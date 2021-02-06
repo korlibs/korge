@@ -166,13 +166,7 @@ open class Text(
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        val font = this.font.getOrNull()
-        // @TODO: Bounds should be consistent with BitmapFont
-        if (autoSize && font !is BitmapFont) {
-            super.getLocalBoundsInternal(out)
-        } else {
-            out.copyFrom(_textBounds)
-        }
+        out.copyFrom(_textBounds)
     }
 
     override fun renderInternal(ctx: RenderContext) {
@@ -267,10 +261,25 @@ open class Text(
 
                 if (cachedVersion != version) {
                     cachedVersion = version
-                    textToBitmapResult = font.renderTextToBitmap(textSize * autoscaling.renderedAtScaleXY, text, paint = Colors.WHITE, fill = true, renderer = renderer, nativeRendering = useNativeRendering)
+                    val realTextSize = textSize * autoscaling.renderedAtScaleXY
+                    //println("realTextSize=$realTextSize")
+                    textToBitmapResult = font.renderTextToBitmap(
+                        realTextSize, text,
+                        paint = Colors.WHITE, fill = true, renderer = renderer,
+                        //background = Colors.RED,
+                        nativeRendering = useNativeRendering, drawBorder = true
+                    )
 
-                    val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
-                    val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
+                    val met = textToBitmapResult.metrics
+                    val x = horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
+                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent + met.descent))
+                    //val y = textToBitmapResult.metrics.drawTop
+
+                    //println("met.lineHeight=${met.lineHeight}, met.ascent=${met.ascent}, met.descent=${met.descent}, y=$y")
+
+                    val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
+                    //println("metrics=$metrics")
+                    //println("textToBitmapResult.metrics=$met")
 
                     if (_staticImage == null) {
                         container.removeChildren()

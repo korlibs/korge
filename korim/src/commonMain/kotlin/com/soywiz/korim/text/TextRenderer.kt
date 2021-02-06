@@ -56,6 +56,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     val flbb = BoundsBuilder()
     val bb = BoundsBuilder()
     var currentLine = 0
+    val nlines get() = currentLine + 1
 
     private fun add(x: Double, y: Double) {
         //val itransform = transform.inverted()

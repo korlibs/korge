@@ -5,9 +5,9 @@ import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.effect.applyEffect
+import com.soywiz.korim.color.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
-import com.soywiz.korim.paint.DefaultPaint
-import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.text.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
@@ -66,29 +66,37 @@ fun <T> Font.renderTextToBitmap(
     size: Double,
     text: T,
     paint: Paint = DefaultPaint,
+    background: Paint = NonePaint,
     fill: Boolean = true,
     border: Int = 0,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     returnGlyphs: Boolean = true,
-    nativeRendering: Boolean = true
+    nativeRendering: Boolean = true,
+    drawBorder: Boolean = false
 ): TextToBitmapResult {
     val font = this
     val bounds = getTextBounds(size, text, renderer = renderer)
     //println("BOUNDS: $bounds")
     val glyphs = arrayListOf<TextToBitmapResult.PlacedGlyph>()
     val iwidth = bounds.width.toIntCeil() + border * 2 + 1
-    val iheight = bounds.height.toIntCeil() + border * 2 + 1
+    val iheight = (if (drawBorder) bounds.allLineHeight else bounds.height).toIntCeil() + border * 2 + 1
     val image = if (nativeRendering) NativeImage(iwidth, iheight) else Bitmap32(iwidth, iheight, premultiplied = true)
     //println("bounds.firstLineBounds: ${bounds.firstLineBounds}")
     //println("bounds.bounds: ${bounds.bounds}")
     image.context2d {
-        font.drawText(this, size, text, paint, bounds.drawLeft, bounds.drawTop, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
+        if (background != NonePaint) {
+            this.fillStyle(background) {
+                fillRect(0, 0, iwidth, iheight)
+            }
+        }
+        //font.drawText(this, size, text, paint, bounds.drawLeft, bounds.drawTop, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
+        font.drawText(this, size, text, paint, bounds.drawLeft, bounds.ascent, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
             if (returnGlyphs) {
                 glyphs += TextToBitmapResult.PlacedGlyph(codePoint, x, y, metrics.clone(), transform.clone())
             }
         })
     }
-    return TextToBitmapResult(image, font.getFontMetrics(size), bounds, glyphs)
+    return TextToBitmapResult(image, bounds.fontMetrics, bounds, glyphs)
 }
 
 fun <T> Font.drawText(
@@ -126,5 +134,7 @@ fun <T> Font.getTextBounds(size: Double, text: T, out: TextMetrics = TextMetrics
     renderer.invoke(actions, text, size, this)
     actions.bb.getBounds(out.bounds)
     actions.flbb.getBounds(out.firstLineBounds)
+    out.nlines = actions.nlines
+    this.getFontMetrics(size, out.fontMetrics)
     return out
 }

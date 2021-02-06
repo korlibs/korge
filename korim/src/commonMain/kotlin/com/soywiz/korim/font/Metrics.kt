@@ -94,7 +94,9 @@ data class GlyphMetrics(
 
 data class TextMetrics(
     val bounds: Rectangle = Rectangle(),
-    val firstLineBounds: Rectangle = Rectangle()
+    val firstLineBounds: Rectangle = Rectangle(),
+    val fontMetrics: FontMetrics = FontMetrics(),
+    var nlines: Int = 0,
 ) {
     val left: Double get() = bounds.left
     val top: Double get() = bounds.top
@@ -107,6 +109,11 @@ data class TextMetrics(
 
     val drawLeft get() = -left
     val drawTop get() = firstLineBounds.height + firstLineBounds.top
+
+    val ascent get() = fontMetrics.ascent
+    val descent get() = fontMetrics.descent
+    val lineHeight get() = fontMetrics.lineHeight
+    val allLineHeight get() = lineHeight * nlines
 
     fun round(): TextMetrics {
         bounds.round()
