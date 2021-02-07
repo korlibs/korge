@@ -1,21 +1,19 @@
-import com.soywiz.klock.*
 import com.soywiz.korge.*
-import com.soywiz.korge.annotations.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.effect.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
+import kotlin.reflect.*
 
 suspend fun main() {
     //GLOBAL_CHECK_GL = true
@@ -44,8 +42,17 @@ suspend fun main() {
             "fox" to "The quick brown fox jumps over the lazy dog. 1234567890",
         )
         val fontSizes = listOf(8, 16, 32, 64, 128, 175)
-        val verticalAlignments = VerticalAlign.values()
-        val horizontalAlignments = HorizontalAlign.values()
+        val verticalAlignments = VerticalAlign.values().toList()
+        val horizontalAlignments = HorizontalAlign.values().toList()
+
+        val fonts = mapOf(
+            "DebugBMP" to font1,
+            "BMPFile" to font0,
+            "ExternalTTF" to font5,
+            "DefaultTTF" to font2,
+            "TTFtoBMP" to font3,
+            "TTFtoBMPEffect" to font4,
+        )
 
         container {
             xy(0, 500)
@@ -84,38 +91,52 @@ suspend fun main() {
 
         }
 
+        data class SecInfo<T>(
+            val name: String,
+            val prop: KMutableProperty0<T>,
+            val items: List<T>,
+            val convert: (T) -> String = { it.toString().toLowerCase().capitalize() }
+        )
+
         korui(width, 200) {
-            horizontal {
-                label("Vertical:")
-                for (align in verticalAlignments) {
-                    button(align.toString().toLowerCase().capitalize()).onClick { text1.verticalAlign = align }
-                }
-            }
-            horizontal {
-                label("Horizontal:")
-                for (align in horizontalAlignments) {
-                    button(align.toString().toLowerCase().capitalize()).onClick { text1.horizontalAlign = align }
+            for (info in listOf(
+                SecInfo("Vertical", text1::verticalAlign, verticalAlignments),
+                SecInfo("Horizontal", text1::horizontalAlign, horizontalAlignments),
+                SecInfo("Size", text1::textSize, fontSizes.map { it.toDouble() }) { "${it.toInt()}" },
+            )) {
+                @Suppress("UNCHECKED_CAST") val rinfo = (info as SecInfo<Any>)
+                horizontal {
+                    label("${info.name}:")
+                    val prop = ObservableProperty(info.prop)
+                    @Suppress("UNCHECKED_CAST") val rprop = (prop as ObservableProperty<Any>)
+                    for (item in info.items) {
+                        toggleButton(rinfo.convert(item)) {
+                            prop.observeStart { this.pressed = (it == item) }
+                            onClick {
+                                rprop.value = item
+                            }
+                        }
+                    }
                 }
             }
             horizontal {
                 label("Font:")
-                button("DebugBMP").onClick { text1.font = font1 }
-                button("BMPFile").onClick { text1.font = font0 }
-                button("DefaultTTF").onClick { text1.font = font2 }
-                button("TTFtoBMP").onClick { text1.font = font3 }
-                button("TTFtoBMPEffect").onClick { text1.font = font4 }
-                button("ExternalTTF").onClick { text1.font = font5 }
-            }
-            horizontal {
-                label("Size:")
-                for (size in fontSizes) {
-                    button("$size").onClick { text1.textSize = size.toDouble() }
+                val prop = ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
+                for ((key, value) in fonts) {
+                    toggleButton(key) {
+                        prop.observeStart { this.pressed = (it == value) }
+                        onClick { prop.value = value }
+                    }
                 }
             }
             horizontal {
                 label("Text:")
+                val prop = ObservableProperty(textStrs.values.first()).observeStart { text1.text = it }
                 for ((key, value) in textStrs) {
-                    button(key).onClick { text1.text = value }
+                    toggleButton(key) {
+                        prop.observeStart { this.pressed = (it == value) }
+                        onClick { prop.value = value }
+                    }
                 }
             }
             horizontal {
