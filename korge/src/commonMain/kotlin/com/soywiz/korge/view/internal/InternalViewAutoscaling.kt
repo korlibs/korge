@@ -24,12 +24,18 @@ internal class InternalViewAutoscaling {
             val diffY = kotlin.math.abs((sy / renderedAtScaleY) - 1.0)
 
             if (diffX >= 0.1 || diffY >= 0.1) {
+                //println("diffX=$diffX, diffY=$diffY")
+
                 renderedAtScaleX = sx
                 renderedAtScaleY = sy
                 renderedAtScaleXY = sxy
                 //println("renderedAtScale: $renderedAtScaleX, $renderedAtScaleY")
                 return true
             }
+        } else {
+            renderedAtScaleX = 1.0
+            renderedAtScaleY = 1.0
+            renderedAtScaleXY = 1.0
         }
         return false
     }

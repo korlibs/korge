@@ -72,6 +72,9 @@ inline class VerticalAlign(val ratio: Double) {
         val MIDDLE = VerticalAlign(0.5)
         val BOTTOM = VerticalAlign(1.0)
         val BASELINE = VerticalAlign(Double.POSITIVE_INFINITY) // Special
+        private val values = arrayOf(TOP, MIDDLE, BASELINE, BOTTOM)
+
+        fun values() = values
 
         operator fun invoke(str: String): VerticalAlign = when (str) {
             "TOP" -> TOP
@@ -104,6 +107,10 @@ inline class HorizontalAlign(val ratio: Double) {
         val LEFT = HorizontalAlign(0.0)
         val CENTER = HorizontalAlign(0.5)
         val RIGHT = HorizontalAlign(1.0)
+
+        private val values = arrayOf(LEFT, CENTER, RIGHT, JUSTIFY)
+
+        fun values() = values
 
         operator fun invoke(str: String): HorizontalAlign = when (str) {
             "LEFT" -> LEFT

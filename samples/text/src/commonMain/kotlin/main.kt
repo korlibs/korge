@@ -19,22 +19,43 @@ import com.soywiz.korui.layout.*
 
 suspend fun main() {
     //GLOBAL_CHECK_GL = true
-    Korge(width = 960, height = 720, bgcolor = Colors["#2b2b2b"], clipBorders = false) {
+    Korge(width = 960, height = 720, bgcolor = Colors["#2b2b2b"], clipBorders = false, scaleAnchor = Anchor.TOP_LEFT) {
         val font0 = resourcesVfs["clear_sans.fnt"].readFont()
         val font1 = debugBmpFont
         val font2 = DefaultTtfFont
         val font3 = BitmapFont(DefaultTtfFont, 64.0)
+        val font4 = BitmapFont(DefaultTtfFont, 64.0, paint = Colors.BLUEVIOLET, effect = BitmapEffect(
+            blurRadius = 0,
+            dropShadowX = 2,
+            dropShadowY = 2,
+            dropShadowColor = Colors.GREEN,
+            dropShadowRadius = 1,
+            //borderSize = 1,
+            //borderColor = Colors.RED,
+        ))
+        val font5 = resourcesVfs["Pacifico.ttf"].readFont()
         lateinit var text1: Text
 
-        container {
-            xy(0, 400)
-            text1 = text("01xhjgÁE", 175.0, Colors.GREEN, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true)
-                .xy(200, 0)
-            val gbounds = graphics {}.xy(200, 0)
+        val textStrs = mapOf(
+            "simple" to "01xXhjgÁEñÑ",
+            "UPPER" to "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
+            "lower" to "abcdefghijklmnopqrstuvwxyz",
+            "number" to "0123456789",
+            "fox" to "The quick brown fox jumps over the lazy dog. 1234567890",
+        )
+        val fontSizes = listOf(8, 16, 32, 64, 128, 175)
+        val verticalAlignments = VerticalAlign.values()
+        val horizontalAlignments = HorizontalAlign.values()
 
-            val baseLineLine = solidRect(960, 1, Colors.ORANGE)
-            val baseAscent = solidRect(960, 1, Colors.BLUE)
-            val baseDescent = solidRect(960, 1, Colors.PURPLE)
+        container {
+            xy(0, 500)
+            val leftPadding = 50
+            text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
+            val gbounds = graphics {}.xy(leftPadding, 0)
+
+            val baseLineLine = solidRect(960 + 1200, 1, Colors.ORANGE)
+            val baseAscent = solidRect(960 + 1200, 1, Colors.BLUE)
+            val baseDescent = solidRect(960 + 1200, 1, Colors.PURPLE)
 
             var cachedBounds: Rectangle? = null
             fun updateBounds() {
@@ -49,7 +70,7 @@ suspend fun main() {
                         line(-5, 0, +5, 0)
                         line(0, -5, 0, +5)
                     }
-                    val metrics = text1.font.getOrNull()!!.getFontMetrics(175.0)
+                    val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.fontSize)
                     baseLineLine.xy(0.0, -metrics.baseline)
                     baseAscent.xy(0.0, -metrics.ascent)
                     baseDescent.xy(0.0, -metrics.descent)
@@ -66,24 +87,46 @@ suspend fun main() {
         korui(width, 200) {
             horizontal {
                 label("Vertical:")
-                button("Top").onClick { text1.verticalAlign = VerticalAlign.TOP }
-                button("Middle").onClick { text1.verticalAlign = VerticalAlign.MIDDLE }
-                button("Baseline").onClick { text1.verticalAlign = VerticalAlign.BASELINE }
-                button("Bottom").onClick { text1.verticalAlign = VerticalAlign.BOTTOM }
+                for (align in verticalAlignments) {
+                    button(align.toString().toLowerCase().capitalize()).onClick { text1.verticalAlign = align }
+                }
             }
             horizontal {
                 label("Horizontal:")
-                button("Left").onClick { text1.horizontalAlign = HorizontalAlign.LEFT }
-                button("Center").onClick { text1.horizontalAlign = HorizontalAlign.CENTER }
-                button("Right").onClick { text1.horizontalAlign = HorizontalAlign.RIGHT }
-                button("Justify").onClick { text1.horizontalAlign = HorizontalAlign.JUSTIFY }
+                for (align in horizontalAlignments) {
+                    button(align.toString().toLowerCase().capitalize()).onClick { text1.horizontalAlign = align }
+                }
             }
             horizontal {
                 label("Font:")
-                button("DefaultTTF").onClick { text1.font = font2 }
-                button("DefaultBMP").onClick { text1.font = font1 }
+                button("DebugBMP").onClick { text1.font = font1 }
                 button("BMPFile").onClick { text1.font = font0 }
+                button("DefaultTTF").onClick { text1.font = font2 }
                 button("TTFtoBMP").onClick { text1.font = font3 }
+                button("TTFtoBMPEffect").onClick { text1.font = font4 }
+                button("ExternalTTF").onClick { text1.font = font5 }
+            }
+            horizontal {
+                label("Size:")
+                for (size in fontSizes) {
+                    button("$size").onClick { text1.textSize = size.toDouble() }
+                }
+            }
+            horizontal {
+                label("Text:")
+                for ((key, value) in textStrs) {
+                    button(key).onClick { text1.text = value }
+                }
+            }
+            horizontal {
+                checkBox("Autoscale") {
+                    checked = text1.autoScaling
+                    onChange { text1.autoScaling = it }
+                }
+                checkBox("Smooth") {
+                    checked = text1.smoothing
+                    onChange { text1.smoothing = it }
+                }
             }
         }
     }

@@ -180,6 +180,8 @@ open class Text(
     private val tempBmpEntry = Text2TextRendererActions.Entry()
     private val fontMetrics = FontMetrics()
     private val textMetrics = TextMetrics()
+    private var lastAutoScaling: Boolean? = null
+    private var lastSmoothing: Boolean? = null
 
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
@@ -207,7 +209,8 @@ open class Text(
             null -> Unit
             is BitmapFont -> {
                 val rversion = renderer.version
-                if (cachedVersion != version || cachedVersionRenderer != rversion) {
+                if (lastSmoothing != smoothing || cachedVersion != version || cachedVersionRenderer != rversion) {
+                    lastSmoothing = smoothing
                     cachedVersionRenderer = rversion
                     cachedVersion = version
 
@@ -250,8 +253,13 @@ open class Text(
                 }
             }
             else -> {
-                if (autoscaling.onRender(autoScaling, this.globalMatrix)) {
+                val onRenderResult = autoscaling.onRender(autoScaling, this.globalMatrix)
+                val lastAutoScalingResult = lastAutoScaling != autoScaling
+                if (onRenderResult || lastAutoScalingResult || lastSmoothing != smoothing) {
                     version++
+                    //println("UPDATED VERSION[$this] lastAutoScaling=$lastAutoScaling, autoScaling=$autoScaling, onRenderResult=$onRenderResult, lastAutoScalingResult=$lastAutoScalingResult")
+                    lastAutoScaling = autoScaling
+                    lastSmoothing = smoothing
                 }
 
                 if (cachedVersion != version) {
