@@ -1,7 +1,9 @@
+import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.effect.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.color.*
@@ -122,6 +124,19 @@ suspend fun main() {
             horizontal {
                 label("Font:")
                 val prop = ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
+                gameWindow.onDragAndDropFileEvent {
+                    if (it.type == DropFileEvent.Type.DROP) {
+                        try {
+                            val file = it.files?.firstOrNull()?.jailParent()
+                            val font = file?.readFont()
+                            if (font != null) {
+                                prop.value = font
+                            }
+                        } catch (e: Throwable) {
+                            gameWindow.alertError(e)
+                        }
+                    }
+                }
                 for ((key, value) in fonts) {
                     toggleButton(key) {
                         prop.observeStart { this.pressed = (it == value) }
