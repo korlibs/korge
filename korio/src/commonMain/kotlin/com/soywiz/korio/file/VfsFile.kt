@@ -235,6 +235,7 @@ data class VfsFile(
 	}
 
 	fun jail(): VfsFile = JailVfs(this)
+    fun jailParent(): VfsFile = JailVfs(parent)[this.baseName]
 
 	suspend fun getUnderlyingUnscapedFile(): FinalVfsFile = vfs.getUnderlyingUnscapedFile(this.path)
 

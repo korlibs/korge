@@ -43,6 +43,7 @@ fun localVfs(base: File): VfsFile = localVfs(base.absolutePath)
 fun jailedLocalVfs(base: File): VfsFile = localVfs(base.absolutePath).jail()
 suspend fun File.open(mode: VfsOpenMode) = localVfs(this).open(mode)
 fun File.toVfs() = localVfs(this)
+fun File.toJailedVfs() = jailedLocalVfs(this.parentFile)[this.name]
 fun UrlVfs(url: URL): VfsFile = UrlVfs(url.toString())
 operator fun File.get(path: String) = File(this, path)
 

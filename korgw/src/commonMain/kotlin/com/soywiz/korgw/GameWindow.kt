@@ -35,6 +35,10 @@ interface DialogInterface {
         unsupported()
 }
 
+suspend fun DialogInterface.alertError(e: Throwable) {
+    alert(e.stackTraceToString().lines().take(16).joinToString("\n"))
+}
+
 open class GameWindowCoroutineDispatcherSetNow : GameWindowCoroutineDispatcher() {
     var currentTime: TimeSpan = PerformanceCounter.reference
     override fun now() = currentTime
@@ -403,7 +407,10 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     fun dispatchDisposeEvent() = dispatch(disposeEvent)
     fun dispatchRenderEvent() = dispatchRenderEvent(true)
     fun dispatchRenderEvent(update: Boolean) = dispatch(renderEvent.also { it.update = update })
-    fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also { it.type = type }.also { it.files = files })
+    fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also {
+        it.type = type
+        it.files = files
+    })
     fun dispatchFullscreenEvent(fullscreen: Boolean) = dispatch(fullScreenEvent.also { it.fullscreen = fullscreen })
 
     fun dispatchReshapeEvent(x: Int, y: Int, width: Int, height: Int) {
@@ -650,4 +657,12 @@ fun GameWindow.configure(
     this.icon = icon
     if (fullscreen != null) this.fullscreen = fullscreen
     this.visible = true
+}
+
+fun GameWindow.onDragAndDropFileEvent(block: suspend (DropFileEvent) -> Unit) {
+    addEventListener<DropFileEvent> { event ->
+        launchImmediately(coroutineDispatcher) {
+            block(event)
+        }
+    }
 }

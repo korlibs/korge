@@ -1,15 +1,20 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.korev.*
 import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Rectangle
 import java.awt.*
 import java.awt.Toolkit.getDefaultToolkit
+import java.awt.datatransfer.*
+import java.awt.dnd.*
 import java.awt.event.*
+import java.io.*
 import javax.swing.*
 
 
@@ -48,6 +53,34 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
             setBounds(0, 0, 640, 480)
             val frame = this
             frame.setLocationRelativeTo(null)
+            frame.dropTarget = object : DropTarget() {
+                init {
+                    this.addDropTargetListener(object : DropTargetAdapter() {
+                        override fun drop(dtde: DropTargetDropEvent) {
+                            //println("drop")
+                            dtde.acceptDrop(DnDConstants.ACTION_COPY)
+                            dispatchDropfileEvent(DropFileEvent.Type.DROP, (dtde.transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>).map { it.toVfs() })
+                        }
+                    })
+                }
+
+                override fun dragEnter(dtde: DropTargetDragEvent) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY)
+                    dispatchDropfileEvent(DropFileEvent.Type.ENTER, null)
+                    //println("dragEnter")
+                    super.dragEnter(dtde)
+                }
+
+                override fun dragOver(dtde: DropTargetDragEvent) {
+                    dtde.acceptDrag(DnDConstants.ACTION_COPY)
+                    super.dragOver(dtde)
+                }
+
+                override fun dragExit(dte: DropTargetEvent) {
+                    dispatchDropfileEvent(DropFileEvent.Type.EXIT, null)
+                    super.dragExit(dte)
+                }
+            }
             //val dim = getDefaultToolkit().screenSize
             //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
