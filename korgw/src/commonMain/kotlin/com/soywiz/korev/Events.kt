@@ -297,8 +297,8 @@ class DisposeEvent() : Event() {
     }
 }
 
-data class DropFileEvent(var type: Type = Type.ENTER, var files: List<VfsFile>? = null) : Event() {
-	enum class Type { ENTER, EXIT, DROP }
+data class DropFileEvent(var type: Type = Type.START, var files: List<VfsFile>? = null) : Event() {
+	enum class Type { START, END, DROP }
 
     fun copyFrom(other: DropFileEvent) {
         this.type = other.type

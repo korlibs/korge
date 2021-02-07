@@ -60,13 +60,15 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
                             //println("drop")
                             dtde.acceptDrop(DnDConstants.ACTION_COPY)
                             dispatchDropfileEvent(DropFileEvent.Type.DROP, (dtde.transferable.getTransferData(DataFlavor.javaFileListFlavor) as List<File>).map { it.toVfs() })
+                            dispatchDropfileEvent(DropFileEvent.Type.END, null)
                         }
                     })
                 }
 
                 override fun dragEnter(dtde: DropTargetDragEvent) {
                     dtde.acceptDrag(DnDConstants.ACTION_COPY)
-                    dispatchDropfileEvent(DropFileEvent.Type.ENTER, null)
+                    //dispatchDropfileEvent(DropFileEvent.Type.ENTER, null)
+                    dispatchDropfileEvent(DropFileEvent.Type.START, null)
                     //println("dragEnter")
                     super.dragEnter(dtde)
                 }
@@ -77,7 +79,8 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
                 }
 
                 override fun dragExit(dte: DropTargetEvent) {
-                    dispatchDropfileEvent(DropFileEvent.Type.EXIT, null)
+                    //dispatchDropfileEvent(DropFileEvent.Type.EXIT, null)
+                    dispatchDropfileEvent(DropFileEvent.Type.END, null)
                     super.dragExit(dte)
                 }
             }

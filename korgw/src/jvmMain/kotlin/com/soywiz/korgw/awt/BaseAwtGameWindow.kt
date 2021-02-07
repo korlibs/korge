@@ -245,15 +245,15 @@ abstract class BaseAwtGameWindow : GameWindow() {
     }
 
     override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
-        val chooser = JFileChooser()
+        //val chooser = JFileChooser()
+        val mode = if (write) FileDialog.SAVE else FileDialog.LOAD
+        val chooser = FileDialog(this.component.getContainerFrame(), "Select file", mode)
+        chooser.setLocationRelativeTo(null)
         //chooser.fileFilter = filter // @TODO: Filters
-        chooser.isMultiSelectionEnabled = multi
-        val result = if (write) {
-            chooser.showSaveDialog(component)
-        } else {
-            chooser.showOpenDialog(component)
-        } == JFileChooser.APPROVE_OPTION
-        return if (result) chooser.selectedFiles.map { localVfs(it) } else listOf()
+        chooser.isMultipleMode = multi
+        //chooser.isMultiSelectionEnabled = multi
+        chooser.isVisible = true
+        return chooser.files.map { localVfs(it) }
     }
 
     fun dispatchReshapeEvent() {

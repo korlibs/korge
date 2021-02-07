@@ -17,9 +17,11 @@ import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
 import kotlin.reflect.*
 
+val DEFAULT_BG = Colors["#2b2b2b"]
+
 suspend fun main() {
     //GLOBAL_CHECK_GL = true
-    Korge(width = 960, height = 720, bgcolor = Colors["#2b2b2b"], clipBorders = false, scaleAnchor = Anchor.TOP_LEFT) {
+    Korge(width = 960, height = 720, bgcolor = DEFAULT_BG, clipBorders = false, scaleAnchor = Anchor.TOP_LEFT) {
         val font0 = resourcesVfs["clear_sans.fnt"].readFont()
         val font1 = debugBmpFont
         val font2 = DefaultTtfFont
@@ -121,26 +123,35 @@ suspend fun main() {
                     }
                 }
             }
+            val fontProp = ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
             horizontal {
                 label("Font:")
-                val prop = ObservableProperty(text1.font.getOrNull()!!).observeStart { text1.font = it }
                 gameWindow.onDragAndDropFileEvent {
-                    if (it.type == DropFileEvent.Type.DROP) {
-                        try {
-                            val file = it.files?.firstOrNull()?.jailParent()
-                            val font = file?.readFont()
-                            if (font != null) {
-                                prop.value = font
+                    when (it.type) {
+                        DropFileEvent.Type.START -> {
+                            views.clearColor = DEFAULT_BG.interpolateWith(0.2, Colors.RED)
+                        }
+                        DropFileEvent.Type.END -> {
+                            views.clearColor = DEFAULT_BG
+                        }
+                        DropFileEvent.Type.DROP -> {
+                            try {
+                                val file = it.files?.firstOrNull()?.jailParent()
+                                val font = file?.readFont()
+                                if (font != null) {
+                                    fontProp.value = font
+                                }
+                            } catch (e: Throwable) {
+                                gameWindow.alertError(e)
+                                throw e
                             }
-                        } catch (e: Throwable) {
-                            gameWindow.alertError(e)
                         }
                     }
                 }
                 for ((key, value) in fonts) {
                     toggleButton(key) {
-                        prop.observeStart { this.pressed = (it == value) }
-                        onClick { prop.value = value }
+                        fontProp.observeStart { this.pressed = (it == value) }
+                        onClick { fontProp.value = value }
                     }
                 }
             }
@@ -162,6 +173,18 @@ suspend fun main() {
                 checkBox("Smooth") {
                     checked = text1.smoothing
                     onChange { text1.smoothing = it }
+                }
+            }
+            horizontal {
+                button("Select file...") {
+                    onClick {
+                        launchImmediately {
+                            val file = gameWindow.openFileDialog().firstOrNull()
+                            if (file != null) {
+                                fontProp.value = file.readFont()
+                            }
+                        }
+                    }
                 }
             }
         }

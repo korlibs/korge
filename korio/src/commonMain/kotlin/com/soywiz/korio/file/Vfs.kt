@@ -60,7 +60,7 @@ abstract class Vfs : AsyncCloseable {
 		handler: VfsProcessHandler = VfsProcessHandler()
 	): Int = unsupported()
 
-	open suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = throw UnsupportedOperationException()
+	open suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = unsupported()
 
 	open suspend fun openInputStream(path: String): AsyncInputStream = open(
 		path,

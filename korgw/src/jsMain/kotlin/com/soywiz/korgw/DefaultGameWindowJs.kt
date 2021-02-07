@@ -11,14 +11,12 @@ import com.soywiz.korio.net.*
 import com.soywiz.korio.util.*
 import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
-import org.w3c.dom.HTMLLinkElement
-import org.w3c.dom.TouchEvent
 import org.w3c.dom.events.*
-import org.w3c.dom.events.Event
 import org.w3c.dom.events.MouseEvent
-import org.w3c.dom.get
 import kotlinx.browser.*
-import kotlin.coroutines.*
+import org.w3c.dom.*
+import org.w3c.dom.TouchEvent
+import org.w3c.files.*
 
 private external val navigator: dynamic
 
@@ -97,6 +95,30 @@ class BrowserGameWindow : GameWindow() {
         canvas.style.right = "0"
         canvas.style.width = "${window.innerWidth}px"
         canvas.style.height = "${window.innerHeight}px"
+
+        canvas.ondragenter = {
+            dispatchDropfileEvent(DropFileEvent.Type.START, null)
+        }
+        canvas.ondragexit = {
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+        }
+        canvas.ondragover = {
+            it.preventDefault()
+        }
+        canvas.ondragstart = {
+            dispatchDropfileEvent(DropFileEvent.Type.START, null)
+        }
+        canvas.ondragend = {
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+        }
+        canvas.ondrop = {
+            it.preventDefault()
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+            val items = it.dataTransfer!!.items
+            val files = (0 until items.length).map { items[it]?.getAsFile()?.toVfs() }.filterNotNull()
+            dispatchDropfileEvent(DropFileEvent.Type.DROP, files)
+        }
+
         //ag.resized(canvas.width, canvas.height)
         //dispatchReshapeEvent(0, 0, window.innerWidth, window.innerHeight)
         dispatchReshapeEvent(0, 0, canvas.width, canvas.height)
@@ -262,7 +284,32 @@ class BrowserGameWindow : GameWindow() {
     }
 
     override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
-        TODO()
+        val deferred = CompletableDeferred<List<VfsFile>>()
+        val input = document.createElement("input").unsafeCast<HTMLInputElement>()
+        input.style.position = "absolute"
+        input.style.top = "0px"
+        input.style.left = "0px"
+        input.style.visibility = "hidden"
+        input.type = "file"
+        input.multiple = multi
+        input.onchange = {
+            val files = input.files
+            //document.body?.removeChild(input)
+            if (files != null) {
+                deferred.complete((0 until files.length).map { files[it]?.toVfs() }.filterNotNull())
+            } else {
+                deferred.complete(listOf())
+            }
+        }
+        input.oncancel = {
+            //document.body?.removeChild(input)
+        }
+        document.body?.appendChild(input)
+        input.click()
+        window.setTimeout({
+            document.body?.removeChild(input)
+        }, 100)
+        return deferred.await()
     }
 
     private var loopJob: Job? = null
