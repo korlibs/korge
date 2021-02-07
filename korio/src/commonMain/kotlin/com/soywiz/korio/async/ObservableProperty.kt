@@ -6,17 +6,34 @@ import kotlin.reflect.*
 class ObservableProperty<T>(initial: T) {
     private var observers = ArrayList<(T) -> Unit>()
 
-    var value: T = initial; private set
+    private var _value: T = initial
+
+    var value: T
+        get() = _value
+        set(v) {
+            update(v)
+        }
     val observerCount: Int get() = observers.size
     fun clear() = observers.clear()
 
-    fun observe(handler: (T) -> Unit) {
+    fun observe(handler: (T) -> Unit): ObservableProperty<T> {
         observers.add(handler)
+        return this
+    }
+    fun observeStart(handler: (T) -> Unit): ObservableProperty<T> {
+        observe(handler)
+        handler(value)
+        return this
     }
     operator fun invoke(handler: (T) -> Unit) = observe(handler)
 
+    fun bind(prop: KMutableProperty0<T>) {
+        observe { prop.set(value) }
+        prop.set(value)
+    }
+
     fun update(value: T) {
-        this.value = value
+        this._value = value
         observers.fastForEach { it(value) }
     }
     operator fun invoke(value: T) = update(value)
@@ -35,4 +52,8 @@ class ObservableProperty<T>(initial: T) {
             TODO()
         }
     }
+}
+
+fun <T> ObservableProperty(prop: KMutableProperty0<T>): ObservableProperty<T> {
+    return ObservableProperty(prop.get()).observeStart { prop.set(it) }
 }
