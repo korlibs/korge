@@ -17,6 +17,19 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
     var previousTime = PerformanceCounter.reference
     var frames = 0
 
+    var batchCount = 0
+    var vertexCount = 0
+
+    views.onBeforeRender {
+        batchCount = 0
+        vertexCount = 0
+    }
+
+    views.renderContext.batch.beforeFlush {
+        batchCount++
+        vertexCount += it.vertexCount
+    }
+
     views.addDebugRenderer { ctx ->
         val scale = ctx.ag.devicePixelRatio
 
@@ -43,6 +56,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
+            + ", batchCount=$batchCount, vertexCount=$vertexCount"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
             ,
             0, 0
