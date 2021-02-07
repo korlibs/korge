@@ -266,15 +266,8 @@ open class Text(
                     )
 
                     val met = textToBitmapResult.metrics
-                    val x = -horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
-                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent + met.descent))
-                    //val y = textToBitmapResult.metrics.drawTop
-
-                    //println("met.lineHeight=${met.lineHeight}, met.ascent=${met.ascent}, met.descent=${met.descent}, y=$y")
-
-                    val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
-                    //println("metrics=$metrics")
-                    //println("textToBitmapResult.metrics=$met")
+                    val x = -horizontalAlign.getOffsetX(met.width) + met.left
+                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
 
                     if (_staticImage == null) {
                         container.removeChildren()
