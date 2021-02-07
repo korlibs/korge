@@ -87,7 +87,16 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
                             "${korge.id}/${korge.id}.MainActivity"
                         )
                     }
-                    val pid = execOutput("$androidSdkPath/platform-tools/adb", *extra, "shell", "pidof", korge.id).trim()
+                    val pid = run {
+                        for (n in 0 until 10) {
+                            try {
+                                return@run execOutput("$androidSdkPath/platform-tools/adb", *extra, "shell", "pidof", korge.id).trim()
+                            } catch (e: Throwable) {
+                                Thread.sleep(500L)
+                                if (n == 9) throw e
+                            }
+                        }
+                    }
                     execLogger {
                         it.commandLine(
                             "$androidSdkPath/platform-tools/adb", *extra, "logcat", "--pid=$pid"
