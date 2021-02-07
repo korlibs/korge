@@ -174,6 +174,10 @@ suspend fun main() {
                     checked = text1.smoothing
                     onChange { text1.smoothing = it }
                 }
+                checkBox("Native Render") {
+                    checked = text1.useNativeRendering
+                    onChange { text1.useNativeRendering = it }
+                }
             }
             horizontal {
                 button("Select file...") {

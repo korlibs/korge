@@ -182,6 +182,7 @@ open class Text(
     private val textMetrics = TextMetrics()
     private var lastAutoScaling: Boolean? = null
     private var lastSmoothing: Boolean? = null
+    private var lastNativeRendering: Boolean? = null
 
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
@@ -255,9 +256,10 @@ open class Text(
             else -> {
                 val onRenderResult = autoscaling.onRender(autoScaling, this.globalMatrix)
                 val lastAutoScalingResult = lastAutoScaling != autoScaling
-                if (onRenderResult || lastAutoScalingResult || lastSmoothing != smoothing) {
+                if (onRenderResult || lastAutoScalingResult || lastSmoothing != smoothing || lastNativeRendering != useNativeRendering) {
                     version++
                     //println("UPDATED VERSION[$this] lastAutoScaling=$lastAutoScaling, autoScaling=$autoScaling, onRenderResult=$onRenderResult, lastAutoScalingResult=$lastAutoScalingResult")
+                    lastNativeRendering = useNativeRendering
                     lastAutoScaling = autoScaling
                     lastSmoothing = smoothing
                 }
