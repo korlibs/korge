@@ -65,7 +65,7 @@ data class FocusEvent(
     val typeBlur get() = type == Type.BLUR
 }
 
-data class Touch(
+class Touch(
 	val index: Int = -1,
 	var active: Boolean = false,
 	var id: Int = -1,
@@ -85,6 +85,9 @@ data class Touch(
         this.start.copyFrom(other.start)
         this.current.copyFrom(other.current)
     }
+
+    override fun hashCode(): Int = index
+    override fun equals(other: Any?): Boolean = other is Touch && this.index == other.index
 }
 
 data class TouchEvent(
