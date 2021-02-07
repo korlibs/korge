@@ -102,6 +102,9 @@ class BrowserGameWindow : GameWindow() {
         canvas.ondragexit = {
             dispatchDropfileEvent(DropFileEvent.Type.END, null)
         }
+        canvas.ondragleave = {
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+        }
         canvas.ondragover = {
             it.preventDefault()
         }
