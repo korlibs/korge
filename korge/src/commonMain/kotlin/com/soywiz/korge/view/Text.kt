@@ -199,13 +199,8 @@ open class Text(
             val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
             _textBounds.copyFrom(metrics.bounds)
             _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
-            _textBounds.x = when (alignment.horizontal) {
-                else -> -_textBounds.width * alignment.horizontal.ratioFake + metrics.left
-            }
-            _textBounds.y = when (alignment.vertical) {
-                VerticalAlign.BASELINE -> -metrics.drawTop
-                else -> -_textBounds.height * alignment.vertical.ratioFake
-            }
+            _textBounds.x = -alignment.horizontal.getOffsetX(_textBounds.width) + metrics.left
+            _textBounds.y = alignment.vertical.getOffsetY(_textBounds.height, -metrics.ascent)
         }
 
         when (font) {

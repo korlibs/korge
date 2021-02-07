@@ -42,8 +42,11 @@ class BitmapFont(
     override suspend fun get() = this
 
     private val naturalFontMetrics by lazy {
+        val ascent = base
+        val baseline = 0.0
+        val descent = lineHeight - base
         FontMetrics(
-            fontSize, lineHeight, lineHeight, 0.0, 0.0, 0.0, 0.0,
+            fontSize, ascent, ascent, baseline, -descent, -descent, 0.0,
             maxWidth = run {
                 var width = 0.0
                 for (glyph in glyphs.values) if (glyph != null) width = max2(width, glyph.texture.width.toDouble())
