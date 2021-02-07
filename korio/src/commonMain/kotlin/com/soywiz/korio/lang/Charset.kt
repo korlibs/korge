@@ -14,7 +14,7 @@ abstract class Charset(val name: String) {
 			return UTF8
 		}
 
-        fun StringBuilder.appendCodePoint(codePoint: Int) {
+        fun StringBuilder.appendCodePointV(codePoint: Int) {
             if (codePoint in 0xD800..0xDFFF || codePoint > 0xFFFF) {
                 val U0 = codePoint - 0x10000
                 val hs = U0.extract(10, 10)
@@ -85,22 +85,22 @@ open class UTC8CharsetBase(name: String) : Charset(name) {
             when (c shr 4) {
                 in 0b0000..0b0111 -> {
                     // 0xxxxxxx
-                    out.appendCodePoint(c)
+                    out.appendCodePointV(c)
                     i += 1
                 }
                 in 0b1100..0b1101 -> {
                     // 110x xxxx   10xx xxxx
-                    out.appendCodePoint((c and 0x1F shl 6 or (src[i + 1].toInt() and 0x3F)))
+                    out.appendCodePointV((c and 0x1F shl 6 or (src[i + 1].toInt() and 0x3F)))
                     i += 2
                 }
                 0b1110 -> {
                     // 1110 xxxx  10xx xxxx  10xx xxxx
-                    out.appendCodePoint((c and 0x0F shl 12 or (src[i + 1].toInt() and 0x3F shl 6) or (src[i + 2].toInt() and 0x3F)))
+                    out.appendCodePointV((c and 0x0F shl 12 or (src[i + 1].toInt() and 0x3F shl 6) or (src[i + 2].toInt() and 0x3F)))
                     i += 3
                 }
                 0b1111 -> {
                     // 1111 0xxx 10xx xxxx  10xx xxxx  10xx xxxx
-                    out.appendCodePoint(0
+                    out.appendCodePointV(0
                         .insert(src[i + 0].toInt().extract(0, 3), 18, 3)
                         .insert(src[i + 1].toInt().extract(0, 6), 12, 6)
                         .insert(src[i + 2].toInt().extract(0, 6), 6, 6)
