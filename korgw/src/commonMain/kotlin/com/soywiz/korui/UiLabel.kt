@@ -14,6 +14,6 @@ open class UiLabel(app: UiApplication, val label: NativeUiFactory.NativeLabel = 
     }
 }
 
-inline fun UiContainer.label(text: String = "Button", block: UiLabel.() -> Unit): UiLabel {
+inline fun UiContainer.label(text: String = "Button", block: UiLabel.() -> Unit = {}): UiLabel {
     return UiLabel(app).also { it.text = text }.also { it.parent = this }.also(block)
 }
