@@ -16,7 +16,7 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.interpolation.*
 
-suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI", bgcolor = Colors["#1c1e0e"]) {
+suspend fun main3() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI", bgcolor = Colors["#1c1e0e"]) {
     val container = fixedSizeContainer(width, height, clip = true) { }
     container.korui {
         addChild(UiEditProperties(app, container, views))
@@ -46,7 +46,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI
     }
 }
 
-suspend fun main2() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
+suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
 	val nativeProcess = NativeProcess(views)
 
 	defaultUISkin = OtherUISkin()
@@ -105,8 +105,8 @@ suspend fun main2() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
 	}
 
 	while (true) {
-		tween(progress::current[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
-		tween(progress::current[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+		tween(progress::ratio[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
+		tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 	}
 }
 
