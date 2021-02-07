@@ -30,6 +30,7 @@ open class BaseAwtUiFactory : NativeUiFactory {
     override fun createToolbar() = AwtToolbar(this)
     override fun createScrollPanel() = AwtScrollPanel(this)
     override fun createButton() = AwtButton(this)
+    override fun createToggleButton() = AwtToggleButton(this)
     override fun createLabel() = AwtLabel(this)
     override fun createCanvas() = AwtCanvas(this)
     override fun createCheckBox() = AwtCheckBox(this)

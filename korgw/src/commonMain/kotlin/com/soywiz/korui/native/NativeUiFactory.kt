@@ -31,11 +31,15 @@ object DummyUiFactory : NativeUiFactory {
     open class DummyButton(native: Any?) : DummyComponent(native), NativeUiFactory.NativeButton {
     }
 
+    open class DummyToggleButton(native: Any?) : DummyComponent(native), NativeUiFactory.NativeToggleButton {
+    }
+
     override fun wrapNative(native: Any?) = DummyComponent(native)
     override fun wrapNativeContainer(native: Any?) = DummyContainer(native)
     override fun createWindow() = DummyWindow(null)
     override fun createContainer() = DummyContainer(null)
     override fun createButton() = DummyButton(null)
+    override fun createToggleButton() = DummyToggleButton(null)
 }
 
 interface NativeUiFactory {
@@ -46,6 +50,7 @@ interface NativeUiFactory {
     fun createToolbar(): NativeToolbar = TODO()
     fun createScrollPanel(): NativeScrollPanel = TODO()
     fun createButton(): NativeButton = TODO()
+    fun createToggleButton(): NativeToggleButton = TODO()
     fun createLabel(): NativeLabel = TODO()
     fun createCheckBox(): NativeCheckBox = TODO()
     fun createTextField(): NativeTextField = TODO()
@@ -56,9 +61,18 @@ interface NativeUiFactory {
     interface NativeToolbar : NativeContainer {
     }
 
-    interface NativeButton : NativeComponent, NativeWithText {
+    interface NativeAbstractButton : NativeComponent, NativeWithText {
         var icon: Bitmap?
             get() = null
+            set(value) = Unit
+    }
+
+    interface NativeButton : NativeAbstractButton {
+    }
+
+    interface NativeToggleButton : NativeAbstractButton {
+        var pressed: Boolean
+            get() = false
             set(value) = Unit
     }
 
