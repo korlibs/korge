@@ -109,7 +109,7 @@ fun ViewsContainer.registerBox2dSupportOnce() {
             val body = view.body
             if (body != null) {
                 physicsContainer.uiCollapsibleSection("Box2D Physics") {
-                    button("Remove") {
+                    button("Remove").onClick {
                         body.destroyBody()
                         view.body = null
                         body.view = null
@@ -134,7 +134,7 @@ fun ViewsContainer.registerBox2dSupportOnce() {
                     uiEditableValue(body::isActive)
                 }
             } else {
-                physicsContainer.button("Add box2d physics") {
+                physicsContainer.button("Add box2d physics").onClick {
                     view.registerBodyWithFixture(type = BodyType.STATIC)
                     views.debugSaveView("Add physics", view)
                     physicsContainer()

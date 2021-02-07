@@ -15,13 +15,13 @@ class KoruiLayoutTest {
         app.window(300, 300) {
             button0 = button("hello")
             horizontal = horizontal {
-                button1 = button("hello", {
+                button1 = button("hello") {
                     preferredWidth = 50.percent
-                })
-                button2 = button("world", {
+                }
+                button2 = button("world") {
                     preferredWidth = 50.percent
                     preferredHeight = 32.pt
-                })
+                }
             }
         }
         assertEquals("Rectangle(x=0, y=0, width=300, height=32)", "${button0.bounds}")

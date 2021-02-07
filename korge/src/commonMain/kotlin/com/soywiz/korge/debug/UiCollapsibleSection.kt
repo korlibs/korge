@@ -50,12 +50,13 @@ class UiCollapsibleSection(app: UiApplication, val name: String?, val componentC
     private lateinit var mycontainer: UiContainer
 
     init {
-        button(name ?: "Unknown", {
+        button(name ?: "Unknown") {
             this.icon = ICON_OPEN
-        }) {
-            mycontainer.visible = !mycontainer.visible
-            mycontainer.root?.relayout()
-            this.icon = if (mycontainer.visible) ICON_OPEN else ICON_CLOSE
+            onClick {
+                mycontainer.visible = !mycontainer.visible
+                mycontainer.root?.relayout()
+                this.icon = if (mycontainer.visible) ICON_OPEN else ICON_CLOSE
+            }
         }
         mycontainer = container {
             for (child in componentChildren) {
