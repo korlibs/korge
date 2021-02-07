@@ -8,7 +8,7 @@ import android.widget.RelativeLayout
 import com.soywiz.kds.Pool
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlAndroid
-import com.soywiz.klock.milliseconds
+import com.soywiz.klock.*
 import com.soywiz.korag.AGOpengl
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.RenderEvent
@@ -81,73 +81,7 @@ class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
             agOpenGl = KorgeViewAGOpenGL()
             gameWindow = AndroidGameWindowNoActivity(module.windowSize.width, module.windowSize.height, agOpenGl!!)
 
-            mGLView = object : GLSurfaceView(context) {
-
-                val view = this
-
-                init {
-
-                    var contextLost = false
-                    var surfaceChanged = false
-                    var initialized = false
-
-                    setEGLContextClientVersion(2)
-
-                    setRenderer(object : Renderer {
-                        override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
-                            contextLost = true
-                        }
-
-                        override fun onDrawFrame(unused: GL10) {
-
-                            if (contextLost) {
-                                contextLost = false
-                                agOpenGl?.contextLost()
-                            }
-
-                            if (!initialized) {
-                                initialized = true
-                                gameWindow?.dispatch(initEvent)
-                            }
-
-                            if (surfaceChanged) {
-                                surfaceChanged = false
-                                gameWindow?.dispatchReshapeEvent(0, 0, view.width, view.height)
-                            }
-
-                            gameWindow?.coroutineDispatcher?.executePending(0.milliseconds)
-                            gameWindow?.dispatch(renderEvent)
-                        }
-
-                        override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
-                            surfaceChanged = true
-                        }
-                    })
-                }
-
-                private val touches = TouchEventHandler()
-                private val coords = MotionEvent.PointerCoords()
-
-                @SuppressLint("ClickableViewAccessibility")
-                override fun onTouchEvent(ev: MotionEvent): Boolean {
-
-                    val gameWindow = gameWindow ?: return false
-                    val gameWindowCoroutineContext = gameWindow.coroutineContext ?: return false
-
-                    touches.handleEvent(gameWindow, gameWindowCoroutineContext, when (ev.action) {
-                        MotionEvent.ACTION_DOWN -> TouchEvent.Type.START
-                        MotionEvent.ACTION_MOVE -> TouchEvent.Type.MOVE
-                        MotionEvent.ACTION_UP -> TouchEvent.Type.END
-                        else -> TouchEvent.Type.END
-                    }, { currentTouchEvent ->
-                        for (n in 0 until ev.pointerCount) {
-                            ev.getPointerCoords(n, coords)
-                            currentTouchEvent.touch(ev.getPointerId(n), coords.x.toDouble(), coords.y.toDouble())
-                        }
-                    })
-                    return true
-                }
-            }
+            mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!)
 
             addView(mGLView)
 

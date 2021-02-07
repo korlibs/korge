@@ -15,7 +15,6 @@ class TouchEventHandler {
         val currentTouchEvent = lock {
             val currentTouchEvent = touchesEventPool.alloc()
             currentTouchEvent.copyFrom(lastTouchEvent)
-
             currentTouchEvent.startFrame(kind)
             emitter(currentTouchEvent)
 

@@ -21,6 +21,7 @@ import com.soywiz.korio.file.VfsFile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import androidx.core.app.ActivityCompat.startActivityForResult
+import com.soywiz.klock.*
 
 abstract class KorgwActivity : Activity() {
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
@@ -65,54 +66,7 @@ abstract class KorgwActivity : Activity() {
         //ag = AGOpenglFactory.create(this).create(this, AGConfig())
         ag = KorgwActivityAGOpengl()
 
-        mGLView = object : GLSurfaceView(this) {
-            val view = this
-
-            init {
-                println("KorgwActivity: Created GLSurfaceView $this for ${this@KorgwActivity}")
-
-                setEGLContextClientVersion(2)
-                setRenderer(object : GLSurfaceView.Renderer {
-                    override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
-                        //GLES20.glClearColor(0.0f, 0.4f, 0.7f, 1.0f)
-                        gameWindow.handleContextLost()
-                    }
-
-                    override fun onDrawFrame(unused: GL10) {
-                        gameWindow.handleInitEventIfRequired()
-                        gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
-                        gameWindow.frame()
-                    }
-
-                    override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
-                        println("---------------- GLSurfaceView.onSurfaceChanged($width, $height) --------------")
-                        //ag.contextVersion++
-                        //GLES20.glViewport(0, 0, width, height)
-                        //surfaceChanged = true
-                    }
-                })
-            }
-
-            private val touches = TouchEventHandler()
-            private val coords = MotionEvent.PointerCoords()
-
-            override fun onTouchEvent(ev: MotionEvent): Boolean {
-                val gameWindow = gameWindow ?: return false
-
-                touches.handleEvent(gameWindow, gameWindow.coroutineContext, when (ev.action) {
-                    MotionEvent.ACTION_DOWN -> TouchEvent.Type.START
-                    MotionEvent.ACTION_MOVE -> TouchEvent.Type.MOVE
-                    MotionEvent.ACTION_UP -> TouchEvent.Type.END
-                    else -> TouchEvent.Type.END
-                }, { currentTouchEvent ->
-                    for (n in 0 until ev.pointerCount) {
-                        ev.getPointerCoords(n, coords)
-                        currentTouchEvent.touch(ev.getPointerId(n), coords.x.toDouble(), coords.y.toDouble())
-                    }
-                })
-                return true
-            }
-        }
+        mGLView = KorgwSurfaceView(this, this, gameWindow)
 
         gameWindow.initializeAndroid()
         setContentView(mGLView)
