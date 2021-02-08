@@ -87,9 +87,11 @@ inline class SizeInt(val size: Size) : ISizeInt {
     override fun toString(): String = "SizeInt(width=$width, height=$height)"
 }
 
-fun SizeInt.setTo(width: Int, height: Int) = this.apply {
+fun SizeInt.setTo(width: Int, height: Int) : SizeInt {
     this.width = width
     this.height = height
+
+    return this
 }
 
 fun SizeInt.setTo(that: SizeInt) = setTo(that.width, that.height)

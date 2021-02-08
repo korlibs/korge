@@ -286,7 +286,12 @@ inline class PointInt(val p: Point) : IPointInt, Comparable<IPointInt> {
     override var y: Int
         set(value) = run { p.y = value.toDouble() }
         get() = p.y.toInt()
-    fun setTo(x: Int, y: Int) = this.apply { this.x = x; this.y = y }
+    fun setTo(x: Int, y: Int) : PointInt {
+        this.x = x
+        this.y = y
+
+        return this
+    }
     fun setTo(that: IPointInt) = this.setTo(that.x, that.y)
     override fun toString(): String = "($x, $y)"
 }

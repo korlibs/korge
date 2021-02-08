@@ -207,7 +207,7 @@ abstract class AGOpengl : AG() {
         val currentRenderBuffer = this.currentRenderBuffer ?: return
         if (currentRenderBuffer === mainRenderBuffer) {
             var realScissors: Rectangle? = finalScissorBL
-            realScissors?.setTo(0, 0, realBackWidth, realBackHeight)
+            realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
             if (scissor != null) {
                 tempRect.setTo(currentRenderBuffer.x + scissor.x, ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)), (scissor.width), scissor.height)
                 realScissors = realScissors?.intersection(tempRect, realScissors)

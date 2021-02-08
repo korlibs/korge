@@ -71,7 +71,7 @@ object Html {
 
 		object Identity : MetricsProvider {
 			override fun getBounds(text: String, format: Format, out: Rectangle) {
-                out.setTo(0, 0, text.length, 1)
+                out.setTo(0.0, 0.0, text.length.toDouble(), 1.0)
             }
 		}
 	}
