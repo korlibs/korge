@@ -7,15 +7,15 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
-inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
-	TiledMapView(tiledMap, showShapes).addTo(this, callback)
+inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
+	TiledMapView(tiledMap, showShapes, smoothing).addTo(this, callback)
 
-class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true) : Container() {
+class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true) : Container() {
     val tileset = tiledMap.tilesets.toTileSet()
 	init {
 		tiledMap.allLayers.fastForEachWithIndex { index, layer ->
             val view: View = when (layer) {
-                is TiledMap.Layer.Tiles -> tileMap(layer.map, tileset)
+                is TiledMap.Layer.Tiles -> tileMap(layer.map, tileset, smoothing = smoothing)
                 //is TiledMap.Layer.Image -> image(layer.image)
                 is TiledMap.Layer.Objects -> {
                     container {
