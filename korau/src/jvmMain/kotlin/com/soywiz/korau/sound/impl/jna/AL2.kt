@@ -60,9 +60,3 @@ val alq: AL? by lazy {
 }
 
 val al: AL by lazy { alq ?: ALDummy }
-
-val alc: ALC? by lazy {
-    runCatchingAl {
-        Native.load(nativeOpenALLibraryPath, ALC::class.java)
-    }
-}

@@ -1,7 +1,6 @@
 package com.soywiz.korau.sound.impl.jna
 
-import com.sun.jna.Library
-import com.sun.jna.Pointer
+import com.sun.jna.*
 import java.nio.Buffer
 
 @Suppress("unused")
@@ -237,57 +236,71 @@ fun AL.alGetSourcei(source: Int, param: Int): Int = tempI.apply { al.alGetSource
 fun AL.alGetSourceState(source: Int): Int = alGetSourcei(source, AL.AL_SOURCE_STATE)
 
 @Suppress("unused")
-interface ALC : Library {
-    fun alcCreateContext(device: Pointer, attrlist: IntArray?): Pointer
-    fun alcMakeContextCurrent(context: Pointer): Boolean
-    fun alcProcessContext(context: Pointer)
-    fun alcSuspendContext(context: Pointer)
-    fun alcDestroyContext(context: Pointer)
-    fun alcGetCurrentContext(): Pointer
-    fun alcGetContextsDevice(context: Pointer): Pointer
-    fun alcOpenDevice(devicename: String?): Pointer
-    fun alcCloseDevice(device: Pointer): Boolean
-    fun alcGetError(device: Pointer): Int
-    fun alcIsExtensionPresent(device: Pointer, extname: String): Boolean
-    fun alcGetProcAddress(device: Pointer, funcname: String): Pointer
-    fun alcGetEnumValue(device: Pointer, enumname: String): Int
-    fun alcGetString(device: Pointer, param: Int): String
-    fun alcGetIntegerv(device: Pointer, param: Int, size: Int, values: IntArray)
-    fun alcCaptureOpenDevice(devicename: String, frequency: Int, format: Int, buffersize: Int): Pointer
-    fun alcCaptureCloseDevice(device: Pointer): Boolean
-    fun alcCaptureStart(device: Pointer)
-    fun alcCaptureStop(device: Pointer)
-    fun alcCaptureSamples(device: Pointer, buffer: Buffer, samples: Int)
+object ALC {
+    @JvmStatic external fun alcCreateContext(device: Pointer, attrlist: IntArray?): Pointer
+    @JvmStatic external fun alcMakeContextCurrent(context: Pointer): Boolean
+    @JvmStatic external fun alcProcessContext(context: Pointer)
+    @JvmStatic external fun alcSuspendContext(context: Pointer)
+    @JvmStatic external fun alcDestroyContext(context: Pointer)
+    @JvmStatic external fun alcGetCurrentContext(): Pointer
+    @JvmStatic external fun alcGetContextsDevice(context: Pointer): Pointer
+    @JvmStatic external fun alcOpenDevice(devicename: String?): Pointer
+    @JvmStatic external fun alcCloseDevice(device: Pointer): Boolean
+    @JvmStatic external fun alcGetError(device: Pointer): Int
+    @JvmStatic external fun alcIsExtensionPresent(device: Pointer, extname: String): Boolean
+    @JvmStatic external fun alcGetProcAddress(device: Pointer, funcname: String): Pointer
+    @JvmStatic external fun alcGetEnumValue(device: Pointer, enumname: String): Int
+    @JvmStatic external fun alcGetString(device: Pointer, param: Int): String
+    @JvmStatic external fun alcGetIntegerv(device: Pointer, param: Int, size: Int, values: IntArray)
+    @JvmStatic external fun alcCaptureOpenDevice(devicename: String, frequency: Int, format: Int, buffersize: Int): Pointer
+    @JvmStatic external fun alcCaptureCloseDevice(device: Pointer): Boolean
+    @JvmStatic external fun alcCaptureStart(device: Pointer)
+    @JvmStatic external fun alcCaptureStop(device: Pointer)
+    @JvmStatic external fun alcCaptureSamples(device: Pointer, buffer: Buffer, samples: Int)
+    private var loaded = false
 
-    companion object {
-        const val ALC_FALSE = 0
-        const val ALC_TRUE = 1
-        const val ALC_FREQUENCY = 0x1007
-        const val ALC_REFRESH = 0x1008
-        const val ALC_SYNC = 0x1009
-        const val ALC_MONO_SOURCES = 0x1010
-        const val ALC_STEREO_SOURCES = 0x1011
-        const val ALC_NO_ERROR = 0
-        const val ALC_INVALID_DEVICE = 0xA001
-        const val ALC_INVALID_CONTEXT = 0xA002
-        const val ALC_INVALID_ENUM = 0xA003
-        const val ALC_INVALID_VALUE = 0xA004
-        const val ALC_OUT_OF_MEMORY = 0xA005
-        const val ALC_MAJOR_VERSION = 0x1000
-        const val ALC_MINOR_VERSION = 0x1001
-        const val ALC_ATTRIBUTES_SIZE = 0x1002
-        const val ALC_ALL_ATTRIBUTES = 0x1003
-        const val ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004
-        const val ALC_DEVICE_SPECIFIER = 0x1005
-        const val ALC_EXTENSIONS = 0x1006
-        const val ALC_EXT_CAPTURE = 1
-        const val ALC_CAPTURE_DEVICE_SPECIFIER = 0x310
-        const val ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 0x311
-        const val ALC_CAPTURE_SAMPLES = 0x312
-        const val ALC_ENUMERATE_ALL_EXT = 1
-        const val ALC_DEFAULT_ALL_DEVICES_SPECIFIER = 0x1012
-        const val ALC_ALL_DEVICES_SPECIFIER = 0x1013
+    init {
+        try {
+            Native.register(nativeOpenALLibraryPath)
+            loaded = true
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
     }
+
+    val instance get() = if (loaded) ALC else null
+
+    const val ALC_FALSE = 0
+    const val ALC_TRUE = 1
+    const val ALC_FREQUENCY = 0x1007
+    const val ALC_REFRESH = 0x1008
+    const val ALC_SYNC = 0x1009
+    const val ALC_MONO_SOURCES = 0x1010
+    const val ALC_STEREO_SOURCES = 0x1011
+    const val ALC_NO_ERROR = 0
+    const val ALC_INVALID_DEVICE = 0xA001
+    const val ALC_INVALID_CONTEXT = 0xA002
+    const val ALC_INVALID_ENUM = 0xA003
+    const val ALC_INVALID_VALUE = 0xA004
+    const val ALC_OUT_OF_MEMORY = 0xA005
+    const val ALC_MAJOR_VERSION = 0x1000
+    const val ALC_MINOR_VERSION = 0x1001
+    const val ALC_ATTRIBUTES_SIZE = 0x1002
+    const val ALC_ALL_ATTRIBUTES = 0x1003
+    const val ALC_DEFAULT_DEVICE_SPECIFIER = 0x1004
+    const val ALC_DEVICE_SPECIFIER = 0x1005
+    const val ALC_EXTENSIONS = 0x1006
+    const val ALC_EXT_CAPTURE = 1
+    const val ALC_CAPTURE_DEVICE_SPECIFIER = 0x310
+    const val ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER = 0x311
+    const val ALC_CAPTURE_SAMPLES = 0x312
+    const val ALC_ENUMERATE_ALL_EXT = 1
+    const val ALC_DEFAULT_ALL_DEVICES_SPECIFIER = 0x1012
+    const val ALC_ALL_DEVICES_SPECIFIER = 0x1013
+}
+
+val alc: ALC? by lazy {
+    ALC.instance
 }
 
 internal inline fun <T> runCatchingAl(block: () -> T): T? {
