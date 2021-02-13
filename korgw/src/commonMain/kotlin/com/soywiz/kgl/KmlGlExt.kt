@@ -1,5 +1,6 @@
 package com.soywiz.kgl
 
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 
 class KmlGlException(message: String) : RuntimeException(message)
@@ -56,4 +57,11 @@ fun KmlGl.getErrorString(error: Int = getError()): String {
 		OUT_OF_MEMORY -> "OUT_OF_MEMORY"
 		else -> "UNKNOWN_ERROR$error"
 	}
+}
+
+fun KmlGl.checkError(message: String) {
+    val error = getError()
+    if (error != NO_ERROR) {
+        Console.error("glGetError after $message")
+    }
 }

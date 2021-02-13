@@ -24,9 +24,11 @@ open class Win32KmlGl : NativeKgl(Win32GL) {
             vertexArrayCachedVersion = contextVersion
             val out = intArrayOf(-1)
             Win32GL.glGenVertexArrays(1, out)
+            checkError("glGenVertexArrays")
             vertexArray = out[0]
         }
         Win32GL.glBindVertexArray(vertexArray)
+        //checkError("glBindVertexArray")
     }
 }
 

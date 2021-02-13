@@ -1469,6 +1469,7 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, 
     init {
         //println("CheckErrorsKmlGlProxy")
     }
+    override fun getError(): Int = parent.getError()
 
     var tooManyErrors = false
     var errorCount = 0
@@ -1479,12 +1480,13 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, 
     }
 
     override fun before(name: String, params: String) {
+        parent.getError()
         super.before(name, params)
     }
 
     override fun after(name: String, params: String, result: String): Unit {
         do {
-            val error = parent.getError()
+            val error = getError()
             if (error != NO_ERROR) {
                 if (errorCount >= 50) {
                     if (!tooManyErrors) {
@@ -1503,7 +1505,6 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, 
             }
         } while (error != NO_ERROR)
     }
-    override fun getError(): Int = parent.getError()
 }
 
 fun KmlGl.checked(throwException: Boolean = false, printStackTrace: Boolean = false) = CheckErrorsKmlGlProxy(this, throwException, printStackTrace)
