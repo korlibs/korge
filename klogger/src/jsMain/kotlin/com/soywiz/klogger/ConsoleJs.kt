@@ -1,5 +1,14 @@
 package com.soywiz.klogger
 
-actual inline fun Console.warn(vararg msg: Any?) = console.warn(*msg)
-actual inline fun Console.error(vararg msg: Any?) = console.error(*msg)
-actual inline fun Console.log(vararg msg: Any?) = console.log(*msg)
+actual object Console : BaseConsole() {
+    override fun log(kind: Kind, vararg msg: Any?) {
+        when (kind) {
+            Kind.ERROR -> console.error(*msg)
+            Kind.WARN -> console.warn(*msg)
+            Kind.INFO -> console.info(*msg)
+            Kind.DEBUG -> console.log(*msg)
+            Kind.TRACE -> console.log(*msg)
+            Kind.LOG -> console.log(*msg)
+        }
+    }
+}
