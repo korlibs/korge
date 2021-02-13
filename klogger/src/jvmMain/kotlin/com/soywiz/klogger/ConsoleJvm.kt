@@ -6,6 +6,13 @@ actual object Console : BaseConsole() {
         stream.println(logToString(kind, *msg))
     }
 
-    override fun logToString(kind: Kind, vararg msg: Any?): String =
-        "${kind.color}#${Thread.currentThread().id}: ${msg.joinToString(", ")}${ConsoleColor.RESET}"
+    override fun logToString(kind: Kind, vararg msg: Any?): String = buildString {
+        val color = kind.color
+        if (color != null) appendFgColor(color)
+        append('#')
+        append(Thread.currentThread().id)
+        append(": ")
+        msg.joinTo(this, ", ")
+        if (color != null) appendReset()
+    }
 }

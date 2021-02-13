@@ -1,20 +1,25 @@
 package com.soywiz.klogger
 
-open class BaseConsole() {
-    enum class Kind(val level: Int, val color: String) {
-        ERROR(0, ConsoleColor.FG_RED),
-        WARN(1, ConsoleColor.FG_YELLOW),
-        INFO(2, ConsoleColor.FG_BLUE),
-        DEBUG(3, ConsoleColor.FG_CYAN),
-        TRACE(4, ConsoleColor.FG_GREEN),
-        LOG(5, ConsoleColor.RESET),
+open class BaseConsole() : AnsiEscape {
+    enum class Kind(val level: Int, val color: AnsiEscape.Color?) {
+        ERROR(0, AnsiEscape.Color.RED),
+        WARN(1, AnsiEscape.Color.YELLOW),
+        INFO(2, AnsiEscape.Color.BLUE),
+        DEBUG(3, AnsiEscape.Color.CYAN),
+        TRACE(4, AnsiEscape.Color.GREEN),
+        LOG(5, null),
     }
 
     open fun log(kind: Kind, vararg msg: Any?) {
         println(logToString(kind, *msg))
     }
 
-    protected open fun logToString(kind: Kind, vararg msg: Any?) = "${kind.color}${msg.joinToString(", ")}${ConsoleColor.RESET}"
+    protected open fun logToString(kind: Kind, vararg msg: Any?): String = buildString {
+        val color = kind.color
+        if (color != null) appendFgColor(color)
+        msg.joinTo(this, ", ")
+        if (color != null) appendReset()
+    }
 
     /** Registers a [log] in the console */
     fun log(vararg msg: Any?): Unit = log(Kind.LOG, *msg)
@@ -41,44 +46,57 @@ fun Console.assert(cond: Boolean, msg: String): Unit {
     if (cond) throw AssertionError(msg)
 }
 
-object ConsoleColor {
-    const val RESET = "\u001B[0m"
+// https://www.lihaoyi.com/post/BuildyourownCommandLinewithANSIescapecodes.html
+interface AnsiEscape {
+    companion object : AnsiEscape {
+        inline operator fun <T> invoke(block: AnsiEscape.() -> T): T = block()
+    }
 
-    const val FG_BLACK = "\u001B[30m"
-    const val FG_RED = "\u001B[31m"
-    const val FG_GREEN = "\u001B[32m"
-    const val FG_YELLOW = "\u001B[33m"
-    const val FG_BLUE = "\u001B[34m"
-    const val FG_PURPLE = "\u001B[35m"
-    const val FG_CYAN = "\u001B[36m"
-    const val FG_WHITE = "\u001B[37m"
+    fun StringBuilder.appendAnsiScape(code: Int, extra: String? = null, char: Char = 'm'): StringBuilder {
+        append('\u001B')
+        append('[')
+        append(code)
+        if (extra != null) append(extra)
+        append(char)
+        return this
+    }
 
-    const val BG_BLACK = "\u001B[40m"
-    const val BG_RED = "\u001B[41m"
-    const val BG_GREEN = "\u001B[42m"
-    const val BG_YELLOW = "\u001B[43m"
-    const val BG_BLUE = "\u001B[44m"
-    const val BG_PURPLE = "\u001B[45m"
-    const val BG_CYAN = "\u001B[46m"
-    const val BG_WHITE = "\u001B[47m"
+    enum class Color(val index: Int) { BLACK(0), RED(1), GREEN(2), YELLOW(3), BLUE(4), PURPLE(5), CYAN(6), WHITE(7) }
 
-    val String.black get() = "$FG_BLACK$this$RESET"
-    val String.red get() = "$FG_RED$this$RESET"
-    val String.green get() = "$FG_GREEN$this$RESET"
-    val String.yellow get() = "$FG_YELLOW$this$RESET"
-    val String.blue get() = "$FG_BLUE$this$RESET"
-    val String.purple get() = "$FG_PURPLE$this$RESET"
-    val String.cyan get() = "$FG_CYAN$this$RESET"
-    val String.white get() = "$FG_WHITE$this$RESET"
+    fun StringBuilder.appendReset() = appendAnsiScape(0)
+    fun StringBuilder.appendBold() = appendAnsiScape(1)
+    fun StringBuilder.appendUnderline() = appendAnsiScape(4)
+    fun StringBuilder.appendColorReversed() = appendAnsiScape(7)
+    fun StringBuilder.appendFgColor(color: Color, bright: Boolean = false) = appendAnsiScape(30 + color.index, extra = if (bright) ";1" else null)
+    fun StringBuilder.appendBgColor(color: Color, bright: Boolean = false) = appendAnsiScape(40 + color.index, extra = if (bright) ";1" else null)
+    fun StringBuilder.appendMoveUp(n: Int = 1) = appendAnsiScape(n, char = 'A')
+    fun StringBuilder.appendMoveDown(n: Int = 1) = appendAnsiScape(n, char = 'B')
+    fun StringBuilder.appendMoveRight(n: Int = 1) = appendAnsiScape(n, char = 'C')
+    fun StringBuilder.appendMoveLeft(n: Int = 1) = appendAnsiScape(n, char = 'D')
 
-    val String.bgBlack get() = "$BG_BLACK$this$RESET"
-    val String.bgRed get() = "$BG_RED$this$RESET"
-    val String.bgGreen get() = "$BG_GREEN$this$RESET"
-    val String.bgYellow get() = "$BG_YELLOW$this$RESET"
-    val String.bgBlue get() = "$BG_BLUE$this$RESET"
-    val String.bgPurple get() = "$BG_PURPLE$this$RESET"
-    val String.bgCyan get() = "$BG_CYAN$this$RESET"
-    val String.bgWhite get() = "$BG_WHITE$this$RESET"
+    fun String.color(color: Color, bright: Boolean = false) = buildString { appendFgColor(color, bright).append(this@color).appendReset() }
+    fun String.bgColor(color: Color, bright: Boolean = false) = buildString { appendBgColor(color, bright).append(this@bgColor).appendReset() }
+    fun String.ansiEscape(code: Int) = buildString { appendAnsiScape(code).append(this@ansiEscape).appendReset() }
 
-    inline operator fun <T> invoke(block: ConsoleColor.() -> T) = block(ConsoleColor)
+    val String.bold get() = ansiEscape(1)
+    val String.underline get() = ansiEscape(4)
+    val String.colorReversed get() = ansiEscape(7)
+
+    val String.black get() = color(Color.BLACK)
+    val String.red get() = color(Color.RED)
+    val String.green get() = color(Color.GREEN)
+    val String.yellow get() = color(Color.YELLOW)
+    val String.blue get() = color(Color.BLUE)
+    val String.purple get() = color(Color.PURPLE)
+    val String.cyan get() = color(Color.CYAN)
+    val String.white get() = color(Color.WHITE)
+
+    val String.bgBlack get() = bgColor(Color.BLACK)
+    val String.bgRed get() = bgColor(Color.RED)
+    val String.bgGreen get() = bgColor(Color.GREEN)
+    val String.bgYellow get() = bgColor(Color.YELLOW)
+    val String.bgBlue get() = bgColor(Color.BLUE)
+    val String.bgPurple get() = bgColor(Color.PURPLE)
+    val String.bgCyan get() = bgColor(Color.CYAN)
+    val String.bgWhite get() = bgColor(Color.WHITE)
 }
