@@ -1,5 +1,6 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.internal.*
 import kotlin.math.*
@@ -78,8 +79,18 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
     override operator fun set(channel: Int, sample: Int, value: Short) = run { data[channel][sample] = value }
 
-    fun setTo(that: AudioSamples) {
+    fun scaleVolume(scale: Float): AudioSamples {
+        data.fastForEach { channel ->
+            for (n in channel.indices) {
+                channel[n] = (channel[n] * scale).toInt().coerceToShort()
+            }
+        }
+        return this
+    }
+
+    fun setTo(that: AudioSamples): AudioSamples {
         that.copyTo(this)
+        return this
     }
 
     fun copyTo(that: AudioSamples) {
