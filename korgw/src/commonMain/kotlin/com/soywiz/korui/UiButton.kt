@@ -13,5 +13,5 @@ inline fun UiContainer.button(text: String = "Button", noinline onClick: (UiButt
     UiButton(app)
         .also { it.text = text }
         .also { it.parent = this }
-        .also { button -> if (onClick != null) button.onClick { button.onClick(it) }  }
+        .also { button -> if (onClick != null) button.onClick { onClick(button, it) }  }
         .also(block)
