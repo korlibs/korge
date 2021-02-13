@@ -2,6 +2,8 @@
 
 package com.soywiz.kds
 
+actual inline fun <T> Any?.fastCastTo(): T = this.asDynamic()
+
 actual class FastIntMap<T>(dummy: Boolean)
 
 @JsName("Map")
