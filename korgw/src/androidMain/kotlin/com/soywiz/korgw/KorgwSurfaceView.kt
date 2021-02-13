@@ -58,12 +58,12 @@ class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindo
             MotionEvent.ACTION_MOVE -> TouchEvent.Type.MOVE
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> TouchEvent.Type.END
             else -> TouchEvent.Type.UNKNOWN
-        }, { currentTouchEvent ->
+        }) { currentTouchEvent ->
             for (n in 0 until ev.pointerCount) {
                 ev.getPointerCoords(n, coords)
                 currentTouchEvent.touch(ev.getPointerId(n), coords.x.toDouble(), coords.y.toDouble())
             }
-        })
+        }
         return true
     }
 }
