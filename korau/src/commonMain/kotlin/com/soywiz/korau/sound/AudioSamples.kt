@@ -79,6 +79,8 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
     override operator fun set(channel: Int, sample: Int, value: Short) = run { data[channel][sample] = value }
 
+    fun scaleVolume(scale: Double): AudioSamples = scaleVolume(scale.toFloat())
+
     fun scaleVolume(scale: Float): AudioSamples {
         data.fastForEach { channel ->
             for (n in channel.indices) {

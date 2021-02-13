@@ -67,7 +67,9 @@ open class NativeSoundProvider {
     suspend fun playAndWait(stream: AudioStream, params: PlaybackParameters = PlaybackParameters.DEFAULT) = createStreamingSound(stream).playAndWait(params)
 }
 
-class DummyNativeSoundProvider : NativeSoundProvider()
+open class DummyNativeSoundProvider : NativeSoundProvider() {
+    companion object : DummyNativeSoundProvider()
+}
 
 class DummySoundChannel(sound: Sound, val data: AudioData? = null) : SoundChannel(sound) {
 	private var timeStart = DateTime.now()
