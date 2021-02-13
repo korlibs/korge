@@ -100,11 +100,19 @@ class X11OpenglContext(val d: X11.Display?, val w: X11.Drawable?, val scr: Int, 
         }
     }
 
+    override fun getCurrent(): Any? {
+        return X.glXGetCurrentDisplay()
+    }
+
     override fun makeCurrent() {
         val result = X.glXMakeCurrent(d, w, glc)
         //X.glXMakeContextCurrent(d, w, w, glc)
         //glXMakeContextCurrent()
         //println("makeCurrent: $result")
+    }
+
+    override fun releaseCurrent() {
+        X.glXMakeCurrent(d, w, null)
     }
 
     override fun swapBuffers() {

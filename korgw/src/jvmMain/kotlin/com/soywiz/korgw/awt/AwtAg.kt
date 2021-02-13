@@ -39,9 +39,9 @@ class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, log
     private fun buildGl(): KmlGl {
         return when {
             //OS.isMac -> MacKmlGL.checked(throwException = false)
-            OS.isMac -> MacKmlGL
-            OS.isWindows -> Win32KmlGl
-            else -> X11KmlGl
+            OS.isMac -> MacKmlGL()
+            OS.isWindows -> Win32KmlGl()
+            else -> X11KmlGl()
         }.checkedIf(checkGl)
     }
 

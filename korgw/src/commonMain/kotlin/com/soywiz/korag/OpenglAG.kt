@@ -7,6 +7,7 @@ import com.soywiz.kgl.*
 import com.soywiz.kgl.internal.*
 import com.soywiz.kgl.internal.min2
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.internal.setFloats
 import com.soywiz.korag.shader.Program
@@ -41,6 +42,11 @@ abstract class AGOpengl : AG() {
     open val webgl: Boolean = false
 
     override var devicePixelRatio: Double = 1.0
+
+    override fun contextLost() {
+        Console.info("AG.contextLost()", this, gl, gl.root)
+        contextVersion++
+    }
 
     //val queue = Deque<(gl: GL) -> Unit>()
 
@@ -567,7 +573,7 @@ abstract class AGOpengl : AG() {
                     id = gl.createProgram()
 
                     if (GlslGenerator.DEBUG_GLSL) {
-                        println("OpenglAG: Creating program ${program.name} with id $id because contextVersion: $oldCachedVersion != $contextVersion")
+                        Console.warn("OpenglAG: Creating program ${program.name} with id $id because contextVersion: $oldCachedVersion != $contextVersion")
                     }
 
                     //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")
@@ -580,7 +586,7 @@ abstract class AGOpengl : AG() {
                     }
 
                     if (GlslGenerator.DEBUG_GLSL) {
-                        println("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
+                        Console.trace("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
                     }
 
                     fragmentShaderId = createShaderCompat(gl.FRAGMENT_SHADER) { compatibility ->
@@ -596,7 +602,7 @@ abstract class AGOpengl : AG() {
                     gl.getProgramiv(id, gl.LINK_STATUS, tempBuffer1)
                 }
                 if (GlslGenerator.DEBUG_GLSL) {
-                    println("OpenglAG: Created program ${program.name} with id $id in time=$time")
+                    Console.info("OpenglAG: Created program ${program.name} with id $id in time=$time")
                 }
             }
         }

@@ -2,6 +2,7 @@ package com.soywiz.korag
 
 import com.soywiz.kds.*
 import com.soywiz.kgl.KmlGl
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
@@ -40,8 +41,8 @@ abstract class AG : Extra by Extra.Mixin() {
 	var contextVersion = 0
 	abstract val nativeComponent: Any
 
-    fun contextLost() {
-        println("AG.contextLost() : $this")
+    open fun contextLost() {
+        Console.info("AG.contextLost()", this)
         contextVersion++
     }
 

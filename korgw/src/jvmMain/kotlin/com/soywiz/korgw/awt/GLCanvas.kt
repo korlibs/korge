@@ -70,7 +70,11 @@ open class GLCanvas constructor(checkGl: Boolean = true, logGl: Boolean = false,
          */
     }
 
+    val isCurrent: () -> Any? = { ctx?.getCurrent() }
+
     open fun render(gl: KmlGl, g: Graphics) {
+        //ctx?.makeCurrent()
+        gl.info.current = isCurrent
         defaultRenderer(gl, g)
     }
 }

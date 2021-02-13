@@ -1,5 +1,6 @@
 package com.soywiz.korag.shader.gl
 
+import com.soywiz.klogger.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
@@ -178,8 +179,8 @@ class GlslGenerator constructor(
             }
         }.toString().also {
             if (DEBUG_GLSL) {
-                println("GlSlGenerator.version: $version")
-                println("GlSlGenerator:\n$it")
+                Console.info("GlSlGenerator.version: $version")
+                Console.debug("GlSlGenerator:\n$it")
             }
         }
         return Result(

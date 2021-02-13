@@ -30,15 +30,19 @@ interface BaseOpenglContext : Disposable {
             val DEFAULT = ContextInfo()
         }
     }
-    fun useContext(obj: Any?, ag: AG, action: (ContextInfo) -> Unit) {
+    fun useContext(g: Graphics, ag: AG, action: (Graphics, ContextInfo) -> Unit) {
         makeCurrent()
         try {
-            action(ContextInfo.DEFAULT)
+            action(g, ContextInfo.DEFAULT)
         } finally {
             swapBuffers()
             releaseCurrent()
         }
     }
+
+    fun isCurrent(): Boolean? = getCurrent() != null
+
+    fun getCurrent(): Any? = null
 
     fun makeCurrent()
     fun releaseCurrent() {
@@ -112,8 +116,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
             object : BaseOpenglContext {
                 override val scaleFactor: Double get() = getDisplayScalingFactor(c)
 
-                override fun useContext(obj: Any?, ag: AG, action: (BaseOpenglContext.ContextInfo) -> Unit) {
-                    val g = obj as Graphics
+                override fun useContext(g: Graphics, ag: AG, action: (Graphics, BaseOpenglContext.ContextInfo) -> Unit) {
                     invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
                         //if (!(isQueueFlusherThread.invoke(null) as Boolean)) error("Can't render on another thread")
                         try {
@@ -135,7 +138,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                             //info.viewport?.setTo(scissorBox.x, scissorBox.y)
                             //println("viewport: $viewport, $scissorBox")
                             //println(g.clipBounds)
-                            action(info)
+                            action(g, info)
 
                         } catch (e: Throwable) {
                             e.printStackTrace()
@@ -147,10 +150,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                 override fun swapBuffers() = Unit
             }
         }
-        OS.isWindows -> Win32OpenglContext(
-            WinDef.HWND(Native.getComponentPointer(c)),
-            doubleBuffered = true
-        )
+        OS.isWindows -> Win32OpenglContext(c, doubleBuffered = true)
         else -> {
             try {
                 val display = X.XOpenDisplay(null)

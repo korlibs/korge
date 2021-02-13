@@ -1,6 +1,7 @@
 package com.soywiz.korgw.win32
 
 import com.soywiz.kgl.*
+import com.soywiz.klogger.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.bitmap.*
 import com.sun.jna.*
@@ -12,7 +13,9 @@ import java.awt.*
 import java.lang.reflect.*
 import javax.swing.*
 
-object Win32KmlGl : NativeKgl(Win32GL) {
+open class Win32KmlGl : NativeKgl(Win32GL) {
+    companion object : Win32KmlGl()
+
     var vertexArrayCachedVersion = -1
     var vertexArray = -1
 
@@ -48,6 +51,13 @@ interface Win32GL : INativeGL, Library {
 
         fun loadFunctionCached(name: String): Function = funcs.getOrPut(name) {
             loadFunction(name) ?: error("Can't find opengl method ${name}")
+        }
+
+        private var preloaded = false
+        fun preloadFunctionsOnce() {
+            if (preloaded) return
+            preloaded = true
+            preloadFunctions()
         }
 
         fun preloadFunctions() {
@@ -176,11 +186,9 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
 }
 
 // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_(WGL)
-class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleBuffered: Boolean = false) : BaseOpenglContext {
-    constructor(hWnd: WinDef.HWND, doubleBuffered: Boolean = false) : this(hWnd, Win32.GetDC(hWnd), doubleBuffered)
-
+class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
     init {
-        Win32GL.preloadFunctions()
+        Win32GL.preloadFunctionsOnce()
     }
 
     //val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
@@ -199,7 +207,6 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
     //}
     //val pf = Win32.ChoosePixelFormat(hDC, pfd)
 
-    ///*
     val pf = run {
         val attribList = intArrayOf(
             WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
@@ -214,7 +221,6 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
             WGL_SAMPLES_ARB, 4,        // Number of samples
             0, // End
         )
-
         val pixelFormatMemory = Memory(8L)
         val numFormatsMemory = Memory(8L)
         pixelFormatMemory.setInt(0L, 0)
@@ -231,7 +237,6 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
         Win32.DescribePixelFormat(hDC, pf, WinGDI.PIXELFORMATDESCRIPTOR().size(), pfd)
         pfd
     }
-    //*/
 
     init {
         //println("PF: $pf, PFD: $pfd")
@@ -250,28 +255,28 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
     //val requestCoreProfile = false
     val requestCoreProfile = true
 
-    val hRC = run {
-        Win32GL.wglCreateContextAttribsARB(hDC, null, intArrayOf(
-            WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
-            WGL_CONTEXT_MINOR_VERSION_ARB, 3,
-            WGL_CONTEXT_PROFILE_MASK_ARB, if (requestCoreProfile) WGL_CONTEXT_CORE_PROFILE_BIT_ARB else WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
-            0
-        )).also {
-            println("wglCreateContextAttribsARB.error: ${Native.getLastError()}")
-
-        }
-        //Win32.wglCreateContext(hDC)
+    val hRC = Win32GL.wglCreateContextAttribsARB(hDC, null, intArrayOf(
+        WGL_CONTEXT_MAJOR_VERSION_ARB, 3,
+        WGL_CONTEXT_MINOR_VERSION_ARB, 3,
+        WGL_CONTEXT_PROFILE_MASK_ARB, if (requestCoreProfile) WGL_CONTEXT_CORE_PROFILE_BIT_ARB else WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+        0
+    )).also {
+        println("wglCreateContextAttribsARB.error: ${Native.getLastError()}")
 
     }
+    //Win32.wglCreateContext(hDC)
 
     init {
-        println("hRC: $hRC")
+        Console.trace("hWnd: $hWnd, hDC: $hDC, hRC: $hRC, component: $component")
         makeCurrent()
 
         Win32KmlGl.apply {
-            println("GL_VERSION: ${getString(VERSION)}, GL_VENDOR: ${getString(VENDOR)}")
-            println("GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, GL_BLUE_BITS: ${getIntegerv(BLUE_BITS)}, GL_ALPHA_BITS: ${getIntegerv(ALPHA_BITS)}")
-            println("GL_DEPTH_BITS: ${getIntegerv(DEPTH_BITS)}, GL_STENCIL_BITS: ${getIntegerv(STENCIL_BITS)}")
+            Console.trace("GL_VERSION: ${getString(VERSION)}, GL_VENDOR: ${getString(VENDOR)}")
+            Console.trace(
+                "GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, " +
+                "GL_BLUE_BITS: ${getIntegerv(BLUE_BITS)}, GL_ALPHA_BITS: ${getIntegerv(ALPHA_BITS)}, " +
+                "GL_DEPTH_BITS: ${getIntegerv(DEPTH_BITS)}, GL_STENCIL_BITS: ${getIntegerv(STENCIL_BITS)}"
+            )
          //println()
         }
     }
@@ -279,23 +284,30 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
         Win32GL.glGetStringi(Win32KmlGl.EXTENSIONS, it)
     }.toSet()
 
-    init {
-        println("extensions=${extensions.size}")
-    }
-
     override val isCore = !extensions.contains("GL_ARB_compatibility")
 
     init {
-        println("requestCoreProfile=$requestCoreProfile, isCore=$isCore")
+        Console.trace("requestCoreProfile=$requestCoreProfile, isCore=$isCore, extensions=${extensions.size}")
+    }
+
+    override fun getCurrent(): Any? {
+        return Win32.wglGetCurrentContext()
     }
 
     override fun makeCurrent() {
         //println("makeCurrent")
-        Win32.wglMakeCurrent(hDC, hRC)
+        makeCurrent(hDC, hRC)
     }
 
     override fun releaseCurrent() {
-        Win32.wglMakeCurrent(null, null)
+        makeCurrent(null, null)
+    }
+
+    private fun makeCurrent(hDC: HDC?, hRC: WinDef.HGLRC?) {
+        if (!Win32.wglMakeCurrent(hDC, hRC)) {
+            val error = Win32.GetLastError()
+            Console.error("Win32.wglMakeCurrent($hDC, $hRC).error = $error")
+        }
     }
 
     override fun swapBuffers() {
@@ -342,6 +354,16 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
     }
 
     companion object {
+        operator fun invoke(c: Component, doubleBuffered: Boolean = false): Win32OpenglContext {
+            val hWnd = WinDef.HWND(Native.getComponentPointer(c))
+            return Win32OpenglContext(hWnd, doubleBuffered, c)
+        }
+
+        operator fun invoke(hWnd: WinDef.HWND, doubleBuffered: Boolean = false, c: Component? = null): Win32OpenglContext {
+            val hDC = Win32.GetDC(hWnd)
+            return Win32OpenglContext(hWnd, hDC, doubleBuffered, c)
+        }
+
         const val WGL_DRAW_TO_WINDOW_ARB            = 0x2001
         const val WGL_SUPPORT_OPENGL_ARB            = 0x2010
         const val WGL_DOUBLE_BUFFER_ARB             = 0x2011

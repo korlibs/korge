@@ -654,4 +654,4 @@ internal interface GL : INativeGL, Library {
 
 //internal object X11KmlGl : NativeKgl(X)
 
-object X11KmlGl : NativeKgl(X)
+open class X11KmlGl : NativeKgl(X)

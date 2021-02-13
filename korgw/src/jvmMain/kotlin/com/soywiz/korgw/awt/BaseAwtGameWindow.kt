@@ -1,7 +1,9 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
@@ -33,7 +35,14 @@ abstract class BaseAwtGameWindow : GameWindow() {
     abstract val contentComponent: Component
     private var lastFactor = 0.0
 
-    val window by lazy { SwingUtilities.getWindowAncestor(component) ?: (component as Frame) }
+    private var _window: Window? = null
+    val window: Window? get() {
+        if (_window == null) {
+            _window = SwingUtilities.getWindowAncestor(component) ?: (component as? Window?)
+        }
+        return _window
+    }
+    val windowOrComponent get() = window ?: component
 
     override var cursor: Cursor = Cursor.DEFAULT
         set(value) {
@@ -95,90 +104,96 @@ abstract class BaseAwtGameWindow : GameWindow() {
         //GL.glClearColor(1f, 0f, 0f, 1f)
         //GL.glClear(GL.GL_COLOR_BUFFER_BIT)
 
-        val state = ag.createGlState()
-
-        ctx?.useContext(g, ag) { info ->
-            state.keep {
-            //run {
-                ctx?.swapInterval(1)
-
-                val g = g as Graphics2D
-                val gl = ag.gl
-                val factor = frameScaleFactor
-                if (lastFactor != factor) {
-                    lastFactor = factor
-                    reshaped = true
-                }
-
-                //println("RENDER[1]")
-
-                val viewport = info.viewport
-                val scissor = info.scissors
-                /*
-                gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
-                if (scissor != null) {
-                    gl.scissor(scissor.x.toInt(), scissor.y.toInt(), scissor.width.toInt(), scissor.height.toInt())
-                }
-                if (viewport != null) {
-                    gl.viewport(viewport.x.toInt(), viewport.y.toInt(), viewport.width.toInt(), viewport.height.toInt())
-                } else {
-                    gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
-                }
-                gl.clearColor(.3f, .3f, .3f, 1f)
-                gl.clear(gl.COLOR_BUFFER_BIT)
-                */
-
-                //println("-- viewport=$viewport, scissors=$scissor")
-
-                if (component is JFrame) {
-                    //println("component.width: ${contentComponent.width}x${contentComponent.height}")
-                    ag.mainRenderBuffer.setSize(
-                        0, 0, (contentComponent.width * factor).toInt(), (contentComponent.height * factor).toInt(),
-                    )
-                } else {
-                    ag.mainRenderBuffer.scissor(scissor)
-                    if (viewport != null) {
-                        //val window = SwingUtilities.getWindowAncestor(contentComponent)
-                        //println("window=${window.width}x${window.height} : factor=$factor")
-
-                        val frame: Component = (window as? JFrame)?.contentPane ?: window
-
-                        ag.mainRenderBuffer.setSize(
-                            viewport.x, viewport.y, viewport.width, viewport.height,
-                            (frame.width * factor).toInt(),
-                            (frame.height * factor).toInt(),
-                        )
-                    } else {
-                        ag.mainRenderBuffer.setSize(
-                            0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
-                        )
-                    }
-                }
-
-                //println(gl.getString(gl.VERSION))
-                //println(gl.versionString)
-                if (reshaped) {
-                    reshaped = false
-                    //println("RESHAPED!")
-                    dispatchReshapeEventEx(
-                        ag.mainRenderBuffer.x,
-                        ag.mainRenderBuffer.y,
-                        ag.mainRenderBuffer.width,
-                        ag.mainRenderBuffer.height,
-                        ag.mainRenderBuffer.fullWidth,
-                        ag.mainRenderBuffer.fullHeight,
-                    )
-                }
-
-                //gl.clearColor(1f, 1f, 1f, 1f)
-                //gl.clear(gl.COLOR_BUFFER_BIT)
-                updateGamepads()
-                frame()
-                gl.flush()
-                gl.finish()
-            }
-        }
+        ctx?.useContext(g, ag, paintInContextDelegate)
         //Toolkit.getDefaultToolkit().sync();
+    }
+
+    val paintInContextDelegate: (Graphics, BaseOpenglContext.ContextInfo) -> Unit = { g, info ->
+        paintInContext(g, info)
+    }
+
+    val state: KmlGlState by lazy { ag.createGlState() }
+
+    fun paintInContext(g: Graphics, info: BaseOpenglContext.ContextInfo) {
+        state.keep {
+            //run {
+            ctx?.swapInterval(1)
+
+            val g = g as Graphics2D
+            val gl = ag.gl
+            val factor = frameScaleFactor
+            if (lastFactor != factor) {
+                lastFactor = factor
+                reshaped = true
+            }
+
+            //println("RENDER[1]")
+
+            val viewport = info.viewport
+            val scissor = info.scissors
+            /*
+            gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
+            if (scissor != null) {
+                gl.scissor(scissor.x.toInt(), scissor.y.toInt(), scissor.width.toInt(), scissor.height.toInt())
+            }
+            if (viewport != null) {
+                gl.viewport(viewport.x.toInt(), viewport.y.toInt(), viewport.width.toInt(), viewport.height.toInt())
+            } else {
+                gl.viewport(0, 0, scaledWidth.toInt().coerceAtLeast(1), scaledHeight.toInt().coerceAtLeast(1))
+            }
+            gl.clearColor(.3f, .3f, .3f, 1f)
+            gl.clear(gl.COLOR_BUFFER_BIT)
+            */
+
+            //println("-- viewport=$viewport, scissors=$scissor")
+
+            if (component is JFrame) {
+                //println("component.width: ${contentComponent.width}x${contentComponent.height}")
+                ag.mainRenderBuffer.setSize(
+                    0, 0, (contentComponent.width * factor).toInt(), (contentComponent.height * factor).toInt(),
+                )
+            } else {
+                ag.mainRenderBuffer.scissor(scissor)
+                if (viewport != null) {
+                    //val window = SwingUtilities.getWindowAncestor(contentComponent)
+                    //println("window=${window.width}x${window.height} : factor=$factor")
+
+                    val frameOrComponent = (window as? JFrame)?.contentPane ?: windowOrComponent
+
+                    ag.mainRenderBuffer.setSize(
+                        viewport.x, viewport.y, viewport.width, viewport.height,
+                        (frameOrComponent.width * factor).toInt(),
+                        (frameOrComponent.height * factor).toInt(),
+                    )
+                } else {
+                    ag.mainRenderBuffer.setSize(
+                        0, 0, (component.width * factor).toInt(), (component.height * factor).toInt(),
+                    )
+                }
+            }
+
+            //println(gl.getString(gl.VERSION))
+            //println(gl.versionString)
+            if (reshaped) {
+                reshaped = false
+                //println("RESHAPED!")
+                dispatchReshapeEventEx(
+                    ag.mainRenderBuffer.x,
+                    ag.mainRenderBuffer.y,
+                    ag.mainRenderBuffer.width,
+                    ag.mainRenderBuffer.height,
+                    ag.mainRenderBuffer.fullWidth,
+                    ag.mainRenderBuffer.fullHeight,
+                )
+            }
+
+            //gl.clearColor(1f, 1f, 1f, 1f)
+            //gl.clear(gl.COLOR_BUFFER_BIT)
+            updateGamepads()
+            frame()
+            gl.flush()
+            gl.finish()
+        }
     }
 
     private fun updateGamepads() {
@@ -570,6 +585,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
     }
 
     override fun computeDisplayRefreshRate(): Int {
-        return this.window.getScreenDevice().displayMode.refreshRate
+        val window = this.window ?: return 60
+        return window.getScreenDevice().displayMode.refreshRate
     }
 }

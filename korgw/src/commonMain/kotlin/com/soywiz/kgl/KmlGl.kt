@@ -7,6 +7,15 @@ package com.soywiz.kgl
 import com.soywiz.kds.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
+    open val root: KmlGl get() = this
+    open var info: ContextInfo = ContextInfo()
+
+    open class ContextInfo {
+        var current: () -> Any? = { null }
+
+        override fun toString(): String = "current=${current()}"
+    }
+
     val DEPTH_BUFFER_BIT: Int = 0x0100
     val STENCIL_BUFFER_BIT: Int = 0x0400
     val COLOR_BUFFER_BIT: Int = 0x4000
@@ -316,6 +325,7 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
     val MAX_RENDERBUFFER_SIZE: Int = 0x84E8
     val INVALID_FRAMEBUFFER_OPERATION: Int = 0x0506 // 1286
 
+    open fun handleContextLost() = Unit
     override fun startFrame(): Unit = Unit
     override fun endFrame(): Unit = Unit
     open fun beforeDoRender(contextVersion: Int): Unit = Unit

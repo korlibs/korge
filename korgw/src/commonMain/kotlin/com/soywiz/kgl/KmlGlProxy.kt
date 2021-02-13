@@ -4,6 +4,7 @@
 
 package com.soywiz.kgl
 
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.printStackTrace
@@ -1014,6 +1015,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 	}
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
+    override val root: KmlGl get() = parent.root
+
+    override var info: ContextInfo
+        get() = parent.info
+        set(value) { parent.info = value }
+
+    override fun handleContextLost() = parent.handleContextLost()
+
     override fun beforeDoRender(contextVersion: Int) {
         parent.beforeDoRender(contextVersion)
     }
@@ -1456,9 +1465,17 @@ class LogKmlGlProxy(parent: KmlGl, var logBefore: Boolean = false, var logAfter:
         if (logAfter) println("after: $name ($params) = $result")
 	}
 }
-class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) : KmlGlProxy(parent) {
+class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
     init {
         //println("CheckErrorsKmlGlProxy")
+    }
+
+    var tooManyErrors = false
+    var errorCount = 0
+    override fun handleContextLost() {
+        errorCount = 0
+        tooManyErrors = false
+        super.handleContextLost()
     }
 
     override fun before(name: String, params: String) {
@@ -1469,11 +1486,19 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) 
         do {
             val error = parent.getError()
             if (error != NO_ERROR) {
-                println("glError: $error ${parent.getErrorString(error)} calling $name($params) = $result")
-                if (throwException) {
-                    throw RuntimeException("glError: $error ${parent.getErrorString(error)} calling $name($params) = $result")
-                } else {
-                    printStackTrace("glError: $error ${parent.getErrorString(error)} calling $name($params) = $result")
+                if (errorCount >= 50) {
+                    if (!tooManyErrors) {
+                        tooManyErrors = true
+                        Console.error("Too many OpenGL errors")
+                    }
+                    break
+                }
+                errorCount++
+                val msg = "glError: $error ${parent.getErrorString(error)} calling $name($params) = $result [$info]"
+                Console.warn(msg)
+                when {
+                    throwException -> throw RuntimeException(msg)
+                    printStackTrace -> printStackTrace(msg)
                 }
             }
         } while (error != NO_ERROR)
@@ -1481,7 +1506,7 @@ class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false) 
     override fun getError(): Int = parent.getError()
 }
 
-fun KmlGl.checked(throwException: Boolean = false) = CheckErrorsKmlGlProxy(this, throwException)
-fun KmlGl.checkedIf(checked: Boolean, throwException: Boolean = false) = if (checked) CheckErrorsKmlGlProxy(this, throwException) else this
-fun KmlGl.cachedIf(cached: Boolean, throwException: Boolean = false) = if (cached) KmlGlCached(this) else this
+fun KmlGl.checked(throwException: Boolean = false, printStackTrace: Boolean = false) = CheckErrorsKmlGlProxy(this, throwException, printStackTrace)
+fun KmlGl.checkedIf(checked: Boolean, throwException: Boolean = false, printStackTrace: Boolean = false) = if (checked) CheckErrorsKmlGlProxy(this, throwException, printStackTrace) else this
+fun KmlGl.cachedIf(cached: Boolean) = if (cached) KmlGlCached(this) else this
 fun KmlGl.logIf(log:Boolean=false) = if (log) LogKmlGlProxy(this) else this
