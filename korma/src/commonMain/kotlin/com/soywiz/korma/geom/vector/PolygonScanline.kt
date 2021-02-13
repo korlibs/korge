@@ -40,7 +40,7 @@ class PolygonScanline : RastScale() {
     private val boundsBuilder = BoundsBuilder()
 
     class Bucket {
-        val edges = arrayListOf<Edge>()
+        val edges = FastArrayList<Edge>()
         fun clear() = this.apply { edges.clear() }
         inline fun fastForEach(block: (edge: Edge) -> Unit) = edges.fastForEach(block)
     }
@@ -102,7 +102,7 @@ class PolygonScanline : RastScale() {
     private val edgesPool = Pool { Edge() }
 
     @PublishedApi
-    internal val edges = arrayListOf<Edge>()
+    internal val edges = FastArrayList<Edge>()
     private val buckets = AllBuckets()
 
     fun getBounds(out: Rectangle = Rectangle()) = boundsBuilder.getBounds(out)

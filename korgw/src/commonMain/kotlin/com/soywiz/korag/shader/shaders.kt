@@ -6,6 +6,7 @@
 
 package com.soywiz.korag.shader
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.lang.*
 
@@ -523,8 +524,8 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 	private val myattr = attr
 	val attributes = attr
 	constructor(attributes: List<Attribute>) : this(attributes, null)
-	constructor(vararg attributes: Attribute) : this(attributes.toList(), null)
-	constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(attributes.toList(), layoutSize)
+	constructor(vararg attributes: Attribute) : this(attributes.toFastList(), null)
+	constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
 
@@ -533,7 +534,7 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 		if (a <= 1) 1 else a
 	}
 
-	val attributePositions = myattr.map {
+	val attributePositions = myattr.mapInt {
 		if (it.offset != null) {
 			_lastPos = it.offset
 		} else {
@@ -544,11 +545,9 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 		out
 	}
 
-    val attributePositionsLong = attributePositions.map { it.toLong() }
-
 	val maxAlignment = alignments.maxOrNull() ?: 1
     /** Size in bytes for each vertex */
 	val totalSize: Int = run { layoutSize ?: _lastPos.nextAlignedTo(maxAlignment) }
 
-	override fun toString(): String = "VertexLayout[${myattr.map { it.name }.joinToString(", ")}]"
+	override fun toString(): String = "VertexLayout[${myattr.joinToString(", ") { it.name }}]"
 }

@@ -161,6 +161,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
         }
     }
 
+    @Suppress("EXPERIMENTAL_API_USAGE")
     inner class ScanlineWriter {
         var compositeMode: CompositeOperation = CompositeOperation.DEFAULT
         var filler: BaseFiller = NoneFiller
@@ -175,8 +176,10 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
         val segments = SegmentHandler()
         var subRowCount = 0
         fun reset() {
-            alpha.fill(0f)
-            hitbits.fill(0)
+            segments.forEachFast { xmin, xmax ->
+                alpha.fill(0f, xmin, xmax)
+                hitbits.fill(0, xmin, xmax)
+            }
             subRowCount = 0
             segments.reset()
         }
@@ -210,12 +213,6 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 if (i1m != 0) put(i1, i1m.toFloat() / RastScale.RAST_FIXED_SCALE)
                 //alphaCount++
             }
-        }
-
-        private fun computeAlpha(v: Int, p: Float, left: Boolean): Float = when {
-            v.toFloat() == p -> 1f
-            v > p != left -> (v - p).absoluteValue
-            else -> 1f - (v - p).absoluteValue
         }
 
         fun put(x: Int, ratio: Float) {

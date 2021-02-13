@@ -259,7 +259,7 @@ abstract class AGOpengl : AG() {
         val scissor = batch.scissor
 
         val vattrs = vertexLayout.attributes
-        val vattrspos = vertexLayout.attributePositionsLong
+        val vattrspos = vertexLayout.attributePositions
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
         applyScissorState(scissor)
@@ -299,7 +299,7 @@ abstract class AGOpengl : AG() {
                 val elementCount = att.type.elementCount
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
-                    gl.vertexAttribPointer(loc, elementCount, glElementType, att.normalized, totalSize, off)
+                    gl.vertexAttribPointer(loc, elementCount, glElementType, att.normalized, totalSize, off.toLong())
                 }
             }
         }

@@ -1,3 +1,5 @@
 package com.soywiz.korio.util
 
-inline fun <T> buildList(callback: ArrayList<T>.() -> Unit): List<T> = arrayListOf<T>().apply(callback)
+import com.soywiz.kds.*
+
+inline fun <T> buildList(callback: FastArrayList<T>.() -> Unit): List<T> = FastArrayList<T>().apply(callback)

@@ -1,5 +1,9 @@
 package com.soywiz.kds
 
+import com.soywiz.kds.iterators.*
+
+// @TODO: ArrayList that prevents isObject + jsInstanceOf on getter on Kotlin/JS
+// @TODO: This class should be temporal until Kotlin/JS fixes this issue
 expect class FastArrayList<E> : MutableList<E>, RandomAccess {
     constructor()
     constructor(initialCapacity: Int)
@@ -38,3 +42,6 @@ expect class FastArrayList<E> : MutableList<E>, RandomAccess {
     override fun listIterator(index: Int): MutableListIterator<E>
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<E>
 }
+
+fun <T> List<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
+fun <T> Array<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
