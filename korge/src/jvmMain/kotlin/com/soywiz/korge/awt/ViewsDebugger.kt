@@ -55,7 +55,8 @@ class ViewsDebuggerComponent constructor(
     rootView: View? = views.stage,
     val coroutineContext: CoroutineContext = views.coroutineContext,
     val actions: ViewsDebuggerActions = ViewsDebuggerActions(views),
-) : JPanel(GridLayout(2, 1)) {
+    val displayTree: Boolean = true
+) : JPanel(GridLayout(if (displayTree) 2 else 1, 1)) {
     init {
         actions.component = this
     }
@@ -191,7 +192,11 @@ class ViewsDebuggerComponent constructor(
         })
     }
     val selectedView: View? get() = actions.selectedView
-    val treeScroll = myComponentFactory.scrollPane(tree).also { add(it) }
+    val treeScroll = myComponentFactory.scrollPane(tree).also {
+        if (displayTree) {
+            add(it)
+        }
+    }
 
     fun setRootView(root: View) {
         //this.coroutineContext = coroutineContext
