@@ -242,6 +242,9 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         fun stringNull(prop: KMutableProperty0<String?>) {
             prop.set(xml.strNull(prop.name))
         }
+        fun boolean(prop: KMutableProperty0<Boolean>, defaultValue: Boolean) {
+            prop.set(xml.boolean(prop.name, defaultValue))
+        }
 
         stringNull(view::name)
         color(view::colorMul, Colors.WHITE)
@@ -268,6 +271,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
         if (view is Text) {
             string(view::text, "Text")
             double(view::textSize, Text.DEFAULT_TEXT_SIZE)
+            boolean(view::autoScaling, Text.DEFAULT_AUTO_SCALING)
             //view.fontSource = xml.str("fontSource", "")
             view.verticalAlign = VerticalAlign(xml.str("verticalAlign"))
             view.horizontalAlign = HorizontalAlign(xml.str("horizontalAlign"))

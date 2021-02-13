@@ -37,7 +37,7 @@ inline fun Container.text(
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = true,
+    autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
     = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
@@ -47,10 +47,11 @@ open class Text(
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = true
+    autoScaling: Boolean = DEFAULT_AUTO_SCALING
 ) : Container(), ViewLeaf, IText {
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
+        val DEFAULT_AUTO_SCALING = true
     }
 
     var smoothing: Boolean = true
@@ -58,7 +59,8 @@ open class Text(
     object Serializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
         add(Text::text, "Text")
         add(Text::fontSource)
-        add(Text::textSize, Text.DEFAULT_TEXT_SIZE)
+        add(Text::textSize, DEFAULT_TEXT_SIZE)
+        add(Text::autoScaling, DEFAULT_AUTO_SCALING)
         add(Text::verticalAlign, { VerticalAlign(it) }, { it.toString() })
         add(Text::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
         //view.fontSource = xml.str("fontSource", "")
@@ -321,6 +323,7 @@ open class Text(
         container.uiCollapsibleSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min= 1.0, max = 300.0)
+            uiEditableValue(::autoScaling)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
