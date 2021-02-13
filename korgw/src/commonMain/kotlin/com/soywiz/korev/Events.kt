@@ -148,7 +148,7 @@ data class TouchEvent(
         }
     }
 
-    enum class Type { START, END, MOVE }
+    enum class Type { START, END, MOVE, HOVER, UNKNOWN }
 }
 
 data class KeyEvent constructor(
