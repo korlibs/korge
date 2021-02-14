@@ -790,12 +790,22 @@ samples {
     }
 }
 
+val gitVersion = try {
+    Runtime.getRuntime().exec("git describe --abbrev=8 --tags --dirty".split(" ").toTypedArray(), arrayOf(), rootDir).inputStream.reader()
+        .readText().lines().first().trim()
+} catch (e: Throwable) {
+    e.printStackTrace()
+    "unknown"
+}
+
+
 val buildVersionsFile = file("korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt")
 val oldBuildVersionsText = buildVersionsFile.readText()
 val newBuildVersionsText = oldBuildVersionsText
     .replace(Regex("const val KORLIBS_VERSION = \"(.*?)\""), "const val KORLIBS_VERSION = \"${project.version}\"")
     .replace(Regex("const val KLOCK = \"(.*?)\""), "const val KLOCK = \"${project.version}\"")
     .replace(Regex("const val KDS = \"(.*?)\""), "const val KDS = \"${project.version}\"")
+    .replace(Regex("const val KRYPTO = \"(.*?)\""), "const val KRYPTO = \"${project.version}\"")
     .replace(Regex("const val KMEM = \"(.*?)\""), "const val KMEM = \"${project.version}\"")
     .replace(Regex("const val KORMA = \"(.*?)\""), "const val KORMA = \"${project.version}\"")
     .replace(Regex("const val KORIO = \"(.*?)\""), "const val KORIO = \"${project.version}\"")
@@ -804,6 +814,7 @@ val newBuildVersionsText = oldBuildVersionsText
     .replace(Regex("const val KORGW = \"(.*?)\""), "const val KORGW = \"${project.version}\"")
     .replace(Regex("const val KORGE = \"(.*?)\""), "const val KORGE = \"${project.version}\"")
     .replace(Regex("const val KOTLIN = \"(.*?)\""), "const val KOTLIN = \"${kotlinVersion}\"")
+    .replace(Regex("const val GIT = \"(.*?)\""), "const val GIT = \"${gitVersion}\"")
     .replace(Regex("const val JNA = \"(.*?)\""), "const val JNA = \"${jnaVersion}\"")
     .replace(Regex("const val ANDROID_BUILD = \"(.*?)\""), "const val ANDROID_BUILD = \"${androidBuildGradleVersion}\"")
     .replace(Regex("const val COROUTINES = \"(.*?)\""), "const val COROUTINES = \"${coroutinesVersion}\"")

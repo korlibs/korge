@@ -7,11 +7,13 @@ import com.soywiz.korge.gradle.targets.isMacos
 import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
+import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.Project
 import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import org.gradle.plugins.ide.idea.model.*
+import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import java.io.*
 
@@ -26,6 +28,29 @@ class KorgeGradleApply(val project: Project) {
 		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
 			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion")
 		}
+
+        logger.info("Korge Gradle plugin: ${BuildVersions.ALL}")
+
+        project.tasks.create("showKorgeVersions", Task::class.java) {
+            it.doLast {
+                println("Build-time:")
+                for ((key, value) in mapOf(
+                    "os.name" to System.getProperty("os.name"),
+                    "os.version" to System.getProperty("os.version"),
+                    "java.vendor" to System.getProperty("java.vendor"),
+                    "java.version" to System.getProperty("java.version"),
+                    "gradle.version" to GradleVersion.current(),
+                    "groovy.version" to GroovySystem.getVersion(),
+                    "kotlin.version" to KotlinVersion.CURRENT,
+                )) {
+                    println(" - $key: $value")
+                }
+                println("Korge Gradle plugin:")
+                for ((key, value) in BuildVersions.ALL) {
+                    println(" - $key: $value")
+                }
+            }
+        }
 
         project.korge.init(includeIndirectAndroid)
 
