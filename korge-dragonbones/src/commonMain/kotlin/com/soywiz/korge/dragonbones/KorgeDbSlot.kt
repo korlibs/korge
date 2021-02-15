@@ -183,8 +183,8 @@ class KorgeDbSlot(pool: SingleObjectPool<KorgeDbSlot>) : Slot(pool) {
 					val scale = this._armature!!._armatureData!!.scale
 
 					val meshDisplay = this._renderDisplay as Mesh
-					val textureAtlasWidth = if (currentTextureAtlasData.width > 0.0) currentTextureAtlasData.width else renderTexture.bmp.width
-					val textureAtlasHeight = if (currentTextureAtlasData.height > 0.0) currentTextureAtlasData.height else renderTexture.bmp.height
+					val textureAtlasWidth = if (currentTextureAtlasData.width > 0.0) currentTextureAtlasData.width else renderTexture.bmpWidth
+					val textureAtlasHeight = if (currentTextureAtlasData.height > 0.0) currentTextureAtlasData.height else renderTexture.bmpHeight
 					val region = currentTextureData.region
 
 					meshDisplay.vertices = Float32BufferAlloc(vertexCount * 2)
