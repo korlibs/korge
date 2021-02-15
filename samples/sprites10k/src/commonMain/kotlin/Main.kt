@@ -1,5 +1,6 @@
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
