@@ -132,9 +132,9 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet, var smoothing: B
 
                 //println("CELL_DATA_TEX: $tex")
 
-                val info = verticesPerTex.getOrPut(tex.bmp) {
+                val info = verticesPerTex.getOrPut(tex.bmpBase) {
                     infosPool.alloc().also { info ->
-                        info.tex = tex.bmp
+                        info.tex = tex.bmpBase
                         if (info.vertices.initialVcount < allocTiles * 4) {
                             info.vertices = TexturedVertexArray(allocTiles * 4, TexturedVertexArray.quadIndices(allocTiles))
                             //println("ALLOC TexturedVertexArray")
@@ -229,7 +229,7 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet, var smoothing: B
         private const val BR = 2
         private const val BL = 3
     }
-    private val infosPool = Pool { Info(Bitmaps.transparent.bmp, dummyTexturedVertexArray) }
+    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, dummyTexturedVertexArray) }
 
 	private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
 	private var currentVirtualRect = Rectangle(-1, -1, -1, -1)

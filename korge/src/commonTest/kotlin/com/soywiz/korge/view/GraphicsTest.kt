@@ -18,7 +18,7 @@ class GraphicsTest {
 				rect(-50, -50, 100, 100)
 			}
 		}
-		val bmp = g.bitmap.bmp.toBMP32()
+		val bmp = g.bitmap.bmpBase.toBMP32()
 		assertEquals(Size(101, 101), bmp.size)
 		//assertEquals("#ff0000ff", bmp[0, 0].hexString)
 		//assertEquals("#ff0000ff", bmp[99, 99].hexString)
@@ -34,7 +34,7 @@ class GraphicsTest {
         }
         val rc = TestRenderContext()
         g.render(rc)
-        val bmp = g.bitmap.bmp.toBMP32()
+        val bmp = g.bitmap.bmpBase.toBMP32()
         // This would fail in Android
         assertTrue(bmp.width > 0)
         assertTrue(bmp.height > 0)

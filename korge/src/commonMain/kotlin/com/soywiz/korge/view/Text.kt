@@ -285,7 +285,7 @@ open class Text(
                         container.removeChildren()
                         _staticImage = container.image(textToBitmapResult.bmp)
                     } else {
-                        imagesToRemove.add(_staticImage!!.bitmap.bmp)
+                        imagesToRemove.add(_staticImage!!.bitmap.bmpBase)
                         _staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
                     val mscale = 1.0 / autoscaling.renderedAtScaleXY

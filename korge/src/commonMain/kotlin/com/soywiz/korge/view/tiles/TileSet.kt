@@ -16,8 +16,8 @@ class TileSet(
 	val width: Int = texturesMap.firstValue().width,
 	val height: Int = texturesMap.firstValue().height
 ) {
-    val base: Bitmap by lazy { if (texturesMap.size == 0) Bitmaps.transparent.bmp else texturesMap.firstValue().bmp }
-    val hasMultipleBaseBitmaps by lazy { texturesMap.values.any { it != null && it.bmp != base } }
+    val base: Bitmap by lazy { if (texturesMap.size == 0) Bitmaps.transparent.bmpBase else texturesMap.firstValue().bmpBase }
+    val hasMultipleBaseBitmaps by lazy { texturesMap.values.any { it !== null && it.bmpBase !== base } }
     val textures by lazy { Array<BmpSlice?>(texturesMap.keys.maxOrNull()?.plus(1) ?: 0) { texturesMap[it] } }
 	//init { if (hasMultipleBaseBitmaps) throw RuntimeException("All tiles in the set must have the same base texture") }
 
