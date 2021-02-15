@@ -5,7 +5,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 
-suspend fun main() = Korge(width = 1600, height = 1200) {
+suspend fun main() = Korge(width = 1600, height = 1200, batchMaxQuads = BatchBuilder2D.MAX_BATCH_QUADS) {
 
 	val numberOfGreen = 5000
 	//val numberOfGreen = 20000

@@ -13,7 +13,6 @@ import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
-import com.soywiz.korge.resources.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
@@ -50,7 +49,8 @@ class Views constructor(
     val stats: Stats,
     val gameWindow: GameWindow,
     val gameId: String = "korgegame",
-    val settingsFolder: String? = null
+    val settingsFolder: String? = null,
+    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
@@ -83,7 +83,7 @@ class Views constructor(
     var name: String? = null
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
-	val renderContext = RenderContext(ag, this, stats, coroutineContext)
+	val renderContext = RenderContext(ag, this, stats, coroutineContext, batchMaxQuads)
 	val agBitmapTextureManager = renderContext.agBitmapTextureManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK

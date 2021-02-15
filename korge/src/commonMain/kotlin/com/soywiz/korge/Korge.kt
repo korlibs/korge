@@ -8,10 +8,10 @@ import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
-import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -28,7 +28,6 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 /**
@@ -69,6 +68,7 @@ object Korge {
             blocking = config.blocking,
             gameId = config.gameId,
             settingsFolder = config.settingsFolder,
+            batchMaxQuads = config.batchMaxQuads,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
@@ -88,29 +88,30 @@ object Korge {
     }
 
     suspend operator fun invoke(
-		title: String = "Korge",
-		width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
-		virtualWidth: Int = width, virtualHeight: Int = height,
-		icon: Bitmap? = null,
+        title: String = "Korge",
+        width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
+        virtualWidth: Int = width, virtualHeight: Int = height,
+        icon: Bitmap? = null,
         iconPath: String? = null,
         iconDrawable: SizedDrawable? = null,
         imageFormats: ImageFormat = ImageFormats(PNG),
-		quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
-		targetFps: Double = 0.0,
-		scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
-		scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
-		clipBorders: Boolean = true,
-		bgcolor: RGBA? = Colors.BLACK,
-		debug: Boolean = false,
-		fullscreen: Boolean? = null,
-		args: Array<String> = arrayOf(),
-		gameWindow: GameWindow? = null,
+        quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+        targetFps: Double = 0.0,
+        scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
+        scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
+        clipBorders: Boolean = true,
+        bgcolor: RGBA? = Colors.BLACK,
+        debug: Boolean = false,
+        fullscreen: Boolean? = null,
+        args: Array<String> = arrayOf(),
+        gameWindow: GameWindow? = null,
         timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         debugAg: Boolean = false,
         blocking: Boolean = true,
         gameId: String = DEFAULT_GAME_ID,
         settingsFolder: String? = null,
+        batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -151,7 +152,8 @@ object Korge {
                 stats = stats,
                 gameWindow = gameWindow,
                 gameId = gameId,
-                settingsFolder = settingsFolder
+                settingsFolder = settingsFolder,
+                batchMaxQuads = batchMaxQuads
             )
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
@@ -457,23 +459,24 @@ object Korge {
     }
 
 	data class Config(
-		val module: Module,
-		val args: Array<String> = arrayOf(),
-		val imageFormats: ImageFormat = RegisteredImageFormats,
-		val gameWindow: GameWindow? = null,
+        val module: Module,
+        val args: Array<String> = arrayOf(),
+        val imageFormats: ImageFormat = RegisteredImageFormats,
+        val gameWindow: GameWindow? = null,
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
-		val sceneClass: KClass<out Scene> = module.mainScene,
-		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: TimeProvider = TimeProvider,
-		val injector: AsyncInjector = AsyncInjector(),
-		val debug: Boolean = false,
-		val trace: Boolean = false,
-		val context: Any? = null,
-		val fullscreen: Boolean? = null,
+        val sceneClass: KClass<out Scene> = module.mainScene,
+        val sceneInjects: List<Any> = listOf(),
+        val timeProvider: TimeProvider = TimeProvider,
+        val injector: AsyncInjector = AsyncInjector(),
+        val debug: Boolean = false,
+        val trace: Boolean = false,
+        val context: Any? = null,
+        val fullscreen: Boolean? = null,
         val blocking: Boolean = true,
         val gameId: String = DEFAULT_GAME_ID,
         val settingsFolder: String? = null,
-		val constructedViews: (Views) -> Unit = {}
+        val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+        val constructedViews: (Views) -> Unit = {}
 	)
 
 	data class ModuleArgs(val args: Array<String>)
