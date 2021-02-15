@@ -126,3 +126,19 @@ actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int,
 
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit =
     dst.asTyped().set(src._sliceFloat64Buffer(0, src.size / 8).subarray(srcPos, srcPos + size), dstPos)
+
+class Fast32Buf(val buffer: ArrayBuffer) {
+    val f32 = Float32Array(buffer)
+    val i32 = Int32Array(buffer)
+    val size: Int get() = f32.length
+}
+
+actual /*inline*/ class Fast32Buffer(val bb: Fast32Buf)
+
+actual fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer = Fast32Buffer(Fast32Buf(mem))
+
+actual val Fast32Buffer.length: Int get() = this.bb.size
+actual fun Fast32Buffer.getF(index: Int): Float = this.bb.f32[index]
+actual fun Fast32Buffer.setF(index: Int, value: Float) { this.bb.f32[index] = value }
+actual fun Fast32Buffer.getI(index: Int): Int = this.bb.i32[index]
+actual fun Fast32Buffer.setI(index: Int, value: Int) { this.bb.i32[index] = value }

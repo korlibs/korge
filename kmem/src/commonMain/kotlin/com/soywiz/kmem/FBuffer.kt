@@ -11,6 +11,7 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 	val arrayInt: Int32Buffer = mem.asInt32Buffer()
 	val arrayFloat: Float32Buffer = mem.asFloat32Buffer()
 	val arrayDouble: Float64Buffer = mem.asFloat64Buffer()
+    val fast32 = NewFast32Buffer(mem)
 
 	inline val i8 get() = arrayByte
 	inline val i16 get() = arrayShort

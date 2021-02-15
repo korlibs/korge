@@ -118,3 +118,13 @@ actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, 
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit = arraycopyBase(src, srcPos, dst, dstPos, size) { s, d -> dst[d] = src.getInt(s * 4) }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit = arraycopyBase(src, srcPos, dst, dstPos, size) { s, d -> dst[d] = src.getFloat(s * 4) }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit = arraycopyBase(src, srcPos, dst, dstPos, size) { s, d -> dst[d] = src.getDouble(s * 8) }
+
+actual /*inline*/ class Fast32Buffer(val bb: ByteArray)
+
+actual fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer = Fast32Buffer(mem.data)
+
+actual val Fast32Buffer.length: Int get() = this.bb.size * 4
+actual fun Fast32Buffer.getF(index: Int): Float = this.bb.getFloatAt(index * 4)
+actual fun Fast32Buffer.setF(index: Int, value: Float) { this.bb.setFloatAt(index * 4, value) }
+actual fun Fast32Buffer.getI(index: Int): Int = this.bb.getIntAt(index * 4)
+actual fun Fast32Buffer.setI(index: Int, value: Int) { this.bb.setIntAt(index * 4, value) }

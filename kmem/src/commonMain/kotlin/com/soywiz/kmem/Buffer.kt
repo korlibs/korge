@@ -36,6 +36,17 @@ fun MemBuffer.asInt32Buffer(): Int32Buffer = this.sliceInt32Buffer()
 fun MemBuffer.asFloat32Buffer(): Float32Buffer = this.sliceFloat32Buffer()
 fun MemBuffer.asFloat64Buffer(): Float64Buffer = this.sliceFloat64Buffer()
 
+fun NewFast32Buffer(size: Int) = NewFast32Buffer(MemBufferAlloc(size * 4))
+
+// @TODO: abstract/inline on ByteBuffer (JVM), but non-abstract on ByteArray (native) and a wrapper class on JS
+expect /*inline*/ class Fast32Buffer
+expect fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer
+expect val Fast32Buffer.length: Int
+expect fun Fast32Buffer.getF(index: Int): Float
+expect fun Fast32Buffer.setF(index: Int, value: Float)
+expect fun Fast32Buffer.getI(index: Int): Int
+expect fun Fast32Buffer.setI(index: Int, value: Int)
+
 expect class DataBuffer
 expect fun MemBuffer.getData(): DataBuffer
 expect val DataBuffer.mem: MemBuffer
@@ -49,6 +60,22 @@ expect fun DataBuffer.getFloat(index: Int): Float
 expect fun DataBuffer.setFloat(index: Int, value: Float): Unit
 expect fun DataBuffer.getDouble(index: Int): Double
 expect fun DataBuffer.setDouble(index: Int, value: Double): Unit
+
+// @TODO: imul is super slow on Kotlin/JS. Why is that? Can't use Math.imul?
+//function imul(a_local, b_local) {
+//    var lhs = jsBitwiseAnd(a_local, 4.29490176E9) * jsBitwiseAnd(b_local, 65535);
+//    var rhs = jsBitwiseAnd(a_local, 65535) * b_local;
+//    return jsBitwiseOr(lhs + rhs, 0);
+//}
+fun DataBuffer.setAlignedByte(index: Int, value: Byte): Unit = setByte(index, value)
+fun DataBuffer.setAlignedShort(index: Int, value: Short): Unit = setShort(index shl 1, value)
+fun DataBuffer.setAlignedInt(index: Int, value: Int): Unit = setInt(index shl 2, value)
+fun DataBuffer.setAlignedFloat(index: Int, value: Float): Unit = setFloat(index shl 2, value)
+
+fun DataBuffer.getAlignedByte(index: Int): Byte = getByte(index)
+fun DataBuffer.getAlignedShort(index: Int): Short = getShort(index shl 1)
+fun DataBuffer.getAlignedInt(index: Int): Int = getInt(index shl 2)
+fun DataBuffer.getAlignedFloat(index: Int): Float = getFloat(index shl 2)
 
 expect class Int8Buffer
 inline fun Int8BufferAlloc(size: Int): Int8Buffer = MemBufferAlloc(size * 1).sliceInt8Buffer() // @TODO: Can't use class name directly (it fails in JS)
