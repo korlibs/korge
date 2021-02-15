@@ -45,18 +45,14 @@ open class Mesh(
 		tva.isize = isize
 
 		bb.reset()
+        val pivotXf = pivotX.toFloat()
+        val pivotYf = pivotY.toFloat()
 		for (n in 0 until tva.isize) tva.indices[n] = indices[n]
 		for (n in 0 until tva.vcount) {
-			val x = vertices[n * 2 + 0].toDouble() + pivotX
-			val y = vertices[n * 2 + 1].toDouble() + pivotY
+			val x = vertices[n * 2 + 0] + pivotXf
+			val y = vertices[n * 2 + 1] + pivotYf
 
-			val tx = m.transformX(x, y)
-			val ty = m.transformY(x, y)
-
-			tva.select(n)
-				.xy(tx, ty)
-				.uv(uvs[n * 2 + 0], uvs[n * 2 + 1])
-				.cols(cmul, cadd)
+            tva.quadV(n, m.transformXf(x, y), m.transformYf(x, y), uvs[n * 2 + 0], uvs[n * 2 + 1], cmul, cadd)
 			bb.add(x, y)
 		}
 		bb.getBounds(localBounds)
