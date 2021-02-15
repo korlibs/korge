@@ -4,7 +4,6 @@
 package com.soywiz.kmem
 
 import java.nio.*
-import java.util.*
 
 private fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
 	//val end = offset + size - 1
@@ -107,13 +106,44 @@ private inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, d
 }
 
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src[it] })
+    val srcBuf = src.buffer
+    val dstBuf = dst.buffer
+
+    if (!srcBuf.isDirect && !dstBuf.isDirect) {
+        System.arraycopy(srcBuf.array(), srcPos, dstBuf.array(), dstPos, size)
+        return
+    }
+
+    val oldDstPos = dstBuf.position()
+    val oldSrcPos = srcBuf.position()
+    val oldSrcLimit = srcBuf.limit()
+    run {
+        dstBuf.position(dstPos)
+        srcBuf.position(srcPos)
+        srcBuf.limit(size)
+        dstBuf.put(srcBuf)
+    }
+    dstBuf.position(oldDstPos)
+    srcBuf.position(oldSrcPos)
+    srcBuf.limit(oldSrcLimit)
 }
 actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src[it] })
+    val dstBuf = dst.buffer
+    val oldPos = dstBuf.position()
+    run {
+        dstBuf.position(dstPos)
+        dstBuf.put(src, srcPos, size)
+    }
+    dstBuf.position(oldPos)
 }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit {
-    arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src[it] })
+    val srcBuf = src.buffer
+    val oldPos = srcBuf.position()
+    run {
+        srcBuf.position(srcPos)
+        srcBuf.get(dst, dstPos, size)
+    }
+    srcBuf.position(oldPos)
 }
 actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst.sbuffer[it] = value }, { src[it] })
