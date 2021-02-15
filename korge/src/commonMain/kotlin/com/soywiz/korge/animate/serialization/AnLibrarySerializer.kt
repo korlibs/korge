@@ -108,8 +108,8 @@ object AnLibrarySerializer {
 
 		// Atlases
 		val atlasBitmaps = listOf(
-			lib.symbolsById.filterIsInstance<AnSymbolShape>().map { it.textureWithBitmap?.bitmapSlice?.bmp },
-			lib.symbolsById.filterIsInstance<AnSymbolMorphShape>().flatMap { it.texturesWithBitmap.entries.map { it.second.bitmapSlice.bmp } }
+			lib.symbolsById.filterIsInstance<AnSymbolShape>().map { it.textureWithBitmap?.bitmapSlice?.bmpBase },
+			lib.symbolsById.filterIsInstance<AnSymbolMorphShape>().flatMap { it.texturesWithBitmap.entries.map { it.second.bitmapSlice.bmpBase } }
 		).flatMap { it }.filterNotNull().distinct()
 
 		val atlasBitmapsToId = atlasBitmaps.withIndex().map { it.value to it.index }.toMap()
@@ -155,7 +155,7 @@ object AnLibrarySerializer {
 					shapeCount++
 					writeU_VL(AniFile.SYMBOL_TYPE_SHAPE)
 					writeF32LE(symbol.textureWithBitmap!!.scale.toFloat())
-					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmp]!!)
+					writeU_VL(atlasBitmapsToId[symbol.textureWithBitmap!!.bitmapSlice.bmpBase]!!)
 					writeIRect(symbol.textureWithBitmap!!.bitmapSlice.bounds)
 					writeRect(symbol.bounds)
 					val path = symbol.path
@@ -177,7 +177,7 @@ object AnLibrarySerializer {
 					for ((ratio1000, textureWithBitmap) in entries) {
 						writeU_VL(ratio1000)
 						writeF32LE(textureWithBitmap.scale.toFloat())
-						writeU_VL(atlasBitmapsToId[textureWithBitmap.bitmapSlice.bmp]!!)
+						writeU_VL(atlasBitmapsToId[textureWithBitmap.bitmapSlice.bmpBase]!!)
 						writeRect(textureWithBitmap.bounds)
 						writeIRect(textureWithBitmap.bitmapSlice.bounds)
 					}
