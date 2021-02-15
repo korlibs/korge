@@ -27,13 +27,16 @@ class Input : Extra by Extra.Mixin() {
 
     val isTouchDevice: Boolean get() = _isTouchDeviceGen()
 
-    fun getTouch(id: Int) = touches.firstOrNull { it.id == id } ?: touches.first { !it.active } ?: dummyTouch
+    @Deprecated("")
+    //fun getTouch(id: Int) = touches.firstOrNull { it.id == id } ?: touches.first { !it.active } ?: dummyTouch
+    fun getTouch(id: Int) = touches.firstOrNull { it.id == id } ?: dummyTouch
 
     @KorgeInternal
+    @Deprecated("")
     fun updateTouches() {
         activeTouches.clear()
         touches.fastForEach { touch ->
-            if (touch.active) activeTouches.add(touch)
+            //if (touch.active) activeTouches.add(touch)
         }
     }
 

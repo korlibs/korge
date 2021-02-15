@@ -65,25 +65,24 @@ data class FocusEvent(
     val typeBlur get() = type == Type.BLUR
 }
 
-class Touch(
+data class Touch(
 	val index: Int = -1,
-	var active: Boolean = false,
 	var id: Int = -1,
-	var startTime: DateTime = DateTime.EPOCH,
-    var currentTime: DateTime = DateTime.EPOCH,
-	val start: Point = Point(),
-	val current: Point = Point()
+    var x: Double = 0.0,
+    var y: Double = 0.0,
+    var status: Status = Status.KEEP,
 ) : Extra by Extra.Mixin() {
+    enum class Status { ADD, KEEP, REMOVE }
+
 	companion object {
 		val dummy = Touch(-1)
 	}
 
     fun copyFrom(other: Touch) {
-        this.active = other.active
         this.id = other.id
-        this.startTime = other.startTime
-        this.start.copyFrom(other.start)
-        this.current.copyFrom(other.current)
+        this.x = other.x
+        this.y = other.y
+        this.status = other.status
     }
 
     override fun hashCode(): Int = index
@@ -93,7 +92,6 @@ class Touch(
 data class TouchEvent(
     var type: Type = Type.START,
     var screen: Int = 0,
-    var startTime: DateTime = DateTime.EPOCH,
     var currentTime: DateTime = DateTime.EPOCH,
     var scaleCoords: Boolean = true
 ) : Event() {
@@ -101,46 +99,32 @@ data class TouchEvent(
         val MAX_TOUCHES = 10
     }
     private val bufferTouches = Array(MAX_TOUCHES) { Touch(it) }
-    private val _touches = LinkedHashSet<Touch>()
-    val touches: Set<Touch> get() = _touches
+    private val _touches = FastArrayList<Touch>()
+    val touches: List<Touch> get() = _touches
+    var actionTouch: Touch? = null
 
     fun startFrame(type: Type) {
         this.type = type
-        if (type == com.soywiz.korev.TouchEvent.Type.START) {
-            startTime = DateTime.now()
-            for (touch in bufferTouches) touch.id = -1
-        }
-        currentTime = DateTime.now()
-        if (type != Type.END) {
-            for (touch in bufferTouches) touch.active = false
-            _touches.clear()
-        }
+        this.currentTime = DateTime.now()
+        actionTouch = null
+        _touches.clear()
     }
 
-    fun getTouchById(id: Int) = bufferTouches.firstOrNull { it.id == id }
-        ?: bufferTouches.firstOrNull { it.id == -1 }
-        ?: bufferTouches.firstOrNull { !it.active }
-        ?: bufferTouches[MAX_TOUCHES - 1]
-
-    fun touch(id: Int, x: Double, y: Double) {
-        val touch = getTouchById(id)
+    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP) {
+        val touch = bufferTouches[_touches.size]
         touch.id = id
-        touch.active = true
-        touch.currentTime = currentTime
-        touch.current.x = x
-        touch.current.y = y
-        if (type == Type.START) {
-            touch.startTime = currentTime
-            touch.start.x = x
-            touch.start.y = y
-        }
+        touch.x = x
+        touch.y = y
+        touch.status = status
         _touches.add(touch)
+        if (status != Touch.Status.KEEP) {
+            actionTouch = touch
+        }
     }
 
     fun copyFrom(other: TouchEvent) {
         this.type = other.type
         this.screen = other.screen
-        this.startTime = other.startTime
         this.currentTime = other.currentTime
         this.scaleCoords = other.scaleCoords
         for (n in 0 until MAX_TOUCHES) {

@@ -7,11 +7,14 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 class TouchEventHandler {
-    private val lock = Lock()
-    private val touchesEventPool = Pool { TouchEvent() }
-    private var lastTouchEvent: TouchEvent = TouchEvent()
+    @PublishedApi
+    internal val lock = Lock()
+    @PublishedApi
+    internal val touchesEventPool = Pool { TouchEvent() }
+    @PublishedApi
+    internal var lastTouchEvent: TouchEvent = TouchEvent()
 
-    fun handleEvent(gameWindow: GameWindow, coroutineContext: CoroutineContext, kind: TouchEvent.Type, emitter: (TouchEvent) -> Unit) {
+    inline fun handleEvent(gameWindow: GameWindow, coroutineContext: CoroutineContext, kind: TouchEvent.Type, emitter: (TouchEvent) -> Unit) {
         val currentTouchEvent = lock {
             val currentTouchEvent = touchesEventPool.alloc()
             currentTouchEvent.copyFrom(lastTouchEvent)

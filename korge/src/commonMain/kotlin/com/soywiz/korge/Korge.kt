@@ -239,6 +239,7 @@ object Korge {
         fun getRealX(x: Double, scaleCoords: Boolean) = if (scaleCoords) x * ag.devicePixelRatio else x
         fun getRealY(y: Double, scaleCoords: Boolean) = if (scaleCoords) y * ag.devicePixelRatio else y
 
+        /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
             val touch = input.getTouch(id)
             val now = DateTime.now()
@@ -256,6 +257,7 @@ object Korge {
 
             input.updateTouches()
         }
+        */
 
         fun mouseDown(type: String, x: Double, y: Double) {
             views.input.mouseButtons = 1
@@ -306,15 +308,15 @@ object Korge {
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", x, y)
-                    updateTouch(mouseTouchId, x, y, start = true, end = false)
+                    //updateTouch(mouseTouchId, x, y, start = true, end = false)
                 }
                 MouseEvent.Type.UP -> {
                     mouseUp("mouseUp", x, y)
-                    updateTouch(mouseTouchId, x, y, start = false, end = true)
+                    //updateTouch(mouseTouchId, x, y, start = false, end = true)
                 }
                 MouseEvent.Type.DRAG -> {
                     mouseDrag("onMouseDrag", x, y)
-                    updateTouch(mouseTouchId, x, y, start = false, end = false)
+                    //updateTouch(mouseTouchId, x, y, start = false, end = false)
                 }
                 MouseEvent.Type.MOVE -> mouseMove("mouseMove", x, y, inside = true)
                 MouseEvent.Type.CLICK -> Unit
@@ -347,9 +349,9 @@ object Korge {
         // TOUCH
         fun touch(e: TouchEvent, start: Boolean, end: Boolean) {
             val t = e.touches.first()
-            val x = t.current.x
-            val y = t.current.y
-            updateTouch(t.id, x, y, start, end)
+            val x = t.x
+            val y = t.y
+            //updateTouch(t.id, x, y, start, end)
             when {
                 start -> {
                     mouseDown("onTouchStart", x, y)
@@ -367,8 +369,8 @@ object Korge {
         eventDispatcher.addEventListener<TouchEvent> { e ->
             logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
             val touch = e.touches.first()
-            val ix = getRealX(touch.current.x, e.scaleCoords).toInt()
-            val iy = getRealX(touch.current.y, e.scaleCoords).toInt()
+            val ix = getRealX(touch.x, e.scaleCoords).toInt()
+            val iy = getRealX(touch.y, e.scaleCoords).toInt()
             when (e.type) {
                 TouchEvent.Type.START -> {
                     touch(e, start = true, end = false)

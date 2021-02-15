@@ -504,6 +504,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     fun dispatchTouchEventStartEnd() = dispatchTouchEventStart(TouchEvent.Type.END)
     fun dispatchTouchEventStart(type: TouchEvent.Type) = touchEvent.startFrame(type)
     fun dispatchTouchEventAddTouch(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y)
+    fun dispatchTouchEventAddTouchAdd(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y, Touch.Status.ADD)
+    fun dispatchTouchEventAddTouchKeep(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y, Touch.Status.KEEP)
+    fun dispatchTouchEventAddTouchRemove(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y, Touch.Status.REMOVE)
     fun dispatchTouchEventEnd() = dispatch(touchEvent)
 
     // @TODO: Is this used?

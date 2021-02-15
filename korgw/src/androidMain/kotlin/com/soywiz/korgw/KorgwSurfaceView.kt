@@ -46,22 +46,29 @@ class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindo
         val gameWindow = gameWindow
 
         val actionMasked = ev.actionMasked
-        val actionPointerId = ev.actionIndex
+        val actionPointerIndex = ev.actionIndex
 
         if (ev.action != MotionEvent.ACTION_MOVE) {
             //println("[${DateTime.nowUnixLong()}]onTouchEvent: ${ev.action}, ${MotionEvent.actionToString(ev.action)}, actionMasked=$actionMasked, actionPointerId=$actionPointerId, ev.pointerCount=${ev.pointerCount}")
         }
 
-        touches.handleEvent(gameWindow, gameWindow.coroutineContext!!, when (actionMasked) {
+        val type = when (actionMasked) {
             MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> TouchEvent.Type.START
             MotionEvent.ACTION_HOVER_MOVE -> TouchEvent.Type.HOVER
             MotionEvent.ACTION_MOVE -> TouchEvent.Type.MOVE
             MotionEvent.ACTION_UP, MotionEvent.ACTION_POINTER_UP -> TouchEvent.Type.END
             else -> TouchEvent.Type.UNKNOWN
-        }) { currentTouchEvent ->
+        }
+        touches.handleEvent(gameWindow, gameWindow.coroutineContext!!, type) { currentTouchEvent ->
             for (n in 0 until ev.pointerCount) {
                 ev.getPointerCoords(n, coords)
-                currentTouchEvent.touch(ev.getPointerId(n), coords.x.toDouble(), coords.y.toDouble())
+                val id = ev.getPointerId(n)
+                val status = when {
+                    type == TouchEvent.Type.START && actionPointerIndex == n -> Touch.Status.ADD
+                    type == TouchEvent.Type.END && actionPointerIndex == n -> Touch.Status.REMOVE
+                    else -> Touch.Status.KEEP
+                }
+                currentTouchEvent.touch(id, coords.x.toDouble(), coords.y.toDouble(), status)
             }
         }
         return true
