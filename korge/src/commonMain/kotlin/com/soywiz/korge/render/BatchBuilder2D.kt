@@ -59,7 +59,7 @@ class BatchBuilder2D constructor(
     internal val indices = FBuffer.alloc(2 * maxIndices)
     //internal val vertices = FBuffer.allocNoDirect(6 * 4 * maxVertices)
     //internal val indices = FBuffer.allocNoDirect(2 * maxIndices)
-    private val indicesI16 = indices.i16
+    val indicesI16 = indices.i16
     private val verticesI32 = vertices.i32
     private val verticesF32 = vertices.f32
     private val verticesData = vertices.data
@@ -272,8 +272,9 @@ class BatchBuilder2D constructor(
     fun addQuadIndicesBatch(batchSize: Int) {
         var vc = vertexCount
         var ip = indexPos
+        val i16 = indicesI16
         for (n in 0 until batchSize) {
-            ip += _addIndices(indicesI16, ip, vc + 0, vc + 1, vc + 2, vc + 3, vc + 0, vc + 2)
+            ip += _addIndices(i16, ip, vc + 0, vc + 1, vc + 2, vc + 3, vc + 0, vc + 2)
             vc += 4
         }
         indexPos = ip
