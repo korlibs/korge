@@ -70,10 +70,7 @@ class FastSpriteContainer : View() {
     }
 
     private fun addQuadIndices(bb: BatchBuilder2D, batchSize: Int) {
-        for (n in 0 until batchSize) {
-            bb.addQuadIndices()
-            bb.vertexCount += 4
-        }
+        bb.addQuadIndicesBatch(batchSize)
     }
 
     private fun renderInternalBatch(bb: BatchBuilder2D, m: Int, batchSize: Int, colorMul: Int, colorAdd: Int) {

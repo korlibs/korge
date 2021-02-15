@@ -12,6 +12,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import kotlin.jvm.*
 
 private val logger = Logger("BatchBuilder2D")
 
@@ -189,13 +190,14 @@ class BatchBuilder2D constructor(
         indicesI16[indexPos++] = (vertexCount + idx).toShort()
     }
 
-	fun addIndices(i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int) {
-		addIndex(i0)
-		addIndex(i1)
-		addIndex(i2)
-		addIndex(i3)
-		addIndex(i4)
-		addIndex(i5)
+	private fun _addIndices(indicesI16: Int16Buffer, pos: Int, i0: Int, i1: Int, i2: Int, i3: Int, i4: Int, i5: Int): Int {
+        indicesI16[pos + 0] = i0.toShort()
+        indicesI16[pos + 1] = i1.toShort()
+        indicesI16[pos + 2] = i2.toShort()
+        indicesI16[pos + 3] = i3.toShort()
+        indicesI16[pos + 4] = i4.toShort()
+        indicesI16[pos + 5] = i5.toShort()
+        return 6
 	}
 
     /**
@@ -262,9 +264,20 @@ class BatchBuilder2D constructor(
         addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd.value)
     }
 
-    fun addQuadIndices() {
-        val vc = vertexCount
-        addIndices(vc + 0, vc + 1, vc + 2, vc + 3, vc + 0, vc + 2)
+    @JvmOverloads
+    fun addQuadIndices(vc: Int = vertexCount) {
+        indexPos += _addIndices(indicesI16, indexPos, vc + 0, vc + 1, vc + 2, vc + 3, vc + 0, vc + 2)
+    }
+
+    fun addQuadIndicesBatch(batchSize: Int) {
+        var vc = vertexCount
+        var ip = indexPos
+        for (n in 0 until batchSize) {
+            ip += _addIndices(indicesI16, ip, vc + 0, vc + 1, vc + 2, vc + 3, vc + 0, vc + 2)
+            vc += 4
+        }
+        indexPos = ip
+        vertexCount = vc
     }
 
     fun addQuadVerticesFastNormal(
