@@ -6,6 +6,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.fast.FastSprite
 import com.soywiz.korge.view.fast.fastSpriteContainer
 import com.soywiz.korim.bitmap.BmpSlice
@@ -13,7 +14,6 @@ import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.toBitmapFont
-import com.soywiz.korim.text.VerticalAlign
 import kotlin.random.Random
 
 //class BunnyFastSprite(tex: BmpSlice) : FastSprite(tex) {
