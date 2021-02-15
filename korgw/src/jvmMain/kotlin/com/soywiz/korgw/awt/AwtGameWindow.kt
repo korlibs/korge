@@ -165,11 +165,13 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
 
     init {
         onDebugChanged.add {
-            debugFrame.isVisible = it
-            synchronizeDebugFrameCoordinates()
-            if (debugFrame.isVisible) {
-                //frame.isVisible = false
-                frame.isVisible = true
+            EventQueue.invokeLater {
+                debugFrame.isVisible = it
+                synchronizeDebugFrameCoordinates()
+                if (debugFrame.isVisible) {
+                    //frame.isVisible = false
+                    frame.isVisible = true
+                }
             }
         }
     }
