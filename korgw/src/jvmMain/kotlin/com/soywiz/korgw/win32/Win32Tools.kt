@@ -52,7 +52,7 @@ interface Win32GL : INativeGL, Library {
                 ?: try { opengl32Lib.getFunction(name) } catch (e: UnsatisfiedLinkError) { null }
 
         fun loadFunctionCached(name: String): Function = funcs.getOrPut(name) {
-            loadFunction(name) ?: error("Can't find opengl method ${name}")
+            loadFunction(name) ?: error("Can't find opengl method $name")
         }
 
         private var preloaded = false
