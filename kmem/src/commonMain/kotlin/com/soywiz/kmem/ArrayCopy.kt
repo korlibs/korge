@@ -46,7 +46,7 @@ fun arraycopy(src: DoubleArray, srcPos: Int, dst: DoubleArray, dstPos: Int, size
 }
 
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-fun <T> arraycopy(src: MutableList<T>, srcPos: Int, dst: MutableList<T>, dstPos: Int, size: Int): Unit {
+fun <T> arraycopy(src: List<T>, srcPos: Int, dst: MutableList<T>, dstPos: Int, size: Int): Unit {
     if (src === dst) error("Not supporting the same array")
     for (n in 0 until size) {
         dst[dstPos + n] = src[srcPos]

@@ -36,7 +36,7 @@ fun MemBuffer.asInt32Buffer(): Int32Buffer = this.sliceInt32Buffer()
 fun MemBuffer.asFloat32Buffer(): Float32Buffer = this.sliceFloat32Buffer()
 fun MemBuffer.asFloat64Buffer(): Float64Buffer = this.sliceFloat64Buffer()
 
-fun NewFast32Buffer(size: Int) = NewFast32Buffer(MemBufferAlloc(size * 4))
+fun NewFast32Buffer(size: Int) = NewFast32Buffer(MemBufferAllocNoDirect(size * 4))
 
 // @TODO: abstract/inline on ByteBuffer (JVM), but non-abstract on ByteArray (native) and a wrapper class on JS
 expect /*inline*/ class Fast32Buffer

@@ -27,6 +27,10 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 
         fun allocUnaligned(size: Int): FBuffer = FBuffer(MemBufferAlloc(size), size)
 		fun alloc(size: Int): FBuffer = allocUnaligned(size.sizeAligned())
+
+        fun allocNoDirectUnaligned(size: Int): FBuffer = FBuffer(MemBufferAllocNoDirect(size), size)
+        fun allocNoDirect(size: Int): FBuffer = allocNoDirectUnaligned(size.sizeAligned())
+
 		fun wrap(buffer: MemBuffer, size: Int = buffer.size): FBuffer = FBuffer(buffer, size)
 		fun wrap(array: ByteArray): FBuffer = FBuffer(MemBufferWrap(array), array.size)
 
