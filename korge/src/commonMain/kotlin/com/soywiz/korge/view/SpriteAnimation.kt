@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.umod
 import com.soywiz.korim.atlas.*
@@ -7,7 +8,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.sliceWithSize
 
-class SpriteAnimation(
+class SpriteAnimation constructor(
     val sprites: List<BmpSlice>,
     val defaultTimePerFrame: TimeSpan = TimeSpan.NIL
 ) {
@@ -24,7 +25,7 @@ class SpriteAnimation(
             offsetBetweenRows: Int = 0
         ): SpriteAnimation {
             return SpriteAnimation(
-                ArrayList<BmpSlice>().apply {
+                FastArrayList<BmpSlice>().apply {
                     for (row in 0 until rows){
                         for (col in 0 until columns){
                             add(
@@ -51,7 +52,7 @@ class SpriteAnimation(
 }
 
 fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
-    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }, defaultTimePerFrame)
+    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }.toFastList(), defaultTimePerFrame)
 
 fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
-    SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }, defaultTimePerFrame)
+    SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }.toFastList(), defaultTimePerFrame)

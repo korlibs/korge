@@ -22,10 +22,10 @@ fun Views.registerStageComponent() {
     val EXTRA_ID = "Views.registerStageComponent"
     if (views.getExtra(EXTRA_ID) == true) return
     views.setExtra(EXTRA_ID, true)
-    val componentsInStagePrev = ArrayList<StageComponent>()
+    val componentsInStagePrev = FastArrayList<StageComponent>()
     val componentsInStageCur = linkedSetOf<StageComponent>()
     val componentsInStage = linkedSetOf<StageComponent>()
-    val tempViews: ArrayList<View> = arrayListOf()
+    val tempViews: FastArrayList<View> = FastArrayList()
     onBeforeRender {
         componentsInStagePrev.clear()
         componentsInStagePrev += componentsInStageCur

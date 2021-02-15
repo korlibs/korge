@@ -189,7 +189,7 @@ class Views constructor(
 
     var supportTogglingDebug = true
 	var debugViews = false
-	val debugHandlers = arrayListOf<Views.(RenderContext) -> Unit>()
+	val debugHandlers = FastArrayList<Views.(RenderContext) -> Unit>()
 
     fun addDebugRenderer(block: Views.(RenderContext) -> Unit) {
         debugHandlers.add(block)
@@ -197,7 +197,7 @@ class Views constructor(
 
 	var lastTime = timeProvider.now()
 
-    private val tempViews: ArrayList<View> = arrayListOf()
+    private val tempViews: FastArrayList<View> = FastArrayList()
 	private val virtualSize = SizeInt()
 	private val actualSize = SizeInt()
 	private val targetSize = SizeInt()
@@ -489,18 +489,18 @@ data class KorgeFileLoader<T>(val name: String, val loader: suspend VfsFile.(Fas
 /////////////////////////
 
 @OptIn(KorgeInternal::class)
-fun getAllDescendantViews(view: View, out: ArrayList<View> = ArrayList(), reversed: Boolean = true): ArrayList<View> {
+fun getAllDescendantViews(view: View, out: FastArrayList<View> = FastArrayList(), reversed: Boolean = true): FastArrayList<View> {
     out.clear()
     val pos = getAllDescendantViewsBase(view, out, reversed, 0)
     while (out.size > pos) out.removeAt(out.size - 1)
     return out
 }
 
-private fun <T> ArrayList<T>.replaceOrAdd(pos: Int, value: T) {
+private fun <T> FastArrayList<T>.replaceOrAdd(pos: Int, value: T) {
     if (pos >= this.size) add(value) else this[pos] = value
 }
 
-private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed: Boolean, cursor: Int): Int {
+private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reversed: Boolean, cursor: Int): Int {
     var pos = cursor
     if (reversed) {
         view.forEachChildReversed { pos = getAllDescendantViewsBase(it, out, reversed, pos) }
@@ -513,7 +513,7 @@ private fun getAllDescendantViewsBase(view: View, out: ArrayList<View>, reversed
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: TimeSpan, tempViews: ArrayList<View> = arrayListOf()) {
+fun View.updateSingleView(delta: TimeSpan, tempViews: FastArrayList<View> = FastArrayList()) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
         view._components?.update?.fastForEach { comp ->
             comp.update(delta * view.globalSpeed)
@@ -534,7 +534,7 @@ fun View.updateSingleView(delta: TimeSpan, tempViews: ArrayList<View> = arrayLis
 fun View.updateSingleViewWithViewsAll(
     views: Views,
     delta: TimeSpan,
-    tempViews: ArrayList<View> = arrayListOf()
+    tempViews: FastArrayList<View> = FastArrayList()
 ) {
     getAllDescendantViews(this, tempViews).fastForEach { view ->
         view._components?.updateWV?.fastForEach { comp -> comp.update(views, delta * view.globalSpeed) }
