@@ -30,14 +30,14 @@ class FastSpriteContainer : View() {
     // let numIndices = 98304;
 
     override fun renderInternal(ctx: RenderContext) {
+        val colorMul = this.renderColorMul.value
+        val colorAdd = this.renderColorAdd.value
         val sprites = this.sprites
         if (sprites.isEmpty()) return
         ctx.flush()
         val bb = ctx.batch
         val fsprite = sprites.first()
-        val bmp = fsprite.tex.bmp
-        val colorMul = this.renderColorMul.value
-        val colorAdd = this.renderColorAdd.value
+        val bmp = fsprite.tex.bmpBase
 
         bb.setViewMatrixTemp(globalMatrix) {
             ////////////////////////////
@@ -47,10 +47,7 @@ class FastSpriteContainer : View() {
             ////////////////////////////
 
             val batchSize = min2(sprites.size, bb.maxQuads)
-            for (n in 0 until batchSize) {
-                bb.addQuadIndices()
-                bb.vertexCount += 4
-            }
+            addQuadIndices(bb, batchSize)
             bb.vertexCount = 0
             bb.uploadIndices()
             val realIndexPos = bb.indexPos
@@ -59,37 +56,47 @@ class FastSpriteContainer : View() {
 
             //var batchCount = 0
             //var spriteCount = 0
-            for (m in 0 until sprites.size step bb.maxQuads) {
+            //for (m in 0 until sprites.size step bb.maxQuads) { // @TODO: Not optimized on Kotlin/JS
+            for (m2 in 0 until sprites.size / bb.maxQuads) {
+                val m = m2 * bb.maxQuads
                 //batchCount++
                 bb.indexPos = realIndexPos
-                for (n in m until min2(sprites.size, m + batchSize)) {
-                    //spriteCount++
-                    val sprite = sprites[n]
-
-                    val w = sprite.width * sprite.scalef
-                    val h = sprite.height * sprite.scalef
-
-                    val ax = w * sprite.anchorXf
-                    val ay = h * sprite.anchorYf
-
-                    val x0 = sprite.xf - ax
-                    val y0 = sprite.yf - ay
-
-                    val x1 = x0 + w
-                    val y1 = y0 + h
-
-                    bb.addQuadVerticesFastNormal(
-                        x0, y0, x1, y0, x1, y1, x0, y1,
-                        sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                        colorMul, colorAdd
-                    )
-                }
-                bb.flush(uploadVertices = true, uploadIndices = false)
+                renderInternalBatch(bb, m, batchSize, colorMul, colorAdd)
+                flush(bb)
             }
 
             //println("batchCount: $batchCount, spriteCount: $spriteCount")
-
-            ////////////////////////////
         }
+    }
+
+    private fun addQuadIndices(bb: BatchBuilder2D, batchSize: Int) {
+        for (n in 0 until batchSize) {
+            bb.addQuadIndices()
+            bb.vertexCount += 4
+        }
+    }
+
+    private fun renderInternalBatch(bb: BatchBuilder2D, m: Int, batchSize: Int, colorMul: Int, colorAdd: Int) {
+        val sprites = this.sprites
+        var vp = bb.vertexPos
+        val vd = bb.verticesFast32
+        val mMax = min2(sprites.size, m + batchSize)
+        val count = mMax - m
+        for (n in m until mMax) {
+            //spriteCount++
+            val sprite = sprites[n]
+            vp = bb._addQuadVerticesFastNormalNonRotated(
+                vp, vd,
+                sprite.x0, sprite.y0, sprite.x1, sprite.y1,
+                sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
+                colorMul, colorAdd
+            )
+        }
+        bb.vertexPos = vp
+        bb.vertexCount += count * 4
+    }
+
+    private fun flush(bb: BatchBuilder2D) {
+        bb.flush(uploadVertices = true, uploadIndices = false)
     }
 }

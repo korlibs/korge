@@ -1,69 +1,120 @@
 package com.soywiz.korge.view.fast
 
-import com.soywiz.korge.view.Image
-import com.soywiz.korim.bitmap.BitmapSlice
-import com.soywiz.korim.bitmap.BmpSlice
-import com.soywiz.korma.geom.Angle
-import kotlin.coroutines.*
-
+import com.soywiz.korim.bitmap.*
 
 open class FastSprite(tex: BmpSlice) {
-    var xf: Float = 0f
-    var yf: Float = 0f
-    var anchorXf: Float = .5f
-    var anchorYf: Float = .5f
-    //var rotationRadiansf: Float = 0f
-    var scalef: Float = 1f
+    var x0: Float = 0f
+    var y0: Float = 0f
+    var x1: Float = 0f
+    var y1: Float = 0f
 
-    var tx0: Float = 0f
-    var ty0: Float = 0f
-    var tx1: Float = 0f
-    var ty1: Float = 0f
-    var width: Float = 0f
-    var height: Float = 0f
+    var w: Float = 0f
+    var h: Float = 0f
 
-    private fun updateTexProps() {
-        tx0 = tex.tl_x
-        ty0 = tex.tl_y
-        tx1 = tex.br_x
-        ty1 = tex.br_y
-        width = tex.width.toFloat()
-        height = tex.height.toFloat()
+    var ax: Float = 0f
+    var ay: Float = 0f
+
+    private fun updateX01() {
+        x0 = xf - ax
+        x1 = x0 + w
     }
+
+    private fun updateY01() {
+        y0 = yf - ay
+        y1 = y0 + h
+    }
+
+    private fun updateXY01() {
+        updateX01()
+        updateY01()
+    }
+
+    private fun updateXSize() {
+        w = width * scalef
+        ax = w * anchorXf
+        updateX01()
+    }
+
+    private fun updateYSize() {
+        h = height * scalef
+        ay = h * anchorYf
+        updateY01()
+    }
+
+    private fun updateSize() {
+        updateXSize()
+        updateYSize()
+    }
+
+    var xf: Float = 0f
+        set(value) {
+            field = value
+            updateX01()
+        }
+    var yf: Float = 0f
+        set(value) {
+            field = value
+            updateY01()
+        }
+    var anchorXf: Float = .5f
+        set(value) {
+            if (field != value) {
+                field = value
+                updateXSize()
+            }
+        }
+    var anchorYf: Float = .5f
+        set(value) {
+            if (field != value) {
+                field = value
+                updateYSize()
+            }
+        }
+    var scalef: Float = 1f
+        set(value) {
+            if (field != value) {
+                field = value
+                updateSize()
+            }
+        }
+
+    val tx0: Float get() = tex.tl_x
+    val ty0: Float get() = tex.tl_y
+    val tx1: Float get() = tex.br_x
+    val ty1: Float get() = tex.br_y
+    val width: Float get() = tex.width.toFloat()
+    val height: Float get() = tex.height.toFloat()
 
     var tex: BmpSlice = tex
         set(value) {
             if (field !== value) {
                 field = value
-                updateTexProps()
+                updateSize()
             }
         }
 
     init {
-        updateTexProps()
+        updateSize()
+        updateXY01()
     }
-
-    var x: Double
-        get() = xf.toDouble()
-        set(value) { xf = value.toFloat() }
-
-    var y: Double
-        get() = yf.toDouble()
-        set(value) { yf = value.toFloat() }
-
-    var anchorX: Double
-        get() = anchorXf.toDouble()
-        set(value) { anchorXf = value.toFloat() }
-
-    var anchorY: Double
-        get() = anchorYf.toDouble()
-        set(value) { anchorYf = value.toFloat() }
-
-    //var rotationRadians: Double
-    //    get() = rotationRadiansf.toDouble()
-    //    set(value) { rotationRadiansf = value.toFloat() }
-
-    var scale: Double
-        get() = scalef.toDouble()
-        set(value) { scalef = value.toFloat() }
 }
+
+var FastSprite.x: Double
+    get() = xf.toDouble()
+    set(value) { xf = value.toFloat() }
+
+var FastSprite.y: Double
+    get() = yf.toDouble()
+    set(value) { yf = value.toFloat() }
+
+var FastSprite.anchorX: Double
+    get() = anchorXf.toDouble()
+    set(value) { anchorXf = value.toFloat() }
+
+var FastSprite.anchorY: Double
+    get() = anchorYf.toDouble()
+    set(value) { anchorYf = value.toFloat() }
+
+var FastSprite.scale: Double
+    get() = scalef.toDouble()
+    set(value) { scalef = value.toFloat() }
