@@ -8,19 +8,25 @@ import com.soywiz.korma.interpolation.interpolate
 import kotlin.jvm.*
 import kotlin.math.*
 
-class Matrix @PublishedApi internal constructor(dummy: Boolean) : MutableInterpolable<Matrix>, Interpolable<Matrix> {
-    @PublishedApi
-    internal val data: FloatArray = FloatArray(6)
-    override fun hashCode(): Int = data.contentHashCode()
-    override fun equals(other: Any?): Boolean = (other is Matrix) && (this.data.contentEquals(other.data))
-    fun copy() = Matrix(true).copyFrom(this)
+data class Matrix(
+    var af: Float = 1f,
+    var bf: Float = 0f,
+    var cf: Float = 0f,
+    var df: Float = 1f,
+    var txf: Float = 0f,
+    var tyf: Float = 0f
+) : MutableInterpolable<Matrix>, Interpolable<Matrix> {
+    //@PublishedApi internal val data: FloatArray = FloatArray(6)
+    //override fun hashCode(): Int = data.contentHashCode()
+    //override fun equals(other: Any?): Boolean = (other is Matrix) && (this.data.contentEquals(other.data))
+    //fun copy() = Matrix().copyFrom(this)
 
-    var af: Float get() = data[0] ; set(value) { data[0] = value }
-    var bf: Float get() = data[1] ; set(value) { data[1] = value }
-    var cf: Float get() = data[2] ; set(value) { data[2] = value }
-    var df: Float get() = data[3] ; set(value) { data[3] = value }
-    var txf: Float get() = data[4] ; set(value) { data[4] = value }
-    var tyf: Float get() = data[5] ; set(value) { data[5] = value }
+    //var af: Float get() = data[0] ; set(value) { data[0] = value }
+    //var bf: Float get() = data[1] ; set(value) { data[1] = value }
+    //var cf: Float get() = data[2] ; set(value) { data[2] = value }
+    //var df: Float get() = data[3] ; set(value) { data[3] = value }
+    //var txf: Float get() = data[4] ; set(value) { data[4] = value }
+    //var tyf: Float get() = data[5] ; set(value) { data[5] = value }
 
     var a: Double get() = af.toDouble() ; set(value) { af = value.toFloat() }
     var b: Double get() = bf.toDouble() ; set(value) { bf = value.toFloat() }
@@ -37,16 +43,16 @@ class Matrix @PublishedApi internal constructor(dummy: Boolean) : MutableInterpo
             d: Double = 1.0,
             tx: Double = 0.0,
             ty: Double = 0.0,
-        ) = Matrix(true).setTo(a, b, c, d, tx, ty)
+        ) = Matrix().setTo(a, b, c, d, tx, ty)
 
-        operator fun invoke(
-            a: Float,
-            b: Float = 0f,
-            c: Float = 0f,
-            d: Float = 1f,
-            tx: Float = 0f,
-            ty: Float = 0f
-        ) = Matrix(true).setTo(a, b, c, d, tx, ty)
+        //operator fun invoke(
+        //    a: Float,
+        //    b: Float = 0f,
+        //    c: Float = 0f,
+        //    d: Float = 1f,
+        //    tx: Float = 0f,
+        //    ty: Float = 0f
+        //) = Matrix(true).setTo(a, b, c, d, tx, ty)
 
         operator fun invoke() = Matrix(1f, 0f, 0f, 1f, 0f, 0f)
 
@@ -373,22 +379,29 @@ class Matrix @PublishedApi internal constructor(dummy: Boolean) : MutableInterpo
         value[offset + 3].toFloat(), value[offset + 4].toFloat(), value[offset + 5].toFloat()
     )
 
-    class Transform private constructor(
-        dummy: Boolean
+    data class Transform(
+        //dummy: Boolean
+        override var xf: Float = 0f,
+        override var yf: Float = 0f,
+        var scaleXf: Float = 1f,
+        var scaleYf: Float = 1f,
+        var skewXRadiansf: Float = 0f,
+        var skewYRadiansf: Float = 0f,
+        var rotationRadiansf: Float = 0f,
     ) : MutableInterpolable<Transform>, Interpolable<Transform>, XY, XYf {
-        override fun equals(other: Any?): Boolean = (other is Transform) && data.contentEquals(other.data)
-        override fun hashCode(): Int = data.contentHashCode()
+        //override fun equals(other: Any?): Boolean = (other is Transform) && data.contentEquals(other.data)
+        //override fun hashCode(): Int = data.contentHashCode()
 
-        @PublishedApi
-        internal val data = FloatArray(7)
+        //@PublishedApi
+        //internal val data = FloatArray(7)
 
-        override var xf: Float get() = data[0] ; set(value) { data[0] = value }
-        override var yf: Float get() = data[1] ; set(value) { data[1] = value }
-        var scaleXf: Float get() = data[2] ; set(value) { data[2] = value }
-        var scaleYf: Float get() = data[3] ; set(value) { data[3] = value }
-        var skewXRadiansf: Float get() = data[4] ; set(value) { data[4] = value }
-        var skewYRadiansf: Float get() = data[5] ; set(value) { data[5] = value }
-        var rotationRadiansf: Float get() = data[6] ; set(value) { data[6] = value }
+        //override var xf: Float get() = data[0] ; set(value) { data[0] = value }
+        //override var yf: Float get() = data[1] ; set(value) { data[1] = value }
+        //var scaleXf: Float get() = data[2] ; set(value) { data[2] = value }
+        //var scaleYf: Float get() = data[3] ; set(value) { data[3] = value }
+        //var skewXRadiansf: Float get() = data[4] ; set(value) { data[4] = value }
+        //var skewYRadiansf: Float get() = data[5] ; set(value) { data[5] = value }
+        //var rotationRadiansf: Float get() = data[6] ; set(value) { data[6] = value }
 
         override var x: Double get() = xf.toDouble() ; set(value) { xf = value.toFloat() }
         override var y: Double get() = yf.toDouble() ; set(value) { yf = value.toFloat() }
@@ -400,22 +413,20 @@ class Matrix @PublishedApi internal constructor(dummy: Boolean) : MutableInterpo
         var rotation: Angle get() = Angle(rotationRadiansf) ; set(value) { rotationRadiansf = value.radiansf }
 
         constructor(
-            x: Double = 0.0, y: Double = 0.0,
+            x: Double, y: Double,
             scaleX: Double = 1.0, scaleY: Double = 1.0,
             skewX: Angle = 0.radians, skewY: Angle = 0.radians,
             rotation: Angle = 0.radians
-        ) : this(false) {
-            setTo(x, y, scaleX, scaleY, skewX, skewY, rotation)
-        }
+        ) : this(x.toFloat(), y.toFloat(), scaleX.toFloat(), scaleY.toFloat(), skewX.radiansf, skewY.radiansf, rotation.radiansf)
 
-        constructor(
-            x: Float, y: Float,
-            scaleX: Float = 1f, scaleY: Float = 1f,
-            skewX: Angle = 0.radians, skewY: Angle = 0.radians,
-            rotation: Angle = 0.radians
-        ) : this(false) {
-            setTo(x, y, scaleX, scaleY, skewX, skewY, rotation)
-        }
+        //constructor(
+        //    x: Float, y: Float,
+        //    scaleX: Float = 1f, scaleY: Float = 1f,
+        //    skewX: Angle = 0.radians, skewY: Angle = 0.radians,
+        //    rotation: Angle = 0.radians
+        //) : this(false) {
+        //    setTo(x, y, scaleX, scaleY, skewX, skewY, rotation)
+        //}
 
         val scaleAvg get() = (scaleX + scaleY) * 0.5
 
