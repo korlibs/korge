@@ -3,6 +3,8 @@ package com.soywiz.korge.gradle.util
 import java.io.File
 import java.nio.charset.*
 
+fun File.takeIfExists() = this.takeIf { it.exists() }
+fun File.takeIfNotExists() = this.takeIf { !it.exists() }
 fun File.ensureParents() = this.apply { parentFile.mkdirs() }
 fun <T> File.conditionally(ifNotExists: Boolean = true, block: File.() -> T): T? = if (!ifNotExists || !this.exists()) block() else null
 fun <T> File.always(block: File.() -> T): T = block()

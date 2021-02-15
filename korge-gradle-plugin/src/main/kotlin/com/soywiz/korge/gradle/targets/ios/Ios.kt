@@ -91,19 +91,30 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-	tasks.create("installXcodeGen") { task ->
-		task.apply {
-			onlyIf { !File("/usr/local/bin/xcodegen").exists() }
-			doLast {
-				val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
-				execLogger {
-					it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git")
-					it.workingDir(korlibsFolder)
+    val korlibsFolder = File(System.getProperty("user.home") + "/.korlibs").apply { mkdirs() }
+    val xcodeGenFolder = korlibsFolder["XcodeGen"]
+    val xcodeGenLocalExecutable = File("/usr/local/bin/xcodegen")
+    val xcodeGenExecutable = xcodeGenFolder[".build/release/xcodegen"]
+    val xcodeGenGitTag = "2.18.0"
 
-				}
+    tasks.create("installXcodeGen") { task ->
+		task.apply {
+			onlyIf { !xcodeGenLocalExecutable.exists() && !xcodeGenExecutable.exists() }
+			doLast {
+                if (!xcodeGenFolder[".git"].isDirectory) {
+                    execLogger {
+                        //it.commandLine("git", "clone", "--depth", "1", "--branch", xcodeGenGitTag, "https://github.com/yonaskolb/XcodeGen.git")
+                        it.commandLine("git", "clone", "https://github.com/yonaskolb/XcodeGen.git")
+                        it.workingDir(korlibsFolder)
+                    }
+                }
+                execLogger {
+                    it.commandLine("git", "checkout", xcodeGenGitTag)
+                    it.workingDir(xcodeGenFolder)
+                }
 				execLogger {
-					it.commandLine("make")
-					it.workingDir(korlibsFolder["XcodeGen"])
+					it.commandLine("make", "build")
+					it.workingDir(xcodeGenFolder)
 				}
 			}
 		}
@@ -757,7 +768,7 @@ fun Project.configureNativeIos() {
 
 			execLogger {
 				it.workingDir(folder)
-				it.commandLine("xcodegen")
+				it.commandLine(xcodeGenExecutable.takeIfExists() ?: xcodeGenLocalExecutable.takeIfExists() ?: error("Can't find xcodegen"))
 			}
 		}
 	}
