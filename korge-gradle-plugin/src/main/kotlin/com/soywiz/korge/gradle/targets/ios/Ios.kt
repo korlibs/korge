@@ -892,7 +892,7 @@ fun Project.configureNativeIos() {
 	tasks.create("installIosDeploy", Exec::class.java) { task ->
 		task.onlyIf { !node_modules["ios-deploy"].exists() }
 		task.setWorkingDir(korgeCacheDir)
-		task.setCommandLine("npm", "install", "--unsafe-perm=true", "ios-deploy@1.10.0")
+		task.setCommandLine("npm", "install", "--unsafe-perm=true", "ios-deploy@1.11.4")
 		// @TODO: Automatically install ios-deploy
 	}
 }
