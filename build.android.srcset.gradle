@@ -6,6 +6,7 @@ kotlin {
         compilations.all {
             kotlinOptions.jvmTarget = "1.8"
             kotlinOptions.suppressWarnings = true
+            kotlinOptions.freeCompilerArgs = ["-Xno-param-assertions"]
         }
     }
 }

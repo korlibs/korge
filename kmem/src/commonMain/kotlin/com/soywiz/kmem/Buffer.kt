@@ -39,13 +39,13 @@ fun MemBuffer.asFloat64Buffer(): Float64Buffer = this.sliceFloat64Buffer()
 fun NewFast32Buffer(size: Int) = NewFast32Buffer(MemBufferAllocNoDirect(size * 4))
 
 // @TODO: abstract/inline on ByteBuffer (JVM), but non-abstract on ByteArray (native) and a wrapper class on JS
-expect /*inline*/ class Fast32Buffer
+expect abstract class Fast32Buffer
 expect fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer
 expect val Fast32Buffer.length: Int
-expect fun Fast32Buffer.getF(index: Int): Float
-expect fun Fast32Buffer.setF(index: Int, value: Float)
-expect fun Fast32Buffer.getI(index: Int): Int
-expect fun Fast32Buffer.setI(index: Int, value: Int)
+expect inline fun Fast32Buffer.getF(index: Int): Float
+expect inline fun Fast32Buffer.setF(index: Int, value: Float)
+expect inline fun Fast32Buffer.getI(index: Int): Int
+expect inline fun Fast32Buffer.setI(index: Int, value: Int)
 
 expect class DataBuffer
 expect fun MemBuffer.getData(): DataBuffer

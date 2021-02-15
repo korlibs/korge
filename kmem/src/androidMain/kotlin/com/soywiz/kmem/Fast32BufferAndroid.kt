@@ -1,20 +1,15 @@
+/*
 package com.soywiz.kmem
 
 import java.nio.*
 
-//private val unsafe: Unsafe? = try {
-//    Unsafe::class.java.getDeclaredField("theUnsafe")
-//        .also { it.isAccessible = true }
-//        .get(null) as? Unsafe?
-//} catch (e: Exception) {
-//    throw AssertionError(e)
-//}
+//private val unsafe = com.ironz.unsafe.AndroidUnsafe()
 
 actual typealias Fast32Buffer = ByteBuffer
 
-//actual abstract class Fast32Buffer(@JvmField val bb: ByteBuffer) {
-    //val address = if (bb is DirectBuffer) (bb as DirectBuffer).address() else 0L
-//}
+actual abstract class Fast32Buffer(@JvmField val bb: ByteBuffer) {
+  //val address = if (bb is DirectBuffer) (bb as DirectBuffer).address() else 0L
+}
 
 actual fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer = mem.buffer
 //actual typealias Fast32Buffer = ByteBuffer
@@ -54,3 +49,4 @@ actual inline fun Fast32Buffer.setI(index: Int, value: Int) {
         putInt(index * 4, value)
     //}
 }
+*/

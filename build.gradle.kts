@@ -205,6 +205,8 @@ subprojects {
                 compilations.all {
                     kotlinOptions.jvmTarget = "1.8"
                     kotlinOptions.suppressWarnings = true
+                    kotlinOptions.freeCompilerArgs = listOf("-Xno-param-assertions")
+                    //kotlinOptions.
 
                     // @TODO:
                     // Tested on Kotlin 1.4.30:
