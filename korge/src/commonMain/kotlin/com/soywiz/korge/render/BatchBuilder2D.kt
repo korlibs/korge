@@ -12,7 +12,6 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import kotlin.math.*
 
 private val logger = Logger("BatchBuilder2D")
 
@@ -58,9 +57,11 @@ class BatchBuilder2D constructor(
 
 	internal val vertices = FBuffer.alloc(6 * 4 * maxVertices)
     internal val indices = FBuffer.alloc(2 * maxIndices)
-    val indicesI16 = indices.i16
-    val verticesI32 = vertices.i32
-    val verticesF32 = vertices.f32
+    private val indicesI16 = indices.i16
+    private val verticesI32 = vertices.i32
+    private val verticesF32 = vertices.f32
+    private val verticesData = vertices.data
+    private val verticesFast32 = vertices.fast32
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
@@ -151,14 +152,33 @@ class BatchBuilder2D constructor(
 
 	// @TODO: copy data from TexturedVertexArray
 	fun addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: RGBA, colorAdd: ColorAdd) {
-		verticesF32[vertexPos++] = x
-		verticesF32[vertexPos++] = y
-		verticesF32[vertexPos++] = u
-		verticesF32[vertexPos++] = v
-		verticesI32[vertexPos++] = colorMul.value
-		verticesI32[vertexPos++] = colorAdd.value
-		vertexCount++
+        _addVertex(x, y, u, v, colorMul.value, colorAdd.value)
 	}
+
+    fun _addVertex(x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int) {
+        vertexPos += _addVertex(verticesFast32, vertexPos, x, y, u, v, colorMul, colorAdd)
+        vertexCount++
+    }
+
+    fun _addVertex(vd: Fast32Buffer, vp: Int, x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int): Int {
+        vd.setF(vp + 0, x)
+        vd.setF(vp + 1, y)
+        vd.setF(vp + 2, u)
+        vd.setF(vp + 3, v)
+        vd.setI(vp + 4, colorMul)
+        vd.setI(vp + 5, colorAdd)
+        return 6
+    }
+
+    fun _addVertex(f32: Float32Buffer, i32: Int32Buffer, vp: Int, x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int): Int {
+        f32[vp + 0] = x
+        f32[vp + 1] = y
+        f32[vp + 2] = u
+        f32[vp + 3] = v
+        i32[vp + 4] = colorMul
+        i32[vp + 5] = colorAdd
+        return 6
+    }
 
 	fun addIndex(idx: Int) {
 		indicesI16[indexPos++] = idx.toShort()
@@ -256,45 +276,23 @@ class BatchBuilder2D constructor(
         colorMul: Int,
         colorAdd: Int,
     ) {
-        //addVertex(x0, y0, tx0, ty0, colorMul, colorAdd)
-        //addVertex(x1, y1, tx1, ty0, colorMul, colorAdd)
-        //addVertex(x2, y2, tx1, ty1, colorMul, colorAdd)
-        //addVertex(x3, y3, tx0, ty1, colorMul, colorAdd)
+        //val vd = verticesData
+        var vp = vertexPos
 
-        val vp = vertexPos
-        val f32 = verticesF32
-        val i32 = verticesI32
-
-        f32[vp + (0 * 6) + 0] = x0
-        f32[vp + (0 * 6) + 1] = y0
-        f32[vp + (0 * 6) + 2] = tx0
-        f32[vp + (0 * 6) + 3] = ty0
-        i32[vp + (0 * 6) + 4] = colorMul
-        i32[vp + (0 * 6) + 5] = colorAdd
-
-        f32[vp + (1 * 6) + 0] = x1
-        f32[vp + (1 * 6) + 1] = y1
-        f32[vp + (1 * 6) + 2] = tx1
-        f32[vp + (1 * 6) + 3] = ty0
-        i32[vp + (1 * 6) + 4] = colorMul
-        i32[vp + (1 * 6) + 5] = colorAdd
-
-        f32[vp + (2 * 6) + 0] = x2
-        f32[vp + (2 * 6) + 1] = y2
-        f32[vp + (2 * 6) + 2] = tx1
-        f32[vp + (2 * 6) + 3] = ty1
-        i32[vp + (2 * 6) + 4] = colorMul
-        i32[vp + (2 * 6) + 5] = colorAdd
-
-        f32[vp + (3 * 6) + 0] = x3
-        f32[vp + (3 * 6) + 1] = y3
-        f32[vp + (3 * 6) + 2] = tx0
-        f32[vp + (3 * 6) + 3] = ty1
-        i32[vp + (3 * 6) + 4] = colorMul
-        i32[vp + (3 * 6) + 5] = colorAdd
+        val vd = verticesFast32
+        vp += _addVertex(vd, vp, x0, y0, tx0, ty0, colorMul, colorAdd)
+        vp += _addVertex(vd, vp, x1, y1, tx1, ty0, colorMul, colorAdd)
+        vp += _addVertex(vd, vp, x2, y2, tx1, ty1, colorMul, colorAdd)
+        vp += _addVertex(vd, vp, x3, y3, tx0, ty1, colorMul, colorAdd)
+        //val vf = verticesF32
+        //val vi = verticesI32
+        //vp += _addVertex(vf, vi, vp, x0, y0, tx0, ty0, colorMul, colorAdd)
+        //vp += _addVertex(vf, vi, vp, x1, y1, tx1, ty0, colorMul, colorAdd)
+        //vp += _addVertex(vf, vi, vp, x2, y2, tx1, ty1, colorMul, colorAdd)
+        //vp += _addVertex(vf, vi, vp, x3, y3, tx0, ty1, colorMul, colorAdd)
 
         vertexCount += 4
-        vertexPos += 6 * 4
+        vertexPos = vp
     }
 
     fun addQuadVerticesFastRotated(
