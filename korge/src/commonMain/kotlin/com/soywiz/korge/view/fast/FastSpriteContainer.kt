@@ -90,7 +90,8 @@ class FastSpriteContainer : View() {
             )
         }
         bb.vertexPos = vp
-        bb.vertexCount += count * 4
+        bb.vertexCount = count * 4
+        bb.indexPos = count * 6
     }
 
     private fun flush(bb: BatchBuilder2D) {
