@@ -57,7 +57,7 @@ class FastSpriteContainer : View() {
             //var batchCount = 0
             //var spriteCount = 0
             //for (m in 0 until sprites.size step bb.maxQuads) { // @TODO: Not optimized on Kotlin/JS
-            for (m2 in 0 until sprites.size / bb.maxQuads) {
+            for (m2 in 0 until (sprites.size divCeil bb.maxQuads)) {
                 val m = m2 * bb.maxQuads
                 //batchCount++
                 bb.indexPos = realIndexPos
@@ -99,4 +99,10 @@ class FastSpriteContainer : View() {
     private fun flush(bb: BatchBuilder2D) {
         bb.flush(uploadVertices = true, uploadIndices = false)
     }
+}
+
+private infix fun Int.divCeil(other: Int): Int {
+    val res = this / other
+    if (this % other != 0) return res + 1
+    return res
 }
