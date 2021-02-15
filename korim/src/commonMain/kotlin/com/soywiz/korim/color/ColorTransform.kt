@@ -53,7 +53,7 @@ data class ColorTransform(
 
     var colorMul: RGBA
         get() = computeColors()._colorMul
-        set(v) = run {
+        set(v) {
             val mR = v.rd
             val mG = v.gd
             val mB = v.bd

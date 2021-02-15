@@ -5,28 +5,53 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
-// @TODO: We should convert this into an open class, then put those immutable fields in the constructor so accessing them doesn't require virtualization
-interface BmpSlice : Extra, Resourceable<BmpSlice> {
+abstract class BmpSlice(
+    val bmpBase: Bitmap,
+    val bounds: RectangleInt,
+    val name: String? = null,
+    val rotated: Boolean = false
+) : Extra, Resourceable<BmpSlice> {
     override fun getOrNull() = this
     override suspend fun get() = this
+    open val bmp: Bitmap = bmpBase
+    val bmpWidth = bmpBase.width
+    val bmpHeight = bmpBase.width
 
-	val name: String?
-	var parent: Any?
-	val bmp: Bitmap
-	val tl_x: Float
-	val tl_y: Float
-	val tr_x: Float
-	val tr_y: Float
-	val bl_x: Float
-	val bl_y: Float
-	val br_x: Float
-	val br_y: Float
-	val left: Int
-	val top: Int
-	val width: Int
-	val height: Int
-	val rotated: Boolean
-	val rotatedAngle: Int
+    private val tl = Point(left.toFloat() / bmpBase.width.toFloat(), top.toFloat() / bmpBase.height.toFloat())
+    private val br = Point(right.toFloat() / bmpBase.width.toFloat(), bottom.toFloat() / bmpBase.height.toFloat())
+    private val tr = Point(br.x, tl.y)
+    private val bl = Point(tl.x, br.y)
+
+    private val points = arrayOf(tl, tr, br, bl)
+    private val offset = if (rotated) 1 else 0
+
+    private val p0 = points.getCyclic(offset + 0)
+    private val p1 = points.getCyclic(offset + 1)
+    private val p2 = points.getCyclic(offset + 2)
+    private val p3 = points.getCyclic(offset + 3)
+
+    val left: Int get() = bounds.left
+    val top: Int get() = bounds.top
+    val width: Int get() = bounds.width
+    val height: Int get() = bounds.height
+    val right get() = bounds.right
+    val bottom get() = bounds.bottom
+
+	var parent: Any? = null
+
+    val tl_x = p0.x.toFloat()
+    val tl_y = p0.y.toFloat()
+
+    val tr_x = p1.x.toFloat()
+    val tr_y = p1.y.toFloat()
+
+    val br_x = p2.x.toFloat()
+    val br_y = p2.y.toFloat()
+
+    val bl_x = p3.x.toFloat()
+    val bl_y = p3.y.toFloat()
+
+    val rotatedAngle: Int = 0
 }
 
 val BmpSlice.nameSure: String get() = name ?: "unknown"
@@ -34,43 +59,10 @@ fun <T : Bitmap> BmpSlice.asBitmapSlice(): BitmapSlice<T> = this as BitmapSlice<
 
 fun BmpSlice.getIntBounds(out: RectangleInt = RectangleInt()) = out.setTo(left, top, width, height)
 
-fun BmpSlice.extract(): Bitmap = bmp.extract(left, top, width, height)
+fun BmpSlice.extract(): Bitmap = bmpBase.extract(left, top, width, height)
 
-class BitmapSlice<out T : Bitmap>(override val bmp: T, val bounds: RectangleInt, override val name: String? = null, rotated: Boolean = false) : BmpSlice, Extra by Extra.Mixin() {
+class BitmapSlice<out T : Bitmap>(override val bmp: T, bounds: RectangleInt, name: String? = null, rotated: Boolean = false) : BmpSlice(bmp, bounds, name, rotated), Extra by Extra.Mixin() {
 	val premultiplied get() = bmp.premultiplied
-	override var parent: Any? = null
-
-	override val left get() = bounds.left
-	override val top get() = bounds.top
-	val right get() = bounds.right
-	val bottom get() = bounds.bottom
-	override val width get() = bounds.width
-	override val height get() = bounds.height
-
-	private val tl = Point(left.toFloat() / bmp.width.toFloat(), top.toFloat() / bmp.height.toFloat())
-	private val br = Point(right.toFloat() / bmp.width.toFloat(), bottom.toFloat() / bmp.height.toFloat())
-	private val tr = Point(br.x, tl.y)
-	private val bl = Point(tl.x, br.y)
-
-	private val points = arrayOf(tl, tr, br, bl)
-	private val offset = if (rotated) 1 else 0
-
-	private val p0 = points.getCyclic(offset + 0)
-	private val p1 = points.getCyclic(offset + 1)
-	private val p2 = points.getCyclic(offset + 2)
-	private val p3 = points.getCyclic(offset + 3)
-
-	override val tl_x = p0.x.toFloat()
-	override val tl_y = p0.y.toFloat()
-
-	override val tr_x = p1.x.toFloat()
-	override val tr_y = p1.y.toFloat()
-
-	override val br_x = p2.x.toFloat()
-	override val br_y = p2.y.toFloat()
-
-	override val bl_x = p3.x.toFloat()
-	override val bl_y = p3.y.toFloat()
 
 	fun extract(): T = bmp.extract(bounds.x, bounds.y, bounds.width, bounds.height)
 
@@ -95,9 +87,6 @@ class BitmapSlice<out T : Bitmap>(override val bmp: T, val bounds: RectangleInt,
     }
 
     fun withName(name: String? = null)  = BitmapSlice<T>(bmp, bounds, name, rotated)
-
-    override val rotated: Boolean = false
-	override val rotatedAngle: Int = 0
 
 	override fun toString(): String = "BitmapSlice($name:${SizeInt(bounds.width, bounds.height)})"
 }

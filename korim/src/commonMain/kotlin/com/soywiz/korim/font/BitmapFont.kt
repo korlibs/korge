@@ -35,7 +35,7 @@ class BitmapFont(
     val base: Double,
     val glyphs: IntMap<Glyph>,
     val kernings: IntMap<Kerning>,
-    val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmp ?: Bitmaps.transparent.bmp,
+    val atlas: Bitmap = glyphs.values.iterator().next()?.texture?.bmpBase ?: Bitmaps.transparent.bmpBase,
     override val name: String = "BitmapFont"
 ) : Font, Extra by Extra.Mixin() {
     override fun getOrNull() = this
@@ -138,7 +138,7 @@ class BitmapFont(
 
 	val dummyGlyph by lazy { Glyph(fontSize, -1, Bitmaps.transparent, 0, 0, 0) }
 	val anyGlyph: Glyph by lazy { glyphs[glyphs.keys.iterator().next()] ?: dummyGlyph }
-	val baseBmp: Bitmap by lazy { anyGlyph.texture.bmp }
+	val baseBmp: Bitmap by lazy { anyGlyph.texture.bmpBase }
 
 	operator fun get(charCode: Int): Glyph = glyphs[charCode] ?: glyphs[32] ?: dummyGlyph
 	operator fun get(char: Char): Glyph = this[char.toInt()]
@@ -262,7 +262,7 @@ private suspend fun readBitmapFontTxt(
 		}
 	}
 	return BitmapFont(
-        atlas = textures.values.first().bmp,
+        atlas = textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base ?: lineHeight,
@@ -316,7 +316,7 @@ private suspend fun readBitmapFontXml(
 	}
 
 	return BitmapFont(
-        atlas = textures.values.first().bmp,
+        atlas = textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base,

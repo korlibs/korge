@@ -152,10 +152,10 @@ class Bitmap32(
 	fun draw(src: BitmapSlice<Bitmap32>, dx: Int = 0, dy: Int = 0) = _draw(src, dx, dy, mix = true)
 
 	fun drawUnoptimized(src: BitmapSlice<Bitmap>, dx: Int = 0, dy: Int = 0, mix: Boolean = true) {
-		if (src.bmp is Bitmap32) {
+		if (src.bmpBase is Bitmap32) {
 			_draw(src as BitmapSlice<Bitmap32>, dx, dy, mix = mix)
 		} else {
-			drawUnoptimized(src.bmp, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
+			drawUnoptimized(src.bmpBase, dx, dy, src.left, src.top, src.right, src.bottom, mix = mix)
 		}
 	}
 

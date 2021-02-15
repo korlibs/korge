@@ -14,7 +14,7 @@ class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo 
         val texture = textures[page.fileName]
             ?: error("Can't find '${page.fileName}' in ${textures.keys}")
         val slice = texture.slice(info.frame.rect).let {
-            BitmapSlice(it.bmp, it.bounds, info.name, info.rotated)
+            BitmapSlice(it.bmpBase, it.bounds, info.name, info.rotated)
         }
         val name get() = info.name
         // @TODO: Use name instead
@@ -46,7 +46,7 @@ suspend fun VfsFile.readAtlas(asumePremultiplied: Boolean = false): Atlas {
     val folder = this.parent
     val textures = info.pages.associate {
         it.fileName to folder[it.fileName].readBitmapSlice(premultiplied = !asumePremultiplied).also {
-            if (asumePremultiplied) it.bmp.asumePremultiplied()
+            if (asumePremultiplied) it.bmpBase.asumePremultiplied()
         }
     }
     return Atlas(textures, info)
