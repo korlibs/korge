@@ -6,6 +6,10 @@ import com.soywiz.korio.internal.*
 import kotlin.native.concurrent.SharedImmutable
 
 abstract class Charset(val name: String) {
+    // Just an estimation, might not be accurate, but hopefully will help setting StringBuilder and ByteArrayBuilder to a better initial capacity
+    open fun estimateNumberOfCharactersForBytes(nbytes: Int): Int = nbytes * 2
+    open fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars * 2
+
 	abstract fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int = 0, end: Int = src.length)
 	abstract fun decode(out: StringBuilder, src: ByteArray, start: Int = 0, end: Int = src.size)
 
@@ -51,7 +55,10 @@ abstract class Charset(val name: String) {
 }
 
 open class UTC8CharsetBase(name: String) : Charset(name) {
-	private fun createByte(codePoint: Int, shift: Int): Int = codePoint shr shift and 0x3F or 0x80
+    override fun estimateNumberOfCharactersForBytes(nbytes: Int): Int = nbytes * 2
+    override fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars * 2
+
+    private fun createByte(codePoint: Int, shift: Int): Int = codePoint shr shift and 0x3F or 0x80
 
 	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {
         decodeCodePoints(src, start, end) { codePoint ->
@@ -119,7 +126,12 @@ open class UTC8CharsetBase(name: String) : Charset(name) {
 	}
 }
 
-open class SingleByteCharset(name: String, val conv: String) : Charset(name) {
+abstract class BaseSingleByteCharset(name: String) : Charset(name) {
+    override fun estimateNumberOfCharactersForBytes(nbytes: Int): Int = nbytes
+    override fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars
+}
+
+open class SingleByteCharset(name: String, val conv: String) : BaseSingleByteCharset(name) {
 	val v: IntIntMap = IntIntMap().apply {
 		for (n in 0 until conv.length) this[conv[n].toInt()] = n
 	}
@@ -144,6 +156,9 @@ object ISO_8859_1 : SingleByteCharset("ISO-8859-1", buildString { for (n in 0 un
 expect val UTF8: Charset
 
 class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE")) {
+    override fun estimateNumberOfCharactersForBytes(nbytes: Int): Int = nbytes * 2
+    override fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars * 2
+
 	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
 		for (n in start until end step 2) out.append(src.readS16(n, le).toChar())
 	}
@@ -157,7 +172,7 @@ class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE
 	}
 }
 
-object ASCII : Charset("ASCII") {
+object ASCII : BaseSingleByteCharset("ASCII") {
 	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {
 		for (n in start until end) out.append(src[n].toByte())
 	}
@@ -182,13 +197,13 @@ object Charsets {
 }
 
 fun String.toByteArray(charset: Charset = UTF8): ByteArray {
-	val out = ByteArrayBuilder()
+	val out = ByteArrayBuilder(charset.estimateNumberOfBytesForCharacters(this.length))
 	charset.encode(out, this)
 	return out.toByteArray()
 }
 
 fun ByteArray.toString(charset: Charset): String {
-	val out = StringBuilder()
+	val out = StringBuilder(charset.estimateNumberOfCharactersForBytes(this.size))
 	charset.decode(out, this)
 	return out.toString()
 }
