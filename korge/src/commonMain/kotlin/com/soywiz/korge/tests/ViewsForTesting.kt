@@ -128,6 +128,30 @@ open class ViewsForTesting(
         )
     }
 
+    suspend fun keyDown(key: Key) {
+        keyEvent(KeyEvent.Type.DOWN, key)
+        simulateFrame(count = 2)
+    }
+
+    suspend fun keyUp(key: Key) {
+        keyEvent(KeyEvent.Type.UP, key)
+        simulateFrame(count = 2)
+    }
+
+    private fun keyEvent(type: KeyEvent.Type, key: Key) {
+        gameWindow.dispatch(
+            KeyEvent(
+                type = type,
+                id = 0,
+                key = key,
+                keyCode = 0,
+                shift = false,
+                ctrl = false,
+                alt = false,
+                meta = false
+            )
+        )
+    }
     val View.viewMouse: MouseEvents get() {
         this.mouse.views = views
         return this.mouse

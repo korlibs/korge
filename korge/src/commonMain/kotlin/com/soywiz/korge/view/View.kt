@@ -1400,6 +1400,16 @@ fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     return Cancellable { component.detach() }
 }
 
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
+    val component = object : UpdateComponentWithViews {
+        override val view: View get() = this@addUpdaterWithViews
+        override fun update(views: Views, dt: TimeSpan) {
+            updatable(this@addUpdaterWithViews, views, dt)
+        }
+    }.attach()
+    return Cancellable { component.detach() }
+}
+
 fun <T : View> T.addOptFixedUpdater(time: TimeSpan = TimeSpan.NIL, updatable: T.(dt: TimeSpan) -> Unit): Cancellable = when (time) {
     TimeSpan.NIL -> addUpdater(updatable)
     else -> addFixedUpdater(time) { updatable(time) }
