@@ -109,6 +109,12 @@ actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, s
     val srcBuf = src.buffer
     val dstBuf = dst.buffer
 
+    val overlapping = srcBuf === dstBuf && dstPos > srcPos
+    if (overlapping) {
+        arraycopy(size, srcBuf, srcPos, dstBuf, dstPos, { it, value -> dst[it] = value }, { src[it] })
+        return
+    }
+
     if (!srcBuf.isDirect && !dstBuf.isDirect) {
         System.arraycopy(srcBuf.array(), srcPos, dstBuf.array(), dstPos, size)
         return
@@ -144,6 +150,7 @@ actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, s
         srcBuf.get(dst, dstPos, size)
     }
     srcBuf.position(oldPos)
+    //arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src[it] })
 }
 actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst.sbuffer[it] = value }, { src[it] })
