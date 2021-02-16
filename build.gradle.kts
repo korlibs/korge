@@ -218,7 +218,7 @@ subprojects {
             js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
                 browser {
                     compilations.all {
-                        kotlinOptions.sourceMap = true
+                        //kotlinOptions.sourceMap = true
                         kotlinOptions.suppressWarnings = true
                     }
                     testTask {
@@ -234,7 +234,7 @@ subprojects {
             if (doEnableKotlinNative) {
                 for (target in nativeTargets()) {
                     target.compilations.all {
-                        //kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
+                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
                         kotlinOptions.suppressWarnings = true
                     }
                 }
@@ -243,7 +243,7 @@ subprojects {
             if (doEnableKotlinMobile) {
                 for (target in mobileTargets()) {
                     target.compilations.all {
-                        //kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
+                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
                         kotlinOptions.suppressWarnings = true
                     }
                 }

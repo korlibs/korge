@@ -1,6 +1,8 @@
 package com.soywiz.korge.gradle.targets.native
 
+import com.soywiz.korge.gradle.*
 import org.gradle.api.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import org.jetbrains.kotlin.gradle.tasks.*
@@ -18,3 +20,11 @@ fun KotlinNativeCompilation.getCompileTask(kind: NativeOutputKind, type: NativeB
 }
 
 val KotlinNativeTest.executableFolder get() = executable.parentFile ?: error("Can't get executable folder for KotlinNativeTest")
+
+fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
+    if (project.korge.useMimalloc) {
+        compilations.all {
+            it.kotlinOptions.freeCompilerArgs = it.kotlinOptions.freeCompilerArgs + listOf("-Xallocator=mimalloc")
+        }
+    }
+}

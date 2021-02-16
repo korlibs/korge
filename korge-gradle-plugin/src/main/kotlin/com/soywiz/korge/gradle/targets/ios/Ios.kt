@@ -2,7 +2,7 @@ package com.soywiz.korge.gradle.targets.ios
 
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
-import com.soywiz.korge.gradle.targets.desktop.prepareKotlinNativeBootstrap
+import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.js.node_modules
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
@@ -59,6 +59,7 @@ fun Project.configureNativeIos() {
 
 	kotlin.apply {
 		for (target in iosTargets) {
+            target.configureKotlinNativeTarget(project)
 			//for (target in listOf(iosX64())) {
 			target.also { target ->
 				//target.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)

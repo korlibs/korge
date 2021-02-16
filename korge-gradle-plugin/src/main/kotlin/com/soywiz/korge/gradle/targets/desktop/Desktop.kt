@@ -9,6 +9,7 @@ import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.native.tasks.*
 import java.io.*
@@ -81,6 +82,7 @@ fun Project.configureNativeDesktop() {
 	for (preset in DESKTOP_NATIVE_TARGETS) {
         //val target = gkotlin.presets.getAt(preset) as KotlinNativeTargetPreset
 		gkotlin.targets.add((gkotlin.presets.getAt(preset) as AbstractKotlinNativeTargetPreset<*>).createTarget(preset).apply {
+            configureKotlinNativeTarget(project)
             //val target = this
             //val native = gkotlin.sourceSets.createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
             //native.dependsOn(nativeCommon)

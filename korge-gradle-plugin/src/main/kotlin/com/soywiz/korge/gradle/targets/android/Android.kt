@@ -91,12 +91,13 @@ fun Project.configureAndroidIndirect() {
 					ensureParents().writeTextIfChanged(Indenter {
 						line("enableFeaturePreview(\"GRADLE_METADATA\")")
                         line("rootProject.name = ${project.name.quoted}")
-						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureAndroidIndirect.parent?.projectDir?.let {
+						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureAndroidIndirect.parent?.projectDir?.let { projectFile ->
+                            val projectPath = projectFile.absolutePath
 							line("include(\":$parentProjectName\")")
-							line("project(\":$parentProjectName\").projectDir = file(\'$it\')")
+							line("project(\":$parentProjectName\").projectDir = file(\'${projectPath.quoted}\')")
 							resolvedModules.forEach { (name, path) ->
 								line("include(\"$path\")")
-								line("project(\"$path\").projectDir = file(\'$it/$name\')")
+								line("project(\"$path\").projectDir = file(\'${"$projectPath/$name".quoted}\')")
 							}
 						}
 					})
