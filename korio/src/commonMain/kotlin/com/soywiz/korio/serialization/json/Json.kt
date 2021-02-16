@@ -30,7 +30,7 @@ object Json {
 					'}' -> break@obj; ',' -> continue@obj; else -> s.unread()
 				}
 				val key = parse(s, context) as String
-				s.skipSpaces().expect(':')
+				s.skipSpaces().skipExpect(':')
 				val value = parse(s, context)
 				this[key] = value
 			}

@@ -635,14 +635,14 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             skipSpaces()
             val id = readCssId()
             skipSpaces()
-            expect(':')
+            skipExpect(':')
             skipSpaces()
             //readStringLit()
             // @TODO: Proper parsing
             val value = readUntil { it == ';' }.trim()
             props[id] = value
             if (!eof) {
-                expect(';')
+                skipExpect(';')
             }
         }
 
