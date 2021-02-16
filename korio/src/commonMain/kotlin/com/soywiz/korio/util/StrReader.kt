@@ -9,7 +9,7 @@ import com.soywiz.korio.internal.*
 import com.soywiz.korio.internal.max2
 
 class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
-    private val tempStringBuilder = StringBuilder(str.length)
+    private val tempCharArray = CharArray(str.length)
 
     companion object {
         fun literals(vararg lits: String): Literals = Literals.fromList(lits.toList().toTypedArray())
@@ -247,8 +247,8 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     }
 
     fun readStringLit(reportErrors: Boolean = true): String {
-        val out = tempStringBuilder
-        out.clear()
+        val out = tempCharArray
+        var outp = 0
         val quotec = read()
         when (quotec) {
             '"', '\'' -> Unit
@@ -259,28 +259,26 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
             when (val c = read()) {
                 '\\' -> {
                     val cc = read()
-                    out.append(
-                        when (cc) {
-                            '\\' -> '\\'; '/' -> '/'; '\'' -> '\''; '"' -> '"'
-                            'b' -> '\b'; 'f' -> '\u000c'; 'n' -> '\n'; 'r' -> '\r'; 't' -> '\t'
-                            'u' -> readFixedSizeInt(4, 16).toChar()
-                            else -> throw IOException("Invalid char '$cc'")
-                        }
-                    )
+                    out[outp++] = when (cc) {
+                        '\\' -> '\\'; '/' -> '/'; '\'' -> '\''; '"' -> '"'
+                        'b' -> '\b'; 'f' -> '\u000c'; 'n' -> '\n'; 'r' -> '\r'; 't' -> '\t'
+                        'u' -> readFixedSizeInt(4, 16).toChar()
+                        else -> throw IOException("Invalid char '$cc'")
+                    }
                 }
                 quotec -> {
                     closed = true
                     break@loop
                 }
                 else -> {
-                    out.append(c)
+                    out[outp++] = c
                 }
             }
         }
         if (!closed && reportErrors) {
             throw RuntimeException("String literal not closed! '${this.str}'")
         }
-        return out.toString()
+        return String_fromCharArray(out, 0, outp)
     }
 
 
@@ -374,7 +372,6 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
         }
         return list
     }
-
 
     fun tryReadId(): String? {
         val start = pos

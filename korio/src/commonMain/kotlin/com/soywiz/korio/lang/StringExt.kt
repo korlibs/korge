@@ -14,7 +14,7 @@ operator fun String.Companion.invoke(arrays: IntArray, offset: Int = 0, size: In
 }
 
 fun String_fromIntArray(arrays: IntArray, offset: Int = 0, size: Int = arrays.size - offset): String = String(arrays, offset, size)
-fun String_fromCharArray(arrays: CharArray, offset: Int = 0, size: Int = arrays.size - offset): String = String(arrays, offset, size)
+fun String_fromCharArray(arrays: CharArray, offset: Int = 0, size: Int = arrays.size - offset): String = arrays.concatToString(offset, offset + size)
 
 ////////////////////////////////////
 ////////////////////////////////////
