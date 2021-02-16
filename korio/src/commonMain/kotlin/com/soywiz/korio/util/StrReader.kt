@@ -9,6 +9,8 @@ import com.soywiz.korio.internal.*
 import com.soywiz.korio.internal.max2
 
 class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
+    private val tempStringBuilder = StringBuilder(str.length)
+
     companion object {
         fun literals(vararg lits: String): Literals = Literals.fromList(lits.toList().toTypedArray())
     }
@@ -245,7 +247,8 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     }
 
     fun readStringLit(reportErrors: Boolean = true): String {
-        val out = StringBuilder(64)
+        val out = tempStringBuilder
+        out.clear()
         val quotec = read()
         when (quotec) {
             '"', '\'' -> Unit
