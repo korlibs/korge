@@ -134,6 +134,7 @@ abstract class View internal constructor(
      * themselves are going to change (like cameras, viewports and the [Stage]).
      */
     interface Reference // View that breaks batching Viewport
+    interface ColorReference // View that breaks batching Viewport
 
     open var hitShape: VectorPath? = null
     open var hitShapes: List<VectorPath>? = null
@@ -577,7 +578,7 @@ abstract class View internal constructor(
                 _requireInvalidateColor = true
                 when {
                     parent != null && parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
-                    parent != null && this !is View.Reference -> _renderColorTransform.setToConcat(
+                    parent != null && this !is View.ColorReference -> _renderColorTransform.setToConcat(
                         _colorTransform,
                         parent!!.renderColorTransform
                     )
