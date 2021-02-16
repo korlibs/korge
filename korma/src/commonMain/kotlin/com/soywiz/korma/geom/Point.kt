@@ -86,19 +86,20 @@ inline fun Point.setToDiv(a: IPoint, s: Number): Point = setToDiv(a, s.toDouble(
 operator fun Point.plusAssign(that: IPoint): Unit = run { setTo(this.x + that.x, this.y + that.y) }
 
 data class Point(
-    //override var x: Double,
-    //override var y: Double
-    override var xf: Float,
-    override var yf: Float
+    override var x: Double,
+    override var y: Double
+    //override var xf: Float,
+    //override var yf: Float
 ) : MutableInterpolable<Point>, Interpolable<Point>, Comparable<IPoint>, IPoint, XY,XYf {
-    constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
-    constructor(x: Int, y: Int) : this(x.toFloat(), y.toFloat())
+    //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
+    constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
+    constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())
 
-    override var x: Double get() = xf.toDouble() ; set(value) { xf = value.toFloat() }
-    override var y: Double get() = yf.toDouble() ; set(value) { yf = value.toFloat() }
+    //override var x: Double get() = xf.toDouble() ; set(value) { xf = value.toFloat() }
+    //override var y: Double get() = yf.toDouble() ; set(value) { yf = value.toFloat() }
 
-    //override var xf: Float get() = x.toFloat() ; set(value) { x = value.toDouble() }
-    //override var yf: Float get() = y.toFloat() ; set(value) { y = value.toDouble() }
+    override var xf: Float get() = x.toFloat() ; set(value) { x = value.toDouble() }
+    override var yf: Float get() = y.toFloat() ; set(value) { y = value.toDouble() }
 
     override fun compareTo(other: IPoint): Int = compare(this.x, this.y, other.x, other.y)
     fun compareTo(other: Point): Int = compare(this.x, this.y, other.x, other.y)

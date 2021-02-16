@@ -197,11 +197,11 @@ abstract class View internal constructor(
     /** Computed [speed] combining all the speeds from ancestors */
     val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
-    private var _scaleXf: Float = 1f
-    private var _scaleYf: Float = 1f
-    private var _skewX: Angle = 0f.radians
-    private var _skewY: Angle = 0f.radians
-    private var _rotation: Angle = 0f.radians
+    private var _scaleX: Double = 1.0
+    private var _scaleY: Double = 1.0
+    private var _skewX: Angle = 0.0.radians
+    private var _skewY: Angle = 0.0.radians
+    private var _rotation: Angle = 0.0.radians
 
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
     var pos = Point()
@@ -210,27 +210,28 @@ abstract class View internal constructor(
             invalidateMatrix()
         }
 
-    var xf: Float
-        get() = ensureTransform().pos.xf
-        set(v) {
-            ensureTransform(); if (pos.xf != v) {
-                pos.xf = v; invalidateMatrix()
-            }
-        }
-
-    var yf: Float
-        get() = ensureTransform().pos.yf
-        set(v) {
-            ensureTransform(); if (pos.yf != v) {
-                pos.yf = v; invalidateMatrix()
-            }
-        }
-
     /** Local X position of this view */
-    var x: Double get() = xf.toDouble() ; set(v) { xf = v.toFloat() }
+    var x: Double
+        get() = ensureTransform().pos.x
+        set(v) {
+            ensureTransform(); if (pos.x != v) {
+                pos.x = v; invalidateMatrix()
+            }
+        }
 
     /** Local Y position of this view */
-    var y: Double get() = yf.toDouble() ; set(v) { yf = v.toFloat() }
+    var y: Double
+        get() = ensureTransform().pos.y
+        set(v) {
+            ensureTransform(); if (pos.y != v) {
+                pos.y = v; invalidateMatrix()
+            }
+        }
+
+    /*
+    var xf: Float get() = x.toFloat() ; set(v) { x = v.toDouble() }
+
+    var yf: Float get() = y.toFloat() ; set(v) { y = v.toDouble() }
 
     var scaleXf: Float
         get() = ensureTransform()._scaleXf
@@ -240,18 +241,23 @@ abstract class View internal constructor(
         get() = ensureTransform()._scaleYf
         set(v) { ensureTransform(); if (_scaleYf != v) { _scaleYf = v; invalidateMatrix() } }
 
-    var scalef: Float
-        get() = (scaleXf + scaleYf) / 2f
-        set(v) { scaleXf = v; scaleYf = v }
+    var scalef: Float get() = scale.toFloat() ; set(v) { scale = v.toDouble() }
+    */
 
     /** Local scaling in the X axis of this view */
-    var scaleX: Double get() = scaleXf.toDouble() ; set(v) { scaleXf = v.toFloat() }
+    var scaleX: Double
+        get() = ensureTransform()._scaleX
+        set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
 
     /** Local scaling in the Y axis of this view */
-    var scaleY: Double get() = scaleYf.toDouble() ; set(v) { scaleYf = v.toFloat() }
+    var scaleY: Double
+        get() = ensureTransform()._scaleY
+        set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
-    var scale: Double get() = scalef.toDouble() ; set(v) { scalef = v.toFloat() }
+    var scale: Double
+        get() = (scaleX + scaleY) / 2f
+        set(v) { scaleX = v; scaleY = v }
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
@@ -398,8 +404,8 @@ abstract class View internal constructor(
             val t = tempTransform.setMatrix(this._localMatrix)
             this.pos.xf = t.xf
             this.pos.yf = t.yf
-            this._scaleXf = t.scaleXf
-            this._scaleYf = t.scaleYf
+            this._scaleX = t.scaleX
+            this._scaleY = t.scaleY
             this._skewX = t.skewX
             this._skewY = t.skewY
             this._rotation = t.rotation
@@ -465,7 +471,7 @@ abstract class View internal constructor(
     fun _setTransform(t: Matrix.Transform) {
         //transform.toMatrix(_localMatrix)
         pos.xf = t.xf; pos.yf = t.yf
-        _scaleXf = t.scaleXf; _scaleYf = t.scaleYf
+        _scaleX = t.scaleX; _scaleY = t.scaleY
         _skewX = t.skewY; _skewY = t.skewY
         _rotation = t.rotation
     }
@@ -488,7 +494,7 @@ abstract class View internal constructor(
             if (!validLocalMatrix) {
                 validLocalMatrix = true
                 _requireInvalidate = true
-                _localMatrix.setTransform(xf, yf, scaleXf, scaleYf, rotation, skewX, skewY)
+                _localMatrix.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
             }
             return _localMatrix
         }
@@ -1013,10 +1019,10 @@ abstract class View internal constructor(
      */
     open fun reset() {
         _localMatrix.identity()
-        pos.setTo(0f, 0f)
-        _scaleXf = 1f; _scaleYf = 1f
-        _skewX = 0f.radians; _skewY = 0f.radians
-        _rotation = 0f.radians
+        pos.setTo(0.0, 0.0)
+        _scaleX = 1.0; _scaleY = 1.0
+        _skewX = 0.0.radians; _skewY = 0.0.radians
+        _rotation = 0.0.radians
         validLocalMatrix = false
         invalidate()
     }

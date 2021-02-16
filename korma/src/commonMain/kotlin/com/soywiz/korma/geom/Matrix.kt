@@ -9,59 +9,46 @@ import kotlin.jvm.*
 import kotlin.math.*
 
 data class Matrix(
-    var af: Float = 1f,
-    var bf: Float = 0f,
-    var cf: Float = 0f,
-    var df: Float = 1f,
-    var txf: Float = 0f,
-    var tyf: Float = 0f
+    var a: Double = 1.0,
+    var b: Double = 0.0,
+    var c: Double = 0.0,
+    var d: Double = 1.0,
+    var tx: Double = 0.0,
+    var ty: Double = 0.0
 ) : MutableInterpolable<Matrix>, Interpolable<Matrix> {
-    //@PublishedApi internal val data: FloatArray = FloatArray(6)
-    //override fun hashCode(): Int = data.contentHashCode()
-    //override fun equals(other: Any?): Boolean = (other is Matrix) && (this.data.contentEquals(other.data))
-    //fun copy() = Matrix().copyFrom(this)
-
-    //var af: Float get() = data[0] ; set(value) { data[0] = value }
-    //var bf: Float get() = data[1] ; set(value) { data[1] = value }
-    //var cf: Float get() = data[2] ; set(value) { data[2] = value }
-    //var df: Float get() = data[3] ; set(value) { data[3] = value }
-    //var txf: Float get() = data[4] ; set(value) { data[4] = value }
-    //var tyf: Float get() = data[5] ; set(value) { data[5] = value }
-
-    var a: Double get() = af.toDouble() ; set(value) { af = value.toFloat() }
-    var b: Double get() = bf.toDouble() ; set(value) { bf = value.toFloat() }
-    var c: Double get() = cf.toDouble() ; set(value) { cf = value.toFloat() }
-    var d: Double get() = df.toDouble() ; set(value) { df = value.toFloat() }
-    var tx: Double get() = txf.toDouble() ; set(value) { txf = value.toFloat() }
-    var ty: Double get() = tyf.toDouble() ; set(value) { tyf = value.toFloat() }
-
     companion object {
-        operator fun invoke(
-            a: Double,
-            b: Double = 0.0,
-            c: Double = 0.0,
-            d: Double = 1.0,
-            tx: Double = 0.0,
-            ty: Double = 0.0,
-        ) = Matrix().setTo(a, b, c, d, tx, ty)
-
-        //operator fun invoke(
-        //    a: Float,
-        //    b: Float = 0f,
-        //    c: Float = 0f,
-        //    d: Float = 1f,
-        //    tx: Float = 0f,
-        //    ty: Float = 0f
-        //) = Matrix(true).setTo(a, b, c, d, tx, ty)
-
-        operator fun invoke() = Matrix(1f, 0f, 0f, 1f, 0f, 0f)
+        inline operator fun invoke(a: Float, b: Float = 0f, c: Float = 0f, d: Float = 1f, tx: Float = 0f, ty: Float = 0f) =
+            Matrix(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
         inline operator fun invoke(a: Int, b: Int = 0, c: Int = 0, d: Int = 1, tx: Int = 0, ty: Int = 0) =
-            Matrix(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
+            Matrix(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
         operator fun invoke(m: Matrix, out: Matrix = Matrix()): Matrix = out.copyFrom(m)
     }
 
+    var af: Float
+        get() = a.toFloat()
+        set(value) { a = value.toDouble() }
+
+    var bf: Float
+        get() = b.toFloat()
+        set(value) { b = value.toDouble() }
+
+    var cf: Float
+        get() = c.toFloat()
+        set(value) { c = value.toDouble() }
+
+    var df: Float
+        get() = d.toFloat()
+        set(value) { d = value.toDouble() }
+
+    var txf: Float
+        get() = tx.toFloat()
+        set(value) { tx = value.toDouble() }
+
+    var tyf: Float
+        get() = ty.toFloat()
+        set(value) { ty = value.toDouble() }
 
     enum class Type(val id: Int, val hasRotation: Boolean, val hasScale: Boolean, val hasTranslation: Boolean) {
         IDENTITY(1, hasRotation = false, hasScale = false, hasTranslation = false),
@@ -72,9 +59,9 @@ data class Matrix(
     }
 
     fun getType(): Type {
-        val hasRotation = bf != 0f || cf != 0f
-        val hasScale = af != 1f || df != 1f
-        val hasTranslation = txf != 0f || tyf != 0f
+        val hasRotation = b != 0.0 || c != 0.0
+        val hasScale = a != 1.0 || d != 1.0
+        val hasTranslation = tx != 0.0 || ty != 0.0
 
         return when {
             hasRotation -> Type.COMPLEX
@@ -85,158 +72,141 @@ data class Matrix(
         }
     }
 
-    fun setTo(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double): Matrix =
-        setTo(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
+    fun setTo(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double): Matrix = this.apply {
+        this.a = a
+        this.b = b
+        this.c = c
+        this.d = d
+        this.tx = tx
+        this.ty = ty
+    }
+    fun setTo(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
+    fun setTo(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
-    fun setTo(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float): Matrix {
-        this.af = a
-        this.bf = b
-        this.cf = c
-        this.df = d
-        this.txf = tx
-        this.tyf = ty
+    fun copyFrom(that: Matrix?): Matrix {
+        if (that != null) {
+            setTo(that.a, that.b, that.c, that.d, that.tx, that.ty)
+        } else {
+            identity()
+        }
         return this
     }
 
-    fun setTo(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int): Matrix =
-        setTo(a.toFloat(), b.toFloat(), c.toFloat(), d.toFloat(), tx.toFloat(), ty.toFloat())
-
-    fun copyFrom(that: Matrix?): Matrix =
-        if (that != null) setTo(that.af, that.bf, that.cf, that.df, that.txf, that.tyf) else identity()
-
-    fun rotate(angle: Angle): Matrix {
-        val theta = angle.radiansf
+    fun rotate(angle: Angle) = this.apply {
+        val theta = angle.radians
         val cos = cos(theta)
         val sin = sin(theta)
 
-        val a1 = af * cos - bf * sin
-        bf = (af * sin + bf * cos)
-        af = a1
-        val c1 = cf * cos - df * sin
-        df = (cf * sin + df * cos)
-        cf = c1
-        val tx1 = txf * cos - tyf * sin
-        tyf = (txf * sin + tyf * cos)
-        txf = tx1
+        val a1 = a * cos - b * sin
+        b = (a * sin + b * cos)
+        a = a1
 
-        return this
+        val c1 = c * cos - d * sin
+        d = (c * sin + d * cos)
+        c = c1
+
+        val tx1 = tx * cos - ty * sin
+        ty = (tx * sin + ty * cos)
+        tx = tx1
     }
 
     fun skew(skewX: Angle, skewY: Angle): Matrix {
-        val sinX = sinf(skewX)
-        val cosX = cosf(skewX)
-        val sinY = sinf(skewY)
-        val cosY = cosf(skewY)
+        val sinX = sin(skewX)
+        val cosX = cos(skewX)
+        val sinY = sin(skewY)
+        val cosY = cos(skewY)
 
         return this.setTo(
-            af * cosY - bf * sinX,
-            af * sinY + bf * cosX,
-            cf * cosY - df * sinX,
-            cf * sinY + df * cosX,
-            txf * cosY - tyf * sinX,
-            txf * sinY + tyf * cosX
+            a * cosY - b * sinX,
+            a * sinY + b * cosX,
+            c * cosY - d * sinX,
+            c * sinY + d * cosX,
+            tx * cosY - ty * sinX,
+            tx * sinY + ty * cosX
         )
     }
 
-    fun scale(sx: Double, sy: Double = sx) = scale(sx.toFloat(), sy.toFloat())
-    fun scale(sx: Float, sy: Float = sx) = setTo(af * sx, bf * sx, cf * sy, df * sy, txf * sx, tyf * sy)
-    fun scale(sx: Int, sy: Int = sx) = scale(sx.toFloat(), sy.toFloat())
+    fun scale(sx: Double, sy: Double = sx) = setTo(a * sx, b * sx, c * sy, d * sy, tx * sx, ty * sy)
+    fun scale(sx: Float, sy: Float = sx) = scale(sx.toDouble(), sy.toDouble())
+    fun scale(sx: Int, sy: Int = sx) = scale(sx.toDouble(), sy.toDouble())
 
-    fun prescale(sx: Double, sy: Double = sx) = prescale(sx.toFloat(), sy.toFloat())
-    fun prescale(sx: Float, sy: Float = sx) = setTo(af * sx, bf * sx, cf * sy, df * sy, txf, tyf)
+    fun prescale(sx: Double, sy: Double = sx) = setTo(a * sx, b * sx, c * sy, d * sy, tx, ty)
+    fun prescale(sx: Float, sy: Float = sx) = prescale(sx.toDouble(), sy.toDouble())
     fun prescale(sx: Int, sy: Int = sx) = prescale(sx.toDouble(), sy.toDouble())
 
-    fun translate(dx: Double, dy: Double): Matrix = translate(dx.toFloat(), dy.toFloat())
-    fun translate(dx: Float, dy: Float): Matrix {
-        this.txf += dx
-        this.tyf += dy
-        return this
-    }
-    fun translate(dx: Int, dy: Int) = translate(dx.toFloat(), dy.toFloat())
+    fun translate(dx: Double, dy: Double) = this.apply { this.tx += dx; this.ty += dy }
+    fun translate(dx: Float, dy: Float) = translate(dx.toDouble(), dy.toDouble())
+    fun translate(dx: Int, dy: Int) = translate(dx.toDouble(), dy.toDouble())
 
-    fun pretranslate(dx: Double, dy: Double): Matrix = pretranslate(dx.toFloat(), dy.toFloat())
-
-    fun pretranslate(dx: Float, dy: Float): Matrix {
-        txf += af * dx + cf * dy
-        tyf += bf * dx + df * dy
-        return this
-    }
+    fun pretranslate(dx: Double, dy: Double) = this.apply { tx += a * dx + c * dy; ty += b * dx + d * dy }
+    fun pretranslate(dx: Float, dy: Float) = pretranslate(dx.toDouble(), dy.toDouble())
     fun pretranslate(dx: Int, dy: Int) = pretranslate(dx.toDouble(), dy.toDouble())
 
-    fun prerotate(angle: Angle): Matrix {
+    fun prerotate(angle: Angle) = this.apply {
         val m = Matrix()
         m.rotate(angle)
         this.premultiply(m)
-        return this
     }
 
-    fun preskew(skewX: Angle, skewY: Angle): Matrix {
+    fun preskew(skewX: Angle, skewY: Angle) = this.apply {
         val m = Matrix()
         m.skew(skewX, skewY)
         this.premultiply(m)
-        return this
     }
 
-    fun premultiply(m: Matrix) = this.premultiply(m.af, m.bf, m.cf, m.df, m.txf, m.tyf)
+    fun premultiply(m: Matrix) = this.premultiply(m.a, m.b, m.c, m.d, m.tx, m.ty)
     fun postmultiply(m: Matrix) = multiply(this, m)
 
-    fun premultiply(la: Double, lb: Double, lc: Double, ld: Double, ltx: Double, lty: Double): Matrix = setTo(la.toFloat(), lb.toFloat(), lc.toFloat(), ld.toFloat(), ltx.toFloat(), lty.toFloat())
-
-    fun premultiply(la: Float, lb: Float, lc: Float, ld: Float, ltx: Float, lty: Float): Matrix = setTo(
-        la * af + lb * cf,
-        la * bf + lb * df,
-        lc * af + ld * cf,
-        lc * bf + ld * df,
-        ltx * af + lty * cf + txf,
-        ltx * bf + lty * df + tyf
+    fun premultiply(la: Double, lb: Double, lc: Double, ld: Double, ltx: Double, lty: Double): Matrix = setTo(
+        la * a + lb * c,
+        la * b + lb * d,
+        lc * a + ld * c,
+        lc * b + ld * d,
+        ltx * a + lty * c + tx,
+        ltx * b + lty * d + ty
     )
-
-    fun premultiply(la: Int, lb: Int, lc: Int, ld: Int, ltx: Int, lty: Int): Matrix =
-        premultiply(la.toFloat(), lb.toFloat(), lc.toFloat(), ld.toFloat(), ltx.toFloat(), lty.toFloat())
+    fun premultiply(la: Float, lb: Float, lc: Float, ld: Float, ltx: Float, lty: Float): Matrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
+    fun premultiply(la: Int, lb: Int, lc: Int, ld: Int, ltx: Int, lty: Int): Matrix = premultiply(la.toDouble(), lb.toDouble(), lc.toDouble(), ld.toDouble(), ltx.toDouble(), lty.toDouble())
 
     fun multiply(l: Matrix, r: Matrix): Matrix = setTo(
-        l.af * r.af + l.bf * r.cf,
-        l.af * r.bf + l.bf * r.df,
-        l.cf * r.af + l.df * r.cf,
-        l.cf * r.bf + l.df * r.df,
-        l.txf * r.af + l.tyf * r.cf + r.txf,
-        l.txf * r.bf + l.tyf * r.df + r.tyf,
+        l.a * r.a + l.b * r.c,
+        l.a * r.b + l.b * r.d,
+        l.c * r.a + l.d * r.c,
+        l.c * r.b + l.d * r.d,
+        l.tx * r.a + l.ty * r.c + r.tx,
+        l.tx * r.b + l.ty * r.d + r.ty
     )
 
     /** Transform point without translation */
     fun deltaTransformPoint(point: IPoint, out: Point = Point()) = deltaTransformPoint(point.x, point.y, out)
-    fun deltaTransformPoint(x: Float, y: Float, out: Point = Point()): Point {
-        out.xf = deltaTransformX(x, y)
-        out.yf = deltaTransformY(x, y)
+    fun deltaTransformPoint(x: Float, y: Float, out: Point = Point()): Point = deltaTransformPoint(x.toDouble(), y.toDouble(), out)
+    fun deltaTransformPoint(x: Double, y: Double, out: Point = Point()): Point {
+        out.x = deltaTransformX(x, y)
+        out.y = deltaTransformY(x, y)
         return out
     }
-
-    fun deltaTransformPoint(x: Double, y: Double, out: Point = Point()): Point = deltaTransformPoint(x.toFloat(), y.toFloat(), out)
 
     fun deltaTransformX(x: Double, y: Double): Double = (x * a) + (y * c)
     fun deltaTransformY(x: Double, y: Double): Double = (x * b) + (y * d)
 
-    fun deltaTransformX(x: Float, y: Float): Float = (x * af) + (y * cf)
-    fun deltaTransformY(x: Float, y: Float): Float = (x * bf) + (y * df)
-
-    fun identity() = setTo(1f, 0f, 0f, 1f, 0f, 0f)
+    fun identity() = setTo(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 
     fun isIdentity() = getType() == Type.IDENTITY
 
     fun invert(matrixToInvert: Matrix = this): Matrix {
         val src = matrixToInvert
         val dst = this
-        val norm = src.af * src.df - src.bf * src.cf
+        val norm = src.a * src.d - src.b * src.c
 
-        if (norm == 0f) {
-            dst.setTo(0f, 0f, 0f, 0f, -src.txf, -src.tyf)
+        if (norm == 0.0) {
+            dst.setTo(0.0, 0.0, 0.0, 0.0, -src.tx, -src.ty)
         } else {
-            val inorm = 1f / norm
-            val d = src.af * inorm
-            val a = src.df * inorm
-            val b = src.bf * -inorm
-            val c = src.cf * -inorm
-            dst.setTo(a, b, c, d, -a * src.txf - c * src.tyf, -b * src.txf - d * src.tyf)
+            val inorm = 1.0 / norm
+            val d = src.a * inorm
+            val a = src.d * inorm
+            val b = src.b * -inorm
+            val c = src.c * -inorm
+            dst.setTo(a, b, c, d, -a * src.tx - c * src.ty, -b * src.tx - d * src.ty)
         }
 
         return this
@@ -254,23 +224,13 @@ data class Matrix(
         rotation: Angle,
         skewX: Angle,
         skewY: Angle
-    ): Matrix = setTransform(x.toFloat(), y.toFloat(), scaleX.toFloat(), scaleY.toFloat(), rotation, skewX, skewY)
-
-    fun setTransform(
-        x: Float,
-        y: Float,
-        scaleX: Float,
-        scaleY: Float,
-        rotation: Angle,
-        skewX: Angle,
-        skewY: Angle
     ): Matrix {
-        if (skewX == 0f.radians && skewY == 0f.radians) {
-            if (rotation == 0f.radians) {
-                this.setTo(scaleX, 0f, 0f, scaleY, x, y)
+        if (skewX == 0.0.radians && skewY == 0.0.radians) {
+            if (rotation == 0.radians) {
+                this.setTo(scaleX, 0.0, 0.0, scaleY, x, y)
             } else {
-                val cos = cosf(rotation)
-                val sin = sinf(rotation)
+                val cos = cos(rotation)
+                val sin = sin(rotation)
                 this.setTo(cos * scaleX, sin * scaleY, -sin * scaleX, cos * scaleY, x, y)
             }
         } else {
@@ -282,8 +242,9 @@ data class Matrix(
         }
         return this
     }
+    fun setTransform(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Angle, skewY: Angle): Matrix = setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
-    fun clone() = Matrix(af, bf, cf, df, txf, tyf)
+    fun clone() = Matrix(a, b, c, d, tx, ty)
 
     operator fun times(that: Matrix): Matrix = Matrix().multiply(this, that)
 
@@ -292,7 +253,6 @@ data class Matrix(
     // Transform points
     fun transform(p: IPoint, out: Point = Point()): Point = transform(p.x, p.y, out)
     fun transform(px: Double, py: Double, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
-
     fun transform(px: Float, py: Float, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
     fun transform(px: Int, py: Int, out: Point = Point()): Point = out.setTo(transformX(px, py), transformY(px, py))
 
@@ -306,13 +266,13 @@ data class Matrix(
     fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
     fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
 
-    fun transformXf(px: Float, py: Float): Float = this.af * px + this.cf * py + this.txf
-    fun transformXf(px: Double, py: Double): Float = transformXf(px.toFloat(), py.toFloat())
-    fun transformXf(px: Int, py: Int): Float = transformXf(px.toFloat(), py.toFloat())
+    fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
+    fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
+    fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
 
-    fun transformYf(px: Float, py: Float): Float = this.df * py + this.bf * px + this.tyf
-    fun transformYf(px: Double, py: Double): Float = transformYf(px.toFloat(), py.toFloat())
-    fun transformYf(px: Int, py: Int): Float = transformYf(px.toFloat(), py.toFloat())
+    fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
+    fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
+    fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 
     @Suppress("DuplicatedCode")
     fun transformRectangle(rectangle: Rectangle, delta: Boolean = false): Unit {
@@ -323,10 +283,10 @@ data class Matrix(
         val tx = if (delta) 0f else this.txf
         val ty = if (delta) 0f else this.tyf
 
-        val x = rectangle.x.toFloat()
-        val y = rectangle.y.toFloat()
-        val xMax = x + rectangle.width.toFloat()
-        val yMax = y + rectangle.height.toFloat()
+        val x = rectangle.x
+        val y = rectangle.y
+        val xMax = x + rectangle.width
+        val yMax = y + rectangle.height
 
         var x0 = a * x + c * y + tx
         var y0 = b * x + d * y + ty
@@ -337,7 +297,7 @@ data class Matrix(
         var x3 = a * x + c * yMax + tx
         var y3 = b * x + d * yMax + ty
 
-        var tmp = 0f
+        var tmp = 0.0
 
         if (x0 > x1) {
             tmp = x0
@@ -350,7 +310,7 @@ data class Matrix(
             x3 = tmp
         }
 
-        rectangle.x = floor(if (x0 < x2) x0 else x2).toDouble()
+        rectangle.x = floor(if (x0 < x2) x0 else x2)
         rectangle.width = ceil((if (x1 > x3) x1 else x3) - rectangle.x)
 
         if (y0 > y1) {
@@ -364,9 +324,10 @@ data class Matrix(
             y3 = tmp
         }
 
-        rectangle.y = floor(if (y0 < y2) y0 else y2).toDouble()
+        rectangle.y = floor(if (y0 < y2) y0 else y2)
         rectangle.height = ceil((if (y1 > y3) y1 else y3) - rectangle.y)
     }
+
 
 
     fun copyFromArray(value: FloatArray, offset: Int = 0): Matrix = setTo(
@@ -380,153 +341,103 @@ data class Matrix(
     )
 
     data class Transform(
-        //dummy: Boolean
-        override var xf: Float = 0f,
-        override var yf: Float = 0f,
-        var scaleXf: Float = 1f,
-        var scaleYf: Float = 1f,
-        var skewXRadiansf: Float = 0f,
-        var skewYRadiansf: Float = 0f,
-        var rotationRadiansf: Float = 0f,
+        override var x: Double = 0.0, override var y: Double = 0.0,
+        var scaleX: Double = 1.0, var scaleY: Double = 1.0,
+        var skewX: Angle = 0.radians, var skewY: Angle = 0.radians,
+        var rotation: Angle = 0.radians
     ) : MutableInterpolable<Transform>, Interpolable<Transform>, XY, XYf {
-        //override fun equals(other: Any?): Boolean = (other is Transform) && data.contentEquals(other.data)
-        //override fun hashCode(): Int = data.contentHashCode()
 
-        //@PublishedApi
-        //internal val data = FloatArray(7)
+        override var xf: Float
+            get() = x.toFloat()
+            set(value) { x = value.toDouble() }
 
-        //override var xf: Float get() = data[0] ; set(value) { data[0] = value }
-        //override var yf: Float get() = data[1] ; set(value) { data[1] = value }
-        //var scaleXf: Float get() = data[2] ; set(value) { data[2] = value }
-        //var scaleYf: Float get() = data[3] ; set(value) { data[3] = value }
-        //var skewXRadiansf: Float get() = data[4] ; set(value) { data[4] = value }
-        //var skewYRadiansf: Float get() = data[5] ; set(value) { data[5] = value }
-        //var rotationRadiansf: Float get() = data[6] ; set(value) { data[6] = value }
-
-        override var x: Double get() = xf.toDouble() ; set(value) { xf = value.toFloat() }
-        override var y: Double get() = yf.toDouble() ; set(value) { yf = value.toFloat() }
-        var scaleX: Double get() = scaleXf.toDouble() ; set(value) { scaleXf = value.toFloat() }
-        var scaleY: Double get() = scaleYf.toDouble() ; set(value) { scaleYf = value.toFloat() }
-
-        var skewX: Angle get() = Angle(skewXRadiansf) ; set(value) { skewXRadiansf = value.radiansf }
-        var skewY: Angle get() = Angle(skewYRadiansf) ; set(value) { skewYRadiansf = value.radiansf }
-        var rotation: Angle get() = Angle(rotationRadiansf) ; set(value) { rotationRadiansf = value.radiansf }
-
-        constructor(
-            x: Double, y: Double,
-            scaleX: Double = 1.0, scaleY: Double = 1.0,
-            skewX: Angle = 0.radians, skewY: Angle = 0.radians,
-            rotation: Angle = 0.radians
-        ) : this(x.toFloat(), y.toFloat(), scaleX.toFloat(), scaleY.toFloat(), skewX.radiansf, skewY.radiansf, rotation.radiansf)
-
-        //constructor(
-        //    x: Float, y: Float,
-        //    scaleX: Float = 1f, scaleY: Float = 1f,
-        //    skewX: Angle = 0.radians, skewY: Angle = 0.radians,
-        //    rotation: Angle = 0.radians
-        //) : this(false) {
-        //    setTo(x, y, scaleX, scaleY, skewX, skewY, rotation)
-        //}
+        override var yf: Float
+            get() = y.toFloat()
+            set(value) { y = value.toDouble() }
 
         val scaleAvg get() = (scaleX + scaleY) * 0.5
 
-        override fun interpolateWith(ratio: Double, other: Transform): Transform =
-            Transform().setToInterpolated(ratio, this, other)
+        override fun interpolateWith(ratio: Double, other: Transform): Transform = Transform().setToInterpolated(ratio, this, other)
 
         override fun setToInterpolated(ratio: Double, l: Transform, r: Transform): Transform = this.setTo(
-            ratio.interpolate(l.xf, r.xf),
-            ratio.interpolate(l.yf, r.yf),
-            ratio.interpolate(l.scaleXf, r.scaleXf),
-            ratio.interpolate(l.scaleYf, r.scaleYf),
+            ratio.interpolate(l.x, r.x),
+            ratio.interpolate(l.y, r.y),
+            ratio.interpolate(l.scaleX, r.scaleX),
+            ratio.interpolate(l.scaleY, r.scaleY),
             ratio.interpolate(l.rotation, r.rotation),
             ratio.interpolate(l.skewX, r.skewX),
-            ratio.interpolate(l.skewY, r.skewY),
+            ratio.interpolate(l.skewY, r.skewY)
         )
 
         fun identity() {
-            xf = 0f
-            yf = 0f
-            scaleXf = 1f
-            scaleYf = 1f
-            skewX = 0f.radians
-            skewY = 0f.radians
-            rotation = 0f.radians
+            x = 0.0
+            y = 0.0
+            scaleX = 1.0
+            scaleY = 1.0
+            skewX = 0.0.radians
+            skewY = 0.0.radians
+            rotation = 0.0.radians
         }
 
         fun setMatrix(matrix: Matrix): Transform {
-            val PI_4 = PI.toFloat() / 4f
-            this.xf = matrix.txf
-            this.yf = matrix.tyf
+            val PI_4 = PI / 4.0
+            this.x = matrix.tx
+            this.y = matrix.ty
 
-            this.skewX = atan(-matrix.cf / matrix.df).radians
-            this.skewY = atan(matrix.bf / matrix.af).radians
+            this.skewX = atan(-matrix.c / matrix.d).radians
+            this.skewY = atan(matrix.b / matrix.a).radians
 
             // Faster isNaN
-            if (this.skewX != this.skewX) this.skewX = 0f.radians
-            if (this.skewY != this.skewY) this.skewY = 0f.radians
+            if (this.skewX != this.skewX) this.skewX = 0.0.radians
+            if (this.skewY != this.skewY) this.skewY = 0.0.radians
 
-            this.scaleYf = if (this.skewX > -PI_4.radians && this.skewX < PI_4.radians) matrix.df / cosf(this.skewX) else -matrix.cf / sinf(this.skewX)
-            this.scaleXf = if (this.skewY > -PI_4.radians && this.skewY < PI_4.radians) matrix.af / cosf(this.skewY) else matrix.bf / sinf(this.skewY)
+            this.scaleY =
+                if (this.skewX > -PI_4.radians && this.skewX < PI_4.radians) matrix.d / cos(this.skewX) else -matrix.c / sin(this.skewX)
+            this.scaleX =
+                if (this.skewY > -PI_4.radians && this.skewY < PI_4.radians) matrix.a / cos(this.skewY) else matrix.b / sin(this.skewY)
 
-            if (abs(this.skewX - this.skewY).radiansf < 0.0001f) {
+            if (abs(this.skewX - this.skewY).radians < 0.0001) {
                 this.rotation = this.skewX
-                this.skewX = 0f.radians
-                this.skewY = 0f.radians
+                this.skewX = 0.0.radians
+                this.skewY = 0.0.radians
             } else {
-                this.rotation = 0f.radians
+                this.rotation = 0.radians
             }
 
             return this
         }
 
-        fun toMatrix(out: Matrix = Matrix()): Matrix = out.setTransform(xf, yf, scaleXf, scaleYf, rotation, skewX, skewY)
-        fun copyFrom(that: Transform) =
-            setTo(that.xf, that.yf, that.scaleXf, that.scaleYf, that.rotation, that.skewX, that.skewY)
+        fun toMatrix(out: Matrix = Matrix()): Matrix = out.setTransform(x, y, scaleX, scaleY, rotation, skewX, skewY)
+        fun copyFrom(that: Transform) = setTo(that.x, that.y, that.scaleX, that.scaleY, that.rotation, that.skewX, that.skewY)
 
-        fun setTo(
-            x: Double,
-            y: Double,
-            scaleX: Double,
-            scaleY: Double,
-            rotation: Angle,
-            skewX: Angle,
-            skewY: Angle
-        ): Transform = setTo(x.toFloat(), y.toFloat(), scaleX.toFloat(), scaleY.toFloat(), rotation, skewX, skewY)
-
-        fun setTo(
-            x: Float,
-            y: Float,
-            scaleX: Float,
-            scaleY: Float,
-            rotation: Angle,
-            skewX: Angle,
-            skewY: Angle
-        ): Transform {
-            this.xf = x
-            this.yf = y
-            this.scaleXf = scaleX
-            this.scaleYf = scaleY
+        fun setTo(x: Double, y: Double, scaleX: Double, scaleY: Double, rotation: Angle, skewX: Angle, skewY: Angle): Transform {
+            this.x = x
+            this.y = y
+            this.scaleX = scaleX
+            this.scaleY = scaleY
             this.rotation = rotation
             this.skewX = skewX
             this.skewY = skewY
             return this
         }
+        fun setTo(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Angle, skewY: Angle): Transform =
+            setTo(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
         fun add(value: Transform): Transform = setTo(
-            xf + value.xf,
-            yf + value.yf,
-            scaleXf * value.scaleXf,
-            scaleYf * value.scaleYf,
+            x + value.x,
+            y + value.y,
+            scaleX * value.scaleX,
+            scaleY * value.scaleY,
             rotation + value.rotation,
             skewX + value.skewX,
             skewY + value.skewY,
         )
 
         fun minus(value: Transform): Transform = setTo(
-            xf - value.xf,
-            yf - value.yf,
-            scaleXf / value.scaleXf,
-            scaleYf / value.scaleYf,
+            x - value.x,
+            y - value.y,
+            scaleX / value.scaleX,
+            scaleY / value.scaleY,
             rotation - value.rotation,
             skewX - value.skewX,
             skewY - value.skewY,
@@ -542,36 +453,35 @@ data class Matrix(
     }
 
     override fun setToInterpolated(ratio: Double, l: Matrix, r: Matrix) = this.setTo(
-        a = ratio.interpolate(l.af, r.af),
-        b = ratio.interpolate(l.bf, r.bf),
-        c = ratio.interpolate(l.cf, r.cf),
-        d = ratio.interpolate(l.df, r.df),
-        tx = ratio.interpolate(l.txf, r.txf),
-        ty = ratio.interpolate(l.tyf, r.tyf)
+        a = ratio.interpolate(l.a, r.a),
+        b = ratio.interpolate(l.b, r.b),
+        c = ratio.interpolate(l.c, r.c),
+        d = ratio.interpolate(l.d, r.d),
+        tx = ratio.interpolate(l.tx, r.tx),
+        ty = ratio.interpolate(l.ty, r.ty)
     )
 
     override fun interpolateWith(ratio: Double, other: Matrix): Matrix =
         Matrix().setToInterpolated(ratio, this, other)
 
     inline fun <T> keep(callback: Matrix.() -> T): T {
-        val a = this.af
-        val b = this.bf
-        val c = this.cf
-        val d = this.df
-        val tx = this.txf
-        val ty = this.tyf
+        val a = this.a
+        val b = this.b
+        val c = this.c
+        val d = this.d
+        val tx = this.tx
+        val ty = this.ty
         try {
             return this.callback()
         } finally {
-            this.af = a
-            this.bf = b
-            this.cf = c
-            this.df = d
-            this.txf = tx
-            this.tyf = ty
+            this.a = a
+            this.b = b
+            this.c = c
+            this.d = d
+            this.tx = tx
+            this.ty = ty
         }
     }
 
     override fun toString(): String = "Matrix(a=$a, b=$b, c=$c, d=$d, tx=$tx, ty=$ty)"
 }
-
