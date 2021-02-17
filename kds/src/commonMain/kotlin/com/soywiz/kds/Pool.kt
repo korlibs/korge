@@ -17,20 +17,17 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
 
     constructor(preallocate: Int = 0, gen: (Int) -> T) : this({}, preallocate, gen)
 
-    private val lock = Lock()
     private val items = Stack<T>()
     private var lastId = 0
 
     val itemsInPool: Int get() = items.size
 
     init {
-        lock {
-            for (n in 0 until preallocate) items.push(gen(lastId++))
-        }
+        for (n in 0 until preallocate) items.push(gen(lastId++))
     }
 
     fun alloc(): T {
-        return lock { if (items.isNotEmpty()) items.pop() else gen(lastId++) }
+        return if (items.isNotEmpty()) items.pop() else gen(lastId++)
     }
 
     interface Poolable {
@@ -39,9 +36,7 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
 
     fun free(element: T) {
         reset(element)
-        lock {
-            items.push(element)
-        }
+        items.push(element)
     }
 
     fun free(vararg elements: T) { elements.fastForEach { free(it) } }
