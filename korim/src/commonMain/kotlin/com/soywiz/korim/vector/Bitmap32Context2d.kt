@@ -177,8 +177,8 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
         var subRowCount = 0
         fun reset() {
             segments.forEachFast { xmin, xmax ->
-                alpha.fill(0f, xmin, xmax)
-                hitbits.fill(0, xmin, xmax)
+                alpha.fill(0f, xmin, xmax + 1)
+                hitbits.fill(0, xmin, xmax + 1)
             }
             subRowCount = 0
             segments.reset()
