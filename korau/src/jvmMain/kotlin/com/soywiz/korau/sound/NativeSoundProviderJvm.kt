@@ -1,5 +1,6 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.klogger.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.format.mp3.*
 import com.soywiz.korau.sound.impl.jna.*
@@ -13,16 +14,21 @@ internal val nativeAudioFormats = AudioFormats(WAV, MP3Decoder, OGG) + AudioForm
         listOf<AudioFormat>()
     })
 
+private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider(nativeAudioFormats) }
+
 actual val nativeSoundProvider: NativeSoundProvider by lazy {
     try {
         traceTime("OpenAL") {
             JnaOpenALNativeSoundProvider()
         }
     } catch (e: UnsatisfiedLinkError) {
-        DummyNativeSoundProvider
+        dummyNativeSoundProvider
+    } catch (e: OpenALException) {
+        Console.error("OpenALException", e.message)
+        dummyNativeSoundProvider
     } catch (e: Throwable) {
         e.printStackTrace()
-        DummyNativeSoundProvider
+        dummyNativeSoundProvider
     }
 }
 //actual val nativeSoundProvider: NativeSoundProvider by lazy { JogampNativeSoundProvider() }

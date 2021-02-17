@@ -8,17 +8,20 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
+import java.lang.RuntimeException
 import java.nio.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
+class OpenALException(message: String) : RuntimeException(message)
+
 class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
-    val device = (AL.alcOpenDevice(null) ?: error("Can't open OpenAL device")).also { device ->
+    val device = (AL.alcOpenDevice(null) ?: throw OpenALException("Can't open OpenAL device")).also { device ->
         Runtime.getRuntime().addShutdownHook(Thread {
             AL.alcCloseDevice(device)
         })
     }
-    val context = (AL.alcCreateContext(device, null) ?: error("Can't get OpenAL context")).also { context ->
+    val context = (AL.alcCreateContext(device, null) ?: throw OpenALException("Can't get OpenAL context")).also { context ->
         Runtime.getRuntime().addShutdownHook(Thread {
             //alc?.alcDestroyContext(context) // Crashes on mac!
         })
