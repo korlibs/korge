@@ -34,7 +34,8 @@ class RenderContext constructor(
 	val bp: BoundsProvider = BoundsProvider.Dummy,
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
-	val coroutineContext: CoroutineContext = EmptyCoroutineContext
+	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
+    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
 ) : Extra by Extra.Mixin(), BoundsProvider by bp {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
 
@@ -45,7 +46,7 @@ class RenderContext constructor(
     var stencilIndex: Int = 0
 
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
-	val batch by lazy { BatchBuilder2D(this) }
+	val batch by lazy { BatchBuilder2D(this, batchMaxQuads) }
 
     /** [RenderContext2D] similar to the one from JS, that keeps an matrix (affine transformation) and allows to draw shapes using the current matrix */
 	val ctx2d by lazy { RenderContext2D(batch, agBitmapTextureManager) }

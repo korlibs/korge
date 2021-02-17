@@ -134,6 +134,7 @@ abstract class View internal constructor(
      * themselves are going to change (like cameras, viewports and the [Stage]).
      */
     interface Reference // View that breaks batching Viewport
+    interface ColorReference // View that breaks batching Viewport
 
     open var hitShape: VectorPath? = null
     open var hitShapes: List<VectorPath>? = null
@@ -228,67 +229,61 @@ abstract class View internal constructor(
             }
         }
 
+    /*
+    var xf: Float get() = x.toFloat() ; set(v) { x = v.toDouble() }
+
+    var yf: Float get() = y.toFloat() ; set(v) { y = v.toDouble() }
+
+    var scaleXf: Float
+        get() = ensureTransform()._scaleXf
+        set(v) { ensureTransform(); if (_scaleXf != v) { _scaleXf = v; invalidateMatrix() } }
+
+    var scaleYf: Float
+        get() = ensureTransform()._scaleYf
+        set(v) { ensureTransform(); if (_scaleYf != v) { _scaleYf = v; invalidateMatrix() } }
+
+    var scalef: Float get() = scale.toFloat() ; set(v) { scale = v.toDouble() }
+    */
+
     /** Local scaling in the X axis of this view */
     var scaleX: Double
         get() = ensureTransform()._scaleX
-        set(v) {
-            ensureTransform(); if (_scaleX != v) {
-                _scaleX = v; invalidateMatrix()
-            }
-        }
+        set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
 
     /** Local scaling in the Y axis of this view */
     var scaleY: Double
         get() = ensureTransform()._scaleY
-        set(v) {
-            ensureTransform(); if (_scaleY != v) {
-                _scaleY = v; invalidateMatrix()
-            }
-        }
+        set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
     var scale: Double
-        get() = (scaleX + scaleY) / 2.0
-        set(v) {
-            scaleX = v; scaleY = v
-        }
+        get() = (scaleX + scaleY) / 2f
+        set(v) { scaleX = v; scaleY = v }
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
         get() = ensureTransform()._skewX
-        set(v) { ensureTransform(); if (_skewX != v) {
-            _skewX = v; invalidateMatrix()
-        } }
+        set(v) { ensureTransform(); if (_skewX != v) { _skewX = v; invalidateMatrix() } }
 
     /** Local skewing in the Y axis of this view */
     var skewY: Angle
         get() = ensureTransform()._skewY
-        set(v) { ensureTransform(); if (_skewY != v) {
-            _skewY = v; invalidateMatrix()
-        } }
+        set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
 
     /** Local rotation of this view */
     var rotation: Angle
         get() = ensureTransform()._rotation
-        set(v) {
-            ensureTransform(); if (_rotation != v) {
-                _rotation = v; invalidateMatrix()
-            }
-        }
+        set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
 
     /** The global x position of this view */
     var globalX: Double
         get() = parent?.localToGlobalX(x, y) ?: x;
-        set(value) {
-            x = parent?.globalToLocalX(value, globalY) ?: value
-        }
+        set(value) { x = parent?.globalToLocalX(value, globalY) ?: value }
 
     /** The global y position of this view */
     var globalY: Double
         get() = parent?.localToGlobalY(x, y) ?: y;
-        set(value) {
-            y = parent?.globalToLocalY(globalX, value) ?: value
-        }
+        set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
 
     /**
      * Changes the [width] and [height] to match the parameters.
@@ -408,8 +403,8 @@ abstract class View internal constructor(
         if (!validLocalProps) {
             validLocalProps = true
             val t = tempTransform.setMatrix(this._localMatrix)
-            this.pos.x = t.x
-            this.pos.y = t.y
+            this.pos.xf = t.xf
+            this.pos.yf = t.yf
             this._scaleX = t.scaleX
             this._scaleY = t.scaleY
             this._skewX = t.skewX
@@ -476,7 +471,7 @@ abstract class View internal constructor(
     @KorgeInternal
     fun _setTransform(t: Matrix.Transform) {
         //transform.toMatrix(_localMatrix)
-        pos.x = t.x; pos.y = t.y
+        pos.xf = t.xf; pos.yf = t.yf
         _scaleX = t.scaleX; _scaleY = t.scaleY
         _skewX = t.skewY; _skewY = t.skewY
         _rotation = t.rotation
@@ -583,7 +578,7 @@ abstract class View internal constructor(
                 _requireInvalidateColor = true
                 when {
                     parent != null && parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
-                    parent != null && this !is View.Reference -> _renderColorTransform.setToConcat(
+                    parent != null && this !is View.ColorReference -> _renderColorTransform.setToConcat(
                         _colorTransform,
                         parent!!.renderColorTransform
                     )
@@ -723,7 +718,7 @@ abstract class View internal constructor(
         //ctx.flush()
         val local = getLocalBounds(doAnchoring = true)
         ctx.debugLineRenderContext.drawVector(Colors.RED) {
-            rect(globalBounds)
+            rect(windowBounds)
         }
         ctx.debugLineRenderContext.drawVector(Colors.WHITE) {
             moveTo(localToGlobal(Point(local.left, local.top)))
@@ -1106,7 +1101,7 @@ abstract class View internal constructor(
     }
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
-    val windowBounds: Rectangle get() = getGlobalBounds()
+    val windowBounds: Rectangle get() = getWindowBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
     fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
@@ -1179,7 +1174,7 @@ abstract class View internal constructor(
 
     private val _localBounds: Rectangle = Rectangle()
     open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit {
-        out.setTo(0, 0, 0, 0)
+        out.clear()
     }
 
     protected open fun createInstance(): View =
@@ -1403,6 +1398,16 @@ fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
         }
     }.attach()
     component.update(TimeSpan.ZERO)
+    return Cancellable { component.detach() }
+}
+
+fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
+    val component = object : UpdateComponentWithViews {
+        override val view: View get() = this@addUpdaterWithViews
+        override fun update(views: Views, dt: TimeSpan) {
+            updatable(this@addUpdaterWithViews, views, dt)
+        }
+    }.attach()
     return Cancellable { component.detach() }
 }
 
@@ -1732,15 +1737,17 @@ fun <T : View> T.alignXY(other: View, ratio: Double, inside: Boolean, doX: Boole
     //val parent = this.parent
     //val bounds = other.getBoundsNoAnchoring(this)
     val bounds = other.getBoundsNoAnchoring(parent)
+    val localBounds = this.getLocalBoundsOptimized()
+
     //bounds.setTo(other.x, other.y, other.unscaledWidth, other.unscaledHeight)
     val ratioM1_1 = (ratio * 2 - 1)
     val rratioM1_1 = if (inside) ratioM1_1 else -ratioM1_1
     val iratio = if (inside) ratio else 1.0 - ratio
     //println("this: $this, other: $other, bounds=$bounds, scaledWidth=$scaledWidth, scaledHeight=$scaledHeight, width=$width, height=$height, scale=$scale, $scaleX, $scaleY")
     if (doX) {
-        x = (bounds.x + (bounds.width * ratio)) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
+        x = (bounds.x + (bounds.width * ratio) - localBounds.left) - (this.scaledWidth * iratio) - (padding * rratioM1_1)
     } else {
-        y = (bounds.y + (bounds.height * ratio)) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
+        y = (bounds.y + (bounds.height * ratio) - localBounds.top) - (this.scaledHeight * iratio) - (padding * rratioM1_1)
     }
     return this
 }

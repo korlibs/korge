@@ -4,7 +4,7 @@ import com.soywiz.korim.atlas.*
 
 class SpineRegion(val entry: Atlas.Entry) {
     val bmpSlice = entry.slice
-    val bmp = bmpSlice.bmp
+    val bmp = bmpSlice.bmpBase
     val texture = bmp
     var rotate = entry.info.rotated
     val u: Float = if (rotate) bmpSlice.br_x else bmpSlice.tl_x

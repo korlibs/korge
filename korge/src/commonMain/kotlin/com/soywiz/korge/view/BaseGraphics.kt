@@ -56,7 +56,7 @@ abstract class BaseGraphics(
 
             // Removes old image
             run {
-                bitmapsToRemove.add(this.bitmap.bmp)
+                bitmapsToRemove.add(this.bitmap.bmpBase)
             }
             // Generates new image
             run {

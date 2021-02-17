@@ -36,11 +36,11 @@ open class UITextButton(
 	var shadowX by uiObservable(1) { updateShadow() }
 	var shadowY by uiObservable(1) { updateShadow() }
 	//var shadowSize by uiObservable(16) { updateShadow() }
-	var shadowColor by uiObservable(Colors.BLACK.withA(64)) { updateShadow() }
+	var shadowColor by uiObservable(Colors.BLACK.withAd(0.3)) { updateShadow() }
 	var shadowVisible by uiObservable(true) { updateShadow() }
 
+    private val textShadow = text(text, textSize)
 	private val textView = text(text, textSize)
-	private val textShadow = text(text, textSize)
 
 	init {
         updateTextAndShadow()

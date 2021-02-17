@@ -109,9 +109,9 @@ class AgBitmapTextureManager(
 	fun getTexture(slice: BmpSlice): Texture {
 		if (cachedBmpSlice === slice) return cachedBmpSliceTexture!!
         if (cachedBmpSlice2 === slice) return cachedBmpSliceTexture2!!
-        referencedBitmapsSinceGC += slice.bmp
+        referencedBitmapsSinceGC += slice.bmpBase
 
-        val info = getTextureInfo(slice.bmp)
+        val info = getTextureInfo(slice.bmpBase)
 
 		val texture = info.slices.getOrPut(slice) {
             Texture(info.textureBase!!).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))

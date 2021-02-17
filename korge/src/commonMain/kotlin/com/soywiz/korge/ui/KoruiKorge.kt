@@ -21,6 +21,7 @@ open class KorgeNativeUiFactory : NativeUiFactory {
     override fun createWindow() = KorgeWindow(this, FixedSizeContainer())
     override fun createContainer() = KorgeContainer(this, FixedSizeContainer())
     override fun createButton() = KorgeButton(this, UITextButton())
+    override fun createToggleButton() = KorgeToggleButton(this, UITextButton())
     override fun createCheckBox() = KorgeCheckBox(this, UICheckBox())
     override fun <T> createComboBox() = KorgeComboBox(this, UIComboBox<T>())
     override fun createLabel() = KorgeLabel(this, UIText("").also { it.textAlignment = TextAlignment.MIDDLE_LEFT })
@@ -85,6 +86,20 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             get() = button.text
             set(value) {
                 button.text = value
+            }
+    }
+
+    open class KorgeToggleButton(override val factory: KorgeNativeUiFactory, val button: UITextButton) : KorgeComponent(factory, button), NativeUiFactory.NativeToggleButton {
+        override var text: String
+            get() = button.text
+            set(value) {
+                button.text = value
+            }
+
+        override var pressed: Boolean
+            get() = button.forcePressed
+            set(value) {
+                button.forcePressed = value
             }
     }
 

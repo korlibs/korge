@@ -349,8 +349,8 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                 },
                 internalGet = { currentMainAnimation?.name ?: "default" }
             ))))
-            button("play") { play() }
-            button("stop") { stop() }
+            button("play").onClick { play() }
+            button("stop").onClick { stop() }
         }
         super.buildDebugComponent(views, container)
     }

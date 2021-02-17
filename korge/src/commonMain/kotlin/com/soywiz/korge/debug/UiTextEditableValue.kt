@@ -73,35 +73,37 @@ class UiTextEditableValue(
         var childCount = 1
         when (kind) {
             is Kind.FILE -> {
-                button("...", {
+                button("...") {
                     preferredWidth = 50.percent
                     childCount++
-                }) {
-                    val file = openFileDialog(null, kind.filter)
-                    if (file != null) {
-                        val filePathInfo = file.absolutePathInfo
-                        val currentVfsPathInfo = kind.currentVfs.absolutePathInfo
-                        val relativePath = filePathInfo.relativePathTo(currentVfsPathInfo)
-                        println("filePathInfo: $filePathInfo")
-                        println("currentVfsPathInfo: $currentVfsPathInfo")
-                        println("relativePath: $relativePath")
+                    onClick {
+                        val file = openFileDialog(null, kind.filter)
+                        if (file != null) {
+                            val filePathInfo = file.absolutePathInfo
+                            val currentVfsPathInfo = kind.currentVfs.absolutePathInfo
+                            val relativePath = filePathInfo.relativePathTo(currentVfsPathInfo)
+                            println("filePathInfo: $filePathInfo")
+                            println("currentVfsPathInfo: $currentVfsPathInfo")
+                            println("relativePath: $relativePath")
 
-                        //PathInfo("test").rela
-                        if (relativePath != null) {
-                            setValue(relativePath)
-                            completedEditing()
+                            //PathInfo("test").rela
+                            if (relativePath != null) {
+                                setValue(relativePath)
+                                completedEditing()
+                            }
                         }
                     }
-                }
+                } 
             }
             is Kind.COLOR -> {
-                button("...", {
+                button("...") {
                     preferredWidth = 50.percent
                     childCount++
-                }) {
-                    val color = Colors[prop.value]
-                    prop.value = (openColorPickerDialog(color) { prop.value = it.hexString } ?: color).hexString
-                    completedEditing()
+                    onClick {
+                        val color = Colors[prop.value]
+                        prop.value = (openColorPickerDialog(color) { prop.value = it.hexString } ?: color).hexString
+                        completedEditing()
+                    }
                 }
             }
         }

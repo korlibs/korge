@@ -13,23 +13,22 @@ import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
-inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewDslMarker TileMap.() -> Unit = {}) =
-	TileMap(map, tileset).repeat(repeatX, repeatY).addTo(this, callback)
+inline fun Container.tileMap(map: IntArray2, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, smoothing: Boolean = true, callback: @ViewDslMarker TileMap.() -> Unit = {}) =
+	TileMap(map, tileset, smoothing).repeat(repeatX, repeatY).addTo(this, callback)
 
-inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, callback: @ViewDslMarker TileMap.() -> Unit = {}) =
-	TileMap(map.toIntArray2(), tileset).repeat(repeatX, repeatY).addTo(this, callback)
+inline fun Container.tileMap(map: Bitmap32, tileset: TileSet, repeatX: TileMap.Repeat = TileMap.Repeat.NONE, repeatY: TileMap.Repeat = repeatX, smoothing: Boolean = true, callback: @ViewDslMarker TileMap.() -> Unit = {}) =
+	TileMap(map.toIntArray2(), tileset, smoothing).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
 
 @OptIn(KorgeInternal::class)
-open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
+open class TileMap(val intMap: IntArray2, val tileset: TileSet, var smoothing: Boolean = true) : View() {
     private var contentVersion = 0
-	constructor(map: Bitmap32, tileset: TileSet) : this(map.toIntArray2(), tileset)
+	constructor(map: Bitmap32, tileset: TileSet, smoothing: Boolean = true) : this(map.toIntArray2(), tileset, smoothing)
 
 	val tileWidth = tileset.width.toDouble()
 	val tileHeight = tileset.height.toDouble()
-	var smoothing = true
 
 	enum class Repeat(val get: (v: Int, max: Int) -> Int) {
 		NONE({ v, max -> v }),
@@ -133,9 +132,9 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
 
                 //println("CELL_DATA_TEX: $tex")
 
-                val info = verticesPerTex.getOrPut(tex.bmp) {
+                val info = verticesPerTex.getOrPut(tex.bmpBase) {
                     infosPool.alloc().also { info ->
-                        info.tex = tex.bmp
+                        info.tex = tex.bmpBase
                         if (info.vertices.initialVcount < allocTiles * 4) {
                             info.vertices = TexturedVertexArray(allocTiles * 4, TexturedVertexArray.quadIndices(allocTiles))
                             //println("ALLOC TexturedVertexArray")
@@ -230,7 +229,7 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet) : View() {
         private const val BR = 2
         private const val BL = 3
     }
-    private val infosPool = Pool { Info(Bitmaps.transparent.bmp, dummyTexturedVertexArray) }
+    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, dummyTexturedVertexArray) }
 
 	private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
 	private var currentVirtualRect = Rectangle(-1, -1, -1, -1)

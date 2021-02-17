@@ -232,7 +232,10 @@ open class Sprite(
         }
     }
 
-    val totalFrames get() = currentAnimation?.size ?: 1
+    val totalFrames: Int get() {
+        val ca = currentAnimation ?: return 1
+        return ca.size
+    }
 
     private fun updateCurrentAnimation(
         spriteAnimation: SpriteAnimation?,

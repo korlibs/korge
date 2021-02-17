@@ -209,4 +209,4 @@ class SpritesTest : ViewsForTesting() {
 }
 
 // Workaround for getting Bitmap-Copy out of BmpSlice
-fun BmpSlice.extract(): Bitmap = bmp.extract(left, top, width, height)
+fun BmpSlice.extract(): Bitmap = bmpBase.extract(left, top, width, height)

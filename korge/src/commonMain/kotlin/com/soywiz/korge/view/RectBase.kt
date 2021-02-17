@@ -29,7 +29,14 @@ open class RectBase(
 
     protected var anchorVersion = 0
 
-	protected var baseBitmap: BmpSlice = Bitmaps.white; set(v) { field = v; dirtyVertices = true }
+	protected var baseBitmap: BmpSlice = Bitmaps.white
+        set(v) {
+            if (field !== v) {
+                field = v
+                dirtyVertices = true
+            }
+        }
+
 	override var anchorX: Double = anchorX; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
     override var anchorY: Double = anchorY; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
 
@@ -94,7 +101,7 @@ open class RectBase(
         val view = this
         container.uiCollapsibleSection("RectBase") {
             uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
-            button("Center") {
+            button("Center").onClick {
                 views.undoable("Change anchor", view) {
                     view.anchorX = 0.5
                     view.anchorY = 0.5

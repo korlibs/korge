@@ -8,10 +8,10 @@ import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.logger.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
-import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -28,7 +28,6 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
-import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 /**
@@ -69,6 +68,7 @@ object Korge {
             blocking = config.blocking,
             gameId = config.gameId,
             settingsFolder = config.settingsFolder,
+            batchMaxQuads = config.batchMaxQuads,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
@@ -88,29 +88,30 @@ object Korge {
     }
 
     suspend operator fun invoke(
-		title: String = "Korge",
-		width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
-		virtualWidth: Int = width, virtualHeight: Int = height,
-		icon: Bitmap? = null,
+        title: String = "Korge",
+        width: Int = DefaultViewport.WIDTH, height: Int = DefaultViewport.HEIGHT,
+        virtualWidth: Int = width, virtualHeight: Int = height,
+        icon: Bitmap? = null,
         iconPath: String? = null,
         iconDrawable: SizedDrawable? = null,
         imageFormats: ImageFormat = ImageFormats(PNG),
-		quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
-		targetFps: Double = 0.0,
-		scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
-		scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
-		clipBorders: Boolean = true,
-		bgcolor: RGBA? = Colors.BLACK,
-		debug: Boolean = false,
-		fullscreen: Boolean? = null,
-		args: Array<String> = arrayOf(),
-		gameWindow: GameWindow? = null,
+        quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
+        targetFps: Double = 0.0,
+        scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
+        scaleMode: ScaleMode = ScaleMode.SHOW_ALL,
+        clipBorders: Boolean = true,
+        bgcolor: RGBA? = Colors.BLACK,
+        debug: Boolean = false,
+        fullscreen: Boolean? = null,
+        args: Array<String> = arrayOf(),
+        gameWindow: GameWindow? = null,
         timeProvider: TimeProvider = TimeProvider,
         injector: AsyncInjector = AsyncInjector(),
         debugAg: Boolean = false,
         blocking: Boolean = true,
         gameId: String = DEFAULT_GAME_ID,
         settingsFolder: String? = null,
+        batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -151,7 +152,8 @@ object Korge {
                 stats = stats,
                 gameWindow = gameWindow,
                 gameId = gameId,
-                settingsFolder = settingsFolder
+                settingsFolder = settingsFolder,
+                batchMaxQuads = batchMaxQuads
             )
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
@@ -237,6 +239,7 @@ object Korge {
         fun getRealX(x: Double, scaleCoords: Boolean) = if (scaleCoords) x * ag.devicePixelRatio else x
         fun getRealY(y: Double, scaleCoords: Boolean) = if (scaleCoords) y * ag.devicePixelRatio else y
 
+        /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
             val touch = input.getTouch(id)
             val now = DateTime.now()
@@ -254,6 +257,7 @@ object Korge {
 
             input.updateTouches()
         }
+        */
 
         fun mouseDown(type: String, x: Double, y: Double) {
             views.input.mouseButtons = 1
@@ -304,15 +308,15 @@ object Korge {
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", x, y)
-                    updateTouch(mouseTouchId, x, y, start = true, end = false)
+                    //updateTouch(mouseTouchId, x, y, start = true, end = false)
                 }
                 MouseEvent.Type.UP -> {
                     mouseUp("mouseUp", x, y)
-                    updateTouch(mouseTouchId, x, y, start = false, end = true)
+                    //updateTouch(mouseTouchId, x, y, start = false, end = true)
                 }
                 MouseEvent.Type.DRAG -> {
                     mouseDrag("onMouseDrag", x, y)
-                    updateTouch(mouseTouchId, x, y, start = false, end = false)
+                    //updateTouch(mouseTouchId, x, y, start = false, end = false)
                 }
                 MouseEvent.Type.MOVE -> mouseMove("mouseMove", x, y, inside = true)
                 MouseEvent.Type.CLICK -> Unit
@@ -345,9 +349,9 @@ object Korge {
         // TOUCH
         fun touch(e: TouchEvent, start: Boolean, end: Boolean) {
             val t = e.touches.first()
-            val x = t.current.x
-            val y = t.current.y
-            updateTouch(t.id, x, y, start, end)
+            val x = t.x
+            val y = t.y
+            //updateTouch(t.id, x, y, start, end)
             when {
                 start -> {
                     mouseDown("onTouchStart", x, y)
@@ -365,8 +369,8 @@ object Korge {
         eventDispatcher.addEventListener<TouchEvent> { e ->
             logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
             val touch = e.touches.first()
-            val ix = getRealX(touch.current.x, e.scaleCoords).toInt()
-            val iy = getRealX(touch.current.y, e.scaleCoords).toInt()
+            val ix = getRealX(touch.x, e.scaleCoords).toInt()
+            val iy = getRealX(touch.y, e.scaleCoords).toInt()
             when (e.type) {
                 TouchEvent.Type.START -> {
                     touch(e, start = true, end = false)
@@ -457,23 +461,24 @@ object Korge {
     }
 
 	data class Config(
-		val module: Module,
-		val args: Array<String> = arrayOf(),
-		val imageFormats: ImageFormat = RegisteredImageFormats,
-		val gameWindow: GameWindow? = null,
+        val module: Module,
+        val args: Array<String> = arrayOf(),
+        val imageFormats: ImageFormat = RegisteredImageFormats,
+        val gameWindow: GameWindow? = null,
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
-		val sceneClass: KClass<out Scene> = module.mainScene,
-		val sceneInjects: List<Any> = listOf(),
-		val timeProvider: TimeProvider = TimeProvider,
-		val injector: AsyncInjector = AsyncInjector(),
-		val debug: Boolean = false,
-		val trace: Boolean = false,
-		val context: Any? = null,
-		val fullscreen: Boolean? = null,
+        val sceneClass: KClass<out Scene> = module.mainScene,
+        val sceneInjects: List<Any> = listOf(),
+        val timeProvider: TimeProvider = TimeProvider,
+        val injector: AsyncInjector = AsyncInjector(),
+        val debug: Boolean = false,
+        val trace: Boolean = false,
+        val context: Any? = null,
+        val fullscreen: Boolean? = null,
         val blocking: Boolean = true,
         val gameId: String = DEFAULT_GAME_ID,
         val settingsFolder: String? = null,
-		val constructedViews: (Views) -> Unit = {}
+        val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+        val constructedViews: (Views) -> Unit = {}
 	)
 
 	data class ModuleArgs(val args: Array<String>)

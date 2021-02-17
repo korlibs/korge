@@ -23,7 +23,7 @@ val debugBmpFont: BitmapFont by lazy {
     val fntBlockWidth = 12.0
     val fntBlockHeight = 12.0
 
-    BitmapFont(fntHeight, fntHeight, fntHeight, (0 until 256).associateWith {
+    BitmapFont(fntHeight, fntHeight, fntHeight - 1.0, (0 until 256).associateWith {
         val x = it % 16
         val y = it / 16
         BitmapFont.Glyph(

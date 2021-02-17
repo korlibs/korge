@@ -37,7 +37,7 @@ inline fun Container.text(
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = true,
+    autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
     = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
@@ -47,10 +47,11 @@ open class Text(
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = true
+    autoScaling: Boolean = DEFAULT_AUTO_SCALING
 ) : Container(), ViewLeaf, IText {
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
+        val DEFAULT_AUTO_SCALING = true
     }
 
     var smoothing: Boolean = true
@@ -58,7 +59,8 @@ open class Text(
     object Serializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
         add(Text::text, "Text")
         add(Text::fontSource)
-        add(Text::textSize, Text.DEFAULT_TEXT_SIZE)
+        add(Text::textSize, DEFAULT_TEXT_SIZE)
+        add(Text::autoScaling, DEFAULT_AUTO_SCALING)
         add(Text::verticalAlign, { VerticalAlign(it) }, { it.toString() })
         add(Text::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
         //view.fontSource = xml.str("fontSource", "")
@@ -80,7 +82,19 @@ open class Text(
     private var cachedVersionRenderer = -1
     private var version = 0
 
-    override var text: String = text; set(value) { if (field != value) { field = value; version++ } }
+    var lineCount: Int = 0; private set
+
+    override var text: String = text; set(value) { if (field != value) {
+        field = value;
+        updateLineCount()
+        version++
+    } }
+    private fun updateLineCount() {
+        lineCount = text.count { it == '\n' } + 1
+    }
+    init {
+        updateLineCount()
+    }
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
     var font: Resourceable<out Font> = font; set(value) { if (field != value) { field = value; version++ } }
     var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
@@ -154,11 +168,7 @@ open class Text(
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        if (autoSize) {
-            super.getLocalBoundsInternal(out)
-        } else {
-            out.copyFrom(_textBounds)
-        }
+        out.copyFrom(_textBounds)
     }
 
     override fun renderInternal(ctx: RenderContext) {
@@ -170,6 +180,11 @@ open class Text(
     }
 
     private val tempBmpEntry = Text2TextRendererActions.Entry()
+    private val fontMetrics = FontMetrics()
+    private val textMetrics = TextMetrics()
+    private var lastAutoScaling: Boolean? = null
+    private var lastSmoothing: Boolean? = null
+    private var lastNativeRendering: Boolean? = null
 
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
@@ -186,15 +201,19 @@ open class Text(
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
-            val metrics = font.getTextBounds(textSize, text, renderer = renderer)
+            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
             _textBounds.copyFrom(metrics.bounds)
+            _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
+            _textBounds.x = -alignment.horizontal.getOffsetX(_textBounds.width) + metrics.left
+            _textBounds.y = alignment.vertical.getOffsetY(_textBounds.height, -metrics.ascent)
         }
 
         when (font) {
             null -> Unit
             is BitmapFont -> {
                 val rversion = renderer.version
-                if (cachedVersion != version || cachedVersionRenderer != rversion) {
+                if (lastSmoothing != smoothing || cachedVersion != version || cachedVersionRenderer != rversion) {
+                    lastSmoothing = smoothing
                     cachedVersionRenderer = rversion
                     cachedVersion = version
 
@@ -237,26 +256,41 @@ open class Text(
                 }
             }
             else -> {
-                if (autoscaling.onRender(autoScaling, this.globalMatrix)) {
+                val onRenderResult = autoscaling.onRender(autoScaling, this.globalMatrix)
+                val lastAutoScalingResult = lastAutoScaling != autoScaling
+                if (onRenderResult || lastAutoScalingResult || lastSmoothing != smoothing || lastNativeRendering != useNativeRendering) {
                     version++
+                    //println("UPDATED VERSION[$this] lastAutoScaling=$lastAutoScaling, autoScaling=$autoScaling, onRenderResult=$onRenderResult, lastAutoScalingResult=$lastAutoScalingResult")
+                    lastNativeRendering = useNativeRendering
+                    lastAutoScaling = autoScaling
+                    lastSmoothing = smoothing
                 }
 
                 if (cachedVersion != version) {
                     cachedVersion = version
-                    textToBitmapResult = font.renderTextToBitmap(textSize * autoscaling.renderedAtScaleXY, text, paint = Colors.WHITE, fill = true, renderer = renderer, nativeRendering = useNativeRendering)
+                    val realTextSize = textSize * autoscaling.renderedAtScaleXY
+                    //println("realTextSize=$realTextSize")
+                    textToBitmapResult = font.renderTextToBitmap(
+                        realTextSize, text,
+                        paint = Colors.WHITE, fill = true, renderer = renderer,
+                        //background = Colors.RED,
+                        nativeRendering = useNativeRendering, drawBorder = true
+                    )
 
-                    val x = textToBitmapResult.metrics.left - horizontalAlign.getOffsetX(textToBitmapResult.bmp.width.toDouble())
-                    val y = verticalAlign.getOffsetY(textToBitmapResult.fmetrics.lineHeight, textToBitmapResult.metrics.top.toDouble())
+                    val met = textToBitmapResult.metrics
+                    val x = -horizontalAlign.getOffsetX(met.width) + met.left
+                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
 
                     if (_staticImage == null) {
                         container.removeChildren()
                         _staticImage = container.image(textToBitmapResult.bmp)
                     } else {
-                        imagesToRemove.add(_staticImage!!.bitmap.bmp)
+                        imagesToRemove.add(_staticImage!!.bitmap.bmpBase)
                         _staticImage!!.bitmap = textToBitmapResult.bmp.slice()
                     }
-                    _staticImage!!.scale(1.0 / autoscaling.renderedAtScaleXY, 1.0 / autoscaling.renderedAtScaleXY)
-                    setContainerPosition(x, y, font.getFontMetrics(fontSize).baseline)
+                    val mscale = 1.0 / autoscaling.renderedAtScaleXY
+                    _staticImage!!.scale(mscale, mscale)
+                    setContainerPosition(x * mscale, y * mscale, font.getFontMetrics(fontSize, fontMetrics).baseline)
                 }
                 _staticImage?.smoothing = smoothing
             }
@@ -289,6 +323,7 @@ open class Text(
         container.uiCollapsibleSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min= 1.0, max = 300.0)
+            uiEditableValue(::autoScaling)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
