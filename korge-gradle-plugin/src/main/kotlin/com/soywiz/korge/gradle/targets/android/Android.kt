@@ -94,10 +94,11 @@ fun Project.configureAndroidIndirect() {
 						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureAndroidIndirect.parent?.projectDir?.let { projectFile ->
                             val projectPath = projectFile.absolutePath
 							line("include(\":$parentProjectName\")")
-							line("project(\":$parentProjectName\").projectDir = file(\'${projectPath.quoted}\')")
+							line("project(\":$parentProjectName\").projectDir = file(${projectPath.quoted})")
 							resolvedModules.forEach { (name, path) ->
+                                val subProjectPath = projectFile[name].absolutePath
 								line("include(\"$path\")")
-								line("project(\"$path\").projectDir = file(\'${"$projectPath/$name".quoted}\')")
+								line("project(\"$path\").projectDir = file(${subProjectPath.quoted})")
 							}
 						}
 					})
