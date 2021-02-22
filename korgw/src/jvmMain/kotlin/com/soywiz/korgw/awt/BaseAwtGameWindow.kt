@@ -586,6 +586,6 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
     override fun computeDisplayRefreshRate(): Int {
         val window = this.window ?: return 60
-        return window.getScreenDevice().displayMode.refreshRate
+        return window.getScreenDevice().cachedRefreshRate
     }
 }

@@ -1,6 +1,9 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.kds.WeakMap
+import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.*
+import com.soywiz.klogger.Console
 import java.awt.*
 
 private val ge = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -13,6 +16,15 @@ fun Window.getScreenDevice(): GraphicsDevice {
         //println("$device: " + device.defaultConfiguration.bounds)
     }
     return ge.defaultScreenDevice
+}
+
+private val cachedRefreshRates = WeakMap<GraphicsDevice, Int>()
+
+val GraphicsDevice.cachedRefreshRate: Int get() {
+    return cachedRefreshRates.getOrPut(this) {
+        Console.info("COMPUTED REFRESH RATE for $it")
+        it.displayMode.refreshRate
+    }
 }
 
 fun Component.getContainerFrame(): Frame? = getAncestor { it is Frame } as? Frame?

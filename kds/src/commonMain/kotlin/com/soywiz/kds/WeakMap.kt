@@ -6,7 +6,7 @@ expect class WeakMap<K : Any, V>() {
     operator fun get(key: K): V?
 }
 
-fun <K : Any, V> WeakMap<K, V>.getOrPut(key: K, value: (K) -> V): V {
+inline fun <K : Any, V> WeakMap<K, V>.getOrPut(key: K, value: (K) -> V): V {
     if (key !in this) this[key] = value(key)
     return this[key]!!
 }

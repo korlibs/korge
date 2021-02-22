@@ -216,7 +216,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         return 60
     }
 
-    private val fpsCached by IntTimedCache(100.milliseconds) { computeDisplayRefreshRate() }
+    private val fpsCached by IntTimedCache(1000.milliseconds) { computeDisplayRefreshRate() }
 
     open var fps: Int
         get() = fpsCached
