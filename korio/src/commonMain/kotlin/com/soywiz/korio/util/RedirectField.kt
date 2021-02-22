@@ -12,7 +12,9 @@ class RedirectMutableField<V>(val redirect: KMutableProperty0<V>) {
 }
 
 // @TODO: Shouldn't be required anymore
+@Deprecated("Shouldn't be required anymore")
 fun <V> redirect(prop: KMutableProperty0<V>) = RedirectMutableField(prop)
+@Deprecated("Shouldn't be required anymore")
 fun <V> redirect(prop: KProperty0<V>) = RedirectField(prop)
 
 class RedirectMutableFieldGen<V>(val redirect: () -> KMutableProperty0<V>) {
@@ -26,7 +28,9 @@ class RedirectFieldGen<V>(val redirect: () -> KProperty0<V>) {
 
 inline fun <V> (() -> KProperty0<V>).redirected() = RedirectFieldGen(this)
 inline fun <V> (() -> KMutableProperty0<V>).redirected() = RedirectMutableFieldGen(this)
+@Deprecated("Shouldn't be required anymore")
 inline fun <V> KMutableProperty0<V>.redirected() = RedirectMutableField(this)
+@Deprecated("Shouldn't be required anymore")
 inline fun <V> KProperty0<V>.redirected() = RedirectField(this)
 
 class TransformedField<V, R>(val prop: KProperty0<V>, val transform: (V) -> R) {

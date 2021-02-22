@@ -37,14 +37,14 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
             component.visible = value
             root?.relayout()
         }
-    var enabled by redirect(component::enabled)
+    var enabled by component::enabled
     open var bounds: RectangleInt
         get() = component.bounds
         set(value) {
             component.bounds = value
         }
-    var cursor by redirect(component::cursor)
-    var focusable by redirect(component::focusable)
+    var cursor by component::cursor
+    var focusable by component::focusable
 
     open fun copyFrom(that: UiComponent) {
         this.visible = that.visible

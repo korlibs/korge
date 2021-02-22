@@ -12,7 +12,7 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
     private val _children = arrayListOf<UiComponent>()
     val numChildren: Int get() = _children.size
     val size: Int get() = numChildren
-    var backgroundColor: RGBA? by redirect(container::backgroundColor)
+    var backgroundColor: RGBA? by container::backgroundColor
 
     var layout: UiLayout? = VerticalUiLayout
 

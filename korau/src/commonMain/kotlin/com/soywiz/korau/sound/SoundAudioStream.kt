@@ -66,9 +66,9 @@ class SoundAudioStream(
             job.cancel()
         }
         return object : SoundChannel(nativeSound) {
-            override var volume: Double by nas::volume.redirected()
-            override var pitch: Double by nas::pitch.redirected()
-            override var panning: Double by nas::panning.redirected()
+            override var volume: Double by nas::volume
+            override var pitch: Double by nas::pitch
+            override var panning: Double by nas::panning
             override var current: TimeSpan
                 get() = stream.currentTime
                 set(value) = run { stream.currentTime = value }

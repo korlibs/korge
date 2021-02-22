@@ -40,11 +40,11 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
     var emitter: ParticleEmitter = emitter
 	var simulator = ParticleEmitterSimulator(emitter, emitterPos)
 
-	var timeUntilStop by simulator::timeUntilStop.redirected()
-	val emitterPos by simulator::emitterPos.redirected()
-	var emitting by simulator::emitting.redirected()
-	val aliveCount by simulator::aliveCount.redirected()
-	val anyAlive by simulator::anyAlive.redirected()
+	var timeUntilStop by simulator::timeUntilStop
+	val emitterPos by simulator::emitterPos
+	var emitting by simulator::emitting
+	val aliveCount by simulator::aliveCount
+	val anyAlive by simulator::anyAlive
 
 	init {
 		addUpdater { dt ->

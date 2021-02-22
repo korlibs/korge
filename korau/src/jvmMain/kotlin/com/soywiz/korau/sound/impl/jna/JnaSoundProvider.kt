@@ -64,9 +64,9 @@ class OpenALPlatformAudioOutput(
     val sourceProv = JnaSoundPropsProvider(sourceProvider)
     override var availableSamples: Int = 0
 
-    override var pitch: Double by sourceProv::pitch.redirected()
-    override var volume: Double by sourceProv::volume.redirected()
-    override var panning: Double by sourceProv::panning.redirected()
+    override var pitch: Double by sourceProv::pitch
+    override var volume: Double by sourceProv::volume
+    override var panning: Double by sourceProv::panning
 
     var source: Int
         get() = sourceProvider.source
