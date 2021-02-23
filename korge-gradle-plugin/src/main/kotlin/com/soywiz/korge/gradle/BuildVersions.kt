@@ -18,6 +18,6 @@ object BuildVersions {
 	const val COROUTINES = "1.4.2"
 	const val ANDROID_BUILD = "4.0.1"
 
-    val ALL_PROPERTIES = listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD)
-    val ALL = ALL_PROPERTIES.associate { it.name to it.get() }
+    val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD) }
+    val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
 }

@@ -22,7 +22,7 @@ class KorgeGradleApply(val project: Project) {
 		System.setProperty("java.awt.headless", "true")
 
 		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
-		val expectedGradleVersion = SemVer("5.1.1")
+        val expectedGradleVersion = SemVer("6.8.1")
 		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
 
 		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
