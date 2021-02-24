@@ -22,11 +22,12 @@ class KorgeGradleApply(val project: Project) {
 		System.setProperty("java.awt.headless", "true")
 
 		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
-        val expectedGradleVersion = SemVer("6.8.1")
+        //val expectedGradleVersion = SemVer("6.8.1")
+        val expectedGradleVersion = SemVer("6.8.0")
 		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
 
 		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
-			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion")
+			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion. Please, edit gradle/wrapper/gradle-wrapper.properties")
 		}
 
         logger.info("Korge Gradle plugin: ${BuildVersions.ALL}")
