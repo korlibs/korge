@@ -149,12 +149,12 @@ fun AudioSamplesInterleaved.applyProps(speed: Double, panning: Double, volume: D
 
     if (channels == 2) {
         for (n in 0 until out.totalSamples) {
-            out[0, n] = (this[0, (n * speedf).toInt()] * lratio).toShort()
-            out[1, n] = (this[1, (n * speedf).toInt()] * rratio).toShort()
+            out[0, n] = (this[0, (n * speedf).toInt()] * lratio).toInt().toShort()
+            out[1, n] = (this[1, (n * speedf).toInt()] * rratio).toInt().toShort()
         }
     } else {
         for (n in out.data.indices) {
-            out.data[n] = (this.data[(n * speedf).toInt()] * lratio).toShort()
+            out.data[n] = (this.data[(n * speedf).toInt()] * lratio).toInt().toShort()
         }
     }
 
@@ -168,10 +168,13 @@ fun AudioSamplesInterleaved.ensureTwoChannels(): AudioSamplesInterleaved {
             AudioSamplesInterleaved(2, this.totalSamples).also { out ->
                 val inp = this@ensureTwoChannels
                 var m = 0
+                val ichannels = inp.channels
+                val odata = out.data
+                val idata = inp.data
                 for (n in 0 until out.totalSamples) {
-                    val v = inp.data[n]
-                    out.data[m++] = v
-                    out.data[m++] = v
+                    val v = idata[n * ichannels]
+                    odata[m++] = v
+                    odata[m++] = v
                 }
             }
         }

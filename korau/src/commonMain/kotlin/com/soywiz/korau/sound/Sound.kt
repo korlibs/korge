@@ -13,7 +13,7 @@ import kotlin.coroutines.*
 
 expect val nativeSoundProvider: NativeSoundProvider
 
-open class NativeSoundProvider {
+open class NativeSoundProvider : Disposable {
 	open val target: String = "unknown"
 
 	private var initialized = false
@@ -65,6 +65,9 @@ open class NativeSoundProvider {
         SoundAudioStream(kotlin.coroutines.coroutineContext, stream, closeStream, name, onComplete)
 
     suspend fun playAndWait(stream: AudioStream, params: PlaybackParameters = PlaybackParameters.DEFAULT) = createStreamingSound(stream).playAndWait(params)
+
+    override fun dispose() {
+    }
 }
 
 open class DummyNativeSoundProvider(

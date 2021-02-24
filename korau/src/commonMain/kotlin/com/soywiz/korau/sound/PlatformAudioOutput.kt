@@ -21,6 +21,14 @@ open class PlatformAudioOutput(
 	open fun start() = Unit
     //open fun pause() = unsupported()
 	open fun stop() = Unit
+    // @TODO: We should week stop or dispose, but maybe not both
+
+    open suspend fun wait() {
+        while (availableSamples > 0) {
+            delay(10.milliseconds)
+        }
+    }
+
     override fun dispose() = stop()
 }
 

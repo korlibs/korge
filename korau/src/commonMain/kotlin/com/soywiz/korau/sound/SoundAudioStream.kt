@@ -51,9 +51,10 @@ class SoundAudioStream(
                     stream.currentPositionInSamples = 0L
                 }
             } catch (e: CancellationException) {
-                nas.stop()
-                nas.dispose()
+                // Do nothing
             } finally {
+                nas.wait()
+                nas.dispose() // disposes also stops if already playing
                 //println("STREAM.STOP")
                 if (closeStream) {
                     stream.close()
