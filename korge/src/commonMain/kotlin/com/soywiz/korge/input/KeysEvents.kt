@@ -9,6 +9,7 @@ import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import kotlinx.coroutines.*
 import kotlin.reflect.*
 
 class KeysEvents(override val view: View) : KeyComponent {
@@ -102,3 +103,7 @@ class KeysEvents(override val view: View) : KeyComponent {
 
 val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
 inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
+
+suspend fun KeysEvents.waitUp(key: Key): KeyEvent = waitUp { it.key == key }
+suspend fun KeysEvents.waitUp(filter: (key: KeyEvent) -> Boolean = { true }): KeyEvent =
+    waitSubscriberCloseable { callback -> up { if (filter(it)) callback(it) } }
