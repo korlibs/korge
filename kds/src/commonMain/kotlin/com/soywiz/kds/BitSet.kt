@@ -6,7 +6,7 @@ import com.soywiz.kds.internal.*
  * Fixed size [BitSet]. Similar to a [BooleanArray] but tightly packed to reduce memory usage.
  */
 class BitSet(override val size: Int) : Collection<Boolean> {
-    val data = IntArray(size divCeil 4)
+    private val data = IntArray(size divCeil 32)
 
     private fun part(index: Int) = index ushr 5
     private fun bit(index: Int) = index and 0x1f
