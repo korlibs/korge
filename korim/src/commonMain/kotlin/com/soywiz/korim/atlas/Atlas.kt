@@ -3,6 +3,7 @@ package com.soywiz.korim.atlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
+import com.soywiz.korma.geom.RectangleInt
 
 class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) {
     constructor(texture: BitmapSlice<Bitmap>, info: AtlasInfo = AtlasInfo()) : this(mapOf(info.pages.first().fileName to texture), info)
@@ -14,7 +15,10 @@ class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo 
         val texture = textures[page.fileName]
             ?: error("Can't find '${page.fileName}' in ${textures.keys}")
         val slice = texture.slice(info.frame.rect).let {
-            BitmapSlice(it.bmpBase, it.bounds, info.name, info.rotated)
+            // Define virtual frame with offsets "info.spriteSourceSize.x" and "info.spriteSourceSize.y"
+            // and original texture size "info.sourceSize.width" and "info.sourceSize.height"
+            BitmapSlice(it.bmpBase, it.bounds, info.name, info.rotated,
+                virtFrame = if (info.trimmed) RectangleInt(info.spriteSourceSize.x, info.spriteSourceSize.y, info.sourceSize.width, info.sourceSize.height) else null)
         }
         val name get() = info.name
         // @TODO: Use name instead
