@@ -23,6 +23,7 @@ suspend fun main() = Korge(width = 592, height = 592, bgcolor = Colors["#2b2b2b"
     // Flag
     image(bitmap) {
         position(40, 40)
+        scaleY = 0.5
         filter = flagFilter
     }
 
