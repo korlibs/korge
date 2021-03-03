@@ -38,7 +38,7 @@ class AudioChannel {
         sound: Sound,
         times: PlaybackTimes = 1.playbackTimes,
         startTime: TimeSpan = 0.seconds,
-        coroutineContext: CoroutineContext = sound.creationCoroutineContext,
+        coroutineContext: CoroutineContext = sound.defaultCoroutineContext,
     ): AudioChannel {
         stop()
         channel = sound.play(coroutineContext, PlaybackParameters(times = times, startTime = startTime, volume = volume, pitch = pitch, panning = panning))
