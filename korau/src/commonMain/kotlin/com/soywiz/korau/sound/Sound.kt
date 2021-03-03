@@ -238,9 +238,6 @@ abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProp
 	open val length: TimeSpan = 0.seconds
     open val nchannels: Int get() = 1
 
-    @Deprecated("Use play with a coroutineContext or in a suspend function")
-    fun playDefaultContext(params: PlaybackParameters = PlaybackParameters.DEFAULT, coroutineContext: CoroutineContext = defaultCoroutineContext): SoundChannel = play(coroutineContext, params)
-
     open fun play(coroutineContext: CoroutineContext, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()
     fun play(coroutineContext: CoroutineContext, times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, PlaybackParameters(times, startTime))
     fun playForever(coroutineContext: CoroutineContext, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, infinitePlaybackTimes, startTime)
