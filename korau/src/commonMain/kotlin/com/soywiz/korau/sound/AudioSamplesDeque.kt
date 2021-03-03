@@ -11,6 +11,16 @@ class AudioSamplesDeque(val channels: Int) {
 
     private val temp = ShortArray(1)
 
+    fun createTempSamples(size: Int = 1024) = AudioSamples(channels, size)
+
+    fun copyTo(out: AudioSamplesDeque, temp: AudioSamples = createTempSamples()) {
+        while (true) {
+            val read = read(temp)
+            if (read <= 0) return
+            out.write(temp, 0, read)
+        }
+    }
+
     // Individual samples
     fun read(channel: Int): Short = buffer[channel].read(temp, 0, 1).let { temp[0] }
     fun write(channel: Int, sample: Short) = run { buffer[channel].write(temp.also { temp[0] = sample }, 0, 1) }
