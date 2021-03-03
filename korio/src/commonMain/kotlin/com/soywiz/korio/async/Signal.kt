@@ -39,6 +39,7 @@ abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {
 	}
 	protected var iterating: Int = 0
 	protected inline fun iterateCallbacks(callback: (THandler) -> Unit) {
+        if (handlers.isEmpty()) return
 		try {
 			iterating++
 			handlers.fastIterateRemove { node ->
