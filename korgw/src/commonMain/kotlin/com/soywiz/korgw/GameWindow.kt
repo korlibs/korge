@@ -2,6 +2,7 @@ package com.soywiz.korgw
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.setBits
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
@@ -107,18 +108,28 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                     item.continuation?.resume(Unit)
                     item.callback?.run()
                 }
-                if ((now() - startTime) >= availableTime) break
+                if ((now() - startTime) >= availableTime) {
+                    informTooMuchCallbacksToHandleInThisFrame()
+                    break
+                }
             }
 
             while (tasks.isNotEmpty()) {
                 val task = tasks.dequeue()
                 task?.run()
-                if ((now() - startTime) >= availableTime) break
+                if ((now() - startTime) >= availableTime) {
+                    informTooMuchCallbacksToHandleInThisFrame()
+                    break
+                }
             }
         } catch (e: Throwable) {
             println("Error in GameWindowCoroutineDispatcher.executePending:")
             e.printStackTrace()
         }
+    }
+
+    open fun informTooMuchCallbacksToHandleInThisFrame() {
+        //Console.warn("Too much callbacks to handle in this frame")
     }
 
     override fun close() {
