@@ -1,8 +1,10 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.internal.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
@@ -63,11 +65,17 @@ class HtmlElementAudio(
         }
     }
 
-    override fun play(params: PlaybackParameters): SoundChannel {
+    override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val audioCopy = audio.clone()
         audioCopy.volume = params.volume
         HtmlSimpleSound.callOnUnlocked {
             audioCopy.play()
+        }
+        audioCopy.oncancel = {
+            params.onCancel()
+        }
+        audioCopy.onended = {
+            params.onFinish()
         }
         return object : SoundChannel(this@HtmlElementAudio) {
             override var volume: Double
@@ -138,8 +146,7 @@ class AudioBufferSound(
         return AudioData(buffer.sampleRate, data)
     }
 
-	override fun play(params: PlaybackParameters): SoundChannel {
-        //println("AudioBufferNativeSound.play: $params")
+	override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val channel = if (buffer.isNotNull) HtmlSimpleSound.playSound(buffer, params, coroutineContext) else null
         HtmlSimpleSound.callOnUnlocked {
             channel?.play()

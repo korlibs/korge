@@ -1,6 +1,7 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.klock.*
+import kotlin.coroutines.*
 
 class AudioChannel {
     private var channel: SoundChannel? = null
@@ -37,9 +38,10 @@ class AudioChannel {
         sound: Sound,
         times: PlaybackTimes = 1.playbackTimes,
         startTime: TimeSpan = 0.seconds,
+        coroutineContext: CoroutineContext = sound.creationCoroutineContext,
     ): AudioChannel {
         stop()
-        channel = sound.play(PlaybackParameters(times = times, startTime = startTime, volume = volume, pitch = pitch, panning = panning))
+        channel = sound.play(coroutineContext, PlaybackParameters(times = times, startTime = startTime, volume = volume, pitch = pitch, panning = panning))
         return this
     }
 
@@ -48,7 +50,7 @@ class AudioChannel {
         times: PlaybackTimes = 1.playbackTimes,
         startTime: TimeSpan = 0.seconds,
     ): AudioChannel {
-        return play(nativeSoundProvider.createStreamingSound(sound, true), times, startTime)
+        return play(nativeSoundProvider.createStreamingSound(sound, true), times, startTime, coroutineContext)
     }
 
     fun stop(): AudioChannel {

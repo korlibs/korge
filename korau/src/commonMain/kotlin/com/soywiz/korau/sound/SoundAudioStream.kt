@@ -20,7 +20,7 @@ class SoundAudioStream(
     override val nchannels: Int get() = stream.channels
 
     @OptIn(ExperimentalStdlibApi::class)
-    override fun play(params: PlaybackParameters): SoundChannel {
+    override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val nas: PlatformAudioOutput = nativeSoundProvider.createAudioStream(coroutineContext, stream.rate)
         nas.copySoundPropsFrom(params)
         var playing = true
@@ -52,14 +52,15 @@ class SoundAudioStream(
                 }
             } catch (e: CancellationException) {
                 // Do nothing
+                params.onCancel()
             } finally {
                 nas.wait()
                 nas.dispose() // disposes also stops if already playing
-                //println("STREAM.STOP")
                 if (closeStream) {
                     stream.close()
                 }
                 playing = false
+                params.onFinish()
                 onComplete?.invoke()
             }
         }

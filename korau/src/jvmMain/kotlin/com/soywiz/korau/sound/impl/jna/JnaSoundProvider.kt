@@ -193,7 +193,7 @@ class OpenALSoundNoStream(
 
     override val nchannels: Int get() = data?.channels ?: 1
 
-    override fun play(params: PlaybackParameters): SoundChannel {
+    override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val data = data ?: return DummySoundChannel(this)
         provider.makeCurrent()
         val buffer = AL.alGenBuffer()
@@ -261,10 +261,13 @@ class OpenALSoundNoStream(
                     startTime = 0.seconds
                     while (channel.playingOrPaused) delay(1L)
                 }
+            } catch (e: CancellationException) {
+                params.onCancel()
             } catch (e: Throwable) {
                 e.printStackTrace()
             } finally {
                 channel.stop()
+                params.onFinish()
             }
         }
         return channel

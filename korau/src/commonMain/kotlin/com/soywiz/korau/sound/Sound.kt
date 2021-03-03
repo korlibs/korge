@@ -10,6 +10,7 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.coroutines.coroutineContext as coroutineContextKt
 
 expect val nativeSoundProvider: NativeSoundProvider
 
@@ -27,7 +28,7 @@ open class NativeSoundProvider : Disposable {
 
 	open fun createAudioStream(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
 
-    suspend fun createAudioStream(freq: Int = 44100): PlatformAudioOutput = createAudioStream(coroutineContext, freq)
+    suspend fun createAudioStream(freq: Int = 44100): PlatformAudioOutput = createAudioStream(coroutineContextKt, freq)
 
 	protected open fun init(): Unit = Unit
 
@@ -225,16 +226,25 @@ suspend fun SoundChannel.await(progress: SoundChannel.(current: TimeSpan, total:
 	}
 }
 
-abstract class Sound(val coroutineContext: CoroutineContext) : SoundProps, AudioStreamable {
+abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProps, AudioStreamable {
+    @Deprecated("Use creationCoroutineContext instead", ReplaceWith("creationCoroutineContext"))
+    val coroutineContext: CoroutineContext get() = creationCoroutineContext
+
     open val name: String = "UnknownNativeSound"
     override var volume: Double = 1.0
     override var panning: Double = 0.0
     override var pitch: Double = 1.0
 	open val length: TimeSpan = 0.seconds
     open val nchannels: Int get() = 1
-	open fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()
-    fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(PlaybackParameters(times, startTime))
-    fun playForever(startTime: TimeSpan = 0.seconds): SoundChannel = play(infinitePlaybackTimes, startTime)
+
+    open fun play(coroutineContext: CoroutineContext, params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = TODO()
+    fun play(coroutineContext: CoroutineContext, times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, PlaybackParameters(times, startTime))
+    fun playForever(coroutineContext: CoroutineContext, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContext, infinitePlaybackTimes, startTime)
+
+    suspend fun play(params: PlaybackParameters = PlaybackParameters.DEFAULT): SoundChannel = play(coroutineContextKt, params)
+    suspend fun play(times: PlaybackTimes, startTime: TimeSpan = 0.seconds): SoundChannel = play(coroutineContextKt, times, startTime)
+    suspend fun playForever(startTime: TimeSpan = 0.seconds): SoundChannel = playForever(coroutineContextKt, startTime)
+
     suspend fun playAndWait(params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
     suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
 
@@ -250,8 +260,10 @@ data class PlaybackParameters(
     val bufferTime: TimeSpan = 0.1.seconds,
     override val volume: Double = 1.0,
     override val pitch: Double = 1.0,
-    override val panning: Double = 0.0
+    override val panning: Double = 0.0,
 ) : ReadonlySoundProps {
+    var onCancel = Signal<Unit>()
+    var onFinish = Signal<Unit>()
     companion object {
         val DEFAULT = PlaybackParameters(1.playbackTimes, 0.seconds)
     }

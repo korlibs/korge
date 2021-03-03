@@ -1,6 +1,7 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
@@ -99,9 +100,10 @@ object HtmlSimpleSound {
                 }
                 updateNodes()
             }
+            val realHtmlAudioElement = this.realHtmlAudioElement
             if (realHtmlAudioElement != null) {
-                realHtmlAudioElement?.currentTime = startTime.seconds
-                realHtmlAudioElement?.play()
+                realHtmlAudioElement.currentTime = startTime.seconds
+                realHtmlAudioElement.play()
             } else {
                 sourceNode?.start(0.0, startTime.seconds)
             }
@@ -111,10 +113,13 @@ object HtmlSimpleSound {
         var times = params.times
 
         fun createJobAt(startTime: TimeSpan): Job {
+            if (coroutineContext.job.isCompleted) {
+                Console.warn("Sound won't play because coroutineContext.job is completed")
+            }
             startedAt = DateTime.now()
             var startTime = startTime
             ctx?.resume()
-            return CoroutineScope(coroutineContext).launchImmediately {
+            return launchImmediately(coroutineContext) {
                 try {
                     while (times.hasMore) {
                         //println("TIMES: $times, startTime=$startTime, buffer.duration.seconds=${buffer.duration.seconds}")
@@ -124,7 +129,10 @@ object HtmlSimpleSound {
                         val deferred = CompletableDeferred<Unit>()
                         //println("sourceNode: $sourceNode, ctx?.state=${ctx?.state}, buffer.duration=${buffer.duration}")
                         if (sourceNode == null || ctx?.state != "running") {
-                            window.setTimeout({ deferred.complete(Unit) }, ((buffer.asDynamic().duration.unsafeCast<Double>()) * 1000).toInt())
+                            window.setTimeout(
+                                { deferred.complete(Unit) },
+                                ((buffer.asDynamic().duration.unsafeCast<Double>()) * 1000).toInt()
+                            )
                         } else {
                             sourceNode?.onended = {
                                 deferred.complete(Unit)
@@ -136,9 +144,9 @@ object HtmlSimpleSound {
                         //println("sound awaited")
                         if (!times.hasMore) break
                     }
+                } catch (e: CancellationException) {
+                    params.onCancel()
                 } finally {
-                    //println("sound completed")
-
                     running = false
                     val realHtmlAudioElement = this.realHtmlAudioElement
                     if (realHtmlAudioElement != null) {
@@ -151,6 +159,7 @@ object HtmlSimpleSound {
                     gainNode = null
                     pannerNode = null
                     sourceNode = null
+                    params.onFinish()
                 }
             }
         }
@@ -351,6 +360,12 @@ object HtmlSimpleSound {
 		val _scratchBuffer = ctx?.createBuffer(1, 1, 22050)
 		lateinit var unlock: (e: Event) -> Unit
 		unlock = {
+            // Remove the touch start listener.
+            document.removeEventListener("keydown", unlock, true)
+            document.removeEventListener("touchstart", unlock, true)
+            document.removeEventListener("touchend", unlock, true)
+            document.removeEventListener("mousedown", unlock, true)
+
 			if (ctx != null) {
                 // If already created the audio context, we try to resume it
                 (window.asDynamic()).globalAudioContext.unsafeCast<BaseAudioContext?>()?.resume()
@@ -364,13 +379,8 @@ object HtmlSimpleSound {
 				source.onended = {
 					source.disconnect(0)
 
-					// Remove the touch start listener.
-					document.removeEventListener("keydown", unlock, true)
-					document.removeEventListener("touchstart", unlock, true)
-					document.removeEventListener("touchend", unlock, true)
-					document.removeEventListener("mousedown", unlock, true)
-
 					unlocked = true
+                    Console.info("Web Audio was successfully unlocked")
 					unlockDeferred.complete(Unit)
 				}
 			}
