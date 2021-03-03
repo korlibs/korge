@@ -4,6 +4,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.log.*
+import com.soywiz.korau.sound.*
 import com.soywiz.korev.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -177,6 +178,7 @@ object Korge {
 
             prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
 
+            nativeSoundProvider.initOnce()
             completeViews(views)
             views.launchImmediately {
                 coroutineScope {

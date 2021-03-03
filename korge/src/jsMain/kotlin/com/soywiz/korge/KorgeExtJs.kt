@@ -4,5 +4,6 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korge.view.*
 
 internal actual fun completeViews(views: Views) {
-    HtmlSimpleSound.unlock // Tries to unlock audio as soon as possible
+    // Already performed on Korge start
+    //HtmlSimpleSound.unlock // Tries to unlock audio as soon as possible
 }
