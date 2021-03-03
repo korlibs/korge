@@ -107,6 +107,13 @@ fun SoundProps.copySoundPropsFrom(other: ReadonlySoundProps) {
     this.panning = other.panning
 }
 
+fun SoundProps.copySoundPropsFromCombined(l: ReadonlySoundProps, r: ReadonlySoundProps) {
+    this.volume = l.volume * r.volume
+    this.pitch = l.pitch * r.pitch
+    //this.panning = l.panning + r.panning
+    this.panning = r.panning
+}
+
 class SoundChannelGroup(volume: Double = 1.0, pitch: Double = 1.0, panning: Double = 0.0) : SoundChannelBase {
     private val channels = arrayListOf<SoundChannelBase>()
 

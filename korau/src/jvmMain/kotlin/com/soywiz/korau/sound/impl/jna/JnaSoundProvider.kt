@@ -1,12 +1,15 @@
 package com.soywiz.korau.sound.impl.jna
 
+import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.internal.*
 import com.soywiz.korau.sound.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
+import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 import java.lang.RuntimeException
 import java.nio.*
@@ -27,6 +30,17 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         })
     }
 
+    val sourcePool = Pool {
+        if (it >= 100) error("TOO MANY OpenAL sources")
+        alGenSourceAndInitialize()
+            //.also { println("CREATED OpenAL source $it") }
+    }
+    val bufferPool = Pool {
+        if (it >= 100) error("TOO MANY OpenAL buffers")
+        AL.alGenBuffer()
+            //.also { println("CREATED OpenAL buffer $it") }
+    }
+
     fun makeCurrent() {
         AL.alcMakeContextCurrent(context)
     }
@@ -35,11 +49,11 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         makeCurrent()
 
         AL.alListener3f(AL.AL_POSITION, 0f, 0f, 1.0f)
-        checkAlErrors("alListener3f")
+        checkAlErrors("alListener3f", 0)
         AL.alListener3f(AL.AL_VELOCITY, 0f, 0f, 0f)
-        checkAlErrors("alListener3f")
+        checkAlErrors("alListener3f", 0)
         AL.alListenerfv(AL.AL_ORIENTATION, floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f))
-        checkAlErrors("alListenerfv")
+        checkAlErrors("alListenerfv", 0)
     }
 
     override val audioFormats = nativeAudioFormats
@@ -59,18 +73,14 @@ class OpenALPlatformAudioOutput(
     val provider: JnaOpenALNativeSoundProvider,
     coroutineContext: CoroutineContext,
     freq: Int,
-    val sourceProvider: SourceProvider = SourceProvider(0)
 ) : PlatformAudioOutput(coroutineContext, freq) {
-    val sourceProv = JnaSoundPropsProvider(sourceProvider)
+    var source = 0
+    val sourceProv = JnaSoundPropsProvider { source }
     override var availableSamples: Int = 0
 
     override var pitch: Double by sourceProv::pitch
     override var volume: Double by sourceProv::volume
     override var panning: Double by sourceProv::panning
-
-    var source: Int
-        get() = sourceProvider.source
-        set(value) = run { sourceProvider.source = value }
 
     //val source
 
@@ -110,18 +120,19 @@ class OpenALPlatformAudioOutput(
 
                 if (total < 6) {
                     AL.alGenBuffers(1, tempBuffers)
-                    checkAlErrors("alGenBuffers")
+                    checkAlErrors("alGenBuffers", tempBuffers[0])
                     //println("alGenBuffers: ${tempBuffers[0]}")
                 } else {
                     AL.alSourceUnqueueBuffers(source, 1, tempBuffers)
-                    checkAlErrors("alSourceUnqueueBuffers")
+                    checkAlErrors("alSourceUnqueueBuffers", source)
                     //println("alSourceUnqueueBuffers: ${tempBuffers[0]}")
                 }
                 //println("samples: $samples - $offset, $size")
                 //al.alBufferData(tempBuffers[0], samples.copyOfRange(offset, offset + size), frequency, panning, volume)
                 AL.alBufferData(tempBuffers[0], samples.copyOfRange(offset, offset + size), frequency, panning)
+                checkAlErrors("alBufferData", tempBuffers[0])
                 AL.alSourceQueueBuffers(source, 1, tempBuffers)
-                checkAlErrors("alSourceQueueBuffers")
+                checkAlErrors("alSourceQueueBuffers", tempBuffers[0])
 
                 //val gain = al.alGetSourcef(source, AL.AL_GAIN)
                 //val pitch = al.alGetSourcef(source, AL.AL_PITCH)
@@ -147,7 +158,7 @@ class OpenALPlatformAudioOutput(
     override fun start() {
         ensureSource()
         AL.alSourcePlay(source)
-        checkAlErrors("alSourcePlay")
+        checkAlErrors("alSourcePlay", source)
         //checkAlErrors()
     }
 
@@ -172,50 +183,90 @@ class OpenALPlatformAudioOutput(
     }
 }
 
+private class MyStopwatch {
+    private var running = false
+    private var ns = 0L
+    private val now get() = System.nanoTime()
+
+    fun resume() {
+        if (running) return
+        toggle()
+    }
+
+    fun pause() {
+        if (!running) return
+        toggle()
+    }
+
+    fun toggle() {
+        running = !running
+        ns = now - ns
+    }
+
+    val elapsedNanoseconds: Long get() = if (running) now - ns else ns
+}
+
 // https://ffainelli.github.io/openal-example/
 class OpenALSoundNoStream(
-    val provider: JnaOpenALNativeSoundProvider, coroutineContext: CoroutineContext,
-    val data: AudioData?, val sourceProvider: SourceProvider = SourceProvider(0),
+    val provider: JnaOpenALNativeSoundProvider,
+    coroutineContext: CoroutineContext,
+    val data: AudioData?,
     override val name: String = "Unknown"
-) : Sound(coroutineContext), SoundProps by JnaSoundPropsProvider(sourceProvider) {
+) : Sound(coroutineContext), SoundProps {
     override suspend fun decode(): AudioData = data ?: AudioData.DUMMY
 
-    var source: Int
-        get() = sourceProvider.source
-        set(value) = run { sourceProvider.source = value }
+    override var volume: Double = 1.0
+    override var pitch: Double = 1.0
+    override var panning: Double = 0.0
 
     override val length: TimeSpan get() = data?.totalTime ?: 0.seconds
-
     override val nchannels: Int get() = data?.channels ?: 1
 
     override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val data = data ?: return DummySoundChannel(this)
         provider.makeCurrent()
-        val buffer = AL.alGenBuffer()
+        var buffer = provider.bufferPool.alloc()
         AL.alBufferData(buffer, data, panning, volume)
 
-        source = alGenSourceAndInitialize()
+        var source = provider.sourcePool.alloc()
+        if (source == -1) Console.warn("UNEXPECTED[0] source=-1")
         AL.alSourcei(source, AL.AL_BUFFER, buffer)
-        checkAlErrors("alSourcei")
+        checkAlErrors("alSourcei", source)
 
         var stopped = false
 
+        val sourceProvider: () -> Int = { source }
+
         val channel = object : SoundChannel(this), SoundProps by JnaSoundPropsProvider(sourceProvider) {
+            private val stopWatch = MyStopwatch()
             val totalSamples get() = data.totalSamples
             var currentSampleOffset: Int
-                get() = AL.alGetSourcei(source, AL.AL_SAMPLE_OFFSET)
+                get() {
+                    if (source < 0) return 0
+                    return AL.alGetSourcei(source, AL.AL_SAMPLE_OFFSET)
+                }
                 set(value) {
+                    if (source < 0) return
                     AL.alSourcei(source, AL.AL_SAMPLE_OFFSET, value)
                 }
 
+            val estimatedTotalNanoseconds: Long
+                get() = total.nanoseconds.toLong()
+            val estimatedCurrentNanoseconds: Long
+                get() = stopWatch.elapsedNanoseconds
+
             override var current: TimeSpan
                 get() = data.timeAtSample(currentSampleOffset)
-                set(value) { AL.alSourcef(source, AL.AL_SEC_OFFSET, value.seconds.toFloat())  }
+                set(value) {
+                    if (source < 0) return
+                    AL.alSourcef(source, AL.AL_SEC_OFFSET, value.seconds.toFloat())
+                }
             override val total: TimeSpan get() = data.totalTime
 
             override val state: SoundChannelState get() {
+                if (source < 0) return SoundChannelState.STOPPED
                 val result = AL.alGetSourceState(source)
-                checkAlErrors("alGetSourceState")
+                checkAlErrors("alGetSourceState", source)
                 return when (result) {
                     AL.AL_INITIAL -> SoundChannelState.INITIAL
                     AL.AL_PLAYING -> SoundChannelState.PLAYING
@@ -226,22 +277,32 @@ class OpenALSoundNoStream(
             }
 
             override fun stop() {
-                if (!stopped) {
-                    stopped = true
-                    AL.alDeleteSource(source)
-                    AL.alDeleteBuffer(buffer)
-                }
+                if (stopped) return
+                stopped = true
+                if (source == -1) Console.warn("UNEXPECTED[1] source=-1")
+                AL.alSourceStop(source)
+                AL.alSourcei(source, AL.AL_BUFFER, 0)
+                provider.sourcePool.free(source)
+                provider.bufferPool.free(buffer)
+                source = -1
+                buffer = -1
+                stopWatch.pause()
+                // We reuse them from the pool
+                //AL.alDeleteSource(source)
+                //AL.alDeleteBuffer(buffer)
             }
 
             override fun pause() {
                 AL.alSourcePause(source)
+                stopWatch.pause()
             }
 
             override fun resume() {
                 AL.alSourcePlay(source)
+                stopWatch.resume()
             }
         }.also {
-            it.copySoundPropsFrom(params)
+            it.copySoundPropsFromCombined(this@OpenALSoundNoStream, params)
         }
         launchImmediately(coroutineContext[ContinuationInterceptor] ?: coroutineContext) {
             var times = params.times
@@ -251,10 +312,10 @@ class OpenALSoundNoStream(
                     times = times.oneLess
                     channel.reset()
                     AL.alSourcef(source, AL.AL_SEC_OFFSET, startTime.seconds.toFloat())
-                    AL.alSourcePlay(source)
+                    channel.resume()
                     //checkAlErrors("alSourcePlay")
                     startTime = 0.seconds
-                    while (channel.playingOrPaused) delay(1L)
+                    while (channel.playingOrPaused) delay(10L)
                 }
             } catch (e: CancellationException) {
                 params.onCancel?.invoke()
@@ -269,27 +330,33 @@ class OpenALSoundNoStream(
     }
 }
 
-data class SourceProvider(var source: Int)
-
-class JnaSoundPropsProvider(val sourceProvider: SourceProvider) : SoundProps {
-    val source get() = sourceProvider.source
+class JnaSoundPropsProvider(val sourceProvider: () -> Int) : SoundProps {
+    val source get() = sourceProvider()
 
     private val temp1 = FloatArray(3)
     private val temp2 = FloatArray(3)
     private val temp3 = FloatArray(3)
 
     override var pitch: Double
-        get() = AL.alGetSourcef(source, AL.AL_PITCH).toDouble()
-        set(value) { AL.alSourcef(source, AL.AL_PITCH, value.toFloat()) }
+        get() = if (source < 0) 1.0 else AL.alGetSourcef(source, AL.AL_PITCH).toDouble()
+        set(value) {
+            if (source < 0) return
+            AL.alSourcef(source, AL.AL_PITCH, value.toFloat())
+        }
     override var volume: Double
-        get() = AL.alGetSourcef(source, AL.AL_GAIN).toDouble()
-        set(value) { AL.alSourcef(source, AL.AL_GAIN, value.toFloat()) }
+        get() = if (source < 0) 1.0 else AL.alGetSourcef(source, AL.AL_GAIN).toDouble()
+        set(value) {
+            if (source < 0) return
+            AL.alSourcef(source, AL.AL_GAIN, value.toFloat())
+        }
     override var panning: Double
         get() {
+            if (source < 0) return 0.0
             AL.alGetSource3f(source, AL.AL_POSITION, temp1, temp2, temp3)
             return temp1[0].toDouble()
         }
         set(value) {
+            if (source < 0) return
             val pan = value.toFloat()
             AL.alSourcef(source, AL.AL_ROLLOFF_FACTOR, 0.0f)
             AL.alSourcei(source, AL.AL_SOURCE_RELATIVE, 1)
@@ -316,21 +383,14 @@ private fun applyStereoPanningInline(interleaved: ShortArray, panning: Double = 
 
 private fun AL.alBufferData(buffer: Int, data: AudioData, panning: Double = 0.0, volume: Double = 1.0) {
     val samples = data.samplesInterleaved.data
-
     if (data.stereo && panning != 0.0) applyStereoPanningInline(samples, panning, volume)
-
     val bufferData = ShortBuffer.wrap(samples)
-    //val bufferData = ByteBuffer.allocateDirect(samples.size * 2).order(ByteOrder.nativeOrder())
-    //bufferData.asShortBuffer().put(samples)
-
-    AL.alBufferData(
-        buffer,
-        if (data.stereo) AL.AL_FORMAT_STEREO16 else AL.AL_FORMAT_MONO16,
-        if (samples.isNotEmpty()) bufferData else null,
-        samples.size * 2,
-        data.rate
-    )
-    checkAlErrors("alBufferData")
+    val format = if (data.stereo) AL.AL_FORMAT_STEREO16 else AL.AL_FORMAT_MONO16
+    val samplesData = if (samples.isNotEmpty()) bufferData else null
+    val bytesSize = samples.size * 2
+    val rate = data.rate
+    AL.alBufferData(buffer, format, samplesData, bytesSize, rate)
+    checkAlErrors("alBufferData", buffer)
 }
 
 private fun alGenSourceAndInitialize() = AL.alGenSource().also { source ->
@@ -339,9 +399,19 @@ private fun alGenSourceAndInitialize() = AL.alGenSource().also { source ->
     AL.alSource3f(source, AL.AL_POSITION, 0f, 0f, 0f)
     AL.alSource3f(source, AL.AL_VELOCITY, 0f, 0f, 0f)
     AL.alSourcei(source, AL.AL_LOOPING, AL.AL_FALSE)
+    AL.alSourceStop(source)
 }
 
-fun checkAlErrors(name: String) {
-    //val error = al.alGetError()
-    //if (error != AL.AL_NO_ERROR) error("OpenAL error ${error.shex} '$name'")
+fun ALerrorToString(value: Int): String = when (value) {
+    AL.AL_INVALID_NAME -> "AL_INVALID_NAME"
+    AL.AL_INVALID_ENUM -> "AL_INVALID_ENUM"
+    AL.AL_INVALID_VALUE -> "AL_INVALID_VALUE"
+    AL.AL_INVALID_OPERATION -> "AL_INVALID_OPERATION"
+    AL.AL_OUT_OF_MEMORY -> "AL_OUT_OF_MEMORY"
+    else -> "UNKNOWN"
+}
+
+//fun checkAlErrors(name: String, value: Int = -1) {
+fun checkAlErrors(name: String, value: Int) {
+    //AL.alGetError().also { error -> if (error != AL.AL_NO_ERROR) Console.error("OpenAL error ${error.shex} (${ALerrorToString(error)}) '$name' (value=$value)") }
 }
