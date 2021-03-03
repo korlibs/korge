@@ -156,11 +156,6 @@ class OpenALPlatformAudioOutput(
     //}
 
     override fun stop() {
-        dispose()
-    }
-
-    // @TODO: Leaking buffers?
-    override fun dispose() {
         provider.makeCurrent()
 
         AL.alSourceStop(source)
@@ -262,12 +257,12 @@ class OpenALSoundNoStream(
                     while (channel.playingOrPaused) delay(1L)
                 }
             } catch (e: CancellationException) {
-                params.onCancel()
+                params.onCancel?.invoke()
             } catch (e: Throwable) {
                 e.printStackTrace()
             } finally {
                 channel.stop()
-                params.onFinish()
+                params.onFinish?.invoke()
             }
         }
         return channel

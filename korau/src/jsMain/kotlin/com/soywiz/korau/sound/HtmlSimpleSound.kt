@@ -145,7 +145,7 @@ object HtmlSimpleSound {
                         if (!times.hasMore) break
                     }
                 } catch (e: CancellationException) {
-                    params.onCancel()
+                    params.onCancel?.invoke()
                 } finally {
                     running = false
                     val realHtmlAudioElement = this.realHtmlAudioElement
@@ -159,7 +159,7 @@ object HtmlSimpleSound {
                     gainNode = null
                     pannerNode = null
                     sourceNode = null
-                    params.onFinish()
+                    params.onFinish?.invoke()
                 }
             }
         }

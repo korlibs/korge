@@ -2,17 +2,21 @@ package com.soywiz.korau.sound
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.korau.format.*
 import com.soywiz.korau.format.mp3.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.native.concurrent.*
 
 actual val nativeSoundProvider: NativeSoundProvider = Win32NativeSoundProvider
 
 @ThreadLocal
-private val Win32NativeSoundProvider_workerPool = Pool<Worker> { Worker.start(name = "Win32NativeSoundProvider$it") }
+private val Win32NativeSoundProvider_workerPool = Pool<Worker> {
+    Worker.start(name = "Win32NativeSoundProvider$it")
+}
 
 object Win32NativeSoundProvider : NativeSoundProvider(), Disposable {
     //override val audioFormats: AudioFormats = AudioFormats(WAV, NativeMp3DecoderFormat, NativeOggVorbisDecoderFormat)
@@ -46,8 +50,9 @@ class Win32PlatformAudioOutput(
     override var panning: Double = 0.0
 
     override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+        // More than 1 second queued, let's wait a bit
         if (availableSamples > freq) {
-            delay(10.milliseconds)
+            delay(200.milliseconds)
         }
 
         // @TODO: All this things could be done at worker level
@@ -67,6 +72,7 @@ class Win32PlatformAudioOutput(
     override suspend fun wait() {
         while (!process.isCompleted) {
             delay(10.milliseconds)
+            //println("WAITING...: process.isCompleted=${process.isCompleted}")
         }
     }
 
@@ -75,8 +81,16 @@ class Win32PlatformAudioOutput(
         val worker = this.worker ?: return
         process.stop()
         launchImmediately(coroutineContext) {
-            wait()
-            provider.workerPool.free(worker)
+            try {
+                wait()
+            } catch (e: CancellationException) {
+                // Do nothing
+            } catch (e: Throwable) {
+                Console.error("Error in Win32PlatformAudioOutput.stop:")
+                e.printStackTrace()
+            } finally {
+                provider.workerPool.free(worker)
+            }
         }
     }
 }

@@ -52,15 +52,14 @@ class SoundAudioStream(
                 }
             } catch (e: CancellationException) {
                 // Do nothing
-                params.onCancel()
+                params.onCancel?.invoke()
             } finally {
-                nas.wait()
-                nas.dispose() // disposes also stops if already playing
+                nas.stop()
                 if (closeStream) {
                     stream.close()
                 }
                 playing = false
-                params.onFinish()
+                params.onFinish?.invoke()
                 onComplete?.invoke()
             }
         }

@@ -265,9 +265,9 @@ data class PlaybackParameters(
     override val volume: Double = 1.0,
     override val pitch: Double = 1.0,
     override val panning: Double = 0.0,
+    val onCancel: (() -> Unit)? = null,
+    val onFinish: (() -> Unit)? = null,
 ) : ReadonlySoundProps {
-    var onCancel = Signal<Unit>()
-    var onFinish = Signal<Unit>()
     companion object {
         val DEFAULT = PlaybackParameters(1.playbackTimes, 0.seconds)
     }

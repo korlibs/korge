@@ -29,7 +29,7 @@ open class PlatformAudioOutput(
         }
     }
 
-    override fun dispose() = stop()
+    final override fun dispose() = stop()
 }
 
 open class DequeBasedPlatformAudioOutput(
@@ -65,5 +65,4 @@ open class DequeBasedPlatformAudioOutput(
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
         deque.write(samples, offset, size)
     }
-    final override fun dispose() = stop()
 }

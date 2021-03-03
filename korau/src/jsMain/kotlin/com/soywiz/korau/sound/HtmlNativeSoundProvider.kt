@@ -72,10 +72,10 @@ class HtmlElementAudio(
             audioCopy.play()
         }
         audioCopy.oncancel = {
-            params.onCancel()
+            params.onCancel?.invoke()
         }
         audioCopy.onended = {
-            params.onFinish()
+            params.onFinish?.invoke()
         }
         return object : SoundChannel(this@HtmlElementAudio) {
             override var volume: Double
