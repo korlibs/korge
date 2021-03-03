@@ -32,8 +32,14 @@ open class NativeSoundProvider : Disposable {
 
 	protected open fun init(): Unit = Unit
 
-	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound =
-        createStreamingSound(audioFormats.decodeStreamOrError(data.openAsync(), props), closeStream = true, name = name)
+	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
+        val stream = audioFormats.decodeStreamOrError(data.openAsync(), props)
+        return if (streaming) {
+            createStreamingSound(stream, closeStream = true, name = name)
+        } else {
+            createNonStreamingSound(stream.toData(), name = name)
+        }
+	}
 
     open val audioFormats: AudioFormats = AudioFormats(WAV)
     //open val audioFormats: AudioFormats = AudioFormats(WAV, MP3Decoder, OGG)
@@ -55,7 +61,12 @@ open class NativeSoundProvider : Disposable {
 	suspend fun createSound(file: FinalVfsFile, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = createSound(file.vfs, file.path, streaming, props)
 	suspend fun createSound(file: VfsFile, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = createSound(file.getUnderlyingUnscapedFile(), streaming, props)
 
-	open suspend fun createSound(
+    open suspend fun createNonStreamingSound(
+        data: AudioData,
+        name: String = "Unknown"
+    ): Sound = createStreamingSound(data.toStream(), true, name)
+
+    open suspend fun createSound(
 		data: AudioData,
 		formats: AudioFormats = defaultAudioFormats,
 		streaming: Boolean = false,
@@ -99,6 +110,18 @@ interface SoundProps : ReadonlySoundProps {
     override var volume: Double
     override var pitch: Double
     override var panning: Double
+}
+
+object DummySoundProps : SoundProps {
+    override var volume: Double
+        get() = 1.0
+        set(v) = Unit
+    override var pitch: Double
+        get() = 1.0
+        set(v) = Unit
+    override var panning: Double
+        get() = 0.0
+        set(v) = Unit
 }
 
 fun SoundProps.copySoundPropsFrom(other: ReadonlySoundProps) {

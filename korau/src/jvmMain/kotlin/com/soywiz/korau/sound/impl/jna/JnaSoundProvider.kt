@@ -60,9 +60,9 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
 
     override val audioFormats = nativeAudioFormats
 
-    override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound {
-        if (!AL.loaded || streaming) return super.createSound(data, streaming, props, name)
-        return OpenALSoundNoStream(this, coroutineContext, audioFormats.decode(data, props), name = name)
+    override suspend fun createNonStreamingSound(data: AudioData, name: String): Sound {
+        if (!AL.loaded) return super.createNonStreamingSound(data, name)
+        return OpenALSoundNoStream(this, coroutineContext, data, name = name)
     }
 
     override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
