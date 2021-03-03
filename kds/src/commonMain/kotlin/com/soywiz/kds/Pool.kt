@@ -20,6 +20,8 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
     private val items = Stack<T>()
     private var lastId = 0
 
+    val totalAllocatedItems get() = lastId
+    val totalItemsInUse get() = totalAllocatedItems - itemsInPool
     val itemsInPool: Int get() = items.size
 
     init {

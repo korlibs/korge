@@ -19,6 +19,10 @@ import kotlin.math.*
 class OpenALException(message: String) : RuntimeException(message)
 
 class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
+    companion object {
+        val MAX_AVAILABLE_SOURCES = 100
+    }
+
     val device = (AL.alcOpenDevice(null) ?: throw OpenALException("Can't open OpenAL device")).also { device ->
         Runtime.getRuntime().addShutdownHook(Thread {
             AL.alcCloseDevice(device)
@@ -31,12 +35,10 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
     }
 
     val sourcePool = Pool {
-        if (it >= 100) error("TOO MANY OpenAL sources")
         alGenSourceAndInitialize()
             //.also { println("CREATED OpenAL source $it") }
     }
     val bufferPool = Pool {
-        if (it >= 100) error("TOO MANY OpenAL buffers")
         AL.alGenBuffer()
             //.also { println("CREATED OpenAL buffer $it") }
     }
@@ -224,12 +226,17 @@ class OpenALSoundNoStream(
 
     override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val data = data ?: return DummySoundChannel(this)
+        //println("provider.sourcePool.totalItemsInUse=${provider.sourcePool.totalItemsInUse}, provider.sourcePool.totalAllocatedItems=${provider.sourcePool.totalAllocatedItems}, provider.sourcePool.itemsInPool=${provider.sourcePool.itemsInPool}")
+        if (provider.sourcePool.totalItemsInUse >= JnaOpenALNativeSoundProvider.MAX_AVAILABLE_SOURCES) {
+            error("OpenAL too many sources in use")
+        }
         provider.makeCurrent()
         var buffer = provider.bufferPool.alloc()
-        AL.alBufferData(buffer, data, panning, volume)
-
         var source = provider.sourcePool.alloc()
         if (source == -1) Console.warn("UNEXPECTED[0] source=-1")
+
+        AL.alBufferData(buffer, data, panning, volume)
+
         AL.alSourcei(source, AL.AL_BUFFER, buffer)
         checkAlErrors("alSourcei", source)
 
