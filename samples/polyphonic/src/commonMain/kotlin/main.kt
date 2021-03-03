@@ -41,6 +41,7 @@ suspend fun main() = Korge {
 				for (n in 1 until samples.channels) {
 					arraycopy(samples.data[0], 0, samples.data[n], 0, samples.data[0].size)
 				}
+                samples.scaleVolume(.05f)
 				//MemorySyncStream().apply { writeShortArrayLE(samples.data[0]) }.toByteArray().writeToFile("/tmp/data.raw")
 				//for (n in 0 until 44100) println(samples.data[0][n])
 				stream.add(samples)
