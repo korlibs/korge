@@ -77,6 +77,7 @@ class AudioDataStream(val data: AudioData) : AudioStream(data.rate, data.channel
             for (n in 0 until channels) {
                 arraycopy(data.samples[n], cursor, out[n], offset, toread)
             }
+            cursor += toread
         }
         if (toread <= 0) finished = true
         return toread

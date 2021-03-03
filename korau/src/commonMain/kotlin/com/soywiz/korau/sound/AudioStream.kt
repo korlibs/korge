@@ -16,7 +16,7 @@ abstract class AudioStream(
     val totalLength get() = ((totalLengthInSamples ?: 0L).toDouble() / rate.toDouble()).seconds
     open var currentPositionInSamples: Long = 0L
     var currentTime: TimeSpan
-        set(value) = run { currentPositionInSamples = (value.seconds * rate.toDouble()).toLong() }
+        set(value) { currentPositionInSamples = (value.seconds * rate.toDouble()).toLong() }
         get() = (currentPositionInSamples.toDouble() / rate.toDouble()).seconds
     open suspend fun read(out: AudioSamples, offset: Int = 0, length: Int = out.totalSamples): Int = 0
     override fun close() = Unit
@@ -52,9 +52,10 @@ abstract class AudioStream(
     }
 }
 
-suspend fun AudioStream.toData(maxSamples: Int = Int.MAX_VALUE): AudioData {
+// default maxSamples is 5 minutes of data at 44100hz
+suspend fun AudioStream.toData(maxSamples: Int = 5 * 60 * 44100): AudioData {
     val out = AudioSamplesDeque(channels)
-    val buffer = AudioSamples(channels, 1024)
+    val buffer = AudioSamples(channels, 16 * 4096)
     try {
         while (!finished) {
             val read = read(buffer, 0, buffer.totalSamples)
