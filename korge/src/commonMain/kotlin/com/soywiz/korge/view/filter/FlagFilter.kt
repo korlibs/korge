@@ -37,8 +37,8 @@ class FlagFilter(
 
         private val FRAGMENT_SHADER = FragmentShader {
             apply {
-                val x01 = fragmentCoords01.x - ceil(abs(u_amplitude)) / (u_TextureSize.x + 2f.lit * ceil(abs(u_amplitude)))
-                val offsetY = sin((x01 * u_crestCount + u_Time * -u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
+                val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
+                val offsetY = sin((x01 * u_crestCount - u_Time * u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
                 out setTo tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY))
             }
         }
