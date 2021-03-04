@@ -597,6 +597,21 @@ samples {
             group = "run"
             dependsOn("jsBrowserDevelopmentRun")
         }
+        fun Task.dependsOnNativeTask(kind: String) {
+            when {
+                isWindows -> dependsOn("runDebugExecutableMingwX64")
+                isMacos -> dependsOn("runDebugExecutableMacosX64")
+                else -> dependsOn("runDebugExecutableLinuxX64")
+            }
+        }
+        val runNativeDebug by creating {
+            group = "run"
+            dependsOnNativeTask("Debug")
+        }
+        val runNativeRelease by creating {
+            group = "run"
+            dependsOnNativeTask("Release")
+        }
 
         //val jsRun by creating { dependsOn("jsBrowserDevelopmentRun") } // Already available
         //val jvmRun by creating {
