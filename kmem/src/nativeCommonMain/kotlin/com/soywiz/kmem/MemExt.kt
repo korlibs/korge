@@ -6,6 +6,8 @@ import kotlinx.cinterop.*
 private val emptyAddressByte = ByteArray(1).pin().addressOf(0)
 private val emptyAddressShort = ShortArray(1).pin().addressOf(0)
 private val emptyAddressInt = IntArray(1).pin().addressOf(0)
+private val emptyAddressFloat = FloatArray(1).pin().addressOf(0)
+private val emptyAddressDouble = DoubleArray(1).pin().addressOf(0)
 private val emptyAddressLong = LongArray(1).pin().addressOf(0)
 
 private val emptyAddressUByte = UByteArray(1).pin().addressOf(0)
@@ -25,6 +27,10 @@ val Pinned<ByteArray>.startAddressOf: CPointer<ByteVar> get() = if (this.get().i
 val Pinned<ShortArray>.startAddressOf: CPointer<ShortVar> get() = if (this.get().isNotEmpty()) this.addressOf(0) else emptyAddressShort
 /** Returns the address of the beginning of this array or if it is empty another valid non-null address */
 val Pinned<IntArray>.startAddressOf: CPointer<IntVar> get() = if (this.get().isNotEmpty()) this.addressOf(0) else emptyAddressInt
+/** Returns the address of the beginning of this array or if it is empty another valid non-null address */
+val Pinned<FloatArray>.startAddressOf: CPointer<FloatVar> get() = if (this.get().isNotEmpty()) this.addressOf(0) else emptyAddressFloat
+/** Returns the address of the beginning of this array or if it is empty another valid non-null address */
+val Pinned<DoubleArray>.startAddressOf: CPointer<DoubleVar> get() = if (this.get().isNotEmpty()) this.addressOf(0) else emptyAddressDouble
 /** Returns the address of the beginning of this array or if it is empty another valid non-null address */
 val Pinned<LongArray>.startAddressOf: CPointer<LongVar> get() = if (this.get().isNotEmpty()) this.addressOf(0) else emptyAddressLong
 /** Returns the address of the beginning of this array or if it is empty another valid non-null address */
