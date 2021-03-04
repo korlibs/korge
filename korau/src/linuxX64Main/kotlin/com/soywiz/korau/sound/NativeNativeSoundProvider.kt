@@ -148,11 +148,6 @@ class OpenALPlatformAudioOutput(
     }
 
     override fun stop() {
-        dispose()
-    }
-
-    // @TODO: Leaking buffers?
-    override fun dispose() {
         provider.makeCurrent()
 
         alSourceStop(source)
@@ -185,7 +180,7 @@ class OpenALNativeSoundNoStream(
 
     override val length: TimeSpan get() = data?.totalTime ?: 0.seconds
 
-    override fun play(params: PlaybackParameters): SoundChannel {
+    override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
         val data = data ?: return DummySoundChannel(this)
         provider.makeCurrent()
         val buffer = alGenBuffer()
