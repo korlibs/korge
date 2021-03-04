@@ -38,13 +38,40 @@ private class ConcurrentDeque<T : Any> {
 private interface WaveOutPart
 
 private object WaveOutEnd : WaveOutPart
+private object WaveOutFlush : WaveOutPart
 
-private class WaveOutData(val data: ShortArray) : WaveOutPart {
+private class WaveOutReopen(val freq: Int) : WaveOutPart {
     init {
         this.freeze()
     }
 }
-private class WaveOutSetVolume(val volume: Double) : WaveOutPart {
+
+private interface WaveOutDataBase : WaveOutPart {
+    fun computeData(): ShortArray
+}
+
+//private class WaveOutData(val data: ShortArray) : WaveOutDataBase {
+//    override fun computeData(): ShortArray = data
+//
+//    init {
+//        this.freeze()
+//    }
+//}
+
+private class WaveOutDataEx(
+    val adata: Array<ShortArray>,
+    val pitch: Double,
+    val volume: Double,
+    val panning: Double,
+    val freq: Int
+) : WaveOutDataBase {
+    override fun computeData(): ShortArray =
+        AudioSamples(2, adata[0].size, Array(2) { adata[it % adata.size] })
+            //.resampleIfRequired(freq, 44100)
+            .interleaved()
+            .applyProps(pitch, panning, volume)
+            .data
+
     init {
         this.freeze()
     }
@@ -53,12 +80,14 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
     private val sPosition = AtomicLong(0L)
     private val sLength = AtomicLong(0L)
     private val completed = AtomicLong(0L)
+    private val numPendingChunks = AtomicLong(0L)
     private val deque = ConcurrentDeque<WaveOutPart>()
     private val info = AtomicReference<Future<Unit>?>(null)
 
     val position get() = sPosition.value
     val length get() = sLength.value
-    val isCompleted get() = completed.value != 0L
+    //val isCompleted get() = completed.value != 0L
+    val pendingAudio get() = numPendingChunks.value != 0L || deque.size > 0
 
     init {
         freeze()
@@ -66,17 +95,28 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
 
     val pendingCommands get() = deque.size
 
-    fun addData(data: ShortArray) {
-        sLength.addAndGet(data.size / nchannels)
-        deque.add(WaveOutData(data))
-    }
+    //fun addData(data: ShortArray) {
+    //    sLength.addAndGet(data.size / nchannels)
+    //    deque.add(WaveOutData(data))
+    //}
 
-    fun setVolume(volume: Double) {
-        deque.add(WaveOutSetVolume(volume))
+    fun addData(samples: AudioSamples, offset: Int, size: Int, pitch: Double, volume: Double, panning: Double, freq: Int) {
+        sLength.addAndGet(size)
+        deque.add(WaveOutDataEx(
+            Array(samples.channels) { samples.data[it].copyOfRange(offset, offset + size) },
+            pitch, volume, panning, freq
+        ))
     }
 
     fun stop() {
         deque.add(WaveOutEnd)
+    }
+
+    fun reopen(freq: Int) {
+        sPosition.value = 0L
+        sLength.value = 0L
+        completed.value = 0L
+        deque.add(WaveOutReopen(freq))
     }
 
     fun stopAndWait() {
@@ -88,73 +128,87 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
         val _info = this
         _info.info.value = _worker.execute(TransferMode.SAFE, { _info }) { info ->
             memScoped {
-                val format = alloc<WAVEFORMATEX>().apply {
-                    this.wFormatTag = WAVE_FORMAT_PCM.convert()
-                    this.nChannels = info.nchannels.convert() // 2?
-                    this.nSamplesPerSec = info.freq.convert() // 44100?
-                    this.wBitsPerSample = Short.SIZE_BITS.convert() // 16
-                    this.nBlockAlign = (info.nchannels * Short.SIZE_BYTES).convert()
-                    this.nAvgBytesPerSec = this.nSamplesPerSec * this.nBlockAlign
-                    this.cbSize = sizeOf<WAVEFORMATEX>().convert()
-                    //this.cbSize = 0.convert()
-                }
+                val nchannels = info.nchannels // 2
                 val hWaveOut = alloc<HWAVEOUTVar>()
-
-                waveOutOpen(hWaveOut.ptr, WAVE_MAPPER, format.ptr, 0.convert(), 0.convert(), CALLBACK_NULL)
                 val pendingChunks = ArrayDeque<WaveOutChunk>()
 
-                fun updatePosition() {
-                    // Update position
-                    memScoped {
-                        val time = alloc<MMTIME>()
-                        time.wType = TIME_BYTES.convert()
-                        waveOutGetPosition(hWaveOut!!.value, time.ptr, sizeOf<MMTIME>().convert())
-                        //info.position.value = time.u.cb.toLong() / Short.SIZE_BYTES / info.nchannels
-                        info.sPosition.value = time.u.cb.toLong() / info.nchannels
-                    }
-                }
-
                 fun clearCompletedChunks() {
-                    updatePosition()
                     while (pendingChunks.isNotEmpty() && pendingChunks.first().completed) {
                         val chunk = pendingChunks.removeFirst()
                         waveOutUnprepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                        info.sPosition.addAndGet(chunk.data.size / nchannels)
                         chunk.dispose()
                     }
                 }
 
-                try {
-                    process@while (true) {
-                        Sleep(5.convert())
-                        updatePosition()
-                        while (true) {
-                            val it = info.deque.consume() ?: break
-                            //println("CONSUME: $item")
-                            when (it) {
-                                is WaveOutEnd -> break@process
-                                is WaveOutData -> {
-                                    val chunk = WaveOutChunk(it.data)
-                                    //info.sLength.addAndGet(chunk.data.size / info.nchannels)
-                                    pendingChunks.add(chunk)
-                                    waveOutPrepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
-                                    waveOutWrite(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
-                                    clearCompletedChunks()
-                                }
-                                is WaveOutSetVolume -> {
-                                    waveOutSetVolume(hWaveOut.value, (it.volume.clamp01() * 0xFFFF).toInt().convert())
-                                }
-                            }
-
-                        }
-                    }
-                } finally {
-                    //println("finalizing...")
+                fun waveReset() {
+                    clearCompletedChunks()
                     while (pendingChunks.isNotEmpty()) {
                         Sleep(5.convert())
                         clearCompletedChunks()
                     }
                     waveOutReset(hWaveOut.value)
+                    info.sPosition.value = 0L
+                }
+
+                fun waveClose() {
+                    waveReset()
                     waveOutClose(hWaveOut.value)
+                }
+
+                var openedFreq = 0
+
+                fun waveOpen(freq: Int) {
+                    openedFreq = freq
+                    memScoped {
+                        val format = alloc<WAVEFORMATEX>().apply {
+                            this.wFormatTag = WAVE_FORMAT_PCM.convert()
+                            this.nChannels = nchannels.convert() // 2?
+                            this.nSamplesPerSec = freq.convert()
+                            this.wBitsPerSample = Short.SIZE_BITS.convert() // 16
+                            this.nBlockAlign = (info.nchannels * Short.SIZE_BYTES).convert()
+                            this.nAvgBytesPerSec = this.nSamplesPerSec * this.nBlockAlign
+                            this.cbSize = sizeOf<WAVEFORMATEX>().convert()
+                            //this.cbSize = 0.convert()
+                        }
+
+                        waveOutOpen(hWaveOut.ptr, WAVE_MAPPER, format.ptr, 0.convert(), 0.convert(), CALLBACK_NULL)
+                    }
+                }
+
+                waveOpen(info.freq)
+
+                try {
+                    process@while (true) {
+                        clearCompletedChunks()
+                        while (true) {
+                            val it = info.deque.consume() ?: break
+                            //println("CONSUME: $item")
+                            when (it) {
+                                is WaveOutReopen -> {
+                                    if (it.freq != openedFreq) {
+                                        waveClose()
+                                        waveOpen(it.freq)
+                                    }
+                                }
+                                is WaveOutEnd -> break@process
+                                is WaveOutDataBase -> {
+                                    val chunk = WaveOutChunk(it.computeData())
+                                    //info.sLength.addAndGet(chunk.data.size / info.nchannels)
+                                    pendingChunks.add(chunk)
+                                    waveOutPrepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                                    waveOutWrite(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                                }
+                                is WaveOutFlush -> {
+                                    waveReset()
+                                }
+                            }
+                        }
+                        Sleep(5.convert())
+                    }
+                } finally {
+                    //println("finalizing...")
+                    waveClose()
                     info.completed.value = 1L
                 }
             }
