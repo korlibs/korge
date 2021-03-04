@@ -116,10 +116,10 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
 
                 fun clearCompletedChunks() {
                     updatePosition()
-                    memScoped {
-                        while (pendingChunks.isNotEmpty() && pendingChunks.first().completed) {
-                            pendingChunks.removeFirst().dispose()
-                        }
+                    while (pendingChunks.isNotEmpty() && pendingChunks.first().completed) {
+                        val chunk = pendingChunks.removeFirst()
+                        waveOutUnprepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                        chunk.dispose()
                     }
                 }
 
@@ -168,7 +168,7 @@ private class WaveOutChunk(val data: ShortArray) {
     val dataPin = data.pin()
     val hdr = scope.alloc<WAVEHDR>().apply {
         //println(samplesInterleaved.data.toList())
-        this.lpData = dataPin.addressOf(0).reinterpret()
+        this.lpData = dataPin.startAddressOf.reinterpret()
         this.dwBufferLength = (data.size * Short.SIZE_BYTES).convert()
         this.dwFlags = 0.convert()
     }

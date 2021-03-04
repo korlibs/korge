@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korau.format.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.concurrent.atomic.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
@@ -17,11 +18,11 @@ expect val nativeSoundProvider: NativeSoundProvider
 open class NativeSoundProvider : Disposable {
 	open val target: String = "unknown"
 
-	private var initialized = false
+	private var initialized = korAtomic(false)
 
 	fun initOnce() {
-		if (!initialized) {
-			initialized = true
+		if (!initialized.value) {
+			initialized.value = true
 			init()
 		}
 	}
