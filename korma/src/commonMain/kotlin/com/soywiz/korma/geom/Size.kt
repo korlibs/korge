@@ -94,7 +94,7 @@ fun SizeInt.setTo(width: Int, height: Int) : SizeInt {
     return this
 }
 
-fun SizeInt.setTo(that: SizeInt) = setTo(that.width, that.height)
+fun SizeInt.setTo(that: ISizeInt) = setTo(that.width, that.height)
 
 fun SizeInt.setToScaled(sx: Double, sy: Double) = setTo((this.width * sx).toInt(), (this.height * sy).toInt())
 fun SizeInt.setToScaled(sx: Int, sy: Int) = setToScaled(sx.toDouble(), sy.toDouble())

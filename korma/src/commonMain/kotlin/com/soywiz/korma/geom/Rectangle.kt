@@ -266,7 +266,7 @@ inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
     override fun toString(): String = "Rectangle(x=$x, y=$y, width=$width, height=$height)"
 }
 
-fun RectangleInt.setTo(that: RectangleInt) = setTo(that.x, that.y, that.width, that.height)
+fun RectangleInt.setTo(that: IRectangleInt) = setTo(that.x, that.y, that.width, that.height)
 
 fun RectangleInt.setTo(x: Int, y: Int, width: Int, height: Int): RectangleInt {
     this.x = x
