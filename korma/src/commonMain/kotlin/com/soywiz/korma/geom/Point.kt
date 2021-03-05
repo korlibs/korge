@@ -282,6 +282,7 @@ inline class PointInt(val p: Point) : IPointInt, Comparable<IPointInt> {
     companion object {
         operator fun invoke(): PointInt = PointInt(0, 0)
         operator fun invoke(x: Int, y: Int): PointInt = PointInt(Point(x, y))
+        operator fun invoke(that: IPointInt): PointInt = PointInt(Point(that.x, that.y))
 
         fun compare(lx: Int, ly: Int, rx: Int, ry: Int): Int {
             val ret = ly.compareTo(ry)

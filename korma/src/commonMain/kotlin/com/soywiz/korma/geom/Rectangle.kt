@@ -258,6 +258,7 @@ inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
         operator fun invoke(x: Int, y: Int, width: Int, height: Int) = RectangleInt(Rectangle(x, y, width, height))
         operator fun invoke(x: Float, y: Float, width: Float, height: Float) = RectangleInt(Rectangle(x, y, width, height))
         operator fun invoke(x: Double, y: Double, width: Double, height: Double) = RectangleInt(Rectangle(x, y, width, height))
+        operator fun invoke(other: IRectangleInt) = RectangleInt(Rectangle(other.x, other.y, other.width, other.height))
 
         fun fromBounds(left: Int, top: Int, right: Int, bottom: Int): RectangleInt =
             RectangleInt(left, top, right - left, bottom - top)

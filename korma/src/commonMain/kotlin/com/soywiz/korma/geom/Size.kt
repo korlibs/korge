@@ -66,12 +66,17 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
 interface ISizeInt {
     val width: Int
     val height: Int
+
+    companion object {
+        operator fun invoke(width: Int, height: Int): ISizeInt = SizeInt(width, height)
+    }
 }
 
 inline class SizeInt(val size: Size) : ISizeInt {
     companion object {
         operator fun invoke(): SizeInt = SizeInt(Size(0, 0))
         operator fun invoke(x: Int, y: Int): SizeInt = SizeInt(Size(x, y))
+        operator fun invoke(that: ISizeInt): SizeInt = SizeInt(Size(that.width, that.height))
     }
 
     fun clone() = SizeInt(size.clone())
