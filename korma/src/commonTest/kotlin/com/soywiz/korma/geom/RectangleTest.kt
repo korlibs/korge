@@ -51,4 +51,64 @@ class RectangleTest {
         assertEquals(IPoint(1000, 204), iRectangle.bottomLeft)
         assertEquals(IPoint(1030, 204), iRectangle.bottomRight)
     }
+
+    @Test
+    fun containsPointInside() {
+        val rect = IRectangle(10, 20, 100, 200)
+        val point = IPointInt(11, 21)
+
+        assertTrue(point.float in rect)
+        assertTrue(point in rect)
+        assertTrue(rect.contains(point.x.toDouble(), point.y.toDouble()))
+        assertTrue(rect.contains(point.x.toFloat(), point.y.toFloat()))
+        assertTrue(rect.contains(point.x, point.y))
+    }
+
+    @Test
+    fun doesNotContainPointToTheLeft() {
+        val rect = IRectangle(10, 20, 100, 200)
+        val point = IPointInt(9, 21)
+
+        assertFalse(point.float in rect)
+        assertFalse(point in rect)
+        assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
+        assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
+        assertFalse(rect.contains(point.x, point.y))
+    }
+
+    @Test
+    fun doesNotContainPointToTheTop() {
+        val rect = IRectangle(10, 20, 100, 200)
+        val point = IPointInt(11, 19)
+
+        assertFalse(point.float in rect)
+        assertFalse(point in rect)
+        assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
+        assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
+        assertFalse(rect.contains(point.x, point.y))
+    }
+
+    @Test
+    fun doesNotContainPointToTheRight() {
+        val rect = IRectangle(10, 20, 100, 200)
+        val point = IPointInt(110, 21)
+
+        assertFalse(point.float in rect)
+        assertFalse(point in rect)
+        assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
+        assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
+        assertFalse(rect.contains(point.x, point.y))
+    }
+
+    @Test
+    fun doesNotContainPointToTheBottom() {
+        val rect = IRectangle(10, 20, 100, 200)
+        val point = IPointInt(11, 220)
+
+        assertFalse(point.float in rect)
+        assertFalse(point in rect)
+        assertFalse(rect.contains(point.x.toDouble(), point.y.toDouble()))
+        assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
+        assertFalse(rect.contains(point.x, point.y))
+    }
 }

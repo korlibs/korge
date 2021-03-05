@@ -31,6 +31,12 @@ val IRectangle.topRight get() = Point(right, top)
 val IRectangle.bottomLeft get() = Point(left, bottom)
 val IRectangle.bottomRight get() = Point(right, bottom)
 
+operator fun IRectangle.contains(that: IPoint) = contains(that.x, that.y)
+operator fun IRectangle.contains(that: IPointInt) = contains(that.x, that.y)
+fun IRectangle.contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
+fun IRectangle.contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
+fun IRectangle.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
+
 data class Rectangle(
     var x: Double, var y: Double,
     var width: Double, var height: Double
@@ -90,11 +96,6 @@ data class Rectangle(
     operator fun div(scale: Int) = this / scale.toDouble()
 
     operator fun contains(that: Rectangle) = isContainedIn(that, this)
-    operator fun contains(that: Point) = contains(that.x, that.y)
-    operator fun contains(that: IPoint) = contains(that.x, that.y)
-    fun contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
-    fun contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
-    fun contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
 
     infix fun intersects(that: Rectangle): Boolean = intersectsX(that) && intersectsY(that)
 
@@ -303,6 +304,11 @@ fun RectangleInt.setBoundsTo(left: Int, top: Int, right: Int, bottom: Int) = set
 ////////////////////
 
 operator fun IRectangleInt.contains(v: SizeInt): Boolean = (v.width <= width) && (v.height <= height)
+operator fun IRectangleInt.contains(that: IPoint) = contains(that.x, that.y)
+operator fun IRectangleInt.contains(that: IPointInt) = contains(that.x, that.y)
+fun IRectangleInt.contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)
+fun IRectangleInt.contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble())
+fun IRectangleInt.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
 
 fun IRectangleInt.anchoredIn(container: RectangleInt, anchor: Anchor, out: RectangleInt = RectangleInt()): RectangleInt =
     out.setTo(
