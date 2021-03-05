@@ -20,6 +20,8 @@ fun Project.configureJvm() {
 	gkotlin.targets.add(jvmTarget)
 	//jvmTarget.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 
+    project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna:$jnaVersion")
+    project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna-platform:$jnaVersion")
 	project.korge.addDependency("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	project.korge.addDependency("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
 	project.korge.addDependency("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
