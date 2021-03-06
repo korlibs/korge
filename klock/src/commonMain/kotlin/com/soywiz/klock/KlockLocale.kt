@@ -30,7 +30,7 @@ abstract class KlockLocale {
         }
     }
 
-    open fun getOrdinalByDay(day: Int): String = ordinals[day]
+    open fun getOrdinalByDay(day: Int, context: KlockLocalContext = KlockLocalContext.empty): String = ordinals[day]
 
     open fun getDayByOrdinal(ordinal: String): Int = ordinals.indexOf(ordinal)
 
