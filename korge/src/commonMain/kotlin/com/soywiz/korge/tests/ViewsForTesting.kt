@@ -223,7 +223,7 @@ open class ViewsForTesting(
 	}
 
     @Suppress("UNCHECKED_CAST")
-    inline fun <reified S : Scene> ViewsForTesting.sceneTest(
+    inline fun <reified S : Scene> sceneTest(
         module: Module? = null,
         crossinline mappingsForTest: AsyncInjector.() -> Unit = {},
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,

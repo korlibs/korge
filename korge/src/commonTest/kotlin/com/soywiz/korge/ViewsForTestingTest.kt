@@ -26,7 +26,7 @@ class ViewsForTestingTest : ViewsForTesting() {
             mapSingleton {
                 Dependency()
             }
-            mapSingleton {
+            mapPrototype {
                 DummyScene(get())
             }
         }
