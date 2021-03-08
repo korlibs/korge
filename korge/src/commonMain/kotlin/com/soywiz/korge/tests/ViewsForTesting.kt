@@ -13,6 +13,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
@@ -224,6 +225,7 @@ open class ViewsForTesting(
     @Suppress("UNCHECKED_CAST")
     inline fun <reified S : Scene> sceneTest(
         module: Module? = null,
+        crossinline mappingsForTest: AsyncInjector.() -> Unit = {},
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
         crossinline block: suspend S.() -> Unit
@@ -232,6 +234,8 @@ open class ViewsForTesting(
             module?.apply {
                 injector.configure()
             }
+
+            injector.mappingsForTest()
 
             val container = sceneContainer(views)
             container.changeTo<S>()
