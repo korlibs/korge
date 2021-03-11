@@ -6,10 +6,13 @@ on:
       - 'v*'
 
 env:
-  NO_HEADLESS_TEST: true
   FORCED_VERSION: ${{ github.ref }}
   BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
   BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
+  SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPEPASSWORD }}
 
 jobs:
   publish-windows:
@@ -43,5 +46,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
-      - run: ./gradlew actuallyPublishBintray
-
+      - run: ./gradlew releaseMavenCentral
