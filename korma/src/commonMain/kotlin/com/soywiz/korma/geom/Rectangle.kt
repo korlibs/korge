@@ -16,6 +16,15 @@ interface IRectangle {
     }
 }
 
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("x"), DeprecationLevel.ERROR)
+val IRectangle._x get() = x
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("y"), DeprecationLevel.ERROR)
+val IRectangle._y get() = y
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("width"), DeprecationLevel.ERROR)
+val IRectangle._width get() = width
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("height"), DeprecationLevel.ERROR)
+val IRectangle._height get() = height
+
 val IRectangle.left get() = x
 val IRectangle.top get() = y
 val IRectangle.right get() = x + width
