@@ -4,10 +4,10 @@ import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 
 interface IRectangle {
-    val _x: Double
-    val _y: Double
-    val _width: Double
-    val _height: Double
+    val x: Double
+    val y: Double
+    val width: Double
+    val height: Double
 
     companion object {
         inline operator fun invoke(x: Double, y: Double, width: Double, height: Double): IRectangle = Rectangle(x, y, width, height)
@@ -16,15 +16,19 @@ interface IRectangle {
     }
 }
 
-val IRectangle.x get() = _x
-val IRectangle.y get() = _y
-val IRectangle.width get() = _width
-val IRectangle.height get() = _height
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("x"), DeprecationLevel.ERROR)
+val IRectangle._x get() = x
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("y"), DeprecationLevel.ERROR)
+val IRectangle._y get() = y
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("width"), DeprecationLevel.ERROR)
+val IRectangle._width get() = width
+@Deprecated("Properties with underscores are deprecated and will be removed soon", ReplaceWith("height"), DeprecationLevel.ERROR)
+val IRectangle._height get() = height
 
-val IRectangle.left get() = _x
-val IRectangle.top get() = _y
-val IRectangle.right get() = _x + _width
-val IRectangle.bottom get() = _y + _height
+val IRectangle.left get() = x
+val IRectangle.top get() = y
+val IRectangle.right get() = x + width
+val IRectangle.bottom get() = y + height
 
 val IRectangle.topLeft get() = Point(left, top)
 val IRectangle.topRight get() = Point(right, top)
@@ -38,13 +42,9 @@ fun IRectangle.contains(x: Float, y: Float) = contains(x.toDouble(), y.toDouble(
 fun IRectangle.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
 
 data class Rectangle(
-    var x: Double, var y: Double,
-    var width: Double, var height: Double
+    override var x: Double, override var y: Double,
+    override var width: Double, override var height: Double
 ) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable {
-    override val _x: Double get() = x
-    override val _y: Double get() = y
-    override val _width: Double get() = width
-    override val _height: Double get() = height
 
     companion object {
         operator fun invoke(): Rectangle = Rectangle(0.0, 0.0, 0.0, 0.0)
@@ -324,7 +324,7 @@ fun IRectangleInt.getAnchorPosition(anchor: Anchor, out: PointInt = PointInt()):
 fun Rectangle.asInt() = RectangleInt(this)
 fun RectangleInt.asDouble() = this.rect
 
-val IRectangle.int get() = RectangleInt(_x, _y, _width, _height)
+val IRectangle.int get() = RectangleInt(x, y, width, height)
 val IRectangleInt.float get() = Rectangle(x, y, width, height)
 
 fun IRectangleInt.anchor(ax: Double, ay: Double): PointInt =
