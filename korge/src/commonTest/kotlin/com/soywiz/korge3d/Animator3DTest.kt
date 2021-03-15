@@ -7,12 +7,11 @@ import com.soywiz.korge3d.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.interpolation.Easing
-//import it.krzeminski.visassert.assertFunctionConformsTo
+import it.krzeminski.visassert.assertFunctionConformsTo
 import kotlin.test.*
 
 @Korge3DExperimental
 class Animator3DTest {
-    /*
     @Test
     fun updateWithDefaultPlaybackPattern() = suspendTestNoBrowser {
         val library = resourcesVfs["skinning.dae"].readColladaLibrary()
@@ -92,5 +91,4 @@ class Animator3DTest {
             throw RuntimeException("Not relevant - shouldn't be called in this unit test")
         }
     }
-    */
 }
