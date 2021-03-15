@@ -6,16 +6,12 @@ buildscript {
     repositories {
         mavenLocal()
         mavenCentral()
-        jcenter()
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
     }
     dependencies {
         classpath("com.gradle.publish:plugin-publish-plugin:0.12.0")
-        //classpath("com.android.tools.build:gradle:3.4.1")
-        classpath("com.android.tools.build:gradle:4.0.1")
+        classpath("com.android.tools.build:gradle:4.2.0-beta06")
         //classpath("com.android.tools.build:gradle:4.1.0-rc03")
         //classpath("com.android.tools.build:gradle:4.2.0-alpha12")
         //classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.15.1")
