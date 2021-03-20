@@ -80,16 +80,7 @@ open class KorgeJavaExec : JavaExec() {
         korgeClassPathGet
     }
 
-    @get:Input
-    val useZgc get() = ((System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14) && (System.getenv("JVM_USE_ZGC") != "false")
-
     override fun exec() {
-        if (useZgc) {
-            println("Using ZGC")
-        }
-        if (useZgc) {
-            jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
-        }
         classpath = korgeClassPath
         for (classPath in korgeClassPath.toList()) {
             project.logger.info("- $classPath")

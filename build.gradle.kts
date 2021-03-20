@@ -402,17 +402,6 @@ open class KorgeJavaExec : JavaExec() {
 
     init {
         systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
-        val useZgc = (System.getenv("JVM_USE_ZGC") == "true") || (javaVersion.majorVersion.toIntOrNull() ?: 8) >= 14
-
-        doFirst {
-            if (useZgc) {
-                println("Using ZGC")
-            }
-        }
-
-        if (useZgc) {
-            //jvmArgs("-XX:+UnlockExperimentalVMOptions", "-XX:+UseZGC")
-        }
         project.afterEvaluate {
             //if (firstThread == true && OS.isMac) task.jvmArgs("-XstartOnFirstThread")
             classpath = korgeClassPath
