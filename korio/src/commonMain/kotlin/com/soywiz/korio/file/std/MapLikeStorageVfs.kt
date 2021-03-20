@@ -6,44 +6,47 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.internal.*
-import com.soywiz.korio.internal.max2
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
-import kotlin.math.*
 
 fun SimpleStorage.toVfs(): VfsFile = MapLikeStorageVfs(this).root
+fun SimpleStorage.toVfs(timeProvider: TimeProvider): VfsFile = MapLikeStorageVfs(this).also { it.timeProvider = timeProvider }.root
 
 class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
-	private val files = StorageFiles(storage)
+    var timeProvider: TimeProvider = TimeProvider
+
+    private fun now() = timeProvider.now()
+
+	private val files = StorageFiles(storage) { timeProvider }
 	private var initialized = false
+    // @TODO: Create and use an AsyncRecursiveLock (so we can use the same lock inside a block of this lock)
+    private val writeLock = AsyncThread2()
 
 	private suspend fun initOnce() {
 		if (!initialized) {
 			initialized = true
 			// Create root
 			if (!files.hasEntryInfo("/")) {
-				files.setEntryInfo("/", StorageFiles.EntryInfo(isFile = false, size = 0L))
+			    val now = now()
+                files.setEntryInfo(StorageFiles.EntryInfo(fullPath = "/", isFile = false, size = 0L, modifiedTime = now, createdTime = now))
 			}
 		}
 	}
 
 	fun String.normalizePath() = "/" + this.trim('/').replace('\\', '/')
 
-	suspend fun remove(path: String, directory: Boolean): Boolean {
-		initOnce()
-		val npath = path.normalizePath()
-		val entry = files.getEntryInfo(npath) ?: return false
-		return if (entry.isDirectory == directory) {
-			if (directory && entry.children.isNotEmpty()) throw IOException("Directory '$npath' is not empty")
-			files.removeEntryInfo(npath)
-		} else {
-			false
-		}
-	}
+	suspend fun remove(path: String, directory: Boolean): Boolean = writeLock {
+        initOnce()
+        val npath = path.normalizePath()
+        val entry = files.getEntryInfo(npath) ?: return@writeLock false
+        if (entry.isDirectory != directory) return@writeLock false
+        if (directory && entry.children.isNotEmpty()) throw IOException("Directory '$npath' is not empty")
+        files.removeEntryInfo(entry)
+        return@writeLock true
+    }
 
 	override suspend fun rmdir(path: String): Boolean = remove(path, directory = true)
 	override suspend fun delete(path: String): Boolean = remove(path, directory = false)
@@ -68,17 +71,19 @@ class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
 		return parent
 	}
 
-	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean {
+    override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean {
 		initOnce()
 		val npath = path.normalizePath()
 		val nparent = PathInfo(npath).folder.normalizePath()
 		if (!files.hasEntryInfo(nparent)) mkdir(nparent, attributes) // Create Parents
-		val parent = ensureParentDirectory(nparent, npath)
-		val now = DateTime.now()
-		if (files.hasEntryInfo(npath)) return false
-		files.setEntryInfo(nparent, parent.copy(children = parent.children + npath))
-		files.setEntryInfo(npath, isFile = false, size = 0L, children = listOf(), createdTime = now, modifiedTime = now)
-		return true
+        return writeLock {
+            val parent = ensureParentDirectory(nparent, npath)
+            val now = now()
+            if (files.hasEntryInfo(npath)) return@writeLock false
+            files.setEntryInfo(parent.copy(children = parent.children + npath))
+            files.setEntryInfo(StorageFiles.EntryInfo(fullPath = npath, isFile = false, size = 0L, children = listOf(), createdTime = now, modifiedTime = now))
+            return@writeLock true
+        }
 	}
 
 	override suspend fun listFlow(path: String): Flow<VfsFile> {
@@ -96,16 +101,17 @@ class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
 
 		if (!files.hasEntryInfo(npath)) {
 			if (!mode.createIfNotExists) throw IOException("File '$npath' doesn't exists")
-			files.setEntryInfo(nparent, parent.copy(children = parent.children + npath))
+			files.setEntryInfo(parent.copy(children = parent.children + npath))
 		}
 
-		val now = DateTime.now()
+		val now = now()
 		var info = files.getEntryInfo(npath) ?: StorageFiles.EntryInfo(
 			isFile = true,
 			size = 0L,
 			children = listOf(),
 			createdTime = now,
-			modifiedTime = now
+			modifiedTime = now,
+            fullPath = npath
 		)
 		if (info.isDirectory) throw IOException("Can't open a directory")
 
@@ -113,7 +119,7 @@ class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
 			private suspend fun updateInfo(newInfo: StorageFiles.EntryInfo) {
 				if (info != newInfo) {
 					info = newInfo
-					files.setEntryInfo(npath, info)
+					files.setEntryInfo(info)
 				}
 			}
 
@@ -139,65 +145,61 @@ class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
 		}.toAsyncStream()
 	}
 
-	override suspend fun touch(path: String, time: DateTime, atime: DateTime) {
+	override suspend fun touch(path: String, time: DateTime, atime: DateTime) = writeLock {
 		initOnce()
 		val npath = path.normalizePath()
 		if (files.hasEntryInfo(npath)) {
-			files.setEntryInfo(npath, files.getEntryInfo(npath)!!.copy(modifiedTime = time))
+			files.setEntryInfo(files.getEntryInfo(npath)!!.copy(modifiedTime = time))
 		}
 	}
 
 	override fun toString(): String = "MapLikeStorageVfs"
 }
 
-private class StorageFiles(val storage: SimpleStorage) {
+private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> TimeProvider) {
+    private fun now() = timeProvider().now()
+
 	companion object {
 		val CHUNK_SIZE = 16 * 1024 // 16K
 	}
 
 	fun getStatsKey(fileName: String) = "korio_stats_v1_$fileName"
 	fun getChunkKey(fileName: String, chunk: Int) = "korio_chunk${chunk}_v1_$fileName"
+    fun getChunkCount(size: Long) = (size divCeil CHUNK_SIZE.toLong()).toInt()
 
 	data class EntryInfo(
+        val fullPath: String,
 		val isFile: Boolean,
 		val size: Long = 0L,
 		val children: List<String> = listOf(),
 		val createdTime: DateTime = DateTime.EPOCH,
-		val modifiedTime: DateTime = DateTime.EPOCH
-	) {
+		val modifiedTime: DateTime = DateTime.EPOCH,
+    ) {
+        val parentFullPath by lazy { fullPath.substringBeforeLast('/') }
 		val isDirectory get() = !isFile
 	}
 
-	suspend fun setEntryInfo(fileName: String, info: EntryInfo) {
-		setEntryInfo(fileName, info.isFile, info.size, info.children, info.createdTime, info.modifiedTime)
-	}
+    suspend fun setEntryInfo(info: EntryInfo) {
+        //setEntryInfo(info.fullPath, info.isFile, info.size, info.children, info.createdTime, info.modifiedTime)
+        val oldEntry = getEntryInfo(info.fullPath)
 
-	suspend fun setEntryInfo(
-		fileName: String,
-		isFile: Boolean,
-		size: Long,
-		children: List<String>,
-		createdTime: DateTime = DateTime.EPOCH,
-		modifiedTime: DateTime = DateTime.EPOCH
-	) {
-		val oldEntry = getEntryInfo(fileName)
+        if (oldEntry != null) {
+            // @TODO: Prune old chunks/children!
+        }
 
-		if (oldEntry != null) {
-			// @TODO: Prune old chunks/children!
-		}
+        val key = getStatsKey(info.fullPath)
+        val content = Json.stringify(
+            hashMapOf(
+                EntryInfo::isFile.name to info.isFile,
+                EntryInfo::size.name to info.size.toDouble(),
+                EntryInfo::children.name to info.children,
+                EntryInfo::createdTime.name to info.createdTime.unixMillisDouble,
+                EntryInfo::modifiedTime.name to info.modifiedTime.unixMillisDouble
+            )
+        )
 
-		storage.set(
-			getStatsKey(fileName), Json.stringify(
-				hashMapOf(
-					EntryInfo::isFile.name to isFile,
-					EntryInfo::size.name to size.toDouble(),
-					EntryInfo::children.name to children,
-					EntryInfo::createdTime.name to createdTime.unixMillisDouble,
-					EntryInfo::modifiedTime.name to modifiedTime.unixMillisDouble
-				)
-			)
-		)
-	}
+        storage.set(key, content)
+    }
 
 	suspend fun hasEntryInfo(fileName: String): Boolean = getEntryInfo(fileName) != null
 
@@ -205,24 +207,37 @@ private class StorageFiles(val storage: SimpleStorage) {
 		val info = storage.get(getStatsKey(fileName)) ?: return null
 		val di = Json.parse(info) as Map<String, Any>
 		return EntryInfo(
-			di[EntryInfo::isFile.name]!! as Boolean,
-			(di[EntryInfo::size.name]!! as Number).toLong(),
-			(di[EntryInfo::children.name] as Iterable<String>).toList(),
-			(DateTime.fromUnix((di[EntryInfo::createdTime.name] as Number).toDouble())),
-			(DateTime.fromUnix((di[EntryInfo::modifiedTime.name] as Number).toDouble()))
-		)
+            fullPath = fileName,
+            isFile = di[EntryInfo::isFile.name]!! as Boolean,
+			size = (di[EntryInfo::size.name]!! as Number).toLong(),
+			children = (di[EntryInfo::children.name] as Iterable<String>).toList(),
+			createdTime = (DateTime.fromUnix((di[EntryInfo::createdTime.name] as Number).toDouble())),
+			modifiedTime = (DateTime.fromUnix((di[EntryInfo::modifiedTime.name] as Number).toDouble())),
+        )
 	}
 
+    suspend fun removeEntryInfo(entry: EntryInfo) {
+        // Remove own children
+        entry.children.fastForEach { child ->
+            removeEntryInfo(child)
+        }
+        // Remove data chunks
+        for (n in 0 until getChunkCount(entry.size)) {
+            storage.remove(getChunkKey(entry.fullPath, n))
+        }
+        // Remove entry
+        storage.remove(getStatsKey(entry.fullPath))
+        // Remove child from parent
+        val parentEntry = getEntryInfo(entry.parentFullPath)
+        if (parentEntry != null) {
+            setEntryInfo(parentEntry.copy(children = parentEntry.children.without(entry.fullPath), modifiedTime = now()))
+        }
+    }
+
 	suspend fun removeEntryInfo(fileName: String): Boolean {
-		val entry = getEntryInfo(fileName)
-		return if (entry != null) {
-			entry.children.fastForEach { child ->
-				removeEntryInfo(child)
-			}
-			true
-		} else {
-			false
-		}
+		val entry = getEntryInfo(fileName) ?: return false
+        removeEntryInfo(entry)
+        return true
 	}
 
 	suspend fun setFileChunk(fileName: String, chunk: Int, data: ByteArray) = run {
