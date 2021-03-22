@@ -10,12 +10,13 @@ import kotlin.random.*
 
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"], clipBorders = false) {
     val random = Random
-    for (n in 0 until 10000) {
+    for (n in 0 until 2000) {
         launchImmediately {
             val view = solidRect(10, 10, Colors.RED.interpolateWith(random[0.0, 1.0], Colors.BLUE))
             view.position(random[0, 512], random[0, 512])
 
             frameBlock(60.timesPerSecond) {
+            //view.frameBlock(60.timesPerSecond) {
                 while (true) {
                     val targetX = random[0, 512].toDouble()
                     val targetY = random[0, 512].toDouble()
