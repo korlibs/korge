@@ -594,10 +594,10 @@ class BatchBuilder2D constructor(
         }
 
         @KorgeInternal
-        val FRAGMENT_PRE = getShaderProgramIndex(premultiplied = true, preadd = false)
+        val FRAGMENT_PRE = FRAGMENTS[getShaderProgramIndex(premultiplied = true, preadd = false)]
 
         @KorgeInternal
-        val FRAGMENT_NOPRE = getShaderProgramIndex(premultiplied = false, preadd = false)
+        val FRAGMENT_NOPRE = FRAGMENTS[getShaderProgramIndex(premultiplied = false, preadd = false)]
 
         private val PROGRAMS = Array(4) { index ->
             val premultiplied = index.extractBool(0)
