@@ -583,30 +583,42 @@ class BatchBuilder2D constructor(
 
 		init { logger.trace { "BatchBuilder2D.Companion[3]" } }
 
-        @KorgeInternal
-        val FRAGMENT_PRE = buildTextureLookupFragment(premultiplied = true)
+        private fun getShaderProgramIndex(premultiplied: Boolean, preadd: Boolean): Int {
+            return 0.insert(premultiplied, 0).insert(preadd, 1)
+        }
+
+        private val FRAGMENTS = Array(4) { index ->
+            val premultiplied = index.extractBool(0)
+            val preadd = index.extractBool(1)
+            buildTextureLookupFragment(premultiplied = premultiplied, preadd = preadd)
+        }
 
         @KorgeInternal
-        val FRAGMENT_NOPRE = buildTextureLookupFragment(premultiplied = false)
+        val FRAGMENT_PRE = getShaderProgramIndex(premultiplied = true, preadd = false)
 
         @KorgeInternal
-		val PROGRAM_PRE = Program(
-			vertex = VERTEX,
-			fragment = FRAGMENT_PRE,
-			name = "BatchBuilder2D.Premultiplied.Tinted"
-		)
+        val FRAGMENT_NOPRE = getShaderProgramIndex(premultiplied = false, preadd = false)
+
+        private val PROGRAMS = Array(4) { index ->
+            val premultiplied = index.extractBool(0)
+            val preadd = index.extractBool(1)
+            Program(
+                vertex = VERTEX,
+                fragment = FRAGMENTS[index],
+                name = "BatchBuilder2D.${if (premultiplied) "Premultiplied" else "NoPremultiplied"}.Tinted${if (preadd) ".Preadd" else ""}"
+            )
+        }
 
         @KorgeInternal
-		val PROGRAM_NOPRE = Program(
-			vertex = VERTEX,
-			fragment = FRAGMENT_NOPRE,
-			name = "BatchBuilder2D.NoPremultiplied.Tinted"
-		)
+		val PROGRAM_PRE = PROGRAMS[getShaderProgramIndex(true, false)]
+
+        @KorgeInternal
+		val PROGRAM_NOPRE = PROGRAMS[getShaderProgramIndex(false, false)]
 
 		init { logger.trace { "BatchBuilder2D.Companion[4]" } }
 
         @KorgeInternal
-        fun getTextureLookupProgram(premultiplied: Boolean) = if (premultiplied) PROGRAM_PRE else PROGRAM_NOPRE
+        fun getTextureLookupProgram(premultiplied: Boolean, preadd: Boolean = false) = PROGRAMS[getShaderProgramIndex(premultiplied, preadd)]
 
 		//val PROGRAM_NORMAL = Program(
 		//	vertex = VERTEX,
@@ -619,13 +631,13 @@ class BatchBuilder2D constructor(
 		//	name = "BatchBuilder2D.Tinted"
 		//)
 
-        fun getTextureLookupFragment(premultiplied: Boolean) = if (premultiplied) FRAGMENT_PRE else FRAGMENT_NOPRE
+        fun getTextureLookupFragment(premultiplied: Boolean, preadd: Boolean = false) = FRAGMENTS[getShaderProgramIndex(premultiplied, preadd)]
 
         /**
          * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
          */
         @KorgeInternal
-		fun buildTextureLookupFragment(premultiplied: Boolean) = FragmentShader {
+		fun buildTextureLookupFragment(premultiplied: Boolean, preadd: Boolean = false) = FragmentShader {
 			DefaultShaders.apply {
 				SET(out, texture2D(u_Tex, v_Tex["xy"]))
 				if (premultiplied) {
@@ -634,7 +646,11 @@ class BatchBuilder2D constructor(
 
 				// @TODO: Kotlin.JS bug?
 				//SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
-				SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
+                if (preadd) {
+                    SET(out, (clamp(out["rgba"] + ((BatchBuilder2D.v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit), 0f.lit, 1f.lit) * BatchBuilder2D.v_ColMul["rgba"]))
+                } else {
+                    SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
+                }
 
 				//SET(out, t_Temp1)
 				// Required for shape masks:
