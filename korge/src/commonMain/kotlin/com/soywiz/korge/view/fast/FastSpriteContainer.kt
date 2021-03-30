@@ -1,20 +1,19 @@
 package com.soywiz.korge.view.fast
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.FBuffer
-import com.soywiz.korag.*
-import com.soywiz.korge.internal.*
+import com.soywiz.kds.FastArrayList
 import com.soywiz.korge.internal.min2
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import kotlin.math.min
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
 
 inline fun Container.fastSpriteContainer(
     callback: @ViewDslMarker FastSpriteContainer.() -> Unit = {}
 ): FastSpriteContainer = FastSpriteContainer().addTo(this, callback)
 
-class FastSpriteContainer : View() {
+class FastSpriteContainer() : View() {
     private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
@@ -22,6 +21,16 @@ class FastSpriteContainer : View() {
     fun addChild(sprite: FastSprite) {
         this.sprites.add(sprite)
     }
+
+    // alias for addChild
+    fun alloc(sprite: FastSprite) = addChild(sprite)
+
+    fun removeChild(sprite: FastSprite) {
+        this.sprites.remove(sprite)
+    }
+
+    // alias for removeChild
+    fun delete(sprite: FastSprite) = removeChild(sprite)
 
     // 65535 is max vertex index in the index buffer (see ParticleRenderer)
     // so max number of particles is 65536 / 4 = 16384
@@ -82,11 +91,12 @@ class FastSpriteContainer : View() {
         for (n in m until mMax) {
             //spriteCount++
             val sprite = sprites[n]
-            vp = bb._addQuadVerticesFastNormalNonRotated(
+            vp = bb._addQuadVerticesFastNormal(
                 vp, vd,
                 sprite.x0, sprite.y0, sprite.x1, sprite.y1,
+                sprite.x2, sprite.y2, sprite.x3, sprite.y3,
                 sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                colorMul, colorAdd
+                sprite.color.value, colorAdd
             )
         }
         bb.vertexPos = vp
