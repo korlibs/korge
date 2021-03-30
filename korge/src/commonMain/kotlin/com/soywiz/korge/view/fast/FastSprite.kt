@@ -27,6 +27,11 @@ open class FastSprite(tex: BmpSlice) {
     // sin(rotation) value
     var sr: Float = 0f
 
+    internal var useRotation = false
+
+    /**
+     * Updates based on rotation
+     */
     private fun updateXY0123() {
         val px = xf - ax
         val py = yf - ay
@@ -50,17 +55,50 @@ open class FastSprite(tex: BmpSlice) {
         y3 = py1 * cr + px * sr + yf
     }
 
+    /**
+     * Updates x without rotation
+     */
+    private fun updateX01() {
+        x0 = xf - ax
+        x1 = x0 + w
+    }
+
+    private fun updateX() {
+        if (useRotation) {
+            updateXY0123()
+        } else {
+            updateX01()
+        }
+    }
+
+    /**
+     * Updates y without rotation
+     */
+    private fun updateY01() {
+        y0 = yf - ay
+        y1 = y0 + h
+    }
+
+    private fun updateY() {
+        if (useRotation) {
+            updateXY0123()
+        } else {
+            updateY01()
+        }
+    }
+
     private fun updateXSize() {
         w = width * scaleXf
         ax = w * anchorXf
-        updateXY0123()
+        updateX()
     }
 
     private fun updateYSize() {
         h = height * scaleYf
         ay = h * anchorYf
-        updateXY0123()
+        updateY()
     }
+
 
     private fun updateSize() {
         updateXSize()
@@ -70,12 +108,12 @@ open class FastSprite(tex: BmpSlice) {
     var xf: Float = 0f
         set(value) {
             field = value
-            updateXY0123()
+            updateX()
         }
     var yf: Float = 0f
         set(value) {
             field = value
-            updateXY0123()
+            updateY()
         }
     var anchorXf: Float = .5f
         set(value) {
@@ -91,7 +129,6 @@ open class FastSprite(tex: BmpSlice) {
                 updateYSize()
             }
         }
-
     var scaleXf: Float = 1f
         set(value) {
             if (field != value) {
@@ -106,14 +143,15 @@ open class FastSprite(tex: BmpSlice) {
                 updateYSize()
             }
         }
-
     var rotationRadiansf: Float = 0f
         set(value) {
             if (field != value) {
                 field = value
-                cr = cos(field)
-                sr = sin(field)
-                updateXY0123()
+                if(useRotation) {
+                    cr = cos(field)
+                    sr = sin(field)
+                    updateXY0123()
+                }
             }
         }
 
@@ -194,5 +232,5 @@ var FastSprite.rotation: Double
 var FastSprite.alpha
     get() = color.af
     set(value) {
-       color = color.withAf(value)
+        color = color.withAf(value)
     }

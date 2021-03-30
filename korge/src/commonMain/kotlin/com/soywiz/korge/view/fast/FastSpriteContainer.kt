@@ -10,15 +10,17 @@ import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 
 inline fun Container.fastSpriteContainer(
+    useRotation: Boolean = false,
     callback: @ViewDslMarker FastSpriteContainer.() -> Unit = {}
-): FastSpriteContainer = FastSpriteContainer().addTo(this, callback)
+): FastSpriteContainer = FastSpriteContainer(useRotation).addTo(this, callback)
 
-class FastSpriteContainer() : View() {
+class FastSpriteContainer(val useRotation: Boolean = false) : View() {
     private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
 
     fun addChild(sprite: FastSprite) {
+        sprite.useRotation = useRotation
         this.sprites.add(sprite)
     }
 
@@ -91,13 +93,22 @@ class FastSpriteContainer() : View() {
         for (n in m until mMax) {
             //spriteCount++
             val sprite = sprites[n]
-            vp = bb._addQuadVerticesFastNormal(
-                vp, vd,
-                sprite.x0, sprite.y0, sprite.x1, sprite.y1,
-                sprite.x2, sprite.y2, sprite.x3, sprite.y3,
-                sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                sprite.color.value, colorAdd
-            )
+            if (useRotation) {
+                vp = bb._addQuadVerticesFastNormal(
+                    vp, vd,
+                    sprite.x0, sprite.y0, sprite.x1, sprite.y1,
+                    sprite.x2, sprite.y2, sprite.x3, sprite.y3,
+                    sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
+                    sprite.color.value, colorAdd
+                )
+            } else {
+                vp = bb._addQuadVerticesFastNormalNonRotated(
+                    vp, vd,
+                    sprite.x0, sprite.y0, sprite.x1, sprite.y1,
+                    sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
+                    sprite.color.value, colorAdd
+                )
+            }
         }
         bb.vertexPos = vp
         bb.vertexCount = count * 4
