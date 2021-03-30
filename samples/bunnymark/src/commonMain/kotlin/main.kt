@@ -1,26 +1,23 @@
-import com.soywiz.kds.*
+import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korge.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
+import com.soywiz.korge.Korge
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.fast.FastSprite
 import com.soywiz.korge.view.fast.alpha
 import com.soywiz.korge.view.fast.fastSpriteContainer
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.text
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.toBitmapFont
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.random.Random
-
-//class BunnyFastSprite(tex: BmpSlice) : FastSprite(tex) {
-//    var speedX: Float = 0f
-//    var speedY: Float = 0f
-//}
 
 class Bunny(tex: BmpSlice) : FastSprite(tex) {
     var speedXf: Float = 0f
@@ -42,17 +39,13 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
 
     val startBunnyCount = 2
     //val startBunnyCount = 1_000_000
-    //val startBunnyCount = 200_000
+   // val startBunnyCount = 200_000
     val bunnyTextures = listOf(bunny1, bunny2, bunny3, bunny4, bunny5)
     var currentTexture = bunny1
-    val amount = 100
 
-    val container = fastSpriteContainer()
+    val container = fastSpriteContainer(useRotation = true)
     val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
-    //val font = resourcesVfs["font1.fnt"].readBitmapFont()
-    //val font = DefaultTtfFont
     val bunnyCountText = text("", font = font, textSize = 16.0, alignment = com.soywiz.korim.text.TextAlignment.TOP_LEFT).position(16.0, 16.0)
-    //val container = container()
 
     val bunnys = FastArrayList<Bunny>()
 
