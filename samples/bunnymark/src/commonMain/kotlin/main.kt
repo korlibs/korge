@@ -8,6 +8,7 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.fast.FastSprite
+import com.soywiz.korge.view.fast.alpha
 import com.soywiz.korge.view.fast.fastSpriteContainer
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.effect.BitmapEffect
@@ -22,11 +23,8 @@ import kotlin.random.Random
 //}
 
 class Bunny(tex: BmpSlice) : FastSprite(tex) {
-    // Temporal placeholder until FastSpriteContainer supports rotation
-    var rotationRadiansf: Float = 0f
     var speedXf: Float = 0f
     var speedYf: Float = 0f
-    var spinf: Float = 0f
 }
 
 // bunnymark ported from PIXI.js
@@ -63,16 +61,14 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     fun addBunny(count: Int = 1) {
         for (n in 0 until count) {
             val bunny = Bunny(currentTexture)
-            bunny.speedXf = random.nextFloat() * 10
-            bunny.speedYf = (random.nextFloat() * 10) - 5
+            bunny.speedXf = random.nextFloat() * 1
+            bunny.speedYf = (random.nextFloat() * 1) - 5
             bunny.anchorXf = .5f
             bunny.anchorYf = 1f
-            //bunny.alpha = 0.3 + Math.random() * 0.7;
-            bunny.scalef = 0.5f + random.nextFloat() * 0.5f
+            bunny.alpha = 0.3f + random.nextFloat() * 0.7f
+            bunny.scale(0.5f + random.nextFloat() * 0.5f)
             bunny.rotationRadiansf = (random.nextFloat() - 0.5f)
-            //bunny.rotation = Math.random() - 0.5;
-            //var random = random.nextInt(0, container.numChildren-2);
-            container.addChild(bunny)//, random);
+            container.addChild(bunny)
             bunnys.add(bunny)
         }
         bunnyCountText.text = "(WIP) KorGE Bunnymark. Bunnies: ${bunnys.size}"
@@ -116,7 +112,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
             if (bunny.yf > maxY) {
                 bunny.speedYf *= -0.85f
                 bunny.yf = maxY
-                bunny.spinf = (random.nextFloat() - 0.5f) * 0.2f
+                bunny.rotationRadiansf = (random.nextFloat() - 0.5f) * 0.2f
                 if (random.nextFloat() > 0.5) {
                     bunny.speedYf -= random.nextFloat() * 6
                 }
