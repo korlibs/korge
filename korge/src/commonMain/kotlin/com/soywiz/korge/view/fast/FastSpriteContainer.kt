@@ -15,13 +15,18 @@ inline fun Container.fastSpriteContainer(
     callback: @ViewDslMarker FastSpriteContainer.() -> Unit = {}
 ): FastSpriteContainer = FastSpriteContainer(useRotation, smoothing).addTo(this, callback)
 
-class FastSpriteContainer(val useRotation: Boolean = false, var smoothing:Boolean = true) : View() {
+class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boolean = true) : View() {
     private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
 
     fun addChild(sprite: FastSprite) {
-        sprite.useRotation = useRotation
+        if(sprite.useRotation != useRotation) {
+            sprite.useRotation = useRotation
+            // force update the sprite just in case the FastSprite properties were updated before being
+            // added to the container
+            sprite.forceUpdate()
+        }
         sprite.container = this
         this.sprites.add(sprite)
     }
@@ -96,7 +101,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing:Boolea
         for (n in m until mMax) {
             //spriteCount++
             val sprite = sprites[n]
-            if(!sprite.visible) {
+            if (!sprite.visible) {
                 count--
                 continue
             }

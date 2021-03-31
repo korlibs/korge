@@ -33,6 +33,13 @@ open class FastSprite(tex: BmpSlice) {
     internal var useRotation = false
 
     /**
+     * Allows FastSpriteContainer to recalculate a FastSprite if added to a FastSpriteContainer using rotation
+     */
+    internal fun forceUpdate() {
+        updateSize()
+    }
+
+    /**
      * Updates based on rotation
      */
     private fun updateXY0123() {
@@ -42,20 +49,20 @@ open class FastSprite(tex: BmpSlice) {
         val py1 = py + h
 
         // top left
-        x0 = px * cr - py * sr + xf
-        y0 = py * cr + px * sr + yf
+        x0 = px * cr - py * sr
+        y0 = py * cr + px * sr
 
         // top right
-        x1 = px1 * cr - py * sr + xf
-        y1 = py * cr + px1 * sr + yf
+        x1 = px1 * cr - py * sr
+        y1 = py * cr + px1 * sr
 
         // bottom right
-        x2 = px1 * cr - py1 * sr + xf
-        y2 = py1 * cr + px1 * sr + yf
+        x2 = px1 * cr - py1 * sr
+        y2 = py1 * cr + px1 * sr
 
         // bottom left
-        x3 = px * cr - py1 * sr + xf
-        y3 = py1 * cr + px * sr + yf
+        x3 = px * cr - py1 * sr
+        y3 = py1 * cr + px * sr
     }
 
     /**
