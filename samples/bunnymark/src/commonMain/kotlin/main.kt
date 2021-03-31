@@ -43,7 +43,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val bunnyTextures = listOf(bunny1, bunny2, bunny3, bunny4, bunny5)
     var currentTexture = bunny1
 
-    val container = fastSpriteContainer(useRotation = true)
+    val container = fastSpriteContainer(useRotation = true, smoothing = false)
     val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
     val bunnyCountText = text("", font = font, textSize = 16.0, alignment = com.soywiz.korim.text.TextAlignment.TOP_LEFT).position(16.0, 16.0)
 
