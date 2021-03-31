@@ -91,10 +91,15 @@ class FastSpriteContainer(val useRotation: Boolean = false) : View() {
         var vp = bb.vertexPos
         val vd = bb.verticesFast32
         val mMax = min2(sprites.size, m + batchSize)
-        val count = mMax - m
+        var count = mMax - m
         for (n in m until mMax) {
             //spriteCount++
             val sprite = sprites[n]
+            if(!sprite.visible) {
+                count--
+                continue
+            }
+
             if (useRotation) {
                 vp = bb._addQuadVerticesFastNormal(
                     vp, vd,
