@@ -36,6 +36,10 @@ open class FastSprite(tex: BmpSlice) {
      * Allows FastSpriteContainer to recalculate a FastSprite if added to a FastSpriteContainer using rotation
      */
     internal fun forceUpdate() {
+        if (useRotation) {
+            cr = cos(rotationRadiansf)
+            sr = sin(rotationRadiansf)
+        }
         updateSize()
     }
 
@@ -43,26 +47,30 @@ open class FastSprite(tex: BmpSlice) {
      * Updates based on rotation
      */
     private fun updateXY0123() {
-        val px = xf - ax
-        val py = yf - ay
-        val px1 = px + w
-        val py1 = py + h
-
         // top left
-        x0 = px * cr - py * sr
-        y0 = py * cr + px * sr
+        var px = anchorXf * scaleXf
+        var py = anchorYf * scaleYf
+        x0 = px * cr - py * sr + xf
+        y0 = py * cr + px * sr + yf
 
         // top right
-        x1 = px1 * cr - py * sr
-        y1 = py * cr + px1 * sr
+        px = (anchorXf + width) * scaleXf
+        py = anchorYf * scaleYf
+        x1 = px * cr - py * sr + xf
+        y1 = py * cr + px * sr + yf
+
 
         // bottom right
-        x2 = px1 * cr - py1 * sr
-        y2 = py1 * cr + px1 * sr
+        px = (anchorXf + width) * scaleXf
+        py = (anchorYf + height) * scaleYf
+        x2 = px * cr - py * sr + xf
+        y2 = py * cr + px * sr + yf
 
         // bottom left
-        x3 = px * cr - py1 * sr
-        y3 = py1 * cr + px * sr
+        px = anchorXf * scaleXf
+        py = (anchorYf + height) * scaleYf
+        x3 = px * cr - py * sr + xf
+        y3 = py * cr + px * sr + yf
     }
 
     /**
@@ -192,6 +200,11 @@ open class FastSprite(tex: BmpSlice) {
         updateSize()
         updateXY0123()
     }
+
+    override fun toString(): String {
+        return "FastSprite(x0=$x0, y0=$y0, x1=$x1, y1=$y1, x2=$x2, y2=$y2, x3=$x3, y3=$y3, w=$w, h=$h, ax=$ax, ay=$ay, cr=$cr, sr=$sr, container=$container, useRotation=$useRotation, xf=$xf, yf=$yf, anchorXf=$anchorXf, anchorYf=$anchorYf, scaleXf=$scaleXf, scaleYf=$scaleYf, rotationRadiansf=$rotationRadiansf, color=$color, visible=$visible, tex=$tex)"
+    }
+
 }
 
 var FastSprite.x: Double
