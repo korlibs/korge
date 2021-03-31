@@ -11,10 +11,11 @@ import com.soywiz.korge.view.addTo
 
 inline fun Container.fastSpriteContainer(
     useRotation: Boolean = false,
+    smoothing: Boolean = true,
     callback: @ViewDslMarker FastSpriteContainer.() -> Unit = {}
 ): FastSpriteContainer = FastSpriteContainer(useRotation).addTo(this, callback)
 
-class FastSpriteContainer(val useRotation: Boolean = false) : View() {
+class FastSpriteContainer(val useRotation: Boolean = false, var smoothing:Boolean = true) : View() {
     private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
@@ -55,7 +56,7 @@ class FastSpriteContainer(val useRotation: Boolean = false) : View() {
         bb.setViewMatrixTemp(globalMatrix) {
             ////////////////////////////
 
-            bb.setStateFast(bmp, true, blendMode.factors, null)
+            bb.setStateFast(bmp, smoothing, blendMode.factors, null)
 
             ////////////////////////////
 
