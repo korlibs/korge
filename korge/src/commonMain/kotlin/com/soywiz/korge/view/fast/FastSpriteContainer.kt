@@ -13,7 +13,7 @@ inline fun Container.fastSpriteContainer(
     useRotation: Boolean = false,
     smoothing: Boolean = true,
     callback: @ViewDslMarker FastSpriteContainer.() -> Unit = {}
-): FastSpriteContainer = FastSpriteContainer(useRotation).addTo(this, callback)
+): FastSpriteContainer = FastSpriteContainer(useRotation, smoothing).addTo(this, callback)
 
 class FastSpriteContainer(val useRotation: Boolean = false, var smoothing:Boolean = true) : View() {
     private val sprites = FastArrayList<FastSprite>()
