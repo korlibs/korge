@@ -27,6 +27,9 @@ open class FastSprite(tex: BmpSlice) {
     // sin(rotation) value
     var sr: Float = 0f
 
+    var container: FastSpriteContainer? = null
+        internal set
+
     internal var useRotation = false
 
     /**
@@ -147,7 +150,7 @@ open class FastSprite(tex: BmpSlice) {
         set(value) {
             if (field != value) {
                 field = value
-                if(useRotation) {
+                if (useRotation) {
                     cr = cos(field)
                     sr = sin(field)
                     updateXY0123()

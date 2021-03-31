@@ -21,6 +21,7 @@ class FastSpriteContainer(val useRotation: Boolean = false) : View() {
 
     fun addChild(sprite: FastSprite) {
         sprite.useRotation = useRotation
+        sprite.container = this
         this.sprites.add(sprite)
     }
 
@@ -29,6 +30,7 @@ class FastSpriteContainer(val useRotation: Boolean = false) : View() {
 
     fun removeChild(sprite: FastSprite) {
         this.sprites.remove(sprite)
+        sprite.container = null
     }
 
     // alias for removeChild
