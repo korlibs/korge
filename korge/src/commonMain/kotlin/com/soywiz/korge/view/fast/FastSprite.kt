@@ -15,9 +15,6 @@ open class FastSprite(tex: BmpSlice) {
     var x3: Float = 0f
     var y3: Float = 0f
 
-    var w: Float = 0f
-    var h: Float = 0f
-
     var ax: Float = 0f
     var ay: Float = 0f
 
@@ -48,27 +45,27 @@ open class FastSprite(tex: BmpSlice) {
      */
     private fun updateXY0123() {
         // top left
-        var px = anchorXf * scaleXf
-        var py = anchorYf * scaleYf
+        var px = -ax * scaleXf
+        var py = -ay * scaleYf
         x0 = px * cr - py * sr + xf
         y0 = py * cr + px * sr + yf
 
         // top right
-        px = (anchorXf + width) * scaleXf
-        py = anchorYf * scaleYf
+        px = (-ax + width) * scaleXf
+        py = -ay * scaleYf
         x1 = px * cr - py * sr + xf
         y1 = py * cr + px * sr + yf
 
 
         // bottom right
-        px = (anchorXf + width) * scaleXf
-        py = (anchorYf + height) * scaleYf
+        px = (-ax + width) * scaleXf
+        py = (-ay + height) * scaleYf
         x2 = px * cr - py * sr + xf
         y2 = py * cr + px * sr + yf
 
         // bottom left
-        px = anchorXf * scaleXf
-        py = (anchorYf + height) * scaleYf
+        px = -ax * scaleXf
+        py = (-ay + height) * scaleYf
         x3 = px * cr - py * sr + xf
         y3 = py * cr + px * sr + yf
     }
@@ -77,8 +74,8 @@ open class FastSprite(tex: BmpSlice) {
      * Updates x without rotation
      */
     private fun updateX01() {
-        x0 = xf - ax
-        x1 = x0 + w
+        x0 = xf - ax * scaleXf
+        x1 = x0 + width * scaleXf
     }
 
     private fun updateX() {
@@ -93,8 +90,8 @@ open class FastSprite(tex: BmpSlice) {
      * Updates y without rotation
      */
     private fun updateY01() {
-        y0 = yf - ay
-        y1 = y0 + h
+        y0 = yf - ay * scaleYf
+        y1 = y0 + height * scaleYf
     }
 
     private fun updateY() {
@@ -106,14 +103,12 @@ open class FastSprite(tex: BmpSlice) {
     }
 
     private fun updateXSize() {
-        w = width * scaleXf
-        ax = w * anchorXf
+        ax = width * anchorXf
         updateX()
     }
 
     private fun updateYSize() {
-        h = height * scaleYf
-        ay = h * anchorYf
+        ay = height * anchorYf
         updateY()
     }
 
@@ -202,7 +197,7 @@ open class FastSprite(tex: BmpSlice) {
     }
 
     override fun toString(): String {
-        return "FastSprite(x0=$x0, y0=$y0, x1=$x1, y1=$y1, x2=$x2, y2=$y2, x3=$x3, y3=$y3, w=$w, h=$h, ax=$ax, ay=$ay, cr=$cr, sr=$sr, container=$container, useRotation=$useRotation, xf=$xf, yf=$yf, anchorXf=$anchorXf, anchorYf=$anchorYf, scaleXf=$scaleXf, scaleYf=$scaleYf, rotationRadiansf=$rotationRadiansf, color=$color, visible=$visible, tex=$tex)"
+        return "FastSprite(x0=$x0, y0=$y0, x1=$x1, y1=$y1, x2=$x2, y2=$y2, x3=$x3, y3=$y3, ax=$ax, ay=$ay, cr=$cr, sr=$sr, container=$container, useRotation=$useRotation, xf=$xf, yf=$yf, anchorXf=$anchorXf, anchorYf=$anchorYf, scaleXf=$scaleXf, scaleYf=$scaleYf, rotationRadiansf=$rotationRadiansf, color=$color, visible=$visible, tex=$tex)"
     }
 
 }
