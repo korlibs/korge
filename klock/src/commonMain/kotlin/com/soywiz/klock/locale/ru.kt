@@ -1,12 +1,22 @@
 package com.soywiz.klock.locale
 
 import com.soywiz.klock.DayOfWeek
+import com.soywiz.klock.KlockLocaleContext
 import com.soywiz.klock.KlockLocale
+import com.soywiz.klock.KlockLocaleGender
 
 val KlockLocale.Companion.russian get() = RussianKlockLocale
 
 open class RussianKlockLocale : KlockLocale() {
 	companion object : RussianKlockLocale()
+
+    override fun getOrdinalByDay(day: Int, context: KlockLocaleContext): String = when (context.gender) {
+        KlockLocaleGender.Masculine -> "$day-й"
+        // if feminine is ever added to KlockLocaleGender, don't forget to add implementation here: "$day-я"
+        else -> "$day-е"
+    }
+
+    override fun getDayByOrdinal(ordinal: String): Int = ordinal.substringBeforeLast('-').toInt()
 
 	override val ISO639_1 = "ru"
 

@@ -167,7 +167,17 @@ class KlockLocaleTest {
 			""".trimIndent(),
 			multiFormat(RussianKlockLocale, KlockLocale.russian)
 		)
-	}
+
+        val neuter = KlockLocaleContext(gender = KlockLocaleGender.Neuter)
+        assertEquals("1-е", RussianKlockLocale.getOrdinalByDay(1, neuter))
+        assertEquals("20-е", RussianKlockLocale.getOrdinalByDay(20, neuter))
+        val masculine = KlockLocaleContext(gender = KlockLocaleGender.Masculine)
+        assertEquals("1-й", RussianKlockLocale.getOrdinalByDay(1, masculine))
+        assertEquals("20-й", RussianKlockLocale.getOrdinalByDay(20, masculine))
+
+        assertEquals(1, RussianKlockLocale.getDayByOrdinal("1-й"))
+        assertEquals(5, RussianKlockLocale.getDayByOrdinal("5-е"))
+    }
 
 	@Test
 	fun testKoreanLocale() {

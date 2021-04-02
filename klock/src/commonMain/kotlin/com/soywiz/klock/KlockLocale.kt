@@ -1,6 +1,5 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.*
 import com.soywiz.klock.internal.klockLazyOrGet
 import com.soywiz.klock.internal.substr
 import kotlin.native.concurrent.ThreadLocal
@@ -30,7 +29,7 @@ abstract class KlockLocale {
         }
     }
 
-    open fun getOrdinalByDay(day: Int): String = ordinals[day]
+    open fun getOrdinalByDay(day: Int, context: KlockLocaleContext = KlockLocaleContext.Default): String = ordinals[day]
 
     open fun getDayByOrdinal(ordinal: String): Int = ordinals.indexOf(ordinal)
 
