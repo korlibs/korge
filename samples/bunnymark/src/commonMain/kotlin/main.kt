@@ -1,32 +1,27 @@
-import com.soywiz.kds.*
+import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korge.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
+import com.soywiz.korge.Korge
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.fast.FastSprite
+import com.soywiz.korge.view.fast.alpha
 import com.soywiz.korge.view.fast.fastSpriteContainer
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.text
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.sliceWithSize
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.toBitmapFont
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.random.Random
 
-//class BunnyFastSprite(tex: BmpSlice) : FastSprite(tex) {
-//    var speedX: Float = 0f
-//    var speedY: Float = 0f
-//}
-
 class Bunny(tex: BmpSlice) : FastSprite(tex) {
-    // Temporal placeholder until FastSpriteContainer supports rotation
-    var rotationRadiansf: Float = 0f
     var speedXf: Float = 0f
     var speedYf: Float = 0f
-    var spinf: Float = 0f
 }
 
 // bunnymark ported from PIXI.js
@@ -44,17 +39,13 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
 
     val startBunnyCount = 2
     //val startBunnyCount = 1_000_000
-    //val startBunnyCount = 200_000
+   // val startBunnyCount = 200_000
     val bunnyTextures = listOf(bunny1, bunny2, bunny3, bunny4, bunny5)
     var currentTexture = bunny1
-    val amount = 100
 
-    val container = fastSpriteContainer()
+    val container = fastSpriteContainer(useRotation = true, smoothing = false)
     val font = DefaultTtfFont.toBitmapFont(fontSize = 16.0, effect = BitmapEffect(dropShadowX = 1, dropShadowY = 1, dropShadowRadius = 1))
-    //val font = resourcesVfs["font1.fnt"].readBitmapFont()
-    //val font = DefaultTtfFont
     val bunnyCountText = text("", font = font, textSize = 16.0, alignment = com.soywiz.korim.text.TextAlignment.TOP_LEFT).position(16.0, 16.0)
-    //val container = container()
 
     val bunnys = FastArrayList<Bunny>()
 
@@ -63,16 +54,14 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     fun addBunny(count: Int = 1) {
         for (n in 0 until count) {
             val bunny = Bunny(currentTexture)
-            bunny.speedXf = random.nextFloat() * 10
-            bunny.speedYf = (random.nextFloat() * 10) - 5
+            bunny.speedXf = random.nextFloat() * 1
+            bunny.speedYf = (random.nextFloat() * 1) - 5
             bunny.anchorXf = .5f
             bunny.anchorYf = 1f
-            //bunny.alpha = 0.3 + Math.random() * 0.7;
-            bunny.scalef = 0.5f + random.nextFloat() * 0.5f
+            bunny.alpha = 0.3f + random.nextFloat() * 0.7f
+            bunny.scale(0.5f + random.nextFloat() * 0.5f)
             bunny.rotationRadiansf = (random.nextFloat() - 0.5f)
-            //bunny.rotation = Math.random() - 0.5;
-            //var random = random.nextInt(0, container.numChildren-2);
-            container.addChild(bunny)//, random);
+            container.addChild(bunny)
             bunnys.add(bunny)
         }
         bunnyCountText.text = "(WIP) KorGE Bunnymark. Bunnies: ${bunnys.size}"
@@ -116,7 +105,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
             if (bunny.yf > maxY) {
                 bunny.speedYf *= -0.85f
                 bunny.yf = maxY
-                bunny.spinf = (random.nextFloat() - 0.5f) * 0.2f
+                bunny.rotationRadiansf = (random.nextFloat() - 0.5f) * 0.2f
                 if (random.nextFloat() > 0.5) {
                     bunny.speedYf -= random.nextFloat() * 6
                 }
