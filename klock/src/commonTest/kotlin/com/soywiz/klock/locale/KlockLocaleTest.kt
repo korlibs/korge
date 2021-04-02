@@ -168,10 +168,10 @@ class KlockLocaleTest {
 			multiFormat(RussianKlockLocale, KlockLocale.russian)
 		)
 
-        val neuter = KlockLocalContext.empty.withGender(KlockLocaleGender.Neuter)
+        val neuter = KlockLocalContext(gender = KlockLocaleGender.Neuter)
         assertEquals("1-е", RussianKlockLocale.getOrdinalByDay(1, neuter))
         assertEquals("20-е", RussianKlockLocale.getOrdinalByDay(20, neuter))
-        val masculine = KlockLocalContext.empty.withGender(KlockLocaleGender.Masculine)
+        val masculine = KlockLocalContext(gender = KlockLocaleGender.Masculine)
         assertEquals("1-й", RussianKlockLocale.getOrdinalByDay(1, masculine))
         assertEquals("20-й", RussianKlockLocale.getOrdinalByDay(20, masculine))
 
