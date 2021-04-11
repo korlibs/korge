@@ -4,14 +4,8 @@ pluginManagement {
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
-        // @TODO: https://github.com/korlibs/korte/issues/13
-        jcenter()
-        maven ("https://dl.bintray.com/kotlin/kotlin-dev")
-		maven ("https://dl.bintray.com/kotlin/kotlin-eap")
 	}
 }
-
-enableFeaturePreview("GRADLE_METADATA")
 
 /*
 for (file in rootDir.listFiles()) {
@@ -46,8 +40,6 @@ include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
 include(":korge-gradle-plugin")
-
-enableFeaturePreview("GRADLE_METADATA")
 
 /*
 for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {

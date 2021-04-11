@@ -2,7 +2,6 @@ plugins {
 	java
 	`java-gradle-plugin`
 	kotlin("jvm")
-	maven
 	`maven-publish`
 	id("com.gradle.plugin-publish")
 }
