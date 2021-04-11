@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.File
 
 buildscript {
+    val androidBuildGradleVersion: String by project
+    val gradlePublishPluginVersion: String by project
     repositories {
         mavenLocal()
         mavenCentral()
@@ -10,11 +12,8 @@ buildscript {
         maven { url = uri("https://plugins.gradle.org/m2/") }
     }
     dependencies {
-        classpath("com.gradle.publish:plugin-publish-plugin:0.12.0")
-        classpath("com.android.tools.build:gradle:4.2.0-beta06")
-        //classpath("com.android.tools.build:gradle:4.1.0-rc03")
-        //classpath("com.android.tools.build:gradle:4.2.0-alpha12")
-        //classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.15.1")
+        classpath("com.gradle.publish:plugin-publish-plugin:$gradlePublishPluginVersion")
+        classpath("com.android.tools.build:gradle:$androidBuildGradleVersion")
     }
 }
 
@@ -42,11 +41,8 @@ allprojects {
 	repositories {
         mavenLocal()
 		mavenCentral()
-		jcenter()
         google()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-eap") }
-        maven { url = uri("https://dl.bintray.com/kotlin/kotlin-dev") }
 	}
 }
 
@@ -265,6 +261,7 @@ subprojects {
                 }
 
                 fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+                    //println("${project.name}: CREATED SOURCE SET: \"${name}Main\"")
                     val main = maybeCreate("${name}Main").apply { block(false) }
                     val test = maybeCreate("${name}Test").apply { block(true) }
                     return PairSourceSet(main, test).also {
@@ -428,20 +425,7 @@ fun Project.nonSamples(block: Project.() -> Unit) {
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
     "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
 
-val BINTRAY_USER = rootProject.findProperty("BINTRAY_USER")?.toString()
-        ?: project.findProperty("bintrayUser")?.toString()
-        ?: System.getenv("BINTRAY_USER")
-
-
-val BINTRAY_KEY = rootProject.findProperty("BINTRAY_KEY")?.toString()
-        ?: project.findProperty("bintrayApiKey")?.toString()
-        ?: System.getenv("BINTRAY_API_KEY")
-        ?: System.getenv("BINTRAY_KEY")
-
-
 nonSamples {
-    if (BINTRAY_USER.isNullOrEmpty() || BINTRAY_KEY.isNullOrEmpty()) return@nonSamples
-
     plugins.apply("maven-publish")
 
     val javadocJar = tasks.maybeCreate<Jar>("javadocJar").apply { archiveClassifier.set("javadoc") }
@@ -450,13 +434,13 @@ nonSamples {
 
     extensions.getByType(PublishingExtension::class.java).apply {
         repositories {
-            maven {
-                credentials {
-                    username = BINTRAY_USER
-                    password = BINTRAY_KEY
-                }
-                url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
-            }
+            //maven {
+            //    credentials {
+            //        username = BINTRAY_USER
+            //        password = BINTRAY_KEY
+            //    }
+            //    url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
+            //}
         }
         afterEvaluate {
             //println(gkotlin.sourceSets.names)
