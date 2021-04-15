@@ -56,7 +56,7 @@ internal object HttpPortable {
 
 				val responseHeaders = Http.Headers(headers.map {
 					val parts = it.split(':', limit = 2)
-					parts.getOrElse(0) { "" } to parts.getOrElse(1) { "" }
+					parts.getOrElse(0) { "" } to parts.getOrElse(1) { "" }.trimStart()
 				})
 
 				return Response(responseCode, responseMessage, responseHeaders, client)
