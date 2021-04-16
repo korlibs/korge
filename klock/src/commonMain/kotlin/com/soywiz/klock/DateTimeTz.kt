@@ -24,6 +24,12 @@ class DateTimeTz private constructor(
         /** Creates a new local [DateTimeTz] from a [unix] time */
         fun fromUnixLocal(unix: Double): DateTimeTz = DateTime(unix).localUnadjusted
 
+        /** Creates a new local [DateTimeTz] from a [unix] time applied*/
+        fun fromUnix(unix: Long): DateTimeTz {
+            val unixDateTime = DateTime(unix)
+            return utc(unixDateTime, TimezoneOffset.local(unixDateTime))
+        }
+
         /** Returns the current local [DateTimeTz] */
         fun nowLocal(): DateTimeTz = DateTime.now().local
     }

@@ -53,4 +53,15 @@ class TimeFormatTest {
         assertEquals(59, time.second)
         assertEquals(0, time.millisecond)
     }
+
+    @Test
+    fun testFromUnix() {
+        val now = 1611658981L * 1000
+        val diff = TimezoneOffset.local(DateTime(now))
+
+        val dateUnix = DateTimeTz.fromUnix(now)
+        val dateUnixLocal = DateTimeTz.fromUnixLocal(now).addOffset(diff)
+
+        assertEquals(dateUnix.hours, dateUnixLocal.hours)
+    }
 }
