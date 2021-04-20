@@ -29,7 +29,7 @@ class Camera : Container(), View.Reference {
         get() = referenceParent?.width ?: 100.0
     override var height: Double
         set(_) = Unit
-        get() = referenceParent?.width ?: 100.0
+        get() = referenceParent?.height ?: 100.0
 
     override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0, 0, width, height)
