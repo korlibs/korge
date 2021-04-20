@@ -7,7 +7,7 @@ object ASCII {
     fun encode(str: String): ByteArray =
         ByteArray(str.length).also { out -> for (n in out.indices) out[n] = str[n].toByte() }
     fun decode(data: ByteArray): String =
-        String(CharArray(data.size).also { out -> for (n in out.indices) out[n] = data[n].toChar() })
+        CharArray(data.size).also { out -> for (n in out.indices) out[n] = data[n].toChar() }.concatToString()
 }
 
 fun String.fromAscii(): ByteArray = ASCII(this)
