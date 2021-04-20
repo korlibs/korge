@@ -150,7 +150,7 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
                 override fun swapBuffers() = Unit
             }
         }
-        OS.isWindows -> Win32OpenglContext(c, doubleBuffered = true)
+        OS.isWindows -> Win32OpenglContext(c, doubleBuffered = true).init()
         else -> {
             try {
                 val display = X.XOpenDisplay(null)
