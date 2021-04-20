@@ -1,5 +1,7 @@
 package com.soywiz.korte.dynamic
 
+import kotlin.native.concurrent.SharedImmutable
+
 // @TODO: Hopefully someday: https://github.com/Kotlin/kotlinx.serialization/tree/dev
 open class NativeObjectMapper2 : ObjectMapper2() {
     //override fun hasProperty(instance: Any, key: String): Boolean = TODO("Not supported in native yet")
@@ -9,4 +11,5 @@ open class NativeObjectMapper2 : ObjectMapper2() {
     //override suspend fun get(instance: Any, key: Any?): Any? = TODO("Not supported in native yet")
 }
 
+@SharedImmutable
 actual val Mapper2: ObjectMapper2 = NativeObjectMapper2()

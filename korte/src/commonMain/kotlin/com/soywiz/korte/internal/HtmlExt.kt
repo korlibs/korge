@@ -1,5 +1,8 @@
 package com.soywiz.korte.internal
 
+import kotlin.native.concurrent.SharedImmutable
+
+@SharedImmutable
 private val charToEntity = linkedMapOf('"' to "&quot;", '\'' to "&apos;", '<' to "&lt;", '>' to "&gt;", '&' to "&amp;")
 
 internal fun String.htmlspecialchars() = buildString {
