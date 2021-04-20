@@ -243,13 +243,18 @@ interface DynamicContext {
     fun Any?.toDynamicNumber() = Dynamic2.toNumber(this)
     fun Any?.toDynamicList() = Dynamic2.toList(this)
     fun Any?.dynamicLength() = Dynamic2.length(this)
-    suspend fun Any?.dynamicGet(key: Any?, mapper: ObjectMapper2) = Dynamic2.accessAny(this, key, mapper)
+    // @TODO: Bug JVM IR 1.5.0-RC: https://youtrack.jetbrains.com/issue/KT-46223
+    suspend fun Any?.dynamicGet(key: Any?, mapper: ObjectMapper2): Any? = Dynamic2.accessAny(this, key, mapper)
+
+    // @TODO: Bug JVM IR 1.5.0-RC: https://youtrack.jetbrains.com/issue/KT-46223
     suspend fun Any?.dynamicSet(key: Any?, value: Any?, mapper: ObjectMapper2) =
         Dynamic2.setAny(this, key, value, mapper)
 
+    // @TODO: Bug JVM IR 1.5.0-RC: https://youtrack.jetbrains.com/issue/KT-46223
     suspend fun Any?.dynamicCall(vararg args: Any?, mapper: ObjectMapper2) =
         Dynamic2.callAny(this, args.toList(), mapper = mapper)
 
+    // @TODO: Bug JVM IR 1.5.0-RC: https://youtrack.jetbrains.com/issue/KT-46223
     suspend fun Any?.dynamicCallMethod(methodName: Any?, vararg args: Any?, mapper: ObjectMapper2) =
         Dynamic2.callAny(this, methodName, args.toList(), mapper = mapper)
 //suspend internal fun Any?.dynamicCastTo(target: KClass<*>) = Dynamic2.dynamicCast(this, target)

@@ -48,10 +48,10 @@ interface ExprNode : DynamicContext {
             val obj = expr.eval(context)
             val key = name.eval(context)
             return try {
-                obj.dynamicGet(key, context.mapper)
+                return Dynamic2.accessAny(obj, key, context.mapper)
             } catch (t: Throwable) {
                 try {
-                    obj.dynamicCallMethod(key, mapper = context.mapper)
+                    Dynamic2.callAny(obj, "invoke", listOf(key), mapper = context.mapper)
                 } catch (t: Throwable) {
                     null
                 }
@@ -73,7 +73,8 @@ interface ExprNode : DynamicContext {
                             return k.invoke(context, processedArgs)
                         }
                     }
-                    return obj.dynamicCallMethod(methodName, *processedArgs.toTypedArray(), mapper = context.mapper)
+                    //return obj.dynamicCallMethod(methodName, *processedArgs.toTypedArray(), mapper = context.mapper)
+                    return Dynamic2.callAny(obj, methodName, processedArgs.toList(), mapper = context.mapper)
                 }
                 is ExprNode.VAR -> {
                     val func = context.config.functions[method.name]
@@ -82,7 +83,8 @@ interface ExprNode : DynamicContext {
                     }
                 }
             }
-            return method.eval(context).dynamicCall(processedArgs.toTypedArray(), mapper = context.mapper)
+            //return method.eval(context).dynamicCall(processedArgs.toTypedArray(), mapper = context.mapper)
+            return Dynamic2.callAny(method.eval(context), processedArgs.toList(), mapper = context.mapper)
         }
     }
 

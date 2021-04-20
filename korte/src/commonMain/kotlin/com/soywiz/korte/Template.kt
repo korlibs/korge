@@ -49,11 +49,11 @@ class Template internal constructor(
 
     class Scope(val map: Any?, val mapper: ObjectMapper2, val parent: Template.Scope? = null) : DynamicContext {
         // operator
-        suspend fun get(key: Any?): Any? = map.dynamicGet(key, mapper) ?: parent?.get(key)
+        suspend fun get(key: Any?): Any? = Dynamic2.accessAny(map, key, mapper) ?: parent?.get(key)
 
         // operator
         suspend fun set(key: Any?, value: Any?): Unit {
-            map.dynamicSet(key, value, mapper)
+            Dynamic2.setAny(map, key, value, mapper)
         }
     }
 
