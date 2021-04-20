@@ -45,7 +45,7 @@ open class HttpPortable(
 				val firstLine = client.readLine()
 				val responseInfo = Regex("HTTP/1.\\d+ (\\d+) (.*)").find(firstLine) ?: error("Invalid HTTP response $firstLine")
 
-				//println("FIRST LINE: $firstLine")
+				//println("FIRST LINE: ${firstLine.trim()}")
 
 				val responseCode = responseInfo.groupValues[1].toInt()
 				val responseMessage = responseInfo.groupValues[2]
