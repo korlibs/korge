@@ -425,6 +425,14 @@ fun Project.nonSamples(block: Project.() -> Unit) {
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
     "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
 
+allprojects {
+    tasks.withType(Copy::class.java).all {
+        //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
+        this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+        //println("Task $this")
+    }
+}
+
 nonSamples {
     plugins.apply("maven-publish")
 
@@ -448,7 +456,7 @@ nonSamples {
             fun configure(publication: MavenPublication) {
                 //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
                 if (publication.name == "kotlinMultiplatform") {
-                    publication.artifact(sourcesJar) {}
+                    //publication.artifact(sourcesJar) {}
                     //publication.artifact(emptyJar) {}
                 }
 
@@ -608,7 +616,9 @@ samples {
             doLast {
                 val targetDir = this.outputs.files.first()
                 val jsMainCompilation = kotlin.js().compilations["main"]!!
-                val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+
+                // @TODO: How to get the actual .js file generated/served?
+                val jsFile = File("${project.name}.js").name
                 val resourcesFolders = jsMainCompilation.allKotlinSourceSets
                     .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
                 //println("jsFile: $jsFile")

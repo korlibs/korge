@@ -26,7 +26,7 @@ class AudioSamplesDeque(val channels: Int) {
     fun write(channel: Int, sample: Short) = run { buffer[channel].write(temp.also { temp[0] = sample }, 0, 1) }
 
     fun readFloat(channel: Int): Float = read(channel).toFloat() / Short.MAX_VALUE.toFloat()
-    fun writeFloat(channel: Int, sample: Float) = write(channel, (sample * Short.MAX_VALUE.toFloat()).toShort())
+    fun writeFloat(channel: Int, sample: Float) = write(channel, (sample * Short.MAX_VALUE.toFloat()).toInt().toShort())
 
     // Write samples
     fun write(samples: AudioSamples, offset: Int = 0, len: Int = samples.totalSamples - offset) {

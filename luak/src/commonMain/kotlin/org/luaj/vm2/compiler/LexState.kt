@@ -137,7 +137,7 @@ class LexState(internal var L: LuaC.CompileState, internal var z: LuaBinInput  /
 
     internal fun txtToken(token: Int): String {
         when (token) {
-            TK_NAME, TK_STRING, TK_NUMBER -> return String(buff!!, 0, nbuff)
+            TK_NAME, TK_STRING, TK_NUMBER -> return buff!!.concatToString(0, nbuff)
             else -> return token2str(token)
         }
     }
@@ -160,7 +160,7 @@ class LexState(internal var L: LuaC.CompileState, internal var z: LuaBinInput  /
     }
 
     internal fun newstring(chars: CharArray?, offset: Int, len: Int): LuaString {
-        return L.newTString(String(chars!!, offset, len))
+        return L.newTString(chars!!.concatToString(offset, len))
     }
 
     internal fun inclinenumber() {
@@ -293,7 +293,7 @@ class LexState(internal var L: LuaC.CompileState, internal var z: LuaBinInput  /
                 break
         }
         save('\u0000'.toInt())
-        val str = String(buff!!, 0, nbuff)
+        val str = buff!!.concatToString(0, nbuff)
         str2d(str, seminfo)
     }
 

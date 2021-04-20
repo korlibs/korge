@@ -25,7 +25,7 @@ fun Project.configureAndroidDirect() {
     android.apply {
         packagingOptions {
             for (pattern in androidExcludePatterns()) {
-                it.exclude(pattern)
+                this.exclude(pattern)
             }
         }
         compileSdkVersion(28)

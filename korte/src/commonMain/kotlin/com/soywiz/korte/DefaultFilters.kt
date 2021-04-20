@@ -41,7 +41,7 @@ object DefaultFilters {
             subject.toDynamicList().sortedBy { it.toDynamicString() }
         } else {
             subject.toDynamicList()
-                .map { it to it.dynamicGet(args[0], mapper).toDynamicString() }
+                .map { it to Dynamic2.accessAny(it, args[0], mapper).toDynamicString() }
                 .sortedBy { it.second }
                 .map { it.first }
         }
@@ -84,12 +84,12 @@ object DefaultFilters {
     val Where = Filter("where") {
         val itemName = args[0]
         val itemValue = args[1]
-        subject.toDynamicList().filter { Dynamic2.contains(it.dynamicGet(itemName, mapper), itemValue) }
+        subject.toDynamicList().filter { Dynamic2.contains(Dynamic2.accessAny(it, itemName, mapper), itemValue) }
 
     }
     val Map = Filter("map") {
         val key = this.args[0].toDynamicString()
-        this.subject.toDynamicList().map { it.dynamicGet(key, mapper) }
+        this.subject.toDynamicList().map { Dynamic2.accessAny(it, key, mapper) }
     }
     val Size = Filter("size") { subject.dynamicLength() }
     val Uniq = Filter("uniq") {

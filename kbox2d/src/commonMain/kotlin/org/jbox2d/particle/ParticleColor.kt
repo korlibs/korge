@@ -36,9 +36,9 @@ class ParticleColor {
     }
 
     fun set(color: Color3f) {
-        r = (255 * color.x).toByte()
-        g = (255 * color.y).toByte()
-        b = (255 * color.z).toByte()
+        r = (255 * color.x).toInt().toByte()
+        g = (255 * color.y).toInt().toByte()
+        b = (255 * color.z).toInt().toByte()
         a = 255.toByte()
     }
 

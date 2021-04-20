@@ -162,7 +162,7 @@ data class Array2<TGen>(val width: Int, val height: Int, val data: Array<TGen>) 
 
     fun toStringList(charMap: (TGen) -> Char, margin: String = ""): List<String> {
         return (0 until height).map { y ->
-            margin + String(CharArray(width) { x -> charMap(this[x, y]) })
+            margin + CharArray(width) { x -> charMap(this[x, y]) }.concatToString()
         }
     }
 
@@ -310,7 +310,7 @@ data class IntArray2(val width: Int, val height: Int, val data: IntArray) : Iter
 
     fun toStringList(charMap: (Int) -> Char, margin: String = ""): List<String> {
         return (0 until height).map { y ->
-            margin + String(CharArray(width) { x -> charMap(this[x, y]) })
+            margin + CharArray(width) { x -> charMap(this[x, y]) }.concatToString()
         }
     }
 
@@ -458,7 +458,7 @@ data class DoubleArray2(val width: Int, val height: Int, val data: DoubleArray) 
 
     fun toStringList(charMap: (Double) -> Char, margin: String = ""): List<String> {
         return (0 until height).map { y ->
-            margin + String(CharArray(width) { x -> charMap(this[x, y]) })
+            margin + CharArray(width) { x -> charMap(this[x, y]) }.concatToString()
         }
     }
 
@@ -606,7 +606,7 @@ data class FloatArray2(val width: Int, val height: Int, val data: FloatArray) : 
 
     fun toStringList(charMap: (Float) -> Char, margin: String = ""): List<String> {
         return (0 until height).map { y ->
-            margin + String(CharArray(width) { x -> charMap(this[x, y]) })
+            margin + CharArray(width) { x -> charMap(this[x, y]) }.concatToString()
         }
     }
 
