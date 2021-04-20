@@ -74,8 +74,8 @@ fun benchmark(block: () -> Double): BenchmarkResult {
 
     val ftotalNanoseconds = results.map { it.nanos }.sum().toDouble()
     val ftotalIters = results.map { it.iters }.sum().toDouble()
-    val fminNanoseconds = results.map { it.nanosPerIter }.min()!!
-    val fmaxNanoseconds = results.map { it.nanosPerIter }.max()!!
+    val fminNanoseconds = results.map { it.nanosPerIter }.minOrNull()!!
+    val fmaxNanoseconds = results.map { it.nanosPerIter }.maxOrNull()!!
     //for (res in results) println("res: $res")
 
     return BenchmarkResult(

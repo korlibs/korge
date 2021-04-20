@@ -12,7 +12,7 @@ data class AwtTreeNode(val node: UiTreeNode) : TreeNode {
     override fun getChildAt(childIndex: Int): TreeNode? = node.children?.get(childIndex)?.awt
     override fun getChildCount(): Int = node.children?.size ?: 0
     override fun getParent(): TreeNode? = node.parent?.let { it.awt }
-    override fun getIndex(node: TreeNode?): Int = this.node.children?.indexOf(node) ?: -1
+    override fun getIndex(node: TreeNode?): Int = this.node.children?.indexOf(node as UiTreeNode?) ?: -1
     override fun getAllowsChildren(): Boolean = node.children != null
     override fun isLeaf(): Boolean = node.children == null
     override fun children(): Enumeration<out TreeNode> = Vector(node.children ?: listOf()).elements() as Enumeration<out TreeNode>

@@ -299,13 +299,13 @@ class CGFloat(val value: Double) : Number(), NativeMapped {
         val SIZE = Native.LONG_SIZE
     }
 
-    override fun toByte(): Byte = value.toByte()
+    override fun toByte(): Byte = value.toInt().toByte()
     override fun toChar(): Char = value.toChar()
     override fun toDouble(): Double = value.toDouble()
     override fun toFloat(): Float = value.toFloat()
     override fun toInt(): Int = value.toInt()
     override fun toLong(): Long = value.toLong()
-    override fun toShort(): Short = value.toShort()
+    override fun toShort(): Short = value.toInt().toShort()
     override fun nativeType(): Class<*> = when (SIZE) {
         4 -> Float::class.java
         8 -> Double::class.java

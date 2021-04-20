@@ -59,7 +59,7 @@ open class DequeBasedPlatformAudioOutput(
 
     protected val availableRead get() = deque.availableRead
     protected fun readFloat(channel: Int): Float = if (deque.availableRead >= 1) (deque.readFloat(channel) * volumes[channel]).clamp(-1f, +1f) else 0f
-    protected fun readShort(channel: Int): Short = (readFloat(channel) * Short.MAX_VALUE).toShort()
+    protected fun readShort(channel: Int): Short = (readFloat(channel) * Short.MAX_VALUE).toInt().toShort()
 
     final override val availableSamples: Int get() = deque.availableRead
     final override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {

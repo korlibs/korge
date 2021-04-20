@@ -398,7 +398,7 @@ fun audioOutCallback(channel: Int, buf: ShortArray, reqn: Int = buf.size, bufn: 
 			state.currentsampleIndex += state.currentsampleIncrement
 			if (state.currentsampleIndex >= SAMPLE_COUNT) state.currentsampleIndex -= SAMPLE_COUNT.toFloat()
 		}
-		val rvalue = value.clamp(Short.MIN_VALUE.toFloat(), Short.MAX_VALUE.toFloat()).toShort()
+		val rvalue = value.clamp(Short.MIN_VALUE.toFloat(), Short.MAX_VALUE.toInt().toFloat()).toInt().toShort()
 		//for (n in 0 until nchannels) buf[bufn++] = value.toShort()
 		buf[bufn++] = rvalue
 		//buf[bufn++] = rvalue
