@@ -2,6 +2,9 @@ package com.soywiz.korge.gradle.util
 
 import groovy.util.*
 import groovy.xml.*
+// Why is this required?
+import groovy.xml.XmlParser
+import groovy.xml.XmlNodePrinter
 import java.io.*
 
 /*
