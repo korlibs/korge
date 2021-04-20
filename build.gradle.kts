@@ -425,6 +425,14 @@ fun Project.nonSamples(block: Project.() -> Unit) {
 fun getKorgeProcessResourcesTaskName(target: org.jetbrains.kotlin.gradle.plugin.KotlinTarget, compilation: org.jetbrains.kotlin.gradle.plugin.KotlinCompilation<*>): String =
     "korgeProcessedResources${target.name.capitalize()}${compilation.name.capitalize()}"
 
+allprojects {
+    tasks.withType(Copy::class.java).all {
+        //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
+        this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+        //println("Task $this")
+    }
+}
+
 nonSamples {
     plugins.apply("maven-publish")
 
