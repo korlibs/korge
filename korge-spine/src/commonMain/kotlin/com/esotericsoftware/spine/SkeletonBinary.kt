@@ -1039,7 +1039,7 @@ class SkeletonBinary {
                     }
                 }
             }
-            return String(chars, 0, charCount)
+            return chars.concatToString(0, charCount)
         }
     }
 

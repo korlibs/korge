@@ -480,7 +480,7 @@ private constructor(
         for (i in start until end)
             c[i - start] = m_bytes[i].toChar()
         try {
-            return (String(c)).toDouble()
+            return (c.concatToString()).toDouble()
         } catch (e: Exception) {
             return Double.NaN
         }
@@ -718,7 +718,7 @@ private constructor(
                 else
                     b and 0xf shl 12 or (bytes[i++].toInt() and 0x3f shl 6) or (bytes[i++].toInt() and 0x3f)).toChar()
             }
-            return String(chars)
+            return chars.concatToString()
         }
 
         /**
