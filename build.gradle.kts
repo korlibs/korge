@@ -456,7 +456,7 @@ nonSamples {
             fun configure(publication: MavenPublication) {
                 //println("Publication: $publication : ${publication.name} : ${publication.artifactId}")
                 if (publication.name == "kotlinMultiplatform") {
-                    publication.artifact(sourcesJar) {}
+                    //publication.artifact(sourcesJar) {}
                     //publication.artifact(emptyJar) {}
                 }
 
