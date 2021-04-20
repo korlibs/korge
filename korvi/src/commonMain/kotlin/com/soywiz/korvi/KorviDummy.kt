@@ -28,35 +28,36 @@ class DummyKorviVideoLL(
             return DummyKorviVideoLL((time / timePerFrame).toLong(), timePerFrame.hr, width, height)
         }
     }
-    override val video: List<KorviVideoStream> = listOf(DummyKorviVideoStream())
-    override val audio: List<KorviAudioStream> = listOf(DummyKorviAudioStream())
+    override val video: List<KorviVideoStream> = listOf(DummyKorviVideoStream(this))
+    override val audio: List<KorviAudioStream> = listOf(DummyKorviAudioStream(this))
 
     override suspend fun close() {
     }
 
-    open inner class DummyBaseStream<TFrame : KorviFrame> : BaseKorviStream<TFrame> {
+    // https://youtrack.jetbrains.com/issue/KT-46214
+    open class DummyBaseStream<TFrame : KorviFrame>(val base: DummyKorviVideoLL) : BaseKorviStream<TFrame> {
         var currentFrame = 0L
 
-        override suspend fun getTotalFrames(): Long? = this@DummyKorviVideoLL.totalFrames
-        override suspend fun getDuration(): HRTimeSpan? = timePerFrame * this@DummyKorviVideoLL.totalFrames.toDouble()
+        override suspend fun getTotalFrames(): Long? = base.totalFrames
+        override suspend fun getDuration(): HRTimeSpan? = base.timePerFrame * base.totalFrames.toDouble()
         override suspend fun seek(frame: Long) = run { currentFrame = frame }
-        override suspend fun seek(time: HRTimeSpan) = run { seek((time / timePerFrame).toLong()) }
+        override suspend fun seek(time: HRTimeSpan) = run { seek((time / base.timePerFrame).toLong()) }
     }
 
-    inner class DummyKorviVideoStream : DummyBaseStream<KorviVideoFrame>() {
+    class DummyKorviVideoStream(base: DummyKorviVideoLL) : DummyBaseStream<KorviVideoFrame>(base) {
         override suspend fun readFrame(): KorviVideoFrame? {
-            if (currentFrame >= totalFrames) return null
+            if (currentFrame >= base.totalFrames) return null
             val frame = currentFrame++
-            val currentTime = timePerFrame * frame.toDouble()
-            val data = NativeImage(width, height)
+            val currentTime = base.timePerFrame * frame.toDouble()
+            val data = NativeImage(base.width, base.height)
             data.context2d {
                 fill(Colors.DARKGREEN) {
-                    fillRect(0, 0, width, height)
+                    fillRect(0, 0, base.width, base.height)
                 }
                 fillText(
                     currentTime.timeSpan.toTimeString(),
-                    width * 0.5,
-                    height * 0.5,
+                    base.width * 0.5,
+                    base.height * 0.5,
                     color = Colors.WHITE,
                     font = SystemFont("Arial"),
                     fontSize = 32.0,
@@ -64,16 +65,16 @@ class DummyKorviVideoLL(
                     valign = VerticalAlign.MIDDLE
                 )
             }
-            return KorviVideoFrame({ data.toBMP32() }, frame, timePerFrame * frame.toDouble(), timePerFrame)
+            return KorviVideoFrame({ data.toBMP32() }, frame, base.timePerFrame * frame.toDouble(), base.timePerFrame)
         }
     }
 
-    inner class DummyKorviAudioStream : DummyBaseStream<KorviAudioFrame>() {
+    class DummyKorviAudioStream(base: DummyKorviVideoLL) : DummyBaseStream<KorviAudioFrame>(base) {
         override suspend fun readFrame(): KorviAudioFrame? {
-            if (currentFrame >= totalFrames) return null
+            if (currentFrame >= base.totalFrames) return null
             val frame = currentFrame++
-            val data = AudioData(44100, AudioSamples(2, (44100 * timePerFrame.timeSpan.seconds).toInt()))
-            return KorviAudioFrame(data, frame, timePerFrame * frame.toDouble(), timePerFrame)
+            val data = AudioData(44100, AudioSamples(2, (44100 * base.timePerFrame.timeSpan.seconds).toInt()))
+            return KorviAudioFrame(data, frame, base.timePerFrame * frame.toDouble(), base.timePerFrame)
         }
     }
 }
