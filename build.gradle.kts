@@ -616,7 +616,9 @@ samples {
             doLast {
                 val targetDir = this.outputs.files.first()
                 val jsMainCompilation = kotlin.js().compilations["main"]!!
-                val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+
+                // @TODO: How to get the actual .js file generated/served?
+                val jsFile = File("${project.name}.js").name
                 val resourcesFolders = jsMainCompilation.allKotlinSourceSets
                     .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
                 //println("jsFile: $jsFile")
