@@ -39,10 +39,10 @@ private fun Bitmap32.toWin32Icon(): HICON? {
         bi.bV5Compression = BI_BITFIELDS.convert()
         // The following mask specification specifies a supported 32 BPP
         // alpha format for Windows XP.
-        bi.bV5RedMask = 0x00FF0000.convert()
-        bi.bV5GreenMask = 0x0000FF00.convert()
-        bi.bV5BlueMask = 0x000000FF.convert()
-        bi.bV5AlphaMask = 0xFF000000.convert()
+        bi.bV5RedMask = 0x00_00_00_FF.convert()
+        bi.bV5GreenMask = 0x00_00_FF_00.convert()
+        bi.bV5BlueMask = 0x00_FF_00_00.convert()
+        bi.bV5AlphaMask = 0xFF_00_00_00.convert()
 
         val lpBits = alloc<COpaquePointerVar>()
         val hdc = GetDC(null)
