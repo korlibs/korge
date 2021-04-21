@@ -58,6 +58,9 @@ class FakeAsyncClient(
         connected = true
     }
     override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = serverToClient.read(buffer, offset, len)
+    // @TODO: BUG: Required override because of Bug
+    override suspend fun read(): Int = serverToClient.read()
+
     override suspend fun write(buffer: ByteArray, offset: Int, len: Int) = clientToServer.write(buffer, offset, len)
     override suspend fun close() {
         onClose(Unit)
