@@ -1,12 +1,13 @@
 package com.soywiz.korio.net.ws
 
 import com.soywiz.korio.async.suspendTestNoJs
-import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.FakeAsyncClient
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.net.http.Http
 import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.*
+import kotlin.printStackTrace
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,11 +71,12 @@ class RawRawSocketWebSocketClient {
         val ws = RawSocketWebSocketClient(coroutineContext, client, URL("ws://127.0.0.1:8081/"))
         ws.onOpen { log += "open" }
         ws.onClose { log += "close" }
+        ws.onError { it.printStackTrace(); log += "error" }
         ws.onStringMessage { log += "'$it'" }
         ws.internalReadPackets()
         ws.close()
-        val frame = RawSocketWebSocketClient.readWsFrame(client.clientToServer.toAsync())
-        val message = frame.data.openSync()
+        val frame = RawSocketWebSocketClient.readWsFrameOrNull(client.clientToServer.toAsync())
+        val message = frame!!.data.openSync()
         assertEquals("open,'hello',close", log.joinToString(","))
         assertEquals(1000, message.readU16BE())
         assertEquals("OK", message.readString(2))
@@ -91,6 +93,7 @@ class RawRawSocketWebSocketClient {
         val ws = RawSocketWebSocketClient(coroutineContext, client, URL("ws://127.0.0.1:8081/"))
         ws.onOpen { log += "open" }
         ws.onClose { log += "close" }
+        ws.onError { it.printStackTrace(); log += "error" }
         ws.onBinaryMessage { log += "#${it.hex}#" }
         ws.onStringMessage { log += "'$it'" }
         ws.onAnyMessage.add { log += "[$it]" }
@@ -110,6 +113,7 @@ class RawRawSocketWebSocketClient {
         val ws = RawSocketWebSocketClient(coroutineContext, client, URL("ws://127.0.0.1:8081/"))
         ws.onOpen { log += "open" }
         ws.onClose { log += "close[${it.code},${it.message}]" }
+        ws.onError { it.printStackTrace(); log += "error" }
         ws.onBinaryMessage { log += "#${it.hex}#" }
         ws.onStringMessage { log += "'$it'" }
         ws.onAnyMessage.add { log += "[$it]" }

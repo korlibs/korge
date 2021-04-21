@@ -142,7 +142,7 @@ class RawSocketWebSocketClient(
         onOpen(Unit)
         try {
             loop@ while (!closed) {
-                val frame = readWsFrame()
+                val frame = readWsFrameOrNull() ?: break
 
                 if (frame.type == WsOpcode.Close) {
                     val closeReason = if (frame.data.size >= 2) frame.data.readU16BE(0) else CloseReasons.UNEXPECTED
@@ -178,6 +178,7 @@ class RawSocketWebSocketClient(
                 }
             }
         } catch (e: Throwable) {
+            //e.printStackTrace()
             onError(e)
         }
         onClose(close)
@@ -206,8 +207,11 @@ class RawSocketWebSocketClient(
     }
 
     companion object {
-        suspend fun readWsFrame(s: AsyncInputStream): WsFrame {
-            val b0 = s.readU8()
+        suspend fun readWsFrame(s: AsyncInputStream): WsFrame = readWsFrameOrNull(s) ?: error("End of stream")
+
+        suspend fun readWsFrameOrNull(s: AsyncInputStream): WsFrame? {
+            val b0 = s.read()
+            if (b0 < 0) return null
             val b1 = s.readU8()
 
             val isFinal = b0.extract(7)
@@ -233,9 +237,9 @@ class RawSocketWebSocketClient(
 
     }
 
-    suspend fun readWsFrame(): WsFrame {
-        return Companion.readWsFrame(client)
-    }
+    suspend fun readWsFrame(): WsFrame = readWsFrame(client)
+
+    suspend fun readWsFrameOrNull(): WsFrame? = readWsFrameOrNull(client)
 
     suspend fun sendWsFrame(frame: WsFrame, random: Random = this.random) {
         // masked should be true (since sent from the client)
