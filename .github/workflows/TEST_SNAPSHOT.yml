@@ -1,10 +1,18 @@
 name: "TEST SNAPSHOT"
 
 on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
   schedule:
     # https://crontab.guru/#0_0_*_*_4
     # “At 00:00 on Thursday.”
     - cron: "0 0 * * 4"
+
+env:
+  # https://oss.sonatype.org/content/repositories/snapshots/org/jetbrains/kotlin/kotlin-compiler/1.5.255-SNAPSHOT/
+  FORCED_KOTLIN_VERSION: "1.5.255-SNAPSHOT"
 
 jobs:
   build:
@@ -19,6 +27,7 @@ jobs:
         java-version: 1.8
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    - name: Testing JVM and JS
-      # https://oss.sonatype.org/content/repositories/snapshots/org/jetbrains/kotlin/kotlin-compiler/1.5.255-SNAPSHOT/
-      run: FORCED_KOTLIN_VERSION=1.5.255-SNAPSHOT ./gradlew jvmTest jsTest
+    - name: Testing JVM
+      run: ./gradlew jvmTest
+    - name: Testing JS
+      run: ./gradlew jsTest
