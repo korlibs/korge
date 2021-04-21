@@ -20,12 +20,14 @@ buildscript {
 
 plugins {
     val kotlinVersion: String by project
+    val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 
 	java
-    kotlin("multiplatform") version kotlinVersion
+    kotlin("multiplatform") version realKotlinVersion
 }
 
 val kotlinVersion: String by project
+val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 val coroutinesVersion: String by project
 val jnaVersion: String by project
 val androidBuildGradleVersion: String by project
@@ -811,7 +813,7 @@ val newBuildVersionsText = oldBuildVersionsText
     .replace(Regex("const val KORAU = \"(.*?)\""), "const val KORAU = \"${project.version}\"")
     .replace(Regex("const val KORGW = \"(.*?)\""), "const val KORGW = \"${project.version}\"")
     .replace(Regex("const val KORGE = \"(.*?)\""), "const val KORGE = \"${project.version}\"")
-    .replace(Regex("const val KOTLIN = \"(.*?)\""), "const val KOTLIN = \"${kotlinVersion}\"")
+    .replace(Regex("const val KOTLIN = \"(.*?)\""), "const val KOTLIN = \"${realKotlinVersion}\"")
     .replace(Regex("const val GIT = \"(.*?)\""), "const val GIT = \"${gitVersion}\"")
     .replace(Regex("const val JNA = \"(.*?)\""), "const val JNA = \"${jnaVersion}\"")
     .replace(Regex("const val ANDROID_BUILD = \"(.*?)\""), "const val ANDROID_BUILD = \"${androidBuildGradleVersion}\"")
