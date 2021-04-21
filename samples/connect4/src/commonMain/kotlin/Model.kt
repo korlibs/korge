@@ -36,7 +36,7 @@ data class Board(val rows: List<String>) {
             if (nrow == row) {
                 rowChars[column] = chip.char
             }
-            String(rowChars)
+            (rowChars).concatToString()
         })
     }
 

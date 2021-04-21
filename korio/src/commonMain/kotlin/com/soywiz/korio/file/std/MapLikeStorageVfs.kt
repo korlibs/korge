@@ -1,5 +1,6 @@
 package com.soywiz.korio.file.std
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
@@ -189,7 +190,7 @@ private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> T
 
         val key = getStatsKey(info.fullPath)
         val content = Json.stringify(
-            hashMapOf(
+            linkedMapOf(
                 EntryInfo::isFile.name to info.isFile,
                 EntryInfo::size.name to info.size.toDouble(),
                 EntryInfo::children.name to info.children,

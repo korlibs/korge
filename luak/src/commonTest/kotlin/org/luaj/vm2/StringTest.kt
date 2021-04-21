@@ -72,7 +72,7 @@ class StringTest {
     fun testUtf820482051() {
         val i = 2048
         val c = charArrayOf((i + 0).toChar(), (i + 1).toChar(), (i + 2).toChar(), (i + 3).toChar())
-        val before = String(c) + " " + i + "-" + (i + 4)
+        val before = c.concatToString() + " " + i + "-" + (i + 4)
         val ls = LuaString.valueOf(before)
         val after = ls.tojstring()
         assertEquals(userFriendly(before), userFriendly(after))
@@ -83,14 +83,14 @@ class StringTest {
         var i = 4
         while (i < 0xffff) {
             val c = charArrayOf((i + 0).toChar(), (i + 1).toChar(), (i + 2).toChar(), (i + 3).toChar())
-            val before = String(c) + " " + i + "-" + (i + 4)
+            val before = c.concatToString() + " " + i + "-" + (i + 4)
             val ls = LuaString.valueOf(before)
             val after = ls.tojstring()
             assertEquals(userFriendly(before), userFriendly(after))
             i += 4
         }
         val c = charArrayOf(1.toChar(), 2.toChar(), 3.toChar())
-        val before = String(c) + " 1-3"
+        val before = c.concatToString() + " 1-3"
         val ls = LuaString.valueOf(before)
         val after = ls.tojstring()
         assertEquals(userFriendly(before), userFriendly(after))
@@ -124,7 +124,7 @@ class StringTest {
     @Test
     fun testNullTerminated() {
         val c = charArrayOf('a', 'b', 'c', '\u0000', 'd', 'e', 'f')
-        val before = String(c)
+        val before = c.concatToString()
         val ls = LuaString.valueOf(before)
         val after = ls.tojstring()
         assertEquals(userFriendly("abc\u0000def"), userFriendly(after))

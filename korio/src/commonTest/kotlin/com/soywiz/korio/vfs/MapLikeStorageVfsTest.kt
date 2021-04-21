@@ -19,14 +19,14 @@ class MapLikeStorageVfsTest {
         root["demo"].mkdir()
         root["demo/test.txt"].writeString("hello")
         assertEquals(
-            """{"korio_stats_v1_\/":"{\"createdTime\":0.0,\"modifiedTime\":0.0,\"isFile\":false,\"size\":0.0,\"children\":[\"\\\/demo\"]}","korio_stats_v1_\/demo":"{\"createdTime\":0.0,\"modifiedTime\":0.0,\"isFile\":false,\"size\":0.0,\"children\":[\"\\\/demo\\\/test.txt\"]}","korio_chunk0_v1_\/demo\/test.txt":"68656c6c6f","korio_stats_v1_\/demo\/test.txt":"{\"createdTime\":0.0,\"modifiedTime\":0.0,\"isFile\":true,\"size\":5.0,\"children\":[]}"}""",
-            storage.map.toJson()
+            """{"korio_stats_v1_\/":"{\"isFile\":false,\"size\":0,\"children\":[\"\\\/demo\"],\"createdTime\":0,\"modifiedTime\":0}","korio_stats_v1_\/demo":"{\"isFile\":false,\"size\":0,\"children\":[\"\\\/demo\\\/test.txt\"],\"createdTime\":0,\"modifiedTime\":0}","korio_chunk0_v1_\/demo\/test.txt":"68656c6c6f","korio_stats_v1_\/demo\/test.txt":"{\"isFile\":true,\"size\":5,\"children\":[],\"createdTime\":0,\"modifiedTime\":0}"}""",
+            storage.map.toJson().replace(".0", "")
         )
         assertEquals("hello", root["demo/test.txt"].readString())
         root["demo/test.txt"].delete()
         assertEquals(
-            """{"korio_stats_v1_\/":"{\"createdTime\":0.0,\"modifiedTime\":0.0,\"isFile\":false,\"size\":0.0,\"children\":[\"\\\/demo\"]}","korio_stats_v1_\/demo":"{\"createdTime\":0.0,\"modifiedTime\":0.0,\"isFile\":false,\"size\":0.0,\"children\":[]}"}""",
-            storage.map.toJson()
+            """{"korio_stats_v1_\/":"{\"isFile\":false,\"size\":0,\"children\":[\"\\\/demo\"],\"createdTime\":0,\"modifiedTime\":0}","korio_stats_v1_\/demo":"{\"isFile\":false,\"size\":0,\"children\":[],\"createdTime\":0,\"modifiedTime\":0}"}""",
+            storage.map.toJson().replace(".0", "")
         )
     }
 

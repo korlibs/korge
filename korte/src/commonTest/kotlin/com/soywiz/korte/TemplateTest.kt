@@ -331,7 +331,7 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testSlice() = suspendTest {
-        val map = hashMapOf("v" to listOf(1, 2, 3, 4))
+        val map = linkedMapOf("v" to listOf(1, 2, 3, 4))
         assertEquals("[1, 2, 3, 4]", Template("{{ v }}")(map))
         assertEquals("[2, 3, 4]", Template("{{ v|slice(1) }}")(map))
         assertEquals("[2, 3]", Template("{{ v|slice(1, 2) }}")(map))
@@ -341,7 +341,7 @@ class TemplateTest : BaseTest() {
 
     @Test
     fun testReverse() = suspendTest {
-        val map = hashMapOf("v" to listOf(1, 2, 3, 4))
+        val map = linkedMapOf("v" to listOf(1, 2, 3, 4))
         assertEquals("[4, 3, 2, 1]", Template("{{ v|reverse }}")(map))
         assertEquals("olleh", Template("{{ v|reverse }}")(mapOf("v" to "hello")))
         assertEquals("le", Template("{{ v|slice(1, 2)|reverse }}")(mapOf("v" to "hello")))
