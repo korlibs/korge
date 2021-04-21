@@ -10,6 +10,7 @@ buildscript {
         mavenCentral()
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     }
     dependencies {
         classpath("com.gradle.publish:plugin-publish-plugin:$gradlePublishPluginVersion")
@@ -43,6 +44,7 @@ allprojects {
 		mavenCentral()
         google()
 		maven { url = uri("https://plugins.gradle.org/m2/") }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
 	}
 }
 
@@ -844,6 +846,13 @@ subprojects {
                 } else if (findByName("publishToMavenLocal") != null) {
                     dependsOn("publishToMavenLocal")
                 }
+            }
+        }
+        tasks.withType(Test::class.java).all {
+            testLogging {
+                //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
+                setEvents(setOf("skipped", "failed", "standardError"))
+                exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
             }
         }
     }
