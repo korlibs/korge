@@ -160,7 +160,7 @@ class LexState(internal var L: LuaC.CompileState, internal var z: LuaBinInput  /
     }
 
     internal fun newstring(chars: CharArray?, offset: Int, len: Int): LuaString {
-        return L.newTString(chars!!.concatToString(offset, len))
+        return L.newTString(chars!!.concatToString(offset, offset + len))
     }
 
     internal fun inclinenumber() {

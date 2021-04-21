@@ -290,9 +290,9 @@ class SimpleCharStream
     /** Get token literal value.  */
     fun GetImage(): String {
         return if (bufpos >= tokenBegin)
-            buffer!!.concatToString(tokenBegin, bufpos - tokenBegin + 1)
+            buffer!!.concatToString(tokenBegin, bufpos + 1)
         else
-            buffer!!.concatToString(tokenBegin, bufsize - tokenBegin) + buffer!!.concatToString(0, bufpos + 1)
+            buffer!!.concatToString(tokenBegin, bufsize) + buffer!!.concatToString(0, bufpos + 1)
     }
 
     /** Get the suffix.  */
