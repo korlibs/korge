@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  SKIP_KORGE_SAMPLES: true
+
 jobs:
   build:
 

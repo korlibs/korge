@@ -50,15 +50,20 @@ for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory 
 }
 */
 
-fileTree(File(rootProject.projectDir, "samples")) {
-    include("**"+"/build.gradle.kts")
-    include("**"+"/build.gradle")
-    exclude("**"+"/build/**")
-}.forEach {
-    val sample = moduleName(it.parentFile)
-    include(":$sample")
-    //project(":$sample").projectDir = File(relativePath(it.parent))
+val skipKorgeSamples = System.getenv("SKIP_KORGE_SAMPLES") == "true"
+
+if (!skipKorgeSamples) {
+    fileTree(File(rootProject.projectDir, "samples")) {
+        include("**" + "/build.gradle.kts")
+        include("**" + "/build.gradle")
+        exclude("**" + "/build/**")
+    }.forEach {
+        val sample = moduleName(it.parentFile)
+        include(":$sample")
+        //project(":$sample").projectDir = File(relativePath(it.parent))
+    }
 }
+
 fun moduleName(f: File): String {
     return if (f.parentFile == rootDir) {
         f.name
