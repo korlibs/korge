@@ -10,7 +10,11 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
-internal object HttpPortable {
+open class HttpPortable(
+    private val factory: AsyncSocketFactory = asyncSocketFactory
+) {
+    companion object : HttpPortable()
+
     internal fun computeHeader(method: Http.Method, url: URL, rheaders2: Http.Headers): String = buildString {
         val EOL = "\r\n"
         append("$method ${url.pathWithQuery} HTTP/1.1$EOL")
@@ -26,7 +30,7 @@ internal object HttpPortable {
 				val url = URL(url)
 				val secure = url.scheme == "https"
 				//println("HTTP CLIENT: host=${url.host}, port=${url.port}, secure=$secure")
-				val client = createTcpClient(url.host!!, url.port, secure)
+				val client = factory.createClient(url.host!!, url.port, secure)
 
 				val rheaders = combineHeadersForHost(headers, url.host)
 				val rheaders2 = if (content != null)
@@ -41,7 +45,7 @@ internal object HttpPortable {
 				val firstLine = client.readLine()
 				val responseInfo = Regex("HTTP/1.\\d+ (\\d+) (.*)").find(firstLine) ?: error("Invalid HTTP response $firstLine")
 
-				//println("FIRST LINE: $firstLine")
+				//println("FIRST LINE: ${firstLine.trim()}")
 
 				val responseCode = responseInfo.groupValues[1].toInt()
 				val responseMessage = responseInfo.groupValues[2]
@@ -56,7 +60,7 @@ internal object HttpPortable {
 
 				val responseHeaders = Http.Headers(headers.map {
 					val parts = it.split(':', limit = 2)
-					parts.getOrElse(0) { "" } to parts.getOrElse(1) { "" }
+					parts.getOrElse(0) { "" } to parts.getOrElse(1) { "" }.trimStart()
 				})
 
 				return Response(responseCode, responseMessage, responseHeaders, client)
@@ -87,7 +91,7 @@ internal object HttpPortable {
 
 			override suspend fun listenInternal(port: Int, host: String) {
 				val context = coroutineContext
-				val socket = createTcpServer(port, host)
+				val socket = factory.createServer(port, host)
 				actualPort = socket.port
 				val close = socket.listen { client ->
 					while (true) {
