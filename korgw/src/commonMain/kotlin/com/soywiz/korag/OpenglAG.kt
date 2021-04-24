@@ -3,8 +3,8 @@ package com.soywiz.korag
 import com.soywiz.kds.Extra
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.getOrPut
+import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
-import com.soywiz.kgl.internal.*
 import com.soywiz.kgl.internal.min2
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
@@ -14,19 +14,13 @@ import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
 import com.soywiz.korag.shader.VarKind
 import com.soywiz.korag.shader.VarType
-import com.soywiz.korag.shader.gl.GlslConfig
-import com.soywiz.korag.shader.gl.GlslGenerator
-import com.soywiz.korag.shader.gl.toNewGlslStringResult
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.Bitmap8
-import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korag.shader.gl.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.JvmOverloads
-import kotlin.math.min
 
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
@@ -243,10 +237,8 @@ abstract class AGOpengl : AG() {
     }
 
     override fun draw(batch: Batch) {
-        val vertices = batch.vertices
         val program = batch.program
         val type = batch.type
-        val vertexLayout = batch.vertexLayout
         val vertexCount = batch.vertexCount
         val indices = batch.indices
         val indexType = batch.indexType
@@ -257,9 +249,6 @@ abstract class AGOpengl : AG() {
         val colorMask = batch.colorMask
         val renderState = batch.renderState
         val scissor = batch.scissor
-
-        val vattrs = vertexLayout.attributes
-        val vattrspos = vertexLayout.attributePositions
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
         applyScissorState(scissor)
@@ -282,17 +271,27 @@ abstract class AGOpengl : AG() {
             }
         }
 
-        checkBuffers(vertices, indices)
+        if (indices != null && indices.kind != Buffer.Kind.INDEX) invalidOp("Not a IndexBuffer")
+
         val programConfig = if (useExternalSampler) ProgramConfig.EXTERNAL_TEXTURE_SAMPLER else ProgramConfig.DEFAULT
         val glProgram = getProgram(program, programConfig)
-        (vertices as GlBuffer).bind(gl)
         (indices as? GlBuffer?)?.bind(gl)
         glProgram.use()
 
-        val totalSize = vertexLayout.totalSize
-        for (n in 0 until vattrspos.size) {
-            val att = vattrs[n]
-            if (att.active) {
+        batch.vertexData.fastForEach { entry ->
+            val vertices = entry.buffer as GlBuffer
+            val vertexLayout = entry.layout
+
+            val vattrs = vertexLayout.attributes
+            val vattrspos = vertexLayout.attributePositions
+
+            if (vertices.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
+
+            vertices.bind(gl)
+            val totalSize = vertexLayout.totalSize
+            for (n in 0 until vattrspos.size) {
+                val att = vattrs[n]
+                if (!att.active) continue
                 val off = vattrspos[n]
                 val loc = glProgram.getAttribLocation(att.name)
                 val glElementType = att.type.glElementType
@@ -488,12 +487,14 @@ abstract class AGOpengl : AG() {
 
         //glSetActiveTexture(gl.TEXTURE0)
 
-        for (n in 0 until vattrs.size) {
-            val att = vattrs[n]
-            if (att.active) {
-                val loc = glProgram.getAttribLocation(att.name).toInt()
-                if (loc >= 0) {
-                    gl.disableVertexAttribArray(loc)
+        batch.vertexData.fastForEach { entry ->
+            val vattrs = entry.layout.attributes
+            vattrs.fastForEach { att ->
+                if (att.active) {
+                    val loc = glProgram.getAttribLocation(att.name).toInt()
+                    if (loc >= 0) {
+                        gl.disableVertexAttribArray(loc)
+                    }
                 }
             }
         }
