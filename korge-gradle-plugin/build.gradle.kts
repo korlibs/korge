@@ -52,6 +52,10 @@ tasks {
     val publishJvmPublicationToMavenLocal by creating(Task::class) {
         dependsOn("publishToMavenLocal")
     }
+
+    val jvmTest by creating(Task::class) {
+        dependsOn("test")
+    }
 }
 
 //val kotlinVersion: String by project
