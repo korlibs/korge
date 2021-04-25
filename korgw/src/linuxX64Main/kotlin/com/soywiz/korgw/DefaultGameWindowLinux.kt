@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import GL.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*

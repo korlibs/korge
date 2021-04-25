@@ -19,8 +19,13 @@ import kotlinx.browser.document
 // https://github.com/shrekshao/MoveWebGL1EngineToWebGL2/blob/master/Move-a-WebGL-1-Engine-To-WebGL-2-Blog-1.md
 // https://webglstats.com/
 // https://caniuse.com/#feat=webgl
-class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl() {
-    val gl = (canvas.getContext("webgl", glOpts) ?: canvas.getContext("experimental-webgl", glOpts)).unsafeCast<WebGLRenderingContext?>()
+class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlWithExtensions() {
+    var webglVersion = 1
+    val gl = (null
+            ?: canvas.getContext("webgl2", glOpts)?.also { webglVersion = 2 }
+            ?: canvas.getContext("webgl", glOpts)
+            ?: canvas.getContext("experimental-webgl", glOpts)
+        ).unsafeCast<WebGLRenderingContext?>()
         ?: run {
             try {
                 document.body?.prepend((document.createElement("div") as HTMLElement).apply {
@@ -163,7 +168,13 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl(
     override fun stencilMaskSeparate(face: Int, mask: Int): Unit = gl.stencilMaskSeparate(face, mask)
     override fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = gl.stencilOp(fail, zfail, zpass)
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = gl.stencilOpSeparate(face, sfail, dpfail, dppass)
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: FBuffer?): Unit = gl.texImage2D(target, level, internalformat, width, height, border, format, type, pixels?.arrayUByte)
+    override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: FBuffer?): Unit {
+        val vpixels = when (type) {
+            FLOAT -> pixels?.f32
+            else -> pixels?.arrayUByte
+        }
+        gl.texImage2D(target, level, internalformat, width, height, border, format, type, vpixels)
+    }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit = gl.texImage2D(target, level, internalformat, format, type, (data as HtmlNativeImage).texSource)
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.texParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: FBuffer): Unit = gl.texParameterf(target, pname, params.arrayFloat[0])
@@ -203,4 +214,14 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGl(
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.viewport(x, y, width, height)
 
     private fun Float32Buffer.sliceIfRequired(count: Int): Float32Buffer = if (size == count) this else Float32Array(this.buffer, 0, count)
+
+    override val extensions by lazy { (gl.getSupportedExtensions() ?: arrayOf()).toSet() }
+
+    override val isFloatTextureSupported: Boolean by lazy {
+        //println("extensions: $extensions")
+
+        gl.getExtension("OES_texture_float_linear") != null // Also request it to support linear filtering if possible!
+            || gl.getExtension("OES_texture_float") != null
+            || webglVersion >= 2 // Supported by default in WebGL 2
+    }
 }

@@ -85,6 +85,7 @@ interface INativeGL {
     fun glGetShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: IntPtr, precision: IntPtr)
     fun glGetShaderSource(shader: Int, bufSize: Int, length: IntPtr, source: VoidPtr)
     fun glGetString(name: Int): String?
+    fun glGetStringi(name: Int, i: Int): String?
     fun glGetTexParameterfv(target: Int, pname: Int, params: FloatPtr)
     fun glGetTexParameteriv(target: Int, pname: Int, params: IntPtr)
     fun glGetUniformfv(program: Int, location: Int, params: FloatPtr)

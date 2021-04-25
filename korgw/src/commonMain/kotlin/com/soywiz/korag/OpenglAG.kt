@@ -20,6 +20,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.krypto.encoding.*
 import kotlin.jvm.JvmOverloads
 
 abstract class AGOpengl : AG() {
@@ -29,11 +30,15 @@ abstract class AGOpengl : AG() {
     open var isGlAvailable = true
     abstract val gl: KmlGl
 
+    override val isFloatTextureSupported: Boolean get() = gl.isFloatTextureSupported
+    override val graphicExtensions: Set<String> get() = gl.graphicExtensions
+
     open val glSlVersion: Int? = null
     open val gles: Boolean = false
     open val linux: Boolean = false
     open val android: Boolean = false
-    open val webgl: Boolean = false
+    open val webgl: Boolean get() = false
+    open val webgl2: Boolean get() = false
 
     override var devicePixelRatio: Double = 1.0
 
@@ -801,26 +806,14 @@ abstract class AGOpengl : AG() {
                 return texIds.getInt(0)
             }
 
-        fun createBufferForBitmap(bmp: Bitmap?): FBuffer? {
-            return when (bmp) {
-                null -> null
-                is NativeImage -> unsupported("Should not call createBufferForBitmap with a NativeImage")
-                is Bitmap8 -> {
-                    val mem = FBuffer(bmp.area)
-                    arraycopy(bmp.data, 0, mem.arrayByte, 0, bmp.area)
-                    @Suppress("USELESS_CAST")
-                    return mem
-                }
-                else -> {
-                    val abmp: Bitmap32 =
-                        if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
-                    //println("BMP: Bitmap32")
-                    //val abmp: Bitmap32 = bmp
-                    val mem = FBuffer(abmp.area * 4)
-                    arraycopy(abmp.data.ints, 0, mem.arrayInt, 0, abmp.area)
-                    @Suppress("USELESS_CAST")
-                    return mem
-                }
+        fun createBufferForBitmap(bmp: Bitmap?): FBuffer? = when (bmp) {
+            null -> null
+            is NativeImage -> unsupported("Should not call createBufferForBitmap with a NativeImage")
+            is Bitmap8 -> FBuffer(bmp.area).also { mem -> arraycopy(bmp.data, 0, mem.arrayByte, 0, bmp.area) }
+            is FloatBitmap32 -> FBuffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.arrayFloat, 0, bmp.area * 4) }
+            else -> FBuffer(bmp.area * 4).also { mem ->
+                val abmp: Bitmap32 = if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
+                arraycopy(abmp.data.ints, 0, mem.arrayInt, 0, abmp.area)
             }
         }
 
@@ -834,6 +827,7 @@ abstract class AGOpengl : AG() {
             } else {
                 gl.LUMINANCE
             }
+            val isFloat = bmp is FloatBitmap32
 
             val bmp = when (bmp) {
                 is BitmapVector -> bmp.nativeImage
@@ -862,11 +856,17 @@ abstract class AGOpengl : AG() {
                     val buffer = createBufferForBitmap(bmp)
                     if (buffer != null && source.width != 0 && source.height != 0 && buffer.size != 0) {
                         prepareTexImage2D()
-                        gl.texImage2D(
-                            forcedTexTarget, 0, type,
-                            source.width, source.height,
-                            0, type, gl.UNSIGNED_BYTE, buffer
-                        )
+                        val internalFormat = when {
+                            isFloat && (webgl2 || !webgl) -> GL_RGBA32F
+                            else -> type
+                        }
+                        val format = type
+                        val texType = when {
+                            isFloat -> gl.FLOAT
+                            else -> gl.UNSIGNED_BYTE
+                        }
+                        //println("actualSyncUpload: webgl=$webgl, internalFormat=${internalFormat.hex}, format=${format.hex}, textype=${texType.hex}")
+                        gl.texImage2D(forcedTexTarget, 0, internalFormat, source.width, source.height, 0, format, texType, buffer)
                     }
                     //println(buffer)
                 }
@@ -885,6 +885,8 @@ abstract class AGOpengl : AG() {
                 //println(" - nomipmaps")
             }
         }
+
+        private val GL_RGBA32F = 0x8814
 
         // https://download.blender.org/source/chest/blender_1.72_tree/glut-win/glut_bitmap.c
         private val GL_UNPACK_ALIGNMENT = 0x0CF5

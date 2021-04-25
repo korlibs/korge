@@ -11,8 +11,11 @@ import com.soywiz.korim.format.*
 import platform.gles2.*
 import platform.posix.*
 
-actual class KmlGlNative actual constructor() : KmlGl() {
-    val tempBufferAddress = TempBufferAddress()
+internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? {
+    TODO()
+}
+
+actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTexture(texture.convert()) }
     override fun attachShader(program: Int, shader: Int): Unit = tempBufferAddress { glAttachShader(program.convert(), shader.convert()) }
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = memScoped { tempBufferAddress { glBindAttribLocation(program.convert(), index.convert(), name) } }

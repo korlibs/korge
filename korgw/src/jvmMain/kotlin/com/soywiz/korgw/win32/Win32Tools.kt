@@ -34,7 +34,6 @@ open class Win32KmlGl : NativeKgl(Win32GL) {
 
 interface Win32GL : INativeGL, Library {
     fun wglGetProcAddress(name: String): Pointer
-    fun glGetStringi(name: Int, i: Int): String
 
     //fun wglChoosePixelFormat(hDC: HDC, piAttribIList: Pointer?, pfAttribFList: Pointer?, nMaxFormats: Int, piFormats: Pointer?, nNumFormats: Pointer?): Int
     //fun wglCreateContextAttribs(hDC: HDC, hshareContext: WinGDI.PIXELFORMATDESCRIPTOR.ByReference, attribList: Pointer?): Int

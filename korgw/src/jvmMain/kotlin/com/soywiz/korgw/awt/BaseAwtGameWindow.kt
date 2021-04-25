@@ -569,7 +569,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 //println((end - start).timeSpan)
             }
         }
-        println("completed. running=$running")
+        println("completed.running=$running")
         //timer.stop()
 
         if (OS.isMac && displayLink != Pointer.NULL) {

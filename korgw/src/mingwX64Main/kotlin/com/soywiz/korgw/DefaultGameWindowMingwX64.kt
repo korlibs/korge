@@ -10,6 +10,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.net.*
 import com.soywiz.korma.geom.*
 import kotlinx.cinterop.*
+import platform.opengl32.*
 import platform.windows.*
 import kotlin.math.*
 
@@ -444,6 +445,7 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
 
                 println("wglSwapIntervalEXT: $wglSwapIntervalEXT")
                 wglSwapIntervalEXT?.invoke(0)
+                glClear(0) // Required since wglMakeCurrent is in the windows package but requires openGL32.dll
 
                 println("GL_CONTEXT: ${windowsGameWindow.glRenderContext}")
             }

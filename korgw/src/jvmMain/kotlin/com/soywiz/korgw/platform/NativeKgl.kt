@@ -1,15 +1,11 @@
 package com.soywiz.korgw.platform
 
-import com.soywiz.kgl.KmlGl
-import com.soywiz.kgl.nioBuffer
-import com.soywiz.kgl.nioFloatBuffer
-import com.soywiz.kgl.nioIntBuffer
+import com.soywiz.kgl.*
 import com.soywiz.kmem.*
-import com.soywiz.korgw.osx.MacGL
 import com.soywiz.korim.awt.AwtNativeImage
 import com.soywiz.korim.bitmap.NativeImage
 
-open class NativeKgl(val gl: INativeGL) : KmlGl() {
+open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = gl.glBindAttribLocation(program, index, name)
@@ -154,3 +150,5 @@ open class NativeKgl(val gl: INativeGL) : KmlGl() {
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.glVertexAttribPointer(index, size, type, normalized.toInt(), stride, pointer)
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.glViewport(x, y, width, height)
 }
+
+private const val GL_NUM_EXTENSIONS = 0x821D

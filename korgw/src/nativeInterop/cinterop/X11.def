@@ -1,0 +1,9 @@
+headers = X11/Xlib.h X11/keysym.h
+compilerOpts.linux = -I/usr/include -I/usr/include/x86_64-linux-gnu/
+linkerOpts = -lX11
+linkerOpts.linux = -L/usr/X11R6/lib -L/usr/lib/x86_64-linux-gnu
+---
+
+// gcc hello-x.c -L/usr/X11R6/lib -lX11 -o hello-x
+// sudo apt-get install libx11-dev
+// sudo apt-get install libpthread-stubs0 libpthread-stubs0-dev libx11-dev libx11-doc libxau-dev libxcb1-dev libxdmcp-dev x11proto-core-dev x11proto-input-dev x11proto-kb-dev xorg-sgml-doctools xtrans-dev

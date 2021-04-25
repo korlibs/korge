@@ -28,9 +28,12 @@ open class BaseAndroidGameWindow() : GameWindow() {
 class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
     val androidContext get() = activity
 
+    val mainHandler by lazy { android.os.Handler(androidContext.getMainLooper()) }
+
     override val ag: AG get() = activity.ag
 
-    override var title: String; get() = activity.title.toString(); set(value) = run { activity.title = value }
+    private var _setTitle: String? = null
+    override var title: String; get() = _setTitle ?: activity.title.toString(); set(value) { _setTitle = value; mainHandler.post { activity.title = value } }
     override val width: Int get() = activity.window.decorView.width
     override val height: Int get() = activity.window.decorView.height
     override var icon: Bitmap?

@@ -1,4 +1,8 @@
 package com.soywiz.kgl
 
-expect class KmlGlNative() : KmlGl {
+import kotlinx.cinterop.*
+
+expect class KmlGlNative() : NativeBaseKmlGl {
 }
+
+internal expect fun glGetProcAddressAnyOrNull(name: String): COpaquePointer?

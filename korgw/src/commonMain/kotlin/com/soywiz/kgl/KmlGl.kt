@@ -5,8 +5,9 @@
 package com.soywiz.kgl
 
 import com.soywiz.kds.*
+import com.soywiz.korag.*
 
-abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
+abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     open val root: KmlGl get() = this
     open var info: ContextInfo = ContextInfo()
 
@@ -325,8 +326,46 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl {
     val MAX_RENDERBUFFER_SIZE: Int = 0x84E8
     val INVALID_FRAMEBUFFER_OPERATION: Int = 0x0506 // 1286
 
+    open fun init() = Unit
     open fun handleContextLost() = Unit
     override fun startFrame(): Unit = Unit
     override fun endFrame(): Unit = Unit
     open fun beforeDoRender(contextVersion: Int): Unit = Unit
+
+    // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_texture_float.txt
+    override val isFloatTextureSupported: Boolean get() = false
+}
+
+abstract class KmlGlWithExtensions : KmlGl() {
+    open fun getStringi(name: Int, index: Int): String? = TODO()
+
+    private var _extensions: Set<String>? = null
+
+    open val extensions: Set<String> get() {
+        if (_extensions == null) {
+            _extensions = run {
+                try {
+                    val numExtensions = getIntegerv(GL_NUM_EXTENSIONS)
+                    if (numExtensions <= 0) TODO()
+                    (0 until numExtensions).mapNotNull { getStringi(EXTENSIONS, it) }.toSet()
+                } catch (e: Throwable) {
+                    getString(EXTENSIONS).split(" ").toSet()
+                }
+            }
+        }
+        //println("GL_EXTENSIONS=$_extensions")
+        return _extensions!!
+    }
+
+    override val graphicExtensions: Set<String> get() = extensions
+
+    // https://www.khronos.org/registry/OpenGL/extensions/OES/OES_texture_float.txt
+    override val isFloatTextureSupported: Boolean by lazy {
+        //println("extensions: $extensions")
+        "GL_OES_texture_float" in extensions || "GL_ARB_texture_float" in extensions
+    }
+
+    companion object {
+        const val GL_NUM_EXTENSIONS = 0x821D
+    }
 }

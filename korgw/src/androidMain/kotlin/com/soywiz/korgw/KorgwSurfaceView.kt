@@ -10,9 +10,12 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 import com.soywiz.klock.*
 import com.soywiz.korev.*
+import com.soywiz.korio.async.*
 
 class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindow: BaseAndroidGameWindow) : GLSurfaceView(context) {
     val view = this
+
+    val onDraw = Signal<Unit>()
 
     init {
         println("KorgwActivity: Created GLSurfaceView $this for ${viewOrActivity}")
@@ -28,6 +31,7 @@ class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindo
                 gameWindow.handleInitEventIfRequired()
                 gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
                 gameWindow.frame()
+                onDraw(Unit)
             }
 
             override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {

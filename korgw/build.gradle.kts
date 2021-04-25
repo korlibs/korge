@@ -20,6 +20,7 @@ if (doEnableKotlinNative) {
         for (target in nativeTargets()) {
             target.compilations["main"].cinterops {
                 if (target.name == "linuxX64") maybeCreate("GL")
+                //if (target.name == "linuxX64") maybeCreate("X11")
             }
         }
 	}

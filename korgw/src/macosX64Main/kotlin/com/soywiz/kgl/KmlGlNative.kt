@@ -11,8 +11,13 @@ import kotlinx.cinterop.*
 import platform.OpenGL.*
 import platform.posix.*
 
-actual class KmlGlNative actual constructor() : KmlGl() {
-    val tempBufferAddress = TempBufferAddress()
+val GL_MODULE by lazy { dlopen("/System/Library/Frameworks/OpenGL.framework/Versions/Current/OpenGL", RTLD_LAZY); }
+
+internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? {
+    return dlsym(GL_MODULE, "_$name") ?: dlsym(GL_MODULE, name)
+}
+
+actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
     override fun activeTexture(texture: Int): Unit = tempBufferAddress { glActiveTexture(texture.convert()) }
     override fun attachShader(program: Int, shader: Int): Unit = tempBufferAddress { glAttachShader(program.convert(), shader.convert()) }
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = memScoped { tempBufferAddress { glBindAttribLocation(program.convert(), index.convert(), name) } }

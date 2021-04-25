@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+//import X11.*
 import GL.*
 import com.soywiz.kds.IntMap
 import com.soywiz.kgl.*
@@ -15,13 +16,28 @@ import com.soywiz.korio.lang.toString
 import com.soywiz.korio.stream.MemorySyncStream
 import com.soywiz.korio.stream.toByteArray
 import kotlinx.cinterop.*
-import platform.posix.*
+import platform.posix.fread
+import platform.posix.pclose
+import platform.posix.popen
+
+//typealias XVisualInfo = IntVar
+//typealias GLXDrawable = Window
+//typealias GLXContext = COpaquePointer?
+//
+//val glXChooseVisual by GLFunc<(CPointer<Display>?, Int, CPointer<IntVar>) -> CPointer<XVisualInfo>?>()
+//val glXCreateContext by GLFunc<(CPointer<Display>?, CPointer<XVisualInfo>?, GLXContext, Int) -> GLXContext>()
+//val glXMakeCurrent by GLFunc<(CPointer<Display>?, GLXDrawable, GLXContext) -> Int>()
+//val glXSwapBuffers by GLFunc<(CPointer<Display>?, GLXDrawable) -> Unit>()
+//val glXGetCurrentDisplay by GLFunc<() -> CPointer<Display>?>()
+//val glXGetCurrentDrawable by GLFunc<() -> Window>()
+//
+//const val GLX_RGBA = 4
+//const val GLX_DOUBLEBUFFER = 5
+//const val GLX_DEPTH_SIZE = 12
+//const val GLX_STENCIL_SIZE = 3
 
 // https://www.khronos.org/registry/OpenGL/extensions/EXT/EXT_swap_control.txt
-@ThreadLocal
-private var setSwapInterval = false
-@ThreadLocal
-private var swapIntervalEXT: CPointer<CFunction<(CPointer<Display>?, GLXDrawable, Int) -> Unit>>? = null
+private val swapIntervalEXT by GLFuncNull<(CPointer<Display>?, GLXDrawable, Int) -> Unit>("swapIntervalEXT")
 
 //class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
 class X11Ag(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
@@ -34,18 +50,20 @@ class X11Ag(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.K
 class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffered: Boolean = true) {
     companion object {
         fun chooseVisuals(d: CPointer<Display>?, scr: Int = XDefaultScreen(d)): CPointer<XVisualInfo>? {
+            val GLX_END = 0
             val attrsList = listOf(
-                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, None.toInt(), GLX_STENCIL_SIZE, 8, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 16, None.toInt(), GLX_STENCIL_SIZE, 8, None.toInt()),
-                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, None.toInt()),
-                intArrayOf(GLX_RGBA, None.toInt()),
-                intArrayOf(None.toInt())
+                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, GLX_END),
+                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_STENCIL_SIZE, 8, GLX_END),
+                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_DEPTH_SIZE, 16, GLX_STENCIL_SIZE, 8, GLX_END),
+                intArrayOf(GLX_RGBA, GLX_DEPTH_SIZE, 16, GLX_STENCIL_SIZE, 8, GLX_END),
+                intArrayOf(GLX_RGBA, GLX_DOUBLEBUFFER, GLX_END),
+                intArrayOf(GLX_RGBA, GLX_END),
+                intArrayOf(GLX_END)
             )
             for (attrs in attrsList) {
                 attrs.usePinned {
-                    return glXChooseVisual(d, scr, it.addressOf(0))
+                    val res = glXChooseVisual(d, scr, it.addressOf(0))
+                    if (res != null) return res
                 }
             }
             println("VI: null")
@@ -64,8 +82,8 @@ class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffe
     init {
         println("VI: $vi, d: $d, w: $w, glc: $glc")
         makeCurrent()
-        println("GL_VENDOR: " + glGetString(GL.GL_VENDOR)?.toKString())
-        println("GL_VERSION: " + glGetString(GL.GL_VERSION)?.toKString())
+        println("GL_VENDOR: " + NativeBaseKmlGl.glGetStringExt(NativeBaseKmlGl.GL_VENDOR)?.toKString())
+        println("GL_VERSION: " + NativeBaseKmlGl.glGetStringExt(NativeBaseKmlGl.GL_VERSION)?.toKString())
     }
 
     fun makeCurrent() {
@@ -359,16 +377,11 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
 
     override fun doInitRender() {
         ctx.makeCurrent()
-        glViewport(0, 0, width, height)
-        glClearColor(.3f, .6f, .3f, 1f)
-        glClear(GL_COLOR_BUFFER_BIT)
+        NativeBaseKmlGl.glViewportExt(0, 0, width, height)
+        NativeBaseKmlGl.glClearColorExt(.3f, .6f, .3f, 1f)
+        NativeBaseKmlGl.glClearExt(NativeBaseKmlGl.GL_COLOR_BUFFER_BIT)
 
         // https://github.com/spurious/SDL-mirror/blob/4c1c6d03ddaa3095b3c63c38ddd0a6cfad58b752/src/video/windows/SDL_windowsopengl.c#L439-L447
-        if (!setSwapInterval) {
-            setSwapInterval = true
-            swapIntervalEXT = com.soywiz.kgl.wglGetProcAddressAny("glXSwapIntervalEXT")?.reinterpret()
-            println("swapIntervalEXT: $swapIntervalEXT")
-        }
         val dpy = glXGetCurrentDisplay()
         val drawable = glXGetCurrentDrawable()
         swapIntervalEXT?.invoke(dpy, drawable, vsync.toInt())

@@ -22,10 +22,11 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import androidx.core.app.ActivityCompat.startActivityForResult
 import com.soywiz.klock.*
+import kotlin.coroutines.*
 
 abstract class KorgwActivity : Activity() {
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
-    private var mGLView: GLSurfaceView? = null
+    private var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
     open val agCheck: Boolean get() = false
     open val agTrace: Boolean get() = false
@@ -71,17 +72,16 @@ abstract class KorgwActivity : Activity() {
         gameWindow.initializeAndroid()
         setContentView(mGLView)
 
-        val androidContext = this
-        Korio(androidContext) {
-            try {
-                kotlinx.coroutines.withContext(coroutineContext + gameWindow) {
-                    withAndroidContext(androidContext) {
-                        activityMain()
-                    }
+        mGLView!!.onDraw.once {
+            suspend {
+                activityMain()
+            }.startCoroutine(object : Continuation<Unit> {
+                override val context: CoroutineContext get() = com.soywiz.korio.android.AndroidCoroutineContext(this@KorgwActivity) + gameWindow
+
+                override fun resumeWith(result: Result<Unit>) {
+                    println("KorgwActivity.activityMain completed! result=$result")
                 }
-            } finally {
-                println("KorgwActivity.activityMain completed!")
-            }
+            })
         }
     }
 

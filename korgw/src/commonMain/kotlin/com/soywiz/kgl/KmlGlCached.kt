@@ -112,4 +112,13 @@ class KmlGlCached(parent: KmlGl) : KmlGlFastProxy(parent) {
 			super.useProgram(program)
 		}
 	}
+
+    var _isFloatTextureSupported: Boolean? = null
+
+    override val isFloatTextureSupported: Boolean get() {
+        if (_isFloatTextureSupported == null) {
+            _isFloatTextureSupported = super.isFloatTextureSupported
+        }
+        return _isFloatTextureSupported!!
+    }
 }
