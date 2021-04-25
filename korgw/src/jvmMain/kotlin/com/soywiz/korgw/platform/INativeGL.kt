@@ -156,7 +156,11 @@ interface INativeGL {
     fun glVertexAttrib4fv(index: Int, v: FloatPtr)
     fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Int, stride: Int, pointer: IntSize)
     fun glViewport(x: Int, y: Int, width: Int, height: Int)
-    
+
+    fun glDrawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int)
+    fun glDrawElementsInstanced(mode: Int, count: Int, type: Int, indices: IntSize, instancecount: Int)
+    fun glVertexAttribDivisor(index: Int, divisor: Int)
+
     companion object {
         const val DEPTH_BUFFER_BIT: Int = 0x0100
         const val STENCIL_BUFFER_BIT: Int = 0x0400

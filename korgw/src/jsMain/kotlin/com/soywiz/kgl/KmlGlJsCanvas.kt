@@ -224,4 +224,41 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             || gl.getExtension("OES_texture_float") != null
             || webglVersion >= 2 // Supported by default in WebGL 2
     }
+
+    var _instancedArraysSet: Boolean = false
+    var _instancedArrays: dynamic = null
+    val instancedArrays: dynamic
+        get() {
+            if (!_instancedArraysSet) {
+                _instancedArraysSet = true
+                _instancedArrays = gl.getExtension("ANGLE_instanced_arrays")
+            }
+            return _instancedArrays
+        }
+
+    override val isInstancedSupported: Boolean get() = (webglVersion >= 2) || (instancedArrays != null)
+
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
+        if (webglVersion >= 2) {
+            gl.asDynamic().drawArraysInstanced(mode, first, count, instancecount)
+        } else {
+            instancedArrays.drawArraysInstancedANGLE(mode, first, count, instancecount)
+        }
+    }
+
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
+        if (webglVersion >= 2) {
+            gl.asDynamic().drawElementsInstanced(mode, count, type, indices, instancecount)
+        } else {
+            instancedArrays.drawElementsInstancedANGLE(mode, count, type, indices, instancecount)
+        }
+    }
+
+    override fun vertexAttribDivisor(index: Int, divisor: Int) {
+        if (webglVersion >= 2) {
+            gl.asDynamic().vertexAttribDivisor(index, divisor)
+        } else {
+            instancedArrays.vertexAttribDivisorANGLE(index, divisor)
+        }
+    }
 }

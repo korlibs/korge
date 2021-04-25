@@ -122,7 +122,8 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-	private val textureUnit = AG.TextureUnit(null, linear = false)
+    @KorgeInternal
+	val textureUnit = AG.TextureUnit(null, linear = false)
 
 	init { logger.trace { "BatchBuilder2D[10]" } }
 
@@ -131,8 +132,8 @@ class BatchBuilder2D constructor(
 	//	DefaultShaders.u_ProjMat to projMat,
 	//	DefaultShaders.u_Tex to textureUnit
 	//)
-	@PublishedApi
-	internal val uniforms by lazy {
+	@KorgeInternal
+	val uniforms by lazy {
 		AG.UniformValues(
 			DefaultShaders.u_ProjMat to projMat,
 			DefaultShaders.u_ViewMat to viewMat,
@@ -665,6 +666,7 @@ class BatchBuilder2D constructor(
 
 	private val tempRect = Rectangle()
     val beforeFlush = Signal<BatchBuilder2D>()
+    val onInstanceCount = Signal<Int>()
 
     fun uploadVertices() {
         vertexBuffer.upload(vertices, 0, vertexPos * 4)

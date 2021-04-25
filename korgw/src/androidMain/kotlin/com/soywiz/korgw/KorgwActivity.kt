@@ -41,7 +41,7 @@ abstract class KorgwActivity : Activity() {
 
     inner class KorgwActivityAGOpengl : AGOpengl() {
         //override val gl: KmlGl = CheckErrorsKmlGlProxy(KmlGlAndroid())
-        override val gl: KmlGl = KmlGlAndroid().checkedIf(agCheck).logIf(agCheck)
+        override val gl: KmlGl = KmlGlAndroid({ mGLView?.clientVersion ?: -1 }).checkedIf(agCheck).logIf(agCheck)
         override val nativeComponent: Any get() = this@KorgwActivity
         override val gles: Boolean = true
 

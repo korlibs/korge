@@ -138,11 +138,22 @@ open class Attribute(
 	val normalized: Boolean,
 	val offset: Int? = null,
 	val active: Boolean = true,
-    precision: Precision = Precision.DEFAULT
+    precision: Precision = Precision.DEFAULT,
+    val divisor: Int = 0
 ) : Variable(name, type, precision) {
 	constructor(name: String, type: VarType, normalized: Boolean, precision: Precision = Precision.DEFAULT) : this(name, type, normalized, null, true, precision)
 
-	fun inactived() = Attribute(name, type, normalized, offset = null, active = false)
+    fun copy(
+        name: String = this.name,
+        type: VarType = this.type,
+        normalized: Boolean = this.normalized,
+        offset: Int? = this.offset,
+        active: Boolean = this.active,
+        precision: Precision = this.precision,
+        divisor: Int = this.divisor
+    ) = Attribute(name, type, normalized, offset, active, precision, divisor)
+    fun inactived() = copy(active = false)
+    fun withDivisor(divisor: Int) = copy(divisor = divisor)
 	override fun toString(): String = "Attribute($name)"
     override fun equals(other: Any?): Boolean = mequals<Attribute>(other) && this.normalized == (other as Attribute).normalized && this.offset == other.offset && this.active == other.active
     override fun hashCode(): Int {
@@ -339,16 +350,15 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 		val Float.lit: FloatLiteral get() = FloatLiteral(this)
 		val Boolean.lit: BoolLiteral get() = BoolLiteral(this)
         //val Number.lit: Operand get() = this // @TODO: With Kotlin.JS you cannot differentiate Int, Float, Double with 'is'. Since it generates typeof $receiver === 'number' for all of them
-		fun lit(type: VarType, vararg ops: Operand): Operand =
-            Vector(type, ops as Array<Operand>)
-		fun vec1(vararg ops: Operand): Operand =
-            Vector(VarType.Float1, ops as Array<Operand>)
-		fun vec2(vararg ops: Operand): Operand =
-            Vector(VarType.Float2, ops as Array<Operand>)
-		fun vec3(vararg ops: Operand): Operand =
-            Vector(VarType.Float3, ops as Array<Operand>)
-		fun vec4(vararg ops: Operand): Operand =
-            Vector(VarType.Float4, ops as Array<Operand>)
+		fun lit(type: VarType, vararg ops: Operand): Operand = Vector(type, ops as Array<Operand>)
+		fun vec1(vararg ops: Operand): Operand = Vector(VarType.Float1, ops as Array<Operand>)
+		fun vec2(vararg ops: Operand): Operand = Vector(VarType.Float2, ops as Array<Operand>)
+		fun vec3(vararg ops: Operand): Operand = Vector(VarType.Float3, ops as Array<Operand>)
+		fun vec4(vararg ops: Operand): Operand = Vector(VarType.Float4, ops as Array<Operand>)
+        fun mat2(vararg ops: Operand): Operand = Vector(VarType.Mat2, ops as Array<Operand>)
+        fun mat3(vararg ops: Operand): Operand = Vector(VarType.Mat3, ops as Array<Operand>)
+        fun mat4(vararg ops: Operand): Operand = Vector(VarType.Mat4, ops as Array<Operand>)
+
 		//fun Operand.swizzle(swizzle: String): Operand = Swizzle(this, swizzle)
 		operator fun Operand.get(index: Int): Operand {
 			return when {

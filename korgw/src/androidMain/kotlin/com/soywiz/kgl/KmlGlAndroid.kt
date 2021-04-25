@@ -5,12 +5,13 @@
 package com.soywiz.kgl
 
 import android.opengl.GLES20.*
+import android.opengl.GLES30.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.AndroidNativeImage
 import java.nio.ByteBuffer
 
-class KmlGlAndroid : KmlGlWithExtensions() {
+class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override fun activeTexture(texture: Int): Unit = glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = glBindAttribLocation(program, index, name)
@@ -161,4 +162,15 @@ class KmlGlAndroid : KmlGlWithExtensions() {
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = glVertexAttrib4fv(index, v.nioFloatBuffer)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = glVertexAttribPointer(index, size, type, normalized, stride, pointer.toInt())
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = glViewport(x, y, width, height)
+
+    val cachedClientVersion by lazy { clientVersion() }
+
+    override val isInstancedSupported: Boolean by lazy {
+        //println("isInstancedSupported.clientVersion=$cachedClientVersion")
+        cachedClientVersion >= 3
+    }
+
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) = glDrawArraysInstanced(mode, first, count, instancecount)
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) = glDrawElementsInstanced(mode, count, type, indices, instancecount)
+    override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisor(index, divisor)
 }

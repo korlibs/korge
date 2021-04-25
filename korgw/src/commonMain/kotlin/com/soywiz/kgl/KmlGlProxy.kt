@@ -1014,12 +1014,41 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
 		after("viewport", sparams, "$res")
 		return res
 	}
+
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
+        val sparams = "$mode, $first, $count, $instancecount)"
+        before("drawArraysInstanced", sparams)
+        val res = parent.drawArraysInstanced(mode, first, count, instancecount)
+        after("drawArraysInstanced", sparams, "$res")
+        return res
+    }
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
+        val sparams = "$mode, $count, $type, $indices, $instancecount"
+        before("drawElementsInstanced", sparams)
+        val res = parent.drawElementsInstanced(mode, count, type, indices, instancecount)
+        after("drawElementsInstanced", sparams, "$res")
+        return res
+    }
+    override fun vertexAttribDivisor(index: Int, divisor: Int) {
+        val sparams = "$index, $divisor"
+        before("vertexAttribDivisor", sparams)
+        val res = parent.vertexAttribDivisor(index, divisor)
+        after("vertexAttribDivisor", sparams, "$res")
+        return res
+    }
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
     override val root: KmlGl get() = parent.root
 
-    override val isFloatTextureSupported: Boolean get() = parent.isFloatTextureSupported
     override val graphicExtensions: Set<String> get() = parent.graphicExtensions
+    override val isFloatTextureSupported: Boolean get() = parent.isFloatTextureSupported
+
+    // Instanced
+    override val isInstancedSupported: Boolean get() = parent.isInstancedSupported
+
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) = parent.drawArraysInstanced(mode, first, count, instancecount)
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) = parent.drawElementsInstanced(mode, count, type, indices, instancecount)
+    override fun vertexAttribDivisor(index: Int, divisor: Int) = parent.vertexAttribDivisor(index, divisor)
 
     override var info: ContextInfo
         get() = parent.info

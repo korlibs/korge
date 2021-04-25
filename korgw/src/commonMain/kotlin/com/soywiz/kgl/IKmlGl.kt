@@ -2,6 +2,7 @@ package com.soywiz.kgl
 
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 
 interface IKmlGl {
 	fun startFrame() = Unit
@@ -155,5 +156,9 @@ interface IKmlGl {
     fun enableDisableVertexAttribArray(index: Int, enable: Boolean) {
         if (enable) enableVertexAttribArray(index) else disableVertexAttribArray(index)
     }
+    // https://www.khronos.org/registry/webgl/extensions/ANGLE_instanced_arrays/
+    fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = unsupported("Not supported instanced drawing")
+    fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = unsupported("Not supported instanced drawing")
+    fun vertexAttribDivisor(index: Int, divisor: Int): Unit = unsupported()
 }
 

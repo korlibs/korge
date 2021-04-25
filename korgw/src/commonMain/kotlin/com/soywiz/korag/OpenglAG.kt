@@ -30,8 +30,9 @@ abstract class AGOpengl : AG() {
     open var isGlAvailable = true
     abstract val gl: KmlGl
 
-    override val isFloatTextureSupported: Boolean get() = gl.isFloatTextureSupported
     override val graphicExtensions: Set<String> get() = gl.graphicExtensions
+    override val isFloatTextureSupported: Boolean get() = gl.isFloatTextureSupported
+    override val isInstancedSupported: Boolean get() = gl.isInstancedSupported
 
     open val glSlVersion: Int? = null
     open val gles: Boolean = false
@@ -242,6 +243,7 @@ abstract class AGOpengl : AG() {
     }
 
     override fun draw(batch: Batch) {
+        val instances = batch.instances
         val program = batch.program
         val type = batch.type
         val vertexCount = batch.vertexCount
@@ -304,6 +306,9 @@ abstract class AGOpengl : AG() {
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
                     gl.vertexAttribPointer(loc, elementCount, glElementType, att.normalized, totalSize, off.toLong())
+                    if (att.divisor != 0) {
+                        gl.vertexAttribDivisor(loc, att.divisor)
+                    }
                 }
             }
         }
@@ -485,9 +490,17 @@ abstract class AGOpengl : AG() {
         //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
         if (indices != null) {
-            gl.drawElements(type.glDrawMode, vertexCount, indexType.glIndexType, offset)
+            if (instances != 1) {
+                gl.drawElementsInstanced(type.glDrawMode, vertexCount, indexType.glIndexType, offset, instances)
+            } else {
+                gl.drawElements(type.glDrawMode, vertexCount, indexType.glIndexType, offset)
+            }
         } else {
-            gl.drawArrays(type.glDrawMode, offset, vertexCount)
+            if (instances != 1) {
+                gl.drawArraysInstanced(type.glDrawMode, offset, vertexCount, instances)
+            } else {
+                gl.drawArrays(type.glDrawMode, offset, vertexCount)
+            }
         }
 
         //glSetActiveTexture(gl.TEXTURE0)
@@ -498,6 +511,9 @@ abstract class AGOpengl : AG() {
                 if (att.active) {
                     val loc = glProgram.getAttribLocation(att.name).toInt()
                     if (loc >= 0) {
+                        if (att.divisor != 0) {
+                            gl.vertexAttribDivisor(loc, 0)
+                        }
                         gl.disableVertexAttribArray(loc)
                     }
                 }

@@ -169,11 +169,20 @@ abstract class NativeBaseKmlGl : KmlGlWithExtensions() {
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = tempBufferAddress { glViewportExt(x.convert(), y.convert(), width.convert(), height.convert()) }
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = tempBufferAddress { glVertexAttribPointerExt(index.convert(), size.convert(), type.convert(), normalized.toInt().convert(), stride.convert(), pointer.toCPointer<IntVar>()?.reinterpret()) }
 
+    override val isInstancedSupported: Boolean get() = true
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = glDrawArraysInstancedExt(mode.convert(), first.convert(), count.convert(), instancecount.convert())
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = glDrawElementsInstancedExt(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>()?.reinterpret(), instancecount.convert())
+    override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = glVertexAttribDivisorExt(index, divisor)
+
     companion object {
         const val GL_NUM_EXTENSIONS = 0x821D
         const val GL_COLOR_BUFFER_BIT = 0x00004000
         const val GL_VENDOR = 0x1F00
         const val GL_VERSION = 0x1F02
+
+        val glDrawArraysInstancedExt by GLFunc<(GLenum, GLint, GLsizei, GLint) -> GLvoid>()
+        val glDrawElementsInstancedExt by GLFunc<(GLenum, GLsizei, GLenum, GLvoidPtr, GLint) -> GLvoid>()
+        val glVertexAttribDivisorExt by GLFunc<(GLint, GLint) -> GLvoid>()
 
         val glTexSubImage2DExt by GLFunc<(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoidPtr) -> GLvoid>()
         val glTexImage2DExt by GLFunc<(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, GLvoidPtr) -> GLvoid>()

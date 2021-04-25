@@ -167,4 +167,18 @@ actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = tempBufferAddress { glVertexAttrib4fv(index.convert(), v.unsafeAddress().reinterpret()) }
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = tempBufferAddress { glVertexAttribPointer(index.convert(), size.convert(), type.convert(), normalized.toInt().convert(), stride.convert(), pointer.toCPointer<IntVar>()) }
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = tempBufferAddress { glViewport(x.convert(), y.convert(), width.convert(), height.convert()) }
+
+    override val isInstancedSupported: Boolean get() = true
+
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
+        glDrawArraysInstancedEXT(mode.convert(), first.convert(), count.convert(), instancecount.convert())
+    }
+
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) {
+        glDrawElementsInstancedEXT(mode.convert(), count.convert(), type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount.convert())
+    }
+
+    override fun vertexAttribDivisor(index: Int, divisor: Int) {
+        glVertexAttribDivisorEXT(index.convert(), divisor.convert())
+    }
 }

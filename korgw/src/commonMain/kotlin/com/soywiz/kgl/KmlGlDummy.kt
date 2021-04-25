@@ -6,6 +6,7 @@ package com.soywiz.kgl
 
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 
 object KmlGlDummy : KmlGlDummyBase()
 
@@ -153,4 +154,8 @@ open class KmlGlDummyBase : KmlGl() {
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = Unit
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = Unit
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = Unit
+
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = Unit
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = Unit
+    override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = Unit
 }

@@ -19,15 +19,21 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
     var batchCount = 0
     var vertexCount = 0
+    var instanceCount = 0
 
     views.onBeforeRender {
         batchCount = 0
         vertexCount = 0
+        instanceCount = 0
     }
 
     views.renderContext.batch.beforeFlush {
         batchCount++
         vertexCount += it.vertexCount
+    }
+
+    views.renderContext.batch.onInstanceCount {
+        instanceCount += it
     }
 
     views.addDebugRenderer { ctx ->
@@ -56,7 +62,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
-            + ", batchCount=$batchCount, vertexCount=$vertexCount"
+            + ", batchCount=$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
             ,
             0, 0

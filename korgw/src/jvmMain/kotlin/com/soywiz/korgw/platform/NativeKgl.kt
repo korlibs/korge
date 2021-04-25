@@ -149,6 +149,13 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = gl.glVertexAttrib4fv(index, v.nioFloatBuffer)
     override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.glVertexAttribPointer(index, size, type, normalized.toInt(), stride, pointer)
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.glViewport(x, y, width, height)
+
+    // GL_ARB_instanced_arrays
+    val isInstancedSupportedActual: Boolean get() = "GL_ARB_instanced_arrays" in extensions
+    override val isInstancedSupported: Boolean get() = true
+    override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = gl.glDrawArraysInstanced(mode, first, count, instancecount)
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = gl.glDrawElementsInstanced(mode, count, type, indices.toLong(), instancecount)
+    override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = gl.glVertexAttribDivisor(index, divisor)
 }
 
 private const val GL_NUM_EXTENSIONS = 0x821D

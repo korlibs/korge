@@ -39,6 +39,7 @@ interface AGWindow : AGContainer {
 
 interface AGFeatures {
     val graphicExtensions: Set<String> get() = emptySet()
+    val isInstancedSupported: Boolean get() = false
     val isFloatTextureSupported: Boolean get() = false
 }
 
@@ -540,7 +541,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         stencil: StencilState = dummyStencilState,
         colorMask: ColorMaskState = dummyColorMaskState,
         renderState: RenderState = dummyRenderState,
-        scissor: Scissor? = null
+        scissor: Scissor? = null,
+        instances: Int = 1
     ) = draw(batch.also { batch ->
         batch.vertices = vertices
         batch.program = program
@@ -556,6 +558,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         batch.colorMask = colorMask
         batch.renderState = renderState
         batch.scissor = scissor
+        batch.instances = instances
     })
 
     fun drawV2(
@@ -571,7 +574,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         stencil: StencilState = dummyStencilState,
         colorMask: ColorMaskState = dummyColorMaskState,
         renderState: RenderState = dummyRenderState,
-        scissor: Scissor? = null
+        scissor: Scissor? = null,
+        instances: Int = 1
     ) = draw(batch.also { batch ->
         batch.vertexData = vertexData
         batch.program = program
@@ -586,6 +590,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         batch.colorMask = colorMask
         batch.renderState = renderState
         batch.scissor = scissor
+        batch.instances = instances
     })
 
     data class VertexData(
@@ -606,7 +611,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         var stencil: StencilState = StencilState(),
         var colorMask: ColorMaskState = ColorMaskState(),
         var renderState: RenderState = RenderState(),
-        var scissor: Scissor? = null
+        var scissor: Scissor? = null,
+        var instances: Int = 1
     ) {
         private val singleVertexData = arrayListOf<VertexData>()
 
