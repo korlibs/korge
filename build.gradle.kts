@@ -799,27 +799,37 @@ val gitVersion = try {
 }
 
 
-val buildVersionsFile = file("korge-gradle-plugin/src/main/kotlin/com/soywiz/korge/gradle/BuildVersions.kt")
-val oldBuildVersionsText = buildVersionsFile.readText()
-val newBuildVersionsText = oldBuildVersionsText
-    .replace(Regex("const val KORLIBS_VERSION = \"(.*?)\""), "const val KORLIBS_VERSION = \"${project.version}\"")
-    .replace(Regex("const val KLOCK = \"(.*?)\""), "const val KLOCK = \"${project.version}\"")
-    .replace(Regex("const val KDS = \"(.*?)\""), "const val KDS = \"${project.version}\"")
-    .replace(Regex("const val KRYPTO = \"(.*?)\""), "const val KRYPTO = \"${project.version}\"")
-    .replace(Regex("const val KMEM = \"(.*?)\""), "const val KMEM = \"${project.version}\"")
-    .replace(Regex("const val KORMA = \"(.*?)\""), "const val KORMA = \"${project.version}\"")
-    .replace(Regex("const val KORIO = \"(.*?)\""), "const val KORIO = \"${project.version}\"")
-    .replace(Regex("const val KORIM = \"(.*?)\""), "const val KORIM = \"${project.version}\"")
-    .replace(Regex("const val KORAU = \"(.*?)\""), "const val KORAU = \"${project.version}\"")
-    .replace(Regex("const val KORGW = \"(.*?)\""), "const val KORGW = \"${project.version}\"")
-    .replace(Regex("const val KORGE = \"(.*?)\""), "const val KORGE = \"${project.version}\"")
-    .replace(Regex("const val KOTLIN = \"(.*?)\""), "const val KOTLIN = \"${realKotlinVersion}\"")
-    .replace(Regex("const val GIT = \"(.*?)\""), "const val GIT = \"${gitVersion}\"")
-    .replace(Regex("const val JNA = \"(.*?)\""), "const val JNA = \"${jnaVersion}\"")
-    .replace(Regex("const val ANDROID_BUILD = \"(.*?)\""), "const val ANDROID_BUILD = \"${androidBuildGradleVersion}\"")
-    .replace(Regex("const val COROUTINES = \"(.*?)\""), "const val COROUTINES = \"${coroutinesVersion}\"")
+val buildVersionsFile = file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt")
+val oldBuildVersionsText = buildVersionsFile.takeIf { it.exists() }?.readText()
+val projectVersion = project.version
+val newBuildVersionsText = """
+package com.soywiz.korge.gradle
+
+object BuildVersions {
+    const val GIT = "$gitVersion"
+    const val KOTLIN = "$realKotlinVersion"
+    const val JNA = "$jnaVersion"
+    const val COROUTINES = "$coroutinesVersion"
+    const val ANDROID_BUILD = "$androidBuildGradleVersion"
+
+    const val KRYPTO = "$projectVersion"
+    const val KLOCK = "$projectVersion"
+    const val KDS = "$projectVersion"
+    const val KMEM = "$projectVersion"
+    const val KORMA = "$projectVersion"
+    const val KORIO = "$projectVersion"
+    const val KORIM = "$projectVersion"
+    const val KORAU = "$projectVersion"
+    const val KORGW = "$projectVersion"
+    const val KORGE = "$projectVersion"
+
+    val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD) }
+    val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
+}
+""".trimIndent()
+
 if (oldBuildVersionsText != newBuildVersionsText) {
-    buildVersionsFile.writeText(newBuildVersionsText)
+    buildVersionsFile.also { it.parentFile.mkdirs() }.writeText(newBuildVersionsText)
 }
 
 if (

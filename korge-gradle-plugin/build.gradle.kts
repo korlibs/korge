@@ -44,6 +44,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
     }
 }
 
+kotlin.sourceSets.main.configure {
+    kotlin.srcDir(File(buildDir, "srcgen"))
+}
+
 tasks {
     val publishJvmPublicationToMavenLocal by creating(Task::class) {
         dependsOn("publishToMavenLocal")
