@@ -580,9 +580,9 @@ samples {
         }
         fun Task.dependsOnNativeTask(kind: String) {
             when {
-                isWindows -> dependsOn("runDebugExecutableMingwX64")
-                isMacos -> dependsOn("runDebugExecutableMacosX64")
-                else -> dependsOn("runDebugExecutableLinuxX64")
+                isWindows -> dependsOn("run${kind}ExecutableMingwX64")
+                isMacos -> dependsOn("run${kind}ExecutableMacosX64")
+                else -> dependsOn("run${kind}ExecutableLinuxX64")
             }
         }
         val runNativeDebug by creating {
