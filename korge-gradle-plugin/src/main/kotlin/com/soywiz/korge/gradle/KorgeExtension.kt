@@ -16,6 +16,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.net.*
 import java.time.*
 import java.util.*
+import javax.naming.*
 import kotlin.collections.LinkedHashMap
 
 enum class Orientation(val lc: String) { DEFAULT("default"), LANDSCAPE("landscape"), PORTRAIT("portrait") }
@@ -90,6 +91,18 @@ class KorgeExtension(val project: Project) {
 	internal fun init(includeIndirectAndroid: Boolean) {
 	    this.includeIndirectAndroid = includeIndirectAndroid
 	}
+
+    companion object {
+        val validIdentifierRegexp = Regex("^[a-zA-Z_]\\w*$")
+
+        fun isIdValid(id: String) = id.isNotEmpty() && id.isNotBlank() && id.split(".").all { it.matches(validIdentifierRegexp) }
+
+        fun verifyId(id: String) {
+            if (!isIdValid(id)) {
+                throw InvalidNameException("'$id' is invalid. Should be separed by '.', shouldn't have spaces, and each component should not start by a number. Example: 'com.test.demo2'")
+            }
+        }
+    }
 
     internal var targets = LinkedHashSet<String>()
 
@@ -220,6 +233,11 @@ class KorgeExtension(val project: Project) {
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
+        get() = field
+        set(value) {
+            verifyId(value)
+            field = value
+        }
 	var version: String = "0.0.1"
     var preferredIphoneSimulatorVersion: Int = 8
 
