@@ -56,6 +56,16 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
         }
     }
 
+    inline fun <R> allocMultiple(count: Int, temp: ArrayList<T> = arrayListOf(), callback: (List<T>) -> R): R {
+        temp.clear()
+        for (n in 0 until count) temp.add(alloc())
+        try {
+            return callback(temp)
+        } finally {
+            while (temp.isNotEmpty()) free(temp.removeLast())
+        }
+    }
+
     inline fun <R> allocThis(callback: T.() -> R): R {
         val temp = alloc()
         try {
@@ -64,7 +74,6 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
             free(temp)
         }
     }
-
 
     override fun hashCode(): Int = items.hashCode()
     override fun equals(other: Any?): Boolean = (other is Pool<*>) && this.items == other.items && this.itemsInPool == other.itemsInPool

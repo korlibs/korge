@@ -17,11 +17,11 @@ import kotlin.math.sin
 class MeshBuilder3D(
     val drawType: AG.DrawType = AG.DrawType.TRIANGLES
 ) {
-    val layout = VertexLayout(buildList {
-        add(Shaders3D.a_pos)
-        add(Shaders3D.a_norm)
-        add(Shaders3D.a_tex)
-    })
+    val layout = VertexLayout(
+        Shaders3D.a_pos,
+        Shaders3D.a_norm,
+        Shaders3D.a_tex
+    )
 
     operator fun invoke(callback: MeshBuilder3D.() -> Unit): Mesh3D = this.apply(callback).build()
 
@@ -234,11 +234,13 @@ class MeshBuilder3D(
     }
 
     fun build(): Mesh3D = Mesh3D(
-        vertexData.toFBuffer(),
+        listOf(BufferWithVertexLayout(
+            buffer = vertexData.toFBuffer(),
+            layout = layout
+        )),
         indexData.toFBuffer(),
         AG.IndexType.USHORT,
         indexData.size,
-        layout,
         null,
         drawType,
         true,
