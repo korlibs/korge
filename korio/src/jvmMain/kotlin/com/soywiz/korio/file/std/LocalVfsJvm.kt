@@ -31,7 +31,7 @@ actual val applicationVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val applicationDataVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
 actual val externalStorageVfs: VfsFile by lazy { localVfs(absoluteCwd) }
-actual val userHomeVfs: VfsFile by lazy { localVfs(absoluteCwd) }
+actual val userHomeVfs: VfsFile by lazy { localVfs(System.getProperty("user.home")) }
 actual val tempVfs: VfsFile by lazy { localVfs(tmpdir) }
 
 actual fun localVfs(path: String): VfsFile = LocalVfsJvm()[path]
