@@ -107,9 +107,9 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     addUpdater {
         if (views.input.mouseButtons != 0) {
             if (bunnys.size < 200_000) {
-                addBunny(500)
+                addBunny(2_000)
             } else if (bunnys.size < bunnys.maxSize - 1000) {
-                addBunny(1000)
+                addBunny(4_000)
             }
         }
         bunnys.fastForEach { bunny ->
