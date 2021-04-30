@@ -24,6 +24,7 @@ actual fun MemBuffer._sliceFloat32Buffer(offset: Int, size: Int): Float32Buffer 
 actual fun MemBuffer._sliceFloat64Buffer(offset: Int, size: Int): Float64Buffer =
     Float64Buffer(this, offset * 8, size)
 
+// @TODO: https://youtrack.jetbrains.com/issue/KT-46427
 //@SymbolName("Kotlin_ByteArray_setFloatAtUnsafe") public external fun ByteArray.setFloatAtUnsafe(index: Int, value: Float)
 //@SymbolName("Kotlin_ByteArray_getFloatAtUnsafe") public external fun ByteArray.getFloatAtUnsafe(index: Int): Float
 

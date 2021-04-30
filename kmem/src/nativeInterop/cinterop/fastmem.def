@@ -2,6 +2,7 @@
 
 /*
 // How can we include Kotlin/Native headers?
+// @TODO: https://youtrack.jetbrains.com/issue/KT-46427
 //#include "Natives.h"
 //#include "Types.h"
 
