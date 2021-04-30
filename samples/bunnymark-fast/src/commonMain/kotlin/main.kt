@@ -5,7 +5,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
-//import com.soywiz.korge.component.length.bindLength
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -26,8 +25,8 @@ val ResourcesContainer.korge_png by resourceBitmap("korge.png")
 
 class BunnyContainer(maxSize: Int) : FSprites(maxSize) {
     val speeds = FBuffer(maxSize * Float.SIZE_BYTES * 2).f32
-    inline var FSprite.speedXf: Float get() = speeds[index * 2 + 0] ; set(value) { speeds[index * 2 + 0] = value }
-    inline var FSprite.speedYf: Float get() = speeds[index * 2 + 1] ; set(value) { speeds[index * 2 + 1] = value }
+    var FSprite.speedXf: Float get() = speeds[index * 2 + 0] ; set(value) { speeds[index * 2 + 0] = value }
+    var FSprite.speedYf: Float get() = speeds[index * 2 + 1] ; set(value) { speeds[index * 2 + 1] = value }
     //var FSprite.tex: BmpSlice
 }
 
@@ -73,7 +72,7 @@ suspend fun main() = Korge(width = 800, height = 600, bgcolor = Colors["#2b2b9b"
     val random = Random(0)
 
     fun addBunny(count: Int = 1) {
-        for (n in 0 until count) {
+        for (n in 0 until kotlin.math.min(count, bunnys.available)) {
             bunnys.apply {
                 val bunny = alloc()
                 bunny.speedXf = random.nextFloat() * 1
@@ -169,29 +168,29 @@ suspend fun main() {
 
 open class FSprites(val maxSize: Int) {
     var size = 0
-    val data = FBuffer(maxSize * FSprites.STRIDE * 4)
-    @PublishedApi
-    internal val i32 = data.i32
-    @PublishedApi
-    internal val f32 = data.f32
+    val available get() = maxSize - size
+    val data = FBuffer(maxSize * 8/*STRIDE*/ * 4)
+    private val i32 = data.i32
+    private val f32 = data.f32
+
     fun uploadVertices(ctx: RenderContext) {
-        ctx.fastSpriteBuffer.buffer.upload(data, 0, size * STRIDE * 4)
+        ctx.fastSpriteBuffer.buffer.upload(data, 0, size * 8/*STRIDE*/ * 4)
     }
 
     fun unloadVertices(ctx: RenderContext) {
         ctx.fastSpriteBuffer.buffer.upload(data, 0, 0)
     }
 
-    fun alloc() = FSprite(size++ * STRIDE)
+    fun alloc() = FSprite(size++ * 8/*STRIDE*/)
 
-    inline var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
-    inline var FSprite.y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
-    inline var FSprite.scaleX: Float get() = f32[offset + 2] ; set(value) { f32[offset + 2] = value }
-    inline var FSprite.scaleY: Float get() = f32[offset + 3] ; set(value) { f32[offset + 3] = value }
-    inline var FSprite.radiansf: Float get() = f32[offset + 4] ; set(value) { f32[offset + 4] = value }
-    inline var FSprite.anchorRaw: Int get() = i32[offset + 5] ; set(value) { i32[offset + 5] = value }
-    inline var FSprite.tex0Raw: Int get() = i32[offset + 6] ; set(value) { i32[offset + 6] = value }
-    inline var FSprite.tex1Raw: Int get() = i32[offset + 7] ; set(value) { i32[offset + 7] = value }
+    var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
+    var FSprite.y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
+    var FSprite.scaleX: Float get() = f32[offset + 2] ; set(value) { f32[offset + 2] = value }
+    var FSprite.scaleY: Float get() = f32[offset + 3] ; set(value) { f32[offset + 3] = value }
+    var FSprite.radiansf: Float get() = f32[offset + 4] ; set(value) { f32[offset + 4] = value }
+    var FSprite.anchorRaw: Int get() = i32[offset + 5] ; set(value) { i32[offset + 5] = value }
+    var FSprite.tex0Raw: Int get() = i32[offset + 6] ; set(value) { i32[offset + 6] = value }
+    var FSprite.tex1Raw: Int get() = i32[offset + 7] ; set(value) { i32[offset + 7] = value }
 
     var FSprite.angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians.toFloat() }
 
@@ -247,7 +246,7 @@ open class FSprites(val maxSize: Int) {
     }
 
     companion object {
-        const val STRIDE = 8
+        //const val STRIDE = 8
 
         val u_i_texSize = Uniform("u_texSize", VarType.Float2)
         val v_color = Varying("v_color", VarType.Float4)
@@ -318,7 +317,7 @@ open class FSprites(val maxSize: Int) {
 
 inline class FSprite(val id: Int) {
     inline val offset get() = id
-    inline val index get() = offset / FSprites.STRIDE
+    inline val index get() = offset / 8/*STRIDE*/
     //val offset get() = index * STRIDE
 }
 
@@ -326,6 +325,6 @@ inline fun <T : FSprites> T.fastForEach(callback: T.(sprite: FSprite) -> Unit) {
     var m = 0
     for (n in 0 until size) {
         callback(FSprite(m))
-        m += FSprites.STRIDE
+        m += 8/*STRIDE*/
     }
 }

@@ -50,7 +50,7 @@ inline class Float16(val rawBits: UShort) {
             return when (exponent) {
                 0 -> when (significand) {
                     0 -> if (sign < 0) -0.0 else +0.0
-                    else -> sign * 2.0.pow((1 - FLOAT16_EXPONENT_BASE).toDouble()) * (significand / 1024) // subnormal number
+                    else -> sign * 2.0.pow((1 - 15/*FLOAT16_EXPONENT_BASE*/).toDouble()) * (significand / 1024) // subnormal number
                 }
                 31 -> when {
                     significand != 0 -> Double.NaN
@@ -58,7 +58,7 @@ inline class Float16(val rawBits: UShort) {
                     else -> Double.POSITIVE_INFINITY
                 }
                 // normal number
-                else -> sign * 2.0.pow((exponent - FLOAT16_EXPONENT_BASE).toDouble()) * (1 + significand / 1024)
+                else -> sign * 2.0.pow((exponent - 15/*FLOAT16_EXPONENT_BASE*/).toDouble()) * (1 + significand / 1024)
             }
         }
 

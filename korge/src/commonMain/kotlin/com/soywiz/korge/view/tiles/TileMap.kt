@@ -199,21 +199,22 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet, var smoothing: B
         private val dummyTexturedVertexArray = TexturedVertexArray(0, IntArray(0))
 
         fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
-            indices[0] = 0 // TL
-            indices[1] = 1 // TR
-            indices[2] = 2 // BR
-            indices[3] = 3 // BL
+            // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
+            indices[0] = 0 // 0/*TL*/
+            indices[1] = 1 // 1/*TR*/
+            indices[2] = 2 // 2/*BR*/
+            indices[3] = 3 // 3/*BL*/
 
             if (rotate) {
-                indices.swap(TR, BL)
+                indices.swap(1/*TR*/, 3/*BL*/)
             }
             if (flipY) {
-                indices.swap(TL, BL)
-                indices.swap(TR, BR)
+                indices.swap(0/*TL*/, 3/*BL*/)
+                indices.swap(1/*TR*/, 2/*BR*/)
             }
             if (flipX) {
-                indices.swap(TL, TR)
-                indices.swap(BL, BR)
+                indices.swap(0/*TL*/, 1/*TR*/)
+                indices.swap(3/*BL*/, 2/*BR*/)
             }
             return indices
         }
@@ -224,10 +225,10 @@ open class TileMap(val intMap: IntArray2, val tileset: TileSet, var smoothing: B
             this[b] = t
         }
 
-        private const val TL = 0
-        private const val TR = 1
-        private const val BR = 2
-        private const val BL = 3
+        //private const val TL = 0
+        //private const val TR = 1
+        //private const val BR = 2
+        //private const val BL = 3
     }
     private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, dummyTexturedVertexArray) }
 

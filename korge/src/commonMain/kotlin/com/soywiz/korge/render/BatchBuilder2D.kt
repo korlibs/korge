@@ -170,7 +170,7 @@ class BatchBuilder2D constructor(
         vd.setF(vp + 3, v)
         vd.setI(vp + 4, colorMul)
         vd.setI(vp + 5, colorAdd)
-        return TexturedVertexArray.COMPONENTS_PER_VERTEX
+        return 6/*COMPONENTS_PER_VERTEX*/
     }
 
     fun _addVertex(f32: Float32Buffer, i32: Int32Buffer, vp: Int, x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int): Int {
@@ -180,7 +180,7 @@ class BatchBuilder2D constructor(
         f32[vp + 3] = v
         i32[vp + 4] = colorMul
         i32[vp + 5] = colorAdd
-        return TexturedVertexArray.COMPONENTS_PER_VERTEX
+        return 6/*COMPONENTS_PER_VERTEX*/
     }
 
 	fun addIndex(idx: Int) {
@@ -798,9 +798,9 @@ class BatchBuilder2D constructor(
 class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int = indices.size) {
     /** The initial/maximum number of vertices */
 	val initialVcount = vcount
-	//internal val data = IntArray(COMPONENTS_PER_VERTEX * vcount)
-	//internal val _data = FBuffer(COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
-    internal val _data = FBuffer.allocNoDirect(COMPONENTS_PER_VERTEX * initialVcount * 4)
+	//internal val data = IntArray(6/*COMPONENTS_PER_VERTEX*/ * vcount)
+	//internal val _data = FBuffer(6/*COMPONENTS_PER_VERTEX*/ * initialVcount * 4, direct = false)
+    internal val _data = FBuffer.allocNoDirect(6/*COMPONENTS_PER_VERTEX*/ * initialVcount * 4)
     private val fast = _data.fast32
 	//private val f32 = _data.f32
     //private val i32 = _data.i32
@@ -808,6 +808,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	//val icount = indices.size
 
 	companion object {
+        // // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
         @KorgeInternal
 		const val COMPONENTS_PER_VERTEX = 6
 
@@ -840,7 +841,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
     
     /** Moves the cursor for setting vertexs to the vertex [i] */
     fun select(i: Int): TexturedVertexArray {
-        offset = i * COMPONENTS_PER_VERTEX
+        offset = i * 6/*COMPONENTS_PER_VERTEX*/
         return this
     }
     /** Sets the [x] of the vertex previously selected calling [select] */
@@ -883,7 +884,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	fun cols(colMul: RGBA, colAdd: ColorAdd) = setCMul(colMul).setCAdd(colAdd)
 
     fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
-        quadV(fast, index * COMPONENTS_PER_VERTEX, x, y, u, v, colMul.value, colAdd.value)
+        quadV(fast, index * 6/*COMPONENTS_PER_VERTEX*/, x, y, u, v, colMul.value, colAdd.value)
     }
 
     fun quadV(fast: Fast32Buffer, pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int): Int {
@@ -893,7 +894,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         fast.setF(pos + 3, v)
         fast.setI(pos + 4, colMul)
         fast.setI(pos + 5, colAdd)
-        return COMPONENTS_PER_VERTEX
+        return 6/*COMPONENTS_PER_VERTEX*/
     }
 
     fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
@@ -941,7 +942,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         val y3 = df * yh + bf * x + tyf
 
         val fast = this.fast
-        var pos = index * COMPONENTS_PER_VERTEX
+        var pos = index * 6/*COMPONENTS_PER_VERTEX*/
         val cm = colMul.value
         val ca = colAdd.value
         pos += quadV(fast, pos, x0, y0, bmp.tl_x, bmp.tl_y, cm, ca)
@@ -992,7 +993,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	}
 
 	//class Item(private val data: IntArray, index: Int) {
-	//	val offset = index * COMPONENTS_PER_VERTEX
+	//	val offset = index * 6/*COMPONENTS_PER_VERTEX*/
 	//	var x: Float; get() = Float.fromBits(data[offset + 0]); set(v) { data[offset + 0] = v.toBits() }
 	//	var y: Float; get() = Float.fromBits(data[offset + 1]); set(v) { data[offset + 1] = v.toBits() }
 	//	var tx: Float; get() = Float.fromBits(data[offset + 2]); set(v) { data[offset + 2] = v.toBits() }
