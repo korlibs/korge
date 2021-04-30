@@ -29,10 +29,10 @@ class BitmapFontTest {
 
 		assertEquals(
 			"""
-            createBuffer(VERTEX):0
-            createBuffer(INDEX):1
             createTexture():0
             Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=361, height=512), 361, 512)
+            createBuffer(VERTEX):0
+            createBuffer(INDEX):1
             Buffer[0].afterSetMem(mem[393216])
             Buffer[1].afterSetMem(mem[49152])
             draw(vertices=Buffer[0], indices=Buffer[1], program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], vertexCount=24, offset=0, blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD), uniforms={Uniform(u_ProjMat)=Matrix3D(
