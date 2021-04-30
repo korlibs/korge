@@ -169,18 +169,18 @@ suspend fun main() {
 
 open class FSprites(val maxSize: Int) {
     var size = 0
-    val data = FBuffer(maxSize * FSprites.STRIDE * 4)
+    val data = FBuffer(maxSize * 8/*STRIDE*/ * 4)
     private val i32 = data.i32
     private val f32 = data.f32
     fun uploadVertices(ctx: RenderContext) {
-        ctx.fastSpriteBuffer.buffer.upload(data, 0, size * STRIDE * 4)
+        ctx.fastSpriteBuffer.buffer.upload(data, 0, size * 8/*STRIDE*/ * 4)
     }
 
     fun unloadVertices(ctx: RenderContext) {
         ctx.fastSpriteBuffer.buffer.upload(data, 0, 0)
     }
 
-    fun alloc() = FSprite(size++ * STRIDE)
+    fun alloc() = FSprite(size++ * 8/*STRIDE*/)
 
     var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
     var FSprite.y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
@@ -243,7 +243,7 @@ open class FSprites(val maxSize: Int) {
     }
 
     companion object {
-        const val STRIDE = 8
+        //const val STRIDE = 8
 
         val u_i_texSize = Uniform("u_texSize", VarType.Float2)
         val v_color = Varying("v_color", VarType.Float4)
@@ -314,14 +314,14 @@ open class FSprites(val maxSize: Int) {
 
 inline class FSprite(val id: Int) {
     val offset get() = id
-    val index get() = offset / FSprites.STRIDE
-    //val offset get() = index * STRIDE
+    val index get() = offset / 8/*STRIDE*/
+    //val offset get() = index * 8/*STRIDE*/
 }
 
 inline fun <T : FSprites> T.fastForEach(callback: T.(sprite: FSprite) -> Unit) {
     var m = 0
     for (n in 0 until size) {
         callback(FSprite(m))
-        m += FSprites.STRIDE
+        m += 8/*STRIDE*/
     }
 }
