@@ -119,9 +119,9 @@ class ShortArrayDeque(val initialBits: Int = 10) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() = run {
+    fun readOne(): Short {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Short) {
         tempBuffer[0] = value

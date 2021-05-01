@@ -9,8 +9,6 @@ class AudioSamplesDeque(val channels: Int) {
     val availableRead get() = buffer.getOrNull(0)?.availableRead ?: 0
     val availableReadMax: Int get() = buffer.map { it.availableRead }.maxOrNull() ?: 0
 
-    private val temp = ShortArray(1)
-
     fun createTempSamples(size: Int = 1024) = AudioSamples(channels, size)
 
     fun copyTo(out: AudioSamplesDeque, temp: AudioSamples = createTempSamples()) {
@@ -22,8 +20,8 @@ class AudioSamplesDeque(val channels: Int) {
     }
 
     // Individual samples
-    fun read(channel: Int): Short = buffer[channel].read(temp, 0, 1).let { temp[0] }
-    fun write(channel: Int, sample: Short) = run { buffer[channel].write(temp.also { temp[0] = sample }, 0, 1) }
+    fun read(channel: Int): Short = buffer[channel].readOne()
+    fun write(channel: Int, sample: Short) { buffer[channel].writeOne(sample) }
 
     fun readFloat(channel: Int): Float = read(channel).toFloat() / Short.MAX_VALUE.toFloat()
     fun writeFloat(channel: Int, sample: Float) = write(channel, (sample * Short.MAX_VALUE.toFloat()).toInt().toShort())
@@ -57,7 +55,7 @@ class AudioSamplesDeque(val channels: Int) {
     fun writeInterleaved(data: ShortArray, offset: Int, len: Int = data.size - offset, channels: Int = this.channels) {
         when (channels) {
             1 -> {
-                buffer[0].write(data, offset, len)
+                for (n in 0 until this.channels) buffer[n].write(data, offset, len)
             }
             2 -> {
                 for (n in 0 until len / 2) write(0, data[n * 2 + 0])

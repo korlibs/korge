@@ -127,6 +127,16 @@ class ShortRingBuffer(val bits: Int) {
         return toRead
     }
 
+    private val temp = ShortArray(1)
+    fun readOne(): Short {
+        read(temp, 0, 1)
+        return temp[0]
+    }
+    fun writeOne(value: Short) {
+        temp[0] = value
+        write(temp, 0, 1)
+    }
+
     fun clear() {
         readPos = 0
         writePos = 0
