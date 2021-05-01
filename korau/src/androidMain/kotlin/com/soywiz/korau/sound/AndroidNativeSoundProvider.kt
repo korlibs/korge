@@ -29,12 +29,12 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
     val audioSessionId by lazy { audioManager!!.generateAudioSessionId() }
     //val audioSessionId get() = audioManager!!.generateAudioSessionId()
 
-    private val threadPool = Pool {
-        Console.info("Creating AudioThread[$it]")
-        AudioThread(this).also { it.isDaemon = true }.also { it.start() }
+    private val threadPool = Pool { id ->
+        //Console.info("Creating AudioThread[$id]")
+        AudioThread(this, id = id).also { it.isDaemon = true }.also { it.start() }
     }
 
-    class AudioThread(val provider: AndroidNativeSoundProvider, var freq: Int = 44100) : Thread() {
+    class AudioThread(val provider: AndroidNativeSoundProvider, var freq: Int = 44100, val id: Int = -1) : Thread() {
         var props: SoundProps = DummySoundProps
         val deque = AudioSamplesDeque(2)
         @Volatile
@@ -70,43 +70,58 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     AudioTrack.MODE_STREAM
                 )
             }
-            if (at.state == AudioTrack.STATE_INITIALIZED) {
-                at.play()
-            }
-            try {
-                val temp = AudioSamplesInterleaved(2, bufferSamples)
-                while (running) {
-                    val readCount = deque.read(temp)
-                    if (readCount > 0) {
-                        //println("AUDIO CHUNK: $readCount : ${temp.data.toList()}")
-                        if (at.state == AudioTrack.STATE_INITIALIZED) {
-                            at.playbackRate = freq
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                at.playbackParams.speed = props.pitch.toFloat()
-                            }
-                            val vol = props.volume.toFloat()
-                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                                at.setVolume(vol)
-                            } else {
-                                @Suppress("DEPRECATION")
-                                at.setStereoVolume(vol, vol)
-                            }
-                            at.write(temp.data, 0, readCount * 2)
-                        }
-                    } else {
-                        Thread.sleep(10L)
-                    }
-                }
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            } finally {
+            //if (at.state == AudioTrack.STATE_INITIALIZED) at.play()
+            while (running) {
                 try {
-                    at.stop()
-                    at.release()
+                    val temp = AudioSamplesInterleaved(2, bufferSamples)
+                    //val tempEmpty = ShortArray(1024)
+                    var paused = true
+                    while (running) {
+                        val readCount = deque.read(temp)
+                        if (readCount > 0) {
+                            if (paused) {
+                                //println("[KORAU] Resume $id")
+                                paused = false
+                                at.play()
+                            }
+                            //println("AUDIO CHUNK: $readCount : ${temp.data.toList()}")
+                            if (at.state == AudioTrack.STATE_INITIALIZED) {
+                                at.playbackRate = freq
+                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                    at.playbackParams.speed = props.pitch.toFloat()
+                                }
+                                val vol = props.volume.toFloat()
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                                    at.setVolume(vol)
+                                } else {
+                                    @Suppress("DEPRECATION")
+                                    at.setStereoVolume(vol, vol)
+                                }
+                                at.write(temp.data, 0, readCount * 2)
+                            }
+                        } else {
+                            //at.write(tempEmpty, 0, tempEmpty.size)
+                            if (!paused) {
+                                //println("[KORAU] Stop $id")
+                                //at.flush()
+                                at.stop()
+                                paused = true
+                            }
+                            Thread.sleep(2L)
+                        }
+                    }
                 } catch (e: Throwable) {
                     e.printStackTrace()
+                } finally {
+                    //println("[KORAU] Completed $id")
+                    try {
+                        at.stop()
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
                 }
             }
+            at.release()
         }
     }
 
@@ -142,6 +157,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     thread = threadPool.alloc()
                     thread?.props = this
                     thread?.freq = freq
+                    threadDeque?.clear()
                 }
             }
             override fun stop() {
