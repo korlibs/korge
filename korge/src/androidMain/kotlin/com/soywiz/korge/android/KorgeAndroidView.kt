@@ -30,7 +30,7 @@ import javax.microedition.khronos.opengles.GL10
 
 class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
 
-    private var mGLView: GLSurfaceView? = null
+    private var mGLView: com.soywiz.korgw.KorgwSurfaceView? = null
     private var agOpenGl: AGOpengl? = null
     private var gameWindow: AndroidGameWindowNoActivity? = null
 
