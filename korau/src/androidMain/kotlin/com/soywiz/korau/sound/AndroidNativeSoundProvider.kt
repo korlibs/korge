@@ -21,7 +21,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         val MAX_CHANNELS = 16
     }
 
-	override val target: String = "android"
+    override val target: String = "android"
 
     override val audioFormats: AudioFormats = AudioFormats(MP3Decoder) + defaultAudioFormats
 
@@ -30,7 +30,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
     //val audioSessionId get() = audioManager!!.generateAudioSessionId()
 
     private val threadPool = Pool {
-        com.soywiz.klogger.Console.info("Creating AudioThread[$it]")
+        Console.info("Creating AudioThread[$it]")
         AudioThread(this).also { it.isDaemon = true }.also { it.start() }
     }
 
@@ -43,22 +43,34 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         override fun run() {
             val bufferSamples = 4096
 
-            val at = AudioTrack(
-                AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_GAME)
-                    //.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
-                    .build(),
-                AudioFormat.Builder()
-                    .setChannelMask(AudioFormat.CHANNEL_IN_STEREO)
-                    .setSampleRate(freq)
-                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                    .build(),
-                2 * 2 * bufferSamples,
-                AudioTrack.MODE_STREAM,
-                provider.audioSessionId
-            )
-            if (at.getState() == AudioTrack.STATE_INITIALIZED) {
+            val at = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                AudioTrack(
+                    AudioAttributes.Builder()
+                        .setUsage(AudioAttributes.USAGE_GAME)
+                        //.setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                        .setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN)
+                        .build(),
+                    AudioFormat.Builder()
+                        .setChannelMask(AudioFormat.CHANNEL_IN_STEREO)
+                        .setSampleRate(freq)
+                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                        .build(),
+                    2 * 2 * bufferSamples,
+                    AudioTrack.MODE_STREAM,
+                    provider.audioSessionId
+                )
+            } else {
+                @Suppress("DEPRECATION")
+                AudioTrack(
+                    AudioManager.STREAM_MUSIC,
+                    freq,
+                    AudioFormat.CHANNEL_OUT_STEREO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    2 * 2 * bufferSamples,
+                    AudioTrack.MODE_STREAM
+                )
+            }
+            if (at.state == AudioTrack.STATE_INITIALIZED) {
                 at.play()
             }
             try {
@@ -67,13 +79,19 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     val readCount = deque.read(temp)
                     if (readCount > 0) {
                         //println("AUDIO CHUNK: $readCount : ${temp.data.toList()}")
-                        if (at.getState() == AudioTrack.STATE_INITIALIZED) {
-                            at.setPlaybackRate(freq)
+                        if (at.state == AudioTrack.STATE_INITIALIZED) {
+                            at.playbackRate = freq
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                                 at.playbackParams.speed = props.pitch.toFloat()
                             }
-                            at.setVolume(props.volume.toFloat())
-                            at.write(temp.data, 0, readCount * 2, AudioTrack.WRITE_BLOCKING)
+                            val vol = props.volume.toFloat()
+                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                                at.setVolume(vol)
+                            } else {
+                                @Suppress("DEPRECATION")
+                                at.setStereoVolume(vol, vol)
+                            }
+                            at.write(temp.data, 0, readCount * 2)
                         }
                     } else {
                         Thread.sleep(10L)
@@ -99,11 +117,10 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
         ensureAudioManager(coroutineContext)
 
-		return object : PlatformAudioOutput(coroutineContext, freq) {
+        return object : PlatformAudioOutput(coroutineContext, freq) {
             private var started = false
             private var thread: AudioThread? = null
             private val threadDeque get() = thread?.deque
@@ -136,79 +153,5 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                 thread = null
             }
         }
-	}
-
-    /*
-    override suspend fun createNonStreamingSound(data: AudioData, name: String): Sound {
-        ensureAudioManager(coroutineContext)
-        val audioManager = this.audioManager!!
-        val ctx = coroutineContext
-        return object : Sound(ctx) {
-            val sound = this
-
-            override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
-                val samplesData = data.samplesInterleaved.data
-                val totalShorts = data.totalSamples * data.channels
-
-                val at = AudioTrack(
-                    AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_GAME).setContentType(AudioAttributes.CONTENT_TYPE_UNKNOWN).build(),
-                    AudioFormat.Builder().setChannelMask(AudioFormat.CHANNEL_IN_STEREO).setSampleRate(data.rate).setEncoding(AudioFormat.ENCODING_PCM_16BIT).build(),
-                    totalShorts * 2,
-                    AudioTrack.MODE_STATIC,
-                    audioSessionId
-                )
-
-                at.write(samplesData, 0, totalShorts, AudioTrack.WRITE_NON_BLOCKING)
-                //at.write(samplesData, 0, totalShorts, AudioTrack.WRITE_BLOCKING)
-                //at.write(data.samplesInterleaved.data, 0, data.totalSamples * data.channels)
-                //println("AudioTrack.PLAY")
-
-                return object : SoundChannel(sound) {
-                    fun setProps() {
-                        at.setVolume(volume.toFloat())
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            at.playbackParams.speed = pitch.toFloat()
-                        }
-                    }
-
-                    init {
-                        launchImmediately(coroutineContext) {
-                            while (at.getState() != AudioTrack.STATE_INITIALIZED) {
-                                delay(1.milliseconds)
-                            }
-                            setProps()
-                            at.play()
-                            try {
-                                while (at.getPlayState() != AudioTrack.PLAYSTATE_STOPPED) {
-                                    setProps()
-                                    delay(64.milliseconds)
-                                }
-                            } finally {
-                                //println("AudioTrack.STOP+RELEASE")
-                                at.stop()
-                                at.release()
-                            }
-                        }
-                    }
-
-                    override fun resume() {
-                        at.play()
-                    }
-
-                    override fun pause() {
-                        at.pause()
-                    }
-
-                    override fun stop() {
-                        at.stop()
-                    }
-                }.apply {
-                    this.copySoundPropsFrom(params)
-                }
-            }
-
-            override suspend fun decode(): AudioData = data
-        }
     }
-     */
 }
