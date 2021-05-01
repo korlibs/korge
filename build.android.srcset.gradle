@@ -4,7 +4,7 @@ kotlin {
         publishLibraryVariantsGroupedByFlavor = true
         //this.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.androidJvm)
         compilations.all {
-            kotlinOptions.jvmTarget = "1.8"
+            kotlinOptions.jvmTarget = "1.6"
             kotlinOptions.suppressWarnings = true
             kotlinOptions.freeCompilerArgs = ["-Xno-param-assertions"]
         }

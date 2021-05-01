@@ -23,6 +23,10 @@ fun Project.configureAndroidDirect() {
     }
 
     android.apply {
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_1_8
+            targetCompatibility = JavaVersion.VERSION_1_8
+        }
         packagingOptions {
             for (pattern in androidExcludePatterns()) {
                 this.exclude(pattern)
