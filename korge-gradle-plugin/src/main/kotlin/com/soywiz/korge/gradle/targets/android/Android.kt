@@ -157,6 +157,10 @@ fun Project.configureAndroidIndirect() {
                                 line("sourceCompatibility JavaVersion.VERSION_1_8")
                                 line("targetCompatibility JavaVersion.VERSION_1_8")
                             }
+                            line("adbOptions") {
+                                line("installOptions = [\"-r\"]")
+                                line("timeOutInMs = 30 * 1000")
+                            }
                             line("lintOptions") {
                                 line("// @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0")
                                 line("disable(\"GradleCompatible\")")
