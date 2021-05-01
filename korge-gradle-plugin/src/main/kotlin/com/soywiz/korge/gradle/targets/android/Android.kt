@@ -113,7 +113,7 @@ fun Project.configureAndroidIndirect() {
 
                 File(outputFolder, "build.extra.gradle").conditionally(ifNotExists) {
                     ensureParents().writeTextIfChanged(Indenter {
-                        line("// When this file exists, it won't be oerriden")
+                        line("// When this file exists, it won't be overriden")
                     })
                 }
 
