@@ -96,7 +96,7 @@ fun Project.configureNativeIos() {
     val xcodeGenFolder = korlibsFolder["XcodeGen"]
     val xcodeGenLocalExecutable = File("/usr/local/bin/xcodegen")
     val xcodeGenExecutable = xcodeGenFolder[".build/release/xcodegen"]
-    val xcodeGenGitTag = "2.18.0"
+    val xcodeGenGitTag = "2.21.0"
 
     tasks.create("installXcodeGen") { task ->
 		task.apply {
@@ -317,202 +317,11 @@ fun Project.configureNativeIos() {
 				//	}
 				//})
 			} else {
-				folder["app/main.m"].ensureParents().writeText("""
-					#import <UIKit/UIKit.h>
-					#import "AppDelegate.h"
-
-					int main(int argc, char * argv[]) {
-						@autoreleasepool {
-							return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class]));
-						}
-					}
-				""".trimIndent())
-
-				folder["app/AppDelegate.h"].ensureParents().writeText("""
-					#import <UIKit/UIKit.h>
-					@interface AppDelegate : UIResponder <UIApplicationDelegate>
-					@property (strong, nonatomic) UIWindow *window;
-					@end
-				""".trimIndent())
-
-				folder["app/AppDelegate.m"].ensureParents().writeText("""
-					#import "AppDelegate.h"
-					@interface AppDelegate ()
-					@end
-					@implementation AppDelegate
-					- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
-						return YES;
-					}
-					- (void)applicationWillResignActive:(UIApplication *)application {
-					}
-					- (void)applicationDidEnterBackground:(UIApplication *)application {
-					}
-					- (void)applicationWillEnterForeground:(UIApplication *)application {
-					}
-					- (void)applicationDidBecomeActive:(UIApplication *)application {
-					}
-					- (void)applicationWillTerminate:(UIApplication *)application {
-					}
-					@end
-				""".trimIndent())
-
-				folder["app/ViewController.h"].ensureParents().writeText("""
-					#import <UIKit/UIKit.h>
-					#import <GLKit/GLKit.h>
-					#import <GameMain/GameMain.h>
-					@interface ViewController : GLKViewController
-					@property(strong, nonatomic) EAGLContext *context;
-					@property(strong, nonatomic) GameMainMyIosGameWindow2 *gameWindow2;
-					@property(strong, nonatomic) GameMainRootGameMain *rootGameMain;
-					@property(strong, nonatomic) NSArray<UITouch*> *touches;
-					@property boolean_t initialized;
-					@property boolean_t reshape;
-					@end
-				""".trimIndent())
-
-				folder["app/ViewController.m"].ensureParents().writeText(
-					"""
-					#import "ViewController.h"
-					@interface ViewController ()
-					@end
-					@implementation ViewController
-					-(id)init {
-						if (self = [super init])  {
-						}
-						return self;
-					}
-
-					-(void)dealloc {
-						[self tearDownGL];
-						if (EAGLContext.currentContext == self.context) {
-							[EAGLContext setCurrentContext:nil];
-						}
-					}
-
-					- (void)viewDidLoad {
-						[super viewDidLoad];
-                        //printf("viewDidLoad\n");
-
-						self.initialized = false;
-						self.reshape = true;
-						self.touches = [[NSArray alloc] init];
-						self.gameWindow2 = [GameMainMyIosGameWindow2 myIosGameWindow2];
-						self.rootGameMain = [GameMainRootGameMain rootGameMain];
-
-						self.context = [[EAGLContext alloc] initWithAPI:(kEAGLRenderingAPIOpenGLES2)];
-						if (self.context == nil) {
-							printf("Failed to create ES context\n");
-						}
-						GLKView *view = (GLKView *)self.view;
-						view.context = self.context;
-						view.drawableDepthFormat = GLKViewDrawableDepthFormat24;
-						[self setupGL];
-					}
-
-					-(void)didReceiveMemoryWarning {
-						[super didReceiveMemoryWarning];
-						if (self.isViewLoaded && self.view.window != nil) {
-							self.view = nil;
-							[self tearDownGL];
-							if (EAGLContext.currentContext == self.context) {
-								[EAGLContext setCurrentContext:nil];
-							}
-							self.context = nil;
-						}
-					}
-
-					-(void)setupGL {
-						[EAGLContext setCurrentContext:self.context];
-						NSString *path = NSBundle.mainBundle.resourcePath;
-						if (path != nil) {
-							NSString *rpath = [NSString stringWithFormat:@"%@%s", path, "/include/app/resources"];
-							[NSFileManager.defaultManager changeCurrentDirectoryPath:rpath];
-							[self.gameWindow2 setCustomCwdCwd:rpath];
-						}
-						[self engineInitialize];
-						double width = self.view.frame.size.width;
-						double height = self.view.frame.size.height;
-						[self engineResize:width height:height];
-					}
-
-					-(void)tearDownGL {
-						[EAGLContext setCurrentContext:nil];
-						[self engineFinalize];
-					}
-
-					-(void)update {
-						[self engineUpdate];
-					}
-
-					-(void)glkView:(GLKView *)view drawInRect:(CGRect)rect {
-						if (!self.initialized) {
-							self.initialized = true;
-                            [self.rootGameMain preRunMain];
-							[self.gameWindow2.gameWindow dispatchInitEvent];
-							[self.rootGameMain runMain];
-							self.reshape = true;
-						}
-						double width = self.view.bounds.size.width * self.view.contentScaleFactor;
-						double height = self.view.bounds.size.height * self.view.contentScaleFactor;
-						if (self.reshape) {
-							self.reshape = false;
-							[_gameWindow2.gameWindow dispatchReshapeEventX:0 y:0 width:width height:height];
-						}
-						[_gameWindow2.gameWindow frame];
-					}
-
-					-(void) engineInitialize {
-					}
-
-					-(void)touchesBegan:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-						self.touches = [[NSArray alloc] init];
-						[self.gameWindow2.gameWindow dispatchTouchEventStartStart];
-						[self addTouches:touches];
-						[self.gameWindow2.gameWindow dispatchTouchEventEnd];
-					}
-
-					-(void)touchesMoved:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-						[self.gameWindow2.gameWindow dispatchTouchEventStartMove];
-						[self addTouches:touches];
-						[self.gameWindow2.gameWindow dispatchTouchEventEnd];
-					}
-
-					-(void)touchesEnded:(NSSet<UITouch *> *)touches withEvent:(UIEvent *)event {
-						[self.gameWindow2.gameWindow dispatchTouchEventStartEnd];
-						[self addTouches:touches];
-						[self.gameWindow2.gameWindow dispatchTouchEventEnd];
-					}
-
-					-(void)addTouches:(NSSet<UITouch *> *)touches {
-						for (UITouch* touch in touches) {
-							CGPoint point = [touch locationInView:self.view];
-							int index = -1;
-							for (int n = 0; n < self.touches.count; n++) {
-								if ([self.touches objectAtIndex:n] == touch) {
-									index = n;
-									break;
-								}
-							}
-							if (index == -1) {
-								index = (int)self.touches.count;
-								self.touches = [self.touches arrayByAddingObject:touch];
-							}
-							[self.gameWindow2.gameWindow dispatchTouchEventAddTouchId:index x:point.x* self.view.contentScaleFactor y:point.y* self.view.contentScaleFactor];
-						}
-					}
-
-					-(void)engineFinalize {
-					}
-
-					-(void)engineResize:(double)width height:(double)height {
-					}
-
-					-(void)engineUpdate {
-					}
-
-					@end
-
-				""".trimIndent())
+				folder["app/main.m"].ensureParents().writeText(getResourceString("ios/main.m"))
+				folder["app/AppDelegate.h"].ensureParents().writeText(getResourceString("ios/AppDelegate.h"))
+				folder["app/AppDelegate.m"].ensureParents().writeText(getResourceString("ios/AppDelegate.m"))
+				folder["app/ViewController.h"].ensureParents().writeText(getResourceString("ios/ViewController.h"))
+				folder["app/ViewController.m"].ensureParents().writeText(getResourceString("ios/ViewController.m"))
 			}
 
 			folder["app/Info.plist"].ensureParents().writeText(Indenter {
@@ -759,7 +568,11 @@ fun Project.configureNativeIos() {
 										}
 									}
 								}
-								line("dependencies:")
+                                if (korge.iosDevelopmentTeam != null) {
+                                    line("settings:")
+                                    line("  DEVELOPMENT_TEAM: ${korge.iosDevelopmentTeam}")
+                                }
+                                line("dependencies:")
                                 line("  - framework: ../../bin/ios$target/${debugSuffix.toLowerCase()}Framework/GameMain.framework")
 							}
 						}

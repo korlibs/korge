@@ -55,14 +55,16 @@ class TouchEvents(override val view: View) : TouchComponent {
     val infos = FastArrayList<Info>()
 
     override fun onTouchEvent(views: Views, e: TouchEvent) {
-        val actionTouch = e.actionTouch ?: e.touches.firstOrNull() ?: Touch.dummy
-
         infos.clear()
 
         if (e.type == TouchEvent.Type.START) {
-            val info = infoPool.alloc().copyFrom(actionTouch).start()
-            infoById[info.id] = info
-            start(info)
+            e.touches.fastForEach {
+                if (it.status != Touch.Status.KEEP) {
+                    val info = infoPool.alloc().copyFrom(it).start()
+                    infoById[info.id] = info
+                    start(info)
+                }
+            }
         }
 
         e.touches.fastForEach {
@@ -84,12 +86,16 @@ class TouchEvents(override val view: View) : TouchComponent {
         }
 
         if (e.type == TouchEvent.Type.END) {
-            val info = infoById[actionTouch.id]
-            if (info != null) {
-                end(info.copyFrom(actionTouch))
-                endAll(this)
-                infoById.remove(info.id)
-                infoPool.free(info)
+            e.touches.fastForEach {
+                if (it.status != Touch.Status.KEEP) {
+                    val info = infoById[it.id]
+                    if (info != null) {
+                        end(info.copyFrom(it))
+                        endAll(this)
+                        infoById.remove(info.id)
+                        infoPool.free(info)
+                    }
+                }
             }
         }
 

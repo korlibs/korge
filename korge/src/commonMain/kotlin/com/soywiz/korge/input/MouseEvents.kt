@@ -1,7 +1,7 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -139,7 +139,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     private var lastInside = false
 	private var lastPressing = false
 
-	val CLICK_THRESHOLD = 16
+    var upPosTime = PerformanceCounter.reference
+    var downPosTime = PerformanceCounter.reference
 
     // Global variants (Not related to the STAGE! but to the window coordinates, so can't be translated directly use *Stage variants instead or directly Stage.mouseXY!)
     @KorgeInternal
@@ -208,32 +209,27 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		when (event.type) {
 			MouseEvent.Type.UP -> {
 				upPosGlobal.copyFrom(views.input.mouse)
-				if (upPosGlobal.distanceTo(downPosGlobal) < CLICK_THRESHOLD) {
+                upPosTime = PerformanceCounter.reference
+                val elapsedTime = upPosTime - downPosTime
+				if (
+                    upPosGlobal.distanceTo(downPosGlobal) < views.input.clickDistance &&
+                    elapsedTime < views.input.clickTime
+                ) {
 					clickedCount++
 					//if (isOver) {
 					//	onClick(this)
 					//}
+                    if (isOver) {
+                        click(this@MouseEvents)
+                        if (click.listenerCount > 0) {
+                            preventDefault(view)
+                        }
+                    }
 				}
 			}
 			MouseEvent.Type.DOWN -> {
+                downPosTime = PerformanceCounter.reference
 				downPosGlobal.copyFrom(views.input.mouse)
-			}
-			MouseEvent.Type.CLICK -> {
-				if (isOver) {
-					click(this@MouseEvents)
-					if (click.listenerCount > 0) {
-						preventDefault(view)
-					}
-				}
-				/*
-                upPos.copyFrom(input.mouse)
-                if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
-                    clickedCount++
-                    if (isOver) {
-                        onClick(this)
-                    }
-                }
-                */
 			}
             MouseEvent.Type.SCROLL -> {
                 if (isOver) {

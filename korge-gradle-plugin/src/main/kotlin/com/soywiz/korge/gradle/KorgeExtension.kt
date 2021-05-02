@@ -348,6 +348,8 @@ class KorgeExtension(val project: Project) {
     var androidReleaseSignKeyAlias: String = "korge"
     var androidReleaseSignKeyPassword: String = "password"
 
+    var iosDevelopmentTeam: String? = null
+
 	// Already included in core
 	fun supportExperimental3d() = Unit
 	fun support3d() = Unit

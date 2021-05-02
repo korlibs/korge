@@ -85,7 +85,7 @@ inline fun <T> List<T>.fastForEachReverse(callback: (T) -> Unit) {
 	}
 }
 
-inline fun <T> ArrayList<T>.fastIterateRemove(callback: (T) -> Boolean): ArrayList<T> {
+inline fun <T> MutableList<T>.fastIterateRemove(callback: (T) -> Boolean): MutableList<T> {
 	var n = 0
 	var m = 0
 	while (n < size) {

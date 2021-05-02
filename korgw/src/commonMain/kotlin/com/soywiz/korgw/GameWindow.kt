@@ -2,7 +2,6 @@ package com.soywiz.korgw
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.klogger.*
 import com.soywiz.kmem.setBits
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
@@ -211,7 +210,8 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     private val reshapeEvent = ReshapeEvent()
     protected val keyEvent = KeyEvent()
     protected val mouseEvent = MouseEvent()
-    protected val touchEvent = TouchEvent()
+    protected val touchBuilder = TouchBuilder()
+    protected val touchEvent get() = touchBuilder.new
     protected val dropFileEvent = DropFileEvent()
     protected val gamePadUpdateEvent = GamePadUpdateEvent()
     protected val gamePadConnectionEvent = GamePadConnectionEvent()
@@ -510,15 +510,13 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         }
     }
 
-    fun dispatchTouchEventStartStart() = dispatchTouchEventStart(TouchEvent.Type.START)
-    fun dispatchTouchEventStartMove() = dispatchTouchEventStart(TouchEvent.Type.MOVE)
-    fun dispatchTouchEventStartEnd() = dispatchTouchEventStart(TouchEvent.Type.END)
-    fun dispatchTouchEventStart(type: TouchEvent.Type) = touchEvent.startFrame(type)
-    fun dispatchTouchEventAddTouch(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y)
-    fun dispatchTouchEventAddTouchAdd(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y, Touch.Status.ADD)
-    fun dispatchTouchEventAddTouchKeep(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y, Touch.Status.KEEP)
-    fun dispatchTouchEventAddTouchRemove(id: Int, x: Double, y: Double) = touchEvent.touch(id, x, y, Touch.Status.REMOVE)
-    fun dispatchTouchEventEnd() = dispatch(touchEvent)
+    // iOS tools
+    fun dispatchTouchEventModeIos() { touchBuilder.mode = TouchBuilder.Mode.IOS }
+    fun dispatchTouchEventStartStart() = touchBuilder.startFrame(TouchEvent.Type.START)
+    fun dispatchTouchEventStartMove() = touchBuilder.startFrame(TouchEvent.Type.MOVE)
+    fun dispatchTouchEventStartEnd() = touchBuilder.startFrame(TouchEvent.Type.END)
+    fun dispatchTouchEventAddTouch(id: Int, x: Double, y: Double) = touchBuilder.touch(id, x, y)
+    fun dispatchTouchEventEnd() = dispatch(touchBuilder.endFrame())
 
     // @TODO: Is this used?
     fun entry(callback: suspend () -> Unit) {

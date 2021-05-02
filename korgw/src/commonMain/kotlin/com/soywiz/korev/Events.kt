@@ -1,11 +1,11 @@
 package com.soywiz.korev
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 
 data class MouseEvent(
@@ -22,7 +22,9 @@ data class MouseEvent(
     var isCtrlDown: Boolean = false,
     var isAltDown: Boolean = false,
     var isMetaDown: Boolean = false,
-    var scaleCoords: Boolean = true
+    var scaleCoords: Boolean = true,
+    /** Not direct user mouse input. Maybe event generated from touch events? */
+    var emulated: Boolean = false
 ) : Event() {
     var component: Any? = null
 
@@ -52,6 +54,7 @@ data class MouseEvent(
         this.isAltDown = other.isAltDown
         this.isMetaDown = other.isMetaDown
         this.scaleCoords = other.scaleCoords
+        this.emulated = other.emulated
     }
 
     var requestLock: () -> Unit = { }
@@ -70,9 +73,14 @@ data class Touch(
 	var id: Int = -1,
     var x: Double = 0.0,
     var y: Double = 0.0,
+    var force: Double = 1.0,
     var status: Status = Status.KEEP,
+    var kind: Kind = Kind.FINGER,
 ) : Extra by Extra.Mixin() {
     enum class Status { ADD, KEEP, REMOVE }
+    enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }
+
+    val isActive: Boolean get() = status != Status.REMOVE
 
 	companion object {
 		val dummy = Touch(-1)
@@ -82,11 +90,100 @@ data class Touch(
         this.id = other.id
         this.x = other.x
         this.y = other.y
+        this.force = other.force
         this.status = other.status
+        this.kind = other.kind
     }
 
     override fun hashCode(): Int = index
     override fun equals(other: Any?): Boolean = other is Touch && this.index == other.index
+
+    fun toStringNice() = "Touch[${id}][${status}](${x.niceStr},${y.niceStr})"
+}
+
+// On JS: each event contains the active down touches (ontouchend simply don't include the touch that has been removed)
+// On Android: ...
+// On iOS: each event contains partial touches with things that have changed for that specific event
+class TouchBuilder {
+    val old = TouchEvent()
+    val new = TouchEvent()
+    var mode = Mode.JS
+
+    enum class Mode { JS, Android, IOS }
+
+    fun startFrame(type: TouchEvent.Type, scaleCoords: Boolean = false) {
+        new.scaleCoords = scaleCoords
+        new.startFrame(type)
+        when (mode) {
+            Mode.IOS -> {
+                new.copyFrom(old)
+                new.type = type
+                new._touches.fastIterateRemove {
+                    if (it.isActive) {
+                        it.status = Touch.Status.KEEP
+                        false
+                    } else {
+                        new._touchesById.remove(it.id)
+                        true
+                    }
+                }
+            }
+        }
+    }
+
+    fun endFrame(): TouchEvent {
+        when (mode) {
+            Mode.JS -> {
+                old.touches.fastForEach { oldTouch ->
+                    if (new.getTouchById(oldTouch.id) == null) {
+                        if (oldTouch.isActive) {
+                            oldTouch.status = Touch.Status.REMOVE
+                            new.touch(oldTouch)
+                        }
+                    }
+                }
+            }
+            Mode.IOS -> {
+
+            }
+        }
+        new.endFrame()
+        old.copyFrom(new)
+        return new
+    }
+
+    inline fun frame(mode: Mode, type: TouchEvent.Type, scaleCoords: Boolean = false, block: TouchBuilder.() -> Unit): TouchEvent {
+        this.mode = mode
+        startFrame(type, scaleCoords)
+        try {
+            block()
+        } finally {
+            endFrame()
+        }
+        return new
+    }
+
+    fun touch(id: Int, x: Double, y: Double, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER) {
+        val touch = new.getOrAllocTouchById(id)
+        touch.x = x
+        touch.y = y
+        touch.force = force
+        touch.kind = kind
+
+        when (mode) {
+            Mode.IOS -> {
+                touch.status = when (new.type) {
+                    TouchEvent.Type.START -> Touch.Status.ADD
+                    TouchEvent.Type.END -> Touch.Status.REMOVE
+                    else -> Touch.Status.KEEP
+                }
+            }
+            else -> {
+                val oldTouch = old.getTouchById(id)
+                touch.status = if (oldTouch == null) Touch.Status.ADD else Touch.Status.KEEP
+            }
+        }
+    }
 }
 
 data class TouchEvent(
@@ -99,27 +196,55 @@ data class TouchEvent(
         val MAX_TOUCHES = 10
     }
     private val bufferTouches = Array(MAX_TOUCHES) { Touch(it) }
-    private val _touches = FastArrayList<Touch>()
+    internal val _touches = FastArrayList<Touch>()
+    internal val _activeTouches = FastArrayList<Touch>()
+    internal val _touchesById = FastIntMap<Touch>()
     val touches: List<Touch> get() = _touches
-    var actionTouch: Touch? = null
+    val activeTouches: List<Touch> get() = _activeTouches
+    val numTouches get() = touches.size
+    val numActiveTouches get() = activeTouches.size
+
+    fun getTouchById(id: Int) = _touchesById[id]
+
+    override fun toString(): String = "TouchEvent[$type][$numTouches](${touches.joinToString(", ") { it.toString() }})"
 
     fun startFrame(type: Type) {
         this.type = type
         this.currentTime = DateTime.now()
-        actionTouch = null
         _touches.clear()
+        _touchesById.clear()
     }
 
-    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP) {
+    fun endFrame() {
+        _activeTouches.clear()
+        touches.fastForEach {
+            if (it.isActive) _activeTouches.add(it)
+        }
+    }
+
+    fun getOrAllocTouchById(id: Int): Touch {
+        return _touchesById[id] ?: allocTouchById(id)
+    }
+
+    fun allocTouchById(id: Int): Touch {
         val touch = bufferTouches[_touches.size]
         touch.id = id
+        _touches.add(touch)
+        _touchesById[touch.id] = touch
+        return touch
+    }
+
+    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER) {
+        val touch = getOrAllocTouchById(id)
         touch.x = x
         touch.y = y
         touch.status = status
-        _touches.add(touch)
-        if (status != Touch.Status.KEEP) {
-            actionTouch = touch
-        }
+        touch.force = force
+        touch.kind = kind
+    }
+
+    fun touch(touch: Touch) {
+        touch(touch.id, touch.x, touch.y, touch.status, touch.force, touch.kind)
     }
 
     fun copyFrom(other: TouchEvent) {
@@ -130,7 +255,23 @@ data class TouchEvent(
         for (n in 0 until MAX_TOUCHES) {
             bufferTouches[n].copyFrom(other.bufferTouches[n])
         }
+        this._touches.clear()
+        this._activeTouches.clear()
+        this._touchesById.clear()
+        other.touches.fastForEach { otherTouch ->
+            val touch = bufferTouches[otherTouch.index]
+            this._touches.add(touch)
+            if (touch.isActive) {
+                this._activeTouches.add(touch)
+            }
+            this._touchesById[touch.id] = touch
+        }
     }
+
+    fun clone() = TouchEvent().also { it.copyFrom(this) }
+
+    val isStart get() = type == Type.START
+    val isEnd get() = type == Type.END
 
     enum class Type { START, END, MOVE, HOVER, UNKNOWN }
 }

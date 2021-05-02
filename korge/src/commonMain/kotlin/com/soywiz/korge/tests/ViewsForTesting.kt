@@ -104,11 +104,11 @@ open class ViewsForTesting(
 	}
 
     suspend fun mouseClick(button: MouseButton = MouseButton.LEFT) {
-        //mouseDown(button)
-        //simulateFrame(count = 2)
-        //mouseUp(button)
-        mouseEvent(MouseEvent.Type.CLICK, button, false)
+        mouseDown(button)
         simulateFrame(count = 2)
+        mouseUp(button)
+        //mouseEvent(MouseEvent.Type.CLICK, button, false)
+        //simulateFrame(count = 2)
     }
 
     private fun mouseEvent(type: MouseEvent.Type, button: MouseButton, set: Boolean?) {

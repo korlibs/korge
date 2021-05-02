@@ -261,29 +261,22 @@ object Korge {
         }
         */
 
-        fun mouseDown(type: String, x: Double, y: Double) {
-            views.input.mouseButtons = 1
-            views.input.mouse.setTo(x, y)
+        fun mouseDown(type: String, x: Double, y: Double, button: MouseButton) {
+            input.toggleButton(button, true)
+            input.mouse.setTo(x, y)
+            input.mouseDown.setTo(x, y)
             views.mouseUpdated()
-            downPos.copyFrom(views.input.mouse)
+            downPos.copyFrom(input.mouse)
             downTime = DateTime.now()
-            views.input.mouseInside = true
+            input.mouseInside = true
         }
 
-        fun mouseUp(type: String, x: Double, y: Double) {
+        fun mouseUp(type: String, x: Double, y: Double, button: MouseButton) {
             //Console.log("mouseUp: $name")
-            views.input.mouseButtons = 0
-            views.input.mouse.setTo(x, y)
+            input.toggleButton(button, false)
+            input.mouse.setTo(x, y)
             views.mouseUpdated()
             upPos.copyFrom(views.input.mouse)
-
-            if (type == "onTouchEnd") {
-                upTime = DateTime.now()
-                if ((downTime - upTime) <= 40.milliseconds) {
-                    //Console.log("mouseClick: $name")
-                    views.dispatch(MouseEvent(MouseEvent.Type.CLICK))
-                }
-            }
         }
 
         fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {
@@ -309,11 +302,11 @@ object Korge {
             val y = getRealY(e.y.toDouble(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
-                    mouseDown("mouseDown", x, y)
+                    mouseDown("mouseDown", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = true, end = false)
                 }
                 MouseEvent.Type.UP -> {
-                    mouseUp("mouseUp", x, y)
+                    mouseUp("mouseUp", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = false, end = true)
                 }
                 MouseEvent.Type.DRAG -> {
@@ -347,48 +340,47 @@ object Korge {
             }
         }
 
-
-        // TOUCH
-        fun touch(e: TouchEvent, start: Boolean, end: Boolean) {
-            val t = e.touches.first()
-            val x = t.x
-            val y = t.y
-            //updateTouch(t.id, x, y, start, end)
-            when {
-                start -> {
-                    mouseDown("onTouchStart", x, y)
-                }
-                end -> {
-                    mouseUp("onTouchEnd", x, y)
-                    moveMouseOutsideInNextFrame = true
-                }
-                else -> {
-                    mouseMove("onTouchMove", x, y, inside = true)
-                }
-            }
-        }
-
+        val touchMouseEvent = MouseEvent()
         eventDispatcher.addEventListener<TouchEvent> { e ->
             logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
-            val touch = e.touches.first()
-            val ix = getRealX(touch.x, e.scaleCoords).toInt()
-            val iy = getRealX(touch.y, e.scaleCoords).toInt()
-            when (e.type) {
-                TouchEvent.Type.START -> {
-                    touch(e, start = true, end = false)
-                    views.dispatch(MouseEvent(MouseEvent.Type.DOWN, 0, ix, iy, MouseButton.LEFT, 1))
-                }
-                TouchEvent.Type.MOVE -> {
-                    touch(e, start = false, end = false)
-                    views.dispatch(MouseEvent(MouseEvent.Type.DRAG, 0, ix, iy, MouseButton.LEFT, 1))
-                }
-                TouchEvent.Type.END -> {
-                    touch(e, start = false, end = true)
-                    views.dispatch(MouseEvent(MouseEvent.Type.UP, 0, ix, iy, MouseButton.LEFT, 0))
-                    //println("DISPATCH MouseEvent(MouseEvent.Type.UP)")
-                }
-            }
+
+            input.updateTouches(e)
             views.dispatch(e)
+
+            // Touch to mouse events
+            if (e.numTouches == 1) {
+                val start = e.isStart
+                val end = e.isEnd
+                val t = e.touches.first()
+                val x = getRealX(t.x, e.scaleCoords)
+                val y = getRealY(t.y, e.scaleCoords)
+                val button = MouseButton.LEFT
+                touchMouseEvent.id = 0
+                touchMouseEvent.button = button
+                touchMouseEvent.buttons = if (end) 0 else 1 shl button.id
+                touchMouseEvent.x = x.toInt()
+                touchMouseEvent.y = y.toInt()
+                touchMouseEvent.scaleCoords = false
+                touchMouseEvent.emulated = true
+                //updateTouch(t.id, x, y, start, end)
+                when {
+                    start -> {
+                        mouseDown("onTouchStart", x, y, button)
+                        touchMouseEvent.type = MouseEvent.Type.DOWN
+                    }
+                    end -> {
+                        mouseUp("onTouchEnd", x, y, button)
+                        moveMouseOutsideInNextFrame = true
+                        touchMouseEvent.type = MouseEvent.Type.UP
+                    }
+                    else -> {
+                        mouseMove("onTouchMove", x, y, inside = true)
+                        touchMouseEvent.type = MouseEvent.Type.DRAG
+                    }
+                }
+                views.dispatch(touchMouseEvent)
+            }
+
         }
 
         fun gamepadUpdated(e: GamePadUpdateEvent) {

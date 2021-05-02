@@ -1,8 +1,10 @@
 package com.soywiz.korgw
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.korag.*
 import com.soywiz.korev.*
+import com.soywiz.korev.Touch
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.PNG
 import com.soywiz.korio.async.*
@@ -193,39 +195,45 @@ class BrowserGameWindow : GameWindow() {
         })
     }
 
+    // JS TouchEvent contains only active touches (ie. touchend just return the list of non ended-touches)
     private fun touchEvent(e: TouchEvent, type: com.soywiz.korev.TouchEvent.Type) {
-        touchEvent.scaleCoords = false
-        touchEvent.startFrame(type)
-        for (n in 0 until e.touches.length) {
-            val touch = e.touches.item(n) ?: continue
-            touchEvent.touch(
-                touch.identifier,
-                transformEventX(touch.clientX.toDouble()),
-                transformEventY(touch.clientY.toDouble())
-            )
-        }
-        dispatch(touchEvent)
+        dispatch(touchBuilder.frame(TouchBuilder.Mode.JS, type) {
+            for (n in 0 until e.touches.length) {
+                val touch = e.touches.item(n) ?: continue
+                val touchId = touch.identifier
+                touch(
+                    id = touchId,
+                    x = transformEventX(touch.clientX.toDouble()),
+                    y = transformEventY(touch.clientY.toDouble()),
+                    force = touch.asDynamic().force.unsafeCast<Double?>() ?: 1.0,
+                    kind = Touch.Kind.FINGER
+                )
+            }
+        }.also {
+            //println("touchEvent=$it")
+        })
     }
 
     private fun mouseEvent(e: MouseEvent, type: com.soywiz.korev.MouseEvent.Type, pressingType: com.soywiz.korev.MouseEvent.Type = type) {
-        if (!is_touch_device()) {
-            val tx = transformEventX(e.clientX.toDouble()).toInt()
-            val ty = transformEventY(e.clientY.toDouble()).toInt()
-            //console.log("mouseEvent", type.toString(), e.clientX, e.clientY, tx, ty)
-            dispatch(mouseEvent {
-                this.type = if (e.buttons.toInt() != 0) pressingType else type
-                this.scaleCoords = false
-                this.id = 0
-                this.x = tx
-                this.y = ty
-                this.button = MouseButton[e.button.toInt()]
-                this.buttons = e.buttons.toInt()
-                this.isShiftDown = e.shiftKey
-                this.isCtrlDown = e.ctrlKey
-                this.isAltDown = e.altKey
-                this.isMetaDown = e.metaKey
-            })
-        }
+        // If we are in a touch device, touch events will be dispatched, and then we don't want to emit mouse events, that would be duplicated
+        if (is_touch_device()) return
+
+        val tx = transformEventX(e.clientX.toDouble()).toInt()
+        val ty = transformEventY(e.clientY.toDouble()).toInt()
+        //console.log("mouseEvent", type.toString(), e.clientX, e.clientY, tx, ty)
+        dispatch(mouseEvent {
+            this.type = if (e.buttons.toInt() != 0) pressingType else type
+            this.scaleCoords = false
+            this.id = 0
+            this.x = tx
+            this.y = ty
+            this.button = MouseButton[e.button.toInt()]
+            this.buttons = e.buttons.toInt()
+            this.isShiftDown = e.shiftKey
+            this.isCtrlDown = e.ctrlKey
+            this.isAltDown = e.altKey
+            this.isMetaDown = e.metaKey
+        })
     }
 
     override var title: String

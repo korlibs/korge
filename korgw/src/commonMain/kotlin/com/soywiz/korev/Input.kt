@@ -12,6 +12,8 @@ enum class MouseButton(val id: Int) {
     BUTTON_WHEEL(8),
     BUTTON_UNKNOWN(9);
 
+    val bits = bit(id)
+
     val isLeft get() = this == LEFT
     val isMiddle get() = this == MIDDLE
     val isRight get() = this == RIGHT

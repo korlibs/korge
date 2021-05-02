@@ -1,0 +1,47 @@
+<html>
+<body>
+<div id="mytext" style="white-space: pre"></div>
+<script>
+    /**
+     * @param {TouchEvent} e
+     */
+    function touchToString(e) {
+        const touchList = []
+        for (let n = 0; n < e.touches.length; n++) {
+            const touch = e.touches[n]
+            touchList.push(`Touch(id=${touch.identifier}, pos=[${touch.clientX}, ${touch.clientY}], force=${touch.force})`)
+        }
+        return `${e.type}[${touchList.length}]: ${touchList.join(", ")}`
+    }
+
+    function trace(msg) {
+        //document.getElementById("mytext").innerText += `${msg}\n`
+        console.log(msg)
+    }
+
+    document.addEventListener("touchstart", (e) => {
+        trace(touchToString(e))
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true)
+
+    document.addEventListener("touchcancel", (e) => {
+        trace(touchToString(e))
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true)
+
+    document.addEventListener("touchmove", (e) => {
+        trace(touchToString(e))
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true)
+
+    document.addEventListener("touchend", (e) => {
+        trace(touchToString(e))
+        e.preventDefault();
+        e.stopImmediatePropagation();
+    }, true)
+</script>
+</body>
+</html>

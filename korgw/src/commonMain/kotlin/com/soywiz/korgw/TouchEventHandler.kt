@@ -20,6 +20,7 @@ class TouchEventHandler {
             currentTouchEvent.copyFrom(lastTouchEvent)
             currentTouchEvent.startFrame(kind)
             emitter(currentTouchEvent)
+            currentTouchEvent.endFrame()
 
             lastTouchEvent.copyFrom(currentTouchEvent)
             currentTouchEvent
