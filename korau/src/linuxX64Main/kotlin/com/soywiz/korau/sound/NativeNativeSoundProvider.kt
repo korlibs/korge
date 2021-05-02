@@ -336,8 +336,8 @@ private fun applyStereoPanningInline(interleaved: ShortArray, panning: Double = 
     val lratio = (1.0 - rratio) * vvolume
     //println("panning=$panning, lratio=$lratio, rratio=$rratio, vvolume=$vvolume")
     for (n in interleaved.indices step 2) {
-        interleaved[n + 0] = (interleaved[n + 0] * lratio).toShort()
-        interleaved[n + 1] = (interleaved[n + 1] * rratio).toShort()
+        interleaved[n + 0] = (interleaved[n + 0] * lratio).toInt().toShort()
+        interleaved[n + 1] = (interleaved[n + 1] * rratio).toInt().toShort()
     }
 }
 
