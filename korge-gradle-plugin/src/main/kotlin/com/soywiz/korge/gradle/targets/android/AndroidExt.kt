@@ -8,12 +8,14 @@ import org.gradle.api.tasks.*
 import java.io.*
 import java.util.*
 
+val ANDROID_SDK_PATH_KEY = "android.sdk.path"
+
 //Linux: ~/Android/Sdk
 //Mac: ~/Library/Android/sdk
 //Windows: %LOCALAPPDATA%\Android\sdk
 val Project.androidSdkPath: String get() {
-    //val extensionAndroidSdkPath = this.extensions.findByName("android.sdk.path")
-    //if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
+    val extensionAndroidSdkPath = this.findProperty(ANDROID_SDK_PATH_KEY)?.toString() ?: this.extensions.findByName(ANDROID_SDK_PATH_KEY)?.toString()
+    if (extensionAndroidSdkPath != null) return extensionAndroidSdkPath
 
     val localPropertiesFile = projectDir["local.properties"]
     if (localPropertiesFile.exists()) {
@@ -46,7 +48,11 @@ fun Project.androidAdbDeviceList(): List<String> {
 }
 
 fun Project.androidEmulatorListAvds(): List<String> {
-    return execOutput(androidEmulatorPath, "-list-avds").trim().split("\n").map { it.trim() }
+    val output = execOutput(androidEmulatorPath, "-list-avds").trim()
+    return when {
+        output.isBlank() -> listOf()
+        else -> output.split("\n").map { it.trim() }
+    }
 }
 
 fun Project.androidEmulatorIsStarted(): Boolean {
