@@ -18,6 +18,7 @@ suspend fun main() = Korge {
 	val mouseDownText = textLine("MouseDown")
 	val mouseUpText = textLine("MouseUp")
 	val mouseClickText = textLine("MouseClick")
+    val mouseScrollText = textLine("MouseScroll")
 	val resizeText = textLine("Resize")
 	val gamepadConnectedText = textLine("GamepadConnectedEv")
 	val gamepadButtonText = textLine("GamepadButtonEv")
@@ -59,5 +60,6 @@ suspend fun main() = Korge {
 		onDown { mouseDownText.text = "Mouse:Down ${nowTime()} $it" }
 		onUp { mouseUpText.text = "Mouse:Up ${nowTime()} $it" }
 		onClick { mouseClickText.text = "Mouse:Click ${nowTime()} $it" }
+        onScroll { mouseScrollText.text = "Mouse:Scroll ${nowTime()} $it" }
 	}
 }
