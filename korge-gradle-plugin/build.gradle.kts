@@ -68,8 +68,9 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     //testImplementation("junit:junit:4.12")
+    testImplementation("io.mockk:mockk:1.11.0")
 
-	implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
 	implementation("net.sf.proguard:proguard-gradle:$proguardVersion")
     implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
 

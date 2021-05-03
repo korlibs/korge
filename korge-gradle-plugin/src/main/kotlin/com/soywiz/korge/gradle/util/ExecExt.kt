@@ -9,8 +9,8 @@ fun Project.debugExecSpec(exec: ExecSpec) {
 	logger.info("COMMAND: ${exec.commandLine.joinToString(" ")}")
 }
 
-fun Project.execLogger(action: (ExecSpec) -> Unit) {
-	exec {
+fun Project.execLogger(action: (ExecSpec) -> Unit): ExecResult {
+	return exec {
 		action(it)
 		debugExecSpec(it)
 	}
@@ -26,7 +26,7 @@ fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
 fun Project.execOutput(vararg cmds: String, log: Boolean = true): String {
 	val stdout = ByteArrayOutputStream()
 	exec {
-		it.commandLine(*cmds)
+		it.commandLineCompat(*cmds)
 		it.standardOutput = stdout
 		if (log) {
 			debugExecSpec(it)
