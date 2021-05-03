@@ -189,11 +189,10 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
 
 val adbLogcatTaskName = "adbLogcat"
 
-fun Project.androidEmulatorStart(spawn: (dir: File, command: List<String>) -> Unit = { dir, command ->
-    ProcessBuilder(command).redirectErrorStream(true).directory(dir).start()
-}) {
+fun Project.androidEmulatorStart() {
     val avdName = androidEmulatorFirstAvd() ?: error("No android emulators available to start. Please create one using Android Studio")
-    spawn(projectDir, listOf(androidEmulatorPath, "-avd", avdName, "-netdelay", "none", "-netspeed", "full"))
+    val spawner = spawnExt
+    spawner.spawn(projectDir, listOf(androidEmulatorPath, "-avd", avdName, "-netdelay", "none", "-netspeed", "full"))
     while (!androidEmulatorIsStarted()) {
         Thread.sleep(1000L)
     }

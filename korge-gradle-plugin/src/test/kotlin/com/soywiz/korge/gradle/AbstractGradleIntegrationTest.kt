@@ -2,6 +2,7 @@ package com.soywiz.korge.gradle
 
 import groovy.lang.*
 import org.gradle.api.*
+import org.gradle.api.tasks.*
 import org.gradle.process.*
 import org.gradle.testfixtures.*
 import java.io.*
@@ -109,10 +110,28 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
 open class AbstractGradleIntegrationTest {
     val project = TestableProject()
 
+    val Task.dependsOnNames: List<String> get() = this.dependsOn.map { when (it) {
+        is Task -> it.name
+        else -> it.toString()
+    } }
+
+    val Task.dependsOnResolved: List<Task> get() = this.dependsOn.map { when (it) {
+        is Task -> it
+        else -> project.tasks.getByName(it.toString())
+    } }
+
+    fun Project.executeTasks(list: Iterable<Task>) {
+        for (task in list) {
+            task.execute()
+        }
+    }
+
     fun Task.execute() {
+        project.executeTasks(this.dependsOnResolved)
         for (action in actions) {
             action.execute(this)
         }
+        project.executeTasks(this.finalizedBy.getDependencies(this))
     }
 
     fun captureStdout(block: () -> Unit): String {
