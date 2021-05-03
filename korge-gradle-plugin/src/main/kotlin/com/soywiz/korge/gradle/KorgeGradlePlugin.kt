@@ -156,5 +156,5 @@ open class JsWebCopy() : Copy() {
     open lateinit var targetDir: File
 }
 
-val Project.korgeCacheDir by lazy { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
+var Project.korgeCacheDir by projectExtension { File(System.getProperty("user.home"), ".korge").apply { mkdirs() } }
 //val node_modules by lazy { project.file("node_modules") }

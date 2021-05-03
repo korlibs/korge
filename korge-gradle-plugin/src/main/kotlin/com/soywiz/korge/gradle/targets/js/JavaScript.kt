@@ -14,8 +14,6 @@ import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 import java.lang.management.*
 
-val Project.node_modules get() = korgeCacheDir["node_modules"]
-
 private object JavaScriptClass
 
 fun Project.configureJavaScript() {

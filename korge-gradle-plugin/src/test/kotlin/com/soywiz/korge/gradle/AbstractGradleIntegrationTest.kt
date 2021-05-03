@@ -6,6 +6,7 @@ import org.gradle.api.tasks.*
 import org.gradle.process.*
 import org.gradle.testfixtures.*
 import java.io.*
+import java.nio.file.*
 
 class TestableExecSpec : ExecSpec {
     var _executable: Any? = null
@@ -74,12 +75,14 @@ data class TestableExecResult(val stdout: String, val stderr: String = "", val e
     override fun rethrowFailure(): ExecResult = this.apply { assertNormalExitValue() }
 }
 
+data class TestableExecRequest(val commandLine: List<String>, val workingDir: File)
+
 class TestableProject : Project by ProjectBuilder.builder().build() {
     //private val myexecTask by lazy { tasks.create("myexectask", Exec::class.java) }
 
-    val execResults = LinkedHashMap<List<String>, () -> TestableExecResult>()
+    val execResults = LinkedHashMap<List<String>, (TestableExecRequest) -> TestableExecResult>()
 
-    fun defineExecResult(vararg commandLine: String, result: () -> TestableExecResult) {
+    fun defineExecResult(vararg commandLine: String, result: (request: TestableExecRequest) -> TestableExecResult) {
         execResults[commandLine.toList()] = result
     }
 
@@ -100,8 +103,9 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
     override fun exec(action: Action<in ExecSpec>): ExecResult {
         val spec = TestableExecSpec()
         action.execute(spec)
-        val resultFactory = execResults[spec.commandLine] ?: error("Can't find output for ${spec.commandLine}")
-        val result = resultFactory()
+        val request = TestableExecRequest(spec.commandLine.toList(), spec.workingDir)
+        val resultFactory = execResults[spec.commandLine] ?: error("Can't find output for $request")
+        val result = resultFactory(request)
         spec.standardOutput.write(result.stdout.toByteArray(Charsets.UTF_8))
         return result
     }
@@ -109,6 +113,15 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
 
 open class AbstractGradleIntegrationTest {
     val project = TestableProject()
+
+    inline fun createTempDirectory(block: (dir: File) -> Unit) {
+        val dir = Files.createTempDirectory("temp").toFile()
+        try {
+            block(dir)
+        } finally {
+            dir.deleteRecursively()
+        }
+    }
 
     val Task.dependsOnNames: List<String> get() = this.dependsOn.map { when (it) {
         is Task -> it.name

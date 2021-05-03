@@ -3,13 +3,11 @@ package com.soywiz.korge.gradle.targets.ios
 import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.desktop.*
-import com.soywiz.korge.gradle.targets.js.node_modules
 import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 
@@ -666,7 +664,7 @@ fun Project.configureNativeIos() {
 			task.dependsOn("installIosDeploy", buildTaskName)
 			task.doLast {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				execLogger { it.commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--bundle", appFolder) }
+                iosDeployExt.command("--bundle", appFolder.absolutePath)
 			}
 		}
 
@@ -676,7 +674,7 @@ fun Project.configureNativeIos() {
 			dependsOn("installIosDeploy", buildTaskName)
 			doFirst {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-				commandLine(node_modules["ios-deploy/build/Release/ios-deploy"], "--noninteractive", "--bundle", appFolder)
+                iosDeployExt.command("--noninteractive", "--bundle", appFolder.absolutePath)
 			}
 		}
 
@@ -692,34 +690,24 @@ fun Project.configureNativeIos() {
         }
     }
 
-
 	tasks.create("iosEraseAllSimulators") { task ->
 		task.doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"iOS Simulator\" to quit") } }
 		task.doLast { execLogger { it.commandLine("osascript", "-e", "tell application \"Simulator\" to quit") } }
 		task.doLast { execLogger { it.commandLine("xcrun", "simctl", "erase", "all") } }
 	}
 
-	tasks.create("fixIosDeploy", Task::class.java) { task ->
-		task.doLast {
-			println("https://github.com/ios-control/ios-deploy/issues/387#issuecomment-539366142")
-			println("In order to fix ld: framework not found MobileDevice error on Macos Catalina, execute:")
-			println("\\rm -fr ~/Library/Developer/Xcode/DerivedData/ios-deploy-*")
-			println("npm -g uninstall ios-deploy")
-		}
+	tasks.create("installIosDeploy", Task::class.java) { task ->
+		task.onlyIf { !iosDeployExt.isInstalled }
+        task.doFirst {
+            iosDeployExt.installIfRequired()
+        }
 	}
 
-	/*
-	tasks.create("installIosDeploy", NpmTask::class.java) { task ->
-		task.onlyIf { !node_modules["ios-deploy"].exists() }
-		task.setArgs(listOf("install", "--unsafe-perm=true", "ios-deploy@1.10.0"))
-	}
-	 */
-	tasks.create("installIosDeploy", Exec::class.java) { task ->
-		task.onlyIf { !node_modules["ios-deploy"].exists() }
-		task.setWorkingDir(korgeCacheDir)
-		task.setCommandLine("npm", "install", "--unsafe-perm=true", "ios-deploy@1.11.4")
-		// @TODO: Automatically install ios-deploy
-	}
+    tasks.create("updateIosDeploy", Task::class.java) { task ->
+        task.doFirst {
+            iosDeployExt.update()
+        }
+    }
 }
 
 data class IosDevice(val booted: Boolean, val isAvailable: Boolean, val name: String, val udid: String)
