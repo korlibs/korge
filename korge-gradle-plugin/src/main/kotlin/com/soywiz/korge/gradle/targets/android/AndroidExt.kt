@@ -179,7 +179,7 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
         }
     }
 
-    tasks.createTyped<DefaultTask>("adbLogcat") {
+    tasks.createTyped<DefaultTask>(adbLogcatTaskName) {
         group = GROUP_KORGE_ADB
         doFirst {
             execAndroidAdb("logcat")
@@ -187,13 +187,13 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
     }
 }
 
-fun Project.androidEmulatorStart() {
+val adbLogcatTaskName = "adbLogcat"
+
+fun Project.androidEmulatorStart(spawn: (dir: File, command: List<String>) -> Unit = { dir, command ->
+    ProcessBuilder(command).redirectErrorStream(true).directory(dir).start()
+}) {
     val avdName = androidEmulatorFirstAvd() ?: error("No android emulators available to start. Please create one using Android Studio")
-    val builder = ProcessBuilder(listOf(androidEmulatorPath, "-avd", avdName, "-netdelay", "none", "-netspeed", "full"))
-    builder.redirectErrorStream(true)
-    //builder.environment().putAll(environmentVariables)
-    builder.directory(projectDir)
-    builder.start()
+    spawn(projectDir, listOf(androidEmulatorPath, "-avd", avdName, "-netdelay", "none", "-netspeed", "full"))
     while (!androidEmulatorIsStarted()) {
         Thread.sleep(1000L)
     }

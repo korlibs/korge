@@ -76,10 +76,19 @@ data class TestableExecResult(val stdout: String, val stderr: String = "", val e
 class TestableProject : Project by ProjectBuilder.builder().build() {
     //private val myexecTask by lazy { tasks.create("myexectask", Exec::class.java) }
 
-    val execResults = LinkedHashMap<List<String>, TestableExecResult>()
+    val execResults = LinkedHashMap<List<String>, () -> TestableExecResult>()
+
+    fun defineExecResult(vararg commandLine: String, result: () -> TestableExecResult) {
+        execResults[commandLine.toList()] = result
+    }
+
+    fun defineExecResult(vararg commandLine: String, result: List<TestableExecResult>) {
+        var time = 0
+        defineExecResult(*commandLine) { result[time++] }
+    }
 
     fun defineExecResult(vararg commandLine: String, result: TestableExecResult) {
-        execResults[commandLine.toList()] = result
+        defineExecResult(*commandLine) { result }
     }
 
     fun defineExecResult(vararg commandLine: String, stdout: String, stderr: String = "", exitCode: Int = 0) {
@@ -90,7 +99,8 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
     override fun exec(action: Action<in ExecSpec>): ExecResult {
         val spec = TestableExecSpec()
         action.execute(spec)
-        val result = execResults[spec.commandLine] ?: error("Can't find output for ${spec.commandLine}")
+        val resultFactory = execResults[spec.commandLine] ?: error("Can't find output for ${spec.commandLine}")
+        val result = resultFactory()
         spec.standardOutput.write(result.stdout.toByteArray(Charsets.UTF_8))
         return result
     }
@@ -98,4 +108,22 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
 
 open class AbstractGradleIntegrationTest {
     val project = TestableProject()
+
+    fun Task.execute() {
+        for (action in actions) {
+            action.execute(this)
+        }
+    }
+
+    fun captureStdout(block: () -> Unit): String {
+        val out = ByteArrayOutputStream()
+        val tempOut = System.out
+        System.setOut(PrintStream(out, true, "UTF-8"))
+        try {
+            block()
+        } finally {
+            System.setOut(tempOut)
+        }
+        return out.toByteArray().toString(Charsets.UTF_8)
+    }
 }
