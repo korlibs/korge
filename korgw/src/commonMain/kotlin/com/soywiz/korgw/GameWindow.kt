@@ -475,19 +475,19 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     }
 
     fun dispatchSimpleMouseEvent(
-        type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, simulateClickOnUp: Boolean = false
+        type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton?, simulateClickOnUp: Boolean = false
     ) {
         dispatchMouseEvent(type, id, x, y, button, simulateClickOnUp = simulateClickOnUp)
     }
 
     fun dispatchMouseEvent(
-        type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int = this.mouseButtons,
+        type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton?, buttons: Int = this.mouseButtons,
         scrollDeltaX: Double = this.scrollDeltaX, scrollDeltaY: Double = this.scrollDeltaY, scrollDeltaZ: Double = this.scrollDeltaZ,
         isShiftDown: Boolean = this.shift, isCtrlDown: Boolean = this.ctrl, isAltDown: Boolean = this.alt, isMetaDown: Boolean = this.meta,
         scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false
     ) {
         if (type != MouseEvent.Type.DOWN && type != MouseEvent.Type.UP) {
-            this.mouseButtons = this.mouseButtons.setBits(1 shl button.ordinal, type == MouseEvent.Type.DOWN)
+            this.mouseButtons = this.mouseButtons.setBits(if (button != null) 1 shl button.ordinal else 0, type == MouseEvent.Type.DOWN)
         }
         dispatch(mouseEvent.apply {
             this.type = type

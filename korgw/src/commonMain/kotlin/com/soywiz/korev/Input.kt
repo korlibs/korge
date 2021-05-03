@@ -12,8 +12,6 @@ enum class MouseButton(val id: Int) {
     BUTTON_WHEEL(8),
     BUTTON_UNKNOWN(9);
 
-    val bits = bit(id)
-
     val isLeft get() = this == LEFT
     val isMiddle get() = this == MIDDLE
     val isRight get() = this == RIGHT
@@ -21,9 +19,12 @@ enum class MouseButton(val id: Int) {
 	companion object {
         val MAX = BUTTON_UNKNOWN.ordinal + 1
 		val BUTTONS = values()
-		operator fun get(id: Int) = BUTTONS.getOrElse(id) { BUTTON_UNKNOWN }
+        fun getOrNull(id: Int): MouseButton? = if (id < 0) null else BUTTONS.getOrNull(id) ?: BUTTON_UNKNOWN
+		operator fun get(id: Int) = getOrNull(id) ?: BUTTON_UNKNOWN
 	}
 }
+
+val MouseButton?.bits get() = if (this != null) bit(id) else 0
 
 enum class Key {
 	SPACE, APOSTROPHE, COMMA, MINUS, PLUS, PERIOD, SLASH,

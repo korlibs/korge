@@ -261,7 +261,7 @@ object Korge {
         }
         */
 
-        fun mouseDown(type: String, x: Double, y: Double, button: MouseButton) {
+        fun mouseDown(type: String, x: Double, y: Double, button: MouseButton?) {
             input.toggleButton(button, true)
             input.mouse.setTo(x, y)
             input.mouseDown.setTo(x, y)
@@ -271,7 +271,7 @@ object Korge {
             input.mouseInside = true
         }
 
-        fun mouseUp(type: String, x: Double, y: Double, button: MouseButton) {
+        fun mouseUp(type: String, x: Double, y: Double, button: MouseButton?) {
             //Console.log("mouseUp: $name")
             input.toggleButton(button, false)
             input.mouse.setTo(x, y)

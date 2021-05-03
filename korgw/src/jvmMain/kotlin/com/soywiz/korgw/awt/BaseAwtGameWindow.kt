@@ -358,9 +358,9 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 }
                 return
             }
-            //println("MOUSE EVENT: $ev : ${e.button}")
+            //println("MOUSE EVENT: $ev : ${e.button} : ${MouseButton[e.button - 1]}")
             queue {
-                val button = MouseButton[e.button - 1]
+                val button = MouseButton.getOrNull(e.button - 1)
                 val factor = frameScaleFactor
                 val sx = e.x * factor
                 val sy = e.y * factor
