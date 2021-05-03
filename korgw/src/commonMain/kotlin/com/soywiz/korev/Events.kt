@@ -13,7 +13,7 @@ data class MouseEvent(
     var id: Int = 0,
     var x: Int = 0,
     var y: Int = 0,
-    var button: MouseButton? = null,
+    var button: MouseButton = MouseButton.NONE,
     var buttons: Int = 0,
     var scrollDeltaX: Double = 0.0,
     var scrollDeltaY: Double = 0.0,

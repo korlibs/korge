@@ -193,7 +193,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     //var lastEventClick: MouseEvent? = null
     //var lastEventEnter: MouseEvent? = null
     //var lastEventExit: MouseEvent? = null
-    val button: MouseButton? get() = lastEvent.button
+    val button: MouseButton get() = lastEvent.button
     val buttons: Int get() = lastEvent.buttons
     val scrollDeltaX: Double get() = lastEvent.scrollDeltaX
     val scrollDeltaY: Double get() = lastEvent.scrollDeltaY

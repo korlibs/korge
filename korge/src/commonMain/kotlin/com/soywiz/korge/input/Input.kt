@@ -53,15 +53,15 @@ class Input : Extra by Extra.Mixin() {
     var mouseButtons = 0
 
     /** Determine if a mouse button is pressed */
-    fun mouseButtonPressed(button: MouseButton?) = if (button != null) mouseButtons.extract(button.id) else false
+    fun mouseButtonPressed(button: MouseButton) = button.pressedFromFlags(mouseButtons)
 
-    operator fun get(button: MouseButton?) = mouseButtonPressed(button)
+    operator fun get(button: MouseButton) = mouseButtonPressed(button)
 
     var mouseInside = true
     var clicked = false
 
     @KorgeInternal
-    fun toggleButton(button: MouseButton?, down: Boolean) {
+    fun toggleButton(button: MouseButton, down: Boolean) {
         mouseButtons = mouseButtons.setBits(button.bits, down)
     }
 

@@ -360,7 +360,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
             }
             //println("MOUSE EVENT: $ev : ${e.button} : ${MouseButton[e.button - 1]}")
             queue {
-                val button = MouseButton.getOrNull(e.button - 1)
+                val button = if (e.button == 0) MouseButton.NONE else MouseButton[e.button - 1]
                 val factor = frameScaleFactor
                 val sx = e.x * factor
                 val sy = e.y * factor
