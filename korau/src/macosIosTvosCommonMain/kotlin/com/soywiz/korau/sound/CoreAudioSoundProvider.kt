@@ -1,6 +1,7 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.korau.format.*
+import com.soywiz.korio.async.*
 import kotlinx.cinterop.*
 //import mystdio.*
 import platform.AudioToolbox.*
@@ -28,9 +29,11 @@ class CoreAudioPlatformAudioOutput(
     coroutineContext: CoroutineContext,
     freq: Int
 ) : DequeBasedPlatformAudioOutput(coroutineContext, freq) {
-    val generator = CoreAudioGenerator(freq, nchannels) { data, dataSize ->
+    val generator = CoreAudioGenerator(freq, nchannels, coroutineContext = coroutineContext) { data, dataSize ->
         for (n in 0 until dataSize / nchannels) {
-            for (m in 0 until nchannels) data[n * nchannels + m] = readShort(m)
+            for (m in 0 until nchannels) {
+                data[n * nchannels + m] = readShort(m)
+            }
         }
     }
     override fun start() {
@@ -58,9 +61,33 @@ private fun coreAudioOutputCallback(custom_data: COpaquePointer?, queue: AudioQu
     output.get().generateOutput(shortBuf, dat)
     AudioQueueEnqueueBuffer(queue, buffer, 0.convert(), null).checkError("AudioQueueEnqueueBuffer")
 }
+fun osStatusToString(status: OSStatus): String = when (status) {
+    kAudioQueueErr_InvalidBuffer -> "InvalidBuffer"
+    kAudioQueueErr_BufferEmpty -> "BufferEmpty"
+    kAudioQueueErr_DisposalPending -> "DisposalPending"
+    kAudioQueueErr_InvalidProperty -> "InvalidProperty"
+    kAudioQueueErr_InvalidPropertySize -> "InvalidPropertySize"
+    kAudioQueueErr_InvalidParameter -> "InvalidParameter"
+    kAudioQueueErr_CannotStart -> "CannotStart"
+    kAudioQueueErr_InvalidDevice -> "InvalidDevice"
+    kAudioQueueErr_BufferInQueue -> "BufferInQueue"
+    kAudioQueueErr_InvalidRunState -> "InvalidRunState"
+    kAudioQueueErr_InvalidQueueType -> "InvalidQueueType"
+    kAudioQueueErr_Permissions -> "Permissions"
+    kAudioQueueErr_InvalidPropertyValue -> "InvalidPropertyValue"
+    kAudioQueueErr_PrimeTimedOut -> "PrimeTimedOut"
+    kAudioQueueErr_CodecNotFound -> "CodecNotFound"
+    kAudioQueueErr_InvalidCodecAccess -> "InvalidCodecAccess"
+    kAudioQueueErr_QueueInvalidated -> "QueueInvalidated"
+    kAudioQueueErr_RecordUnderrun -> "RecordUnderrun"
+    kAudioQueueErr_EnqueueDuringReset -> "EnqueueDuringReset"
+    kAudioQueueErr_InvalidOfflineMode -> "InvalidOfflineMode"
+    kAudioFormatUnsupportedDataFormatError -> "UnsupportedDataFormatError"
+    else -> "Unknown$status"
+}
 
 private fun OSStatus.checkError(name: String): OSStatus {
-    if (this != 0) println("ERROR: $name")
+    if (this != 0) println("ERROR: $name ($this)(${osStatusToString(this)})")
     return this
 }
 
@@ -69,6 +96,7 @@ class CoreAudioGenerator(
     val nchannels: Int,
     val numBuffers: Int = 3,
     val bufferSize: Int = 4096,
+    val coroutineContext: CoroutineContext,
     val generatorCore: CoreAudioGenerator.(data: CPointer<ShortVar>, dataSize: Int) -> Unit
 ) : MyCoreAudioOutputCallback {
     val arena = Arena()
@@ -115,15 +143,18 @@ class CoreAudioGenerator(
             coreAudioOutputCallback(thisStableRef!!.asCPointer(), queue!!.value, buffers!![n])
         }
 
+        //println("AudioQueueStart")
         AudioQueueStart(queue!!.value, null)
     }
 
     fun dispose() {
         if (running) {
             if (queue != null) {
-                AudioQueueStop(queue!!.value, false).checkError("AudioQueueStop")
+                //println("AudioQueueFlush/AudioQueueStop/AudioQueueDispose")
+                //AudioQueueFlush(queue!!.value).checkError("AudioQueueFlush")
+                //AudioQueueStop(queue!!.value, false).checkError("AudioQueueStop")
                 //for (n in 0 until NUM_BUFFERS) AudioQueueFreeBuffer(queue.value, buffers[n]).also { println("AudioQueueFreeBuffer: $it") }
-                AudioQueueDispose(queue!!.value, true).checkError("AudioQueueDispose")
+                AudioQueueDispose(queue!!.value, false).checkError("AudioQueueDispose")
             }
             queue = null
             thisStableRef?.dispose()

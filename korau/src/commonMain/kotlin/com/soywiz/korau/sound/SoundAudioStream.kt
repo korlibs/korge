@@ -54,6 +54,7 @@ class SoundAudioStream(
                 // Do nothing
                 params.onCancel?.invoke()
             } finally {
+                nas.wait()
                 nas.stop()
                 if (closeStream) {
                     stream.close()
