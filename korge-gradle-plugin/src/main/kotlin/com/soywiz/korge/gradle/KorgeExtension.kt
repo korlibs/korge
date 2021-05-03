@@ -221,6 +221,17 @@ class KorgeExtension(val project: Project) {
         targetIos()
     }
 
+    /** Enables kotlinx.serialization */
+    fun serialization() {
+        project.plugins.apply("kotlinx-serialization")
+    }
+
+    /** Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json` */
+    fun serializationJson() {
+        serialization()
+        project.dependencies.add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
+    }
+
     val bundles = KorgeBundles(project)
 
     @JvmOverloads

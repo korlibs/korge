@@ -65,6 +65,7 @@ val proguardVersion: String by project
 dependencies {
 	//implementation(project(":korge-build"))
     implementation(kotlin("gradle-plugin"))
+    implementation(kotlin("serialization"))
     testImplementation(kotlin("test"))
     testImplementation(kotlin("test-junit"))
     //testImplementation("junit:junit:4.12")

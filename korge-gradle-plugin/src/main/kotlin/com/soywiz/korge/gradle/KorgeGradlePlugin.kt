@@ -1,11 +1,5 @@
 package com.soywiz.korge.gradle
 
-import com.soywiz.korge.gradle.targets.android.*
-import com.soywiz.korge.gradle.targets.desktop.*
-import com.soywiz.korge.gradle.targets.ios.*
-import com.soywiz.korge.gradle.targets.isMacos
-import com.soywiz.korge.gradle.targets.js.*
-import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
 import groovy.lang.*
 import org.gradle.api.*
