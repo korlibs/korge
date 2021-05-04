@@ -2,6 +2,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.tween.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -50,6 +51,20 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 
     addFixedUpdater(2.timesPerSecond) {
         println(views.input.activeTouches)
+    }
+
+    uiTextButton(text = "1") {
+        position(10, 380)
+        onPress { println("TAPPED ON 1") }
+    }
+    uiTextButton(text = "2") {
+        position(150, 380)
+        onPress { println("TAPPED ON 2") }
+    }
+
+    uiTextButton(text = "3") {
+        position(300, 380)
+        onPress { println("TAPPED ON 3") }
     }
 
     while (true) {

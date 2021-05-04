@@ -2,11 +2,11 @@ package com.soywiz.korge.input
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
 class TouchEvents(override val view: View) : TouchComponent {
@@ -15,9 +15,15 @@ class TouchEvents(override val view: View) : TouchComponent {
         var id: Int = 0,
         var local: Point = Point(),
         var startLocal: Point = Point(),
+        var startTime: DateTime = DateTime.EPOCH,
         var global: Point = Point(),
         var startGlobal: Point = Point(),
+        var time: DateTime = DateTime.EPOCH,
     ) : Extra by Extra.Mixin() {
+        val elapsedTime get() = time - startTime
+
+        lateinit var views: Views
+
         val localX: Double get() = local.x
         val localY: Double get() = local.y
         val startLocalX: Double get() = startLocal.x
@@ -57,10 +63,14 @@ class TouchEvents(override val view: View) : TouchComponent {
     override fun onTouchEvent(views: Views, e: TouchEvent) {
         infos.clear()
 
+        val now = views.timeProvider.now()
+
         if (e.type == TouchEvent.Type.START) {
             e.touches.fastForEach {
                 if (it.status != Touch.Status.KEEP) {
                     val info = infoPool.alloc().copyFrom(it).start()
+                    info.startTime = now
+                    info.views = views
                     infoById[info.id] = info
                     start(info)
                 }
@@ -70,6 +80,7 @@ class TouchEvents(override val view: View) : TouchComponent {
         e.touches.fastForEach {
             val info = infoById[it.id]
             if (info != null) {
+                info.time = now
                 infos.add(info.copyFrom(it))
             }
         }
@@ -105,4 +116,73 @@ class TouchEvents(override val view: View) : TouchComponent {
 
 fun View.touch(block: TouchEvents.() -> Unit) {
     block(getOrCreateComponentTouch { TouchEvents(this) })
+}
+
+// @TODO: Handle several views covering other views (like MouseEvents)
+/**
+ * @param block This block is executed once for every different touch
+ */
+fun View.singleTouch(removeTouch: Boolean = false, supportStartAnywhere: Boolean = false, block: SingleTouchHandler.(id: Int) -> Unit) {
+    class SingleTouchInfo(val handler: SingleTouchHandler = SingleTouchHandler(), var startedInside: Boolean = false)
+
+    val ids = FastIntMap<SingleTouchInfo>()
+    fun getById(id: Int): SingleTouchInfo = ids.getOrPut(id) { SingleTouchInfo().also { it.handler.block(id) } }
+
+    touch {
+        start {
+            val info = getById(it.id)
+            val handler = info.handler
+            info.startedInside = this@singleTouch.hitTest(it.global) != null
+            if (handler.start.hasListeners && info.startedInside) {
+                handler.start(it)
+            }
+            if (supportStartAnywhere) {
+                handler.startAnywhere(it)
+            }
+        }
+        move {
+            val info = getById(it.id)
+            if (!supportStartAnywhere && !info.startedInside) return@move
+
+            val handler = info.handler
+            if (handler.move.hasListeners && this@singleTouch.hitTest(it.global) != null) {
+                handler.move(it)
+            }
+            handler.moveAnywhere(it)
+        }
+        end {
+            val info = getById(it.id)
+            if (!supportStartAnywhere && !info.startedInside) return@end
+
+            val handler = info.handler
+
+            val hitTest = if (handler.end.hasListeners || handler.tap.hasListeners) this@singleTouch.hitTest(it.global) != null else false
+
+            if (hitTest) {
+                handler.end(it)
+            }
+            handler.endAnywhere(it)
+            if ((Point.distance(it.startGlobal, it.global) <= it.views.input.clickDistance) && (it.elapsedTime <= it.views.input.clickTime)) {
+                if (info.startedInside && hitTest) {
+                    handler.tap(it)
+                }
+                handler.tapAnywhere(it)
+            }
+
+            if (removeTouch) {
+                ids.remove(it.id)
+            }
+        }
+    }
+}
+
+open class SingleTouchHandler {
+    val start = Signal<TouchEvents.Info>()
+    val startAnywhere = Signal<TouchEvents.Info>()
+    val move = Signal<TouchEvents.Info>()
+    val moveAnywhere = Signal<TouchEvents.Info>()
+    val end = Signal<TouchEvents.Info>()
+    val endAnywhere = Signal<TouchEvents.Info>()
+    val tap = Signal<TouchEvents.Info>()
+    val tapAnywhere = Signal<TouchEvents.Info>()
 }

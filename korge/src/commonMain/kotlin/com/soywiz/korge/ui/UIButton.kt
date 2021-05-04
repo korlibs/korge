@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
+import com.soywiz.korio.async.*
 
 inline fun Container.uiButton(
     width: Double = 128.0,
@@ -43,19 +44,26 @@ open class UIButton(
 		bpressing = false
 	}
 
+    val onPress = Signal<TouchEvents.Info>()
+
 	init {
+        singleTouch {
+            start {
+                simulateDown()
+            }
+            endAnywhere {
+                simulateUp()
+            }
+            tap {
+                onPress(it)
+            }
+        }
 		mouse {
 			onOver {
 				simulateOver()
 			}
 			onOut {
 				simulateOut()
-			}
-			onDown {
-				simulateDown()
-			}
-			onUpAnywhere {
-				simulateUp()
 			}
 		}
 	}

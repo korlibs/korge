@@ -76,6 +76,7 @@ data class Touch(
     var force: Double = 1.0,
     var status: Status = Status.KEEP,
     var kind: Kind = Kind.FINGER,
+    var button: MouseButton = MouseButton.LEFT,
 ) : Extra by Extra.Mixin() {
     enum class Status { ADD, KEEP, REMOVE }
     enum class Kind { FINGER, MOUSE, STYLUS, ERASER, UNKNOWN }
@@ -93,6 +94,7 @@ data class Touch(
         this.force = other.force
         this.status = other.status
         this.kind = other.kind
+        this.button = other.button
     }
 
     override fun hashCode(): Int = index
@@ -163,12 +165,13 @@ class TouchBuilder {
         return new
     }
 
-    fun touch(id: Int, x: Double, y: Double, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER) {
+    fun touch(id: Int, x: Double, y: Double, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
         val touch = new.getOrAllocTouchById(id)
         touch.x = x
         touch.y = y
         touch.force = force
         touch.kind = kind
+        touch.button = button
 
         when (mode) {
             Mode.IOS -> {
@@ -190,7 +193,8 @@ data class TouchEvent(
     var type: Type = Type.START,
     var screen: Int = 0,
     var currentTime: DateTime = DateTime.EPOCH,
-    var scaleCoords: Boolean = true
+    var scaleCoords: Boolean = true,
+    var emulated: Boolean = false
 ) : Event() {
     companion object {
         val MAX_TOUCHES = 10
@@ -234,17 +238,18 @@ data class TouchEvent(
         return touch
     }
 
-    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER) {
+    fun touch(id: Int, x: Double, y: Double, status: Touch.Status = Touch.Status.KEEP, force: Double = 1.0, kind: Touch.Kind = Touch.Kind.FINGER, button: MouseButton = MouseButton.LEFT) {
         val touch = getOrAllocTouchById(id)
         touch.x = x
         touch.y = y
         touch.status = status
         touch.force = force
         touch.kind = kind
+        touch.button = button
     }
 
     fun touch(touch: Touch) {
-        touch(touch.id, touch.x, touch.y, touch.status, touch.force, touch.kind)
+        touch(touch.id, touch.x, touch.y, touch.status, touch.force, touch.kind, touch.button)
     }
 
     fun copyFrom(other: TouchEvent) {
@@ -252,6 +257,7 @@ data class TouchEvent(
         this.screen = other.screen
         this.currentTime = other.currentTime
         this.scaleCoords = other.scaleCoords
+        this.emulated = other.emulated
         for (n in 0 until MAX_TOUCHES) {
             bufferTouches[n].copyFrom(other.bufferTouches[n])
         }

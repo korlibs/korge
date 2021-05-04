@@ -24,6 +24,7 @@ abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {
 	protected var handlers = ArrayList<Node>()
 	protected var handlersToRemove = ArrayList<Node>()
 	val listenerCount: Int get() = handlers.size
+    val hasListeners get() = listenerCount > 0
 	fun clear() = handlers.clear()
 
 	// @TODO: This breaks binary compatibility

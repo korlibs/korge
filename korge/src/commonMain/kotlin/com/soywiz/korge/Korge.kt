@@ -295,6 +295,19 @@ object Korge {
             moveTime = DateTime.now()
         }
 
+        val mouseTouchEvent = TouchEvent()
+
+        fun dispatchSimulatedTouchEvent(x: Double, y: Double, button: MouseButton, type: TouchEvent.Type, status: Touch.Status) {
+            mouseTouchEvent.screen = 0
+            mouseTouchEvent.emulated = true
+            mouseTouchEvent.currentTime = DateTime.now()
+            mouseTouchEvent.scaleCoords = false
+            mouseTouchEvent.startFrame(type)
+            mouseTouchEvent.touch(button.id, x, y, status, kind = Touch.Kind.MOUSE, button = button)
+            mouseTouchEvent.endFrame()
+            views.dispatch(mouseTouchEvent)
+        }
+
         eventDispatcher.addEventListener<MouseEvent> { e ->
             //println("MOUSE: $e")
             logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
@@ -304,14 +317,17 @@ object Korge {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = true, end = false)
+                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.START, Touch.Status.ADD)
                 }
                 MouseEvent.Type.UP -> {
                     mouseUp("mouseUp", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = false, end = true)
+                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.END, Touch.Status.REMOVE)
                 }
                 MouseEvent.Type.DRAG -> {
                     mouseDrag("onMouseDrag", x, y)
                     //updateTouch(mouseTouchId, x, y, start = false, end = false)
+                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.MOVE, Touch.Status.KEEP)
                 }
                 MouseEvent.Type.MOVE -> mouseMove("mouseMove", x, y, inside = true)
                 MouseEvent.Type.CLICK -> Unit
