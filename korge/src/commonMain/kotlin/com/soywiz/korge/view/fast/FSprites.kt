@@ -9,21 +9,25 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
 
+@PublishedApi
+internal const val FSPRITES_STRIDE = 8
+
 open class FSprites(val maxSize: Int) {
     var size = 0
-    val data = FBuffer(maxSize * 8/*STRIDE*/ * 4)
+    val available get() = maxSize - size
+    val data = FBuffer(maxSize * FSPRITES_STRIDE * 4)
     private val i32 = data.i32
     private val f32 = data.f32
 
     fun uploadVertices(ctx: RenderContext) {
-        ctx.fastSpriteBuffer.buffer.upload(data, 0, size * 8/*STRIDE*/ * 4)
+        ctx.fastSpriteBuffer.buffer.upload(data, 0, size * FSPRITES_STRIDE * 4)
     }
 
     fun unloadVertices(ctx: RenderContext) {
         ctx.fastSpriteBuffer.buffer.upload(data, 0, 0)
     }
 
-    fun alloc() = FSprite(size++ * 8/*STRIDE*/)
+    fun alloc() = FSprite(size++ * FSPRITES_STRIDE)
 
     var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
     var FSprite.y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
@@ -76,7 +80,9 @@ open class FSprites(val maxSize: Int) {
                         type = AG.DrawType.TRIANGLE_FAN,
                         vertexCount = 4,
                         instances = sprites.size,
-                        uniforms = ctx.batch.uniforms
+                        uniforms = ctx.batch.uniforms,
+                        //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
+                        //blending = AG.Blending.NONE
                     )
                     sprites.unloadVertices(ctx)
 
@@ -117,8 +123,7 @@ open class FSprites(val maxSize: Int) {
                 val baseSize = t_Temp1["xy"]
                 SET(baseSize, a_uv1 - a_uv0)
 
-                SET(
-                    v_Tex, vec2(
+                SET(v_Tex, vec2(
                     mix(a_uv0.x, a_uv1.x, a_xy.x),
                     mix(a_uv0.y, a_uv1.y, a_xy.y),
                 ) * u_i_texSize)
@@ -126,8 +131,7 @@ open class FSprites(val maxSize: Int) {
                 val sin = t_Temp0["y"]
                 SET(cos, cos(a_angle))
                 SET(sin, sin(a_angle))
-                SET(
-                    t_TempMat2, mat2(
+                SET(t_TempMat2, mat2(
                     cos, -sin,
                     sin, cos,
                 ))
@@ -160,14 +164,14 @@ open class FSprites(val maxSize: Int) {
 
 inline class FSprite(val id: Int) {
     val offset get() = id
-    val index get() = offset / 8/*STRIDE*/
-    //val offset get() = index * 8/*STRIDE*/
+    val index get() = offset / FSPRITES_STRIDE
+    //val offset get() = index * STRIDE
 }
 
 inline fun <T : FSprites> T.fastForEach(callback: T.(sprite: FSprite) -> Unit) {
     var m = 0
     for (n in 0 until size) {
         callback(FSprite(m))
-        m += 8/*STRIDE*/
+        m += FSPRITES_STRIDE
     }
 }
