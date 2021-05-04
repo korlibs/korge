@@ -1,0 +1,202 @@
+apply plugin: 'com.android.application'
+//apply plugin: 'kotlin-android'
+//apply plugin: 'kotlin-android-extensions'
+
+String androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}";
+
+kotlin.android();
+
+
+android {
+    lintOptions {
+        // @TODO: ../../build.gradle: All com.android.support libraries must use the exact same version specification (mixing versions can lead to runtime crashes). Found versions 28.0.0, 26.1.0. Examples include com.android.support:animated-vector-drawable:28.0.0 and com.android.support:customtabs:26.1.0
+        disable("GradleCompatible")
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs += "-Xmulti-platform"
+    }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/LGPL*'
+        exclude 'META-INF/AL2.0'
+        exclude 'META-INF/*.kotlin_module'
+        exclude '**/*.kotlin_metadata'
+        exclude '**/*.kotlin_builtins'
+    }
+    compileSdkVersion 28
+    defaultConfig {
+        multiDexEnabled true
+        applicationId androidApplicationId
+        minSdkVersion 16
+        targetSdkVersion 28
+        versionCode 1
+        versionName '1.0'
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+        manifestPlaceholders = [:]
+    }
+    signingConfigs {
+        release {
+            //storeFile file(findProperty('RELEASE_STORE_FILE') ?: "korge.keystore")
+            storeFile new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/korge.keystore")
+            storePassword findProperty('RELEASE_STORE_PASSWORD') ?: "password"
+            keyAlias findProperty('RELEASE_KEY_ALIAS') ?: "korge"
+            keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: "password"
+        }
+    }
+    buildTypes {
+        debug {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+        }
+    }
+    sourceSets {
+        main {
+            manifest.srcFile new File(project.buildDir, 'AndroidManifest.xml')
+            java.srcDirs += ["${project.buildDir}/androidsrc"]
+            res.srcDirs += ["${project.buildDir}/androidres"]
+            assets.srcDirs += [
+                "${project.projectDir}/src/commonMain/resources",
+                "${project.projectDir}/src/androidMain/resources",
+                "${project.projectDir}/src/main/resources",
+                "${project.projectDir}/build/commonMain/korgeProcessedResources/metadata/main",
+            ]
+            //java.srcDirs += ["C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\commonMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\androidMain\\kotlin", "C:\\Users\\soywi\\projects\\korlibs\\korge-hello-world\\src\\main\\java"]
+        }
+    }
+}
+
+def mainDir = project.buildDir
+
+tasks.create("createAndroidManifest") {
+    doFirst {
+        mainDir.mkdirs()
+        new File(mainDir, "AndroidManifest.xml").text = """
+            <?xml version="1.0" encoding="utf-8"?>
+            <manifest
+                xmlns:android="http://schemas.android.com/apk/res/android"
+                package="${androidApplicationId}"
+            >
+                <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+                <uses-feature android:name="android.software.leanback" android:required="false" />
+                <application
+                    android:allowBackup="true"
+                    android:label="${project.name}"
+                    android:icon="@mipmap/icon"
+                    android:roundIcon="@android:drawable/sym_def_app_icon"
+                    android:theme="@android:style/Theme.Holo.NoActionBar"
+                    android:supportsRtl="true"
+                >
+                    <activity android:name=".MainActivity"
+                        android:banner="@drawable/app_banner"
+                        android:icon="@drawable/app_icon"
+                        android:label="unnamed"
+                        android:logo="@drawable/app_icon"
+                    >
+                        <intent-filter>
+                            <action android:name="android.intent.action.MAIN"/>
+                            <category android:name="android.intent.category.LAUNCHER"/>
+                        </intent-filter>
+                    </activity>
+                </application>
+            </manifest>
+            
+        """.trim()
+
+//println(project.name)
+
+        new File(mainDir, "androidsrc").mkdirs()
+
+        new File(mainDir, "androidres/drawable").mkdirs()
+        new File(mainDir, "androidres/mipmap").mkdirs()
+
+        new File(mainDir, "androidres/drawable/app_banner.png").bytes = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/banners/korge.png").bytes
+        new File(mainDir, "androidres/drawable/app_icon.png").bytes = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/icons/korge.png").bytes
+        new File(mainDir, "androidres/mipmap/icon.png").bytes = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/icons/korge.png").bytes
+
+        new File(mainDir, "androidsrc/MainActivity.kt").text = """
+            package ${androidApplicationId}
+            import com.soywiz.korio.android.withAndroidContext
+            import com.soywiz.korgw.KorgwActivity
+            import main
+            class MainActivity : KorgwActivity() {
+            \toverride suspend fun activityMain() {
+            \t\tmain()
+            \t}
+            }
+        """.trim()
+    }
+}
+
+//tasks.getByName("installDebug").dependsOn("createAndroidManifest")
+
+def execOutput(String... args) {
+    String out = ""
+    new ByteArrayOutputStream().withStream { os ->
+        def result = exec {
+            commandLine(*args)
+            standardOutput = os
+        }
+        result.assertNormalExitValue()
+        out = os.toString()
+    }
+    return out
+}
+
+tasks.create("onlyRunAndroid") {
+    doFirst {
+        exec {
+            commandLine "adb", "shell", "am", "start", "-n", "${androidApplicationId}/${androidApplicationId}.MainActivity"
+        }
+
+        String pid = ""
+        for (int n = 0; n < 10; n++) {
+            try {
+                pid = execOutput("adb", "shell", "pidof", androidApplicationId)
+                break;
+            } catch (e) {
+                Thread.sleep(500L)
+                if (n == 9) throw e
+            }
+        }
+        println(pid)
+        exec {
+            commandLine "adb", "logcat", "--pid=${pid.trim()}"
+        }
+    }
+}
+
+def ordered(String... dependencyPaths) {
+    def dependencies = dependencyPaths.collect { tasks.getByPath(it) }
+    for (int i = 0; i < dependencies.size() - 1; i++) {
+        dependencies[i + 1].mustRunAfter(dependencies[i])
+    }
+    return dependencies
+}
+
+afterEvaluate {
+    //InstallVariantTask id = installDebug
+    installRelease.installOptions = ["-r"]
+    //println(installDebug.class)
+
+    tasks.create("runAndroidDebug") {
+        dependsOn ordered("createAndroidManifest", "installDebug")
+        finalizedBy "onlyRunAndroid"
+    }
+
+    tasks.create("runAndroidRelease") {
+        dependsOn ordered("createAndroidManifest", "installRelease")
+        finalizedBy "onlyRunAndroid"
+    }
+}

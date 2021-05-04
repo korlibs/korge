@@ -143,16 +143,24 @@ subprojects {
 
     if (doConfigure) {
         val isSample = project.path.startsWith(":samples")
-        val hasAndroid = !isSample && doEnableKotlinAndroid && hasAndroidSdk
+        val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk
         //val hasAndroid = !isSample && true
         val mustPublish = !isSample
 
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
-        if (hasAndroid) {
-            apply(from = "${rootProject.rootDir}/build.android.gradle")
-        }
-
         apply(plugin = "kotlin-multiplatform")
+
+        if (hasAndroid) {
+            if (isSample) {
+                apply(plugin = "com.android.application")
+            } else {
+                apply(plugin = "com.android.library")
+            }
+            apply(from = "${rootProject.rootDir}/build.android.gradle")
+            if (isSample) {
+                apply(from = "${rootProject.rootDir}/build.android.application.gradle")
+            }
+        }
 
         // @TODO: When Kotlin/Native is enabled:
         // @TODO: Cannot change dependencies of dependency configuration ':kbignum:iosArm64MainImplementationDependenciesMetadata' after task dependencies have been resolved
