@@ -56,20 +56,16 @@ open class RectBase(
 
     private val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
-	private fun computeVertexIfRequired() {
-		if (!dirtyVertices) return
-		dirtyVertices = false
-		vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
-	}
-
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-		if (baseBitmap !== Bitmaps.transparent) {
-			computeVertexIfRequired()
-			//println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
-			ctx.batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
-		}
-		//super.renderInternal(ctx)
+        if (baseBitmap === Bitmaps.transparent) return
+        if (dirtyVertices) {
+            dirtyVertices = false
+            vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
+        }
+        //println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
+        ctx.batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
+        //super.renderInternal(ctx)
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
