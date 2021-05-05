@@ -62,10 +62,7 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun open(path: String, mode: VfsOpenMode): AsyncStream = unsupported()
 
-	open suspend fun openInputStream(path: String): AsyncInputStream = open(
-		path,
-		VfsOpenMode.READ
-	)
+	open suspend fun openInputStream(path: String): AsyncInputStream = open(path, VfsOpenMode.READ)
 
 	open suspend fun readRange(path: String, range: LongRange): ByteArray {
 		val s = open(path, VfsOpenMode.READ)
