@@ -20,6 +20,12 @@ internal suspend  fun AsyncStream.copyChunkTo(deque: ByteArrayDeque, temp: ByteA
     return size
 }
 
+internal suspend fun AsyncStream.copyChunkTo(out: SyncStream, temp: ByteArray, maxSize: Int = temp.size): Int {
+    val size = this.read(temp, 0, maxSize)
+    out.write(temp, 0, size)
+    return size
+}
+
 internal fun ShortArray.toByteArrayLE(): ByteArray {
     val out = ByteArray(this.size * 2)
     for (n in 0 until this.size) {

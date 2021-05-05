@@ -51,7 +51,7 @@ object JavaMp3Decoder {
 
     fun init(inp: ByteArray): SoundData? = init(inp.openSync())
 
-    fun SyncStream.readSyncSafeS28(): Int {
+    fun SyncInputStream.readSyncSafeS28(): Int {
         val v0 = readU8()
         val v1 = readU8()
         val v2 = readU8()
@@ -59,24 +59,26 @@ object JavaMp3Decoder {
         return (v3 and 0x7F) or ((v2 and 0x7F) shl 7) or ((v1 and 0x7F) shl 14) or ((v0 and 0x7F) shl 21)
     }
 
-    fun init(inp: SyncStream): SoundData? {
-        val oldPos = inp.position
+    fun init(inp: MarkableSyncInputStream): SoundData? {
+        inp.mark(3)
         // Skips ID3v2
         if (inp.readStringz(3, Charsets.LATIN1) == "ID3") {
             val major = inp.readU8()
             val revision = inp.readU8()
             val flags = inp.readU8()
             val size = inp.readSyncSafeS28()
-            inp.position += size
+            inp.skip(size)
             //println("SIZE: $size")
         } else {
-            inp.position = oldPos
+            inp.reset()
         }
 
         val buffer = Buffer(inp)
         while (buffer.lastByte != -1) {
             val soundData = SoundData(buffer)
-            if (decodeFrame(soundData) == DecodeStatus.OK) {
+            val frameStatus = decodeFrame(soundData)
+            //println("FRAME!")
+            if (frameStatus == DecodeStatus.OK) {
                 // require directly adjacent second frame (actually allow up to two bytes
                 // away because of some quirks with Layer III decoding)
                 val adjacentHeader: FrameHeader? = findNextHeader(soundData, 1)
@@ -1415,21 +1417,22 @@ object JavaMp3Decoder {
         var current: Int = 0
     }
 
-    internal class Buffer(val inp: SyncStream) {
+    internal class Buffer(val inp: MarkableSyncInputStream) {
+        val inpWithPos = inp as? SyncPositionStream?
         var current: Int = 0
         var lastByte: Int = inp.read()
 
         private var markedPos = 0L
         fun mark(count: Int) {
-            markedPos = inp.position
+            inp.mark(count)
         }
 
         fun reset() {
-            inp.position = markedPos
+            inp.reset()
         }
 
         fun seek(pos: Long) {
-            inp.position = pos
+            inpWithPos?.position = pos
             markedPos = 0L
             current = 0
             lastByte = inp.read()
