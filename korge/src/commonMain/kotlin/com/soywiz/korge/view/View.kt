@@ -198,34 +198,56 @@ abstract class View internal constructor(
     /** Computed [speed] combining all the speeds from ancestors */
     val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
+    private var _x: Double = 0.0
+    private var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
     private var _skewX: Angle = 0.0.radians
     private var _skewY: Angle = 0.0.radians
     private var _rotation: Angle = 0.0.radians
 
+    private val _pos = Point()
+
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
-    var pos = Point()
+    var pos: Point
+        get() {
+            _pos.setTo(x, y)
+            return _pos
+        }
         set(value) {
-            field.copyFrom(value)
-            invalidateMatrix()
+            ensureTransform()
+            if (_x != value.x || _y != value.y) {
+                this._x = value.x
+                this._y = value.y
+                invalidateMatrix()
+            }
         }
 
     /** Local X position of this view */
     var x: Double
-        get() = ensureTransform().pos.x
+        get() {
+            ensureTransform()
+            return _x
+        }
         set(v) {
-            ensureTransform(); if (pos.x != v) {
-                pos.x = v; invalidateMatrix()
+            ensureTransform()
+            if (_x != v) {
+                _x = v
+                invalidateMatrix()
             }
         }
 
     /** Local Y position of this view */
     var y: Double
-        get() = ensureTransform().pos.y
+        get() {
+            ensureTransform()
+            return _y
+        }
         set(v) {
-            ensureTransform(); if (pos.y != v) {
-                pos.y = v; invalidateMatrix()
+            ensureTransform()
+            if (_y != v) {
+                _y = v
+                invalidateMatrix()
             }
         }
 
@@ -247,12 +269,12 @@ abstract class View internal constructor(
 
     /** Local scaling in the X axis of this view */
     var scaleX: Double
-        get() = ensureTransform()._scaleX
+        get() { ensureTransform(); return _scaleX }
         set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
 
     /** Local scaling in the Y axis of this view */
     var scaleY: Double
-        get() = ensureTransform()._scaleY
+        get() { ensureTransform(); return _scaleY }
         set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
@@ -262,17 +284,17 @@ abstract class View internal constructor(
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
-        get() = ensureTransform()._skewX
+        get() { ensureTransform(); return _skewX }
         set(v) { ensureTransform(); if (_skewX != v) { _skewX = v; invalidateMatrix() } }
 
     /** Local skewing in the Y axis of this view */
     var skewY: Angle
-        get() = ensureTransform()._skewY
+        get() { ensureTransform(); return _skewY }
         set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
 
     /** Local rotation of this view */
     var rotation: Angle
-        get() = ensureTransform()._rotation
+        get() { ensureTransform(); return _rotation }
         set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
 
     /** The global x position of this view */
@@ -399,19 +421,18 @@ abstract class View internal constructor(
     private val tempTransform = Matrix.Transform()
     //private val tempMatrix = Matrix2d()
 
-    private fun ensureTransform(): View {
-        if (!validLocalProps) {
-            validLocalProps = true
-            val t = tempTransform.setMatrix(this._localMatrix)
-            this.pos.xf = t.xf
-            this.pos.yf = t.yf
-            this._scaleX = t.scaleX
-            this._scaleY = t.scaleY
-            this._skewX = t.skewX
-            this._skewY = t.skewY
-            this._rotation = t.rotation
-        }
-        return this
+    private fun ensureTransform() {
+        if (validLocalProps) return
+        validLocalProps = true
+        val t = tempTransform
+        t.setMatrixNoReturn(this._localMatrix)
+        this._x = t.x
+        this._y = t.y
+        this._scaleX = t.scaleX
+        this._scaleY = t.scaleY
+        this._skewX = t.skewX
+        this._skewY = t.skewY
+        this._rotation = t.rotation
     }
 
     /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */
@@ -471,7 +492,7 @@ abstract class View internal constructor(
     @KorgeInternal
     fun _setTransform(t: Matrix.Transform) {
         //transform.toMatrix(_localMatrix)
-        pos.xf = t.xf; pos.yf = t.yf
+        _x = t.x; _y = t.y
         _scaleX = t.scaleX; _scaleY = t.scaleY
         _skewX = t.skewY; _skewY = t.skewY
         _rotation = t.rotation
@@ -484,7 +505,7 @@ abstract class View internal constructor(
     internal var validLocalProps = true
     internal var validLocalMatrix = true
 
-    private var _localMatrix = Matrix()
+    private val _localMatrix = Matrix()
 
     /**
      * Local transform [Matrix]. If you plan to change its components manually
@@ -1020,7 +1041,7 @@ abstract class View internal constructor(
      */
     open fun reset() {
         _localMatrix.identity()
-        pos.setTo(0.0, 0.0)
+        _x = 0.0; _y = 0.0
         _scaleX = 1.0; _scaleY = 1.0
         _skewX = 0.0.radians; _skewY = 0.0.radians
         _rotation = 0.0.radians
@@ -1664,7 +1685,7 @@ fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
-    return mat.transform(pos, out)
+    return mat.transform(x, y, out)
 }
 
 fun View.setPositionRelativeTo(view: View, pos: Point) {

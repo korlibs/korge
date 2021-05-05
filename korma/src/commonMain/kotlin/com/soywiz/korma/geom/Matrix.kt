@@ -248,7 +248,10 @@ data class Matrix(
 
     operator fun times(that: Matrix): Matrix = Matrix().multiply(this, that)
 
-    fun toTransform(out: Transform = Transform()): Transform = out.setMatrix(this)
+    fun toTransform(out: Transform = Transform()): Transform {
+        out.setMatrixNoReturn(this)
+        return out
+    }
 
     // Transform points
     fun transform(p: IPoint, out: Point = Point()): Point = transform(p.x, p.y, out)
@@ -379,7 +382,7 @@ data class Matrix(
             rotation = 0.0.radians
         }
 
-        fun setMatrix(matrix: Matrix): Transform {
+        fun setMatrixNoReturn(matrix: Matrix) {
             val PI_4 = PI / 4.0
             this.x = matrix.tx
             this.y = matrix.ty
@@ -403,7 +406,10 @@ data class Matrix(
             } else {
                 this.rotation = 0.radians
             }
+        }
 
+        fun setMatrix(matrix: Matrix): Transform {
+            setMatrixNoReturn(matrix)
             return this
         }
 
@@ -448,7 +454,7 @@ data class Matrix(
 
     class Computed(val matrix: Matrix, val transform: Transform) {
         companion object;
-        constructor(matrix: Matrix) : this(matrix, Transform().setMatrix(matrix))
+        constructor(matrix: Matrix) : this(matrix, Transform().also { it.setMatrixNoReturn(matrix) })
         constructor(transform: Transform) : this(transform.toMatrix(), transform)
     }
 

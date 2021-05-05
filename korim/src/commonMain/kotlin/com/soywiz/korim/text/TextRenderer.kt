@@ -165,7 +165,7 @@ class Text2TextRendererActions : TextRendererActions() {
 
         val fontScale = fontSize / bf.fontSize
 
-        tr.setMatrix(transform)
+        tr.setMatrixNoReturn(transform)
         //println("x: ${this.x}, y: ${this.y}")
         arrayTex.add(g.texture)
         arrayX.add(this.x + transform.transformX(x, y) * fontScale)
