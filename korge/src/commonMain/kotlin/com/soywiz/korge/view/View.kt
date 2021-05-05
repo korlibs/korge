@@ -88,7 +88,7 @@ abstract class View internal constructor(
 
     @KorgeInternal
     @PublishedApi
-    internal var _children: FastArrayList<View>? = null
+    internal open val _children: FastArrayList<View>? get() = null
 
     /** Iterates all the children of this container in normal order of rendering. */
     inline fun forEachChild(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
@@ -664,26 +664,16 @@ abstract class View internal constructor(
      * Invalidates the [View] after changing some of its properties so the geometry can be computed again.
      * If you change the [localMatrix] directly, you should call [invalidateMatrix] instead.
      */
-    fun invalidate() {
+    open fun invalidate() {
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
-        _children?.fastForEach { child ->
-            if (child._requireInvalidate) {
-                child.invalidate()
-            }
-        }
     }
 
-    fun invalidateColorTransform() {
+    open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
-        _children?.fastForEach { child ->
-            if (child._requireInvalidateColor) {
-                child.invalidateColorTransform()
-            }
-        }
     }
 
     /**
@@ -1220,15 +1210,8 @@ abstract class View internal constructor(
      * Allows to find a descendant view whose [View.name] property is [name].
      * Returns null if can't find any.
      */
-    fun findViewByName(name: String): View? {
+    open fun findViewByName(name: String): View? {
         if (this.name == name) return this
-        if (this.isContainer) {
-            //(this as Container).children.fastForEach { child ->
-            (this as Container).forEachChild { child: View ->
-                val named = child.findViewByName(name)
-                if (named != null) return named
-            }
-        }
         return null
     }
 
