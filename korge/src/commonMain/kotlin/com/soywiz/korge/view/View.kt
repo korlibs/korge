@@ -757,17 +757,18 @@ abstract class View internal constructor(
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
         val local = getLocalBounds(doAnchoring = true)
-        ctx.debugLineRenderContext.drawVector(Colors.RED) {
+        val debugLineRenderContext = ctx.debugLineRenderContext
+        debugLineRenderContext.drawVector(Colors.RED) {
             rect(windowBounds)
         }
-        ctx.debugLineRenderContext.drawVector(Colors.WHITE) {
+        debugLineRenderContext.drawVector(Colors.WHITE) {
             moveTo(localToGlobal(Point(local.left, local.top)))
             lineTo(localToGlobal(Point(local.right, local.top)))
             lineTo(localToGlobal(Point(local.right, local.bottom)))
             lineTo(localToGlobal(Point(local.left, local.bottom)))
             close()
         }
-        ctx.debugLineRenderContext.drawVector(Colors.YELLOW) {
+        debugLineRenderContext.drawVector(Colors.YELLOW) {
             val anchorSize = 5.0
             circle(localToGlobal(local.topLeft), anchorSize)
             circle(localToGlobal(local.topRight), anchorSize)
@@ -778,7 +779,7 @@ abstract class View internal constructor(
             circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
             circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
         }
-        ctx.debugLineRenderContext.drawVector(Colors.BLUE) {
+        debugLineRenderContext.drawVector(Colors.BLUE) {
             val centerX = globalX
             val centerY = globalY
             line(centerX, centerY - 5, centerX, centerY + 5)
