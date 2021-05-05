@@ -55,8 +55,8 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[1]" } }
 
-	internal val vertices = FBuffer.alloc(6 * 4 * maxVertices)
-    internal val indices = FBuffer.alloc(2 * maxIndices)
+	@PublishedApi internal val vertices = FBuffer.alloc(6 * 4 * maxVertices)
+    @PublishedApi internal val indices = FBuffer.alloc(2 * maxIndices)
     //internal val vertices = FBuffer.allocNoDirect(6 * 4 * maxVertices)
     //internal val indices = FBuffer.allocNoDirect(2 * maxIndices)
     val indicesI16 = indices.i16
@@ -67,14 +67,18 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[2]" } }
 
-	var vertexCount = 0
-        internal set
-    internal var vertexPos = 0
-	internal var indexPos = 0
-	private var currentTex: AG.Texture? = null
-	private var currentSmoothing: Boolean = false
-	private var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors
-	private var currentProgram: Program? = null
+    @PublishedApi internal var _vertexCount = 0
+
+    var vertexCount: Int
+        get() = _vertexCount
+        internal set(value) { _vertexCount = value }
+
+    @PublishedApi internal var vertexPos = 0
+    @PublishedApi internal var indexPos = 0
+	@PublishedApi internal var currentTex: AG.Texture? = null
+    @PublishedApi internal var currentSmoothing: Boolean = false
+    @PublishedApi internal var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors
+    @PublishedApi internal var currentProgram: Program? = null
 
 	init { logger.trace { "BatchBuilder2D[3]" } }
 
@@ -170,7 +174,7 @@ class BatchBuilder2D constructor(
         vd.setF(vp + 3, v)
         vd.setI(vp + 4, colorMul)
         vd.setI(vp + 5, colorAdd)
-        return 6/*COMPONENTS_PER_VERTEX*/
+        return TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
     }
 
     fun _addVertex(f32: Float32Buffer, i32: Int32Buffer, vp: Int, x: Float, y: Float, u: Float, v: Float, colorMul: Int, colorAdd: Int): Int {
@@ -180,14 +184,14 @@ class BatchBuilder2D constructor(
         f32[vp + 3] = v
         i32[vp + 4] = colorMul
         i32[vp + 5] = colorAdd
-        return 6/*COMPONENTS_PER_VERTEX*/
+        return TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
     }
 
-	fun addIndex(idx: Int) {
+	inline fun addIndex(idx: Int) {
 		indicesI16[indexPos++] = idx.toShort()
 	}
 
-    fun addIndexRelative(idx: Int) {
+    inline fun addIndexRelative(idx: Int) {
         indicesI16[indexPos++] = (vertexCount + idx).toShort()
     }
 
@@ -354,7 +358,7 @@ class BatchBuilder2D constructor(
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the current state previously set by calling [setStateFast].
      */
-	fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
+	inline fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
 		ensure(icount, vcount)
 
 		for (idx in 0 until min2(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
@@ -362,15 +366,15 @@ class BatchBuilder2D constructor(
 
 		FBuffer.copy(array._data, 0, vertices, vertexPos * 4, vcount * 6 * 4)
 		//vertices.setAlignedArrayInt32(vertexPos, array.data, 0, vcount * 6)
-		vertexCount += vcount
+		_vertexCount += vcount
 		vertexPos += vcount * 6
 	}
 
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
      */
-	fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null) {
-		setStateFast(tex, smoothing, blendFactors, program)
+	inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null) {
+		setStateFast(tex.base, smoothing, blendFactors, program)
 		drawVertices(array, vcount, icount)
 	}
 
@@ -392,8 +396,8 @@ class BatchBuilder2D constructor(
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
-	fun setStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
-        if (tex === currentTex && currentSmoothing === smoothing && currentBlendFactors === blendFactors && currentProgram === program) return
+	inline fun setStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+        if (currentTex === tex && currentSmoothing == smoothing && currentBlendFactors === blendFactors && currentProgram === program) return
         flush()
         currentTex = tex
         currentSmoothing = smoothing
@@ -788,6 +792,29 @@ class BatchBuilder2D constructor(
 	}
 }
 
+@PublishedApi internal const val TEXTURED_ARRAY_COMPONENTS_PER_VERTEX = 6
+@KorgeInternal @PublishedApi internal val TEXTURED_ARRAY_QUAD_INDICES = intArrayOf(0, 1, 2,  3, 0, 2)
+@PublishedApi internal val TEXTURED_ARRAY_EMPTY_INT_ARRAY = IntArray(0)
+
+/** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
+@PublishedApi internal fun TEXTURED_ARRAY_quadIndices(quadCount: Int): IntArray {
+    if (quadCount == 0) return TEXTURED_ARRAY_EMPTY_INT_ARRAY
+    val out = IntArray(quadCount * 6)
+    var m = 0
+    var base = 0
+    for (n in 0 until quadCount) {
+        out[m++] = base + 0
+        out[m++] = base + 1
+        out[m++] = base + 2
+        out[m++] = base + 3
+        out[m++] = base + 0
+        out[m++] = base + 2
+        base += 4
+    }
+    //QUAD_INDICES.repeat(quadCount)
+    return out
+}
+
 // @TODO: Call this mesh?
 /**
  * Allows to build a set of textured and colored vertices. Where [vcount] is the number of vertices and [isize] [indices],
@@ -798,9 +825,9 @@ class BatchBuilder2D constructor(
 class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int = indices.size) {
     /** The initial/maximum number of vertices */
 	val initialVcount = vcount
-	//internal val data = IntArray(6/*COMPONENTS_PER_VERTEX*/ * vcount)
-	//internal val _data = FBuffer(6/*COMPONENTS_PER_VERTEX*/ * initialVcount * 4, direct = false)
-    internal val _data = FBuffer.allocNoDirect(6/*COMPONENTS_PER_VERTEX*/ * initialVcount * 4)
+	//internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
+	//internal val _data = FBuffer(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
+    @PublishedApi internal val _data = FBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
     private val fast = _data.fast32
 	//private val f32 = _data.f32
     //private val i32 = _data.i32
@@ -810,38 +837,22 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	companion object {
         // // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
         @KorgeInternal
-		const val COMPONENTS_PER_VERTEX = 6
+		inline val COMPONENTS_PER_VERTEX get() = TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
 
         @KorgeInternal
-		val QUAD_INDICES = intArrayOf(0, 1, 2,  3, 0, 2)
+		inline val QUAD_INDICES get() = TEXTURED_ARRAY_QUAD_INDICES
 
-        val EMPTY_INT_ARRAY = IntArray(0)
+        inline val EMPTY_INT_ARRAY get() = TEXTURED_ARRAY_EMPTY_INT_ARRAY
 
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
-		fun quadIndices(quadCount: Int): IntArray {
-            if (quadCount == 0) return EMPTY_INT_ARRAY
-			val out = IntArray(quadCount * 6)
-			var m = 0
-			var base = 0
-			for (n in 0 until quadCount) {
-				out[m++] = base + 0
-				out[m++] = base + 1
-				out[m++] = base + 2
-				out[m++] = base + 3
-				out[m++] = base + 0
-				out[m++] = base + 2
-				base += 4
-			}
-			//QUAD_INDICES.repeat(quadCount)
-			return out
-		}
+		inline fun quadIndices(quadCount: Int): IntArray = TEXTURED_ARRAY_quadIndices(quadCount)
 	}
 
 	private var offset = 0
     
     /** Moves the cursor for setting vertexs to the vertex [i] */
     fun select(i: Int): TexturedVertexArray {
-        offset = i * 6/*COMPONENTS_PER_VERTEX*/
+        offset = i * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
         return this
     }
     /** Sets the [x] of the vertex previously selected calling [select] */
@@ -884,7 +895,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	fun cols(colMul: RGBA, colAdd: ColorAdd) = setCMul(colMul).setCAdd(colAdd)
 
     fun quadV(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
-        quadV(fast, index * 6/*COMPONENTS_PER_VERTEX*/, x, y, u, v, colMul.value, colAdd.value)
+        quadV(fast, index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX, x, y, u, v, colMul.value, colAdd.value)
     }
 
     fun quadV(fast: Fast32Buffer, pos: Int, x: Float, y: Float, u: Float, v: Float, colMul: Int, colAdd: Int): Int {
@@ -894,7 +905,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         fast.setF(pos + 3, v)
         fast.setI(pos + 4, colMul)
         fast.setI(pos + 5, colAdd)
-        return 6/*COMPONENTS_PER_VERTEX*/
+        return TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
     }
 
     fun quadV(index: Int, x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) = quadV(index, x.toFloat(), y.toFloat(), u, v, colMul, colAdd)
@@ -942,7 +953,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         val y3 = df * yh + bf * x + tyf
 
         val fast = this.fast
-        var pos = index * 6/*COMPONENTS_PER_VERTEX*/
+        var pos = index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
         val cm = colMul.value
         val ca = colAdd.value
         pos += quadV(fast, pos, x0, y0, bmp.tl_x, bmp.tl_y, cm, ca)
@@ -993,7 +1004,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	}
 
 	//class Item(private val data: IntArray, index: Int) {
-	//	val offset = index * 6/*COMPONENTS_PER_VERTEX*/
+	//	val offset = index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
 	//	var x: Float; get() = Float.fromBits(data[offset + 0]); set(v) { data[offset + 0] = v.toBits() }
 	//	var y: Float; get() = Float.fromBits(data[offset + 1]); set(v) { data[offset + 1] = v.toBits() }
 	//	var tx: Float; get() = Float.fromBits(data[offset + 2]); set(v) { data[offset + 2] = v.toBits() }
