@@ -17,10 +17,12 @@ class BatchBuilderTest {
 			"""
             createBuffer(VERTEX):0
             createBuffer(INDEX):1
+            createBuffer(VERTEX):2
+            createBuffer(INDEX):3
             createTexture():0
-            Buffer[0].afterSetMem(mem[393216])
-            Buffer[1].afterSetMem(mem[49152])
-            draw(vertices=Buffer[0], indices=Buffer[1], program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], vertexCount=6, offset=0, blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD), uniforms={Uniform(u_ProjMat)=Matrix3D(
+            Buffer[2].afterSetMem(mem[393216])
+            Buffer[3].afterSetMem(mem[49152])
+            draw(vertices=Buffer[2], indices=Buffer[3], program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], vertexCount=6, offset=0, blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD), uniforms={Uniform(u_ProjMat)=Matrix3D(
               [ 0.015625, 0, 0, -1 ],
               [ 0, -0.015625, 0, 1 ],
               [ 0, 0, -1, 0 ],
@@ -52,10 +54,12 @@ class BatchBuilderTest {
 			"""
             createBuffer(VERTEX):0
             createBuffer(INDEX):1
+            createBuffer(VERTEX):2
+            createBuffer(INDEX):3
             createTexture():0
-            Buffer[0].afterSetMem(mem[393216])
-            Buffer[1].afterSetMem(mem[49152])
-            draw(vertices=Buffer[0], indices=Buffer[1], program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], vertexCount=12, offset=0, blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD), uniforms={Uniform(u_ProjMat)=Matrix3D(
+            Buffer[2].afterSetMem(mem[393216])
+            Buffer[3].afterSetMem(mem[49152])
+            draw(vertices=Buffer[2], indices=Buffer[3], program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], vertexCount=12, offset=0, blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD), uniforms={Uniform(u_ProjMat)=Matrix3D(
               [ 0.015625, 0, 0, -1 ],
               [ 0, -0.015625, 0, 1 ],
               [ 0, 0, -1, 0 ],

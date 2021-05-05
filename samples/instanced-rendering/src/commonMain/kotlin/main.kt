@@ -20,6 +20,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.random.*
 import com.soywiz.klock.*
+import com.soywiz.korge.view.fast.*
 
 // @TODO: We could autogenerate this via gradle
 val ResourcesContainer.korge_png by resourceBitmap("korge.png")

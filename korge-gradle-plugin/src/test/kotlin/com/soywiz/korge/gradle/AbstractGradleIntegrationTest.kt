@@ -75,7 +75,18 @@ data class TestableExecResult(val stdout: String, val stderr: String = "", val e
     override fun rethrowFailure(): ExecResult = this.apply { assertNormalExitValue() }
 }
 
-data class TestableExecRequest(val commandLine: List<String>, val workingDir: File)
+data class TestableExecRequest(val commandLine: List<String>, val workingDir: File) {
+    val normalizedCommandLine = normalizeCommandLine(commandLine)
+
+    companion object {
+        fun normalizeCommandLine(list: List<String>): List<String> {
+            if (list.size >= 2 && list[0] == "cmd" && list[1] == "/c") {
+                return list.slice(2 until list.size)
+            }
+            return list
+        }
+    }
+}
 
 class TestableProject : Project by ProjectBuilder.builder().build() {
     //private val myexecTask by lazy { tasks.create("myexectask", Exec::class.java) }
@@ -83,7 +94,8 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
     val execResults = LinkedHashMap<List<String>, (TestableExecRequest) -> TestableExecResult>()
 
     fun defineExecResult(vararg commandLine: String, result: (request: TestableExecRequest) -> TestableExecResult) {
-        execResults[commandLine.toList()] = result
+        // This handles windows cmd /c to simplify tests
+        execResults[TestableExecRequest.normalizeCommandLine(commandLine.toList())] = result
     }
 
     fun defineExecResult(vararg commandLine: String, result: List<TestableExecResult>) {
@@ -104,7 +116,7 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
         val spec = TestableExecSpec()
         action.execute(spec)
         val request = TestableExecRequest(spec.commandLine.toList(), spec.workingDir)
-        val resultFactory = execResults[spec.commandLine] ?: error("Can't find output for $request")
+        val resultFactory = execResults[request.normalizedCommandLine] ?: error("Can't find output for $request")
         val result = resultFactory(request)
         spec.standardOutput.write(result.stdout.toByteArray(Charsets.UTF_8))
         return result
