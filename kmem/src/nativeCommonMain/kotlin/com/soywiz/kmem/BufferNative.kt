@@ -127,38 +127,44 @@ inline fun <T : Any, R : Any> anyArrayCopy(input: T, inputAddress: (Pinned<T>) -
     }
 }
 
+@PublishedApi internal const val BYTE_SIZE_BYTES = 1
+@PublishedApi internal const val SHORT_SIZE_BYTES = 2
+@PublishedApi internal const val INT_SIZE_BYTES = 4
+@PublishedApi internal const val FLOAT_SIZE_BYTES = 4
+@PublishedApi internal const val DOUBLE_SIZE_BYTES = 8
+
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src.data, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos) }, size * Byte.SIZE_BYTES)
+    src.data.copyInto(dst.data, dstPos, srcPos, srcPos + size)
 }
 actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos) }, size * Byte.SIZE_BYTES)
+    src.copyInto(dst.data, dstPos, srcPos, srcPos + size)
 }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src.data, { it.addressOf(srcPos) }, dst, { it.addressOf(dstPos * Byte.SIZE_BYTES) }, size * Byte.SIZE_BYTES)
+    src.data.copyInto(dst, dstPos, srcPos, srcPos + size)
 }
 actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * Short.SIZE_BYTES) }, size * Short.SIZE_BYTES)
+    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * SHORT_SIZE_BYTES) }, size * SHORT_SIZE_BYTES)
 }
 actual fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * Int.SIZE_BYTES) }, size * Int.SIZE_BYTES)
+    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * INT_SIZE_BYTES) }, size * INT_SIZE_BYTES)
 }
 actual fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * Float.SIZE_BYTES) }, size * Float.SIZE_BYTES)
+    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * FLOAT_SIZE_BYTES) }, size * FLOAT_SIZE_BYTES)
 }
 actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * Double.SIZE_BYTES) }, size * Double.SIZE_BYTES)
+    anyArrayCopy(src, { it.addressOf(srcPos) }, dst.data, { it.addressOf(dstPos * DOUBLE_SIZE_BYTES) }, size * DOUBLE_SIZE_BYTES)
 }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src.data, { it.addressOf(srcPos * Short.SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * Short.SIZE_BYTES)
+    anyArrayCopy(src.data, { it.addressOf(srcPos * SHORT_SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * SHORT_SIZE_BYTES)
 }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src.data, { it.addressOf(srcPos * Int.SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * Int.SIZE_BYTES)
+    anyArrayCopy(src.data, { it.addressOf(srcPos * INT_SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * INT_SIZE_BYTES)
 }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src.data, { it.addressOf(srcPos * Float.SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * Float.SIZE_BYTES)
+    anyArrayCopy(src.data, { it.addressOf(srcPos * FLOAT_SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * FLOAT_SIZE_BYTES)
 }
 actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit {
-    anyArrayCopy(src.data, { it.addressOf(srcPos * Double.SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * Double.SIZE_BYTES)
+    anyArrayCopy(src.data, { it.addressOf(srcPos * DOUBLE_SIZE_BYTES) }, dst, { it.addressOf(dstPos) }, size * DOUBLE_SIZE_BYTES)
 }
 
 actual abstract class Fast32Buffer(val bb: ByteArray)
