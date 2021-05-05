@@ -205,22 +205,30 @@ class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
 		private var responseContent = "LogHttpClient.response".toByteArray(UTF8)
 		private var responseHeaders = Http.Headers()
 
-		fun response(content: String, code: Int = 200, charset: Charset = UTF8) {
+		fun response(content: String, code: Int = 200, charset: Charset = UTF8) = this.apply {
 			responseCode = code
 			responseContent = content.toByteArray(charset)
 		}
 
-		fun response(content: ByteArray, code: Int = 200) {
+		fun response(content: ByteArray, code: Int = 200) = this.apply {
 			responseCode = code
 			responseContent = content
 		}
 
-		fun redirect(url: String, code: Int = 302): Unit {
+		fun redirect(url: String, code: Int = 302) = this.apply {
 			responseCode = code
 			responseHeaders += Http.Headers("Location" to url)
 		}
 
-		fun ok(content: String) = response(content, code = 200)
+        fun header(key: String, value: Any) = this.apply {
+            responseHeaders += Http.Headers(key to "$value")
+        }
+
+        fun headers(headers: Http.Headers) = this.apply {
+            responseHeaders += headers
+        }
+
+        fun ok(content: String) = response(content, code = 200)
         fun ok(content: ByteArray) = response(content, code = 200)
 		fun notFound(content: String = "404 - Not Found") = response(content, code = 404)
 		fun internalServerError(content: String = "500 - Internal Server Error") = response(content, code = 500)

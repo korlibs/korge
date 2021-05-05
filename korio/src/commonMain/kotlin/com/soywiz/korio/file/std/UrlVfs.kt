@@ -70,7 +70,8 @@ class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHt
 					return totalRead
 				}
 
-				override suspend fun getLength(): Long = stat.size
+                override suspend fun hasLength(): Boolean = stat.size >= 0L
+                override suspend fun getLength(): Long = if (hasLength()) stat.size else unsupported()
 			}.toAsyncStream().buffered()
 			//}.toAsyncStream()
 		} catch (e: RuntimeException) {
@@ -144,7 +145,7 @@ class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHt
 				createExistsStat(
 					path,
 					isDirectory = false,
-					size = result.headers[Http.Headers.ContentLength]?.toLongOrNull() ?: 0L,
+					size = result.headers[Http.Headers.ContentLength]?.toLongOrNull() ?: -1L,
 					extraInfo = result
 				)
 			} else {

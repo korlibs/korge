@@ -48,4 +48,17 @@ class UrlVfsTest {
 		)
 	}
 
+    @Test
+    fun testLength() = suspendTest {
+        val LEN10File = UrlVfs("http://whatever", FakeHttpClient().apply { onRequest().header("Content-Length", 10).ok("hello") })
+        val NOLENFile = UrlVfs("http://whatever", FakeHttpClient().apply { onRequest().ok("hello") })
+
+        assertEquals(10L, LEN10File.stat().size)
+        assertEquals(-1L, NOLENFile.stat().size)
+
+        assertEquals(true, LEN10File.open().hasLength())
+        assertEquals(false, NOLENFile.open().hasLength())
+
+        assertEquals(10L, LEN10File.open().getLength())
+    }
 }
