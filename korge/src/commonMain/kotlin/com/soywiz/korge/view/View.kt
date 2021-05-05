@@ -586,54 +586,78 @@ abstract class View internal constructor(
             }
         }
 
-    private var _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    private val _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
     private var _renderColorTransformVersion = -1
+
+    private fun updateRenderColorTransform() {
+        _renderColorTransformVersion = this._versionColor
+        _requireInvalidateColor = true
+        val parent = this.parent
+        when {
+            parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
+            parent != null && this !is ColorReference -> _renderColorTransform.setToConcat(
+                _colorTransform,
+                parent.renderColorTransform
+            )
+            else -> _renderColorTransform.copyFrom(_colorTransform)
+        }
+    }
+
+    private fun updateRenderColorTransformIfRequired() {
+        if (_renderColorTransformVersion == this._versionColor) return
+        updateRenderColorTransform()
+    }
 
     /**
      * The concatenated version of [colorTransform] having into account all the color transformations of the ancestors
      */
-    val renderColorTransform: ColorTransform
-        get() {
-            if (_renderColorTransformVersion != this._versionColor) {
-                _renderColorTransformVersion = this._versionColor
-                _requireInvalidateColor = true
-                when {
-                    parent != null && parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
-                    parent != null && this !is View.ColorReference -> _renderColorTransform.setToConcat(
-                        _colorTransform,
-                        parent!!.renderColorTransform
-                    )
-                    else -> _renderColorTransform.copyFrom(_colorTransform)
-                }
-            }
-            return _renderColorTransform
-        }
+    val renderColorTransform: ColorTransform get() {
+        updateRenderColorTransformIfRequired()
+        return _renderColorTransform
+    }
 
     private var _renderBlendMode: BlendMode = BlendMode.INHERIT
     private var _renderBlendModeVersion: Int = -1
 
+    private fun updateRenderBlendMode() {
+        _renderBlendModeVersion = this._version
+        _requireInvalidate = true
+        _renderBlendMode = when (blendMode) {
+            BlendMode.INHERIT -> parent?.renderBlendMode ?: BlendMode.NORMAL
+            else -> blendMode
+        }
+    }
+
+    private fun updateRenderBlendModeIfRequired() {
+        if (_renderBlendModeVersion == this._version) return
+        updateRenderBlendMode()
+    }
+
     /**
      * The actual [blendMode] of the view after computing the ancestors and reaching a view with a non [BlendMode.INHERIT].
      */
-    val renderBlendMode: BlendMode
-        get() {
-            if (_renderBlendModeVersion != this._version) {
-                _renderBlendModeVersion = this._version
-                _requireInvalidate = true
-                _renderBlendMode =
-                    if (blendMode == BlendMode.INHERIT) parent?.renderBlendMode ?: BlendMode.NORMAL else blendMode
-            }
-            return _renderBlendMode
-        }
+    val renderBlendMode: BlendMode get() {
+        updateRenderBlendModeIfRequired()
+        return _renderBlendMode
+    }
 
     /** The concatenated/global version of the local [colorMul] */
-    val renderColorMul: RGBA get() = renderColorTransform.colorMul
+    val renderColorMul: RGBA get() {
+        updateRenderColorTransformIfRequired()
+        return _renderColorTransform.colorMul
+    }
 
     /** The concatenated/global version of the local [colorAdd] */
-    val renderColorAdd: ColorAdd get() = renderColorTransform.colorAdd
+    val renderColorAdd: ColorAdd get() {
+        updateRenderColorTransformIfRequired()
+        return _renderColorTransform.colorAdd
+    }
 
     /** The concatenated/global version of the local [alpha] */
-    val renderAlpha: Double get() = renderColorTransform.mA
+    val renderAlpha: Double get() {
+        updateRenderColorTransformIfRequired()
+        return renderColorTransform.mA
+    }
 
     /** Computes the local X coordinate of the mouse using the coords from the [Views] object */
     fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
@@ -681,7 +705,12 @@ abstract class View internal constructor(
      * Filters allow to render this view to a texture, and to control how to render that texture (using shaders, repeating the texture, etc.).
      * You add multiple filters by creating a composite filter [ComposedFilter].
      */
+    private var _isFilterSet = false
     var filter: Filter? = null
+        set(value) {
+            field = value
+            _isFilterSet = (value != null)
+        }
 
     fun addFilter(filter: Filter) {
         when (this.filter) {
@@ -711,8 +740,8 @@ abstract class View internal constructor(
      */
     final override fun render(ctx: RenderContext) {
         if (!visible) return
-        if (filter != null) {
-            renderFiltered(ctx, filter!!)
+        if (_isFilterSet) {
+            renderFiltered(ctx)
         } else {
             renderInternal(ctx)
         }
@@ -756,6 +785,10 @@ abstract class View internal constructor(
             line(centerX - 5, centerY, centerX + 5, centerY)
         }
         //ctx.flush()
+    }
+
+    private fun renderFiltered(ctx: RenderContext) {
+        renderFiltered(ctx, filter!!)
     }
 
     private fun renderFiltered(ctx: RenderContext, filter: Filter) {
