@@ -362,10 +362,9 @@ class BatchBuilder2D constructor(
 		ensure(icount, vcount)
 
 		for (idx in 0 until min2(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
-		//for (p in array.points) addVertex(p.x, p.y, p.tx, p.ty, p.colMul, p.colAdd)
 
-		FBuffer.copy(array._data, 0, vertices, vertexPos * 4, vcount * 6 * 4)
-		//vertices.setAlignedArrayInt32(vertexPos, array.data, 0, vcount * 6)
+        arraycopy(array._data.i32, 0, vertices.i32, vertexPos, vcount * 6)
+
 		_vertexCount += vcount
 		vertexPos += vcount * 6
 	}
@@ -373,7 +372,7 @@ class BatchBuilder2D constructor(
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
      */
-	inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null) {
+    inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null) {
 		setStateFast(tex.base, smoothing, blendFactors, program)
 		drawVertices(array, vcount, icount)
 	}
@@ -396,7 +395,7 @@ class BatchBuilder2D constructor(
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
-	inline fun setStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
+    inline fun setStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
         if (currentTex === tex && currentSmoothing == smoothing && currentBlendFactors === blendFactors && currentProgram === program) return
         flush()
         currentTex = tex
