@@ -6,6 +6,7 @@ import com.soywiz.korio.time.*
 import com.soywiz.korio.util.*
 import com.sun.jna.*
 import java.io.*
+import java.net.*
 import java.nio.Buffer
 import kotlin.printStackTrace
 
@@ -260,12 +261,16 @@ val nativeOpenALLibraryPath: String? by lazy {
 
 private val arch by lazy { System.getProperty("os.arch").toLowerCase() }
 private val alClassLoader by lazy { AL::class.java.classLoader }
-private fun getNativeFile(path: String): ByteArray = alClassLoader.getResource(path)?.readBytes() ?: error("Can't find '$path'")
+private fun getNativeFileURL(path: String): URL? = alClassLoader.getResource(path)
+private fun getNativeFile(path: String): ByteArray = getNativeFileURL(path)?.readBytes() ?: error("Can't find '$path'")
 private fun getNativeFileLocalPath(path: String): String {
     val tempDir = File(System.getProperty("java.io.tmpdir"))
     //val tempFile = File.createTempFile("libopenal_", ".${File(path).extension}")
     val tempFile = File(tempDir, "korau_openal.${File(path).extension}")
-    if (!tempFile.exists()) {
+
+    val expectedSize = getNativeFileURL(path)?.openStream()?.use { it.available().toLong() }
+
+    if (!tempFile.exists() || tempFile.length() != expectedSize) {
         try {
             tempFile.writeBytes(getNativeFile(path))
         } catch (e: Throwable) {
