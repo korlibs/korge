@@ -47,6 +47,7 @@ interface AsyncPositionStream : AsyncGetPositionStream {
 }
 
 interface AsyncGetLengthStream : AsyncBaseStream {
+    suspend fun hasLength() = try { getLength(); true } catch (t: UnsupportedOperationException) { false }
 	suspend fun getLength(): Long = throw UnsupportedOperationException()
 }
 
@@ -189,24 +190,15 @@ class AsyncStream(val base: AsyncStreamBase, var position: Long = 0L, val queue:
 	override suspend fun getLength(): Long = base.getLength()
 	suspend fun size(): Long = base.getLength()
 
+    suspend fun hasAvailable() = hasLength()
 	suspend fun getAvailable(): Long = getLength() - getPosition()
-	suspend fun eof(): Boolean = this.getAvailable() <= 0L
+	suspend fun eof(): Boolean = hasAvailable() && this.getAvailable() <= 0L
 
 	override suspend fun close(): Unit = base.close()
 
 	fun duplicate(): AsyncStream = AsyncStream(base, position)
 }
 
-suspend fun AsyncStream.hasLength() = try {
-	getLength(); true
-} catch (t: Throwable) {
-	false
-}
-suspend fun AsyncStream.hasAvailable() = try {
-	getAvailable(); true
-} catch (t: Throwable) {
-	false
-}
 
 inline fun <T> AsyncStream.keepPosition(callback: () -> T): T {
 	val old = this.position
@@ -274,7 +266,7 @@ class BufferedStreamBase(val base: AsyncStreamBase, val blockSize: Int = 2048, v
 	var cachedSector = -1L
 
 	suspend fun _read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
-		if (position >= base.getLength()) return -1
+		if (base.hasLength() && position >= base.getLength()) return -1
 		val sector = position / bsize
 		if (cachedSector != sector) {
 			cachedData = base.readBytes(sector * bsize, bsize)
