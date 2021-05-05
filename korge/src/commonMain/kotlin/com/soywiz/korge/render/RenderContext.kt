@@ -39,6 +39,9 @@ class RenderContext constructor(
 ) : Extra by Extra.Mixin(), BoundsProvider by bp {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
 
+    /** Allows to register handlers when the [flush] method is called */
+    val flushers = Signal<Unit>()
+
     val views: Views? = bp as? Views?
 
     var debugAnnotateView: View? = null
@@ -46,13 +49,10 @@ class RenderContext constructor(
     var stencilIndex: Int = 0
 
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
-	val batch by lazy { BatchBuilder2D(this, batchMaxQuads) }
+    val batch = BatchBuilder2D(this, batchMaxQuads)
 
     /** [RenderContext2D] similar to the one from JS, that keeps an matrix (affine transformation) and allows to draw shapes using the current matrix */
-	val ctx2d by lazy { RenderContext2D(batch, agBitmapTextureManager) }
-
-    /** Allows to register handlers when the [flush] method is called */
-    val flushers = Signal<Unit>()
+    val ctx2d = RenderContext2D(batch, agBitmapTextureManager)
 
     /** Pool of [Matrix] objects that could be used temporarily by renders */
     val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix() }
