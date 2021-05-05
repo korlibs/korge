@@ -2,6 +2,8 @@
 
 package com.soywiz.kds
 
+import com.soywiz.kds.iterators.*
+
 actual inline fun <T> Any?.fastCastTo(): T = this.asDynamic()
 
 actual class FastIntMap<T>(dummy: Boolean)
@@ -126,7 +128,7 @@ internal fun Array_from(value: dynamic): Array<dynamic> = JsArray.from(value)
 //@JsName("delete")
 //external fun jsDelete(v: dynamic): Unit
 
-public actual open class FastArrayList<E> internal constructor(private var array: Array<Any?>) : AbstractMutableList<E>(), MutableList<E>, RandomAccess {
+public actual open class FastArrayList<E> internal constructor(@PublishedApi internal var array: Array<Any?>) : AbstractMutableList<E>(), MutableList<E>, RandomAccess {
     private var isReadOnly: Boolean = false
 
     /**
@@ -235,6 +237,42 @@ public actual open class FastArrayList<E> internal constructor(private var array
     private fun rangeCheck(index: Int) = index.apply {
         if (index < 0 || index >= size) {
             throw IndexOutOfBoundsException("index: $index, size: $size")
+        }
+    }
+
+    actual inline fun fastForEach(callback: (E) -> Unit) {
+        val array = this.array
+        var n = 0
+        while (n < array.size) {
+            callback(array[n++].unsafeCast<E>())
+        }
+    }
+    
+    actual inline fun fastForEachWithIndex(callback: (index: Int, value: E) -> Unit) {
+        val array = this.array
+        var n = 0
+        while (n < array.size) {
+            callback(n, array[n].unsafeCast<E>())
+            n++
+        }
+    }
+
+    actual inline fun fastForEachReverse(callback: (E) -> Unit) {
+        val array = this.array
+        var n = 0
+        while (n < array.size) {
+            callback(array[size - n - 1].unsafeCast<E>())
+            n++
+        }
+    }
+
+    actual inline fun fastForEachReverseWithIndex(callback: (index: Int, value: E) -> Unit) {
+        val array = this.array
+        var n = 0
+        while (n < array.size) {
+            val index = array.size - n - 1
+            callback(index, array[index].unsafeCast<E>())
+            n++
         }
     }
 

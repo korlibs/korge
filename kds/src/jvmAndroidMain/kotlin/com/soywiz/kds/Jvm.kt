@@ -71,5 +71,3 @@ actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K)
         callback(key)
     }
 }
-
-actual typealias FastArrayList<E> = java.util.ArrayList<E>

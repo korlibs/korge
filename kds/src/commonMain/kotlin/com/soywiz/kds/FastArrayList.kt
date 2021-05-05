@@ -41,6 +41,11 @@ expect class FastArrayList<E> : MutableList<E>, RandomAccess {
     override fun listIterator(): MutableListIterator<E>
     override fun listIterator(index: Int): MutableListIterator<E>
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<E>
+
+    inline fun fastForEach(callback: (E) -> Unit)
+    inline fun fastForEachWithIndex(callback: (index: Int, value: E) -> Unit)
+    inline fun fastForEachReverse(callback: (E) -> Unit)
+    inline fun fastForEachReverseWithIndex(callback: (index: Int, value: E) -> Unit)
 }
 
 fun <T> List<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
