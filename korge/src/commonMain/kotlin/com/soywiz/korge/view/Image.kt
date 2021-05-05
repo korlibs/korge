@@ -52,6 +52,10 @@ open class BaseImage(
 
     fun trySetSource() {
         if (setBitmapSource) return
+        trySetSourceActually()
+    }
+
+    private fun trySetSourceActually() {
         val source = bitmapSrc.getOrNull()
         if (source != null) {
             setBitmapSource = true
