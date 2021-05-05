@@ -3,8 +3,10 @@ package com.soywiz.korim.bitmap
 import com.soywiz.korim.color.*
 import kotlin.native.concurrent.*
 
-@ThreadLocal
+@SharedImmutable @PublishedApi internal val Bitmaps_transparent: BitmapSlice<Bitmap32> = Bitmap32(1, 1).slice(name = "transparent")
+@SharedImmutable @PublishedApi internal val Bitmaps_white: BitmapSlice<Bitmap32> = Bitmap32(1, 1, RgbaArray(1) { Colors.WHITE }).slice(name = "white")
+
 object Bitmaps {
-    val transparent: BitmapSlice<Bitmap32> = Bitmap32(1, 1).slice(name = "transparent")
-    val white: BitmapSlice<Bitmap32> = Bitmap32(1, 1, RgbaArray(1) { Colors.WHITE }).slice(name = "white")
+    inline val transparent: BitmapSlice<Bitmap32> get() = Bitmaps_transparent
+    inline val white: BitmapSlice<Bitmap32> get() = Bitmaps_white
 }
