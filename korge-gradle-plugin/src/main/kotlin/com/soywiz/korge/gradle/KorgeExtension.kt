@@ -113,6 +113,8 @@ class KorgeExtension(val project: Project) {
         }
     }
 
+    var mingwX64PatchedLegacyMemoryManager: Boolean = true
+    
     /**
      * Configures JVM target
      */
