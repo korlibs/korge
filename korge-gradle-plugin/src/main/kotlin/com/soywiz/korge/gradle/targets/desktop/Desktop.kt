@@ -157,6 +157,7 @@ private fun Project.addNativeRun() {
     val mingwX64SelectPatchedMemoryManager = tasks.create("mingwX64SelectPatchedMemoryManager") { task ->
         task.doFirst {
             val nativeFolder = File(System.getProperty("user.home"), ".konan/kotlin-native-prebuilt-windows-1.5/konan/targets/mingw_x64/native")
+            // https://github.com/JetBrains/kotlin/pull/4339
             val newFile = File(nativeFolder, "legacy_memory_manager.new.bc")
             val oldFile = File(nativeFolder, "legacy_memory_manager.old.bc")
             val activeFile = File(nativeFolder, "legacy_memory_manager.bc")

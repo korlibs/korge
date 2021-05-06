@@ -113,6 +113,7 @@ class KorgeExtension(val project: Project) {
         }
     }
 
+    // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
     
     /**
