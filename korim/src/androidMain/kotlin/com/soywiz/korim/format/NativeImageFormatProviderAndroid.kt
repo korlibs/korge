@@ -122,7 +122,7 @@ class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
         androidBitmap.setPixels(out.ints, offset, this.width, x, y, width, height)
         BGRA.bgraToRgba(out.ints, offset, width * height)
     }
-    override fun setRgba(x: Int, y: Int, v: RGBA) = run { androidBitmap.setPixel(x, y, v.value) }
+    override fun setRgba(x: Int, y: Int, v: RGBA) { androidBitmap.setPixel(x, y, v.value) }
     override fun getRgba(x: Int, y: Int): RGBA = RGBA(androidBitmap.getPixel(x, y))
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AndroidContext2dRenderer(androidBitmap, antialiasing))
