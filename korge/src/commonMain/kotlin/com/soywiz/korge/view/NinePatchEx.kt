@@ -15,7 +15,7 @@ inline fun Container.ninePatch(
 ) = NinePatchEx(tex, width, height).addTo(this, callback)
 
 inline fun Container.ninePatch(
-	ninePatch: NinePatchBitmap32, width: Double = ninePatch.dwidth, height: Double = ninePatch.dheight,
+	ninePatch: NinePatchBmpSlice, width: Double = ninePatch.dwidth, height: Double = ninePatch.dheight,
 	callback: @ViewDslMarker NinePatchEx.() -> Unit
 ) = NinePatchEx(ninePatch, width, height).addTo(this, callback)
 
@@ -34,7 +34,7 @@ class NinePatchEx(
 
     companion object {
 		operator fun invoke(
-			ninePatch: NinePatchBitmap32,
+			ninePatch: NinePatchBmpSlice,
 			width: Double = ninePatch.width.toDouble(), height: Double = ninePatch.height.toDouble()
 		): NinePatchEx = NinePatchEx(Tex(ninePatch), width, height)
 	}
