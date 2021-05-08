@@ -2,6 +2,7 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
@@ -65,6 +66,25 @@ abstract class BmpSlice(
     val bl_y = p3.y.toFloat()
 
     val rotatedAngle: Int = 0
+
+    fun readPixels(x: Int, y: Int, width: Int, height: Int, out: RgbaArray = RgbaArray(width * height), offset: Int = 0): RgbaArray {
+        check(x in 0 until this.width)
+        check(y in 0 until this.height)
+        check((x + width) in 0 .. this.width)
+        check((y + height) in 0 .. this.height)
+        check(out.size >= offset + width * height)
+        bmpBase.readPixelsUnsafe(left + x, top + y, width, height, out, offset)
+        return out
+    }
+
+    fun getRgba(x: Int, y: Int): RGBA = bmpBase.getRgba(left + x, top + y)
+    fun setRgba(x: Int, y: Int, value: RGBA): Unit = bmpBase.setRgba(left + x, top + y, value)
+
+    open fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null): BmpSlice =
+        BitmapSlice(bmp, createRectangleInt(bounds.left, bounds.top, bounds.right, bounds.bottom, left, top, right, bottom), name)
+    open fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null): BmpSlice = sliceWithBounds(x, y, x + width, y + height, name)
+    open fun slice(rect: RectangleInt, name: String? = null): BmpSlice = sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name)
+    open fun slice(rect: Rectangle, name: String? = null): BmpSlice = slice(rect.toInt(), name)
 }
 
 val BmpSlice.nameSure: String get() = name ?: "unknown"
@@ -85,12 +105,11 @@ class BitmapSlice<out T : Bitmap>(
 
 	fun extract(): T = bmp.extract(bounds.x, bounds.y, bounds.width, bounds.height)
 
-	fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null): BitmapSlice<T> =
+	override fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String?): BitmapSlice<T> =
 		BitmapSlice(bmp, createRectangleInt(bounds.left, bounds.top, bounds.right, bounds.bottom, left, top, right, bottom), name)
-
-	fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null): BitmapSlice<T> = sliceWithBounds(x, y, x + width, y + height, name)
-	fun slice(rect: RectangleInt, name: String? = null): BitmapSlice<T> = sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name)
-	fun slice(rect: Rectangle, name: String? = null): BitmapSlice<T> = slice(rect.toInt(), name)
+    override fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String?): BitmapSlice<T> = sliceWithBounds(x, y, x + width, y + height, name)
+    override fun slice(rect: RectangleInt, name: String?): BitmapSlice<T> = sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name)
+    override fun slice(rect: Rectangle, name: String?): BitmapSlice<T> = slice(rect.toInt(), name)
 
     fun split(width: Int, height: Int): List<BitmapSlice<T>> {
         val self = this
