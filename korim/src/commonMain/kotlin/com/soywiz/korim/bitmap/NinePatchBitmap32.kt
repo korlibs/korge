@@ -4,13 +4,11 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.internal.*
 import com.soywiz.korim.internal.max2
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
-import kotlin.math.*
 
 class NinePatchInfo(
 	val xranges: List<Pair<Boolean, IntRange>>,
@@ -102,21 +100,27 @@ class NinePatchInfo(
 
 }
 
-class NinePatchBitmap32(val bmp: Bitmap32) {
-	val width get() = bmp.width
-	val height get() = bmp.height
+open class NinePatchBmpSlice(val bmpSlice: BmpSlice) {
+    constructor(bmp: Bitmap) : this(bmp.slice())
+
+	val width get() = bmpSlice.width
+	val height get() = bmpSlice.height
 	val dwidth get() = width.toDouble()
 	val dheight get() = height.toDouble()
-	val content = bmp.sliceWithBounds(1, 1, bmp.width - 1, bmp.height - 1)
+	val content = bmpSlice.sliceWithBounds(1, 1, bmpSlice.width - 1, bmpSlice.height - 1)
 
-	val info = NinePatchInfo(
-		(1 until bmp.width - 1).computeRle { bmp[it, 0].a != 0 },
-		(1 until bmp.height - 1).computeRle { bmp[0, it].a != 0 },
-		content.width, content.height
-	)
+	val info: NinePatchInfo = run {
+        val topPixels = bmpSlice.readPixels(0, 0, bmpSlice.width, 1)
+        val leftPixels = bmpSlice.readPixels(0, 0, 1, bmpSlice.height)
+        NinePatchInfo(
+            (1 until bmpSlice.width - 1).computeRle { topPixels[it].a != 0 },
+            (1 until bmpSlice.height - 1).computeRle { leftPixels[it].a != 0 },
+            content.width, content.height
+        )
+    }
 
-	val NinePatchInfo.Segment.bmp by Extra.PropertyThis<NinePatchInfo.Segment, Bitmap32> {
-		this@NinePatchBitmap32.content.slice(this.rect).extract()
+	val NinePatchInfo.Segment.bmp by Extra.PropertyThis<NinePatchInfo.Segment, Bitmap> {
+		this@NinePatchBmpSlice.content.slice(this.rect).extract()
 	}
 
 	fun <T : Bitmap> drawTo(
@@ -136,18 +140,21 @@ class NinePatchBitmap32(val bmp: Bitmap32) {
 		return other
 	}
 
-	fun rendered(width: Int, height: Int, antialiased: Boolean = true, drawRegions: Boolean = false): Bitmap32 {
-		return drawTo(
-			NativeImage(width, height),
-			//Bitmap32(width, height),
-			RectangleInt(0, 0, width, height),
-			antialiased = antialiased,
-			drawRegions = drawRegions
-		).toBMP32()
-	}
+	fun renderedNative(width: Int, height: Int, antialiased: Boolean = true, drawRegions: Boolean = false): NativeImage = drawTo(
+        NativeImage(width, height),
+        //Bitmap32(width, height),
+        RectangleInt(0, 0, width, height),
+        antialiased = antialiased,
+        drawRegions = drawRegions
+    )
+
+    fun rendered(width: Int, height: Int, antialiased: Boolean = true, drawRegions: Boolean = false): Bitmap32 = renderedNative(width, height, antialiased, drawRegions).toBMP32IfRequired()
 }
 
-fun Bitmap.asNinePatch() = NinePatchBitmap32(this.toBMP32())
+open class NinePatchBitmap32(val bmp: Bitmap32) : NinePatchBmpSlice(bmp)
+
+fun BmpSlice.asNinePatch() = NinePatchBmpSlice(this)
+fun Bitmap.asNinePatch() = NinePatchBitmap32(this.toBMP32IfRequired())
 suspend fun VfsFile.readNinePatch(format: ImageFormat = RegisteredImageFormats) = NinePatchBitmap32(readBitmap(format).toBMP32())
 
 private inline fun <T, R : Any> Iterable<T>.computeRle(callback: (T) -> R): List<Pair<R, IntRange>> {

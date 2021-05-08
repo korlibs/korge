@@ -1,11 +1,34 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.korim.atlas.*
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class NinePatchBitmap32Test {
+    @Test
+    fun testAtlasFromBmpSlice() = suspendTestNoBrowser {
+        val bmp = resourcesVfs["bubble-chat.9.png"].readBitmap()
+        val atlas = AtlasPacker.pack(listOf(bmp.slice(name = "bmp1"), bmp.slice(name = "bmp2")))
+        val bmp1 = atlas["bmp1"]
+        val bmp2 = atlas["bmp2"]
+        val ninePatch1 = bmp1.asNinePatch()
+        val ninePatch2 = bmp2.asNinePatch()
+
+        for (ninePatch in listOf(ninePatch1, ninePatch2)) {
+            assertEquals(
+                listOf(false to 0..89, true to 90..156, false to 157..199),
+                ninePatch.info.xsegments.map { it.scaled to it.range }
+            )
+            assertEquals(
+                listOf(false to 0..55, true to 56..107, false to 108..199),
+                ninePatch1.info.ysegments.map { it.scaled to it.range }
+            )
+        }
+    }
+
     @Test
     fun name() = suspendTestNoBrowser {
         val ninePatch = resourcesVfs["bubble-chat.9.png"].readNinePatch()
