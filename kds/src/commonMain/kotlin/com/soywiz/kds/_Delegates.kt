@@ -50,7 +50,10 @@ interface Extra {
 fun <T : Any> Extra.getExtraTyped(name: String): T? = extra?.get(name) as T?
 fun Extra.getExtra(name: String): Any? = extra?.get(name)
 fun Extra.setExtra(name: String, value: Any?): Unit {
-    if (extra == null) extra = LinkedHashMap()
+    if (extra == null) {
+        if (value == null) return
+        extra = LinkedHashMap()
+    }
     extra?.set(name, value)
 }
 

@@ -185,28 +185,49 @@ class NinePatchInfo(
     }
 }
 
-open class NinePatchBmpSlice(val bmpSlice: BmpSlice) {
-    constructor(bmp: Bitmap) : this(bmp.slice())
+open class NinePatchBmpSlice(
+    val content: BmpSlice,
+    val info: NinePatchInfo,
+    val bmpSlice: BmpSlice = content
+) {
+    companion object {
+        fun createSimple(bmp: BmpSlice, left: Int, top: Int, right: Int, bottom: Int): NinePatchBmpSlice {
+            return NinePatchBmpSlice(bmp, NinePatchInfo(bmp.width, bmp.height, left, top, right, bottom))
+        }
+
+        operator fun invoke(bmp: Bitmap) = invoke(bmp.slice())
+        operator fun invoke(bmpSlice: BmpSlice): NinePatchBmpSlice {
+            val content = bmpSlice.sliceWithBounds(1, 1, bmpSlice.width - 1, bmpSlice.height - 1)
+            return NinePatchBmpSlice(
+                content = content,
+                info = run {
+                    val topPixels = bmpSlice.readPixels(0, 0, bmpSlice.width, 1)
+                    val leftPixels = bmpSlice.readPixels(0, 0, 1, bmpSlice.height)
+                    NinePatchInfo(
+                        (1 until bmpSlice.width - 1).computeRle { topPixels[it].a != 0 },
+                        (1 until bmpSlice.height - 1).computeRle { leftPixels[it].a != 0 },
+                        content.width, content.height
+                    )
+                },
+                bmpSlice = bmpSlice
+            )
+        }
+    }
 
 	val width get() = bmpSlice.width
 	val height get() = bmpSlice.height
 	val dwidth get() = width.toDouble()
 	val dheight get() = height.toDouble()
-	val content = bmpSlice.sliceWithBounds(1, 1, bmpSlice.width - 1, bmpSlice.height - 1)
 
-	val info: NinePatchInfo = run {
-        val topPixels = bmpSlice.readPixels(0, 0, bmpSlice.width, 1)
-        val leftPixels = bmpSlice.readPixels(0, 0, 1, bmpSlice.height)
-        NinePatchInfo(
-            (1 until bmpSlice.width - 1).computeRle { topPixels[it].a != 0 },
-            (1 until bmpSlice.height - 1).computeRle { leftPixels[it].a != 0 },
-            content.width, content.height
-        )
+    val NinePatchInfo.Segment.bmpSlice by Extra.PropertyThis<NinePatchInfo.Segment, BmpSlice> {
+        this@NinePatchBmpSlice.content.slice(this.rect)
     }
 
-	val NinePatchInfo.Segment.bmp by Extra.PropertyThis<NinePatchInfo.Segment, Bitmap> {
-		this@NinePatchBmpSlice.content.slice(this.rect).extract()
+    val NinePatchInfo.Segment.bmp by Extra.PropertyThis<NinePatchInfo.Segment, Bitmap> {
+		this@NinePatchBmpSlice.bmpSlice.extract()
 	}
+
+    fun getSegmentBmpSlice(segment: NinePatchInfo.Segment) = segment.bmpSlice
 
 	fun <T : Bitmap> drawTo(
 		other: T,
@@ -236,10 +257,18 @@ open class NinePatchBmpSlice(val bmpSlice: BmpSlice) {
     fun rendered(width: Int, height: Int, antialiased: Boolean = true, drawRegions: Boolean = false): Bitmap32 = renderedNative(width, height, antialiased, drawRegions).toBMP32IfRequired()
 }
 
-open class NinePatchBitmap32(val bmp: Bitmap32) : NinePatchBmpSlice(bmp)
+typealias NinePatchBitmap32 = NinePatchBmpSlice
 
 fun BmpSlice.asNinePatch() = NinePatchBmpSlice(this)
 fun Bitmap.asNinePatch() = NinePatchBitmap32(this.toBMP32IfRequired())
+
+fun BmpSlice.asNinePatchSimpleRatio(left: Double, top: Double, right: Double, bottom: Double) = this.asNinePatchSimple(
+    (left * width).toInt(), (top * height).toInt(),
+    (right * width).toInt(), (bottom * height).toInt()
+)
+fun BmpSlice.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = NinePatchBmpSlice(this, NinePatchInfo(width, height, left, top, right, bottom))
+fun Bitmap.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = this.slice().asNinePatchSimple(left, top, right, bottom)
+
 suspend fun VfsFile.readNinePatch(format: ImageFormat = RegisteredImageFormats) = NinePatchBitmap32(readBitmap(format).toBMP32())
 
 private inline fun <T, R : Any> Iterable<T>.computeRle(callback: (T) -> R): List<Pair<R, IntRange>> {

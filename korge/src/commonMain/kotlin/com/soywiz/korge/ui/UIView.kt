@@ -5,13 +5,26 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.internal.*
+import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
+import kotlin.reflect.*
+
+private val View._defaultUiSkin: UISkin by extraProperty { UISkin {  } }
+
+var View.uiSkin: UISkin? by extraProperty { null }
+val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaultUiSkin
 
 open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0
-) : Container() {
+) : Container(), UISkinable {
+    private val skinProps = LinkedHashMap<KProperty<*>, Any?>()
+    override fun <T> setSkinProperty(property: KProperty<*>, value: T) { skinProps[property] = value }
+    override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? = (skinProps[property] as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
 
 	override var width: Double by uiObservable(width) { onSizeChanged() }
 	override var height: Double by uiObservable(height) { onSizeChanged() }
@@ -55,6 +68,20 @@ open class UIView(
             DummyUpdateComponentWithViews(stage)
 		}
 	}
+
+    companion object {
+        fun fitIconInRect(iconView: Image, bmp: BmpSlice, width: Double, height: Double, anchor: Anchor) {
+            val iconScaleX = width / bmp.width
+            val iconScaleY = height / bmp.height
+            val iconScale = min2(iconScaleX, iconScaleY)
+
+            iconView.bitmap = bmp
+            iconView.anchor(anchor)
+            iconView.position(width * anchor.sx, height * anchor.sy)
+            iconView.scale(iconScale, iconScale)
+
+        }
+    }
 }
 
 internal class DummyUpdateComponentWithViews(override val view: BaseView) : UpdateComponentWithViews {

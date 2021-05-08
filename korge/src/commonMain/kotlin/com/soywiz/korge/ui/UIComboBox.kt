@@ -11,9 +11,8 @@ inline fun <T> Container.uiComboBox(
     selectedIndex: Int = 0,
     items: List<T>,
     verticalScroll: Boolean = true,
-    skin: ComboBoxSkin = defaultComboBoxSkin,
     block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
-) = UIComboBox(width, height, selectedIndex, items, verticalScroll, skin).addTo(this).apply(block)
+) = UIComboBox(width, height, selectedIndex, items, verticalScroll).addTo(this).apply(block)
 
 open class UIComboBox<T>(
     width: Double = 192.0,
@@ -21,7 +20,6 @@ open class UIComboBox<T>(
     selectedIndex: Int = 0,
     items: List<T> = listOf(),
     verticalScroll: Boolean = true,
-    private val skin: ComboBoxSkin = DefaultComboBoxSkin
 ) : UIView(width, height) {
 
     var selectedIndex by uiObservable(selectedIndex) { updateState() }
@@ -38,8 +36,8 @@ open class UIComboBox<T>(
         verticalScroll = verticalScroll,
         horizontalScroll = false,
     )
-    private val selectedButton = uiTextButton(width - height, height, "", skin.selectedSkin, skin.textFont)
-    private val expandButton = iconButton(height, height, skin.expandSkin).position(width - height, 0.0)
+    private val selectedButton = uiButton(width - height, height, "")
+    private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     private var showItems = false
 
@@ -90,12 +88,10 @@ open class UIComboBox<T>(
     private fun updateItems() {
         itemsView.container.removeChildren()
         for ((index, item) in items.withIndex()) {
-            itemsView.container.uiTextButton(
+            itemsView.container.uiButton(
                 width - 32.0,
                 itemHeight.toDouble(),
-                item.toString(),
-                skin.itemSkin,
-                skin.textFont
+                item.toString()
             ) {
                 position(0, index * this@UIComboBox.itemHeight)
                 onClick {
@@ -127,8 +123,7 @@ open class UIComboBox<T>(
         itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
         selectedButton.simulatePressing(showItems)
         expandButton.simulatePressing(showItems)
-        expandButton.skin = skin.expandSkin
-        expandButton.iconSkin = if (showItems) skin.hideIcon else skin.showIcon
+        expandButton.icon = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon
         invisibleRect.size(width, height)
         selectedButton.size(width - height, height)
         selectedButton.text = selectedItem?.toString() ?: ""

@@ -37,8 +37,8 @@ open class RectBase(
             }
         }
 
-	override var anchorX: Double = anchorX; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
-    override var anchorY: Double = anchorY; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
+	override var anchorX: Double = anchorX; set(v) { if (field != v) { field = v; dirtyVertices = true; anchorVersion++ } }
+    override var anchorY: Double = anchorY; set(v) { if (field != v) { field = v; dirtyVertices = true; anchorVersion++ } }
 
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0

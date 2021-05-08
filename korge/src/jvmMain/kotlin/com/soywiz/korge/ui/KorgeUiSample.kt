@@ -11,16 +11,20 @@ object KorgeUiSample {
     @JvmStatic
     fun main(args: Array<String>): Unit = runBlocking {
         Korge {
-            uiButton(64.0, 64.0, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(0, 0, 64, 64))) {
+            uiButton(64.0, 64.0) {
+                uiSkin = UISkin { buttonNormal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64 * 0, 0, 64, 64).asNinePatchSimpleRatio(0.25, 0.25, 0.75, 0.75) }
                 position(130, 270)
             }
-            uiButton(64.0, 64.0, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64, 0, 64, 64))) {
+            uiButton(64.0, 64.0) {
+                uiSkin = UISkin { buttonNormal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64 * 1, 0, 64, 64).asNinePatchSimpleRatio(0.25, 0.25, 0.75, 0.75) }
                 position(130, 340)
             }
-            uiButton(64.0, 64.0, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(128, 0, 64, 64))) {
+            uiButton(64.0, 64.0) {
+                uiSkin = UISkin { buttonNormal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64 * 2, 0, 64, 64).asNinePatchSimpleRatio(0.25, 0.25, 0.75, 0.75) }
                 position(130, 410)
             }
-            uiButton(64.0, 64.0, skin = UISkin(normal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(192, 0, 64, 64))) {
+            uiButton(64.0, 64.0) {
+                uiSkin = UISkin { buttonNormal = DEFAULT_CHECKED_SKIN_IMG.sliceWithSize(64 * 3, 0, 64, 64).asNinePatchSimpleRatio(0.25, 0.25, 0.75, 0.75) }
                 position(130, 480)
             }
         }

@@ -1,36 +1,26 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.html.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.uiText(
     text: String,
     width: Double = 128.0,
     height: Double = 64.0,
-    skin: TextSkin = defaultTextSkin,
     block: @ViewDslMarker UIText.() -> Unit = {}
-): UIText = UIText(text, width, height, skin).addTo(this).apply(block)
+): UIText = UIText(text, width, height).addTo(this).apply(block)
 
 class UIText(
-    text: String,
+    var text: String,
     width: Double = 128.0,
     height: Double = 64.0,
-    private val skin: TextSkin = DefaultTextSkin
 ) : UIView(width, height) {
-
-    var text by uiObservable(text) { updateText() }
-    var textColor by uiObservable(skin.normal.color) { updateText() }
-    var textSize by uiObservable(skin.normal.size) { updateText() }
-    var textFont by uiObservable(skin.normal.font) { updateText() }
-    var textAlignment by uiObservable(TextAlignment.MIDDLE_CENTER) { updateText() }
-
     protected var bover by uiObservable(false) { updateState() }
     protected var bpressing by uiObservable(false) { updateState() }
 
-    private val background = solidRect(width, height, skin.backColor)
+    private val background = solidRect(width, height, buttonBackColor)
     private val textView = text(text)
 
     init {
@@ -48,7 +38,6 @@ class UIText(
                 simulateUp()
             }
         }
-        updateText()
     }
 
     fun simulateOver() {
@@ -71,28 +60,17 @@ class UIText(
         bpressing = false
     }
 
-    override fun updateState() {
-        val (color, size, font) = when {
-            !enabled -> skin.disabled
-            bpressing -> skin.down
-            bover -> skin.over
-            else -> skin.normal
-        }
-        textColor = color
-        textSize = size
-        textFont = font
-        updateText()
-    }
+    private val textBounds = Rectangle()
 
-    private fun updateText() {
-        textView.setFormat(face = textFont, size = textSize, color = textColor, align = textAlignment)
-        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
-        textView.setText(text)
-    }
-
-    override fun onSizeChanged() {
-        super.onSizeChanged()
+    override fun renderInternal(ctx: RenderContext) {
+        textBounds.setTo(0.0, 0.0, width, height)
+        textView.setFormat(face = textFont, size = textSize.toInt(), color = textColor, align = textAlignment)
+        textView.setTextBounds(textBounds)
         background.size(width, height)
-        textView.setTextBounds(Rectangle(0.0, 0.0, width, height))
+        textView.text = text
+        super.renderInternal(ctx)
+    }
+
+    override fun updateState() {
     }
 }

@@ -14,14 +14,14 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         position(128, 265)
     }
 
-    uiTextButton(256.0, 32.0, "Disabled Button") {
+    uiButton(256.0, 32.0, "Disabled Button") {
         position(128, 128)
         onClick {
             println("CLICKED!")
         }
         disable()
     }
-    uiTextButton(256.0, 32.0, "Enabled Button") {
+    uiButton(256.0, 32.0, "Enabled Button") {
         position(128, 128 + 32)
         onClick {
             println("CLICKED!")
@@ -54,7 +54,7 @@ suspend fun korge() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
         position(480, 128)
     }) {
         for (n in 0 until 16) {
-            uiTextButton(text = "HELLO $n").position(0, n * 64)
+            uiButton(text = "HELLO $n").position(0, n * 64)
         }
     }
 

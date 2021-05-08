@@ -2,8 +2,10 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
@@ -16,42 +18,54 @@ inline fun Container.uiCheckBox(
     height: Double = 32.0,
     checked: Boolean = false,
     text: String = "CheckBox",
-    textFont: Font = defaultUIFont,
-    skin: UISkin = defaultUISkin,
-    checkIcon: IconSkin = defaultCheckSkin,
     block: @ViewDslMarker UICheckBox.() -> Unit = {}
-): UICheckBox = UICheckBox(width, height, checked, text, textFont, skin, checkIcon).addTo(this).apply(block)
+): UICheckBox = UICheckBox(width, height, checked, text).addTo(this).apply(block)
 
 open class UICheckBox(
     width: Double = 120.0,
     height: Double = 32.0,
     checked: Boolean = false,
-    text: String = "CheckBox",
-    textFont: Font = DefaultUIFont,
-    private val skin: UISkin = DefaultUISkin,
-    private val checkIcon: IconSkin = DefaultCheckSkin
+    var text: String = "CheckBox",
 ) : UIView(width, height), ViewLeaf {
-
-    var checked by uiObservable(checked) { updateState() }
-    var text by uiObservable(text) { updateText() }
-    var textFont by uiObservable(textFont) { updateText() }
-    var textSize by uiObservable(16) { updateText() }
-    var textColor by uiObservable(Colors.WHITE) { updateText() }
-
     val onChange = Signal<UICheckBox>()
 
+    var checked: Boolean = checked
+        get() = field
+        set(value) {
+            field = value
+            onChange(this)
+        }
+
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
-    private val box = ninePatch(skin.normal, height, height, 10.0 / 64.0, 10.0 / 64.0, 54.0 / 64.0, 54.0 / 64.0)
-    private val icon = ninePatch(
-        checkIcon.normal,
-        checkIcon.calculateWidth(height),
-        checkIcon.calculateHeight(height),
-        0.0, 0.0, 0.0, 0.0
-    ).position(checkIcon.paddingLeft(height), checkIcon.paddingTop(height)).also { it.visible = false }
+    private val box = ninePatch(buttonNormal, height, height)
+    private val icon = image(checkBoxIcon)
     private val textView = text(text)
 
     private var over by uiObservable(false) { updateState() }
     private var pressing by uiObservable(false) { updateState() }
+
+    private val textBounds = Rectangle()
+
+    override fun renderInternal(ctx: RenderContext) {
+        textView.setFormat(
+            face = textFont,
+            size = textSize.toInt(),
+            color = textColor,
+            align = TextAlignment.MIDDLE_LEFT
+        )
+        textView.text = text
+        textView.position(height + 8.0, 0.0)
+        textView.setTextBounds(textBounds)
+
+        background.size(width, height)
+        box.ninePatch = buttonNormal
+        box.size(height, height)
+        textBounds.setTo(0.0, 0.0, width - height - 8.0, height)
+
+        fitIconInRect(icon, checkBoxIcon, box.width, box.height, Anchor.MIDDLE_CENTER)
+        icon.visible = checked
+        super.renderInternal(ctx)
+    }
 
     init {
         mouse {
@@ -73,47 +87,6 @@ open class UICheckBox(
                 }
             }
         }
-        updateText()
-    }
-
-    override fun updateState() {
-        super.updateState()
-        box.tex = when {
-            !enabled -> skin.disabled
-            pressing -> skin.down
-            over -> skin.over
-            else -> skin.normal
-        }
-        icon.tex = when {
-            !enabled -> checkIcon.disabled
-            pressing -> checkIcon.down
-            over -> checkIcon.over
-            else -> checkIcon.normal
-        }
-        icon.visible = checked
-        onChange(this)
-    }
-
-    private fun updateText() {
-        textView.setFormat(
-            face = textFont,
-            size = textSize,
-            color = textColor,
-            align = TextAlignment.MIDDLE_LEFT
-        )
-        textView.setTextBounds(Rectangle(0.0, 0.0, width - height, height))
-        textView.setText(text)
-        textView.position(height + 8.0, 0.0)
-    }
-
-    override fun onSizeChanged() {
-        super.onSizeChanged()
-        background.size(width, height)
-        box.size(height, height)
-        icon.width = checkIcon.calculateWidth(height)
-        icon.height = checkIcon.calculateHeight(height)
-        textView.position(height + 8.0, 0.0)
-        textView.setTextBounds(Rectangle(0.0, 0.0, width - height - 8.0, height))
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {

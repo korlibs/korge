@@ -53,16 +53,16 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
         println(views.input.activeTouches)
     }
 
-    uiTextButton(text = "1") {
+    uiButton(text = "1") {
         position(10, 380)
         onPress { println("TAPPED ON 1") }
     }
-    uiTextButton(text = "2") {
+    uiButton(text = "2") {
         position(150, 380)
         onPress { println("TAPPED ON 2") }
     }
 
-    uiTextButton(text = "3") {
+    uiButton(text = "3") {
         position(300, 380)
         onPress { println("TAPPED ON 3") }
     }

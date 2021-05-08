@@ -49,10 +49,14 @@ suspend fun main3() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "U
 suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI") {
 	val nativeProcess = NativeProcess(views)
 
-	defaultUISkin = OtherUISkin()
-	defaultUIFont = resourcesVfs["uifont.fnt"].readBitmapFont()
+    uiSkin = UISkin {
+        val colorTransform = ColorTransform(0.7, 0.9, 1.0)
+        this.uiSkinBitmap = this.uiSkinBitmap.withColorTransform(colorTransform)
+        this.buttonBackColor = this.buttonBackColor.transform(colorTransform)
+        this.textFont = resourcesVfs["uifont.fnt"].readBitmapFont()
+    }
 
-	uiTextButton(256.0, 32.0) {
+    uiButton(256.0, 32.0) {
 		text = "Disabled Button"
 		position(128, 128)
 		onClick {
@@ -60,7 +64,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI
 		}
 		disable()
 	}
-	uiTextButton(256.0, 32.0) {
+    uiButton(256.0, 32.0) {
 		text = "Enabled Button"
 		position(128, 128 + 32)
 		onClick {
@@ -95,7 +99,7 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI
 		position(480, 128)
 	}) {
 		for (n in 0 until 16) {
-			uiTextButton(text = "HELLO $n").position(0, n * 64)
+            uiButton(text = "HELLO $n").position(0, n * 64)
 		}
 	}
 
@@ -108,26 +112,4 @@ suspend fun main() = Korge(quality = GameWindow.Quality.PERFORMANCE, title = "UI
 		tween(progress::ratio[1.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 		tween(progress::ratio[1.0, 0.0], time = 1.seconds, easing = Easing.EASE_IN_OUT)
 	}
-}
-
-private val otherColorTransform = ColorTransform(0.7, 0.9, 1.0)
-private val OTHER_UI_SKIN_IMG: Bitmap32 by lazy {
-	DEFAULT_UI_SKIN_IMG.withColorTransform(otherColorTransform)
-}
-
-private val OtherUISkinOnce = AsyncOnce<UISkin>()
-
-suspend fun OtherUISkin(): UISkin = OtherUISkinOnce {
-	//val ui = resourcesVfs["korge-ui.png"].readNativeImage().toBMP32().withColorTransform(otherColorTransform)
-	val ui = resourcesVfs["korge-ui.png"].readNativeImage()
-
-	DefaultUISkin.copy(
-		normal = ui.sliceWithSize(0, 0, 64, 64),
-		over = ui.sliceWithSize(64, 0, 64, 64),
-		down = ui.sliceWithSize(127, 0, 64, 64),
-		backColor = DefaultUISkin.backColor.transform(otherColorTransform)
-		//,
-		//font = Html.FontFace.Bitmap(getDebugBmpFontOnce())
-		//font = Html.FontFace.Bitmap(resourcesVfs["uifont.fnt"].readBitmapFontWithMipmaps())
-	)
 }
