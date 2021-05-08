@@ -41,8 +41,8 @@ class NinePatchBitmap32Test {
             listOf(false to 0..55, true to 56..107, false to 108..199),
             ninePatch.info.ysegments.map { it.scaled to it.range }
         )
-        assertEquals(202, ninePatch.bmp.width)
-        assertEquals(202, ninePatch.bmp.height)
+        assertEquals(202, ninePatch.bmpSlice.bmp.width)
+        assertEquals(202, ninePatch.bmpSlice.bmp.height)
 
         assertEquals(200, ninePatch.info.width)
         assertEquals(200, ninePatch.info.height)
