@@ -55,7 +55,7 @@ class NinePatchEx(
 
 		m.keep {
 			prescale(1.0 / xscale, 1.0 / yscale)
-			ninePatch.info.computeScaleFixed(bounds) { segment, x, y, width, height ->
+			ninePatch.info.computeScale(bounds) { segment, x, y, width, height ->
 				ctx.batch.drawQuad(
 					ctx.getTex(ninePatch.getSliceTex(segment)),
 					x.toFloat(), y.toFloat(),
@@ -153,11 +153,11 @@ class NinePatchEx(
 		out.setTo(0.0, 0.0, width, height)
 	}
 
-	class Tex(val tex: BitmapSlice<Bitmap>, val info: NinePatchInfo) {
+	class Tex(val tex: BmpSlice, val info: NinePatchInfo) {
 		val width get() = info.width
 		val height get() = info.height
 
-		constructor(ninePatch: NinePatchBitmap32) : this(ninePatch.content, ninePatch.info)
+		constructor(ninePatch: NinePatchBmpSlice) : this(ninePatch.content, ninePatch.info)
 
 		val NinePatchInfo.Segment.tex by Extra.PropertyThis<NinePatchInfo.Segment, BmpSlice> {
 			this@Tex.tex.slice(this.rect)
