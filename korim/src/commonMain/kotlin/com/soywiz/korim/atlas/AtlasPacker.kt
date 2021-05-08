@@ -1,5 +1,6 @@
 package com.soywiz.korim.atlas
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.Rectangle
@@ -10,11 +11,21 @@ import kotlin.jvm.JvmName
 object AtlasPacker {
     data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BitmapSlice<Bitmap32>, val rectWithBorder: Rectangle, val rect: Rectangle)
 
-    data class AtlasResult<T>(val tex: Bitmap32, val atlas: Atlas, val packedItems: List<Entry<T>>) {
+    data class AtlasResult<T>(val tex: Bitmap32, val atlas: Atlas, val packedItems: List<Entry<T>>) : AtlasLookup {
+        override fun tryGetEntryByName(name: String): Atlas.Entry? = atlas.tryGetEntryByName(name)
+
         val atlasInfo get() = atlas.info
     }
 
-    data class Result<T>(val atlases: List<AtlasResult<T>>)
+    data class Result<T>(val atlases: List<AtlasResult<T>>) : AtlasLookup {
+        override fun tryGetEntryByName(name: String): Atlas.Entry? {
+            atlases.fastForEach {
+                val result = it.tryGetEntryByName(name)
+                if (result != null) return result
+            }
+            return null
+        }
+    }
 
     fun pack(items: List<BmpSlice>, maxSide: Int = 2048, maxTextures: Int = 1, borderSize: Int = 2, fileName: String = "atlas.png"): Result<BmpSlice> =
         pack(items.map { it to it }, maxSide, maxTextures, borderSize, fileName)

@@ -5,7 +5,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.RectangleInt
 
-class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) {
+class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) : AtlasLookup {
     constructor(texture: BitmapSlice<Bitmap>, info: AtlasInfo = AtlasInfo()) : this(mapOf(info.pages.first().fileName to texture), info)
     constructor(slices: List<BitmapSlice<Bitmap>>) : this(slices.mapIndexed { index, bmp -> (bmp.name.takeIf { it != "unknown" } ?: "$index") to bmp }.toMap())
 
@@ -32,9 +32,13 @@ class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo 
     }
     val entriesMap = entries.associateBy { it.filename }
 
-    fun tryGetEntryByName(name: String): Entry? = entriesMap[name]
+    override fun tryGetEntryByName(name: String): Entry? = entriesMap[name]
+}
+
+interface AtlasLookup {
+    fun tryGetEntryByName(name: String): Atlas.Entry?
     fun tryGet(name: String): BmpSlice? = tryGetEntryByName(name)?.slice
-	operator fun get(name: String): BmpSlice = tryGet(name)
+    operator fun get(name: String): BmpSlice = tryGet(name)
         ?: error("Can't find '$name' it atlas")
 }
 
