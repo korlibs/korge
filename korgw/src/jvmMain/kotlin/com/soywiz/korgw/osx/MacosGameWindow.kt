@@ -205,7 +205,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         val sx = x * factor
         val sy = y * factor
 
-        dispatchSimpleMouseEvent(ev, 0, sx.toInt(), sy.toInt(), button, simulateClickOnUp = true)
+        dispatchSimpleMouseEvent(ev, 0, sx.toInt(), sy.toInt(), button, simulateClickOnUp = false)
         //println("MOUSE EVENT ($type) ($selName) from NSWindow! $point2 : $buttonNumber : $clickCount, $rect, $rect2, $rect3")
     }
 

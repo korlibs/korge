@@ -544,9 +544,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
             this.isMetaDown = isMetaDown
             this.scaleCoords = scaleCoords
         })
-        if (simulateClickOnUp && type == MouseEvent.Type.UP) {
-            dispatchMouseEvent(MouseEvent.Type.CLICK, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords, simulateClickOnUp = false)
-        }
+        //if (simulateClickOnUp && type == MouseEvent.Type.UP) {
+        //    dispatchMouseEvent(MouseEvent.Type.CLICK, id, x, y, button, buttons, scrollDeltaX, scrollDeltaY, scrollDeltaZ, isShiftDown, isCtrlDown, isAltDown, isMetaDown, scaleCoords, simulateClickOnUp = false)
+        //}
     }
 
     // iOS tools

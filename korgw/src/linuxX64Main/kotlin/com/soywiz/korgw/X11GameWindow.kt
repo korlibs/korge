@@ -366,7 +366,7 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
                     //println(mot.size)
                     //println("MOUSE ${ev} ${mot.x} ${mot.y} ${mot.button}")
 
-                    dispatchSimpleMouseEvent(ev, 0, mot.x, mot.y, button, simulateClickOnUp = true)
+                    dispatchSimpleMouseEvent(ev, 0, mot.x, mot.y, button, simulateClickOnUp = false)
                 }
                 else -> {
                     //println("OTHER EVENT ${e.type}")
