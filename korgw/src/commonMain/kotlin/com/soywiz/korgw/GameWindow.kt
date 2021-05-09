@@ -276,12 +276,14 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open var bgcolor: RGBA = Colors.BLACK
     open var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
 
+    val onDebugEnabled = Signal<Unit>()
     val onDebugChanged = Signal<Boolean>()
     open val debugComponent: Any? = null
     open var debug: Boolean = false
         set(value) {
             field = value
             onDebugChanged(value)
+            if (value) onDebugEnabled()
         }
 
     /**
