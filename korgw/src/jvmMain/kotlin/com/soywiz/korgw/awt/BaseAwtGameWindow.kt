@@ -10,6 +10,7 @@ import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.win32.*
 import com.soywiz.korgw.x11.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -238,6 +239,11 @@ abstract class BaseAwtGameWindow : GameWindow() {
         get() = component.isVisible
         set(value) {
             component.isVisible = value
+        }
+    override var bgcolor: RGBA
+        get() = component.background.toRgba()
+        set(value) {
+            component.background = value.toAwt()
         }
     override var quality: Quality = Quality.AUTOMATIC
 

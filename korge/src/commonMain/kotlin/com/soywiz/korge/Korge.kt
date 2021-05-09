@@ -119,6 +119,7 @@ object Korge {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow())
+        realGameWindow.bgcolor = bgcolor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
         //realGameWindow.configure(width, height, title, icon, fullscreen)

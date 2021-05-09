@@ -56,6 +56,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
 
     fun queue(block: () -> Unit) {
+        //println("queue: $block")
         tasks.enqueue(Runnable { block() })
     }
 
@@ -246,6 +247,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open var icon: Bitmap? = null
     open var fullscreen: Boolean = false
     open var visible: Boolean = false
+    open var bgcolor: RGBA = Colors.BLACK
     open var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
 
     val onDebugChanged = Signal<Boolean>()
@@ -662,12 +664,14 @@ fun GameWindow.configure(
     height: Int,
     title: String? = "GameWindow",
     icon: Bitmap? = null,
-    fullscreen: Boolean? = null
+    fullscreen: Boolean? = null,
+    bgcolor: RGBA = Colors.BLACK,
 ) {
     this.setSize(width, height)
     if (title != null) this.title = title
     this.icon = icon
     if (fullscreen != null) this.fullscreen = fullscreen
+    this.bgcolor = bgcolor
     this.visible = true
 }
 
