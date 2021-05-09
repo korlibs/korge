@@ -465,12 +465,15 @@ abstract class BaseAwtGameWindow : GameWindow() {
             //fullscreen = true
 
             // keys.up(Key.ENTER) { if (it.alt) gameWindow.toggleFullScreen() }
-            if (OS.isWindows) {
+
+            // @TODO: HACK so the windows grabs focus on Windows 10 when launching on gradle daemon
+            val useRobotHack = OS.isWindows
+
+            if (useRobotHack) {
                 (component as? Frame?)?.apply {
                     val frame = this
                     val insets = frame.insets
                     frame.isAlwaysOnTop = true
-                    // @TODO: HACK so the windows grabs focus on Windows 10 at least when launching on gradle daemon
                     try {
                         val robot = Robot()
                         val pos = MouseInfo.getPointerInfo().location
@@ -493,20 +496,27 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 }
             }
 
-            contentComponent.addMouseMotionListener(object : MouseMotionAdapter() {
-                override fun mouseMoved(e: MouseEvent) = handleMouseEvent(e)
-                override fun mouseDragged(e: MouseEvent) = handleMouseEvent(e)
-            })
+            EventQueue.invokeLater {
+                // Here all the robot events have been already processed so they won't be processed
+                //println("END ROBOT2")
 
-            contentComponent.addMouseListener(object : MouseAdapter() {
-                override fun mouseReleased(e: MouseEvent) = handleMouseEvent(e)
-                override fun mouseMoved(e: MouseEvent) = handleMouseEvent(e)
-                override fun mouseEntered(e: MouseEvent) = handleMouseEvent(e)
-                override fun mouseDragged(e: MouseEvent) = handleMouseEvent(e)
-                override fun mouseClicked(e: MouseEvent) = handleMouseEvent(e)
-                override fun mouseExited(e: MouseEvent) = handleMouseEvent(e)
-                override fun mousePressed(e: MouseEvent) = handleMouseEvent(e)
-            })
+                contentComponent.addMouseMotionListener(object : MouseMotionAdapter() {
+                    override fun mouseMoved(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mouseDragged(e: MouseEvent) = handleMouseEvent(e)
+                })
+
+                contentComponent.addMouseListener(object : MouseAdapter() {
+                    override fun mouseReleased(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mouseMoved(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mouseEntered(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mouseDragged(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mouseClicked(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mouseExited(e: MouseEvent) = handleMouseEvent(e)
+                    override fun mousePressed(e: MouseEvent) = handleMouseEvent(e)
+                })
+
+            }
+
         }
 
         //val timer = Timer(1000 / 60, ActionListener { component.repaint() })
