@@ -190,10 +190,23 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
             //gl.clearColor(1f, 1f, 1f, 1f)
             //gl.clear(gl.COLOR_BUFFER_BIT)
-            updateGamepads()
-            frame()
-            gl.flush()
-            gl.finish()
+            var gamePadTime: TimeSpan = 0.milliseconds
+            var frameTime: TimeSpan = 0.milliseconds
+            var finishTime: TimeSpan = 0.milliseconds
+            val totalTime = measureTime {
+                gamePadTime = measureTime {
+                    updateGamepads()
+                }
+                frameTime = measureTime {
+                    frame()
+                }
+                finishTime = measureTime {
+                    gl.flush()
+                    gl.finish()
+                }
+            }
+
+            //println("totalTime=$totalTime, gamePadTime=$gamePadTime, finishTime=$finishTime, frameTime=$frameTime, timedTasksTime=${coroutineDispatcher.timedTasksTime}, tasksTime=${coroutineDispatcher.tasksTime}, renderTime=${renderTime}, updateTime=${updateTime}")
         }
     }
 

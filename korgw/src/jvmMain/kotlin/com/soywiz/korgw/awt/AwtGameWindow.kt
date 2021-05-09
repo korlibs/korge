@@ -5,6 +5,7 @@ import com.soywiz.korgw.internal.MicroDynamic
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.awt.toAwt
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.*
@@ -50,6 +51,7 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
         init {
             isVisible = false
             ignoreRepaint = true
+            //background = Color.black
             setBounds(0, 0, 640, 480)
             val frame = this
             frame.setLocationRelativeTo(null)

@@ -8,6 +8,7 @@ import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.internal.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
@@ -67,6 +68,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     }
 
     override fun dispatch(context: CoroutineContext, block: Runnable) {
+        //println("dispatch: $block")
         tasks.enqueue(block)
     }
 
@@ -94,32 +96,42 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         }
     }
 
+    var timedTasksTime = 0.milliseconds
+    var tasksTime = 0.milliseconds
+
     fun executePending(availableTime: TimeSpan) {
         try {
             val startTime = now()
-            while (timedTasks.isNotEmpty() && startTime >= timedTasks.head.time) {
-                val item = timedTasks.removeHead()
-                if (item.exception != null) {
-                    item.continuation?.resumeWithException(item.exception!!)
-                    if (item.callback != null) {
-                        item.exception?.printStackTrace()
+
+            timedTasksTime = measureTime {
+                while (timedTasks.isNotEmpty() && startTime >= timedTasks.head.time) {
+                    val item = timedTasks.removeHead()
+                    if (item.exception != null) {
+                        item.continuation?.resumeWithException(item.exception!!)
+                        if (item.callback != null) {
+                            item.exception?.printStackTrace()
+                        }
+                    } else {
+                        item.continuation?.resume(Unit)
+                        item.callback?.run()
                     }
-                } else {
-                    item.continuation?.resume(Unit)
-                    item.callback?.run()
-                }
-                if ((now() - startTime) >= availableTime) {
-                    informTooMuchCallbacksToHandleInThisFrame()
-                    break
+                    if ((now() - startTime) >= availableTime) {
+                        informTooMuchCallbacksToHandleInThisFrame()
+                        break
+                    }
                 }
             }
-
-            while (tasks.isNotEmpty()) {
-                val task = tasks.dequeue()
-                task?.run()
-                if ((now() - startTime) >= availableTime) {
-                    informTooMuchCallbacksToHandleInThisFrame()
-                    break
+            tasksTime = measureTime {
+                while (tasks.isNotEmpty()) {
+                    val task = tasks.dequeue()
+                    val time = measureTime {
+                        task?.run()
+                    }
+                    //println("task=$time, task=$task")
+                    if ((now() - startTime) >= availableTime) {
+                        informTooMuchCallbacksToHandleInThisFrame()
+                        break
+                    }
                 }
             }
         } catch (e: Throwable) {
@@ -146,7 +158,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     override fun toString(): String = "GameWindowCoroutineDispatcher"
 }
 
-open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, CoroutineContext.Element, AGWindow {
+open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, CoroutineContext.Element, AGWindow, Extra by Extra.Mixin() {
     enum class Cursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
         RESIZE_EAST, RESIZE_WEST, RESIZE_SOUTH, RESIZE_NORTH,
@@ -226,6 +238,20 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     open fun computeDisplayRefreshRate(): Int {
         return 60
+    }
+
+    open fun registerTime(name: String, time: TimeSpan) {
+        //println("registerTime: $name=$time")
+    }
+
+    inline fun <T> registerTime(name: String, block: () -> T): T {
+        val start = PerformanceCounter.microseconds
+        try {
+            return block()
+        } finally {
+            val end = PerformanceCounter.microseconds
+            registerTime(name, (end - start).microseconds)
+        }
     }
 
     private val fpsCached by IntTimedCache(1000.milliseconds) { computeDisplayRefreshRate() }
@@ -331,10 +357,19 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         frame(true)
     }
 
+    var renderTime = 0.milliseconds
+    var updateTime = 0.milliseconds
+
     fun frame(doUpdate: Boolean, startTime: TimeSpan = PerformanceCounter.reference) {
-        frameRender()
+        renderTime = measureTime {
+            frameRender()
+        }
+        //println("renderTime=$renderTime")
         if (doUpdate) {
-            frameUpdate(startTime)
+            updateTime = measureTime {
+                frameUpdate(startTime)
+            }
+            //println("updateTime=$updateTime")
         }
     }
 

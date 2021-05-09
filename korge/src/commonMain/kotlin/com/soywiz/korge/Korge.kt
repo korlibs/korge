@@ -126,17 +126,21 @@ object Korge {
         realGameWindow.loop {
             val gameWindow = this
             if (OS.isNative) println("Korui[0]")
-            realGameWindow.configure(width, height, title, icon, fullscreen)
-            try {
-                // Do nothing
-                when {
-                    iconDrawable != null -> this.icon = iconDrawable.render()
-                    iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
-                    else -> Unit
+            gameWindow.registerTime("configureGameWindow") {
+                realGameWindow.configure(width, height, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
+            }
+            gameWindow.registerTime("setIcon") {
+                try {
+                    // Do nothing
+                    when {
+                        iconDrawable != null -> this.icon = iconDrawable.render()
+                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
+                        else -> Unit
+                    }
+                } catch (e: Throwable) {
+                    logger.error { "Couldn't get the application icon" }
+                    e.printStackTrace()
                 }
-            } catch (e: Throwable) {
-                logger.error { "Couldn't get the application icon" }
-                e.printStackTrace()
             }
             this.quality = quality
             if (OS.isNative) println("CanvasApplicationEx.IN[0]")
@@ -177,10 +181,16 @@ object Korge {
             views.targetFps = targetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
-            prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
+            gameWindow.registerTime("prepareViews") {
+                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
+            }
 
-            nativeSoundProvider.initOnce()
-            completeViews(views)
+            gameWindow.registerTime("nativeSoundProvider") {
+                nativeSoundProvider.initOnce()
+            }
+            gameWindow.registerTime("completeViews") {
+                completeViews(views)
+            }
             views.launchImmediately {
                 coroutineScope {
                     //println("coroutineContext: $coroutineContext")
