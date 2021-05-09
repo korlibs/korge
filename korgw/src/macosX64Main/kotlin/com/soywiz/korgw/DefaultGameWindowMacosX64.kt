@@ -123,6 +123,37 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
 
             fun getHeight() = openglView.bounds.height
 
+            var lastModifierFlags: Int = 0
+
+            fun dispatchFlagIfRequired(event: NSEvent, mask: Int, key: Key) {
+                val old = (lastModifierFlags and mask) != 0
+                val new = (event.modifierFlags.toInt() and mask) != 0
+                if (old == new) return
+
+                dispatchKeyEventEx(
+                    type = if (new) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
+                    id = 0,
+                    character = ' ',
+                    key = key,
+                    keyCode = key.ordinal,
+                    shift = event.shift,
+                    ctrl = event.ctrl,
+                    alt = event.alt,
+                    meta = event.meta
+                )
+            }
+
+            override fun flagsChanged(event: NSEvent) {
+                dispatchFlagIfRequired(event, NSShiftKeyMask.toInt(), Key.LEFT_SHIFT)
+                dispatchFlagIfRequired(event, NSControlKeyMask.toInt(), Key.LEFT_CONTROL)
+                dispatchFlagIfRequired(event, NSAlternateKeyMask.toInt(), Key.LEFT_ALT)
+                dispatchFlagIfRequired(event, NSCommandKeyMask.toInt(), Key.META)
+                dispatchFlagIfRequired(event, NSFunctionKeyMask.toInt(), Key.FUNCTION)
+                dispatchFlagIfRequired(event, NSEventModifierFlagCapsLock.toInt(), Key.CAPS_LOCK)
+
+                lastModifierFlags = event.modifierFlags.toInt()
+            }
+
             override fun mouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
             override fun rightMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
             override fun otherMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
@@ -193,6 +224,9 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
                 val keyCode = event.keyCode.toInt()
 
                 val key = KeyCodesToKeys[keyCode] ?: CharToKeys[char] ?: Key.UNKNOWN
+
+                lastModifierFlags = event.modifierFlags.toInt()
+
                 //println("keyDownUp: char=$char, keyCode=${keyCode.toInt()}, key=$key, pressed=$pressed, shift=${e.shift}, ctrl=${e.ctrl}, alt=${e.alt}, meta=${e.meta}")
                 dispatchKeyEventEx(
                     type = if (pressed) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
