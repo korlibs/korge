@@ -16,7 +16,7 @@ internal val nativeAudioFormats = AudioFormats(WAV, MP3Decoder, OGG) + AudioForm
 
 private val dummyNativeSoundProvider by lazy { DummyNativeSoundProvider(nativeAudioFormats) }
 
-actual val nativeSoundProvider: NativeSoundProvider by lazy {
+private val nativeSoundProviderDeferred by lazy {
     try {
         traceTime("OpenAL") {
             JnaOpenALNativeSoundProvider()
@@ -30,6 +30,13 @@ actual val nativeSoundProvider: NativeSoundProvider by lazy {
         e.printStackTrace()
         dummyNativeSoundProvider
     }
+}
+
+actual val nativeSoundProvider: NativeSoundProvider = LazyNativeSoundProvider(prepareInit = {
+    //println("nativeSoundProvider")
+    Thread { nativeSoundProviderDeferred }.apply { isDaemon = true }.start()
+}) {
+    nativeSoundProviderDeferred
 }
 //actual val nativeSoundProvider: NativeSoundProvider by lazy { JogampNativeSoundProvider() }
 //actual val nativeSoundProvider: NativeSoundProvider by lazy { AwtNativeSoundProvider() }
