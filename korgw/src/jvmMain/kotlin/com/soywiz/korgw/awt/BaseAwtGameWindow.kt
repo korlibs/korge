@@ -362,7 +362,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
             }
         })
 
-        var waitingRobotEvents = true
+        //var waitingRobotEvents = true
         fun handleMouseEvent(e: MouseEvent) {
             val ev = when (e.id) {
                 MouseEvent.MOUSE_MOVED -> com.soywiz.korev.MouseEvent.Type.MOVE
@@ -371,12 +371,14 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 MouseEvent.MOUSE_RELEASED -> com.soywiz.korev.MouseEvent.Type.UP
                 else -> com.soywiz.korev.MouseEvent.Type.MOVE
             }
+            /*
             if (waitingRobotEvents) {
                 if (ev == com.soywiz.korev.MouseEvent.Type.CLICK) {
                     waitingRobotEvents = false
                 }
                 return
             }
+             */
             //println("MOUSE EVENT: $ev : ${e.button} : ${MouseButton[e.button - 1]}")
             queue {
                 val button = if (e.button == 0) MouseButton.NONE else MouseButton[e.button - 1]
@@ -491,6 +493,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 (component as? Frame?)?.apply {
                     val frame = this
                     val insets = frame.insets
+                    /*
                     frame.isAlwaysOnTop = true
                     // @TODO: HACK so the windows grabs focus on Windows 10 at least when launching on gradle daemon
                     try {
@@ -513,6 +516,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                     } catch (e: Throwable) {
                     }
                     frame.isAlwaysOnTop = false
+                     */
                 }
             }
         }
