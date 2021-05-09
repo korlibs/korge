@@ -1589,6 +1589,15 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
     }
 }
 
+inline fun View?.forEachAscendant(includeThis: Boolean = false, handler: (View) -> Unit) {
+    var view = this
+    if (!includeThis) view = view?.parent
+    while (view != null) {
+        handler(view)
+        view = view.parent
+    }
+}
+
 /** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
 fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
     if (this == null) return listOf()
