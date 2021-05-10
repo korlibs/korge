@@ -402,22 +402,16 @@ private class LocalVfsJvm : LocalVfsV2() {
 		val fs = FileSystems.getDefault()
 		val watcher = fs.newWatchService()
 
-		fs.getPath(path).register(
+        val registeredKey = fs.getPath(path).register(
 			watcher,
 			StandardWatchEventKinds.ENTRY_CREATE,
 			StandardWatchEventKinds.ENTRY_DELETE,
 			StandardWatchEventKinds.ENTRY_MODIFY
 		)
 
-		launchImmediately(coroutineContext) {
+        GlobalScope.launch(Dispatchers.IO) {
 			while (running) {
-				val key = executeIo {
-					var r: WatchKey?
-					do {
-						r = watcher.poll(100L, TimeUnit.MILLISECONDS)
-					} while (r == null && running)
-					r
-				} ?: continue
+                val key = watcher.take()
 
 				for (e in key.pollEvents()) {
 					val kind = e.kind()
@@ -426,43 +420,50 @@ private class LocalVfsJvm : LocalVfsV2() {
 					val file = rfilepath.toFile()
 					val absolutePath = file.absolutePath
 					val vfsFile = file(absolutePath)
-					when (kind) {
-						StandardWatchEventKinds.OVERFLOW -> {
-							println("Overflow WatchService")
-						}
-						StandardWatchEventKinds.ENTRY_CREATE -> {
-							handler(
-								FileEvent(
-									FileEvent.Kind.CREATED,
-									vfsFile
-								)
-							)
-						}
-						StandardWatchEventKinds.ENTRY_MODIFY -> {
-							handler(
-								FileEvent(
-									FileEvent.Kind.MODIFIED,
-									vfsFile
-								)
-							)
-						}
-						StandardWatchEventKinds.ENTRY_DELETE -> {
-							handler(
-								FileEvent(
-									FileEvent.Kind.DELETED,
-									vfsFile
-								)
-							)
-						}
-					}
+                    withContext(coroutineContext) {
+                        when (kind) {
+                            StandardWatchEventKinds.OVERFLOW -> {
+                                println("Overflow WatchService")
+                            }
+                            StandardWatchEventKinds.ENTRY_CREATE -> {
+                                handler(
+                                    FileEvent(
+                                        FileEvent.Kind.CREATED,
+                                        vfsFile
+                                    )
+                                )
+                            }
+                            StandardWatchEventKinds.ENTRY_MODIFY -> {
+                                handler(
+                                    FileEvent(
+                                        FileEvent.Kind.MODIFIED,
+                                        vfsFile
+                                    )
+                                )
+                            }
+                            StandardWatchEventKinds.ENTRY_DELETE -> {
+                                handler(
+                                    FileEvent(
+                                        FileEvent.Kind.DELETED,
+                                        vfsFile
+                                    )
+                                )
+                            }
+                        }
+                    }
 				}
-				key.reset()
+
+                if (!key.reset()) {
+                    key.cancel()
+                    registeredKey.cancel()
+                    break
+                }
 			}
 		}
 
 		return Closeable {
 			running = false
-			watcher.close()
+            registeredKey.cancel()
 		}
 	}
 
