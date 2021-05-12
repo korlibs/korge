@@ -122,8 +122,12 @@ val AlphaTransition = Transition { ctx, prev, next, ratio ->
 /**
  * A [Transition] that will use a [transition] [TransitionFilter.Transition] to show the new scene.
  */
-fun MaskTransition(transition: TransitionFilter.Transition = TransitionFilter.Transition.CIRCULAR) = TransitionCreate {
-    val filter = TransitionFilter(transition)
+fun MaskTransition(
+    transition: TransitionFilter.Transition = TransitionFilter.Transition.CIRCULAR,
+    reversed: Boolean = false,
+    smooth: Boolean = true,
+) = TransitionCreate {
+    val filter = TransitionFilter(transition, reversed, smooth)
     TransitionProcess { ctx, prev, next, ratio ->
             filter.ratio = ratio
             prev.render(ctx)

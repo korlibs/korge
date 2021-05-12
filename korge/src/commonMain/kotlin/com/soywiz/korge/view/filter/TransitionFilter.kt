@@ -25,6 +25,8 @@ class TransitionFilter(
     ratio: Double = 1.0,
 ) : ShaderFilter() {
     class Transition(val bmp: Bitmap) {
+        fun inverted() = bmp.toBMP32().also { it.invert() }
+
         companion object {
             private val BMP_SIZE = 64
 
