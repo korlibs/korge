@@ -166,8 +166,7 @@ class SceneContainer(
         val newScene = sceneInjector.get(clazz)
         currentScene = newScene
 
-        transitionView.transition = transition
-        transitionView.startNewTransition(newScene._sceneViewContainer)
+        transitionView.startNewTransition(newScene._sceneViewContainer, transition)
 
         //println("SCENE PREINIT")
         try {

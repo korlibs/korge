@@ -792,7 +792,7 @@ abstract class View internal constructor(
         renderFiltered(ctx, filter!!)
     }
 
-    private fun renderFiltered(ctx: RenderContext, filter: Filter) {
+    fun renderFiltered(ctx: RenderContext, filter: Filter) {
         val bounds = getLocalBounds()
 
         val borderEffect = filter.border
