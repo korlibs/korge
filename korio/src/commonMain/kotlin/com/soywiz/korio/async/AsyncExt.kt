@@ -6,6 +6,32 @@ import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
+suspend fun <T> CoroutineContext.launchUnscopedAndWait(block: suspend () -> T): T {
+    val deferred = CompletableDeferred<T>()
+    block.startCoroutine(object : Continuation<T> {
+        override val context: CoroutineContext = this@launchUnscopedAndWait
+
+        override fun resumeWith(result: Result<T>) {
+            deferred.completeWith(result)
+        }
+    })
+    return deferred.await()
+}
+
+fun CoroutineContext.launchUnscoped(block: suspend () -> Unit) {
+    block.startCoroutine(object : Continuation<Unit> {
+        override val context: CoroutineContext = this@launchUnscoped
+
+        override fun resumeWith(result: Result<Unit>) {
+            if (result.isFailure) {
+                result.exceptionOrNull()?.printStackTrace()
+            }
+        }
+    })
+}
+
+fun CoroutineScope.launchUnscoped(block: suspend () -> Unit) = coroutineContext.launchUnscoped(block)
+
 fun CoroutineScope.launch(callback: suspend () -> Unit) = _launch(CoroutineStart.UNDISPATCHED, callback)
 fun CoroutineScope.launchImmediately(callback: suspend () -> Unit) = _launch(CoroutineStart.UNDISPATCHED, callback)
 fun CoroutineScope.launchAsap(callback: suspend () -> Unit) = _launch(CoroutineStart.DEFAULT, callback)
