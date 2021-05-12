@@ -42,18 +42,19 @@ data class ColorTransform(
     private var _colorMul: RGBA = Colors.WHITE
     private var _colorAdd: ColorAdd = ColorAdd(0)
 
-    private fun computeColors(): ColorTransform {
+    private fun computeColors() {
         if (dirty) {
             dirty = false
             _colorMul = RGBA.float(_mR.toFloat(), _mG.toFloat(), _mB.toFloat(), _mA.toFloat())
             _colorAdd = ColorAdd(_aR, _aG, _aB, _aA)
         }
-
-        return this
     }
 
     var colorMul: RGBA
-        get() = computeColors()._colorMul
+        get() {
+            computeColors()
+            return _colorMul
+        }
         set(v) {
             val mR = v.rd
             val mG = v.gd
@@ -71,7 +72,8 @@ data class ColorTransform(
     var colorAdd: ColorAdd
         get() {
             //println("%08X".format(computeColors()._colorAdd))
-            return computeColors()._colorAdd
+            computeColors()
+            return _colorAdd
         }
         set(v) {
             aR = v.r
