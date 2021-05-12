@@ -56,11 +56,11 @@ class TransitionFilter(
         private val u_Mask = Uniform("mask", VarType.TextureUnit)
         private val FRAGMENT_SHADER = Filter.DEFAULT_FRAGMENT.appending {
             t_Temp1.x setTo texture2D(u_Mask, v_Tex["xy"]).r
-            IF(u_Reversed.x eq 1f.lit) {
+            IF(u_Reversed eq 1f.lit) {
                 t_Temp1.x setTo 1f.lit - t_Temp1.x
             }
-            t_Temp1.x setTo clamp(t_Temp1.x + ((u_Ratio.x * 2f.lit) - 1f.lit), 0f.lit, 1f.lit)
-            IF(u_Smooth.x ne 1f.lit) {
+            t_Temp1.x setTo clamp(t_Temp1.x + ((u_Ratio * 2f.lit) - 1f.lit), 0f.lit, 1f.lit)
+            IF(u_Smooth ne 1f.lit) {
                 IF(t_Temp1.x ge 1f.lit) {
                     t_Temp1.x setTo 1f.lit
                 } ELSE {
