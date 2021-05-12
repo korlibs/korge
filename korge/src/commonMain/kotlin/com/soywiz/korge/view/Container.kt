@@ -32,6 +32,10 @@ open class Container : View(true) {
 
     override val _children: FastArrayList<View>? get() = __children
 
+    inline fun fastForEachChild(block: (child: View) -> Unit) {
+        __children.fastForEach { child ->block(child) }
+    }
+
     @KorgeInternal
     @PublishedApi
 	internal val childrenInternal: FastArrayList<View> get() {
@@ -48,7 +52,7 @@ open class Container : View(true) {
 
     override fun invalidate() {
         super.invalidate()
-        __children.fastForEach { child ->
+        fastForEachChild { child ->
             if (child._requireInvalidate) {
                 child.invalidate()
             }
@@ -57,7 +61,7 @@ open class Container : View(true) {
 
     override fun invalidateColorTransform() {
         super.invalidateColorTransform()
-        __children.fastForEach { child ->
+        fastForEachChild { child ->
             if (child._requireInvalidateColor) {
                 child.invalidateColorTransform()
             }
@@ -189,7 +193,7 @@ open class Container : View(true) {
 	 * Removes all [View]s children from this container.
 	 */
 	fun removeChildren() {
-        __children.fastForEach { child ->
+        fastForEachChild { child ->
 			child.parent = null
 			child.index = -1
 		}
@@ -226,13 +230,13 @@ open class Container : View(true) {
 	private val tempMatrix = Matrix()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-        __children.fastForEach { child: View ->
+        fastForEachChild { child: View ->
 			child.render(ctx)
 		}
     }
 
     override fun renderDebug(ctx: RenderContext) {
-        __children.fastForEach { child: View ->
+        fastForEachChild { child: View ->
             child.renderDebug(ctx)
         }
         super.renderDebug(ctx)
@@ -243,7 +247,7 @@ open class Container : View(true) {
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		bb.reset()
-		__children.fastForEach { child: View ->
+        fastForEachChild { child: View ->
 			child.getBounds(this, tempRect)
 			bb.add(tempRect)
 		}
@@ -261,14 +265,14 @@ open class Container : View(true) {
 	 */
 	override fun clone(): View {
 		val out = super.clone()
-        __children.fastForEach { out += it.clone() }
+        fastForEachChild { out += it.clone() }
 		return out
 	}
 
     override fun findViewByName(name: String): View? {
         val result = super.findViewByName(name)
         if (result != null) return result
-        __children.fastForEach { child: View ->
+        fastForEachChild { child: View ->
             val named = child.findViewByName(name)
             if (named != null) return named
         }
