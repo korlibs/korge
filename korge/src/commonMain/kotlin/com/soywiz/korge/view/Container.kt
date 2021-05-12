@@ -56,7 +56,7 @@ open class Container : View(true) {
     }
 
     override fun invalidateColorTransform() {
-        super.invalidate()
+        super.invalidateColorTransform()
         __children.fastForEach { child ->
             if (child._requireInvalidateColor) {
                 child.invalidateColorTransform()
