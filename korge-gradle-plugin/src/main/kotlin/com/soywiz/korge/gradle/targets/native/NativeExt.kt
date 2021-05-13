@@ -24,7 +24,13 @@ val KotlinNativeTest.executableFolder get() = executable.parentFile ?: error("Ca
 fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
     if (project.korge.useMimalloc) {
         compilations.all {
-            it.kotlinOptions.freeCompilerArgs = it.kotlinOptions.freeCompilerArgs + listOf("-Xallocator=mimalloc")
+            it.kotlinOptions.freeCompilerArgs = it.kotlinOptions.freeCompilerArgs + listOf(
+                "-Xallocator=mimalloc",
+                // https://kotlinlang.slack.com/archives/C3SGXARS6/p1620909233323100?thread_ts=1619349974.244300&cid=C3SGXARS6
+                // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
+                //"-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -femulated-tls -target-cpu x86-64"
+                "-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64"
+            )
         }
     }
 }

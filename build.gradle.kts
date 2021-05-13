@@ -236,21 +236,21 @@ subprojects {
             if (hasAndroid) {
                 apply(from = "${rootProject.rootDir}/build.android.srcset.gradle")
             }
-            if (doEnableKotlinNative) {
-                for (target in nativeTargets()) {
-                    target.compilations.all {
-                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
-                        kotlinOptions.suppressWarnings = true
-                    }
-                }
-            }
 
-            if (doEnableKotlinMobile) {
-                for (target in mobileTargets()) {
-                    target.compilations.all {
-                        kotlinOptions.freeCompilerArgs = listOf("-Xallocator=mimalloc")
-                        kotlinOptions.suppressWarnings = true
-                    }
+            val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
+                if (doEnableKotlinNative) addAll(nativeTargets())
+                if (doEnableKotlinMobile) addAll(mobileTargets())
+            }.toList()
+
+            for (target in desktopAndMobileTargets) {
+                target.compilations.all {
+                    // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
+                    kotlinOptions.freeCompilerArgs = listOf(
+                        "-Xallocator=mimalloc",
+                        //"-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -femulated-tls -target-cpu x86-64"
+                        "-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64"
+                    )
+                    kotlinOptions.suppressWarnings = true
                 }
             }
 
