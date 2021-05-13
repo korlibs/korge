@@ -26,7 +26,7 @@ import kotlin.coroutines.*
 
 abstract class KorgwActivity : Activity() {
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
-    private var mGLView: KorgwSurfaceView? = null
+    var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
     open val agCheck: Boolean get() = false
     open val agTrace: Boolean get() = false
