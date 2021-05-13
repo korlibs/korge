@@ -208,6 +208,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 	@Suppress("DuplicatedCode")
     override fun onMouseEvent(views: Views, event: MouseEvent) {
+        if (!view.mouseEnabled) return
         this.views = views
         // Store event
         this.lastEvent.copyFrom(event)
