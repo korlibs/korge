@@ -70,6 +70,9 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     AudioTrack.MODE_STREAM
                 )
             }
+            if (at.state == AudioTrack.STATE_UNINITIALIZED) {
+                System.err.println("Audio track was not initialized correctly freq=$freq, bufferSamples=$bufferSamples")
+            }
             //if (at.state == AudioTrack.STATE_INITIALIZED) at.play()
             while (running) {
                 try {
@@ -78,6 +81,10 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     var paused = true
                     while (running) {
                         val readCount = deque.read(temp)
+                        if (at.state == AudioTrack.STATE_UNINITIALIZED) {
+                            Thread.sleep(50L)
+                            continue
+                        }
                         if (readCount > 0) {
                             if (paused) {
                                 //println("[KORAU] Resume $id")
