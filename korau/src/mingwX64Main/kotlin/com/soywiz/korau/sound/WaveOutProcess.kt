@@ -47,7 +47,7 @@ private class WaveOutReopen(val freq: Int) : WaveOutPart {
 }
 
 private interface WaveOutDataBase : WaveOutPart {
-    fun computeData(): ShortArray
+    fun computeData(volume: Double, panning: Double, pitch: Double): ShortArray
 }
 
 //private class WaveOutData(val data: ShortArray) : WaveOutDataBase {
@@ -58,14 +58,19 @@ private interface WaveOutDataBase : WaveOutPart {
 //    }
 //}
 
-private class WaveOutDataEx(
+internal class AtomicDouble(value: Double) {
+    val atomic = AtomicLong(value.toRawBits()).freeze()
+
+    var value: Double
+        get() = Double.fromBits(atomic.value)
+        set(value) { atomic.value = value.toRawBits() }
+}
+
+internal class WaveOutDataEx(
     val adata: Array<ShortArray>,
-    val pitch: Double,
-    val volume: Double,
-    val panning: Double,
     val freq: Int
 ) : WaveOutDataBase {
-    override fun computeData(): ShortArray =
+    override fun computeData(volume: Double, panning: Double, pitch: Double): ShortArray =
         AudioSamples(2, adata[0].size, Array(2) { adata[it % adata.size] })
             //.resampleIfRequired(freq, 44100)
             .interleaved()
@@ -80,6 +85,9 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
     private val sPosition = AtomicLong(0L)
     private val sLength = AtomicLong(0L)
     private val completed = AtomicLong(0L)
+    internal val volume = AtomicDouble(1.0)
+    internal val pitch = AtomicDouble(1.0)
+    internal val panning = AtomicDouble(0.0)
     private val numPendingChunks = AtomicLong(0L)
     private val deque = ConcurrentDeque<WaveOutPart>()
     private val info = AtomicReference<Future<Unit>?>(null)
@@ -100,12 +108,9 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
     //    deque.add(WaveOutData(data))
     //}
 
-    fun addData(samples: AudioSamples, offset: Int, size: Int, pitch: Double, volume: Double, panning: Double, freq: Int) {
+    fun addData(samples: AudioSamples, offset: Int, size: Int, freq: Int) {
         sLength.addAndGet(size)
-        deque.add(WaveOutDataEx(
-            Array(samples.channels) { samples.data[it].copyOfRange(offset, offset + size) },
-            pitch, volume, panning, freq
-        ))
+        deque.add(WaveOutDataEx(Array(samples.channels) { samples.data[it].copyOfRange(offset, offset + size) }, freq))
     }
 
     fun stop() {
@@ -193,7 +198,7 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
                                 }
                                 is WaveOutEnd -> break@process
                                 is WaveOutDataBase -> {
-                                    val chunk = WaveOutChunk(it.computeData())
+                                    val chunk = WaveOutChunk(it.computeData(info.volume.value, info.panning.value, info.pitch.value))
                                     //info.sLength.addAndGet(chunk.data.size / info.nchannels)
                                     pendingChunks.add(chunk)
                                     waveOutPrepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())

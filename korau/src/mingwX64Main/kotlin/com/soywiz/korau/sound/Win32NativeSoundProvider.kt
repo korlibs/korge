@@ -53,8 +53,20 @@ class Win32PlatformAudioOutput(
         //.also { println("Win32PlatformAudioOutput.availableSamples. length=${process.length}, position=${process.position}, value=$it") }
 
     override var pitch: Double = 1.0
+        set(value) {
+            field = value
+            process?.pitch?.value = value
+        }
     override var volume: Double = 1.0
+        set(value) {
+            field = value
+            process?.volume?.value = value
+        }
     override var panning: Double = 0.0
+        set(value) {
+            field = value
+            process?.panning?.value = value
+        }
 
     override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
         // More than 1 second queued, let's wait a bit
@@ -62,12 +74,15 @@ class Win32PlatformAudioOutput(
             delay(200.milliseconds)
         }
 
-        process!!.addData(samples, offset, size, pitch, volume, panning, freq)
+        process!!.addData(samples, offset, size, freq)
     }
 
     override fun start() {
         process = provider.workerPool.alloc()
             .also { it.reopen(freq) }
+        process!!.volume.value = volume
+        process!!.pitch.value = pitch
+        process!!.panning.value = panning
         //println("Win32PlatformAudioOutput.START WORKER: $worker")
     }
 
