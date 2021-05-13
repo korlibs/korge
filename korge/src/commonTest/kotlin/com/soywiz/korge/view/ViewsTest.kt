@@ -363,4 +363,23 @@ class ViewsTest : ViewsForTesting() {
         assertEquals(rect.x, 0.0)
         assertEquals(rect.y, -5.0)
     }
+
+    @Test
+    fun testPropagateAlpha() = viewsTest {
+        lateinit var container1: Container
+        lateinit var container2: Container
+        lateinit var container3: Container
+        container1 = container {
+            container2 = container {
+                container3 = container {
+                }
+            }
+        }
+        container3.alpha = 0.5
+        container1.alpha = 0.5
+        assertEquals(0.25, container3.renderColorMul.ad, 0.03)
+        container3.alpha = 0.10
+        container1.alpha = 1.0
+        assertEquals(0.10, container3.renderColorMul.ad, 0.03)
+    }
 }
