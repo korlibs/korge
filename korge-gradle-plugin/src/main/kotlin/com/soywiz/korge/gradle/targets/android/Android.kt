@@ -89,7 +89,6 @@ fun Project.configureAndroidIndirect() {
 				//File(outputFolder, "settings.gradle").conditionally(ifNotExists) {
                 File(outputFolder, "settings.gradle").always {
 					ensureParents().writeTextIfChanged(Indenter {
-						line("enableFeaturePreview(\"GRADLE_METADATA\")")
                         line("rootProject.name = ${project.name.quoted}")
 						if (parentProjectName != null && resolvedModules.isNotEmpty()) this@configureAndroidIndirect.parent?.projectDir?.let { projectFile ->
                             val projectPath = projectFile.absolutePath
