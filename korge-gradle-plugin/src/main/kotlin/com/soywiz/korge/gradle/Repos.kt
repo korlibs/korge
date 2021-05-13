@@ -11,9 +11,7 @@ fun Project.configureRepositories() {
         mavenCentral().content {
             it.excludeGroup("Kotlin/Native")
         }
-		jcenter().content {
-			it.excludeGroup("Kotlin/Native")
-		}
+		//jcenter().content { it.excludeGroup("Kotlin/Native") }
         google().content {
         }
         if (isKotlinDevOrEap) {
