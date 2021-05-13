@@ -32,6 +32,6 @@ jobs:
     - name: Start gradle
       run: ./gradlew
     - name: Testing JVM
-      run: ./gradlew jvmTest
+      run: ./gradlew --no-daemon jvmTest
     - name: Testing JS
-      run: ./gradlew jsTest
+      run: ./gradlew --no-daemon jsTest
