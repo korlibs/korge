@@ -231,9 +231,7 @@ suspend fun ktreeEditor(fileToEdit: BaseKorgeFileToEdit): Module {
         fun spaceBarIsBeingPressed(): Boolean = views.input.keys[Key.SPACE]
 
         views.onBeforeRender {
-            val ctx = it.debugLineRenderContext
-
-
+            //val ctx = it.debugLineRenderContext
         }
 
         views.onAfterRender {

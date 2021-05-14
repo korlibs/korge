@@ -4,11 +4,8 @@ import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.AG
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.format.readBitmap
-import com.soywiz.korio.file.VfsFile
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.Vector3D
-import kotlin.math.max
 
 interface HeightMap {
     operator fun get(x: Float, z: Float): Float
@@ -138,13 +135,12 @@ class Terrain3D(
     override fun render(ctx: RenderContext3D) {
         val ag = ctx.ag
         val indexBuffer = ag.createIndexBuffer()
-        ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-            vertexBuffer.upload(mesh.vertexBuffer)
+        ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
             indexBuffer.upload(mesh.indexBuffer)
             Shaders3D.apply {
                 val meshMaterial = mesh.material
-                ag.draw(
-                    vertices = vertexBuffer,
+                ag.drawV2(
+                    vertexData = vertexData,
                     indices = indexBuffer,
                     indexType = mesh.indexType,
                     type = mesh.drawType,
@@ -154,7 +150,6 @@ class Terrain3D(
                         meshMaterial,
                         mesh.hasTexture
                     ),
-                    vertexLayout = mesh.layout,
                     vertexCount = mesh.vertexCount,
                     blending = AG.Blending.NONE,
                     //vertexCount = 6 * 6,
@@ -190,8 +185,6 @@ class Terrain3D(
                     renderState = rs
                 )
             }
-
         }
     }
-
 }

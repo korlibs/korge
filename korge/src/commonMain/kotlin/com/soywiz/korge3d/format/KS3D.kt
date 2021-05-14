@@ -2,6 +2,7 @@ package com.soywiz.korge3d.format
 
 import com.soywiz.kds.IndexedTable
 import com.soywiz.kds.fastForEach
+import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.toInt
 import com.soywiz.korge3d.Korge3DExperimental
 import com.soywiz.korge3d.Library3D
@@ -30,11 +31,15 @@ suspend fun VfsFile.writeKs3d(library: Library3D) {
         library.geometryDefs.fastForEach { key, geom ->
             val mesh = geom.mesh
             writeU_VL(names[key])
-            writeU_VL(mesh.vertexBuffer.size)
             writeU_VL(mesh.hasTexture.toInt())
             writeU_VL(mesh.maxWeights)
             writeU_VL(mesh.vertexCount)
-            mesh.vertexBuffer.getAlignedArrayInt8(0, ByteArray(mesh.vertexBuffer.size), 0, mesh.vertexBuffer.size)
+            mesh.vertexBuffers.fastForEach {
+                writeU_VL(it.buffer.size)
+                val temp = ByteArray(it.buffer.size)
+                it.buffer.getAlignedArrayInt8(0, temp, 0, it.buffer.size)
+                writeBytes(temp)
+            }
         }
     })
 }

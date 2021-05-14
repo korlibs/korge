@@ -9,7 +9,10 @@ enum class SwipeRecognizerDirection(val dx: Int, val dy: Int) {
     LEFT(-1, 0);
 }
 
-fun TouchEvents.swipeRecognizer(thresold: Double = 32.0, block: (direction: SwipeRecognizerDirection) -> Unit) {
+fun TouchEvents.swipeRecognizer(
+    thresold: Double = 32.0,
+    block: (direction: SwipeRecognizerDirection) -> Unit
+) {
     var completed = false
     endAll {
         if (it.infos.size == 1) {
@@ -40,54 +43,78 @@ fun TouchEvents.swipeRecognizer(thresold: Double = 32.0, block: (direction: Swip
     }
 }
 
-class ScaleRecognizerInfo {
-    var completed: Boolean = false
-    var start: Double = 0.0
-    var current: Double = 0.0
+data class ScaleRecognizerInfo(
+    // True when the gesture starts
+    var started: Boolean = false,
+    // True when the gestuer ends
+    var completed: Boolean = true,
+    var start: Double = 0.0,
+    var current: Double = 0.0,
+) {
     val ratio get() = current / start
 }
 
-fun TouchEvents.scaleRecognizer(block: ScaleRecognizerInfo.(ratio: Double) -> Unit) {
+fun TouchEvents.scaleRecognizer(
+    start: ScaleRecognizerInfo.() -> Unit = {},
+    end: ScaleRecognizerInfo.(ratio: Double) -> Unit = {},
+    block: ScaleRecognizerInfo.(ratio: Double) -> Unit
+) {
     val info = ScaleRecognizerInfo()
     updateAll {
         if (it.infos.size >= 2) {
             val i0 = it.infos[0]
             val i1 = it.infos[1]
+            info.started = info.completed
             info.completed = false
             info.start = Point.distance(i0.startGlobal, i1.startGlobal)
             info.current = Point.distance(i0.global, i1.global)
+            if (info.started) {
+                start(info)
+            }
             block(info, info.ratio)
         } else {
             if (!info.completed) {
                 info.completed = true
+                info.started = false
                 block(info, info.ratio)
+                end(info, info.ratio)
             }
         }
     }
 }
 
-class RotationRecognizerInfo {
-    var completed: Boolean = false
-    var start: Angle = 0.degrees
-    var current: Angle = 0.degrees
+data class RotationRecognizerInfo(
+    var started: Boolean = false,
+    var completed: Boolean = false,
+    var start: Angle = 0.degrees,
+    var current: Angle = 0.degrees,
+) {
     val delta get() = current - start
 }
 
-fun TouchEvents.rotationRecognizer(block: RotationRecognizerInfo.(delta: Angle) -> Unit) {
+fun TouchEvents.rotationRecognizer(
+    start: RotationRecognizerInfo.() -> Unit = {},
+    end: RotationRecognizerInfo.(delta: Angle) -> Unit = {},
+    block: RotationRecognizerInfo.(delta: Angle) -> Unit
+) {
     val info = RotationRecognizerInfo()
     updateAll {
         if (it.infos.size >= 2) {
             val i0 = it.infos[0]
             val i1 = it.infos[1]
-
+            info.started = info.completed
             info.completed = false
             info.start = Angle.between(i0.startGlobal, i1.startGlobal)
             info.current = Angle.between(i0.global, i1.global)
+            if (info.started) {
+                start(info)
+            }
             block(info, info.delta)
         } else {
             if (!info.completed) {
                 info.completed = true
                 block(info, info.delta)
+                end(info, info.delta)
             }
         }
     }

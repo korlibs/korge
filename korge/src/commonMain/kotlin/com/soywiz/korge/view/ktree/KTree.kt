@@ -132,7 +132,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
     val extensionsByName = LinkedHashMap<String, KTreeSerializerExtension>()
 
     init {
-        register(UITextButton.Serializer)
+        register(UIButton.Serializer)
         register(Text.Serializer)
         register(UIProgressBar.Serializer)
         register(UICheckBox.Serializer)

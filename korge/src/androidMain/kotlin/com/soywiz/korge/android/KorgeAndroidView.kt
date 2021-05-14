@@ -30,7 +30,7 @@ import javax.microedition.khronos.opengles.GL10
 
 class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
 
-    private var mGLView: GLSurfaceView? = null
+    var mGLView: com.soywiz.korgw.KorgwSurfaceView? = null
     private var agOpenGl: AGOpengl? = null
     private var gameWindow: AndroidGameWindowNoActivity? = null
 
@@ -41,7 +41,7 @@ class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
 
     inner class KorgeViewAGOpenGL : AGOpengl() {
 
-        override val gl: KmlGl = KmlGlAndroid()
+        override val gl: KmlGl = KmlGlAndroid({ mGLView?.clientVersion ?: -1 })
         override val nativeComponent: Any get() = this@KorgeAndroidView
         override val gles: Boolean = true
 

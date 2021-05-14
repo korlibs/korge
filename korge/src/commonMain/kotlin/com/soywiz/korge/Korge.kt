@@ -119,23 +119,28 @@ object Korge {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
         val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow())
+        realGameWindow.bgcolor = bgcolor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
         //realGameWindow.configure(width, height, title, icon, fullscreen)
         realGameWindow.loop {
             val gameWindow = this
             if (OS.isNative) println("Korui[0]")
-            realGameWindow.configure(width, height, title, icon, fullscreen)
-            try {
-                // Do nothing
-                when {
-                    iconDrawable != null -> this.icon = iconDrawable.render()
-                    iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
-                    else -> Unit
+            gameWindow.registerTime("configureGameWindow") {
+                realGameWindow.configure(width, height, title, icon, fullscreen, bgcolor ?: Colors.BLACK)
+            }
+            gameWindow.registerTime("setIcon") {
+                try {
+                    // Do nothing
+                    when {
+                        iconDrawable != null -> this.icon = iconDrawable.render()
+                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
+                        else -> Unit
+                    }
+                } catch (e: Throwable) {
+                    logger.error { "Couldn't get the application icon" }
+                    e.printStackTrace()
                 }
-            } catch (e: Throwable) {
-                logger.error { "Couldn't get the application icon" }
-                e.printStackTrace()
             }
             this.quality = quality
             if (OS.isNative) println("CanvasApplicationEx.IN[0]")
@@ -176,10 +181,16 @@ object Korge {
             views.targetFps = targetFps
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
-            prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
+            gameWindow.registerTime("prepareViews") {
+                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
+            }
 
-            nativeSoundProvider.initOnce()
-            completeViews(views)
+            gameWindow.registerTime("nativeSoundProvider") {
+                nativeSoundProvider.initOnce()
+            }
+            gameWindow.registerTime("completeViews") {
+                completeViews(views)
+            }
             views.launchImmediately {
                 coroutineScope {
                     //println("coroutineContext: $coroutineContext")
@@ -261,29 +272,22 @@ object Korge {
         }
         */
 
-        fun mouseDown(type: String, x: Double, y: Double) {
-            views.input.mouseButtons = 1
-            views.input.mouse.setTo(x, y)
+        fun mouseDown(type: String, x: Double, y: Double, button: MouseButton) {
+            input.toggleButton(button, true)
+            input.mouse.setTo(x, y)
+            input.mouseDown.setTo(x, y)
             views.mouseUpdated()
-            downPos.copyFrom(views.input.mouse)
+            downPos.copyFrom(input.mouse)
             downTime = DateTime.now()
-            views.input.mouseInside = true
+            input.mouseInside = true
         }
 
-        fun mouseUp(type: String, x: Double, y: Double) {
+        fun mouseUp(type: String, x: Double, y: Double, button: MouseButton) {
             //Console.log("mouseUp: $name")
-            views.input.mouseButtons = 0
-            views.input.mouse.setTo(x, y)
+            input.toggleButton(button, false)
+            input.mouse.setTo(x, y)
             views.mouseUpdated()
             upPos.copyFrom(views.input.mouse)
-
-            if (type == "onTouchEnd") {
-                upTime = DateTime.now()
-                if ((downTime - upTime) <= 40.milliseconds) {
-                    //Console.log("mouseClick: $name")
-                    views.dispatch(MouseEvent(MouseEvent.Type.CLICK))
-                }
-            }
         }
 
         fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {
@@ -302,6 +306,19 @@ object Korge {
             moveTime = DateTime.now()
         }
 
+        val mouseTouchEvent = TouchEvent()
+
+        fun dispatchSimulatedTouchEvent(x: Double, y: Double, button: MouseButton, type: TouchEvent.Type, status: Touch.Status) {
+            mouseTouchEvent.screen = 0
+            mouseTouchEvent.emulated = true
+            mouseTouchEvent.currentTime = DateTime.now()
+            mouseTouchEvent.scaleCoords = false
+            mouseTouchEvent.startFrame(type)
+            mouseTouchEvent.touch(button.id, x, y, status, kind = Touch.Kind.MOUSE, button = button)
+            mouseTouchEvent.endFrame()
+            views.dispatch(mouseTouchEvent)
+        }
+
         eventDispatcher.addEventListener<MouseEvent> { e ->
             //println("MOUSE: $e")
             logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
@@ -309,16 +326,19 @@ object Korge {
             val y = getRealY(e.y.toDouble(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
-                    mouseDown("mouseDown", x, y)
+                    mouseDown("mouseDown", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = true, end = false)
+                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.START, Touch.Status.ADD)
                 }
                 MouseEvent.Type.UP -> {
-                    mouseUp("mouseUp", x, y)
+                    mouseUp("mouseUp", x, y, e.button)
                     //updateTouch(mouseTouchId, x, y, start = false, end = true)
+                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.END, Touch.Status.REMOVE)
                 }
                 MouseEvent.Type.DRAG -> {
                     mouseDrag("onMouseDrag", x, y)
                     //updateTouch(mouseTouchId, x, y, start = false, end = false)
+                    dispatchSimulatedTouchEvent(x, y, e.button, TouchEvent.Type.MOVE, Touch.Status.KEEP)
                 }
                 MouseEvent.Type.MOVE -> mouseMove("mouseMove", x, y, inside = true)
                 MouseEvent.Type.CLICK -> Unit
@@ -347,48 +367,47 @@ object Korge {
             }
         }
 
-
-        // TOUCH
-        fun touch(e: TouchEvent, start: Boolean, end: Boolean) {
-            val t = e.touches.first()
-            val x = t.x
-            val y = t.y
-            //updateTouch(t.id, x, y, start, end)
-            when {
-                start -> {
-                    mouseDown("onTouchStart", x, y)
-                }
-                end -> {
-                    mouseUp("onTouchEnd", x, y)
-                    moveMouseOutsideInNextFrame = true
-                }
-                else -> {
-                    mouseMove("onTouchMove", x, y, inside = true)
-                }
-            }
-        }
-
+        val touchMouseEvent = MouseEvent()
         eventDispatcher.addEventListener<TouchEvent> { e ->
             logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
-            val touch = e.touches.first()
-            val ix = getRealX(touch.x, e.scaleCoords).toInt()
-            val iy = getRealX(touch.y, e.scaleCoords).toInt()
-            when (e.type) {
-                TouchEvent.Type.START -> {
-                    touch(e, start = true, end = false)
-                    views.dispatch(MouseEvent(MouseEvent.Type.DOWN, 0, ix, iy, MouseButton.LEFT, 1))
-                }
-                TouchEvent.Type.MOVE -> {
-                    touch(e, start = false, end = false)
-                    views.dispatch(MouseEvent(MouseEvent.Type.DRAG, 0, ix, iy, MouseButton.LEFT, 1))
-                }
-                TouchEvent.Type.END -> {
-                    touch(e, start = false, end = true)
-                    views.dispatch(MouseEvent(MouseEvent.Type.UP, 0, ix, iy, MouseButton.LEFT, 0))
-                    //println("DISPATCH MouseEvent(MouseEvent.Type.UP)")
-                }
-            }
+
+            input.updateTouches(e)
             views.dispatch(e)
+
+            // Touch to mouse events
+            if (e.numTouches == 1) {
+                val start = e.isStart
+                val end = e.isEnd
+                val t = e.touches.first()
+                val x = getRealX(t.x, e.scaleCoords)
+                val y = getRealY(t.y, e.scaleCoords)
+                val button = MouseButton.LEFT
+                touchMouseEvent.id = 0
+                touchMouseEvent.button = button
+                touchMouseEvent.buttons = if (end) 0 else 1 shl button.id
+                touchMouseEvent.x = x.toInt()
+                touchMouseEvent.y = y.toInt()
+                touchMouseEvent.scaleCoords = false
+                touchMouseEvent.emulated = true
+                //updateTouch(t.id, x, y, start, end)
+                when {
+                    start -> {
+                        mouseDown("onTouchStart", x, y, button)
+                        touchMouseEvent.type = MouseEvent.Type.DOWN
+                    }
+                    end -> {
+                        mouseUp("onTouchEnd", x, y, button)
+                        moveMouseOutsideInNextFrame = true
+                        touchMouseEvent.type = MouseEvent.Type.UP
+                    }
+                    else -> {
+                        mouseMove("onTouchMove", x, y, inside = true)
+                        touchMouseEvent.type = MouseEvent.Type.DRAG
+                    }
+                }
+                views.dispatch(touchMouseEvent)
+            }
+
         }
 
         fun gamepadUpdated(e: GamePadUpdateEvent) {

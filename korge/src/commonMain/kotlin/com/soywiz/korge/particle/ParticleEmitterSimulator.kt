@@ -1,6 +1,5 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
@@ -16,66 +15,72 @@ class ParticleEmitterSimulator(
     var timeUntilStop = TimeSpan.NIL
     var emitting = true
     val textureWidth = emitter.texture?.width ?: 16
-    val particles = List(emitter.maxParticles) { init(Particle(it), true) }
-    val aliveCount: Int get() = particles.count { it.alive }
+    val particles = ParticleContainer(emitter.maxParticles).init()
+    val aliveCount: Int get() {
+        var count = 0
+        particles.fastForEach { if (it.alive) count++ }
+        return count
+    }
     val anyAlive: Boolean get() = aliveCount > 0
 
-    private fun randomVariance(base: Double, variance: Double): Double =
-        base + variance * (random.nextDouble() * 2.0 - 1.0)
+    private fun randomVariance(base: Float, variance: Float): Float = base + variance * (random.nextFloat() * 2f - 1f)
+    private fun randomVariance(base: Double, variance: Double): Double = base + variance * (random.nextDouble() * 2.0 - 1.0)
+    private fun randomVariance(base: Angle, variance: Angle): Angle = randomVariance(base.degrees, variance.degrees).degrees
 
-    private fun randomVariance(base: Angle, variance: Angle): Angle =
-        randomVariance(base.degrees, variance.degrees).degrees
+    fun ParticleContainer.init() = fastForEach {
+        init(it, true)
+    }
 
-    fun init(particle: Particle, initialization: Boolean): Particle {
-        val lifespan = randomVariance(emitter.lifeSpan, emitter.lifespanVariance).coerceAtLeast(0.001)
+    fun ParticleContainer.init(particle: Particle, initialization: Boolean): Particle {
+        val lifespan = randomVariance(emitter.lifeSpan, emitter.lifespanVariance).coerceAtLeast(0.001).toFloat()
 
-        particle.totalTime = lifespan.coerceAtLeast(0.0)
+        particle.totalTime = lifespan.coerceAtLeast(0f)
 
         if (initialization) {
-            val ratio = particle.index.toDouble() / emitter.maxParticles.toDouble()
-            particle.currentTime = -(emitter.lifeSpan + emitter.lifespanVariance.absoluteValue) * ratio
+            val ratio = particle.index.toFloat() / emitter.maxParticles.toFloat()
+            particle.currentTime = -(emitter.lifeSpan + emitter.lifespanVariance.absoluteValue).toFloat() * ratio
             //println(particle.currentTime)
         } else {
-            particle.currentTime = 0.0
+            particle.currentTime = 0f
         }
 
-        val emitterX = emitterPos.x
-        val emitterY = emitterPos.y
+        val emitterX = emitterPos.x.toFloat()
+        val emitterY = emitterPos.y.toFloat()
 
-        particle.x = randomVariance(emitterX, emitter.sourcePositionVariance.x)
-        particle.y = randomVariance(emitterY, emitter.sourcePositionVariance.y)
-        particle.startX = emitterX
-        particle.startY = emitterY
+        particle.x = randomVariance(emitterX, emitter.sourcePositionVariance.x.toFloat())
+        particle.y = randomVariance(emitterY, emitter.sourcePositionVariance.y.toFloat())
+        particle.startX = emitterX.toFloat()
+        particle.startY = emitterY.toFloat()
 
         val angle = randomVariance(emitter.angle, emitter.angleVariance)
-        val speed = randomVariance(emitter.speed, emitter.speedVariance)
-        particle.velocityX = speed * cos(angle)
-        particle.velocityY = speed * sin(angle)
+        val speed = randomVariance(emitter.speed, emitter.speedVariance).toFloat()
+        particle.velocityX = speed * cos(angle).toFloat()
+        particle.velocityY = speed * sin(angle).toFloat()
 
-        val startRadius = randomVariance(emitter.maxRadius, emitter.maxRadiusVariance)
-        val endRadius = randomVariance(emitter.minRadius, emitter.minRadiusVariance)
+        val startRadius = randomVariance(emitter.maxRadius, emitter.maxRadiusVariance).toFloat()
+        val endRadius = randomVariance(emitter.minRadius, emitter.minRadiusVariance).toFloat()
         particle.emitRadius = startRadius
         particle.emitRadiusDelta = (endRadius - startRadius) / lifespan
         particle.emitRotation = randomVariance(emitter.angle, emitter.angleVariance)
         particle.emitRotationDelta = randomVariance(emitter.rotatePerSecond, emitter.rotatePerSecondVariance)
-        particle.radialAcceleration = randomVariance(emitter.radialAcceleration, emitter.radialAccelVariance)
+        particle.radialAcceleration = randomVariance(emitter.radialAcceleration, emitter.radialAccelVariance).toFloat()
         particle.tangentialAcceleration =
-            randomVariance(emitter.tangentialAcceleration, emitter.tangentialAccelVariance)
+            randomVariance(emitter.tangentialAcceleration, emitter.tangentialAccelVariance).toFloat()
 
-        val startSize = randomVariance(emitter.startSize, emitter.startSizeVariance).coerceAtLeast(0.1)
-        val endSize = randomVariance(emitter.endSize, emitter.endSizeVariance).coerceAtLeast(0.1)
+        val startSize = randomVariance(emitter.startSize, emitter.startSizeVariance).coerceAtLeast(0.1).toFloat()
+        val endSize = randomVariance(emitter.endSize, emitter.endSizeVariance).coerceAtLeast(0.1).toFloat()
         particle.scale = startSize / textureWidth
         particle.scaleDelta = ((endSize - startSize) / lifespan) / textureWidth
 
-        particle.colorR = randomVariance(emitter.startColor.rd, emitter.startColorVariance.rd)
-        particle.colorG = randomVariance(emitter.startColor.gd, emitter.startColorVariance.gd)
-        particle.colorB = randomVariance(emitter.startColor.bd, emitter.startColorVariance.bd)
-        particle.colorA = randomVariance(emitter.startColor.ad, emitter.startColorVariance.ad)
+        particle.colorR = randomVariance(emitter.startColor.r, emitter.startColorVariance.r)
+        particle.colorG = randomVariance(emitter.startColor.g, emitter.startColorVariance.g)
+        particle.colorB = randomVariance(emitter.startColor.b, emitter.startColorVariance.b)
+        particle.colorA = randomVariance(emitter.startColor.a, emitter.startColorVariance.a)
 
-        val endColorR = randomVariance(emitter.endColor.rd, emitter.endColorVariance.rd)
-        val endColorG = randomVariance(emitter.endColor.gd, emitter.endColorVariance.gd)
-        val endColorB = randomVariance(emitter.endColor.bd, emitter.endColorVariance.bd)
-        val endColorA = randomVariance(emitter.endColor.ad, emitter.endColorVariance.ad)
+        val endColorR = randomVariance(emitter.endColor.r, emitter.endColorVariance.r)
+        val endColorG = randomVariance(emitter.endColor.g, emitter.endColorVariance.g)
+        val endColorB = randomVariance(emitter.endColor.b, emitter.endColorVariance.b)
+        val endColorA = randomVariance(emitter.endColor.a, emitter.endColorVariance.a)
 
         particle.colorRdelta = ((endColorR - particle.colorR) / lifespan)
         particle.colorGdelta = ((endColorG - particle.colorG) / lifespan)
@@ -91,10 +96,10 @@ class ParticleEmitterSimulator(
         return particle
     }
 
-    fun advance(particle: Particle, _elapsedTime: Double) {
+    fun ParticleContainer.advance(particle: Particle, _elapsedTime: Float) {
         val restTime = particle.totalTime - particle.currentTime
         val elapsedTime = if (restTime > _elapsedTime) _elapsedTime else restTime
-        particle.currentTime += elapsedTime
+        particle.currentTime += elapsedTime.toFloat()
 
         //if (particle.index == 0) {
             //println("currentTime=${particle.currentTime}, totalTime=${particle.totalTime}, emitting=$emitting, elapsedTime=$elapsedTime, alive=${particle.alive}")
@@ -111,15 +116,15 @@ class ParticleEmitterSimulator(
 
         when (emitter.emitterType) {
             ParticleEmitter.Type.RADIAL -> {
-                particle.emitRotation += particle.emitRotationDelta * elapsedTime
-                particle.emitRadius += particle.emitRadiusDelta * elapsedTime
-                particle.x = emitter.sourcePosition.x - cos(particle.emitRotation) * particle.emitRadius
-                particle.y = emitter.sourcePosition.y - sin(particle.emitRotation) * particle.emitRadius
+                particle.emitRotation += particle.emitRotationDelta * elapsedTime.toDouble()
+                particle.emitRadius += (particle.emitRadiusDelta * elapsedTime).toFloat()
+                particle.x = emitter.sourcePosition.xf - cos(particle.emitRotation).toFloat() * particle.emitRadius
+                particle.y = emitter.sourcePosition.yf - sin(particle.emitRotation).toFloat() * particle.emitRadius
             }
             ParticleEmitter.Type.GRAVITY -> {
                 val distanceX = particle.x - particle.startX
                 val distanceY = particle.y - particle.startY
-                val distanceScalar = sqrt(distanceX * distanceX + distanceY * distanceY).coerceAtLeast(0.01)
+                val distanceScalar = sqrt(distanceX * distanceX + distanceY * distanceY).coerceAtLeast(0.01f)
                 var radialX = distanceX / distanceScalar
                 var radialY = distanceY / distanceScalar
                 var tangentialX = radialX
@@ -132,20 +137,20 @@ class ParticleEmitterSimulator(
                 tangentialX = -tangentialY * particle.tangentialAcceleration
                 tangentialY = newY * particle.tangentialAcceleration
 
-                particle.velocityX += elapsedTime * (emitter.gravity.x + radialX + tangentialX)
-                particle.velocityY += elapsedTime * (emitter.gravity.y + radialY + tangentialY)
-                particle.x += particle.velocityX * elapsedTime
-                particle.y += particle.velocityY * elapsedTime
+                particle.velocityX += elapsedTime * (emitter.gravity.x + radialX + tangentialX).toFloat()
+                particle.velocityY += elapsedTime * (emitter.gravity.y + radialY + tangentialY).toFloat()
+                particle.x += particle.velocityX * elapsedTime.toFloat()
+                particle.y += particle.velocityY * elapsedTime.toFloat()
             }
         }
 
         particle.scale += particle.scaleDelta * elapsedTime
         particle.rotation += particle.rotationDelta * elapsedTime
 
-        particle.colorR += (particle.colorRdelta * elapsedTime).toFloat()
-        particle.colorG += (particle.colorGdelta * elapsedTime).toFloat()
-        particle.colorB += (particle.colorBdelta * elapsedTime).toFloat()
-        particle.colorA += (particle.colorAdelta * elapsedTime).toFloat()
+        particle.colorR += (particle.colorRdelta * elapsedTime)
+        particle.colorG += (particle.colorGdelta * elapsedTime)
+        particle.colorB += (particle.colorBdelta * elapsedTime)
+        particle.colorA += (particle.colorAdelta * elapsedTime)
     }
 
     fun simulate(time: TimeSpan) {
@@ -153,7 +158,8 @@ class ParticleEmitterSimulator(
             totalElapsedTime += time
             if (timeUntilStop != TimeSpan.NIL && totalElapsedTime >= timeUntilStop) emitting = false
         }
-        particles.fastForEach { p -> advance(p, time.seconds) }
+        val timeSeconds = time.seconds.toFloat()
+        particles.fastForEach { p -> advance(p, timeSeconds) }
     }
 
     fun restart() {

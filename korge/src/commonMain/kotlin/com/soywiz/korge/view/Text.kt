@@ -172,9 +172,11 @@ open class Text(
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        _renderInternal(ctx)
-        while (imagesToRemove.isNotEmpty()) {
-            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
+        if (text.isNotEmpty()) {
+            _renderInternal(ctx)
+            while (imagesToRemove.isNotEmpty()) {
+                ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
+            }
         }
         super.renderInternal(ctx)
     }

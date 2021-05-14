@@ -23,12 +23,14 @@ class TweenComponent(
     val time: TimeSpan = TimeSpan.NIL,
     val easing: Easing = DEFAULT_EASING,
     val callback: (Double) -> Unit,
-    val c: CancellableContinuation<Unit>
+    val c: CancellableContinuation<Unit>,
+    val waitTime: TimeSpan = TimeSpan.NIL
 ) : UpdateComponent {
 	var elapsed = 0.0.milliseconds
 	val hrtime = if (time != TimeSpan.NIL) time else (vs.map { it.endTime.nanoseconds }.maxOrNull() ?: 0.0).nanoseconds
 	var cancelled = false
 	var done = false
+    var resumed = false
 
 	init {
 		c.invokeOnCancellation {
@@ -38,14 +40,19 @@ class TweenComponent(
 		update(0.0.milliseconds)
 	}
 
+    fun resumeOnce() {
+        if (resumed) return
+        resumed = true
+        c.resume(Unit)
+    }
+
 	fun completeOnce() {
-		if (!done) {
-			done = true
-			detach()
-			c.resume(Unit)
-			//println("TWEEN COMPLETED[$this, $vs]: $elapsed")
-		}
-	}
+        if (done) return
+        done = true
+        detach()
+        resumeOnce()
+        //println("TWEEN COMPLETED[$this, $vs]: $elapsed")
+    }
 
 	override fun update(dt: TimeSpan) {
         if (cancelled) {
@@ -59,6 +66,10 @@ class TweenComponent(
         //println("$elapsed/$hrtime : $ratio")
 		setTo(elapsed)
 		callback(easing(ratio))
+
+        if (waitTime != TimeSpan.NIL && elapsed >= waitTime) {
+            resumeOnce()
+        }
 
         //println("UPDATE! : dt=${dt.timeSpan} : ratio=$ratio")
 
@@ -87,10 +98,20 @@ class TweenComponent(
 	override fun toString(): String = "TweenComponent($view)"
 }
 
+/**
+ * Creates a tween that will take a specified [time] to execute,
+ * with an optional [easing].
+ *
+ * If [waitTime] is specified, the suspending function will wait as much as [time] or [waitTime] even if it is
+ * still executing.
+ *
+ * Once completed [callback] will be executed.
+ */
 suspend fun BaseView?.tween(
     vararg vs: V2<*>,
     time: TimeSpan = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
+    waitTime: TimeSpan = TimeSpan.NIL,
     callback: (Double) -> Unit = { }
 ): Unit {
 	if (this != null) {
@@ -100,7 +121,7 @@ suspend fun BaseView?.tween(
 				suspendCancellableCoroutine<Unit> { c ->
 					val view = this@tween
 					//println("STARTED TWEEN at thread $currentThreadId")
-					tc = TweenComponent(view, vs.toList(), time, easing, callback, c).also { it.attach() }
+					tc = TweenComponent(view, vs.toList(), time, easing, callback, c, waitTime).also { it.attach() }
 				}
 			}
 		} catch (e: TimeoutCancellationException) {
@@ -113,6 +134,7 @@ suspend fun QView.tween(
     vararg vs: V2<*>,
     time: TimeSpan = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
+    waitTime: TimeSpan = TimeSpan.NIL,
     callback: (Double) -> Unit = { }
 ): Unit {
     if (isEmpty()) {
@@ -120,7 +142,7 @@ suspend fun QView.tween(
         delay(time)
     } else {
         fastForEach {
-            it.tween(*vs, time = time, easing = easing, callback = callback)
+            it.tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback)
         }
     }
 }
@@ -135,13 +157,15 @@ suspend fun BaseView?.tweenAsync(
 	vararg vs: V2<*>,
 	time: TimeSpan = DEFAULT_TIME,
 	easing: Easing = DEFAULT_EASING,
+    waitTime: TimeSpan = TimeSpan.NIL,
 	callback: (Double) -> Unit = {}
-) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, callback = callback) }
+) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }
 
 fun BaseView?.tweenAsync(
 	vararg vs: V2<*>,
 	coroutineContext: CoroutineContext,
 	time: TimeSpan = DEFAULT_TIME,
 	easing: Easing = DEFAULT_EASING,
-	callback: (Double) -> Unit = {}
-) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, callback = callback) }
+    waitTime: TimeSpan = TimeSpan.NIL,
+    callback: (Double) -> Unit = {}
+) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }

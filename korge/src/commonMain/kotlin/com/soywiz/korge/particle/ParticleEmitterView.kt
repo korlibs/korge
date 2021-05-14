@@ -90,7 +90,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
                 if (p.alive) {
                     val scale = p.scale
                     context.multiplyColor = p.color * this@ParticleEmitterView.colorMul
-                    context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale)
+                    context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale.toDouble())
                 }
 			}
 		}

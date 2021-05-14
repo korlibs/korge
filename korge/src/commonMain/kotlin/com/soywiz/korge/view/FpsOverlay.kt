@@ -19,15 +19,21 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
     var batchCount = 0
     var vertexCount = 0
+    var instanceCount = 0
 
     views.onBeforeRender {
         batchCount = 0
         vertexCount = 0
+        instanceCount = 0
     }
 
     views.renderContext.batch.beforeFlush {
         batchCount++
         vertexCount += it.vertexCount
+    }
+
+    views.renderContext.batch.onInstanceCount {
+        instanceCount += it
     }
 
     views.addDebugRenderer { ctx ->
@@ -56,7 +62,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
-            + ", batchCount=$batchCount, vertexCount=$vertexCount"
+            + ", batchCount=$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
             ,
             0, 0
@@ -69,20 +75,22 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         val overlayHeight = 30 * scale
         val overlayHeightGap = 5.0
 
-        renderContext.debugLineRenderContext.color(Colors.YELLOW) {
+        val debugLineRenderContext = renderContext.debugLineRenderContext
+
+        debugLineRenderContext.color(Colors.YELLOW) {
             // y-axis
-            renderContext.debugLineRenderContext.line(
+            debugLineRenderContext.line(
                 graphLeft, graphTop,
                 graphLeft, graphTop + overlayHeight.toFloat()
             )
             // x-axis
-            renderContext.debugLineRenderContext.line(
+            debugLineRenderContext.line(
                 graphLeft, graphTop + overlayHeight.toFloat(),
                 graphLeft + overlayWidth, graphTop + overlayHeight.toFloat()
             )
         }
 
-        renderContext.debugLineRenderContext.color(Colors.WHITE) {
+        debugLineRenderContext.color(Colors.WHITE) {
             val ratio = longWindow.size.toDouble() / longWindow.capacity.toDouble()
             val totalOverlayLines = (overlayLines * ratio).toInt().coerceAtLeast(1)
             if (longWindow.size > 0) {
@@ -119,7 +127,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
                     val y = (graphTop + overlayHeight - scaledFreq).toFloat()
                     val x = graphLeft + (n.toFloat() * overlayWidth / overlayLines.toFloat())
                     if (n > 0) {
-                        renderContext.debugLineRenderContext.line(previousX, previousY, x, y)
+                        debugLineRenderContext.line(previousX, previousY, x, y)
                     }
                     previousY = y
                     previousX = x

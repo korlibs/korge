@@ -1,7 +1,7 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.*
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.view.*
@@ -139,7 +139,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     private var lastInside = false
 	private var lastPressing = false
 
-	val CLICK_THRESHOLD = 16
+    var upPosTime = PerformanceCounter.reference
+    var downPosTime = PerformanceCounter.reference
 
     // Global variants (Not related to the STAGE! but to the window coordinates, so can't be translated directly use *Stage variants instead or directly Stage.mouseXY!)
     @KorgeInternal
@@ -184,6 +185,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
     var lastEventSet = false
     var lastEvent: MouseEvent = MouseEvent()
+    var lastEventUp: MouseEvent = MouseEvent()
+    //var lastEventDown: MouseEvent? = null
+    //var lastEventScroll: MouseEvent? = null
+    //var lastEventMove: MouseEvent? = null
+    //var lastEventDrag: MouseEvent? = null
+    //var lastEventClick: MouseEvent? = null
+    //var lastEventEnter: MouseEvent? = null
+    //var lastEventExit: MouseEvent? = null
     val button: MouseButton get() = lastEvent.button
     val buttons: Int get() = lastEvent.buttons
     val scrollDeltaX: Double get() = lastEvent.scrollDeltaX
@@ -199,43 +208,42 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 	@Suppress("DuplicatedCode")
     override fun onMouseEvent(views: Views, event: MouseEvent) {
+        if (!view.mouseEnabled) return
         this.views = views
         // Store event
-        this.lastEvent = event
+        this.lastEvent.copyFrom(event)
         lastEventSet = true
 
         //println("MouseEvent.onMouseEvent($views, $event)")
 		when (event.type) {
 			MouseEvent.Type.UP -> {
+                lastEventUp.copyFrom(event)
 				upPosGlobal.copyFrom(views.input.mouse)
-				if (upPosGlobal.distanceTo(downPosGlobal) < CLICK_THRESHOLD) {
+                upPosTime = PerformanceCounter.reference
+                val elapsedTime = upPosTime - downPosTime
+				if (
+                    upPosGlobal.distanceTo(downPosGlobal) < views.input.clickDistance &&
+                    elapsedTime < views.input.clickTime
+                ) {
 					clickedCount++
 					//if (isOver) {
 					//	onClick(this)
 					//}
+                    if (isOver) {
+                        click(this@MouseEvents)
+                        if (click.listenerCount > 0) {
+                            preventDefault(view)
+                        }
+                    }
 				}
 			}
 			MouseEvent.Type.DOWN -> {
+                //this.lastEventDown = event
+                downPosTime = PerformanceCounter.reference
 				downPosGlobal.copyFrom(views.input.mouse)
 			}
-			MouseEvent.Type.CLICK -> {
-				if (isOver) {
-					click(this@MouseEvents)
-					if (click.listenerCount > 0) {
-						preventDefault(view)
-					}
-				}
-				/*
-                upPos.copyFrom(input.mouse)
-                if (upPos.distanceTo(downPos) < CLICK_THRESHOLD) {
-                    clickedCount++
-                    if (isOver) {
-                        onClick(this)
-                    }
-                }
-                */
-			}
             MouseEvent.Type.SCROLL -> {
+                //this.lastEventScroll = event
                 if (isOver) {
                     scroll(this@MouseEvents)
                 } else {
@@ -243,9 +251,12 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 }
                 scrollAnywhere(this@MouseEvents)
             }
-			else -> {
-			}
-		}
+            //MouseEvent.Type.MOVE -> this.lastEventMove = event
+            //MouseEvent.Type.DRAG -> this.lastEventDrag = event
+            //MouseEvent.Type.CLICK -> this.lastEventClick = event
+            //MouseEvent.Type.ENTER -> this.lastEventEnter = event
+            //MouseEvent.Type.EXIT -> this.lastEventExit = event
+        }
 	}
 
     inner class MouseEventsUpdate(override val view: View) : UpdateComponentWithViews, Extra by Extra.Mixin() {
@@ -255,6 +266,16 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     }
 
     val updater = MouseEventsUpdate(view).attach()
+
+    private fun <T> temporalLastEvent(lastEventNew: MouseEvent?, block: () -> T): T {
+        val old = lastEvent
+        lastEvent = lastEventNew ?: lastEvent
+        try {
+            return block()
+        } finally {
+            lastEvent = old
+        }
+    }
 
     fun update(views: Views, dt: TimeSpan) {
 		if (!view.mouseEnabled) return
@@ -290,8 +311,10 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 			downFromOutside(this)
 		}
 		if (pressingChanged && !pressing) {
-			if (over) up(this) else upOutside(this)
-			upAnywhere(this)
+		    temporalLastEvent(lastEventUp) {
+                if (over) up(this) else upOutside(this)
+                upAnywhere(this)
+            }
 			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
 		}
 		if (over && clickedCount > 0) {

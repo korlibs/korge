@@ -88,7 +88,7 @@ abstract class View internal constructor(
 
     @KorgeInternal
     @PublishedApi
-    internal var _children: FastArrayList<View>? = null
+    internal open val _children: FastArrayList<View>? get() = null
 
     /** Iterates all the children of this container in normal order of rendering. */
     inline fun forEachChild(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
@@ -198,34 +198,56 @@ abstract class View internal constructor(
     /** Computed [speed] combining all the speeds from ancestors */
     val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
+    private var _x: Double = 0.0
+    private var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
     private var _skewX: Angle = 0.0.radians
     private var _skewY: Angle = 0.0.radians
     private var _rotation: Angle = 0.0.radians
 
+    private val _pos = Point()
+
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
-    var pos = Point()
+    var pos: Point
+        get() {
+            _pos.setTo(x, y)
+            return _pos
+        }
         set(value) {
-            field.copyFrom(value)
-            invalidateMatrix()
+            ensureTransform()
+            if (_x != value.x || _y != value.y) {
+                this._x = value.x
+                this._y = value.y
+                invalidateMatrix()
+            }
         }
 
     /** Local X position of this view */
     var x: Double
-        get() = ensureTransform().pos.x
+        get() {
+            ensureTransform()
+            return _x
+        }
         set(v) {
-            ensureTransform(); if (pos.x != v) {
-                pos.x = v; invalidateMatrix()
+            ensureTransform()
+            if (_x != v) {
+                _x = v
+                invalidateMatrix()
             }
         }
 
     /** Local Y position of this view */
     var y: Double
-        get() = ensureTransform().pos.y
+        get() {
+            ensureTransform()
+            return _y
+        }
         set(v) {
-            ensureTransform(); if (pos.y != v) {
-                pos.y = v; invalidateMatrix()
+            ensureTransform()
+            if (_y != v) {
+                _y = v
+                invalidateMatrix()
             }
         }
 
@@ -247,12 +269,12 @@ abstract class View internal constructor(
 
     /** Local scaling in the X axis of this view */
     var scaleX: Double
-        get() = ensureTransform()._scaleX
+        get() { ensureTransform(); return _scaleX }
         set(v) { ensureTransform(); if (_scaleX != v) { _scaleX = v; invalidateMatrix() } }
 
     /** Local scaling in the Y axis of this view */
     var scaleY: Double
-        get() = ensureTransform()._scaleY
+        get() { ensureTransform(); return _scaleY }
         set(v) { ensureTransform(); if (_scaleY != v) { _scaleY = v; invalidateMatrix() } }
 
     /** Allows to change [scaleX] and [scaleY] at once. Returns the mean value of x and y scales. */
@@ -262,17 +284,17 @@ abstract class View internal constructor(
 
     /** Local skewing in the X axis of this view */
     var skewX: Angle
-        get() = ensureTransform()._skewX
+        get() { ensureTransform(); return _skewX }
         set(v) { ensureTransform(); if (_skewX != v) { _skewX = v; invalidateMatrix() } }
 
     /** Local skewing in the Y axis of this view */
     var skewY: Angle
-        get() = ensureTransform()._skewY
+        get() { ensureTransform(); return _skewY }
         set(v) { ensureTransform(); if (_skewY != v) { _skewY = v; invalidateMatrix() } }
 
     /** Local rotation of this view */
     var rotation: Angle
-        get() = ensureTransform()._rotation
+        get() { ensureTransform(); return _rotation }
         set(v) { ensureTransform(); if (_rotation != v) { _rotation = v; invalidateMatrix() } }
 
     /** The global x position of this view */
@@ -399,19 +421,18 @@ abstract class View internal constructor(
     private val tempTransform = Matrix.Transform()
     //private val tempMatrix = Matrix2d()
 
-    private fun ensureTransform(): View {
-        if (!validLocalProps) {
-            validLocalProps = true
-            val t = tempTransform.setMatrix(this._localMatrix)
-            this.pos.xf = t.xf
-            this.pos.yf = t.yf
-            this._scaleX = t.scaleX
-            this._scaleY = t.scaleY
-            this._skewX = t.skewX
-            this._skewY = t.skewY
-            this._rotation = t.rotation
-        }
-        return this
+    private fun ensureTransform() {
+        if (validLocalProps) return
+        validLocalProps = true
+        val t = tempTransform
+        t.setMatrixNoReturn(this._localMatrix)
+        this._x = t.x
+        this._y = t.y
+        this._scaleX = t.scaleX
+        this._scaleY = t.scaleY
+        this._skewX = t.skewX
+        this._skewY = t.skewY
+        this._rotation = t.rotation
     }
 
     /** The ancestor view without parents. When attached (visible or invisible), this is the [Stage]. When no parents, it is [this] */
@@ -471,7 +492,7 @@ abstract class View internal constructor(
     @KorgeInternal
     fun _setTransform(t: Matrix.Transform) {
         //transform.toMatrix(_localMatrix)
-        pos.xf = t.xf; pos.yf = t.yf
+        _x = t.x; _y = t.y
         _scaleX = t.scaleX; _scaleY = t.scaleY
         _skewX = t.skewY; _skewY = t.skewY
         _rotation = t.rotation
@@ -484,7 +505,7 @@ abstract class View internal constructor(
     internal var validLocalProps = true
     internal var validLocalMatrix = true
 
-    private var _localMatrix = Matrix()
+    private val _localMatrix = Matrix()
 
     /**
      * Local transform [Matrix]. If you plan to change its components manually
@@ -565,54 +586,78 @@ abstract class View internal constructor(
             }
         }
 
-    private var _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
+    private val _renderColorTransform = ColorTransform(1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0)
     private var _renderColorTransformVersion = -1
+
+    private fun updateRenderColorTransform() {
+        _renderColorTransformVersion = this._versionColor
+        _requireInvalidateColor = true
+        val parent = this.parent
+        when {
+            parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
+            parent != null && this !is ColorReference -> _renderColorTransform.setToConcat(
+                _colorTransform,
+                parent.renderColorTransform
+            )
+            else -> _renderColorTransform.copyFrom(_colorTransform)
+        }
+    }
+
+    private fun updateRenderColorTransformIfRequired() {
+        if (_renderColorTransformVersion == this._versionColor) return
+        updateRenderColorTransform()
+    }
 
     /**
      * The concatenated version of [colorTransform] having into account all the color transformations of the ancestors
      */
-    val renderColorTransform: ColorTransform
-        get() {
-            if (_renderColorTransformVersion != this._versionColor) {
-                _renderColorTransformVersion = this._versionColor
-                _requireInvalidateColor = true
-                when {
-                    parent != null && parent?.filter != null -> _renderColorTransform.copyFrom(_colorTransform)
-                    parent != null && this !is View.ColorReference -> _renderColorTransform.setToConcat(
-                        _colorTransform,
-                        parent!!.renderColorTransform
-                    )
-                    else -> _renderColorTransform.copyFrom(_colorTransform)
-                }
-            }
-            return _renderColorTransform
-        }
+    val renderColorTransform: ColorTransform get() {
+        updateRenderColorTransformIfRequired()
+        return _renderColorTransform
+    }
 
     private var _renderBlendMode: BlendMode = BlendMode.INHERIT
     private var _renderBlendModeVersion: Int = -1
 
+    private fun updateRenderBlendMode() {
+        _renderBlendModeVersion = this._version
+        _requireInvalidate = true
+        _renderBlendMode = when (blendMode) {
+            BlendMode.INHERIT -> parent?.renderBlendMode ?: BlendMode.NORMAL
+            else -> blendMode
+        }
+    }
+
+    private fun updateRenderBlendModeIfRequired() {
+        if (_renderBlendModeVersion == this._version) return
+        updateRenderBlendMode()
+    }
+
     /**
      * The actual [blendMode] of the view after computing the ancestors and reaching a view with a non [BlendMode.INHERIT].
      */
-    val renderBlendMode: BlendMode
-        get() {
-            if (_renderBlendModeVersion != this._version) {
-                _renderBlendModeVersion = this._version
-                _requireInvalidate = true
-                _renderBlendMode =
-                    if (blendMode == BlendMode.INHERIT) parent?.renderBlendMode ?: BlendMode.NORMAL else blendMode
-            }
-            return _renderBlendMode
-        }
+    val renderBlendMode: BlendMode get() {
+        updateRenderBlendModeIfRequired()
+        return _renderBlendMode
+    }
 
     /** The concatenated/global version of the local [colorMul] */
-    val renderColorMul: RGBA get() = renderColorTransform.colorMul
+    val renderColorMul: RGBA get() {
+        updateRenderColorTransformIfRequired()
+        return _renderColorTransform.colorMul
+    }
 
     /** The concatenated/global version of the local [colorAdd] */
-    val renderColorAdd: ColorAdd get() = renderColorTransform.colorAdd
+    val renderColorAdd: ColorAdd get() {
+        updateRenderColorTransformIfRequired()
+        return _renderColorTransform.colorAdd
+    }
 
     /** The concatenated/global version of the local [alpha] */
-    val renderAlpha: Double get() = renderColorTransform.mA
+    val renderAlpha: Double get() {
+        updateRenderColorTransformIfRequired()
+        return renderColorTransform.mA
+    }
 
     /** Computes the local X coordinate of the mouse using the coords from the [Views] object */
     fun localMouseX(views: Views): Double = this.globalMatrixInv.transformX(views.input.mouse)
@@ -643,26 +688,16 @@ abstract class View internal constructor(
      * Invalidates the [View] after changing some of its properties so the geometry can be computed again.
      * If you change the [localMatrix] directly, you should call [invalidateMatrix] instead.
      */
-    fun invalidate() {
+    open fun invalidate() {
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
-        _children?.fastForEach { child ->
-            if (child._requireInvalidate) {
-                child.invalidate()
-            }
-        }
     }
 
-    fun invalidateColorTransform() {
+    open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
-        _children?.fastForEach { child ->
-            if (child._requireInvalidateColor) {
-                child.invalidateColorTransform()
-            }
-        }
     }
 
     /**
@@ -670,7 +705,12 @@ abstract class View internal constructor(
      * Filters allow to render this view to a texture, and to control how to render that texture (using shaders, repeating the texture, etc.).
      * You add multiple filters by creating a composite filter [ComposedFilter].
      */
+    private var _isFilterSet = false
     var filter: Filter? = null
+        set(value) {
+            field = value
+            _isFilterSet = (value != null)
+        }
 
     fun addFilter(filter: Filter) {
         when (this.filter) {
@@ -700,8 +740,8 @@ abstract class View internal constructor(
      */
     final override fun render(ctx: RenderContext) {
         if (!visible) return
-        if (filter != null) {
-            renderFiltered(ctx, filter!!)
+        if (_isFilterSet) {
+            renderFiltered(ctx)
         } else {
             renderInternal(ctx)
         }
@@ -717,17 +757,18 @@ abstract class View internal constructor(
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
         val local = getLocalBounds(doAnchoring = true)
-        ctx.debugLineRenderContext.drawVector(Colors.RED) {
+        val debugLineRenderContext = ctx.debugLineRenderContext
+        debugLineRenderContext.drawVector(Colors.RED) {
             rect(windowBounds)
         }
-        ctx.debugLineRenderContext.drawVector(Colors.WHITE) {
+        debugLineRenderContext.drawVector(Colors.WHITE) {
             moveTo(localToGlobal(Point(local.left, local.top)))
             lineTo(localToGlobal(Point(local.right, local.top)))
             lineTo(localToGlobal(Point(local.right, local.bottom)))
             lineTo(localToGlobal(Point(local.left, local.bottom)))
             close()
         }
-        ctx.debugLineRenderContext.drawVector(Colors.YELLOW) {
+        debugLineRenderContext.drawVector(Colors.YELLOW) {
             val anchorSize = 5.0
             circle(localToGlobal(local.topLeft), anchorSize)
             circle(localToGlobal(local.topRight), anchorSize)
@@ -738,7 +779,7 @@ abstract class View internal constructor(
             circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
             circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
         }
-        ctx.debugLineRenderContext.drawVector(Colors.BLUE) {
+        debugLineRenderContext.drawVector(Colors.BLUE) {
             val centerX = globalX
             val centerY = globalY
             line(centerX, centerY - 5, centerX, centerY + 5)
@@ -747,7 +788,11 @@ abstract class View internal constructor(
         //ctx.flush()
     }
 
-    private fun renderFiltered(ctx: RenderContext, filter: Filter) {
+    private fun renderFiltered(ctx: RenderContext) {
+        renderFiltered(ctx, filter!!)
+    }
+
+    fun renderFiltered(ctx: RenderContext, filter: Filter) {
         val bounds = getLocalBounds()
 
         val borderEffect = filter.border
@@ -1020,7 +1065,7 @@ abstract class View internal constructor(
      */
     open fun reset() {
         _localMatrix.identity()
-        pos.setTo(0.0, 0.0)
+        _x = 0.0; _y = 0.0
         _scaleX = 1.0; _scaleY = 1.0
         _skewX = 0.0.radians; _skewY = 0.0.radians
         _rotation = 0.0.radians
@@ -1199,15 +1244,8 @@ abstract class View internal constructor(
      * Allows to find a descendant view whose [View.name] property is [name].
      * Returns null if can't find any.
      */
-    fun findViewByName(name: String): View? {
+    open fun findViewByName(name: String): View? {
         if (this.name == name) return this
-        if (this.isContainer) {
-            //(this as Container).children.fastForEach { child ->
-            (this as Container).forEachChild { child: View ->
-                val named = child.findViewByName(name)
-                if (named != null) return named
-            }
-        }
         return null
     }
 
@@ -1551,6 +1589,15 @@ fun View?.foreachDescendant(handler: (View) -> Unit) {
     }
 }
 
+inline fun View?.forEachAscendant(includeThis: Boolean = false, handler: (View) -> Unit) {
+    var view = this
+    if (!includeThis) view = view?.parent
+    while (view != null) {
+        handler(view)
+        view = view.parent
+    }
+}
+
 /** Returns a list of descendants having the property [prop] optionally matching the value [value]. */
 fun View?.descendantsWithProp(prop: String, value: String? = null): List<View> {
     if (this == null) return listOf()
@@ -1664,7 +1711,7 @@ fun <T : View> T.positionY(y: Int): T = positionY(y.toDouble())
 
 fun View.getPositionRelativeTo(view: View, out: Point = Point()): Point {
     val mat = this.parent!!.getConcatMatrix(view, inclusive = false)
-    return mat.transform(pos, out)
+    return mat.transform(x, y, out)
 }
 
 fun View.setPositionRelativeTo(view: View, pos: Point) {

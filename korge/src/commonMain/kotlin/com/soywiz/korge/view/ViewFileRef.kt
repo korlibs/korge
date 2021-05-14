@@ -32,6 +32,11 @@ interface ViewFileRef {
         }
 
         override fun lazyLoadRenderInternal(ctx: RenderContext, view: ViewFileRef) {
+            if (sourceTreeLoaded) return
+            lazyLoadRenderInternalActually(ctx, view)
+        }
+
+        fun lazyLoadRenderInternalActually(ctx: RenderContext, view: ViewFileRef) {
             if (!sourceTreeLoaded && sourceFile != null) {
                 sourceTreeLoaded = true
                 launchImmediately(ctx.coroutineContext) {

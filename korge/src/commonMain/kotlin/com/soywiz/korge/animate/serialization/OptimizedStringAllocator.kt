@@ -1,7 +1,7 @@
 package com.soywiz.korge.animate.serialization
 
+import com.soywiz.kds.*
 import kotlin.collections.contains
-import kotlin.collections.hashMapOf
 import kotlin.collections.map
 import kotlin.collections.plus
 import kotlin.collections.set
@@ -10,9 +10,9 @@ import kotlin.collections.toTypedArray
 
 class OptimizedStringAllocator {
 	private var finalized = false
-	private val stringsCount = hashMapOf<String, Int>()
+	private val stringsCount = linkedMapOf<String, Int>()
 	var strings = arrayOf<String?>(); private set
-	private val stringsToIndex = hashMapOf<String, Int>()
+	private val stringsToIndex = linkedMapOf<String, Int>()
 
 	fun add(str: String?) {
 		if (finalized) throw IllegalStateException()

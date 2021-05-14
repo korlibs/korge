@@ -2,19 +2,15 @@ package com.soywiz.korge.scene
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.resources.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.async.async
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
 import kotlinx.coroutines.*
-import kotlin.coroutines.*
 import kotlin.reflect.*
 
 /**
@@ -170,19 +166,27 @@ class SceneContainer(
         val newScene = sceneInjector.get(clazz)
         currentScene = newScene
 
-        transitionView.transition = transition
-        transitionView.startNewTransition(newScene._sceneViewContainer)
+        transitionView.startNewTransition(newScene._sceneViewContainer, transition)
 
-        withContext(newScene.coroutineContext) {
-            newScene.sceneView.apply { newScene.apply { sceneInit() } }
+        //println("SCENE PREINIT")
+        try {
+            newScene.coroutineContext.launchUnscopedAndWait {
+                //println("coroutineContext=$coroutineContext")
+                newScene.sceneView.apply { newScene.apply { sceneInit() } }
+                //println("...")
+            }
+        } catch (e: Throwable) {
+            //println("WOOOPS!")
+            e.printStackTrace()
         }
+        //println("SCENE POSTINIT")
 
-        newScene.launchImmediately {
+        newScene.launchUnscoped {
             newScene.sceneView.apply { newScene.apply { sceneMain() } }
         }
 
         if (oldScene != null) {
-            withContext(oldScene.coroutineContext) {
+            oldScene.coroutineContext.launchUnscopedAndWait {
                 oldScene.sceneBeforeLeaving()
             }
         }
@@ -196,19 +200,21 @@ class SceneContainer(
         transitionView.endTransition()
 
         if (oldScene != null) {
-            withContext(oldScene.coroutineContext) {
+            oldScene.coroutineContext.launchUnscopedAndWait {
+                //println("sceneDestroy.coroutineContext=$coroutineContext")
                 oldScene.sceneDestroy()
                 oldScene.sceneDestroyInternal()
             }
 
-            oldScene.launchImmediately {
+            oldScene.launchUnscoped {
+                //println("sceneAfterDestroyInternal.coroutineContext=$coroutineContext")
+
                 oldScene.sceneAfterDestroyInternal()
             }
         }
-        views.launchImmediately {
-            withContext(newScene.coroutineContext) {
-                newScene.sceneAfterInit()
-            }
+
+        newScene.coroutineContext.launchUnscoped {
+            newScene.sceneAfterInit()
         }
 
         return newScene

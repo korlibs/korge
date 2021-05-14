@@ -8,56 +8,54 @@ import com.soywiz.korma.geom.*
 
 @Korge3DExperimental
 inline fun Container3D.mesh(mesh: Mesh3D, callback: ViewWithMesh3D.() -> Unit = {}): ViewWithMesh3D {
-	return ViewWithMesh3D(mesh).addTo(this, callback)
+    return ViewWithMesh3D(mesh).addTo(this, callback)
 }
 
 @Korge3DExperimental
 open class ViewWithMesh3D(
-	var mesh: Mesh3D,
-	var skeleton: Skeleton3D? = null
+    var mesh: Mesh3D,
+    var skeleton: Skeleton3D? = null
 ) : View3D() {
 
-	private val uniformValues = AG.UniformValues()
-	private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
-	//private val rs = AG.RenderState(depthFunc = AG.CompareMode.ALWAYS)
+    private val uniformValues = AG.UniformValues()
+    private val rs = AG.RenderState(depthFunc = AG.CompareMode.LESS_EQUAL)
+    //private val rs = AG.RenderState(depthFunc = AG.CompareMode.ALWAYS)
 
-	private val tempMat1 = Matrix3D()
-	private val tempMat2 = Matrix3D()
-	private val tempMat3 = Matrix3D()
+    private val tempMat1 = Matrix3D()
+    private val tempMat2 = Matrix3D()
+    private val tempMat3 = Matrix3D()
 
-	protected open fun prepareExtraModelMatrix(mat: Matrix3D) {
-		mat.identity()
-	}
+    protected open fun prepareExtraModelMatrix(mat: Matrix3D) {
+        mat.identity()
+    }
 
-	fun AG.UniformValues.setMaterialLight(
-		ctx: RenderContext3D,
-		uniform: Shaders3D.MaterialLightUniform,
-		actual: Material3D.Light
-	) {
-		when (actual) {
-			is Material3D.LightColor -> {
-				this[uniform.u_color] = actual.colorVec
-			}
-			is Material3D.LightTexture -> {
-				actual.textureUnit.texture = actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
-				actual.textureUnit.linear = true
-				this[uniform.u_texUnit] = actual.textureUnit
-			}
-		}
-	}
+    fun AG.UniformValues.setMaterialLight(
+        ctx: RenderContext3D,
+        uniform: Shaders3D.MaterialLightUniform,
+        actual: Material3D.Light
+    ) {
+        when (actual) {
+            is Material3D.LightColor -> {
+                this[uniform.u_color] = actual.colorVec
+            }
+            is Material3D.LightTexture -> {
+                actual.textureUnit.texture = actual.bitmap?.let { ctx.rctx.agBitmapTextureManager.getTextureBase(it).base }
+                actual.textureUnit.linear = true
+                this[uniform.u_texUnit] = actual.textureUnit
+            }
+        }
+    }
 
-	private val identity = Matrix3D()
-	private val identityInv = identity.clone().invert()
+    private val identity = Matrix3D()
+    private val identityInv = identity.clone().invert()
 
-	override fun render(ctx: RenderContext3D) {
-		val ag = ctx.ag
+    override fun render(ctx: RenderContext3D) {
+        val ag = ctx.ag
 
         // @TODO: We should have a managed object for index and vertex buffers like Bitmap -> Texture
         // @TODO:   that handles this automatically. So they are released and allocated automatically on the GPU
         ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
-            ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-                //vertexBuffer.upload(mesh.data)
-                vertexBuffer.upload(mesh.vertexBuffer)
+            ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
                 indexBuffer.upload(mesh.indexBuffer)
                 //tempMat2.invert()
                 //tempMat3.multiply(ctx.cameraMatInv, this.localTransform.matrix)
@@ -66,8 +64,8 @@ open class ViewWithMesh3D(
 
                 Shaders3D.apply {
                     val meshMaterial = mesh.material
-                    ag.draw(
-                        vertices = vertexBuffer,
+                    ag.drawV2(
+                        vertexData = vertexData,
                         indices = indexBuffer,
                         indexType = mesh.indexType,
                         type = mesh.drawType,
@@ -77,7 +75,6 @@ open class ViewWithMesh3D(
                             meshMaterial,
                             mesh.hasTexture
                         ),
-                        vertexLayout = mesh.layout,
                         vertexCount = mesh.vertexCount,
                         blending = AG.Blending.NONE,
                         //vertexCount = 6 * 6,
@@ -142,5 +139,5 @@ open class ViewWithMesh3D(
                 }
             }
         }
-	}
+    }
 }

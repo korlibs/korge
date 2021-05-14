@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.ui.UIScrollBar.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
@@ -17,9 +18,8 @@ inline fun Container.uiScrollBar(
     buttonSize: Double = 32.0,
     stepSize: Double = pageSize / 10.0,
     direction: Direction = Direction.auto(width, height),
-    skin: ScrollBarSkin = if (direction == Direction.Horizontal) defaultHorScrollBarSkin else defaultVerScrollBarSkin,
     block: @ViewDslMarker UIScrollBar.() -> Unit = {}
-): UIScrollBar = UIScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction, skin).addTo(this).apply(block)
+): UIScrollBar = UIScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
 
 open class UIScrollBar(
     width: Double,
@@ -29,8 +29,7 @@ open class UIScrollBar(
     totalSize: Double,
     buttonSize: Double = 32.0,
     var stepSize: Double = pageSize / 10.0,
-    direction: Direction = Direction.auto(width, height),
-    skin: ScrollBarSkin = if (direction == Direction.Horizontal) DefaultHorScrollBarSkin else DefaultVerScrollBarSkin
+    direction: Direction = Direction.auto(width, height)
 ) : UIView() {
 
     enum class Direction {
@@ -72,12 +71,19 @@ open class UIScrollBar(
             current = value.clamp01() * (totalSize - pageSize)
         }
 
-    protected val background = solidRect(100, 100, skin.backColor)
-    protected val upButton = iconButton(16.0, 16.0, skin.upSkin, skin.upIcon)
-    protected val downButton = iconButton(16.0, 16.0, skin.downSkin, skin.downIcon)
-    protected val thumb = uiButton(16.0, 16.0, skin.thumbSkin)
+    protected val background = solidRect(100, 100, buttonBackColor)
+    protected val upButton = uiButton(16.0, 16.0)
+    protected val downButton = uiButton(16.0, 16.0)
+    protected val thumb = uiButton(16.0, 16.0)
 
     protected val views get() = stage?.views
+
+    override fun renderInternal(ctx: RenderContext) {
+        background.color = buttonBackColor
+        upButton.icon = if (direction == Direction.Horizontal) this.iconLeft else this.iconUp
+        downButton.icon = if (direction == Direction.Horizontal) this.iconRight else this.iconDown
+        super.renderInternal(ctx)
+    }
 
     init {
         reshape()

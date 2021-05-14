@@ -1,27 +1,46 @@
 package com.soywiz.korge.view.fast
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.FBuffer
-import com.soywiz.korag.*
-import com.soywiz.korge.internal.*
+import com.soywiz.kds.FastArrayList
 import com.soywiz.korge.internal.min2
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import kotlin.math.min
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
 
 inline fun Container.fastSpriteContainer(
+    useRotation: Boolean = false,
+    smoothing: Boolean = true,
     callback: @ViewDslMarker FastSpriteContainer.() -> Unit = {}
-): FastSpriteContainer = FastSpriteContainer().addTo(this, callback)
+): FastSpriteContainer = FastSpriteContainer(useRotation, smoothing).addTo(this, callback)
 
-class FastSpriteContainer : View() {
+class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boolean = true) : View() {
     private val sprites = FastArrayList<FastSprite>()
 
     val numChildren get() = sprites.size
 
     fun addChild(sprite: FastSprite) {
+        if(sprite.useRotation != useRotation) {
+            sprite.useRotation = useRotation
+            // force update the sprite just in case the FastSprite properties were updated before being
+            // added to the container
+            sprite.forceUpdate()
+        }
+        sprite.container = this
         this.sprites.add(sprite)
     }
+
+    // alias for addChild
+    fun alloc(sprite: FastSprite) = addChild(sprite)
+
+    fun removeChild(sprite: FastSprite) {
+        this.sprites.remove(sprite)
+        sprite.container = null
+    }
+
+    // alias for removeChild
+    fun delete(sprite: FastSprite) = removeChild(sprite)
 
     // 65535 is max vertex index in the index buffer (see ParticleRenderer)
     // so max number of particles is 65536 / 4 = 16384
@@ -42,7 +61,7 @@ class FastSpriteContainer : View() {
         bb.setViewMatrixTemp(globalMatrix) {
             ////////////////////////////
 
-            bb.setStateFast(bmp, true, blendMode.factors, null)
+            bb.setStateFast(bmp, smoothing, blendMode.factors, null)
 
             ////////////////////////////
 
@@ -78,16 +97,31 @@ class FastSpriteContainer : View() {
         var vp = bb.vertexPos
         val vd = bb.verticesFast32
         val mMax = min2(sprites.size, m + batchSize)
-        val count = mMax - m
+        var count = mMax - m
         for (n in m until mMax) {
             //spriteCount++
             val sprite = sprites[n]
-            vp = bb._addQuadVerticesFastNormalNonRotated(
-                vp, vd,
-                sprite.x0, sprite.y0, sprite.x1, sprite.y1,
-                sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                colorMul, colorAdd
-            )
+            if (!sprite.visible) {
+                count--
+                continue
+            }
+
+            if (useRotation) {
+                vp = bb._addQuadVerticesFastNormal(
+                    vp, vd,
+                    sprite.x0, sprite.y0, sprite.x1, sprite.y1,
+                    sprite.x2, sprite.y2, sprite.x3, sprite.y3,
+                    sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
+                    sprite.color.value, colorAdd
+                )
+            } else {
+                vp = bb._addQuadVerticesFastNormalNonRotated(
+                    vp, vd,
+                    sprite.x0, sprite.y0, sprite.x1, sprite.y1,
+                    sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
+                    sprite.color.value, colorAdd
+                )
+            }
         }
         bb.vertexPos = vp
         bb.vertexCount = count * 4

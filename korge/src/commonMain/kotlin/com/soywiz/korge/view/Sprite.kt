@@ -278,6 +278,14 @@ open class Sprite(
     }
 }
 
-enum class AnimationType {
-    STANDARD, LOOPED, DURATION
+//enum class AnimationType {
+//    STANDARD, LOOPED, DURATION
+//}
+
+inline class AnimationType(val id: Int) {
+    companion object {
+        inline val STANDARD get() = AnimationType(0)
+        inline val LOOPED get() = AnimationType(1)
+        inline val DURATION get() = AnimationType(2)
+    }
 }

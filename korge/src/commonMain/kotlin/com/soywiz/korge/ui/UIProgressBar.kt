@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kmem.*
 import com.soywiz.korge.debug.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korui.*
@@ -11,46 +12,34 @@ inline fun Container.uiProgressBar(
     height: Double = 24.0,
     current: Double = 0.0,
     maximum: Double = 100.0,
-    skin: UISkin = defaultUISkin,
     block: @ViewDslMarker UIProgressBar.() -> Unit = {}
-): UIProgressBar = UIProgressBar(width, height, current, maximum, skin).addTo(this).apply(block)
+): UIProgressBar = UIProgressBar(width, height, current, maximum).addTo(this).apply(block)
 
 open class UIProgressBar(
 	width: Double = 256.0,
 	height: Double = 24.0,
 	current: Double = 0.0,
 	maximum: Double = 100.0,
-	skin: UISkin = DefaultUISkin
 ) : UIView(width, height), ViewLeaf {
 
 	var current by uiObservable(current) { updateState() }
 	var maximum by uiObservable(maximum) { updateState() }
-	var skin by uiObservable(skin) {
-		background.color = it.backColor
-		onSkinChanged()
-	}
 
 	override var ratio: Double
 		set(value) { current = value * maximum }
 		get() = (current / maximum).clamp01()
 
-	private val background = solidRect(width, height, skin.backColor)
-	protected open val progressView: View =
-		ninePatch(skin.normal, width * (current / maximum).clamp01(), height, .25, .25, .75, .75)
+	private val background = solidRect(width, height, buttonBackColor)
+	protected open val progressView: NinePatchEx =
+		ninePatch(buttonNormal, width * (current / maximum).clamp01(), height)
 
-	override fun onSizeChanged() {
-		background.size(width, height)
-		updateState()
-	}
-
-	override fun updateState() {
-		progressView.size(width * ratio, height)
-	}
-
-	protected open fun onSkinChanged() {
-		(progressView as? NinePatch)?.tex = skin.normal
-		background.color = skin.backColor
-	}
+    override fun renderInternal(ctx: RenderContext) {
+        background.size(width, height)
+        progressView.size(width * ratio, height)
+        progressView.ninePatch = buttonNormal
+        background.color = buttonBackColor
+        super.renderInternal(ctx)
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection(this@UIProgressBar::class.simpleName!!) {

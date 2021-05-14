@@ -1,13 +1,11 @@
 package com.soywiz.korfl
 
 import com.soywiz.klock.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.stream.*
 import kotlin.collections.List
 import kotlin.collections.Map
 import kotlin.collections.arrayListOf
-import kotlin.collections.hashMapOf
 import kotlin.collections.map
 import kotlin.collections.set
 
@@ -24,7 +22,7 @@ object AMF3 {
 			val dyn = ((len ushr 3) and 0x01) == 1
 			len = len ushr 4
 			i.readU8()
-			val h = hashMapOf<String, Any?>()
+			val h = linkedMapOf<String, Any?>()
 			if (dyn) {
 				while (true) {
 					val s = readString()
@@ -39,7 +37,7 @@ object AMF3 {
 		}
 
 		fun readMap(len: Int): Map<Any?, Any?> {
-			val h = hashMapOf<Any?, Any?>()
+			val h = linkedMapOf<Any?, Any?>()
 			i.readU8()
 			for (i in 0 until len) h[read()] = read()
 			return h

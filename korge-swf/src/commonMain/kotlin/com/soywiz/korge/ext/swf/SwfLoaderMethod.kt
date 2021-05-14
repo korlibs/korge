@@ -536,7 +536,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 			var charId: Int = -1,
 			var clipDepth: Int = -1,
 			var name: String? = null,
-			var colorTransform: ColorTransform = ColorTransform.identity,
+			var colorTransform: ColorTransform = ColorTransform(),
 			var ratio: Double = 0.0,
 			var matrix: Matrix = Matrix(),
 			var blendMode: BlendMode = BlendMode.INHERIT
@@ -546,7 +546,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				ratio = 0.0
 				charId = -1
 				clipDepth = -1
-				colorTransform = ColorTransform.identity
+				colorTransform.setToIdentity()
 				name = null
 				matrix = Matrix()
 				blendMode = BlendMode.INHERIT

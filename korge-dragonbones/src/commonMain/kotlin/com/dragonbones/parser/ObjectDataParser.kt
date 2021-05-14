@@ -2354,7 +2354,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 		//for (var i = 0, l = this._frameArray.length; i < l; ++i) {
 		for (i in 0 until this._frameArray.length) {
-			frameArray[i] = this._frameArray[i].toShort()
+			frameArray[i] = this._frameArray[i].toInt().toShort()
 		}
 
 		//for (var i = 0, l = this._timelineArray.length; i < l; ++i) {

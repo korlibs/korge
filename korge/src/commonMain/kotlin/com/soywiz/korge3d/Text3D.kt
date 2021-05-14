@@ -55,10 +55,7 @@ class Text3D(
         val ag = ctx.ag
         val mesh = this.createMesh(ctx)
 
-        ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
-            //vertexBuffer.upload(mesh.data)
-            vertexBuffer.upload(mesh.vertexBuffer)
-
+        ctx.useDynamicVertexData(mesh.vertexBuffers) { vertexData ->
             //tempMat2.invert()
             //tempMat3.multiply(ctx.cameraMatInv, this.localTransform.matrix)
             //tempMat3.multiply(ctx.cameraMatInv, Matrix3D().invert(this.localTransform.matrix))
@@ -66,8 +63,8 @@ class Text3D(
 
             Shaders3D.apply {
                 val meshMaterial = mesh.material
-                ag.draw(
-                    vertexBuffer,
+                ag.drawV2(
+                    vertexData,
                     type = mesh.drawType,
                     program = mesh.program ?: ctx.shaders.getProgram3D(
                         ctx.lights.size.clamp(0, 4),
@@ -75,7 +72,6 @@ class Text3D(
                         meshMaterial,
                         mesh.hasTexture
                     ),
-                    vertexLayout = mesh.layout,
                     vertexCount = mesh.vertexCount,
                     blending = AG.Blending.NONE,
                     //vertexCount = 6 * 6,
@@ -173,5 +169,4 @@ class Text3D(
         }
         return meshBuilder3D.build()
     }
-
 }

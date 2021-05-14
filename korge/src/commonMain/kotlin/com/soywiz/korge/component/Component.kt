@@ -1,5 +1,6 @@
 package com.soywiz.korge.component
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
@@ -263,54 +264,54 @@ open class Component(val view: BaseView) : EventDispatcher by view, Cancellable 
 */
 
 class Components {
-    var mouse: ArrayList<MouseComponent>? = null
-    var key: ArrayList<KeyComponent>? = null
-    var gamepad: ArrayList<GamepadComponent>? = null
-    var touch: ArrayList<TouchComponent>? = null
-    var event: ArrayList<EventComponent>? = null
-    var updateWV: ArrayList<UpdateComponentWithViews>? = null
-    var update: ArrayList<UpdateComponent>? = null
-    var resize: ArrayList<ResizeComponent>? = null
-    var other: ArrayList<Component>? = null
+    var mouse: FastArrayList<MouseComponent>? = null
+    var key: FastArrayList<KeyComponent>? = null
+    var gamepad: FastArrayList<GamepadComponent>? = null
+    var touch: FastArrayList<TouchComponent>? = null
+    var event: FastArrayList<EventComponent>? = null
+    var updateWV: FastArrayList<UpdateComponentWithViews>? = null
+    var update: FastArrayList<UpdateComponent>? = null
+    var resize: FastArrayList<ResizeComponent>? = null
+    var other: FastArrayList<Component>? = null
 
-    val emouse: ArrayList<MouseComponent>
+    val emouse: FastArrayList<MouseComponent>
         get() {
-            if (mouse == null) mouse = arrayListOf(); return mouse!!
+            if (mouse == null) mouse = FastArrayList(); return mouse!!
         }
-    val ekey: ArrayList<KeyComponent>
+    val ekey: FastArrayList<KeyComponent>
         get() {
-            if (key == null) key = arrayListOf(); return key!!
+            if (key == null) key = FastArrayList(); return key!!
         }
-    val egamepad: ArrayList<GamepadComponent>
+    val egamepad: FastArrayList<GamepadComponent>
         get() {
-            if (gamepad == null) gamepad = arrayListOf(); return gamepad!!
+            if (gamepad == null) gamepad = FastArrayList(); return gamepad!!
         }
-    val etouch: ArrayList<TouchComponent>
+    val etouch: FastArrayList<TouchComponent>
         get() {
-            if (touch == null) touch = arrayListOf(); return touch!!
+            if (touch == null) touch = FastArrayList(); return touch!!
         }
-    val eevent: ArrayList<EventComponent>
+    val eevent: FastArrayList<EventComponent>
         get() {
-            if (event == null) event = arrayListOf(); return event!!
+            if (event == null) event = FastArrayList(); return event!!
         }
-    val eupdateWV: ArrayList<UpdateComponentWithViews>
+    val eupdateWV: FastArrayList<UpdateComponentWithViews>
         get() {
-            if (updateWV == null) updateWV = arrayListOf(); return updateWV!!
+            if (updateWV == null) updateWV = FastArrayList(); return updateWV!!
         }
-    val eupdate: ArrayList<UpdateComponent>
+    val eupdate: FastArrayList<UpdateComponent>
         get() {
-            if (update == null) update = arrayListOf(); return update!!
+            if (update == null) update = FastArrayList(); return update!!
         }
-    val eresize: ArrayList<ResizeComponent>
+    val eresize: FastArrayList<ResizeComponent>
         get() {
-            if (resize == null) resize = arrayListOf(); return resize!!
+            if (resize == null) resize = FastArrayList(); return resize!!
         }
-    val eother: ArrayList<Component>
+    val eother: FastArrayList<Component>
         get() {
-            if (other == null) other = arrayListOf(); return other!!
+            if (other == null) other = FastArrayList(); return other!!
         }
 
-    fun getArrayComponentOrNull(c: Component): ArrayList<out Component>? = when (c) {
+    fun getArrayComponentOrNull(c: Component): FastArrayList<out Component>? = when (c) {
         is MouseComponent -> mouse
         is KeyComponent -> key
         is GamepadComponent -> gamepad
@@ -322,7 +323,7 @@ class Components {
         else -> other
     }
 
-    fun getArrayComponent(c: Component): ArrayList<out Component> = when (c) {
+    fun getArrayComponent(c: Component): FastArrayList<out Component> = when (c) {
         is MouseComponent -> emouse
         is KeyComponent -> ekey
         is GamepadComponent -> egamepad
@@ -410,7 +411,7 @@ class Components {
 
     inline fun <reified T : Component> getOrCreateComponent(
         view: BaseView,
-        array: ArrayList<T>,
+        array: FastArrayList<T>,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
     ): T {
@@ -472,7 +473,7 @@ class Components {
 
     inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = findFirstComponentOfType(eupdate, T::class) as T?
 
-    fun <T : Component> findFirstComponentOfType(array: ArrayList<T>, clazz: KClass<out T>): T? {
+    fun <T : Component> findFirstComponentOfType(array: FastArrayList<T>, clazz: KClass<out T>): T? {
         array.fastForEach { if (it::class == clazz) return it }
         return null
     }

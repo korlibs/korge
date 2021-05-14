@@ -124,7 +124,7 @@ internal class BindLengthComponent(override val view: BaseView) : UpdateComponen
     override fun update(views: Views, dt: TimeSpan) {
         this.views = views
         val container = (view as? View?)?.parent ?: views.stage
-        tempTransform.setMatrix(container.globalMatrix)
+        tempTransform.setMatrixNoReturn(container.globalMatrix)
         val scaleAvgInv = 1.0 / tempTransform.scaleAvg
 
         context.fontSize = 16.0 // @TODO: Can we store something in the views?

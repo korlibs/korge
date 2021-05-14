@@ -1,7 +1,6 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.internal.*
@@ -23,8 +22,28 @@ import com.soywiz.korma.geom.Rectangle
 class AgBitmapTextureManager(
     val ag: AG
 ) {
-	private val referencedBitmapsSinceGC = LinkedHashSet<Bitmap>()
-	private var referencedBitmaps = ArrayList<Bitmap>()
+    // @TODO: Use HashSet if items.size increases
+    internal class SmallSet<T> {
+        val items = FastArrayList<T>()
+
+        fun add(item: T) {
+            if (item in items) return
+            items.add(item)
+        }
+
+        fun remove(item: T) {
+            items.remove(item)
+        }
+
+        inline operator fun contains(item: T): Boolean = item in items
+
+        fun clear() {
+            items.clear()
+        }
+    }
+
+	private val referencedBitmapsSinceGC = SmallSet<Bitmap>()
+	private var referencedBitmaps = FastArrayList<Bitmap>()
 
     /** Number of frames between each Texture Garbage Collection step */
     var framesBetweenGC = 60
@@ -74,7 +93,7 @@ class AgBitmapTextureManager(
 	private fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
 		if (cachedBitmap === bitmap) return cachedBitmapTextureInfo!!
         if (cachedBitmap2 === bitmap) return cachedBitmapTextureInfo2!!
-        referencedBitmapsSinceGC += bitmap
+        referencedBitmapsSinceGC.add(bitmap)
 
 		if (cachedBitmap == bitmap) return cachedBitmapTextureInfo!!
 
@@ -109,7 +128,6 @@ class AgBitmapTextureManager(
 	fun getTexture(slice: BmpSlice): Texture {
 		if (cachedBmpSlice === slice) return cachedBmpSliceTexture!!
         if (cachedBmpSlice2 === slice) return cachedBmpSliceTexture2!!
-        referencedBitmapsSinceGC += slice.bmpBase
 
         val info = getTextureInfo(slice.bmpBase)
 
@@ -132,23 +150,14 @@ class AgBitmapTextureManager(
      * Called automatically by the engine after the render has been executed (each frame). It executes a texture GC every [framesBetweenGC] frames.
      */
     internal fun afterRender() {
-        cachedBitmap = null
-        cachedBitmap2 = null
-        cachedBitmapTextureInfo = null
-        cachedBitmapTextureInfo2 = null
-
-        cachedBmpSlice = null
-        cachedBmpSlice2 = null
-        cachedBmpSliceTexture = null
-        cachedBmpSliceTexture2 = null
+        // Prevent leaks when not referenced anymore
+        removeCache()
 
 		fcount++
 		if (fcount >= framesBetweenGC) {
 			fcount = 0
 			gc()
 		}
-		// Prevent leaks when not referenced anymore
-		removeCache()
 	}
 
     /** Performs a kind of Garbage Collection of textures references since the last GC. This method is automatically executed every [framesBetweenGC] frames. */
@@ -160,7 +169,7 @@ class AgBitmapTextureManager(
             }
         }
         referencedBitmaps.clear()
-        referencedBitmaps.addAll(referencedBitmapsSinceGC)
+        referencedBitmaps.addAll(referencedBitmapsSinceGC.items)
         referencedBitmapsSinceGC.clear()
 	}
 
@@ -168,8 +177,8 @@ class AgBitmapTextureManager(
     fun removeBitmap(bmp: Bitmap) {
         //println("removeBitmap:${bmp.size}")
         val info = bitmapsToTextureBase.getAndRemove(bmp) ?: return
-        referencedBitmapsSinceGC -= bmp
-        if (cachedBitmapTextureInfo == info) removeCache()
+        referencedBitmapsSinceGC.remove(bmp)
+        if (cachedBitmapTextureInfo == info || cachedBitmapTextureInfo2 == info) removeCache()
         info.textureBase.close()
         textureInfoPool.free(info)
     }
@@ -177,8 +186,13 @@ class AgBitmapTextureManager(
     private fun removeCache() {
         cachedBitmap = null
         cachedBitmapTextureInfo = null
+        cachedBitmap2 = null
+        cachedBitmapTextureInfo2 = null
+
         cachedBmpSlice = null
         cachedBmpSliceTexture = null
+        cachedBmpSlice2 = null
+        cachedBmpSliceTexture2 = null
     }
 }
 

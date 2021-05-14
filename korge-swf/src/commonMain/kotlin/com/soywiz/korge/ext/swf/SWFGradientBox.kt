@@ -10,7 +10,7 @@ data class SWFGradientBox(val width: Double, val height: Double, val rotation: A
         // WRONG IMPLEMENTATION
         fun fromMatrix(matrix: Matrix): SWFGradientBox {
             val transform = Matrix.Transform()
-            transform.setMatrix(matrix)
+            transform.setMatrixNoReturn(matrix)
             val rotation = transform.rotation
             val twidth = (transform.scaleX * GRADIENT_SQUARE_MAX / 20) * 2
             val theight = (transform.scaleY * GRADIENT_SQUARE_MAX / 20) * 2

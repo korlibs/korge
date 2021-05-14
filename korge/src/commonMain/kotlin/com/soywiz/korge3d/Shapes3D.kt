@@ -74,13 +74,15 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : ViewWit
                     val dx = dirs[0]
                     val dy = dirs[1]
 
-                    addVertex(pos - dx - dy, normal, Vector3D(0f, 0f, 0f))
-                    addVertex(pos + dx - dy, normal, Vector3D(1f, 0f, 0f))
-                    addVertex(pos - dx + dy, normal, Vector3D(0f, 1f, 0f))
+                    val i0 = addVertex(pos - dx - dy, normal, Vector3D(0f, 0f, 0f))
+                    val i1 = addVertex(pos + dx - dy, normal, Vector3D(1f, 0f, 0f))
+                    val i2 = addVertex(pos - dx + dy, normal, Vector3D(0f, 1f, 0f))
 
-                    addVertex(pos - dx + dy, normal, Vector3D(0f, 1f, 0f))
-                    addVertex(pos + dx - dy, normal, Vector3D(1f, 0f, 0f))
-                    addVertex(pos + dx + dy, normal, Vector3D(1f, 1f, 0f))
+                    val i3 = addVertex(pos - dx + dy, normal, Vector3D(0f, 1f, 0f))
+                    val i4 = addVertex(pos + dx - dy, normal, Vector3D(1f, 0f, 0f))
+                    val i5 = addVertex(pos + dx + dy, normal, Vector3D(1f, 1f, 0f))
+
+                    addIndices(i0, i1, i2, i3, i4, i5)
                 }
 
                 face(Vector3D(0f, +.5f, 0f))

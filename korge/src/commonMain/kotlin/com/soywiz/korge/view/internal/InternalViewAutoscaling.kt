@@ -12,7 +12,7 @@ internal class InternalViewAutoscaling {
 
     fun onRender(autoScaling: Boolean, globalMatrix: Matrix): Boolean {
         if (autoScaling) {
-            matrixTransform.setMatrix(globalMatrix)
+            matrixTransform.setMatrixNoReturn(globalMatrix)
             //val sx = kotlin.math.abs(matrixTransform.scaleX / this.scaleX)
             //val sy = kotlin.math.abs(matrixTransform.scaleY / this.scaleY)
 

@@ -37,8 +37,8 @@ open class RectBase(
             }
         }
 
-	override var anchorX: Double = anchorX; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
-    override var anchorY: Double = anchorY; set(v) { field = v; dirtyVertices = true; anchorVersion++ }
+	override var anchorX: Double = anchorX; set(v) { if (field != v) { field = v; dirtyVertices = true; anchorVersion++ } }
+    override var anchorY: Double = anchorY; set(v) { if (field != v) { field = v; dirtyVertices = true; anchorVersion++ } }
 
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0
@@ -56,20 +56,16 @@ open class RectBase(
 
     private val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
-	private fun computeVertexIfRequired() {
-		if (!dirtyVertices) return
-		dirtyVertices = false
-		vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
-	}
-
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-		if (baseBitmap !== Bitmaps.transparent) {
-			computeVertexIfRequired()
-			//println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
-			ctx.batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
-		}
-		//super.renderInternal(ctx)
+        if (baseBitmap === Bitmaps.transparent) return
+        if (dirtyVertices) {
+            dirtyVertices = false
+            vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
+        }
+        //println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
+        ctx.batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
+        //super.renderInternal(ctx)
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
