@@ -22,3 +22,10 @@ fun File.writeBytesIfChanged(bytes: ByteArray) {
         writeBytes(bytes)
     }
 }
+
+class FileList(val files: List<File>) {
+    constructor(vararg files: File) : this(files.toList())
+    fun exists() = files.any { it.exists() }
+    val firstExistantFile: File? get() = files.firstOrNull { it.exists() }
+    fun takeIfExists() = firstExistantFile
+}
