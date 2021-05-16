@@ -7,6 +7,7 @@ import com.soywiz.korge.gradle.targets.native.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
+import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
@@ -128,10 +129,11 @@ fun Project.configureNativeIos() {
         val compilationName = "main"
 		dependsOn(getKorgeProcessResourcesTaskName(targetName, compilationName))
 		from(getCompilationKorgeProcessedResourcesFolder(targetName, compilationName))
-		from(File(rootDir, "src/commonMain/resources"))
+		from(File(project.projectDir, "src/commonMain/resources")) // @TODO: Use proper source sets to determine this?
 		into(combinedResourcesFolder)
+        duplicatesStrategy = DuplicatesStrategy.INCLUDE
 		doFirst {
-			combinedResourcesFolder.mkdirs()
+			//combinedResourcesFolder.mkdirs()
 		}
 	}
 
