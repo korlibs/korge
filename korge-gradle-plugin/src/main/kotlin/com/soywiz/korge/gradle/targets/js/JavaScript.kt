@@ -34,7 +34,6 @@ fun Project.configureJavaScript() {
 
 			compilations.all {
 				it.kotlinOptions.apply {
-					languageVersion = "1.4"
 					sourceMap = true
 					//metaInfo = true
 					//moduleKind = "umd"
