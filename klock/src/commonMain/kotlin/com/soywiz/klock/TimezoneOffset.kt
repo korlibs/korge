@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.*
+import kotlin.jvm.JvmInline
 import kotlin.math.*
 
 /**
@@ -9,7 +10,8 @@ import kotlin.math.*
  *
  * This class is inlined so no boxing should be required.
  */
-inline class TimezoneOffset(
+@JvmInline
+value class TimezoneOffset(
     /** [TimezoneOffset] in [totalMilliseconds] */
     val totalMilliseconds: Double
 ) : Comparable<TimezoneOffset>, Serializable {

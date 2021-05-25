@@ -1,9 +1,12 @@
 package com.soywiz.klock
 
+import kotlin.jvm.JvmInline
+
 val infiniteTimes get() = NumberOfTimes.INFINITE
 inline val Int.times get() = NumberOfTimes(this)
 
-inline class NumberOfTimes(val count: Int) {
+@JvmInline
+value class NumberOfTimes(val count: Int) {
     companion object {
         val ZERO = NumberOfTimes(0)
         val ONE = NumberOfTimes(1)

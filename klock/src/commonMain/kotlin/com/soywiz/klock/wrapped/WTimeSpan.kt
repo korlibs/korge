@@ -8,11 +8,11 @@ import com.soywiz.klock.internal.*
 val TimeSpan.wrapped get() = WTimeSpan(this)
 
 /**
- * Wrapped Version, that is not inline. You can use [value] to get the wrapped inline class.
+ * Wrapped Version, that is not inline. You can use [value] to get the wrapped value class.
  *
  * Represents a span of time, with [milliseconds] precision.
  *
- * It is an inline class wrapping [Double] instead of [Long] to work on JavaScript without allocations.
+ * It is a value class wrapping [Double] instead of [Long] to work on JavaScript without allocations.
  */
 @KlockExperimental
 data class WTimeSpan(val value: TimeSpan) : Comparable<WTimeSpan>, Serializable {

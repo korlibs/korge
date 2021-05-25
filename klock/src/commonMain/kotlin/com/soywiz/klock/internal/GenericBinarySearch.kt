@@ -1,5 +1,7 @@
 package com.soywiz.klock.internal
 
+import kotlin.jvm.JvmInline
+
 // Original implementation grabbed from Kds to prevent additional dependencies:
 // - https://github.com/korlibs/kds/blob/965f6017d7ad82e4bad714acf26cd7189186bdb3/kds/src/commonMain/kotlin/com/soywiz/kds/_Extensions.kt#L48
 internal inline fun genericBinarySearch(
@@ -24,7 +26,8 @@ internal inline fun genericBinarySearch(
 	return invalid(fromIndex, toIndex, low, high)
 }
 
-internal inline class BSearchResult(val raw: Int) {
+@JvmInline
+internal value class BSearchResult(val raw: Int) {
 	val found: Boolean get() = raw >= 0
 	val index: Int get() = if (found) raw else -1
 	val nearIndex: Int get() = if (found) raw else -raw - 1

@@ -8,7 +8,7 @@ import com.soywiz.klock.internal.Serializable
 val Time.wrapped get() = WTime(this)
 
 /**
- * Wrapped Version, that is not inline. You can use [value] to get the wrapped inline class.
+ * Wrapped Version, that is not inline. You can use [value] to get the wrapped value class.
  *
  * Represents a union of [millisecond], [second], [minute] and [hour].
  */

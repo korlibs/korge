@@ -1,13 +1,15 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.Serializable
+import kotlin.jvm.JvmInline
 
 /**
  * Represents a couple of [year] and [month].
  *
- * It is packed in an inline class wrapping an Int to prevent allocations.
+ * It is packed in a value class wrapping an Int to prevent allocations.
  */
-inline class YearMonth(internal val internalPackedInfo: Int) : Serializable {
+@JvmInline
+value class YearMonth(internal val internalPackedInfo: Int) : Serializable {
     companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

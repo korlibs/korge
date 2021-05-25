@@ -1,14 +1,16 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.math.abs
 
 /**
  * Represents a triple of [year], [month] and [day].
  *
- * It is packed in an inline class wrapping an Int to prevent allocations.
+ * It is packed in a value class wrapping an Int to prevent allocations.
  */
-inline class Date(val encoded: Int) : Comparable<Date>, Serializable {
+@JvmInline
+value class Date(val encoded: Int) : Comparable<Date>, Serializable {
 	companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

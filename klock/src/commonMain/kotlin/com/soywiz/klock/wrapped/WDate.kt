@@ -8,11 +8,11 @@ import com.soywiz.klock.internal.Serializable
 val Date.wrapped get() = WDate(this)
 
 /**
- * Wrapped Version, that is not inline. You can use [value] to get the wrapped inline class.
+ * Wrapped Version, that is not inline. You can use [value] to get the wrapped value class.
  *
  * Represents a triple of [year], [month] and [day].
  *
- * It is packed in an inline class wrapping an Int to prevent allocations.
+ * It is packed in a value class wrapping an Int to prevent allocations.
  */
 @KlockExperimental
 data class WDate(val value: Date) : Comparable<WDate>, Serializable {

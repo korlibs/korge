@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.Serializable
+import kotlin.jvm.JvmInline
 
 /**
  * Creates a [MonthSpan] representing these years.
@@ -15,7 +16,8 @@ inline val Int.months get() = MonthSpan(this)
 /**
  * Represents a number of years and months temporal distance.
  */
-inline class MonthSpan(
+@JvmInline
+value class MonthSpan(
     /** Total months of this [MonthSpan] as integer */
     val totalMonths: Int
 ) : Comparable<MonthSpan>, Serializable {

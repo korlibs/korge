@@ -1,6 +1,7 @@
 package com.soywiz.klock.hr
 
 import com.soywiz.klock.*
+import kotlin.jvm.JvmInline
 import kotlin.math.round
 
 /** Converts a [TimeSpan] into a high-resolution [HRTimeSpan] */
@@ -11,7 +12,8 @@ val HRTimeSpan.timeSpan get() = nanosecondsRaw.nanoseconds
 
 // @TODO: Ensure nanosecondsRaw has no decimals
 /** A High-Resolution TimeSpan that stores its values as nanoseconds. Just uses 52-bits and won't store decimals */
-inline class HRTimeSpan constructor(val nanosecondsRaw: Double) : Comparable<HRTimeSpan> {
+@JvmInline
+value class HRTimeSpan constructor(val nanosecondsRaw: Double) : Comparable<HRTimeSpan> {
     companion object {
         val ZERO = HRTimeSpan(0.0)
         val NIL = HRTimeSpan(Double.NaN)

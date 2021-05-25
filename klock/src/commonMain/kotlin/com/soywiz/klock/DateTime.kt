@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.*
+import kotlin.jvm.JvmInline
 import kotlin.math.*
 
 /**
@@ -11,7 +12,8 @@ import kotlin.math.*
  * - Thu Aug 10 -140744 07:15:45 GMT-0014 (Central European Summer Time)
  * - Wed May 23 144683 18:29:30 GMT+0200 (Central European Summer Time)
  */
-inline class DateTime(
+@JvmInline
+value class DateTime(
     /** Number of milliseconds since UNIX [EPOCH] */
     val unixMillis: Double
 ) : Comparable<DateTime>, Serializable {

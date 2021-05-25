@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.*
+import kotlin.jvm.JvmInline
 import kotlin.math.*
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
@@ -75,9 +76,10 @@ inline val Double.weeks get() = TimeSpan.fromWeeks(this)
 /**
  * Represents a span of time, with [milliseconds] precision.
  *
- * It is an inline class wrapping [Double] instead of [Long] to work on JavaScript without allocations.
+ * It is a value class wrapping [Double] instead of [Long] to work on JavaScript without allocations.
  */
-inline class TimeSpan(
+@JvmInline
+value class TimeSpan(
     /** Returns the total number of [milliseconds] for this [TimeSpan] (1 / 1_000 [seconds]) */
     val milliseconds: Double
 ) : Comparable<TimeSpan>, Serializable {

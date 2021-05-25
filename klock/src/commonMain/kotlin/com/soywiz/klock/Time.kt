@@ -1,12 +1,14 @@
 package com.soywiz.klock
 
 import com.soywiz.klock.internal.Serializable
+import kotlin.jvm.JvmInline
 import kotlin.math.abs
 
 /**
  * Represents a union of [millisecond], [second], [minute] and [hour].
  */
-inline class Time(val encoded: TimeSpan) : Comparable<Time>, Serializable {
+@JvmInline
+value class Time(val encoded: TimeSpan) : Comparable<Time>, Serializable {
 	companion object {
         @Suppress("MayBeConstant", "unused")
         private const val serialVersionUID = 1L

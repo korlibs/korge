@@ -8,7 +8,7 @@ import com.soywiz.klock.internal.*
 val DateTime.wrapped get() = WDateTime(this)
 
 /**
- * Wrapped Version, that is not inline. You can use [value] to get the wrapped inline class.
+ * Wrapped Version, that is not inline. You can use [value] to get the wrapped value class.
  *
  * Represents a Date in UTC (GMT+00) with millisecond precision.
  *

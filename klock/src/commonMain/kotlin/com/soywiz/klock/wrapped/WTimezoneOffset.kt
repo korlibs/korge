@@ -8,7 +8,7 @@ import com.soywiz.klock.internal.Serializable
 val TimezoneOffset.wrapped get() = WTimezoneOffset(this)
 
 /**
- * Wrapped Version, that is not inline. You can use [value] to get the wrapped inline class.
+ * Wrapped Version, that is not inline. You can use [value] to get the wrapped value class.
  *
  * Represents a time zone offset with millisecond precision. Usually minute is enough.
  * Can be used along [WDateTimeTz] to construct non universal, local times.

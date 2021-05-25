@@ -8,7 +8,7 @@ import com.soywiz.klock.internal.Serializable
 val YearMonth.wrapped get() = WYearMonth(this)
 
 /**
- * Wrapped Version, that is not inline. You can use [value] to get the wrapped inline class.
+ * Wrapped Version, that is not inline. You can use [value] to get the wrapped value class.
  *
  * Represents a couple of [year] and [month].
  */
