@@ -4,8 +4,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
-	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
-	<a href="https://discord.com/invite/jKCxCHn"><img alt="Slack" src="https://img.shields.io/discord/728582275884908604?label=Discord" /></a>
+	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord&label=Discord" /></a>
 </p>
 <!-- /BADGES -->
 
