@@ -84,7 +84,6 @@ fun Project.configureJavaScript() {
             //println(File(targetDir, "index.html"))
 
             try {
-
                 File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(16, 32).map {
                     project.korge.getIconBytes(it).decodeImage()
                 }))

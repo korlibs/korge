@@ -25,7 +25,10 @@ fun jsObject(vararg pairs: Pair<String, Any?>): dynamic {
 	return out
 }
 
-class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
+val korgwCanvasQuery: String? by lazy { window.asDynamic().korgwCanvasQuery.unsafeCast<String?>() }
+val isCanvasCreatedAndHandled get() = korgwCanvasQuery == null
+
+open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
     companion object {
 		//var UNPACK_PREMULTIPLY_ALPHA_WEBGL = document.createElement('canvas').getContext('webgl').UNPACK_PREMULTIPLY_ALPHA_WEBGL
 		const val UNPACK_PREMULTIPLY_ALPHA_WEBGL = 37441
@@ -33,7 +36,13 @@ class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) 
 
 	override val ag: AG = this
 
-	val canvas = document.createElement("canvas") as HTMLCanvasElement
+    open fun getCanvas(): HTMLCanvasElement {
+        return (korgwCanvasQuery?.let { document.querySelector(it) as HTMLCanvasElement })
+            ?: (document.createElement("canvas") as HTMLCanvasElement)
+    }
+
+	val canvas by lazy { getCanvas() }
+
 	val glOpts = jsObject(
 		"premultipliedAlpha" to true,
 		"alpha" to false,

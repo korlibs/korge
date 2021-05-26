@@ -22,7 +22,7 @@ import org.w3c.files.*
 
 private external val navigator: dynamic
 
-class BrowserGameWindow : GameWindow() {
+open class BrowserGameWindow : GameWindow() {
     override val ag: AGWebgl = AGWebgl(AGConfig())
     val canvas get() = ag.canvas
 
@@ -88,44 +88,26 @@ class BrowserGameWindow : GameWindow() {
 
     private fun onResized() {
         isTouchDeviceCache = null
-        val scale = quality.computeTargetScale(window.innerWidth, window.innerHeight, ag.devicePixelRatio)
-        canvasRatio = scale
-        canvas.width = (window.innerWidth * scale).toInt()
-        canvas.height = (window.innerHeight * scale).toInt()
-        canvas.style.position = "absolute"
-        canvas.style.left = "0"
-        canvas.style.right = "0"
-        canvas.style.width = "${window.innerWidth}px"
-        canvas.style.height = "${window.innerHeight}px"
+        if (isCanvasCreatedAndHandled) {
+            val scale = quality.computeTargetScale(window.innerWidth, window.innerHeight, ag.devicePixelRatio)
+            val canvasWidth = (window.innerWidth * scale).toInt()
+            val canvasHeight = (window.innerHeight * scale).toInt()
+            canvas.width = canvasWidth
+            canvas.height = canvasHeight
+            canvas.style.position = "absolute"
+            canvas.style.left = "0"
+            canvas.style.right = "0"
+            canvas.style.width = "${window.innerWidth}px"
+            canvas.style.height = "${window.innerHeight}px"
+            canvasRatio = scale
 
-        canvas.ondragenter = {
-            dispatchDropfileEvent(DropFileEvent.Type.START, null)
+            //ag.resized(canvas.width, canvas.height)
+            //dispatchReshapeEvent(0, 0, window.innerWidth, window.innerHeight)
+        } else {
+            canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
         }
-        canvas.ondragexit = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondragleave = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondragover = {
-            it.preventDefault()
-        }
-        canvas.ondragstart = {
-            dispatchDropfileEvent(DropFileEvent.Type.START, null)
-        }
-        canvas.ondragend = {
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-        }
-        canvas.ondrop = {
-            it.preventDefault()
-            dispatchDropfileEvent(DropFileEvent.Type.END, null)
-            val items = it.dataTransfer!!.items
-            val files = (0 until items.length).map { items[it]?.getAsFile()?.toVfs() }.filterNotNull()
-            dispatchDropfileEvent(DropFileEvent.Type.DROP, files)
-        }
+        //canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
 
-        //ag.resized(canvas.width, canvas.height)
-        //dispatchReshapeEvent(0, 0, window.innerWidth, window.innerHeight)
         dispatchReshapeEvent(0, 0, canvas.width, canvas.height)
     }
 
@@ -197,14 +179,15 @@ class BrowserGameWindow : GameWindow() {
 
     // JS TouchEvent contains only active touches (ie. touchend just return the list of non ended-touches)
     private fun touchEvent(e: TouchEvent, type: com.soywiz.korev.TouchEvent.Type) {
+        val canvasBounds = canvas.getBoundingClientRect()
         dispatch(touchBuilder.frame(TouchBuilder.Mode.JS, type) {
             for (n in 0 until e.touches.length) {
                 val touch = e.touches.item(n) ?: continue
                 val touchId = touch.identifier
                 touch(
                     id = touchId,
-                    x = transformEventX(touch.clientX.toDouble()),
-                    y = transformEventY(touch.clientY.toDouble()),
+                    x = transformEventX(touch.clientX.toDouble() - canvasBounds.left),
+                    y = transformEventY(touch.clientY.toDouble() - canvasBounds.top),
                     force = touch.asDynamic().force.unsafeCast<Double?>() ?: 1.0,
                     kind = Touch.Kind.FINGER
                 )
@@ -218,8 +201,10 @@ class BrowserGameWindow : GameWindow() {
         // If we are in a touch device, touch events will be dispatched, and then we don't want to emit mouse events, that would be duplicated
         if (is_touch_device()) return
 
-        val tx = transformEventX(e.clientX.toDouble()).toInt()
-        val ty = transformEventY(e.clientY.toDouble()).toInt()
+        val canvasBounds = canvas.getBoundingClientRect()
+
+        val tx = transformEventX(e.clientX.toDouble() - canvasBounds.left).toInt()
+        val ty = transformEventY(e.clientY.toDouble() - canvasBounds.top).toInt()
         //console.log("mouseEvent", type.toString(), e.clientX, e.clientY, tx, ty)
         dispatch(mouseEvent {
             this.type = if (e.buttons.toInt() != 0) pressingType else type
@@ -347,11 +332,13 @@ class BrowserGameWindow : GameWindow() {
         window.asDynamic().canvas = canvas
         window.asDynamic().ag = ag
         window.asDynamic().gl = ag.gl
-        document.body?.appendChild(canvas)
-        document.body?.style?.margin = "0px"
-        document.body?.style?.padding = "0px"
-        document.body?.style?.overflowX = "hidden"
-        document.body?.style?.overflowY = "hidden"
+        if (isCanvasCreatedAndHandled) {
+            document.body?.appendChild(canvas)
+            document.body?.style?.margin = "0px"
+            document.body?.style?.padding = "0px"
+            document.body?.style?.overflowX = "hidden"
+            document.body?.style?.overflowY = "hidden"
+        }
         canvas.addEventListener("mouseenter", { mouseEvent(it.unsafeCast<MouseEvent>(), com.soywiz.korev.MouseEvent.Type.ENTER) })
         canvas.addEventListener("mouseleave", { mouseEvent(it.unsafeCast<MouseEvent>(), com.soywiz.korev.MouseEvent.Type.EXIT) })
         canvas.addEventListener("mouseover", { mouseEvent(it.unsafeCast<MouseEvent>(), com.soywiz.korev.MouseEvent.Type.MOVE, com.soywiz.korev.MouseEvent.Type.DRAG) })
@@ -386,10 +373,34 @@ class BrowserGameWindow : GameWindow() {
                 this.gamepad = e.gamepad.index
             })
         })
-
-
         window.addEventListener("resize", { onResized() })
+        canvas.ondragenter = {
+            dispatchDropfileEvent(DropFileEvent.Type.START, null)
+        }
+        canvas.ondragexit = {
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+        }
+        canvas.ondragleave = {
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+        }
+        canvas.ondragover = {
+            it.preventDefault()
+        }
+        canvas.ondragstart = {
+            dispatchDropfileEvent(DropFileEvent.Type.START, null)
+        }
+        canvas.ondragend = {
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+        }
+        canvas.ondrop = {
+            it.preventDefault()
+            dispatchDropfileEvent(DropFileEvent.Type.END, null)
+            val items = it.dataTransfer!!.items
+            val files = (0 until items.length).mapNotNull { items[it]?.getAsFile()?.toVfs() }
+            dispatchDropfileEvent(DropFileEvent.Type.DROP, files)
+        }
         onResized()
+
         jsFrame = { step: Double ->
             val startTime = PerformanceCounter.reference
             window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop
