@@ -20,10 +20,9 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 <!-- /SUPPORT -->
 
 
-## Info:
+## Info about the project:
 
-[![KorGE Game Engine Landing](docs/landing_new.png)](https://korge.org)
-
+<https://korge.org>
 
 ## Contributors
 
