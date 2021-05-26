@@ -50,7 +50,8 @@ for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory 
 }
 */
 
-val skipKorgeSamples = System.getenv("SKIP_KORGE_SAMPLES") == "true"
+//val skipKorgeSamples = System.getenv("SKIP_KORGE_SAMPLES") == "true"
+val skipKorgeSamples = true
 
 if (!skipKorgeSamples) {
     fileTree(File(rootProject.projectDir, "samples")) {

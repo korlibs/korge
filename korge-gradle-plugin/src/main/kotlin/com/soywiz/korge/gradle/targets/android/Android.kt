@@ -136,13 +136,6 @@ fun Project.configureAndroidIndirect() {
                             line("mavenCentral()")
                             //line("jcenter()")
 							line("google()")
-                            if (isKotlinDevOrEap) {
-                                line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-eap\") }")
-                                line("maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") }")
-                            }
-                            if (checkBintrayArtifacts) {
-                                line("maven { url = 'https://dl.bintray.com/korlibs/korlibs' }")
-                            }
 						}
 
 						if (korge.androidLibrary) {

@@ -43,11 +43,21 @@ allprojects {
 
 allprojects {
 	repositories {
-        mavenLocal()
-		mavenCentral()
-        google()
-		maven { url = uri("https://plugins.gradle.org/m2/") }
-        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
+        mavenLocal().content {
+            excludeGroup("Kotlin/Native")
+        }
+		mavenCentral().content {
+            excludeGroup("Kotlin/Native")
+        }
+        google().content {
+            excludeGroup("Kotlin/Native")
+        }
+		maven { url = uri("https://plugins.gradle.org/m2/") }.content {
+            excludeGroup("Kotlin/Native")
+        }
+        maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.content {
+            excludeGroup("Kotlin/Native")
+        }
 	}
 }
 

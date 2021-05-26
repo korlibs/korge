@@ -19,7 +19,6 @@ val Project.kotlinVersion: String get() = findProperty("kotlinVersion")?.toStrin
 val Project.androidBuildGradleVersion get() = findProperty("androidBuildGradleVersion") ?: BuildVersions.ANDROID_BUILD
 val Project.coroutinesVersion get() = findProperty("coroutinesVersion") ?: BuildVersions.COROUTINES
 
-val Project.checkBintrayArtifacts get() = findProperty("checkBintrayArtifacts")?.toString() == "true"
 val Project.isKotlinDevOrEap get() = kotlinVersion.contains("-release") || kotlinVersion.contains("-eap") || kotlinVersion.contains("-M")
 
 fun Project.getModuleVersion(name: String, defaultVersion: Any): Any {
