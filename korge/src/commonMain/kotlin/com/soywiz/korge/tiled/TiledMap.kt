@@ -37,8 +37,30 @@ class TiledMapData(
     val tilesets: MutableList<TileSetData> = arrayListOf(),
     var editorSettings: TiledMap.EditorSettings? = null
 ) {
-    val pixelWidth: Int get() = width * tilewidth
-    val pixelHeight: Int get() = height * tileheight
+    val pixelWidth: Int
+        get() {
+            return when(orientation) {
+                TiledMap.Orientation.ORTHOGONAL -> width * tilewidth
+                TiledMap.Orientation.STAGGERED -> {
+                    when(staggerAxis) {
+                        TiledMap.StaggerAxis.X -> (tilewidth * (width / 2 + 0.5)).toInt()
+                        TiledMap.StaggerAxis.Y -> tilewidth * width + tilewidth / 2
+                        else -> invalidArgument("staggeraxis missing on staggered tiled map")
+                    }
+                }
+                else -> TODO()
+            }
+        }
+    val pixelHeight: Int
+        get() {
+            return when(orientation) {
+                TiledMap.Orientation.ORTHOGONAL -> height * tileheight
+                TiledMap.Orientation.STAGGERED -> {
+                    (tileheight * (height / (if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0) + 0.5)).toInt()
+                }
+                else -> TODO()
+            }
+        }
     inline val tileLayers get() = allLayers.tiles
     inline val imageLayers get() = allLayers.images
     inline val objectLayers get() = allLayers.objects

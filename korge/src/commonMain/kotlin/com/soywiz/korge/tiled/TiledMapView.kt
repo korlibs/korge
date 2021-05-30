@@ -15,7 +15,15 @@ class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Bo
 	init {
 		tiledMap.allLayers.fastForEachWithIndex { index, layer ->
             val view: View = when (layer) {
-                is TiledMap.Layer.Tiles -> tileMap(layer.map, tileset, smoothing = smoothing)
+                is TiledMap.Layer.Tiles -> tileMap(
+                    map = layer.map,
+                    tileset = tileset,
+                    smoothing = smoothing,
+                    orientation = tiledMap.data.orientation,
+                    staggerAxis = tiledMap.data.staggerAxis,
+                    staggerIndex = tiledMap.data.staggerIndex,
+                    tileSize = Size(tiledMap.tilewidth.toDouble(), tiledMap.tileheight.toDouble()),
+                )
                 //is TiledMap.Layer.Image -> image(layer.image)
                 is TiledMap.Layer.Objects -> {
                     container {
