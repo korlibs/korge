@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.IntArray2
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.AG
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tiled.TiledMap
@@ -109,15 +110,27 @@ open class TileMap(
 
         val renderTilesCounter = ctx.stats.counter("renderedTiles")
 
-        val initY = if (staggerAxis != null) -tileSize.height else 0.0
         val posX = m.transformX(0.0, 0.0)
         val posY = m.transformY(0.0, 0.0)
         val dUX = m.transformX(tileWidth, 0.0) - posX
         val dUY = m.transformY(tileWidth, 0.0) - posY
         val dVX = m.transformX(0.0, tileHeight) - posX
         val dVY = m.transformY(0.0, tileHeight) - posY
-        val nextTileX = tileSize.width / if (staggerAxis == TiledMap.StaggerAxis.X) 2.0 else 1.0
-        val nextTileY = tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0
+        val initY = (if (staggerAxis != null) tileSize.height - tileHeight else 0.0).let {
+            min2(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
+        }
+        val nextTileX = (tileSize.width / if (staggerAxis == TiledMap.StaggerAxis.X) 2.0 else 1.0).let { width ->
+            min2(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+        }
+        val nextTileY = (tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0).let { height ->
+            min2(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+        }
+        val staggerX = (tileWidth / 2.0).let{ width ->
+            min2(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+        }
+        val staggerY = (tileSize.height / 2.0).let{ height ->
+            min2(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+        }
 
         val colMul = renderColorMul
         val colAdd = renderColorAdd
@@ -127,14 +140,16 @@ open class TileMap(
         val pp1 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.bottom), tt1)
         val pp2 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.top), tt2)
         val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
-        val mx0 = ((pp0.x / tileWidth) - 1).toInt()
-        val mx1 = ((pp1.x / tileWidth) + 1).toInt()
-        val mx2 = ((pp2.x / tileWidth) + 1).toInt()
-        val mx3 = ((pp3.x / tileWidth) + 1).toInt()
-        val my0 = ((pp0.y / tileHeight) - 1).toInt()
-        val my1 = ((pp1.y / tileHeight) + 1).toInt()
-        val my2 = ((pp2.y / tileHeight) + 1).toInt()
-        val my3 = ((pp3.y / tileHeight) + 1).toInt()
+        val mapTileWidth = tileSize.width
+        val mapTileHeight = tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0
+        val mx0 = ((pp0.x / mapTileWidth) - 1).toInt()
+        val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
+        val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
+        val mx3 = ((pp3.x / mapTileWidth) + 1).toInt()
+        val my0 = ((pp0.y / mapTileHeight) - 1).toInt()
+        val my1 = ((pp1.y / mapTileHeight) + 1).toInt()
+        val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
+        val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
 
         val ymin = min2(min2(min2(my0, my1), my2), my3)
         val ymax = max2(max2(max2(my0, my1), my2), my3)
@@ -178,13 +193,13 @@ open class TileMap(
                     val rotate = cell.extract(29)
 
                     val staggerOffsetX = when (staggerAxis.takeIf { staggered }) {
-                        TiledMap.StaggerAxis.Y -> tileWidth / 2.0
+                        TiledMap.StaggerAxis.Y -> staggerX
                         TiledMap.StaggerAxis.X -> 0.0
                         else -> 0.0
                     }
                     val staggerOffsetY = when (staggerAxis.takeIf { staggered }) {
                         TiledMap.StaggerAxis.Y -> 0.0
-                        TiledMap.StaggerAxis.X -> tileSize.height / 2.0
+                        TiledMap.StaggerAxis.X -> staggerY
                         else -> 0.0
                     }
 
