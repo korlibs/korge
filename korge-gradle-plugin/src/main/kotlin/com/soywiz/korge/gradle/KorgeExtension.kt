@@ -406,7 +406,7 @@ class KorgeExtension(val project: Project) {
 
     fun supportBox2d() {
         // https://awesome.korge.org/
-        bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::4ac7fcee689e1b541849cedd1e017016128624b9##d15f5b28abbc2f58ba375d7204a6db2e90342978d02e675cd29249d0cade8f9f")
+        bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::7439e5c7de7442f2cd33a1944846d44aea31af0a##9fd9d54abd8abc4736fd3439f0904141d9b6a26e9e2f1e1f8e2ed10c51f490fd")
 	}
 
 	fun admob(ADMOB_APP_ID: String) {

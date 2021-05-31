@@ -59,15 +59,20 @@ class KorgeBundles(val project: Project) {
     fun bundle(zipFile: File, baseName: String? = null, checkSha256: String? = null) {
         val bundleName = baseName ?: zipFile.name.removeSuffix(".korgebundle")
         val outputDir = project.file("${project.buildDir}/$buildDirBundleFolder/$bundleName")
+        val tree = if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile)
+        val computedSha256 = sha256Tree(tree)
+
+        if (checkSha256.isNullOrEmpty()) {
+            println("Bundle $bundleName hash missing; calculated SHA256: $computedSha256")
+        }
+
         if (!outputDir.exists()) {
             logger.warn("KorGE.bundle: Extracting $zipFile...")
-            val tree = if (zipFile.isDirectory) project.fileTree(zipFile) else project.zipTree(zipFile)
 
-            val computedSha25 = sha256Tree(tree)
             when {
-                checkSha256 == null -> logger.warn("  - Security WARNING! Not checking SHA256 for bundle $bundleName. That should be SHA256 = $computedSha25")
-                checkSha256 != computedSha25 -> error("Bundle '$bundleName' expects SHA256 = $checkSha256 , but found SHA256 = $computedSha25")
-                else -> logger.info("Matching bundle SHA256 = $computedSha25")
+                checkSha256 == null -> logger.warn("  - Security WARNING! Not checking SHA256 for bundle $bundleName. That should be SHA256 = $computedSha256")
+                checkSha256 != computedSha256 -> error("Bundle '$bundleName' expects SHA256 = $checkSha256 , but found SHA256 = $computedSha256")
+                else -> logger.info("Matching bundle SHA256 = $computedSha256")
             }
             //println("SHA256: ${sha256Tree(tree)}")
 
