@@ -22,6 +22,7 @@ class DateTimeTz private constructor(
         /** Creates a new local [DateTimeTz] from a [unix] time */
         fun fromUnixLocal(unix: Long): DateTimeTz = fromUnixLocal(unix.toDouble())
         /** Creates a new local [DateTimeTz] from a [unix] time */
+        @Deprecated("Use fromUnix instead")
         fun fromUnixLocal(unix: Double): DateTimeTz = DateTime(unix).localUnadjusted
 
         /** Creates a new local [DateTimeTz] from a [unix] time applied*/
