@@ -40,6 +40,10 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         @Volatile
         var running = true
 
+        init {
+            this.isDaemon = true
+        }
+
         override fun run() {
             val bufferSamples = 4096
 
