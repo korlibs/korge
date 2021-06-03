@@ -166,7 +166,7 @@ object AL {
     // ALC
 
     @JvmStatic external fun alcCreateContext(device: Pointer, attrlist: IntArray?): Pointer?
-    @JvmStatic external fun alcMakeContextCurrent(context: Pointer): Boolean
+    @JvmStatic external fun alcMakeContextCurrent(context: Pointer?): Boolean
     @JvmStatic external fun alcProcessContext(context: Pointer)
     @JvmStatic external fun alcSuspendContext(context: Pointer)
     @JvmStatic external fun alcDestroyContext(context: Pointer)
