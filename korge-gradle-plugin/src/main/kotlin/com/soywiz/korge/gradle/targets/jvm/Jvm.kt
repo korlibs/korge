@@ -10,6 +10,7 @@ import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
 import org.gradle.jvm.tasks.Jar
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import proguard.*
 import proguard.gradle.*
 
 fun Project.configureJvm() {
@@ -100,6 +101,50 @@ private fun Project.configureJvmTest() {
 	jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
 }
 
+open class PatchedProGuardTask : ProGuardTask() {
+    @Internal override fun getadaptresourcefilenames(): Any = super.getadaptresourcefilenames()
+    @Internal override fun getadaptresourcefilecontents(): Any = super.getadaptresourcefilecontents()
+    @Internal override fun getallowaccessmodification(): Any = super.getallowaccessmodification()
+    @Internal override fun getaddconfigurationdebugging(): Any = super.getaddconfigurationdebugging()
+    @Internal override fun getadaptclassstrings(): Any = super.getadaptclassstrings()
+    @Internal override fun getdontoptimize(): Any = super.getdontoptimize()
+    @Internal override fun getdontobfuscate(): Any = super.getdontobfuscate()
+    @Internal override fun getdontwarn(): Any = super.getdontwarn()
+    @Internal override fun getdontnote(): Any = super.getdontnote()
+    @Internal override fun getConfigurationFiles(): MutableList<Any?> = super.getConfigurationFiles()
+    @Internal override fun getandroid(): Any = super.getandroid()
+    @Internal override fun getdontusemixedcaseclassnames(): Any = super.getdontusemixedcaseclassnames()
+    @Internal override fun getdontskipnonpubliclibraryclassmembers(): Any = super.getdontskipnonpubliclibraryclassmembers()
+    @Internal override fun getdontshrink(): Any = super.getdontshrink()
+    @Internal override fun getdontpreverify(): Any = super.getdontpreverify()
+    @Internal override fun getInJarCounts(): MutableList<Any?> = super.getInJarCounts()
+    @Internal override fun getignorewarnings(): Any = super.getignorewarnings()
+    @Internal override fun getflattenpackagehierarchy(): Any = super.getflattenpackagehierarchy()
+    @Internal override fun getdump(): Any = super.getdump()
+    @Internal override fun getkeepdirectories(): Any = super.getkeepdirectories()
+    @Internal override fun getkeepattributes(): Any = super.getkeepattributes()
+    @Internal override fun getInJarFiles(): MutableList<Any?> = super.getInJarFiles()
+    @Internal override fun getInJarFilters(): MutableList<Any?> = super.getInJarFilters()
+    @Internal override fun getforceprocessing(): Any = super.getforceprocessing()
+    @Internal override fun getmergeinterfacesaggressively(): Any = super.getmergeinterfacesaggressively()
+    @Internal override fun getLibraryJarFilters(): MutableList<Any?> = super.getLibraryJarFilters()
+    @Internal override fun getLibraryJarFiles(): MutableList<Any?> = super.getLibraryJarFiles()
+    @Internal override fun getskipnonpubliclibraryclasses(): Any = super.getskipnonpubliclibraryclasses()
+    @Internal override fun getprintseeds(): Any = super.getprintseeds()
+    @Internal override fun getprintusage(): Any = super.getprintusage()
+    @Internal override fun getprintmapping(): Any = super.getprintmapping()
+    @Internal override fun getoverloadaggressively(): Any = super.getoverloadaggressively()
+    @Internal override fun getuseuniqueclassmembernames(): Any = super.getuseuniqueclassmembernames()
+    @Internal override fun getkeeppackagenames(): Any = super.getkeeppackagenames()
+    @Internal override fun getrepackageclasses(): Any = super.getrepackageclasses()
+    @Internal override fun getkeepparameternames(): Any = super.getkeepparameternames()
+    @Internal override fun getrenamesourcefileattribute(): Any = super.getrenamesourcefileattribute()
+    @Internal override fun getmicroedition(): Any = super.getmicroedition()
+    @Internal override fun getverbose(): Any = super.getverbose()
+    @Internal override fun getprintconfiguration(): Any = super.getprintconfiguration()
+    @Internal override fun getOutJarFiles(): MutableList<Any?> = super.getOutJarFiles()
+    @Internal override fun getOutJarFilters(): MutableList<Any?> = super.getOutJarFilters()
+}
 
 private fun Project.addProguard() {
 	// packageJvmFatJar
@@ -150,7 +195,7 @@ private fun Project.addProguard() {
 
 	val runJvm = tasks.getByName("runJvm") as JavaExec
 
-	project.addTask<ProGuardTask>("packageJvmFatJarProguard", group = GROUP_KORGE, dependsOn = listOf(
+	project.addTask<PatchedProGuardTask>("packageJvmFatJarProguard", group = GROUP_KORGE, dependsOn = listOf(
 		packageJvmFatJar
 	)
 	) { task ->
