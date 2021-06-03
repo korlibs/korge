@@ -128,7 +128,9 @@ class TileSet(
 			val fullArea = bmpSlices.size.nextPowerOfTwo * barea
 			val expectedSide = sqrt(fullArea.toDouble()).toIntCeil().nextPowerOfTwo
 
-			val out = Bitmap32(expectedSide, expectedSide).mipmaps(mipmaps)
+            val premultiplied = bmpSlices.any { it.premultiplied }
+
+			val out = Bitmap32(expectedSide, expectedSide, premultiplied = premultiplied).mipmaps(mipmaps)
 			val texs = IntMap<BmpSlice>()
 
 			val columns = (out.width / btilewidth)
