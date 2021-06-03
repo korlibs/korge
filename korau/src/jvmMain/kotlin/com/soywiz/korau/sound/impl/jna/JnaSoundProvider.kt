@@ -10,6 +10,7 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.krypto.encoding.*
+import com.sun.jna.*
 import kotlinx.coroutines.*
 import java.lang.RuntimeException
 import java.nio.*
@@ -23,16 +24,8 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         val MAX_AVAILABLE_SOURCES = 100
     }
 
-    val device = (AL.alcOpenDevice(null) ?: throw OpenALException("Can't open OpenAL device")).also { device ->
-        Runtime.getRuntime().addShutdownHook(Thread {
-            AL.alcCloseDevice(device)
-        })
-    }
-    val context = (AL.alcCreateContext(device, null) ?: throw OpenALException("Can't get OpenAL context")).also { context ->
-        Runtime.getRuntime().addShutdownHook(Thread {
-            //alc?.alcDestroyContext(context) // Crashes on mac!
-        })
-    }
+    val device = (AL.alcOpenDevice(null) ?: throw OpenALException("Can't open OpenAL device"))
+    val context = (AL.alcCreateContext(device, null) ?: throw OpenALException("Can't get OpenAL context"))
 
     val sourcePool = Pool {
         alGenSourceAndInitialize()
@@ -47,6 +40,10 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         AL.alcMakeContextCurrent(context)
     }
 
+    fun unmakeCurrent() {
+        AL.alcMakeContextCurrent(Pointer.NULL)
+    }
+
     init {
         makeCurrent()
 
@@ -56,6 +53,12 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         checkAlErrors("alListener3f", 0)
         AL.alListenerfv(AL.AL_ORIENTATION, floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f))
         checkAlErrors("alListenerfv", 0)
+
+        Runtime.getRuntime().addShutdownHook(Thread {
+            unmakeCurrent()
+            AL.alcDestroyContext(context)
+            AL.alcCloseDevice(device)
+        })
     }
 
     override val audioFormats = nativeAudioFormats
