@@ -26,23 +26,27 @@ fun Bitmap32.setAlpha(value: Int) {
 }
 
 fun <T : Bitmap> T.putWithBorder(x: Int, y: Int, bmp: T, border: Int = 1) {
-	val width = bmp.width
-	val height = bmp.height
+    return putSliceWithBorder(x, y, bmp.slice(), border)
+}
 
-	// Block copy
-	bmp.copy(0, 0, this, x, y, width, height)
+fun Bitmap.putSliceWithBorder(x: Int, y: Int, bmp: BmpSlice, border: Int = 1) {
+    val width = bmp.width
+    val height = bmp.height
 
-	// Horizontal replicate
-	for (n in 1..border) {
-		this.copy(x, y, this, x - n, y, 1, height)
-		this.copy(x + width - 1, y, this, x + width - 1 + n, y, 1, height)
-	}
-	// Vertical replicate
-	for (n in 1..border) {
-		val rwidth = width + border * 2
-		this.copy(x, y, this, x, y - n, rwidth, 1)
-		this.copy(x, y + height - 1, this, x, y + height - 1 + n, rwidth, 1)
-	}
+    // Block copy
+    bmp.bmpBase.copy(bmp.left, bmp.top, this, x, y, width, height)
+
+    // Horizontal replicate
+    for (n in 1..border) {
+        this.copy(x, y, this, x - n, y, 1, height)
+        this.copy(x + width - 1, y, this, x + width - 1 + n, y, 1, height)
+    }
+    // Vertical replicate
+    for (n in 1..border) {
+        val rwidth = width + border * 2
+        this.copy(x, y, this, x, y - n, rwidth, 1)
+        this.copy(x, y + height - 1, this, x, y + height - 1 + n, rwidth, 1)
+    }
 }
 
 fun Bitmap.resized(out: Bitmap, scale: ScaleMode, anchor: Anchor): Bitmap {
