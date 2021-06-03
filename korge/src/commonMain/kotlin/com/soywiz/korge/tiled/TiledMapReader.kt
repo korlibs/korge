@@ -81,7 +81,7 @@ suspend fun TileSetData.toTiledSet(
 		} else {
 			// No separation between tiles: create a new Bitmap adding that separation
 			val bitmaps = if (bmp.width != 0 && bmp.height != 0) {
-				TileSet.extractBitmaps(
+				TileSet.extractBmpSlices(
 					bmp,
 					tileset.tileWidth,
 					tileset.tileHeight,
@@ -94,14 +94,17 @@ suspend fun TileSetData.toTiledSet(
 				tileset.tiles.map {
 					when (it.image) {
 						is Image.Embedded -> TODO()
-						is Image.External -> folder[it.image.source].readBitmapOptimized().toBMP32()
-						else -> Bitmap32(0, 0)
+						is Image.External -> {
+                            val file = folder[it.image.source]
+                            file.readBitmapOptimized().toBMP32().slice(name = file.baseName)
+                        }
+						else -> Bitmap32(0, 0).slice()
 					}
 				}
 			} else {
 				emptyList()
 			}
-			TileSet.fromBitmaps(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
+			TileSet.fromBitmapSlices(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
 		}
 	} else {
 		TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)

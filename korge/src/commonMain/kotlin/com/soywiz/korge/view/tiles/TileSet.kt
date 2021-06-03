@@ -3,11 +3,7 @@ package com.soywiz.korge.view.tiles
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import kotlin.math.*
 
 class TileSet(
@@ -103,15 +99,25 @@ class TileSet(
             margin :Int
 		): List<Bitmap32> = extractBmpSlices(bmp, tilewidth, tileheight, columns, tilecount, spacing, margin).map { it.extract() }
 
-		fun fromBitmaps(
-			tilewidth: Int,
-			tileheight: Int,
-			bitmaps: List<Bitmap32>,
-			border: Int = 1,
-			mipmaps: Boolean = false
+        fun fromBitmaps(
+            tilewidth: Int,
+            tileheight: Int,
+            bitmaps: List<Bitmap32>,
+            border: Int = 1,
+            mipmaps: Boolean = false
+        ): TileSet {
+            return fromBitmapSlices(tilewidth, tileheight, bitmaps.map { it.slice() }, border, mipmaps)
+        }
+
+		fun fromBitmapSlices(
+            tilewidth: Int,
+            tileheight: Int,
+            bmpSlices: List<BitmapSlice<Bitmap32>>,
+            border: Int = 1,
+            mipmaps: Boolean = false
 		): TileSet {
-			check(bitmaps.all { it.width == tilewidth && it.height == tileheight })
-			if (bitmaps.isEmpty()) return TileSet(IntMap(), tilewidth, tileheight)
+			check(bmpSlices.all { it.width == tilewidth && it.height == tileheight })
+			if (bmpSlices.isEmpty()) return TileSet(IntMap(), tilewidth, tileheight)
 
 			//sqrt(bitmaps.size.toDouble()).toIntCeil() * tilewidth
 
@@ -119,7 +125,7 @@ class TileSet(
 			val btilewidth = tilewidth + border2
 			val btileheight = tileheight + border2
 			val barea = btilewidth * btileheight
-			val fullArea = bitmaps.size.nextPowerOfTwo * barea
+			val fullArea = bmpSlices.size.nextPowerOfTwo * barea
 			val expectedSide = sqrt(fullArea.toDouble()).toIntCeil().nextPowerOfTwo
 
 			val out = Bitmap32(expectedSide, expectedSide).mipmaps(mipmaps)
@@ -131,15 +137,15 @@ class TileSet(
 			//val tex = views.texture(out, mipmaps = mipmaps)
             var nn = 0
 			for (m in 0 until 2) {
-				for (n in 0 until bitmaps.size) {
+				for (n in 0 until bmpSlices.size) {
 					val y = n / columns
 					val x = n % columns
 					val px = x * btilewidth + border
 					val py = y * btileheight + border
 					if (m == 0) {
-						out.putWithBorder(px, py, bitmaps[n], border)
+						out.putSliceWithBorder(px, py, bmpSlices[n], border)
 					} else {
-						texs[nn++] = tex.sliceWithSize(px, py, tilewidth, tileheight)
+						texs[nn++] = tex.sliceWithSize(px, py, tilewidth, tileheight, name = bmpSlices[n].name)
 					}
 				}
 				if (m == 0) {
