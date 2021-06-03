@@ -4,6 +4,7 @@
 <!-- BADGES -->
 <p align="center">
 	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
+    <a href="https://search.maven.org/artifact/com.soywiz.korlibs.korge.plugins/korge-gradle-plugin"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.korge.plugins/korge-gradle-plugin"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord&label=Discord" /></a>
 </p>
 <!-- /BADGES -->
@@ -15,7 +16,6 @@ If you like korge, or want your company logo here, please consider <a href="http
 in addition to ensure the continuity of the project, you will get exclusive content.
 </p>
 <!-- /SUPPORT -->
-
 
 ## Info about the project:
 
