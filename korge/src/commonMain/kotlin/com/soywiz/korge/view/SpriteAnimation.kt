@@ -52,7 +52,7 @@ class SpriteAnimation constructor(
 }
 
 fun Atlas.getSpriteAnimation(prefix: String = "", defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
-    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }.toFastList(), defaultTimePerFrame)
+    SpriteAnimation(this.entries.filter { it.filename.startsWith(prefix) }.map { it.slice }.toFastListNew(), defaultTimePerFrame)
 
 fun Atlas.getSpriteAnimation(regex: Regex, defaultTimePerFrame: TimeSpan = TimeSpan.NIL): SpriteAnimation =
-    SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }.toFastList(), defaultTimePerFrame)
+    SpriteAnimation(this.entries.filter { regex.matches(it.filename) }.map { it.slice }.toFastListNew(), defaultTimePerFrame)
