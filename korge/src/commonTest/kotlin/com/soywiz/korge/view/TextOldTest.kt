@@ -42,7 +42,7 @@ class TextOldTest {
     @Test
     fun testBounds() {
         val text = TextOld("1", textSize = 32.0)
-        assertEquals(Rectangle(0, 0, 28, 32), text.getLocalBounds())
+        assertEquals(Rectangle(0, 0, 28, 32), text.getLocalBoundsOptimizedAnchored())
     }
 
     @Test

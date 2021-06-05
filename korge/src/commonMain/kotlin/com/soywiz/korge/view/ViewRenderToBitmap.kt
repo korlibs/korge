@@ -10,7 +10,7 @@ import kotlinx.coroutines.*
  */
 suspend fun View.renderToBitmap(views: Views): Bitmap32 {
 	val view = this
-	val bounds = getLocalBounds()
+	val bounds = getLocalBoundsOptimizedAnchored()
 	val done = CompletableDeferred<Bitmap32>()
 
 	views.onBeforeRender.once {

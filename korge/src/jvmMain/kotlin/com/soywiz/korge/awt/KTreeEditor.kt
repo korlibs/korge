@@ -31,7 +31,7 @@ class AnchorPointResult(
     val viewInitialGlobalMatrix = view.globalMatrix.copy()
     val viewInitialGlobalMatrixInv = view.globalMatrixInv.copy()
     val localPos = Point(view.x, view.y)
-    val localBounds = view.getLocalBounds().copy()
+    val localBounds = view.getLocalBoundsOptimizedAnchored().copy()
     val localAnchorXY = localBounds.getAnchoredPosition(anchor)
     val globalAnchorXY = view.localToGlobal(localAnchorXY)
 

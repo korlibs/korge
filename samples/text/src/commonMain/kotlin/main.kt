@@ -70,12 +70,12 @@ suspend fun main() {
 
             var cachedBounds: Rectangle? = null
             fun updateBounds() {
-                val currentBounds = text1.getLocalBounds()
+                val currentBounds = text1.getLocalBoundsOptimizedAnchored()
                 if (cachedBounds != currentBounds) {
                     cachedBounds = currentBounds
                     gbounds.clear()
                     gbounds.stroke(Colors.RED, StrokeInfo(2.0)) {
-                        rect(text1.getLocalBounds())
+                        rect(text1.getLocalBoundsOptimizedAnchored())
                     }
                     gbounds.stroke(Colors.BLUE, StrokeInfo(2.0)) {
                         line(-5, 0, +5, 0)

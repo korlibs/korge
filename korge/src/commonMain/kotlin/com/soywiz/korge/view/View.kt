@@ -327,7 +327,7 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var width: Double
-        get() = getLocalBounds().width
+        get() = getLocalBoundsOptimizedAnchored().width
         @Deprecated("Shouldn't set width but scaleWidth instead")
         set(value) {
             scaleX = (if (scaleX == 0.0) 1.0 else scaleX) * (value / width)
@@ -340,10 +340,10 @@ abstract class View internal constructor(
      * @TODO: In KorGE 2.0, View.width/View.height will be immutable and available from an extension method for Views that doesn't have a width/height properties
      */
     open var height: Double
-        get() = getLocalBounds().height
+        get() = getLocalBoundsOptimizedAnchored().height
         @Deprecated("Shouldn't set height but scaleHeight instead")
         set(value) {
-            scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBounds().height)
+            scaleY = (if (scaleY == 0.0) 1.0 else scaleY) * (value / getLocalBoundsOptimizedAnchored().height)
         }
 
     val unscaledWidth: Double get() = width
@@ -756,7 +756,7 @@ abstract class View internal constructor(
     protected open fun renderDebugAnnotationsInternal(ctx: RenderContext) {
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
-        val local = getLocalBounds(doAnchoring = true)
+        val local = getLocalBoundsOptimizedAnchored()
         val debugLineRenderContext = ctx.debugLineRenderContext
         debugLineRenderContext.drawVector(Colors.RED) {
             rect(windowBounds)
@@ -793,7 +793,7 @@ abstract class View internal constructor(
     }
 
     fun renderFiltered(ctx: RenderContext, filter: Filter) {
-        val bounds = getLocalBounds()
+        val bounds = getLocalBoundsOptimizedAnchored()
 
         val borderEffect = filter.border
         ctx.matrixPool.alloc { tempMat2d ->
@@ -927,6 +927,8 @@ abstract class View internal constructor(
     /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
     fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
+    var hitTestEnabled = true
+
     /**
      * Determines the view at the global point defined by [x] and [y] if any, or null
      *
@@ -935,11 +937,12 @@ abstract class View internal constructor(
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
     fun hitTest(x: Double, y: Double): View? {
+        if (!hitTestEnabled) return null
+        if (!visible) return null
+
         _children?.fastForEachReverse { child ->
-            if (child.visible) {
-                child.hitTest(x, y)?.let {
-                    return it
-                }
+            child.hitTest(x, y)?.let {
+                return it
             }
         }
         val res = hitTestInternal(x, y)
@@ -949,22 +952,40 @@ abstract class View internal constructor(
     fun hitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
     fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
+    fun mouseHitTest(x: Double, y: Double): View? {
+        if (!mouseEnabled) return null
+        if (!hitTestEnabled) return null
+        if (!visible) return null
+
+        _children?.fastForEachReverse { child ->
+            child.mouseHitTest(x, y)?.let {
+                return it
+            }
+        }
+        val res = hitTestInternal(x, y)
+        if (res != null) return res
+        return if (this is Stage) this else null
+    }
+    fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
+    fun mouseHitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
+
     fun hitTestAny(x: Double, y: Double): Boolean = hitTest(x, y) != null
 
     var hitTestUsingShapes: Boolean? = null
 
     /** [x] and [y] coordinates are global */
     protected fun hitTestInternal(x: Double, y: Double): View? {
+        if (!hitTestEnabled) return null
+
         //println("x,y: $x,$y")
         //println("bounds: ${getGlobalBounds(_localBounds)}")
         //if (!getGlobalBounds(_localBounds).contains(x, y)) return null
-
-        val bounds = getLocalBounds()
 
         // Adjusted coordinates to compensate anchoring
         val llx = globalToLocalX(x, y)
         val lly = globalToLocalY(x, y)
 
+        val bounds = getLocalBoundsOptimizedAnchored()
         if (!bounds.contains(llx, lly)) return null
 
         val anchorDispX = this.anchorDispX
@@ -1204,10 +1225,15 @@ abstract class View internal constructor(
      */
     fun getLocalBoundsOptimized(): Rectangle = getLocalBounds(_localBounds)
 
+    fun getLocalBoundsOptimizedAnchored(): Rectangle = getLocalBounds(_localBounds, doAnchoring = true)
+
+    @Deprecated("Allocates")
+    fun getLocalBounds(doAnchoring: Boolean = true) = getLocalBounds(Rectangle(), doAnchoring)
+
     /**
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: Rectangle = Rectangle(), doAnchoring: Boolean = true): Rectangle {
+    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true): Rectangle {
         getLocalBoundsInternal(out)
         val it = out
         if (!doAnchoring) {
@@ -1261,7 +1287,7 @@ abstract class View internal constructor(
     fun globalLocalBoundsPointRatio(anchor: Anchor, out: Point = Point()): Point = globalLocalBoundsPointRatio(anchor.sx, anchor.sy, out)
 
     fun globalLocalBoundsPointRatio(ratioX: Double, ratioY: Double, out: Point = Point()): Point {
-        val bounds = getLocalBounds()
+        val bounds = getLocalBoundsOptimizedAnchored()
         val x = ratioX.interpolate(bounds.left, bounds.right)
         val y = ratioY.interpolate(bounds.top, bounds.bottom)
         return out.setTo(localToGlobalX(x, y), localToGlobalY(x, y))

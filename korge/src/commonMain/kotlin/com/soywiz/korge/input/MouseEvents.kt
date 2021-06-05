@@ -23,10 +23,10 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         var Input.mouseHitResultUsed by Extra.Property<View?> { null }
         var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 
-        private fun hitTest(views: Views): View? {
+        private fun mouseHitTest(views: Views): View? {
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true
-                views.input.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY)
+                views.input.mouseHitResult = views.stage.mouseHitTest(views.nativeMouseX, views.nativeMouseY)
                 //if (frame.mouseHitResult != null) {
                 //val hitResult = frame.mouseHitResult!!
                 //println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
@@ -44,9 +44,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                     var yy = 60.toDouble() * scale
                     val lineHeight = 8.toDouble() * scale
-                    val mouseHit = hitTest(views)
+                    val mouseHit = mouseHitTest(views)
                     if (mouseHit != null) {
-                        val bounds = mouseHit.getLocalBounds()
+                        val bounds = mouseHit.getLocalBoundsOptimizedAnchored()
                         renderContext.batch.drawQuad(
                             ctx.getTex(Bitmaps.white),
                             x = bounds.x.toFloat(),
@@ -68,7 +68,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                     val mouseHitResultUsed = input.mouseHitResultUsed
                     if (mouseHitResultUsed != null) {
-                        val bounds = mouseHitResultUsed.getLocalBounds()
+                        val bounds = mouseHitResultUsed.getLocalBoundsOptimizedAnchored()
                         renderContext.batch.drawQuad(
                             ctx.getTex(Bitmaps.white),
                             x = bounds.x.toFloat(),
@@ -285,7 +285,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 		//println("${frame.mouseHitResult}")
 
-		hitTest = hitTest(views)
+		hitTest = mouseHitTest(views)
 		val over = isOver
         val inside = views.input.mouseInside
 		if (over) views.input.mouseHitResultUsed = view
