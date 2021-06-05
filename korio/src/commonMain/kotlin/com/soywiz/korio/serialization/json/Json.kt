@@ -17,9 +17,14 @@ object Json {
 		fun encodeToJson(b: StringBuilder)
 	}
 
-    class Context(val optimizedNumericLists: Boolean) {
+    data class Context(val optimizedNumericLists: Boolean, val useFastArrayList: Boolean = false) {
         companion object {
-            val DEFAULT = Context(optimizedNumericLists = false)
+            val DEFAULT = Context(optimizedNumericLists = false, useFastArrayList = false)
+            val FAST = Context(optimizedNumericLists = true, useFastArrayList = true)
+        }
+
+        fun <T> createArrayList(): MutableList<T> {
+            return if (useFastArrayList) FastArrayList() else ArrayList()
         }
     }
 
@@ -36,7 +41,7 @@ object Json {
 			}
 		}
 		'[' -> {
-            var out: ArrayList<Any?>? = null
+            var out: MutableList<Any?>? = null
             var outNumber: DoubleArrayList? = null
             array@ while (true) {
                 when (s.skipSpaces().read()) {
@@ -48,7 +53,7 @@ object Json {
                     }
                     outNumber.add(parseNumber(s))
                 } else {
-                    if (out == null) out = arrayListOf()
+                    if (out == null) out = context.createArrayList()
                     if (outNumber != null) {
                         outNumber.fastForEach { out.add(it) }
                         outNumber = null
@@ -56,7 +61,7 @@ object Json {
                     out.add(parse(s, context))
                 }
             }
-            outNumber ?: out ?: arrayListOf<Any?>()
+            outNumber ?: out ?: context.createArrayList<Any?>()
         }
 		//'-', '+', in '0'..'9' -> { // @TODO: Kotlin native doesn't optimize char ranges
 		'-', '+', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' -> {
