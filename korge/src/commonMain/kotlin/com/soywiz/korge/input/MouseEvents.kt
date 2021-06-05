@@ -17,6 +17,10 @@ import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
 class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin() {
+    init {
+        view.mouseEnabled = true
+    }
+
     companion object {
         var Input.mouseHitSearch by Extra.Property { false }
         var Input.mouseHitResult by Extra.Property<View?> { null }

@@ -442,8 +442,9 @@ abstract class View internal constructor(
     open val stage: Stage? get() = root as? Stage?
 
     /** Determines if mouse events will be handled for this view and its children */
-    open var mouseEnabled: Boolean = true
-    //var mouseChildren: Boolean = false
+    //open var mouseEnabled: Boolean = true
+    open var mouseEnabled: Boolean = false
+    open var mouseChildren: Boolean = true
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
@@ -953,17 +954,17 @@ abstract class View internal constructor(
     fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
     fun mouseHitTest(x: Double, y: Double): View? {
-        if (!mouseEnabled) return null
         if (!hitTestEnabled) return null
         if (!visible) return null
-
-        _children?.fastForEachReverse { child ->
-            child.mouseHitTest(x, y)?.let {
-                return it
+        if (mouseChildren) {
+            _children?.fastForEachReverse { child ->
+                child.mouseHitTest(x, y)?.let {
+                    return it
+                }
             }
         }
-        val res = hitTestInternal(x, y)
-        if (res != null) return res
+        if (!mouseEnabled) return null
+        hitTestInternal(x, y)?.let { return it }
         return if (this is Stage) this else null
     }
     fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
