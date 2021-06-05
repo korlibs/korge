@@ -78,7 +78,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 	private val _binaryDataParser by lazy { BinaryDataParser(pool) }
 
 	protected val _dragonBonesDataMap: FastStringMap<DragonBonesData> = FastStringMap()
-	protected val _textureAtlasDataMap: FastStringMap<ArrayList<TextureAtlasData>> = FastStringMap()
+	protected val _textureAtlasDataMap: FastStringMap<FastArrayList<TextureAtlasData>> = FastStringMap()
 	protected lateinit var _dragonBones: DragonBones
 	protected var _dataParser: DataParser = dataParser
 
@@ -194,7 +194,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 			return
 		}
 
-		val skinSlots: FastStringMap<ArrayList<DisplayData?>> = FastStringMap()
+		val skinSlots: FastStringMap<FastArrayList<DisplayData?>> = FastStringMap()
 		defaultSkin.displays.fastKeyForEach { k ->
 			val displays = defaultSkin.getDisplays(k)
 			skinSlots[k] = displays!!
@@ -560,7 +560,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun getTextureAtlasData(name: String): ArrayList<TextureAtlasData>? = this._textureAtlasDataMap[name]
+	fun getTextureAtlasData(name: String): FastArrayList<TextureAtlasData>? = this._textureAtlasDataMap[name]
 	/**
 	 * - Cache a TextureAtlasData instance to the factory.
 	 * @param data - The TextureAtlasData instance.
@@ -585,7 +585,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 	 */
 	fun addTextureAtlasData(data: TextureAtlasData, name: String? = null) {
 		val rname = name ?: data.name
-		val textureAtlasList = this._textureAtlasDataMap.getOrPut(rname) { arrayListOf() }
+		val textureAtlasList = this._textureAtlasDataMap.getOrPut(rname) { FastArrayList() }
 		if (textureAtlasList.indexOf(data) < 0) {
             textureAtlasList.add(data)
 		}
@@ -1006,7 +1006,7 @@ abstract class BaseFactory(val pool: BaseObjectPool, dataParser: DataParser = Ob
 	/**
 	 * @private
 	 */
-	fun getAllTextureAtlasData(): FastStringMap<ArrayList<TextureAtlasData>> {
+	fun getAllTextureAtlasData(): FastStringMap<FastArrayList<TextureAtlasData>> {
 		return this._textureAtlasDataMap
 	}
 	/**

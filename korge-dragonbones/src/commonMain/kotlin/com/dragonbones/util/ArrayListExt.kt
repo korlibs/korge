@@ -20,15 +20,15 @@ internal var DoubleArrayList.length: Int
 	set(value) = run { size = value }
 
 
-internal var <T> ArrayList<T>.lengthSet
+internal var <T> FastArrayList<T>.lengthSet
 	get() = size
 	set(value) = if (value == 0) clear() else {
 		while (size > value) this.removeAt(size - 1)
 		@Suppress("UNCHECKED_CAST")
-		while (size < value) (this as ArrayList<T?>).add(null)
+		while (size < value) (this as FastArrayList<T?>).add(null)
 	}
 
-internal var <T> ArrayList<T>.length; get() = size; set(value) = run { lengthSet = value }
+internal var <T> FastArrayList<T>.length; get() = size; set(value) = run { lengthSet = value }
 
 internal fun DoubleArrayList.push(value: Double) = this.add(value)
 internal fun IntArrayList.push(value: Int) = this.add(value)

@@ -57,6 +57,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		}
 		internal inline fun Any?.containsDynamic(key: String): Boolean = this.getDynamic(key) != null
 
+        internal fun Any?.asFastArrayList() = (this as List<Any?>).toFastListNew()
+
 		internal val Any?.dynKeys: List<String> get() = when (this) {
 			null -> listOf()
 			is Map<*, *> -> keys.map { it.toString() }
@@ -142,7 +144,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	}
 
 	protected var _rawTextureAtlasIndex: Int = 0
-	protected val _rawBones: ArrayList<BoneData> = ArrayList()
+	protected val _rawBones: FastArrayList<BoneData> = FastArrayList()
 	protected var _data: DragonBonesData? = null //
 	protected var _armature: ArmatureData? = null //
 	protected var _bone: BoneData? = null //
@@ -152,7 +154,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	protected var _mesh: MeshDisplayData? = null //
 	protected var _animation: AnimationData? = null //
 	protected var _timeline: TimelineData? = null //
-	protected var _rawTextureAtlases: ArrayList<Any?>? = null
+	protected var _rawTextureAtlases: FastArrayList<Any?>? = null
 
 	private var _frameValueType: FrameValueType = FrameValueType.STEP
 	private var _defaultColorOffset: Int = -1
@@ -176,13 +178,13 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	private val _timelineArray: DoubleArrayList = DoubleArrayList()
 	//private val _colorArray:  DoubleArrayList = DoubleArrayList()
 	private val _colorArray: IntArrayList = IntArrayList()
-	private val _cacheRawMeshes: ArrayList<Any> = arrayListOf()
-	private val _cacheMeshes: ArrayList<MeshDisplayData> = arrayListOf()
-	private val _actionFrames: ArrayList<ActionFrame> = arrayListOf()
+	private val _cacheRawMeshes: FastArrayList<Any> = FastArrayList()
+	private val _cacheMeshes: FastArrayList<MeshDisplayData> = FastArrayList()
+	private val _actionFrames: FastArrayList<ActionFrame> = FastArrayList()
 	private val _weightSlotPose: LinkedHashMap<String, DoubleArrayList> = LinkedHashMap()
 	private val _weightBonePoses: LinkedHashMap<String, DoubleArrayList> = LinkedHashMap()
-	private val _cacheBones: LinkedHashMap<String, ArrayList<BoneData>> = LinkedHashMap()
-	private val _slotChildActions: LinkedHashMap<String, ArrayList<ActionData>> = LinkedHashMap()
+	private val _cacheBones: LinkedHashMap<String, FastArrayList<BoneData>> = LinkedHashMap()
+	private val _slotChildActions: LinkedHashMap<String, FastArrayList<ActionData>> = LinkedHashMap()
 
 	private fun _getCurvePoint(
 		x1: Double,
@@ -396,7 +398,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 						bone.parent = parent
 					} else { // Cache.
 						if (!(this._cacheBones.containsDynamic(parentName))) {
-							this._cacheBones[parentName] = arrayListOf()
+							this._cacheBones[parentName] = FastArrayList()
 						}
 
                         this._cacheBones[parentName]?.add(bone)
@@ -1030,7 +1032,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 
 		if (this._actionFrames.length > 0) {
 			this._animation!!.actionTimeline = this._parseTimeline(
-				null, this._actionFrames as ArrayList<Any?>?, "", TimelineType.Action,
+				null, this._actionFrames.asFastArrayList(), "", TimelineType.Action,
 				FrameValueType.STEP, 0,
 				this::_parseActionFrameRaw
 			)
@@ -1234,7 +1236,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 	}
 
 	protected fun _parseTimeline(
-		rawData: Any?, rawFrames: ArrayList<Any?>?, framesKey: String,
+		rawData: Any?, rawFrames: FastArrayList<Any?>?, framesKey: String,
 		timelineType: TimelineType, frameValueType: FrameValueType, frameValueCount: Int,
 		frameParser: (rawData: Any?, frameStart: Int, frameCount: Int) -> Int, timeline: TimelineData? = null
 	): TimelineData? {
@@ -1242,7 +1244,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val frameParser = frameParser
 		var rawFrames = rawFrames
 		if (rawData != null && framesKey.isNotEmpty() && rawData.containsDynamic(framesKey)) {
-			rawFrames = rawData.getDynamic(framesKey) as ArrayList<Any?>?
+			rawFrames = (rawData.getDynamic(framesKey) as List<Any?>?)?.toFastListNew()
 		}
 
 		if (rawFrames == null) {
@@ -1940,8 +1942,8 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		type: ActionType,
 		bone: BoneData?,
 		slot: SlotData?
-	): ArrayList<ActionData> {
-		val actions = ArrayList<ActionData>()
+	): FastArrayList<ActionData> {
+		val actions = FastArrayList<ActionData>()
 
 		if (rawData is String) {
 			val action = pool.actionData.borrow()
@@ -2010,7 +2012,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 						userData = pool.userData.borrow()
 					}
 
-					val rawStrings = rawAction[DataParser.STRINGS] as ArrayList<String>
+					val rawStrings = rawAction[DataParser.STRINGS] as List<String>
 					for (rawValue in rawStrings) {
 						userData.addString(rawValue)
 					}
@@ -2420,7 +2422,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 			}
 
 			if (rawData.containsDynamic(DataParser.TEXTURE_ATLAS)) {
-				this._rawTextureAtlases = rawData.getDynamic(DataParser.TEXTURE_ATLAS) as ArrayList<Any?>?
+				this._rawTextureAtlases = rawData.getDynamic(DataParser.TEXTURE_ATLAS).asFastArrayList()
 			}
 
 			return data
@@ -2462,7 +2464,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		textureAtlasData.imagePath = ObjectDataParser._getString(rawData, DataParser.IMAGE_PATH, "")
 
 		if (rawData.containsDynamic(DataParser.SUB_TEXTURE)) {
-			val rawTextures = rawData.getDynamic(DataParser.SUB_TEXTURE) as ArrayList<*>
+			val rawTextures = rawData.getDynamic(DataParser.SUB_TEXTURE).asFastArrayList()
 			//for (var i = 0, l = rawTextures.length; i < l; ++i) {
 			for (i in 0 until rawTextures.length) {
 				val rawTexture = rawTextures[i]

@@ -238,14 +238,14 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	 * @internal
 	 */
 	var _weightResult: Double = 0.0
-	private val _boneMask: ArrayList<String> = arrayListOf()
-	private val _boneTimelines: ArrayList<TimelineState> = arrayListOf()
-	private val _boneBlendTimelines: ArrayList<TimelineState> = arrayListOf()
-	private val _slotTimelines: ArrayList<TimelineState> = arrayListOf()
-	private val _slotBlendTimelines: ArrayList<TimelineState> = arrayListOf()
-	private val _constraintTimelines: ArrayList<TimelineState> = arrayListOf()
-	private val _animationTimelines: ArrayList<TimelineState> = arrayListOf()
-	private val _poseTimelines: ArrayList<TimelineState> = arrayListOf()
+	private val _boneMask: FastArrayList<String> = FastArrayList()
+	private val _boneTimelines: FastArrayList<TimelineState> = FastArrayList()
+	private val _boneBlendTimelines: FastArrayList<TimelineState> = FastArrayList()
+	private val _slotTimelines: FastArrayList<TimelineState> = FastArrayList()
+	private val _slotBlendTimelines: FastArrayList<TimelineState> = FastArrayList()
+	private val _constraintTimelines: FastArrayList<TimelineState> = FastArrayList()
+	private val _animationTimelines: FastArrayList<TimelineState> = FastArrayList()
+	private val _poseTimelines: FastArrayList<TimelineState> = FastArrayList()
 	private var _animationData: AnimationData? = null
 	private var _armature: Armature? = null
 	/**
@@ -373,12 +373,12 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	private fun _updateBoneAndSlotTimelines(): Unit {
 		run {
 			// Update bone and surface timelines.
-			val boneTimelines: FastStringMap<ArrayList<TimelineState>> = FastStringMap()
+			val boneTimelines: FastStringMap<FastArrayList<TimelineState>> = FastStringMap()
 			// Create bone timelines map.
 			this._boneTimelines.fastForEach { timeline ->
 				val timelineName = ((timeline.targetBlendState)!!.targetBone)!!.name
 				if (timelineName !in boneTimelines) {
-					boneTimelines[timelineName] = arrayListOf()
+					boneTimelines[timelineName] = FastArrayList()
 				}
 
                 boneTimelines[timelineName]?.add(timeline)
@@ -387,7 +387,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 			this._boneBlendTimelines.fastForEach { timeline ->
 				val timelineName = ((timeline.targetBlendState)!!.targetBone)!!.name
 				if (timelineName !in boneTimelines) {
-					boneTimelines[timelineName] = arrayListOf()
+					boneTimelines[timelineName] = FastArrayList()
 				}
 
                 boneTimelines[timelineName]?.add(timeline)
@@ -493,13 +493,13 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 
 		run {
 			// Update slot timelines.
-			val slotTimelines: FastStringMap<ArrayList<TimelineState>> = FastStringMap()
+			val slotTimelines: FastStringMap<FastArrayList<TimelineState>> = FastStringMap()
 			val ffdFlags = IntArrayList()
 			// Create slot timelines map.
 			this._slotTimelines.fastForEach { timeline ->
 				val timelineName = (timeline.targetSlot)!!.name
 				if (timelineName !in slotTimelines) {
-					slotTimelines[timelineName] = arrayListOf()
+					slotTimelines[timelineName] = FastArrayList()
 				}
 
                 slotTimelines[timelineName]?.add(timeline)
@@ -508,7 +508,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 			this._slotBlendTimelines.fastForEach { timeline ->
 				val timelineName = ((timeline.targetBlendState)!!.targetSlot)!!.name
 				if (timelineName !in slotTimelines) {
-					slotTimelines[timelineName] = arrayListOf()
+					slotTimelines[timelineName] = FastArrayList()
 				}
 
                 slotTimelines[timelineName]?.add(timeline)
@@ -1267,7 +1267,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	/**
 	 * @private
 	 */
-	fun addState(animationState: AnimationState, timelineDatas: ArrayList<TimelineData>? = null) {
+	fun addState(animationState: AnimationState, timelineDatas: FastArrayList<TimelineData>? = null) {
         timelineDatas?.fastForEach { timelineData ->
             when (timelineData.type) {
                 TimelineType.AnimationProgress -> {

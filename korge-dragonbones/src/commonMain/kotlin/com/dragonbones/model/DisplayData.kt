@@ -25,6 +25,7 @@ package com.dragonbones.model
 import com.dragonbones.core.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
@@ -118,7 +119,7 @@ class ArmatureDisplayData(pool: SingleObjectPool<ArmatureDisplayData>) :  Displa
 	}
 
 	var inheritAnimation: Boolean = false
-	val actions: ArrayList<ActionData> = arrayListOf()
+	val actions: FastArrayList<ActionData> = FastArrayList()
 	var armature: ArmatureData? = null
 
 	override fun _onClear() {
@@ -212,7 +213,7 @@ class WeightData(pool: SingleObjectPool<WeightData>) :  BaseObject(pool) {
 
 	var count: Int = 0
 	var offset: Int = 0
-	val bones: ArrayList<BoneData> = arrayListOf()
+	val bones: FastArrayList<BoneData> = FastArrayList()
 
 	override fun _onClear() {
 		this.count = 0

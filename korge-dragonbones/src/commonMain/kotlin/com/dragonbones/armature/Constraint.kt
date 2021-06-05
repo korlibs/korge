@@ -240,7 +240,7 @@ class PathConstraint(pool: SingleObjectPool<PathConstraint>) :  Constraint(pool)
 	var translateMix: Double = 1.0
 
 	private var _pathSlot: Slot? = null
-	private var _bones: ArrayList<Bone> = ArrayList()
+	private var _bones: FastArrayList<Bone> = FastArrayList()
 
 	private var _spaces:  DoubleArray = DoubleArray(0)
 	private var _positions:  DoubleArray = DoubleArray(0)

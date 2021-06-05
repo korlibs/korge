@@ -31,6 +31,7 @@ import com.soywiz.kds.iterators.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.dragonbones.util.length
+import com.soywiz.kds.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
@@ -111,13 +112,13 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 	 * @internal
 	 */
 	var _globalAlpha: Double = 1.0
-	private val _bones: ArrayList<Bone> = arrayListOf()
-	private val _slots: ArrayList<Slot> = arrayListOf()
+	private val _bones: FastArrayList<Bone> = FastArrayList()
+	private val _slots: FastArrayList<Slot> = FastArrayList()
 	/**
 	 * @internal
 	 */
-	val _constraints: ArrayList<Constraint> = ArrayList()
-	private val _actions: ArrayList<EventObject> = ArrayList()
+	val _constraints: FastArrayList<Constraint> = FastArrayList()
+	private val _actions: FastArrayList<EventObject> = FastArrayList()
 	/**
 	 * @internal
 	 */
@@ -696,7 +697,7 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun getBones(): ArrayList<Bone> {
+	fun getBones(): FastArrayList<Bone> {
 		return this._bones
 	}
 	/**
@@ -711,7 +712,7 @@ class Armature(pool: SingleObjectPool<Armature>) : BaseObject(pool), IAnimatable
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun getSlots(): ArrayList<Slot> {
+	fun getSlots(): FastArrayList<Slot> {
 		return this._slots
 	}
 	/**

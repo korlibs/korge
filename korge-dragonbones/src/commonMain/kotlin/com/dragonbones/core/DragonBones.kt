@@ -320,8 +320,8 @@ class DragonBones(eventManager: IEventDispatcher) {
 	}
 
 	private val _clock: WorldClock = WorldClock()
-	//private val _events: ArrayList<EventObject> = arrayListOf()
-	//private val _objects: ArrayList<BaseObject> = arrayListOf()
+	//private val _events: FastArrayList<EventObject> = FastArrayList()
+	//private val _objects: FastArrayList<BaseObject> = FastArrayList()
 	private var _eventManager: IEventDispatcher = eventManager
 
 	//init {

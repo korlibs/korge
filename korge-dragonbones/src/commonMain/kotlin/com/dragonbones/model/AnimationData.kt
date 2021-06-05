@@ -130,23 +130,23 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	val cachedFrames: ArrayList<Boolean> = arrayListOf()
+	val cachedFrames: FastArrayList<Boolean> = FastArrayList()
 	/**
 	 * @private
 	 */
-	val boneTimelines: FastStringMap<ArrayList<TimelineData>> = FastStringMap()
+	val boneTimelines: FastStringMap<FastArrayList<TimelineData>> = FastStringMap()
 	/**
 	 * @private
 	 */
-	val slotTimelines: FastStringMap<ArrayList<TimelineData>> = FastStringMap()
+	val slotTimelines: FastStringMap<FastArrayList<TimelineData>> = FastStringMap()
 	/**
 	 * @private
 	 */
-	val constraintTimelines: FastStringMap<ArrayList<TimelineData>> = FastStringMap()
+	val constraintTimelines: FastStringMap<FastArrayList<TimelineData>> = FastStringMap()
 	/**
 	 * @private
 	 */
-	val animationTimelines: FastStringMap<ArrayList<TimelineData>> = FastStringMap()
+	val animationTimelines: FastStringMap<FastArrayList<TimelineData>> = FastStringMap()
 	/**
 	 * @private
 	 */
@@ -266,7 +266,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	 * @private
 	 */
 	fun addBoneTimeline(timelineName: String, timeline: TimelineData) {
-		val timelines = this.boneTimelines.getOrPut(timelineName) { arrayListOf() }
+		val timelines = this.boneTimelines.getOrPut(timelineName) { FastArrayList() }
 		if (timelines.indexOf(timeline) < 0) {
 			timelines.add(timeline)
 		}
@@ -276,7 +276,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	 * @private
 	 */
 	fun addSlotTimeline(timelineName: String, timeline: TimelineData) {
-		val timelines = this.slotTimelines.getOrPut(timelineName) { arrayListOf() }
+		val timelines = this.slotTimelines.getOrPut(timelineName) { FastArrayList() }
 		if (timelines.indexOf(timeline) < 0) {
 			timelines.add(timeline)
 		}
@@ -286,7 +286,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	 * @private
 	 */
 	fun addConstraintTimeline(timelineName: String, timeline: TimelineData) {
-		val timelines = this.constraintTimelines.getOrPut(timelineName) { arrayListOf() }
+		val timelines = this.constraintTimelines.getOrPut(timelineName) { FastArrayList() }
 		if (timelines.indexOf(timeline) < 0) {
 			timelines.add(timeline)
 		}
@@ -296,7 +296,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	 * @private
 	 */
 	fun addAnimationTimeline(timelineName: String, timeline: TimelineData): Unit {
-		val timelines = this.animationTimelines.getOrPut(timelineName) { arrayListOf() }
+		val timelines = this.animationTimelines.getOrPut(timelineName) { FastArrayList() }
 		if (timelines.indexOf(timeline) < 0) {
 			timelines.add(timeline)
 		}
@@ -305,22 +305,22 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	fun getBoneTimelines(timelineName: String): ArrayList<TimelineData>? = this.boneTimelines[timelineName]
+	fun getBoneTimelines(timelineName: String): FastArrayList<TimelineData>? = this.boneTimelines[timelineName]
 
 	/**
 	 * @private
 	 */
-	fun getSlotTimelines(timelineName: String): ArrayList<TimelineData>? = this.slotTimelines[timelineName]
+	fun getSlotTimelines(timelineName: String): FastArrayList<TimelineData>? = this.slotTimelines[timelineName]
 
 	/**
 	 * @private
 	 */
-	fun getConstraintTimelines(timelineName: String): ArrayList<TimelineData>? = this.constraintTimelines[timelineName]
+	fun getConstraintTimelines(timelineName: String): FastArrayList<TimelineData>? = this.constraintTimelines[timelineName]
 
 	/**
 	 * @private
 	 */
-	fun getAnimationTimelines(timelineName: String): ArrayList<TimelineData>? = this.animationTimelines[timelineName]
+	fun getAnimationTimelines(timelineName: String): FastArrayList<TimelineData>? = this.animationTimelines[timelineName]
 
 	/**
 	 * @private

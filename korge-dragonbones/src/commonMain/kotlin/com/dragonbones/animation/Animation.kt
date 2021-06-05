@@ -69,8 +69,8 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 	 */
 	private var _animationDirty: Boolean = false //
 	private var _inheritTimeScale: Double = 1.0
-	private val _animationNames: ArrayList<String> = arrayListOf()
-	private val _animationStates: ArrayList<AnimationState> = arrayListOf()
+	private val _animationNames: FastArrayList<String> = FastArrayList()
+	private val _animationStates: FastArrayList<AnimationState> = FastArrayList()
 	private val _animations: FastStringMap<AnimationData> = FastStringMap()
 	private val _blendStates: FastStringMap<FastStringMap<BlendState>> = FastStringMap()
 	private var _armature: Armature? = null

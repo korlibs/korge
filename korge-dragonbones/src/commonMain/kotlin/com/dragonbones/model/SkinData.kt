@@ -51,7 +51,7 @@ class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	val displays: FastStringMap<ArrayList<DisplayData?>> = FastStringMap()
+	val displays: FastStringMap<FastArrayList<DisplayData?>> = FastStringMap()
 	/**
 	 * @private
 	 */
@@ -74,7 +74,7 @@ class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
 	 */
 	fun addDisplay(slotName: String, value: DisplayData?) {
 		if (!(slotName in this.displays)) {
-			this.displays[slotName] = arrayListOf()
+			this.displays[slotName] = FastArrayList()
 		}
 
 		if (value != null) {
@@ -101,7 +101,7 @@ class SkinData(pool: SingleObjectPool<SkinData>) : BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	fun getDisplays(slotName: String?): ArrayList<DisplayData?>? = this.displays.getNull(slotName)
+	fun getDisplays(slotName: String?): FastArrayList<DisplayData?>? = this.displays.getNull(slotName)
 
     override fun toString(): String = "[class dragonBones.SkinData]"
 }

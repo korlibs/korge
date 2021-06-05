@@ -93,23 +93,23 @@ class ArmatureData(pool: SingleObjectPool<ArmatureData>) : BaseObject(pool) {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	val animationNames: ArrayList<String> = arrayListOf()
+	val animationNames: FastArrayList<String> = FastArrayList()
 	/**
 	 * @private
 	 */
-	val sortedBones: ArrayList<BoneData> = arrayListOf()
+	val sortedBones: FastArrayList<BoneData> = FastArrayList()
 	/**
 	 * @private
 	 */
-	val sortedSlots: ArrayList<SlotData> = arrayListOf()
+	val sortedSlots: FastArrayList<SlotData> = FastArrayList()
 	/**
 	 * @private
 	 */
-	val defaultActions: ArrayList<ActionData> = arrayListOf()
+	val defaultActions: FastArrayList<ActionData> = FastArrayList()
 	/**
 	 * @private
 	 */
-	val actions: ArrayList<ActionData> = arrayListOf()
+	val actions: FastArrayList<ActionData> = FastArrayList()
 	/**
 	 * @private
 	 */
