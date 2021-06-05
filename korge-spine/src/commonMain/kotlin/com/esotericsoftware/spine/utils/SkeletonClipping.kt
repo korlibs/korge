@@ -44,7 +44,7 @@ class SkeletonClipping {
     private val scratch = FloatArrayList()
 
     private var clipAttachment: ClippingAttachment? = null
-    private var clippingPolygons: ArrayList<FloatArrayList>? = null
+    private var clippingPolygons: FastArrayList<FloatArrayList>? = null
 
     val isClipping: Boolean
         get() = clipAttachment != null

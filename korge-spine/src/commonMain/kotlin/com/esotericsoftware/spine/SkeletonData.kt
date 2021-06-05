@@ -29,6 +29,7 @@
 
 package com.esotericsoftware.spine
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 
 /** Stores the setup pose and all of the stateless data for a skeleton.
@@ -48,14 +49,14 @@ class SkeletonData {
     // --- Bones.
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
-    val bones: ArrayList<BoneData> = ArrayList<BoneData>() // Ordered parents first.
+    val bones: FastArrayList<BoneData> = FastArrayList<BoneData>() // Ordered parents first.
     // --- Slots.
 
     /** The skeleton's slots.  */
-    val slots: ArrayList<SlotData> = ArrayList<SlotData>() // Setup pose draw order.
+    val slots: FastArrayList<SlotData> = FastArrayList<SlotData>() // Setup pose draw order.
 
     /** All skins, including the default skin.  */
-    val skins: ArrayList<Skin> = ArrayList<Skin>()
+    val skins: FastArrayList<Skin> = FastArrayList<Skin>()
     // --- Skins.
 
     /** The skeleton's default skin. By default this skin contains all attachments that were not in a skin in Spine.
@@ -69,23 +70,23 @@ class SkeletonData {
     lateinit var defaultSkin: Skin
 
     /** The skeleton's events.  */
-    val events: ArrayList<EventData> = ArrayList()
+    val events: FastArrayList<EventData> = FastArrayList()
     // --- Animations.
 
     /** The skeleton's animations.  */
-    val animations: ArrayList<Animation> = ArrayList()
+    val animations: FastArrayList<Animation> = FastArrayList()
     // --- IK constraints
 
     /** The skeleton's IK constraints.  */
-    val ikConstraints: ArrayList<IkConstraintData> = ArrayList()
+    val ikConstraints: FastArrayList<IkConstraintData> = FastArrayList()
     // --- Transform constraints
 
     /** The skeleton's transform constraints.  */
-    val transformConstraints: ArrayList<TransformConstraintData> = ArrayList()
+    val transformConstraints: FastArrayList<TransformConstraintData> = FastArrayList()
     // --- Path constraints
 
     /** The skeleton's path constraints.  */
-    val pathConstraints: ArrayList<PathConstraintData> = ArrayList()
+    val pathConstraints: FastArrayList<PathConstraintData> = FastArrayList()
 
     /** The X coordinate of the skeleton's axis aligned bounding box in the setup pose.  */
     var x: Float = 0.toFloat()

@@ -29,13 +29,15 @@
 
 package com.esotericsoftware.spine
 
+import com.soywiz.kds.*
+
 /** Stores the setup pose for a [TransformConstraint].
  *
  *
  * See [Transform constraints](http://esotericsoftware.com/spine-transform-constraints) in the Spine User Guide.  */
 class TransformConstraintData(name: String) : ConstraintData(name) {
     /** The bones that will be modified by this transform constraint.  */
-    val bones: ArrayList<BoneData> = ArrayList()
+    val bones: FastArrayList<BoneData> = FastArrayList()
     internal lateinit var target: BoneData
 
     /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */

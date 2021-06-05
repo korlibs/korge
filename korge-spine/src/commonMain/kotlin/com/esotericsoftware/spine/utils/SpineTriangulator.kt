@@ -35,8 +35,8 @@ import com.soywiz.kds.*
 import kotlin.math.*
 
 internal class SpineTriangulator {
-    private val convexPolygons = ArrayList<FloatArrayList>()
-    private val convexPolygonsIndices = ArrayList<ShortArrayList>()
+    private val convexPolygons = FastArrayList<FloatArrayList>()
+    private val convexPolygonsIndices = FastArrayList<ShortArrayList>()
 
     private val indicesArray = ShortArrayList()
     private val isConcaveArray = BooleanArrayList()
@@ -144,7 +144,7 @@ internal class SpineTriangulator {
         return triangles
     }
 
-    fun decompose(verticesArray: FloatArrayList, triangles: ShortArrayList): ArrayList<FloatArrayList> {
+    fun decompose(verticesArray: FloatArrayList, triangles: ShortArrayList): FastArrayList<FloatArrayList> {
         val vertices = verticesArray.data
 
         val convexPolygons = this.convexPolygons

@@ -54,10 +54,10 @@ class SkeletonBounds {
         private set
 
     /** The visible bounding boxes.  */
-    val boundingBoxes: ArrayList<BoundingBoxAttachment> = ArrayList()
+    val boundingBoxes: FastArrayList<BoundingBoxAttachment> = FastArrayList()
 
     /** The world vertices for the bounding box polygons.  */
-    val polygons: ArrayList<FloatArrayList> = ArrayList()
+    val polygons: FastArrayList<FloatArrayList> = FastArrayList()
     private val polygonPool = Pool { FloatArrayList() }
 
     /** The width of the axis aligned bounding box.  */

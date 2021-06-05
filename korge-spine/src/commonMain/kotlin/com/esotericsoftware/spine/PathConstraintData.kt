@@ -29,6 +29,7 @@
 
 package com.esotericsoftware.spine
 
+import com.soywiz.kds.*
 import kotlin.js.*
 
 /** Stores the setup pose for a [PathConstraint].
@@ -37,7 +38,7 @@ import kotlin.js.*
  * See [Path constraints](http://esotericsoftware.com/spine-path-constraints) in the Spine User Guide.  */
 class PathConstraintData(name: String) : ConstraintData(name) {
     /** The bones that will be modified by this path constraint.  */
-    val bones: ArrayList<BoneData> = ArrayList()
+    val bones: FastArrayList<BoneData> = FastArrayList()
     internal lateinit var target: SlotData
     internal lateinit var positionMode: PositionMode
     internal lateinit var spacingMode: SpacingMode

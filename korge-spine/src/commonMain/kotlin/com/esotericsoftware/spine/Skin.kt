@@ -32,6 +32,7 @@ package com.esotericsoftware.spine
 import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.utils.*
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 
 /** Stores attachments by slot index and attachment name.
@@ -44,8 +45,8 @@ class Skin(
         val name: String
 ) {
     internal val attachments: LinkedHashMap<SkinEntry, SkinEntry> = LinkedHashMap()
-    val bones: ArrayList<BoneData> = ArrayList()
-    val constraints: ArrayList<ConstraintData> = ArrayList()
+    val bones: FastArrayList<BoneData> = FastArrayList()
+    val constraints: FastArrayList<ConstraintData> = FastArrayList()
     private val lookup = SkinEntry()
 
     /** Adds an attachment to the skin for the specified slot index and name.  */
@@ -112,7 +113,7 @@ class Skin(
     }
 
     /** Returns all attachments in this skin for the specified slot index.  */
-    fun getAttachments(slotIndex: Int, attachments: ArrayList<SkinEntry>) {
+    fun getAttachments(slotIndex: Int, attachments: FastArrayList<SkinEntry>) {
         require(slotIndex >= 0) { "slotIndex must be >= 0." }
         for (entry in this.attachments.keys)
             if (entry.slotIndex == slotIndex) attachments.add(entry)

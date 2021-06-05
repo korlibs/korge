@@ -61,7 +61,7 @@ class SkeletonJson {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    private val linkedMeshes = ArrayList<LinkedMesh>()
+    private val linkedMeshes = FastArrayList<LinkedMesh>()
 
     constructor(atlas: Atlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
@@ -79,7 +79,7 @@ class SkeletonJson {
         val skeletonData = SkeletonData()
         skeletonData.name = PathInfo(fileName).baseNameWithoutExtension
 
-        val root = SpineJsonValue.fromPrimitiveTree(Json.parse(fileContent))
+        val root = SpineJsonValue.fromPrimitiveTree(Json.parse(fileContent, Json.Context.FAST))
 
         // Skeleton.
         val skeletonMap = root!!["skeleton"]
@@ -479,7 +479,7 @@ class SkeletonJson {
 
     private fun readAnimation(map: SpineJsonValue, name: String, skeletonData: SkeletonData) {
         val scale = this.scale
-        val timelines = ArrayList<Timeline>()
+        val timelines = FastArrayList<Timeline>()
         var duration = 0f
 
         // Slot timelines.

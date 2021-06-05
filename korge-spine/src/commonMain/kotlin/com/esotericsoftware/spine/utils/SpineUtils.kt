@@ -29,6 +29,8 @@
 
 package com.esotericsoftware.spine.utils
 
+import com.soywiz.kds.*
+
 object SpineUtils {
     const val PI = 3.1415927f
     const val PI2 = PI * 2
@@ -37,11 +39,11 @@ object SpineUtils {
     const val degreesToRadians = PI / 180
     const val degRad = degreesToRadians
 
-    fun cosDeg(angle: Float): Float = kotlin.math.cos((angle * degRad).toDouble()).toFloat()
-    fun sinDeg(angle: Float): Float = kotlin.math.sin((angle * degRad).toDouble()).toFloat()
-    fun cos(angle: Float): Float = kotlin.math.cos(angle.toDouble()).toFloat()
-    fun sin(angle: Float): Float = kotlin.math.sin(angle.toDouble()).toFloat()
-    fun atan2(y: Float, x: Float): Float = kotlin.math.atan2(y.toDouble(), x.toDouble()).toFloat()
+    inline fun cosDeg(angle: Float): Float = kotlin.math.cos(angle * degRad)
+    inline fun sinDeg(angle: Float): Float = kotlin.math.sin(angle * degRad)
+    inline fun cos(angle: Float): Float = kotlin.math.cos(angle)
+    inline fun sin(angle: Float): Float = kotlin.math.sin(angle)
+    inline fun atan2(y: Float, x: Float): Float = kotlin.math.atan2(y, x)
 
     /*
     private const val SIN_BITS = 14 // 16KB. Adjust for accuracy.
@@ -100,27 +102,27 @@ object SpineUtils {
     }
      */
 
-    fun arraycopy(src: ByteArray, srcPos: Int, dest: ByteArray, destPos: Int, length: Int) {
+    inline fun arraycopy(src: ByteArray, srcPos: Int, dest: ByteArray, destPos: Int, length: Int) {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
-    fun arraycopy(src: ShortArray, srcPos: Int, dest: ShortArray, destPos: Int, length: Int) {
+    inline fun arraycopy(src: ShortArray, srcPos: Int, dest: ShortArray, destPos: Int, length: Int) {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
-    fun arraycopy(src: IntArray, srcPos: Int, dest: IntArray, destPos: Int, length: Int) {
+    inline fun arraycopy(src: IntArray, srcPos: Int, dest: IntArray, destPos: Int, length: Int) {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
-    fun arraycopy(src: FloatArray, srcPos: Int, dest: FloatArray, destPos: Int, length: Int) {
+    inline fun arraycopy(src: FloatArray, srcPos: Int, dest: FloatArray, destPos: Int, length: Int) {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
-    fun <T> arraycopy(src: Array<T>, srcPos: Int, dest: Array<T>, destPos: Int, length: Int) {
+    inline fun <T> arraycopy(src: Array<T>, srcPos: Int, dest: Array<T>, destPos: Int, length: Int) {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 
-    fun <T> arraycopy(src: ArrayList<T>, srcPos: Int, dest: ArrayList<T>, destPos: Int, length: Int) {
+    inline fun <T> arraycopy(src: FastArrayList<T>, srcPos: Int, dest: FastArrayList<T>, destPos: Int, length: Int) {
         com.soywiz.kmem.arraycopy(src, srcPos, dest, destPos, length)
     }
 }

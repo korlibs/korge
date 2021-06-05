@@ -18,7 +18,7 @@ internal fun BooleanArrayList.setSize(size: Int) {
 internal fun IntArrayList.toArray() = this.toIntArray()
 internal fun ShortArrayList.toArray(): ShortArray = ShortArray(size) { this[it] }
 
-internal fun <T> ArrayList<T>.setAndGrow(index: Int, value: T) {
+internal fun <T> FastArrayList<T>.setAndGrow(index: Int, value: T) {
     if (index >= size) {
         val items = this as MutableList<Any?>
         while (items.size <= index) items.add(null)
@@ -26,28 +26,28 @@ internal fun <T> ArrayList<T>.setAndGrow(index: Int, value: T) {
     this[index] = value
 }
 
-internal fun <T> ArrayList<T>.indexOfIdentity(value: T?): Int {
+internal fun <T> FastArrayList<T>.indexOfIdentity(value: T?): Int {
     fastForEachWithIndex { index, current -> if (current === value) return index }
     return -1
 }
-internal fun <T> ArrayList<T>.removeValueIdentity(value: T?): Boolean {
+internal fun <T> FastArrayList<T>.removeValueIdentity(value: T?): Boolean {
     val index = indexOfIdentity(value)
     val found = index >= 0
     if (found) removeAt(index)
     return found
 }
-internal fun <T> ArrayList<T>.containsIdentity(value: T?): Boolean = indexOfIdentity(value) >= 0
+internal fun <T> FastArrayList<T>.containsIdentity(value: T?): Boolean = indexOfIdentity(value) >= 0
 
-internal fun <T> ArrayList<T>.shrink() = run { if (size != size) resize(size) }
-internal fun <T> ArrayList<T>.setSize(newSize: Int): ArrayList<T> {
+internal fun <T> FastArrayList<T>.shrink() = run { if (size != size) resize(size) }
+internal fun <T> FastArrayList<T>.setSize(newSize: Int): FastArrayList<T> {
     truncate(max2(8, newSize))
     return this
 }
-internal fun <T> ArrayList<T>.resize(newSize: Int) = run {
+internal fun <T> FastArrayList<T>.resize(newSize: Int) = run {
     truncate(newSize)
 }
 
-internal fun <T> ArrayList<T>.truncate(newSize: Int) {
+internal fun <T> FastArrayList<T>.truncate(newSize: Int) {
     require(newSize >= 0) { "newSize must be >= 0: $newSize" }
     while (size > newSize) removeAt(size - 1)
 }

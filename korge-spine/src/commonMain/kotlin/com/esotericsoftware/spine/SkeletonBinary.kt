@@ -61,8 +61,8 @@ class SkeletonBinary {
             require(scale != 0f) { "scale cannot be 0." }
             field = scale
         }
-    //private val linkedMeshes = ArrayList<LinkedMesh>()
-    private val linkedMeshes by lazy { ArrayList<LinkedMesh>() }
+    //private val linkedMeshes = FastArrayList<LinkedMesh>()
+    private val linkedMeshes by lazy { FastArrayList<LinkedMesh>() }
 
     constructor(atlas: Atlas) {
         attachmentLoader = AtlasAttachmentLoader(atlas)
@@ -108,7 +108,7 @@ class SkeletonBinary {
 
             // Strings.
             run {
-                input.strings = ArrayList<String>(input.readInt(true).also { n = it })
+                input.strings = FastArrayList<String>(input.readInt(true).also { n = it })
                 val o = input.strings!!.setSize(n)
                 for (i in 0 until n)
                     o.setAndGrow(i, input.readString()!!)
@@ -593,7 +593,7 @@ class SkeletonBinary {
     }
 
     private fun readAnimation(input: SkeletonInput, name: String?, skeletonData: SkeletonData): Animation {
-        val timelines = ArrayList<Timeline>(32)
+        val timelines = FastArrayList<Timeline>(32)
         val scale = this.scale
         var duration = 0f
 
@@ -999,7 +999,7 @@ class SkeletonBinary {
         }
 
         private var chars = CharArray(32)
-        var strings: ArrayList<String>? = null
+        var strings: FastArrayList<String>? = null
 
         /** @return May be null.
          */

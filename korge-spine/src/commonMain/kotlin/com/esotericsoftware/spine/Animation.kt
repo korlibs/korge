@@ -42,11 +42,11 @@ import kotlin.math.*
 class Animation(
     /** The animation's name, which is unique across all animations in the skeleton.  */
     val name: String,
-    timelines: ArrayList<Timeline>,
+    timelines: FastArrayList<Timeline>,
     /** The duration of the animation in seconds, which is the highest time of all keys in the timeline.  */
     var duration: Float
 ) {
-    lateinit internal var timelines: ArrayList<Timeline>
+    lateinit internal var timelines: FastArrayList<Timeline>
     internal val timelineIDs = IntSet()
 
     init {
@@ -54,11 +54,11 @@ class Animation(
     }
 
     /** If the returned array or the timelines it contains are modified, [.setTimelines] must be called.  */
-    fun getTimelines(): ArrayList<Timeline> {
+    fun getTimelines(): FastArrayList<Timeline> {
         return timelines
     }
 
-    fun setTimelines(timelines: ArrayList<Timeline>) {
+    fun setTimelines(timelines: FastArrayList<Timeline>) {
         this.timelines = timelines
 
         timelineIDs.clear()
@@ -79,7 +79,7 @@ class Animation(
      * @param loop If true, the animation repeats after [.getDuration].
      * @param events May be null to ignore fired events.
      */
-    fun apply(skeleton: Skeleton, lastTime: Float, time: Float, loop: Boolean, events: ArrayList<Event>?, alpha: Float,
+    fun apply(skeleton: Skeleton, lastTime: Float, time: Float, loop: Boolean, events: FastArrayList<Event>?, alpha: Float,
               blend: MixBlend, direction: MixDirection) {
         var lastTime = lastTime
         var time = time
@@ -126,7 +126,7 @@ class Animation(
          * @param direction Indicates whether the timeline is mixing in or out. Used by timelines which perform instant transitions,
          * such as [DrawOrderTimeline] or [AttachmentTimeline], and other such as [ScaleTimeline].
          */
-        fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                   direction: MixDirection)
     }
 
@@ -324,7 +324,7 @@ class Animation(
             frames[frameIndex + ROTATION] = degrees
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -415,7 +415,7 @@ class Animation(
             frames[frameIndex + Y] = y
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -485,7 +485,7 @@ class Animation(
         override val propertyId: Int
             get() = (TimelineType.scale.ordinal shl 24) + boneIndex
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -588,7 +588,7 @@ class Animation(
         override val propertyId: Int
             get() = (TimelineType.shear.ordinal shl 24) + boneIndex
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val bone = skeleton.bones[boneIndex]
@@ -674,7 +674,7 @@ class Animation(
             frames[frameIndex + A] = a
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val slot = skeleton.slots[slotIndex]
@@ -781,7 +781,7 @@ class Animation(
             frames[frameIndex + B2] = b2
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val slot = skeleton.slots[slotIndex]
@@ -912,7 +912,7 @@ class Animation(
             attachmentNames[frameIndex] = attachmentName
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val slot = skeleton.slots[slotIndex]
@@ -972,7 +972,7 @@ class Animation(
             this.vertices[frameIndex] = vertices
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
             var alpha = alpha
             var blend = blend
@@ -1176,7 +1176,7 @@ class Animation(
         }
 
         /** Fires events for frames > `lastTime` and <= `time`.  */
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, firedEvents: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, firedEvents: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
             var lastTime = lastTime
 
@@ -1237,7 +1237,7 @@ class Animation(
             drawOrders[frameIndex] = drawOrder
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val drawOrder = skeleton.drawOrder
@@ -1309,7 +1309,7 @@ class Animation(
             frames[frameIndex + STRETCH] = (if (stretch) 1 else 0).toFloat()
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.ikConstraints[ikConstraintIndex]
@@ -1440,7 +1440,7 @@ class Animation(
             frames[frameIndex + SHEAR] = shearMix
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.transformConstraints[transformConstraintIndex]
@@ -1549,7 +1549,7 @@ class Animation(
             frames[frameIndex + VALUE] = position
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.pathConstraints[pathConstraintIndex]
@@ -1600,7 +1600,7 @@ class Animation(
         override val propertyId: Int
             get() = (TimelineType.pathConstraintSpacing.ordinal shl 24) + pathConstraintIndex
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.pathConstraints[pathConstraintIndex]
@@ -1670,7 +1670,7 @@ class Animation(
             frames[frameIndex + TRANSLATE] = translateMix
         }
 
-        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: ArrayList<Event>?, alpha: Float, blend: MixBlend,
+        override fun apply(skeleton: Skeleton, lastTime: Float, time: Float, events: FastArrayList<Event>?, alpha: Float, blend: MixBlend,
                            direction: MixDirection) {
 
             val constraint = skeleton.pathConstraints[pathConstraintIndex]
