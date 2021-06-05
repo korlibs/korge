@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom.binpack
 
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 
 class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects(width, height)) {
@@ -15,7 +16,7 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
         val rectsStr: String get() = rects.toString()
     }
 
-    val allocated = arrayListOf<Rectangle>()
+    val allocated = FastArrayList<Rectangle>()
 
     fun <T> Algo.addBatch(items: Iterable<T>, getSize: (T) -> Size): List<Pair<T, Rectangle?>> {
         val its = items.toList()
@@ -62,18 +63,18 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
             getSize: (T) -> Size
         ): List<Result<T>> {
             var currentBinPacker = BinPacker(maxWidth, maxHeight)
-            var currentPairs = arrayListOf<Pair<T, Rectangle>>()
+            var currentPairs = FastArrayList<Pair<T, Rectangle>>()
             val sortedItems = items.sortedByDescending { getSize(it).area }
             if (sortedItems.any { getSize(it).let { size -> size.width > maxWidth || size.height > maxHeight } }) {
                 throw IllegalArgumentException("Item is bigger than max size")
             }
 
-            val out = arrayListOf<Result<T>>()
+            val out = FastArrayList<Result<T>>()
 
             fun emit() {
                 if (currentPairs.isEmpty()) return
                 out += Result(maxWidth, maxHeight, currentPairs.toList())
-                currentPairs = arrayListOf()
+                currentPairs = FastArrayList()
                 currentBinPacker = BinPacker(maxWidth, maxHeight)
             }
 

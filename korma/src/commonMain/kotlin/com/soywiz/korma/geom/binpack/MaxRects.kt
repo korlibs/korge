@@ -1,12 +1,13 @@
 package com.soywiz.korma.geom.binpack
 
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.Rectangle
 
 class MaxRects(
     maxWidth: Double,
     maxHeight: Double
 ) : BinPacker.Algo {
-    var freeRectangles = arrayListOf(Rectangle(0.0, 0.0, maxWidth, maxHeight))
+    var freeRectangles = fastArrayListOf<Rectangle>(Rectangle(0.0, 0.0, maxWidth, maxHeight))
 
     override fun add(width: Double, height: Double): Rectangle? = quickInsert(width, height)
 
