@@ -534,8 +534,8 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 	private val myattr = attr
 	val attributes = attr
 	constructor(attributes: List<Attribute>) : this(attributes, null)
-	constructor(vararg attributes: Attribute) : this(attributes.toFastListNew(), null)
-	constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(attributes.toFastListNew(), layoutSize)
+	constructor(vararg attributes: Attribute) : this(attributes.toFastList(), null)
+	constructor(vararg attributes: Attribute, layoutSize: Int? = null) : this(attributes.toFastList(), layoutSize)
 
 	private var _lastPos: Int = 0
 

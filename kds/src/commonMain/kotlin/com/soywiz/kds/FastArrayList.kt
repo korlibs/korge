@@ -48,8 +48,5 @@ expect class FastArrayList<E> : MutableList<E>, RandomAccess {
     inline fun fastForEachReverseWithIndex(callback: (index: Int, value: E) -> Unit)
 }
 
-fun <T> List<T>.toFastList(): List<T> = toFastListNew()
-fun <T> Array<T>.toFastList(): List<T> = toFastListNew()
-
-fun <T> List<T>.toFastListNew(): FastArrayList<T> = if (this is FastArrayList) this as FastArrayList<T> else FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
-fun <T> Array<T>.toFastListNew(): FastArrayList<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
+fun <T> List<T>.toFastList(): List<T> = if (this is FastArrayList) this else FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
+fun <T> Array<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }

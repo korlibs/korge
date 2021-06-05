@@ -57,7 +57,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		}
 		internal inline fun Any?.containsDynamic(key: String): Boolean = this.getDynamic(key) != null
 
-        internal fun Any?.asFastArrayList() = (this as List<Any?>).toFastListNew()
+        internal fun Any?.asFastArrayList() = (this as List<Any?>).toFastList() as FastArrayList<Any?>
 
 		internal val Any?.dynKeys: List<String> get() = when (this) {
 			null -> listOf()
@@ -1244,7 +1244,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 		val frameParser = frameParser
 		var rawFrames = rawFrames
 		if (rawData != null && framesKey.isNotEmpty() && rawData.containsDynamic(framesKey)) {
-			rawFrames = (rawData.getDynamic(framesKey) as List<Any?>?)?.toFastListNew()
+			rawFrames = (rawData.getDynamic(framesKey) as List<Any?>?)?.toFastList() as? FastArrayList<Any?>
 		}
 
 		if (rawFrames == null) {
