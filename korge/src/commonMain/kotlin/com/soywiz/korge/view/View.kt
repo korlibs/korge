@@ -953,6 +953,7 @@ abstract class View internal constructor(
     fun hitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
     fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
+    // @TODO: we should compute view bounds on demand
     fun mouseHitTest(x: Double, y: Double): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
@@ -964,9 +965,37 @@ abstract class View internal constructor(
             }
         }
         if (!mouseEnabled) return null
-        hitTestInternal(x, y)?.let { return it }
+        hitTestInternal(x, y)?.let {
+
+            // @TODO: This should not be required if we compute bounds
+            val area = getClippingAreaInternal()
+            if (area != null && !area.contains(x, y)) return null
+
+            return it
+        }
         return if (this is Stage) this else null
     }
+
+    private val _localBounds2: Rectangle = Rectangle()
+
+    @KorgeInternal
+    fun getClippingAreaInternal(): Rectangle? {
+        this._localBounds2.setTo(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY)
+        var count = 0
+        forEachAscendant(true) {
+            if (it !is Stage && it is FixedSizeContainer && it.clip) {
+                it.getGlobalBounds(this._localBounds)
+                if (count == 0) {
+                    this._localBounds2.copyFrom(this._localBounds)
+                } else {
+                    this._localBounds2.setToIntersection(this._localBounds2, this._localBounds)
+                }
+                count++
+            }
+        }
+        return if (count == 0) null else this._localBounds2
+    }
+
     fun mouseHitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
     fun mouseHitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
 
@@ -988,7 +1017,6 @@ abstract class View internal constructor(
 
         val bounds = getLocalBoundsOptimizedAnchored()
         if (!bounds.contains(llx, lly)) return null
-
         val anchorDispX = this.anchorDispX
         val anchorDispY = this.anchorDispY
 
