@@ -147,6 +147,10 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 val components = str.removePrefix("rgba(").removeSuffix(")").split(",").map { it.trim().toDoubleOrNull() ?: 0.0 }
                 ColorPaint(RGBA(components[0].toInt(), components[1].toInt(), components[2].toInt(), (components[3] * 255).toInt()))
             }
+            str.startsWith("rgb(") -> {
+                val components = str.removePrefix("rgb(").removeSuffix(")").split(",").map { it.trim().toDoubleOrNull() ?: 0.0 }
+                ColorPaint(RGBA(components[0].toInt(), components[1].toInt(), components[2].toInt(), 255))
+            }
             else -> when (str) {
                 "none" -> NonePaint
                 else -> c.createColor(ColorDefaultBlack[str])
