@@ -11,9 +11,9 @@ inline fun Container.uiScrollableArea(
     verticalScroll: Boolean = true,
     horizontalScroll: Boolean = true,
     config: UIScrollableArea.() -> Unit = {},
-    block: @ViewDslMarker Container.() -> Unit = {}
+    block: @ViewDslMarker Container.(UIScrollableArea) -> Unit = {}
 ): UIScrollableArea = UIScrollableArea(width, height, contentWidth, contentHeight, buttonSize, verticalScroll, horizontalScroll)
-    .addTo(this).apply(config).also { block(it.container) }
+    .addTo(this).apply(config).also { block(it.container, it) }
 
 // @TODO: Optimize this!
 // @TODO: Add an actualContainer = this inside Container
