@@ -91,6 +91,7 @@ open class KorgeJavaExec : JavaExec() {
 
     init {
         systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"
+        defaultCharacterEncoding = Charsets.UTF_8.toString()
         // https://github.com/korlibs/korge-plugins/issues/25
     }
 }
