@@ -349,10 +349,9 @@ class WindowsGameWindow : EventLoopGameWindow() {
         }
     }
 
-    fun keyUpdate(keyCode: Int, down: Boolean) {
-        // @TODO: KeyEvent.Tpe.TYPE
+    fun keyEvent(keyCode: Int, type: KeyEvent.Type) {
         dispatch(keyEvent.apply {
-            this.type = if (down) com.soywiz.korev.KeyEvent.Type.DOWN else com.soywiz.korev.KeyEvent.Type.UP
+            this.type = type
             this.id = 0
             this.key = KEYS[keyCode] ?: com.soywiz.korev.Key.UNKNOWN
             this.keyCode = keyCode
@@ -362,6 +361,14 @@ class WindowsGameWindow : EventLoopGameWindow() {
             this.shift = GetKeyState(VK_SHIFT) < 0
             this.meta = GetKeyState(VK_LWIN) < 0 || GetKeyState(VK_RWIN) < 0
         })
+    }
+
+    fun keyUpdate(keyCode: Int, down: Boolean) {
+        keyEvent(keyCode, if (down) com.soywiz.korev.KeyEvent.Type.DOWN else com.soywiz.korev.KeyEvent.Type.UP)
+    }
+
+    fun keyType(character: Int) {
+        keyEvent(character, com.soywiz.korev.KeyEvent.Type.TYPE)
     }
 
     fun mouseEvent(
@@ -417,6 +424,8 @@ val _WM_KEYUP: UINT = WM_KEYUP.convert()
 val _WM_SYSKEYDOWN: UINT = WM_SYSKEYDOWN.convert()
 val _WM_SYSKEYUP: UINT = WM_SYSKEYUP.convert()
 val _WM_CLOSE: UINT = WM_CLOSE.convert()
+val _WM_CHAR: UINT = WM_CHAR.convert()
+val _WM_UNICHAR: UINT = WM_UNICHAR.convert()
 
 @Suppress("UNUSED_PARAMETER")
 fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT {
@@ -486,9 +495,9 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
         _WM_KEYUP -> windowsGameWindow.keyUpdate(wParam.toInt(), false)
         _WM_SYSKEYDOWN -> windowsGameWindow.keyUpdate(wParam.toInt(), true)
         _WM_SYSKEYUP -> windowsGameWindow.keyUpdate(wParam.toInt(), false)
-        _WM_CLOSE -> {
-            kotlin.system.exitProcess(0)
-        }
+        _WM_CHAR -> windowsGameWindow.keyType(wParam.toInt())
+        //_WM_UNICHAR -> windowsGameWindow.keyType(wParam.toInt())
+        _WM_CLOSE -> kotlin.system.exitProcess(0)
     }
     return DefWindowProcW(hWnd, message, wParam, lParam)
 }
