@@ -2,6 +2,7 @@ package com.soywiz.korge.component
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.view.*
 
@@ -16,9 +17,19 @@ interface StageComponent : Component {
     fun removed(views: Views)
 }
 
-fun <T : View> T.onAttachDetach(views: Views, onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): T {
+fun <T : View> T.onAttachDetach(views: Views? = null, onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): T {
     val view = this
-    views.registerStageComponent()
+    if (views != null) {
+        views.registerStageComponent()
+    } else {
+        view.addComponent(object : UpdateComponentWithViews {
+            override val view: BaseView = this@onAttachDetach
+            override fun update(views: Views, dt: TimeSpan) {
+                this.removeFromView()
+                views.registerStageComponent()
+            }
+        })
+    }
     view.addComponent(object : StageComponent {
         override val view: BaseView get() = view
         override fun added(views: Views) {
