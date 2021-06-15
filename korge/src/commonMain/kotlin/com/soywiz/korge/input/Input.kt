@@ -27,6 +27,8 @@ class Input : Extra by Extra.Mixin() {
     /** All the touches that are active (recently created or updated) */
     val activeTouches: List<Touch> get() = touch.activeTouches
 
+    val numActiveTouches get() = activeTouches.size
+
     @KorgeInternal
     internal var _isTouchDeviceGen = { AGOpenglFactory.isTouchDevice }
 
