@@ -13,6 +13,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
@@ -98,6 +99,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     internal lateinit var views: Views
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
+
+    val input get() = views.input
 
 
     val click = Signal<MouseEvents>()
@@ -370,3 +373,22 @@ inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (Mous
 inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::scroll, handler)
 
 fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
+
+fun MouseEvents.doubleClick(callback: (MouseEvents) -> Unit): Closeable = multiClick(2, callback)
+
+fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeable {
+    var clickCount = 0
+    var lastClickTime = DateTime.EPOCH
+    return this.click {
+        val currentClickTime = DateTime.now()
+        if (currentClickTime - lastClickTime > 0.3.seconds) {
+            clickCount = 0
+        }
+        lastClickTime = currentClickTime
+        clickCount++
+        it.clickedCount = clickCount
+        if (clickCount == count) {
+            callback(it)
+        }
+    }
+}
