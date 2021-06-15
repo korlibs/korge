@@ -5,13 +5,10 @@ import com.soywiz.korge.view.*
 
 fun <T : View> T.decorateOutOver(onOver: (T) -> Unit = { }, onOut: (T) -> Unit = { }): T {
     onOut(this)
-    var pressing = false
     mouse {
-        this.down { pressing = true }
-        this.up { pressing = false }
         this.over { onOver(this@decorateOutOver) }
         this.out {
-            if (!pressing) onOut(this@decorateOutOver)
+            if (it.input.numActiveTouches == 0) onOut(this@decorateOutOver)
         }
         this.upOutside { onOut(this@decorateOutOver) }
     }
