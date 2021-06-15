@@ -179,6 +179,17 @@ open class Text(
         super.renderInternal(ctx)
     }
 
+    var cachedVersionGlyphMetrics = -1
+    private var _textMetricsResult: TextMetricsResult? = null
+
+    fun getGlyphMetrics(): TextMetricsResult {
+        if (cachedVersionGlyphMetrics != version) {
+            cachedVersionGlyphMetrics = version
+            _textMetricsResult = font.getOrNull()?.measureTextGlyphs(fontSize, text, renderer)
+        }
+        return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
+    }
+
     private val tempBmpEntry = Text2TextRendererActions.Entry()
     private val fontMetrics = FontMetrics()
     private val textMetrics = TextMetrics()

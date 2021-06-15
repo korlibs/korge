@@ -15,6 +15,7 @@ inline fun mapWhileFloat(cond: (index: Int) -> Boolean, gen: (Int) -> Float): Fl
 inline fun mapWhileDouble(cond: (index: Int) -> Boolean, gen: (Int) -> Double): DoubleArray = DoubleArrayList().apply { while (cond(this.size)) this += gen(this.size) }.toDoubleArray()
 
 fun <T> List<T>.getCyclic(index: Int) = this[index umod this.size]
+fun <T> List<T>.getCyclicOrNull(index: Int) = this.getOrNull(index umod this.size)
 fun <T> Array<T>.getCyclic(index: Int) = this[index umod this.size]
 fun IntArrayList.getCyclic(index: Int) = this.getAt(index umod this.size)
 fun FloatArrayList.getCyclic(index: Int) = this.getAt(index umod this.size)

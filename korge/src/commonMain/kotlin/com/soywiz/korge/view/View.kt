@@ -1736,6 +1736,10 @@ fun View?.descendantsWith(out: ArrayList<View> = arrayListOf(), check: (View) ->
     return out
 }
 
+inline fun <reified T> View?.descendantsOfType(): List<T> = descendantsWith { it is T } as List<T>
+
+fun View?.allDescendants(out: ArrayList<View> = arrayListOf()): List<View> = descendantsWith { true }
+
 /** Chainable method returning this that sets [View.x] and [View.y] */
 fun <T : View> T.xy(x: Double, y: Double): T {
     this.x = x
@@ -1982,3 +1986,56 @@ fun View?.findLastAscendant(cond: (view: View) -> Boolean): View? {
     return result
 }
 
+///////////////////
+
+
+val View.prevSibling get() = parent?.children?.getOrNull(index - 1)
+val View.nextSibling get() = parent?.children?.getOrNull(index + 1)
+
+val Stage.lastTreeView: View
+    get() {
+        var view: View? = this
+        while (view != null) {
+            if (view is Container) {
+                if (view.numChildren == 0) return view
+                view = view.lastChild
+            } else {
+                return view
+            }
+        }
+        return view ?: stage
+    }
+
+fun View.nextView(): View? {
+    if (this is Container && this.numChildren > 0) return this.firstChild
+    var cur: View? = this
+    while (cur != null) {
+        cur.nextSibling?.let { return it }
+        cur = cur.parent
+    }
+    return null
+}
+
+fun View.prevView(): View? {
+    prevSibling?.let { return it }
+    return parent
+}
+
+inline fun View.nextView(filter: (View) -> Boolean): View? {
+    var view = this
+    while (true) {
+        view = view.nextView() ?: return null
+        if (filter(view)) return view
+    }
+}
+
+inline fun View.prevView(filter: (View) -> Boolean): View? {
+    var view = this
+    while (true) {
+        view = view.prevView() ?: return null
+        if (filter(view)) return view
+    }
+}
+
+inline fun <reified T> View.nextViewOfType(): T? = nextView { it is T } as? T?
+inline fun <reified T> View.prevViewOfType(): T? = prevView { it is T } as? T?
