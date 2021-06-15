@@ -172,11 +172,9 @@ open class Text(
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        if (text.isNotEmpty()) {
-            _renderInternal(ctx)
-            while (imagesToRemove.isNotEmpty()) {
-                ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
-            }
+        _renderInternal(ctx)
+        while (imagesToRemove.isNotEmpty()) {
+            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
         }
         super.renderInternal(ctx)
     }
@@ -272,12 +270,21 @@ open class Text(
                     cachedVersion = version
                     val realTextSize = textSize * autoscaling.renderedAtScaleXY
                     //println("realTextSize=$realTextSize")
-                    textToBitmapResult = font.renderTextToBitmap(
-                        realTextSize, text,
-                        paint = Colors.WHITE, fill = true, renderer = renderer,
-                        //background = Colors.RED,
-                        nativeRendering = useNativeRendering, drawBorder = true
-                    )
+                    textToBitmapResult = when {
+                        text.isNotEmpty() -> {
+                            font.renderTextToBitmap(
+                                realTextSize, text,
+                                paint = Colors.WHITE, fill = true, renderer = renderer,
+                                //background = Colors.RED,
+                                nativeRendering = useNativeRendering, drawBorder = true
+                            )
+                        }
+                        else -> {
+                            TextToBitmapResult(Bitmaps.transparent.bmp, FontMetrics(), TextMetrics(), emptyList())
+                        }
+                    }
+
+                    //println("RENDER TEXT: '$text'")
 
                     val met = textToBitmapResult.metrics
                     val x = -horizontalAlign.getOffsetX(met.width) + met.left
