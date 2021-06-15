@@ -36,6 +36,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
     private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
     private val container = clipContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
+    //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
     private val caret = container.solidRect(2.0, 16.0, Colors.WHITE).also {
         it.blendMode = BlendMode.INVERT
@@ -193,13 +194,20 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     override var focused: Boolean
         set(value) {
             if (value) {
-                (stage?.uiFocusedView as? UiFocusable?)?.blur()
-                stage?.uiFocusedView = this
+                if (stage?.uiFocusedView != this) {
+                    (stage?.uiFocusedView as? UiFocusable?)?.blur()
+                    stage?.uiFocusedView = this
+                }
                 caret.visible = true
+                //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
+                stage?.uiFocusManager?.requestToggleSoftKeyboard(true)
             } else {
                 if (stage?.uiFocusedView == this) {
                     stage?.uiFocusedView = null
                     caret.visible = false
+                    if (stage?.uiFocusedView !is UiTextInput) {
+                        stage?.uiFocusManager?.requestToggleSoftKeyboard(false)
+                    }
                 }
             }
         }
@@ -227,57 +235,71 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
         keys {
             this.typed {
-                if (focused) {
-                    val code = it.character.code
-                    when (code) {
-                        8, 127 -> { // backspace, supr
-                            val backspace = code == 8
-                            val range = selectionRange
-                            if (range.length > 0) {
-                                text = text.withoutRange(range)
-                                cursorIndex = range.first
-                            } else {
-                                if (backspace) {
-                                    if (cursorIndex > 0) {
-                                        text = text.withoutIndex(cursorIndex - 1)
-                                        cursorIndex--
-                                    }
-                                } else {
-                                    if (cursorIndex < text.length) {
-                                        text = text.withoutIndex(cursorIndex)
-                                    }
-                                }
-                            }
+                if (!focused) return@typed
+                val code = it.character.code
+                when (code) {
+                    8, 127 -> Unit // backspace, backspace (handled by down event)
+                    9, 10, 13 -> { // tab & return: Do nothing in single line text inputs
+                        if (code == 10 || code == 13) {
+                            onReturnPressed(this@UiTextInput)
                         }
-                        9, 10, 13 -> { // tab & return: Do nothing in single line text inputs
-                            if (code == 10 || code == 13) {
-                                onReturnPressed(this@UiTextInput)
-                            }
-                        }
-                        else -> {
-                            val range = selectionRange
-                            text = text.withoutRange(range).withInsertion(cursorIndex, "${it.character}")
-                            cursorIndex++
-                        }
+                    }
+                    else -> {
+                        val range = selectionRange
+                        text = text.withoutRange(range).withInsertion(cursorIndex, "${it.character}")
+                        cursorIndex++
                     }
                 }
                 //println(it.character.toInt())
                 //println("NEW TEXT[${it.character.code}]: '${text}'")
             }
-            this.down(Key.LEFT)  { if (focused) { moveToIndex(it.shift, leftIndex(selectionStart, it.ctrl)) } }
-            this.down(Key.RIGHT) { if (focused) { moveToIndex(it.shift, rightIndex(selectionStart, it.ctrl)) } }
-            this.down(Key.HOME)  { if (focused) { moveToIndex(it.shift, 0) } }
-            this.down(Key.END)   { if (focused) { moveToIndex(it.shift, text.length) } }
+            down {
+                if (!focused) return@down
+                when (it.key) {
+                    Key.BACKSPACE, Key.DELETE -> {
+                        val range = selectionRange
+                        if (range.length > 0) {
+                            text = text.withoutRange(range)
+                            cursorIndex = range.first
+                        } else {
+                            if (it.key == Key.BACKSPACE) {
+                                if (cursorIndex > 0) {
+                                    text = text.withoutIndex(cursorIndex - 1)
+                                    cursorIndex--
+                                }
+                            } else {
+                                if (cursorIndex < text.length) {
+                                    text = text.withoutIndex(cursorIndex)
+                                }
+                            }
+                        }
+                    }
+                    Key.LEFT -> moveToIndex(it.shift, leftIndex(selectionStart, it.ctrl))
+                    Key.RIGHT -> moveToIndex(it.shift, rightIndex(selectionStart, it.ctrl))
+                    Key.HOME -> moveToIndex(it.shift, 0)
+                    Key.END -> moveToIndex(it.shift, text.length)
+                    else -> Unit
+                }
+            }
         }
 
         container.mouse {
             var dragging = false
+            bg.alpha = 0.7
+            over {
+                bg.alpha = 1.0
+            }
+            out {
+                bg.alpha = 0.7
+            }
             down {
+                //println("UiTextInput.down")
                 cursorIndex = getIndexAtPos(it.currentPosLocal)
                 focused = true
                 dragging = false
             }
             moveAnywhere {
+                //println("UiTextInput.moveAnywhere")
                 if (focused) {
                     if (it.pressing) {
                         dragging = true
@@ -286,12 +308,16 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 }
             }
             upOutside {
-                if (!dragging) {
+                val isFocusedView = stage?.uiFocusedView == this@UiTextInput
+                //println("UiTextInput.upOutside: dragging=$dragging, isFocusedView=$isFocusedView, view=${it.view}, stage?.uiFocusedView=${stage?.uiFocusedView}")
+                if (!dragging && isFocusedView) {
+                    //println(" -- BLUR")
                     blur()
                 }
                 dragging = false
             }
             doubleClick {
+                //println("UiTextInput.doubleClick")
                 val index = getIndexAtPos(it.currentPosLocal)
                 setSelection(leftIndex(index, true), rightIndex(index, true))
             }

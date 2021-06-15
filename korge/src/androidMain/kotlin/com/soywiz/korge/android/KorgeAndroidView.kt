@@ -29,7 +29,6 @@ import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
 class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
-
     var mGLView: com.soywiz.korgw.KorgwSurfaceView? = null
     private var agOpenGl: AGOpengl? = null
     private var gameWindow: AndroidGameWindowNoActivity? = null
@@ -79,7 +78,7 @@ class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
         if (!moduleLoaded) {
 
             agOpenGl = KorgeViewAGOpenGL()
-            gameWindow = AndroidGameWindowNoActivity(module.windowSize.width, module.windowSize.height, agOpenGl!!)
+            gameWindow = AndroidGameWindowNoActivity(module.windowSize.width, module.windowSize.height, agOpenGl!!, context) { mGLView!! }
 
             mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!)
 

@@ -984,7 +984,7 @@ abstract class View internal constructor(
         var count = 0
         forEachAscendant(true) {
             if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                it.getGlobalBounds(this._localBounds)
+                it.getWindowBounds(this._localBounds)
                 if (count == 0) {
                     this._localBounds2.copyFrom(this._localBounds)
                 } else {
@@ -2039,3 +2039,19 @@ inline fun View.prevView(filter: (View) -> Boolean): View? {
 
 inline fun <reified T> View.nextViewOfType(): T? = nextView { it is T } as? T?
 inline fun <reified T> View.prevViewOfType(): T? = prevView { it is T } as? T?
+
+/*
+fun <T : BaseView> T.addMouseComponent(block: (view: T, views: Views, event: MouseEvent) -> Unit): MouseComponent {
+    return addComponent(object : MouseComponent {
+        override val view: T = this@addMouseComponent
+        override fun onMouseEvent(views: Views, event: MouseEvent) = block(view, views, event)
+    })
+}
+
+fun <T : BaseView> T.addKeyComponent(block: (view: T, event: KeyEvent) -> Unit): KeyComponent {
+    return addComponent(object : KeyComponent {
+        override val view: T = this@addKeyComponent
+        override fun Views.onKeyEvent(event: KeyEvent) = block(view, event)
+    })
+}
+*/

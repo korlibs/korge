@@ -6,8 +6,8 @@ import android.content.DialogInterface
 import android.net.*
 import android.text.*
 import android.view.*
+import android.view.inputmethod.*
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.startActivity
 import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.*
@@ -21,12 +21,58 @@ import kotlin.coroutines.*
 
 actual fun CreateDefaultGameWindow(): GameWindow = TODO()
 
-open class BaseAndroidGameWindow() : GameWindow() {
+abstract class BaseAndroidGameWindow() : GameWindow() {
+    abstract val androidContext: Context
+    abstract val androidView: View
+    val context get() = androidContext
     var coroutineContext: CoroutineContext? = null
+
+    val inputMethodManager get() = androidContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+    override var isSoftKeyboardVisible: Boolean = false
+
+    override fun showSoftKeyboard(force: Boolean) {
+        isSoftKeyboardVisible = true
+        println("Korgw.BaseAndroidGameWindow.showSoftKeyboard:force=$force")
+        try {
+            //inputMethodManager.showSoftInput(androidView, if (force) InputMethodManager.SHOW_FORCED else 0)
+            if (force) {
+                inputMethodManager.toggleSoftInput(
+                    InputMethodManager.SHOW_FORCED,
+                    InputMethodManager.HIDE_IMPLICIT_ONLY
+                )
+            }
+
+            //val hasHardKeyboard = context.resources.configuration.hasHardKeyboard()
+            //val hardKeyboardInUse = context.resources.configuration.isHardKeyboardInUse()
+            //if (hasHardKeyboard && !hardKeyboardInUse) {
+            //    inputMethodManager.showSoftInput(androidView, InputMethodManager.SHOW_FORCED)
+            //} else if (!hasHardKeyboard) {
+            //    inputMethodManager.showSoftInput(androidView, InputMethodManager.SHOW_IMPLICIT)
+            //}
+
+            //inputMethodManager.showSoftInput(androidView, InputMethodManager.SHOW_FORCED)
+            inputMethodManager.showSoftInput(androidView, InputMethodManager.SHOW_IMPLICIT)
+
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun hideSoftKeyboard() {
+        println("Korgw.BaseAndroidGameWindow.hideSoftKeyboard")
+        isSoftKeyboardVisible = false
+        try {
+            inputMethodManager.hideSoftInputFromWindow(androidView.getWindowToken(), 0)
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+    }
 }
 
 class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
-    val androidContext get() = activity
+    override val androidContext get() = activity
+    override val androidView: View get() = activity.mGLView ?: error("Can't find mGLView")
 
     val mainHandler by lazy { android.os.Handler(androidContext.getMainLooper()) }
 
@@ -123,9 +169,9 @@ class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
     }
 }
 
-class AndroidGameWindowNoActivity(override val width: Int, override val height: Int, override val ag: AG) : BaseAndroidGameWindow() {
-
-    override var title: String = "Senaptec"
+class AndroidGameWindowNoActivity(override val width: Int, override val height: Int, override val ag: AG, override val androidContext: Context, val getView: () -> View) : BaseAndroidGameWindow() {
+    override val androidView: View get() = getView()
+    override var title: String = "Korge"
 
     override var icon: Bitmap?
         get() = super.icon

@@ -59,6 +59,7 @@ class Input : Extra by Extra.Mixin() {
 
     operator fun get(button: MouseButton) = mouseButtonPressed(button)
 
+    var mouseOutside = false
     var mouseInside = true
     var clicked = false
 

@@ -1,11 +1,14 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.component.*
+import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
+import com.soywiz.korio.lang.*
 
 @KorgeExperimental
 interface UiFocusable {
@@ -20,7 +23,22 @@ fun UiFocusable.blur() { focused = false }
 
 @KorgeExperimental
 class UiFocusManager(override val view: Stage) : KeyComponent {
+    val stage = view
+    val gameWindow get() = view.gameWindow
     var uiFocusedView: UIView? = null
+
+    //private var toggleKeyboardTimeout: Closeable? = null
+
+    fun requestToggleSoftKeyboard(show: Boolean) {
+        //toggleKeyboardTimeout?.close()
+        //toggleKeyboardTimeout = stage.timeout(1.seconds) {
+            if (show) {
+                gameWindow.showSoftKeyboard()
+            } else {
+                gameWindow.hideSoftKeyboard()
+            }
+        //}
+    }
 
     override fun Views.onKeyEvent(event: KeyEvent) {
         if (event.type == KeyEvent.Type.DOWN && event.key == Key.TAB) {

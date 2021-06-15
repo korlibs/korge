@@ -198,6 +198,14 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open fun showContextMenu(items: List<MenuItem?>) {
     }
 
+    open val isSoftKeyboardVisible: Boolean get() = false
+
+    open fun showSoftKeyboard(force: Boolean = true) {
+    }
+
+    open fun hideSoftKeyboard() {
+    }
+
     open var cursor: Cursor = Cursor.DEFAULT
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey

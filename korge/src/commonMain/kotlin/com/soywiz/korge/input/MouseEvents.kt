@@ -110,6 +110,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	val downFromOutside = Signal<MouseEvents>()
 	val up = Signal<MouseEvents>()
 	val upOutside = Signal<MouseEvents>()
+    val upOutsideExit = Signal<MouseEvents>()
+    val upOutsideAny = Signal<MouseEvents>()
 	val upAnywhere = Signal<MouseEvents>()
 	val move = Signal<MouseEvents>()
 	val moveAnywhere = Signal<MouseEvents>()
@@ -319,7 +321,12 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		}
 		if (pressingChanged && !pressing) {
 		    temporalLastEvent(lastEventUp) {
-                if (over) up(this) else upOutside(this)
+                if (over) {
+                    up(this)
+                } else {
+                    upOutside(this)
+                    upOutsideAny(this)
+                }
                 upAnywhere(this)
             }
 			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
@@ -330,7 +337,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         if (insideChanged && !inside) {
             moveOutside(this)
             out(this)
-            upOutside(this)
+            upOutsideExit(this)
+            upOutsideAny(this)
             exit(this)
         }
 
