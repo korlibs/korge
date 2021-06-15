@@ -1,11 +1,9 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.*
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.effect.applyEffect
-import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.text.*
@@ -29,11 +27,23 @@ interface Font : Resourceable<Font> {
 
 data class TextToBitmapResult(
     val bmp: Bitmap,
-    val fmetrics: FontMetrics,
-    val metrics: TextMetrics,
-    val glyphs: List<PlacedGlyph>
-) {
-    data class PlacedGlyph(val codePoint: Int, val x: Double, val y: Double, val metrics: GlyphMetrics, val transform: Matrix)
+    override val fmetrics: FontMetrics,
+    override val metrics: TextMetrics,
+    override val glyphs: List<PlacedGlyphMetrics>
+) : BaseTextMetricsResult
+
+data class TextMetricsResult(
+    override val fmetrics: FontMetrics,
+    override val metrics: TextMetrics,
+    override val glyphs: List<PlacedGlyphMetrics>
+) : BaseTextMetricsResult
+
+data class PlacedGlyphMetrics(val codePoint: Int, val x: Double, val y: Double, val metrics: GlyphMetrics, val transform: Matrix, val index: Int)
+
+interface BaseTextMetricsResult {
+    val fmetrics: FontMetrics
+    val metrics: TextMetrics
+    val glyphs: List<PlacedGlyphMetrics>
 }
 
 fun Font.renderGlyphToBitmap(
@@ -57,7 +67,7 @@ fun Font.renderGlyphToBitmap(
     }
     val imageOut = image.toBMP32IfRequired().applyEffect(effect)
     return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(
-        TextToBitmapResult.PlacedGlyph(codePoint, gx + border, gy + border, gmetrics, Matrix())
+        PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, Matrix(), 0)
     ))
 }
 
@@ -77,7 +87,7 @@ fun <T> Font.renderTextToBitmap(
     val font = this
     val bounds = getTextBounds(size, text, renderer = renderer)
     //println("BOUNDS: $bounds")
-    val glyphs = arrayListOf<TextToBitmapResult.PlacedGlyph>()
+    val glyphs = arrayListOf<PlacedGlyphMetrics>()
     val iwidth = bounds.width.toIntCeil() + border * 2 + 1
     val iheight = (if (drawBorder) bounds.allLineHeight else bounds.height).toIntCeil() + border * 2 + 1
     val image = if (nativeRendering) NativeImage(iwidth, iheight) else Bitmap32(iwidth, iheight, premultiplied = true)
@@ -90,18 +100,35 @@ fun <T> Font.renderTextToBitmap(
             }
         }
         //font.drawText(this, size, text, paint, bounds.drawLeft, bounds.drawTop, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
+        var index = 0
         font.drawText(this, size, text, paint, bounds.drawLeft, bounds.ascent, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
             if (returnGlyphs) {
-                glyphs += TextToBitmapResult.PlacedGlyph(codePoint, x, y, metrics.clone(), transform.clone())
+                glyphs += PlacedGlyphMetrics(codePoint, x, y, metrics.clone(), transform.clone(), index++)
             }
         })
     }
     return TextToBitmapResult(image, bounds.fontMetrics, bounds, glyphs)
 }
 
+fun <T> Font.measureTextGlyphs(
+    size: Double,
+    text: T,
+    renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
+): TextMetricsResult {
+    val font = this
+    val bounds = getTextBounds(size, text, renderer = renderer)
+    //println("BOUNDS: $bounds")
+    val glyphs = arrayListOf<PlacedGlyphMetrics>()
+    var index = 0
+    font.drawText(null, size, text, null, bounds.drawLeft, bounds.ascent, false, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
+        glyphs += PlacedGlyphMetrics(codePoint, x, y, metrics.clone(), transform.clone(), index++)
+    })
+    return TextMetricsResult(bounds.fontMetrics, bounds, glyphs)
+}
+
 fun <T> Font.drawText(
     ctx: Context2d?, size: Double,
-    text: T, paint: Paint,
+    text: T, paint: Paint?,
     x: Double = 0.0, y: Double = 0.0,
     fill: Boolean = true,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
@@ -116,7 +143,7 @@ fun <T> Font.drawText(
                     //ctx.translate(-m.width * transformAnchor.sx, +m.height * transformAnchor.sy)
                     ctx.transform(this.transform)
                     //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
-                    ctx.fillStyle = this.paint ?: paint
+                    ctx.fillStyle = this.paint ?: paint ?: NonePaint
                     font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics)
                     placed?.invoke(codePoint, this.x + x, this.y + y, size, glyphMetrics, this.transform)
                     if (fill) ctx.fill() else ctx.stroke()
