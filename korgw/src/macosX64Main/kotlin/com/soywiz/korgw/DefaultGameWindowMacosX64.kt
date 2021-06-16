@@ -1,18 +1,17 @@
 package com.soywiz.korgw
 
 import com.soywiz.klock.*
-import com.soywiz.klock.hr.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.cg.toCgFloat
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
+import com.soywiz.korma.geom.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.AppKit.*
@@ -33,7 +32,215 @@ private fun ByteArray.toNsData(): NSData {
 
 val frameRequestNumber = AtomicInt(0)
 
-actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRenderizable {
+class MyNSWindow(contentRect: kotlinx.cinterop.CValue<platform.Foundation.NSRect /* = platform.CoreGraphics.CGRect */>, styleMask: platform.AppKit.NSWindowStyleMask /* = kotlin.ULong */, backing: platform.AppKit.NSBackingStoreType /* = kotlin.ULong */, defer: kotlin.Boolean) : NSWindow(
+    contentRect, styleMask, backing, defer
+) {
+}
+
+class MyNSOpenGLView(
+    val defaultGameWindow: MyDefaultGameWindow,
+    frame: kotlinx.cinterop.CValue<platform.Foundation.NSRect /* = platform.CoreGraphics.CGRect */>,
+    pixelFormat: platform.AppKit.NSOpenGLPixelFormat?
+) : NSOpenGLView(frame, pixelFormat), NSTextInputProtocol {
+    override fun acceptsFirstResponder(): Boolean = true
+    override fun becomeFirstResponder(): Boolean = true
+
+    //fun getHeight() = openglView.bounds.height
+    fun getHeight() = bounds.height
+
+    var lastModifierFlags: Int = 0
+
+    fun dispatchFlagIfRequired(event: NSEvent, mask: Int, key: Key) {
+        val old = (lastModifierFlags and mask) != 0
+        val new = (event.modifierFlags.toInt() and mask) != 0
+        if (old == new) return
+
+        defaultGameWindow.dispatchKeyEventEx(
+            type = if (new) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
+            id = 0,
+            character = ' ',
+            key = key,
+            keyCode = key.ordinal,
+            shift = event.shift,
+            ctrl = event.ctrl,
+            alt = event.alt,
+            meta = event.meta
+        )
+    }
+
+    override fun flagsChanged(event: NSEvent) {
+        dispatchFlagIfRequired(event, NSShiftKeyMask.toInt(), Key.LEFT_SHIFT)
+        dispatchFlagIfRequired(event, NSControlKeyMask.toInt(), Key.LEFT_CONTROL)
+        dispatchFlagIfRequired(event, NSAlternateKeyMask.toInt(), Key.LEFT_ALT)
+        dispatchFlagIfRequired(event, NSCommandKeyMask.toInt(), Key.META)
+        dispatchFlagIfRequired(event, NSFunctionKeyMask.toInt(), Key.FUNCTION)
+        dispatchFlagIfRequired(event, NSEventModifierFlagCapsLock.toInt(), Key.CAPS_LOCK)
+
+        lastModifierFlags = event.modifierFlags.toInt()
+    }
+
+    override fun mouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
+    override fun rightMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
+    override fun otherMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
+
+    override fun mouseDown(event: NSEvent) = mouseEvent(MouseEvent.Type.DOWN, event)
+    override fun rightMouseDown(event: NSEvent) = mouseEvent(MouseEvent.Type.DOWN, event)
+    override fun otherMouseDown(event: NSEvent) = mouseEvent(MouseEvent.Type.DOWN, event)
+
+    override fun mouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
+    override fun rightMouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
+    override fun otherMouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
+
+    override fun scrollWheel(event: NSEvent) = mouseEvent(MouseEvent.Type.SCROLL, event)
+
+    override fun mouseMoved(event: NSEvent) = mouseEvent(MouseEvent.Type.MOVE, event)
+
+    private fun mouseEvent(etype: MouseEvent.Type, e: NSEvent) {
+        val ex = e.locationInWindow.x.toInt()
+        val ey = (getHeight() - e.locationInWindow.y).toInt()
+        //println("mouseUp($rx,$ry)")
+        val ebutton = e.buttonNumber.toInt()
+
+        val factor = defaultGameWindow.backingScaleFactor
+        val sx = ex * factor
+        val sy = ey * factor
+
+        defaultGameWindow.dispatchMouseEvent(
+            id = 0,
+            type = etype,
+            x = sx.toInt(),
+            y = sy.toInt(),
+            button = when (etype) {
+                MouseEvent.Type.SCROLL -> MouseButton.BUTTON_WHEEL
+                else -> button(ebutton)
+            },
+            buttons = when (etype) {
+                MouseEvent.Type.SCROLL -> 0
+                else -> buttonMask(e.buttonMask.toInt())
+            },
+            scrollDeltaX = e.deltaX.toDouble(), scrollDeltaY = e.deltaY.toDouble(), scrollDeltaZ = e.deltaZ.toDouble(),
+            isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
+        )
+    }
+
+    fun buttonMask(mask: Int): Int {
+        var out = 0
+        for (n in 0 until 8) {
+            if (mask.extractBool(n)) out = out or button(n).bits
+        }
+        return out
+    }
+
+    fun button(index: Int): MouseButton {
+        return when (index) {
+            0 -> MouseButton.LEFT
+            1 -> MouseButton.RIGHT
+            2 -> MouseButton.MIDDLE
+            else -> MouseButton[index]
+        }
+    }
+
+    var lastFn = false
+    var lastShift = false
+    var lastCtrl = false
+    var lastAlt = false
+    var lastMeta = false
+
+    fun keyDownUp(event: NSEvent, pressed: Boolean, e: NSEvent) {
+        val str = event.charactersIgnoringModifiers ?: "\u0000"
+        val c = str.getOrNull(0) ?: '\u0000'
+        val cc = c.toInt().toChar()
+        //println("keyDownUp")
+        val char = cc
+        val keyCode = event.keyCode.toInt()
+
+        val rawKey = KeyCodesToKeys[keyCode] ?: CharToKeys[char] ?: Key.UNKNOWN
+        val key = when {
+            (rawKey == Key.BACKSPACE || rawKey == Key.DELETE) -> if (event.fn) Key.DELETE else Key.BACKSPACE
+            else -> rawKey
+        }
+
+        lastModifierFlags = event.modifierFlags.toInt()
+
+        //println("keyDownUp: char=$char, keyCode=${keyCode.toInt()}, key=$key, pressed=$pressed, shift=${e.shift}, ctrl=${e.ctrl}, alt=${e.alt}, meta=${e.meta}, characters=${event.characters}, event.willBeHandledByComplexInputMethod()=${event.willBeHandledByComplexInputMethod()}")
+
+        defaultGameWindow.dispatchKeyEventEx(
+            type = if (pressed) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
+            id = 0,
+            character = char,
+            key = key,
+            keyCode = keyCode,
+            shift = e.shift,
+            ctrl = e.ctrl,
+            alt = e.alt,
+            meta = e.meta
+        )
+    }
+
+    override fun keyDown(event: NSEvent) {
+        //super.keyDown(event)
+        lastFn = event.fn
+        lastShift = event.shift
+        lastCtrl = event.ctrl
+        lastAlt = event.alt
+        lastMeta = event.meta
+
+        interpretKeyEvents(listOf(event))
+        //val inputMethod = event.willBeHandledByComplexInputMethod()
+        keyDownUp(event, true, event)
+    }
+
+    override fun keyUp(event: NSEvent) {
+        //super.keyUp(event)
+        keyDownUp(event, false, event)
+    }
+
+    override fun insertText(string: Any?) {
+        //println("MyNSOpenGLView.insertText: '$string'")
+        if (string == null) return
+        for (char in string.toString()) {
+            defaultGameWindow.dispatchKeyEventEx(
+                type = KeyEvent.Type.TYPE,
+                id = 0,
+                character = char,
+                key = Key.UNKNOWN,
+                keyCode = char.code,
+                shift = lastShift,
+                ctrl = lastCtrl,
+                alt = lastAlt,
+                meta = lastMeta
+            )
+        }
+    }
+
+    var inputRect: Rectangle = Rectangle(0.0, 0.0, 0.0, 0.0)
+
+    fun setInputRectangle(windowRect: Rectangle) {
+        this.inputRect = windowRect
+    }
+
+    // @TODO: Used for example when partially typing japanese. We need to display partial text while typing somehow
+    override fun setMarkedText(string: Any?, selectedRange: CValue<NSRange>) = Unit//.also { println("setMarkedText: '$string', $selectedRange") }
+    // @TODO: We should set the rectangle of the text input so IME places completion box at the right place
+    override fun firstRectForCharacterRange(range: CValue<NSRange>): CValue<NSRect> = NSMakeRect(
+        0.0.toCgFloat(), 0.0.toCgFloat(), 0.0.toCgFloat(), 0.0.toCgFloat()
+        //(this.bounds.left + inputRect.x).toCgFloat(),
+        //(this.bounds.top + inputRect.y).toCgFloat(),
+        //(inputRect.width).toCgFloat(),
+        //(inputRect.height).toCgFloat()
+    )//.also { println("firstRectForCharacterRange: $range") }
+    override fun attributedSubstringFromRange(range: CValue<NSRange>): NSAttributedString? = null//.also { println("attributedSubstringFromRange: $range") }
+    override fun characterIndexForPoint(point: CValue<NSPoint>): NSUInteger = 0u//.also { println("characterIndexForPoint: $point") }
+    override fun conversationIdentifier(): NSInteger = 0//.also { println("conversationIdentifier") }
+    override fun doCommandBySelector(selector: COpaquePointer?) = Unit//.also { println("doCommandBySelector: $selector") }
+    override fun hasMarkedText(): Boolean = false//.also { println("hasMarkedText") }
+    override fun markedRange(): CValue<NSRange> = NSMakeRange(0u, 0u)//.also { println("markedRange") }
+    override fun selectedRange(): CValue<NSRange> = NSMakeRange(0u, 0u)//.also { println("selectedRange") }
+    override fun unmarkText() = Unit//.also { println("unmarkText") }
+    override fun validAttributesForMarkedText(): List<*>? = null//.also { println("validAttributesForMarkedText") }
+}
+
+class MyDefaultGameWindow : GameWindow(), DoRenderizable {
     val gameWindow = this
     val gameWindowStableRef = StableRef.create(gameWindow)
     val app = NSApplication.sharedApplication()
@@ -85,12 +292,16 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
         )
     }
 
-    private val openglView: NSOpenGLView = NSOpenGLView(NSMakeRect(0.0, 0.0, 16.0, 16.0), pixelFormat)
+    private val openglView: MyNSOpenGLView = MyNSOpenGLView(this@MyDefaultGameWindow, NSMakeRect(0.0, 0.0, 16.0, 16.0), pixelFormat)
     var timer: NSTimer? = null
+
+    override fun setInputRectangle(windowRect: Rectangle) {
+        openglView.setInputRectangle(windowRect)
+    }
 
     private var responder: NSResponder
 
-    private val window: NSWindow = NSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false).apply {
+    private val window: NSWindow = MyNSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false).apply {
         setIsVisible(false)
         title = windowConfigTitle
         opaque = true
@@ -120,143 +331,18 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
         setContentMinSize(NSMakeSize(150.0, 100.0))
         responder = object : NSResponder() {
             override fun acceptsFirstResponder(): Boolean = true
+            override fun becomeFirstResponder(): Boolean = true
 
-            fun getHeight() = openglView.bounds.height
 
-            var lastModifierFlags: Int = 0
 
-            fun dispatchFlagIfRequired(event: NSEvent, mask: Int, key: Key) {
-                val old = (lastModifierFlags and mask) != 0
-                val new = (event.modifierFlags.toInt() and mask) != 0
-                if (old == new) return
-
-                dispatchKeyEventEx(
-                    type = if (new) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
-                    id = 0,
-                    character = ' ',
-                    key = key,
-                    keyCode = key.ordinal,
-                    shift = event.shift,
-                    ctrl = event.ctrl,
-                    alt = event.alt,
-                    meta = event.meta
-                )
-            }
-
-            override fun flagsChanged(event: NSEvent) {
-                dispatchFlagIfRequired(event, NSShiftKeyMask.toInt(), Key.LEFT_SHIFT)
-                dispatchFlagIfRequired(event, NSControlKeyMask.toInt(), Key.LEFT_CONTROL)
-                dispatchFlagIfRequired(event, NSAlternateKeyMask.toInt(), Key.LEFT_ALT)
-                dispatchFlagIfRequired(event, NSCommandKeyMask.toInt(), Key.META)
-                dispatchFlagIfRequired(event, NSFunctionKeyMask.toInt(), Key.FUNCTION)
-                dispatchFlagIfRequired(event, NSEventModifierFlagCapsLock.toInt(), Key.CAPS_LOCK)
-
-                lastModifierFlags = event.modifierFlags.toInt()
-            }
-
-            override fun mouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
-            override fun rightMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
-            override fun otherMouseUp(event: NSEvent) = mouseEvent(MouseEvent.Type.UP, event)
-
-            override fun mouseDown(event: NSEvent) = mouseEvent(MouseEvent.Type.DOWN, event)
-            override fun rightMouseDown(event: NSEvent) = mouseEvent(MouseEvent.Type.DOWN, event)
-            override fun otherMouseDown(event: NSEvent) = mouseEvent(MouseEvent.Type.DOWN, event)
-
-            override fun mouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
-            override fun rightMouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
-            override fun otherMouseDragged(event: NSEvent) = mouseEvent(MouseEvent.Type.DRAG, event)
-
-            override fun scrollWheel(event: NSEvent) = mouseEvent(MouseEvent.Type.SCROLL, event)
-
-            override fun mouseMoved(event: NSEvent) = mouseEvent(MouseEvent.Type.MOVE, event)
-
-            private fun mouseEvent(etype: MouseEvent.Type, e: NSEvent) {
-                val ex = e.locationInWindow.x.toInt()
-                val ey = (getHeight() - e.locationInWindow.y).toInt()
-                //println("mouseUp($rx,$ry)")
-                val ebutton = e.buttonNumber.toInt()
-
-                val factor = backingScaleFactor
-                val sx = ex * factor
-                val sy = ey * factor
-
-                dispatchMouseEvent(
-                    id = 0,
-                    type = etype,
-                    x = sx.toInt(),
-                    y = sy.toInt(),
-                    button = when (etype) {
-                        MouseEvent.Type.SCROLL -> MouseButton.BUTTON_WHEEL
-                        else -> button(ebutton)
-                    },
-                    buttons = when (etype) {
-                        MouseEvent.Type.SCROLL -> 0
-                        else -> buttonMask(e.buttonMask.toInt())
-                    },
-                    scrollDeltaX = e.deltaX.toDouble(), scrollDeltaY = e.deltaY.toDouble(), scrollDeltaZ = e.deltaZ.toDouble(),
-                    isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
-                )
-            }
-
-            fun buttonMask(mask: Int): Int {
-                var out = 0
-                for (n in 0 until 8) {
-                    if (mask.extractBool(n)) out = out or button(n).bits
-                }
-                return out
-            }
-
-            fun button(index: Int): MouseButton {
-                return when (index) {
-                    0 -> MouseButton.LEFT
-                    1 -> MouseButton.RIGHT
-                    2 -> MouseButton.MIDDLE
-                    else -> MouseButton[index]
-                }
-            }
-
-            fun keyDownUp(event: NSEvent, pressed: Boolean, e: NSEvent) {
-                val str = event.charactersIgnoringModifiers ?: "\u0000"
-                val c = str.getOrNull(0) ?: '\u0000'
-                val cc = c.toInt().toChar()
-                //println("keyDownUp")
-                val char = cc
-                val keyCode = event.keyCode.toInt()
-
-                val key = KeyCodesToKeys[keyCode] ?: CharToKeys[char] ?: Key.UNKNOWN
-
-                lastModifierFlags = event.modifierFlags.toInt()
-
-                //println("keyDownUp: char=$char, keyCode=${keyCode.toInt()}, key=$key, pressed=$pressed, shift=${e.shift}, ctrl=${e.ctrl}, alt=${e.alt}, meta=${e.meta}")
-                dispatchKeyEventEx(
-                    type = if (pressed) KeyEvent.Type.DOWN else KeyEvent.Type.UP,
-                    id = 0,
-                    character = char,
-                    key = key,
-                    keyCode = keyCode,
-                    shift = e.shift,
-                    ctrl = e.ctrl,
-                    alt = e.alt,
-                    meta = e.meta
-                )
-            }
-
-            override fun keyDown(event: NSEvent) {
-                //super.keyDown(event)
-                keyDownUp(event, true, event)
-            }
-
-            override fun keyUp(event: NSEvent) {
-                //super.keyUp(event)
-                keyDownUp(event, false, event)
-            }
 
             //external override fun performKeyEquivalent(event: NSEvent): Boolean {
             //    return true
             //}
         }
-        openglView.setNextResponder(responder)
-        setNextResponder(responder)
+        makeFirstResponder(openglView)
+        //openglView.setNextResponder(responder)
+        //setNextResponder(responder)
         setIsVisible(false)
     }
 
@@ -274,8 +360,8 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
     }
 
     @Suppress("RemoveRedundantCallsOfConversionMethods")
-    private val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
-    private var lastBackingScaleFactor = 0.0
+    internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
+    internal var lastBackingScaleFactor = 0.0
 
     override fun doRenderRequest() {
         //dispatch_async(dispatch_get_main_queue(), ::doRender)
@@ -521,6 +607,8 @@ actual fun CreateDefaultGameWindow(): GameWindow = object : GameWindow(), DoRend
     }
 }
 
+actual fun CreateDefaultGameWindow(): GameWindow = MyDefaultGameWindow()
+
 interface DoRenderizable {
     fun doRenderRequest()
 }
@@ -562,6 +650,7 @@ val CValue<NSRect>.top get() = this.useContents { origin.y }
 val CValue<NSRect>.width get() = this.useContents { size.width }
 val CValue<NSRect>.height get() = this.useContents { size.height }
 
+val NSEvent.fn get() = (modifierFlags and NSFunctionKeyMask) != 0uL
 val NSEvent.shift get() = (modifierFlags and NSShiftKeyMask) != 0uL
 val NSEvent.ctrl get() = (modifierFlags and NSControlKeyMask) != 0uL
 val NSEvent.alt get() = (modifierFlags and NSAlternateKeyMask) != 0uL

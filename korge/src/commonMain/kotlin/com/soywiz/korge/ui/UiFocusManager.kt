@@ -29,10 +29,13 @@ class UiFocusManager(override val view: Stage) : KeyComponent {
 
     //private var toggleKeyboardTimeout: Closeable? = null
 
-    fun requestToggleSoftKeyboard(show: Boolean) {
+    fun requestToggleSoftKeyboard(show: Boolean, view: View?) {
         //toggleKeyboardTimeout?.close()
         //toggleKeyboardTimeout = stage.timeout(1.seconds) {
             if (show) {
+                if (view != null) {
+                    gameWindow.setInputRectangle(view.windowBounds)
+                }
                 gameWindow.showSoftKeyboard()
             } else {
                 gameWindow.hideSoftKeyboard()

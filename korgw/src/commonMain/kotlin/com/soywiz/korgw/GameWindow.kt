@@ -200,6 +200,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     open val isSoftKeyboardVisible: Boolean get() = false
 
+    open fun setInputRectangle(windowRect: Rectangle) {
+    }
+
     open fun showSoftKeyboard(force: Boolean = true) {
     }
 
@@ -503,6 +506,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     fun dispatchKeyEventEx(
         type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,
+
         shift: Boolean = this.shift, ctrl: Boolean = this.ctrl, alt: Boolean = this.alt, meta: Boolean = this.meta
     ) {
         if (type != KeyEvent.Type.TYPE) {

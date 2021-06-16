@@ -200,13 +200,13 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 }
                 caret.visible = true
                 //println("stage?.gameWindow?.showSoftKeyboard(): ${stage?.gameWindow}")
-                stage?.uiFocusManager?.requestToggleSoftKeyboard(true)
+                stage?.uiFocusManager?.requestToggleSoftKeyboard(true, this)
             } else {
                 if (stage?.uiFocusedView == this) {
                     stage?.uiFocusedView = null
                     caret.visible = false
                     if (stage?.uiFocusedView !is UiTextInput) {
-                        stage?.uiFocusManager?.requestToggleSoftKeyboard(false)
+                        stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
                     }
                 }
             }
