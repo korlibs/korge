@@ -132,7 +132,7 @@ class RenderContext2D(
 		m.prerotate(angle)
 	}
 
-    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA, filtering: Boolean = false) {
+    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA, filtering: Boolean = this.filtering) {
         batch.drawQuad(
             getTexture(Bitmaps.white),
             x.toFloat(),
