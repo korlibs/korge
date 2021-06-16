@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -10,6 +11,20 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
+
+class BoxUISkin(
+    var bgColor: RGBA = Colors.WHITE,
+    var borderColor: RGBA = Colors.BLACK,
+    var borderSize: Double = 1.0
+) : ViewRenderer {
+    override fun RenderableView.render() {
+        ctx2d.rect(0.0, 0.0, width, height, bgColor, false)
+        ctx2d.rect(0.0, 0.0, width, borderSize, borderColor, false)
+        ctx2d.rect(0.0, 0.0, borderSize, height, borderColor, false)
+        ctx2d.rect(width - borderSize, 0.0, borderSize, height, borderColor, false)
+        ctx2d.rect(0.0, height - borderSize, width, borderSize, borderColor, false)
+    }
+}
 
 interface UISkinable {
     fun <T> setSkinProperty(property: KProperty<*>, value: T)

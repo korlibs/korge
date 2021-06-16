@@ -9,7 +9,6 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.async.*
@@ -24,17 +23,20 @@ inline fun Container.uiTextInput(
     initialText: String = "",
     width: Double = 128.0,
     height: Double = 24.0,
+    skin: ViewRenderer = BoxUISkin(),
     block: @ViewDslMarker UiTextInput.() -> Unit = {}
-): UiTextInput = UiTextInput(initialText, width, height)
+): UiTextInput = UiTextInput(initialText, width, height, skin)
     .addTo(this).also { block(it) }
 
 /**
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UiTextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0) : UIView(width, height), UiFocusable {
+class UiTextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) : UIView(width, height), UiFocusable {
 
-    private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
+    //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
+    private val bg = renderableView(width, height, skin)
+    var skin by bg::viewRenderer
     private val container = clipContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
@@ -47,6 +49,11 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         onAttachDetach(onAttach = {
             this.stage.uiFocusManager
         })
+    }
+
+    override fun onSizeChanged() {
+        bg.setSize(width, height)
+        container.setSize(width - 4.0, height - 4.0)
     }
 
     val onReturnPressed = Signal<UiTextInput>()

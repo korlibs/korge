@@ -36,6 +36,8 @@ class RenderContext2D(
 ) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
 
+    inline fun getTexture(slice: BmpSlice): Texture = agBitmapTextureManager.getTexture(slice)
+
     @KorgeInternal
 	val mpool = Pool<Matrix> { Matrix() }
 
@@ -48,6 +50,7 @@ class RenderContext2D(
 	var blendFactors = AG.Blending.NORMAL
     /** Multiplicative color to be used in the renders */
 	var multiplyColor = Colors.WHITE
+    var filtering: Boolean = true
 
 	init { logger.trace { "RenderContext2D[2]" } }
 
@@ -81,12 +84,24 @@ class RenderContext2D(
         }
     }
 
+    /** Executes [callback] restoring the initial [filtering] at the end */
+    inline fun <T> keepFiltering(crossinline callback: () -> T): T {
+        val filtering = this.filtering
+        try {
+            return callback()
+        } finally {
+            this.filtering = filtering
+        }
+    }
+
     /** Executes [callback] restoring the transform matrix, the [blendFactors] and the [multiplyColor] at the end */
 	inline fun <T> keep(crossinline callback: () -> T): T {
 		return keepMatrix {
 			keepBlendFactors {
 				keepColor {
-					callback()
+                    keepFiltering {
+                        callback()
+                    }
 				}
 			}
 		}
@@ -117,23 +132,28 @@ class RenderContext2D(
 		m.prerotate(angle)
 	}
 
-    /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
-    fun rect(x: Double, y: Double, width: Double, height: Double) {
+    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA, filtering: Boolean = false) {
         batch.drawQuad(
-            agBitmapTextureManager.getTexture(Bitmaps.white),
+            getTexture(Bitmaps.white),
             x.toFloat(),
             y.toFloat(),
             width.toFloat(),
             height.toFloat(),
+            filtering = filtering,
             m = m,
-            colorMul = multiplyColor,
+            colorMul = color,
             blendFactors = blendFactors
         )
     }
 
+    /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
+    fun rect(x: Double, y: Double, width: Double, height: Double) {
+        rect(x, y, width, height, multiplyColor)
+    }
+
     /** Renders a [texture] with the [blendFactors] at [x], [y] scaling it by [scale].
      * The texture colors will be multiplied by [multiplyColor]. Since it is multiplicative, white won't cause any effect. */
-	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0) {
+	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) {
 		//println(m)
 		batch.drawQuad(
 			texture,
@@ -141,6 +161,7 @@ class RenderContext2D(
 			y.toFloat(),
 			(texture.width * scale).toFloat(),
 			(texture.height * scale).toFloat(),
+            filtering = filtering,
 			m = m,
 			colorMul = multiplyColor,
 			blendFactors = blendFactors
