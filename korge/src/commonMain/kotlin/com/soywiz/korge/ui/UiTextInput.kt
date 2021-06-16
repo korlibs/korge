@@ -114,7 +114,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         val glyph = glyphPositions[min(index, glyphPositions.size - 1)]
         var x = glyph.x
         if (index >= glyphPositions.size) {
-            x += glyph.metrics.width
+            x += glyph.metrics.xadvance
         }
         return Point(x, glyph.y)
     }
@@ -129,7 +129,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             for (n in 0 until glyphPositions.size + 1) {
                 val glyph = glyphPositions[min(glyphPositions.size - 1, n)]
                 var x = glyph.x
-                if (n == glyphPositions.size) x += glyph.metrics.width
+                if (n == glyphPositions.size) x += glyph.metrics.xadvance
                 val dist = (pos.x - x).absoluteValue
                 if (minDist > dist) {
                     minDist = dist
