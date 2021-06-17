@@ -208,13 +208,17 @@ open class VectorPath(
         return bb.getBounds(out)
     }
 
-    fun getPoints(): List<IPoint> {
-        val points = arrayListOf<IPoint>()
+    @Deprecated("Use toPathList that aproximates curves")
+    fun getPoints(): List<IPoint> = getPointList().toList()
+
+    @Deprecated("Use toPathList that aproximates curves")
+    fun getPointList(): PointArrayList {
+        val points = PointArrayList()
         this.visitCmds(
-            moveTo = { x, y -> points += IPoint(x, y) },
-            lineTo = { x, y -> points += IPoint(x, y) },
-            quadTo = { x1, y1, x2, y2 -> points += IPoint(x2, y2) },
-            cubicTo = { x1, y1, x2, y2, x3, y3 -> points += IPoint(x3, y3) },
+            moveTo = { x, y -> points.add(x, y) },
+            lineTo = { x, y -> points.add(x, y) },
+            quadTo = { x1, y1, x2, y2 -> points.add(x2, y2) },
+            cubicTo = { x1, y1, x2, y2, x3, y3 -> points.add(x3, y3) },
             close = { }
         )
         return points
