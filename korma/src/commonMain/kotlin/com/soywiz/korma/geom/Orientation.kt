@@ -15,6 +15,18 @@ enum class Orientation(val value: Int) {
 
             return when {
                 (v > -EPSILON) && (v < EPSILON) -> COLLINEAR
+                v > 0 -> COUNTER_CLOCK_WISE
+                else -> CLOCK_WISE
+            }
+        }
+
+        fun orient2dFixed(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double): Orientation {
+            val detleft: Double = (paX - pcX) * (pbY - pcY)
+            val detright: Double = (paY - pcY) * (pbX - pcX)
+            val v: Double = detleft - detright
+
+            return when {
+                (v > -EPSILON) && (v < EPSILON) -> COLLINEAR
                 v > 0 -> CLOCK_WISE
                 else -> COUNTER_CLOCK_WISE
             }

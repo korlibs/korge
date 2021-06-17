@@ -11,7 +11,7 @@ interface IPointArrayList {
 
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
-    return Orientation.orient2d(getX(0), getY(0), getX(1), getY(1), getX(2), getY(2))
+    return Orientation.orient2dFixed(getX(0), getY(0), getX(1), getY(1), getX(2), getY(2))
 }
 
 inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
