@@ -211,6 +211,8 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
     override var focused: Boolean
         set(value) {
+            if (value == focused) return
+
             bg.isFocused = value
 
             if (value) {
