@@ -83,6 +83,7 @@ fun VectorBuilder.roundRect(x: Double, y: Double, w: Double, h: Double, rx: Doub
         this.arcTo(x + w, y + h, x, y + h, r)
         this.arcTo(x, y + h, x, y, r)
         this.arcTo(x, y, x + w, y, r)
+        this.close()
     }
 }
 fun VectorBuilder.roundRect(x: Float, y: Float, w: Float, h: Float, rx: Float, ry: Float = rx) = roundRect(x.toDouble(), y.toDouble(), w.toDouble(), h.toDouble(), rx.toDouble(), ry.toDouble())
@@ -162,6 +163,7 @@ fun VectorBuilder.ellipse(x: Double, y: Double, rw: Double, rh: Double) {
     cubicTo(xm + ox, y, xe, ym - oy, xe, ym)
     cubicTo(xe, ym + oy, xm + ox, ye, xm, ye)
     cubicTo(xm - ox, ye, x, ym + oy, x, ym)
+    close()
 }
 fun VectorBuilder.ellipse(x: Float, y: Float, rw: Float, rh: Float) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())
 fun VectorBuilder.ellipse(x: Int, y: Int, rw: Int, rh: Int) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())

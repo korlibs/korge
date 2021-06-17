@@ -252,6 +252,9 @@ fun VectorPath.toPathList(): List<IPointArrayList> {
     var path = PointArrayList()
     emitPoints({
         if (path.isNotEmpty()) {
+            //if (path.getX(0) == path.getX(path.size - 1) && path.getY(0) == path.getY(path.size - 1)) path.removeAt(path.size - 1)
+            //println("POINTS:" + path.size)
+            //for (p in path.toPoints()) println(" - $p")
             paths += path
             path = PointArrayList()
         }
