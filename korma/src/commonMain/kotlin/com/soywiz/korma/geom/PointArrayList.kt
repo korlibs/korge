@@ -9,9 +9,27 @@ interface IPointArrayList {
     fun getY(index: Int): Double
 }
 
+fun IPointArrayList.orientation(): Orientation {
+    if (size < 3) return Orientation.COLLINEAR
+    return Orientation.orient2d(getX(0), getY(0), getX(1), getY(1), getX(2), getY(2))
+}
+
 inline fun IPointArrayList.fastForEach(block: (x: Double, y: Double) -> Unit) {
     for (n in 0 until size) {
         block(getX(n), getY(n))
+    }
+}
+
+inline fun IPointArrayList.fastForEachReverse(block: (x: Double, y: Double) -> Unit) {
+    for (n in 0 until size) {
+        val index = size - n - 1
+        block(getX(index), getY(index))
+    }
+}
+
+inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y: Double) -> Unit) {
+    for (n in 0 until size) {
+        block(n, getX(n), getY(n))
     }
 }
 
@@ -61,6 +79,7 @@ class PointArrayList(capacity: Int = 7) : IPointArrayList {
     fun add(p: Point) = add(p.x, p.y)
     fun add(p: IPoint) = add(p.x, p.y)
     fun add(p: IPointArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
+    fun addReverse(p: IPointArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
 
     fun copyFrom(other: IPointArrayList): PointArrayList = this.apply { clear() }.apply { add(other) }
     fun clone(out: PointArrayList = PointArrayList()): PointArrayList = out.clear().add(this)

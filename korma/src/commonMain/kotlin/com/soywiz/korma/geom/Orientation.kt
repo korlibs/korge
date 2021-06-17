@@ -11,11 +11,13 @@ enum class Orientation(val value: Int) {
         fun orient2d(paX: Double, paY: Double, pbX: Double, pbY: Double, pcX: Double, pcY: Double): Orientation {
             val detleft: Double = (paX - pcX) * (pbY - pcY)
             val detright: Double = (paY - pcY) * (pbX - pcX)
-            val `val`: Double = detleft - detright
+            val v: Double = detleft - detright
 
-            if ((`val` > -EPSILON) && (`val` < EPSILON)) return Orientation.COLLINEAR
-            if (`val` > 0) return Orientation.COUNTER_CLOCK_WISE
-            return Orientation.CLOCK_WISE
+            return when {
+                (v > -EPSILON) && (v < EPSILON) -> COLLINEAR
+                v > 0 -> CLOCK_WISE
+                else -> COUNTER_CLOCK_WISE
+            }
         }
     }
 }

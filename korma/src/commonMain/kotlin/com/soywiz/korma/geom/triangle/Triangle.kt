@@ -201,3 +201,34 @@ fun Triangle.edgeIndex(p1: IPoint, p2: IPoint): Int {
     }
     return -1
 }
+
+class TriangleList(val points: PointArrayList, val indices: IntArray, val numTriangles: Int = indices.size / 3) {
+    val numIndices get() = numTriangles * 3
+    val pointCount get() = points.size
+
+    @PublishedApi
+    internal val tempTriangle: MutableTriangle = MutableTriangle()
+
+    class MutableTriangle : Triangle {
+        override val p0 = Point()
+        override val p1 = Point()
+        override val p2 = Point()
+        override fun toString(): String = "Triangle($p0, $p1, $p2)"
+    }
+
+    fun getTriangle(index: Int, out: MutableTriangle = MutableTriangle()): MutableTriangle {
+        points.getPoint(indices[index * 3 + 0], out.p0)
+        points.getPoint(indices[index * 3 + 1], out.p1)
+        points.getPoint(indices[index * 3 + 2], out.p2)
+        return out
+    }
+
+    fun getTriangles(): List<Triangle> = (0 until numTriangles).map { getTriangle(it) }
+
+    override fun toString(): String = getTriangles().toString()
+    inline fun fastForEach(block: (MutableTriangle) -> Unit) {
+        for (n in 0 until numTriangles) {
+            block(getTriangle(n, tempTriangle))
+        }
+    }
+}
