@@ -1,13 +1,14 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
-import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 private val logger = Logger("RenderContext2D")
 
@@ -153,6 +154,31 @@ class RenderContext2D(
         rect(x, y, border, height, color, filtering)
         rect(x + width - border, y, border, height, color, filtering)
         rect(x, y + height - border, width, border, color, filtering)
+    }
+
+    fun ellipse(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        simplePath(buildPath { ellipse(x, y, width, height) }, color, filtering)
+    }
+
+    fun ellipseOutline(x: Double, y: Double, width: Double, height: Double, lineWidth: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        simplePath(buildPath { ellipse(x, y, width, height) }.strokeToFill(lineWidth), color, filtering)
+    }
+
+    // @TODO: It doesn't handle holes (it uses a triangle fan approach)
+    fun simplePath(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        for (points in path.toPathList()) {
+            texturedVertexArrayNoTransform(TexturedVertexArray.fromPointArrayList(points, color, matrix = m), filtering)
+        }
+    }
+
+    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
+        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
+        batch.drawVertices(texturedVertexArray)
+    }
+
+    fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
+        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
+        batch.drawVerticesTransformed(texturedVertexArray, m)
     }
 
     /** Renders a [texture] with the [blendFactors] at [x], [y] scaling it by [scale].
