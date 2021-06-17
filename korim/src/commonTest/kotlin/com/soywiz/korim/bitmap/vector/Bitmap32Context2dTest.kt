@@ -147,3 +147,5 @@ fun VectorBuilder.triangle(x1: Double, y1: Double, x2: Double, y2: Double, x3: D
     //this.close() // @TODO: Is this a Bug? But still we have to handle strange cases like this one to be consistent with other rasterizers.
     //println("TRIANGLE: ($x1,$y1)-($x2,$y2)-($x3,$y3)")
 }
+
+fun VectorBuilder.triangle(p1: IPoint, p2: IPoint, p3: IPoint) = triangle(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
