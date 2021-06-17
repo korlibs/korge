@@ -13,16 +13,25 @@ import kotlin.native.concurrent.*
 import kotlin.reflect.*
 
 class BoxUISkin(
-    var bgColor: RGBA = Colors.WHITE,
-    var borderColor: RGBA = Colors.BLACK,
-    var borderSize: Double = 1.0
+    var bgColor: RGBA = Colors["#c3c3c3"],
+    var borderColor: RGBA = Colors["#1f1f1f"],
+    var borderSize: Double = 1.0,
+    var bgColorFocused: RGBA = Colors.WHITE,
+    var borderColorFocused: RGBA = Colors.BLACK,
+    var bgColorOver: RGBA = bgColor.mix(bgColorFocused, 0.5),
+    var borderColorOver: RGBA = borderColor.mix(borderColorFocused, 0.5),
 ) : ViewRenderer {
     override fun RenderableView.render() {
-        ctx2d.rect(0.0, 0.0, width, height, bgColor, false)
-        ctx2d.rect(0.0, 0.0, width, borderSize, borderColor, false)
-        ctx2d.rect(0.0, 0.0, borderSize, height, borderColor, false)
-        ctx2d.rect(width - borderSize, 0.0, borderSize, height, borderColor, false)
-        ctx2d.rect(0.0, height - borderSize, width, borderSize, borderColor, false)
+        ctx2d.rect(0.0, 0.0, width, height, when {
+            isFocused -> bgColorFocused
+            isOver -> bgColorOver
+            else -> bgColor
+        }, false)
+        ctx2d.rectOutline(x, y, width, height, borderSize, when {
+            isFocused -> borderColorFocused
+            isOver -> borderColorOver
+            else -> borderColor
+        }, false)
     }
 }
 

@@ -58,11 +58,13 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
     val onReturnPressed = Signal<UiTextInput>()
     val onTextUpdated = Signal<UiTextInput>()
+    val onFocused = Signal<UiTextInput>()
 
     var text: String
         get() = textView.text
         set(value) {
             textView.text = value
+            reclampSelection()
             onTextUpdated(this)
         }
 
@@ -79,6 +81,11 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     private var _selectionEnd: Int = _selectionStart
 
     private fun clampIndex(index: Int) = index.clamp(0, text.length)
+
+    private fun reclampSelection() {
+        select(selectionStart, selectionEnd)
+        selectionStart = selectionStart
+    }
 
     var selectionStart: Int
         get() = _selectionStart
@@ -103,10 +110,14 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             updateCaretPosition()
         }
 
-    fun setSelection(start: Int, end: Int) {
+    fun select(start: Int, end: Int) {
         _selectionStart = clampIndex(start)
         _selectionEnd = clampIndex(end)
         updateCaretPosition()
+    }
+
+    fun selectAll() {
+        select(0, text.length)
     }
 
     val selectionLength get() = (selectionEnd - selectionStart).absoluteValue
@@ -200,6 +211,8 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
     override var focused: Boolean
         set(value) {
+            bg.isFocused = value
+
             if (value) {
                 if (stage?.uiFocusedView != this) {
                     (stage?.uiFocusedView as? UiFocusable?)?.blur()
@@ -217,6 +230,10 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                     }
                 }
             }
+
+            if (value) {
+                onFocused(this)
+            }
         }
         get() = stage?.uiFocusedView == this
 
@@ -224,8 +241,14 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         //println(metrics)
 
         mouse {
-            over { gameWindow.cursor = GameWindow.Cursor.TEXT }
-            out { gameWindow.cursor = GameWindow.Cursor.DEFAULT }
+            over {
+                bg.isOver = true
+                gameWindow.cursor = GameWindow.Cursor.TEXT
+            }
+            out {
+                bg.isOver = false
+                gameWindow.cursor = GameWindow.Cursor.DEFAULT
+            }
         }
 
         timers.interval(0.5.seconds) {
@@ -326,7 +349,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             doubleClick {
                 //println("UiTextInput.doubleClick")
                 val index = getIndexAtPos(it.currentPosLocal)
-                setSelection(leftIndex(index, true), rightIndex(index, true))
+                select(leftIndex(index, true), rightIndex(index, true))
             }
         }
 

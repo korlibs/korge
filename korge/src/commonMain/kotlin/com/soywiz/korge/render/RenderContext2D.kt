@@ -132,7 +132,8 @@ class RenderContext2D(
 		m.prerotate(angle)
 	}
 
-    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA, filtering: Boolean = this.filtering) {
+    /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
+    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         batch.drawQuad(
             getTexture(Bitmaps.white),
             x.toFloat(),
@@ -147,8 +148,11 @@ class RenderContext2D(
     }
 
     /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
-    fun rect(x: Double, y: Double, width: Double, height: Double) {
-        rect(x, y, width, height, multiplyColor)
+    fun rectOutline(x: Double, y: Double, width: Double, height: Double, border: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        rect(x, y, width, border, color, filtering)
+        rect(x, y, border, height, color, filtering)
+        rect(x + width - border, y, border, height, color, filtering)
+        rect(x, y + height - border, width, border, color, filtering)
     }
 
     /** Renders a [texture] with the [blendFactors] at [x], [y] scaling it by [scale].
