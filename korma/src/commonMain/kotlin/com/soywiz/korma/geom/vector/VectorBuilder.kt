@@ -177,9 +177,19 @@ fun VectorPath.regularPolygon(points: Int, radius: Double, rotated: Angle = 0.de
     _regularPolygonStar(points, radius, radius, rotated)
 }
 
-internal fun VectorPath._regularPolygonStar(points: Int, radiusSmall: Double = 20.0, radiusBig: Double = 50.0, rotated: Angle = 0.degrees) {
+fun VectorPath.starHole(points: Int, radiusSmall: Double, radiusBig: Double, rotated: Angle = 0.degrees) {
+    _regularPolygonStar(points * 2, radiusSmall, radiusBig, rotated, true)
+}
+
+fun VectorPath.regularPolygonHole(points: Int, radius: Double, rotated: Angle = 0.degrees) {
+    _regularPolygonStar(points, radius, radius, rotated, true)
+}
+
+internal fun VectorPath._regularPolygonStar(points: Int, radiusSmall: Double = 20.0, radiusBig: Double = 50.0, rotated: Angle = 0.degrees, hole: Boolean = false) {
     for (n in 0 until points) {
-        val angle = (360.degrees * (n.toDouble() / points)) - 90.degrees + rotated
+        val baseAngle = (360.degrees * (n.toDouble() / points))
+        val realAngle = if (hole) -baseAngle else baseAngle
+        val angle = realAngle - 90.degrees + rotated
         val radius = if (n % 2 == 0) radiusSmall else radiusBig
         val x = angle.cosine * radius
         val y = angle.sine * radius
