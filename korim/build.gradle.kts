@@ -25,4 +25,5 @@ if (doEnableKotlinNative) {
 dependencies {
 	add("commonMainApi", project(":korio"))
 	add("commonMainApi", project(":korma"))
+    //add("commonTestApi", project(":korma-shape"))
 }

@@ -45,7 +45,7 @@ import kotlin.math.*
 
 private fun vector2(v: IPoint) = IPoint(v.x, v.y)
 
-internal interface Clipper {
+interface Clipper {
     enum class ClipType { INTERSECTION, UNION, DIFFERENCE, XOR }
     enum class Direction { RIGHT_TO_LEFT, LEFT_TO_RIGHT }
     enum class EndType { CLOSED_POLYGON, CLOSED_LINE, OPEN_BUTT, OPEN_SQUARE, OPEN_ROUND }
@@ -60,10 +60,8 @@ internal interface Clipper {
     fun addPath(pg: Path, polyType: PolyType, Closed: Boolean): Boolean
     fun addPaths(ppg: Paths, polyType: PolyType, closed: Boolean): Boolean
     fun clear()
-    fun execute(clipType: ClipType, solution: Paths): Boolean
-    fun execute(clipType: ClipType, solution: Paths, subjFillType: PolyFillType, clipFillType: PolyFillType): Boolean
-    fun execute(clipType: ClipType, polytree: PolyTree): Boolean
-    fun execute(clipType: ClipType, polytree: PolyTree, subjFillType: PolyFillType, clipFillType: PolyFillType): Boolean
+    fun execute(clipType: ClipType, solution: Paths, subjFillType: PolyFillType = Clipper.PolyFillType.EVEN_ODD, clipFillType: PolyFillType = Clipper.PolyFillType.EVEN_ODD): Boolean
+    fun execute(clipType: ClipType, polytree: PolyTree, subjFillType: PolyFillType = Clipper.PolyFillType.EVEN_ODD, clipFillType: PolyFillType = Clipper.PolyFillType.EVEN_ODD): Boolean
 
     companion object {
         //InitOptions that can be passed to the constructor ...
@@ -73,7 +71,13 @@ internal interface Clipper {
     }
 }
 
-internal abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolean) : Clipper { //constructor (nb: no external instantiation)
+fun Clipper.executePaths(clipType: Clipper.ClipType, subjFillType: Clipper.PolyFillType = Clipper.PolyFillType.EVEN_ODD, clipFillType: Clipper.PolyFillType = Clipper.PolyFillType.EVEN_ODD): Paths {
+    val out = Paths()
+    execute(clipType, out, subjFillType, clipFillType)
+    return out
+}
+
+abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolean) : Clipper { //constructor (nb: no external instantiation)
     protected inner class LocalMinima {
         var y: Double = 0.0
         var leftBound: Edge? = null
@@ -500,7 +504,7 @@ internal abstract class ClipperBase protected constructor(val isPreserveCollinea
 
 }
 
-internal class ClipperOffset(private val miterLimit: Double = 2.0, private val arcTolerance: Double = DEFAULT_ARC_TOLERANCE) {
+class ClipperOffset(private val miterLimit: Double = 2.0, private val arcTolerance: Double = DEFAULT_ARC_TOLERANCE) {
 
     private var destPolys: Paths? = null
     private var srcPoly: Path? = null
@@ -582,10 +586,8 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
     private fun doMiter(j: Int, k: Int, r: Double) {
         val q = delta / r
         destPoly!!.add(
-            IPoint(
-                round(srcPoly!![j].x + (normals[k].x + normals[j].x) * q).toInt(),
-                round(srcPoly!![j].y + (normals[k].y + normals[j].y) * q).toInt()
-            )
+            round(srcPoly!![j].x + (normals[k].x + normals[j].x) * q).toInt(),
+            round(srcPoly!![j].y + (normals[k].y + normals[j].y) * q).toInt()
         )
     }
 
@@ -640,10 +642,8 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
                     var j = 1
                     while (j <= steps) {
                         destPoly!!.add(
-                            IPoint(
-                                round(srcPoly!![0].x + x * delta).toInt(),
-                                round(srcPoly!![0].y + y * delta).toInt()
-                            )
+                            round(srcPoly!![0].x + x * delta).toInt(),
+                            round(srcPoly!![0].y + y * delta).toInt()
                         )
                         val x2 = x
                         x = x * cos - sin * y
@@ -655,10 +655,8 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
                     @Suppress("NAME_SHADOWING") var y = -1.0
                     for (j in 0..3) {
                         destPoly!!.add(
-                            IPoint(
-                                round(srcPoly!![0].x + x * delta).toInt(),
-                                round(srcPoly!![0].y + y * delta).toInt()
-                            )
+                            round(srcPoly!![0].x + x * delta).toInt(),
+                            round(srcPoly!![0].y + y * delta).toInt()
                         )
                         when {
                             x < 0 -> x = 1.0
@@ -715,19 +713,16 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
                         offsetPoint(j, k, node.joinType!!)
                     }
 
-                    var pt1: IPoint
                     if (node.endType == Clipper.EndType.OPEN_BUTT) {
                         val j = len - 1
-                        pt1 = IPoint(
+                        destPoly!!.add(
                             round(srcPoly!![j].x + normals[j].x * delta).toInt(),
                             round(srcPoly!![j].y + normals[j].y * delta).toInt()
                         )
-                        destPoly!!.add(pt1)
-                        pt1 = IPoint(
+                        destPoly!!.add(
                             round(srcPoly!![j].x - normals[j].x * delta).toInt(),
                             round(srcPoly!![j].y - normals[j].y * delta).toInt()
                         )
-                        destPoly!!.add(pt1)
                     } else {
                         val j = len - 1
                         k[0] = len - 2
@@ -751,16 +746,14 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
                     for (j in k[0] - 1 downTo 1) offsetPoint(j, k, node.joinType!!)
 
                     if (node.endType == Clipper.EndType.OPEN_BUTT) {
-                        pt1 = IPoint(
+                        destPoly!!.add(
                             round(srcPoly!![0].x - normals[0].x * delta).toInt(),
                             round(srcPoly!![0].y - normals[0].y * delta).toInt()
                         )
-                        destPoly!!.add(pt1)
-                        pt1 = IPoint(
+                        destPoly!!.add(
                             round(srcPoly!![0].x + normals[0].x * delta).toInt(),
                             round(srcPoly!![0].y + normals[0].y * delta).toInt()
                         )
-                        destPoly!!.add(pt1)
                     } else {
                         k[0] = 1
                         inA = 0.0
@@ -785,20 +778,16 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
         var x2: Double
         for (i in 0 until steps) {
             destPoly!!.add(
-                IPoint(
-                    round(srcPoly!![j].x + x * delta).toInt(),
-                    round(srcPoly!![j].y + y * delta).toInt()
-                )
+                round(srcPoly!![j].x + x * delta).toInt(),
+                round(srcPoly!![j].y + y * delta).toInt()
             )
             x2 = x
             x = x * cos - sin * y
             y = x2 * sin + y * cos
         }
         destPoly!!.add(
-            IPoint(
-                round(srcPoly!![j].x + normals[j].x * delta).toInt(),
-                round(srcPoly!![j].y + normals[j].y * delta).toInt()
-            )
+            round(srcPoly!![j].x + normals[j].x * delta).toInt(),
+            round(srcPoly!![j].y + normals[j].y * delta).toInt()
         )
     }
 
@@ -811,16 +800,12 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
         val sjy = srcPoly!![j].y
         val dx = tan(atan2(inA, nkx * njx + nky * njy) / 4)
         destPoly!!.add(
-            IPoint(
-                round(sjx + delta * (nkx - nky * dx)).toInt(),
-                round(sjy + delta * (nky + nkx * dx)).toInt()
-            )
+            round(sjx + delta * (nkx - nky * dx)).toInt(),
+            round(sjy + delta * (nky + nkx * dx)).toInt()
         )
         destPoly!!.add(
-            IPoint(
-                round(sjx + delta * (njx + njy * dx)).toInt(),
-                round(sjy + delta * (njy - njx * dx)).toInt()
-            )
+            round(sjx + delta * (njx + njy * dx)).toInt(),
+            round(sjy + delta * (njy - njx * dx)).toInt()
         )
     }
 
@@ -843,10 +828,10 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
             val r = destPolys!!.bounds
             val outer = Path(4)
 
-            outer.add(IPoint(r.left - 10, r.bottom + 10))
-            outer.add(IPoint(r.right + 10, r.bottom + 10))
-            outer.add(IPoint(r.right + 10, r.top - 10))
-            outer.add(IPoint(r.left - 10, r.top - 10))
+            outer.add(r.left - 10, r.bottom + 10)
+            outer.add(r.right + 10, r.bottom + 10)
+            outer.add(r.right + 10, r.top - 10)
+            outer.add(r.left - 10, r.top - 10)
 
             clpr.addPath(outer, Clipper.PolyType.SUBJECT, true)
 
@@ -882,10 +867,10 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
             val r = destPolys!!.bounds
             val outer = Path(4)
 
-            outer.add(IPoint(r.left - 10, r.bottom + 10))
-            outer.add(IPoint(r.right + 10, r.bottom + 10))
-            outer.add(IPoint(r.right + 10, r.top - 10))
-            outer.add(IPoint(r.left - 10, r.top - 10))
+            outer.add(r.left - 10, r.bottom + 10)
+            outer.add(r.right + 10, r.bottom + 10)
+            outer.add(r.right + 10, r.top - 10)
+            outer.add(r.left - 10, r.top - 10)
 
             clpr.addPath(outer, Clipper.PolyType.SUBJECT, true)
 
@@ -948,7 +933,7 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
             if (cosA > 0)
             // angle ==> 0 degrees
             {
-                destPoly!!.add(IPoint(round(sjx + nkx * delta).toInt(), round(sjy + nky * delta).toInt()))
+                destPoly!!.add(round(sjx + nkx * delta).toInt(), round(sjy + nky * delta).toInt())
                 return
             }
             //else angle ==> 180 degrees
@@ -959,9 +944,9 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
         }
 
         if (inA * delta < 0) {
-            destPoly!!.add(IPoint(round(sjx + nkx * delta).toInt(), round(sjy + nky * delta).toInt()))
+            destPoly!!.add(round(sjx + nkx * delta).toInt(), round(sjy + nky * delta).toInt())
             destPoly!!.add(srcPoly!![j])
-            destPoly!!.add(IPoint(round(sjx + njx * delta).toInt(), round(sjy + njy * delta).toInt()))
+            destPoly!!.add(round(sjx + njx * delta).toInt(), round(sjy + njy * delta).toInt())
         } else {
             when (jointype) {
                 Clipper.JoinType.MITER -> {
@@ -994,7 +979,7 @@ internal class ClipperOffset(private val miterLimit: Double = 2.0, private val a
 }
 
 @Suppress("unused")
-internal class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINEAR and initOptions != 0) {
+class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINEAR and initOptions != 0) {
     private inner class IntersectNode {
         var edge1: Edge? = null
         var edge2: Edge? = null
@@ -1541,10 +1526,6 @@ internal class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESER
 
     //------------------------------------------------------------------------------
 
-    override fun execute(clipType: Clipper.ClipType, solution: Paths): Boolean {
-        return execute(clipType, solution, Clipper.PolyFillType.EVEN_ODD, Clipper.PolyFillType.EVEN_ODD)
-    }
-
     override fun execute(
         clipType: Clipper.ClipType,
         solution: Paths,
@@ -1573,10 +1554,6 @@ internal class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESER
             polyOuts.clear()
 
         }
-    }
-
-    override fun execute(clipType: Clipper.ClipType, polytree: PolyTree): Boolean {
-        return execute(clipType, polytree, Clipper.PolyFillType.EVEN_ODD, Clipper.PolyFillType.EVEN_ODD)
     }
 
     override fun execute(
@@ -3132,13 +3109,13 @@ internal class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESER
             if (IsSum) {
                 for (i in 0 until pathCnt) {
                     val p = Path(polyCnt)
-                    for (ip in pattern) p.add(IPoint(path[i].x + ip.x, path[i].y + ip.y))
+                    for (ip in pattern) p.add(path[i].x + ip.x, path[i].y + ip.y)
                     result.add(p)
                 }
             } else {
                 for (i in 0 until pathCnt) {
                     val p = Path(polyCnt)
-                    for (ip in pattern) p.add(IPoint(path[i].x - ip.x, path[i].y - ip.y))
+                    for (ip in pattern) p.add(path[i].x - ip.x, path[i].y - ip.y)
                     result.add(p)
                 }
             }
@@ -3237,7 +3214,7 @@ internal class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESER
 
 }//------------------------------------------------------------------------------
 
-internal class Edge {
+class Edge {
     enum class Side { LEFT, RIGHT }
 
     var bot: Point = Point(); set(v) = run { field.copyFrom(v) }
@@ -3441,8 +3418,13 @@ internal class Edge {
  * @author Tobias Mahlmann
 </IntPoint> */
 @Suppress("unused")
-internal class Path private constructor(private val al: ArrayList<IPoint>) : MutableList<IPoint> by al, RandomAccess {
+class Path private constructor(private val al: ArrayList<IPoint>) : MutableList<IPoint> by al, RandomAccess {
     constructor(initialCapacity: Int = 0) : this(ArrayList<IPoint>(initialCapacity))
+
+    //val orientation get() = if (al.size >= 3) Orientation.orient2d(al[0], al[1], al[2]) else Orientation.COLLINEAR
+
+    fun add(x: Int, y: Int) = add(IPoint(x, y))
+    fun add(x: Double, y: Double) = add(IPoint(x, y))
 
     constructor(vararg points: IPoint) : this(points.size) {
         addAll(points)
@@ -3463,8 +3445,6 @@ internal class Path private constructor(private val al: ArrayList<IPoint>) : Mut
         var outPt2: OutPt? = null,
         var offPt: IPoint? = null
     )
-
-    fun addPoint(x: Double, y: Double) = add(IPoint(x, y))
 
     class OutPt {
         var idx: Int = 0
@@ -3739,7 +3719,7 @@ internal class Path private constructor(private val al: ArrayList<IPoint>) : Mut
 
     fun translatePath(delta: IPoint): Path {
         val outPath = Path(size)
-        for (i in this) outPath.add(IPoint(i.x + delta.x, i.y + delta.y))
+        for (i in this) outPath.add(i.x + delta.x, i.y + delta.y)
         return outPath
     }
 
@@ -3760,7 +3740,7 @@ internal class Path private constructor(private val al: ArrayList<IPoint>) : Mut
 
  * @author Tobias Mahlmann
 </Path> */
-internal class Paths private constructor(private val al: ArrayList<Path>) : MutableList<Path> by al {
+class Paths private constructor(private val al: ArrayList<Path>) : MutableList<Path> by al {
     constructor() : this(arrayListOf())
 
     constructor(initialCapacity: Int) : this(ArrayList(initialCapacity))
@@ -3913,7 +3893,7 @@ internal object Points {
 }
 
 @Suppress("unused")
-internal open class PolyNode {
+open class PolyNode {
     enum class NodeType { ANY, OPEN, CLOSED }
 
     var parent: PolyNode? = null
@@ -3953,7 +3933,7 @@ internal open class PolyNode {
 }
 
 @Suppress("unused")
-internal class PolyTree : PolyNode() {
+class PolyTree : PolyNode() {
     val allPolys = ArrayList<PolyNode>()
 
     fun clear() {

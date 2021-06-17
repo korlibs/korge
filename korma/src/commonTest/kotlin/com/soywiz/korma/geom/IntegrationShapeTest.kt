@@ -1,6 +1,7 @@
-package com.soywiz.korma.geom.shape
+package com.soywiz.korma.geom
 
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.shape.ops.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.*

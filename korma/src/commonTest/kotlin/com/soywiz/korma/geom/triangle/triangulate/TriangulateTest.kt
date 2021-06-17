@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom.triangle.triangulate
 
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.triangulate.*
 import kotlin.test.*
@@ -53,5 +54,10 @@ class TriangulateTest {
             "[Triangle((-375.401, 315.818), (-376.28, 314.588), (-376.28, 313.357)), Triangle((-375.401, 315.818), (-376.28, 313.357), (-375.753, 311.599)), Triangle((-373.468, 317.048), (-375.401, 315.818), (-375.753, 311.599)), Triangle((-371.182, 307.381), (-373.468, 317.048), (-375.753, 311.599)), Triangle((-373.643, 307.733), (-371.182, 307.381), (-375.753, 311.599)), Triangle((-373.643, 307.733), (-372.061, 307.029), (-371.182, 307.381)), Triangle((-373.643, 307.733), (-372.764, 307.029), (-372.061, 307.029)), Triangle((-365.909, 310.721), (-373.468, 317.048), (-371.182, 307.381)), Triangle((-365.909, 310.721), (-369.425, 318.455), (-373.468, 317.048))]",
             points.triangulate().toString()
         )
+    }
+
+    @Test
+    fun test4() {
+
     }
 }

@@ -225,7 +225,7 @@ class TriangleList(val points: PointArrayList, val indices: IntArray, val numTri
 
     fun getTriangles(): List<Triangle> = (0 until numTriangles).map { getTriangle(it) }
 
-    override fun toString(): String = getTriangles().toString()
+    override fun toString(): String = "TriangleList[$numTriangles](" + getTriangles().toString() + ")"
     inline fun fastForEach(block: (MutableTriangle) -> Unit) {
         for (n in 0 until numTriangles) {
             block(getTriangle(n, tempTriangle))

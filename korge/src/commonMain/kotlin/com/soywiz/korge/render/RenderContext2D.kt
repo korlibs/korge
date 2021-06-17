@@ -8,6 +8,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
 
 private val logger = Logger("RenderContext2D")
@@ -173,6 +174,10 @@ class RenderContext2D(
 
     fun path(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m), filtering)
+    }
+
+    fun triangles(triangles: TriangleList, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromTriangles(triangles, color, matrix = m), filtering)
     }
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {

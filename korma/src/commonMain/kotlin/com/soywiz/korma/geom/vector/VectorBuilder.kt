@@ -198,10 +198,10 @@ internal fun VectorPath._regularPolygonStar(points: Int, radiusSmall: Double = 2
     close()
 }
 
-fun VectorBuilder.moveTo(p: Point) = moveTo(p.x, p.y)
-fun VectorBuilder.lineTo(p: Point) = lineTo(p.x, p.y)
-fun VectorBuilder.quadTo(c: Point, a: Point) = quadTo(c.x, c.y, a.x, a.y)
-fun VectorBuilder.cubicTo(c1: Point, c2: Point, a: Point) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
+fun VectorBuilder.moveTo(p: IPoint) = moveTo(p.x, p.y)
+fun VectorBuilder.lineTo(p: IPoint) = lineTo(p.x, p.y)
+fun VectorBuilder.quadTo(c: IPoint, a: IPoint) = quadTo(c.x, c.y, a.x, a.y)
+fun VectorBuilder.cubicTo(c1: IPoint, c2: IPoint, a: IPoint) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
 fun VectorBuilder.polygon(path: PointArrayList, close: Boolean = true) {
     moveTo(path.getX(0), path.getY(0))
@@ -210,8 +210,8 @@ fun VectorBuilder.polygon(path: PointArrayList, close: Boolean = true) {
     }
     if (close) close()
 }
-fun VectorBuilder.polygon(path: Array<Point>, close: Boolean = true) = polygon(PointArrayList(*path), close)
-fun VectorBuilder.polygon(path: List<Point>, close: Boolean = true) = polygon(PointArrayList(path), close)
+fun VectorBuilder.polygon(path: Array<IPoint>, close: Boolean = true) = polygon(PointArrayList(*path), close)
+fun VectorBuilder.polygon(path: List<IPoint>, close: Boolean = true) = polygon(PointArrayList(path), close)
 
 fun VectorBuilder.moveToH(x: Double) = moveTo(x, lastY)
 fun VectorBuilder.moveToH(x: Float) = moveToH(x.toDouble())

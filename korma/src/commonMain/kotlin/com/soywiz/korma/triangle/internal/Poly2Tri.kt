@@ -358,6 +358,7 @@ internal class Sweep(private var context: SweepContext) {
     * Returns true if triangle was legalized
     */
     fun legalize(t: PolyTriangle): Boolean {
+        //if (context.validateTriangle?.invoke(t) == false) return false
         // To legalize a triangle we start by finding if any of the three edges
         // violate the Delaunay condition
         for (i in 0 until 3) {
@@ -706,6 +707,7 @@ internal class Sweep(private var context: SweepContext) {
 }
 
 internal class SweepContext() {
+    var validateTriangle: ((PolyTriangle) -> Boolean)? = null
     var triangles: ArrayList<PolyTriangle> = ArrayList()
     var points: PointArrayList = PointArrayList()
     var edgeList: ArrayList<Edge> = ArrayList()
@@ -725,7 +727,10 @@ internal class SweepContext() {
     }
 
     private fun addPoints(points: List<IPoint>) {
-        for (point in points) this.points.add(point)
+        for (point in points) {
+            if (this.points.isNotEmpty() && this.points.getX(this.points.size - 1) == point.x && this.points.getY(this.points.size - 1) == point.y) continue
+            this.points.add(point)
+        }
     }
 
     fun addPolyline(polyline: List<IPoint>) {
@@ -744,7 +749,11 @@ internal class SweepContext() {
 
     private fun initEdges(polyline: List<IPoint>) {
         for (n in 0 until polyline.size) {
-            this.edgeList.add(edgeContext.createEdge(polyline[n], polyline[(n + 1) % polyline.size]))
+            val p1 = polyline[n]
+            val p2 = polyline[(n + 1) % polyline.size]
+            if (p1 != p2) {
+                this.edgeList.add(edgeContext.createEdge(p1, p2))
+            }
         }
     }
 
@@ -1093,6 +1102,8 @@ internal fun PolyTriangle(p0: IPoint, p1: IPoint, p2: IPoint, fixOrientation: Bo
             //println("Fixed orientation");
         }
     }
-    if (checkOrientation && Orientation.orient2d(p2, p1, p0) != Orientation.CLOCK_WISE) throw(Error("Triangle must defined with Orientation.CW"))
+    if (checkOrientation && Orientation.orient2d(p2, p1, p0) != Orientation.CLOCK_WISE) {
+        throw Error("Triangle must defined with Orientation.CW")
+    }
     return PolyTriangle(true, p0, p1, p2)
 }

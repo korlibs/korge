@@ -14,3 +14,4 @@ local.*.properties
 /samples/hello-world/settings.json
 out.txt
 err.txt
+/korim/demo.png

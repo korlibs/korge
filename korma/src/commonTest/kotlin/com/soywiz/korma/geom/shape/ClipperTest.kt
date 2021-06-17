@@ -2,6 +2,7 @@ package com.soywiz.korma.geom.shape
 
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.ops.internal.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
 class ClipperTest {
@@ -19,4 +20,17 @@ class ClipperTest {
         assertEquals("[[(10, 10), (5, 10), (5, 0), (10, 0)]]", paths.toString())
         assertEquals("Rectangle(x=5, y=0, width=5, height=10)", paths.bounds.toString())
     }
+
+    //@Test
+    //fun name2() {
+    //    val clipper = DefaultClipper()
+    //    val path = buildPath {
+    //        rect(0, 0, 100, 100)
+    //        rect(20, 20, 120, 60)
+    //    }
+    //    val out = Paths()
+    //    clipper.addPaths(path.toClipperPaths(), Clipper.PolyType.SUBJECT, true)
+    //    clipper.execute(Clipper.ClipType.UNION, out)
+    //    assertEquals("...", out.toVectorPath().toString())
+    //}
 }

@@ -6,7 +6,7 @@ import com.soywiz.korma.triangle.pathfind.*
 import kotlin.math.*
 import kotlin.test.*
 
-class EdgeTest {
+class Edge2Test {
     private var p1: IPoint = IPoint(0, 0)
     private var p2: IPoint = IPoint(-1, 0)
     private val edgeContext = EdgeContext()
@@ -339,7 +339,7 @@ class SweepTest {
     }
 }
 
-class TriangleTest {
+class Triangle2Test {
     /**
     *    p5
     *     |\

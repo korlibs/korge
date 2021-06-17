@@ -390,7 +390,7 @@ class KorgeExtension(val project: Project) {
 	}
 
     fun supportShape() {
-        dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
+        //dependencyMulti("com.soywiz.korlibs.korma:korma-shape:${BuildVersions.KORMA}", registerPlugin = false)
     }
 
     fun supportShapeOps() = supportShape()

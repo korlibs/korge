@@ -15,6 +15,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.*
+import com.soywiz.korma.triangle.triangulate.*
 import kotlin.jvm.*
 
 private val logger = Logger("BatchBuilder2D")
@@ -881,7 +882,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 		inline fun quadIndices(quadCount: Int): IntArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
         fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
-            return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
+            //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
+            return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
         }
 
         fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
