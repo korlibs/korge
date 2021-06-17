@@ -171,6 +171,10 @@ class RenderContext2D(
         }
     }
 
+    fun path(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m), filtering)
+    }
+
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
         batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
         batch.drawVertices(texturedVertexArray)

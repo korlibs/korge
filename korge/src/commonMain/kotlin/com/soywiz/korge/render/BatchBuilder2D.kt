@@ -12,6 +12,9 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.triangle.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.triangle.*
 import kotlin.jvm.*
 
 private val logger = Logger("BatchBuilder2D")
@@ -877,6 +880,16 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
 		inline fun quadIndices(quadCount: Int): IntArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
+        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+            return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
+        }
+
+        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+            val tva = TexturedVertexArray(triangles.pointCount, triangles.indices, triangles.numIndices)
+            tva.setSimplePoints(triangles.points, matrix, colorMul, colorAdd)
+            return tva
+        }
+
         /** This doesn't handle holes */
         fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
             val indices = IntArray((points.size - 2) * 3)
@@ -886,19 +899,23 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
                 indices[n * 3 + 2] = n + 2
             }
             val tva = TexturedVertexArray(points.size, indices)
-            var index = 0
-            if (matrix != null) {
-                points.fastForEach { x, y ->
-                    val xf = x.toFloat()
-                    val yf = y.toFloat()
-                    tva.set(index++, matrix.transformXf(xf, yf), matrix.transformYf(xf, yf), 0f, 0f, colorMul, colorAdd)
-                }
-            } else {
-                points.fastForEach { x, y -> tva.set(index++, x.toFloat(), y.toFloat(), 0f, 0f, colorMul, colorAdd) }
-            }
+            tva.setSimplePoints(points, matrix, colorMul, colorAdd)
             return tva
         }
+
 	}
+
+    fun setSimplePoints(points: IPointArrayList, matrix: Matrix?, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL) {
+        if (matrix != null) {
+            points.fastForEachWithIndex { index, x, y ->
+                val xf = x.toFloat()
+                val yf = y.toFloat()
+                this.set(index, matrix.transformXf(xf, yf), matrix.transformYf(xf, yf), 0f, 0f, colorMul, colorAdd)
+            }
+        } else {
+            points.fastForEachWithIndex { index, x, y -> this.set(index, x.toFloat(), y.toFloat(), 0f, 0f, colorMul, colorAdd) }
+        }
+    }
 
 	@PublishedApi internal var offset = 0
 

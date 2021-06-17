@@ -7,15 +7,15 @@ import com.soywiz.korge.render.*
 inline fun Container.renderableView(
     width: Double = 128.0,
     height: Double = 24.0,
-    noinline skinRenderer: RenderableView.() -> Unit,
-): RenderableView = RenderableView(width, height, skinRenderer).addTo(this)
+    noinline viewRenderer: RenderableView.() -> Unit,
+): RenderableView = RenderableView(width, height, viewRenderer).addTo(this)
 
 @KorgeExperimental
 inline fun Container.renderableView(
     width: Double = 128.0,
     height: Double = 24.0,
-    skinRenderer: ViewRenderer,
-): RenderableView = RenderableView(width, height, skinRenderer).addTo(this)
+    viewRenderer: ViewRenderer,
+): RenderableView = RenderableView(width, height, viewRenderer).addTo(this)
 
 class RenderableView(width: Double, height: Double, var viewRenderer: ViewRenderer) : CustomContextRenderizableView(width, height) {
     var isFocused: Boolean = false
