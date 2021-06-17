@@ -20,8 +20,12 @@ class BoxUISkin(
     var borderColorFocused: RGBA = Colors.BLACK,
     var bgColorOver: RGBA = bgColor.mix(bgColorFocused, 0.5),
     var borderColorOver: RGBA = borderColor.mix(borderColorFocused, 0.5),
+    val outlineColor: RGBA = Colors["#621a99"],
 ) : ViewRenderer {
     override fun RenderableView.render() {
+        if (isFocused && outlineColor.ad > 0.0) {
+            ctx2d.rectOutline(x - 1, y - 1, width + 2, height + 2, borderSize, outlineColor, false)
+        }
         ctx2d.rect(0.0, 0.0, width, height, when {
             isFocused -> bgColorFocused
             isOver -> bgColorOver
