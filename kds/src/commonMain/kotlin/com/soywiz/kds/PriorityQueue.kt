@@ -9,6 +9,9 @@ typealias PriorityQueue<TGen> = TGenPriorityQueue<TGen>
 class TGenPriorityQueue<TGen>
 @PublishedApi internal constructor(private var data: Array<TGen>, val comparator: Comparator<TGen>) : MutableCollection<TGen> {
     companion object {
+        operator fun <TGen> invoke(initialCapacity: Int, comparator: Comparator<TGen>, reversed: Boolean = false): TGenPriorityQueue<TGen> =
+            TGenPriorityQueue<TGen>(arrayOfNulls<Any>(initialCapacity) as Array<TGen>, if (reversed) comparator.reversed() else comparator)
+
         operator fun <TGen> invoke(comparator: Comparator<TGen>, reversed: Boolean = false): TGenPriorityQueue<TGen> =
             TGenPriorityQueue<TGen>(arrayOfNulls<Any>(16) as Array<TGen>, if (reversed) comparator.reversed() else comparator)
 
@@ -134,6 +137,8 @@ class TGenPriorityQueue<TGen>
     override fun isEmpty(): Boolean = size == 0
     override fun addAll(elements: Collection<TGen>): Boolean = run { for (e in elements) add(e); elements.isNotEmpty() }
     override fun clear() = run { size = 0 }
+
+    //fun poll() = head
 
     override fun removeAll(elements: Collection<TGen>): Boolean {
         val temp = ArrayList(toList())
