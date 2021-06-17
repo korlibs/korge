@@ -168,6 +168,26 @@ fun VectorBuilder.ellipse(x: Double, y: Double, rw: Double, rh: Double) {
 fun VectorBuilder.ellipse(x: Float, y: Float, rw: Float, rh: Float) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())
 fun VectorBuilder.ellipse(x: Int, y: Int, rw: Int, rh: Int) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())
 
+
+fun VectorPath.star(points: Int, radiusSmall: Double, radiusBig: Double, rotated: Angle = 0.degrees) {
+    _regularPolygonStar(points * 2, radiusSmall, radiusBig, rotated)
+}
+
+fun VectorPath.regularPolygon(points: Int, radius: Double, rotated: Angle = 0.degrees) {
+    _regularPolygonStar(points, radius, radius, rotated)
+}
+
+internal fun VectorPath._regularPolygonStar(points: Int, radiusSmall: Double = 20.0, radiusBig: Double = 50.0, rotated: Angle = 0.degrees) {
+    for (n in 0 until points) {
+        val angle = (360.degrees * (n.toDouble() / points)) - 90.degrees + rotated
+        val radius = if (n % 2 == 0) radiusSmall else radiusBig
+        val x = angle.cosine * radius
+        val y = angle.sine * radius
+        if (n == 0) moveTo(x, y) else lineTo(x, y)
+    }
+    close()
+}
+
 fun VectorBuilder.moveTo(p: Point) = moveTo(p.x, p.y)
 fun VectorBuilder.lineTo(p: Point) = lineTo(p.x, p.y)
 fun VectorBuilder.quadTo(c: Point, a: Point) = quadTo(c.x, c.y, a.x, a.y)
