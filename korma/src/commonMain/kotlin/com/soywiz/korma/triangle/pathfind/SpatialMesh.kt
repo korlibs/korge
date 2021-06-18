@@ -3,7 +3,6 @@ package com.soywiz.korma.triangle.pathfind
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.internal.*
-import com.soywiz.korma.triangle.internal.*
 import kotlin.math.*
 
 class SpatialMesh {
