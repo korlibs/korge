@@ -5,6 +5,7 @@
 package com.soywiz.korma.triangle.poly2tri
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
 import kotlin.jvm.*
@@ -1736,10 +1737,20 @@ object Poly2Tri {
          * @param {Array.<Point>} polyline - array of "Point like" objects with {x,y}
          */
         fun addHole(polyline: List<Point>): SweepContext {
-            this.initEdges(polyline)
             var len = polyline.size
+            val start = this.points_.size
+            // Point addition
             for (i in 0 until len) {
                 this.points_.add(polyline[i])
+            }
+            // Edge initialization
+            val points = this.points_
+            for (i in 0 until len) {
+                val p1 = points[start + i]
+                val p2 = points[start + ((i + 1) % len)]
+                if (p1 != p2) {
+                    this.edge_list.add(Edge(p1, p2))
+                }
             }
             return this // for chaining
         }
@@ -1772,10 +1783,7 @@ object Poly2Tri {
          */
 // Method added in the JavaScript version (was not present in the c++ version)
         fun addHoles(holes: List<List<Point>>): SweepContext {
-            for (i in 0 until holes.size) {
-                this.initEdges(holes[i])
-                this.points_.addAll(holes[i])
-            }
+            holes.fastForEach { addHole(it) }
             return this // for chaining
         }
 
@@ -1937,14 +1945,6 @@ object Poly2Tri {
 
             // Sort points along y-axis
             this.points_.sortWith { a, b -> a.compareTo(b) }
-        }
-
-        /** @private */
-        fun initEdges(polyline: List<Point>) {
-            var len = polyline.size
-            for (i in 0 until len) {
-                this.edge_list.add(Edge(polyline[i], polyline[(i + 1) % len]))
-            }
         }
 
         /** @private */
