@@ -538,26 +538,31 @@ object Poly2Tri {
 
         var node: Node = node
 
-        if (node.prev === tcx.basin.left_node && node.next === tcx.basin.right_node) {
-            return
-        } else if (node.prev === tcx.basin.left_node) {
-            val o = orient2d(node.point, node.next!!.point, node.next!!.next!!.point)
-            if (o === Orientation.CW) {
+        when {
+            node.prev === tcx.basin.left_node && node.next === tcx.basin.right_node -> {
                 return
             }
-            node = node.next!!
-        } else if (node.next === tcx.basin.right_node) {
-            val o = orient2d(node.point, node.prev!!.point, node.prev!!.prev!!.point)
-            if (o === Orientation.CCW) {
-                return
-            }
-            node = node.prev!!
-        } else {
-            // Continue with the neighbor node with lowest Y value
-            if (node.prev!!.point.y < node.next!!.point.y) {
-                node = node.prev!!
-            } else {
+            node.prev === tcx.basin.left_node -> {
+                val o = orient2d(node.point, node.next!!.point, node.next!!.next!!.point)
+                if (o === Orientation.CW) {
+                    return
+                }
                 node = node.next!!
+            }
+            node.next === tcx.basin.right_node -> {
+                val o = orient2d(node.point, node.prev!!.point, node.prev!!.prev!!.point)
+                if (o === Orientation.CCW) {
+                    return
+                }
+                node = node.prev!!
+            }
+            else -> {
+                // Continue with the neighbor node with lowest Y value
+                if (node.prev!!.point.y < node.next!!.point.y) {
+                    node = node.prev!!
+                } else {
+                    node = node.next!!
+                }
             }
         }
 
@@ -788,14 +793,10 @@ object Poly2Tri {
      */
     fun nextFlipPoint(ep: Point, eq: Point, ot: Triangle, op: Point): Point? {
         val o2d = orient2d(eq, op, ep)
-        if (o2d === Orientation.CW) {
-            // Right
-            return ot.pointCCW(op)
-        } else if (o2d === Orientation.CCW) {
-            // Left
-            return ot.pointCW(op)
-        } else {
-            throw PointError("poly2tri [Unsupported] nextFlipPoint: opposing point on constrained edge!", listOf(eq, op, ep))
+        return when {
+            o2d === Orientation.CW -> ot.pointCCW(op) // Right
+            o2d === Orientation.CCW -> ot.pointCW(op) // Left
+            else -> throw PointError("poly2tri [Unsupported] nextFlipPoint: opposing point on constrained edge!", listOf(eq, op, ep))
         }
     }
 
@@ -961,33 +962,37 @@ object Poly2Tri {
             var node: Node? = this.findSearchNode(px)
             val nx = node!!.point.x
 
-            if (px == nx) {
-                // Here we are comparing point references, not values
-                if (point !== node.point) {
-                    // We might have two nodes with same x value for a short time
-                    if (point === node.prev!!.point) {
-                        node = node.prev
-                    } else if (point === node.next!!.point) {
-                        node = node.next
-                    } else {
-                        throw Error("poly2tri Invalid AdvancingFront.locatePoint() call")
+            when {
+                px == nx -> {
+                    // Here we are comparing point references, not values
+                    if (point !== node.point) {
+                        // We might have two nodes with same x value for a short time
+                        if (point === node.prev!!.point) {
+                            node = node.prev
+                        } else if (point === node.next!!.point) {
+                            node = node.next
+                        } else {
+                            throw Error("poly2tri Invalid AdvancingFront.locatePoint() call")
+                        }
                     }
                 }
-            } else if (px < nx) {
-                /* jshint boss:true */
-                while (true) {
-                    node = node!!.prev
-                    if (node == null) break
-                    if (point === node.point) {
-                        break
+                px < nx -> {
+                    /* jshint boss:true */
+                    while (true) {
+                        node = node!!.prev
+                        if (node == null) break
+                        if (point === node.point) {
+                            break
+                        }
                     }
                 }
-            } else {
-                while (true) {
-                    node = node!!.next
-                    if (node == null) break
-                    if (point === node.point) {
-                        break
+                else -> {
+                    while (true) {
+                        node = node!!.next
+                        if (node == null) break
+                        if (point === node.point) {
+                            break
+                        }
                     }
                 }
             }
@@ -1184,14 +1189,11 @@ object Poly2Tri {
         fun markNeighborPointers(p1: Point, p2: Point, t: Triangle) {
             var points = this.points_
             // Here we are comparing point references, not values
-            if ((p1 === points[2] && p2 === points[1]) || (p1 === points[1] && p2 === points[2])) {
-                this.neighbors_[0] = t
-            } else if ((p1 === points[0] && p2 === points[2]) || (p1 === points[2] && p2 === points[0])) {
-                this.neighbors_[1] = t
-            } else if ((p1 === points[0] && p2 === points[1]) || (p1 === points[1] && p2 === points[0])) {
-                this.neighbors_[2] = t
-            } else {
-                throw Error("poly2tri Invalid Triangle.markNeighborPointers() call")
+            when {
+                p1 === points[2] && p2 === points[1] || p1 === points[1] && p2 === points[2] -> this.neighbors_[0] = t
+                p1 === points[0] && p2 === points[2] || p1 === points[2] && p2 === points[0] -> this.neighbors_[1] = t
+                p1 === points[0] && p2 === points[1] || p1 === points[1] && p2 === points[0] -> this.neighbors_[2] = t
+                else -> throw Error("poly2tri Invalid Triangle.markNeighborPointers() call")
             }
         }
 
@@ -1202,15 +1204,19 @@ object Poly2Tri {
          */
         fun markNeighbor(t: Triangle) {
             var points = this.points_
-            if (t.containsPoints(points[1], points[2])) {
-                this.neighbors_[0] = t
-                t.markNeighborPointers(points[1], points[2], this)
-            } else if (t.containsPoints(points[0], points[2])) {
-                this.neighbors_[1] = t
-                t.markNeighborPointers(points[0], points[2], this)
-            } else if (t.containsPoints(points[0], points[1])) {
-                this.neighbors_[2] = t
-                t.markNeighborPointers(points[0], points[1], this)
+            when {
+                t.containsPoints(points[1], points[2]) -> {
+                    this.neighbors_[0] = t
+                    t.markNeighborPointers(points[1], points[2], this)
+                }
+                t.containsPoints(points[0], points[2]) -> {
+                    this.neighbors_[1] = t
+                    t.markNeighborPointers(points[0], points[2], this)
+                }
+                t.containsPoints(points[0], points[1]) -> {
+                    this.neighbors_[2] = t
+                    t.markNeighborPointers(points[0], points[1], this)
+                }
             }
         }
 
@@ -1235,14 +1241,11 @@ object Poly2Tri {
         fun pointCW(p: Point?): Point? {
             var points = this.points_
             // Here we are comparing point references, not values
-            if (p === points[0]) {
-                return points[2]
-            } else if (p === points[1]) {
-                return points[0]
-            } else if (p === points[2]) {
-                return points[1]
-            } else {
-                return null
+            return when {
+                p === points[0] -> points[2]
+                p === points[1] -> points[0]
+                p === points[2] -> points[1]
+                else -> null
             }
         }
 
@@ -1254,14 +1257,11 @@ object Poly2Tri {
         fun pointCCW(p: Point): Point? {
             var points = this.points_
             // Here we are comparing point references, not values
-            if (p === points[0]) {
-                return points[1]
-            } else if (p === points[1]) {
-                return points[2]
-            } else if (p === points[2]) {
-                return points[0]
-            } else {
-                return null
+            return when {
+                p === points[0] -> points[1]
+                p === points[1] -> points[2]
+                p === points[2] -> points[0]
+                else -> null
             }
         }
 
@@ -1304,81 +1304,53 @@ object Poly2Tri {
         }
 
         // Additional check from Java version (see issue #88)
-        fun getConstrainedEdgeAcross(p: Point): Boolean {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                return this.constrained_edge[0]
-            } else if (p === this.points_[1]) {
-                return this.constrained_edge[1]
-            } else {
-                return this.constrained_edge[2]
-            }
+        // Here we are comparing point references, not values
+        fun getConstrainedEdgeAcross(p: Point): Boolean = when {
+            p === this.points_[0] -> this.constrained_edge[0]
+            p === this.points_[1] -> this.constrained_edge[1]
+            else -> this.constrained_edge[2]
         }
 
-        fun setConstrainedEdgeCW(p: Point, ce: Boolean) {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                this.constrained_edge[1] = ce
-            } else if (p === this.points_[1]) {
-                this.constrained_edge[2] = ce
-            } else {
-                this.constrained_edge[0] = ce
-            }
+        // Here we are comparing point references, not values
+        fun setConstrainedEdgeCW(p: Point, ce: Boolean) = when {
+            p === this.points_[0] -> this.constrained_edge[1] = ce
+            p === this.points_[1] -> this.constrained_edge[2] = ce
+            else -> this.constrained_edge[0] = ce
         }
 
-        fun setConstrainedEdgeCCW(p: Point, ce: Boolean) {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                this.constrained_edge[2] = ce
-            } else if (p === this.points_[1]) {
-                this.constrained_edge[0] = ce
-            } else {
-                this.constrained_edge[1] = ce
-            }
+        // Here we are comparing point references, not values
+        fun setConstrainedEdgeCCW(p: Point, ce: Boolean) = when {
+            p === this.points_[0] -> this.constrained_edge[2] = ce
+            p === this.points_[1] -> this.constrained_edge[0] = ce
+            else -> this.constrained_edge[1] = ce
         }
 
-        fun getDelaunayEdgeCW(p: Point): Boolean {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                return this.delaunay_edge[1]
-            } else if (p === this.points_[1]) {
-                return this.delaunay_edge[2]
-            } else {
-                return this.delaunay_edge[0]
-            }
+        // Here we are comparing point references, not values
+        fun getDelaunayEdgeCW(p: Point): Boolean = when {
+            p === this.points_[0] -> this.delaunay_edge[1]
+            p === this.points_[1] -> this.delaunay_edge[2]
+            else -> this.delaunay_edge[0]
         }
 
-        fun getDelaunayEdgeCCW(p: Point): Boolean {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                return this.delaunay_edge[2]
-            } else if (p === this.points_[1]) {
-                return this.delaunay_edge[0]
-            } else {
-                return this.delaunay_edge[1]
-            }
+        // Here we are comparing point references, not values
+        fun getDelaunayEdgeCCW(p: Point): Boolean = when {
+            p === this.points_[0] -> this.delaunay_edge[2]
+            p === this.points_[1] -> this.delaunay_edge[0]
+            else -> this.delaunay_edge[1]
         }
 
-        fun setDelaunayEdgeCW(p: Point, e: Boolean) {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                this.delaunay_edge[1] = e
-            } else if (p === this.points_[1]) {
-                this.delaunay_edge[2] = e
-            } else {
-                this.delaunay_edge[0] = e
-            }
+        // Here we are comparing point references, not values
+        fun setDelaunayEdgeCW(p: Point, e: Boolean) = when {
+            p === this.points_[0] -> this.delaunay_edge[1] = e
+            p === this.points_[1] -> this.delaunay_edge[2] = e
+            else -> this.delaunay_edge[0] = e
         }
 
-        fun setDelaunayEdgeCCW(p: Point, e: Boolean) {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                this.delaunay_edge[2] = e
-            } else if (p === this.points_[1]) {
-                this.delaunay_edge[0] = e
-            } else {
-                this.delaunay_edge[1] = e
-            }
+        // Here we are comparing point references, not values
+        fun setDelaunayEdgeCCW(p: Point, e: Boolean) = when {
+            p === this.points_[0] -> this.delaunay_edge[2] = e
+            p === this.points_[1] -> this.delaunay_edge[0] = e
+            else -> this.delaunay_edge[1] = e
         }
 
         /**
@@ -1387,15 +1359,11 @@ object Poly2Tri {
          * @param {Point} p - point object with {x,y}
          * @returns {Triangle}
          */
-        fun neighborAcross(p: Point): Triangle? {
-            // Here we are comparing point references, not values
-            if (p === this.points_[0]) {
-                return this.neighbors_[0]
-            } else if (p === this.points_[1]) {
-                return this.neighbors_[1]
-            } else {
-                return this.neighbors_[2]
-            }
+        // Here we are comparing point references, not values
+        fun neighborAcross(p: Point): Triangle? = when {
+            p === this.points_[0] -> this.neighbors_[0]
+            p === this.points_[1] -> this.neighbors_[1]
+            else -> this.neighbors_[2]
         }
 
         /**
@@ -1403,10 +1371,7 @@ object Poly2Tri {
          * @param {!Triangle} t Triangle object.
          * @param {Point} p - point object with {x,y}
          */
-        fun oppositePoint(t: Triangle, p: Point): Point? {
-            var cw = t.pointCW(p)
-            return this.pointCW(cw)
-        }
+        fun oppositePoint(t: Triangle, p: Point): Point? = this.pointCW(t.pointCW(p))
 
         /**
          * Legalize triangle by rotating clockwise around oPoint
@@ -1418,20 +1383,25 @@ object Poly2Tri {
         fun legalize(opoint: Point, npoint: Point) {
             var points = this.points_
             // Here we are comparing point references, not values
-            if (opoint === points[0]) {
-                points[1] = points[0]
-                points[0] = points[2]
-                points[2] = npoint
-            } else if (opoint === points[1]) {
-                points[2] = points[1]
-                points[1] = points[0]
-                points[0] = npoint
-            } else if (opoint === points[2]) {
-                points[0] = points[2]
-                points[2] = points[1]
-                points[1] = npoint
-            } else {
-                throw Error("poly2tri Invalid Triangle.legalize() call")
+            when {
+                opoint === points[0] -> {
+                    points[1] = points[0]
+                    points[0] = points[2]
+                    points[2] = npoint
+                }
+                opoint === points[1] -> {
+                    points[2] = points[1]
+                    points[1] = points[0]
+                    points[0] = npoint
+                }
+                opoint === points[2] -> {
+                    points[0] = points[2]
+                    points[2] = points[1]
+                    points[1] = npoint
+                }
+                else -> {
+                    throw Error("poly2tri Invalid Triangle.legalize() call")
+                }
             }
         }
 
@@ -1446,14 +1416,11 @@ object Poly2Tri {
         fun index(p: Point): Int {
             var points = this.points_
             // Here we are comparing point references, not values
-            if (p === points[0]) {
-                return 0
-            } else if (p === points[1]) {
-                return 1
-            } else if (p === points[2]) {
-                return 2
-            } else {
-                throw Error("poly2tri Invalid Triangle.index() call")
+            return when {
+                p === points[0] -> 0
+                p === points[1] -> 1
+                p === points[2] -> 2
+                else -> throw Error("poly2tri Invalid Triangle.index() call")
             }
         }
 
@@ -1516,12 +1483,10 @@ object Poly2Tri {
         fun markConstrainedEdgeByPoints(p: Point, q: Point) {
             val points = this.points_
             // Here we are comparing point references, not values
-            if ((q === points[0] && p === points[1]) || (q === points[1] && p === points[0])) {
-                this.constrained_edge[2] = true
-            } else if ((q === points[0] && p === points[2]) || (q === points[2] && p === points[0])) {
-                this.constrained_edge[1] = true
-            } else if ((q === points[1] && p === points[2]) || (q === points[2] && p === points[1])) {
-                this.constrained_edge[0] = true
+            when {
+                q === points[0] && p === points[1] || q === points[1] && p === points[0] -> this.constrained_edge[2] = true
+                q === points[0] && p === points[2] || q === points[2] && p === points[0] -> this.constrained_edge[1] = true
+                q === points[1] && p === points[2] || q === points[2] && p === points[1] -> this.constrained_edge[0] = true
             }
         }
     }
