@@ -36,6 +36,8 @@ inline fun IPointArrayList.fastForEachWithIndex(block: (index: Int, x: Double, y
 fun IPointArrayList.getPoint(index: Int, out: Point = Point()): Point = out.setTo(getX(index), getY(index))
 fun IPointArrayList.getIPoint(index: Int): IPoint = IPoint(getX(index), getY(index))
 
+fun IPointArrayList.toList(): List<Point> = (0 until size).map { getPoint(it) }
+
 fun IPointArrayList.toPoints(): List<Point> = (0 until size).map { getPoint(it) }
 fun IPointArrayList.toIPoints(): List<IPoint> = (0 until size).map { getIPoint(it) }
 

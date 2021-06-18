@@ -7,6 +7,8 @@ import kotlin.math.*
 
 private typealias SpatialNode = SpatialMesh.Node
 
+fun SpatialMesh.finder() = SpatialMeshFind(this)
+
 class SpatialMeshFind(val spatialMesh: SpatialMesh) {
     private var openedList = PriorityQueue<SpatialNode> { l, r -> l.F.compareTo(r.F) }
 
@@ -24,7 +26,15 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
         }
     }
 
-    fun find(startNode: SpatialNode?, endNode: SpatialNode?): List<SpatialNode> {
+    fun find(start: IPoint, end: IPoint): IPointArrayList {
+        return Channel.channelToPortals(start, end, findNodes(spatialMesh.spatialNodeFromPoint(start), spatialMesh.spatialNodeFromPoint(end))).path
+    }
+
+    fun findNodes(start: IPoint, end: IPoint): List<SpatialNode> {
+        return findNodes(spatialMesh.spatialNodeFromPoint(start), spatialMesh.spatialNodeFromPoint(end))
+    }
+
+    fun findNodes(startNode: SpatialNode?, endNode: SpatialNode?): List<SpatialNode> {
         val returnList = ArrayList<SpatialNode>()
         reset()
         var currentNode = startNode
@@ -152,7 +162,9 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
 
         class Funnel {
             private val portals = ArrayList<Portal>()
-            var path = arrayListOf<IPoint>()
+            var path = PointArrayList()
+
+            override fun toString(): String = "Funnel($path)"
 
             companion object {
                 private fun triarea2(a: IPoint, b: IPoint, c: IPoint): Double {
@@ -164,8 +176,10 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                 }
 
                 private fun vdistsqr(a: IPoint, b: IPoint): Double = hypot(b.x - a.x, b.y - a.y)
+                private fun vdistsqr(ax: Double, ay: Double, bx: Double, by: Double): Double = hypot(bx - ax, by - ay)
 
                 private fun vequal(a: IPoint, b: IPoint): Boolean = vdistsqr(a, b) < (0.001 * 0.001)
+                private fun vequal(ax: Double, ay: Double, bx: Double, by: Double): Boolean = vdistsqr(ax, ay, bx, by) < (0.001 * 0.001)
             }
 
 
@@ -178,8 +192,8 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                 }*/
             }
 
-            fun stringPull(): ArrayList<IPoint> {
-                val pts = ArrayList<IPoint>()
+            fun stringPull(): IPointArrayList {
+                val pts = PointArrayList()
                 // Init scan state
                 var portalApex: IPoint
                 var portalLeft: IPoint
@@ -248,7 +262,7 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
                     }
                 }
 
-                if ((pts.size == 0) || (!vequal(pts[pts.size - 1], portals[portals.size - 1].left))) {
+                if ((pts.size == 0) || (!vequal(pts.getX(pts.size - 1), pts.getY(pts.size - 1), portals[portals.size - 1].left.x, portals[portals.size - 1].left.y))) {
                     // Append last point to path.
                     pts.add(portals[portals.size - 1].left)
                 }

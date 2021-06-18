@@ -5,6 +5,8 @@ import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.internal.*
 import kotlin.math.*
 
+fun Iterable<Triangle>.spatialMesh() = SpatialMesh(this)
+
 class SpatialMesh {
     private var mapTriangleToSpatialNode = hashMapOf<Triangle, Node>()
     var nodes = arrayListOf<Node>()
@@ -28,12 +30,14 @@ class SpatialMesh {
         }
     }
 
-    fun spatialNodeFromPoint(point: IPoint): Node {
+    fun spatialNodeFromPoint(x: Double, y: Double): Node {
         for (node in nodes) {
-            if (node.triangle!!.pointInsideTriangle(point)) return node
+            if (node.triangle!!.pointInsideTriangle(x, y)) return node
         }
         throw Error("Point2d not inside triangles")
     }
+
+    fun spatialNodeFromPoint(point: IPoint): Node = spatialNodeFromPoint(point.x, point.y)
 
     fun getNodeAt(point: IPoint): Node? {
         for (node in nodes) if (node.triangle!!.containsPoint(point)) return node
