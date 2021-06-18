@@ -16,7 +16,7 @@ data class Matrix(
     var d: Double = 1.0,
     var tx: Double = 0.0,
     var ty: Double = 0.0
-) : MutableInterpolable<Matrix>, Interpolable<Matrix>, Extra by Extra.Mixin() {
+) : MutableInterpolable<Matrix>, Interpolable<Matrix> {
     companion object {
         inline operator fun invoke(a: Float, b: Float = 0f, c: Float = 0f, d: Float = 1f, tx: Float = 0f, ty: Float = 0f) =
             Matrix(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())

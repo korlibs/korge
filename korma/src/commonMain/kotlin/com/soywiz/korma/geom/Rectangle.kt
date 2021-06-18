@@ -45,7 +45,7 @@ fun IRectangle.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
 data class Rectangle(
     override var x: Double, override var y: Double,
     override var width: Double, override var height: Double
-) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable, Extra by Extra.Mixin() {
+) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable {
 
     companion object {
         operator fun invoke(): Rectangle = Rectangle(0.0, 0.0, 0.0, 0.0)

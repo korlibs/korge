@@ -55,7 +55,7 @@ import kotlin.math.*
 
 //val _edge_list = FastIdentityMap<Point, ArrayList<Poly2Tri.Edge>?>()
 
-private var Point._p2t_edge_list: ArrayList<Poly2Tri.Edge>? by extraProperty { null }
+private var Point._p2t_edge_list: FastArrayList<Poly2Tri.Edge>? by extraProperty { null }
 //private var Point._p2t_edge_list: ArrayList<Poly2Tri.Edge>? by WeakProperty { null }
 
 object Poly2Tri {
@@ -871,14 +871,10 @@ object Poly2Tri {
      */
     fun inScanArea(pa: Point, pb: Point, pc: Point, pd: Point): Boolean {
         val oadb = (pa.x - pb.x) * (pd.y - pb.y) - (pd.x - pb.x) * (pa.y - pb.y)
-        if (oadb >= -POLY2TRI_EPSILON) {
-            return false
-        }
+        if (oadb >= -POLY2TRI_EPSILON) return false
 
         val oadc = (pa.x - pc.x) * (pd.y - pc.y) - (pd.x - pc.x) * (pa.y - pc.y)
-        if (oadc <= POLY2TRI_EPSILON) {
-            return false
-        }
+        if (oadc <= POLY2TRI_EPSILON) return false
         return true
     }
 
@@ -1579,7 +1575,7 @@ object Poly2Tri {
             }
 
             if (this.q._p2t_edge_list == null) {
-                this.q._p2t_edge_list = arrayListOf()
+                this.q._p2t_edge_list = FastArrayList()
             }
             this.q._p2t_edge_list!!.add(this)
         }
@@ -1661,7 +1657,7 @@ object Poly2Tri {
      *          or any "Point like" custom class with <code>{x, y}</code> attributes.
      * @param {SweepContextOptions=} options - constructor options
      */
-    class SweepContext(contour: List<Point> = listOf()) {
+    class SweepContext() {
         /**
          * Initial triangle factor, seed triangle will extend 30% of
          * PointSet width to both left and right.
@@ -1670,11 +1666,11 @@ object Poly2Tri {
          */
         var kAlpha = 0.3
 
-        val triangles_ = arrayListOf<Triangle>()
-        var map_: ArrayList<Triangle> = arrayListOf()
-        var points_ = contour.toMutableList()
+        val triangles_ = FastArrayList<Triangle>()
+        var map_ = FastArrayList<Triangle>()
+        var points_ = FastArrayList<Point>()
 
-        var edge_list = arrayListOf<Edge>()
+        var edge_list = FastArrayList<Edge>()
 
         // Bounding box of all points. Computed at the start of the triangulation,
         // it is stored in case it is needed by the caller.
@@ -1722,12 +1718,6 @@ object Poly2Tri {
 
         var basin = Basin()
         var edge_event = EdgeEvent()
-
-        init {
-            this.initEdges(this.points_)
-        }
-
-
 
         /**
          * Add a hole to the constraints
@@ -2029,7 +2019,7 @@ object Poly2Tri {
         fun meshClean(triangle: Triangle) {
             // New implementation avoids recursive calls and use a loop instead.
             // Cf. issues # 57, 65 and 69.
-            var triangles = arrayListOf(triangle)
+            var triangles = fastArrayListOf(triangle)
             /* jshint boss:true */
             while (triangles.isNotEmpty()) {
                 val t = triangles.removeLast()
