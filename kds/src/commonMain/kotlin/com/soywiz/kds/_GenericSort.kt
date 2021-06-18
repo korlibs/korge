@@ -8,7 +8,12 @@ fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>): T =
     genericSort(subject, left, right, ops, false)
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>, reversed: Boolean): T =
-    subject.also { timSort(subject, left, right, ops, reversed) }
+    subject.also {
+        mergeSort(subject, left, right, ops, reversed)
+
+        // @TODO: This seems to produce out of bounds in some cases (a list of 76 tried to access an 96 index). RUN constant?
+        //timSort(subject, left, right, ops, reversed)
+    }
 
 private fun Int.negateIf(doNegate: Boolean) = if (doNegate) -this else this
 

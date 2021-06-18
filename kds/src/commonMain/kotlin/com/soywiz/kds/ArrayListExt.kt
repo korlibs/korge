@@ -77,3 +77,9 @@ fun IntArrayList.toIntArrayList(): DoubleArrayList {
     this.fastForEach { out.add(it.toDouble()) }
     return out
 }
+
+fun <T> MutableList<T>.swap(lIndex: Int, rIndex: Int) {
+    val temp = this[lIndex]
+    this[lIndex] = this[rIndex]
+    this[rIndex] = temp
+}
