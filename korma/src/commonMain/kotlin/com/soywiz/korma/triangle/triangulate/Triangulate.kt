@@ -21,6 +21,7 @@ fun List<IPointArrayList>.triangulate(): List<Triangle> {
     val sc = SweepContext()
     for (points in this) {
         if (points.orientation() == Orientation.CLOCK_WISE) {
+            //println(points.toPoints())
             sc.addPolyline(points.toPoints())
             //println("ADD POLYLINE: $points")
         } else {

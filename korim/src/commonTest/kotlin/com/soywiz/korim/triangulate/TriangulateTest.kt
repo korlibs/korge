@@ -7,57 +7,45 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.shape.ops.internal.*
+import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.internal.*
-import com.soywiz.korma.triangle.triangulate.*
+import com.soywiz.korma.triangle.poly2tri.*
 import kotlin.test.*
 
 class TriangulateTest {
-    /*
     @Test
-    fun test() = suspendTest {
-        val path = buildPath {
+    fun testTriangulateSafe() {
+        buildPath {
             rect(0, 0, 100, 100)
             rect(20, 20, 60, 60)
+        }.also { path ->
+            val triangles = path.triangulateSafe()
+            //suspendTest { outputTriangles(triangles) }
+            assertEquals(8, triangles.size)
+            assertEquals(
+                "[Triangle((0, 100), (20, 80), (100, 100)), Triangle((0, 100), (0, 0), (20, 80)), Triangle((0, 0), (20, 20), (20, 80)), Triangle((20, 20), (0, 0), (100, 0)), Triangle((80, 20), (20, 20), (100, 0)), Triangle((80, 80), (80, 20), (100, 0)), Triangle((80, 80), (100, 0), (100, 100)), Triangle((20, 80), (80, 80), (100, 100))]",
+                triangles.getTriangles().toString()
+            )
         }
-        val triangles = path.triangulateNew()
-        println(triangles)
-        val image = NativeImage(512, 512)
-        image.context2d {
-            for (triangle in triangles) {
-                fill(Colors.RED) {
-                    triangle(triangle.p0, triangle.p1, triangle.p2)
-                }
-            }
-        }
-        localCurrentDirVfs["demo.png"].writeBitmap(image, PNG)
-    }
-    */
 
-    /*
-    @Test
-    fun test2() = suspendTest {
-        val clipper = DefaultClipper()
-        val path = buildPath {
+        buildPath {
             rect(0, 0, 100, 100)
             rect(20, 20, 120, 60)
-            //rect(20, 20, 60, 60)
+        }.also { path ->
+            val triangles = path.triangulateSafe()
+            //suspendTest { outputTriangles(triangles) }
+            assertEquals(10, triangles.size)
+            assertEquals(
+                "[Triangle((0, 100), (20, 80), (100, 100)), Triangle((0, 100), (0, 0), (20, 80)), Triangle((0, 0), (20, 20), (20, 80)), Triangle((20, 20), (0, 0), (100, 0)), Triangle((20, 20), (100, 0), (100, 20)), Triangle((20, 80), (100, 80), (100, 100)), Triangle((20, 80), (100, 80), (100, 80)), Triangle((100, 80), (100, 80), (140, 20)), Triangle((100, 80), (140, 20), (140, 80)), Triangle((100, 80), (100, 20), (140, 20))]",
+                triangles.getTriangles().toString()
+            )
         }
-        val polytree = PolyTree()
-        clipper.addPaths(path.toClipperPaths(), Clipper.PolyType.SUBJECT, true)
-        //clipper.execute(Clipper.ClipType.UNION, polytree)
-        val out = clipper.executePaths(Clipper.ClipType.UNION)
-        //clipper.execute(Clipper.ClipType.UNION, out)
-        //assertEquals("...", out.toVectorPath().toString())
-        val triangles = out.toVectorPath().triangulate()
+    }
 
-        //val triangles = path.triangulate()
-
-        //println(out.toVectorPath().toString())
-
+    @Suppress("unused")
+    private suspend fun outputTriangles(triangles: TriangleList) {
         val image = NativeImage(512, 512).context2d {
-            for (triangle in triangles) {
+            for (triangle in triangles.getTriangles()) {
                 fillStroke(Colors.RED, Colors.BLUE) {
                     triangle(triangle.p0, triangle.p1, triangle.p2)
                 }
@@ -66,5 +54,4 @@ class TriangulateTest {
         }
         image.writeTo(localCurrentDirVfs["demo.png"], PNG)
     }
-     */
 }

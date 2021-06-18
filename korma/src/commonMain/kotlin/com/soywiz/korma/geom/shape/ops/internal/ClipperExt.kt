@@ -70,6 +70,18 @@ fun LineJoin.toClipper(): Clipper.JoinType = when (this) {
     LineJoin.MITER -> Clipper.JoinType.MITER
 }
 
+fun Paths.toPathList(): List<IPointArrayList> {
+    val out = arrayListOf<IPointArrayList>()
+    for (path in this) {
+        val points = PointArrayList()
+        for (point in path) {
+            points.add(point.x, point.y)
+        }
+        out.add(points)
+    }
+    return out
+}
+
 fun Paths.toVectorPath(): VectorPath {
     return buildPath {
         for (path in this@toVectorPath) {

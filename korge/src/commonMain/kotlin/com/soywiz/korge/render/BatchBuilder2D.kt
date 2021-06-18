@@ -15,6 +15,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.*
+import com.soywiz.korma.triangle.poly2tri.*
 import com.soywiz.korma.triangle.triangulate.*
 import kotlin.jvm.*
 
@@ -883,7 +884,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 
         fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
             //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
-            return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
+            //return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
+            return fromTriangles(path.triangulateSafe(), colorMul, colorAdd, matrix)
         }
 
         fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {

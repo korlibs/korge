@@ -206,6 +206,8 @@ class TriangleList(val points: PointArrayList, val indices: IntArray, val numTri
     val numIndices get() = numTriangles * 3
     val pointCount get() = points.size
 
+    val size get() = numTriangles
+
     @PublishedApi
     internal val tempTriangle: MutableTriangle = MutableTriangle()
 
@@ -225,10 +227,13 @@ class TriangleList(val points: PointArrayList, val indices: IntArray, val numTri
 
     fun getTriangles(): List<Triangle> = (0 until numTriangles).map { getTriangle(it) }
 
-    override fun toString(): String = "TriangleList[$numTriangles](" + getTriangles().toString() + ")"
+    override fun toString(): String = "TriangleList[$numTriangles](${getTriangles()})"
+
     inline fun fastForEach(block: (MutableTriangle) -> Unit) {
-        for (n in 0 until numTriangles) {
-            block(getTriangle(n, tempTriangle))
-        }
+        for (n in 0 until numTriangles) block(getTriangle(n, tempTriangle))
+    }
+
+    inline fun <T> map(block: (MutableTriangle) -> T): List<T> {
+        return  arrayListOf<T>().also { out -> fastForEach { out += block(it) } }
     }
 }
