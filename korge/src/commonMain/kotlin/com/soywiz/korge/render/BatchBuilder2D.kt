@@ -882,10 +882,10 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
 		inline fun quadIndices(quadCount: Int): IntArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
-        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null, doClipper: Boolean = true): TexturedVertexArray {
             //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
             //return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
-            return fromTriangles(path.triangulateSafe(), colorMul, colorAdd, matrix)
+            return fromTriangles(path.triangulateSafe(doClipper), colorMul, colorAdd, matrix)
         }
 
         fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {

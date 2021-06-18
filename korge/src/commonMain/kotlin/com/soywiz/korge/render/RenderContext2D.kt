@@ -172,8 +172,12 @@ class RenderContext2D(
         }
     }
 
-    fun path(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
-        texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m), filtering)
+    fun pathFast(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m, doClipper = false), filtering)
+    }
+
+    fun path(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering, doClipper: Boolean = true) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m, doClipper = doClipper), filtering)
     }
 
     fun triangles(triangles: TriangleList, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {

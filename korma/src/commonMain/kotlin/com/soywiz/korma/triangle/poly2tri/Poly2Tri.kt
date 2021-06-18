@@ -1,16 +1,3 @@
-@file:Suppress("LiftReturnOrAssignment", "CanBeVal", "CascadeIf", "DEPRECATED_IDENTITY_EQUALS", "PropertyName",
-    "unused", "UNUSED_PARAMETER", "NAME_SHADOWING", "MemberVisibilityCanBePrivate"
-)
-
-package com.soywiz.korma.triangle.poly2tri
-
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.triangle.*
-import kotlin.jvm.*
-import kotlin.math.*
-
 // Port from .JS: https://github.com/r3mi/poly2tri.js/
 
 // Bundled type definitions for poly2tri.js
@@ -52,6 +39,19 @@ import kotlin.math.*
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+@file:Suppress("LiftReturnOrAssignment", "CanBeVal", "CascadeIf", "DEPRECATED_IDENTITY_EQUALS", "PropertyName",
+    "unused", "UNUSED_PARAMETER", "NAME_SHADOWING", "MemberVisibilityCanBePrivate"
+)
+
+package com.soywiz.korma.triangle.poly2tri
+
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.triangle.*
+import kotlin.jvm.*
+import kotlin.math.*
 
 object Poly2Tri {
 
@@ -1064,14 +1064,14 @@ object Poly2Tri {
          * @private
          * @type {Array.<boolean>}
          */
-        val constrained_edge = BooleanArray(3)
+        val constrained_edge = booleanArrayOf(false, false, false)
 
         /**
          * Flags to determine if an edge is a Delauney edge
          * @private
          * @type {Array.<boolean>}
          */
-        val delaunay_edge = BooleanArray(3)
+        val delaunay_edge = booleanArrayOf(false, false, false)
 
         /**
          * For pretty printing ex. <code>"[(5;42)(10;20)(21;30)]"</code>.
@@ -1099,9 +1099,7 @@ object Poly2Tri {
          * @public
          * @returns {Point}
          */
-        fun getPoint(index: Int): Point {
-            return this.points_[index]
-        }
+        fun getPoint(index: Int): Point = this.points_[index]
 
         /**
          * Get all 3 vertices of the triangle as an array
@@ -1109,18 +1107,14 @@ object Poly2Tri {
          * @return {Array.<Point>}
          */
 // Method added in the JavaScript version (was not present in the c++ version)
-        fun getPoints(): Array<Point> {
-            return this.points_
-        }
+        fun getPoints(): Array<Point> = this.points_
 
         /**
          * @private
          * @param {number} index
          * @returns {?Triangle}
          */
-        fun getNeighbor(index: Int): Triangle? {
-            return this.neighbors_[index]
-        }
+        fun getNeighbor(index: Int): Triangle? = this.neighbors_[index]
 
         /**
          * Test if this Triangle contains the Point object given as parameter as one of its vertices.
@@ -1130,9 +1124,9 @@ object Poly2Tri {
          * @return {boolean} <code>True</code> if the Point object is of the Triangle's vertices,
          *         <code>false</code> otherwise.
          */
+        // Here we are comparing point references, not values
         fun containsPoint(point: Point): Boolean {
             var points = this.points_
-            // Here we are comparing point references, not values
             return (point === points[0] || point === points[1] || point === points[2])
         }
 
@@ -1144,9 +1138,7 @@ object Poly2Tri {
          * @return {boolean} <code>True</code> if the Edge object is of the Triangle's bounding
          *         edges, <code>false</code> otherwise.
          */
-        fun containsEdge(edge: Edge): Boolean {
-            return this.containsPoint(edge.p) && this.containsPoint(edge.q)
-        }
+        fun containsEdge(edge: Edge): Boolean = this.containsPoint(edge.p) && this.containsPoint(edge.q)
 
         /**
          * Test if this Triangle contains the two Point objects given as parameters among its vertices.
@@ -1155,27 +1147,21 @@ object Poly2Tri {
          * @param {Point} p2 - point object with {x,y}
          * @return {boolean}
          */
-        fun containsPoints(p1: Point, p2: Point): Boolean {
-            return this.containsPoint(p1) && this.containsPoint(p2)
-        }
+        fun containsPoints(p1: Point, p2: Point): Boolean = this.containsPoint(p1) && this.containsPoint(p2)
 
         /**
          * Has this triangle been marked as an interior triangle?
          * @returns {boolean}
          */
-        fun isInterior(): Boolean {
-            return this.interior_
-        }
+        fun isInterior(): Boolean = this.interior_
 
         /**
          * Mark this triangle as an interior triangle
          * @private
          * @param {boolean} interior
-         * @returns {Triangle} this
          */
-        fun setInterior(interior: Boolean): Triangle {
+        fun setInterior(interior: Boolean) {
             this.interior_ = interior
-            return this
         }
 
         /**
@@ -1676,7 +1662,7 @@ object Poly2Tri {
          * @public
          * @param {Array.<Point>} polyline - array of "Point like" objects with {x,y}
          */
-        fun addHole(polyline: List<Point>): SweepContext {
+        fun addHole(polyline: List<Point>) {
             var len = polyline.size
             val points = this.points_
             val start = points.size
@@ -1701,13 +1687,11 @@ object Poly2Tri {
 
                 }
             }
-            return this // for chaining
         }
 
         @JvmName("addHolesListIPointArrayList")
-        fun addHoles(polyline: List<IPointArrayList>): SweepContext {
+        fun addHoles(polyline: List<IPointArrayList>) {
             for (p in polyline) addHole(p.map { x, y -> Point(x, y) })
-            return this
         }
 
 
@@ -1731,9 +1715,8 @@ object Poly2Tri {
          * @param {Array.<Array.<Point>>} holes - array of array of "Point like" objects with {x,y}
          */
 // Method added in the JavaScript version (was not present in the c++ version)
-        fun addHoles(holes: List<List<Point>>): SweepContext {
+        fun addHoles(holes: List<List<Point>>) {
             holes.fastForEach { addHole(it) }
-            return this // for chaining
         }
 
 
@@ -1749,9 +1732,8 @@ object Poly2Tri {
          * @public
          * @param {Point} point - any "Point like" object with {x,y}
          */
-        fun addPoint(point: Point): SweepContext {
+        fun addPoint(point: Point) {
             this.points_.add(point)
-            return this // for chaining
         }
 
         /**
@@ -1771,9 +1753,8 @@ object Poly2Tri {
          * @param {Array.<Point>} points - array of "Point like" object with {x,y}
          */
         // Method added in the JavaScript version (was not present in the c++ version)
-        fun addPoints(points: List<Point>): SweepContext {
+        fun addPoints(points: List<Point>) {
             points.fastForEach { this.points_.add(Point(it.x, it.y)) }
-            return this // for chaining
         }
 
 
@@ -1788,9 +1769,8 @@ object Poly2Tri {
          */
 // Shortcut method for sweep.triangulate(SweepContext).
 // Method added in the JavaScript version (was not present in the c++ version)
-        fun triangulate(): SweepContext {
+        fun triangulate() {
             Poly2Tri.triangulate(this)
-            return this // for chaining
         }
 
 
