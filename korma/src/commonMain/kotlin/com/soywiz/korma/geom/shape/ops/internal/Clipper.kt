@@ -40,6 +40,7 @@
 
 package com.soywiz.korma.geom.shape.ops.internal
 
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -94,7 +95,7 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
 
     protected var currentLM: LocalMinima? = null
 
-    private val edges: MutableList<List<Edge>> = ArrayList()
+    private val edges: MutableList<List<Edge>> = FastArrayList()
 
     protected var hasOpenPaths: Boolean = false
 
@@ -109,7 +110,7 @@ abstract class ClipperBase protected constructor(val isPreserveCollinear: Boolea
         if (Closed && highI < 2 || !Closed && highI < 1) return false
 
         //create a new edge array ...
-        val edges = ArrayList<Edge>(highI + 1)
+        val edges = FastArrayList<Edge>(highI + 1)
         for (i in 0..highI) {
             edges.add(Edge())
         }
@@ -510,7 +511,7 @@ class ClipperOffset(private val miterLimit: Double = 2.0, private val arcToleran
     private var srcPoly: Path? = null
     private var destPoly: Path? = null
 
-    private val normals: MutableList<IPoint> = ArrayList()
+    private val normals: MutableList<IPoint> = FastArrayList()
     private var delta: Double = 0.0
     private var inA: Double = 0.0
     private var sin: Double = 0.0
@@ -987,7 +988,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     }
 
-    private val polyOuts: MutableList<Path.OutRec> = ArrayList()
+    private val polyOuts: MutableList<Path.OutRec> = FastArrayList()
 
     private var clipType: Clipper.ClipType? = null
 
@@ -997,7 +998,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     private var sortedEdges: Edge? = null
 
-    private val intersectList: MutableList<IntersectNode> = ArrayList()
+    private val intersectList: MutableList<IntersectNode> = FastArrayList()
 
     private val intersectNodeComparer: Comparator<IntersectNode> = Comparator { node1, node2 -> (node2.pt!!.y - node1.pt!!.y).sign.toInt() }
 
@@ -1009,11 +1010,11 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 
     //------------------------------------------------------------------------------
 
-    private val joins: MutableList<Path.Join> = ArrayList()
+    private val joins: MutableList<Path.Join> = FastArrayList()
 
     //------------------------------------------------------------------------------
 
-    private val ghostJoins: MutableList<Path.Join> = ArrayList()
+    private val ghostJoins: MutableList<Path.Join> = FastArrayList()
 
     private var usingPolyTree: Boolean = false
 
@@ -3418,8 +3419,8 @@ class Edge {
  * @author Tobias Mahlmann
 </IntPoint> */
 @Suppress("unused")
-class Path private constructor(private val al: ArrayList<IPoint>) : MutableList<IPoint> by al, RandomAccess {
-    constructor(initialCapacity: Int = 0) : this(ArrayList<IPoint>(initialCapacity))
+class Path private constructor(private val al: FastArrayList<IPoint>) : MutableList<IPoint> by al, RandomAccess {
+    constructor(initialCapacity: Int = 0) : this(FastArrayList<IPoint>(initialCapacity))
 
     //val orientation get() = if (al.size >= 3) Orientation.orient2d(al[0], al[1], al[2]) else Orientation.COLLINEAR
 
@@ -3740,15 +3741,15 @@ class Path private constructor(private val al: ArrayList<IPoint>) : MutableList<
 
  * @author Tobias Mahlmann
 </Path> */
-class Paths private constructor(private val al: ArrayList<Path>) : MutableList<Path> by al {
-    constructor() : this(arrayListOf())
+class Paths private constructor(private val al: FastArrayList<Path>) : MutableList<Path> by al {
+    constructor() : this(FastArrayList())
 
-    constructor(initialCapacity: Int) : this(ArrayList(initialCapacity))
-    constructor(vararg items: Path) : this(arrayListOf()) {
+    constructor(initialCapacity: Int) : this(FastArrayList(initialCapacity))
+    constructor(vararg items: Path) : this(FastArrayList()) {
         addAll(items)
     }
 
-    constructor(items: Iterable<Path>) : this(arrayListOf()) {
+    constructor(items: Iterable<Path>) : this(FastArrayList()) {
         addAll(items)
     }
 
@@ -3901,7 +3902,7 @@ open class PolyNode {
     private var index: Int = 0
     var joinType: Clipper.JoinType? = null
     var endType: Clipper.EndType? = null
-    val childs: MutableList<PolyNode> = ArrayList()
+    val childs: MutableList<PolyNode> = FastArrayList()
     var isOpen: Boolean = false
 
     fun addChild(child: PolyNode) {
@@ -3934,7 +3935,7 @@ open class PolyNode {
 
 @Suppress("unused")
 class PolyTree : PolyNode() {
-    val allPolys = ArrayList<PolyNode>()
+    val allPolys = FastArrayList<PolyNode>()
 
     fun clear() {
         allPolys.clear()
