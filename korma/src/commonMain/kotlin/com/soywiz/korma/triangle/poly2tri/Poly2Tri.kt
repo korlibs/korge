@@ -4,11 +4,17 @@
 
 package com.soywiz.korma.triangle.poly2tri
 
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 import kotlin.math.*
 
 // Port from .JS: https://github.com/r3mi/poly2tri.js/
+
+//val _edge_list = FastIdentityMap<Point, ArrayList<Poly2Tri.Edge>?>()
+
+private var Point._p2t_edge_list: ArrayList<Poly2Tri.Edge>? by extraProperty { null }
+//private var Point._p2t_edge_list: ArrayList<Poly2Tri.Edge>? by WeakProperty { null }
 
 object Poly2Tri {
 
@@ -962,58 +968,6 @@ object Poly2Tri {
     }
 
     /**
-     * Construct a point
-     * @example
-     *      var point = new poly2tri.Point(150, 150);
-     * @public
-     * @constructor
-     * @struct
-     * @param {number=} x    coordinate (0 if undefined)
-     * @param {number=} y    coordinate (0 if undefined)
-     */
-    data class Point(var x: Double, var y: Double) : Comparable<Point> {
-        // All extra fields added to Point are prefixed with _p2t_
-        // to avoid collisions if custom Point class is used.
-
-        /**
-         * The edges this point constitutes an upper ending point
-         * @private
-         * @type {Array.<Edge>}
-         */
-        var _p2t_edge_list: ArrayList<Edge>? = null
-
-
-        /**
-         * For pretty printing
-         * @example
-         *      "p=" + new poly2tri.Point(5,42)
-         *      // → "p=(5;42)"
-         * @returns {string} <code>"(x;y)"</code>
-         */
-        override fun toString(): String {
-            return "($x;$y)"
-        }
-
-        /**
-         * Test this Point object with another for equality.
-         * @param {!XY} p - any "Point like" object with {x,y}
-         * @return {boolean} <code>true</code> if same x and y coordinates, <code>false</code> otherwise.
-         */
-        override fun compareTo(other: Point): Int = compare(this, other)
-
-        companion object {
-            fun compare(a: Point, b: Point): Int {
-                if (a.y == b.y) {
-                    return (a.x - b.x).sign.toInt()
-                } else {
-                    return (a.y - b.y).sign.toInt()
-                }
-            }
-
-        }
-    }
-
-    /**
      * Custom exception class to indicate invalid Point values
      * @constructor
      * @public
@@ -1674,7 +1628,6 @@ object Poly2Tri {
          */
         var kAlpha = 0.3
 
-
         val triangles_ = arrayListOf<Triangle>()
         var map_: ArrayList<Triangle> = arrayListOf()
         var points_ = contour.toMutableList()
@@ -1951,7 +1904,7 @@ object Poly2Tri {
             this.tail_ = Point(xmin - dx, ymin - dy)
 
             // Sort points along y-axis
-            this.points_.sortWith { a, b -> Point.compare(a, b) }
+            this.points_.sortWith { a, b -> a.compareTo(b) }
         }
 
         /** @private */

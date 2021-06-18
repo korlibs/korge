@@ -2,6 +2,7 @@
 
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
@@ -90,7 +91,7 @@ data class Point(
     override var y: Double
     //override var xf: Float,
     //override var yf: Float
-) : MutableInterpolable<Point>, Interpolable<Point>, Comparable<IPoint>, IPoint, XY,XYf {
+) : MutableInterpolable<Point>, Interpolable<Point>, Comparable<IPoint>, IPoint, XY, XYf, Extra by Extra.Mixin() {
     //constructor(x: Double, y: Double) : this(x.toFloat(), y.toFloat())
     constructor(x: Float, y: Float) : this(x.toDouble(), y.toDouble())
     constructor(x: Int, y: Int) : this(x.toDouble(), y.toDouble())

@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 
@@ -44,7 +45,7 @@ fun IRectangle.contains(x: Int, y: Int) = contains(x.toDouble(), y.toDouble())
 data class Rectangle(
     override var x: Double, override var y: Double,
     override var width: Double, override var height: Double
-) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable {
+) : MutableInterpolable<Rectangle>, Interpolable<Rectangle>, IRectangle, Sizeable, Extra by Extra.Mixin() {
 
     companion object {
         operator fun invoke(): Rectangle = Rectangle(0.0, 0.0, 0.0, 0.0)
