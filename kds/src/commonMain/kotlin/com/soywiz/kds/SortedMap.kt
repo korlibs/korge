@@ -98,6 +98,17 @@ open class SortedMap<K, V>(val comparator: Comparator<K>) {
     fun nearestLow(key: K): K? = keys.getOrNull(nearestLowIndex(key))
     fun nearestHigh(key: K): K? = keys.getOrNull(nearestHighIndex(key))
 
+    fun nearestLowExcludingExact(key: K): K? {
+        val bindex = nearestLowIndex(key)
+        val index = if (key in keysToIndex) bindex - 1 else bindex
+        return keys.getOrNull(index)
+    }
+    fun nearestHighExcludingExact(key: K): K? {
+        val bindex = nearestHighIndex(key)
+        val index = if (key in keysToIndex) bindex + 1 else bindex
+        return keys.getOrNull(index)
+    }
+
     fun keysToList(): List<K> {
         ensureSorted()
         return keys.toFastList()
