@@ -48,6 +48,9 @@ fun interface Easing {
         val EASE_OUT_QUAD: Easing get() = Easings.EASE_OUT_QUAD
         val EASE_IN_OUT_QUAD: Easing get() = Easings.EASE_IN_OUT_QUAD
         val EASE_SINE: Easing get() = Easings.EASE_SINE
+        val EASE_CLAMP_START: Easing get() = Easings.EASE_CLAMP_START
+        val EASE_CLAMP_END: Easing get() = Easings.EASE_CLAMP_END
+        val EASE_CLAMP_MIDDLE: Easing get() = Easings.EASE_CLAMP_MIDDLE
     }
 }
 
@@ -155,5 +158,8 @@ private enum class Easings : Easing {
     },
     EASE_SINE {
         override fun invoke(it: Double): Double = sin(it * HALF_PI)
-    }
+    },
+    EASE_CLAMP_START { override fun invoke(it: Double): Double = if (it <= 0.0) 0.0 else 1.0 },
+    EASE_CLAMP_END { override fun invoke(it: Double): Double = if (it < 1.0) 0.0 else 1.0 },
+    EASE_CLAMP_MIDDLE { override fun invoke(it: Double): Double = if (it < 0.5) 0.0 else 1.0 },
 }

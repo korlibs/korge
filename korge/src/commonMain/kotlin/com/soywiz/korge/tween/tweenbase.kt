@@ -163,3 +163,7 @@ inline fun <V> V2<V>.easeOutQuad() = this.easing(Easing.EASE_OUT_QUAD)
 inline fun <V> V2<V>.easeInOutQuad() = this.easing(Easing.EASE_IN_OUT_QUAD)
 
 inline fun <V> V2<V>.easeSine() = this.easing(Easing.EASE_SINE)
+
+inline fun <V> V2<V>.easeClampStart() = this.easing(Easing.EASE_CLAMP_START)
+inline fun <V> V2<V>.easeClampEnd() = this.easing(Easing.EASE_CLAMP_END)
+inline fun <V> V2<V>.easeClampMiddle() = this.easing(Easing.EASE_CLAMP_MIDDLE)
