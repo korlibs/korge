@@ -85,15 +85,13 @@ open class SortedMap<K, V>(val comparator: Comparator<K>) {
         }
     }
 
-    fun nearestLowIndex(key: K): Int {
+    fun nearestLowHighIndex(key: K, doHigh: Boolean): Int {
         ensureSorted()
-        return genericBinarySearch(0, keys.size, { from, to, low, high -> min(low, high) }) { comparator.compare(keys[it], key) }
+        return genericBinarySearch(0, keys.size, { from, to, low, high -> if (doHigh) max(low, high) else min(low, high) }) { comparator.compare(keys[it], key) }
     }
 
-    fun nearestHighIndex(key: K): Int {
-        ensureSorted()
-        return genericBinarySearch(0, keys.size, { from, to, low, high -> max(low, high) }) { comparator.compare(keys[it], key) }
-    }
+    fun nearestLowIndex(key: K): Int = nearestLowHighIndex(key, doHigh = false)
+    fun nearestHighIndex(key: K): Int = nearestLowHighIndex(key, doHigh = true)
 
     fun nearestLow(key: K): K? = keys.getOrNull(nearestLowIndex(key))
     fun nearestHigh(key: K): K? = keys.getOrNull(nearestHighIndex(key))
