@@ -13,11 +13,9 @@ class TimSortTest {
             items to shuffledItems
         }
 
-        for (n in 0 until 100) {
-            for ((items, shuffledItems) in pairs) {
-                assertEquals(items, shuffledItems.timSorted())
-                //assertEquals(items, shuffledItems.genericSorted())
-            }
+        for ((items, shuffledItems) in pairs) {
+            assertEquals(items, shuffledItems.timSorted())
+            //assertEquals(items, shuffledItems.genericSorted())
         }
     }
 }
