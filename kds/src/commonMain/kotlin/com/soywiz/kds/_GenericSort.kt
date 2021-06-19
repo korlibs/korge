@@ -1,18 +1,13 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
 import com.soywiz.kds.internal.min2
-import kotlin.math.*
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>): T =
     genericSort(subject, left, right, ops, false)
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>, reversed: Boolean): T =
     subject.also {
-        mergeSort(subject, left, right, ops, reversed)
-
-        // @TODO: This seems to produce out of bounds in some cases (a list of 76 tried to access an 96 index). RUN constant?
-        //timSort(subject, left, right, ops, reversed)
+        timSort(subject, left, right, ops, reversed)
     }
 
 private fun Int.negateIf(doNegate: Boolean) = if (doNegate) -this else this
@@ -59,18 +54,17 @@ private fun <T> mergeSort(arr: T, l: Int, r: Int, ops: SortOps<T>, reversed: Boo
     }
 }
 
-private fun <T> timSort(arr: T, l: Int, r: Int, ops: SortOps<T>, reversed: Boolean) {
-    val RUN = 32
-
+private fun <T> timSort(arr: T, l: Int, r: Int, ops: SortOps<T>, reversed: Boolean, RUN: Int = 32) {
     val n = r - l + 1
     for (i in 0 until n step RUN) {
-        insertionSort(arr, l + i, l + min2((i + 31), (n - 1)), ops, reversed)
+        insertionSort(arr, l + i, l + min2((i + RUN - 1), (n - 1)), ops, reversed)
     }
     var size = RUN
     while (size < n) {
         for (left in 0 until n step (2 * size)) {
-            val mid = left + size - 1
-            val right = min2((left + 2 * size - 1), (n - 1))
+            val rize = min2(size, n - left - 1)
+            val mid = left + rize - 1
+            val right = min2((left + 2 * rize - 1), (n - 1))
             merge(arr, l + left, l + mid, l + right, ops, reversed)
         }
         size *= 2
@@ -107,3 +101,11 @@ fun <T : Comparable<T>> MutableList<T>.genericSort(left: Int = 0, right: Int = s
 
 fun <T : Comparable<T>> List<T>.genericSorted(left: Int = 0, right: Int = size - 1): List<T> =
     this.subList(left, right + 1).toMutableList().genericSort()
+
+fun <T : Comparable<T>> List<T>.timSorted(): List<T> = this.toMutableList().also { it.timSort() }
+
+fun <T : Comparable<T>> MutableList<T>.timSort(left: Int = 0, right: Int = size - 1): MutableList<T> {
+    timSort(this, left, right, SortOpsComparable as SortOps<MutableList<T>>, false)
+    //genericSort(this, left, right, SortOpsComparable as SortOps<MutableList<T>>, false)
+    return this
+}

@@ -1,0 +1,23 @@
+package com.soywiz.kds
+
+import kotlin.random.*
+import kotlin.test.*
+
+class TimSortTest {
+    @Test
+    fun test() {
+        val pairs = listOf(1, 2, 3, 4, 5, 11, 15, 76, 192, 1024, 2048, 3000).map { N ->
+        //val pairs = listOf(1, 2, 3, 4).map { N ->
+            val items = (0 until N).toList()
+            val shuffledItems = items.shuffled(Random(0))
+            items to shuffledItems
+        }
+
+        for (n in 0 until 100) {
+            for ((items, shuffledItems) in pairs) {
+                assertEquals(items, shuffledItems.timSorted())
+                //assertEquals(items, shuffledItems.genericSorted())
+            }
+        }
+    }
+}
