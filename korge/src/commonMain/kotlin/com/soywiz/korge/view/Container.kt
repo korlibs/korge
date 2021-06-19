@@ -296,3 +296,10 @@ operator fun View?.plusAssign(view: View?) {
 
 inline fun <T : View> T.addTo(instance: Container, callback: @ViewDslMarker T.() -> Unit = {}) =
     this.addTo(instance).apply(callback)
+
+inline fun <T : View> Container.append(view: T): T {
+    addChild(view)
+    return view
+}
+
+inline fun <T : View> Container.append(view: T, block: (T) -> Unit): T = append(view).also(block)
