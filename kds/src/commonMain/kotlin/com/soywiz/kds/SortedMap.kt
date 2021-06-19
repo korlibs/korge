@@ -102,4 +102,19 @@ open class SortedMap<K, V>(val comparator: Comparator<K>) {
         ensureSorted()
         return keys.toFastList()
     }
+
+    fun valuesToList(): List<V> {
+        ensureSorted()
+        return values.toFastList()
+    }
+
+    fun toList(): List<Pair<K, V>> {
+        ensureSorted()
+        return (0 until size).map { keys[it] to values[it] }
+    }
+
+    fun toMap(): Map<K, V> {
+        ensureSorted()
+        return (0 until size).map { keys[it] to values[it] }.toLinkedMap()
+    }
 }
