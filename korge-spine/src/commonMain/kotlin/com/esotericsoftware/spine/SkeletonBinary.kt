@@ -40,6 +40,7 @@ import com.soywiz.kds.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.file.*
+import kotlin.math.*
 
 /** Loads skeleton data in the Spine binary format.
  *
@@ -616,7 +617,7 @@ class SkeletonBinary {
                                 for (frameIndex in 0 until frameCount)
                                     timeline.setFrame(frameIndex, input.readFloat(), input.readStringRef())
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[frameCount - 1])
+                                duration = max(duration, timeline.frames[frameCount - 1])
                             }
                             SLOT_COLOR -> {
                                 val timeline = ColorTimeline(frameCount)
@@ -628,7 +629,7 @@ class SkeletonBinary {
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[(frameCount - 1) * ColorTimeline.ENTRIES])
+                                duration = max(duration, timeline.frames[(frameCount - 1) * ColorTimeline.ENTRIES])
                             }
                             SLOT_TWO_COLOR -> {
                                 val timeline = TwoColorTimeline(frameCount)
@@ -642,7 +643,7 @@ class SkeletonBinary {
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[(frameCount - 1) * TwoColorTimeline.ENTRIES])
+                                duration = max(duration, timeline.frames[(frameCount - 1) * TwoColorTimeline.ENTRIES])
                             }
                         }
                         ii++
@@ -671,7 +672,7 @@ class SkeletonBinary {
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[(frameCount - 1) * RotateTimeline.ENTRIES])
+                                duration = max(duration, timeline.frames[(frameCount - 1) * RotateTimeline.ENTRIES])
                             }
                             BONE_TRANSLATE, BONE_SCALE, BONE_SHEAR -> {
                                 val timeline: TranslateTimeline
@@ -691,7 +692,7 @@ class SkeletonBinary {
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[(frameCount - 1) * TranslateTimeline.ENTRIES])
+                                duration = max(duration, timeline.frames[(frameCount - 1) * TranslateTimeline.ENTRIES])
                             }
                         }
                         ii++
@@ -715,7 +716,7 @@ class SkeletonBinary {
                         if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                     }
                     timelines.add(timeline)
-                    duration = max2(duration, timeline.frames[(frameCount - 1) * IkConstraintTimeline.ENTRIES])
+                    duration = max(duration, timeline.frames[(frameCount - 1) * IkConstraintTimeline.ENTRIES])
                     i++
                 }
             }
@@ -735,7 +736,7 @@ class SkeletonBinary {
                         if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                     }
                     timelines.add(timeline)
-                    duration = max2(duration, timeline.frames[(frameCount - 1) * TransformConstraintTimeline.ENTRIES])
+                    duration = max(duration, timeline.frames[(frameCount - 1) * TransformConstraintTimeline.ENTRIES])
                     i++
                 }
             }
@@ -769,7 +770,7 @@ class SkeletonBinary {
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[(frameCount - 1) * PathConstraintPositionTimeline.ENTRIES])
+                                duration = max(duration, timeline.frames[(frameCount - 1) * PathConstraintPositionTimeline.ENTRIES])
                             }
                             PATH_MIX -> {
                                 val timeline = PathConstraintMixTimeline(frameCount)
@@ -779,7 +780,7 @@ class SkeletonBinary {
                                     if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                                 }
                                 timelines.add(timeline)
-                                duration = max2(duration, timeline.frames[(frameCount - 1) * PathConstraintMixTimeline.ENTRIES])
+                                duration = max(duration, timeline.frames[(frameCount - 1) * PathConstraintMixTimeline.ENTRIES])
                             }
                         }
                         ii++
@@ -842,7 +843,7 @@ class SkeletonBinary {
                                 if (frameIndex < frameCount - 1) readCurve(input, frameIndex, timeline)
                             }
                             timelines.add(timeline)
-                            duration = max2(duration, timeline.frames[frameCount - 1])
+                            duration = max(duration, timeline.frames[frameCount - 1])
                             iii++
                         }
                         ii++
@@ -882,7 +883,7 @@ class SkeletonBinary {
                     timeline.setFrame(i, time, drawOrder)
                 }
                 timelines.add(timeline)
-                duration = max2(duration, timeline.frames[drawOrderCount - 1])
+                duration = max(duration, timeline.frames[drawOrderCount - 1])
             }
 
             // Event timeline.
@@ -903,7 +904,7 @@ class SkeletonBinary {
                     timeline.setFrame(i, event)
                 }
                 timelines.add(timeline)
-                duration = max2(duration, timeline.frames[eventCount - 1])
+                duration = max(duration, timeline.frames[eventCount - 1])
             }
         } catch (ex: Throwable) {
             throw RuntimeException("Error reading skeleton file.", ex)

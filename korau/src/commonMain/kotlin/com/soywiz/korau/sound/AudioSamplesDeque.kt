@@ -68,19 +68,19 @@ class AudioSamplesDeque(val channels: Int) {
     }
 
     fun read(out: AudioSamples, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min2(len, availableRead)
+        val result = min(len, availableRead)
         for (channel in 0 until out.channels) this.buffer[channel].read(out[channel], offset, len)
         return result
     }
 
     fun read(out: AudioSamplesInterleaved, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min2(len, availableRead)
+        val result = min(len, availableRead)
         for (channel in 0 until out.channels) for (n in 0 until len) out[channel, offset + n] = this.read(channel)
         return result
     }
 
     fun read(out: IAudioSamples, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min2(len, availableRead)
+        val result = min(len, availableRead)
         when (out) {
             is AudioSamples -> read(out, offset, len)
             is AudioSamplesInterleaved -> read(out, offset, len)

@@ -31,7 +31,6 @@ package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.internal.*
-import com.esotericsoftware.spine.internal.max2
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
@@ -320,7 +319,7 @@ class AnimationState {
                     -> {
                         timelineBlend = MixBlend.setup
                         val holdMix = timelineHoldMix[i]
-                        alpha = alphaHold * max2(0f, 1 - holdMix.mixTime / holdMix.mixDuration)
+                        alpha = alphaHold * max(0f, 1 - holdMix.mixTime / holdMix.mixDuration)
                     }
                 }
                 from.totalAlpha += alpha
@@ -651,7 +650,7 @@ class AnimationState {
                     if (last.loop)
                         delay += duration * (1 + (last.trackTime / duration).toInt()) // Completion of next loop.
                     else
-                        delay += max2(duration, last.trackTime) // After duration, else next update.
+                        delay += max(duration, last.trackTime) // After duration, else next update.
                     delay -= data!!.getMix(last.animation, animation)
                 } else
                     delay = last.trackTime // Next update.

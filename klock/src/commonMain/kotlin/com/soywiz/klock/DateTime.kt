@@ -424,8 +424,8 @@ value class DateTime(
     override fun toString(): String = DateFormat.DEFAULT_FORMAT.format(this)
 }
 
-fun max(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(max2(a.unixMillis, b.unixMillis))
-fun min(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(min2(a.unixMillis, b.unixMillis))
+fun max(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(max(a.unixMillis, b.unixMillis))
+fun min(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(min(a.unixMillis, b.unixMillis))
 fun DateTime.clamp(min: DateTime, max: DateTime): DateTime = when {
     this < min -> min
     this > max -> max

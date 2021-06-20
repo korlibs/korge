@@ -4,7 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.max2
+
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.util.checksum.*
@@ -214,11 +214,11 @@ object PNG : ImageFormat("png") {
 					}
 				}
 				"PLTE" -> {
-					paletteCount = max2(paletteCount, data.length.toInt() / 3)
+					paletteCount = max(paletteCount, data.length.toInt() / 3)
 					data.read(rgbPalette.asByteArray(), 0, data.length.toInt())
 				}
 				"tRNS" -> {
-					paletteCount = max2(paletteCount, data.length.toInt())
+					paletteCount = max(paletteCount, data.length.toInt())
 					data.read(aPalette.asByteArray(), 0, data.length.toInt())
 				}
 				"IDAT" -> {

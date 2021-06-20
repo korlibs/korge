@@ -2,6 +2,7 @@ package org.luaj.vm2.io
 
 import org.luaj.vm2.internal.*
 import org.luaj.vm2.internal.arraycopy
+import kotlin.math.*
 
 abstract class LuaBinOutput {
     abstract fun write(value: Int)
@@ -30,7 +31,7 @@ open class ByteArrayLuaBinOutput(val initialCapacity: Int = 64) : LuaBinOutput()
 
     private fun ensure(size: Int) {
         if (pos + size >= buf.size) {
-            buf = buf.copyOf(max2(buf.size * 2 + 1, pos + size + 7))
+            buf = buf.copyOf(max(buf.size * 2 + 1, pos + size + 7))
         }
     }
 

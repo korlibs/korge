@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.min2
+import kotlin.math.*
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>): T =
     genericSort(subject, left, right, ops, false)
@@ -57,14 +57,14 @@ private fun <T> mergeSort(arr: T, l: Int, r: Int, ops: SortOps<T>, reversed: Boo
 private fun <T> timSort(arr: T, l: Int, r: Int, ops: SortOps<T>, reversed: Boolean, RUN: Int = 32) {
     val n = r - l + 1
     for (i in 0 until n step RUN) {
-        insertionSort(arr, l + i, l + min2((i + RUN - 1), (n - 1)), ops, reversed)
+        insertionSort(arr, l + i, l + min((i + RUN - 1), (n - 1)), ops, reversed)
     }
     var size = RUN
     while (size < n) {
         for (left in 0 until n step (2 * size)) {
-            val rize = min2(size, n - left - 1)
+            val rize = min(size, n - left - 1)
             val mid = left + rize - 1
-            val right = min2((left + 2 * rize - 1), (n - 1))
+            val right = min((left + 2 * rize - 1), (n - 1))
             merge(arr, l + left, l + mid, l + right, ops, reversed)
         }
         size *= 2

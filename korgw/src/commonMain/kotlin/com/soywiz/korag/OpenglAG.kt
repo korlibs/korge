@@ -5,8 +5,8 @@ import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
-import com.soywiz.kgl.internal.min2
 import com.soywiz.klock.*
+import com.soywiz.klock.min
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.internal.setFloats
@@ -22,6 +22,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.*
 import kotlin.jvm.JvmOverloads
+import kotlin.math.*
 
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
@@ -350,7 +351,7 @@ abstract class AGOpengl : AG() {
                         is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
                         else -> error("Not an array or a matrix3d")
                     } as Array<Matrix3D>
-                    val arrayCount = min2(declArrayCount, matArray.size)
+                    val arrayCount = min(declArrayCount, matArray.size)
 
                     val matSize = when (uniformType) {
                         VarType.Mat2 -> 2; VarType.Mat3 -> 3; VarType.Mat4 -> 4; else -> -1
@@ -397,11 +398,11 @@ abstract class AGOpengl : AG() {
                         is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
                         is Vector3D -> tempBuffer.setFloats(0, value.data, 0, stride)
                         is FloatArray -> {
-                            arrayCount = min2(declArrayCount, value.size / stride)
+                            arrayCount = min(declArrayCount, value.size / stride)
                             tempBuffer.setFloats(0, value, 0, stride * arrayCount)
                         }
                         is Array<*> -> {
-                            arrayCount = min2(declArrayCount, value.size)
+                            arrayCount = min(declArrayCount, value.size)
                             for (n in 0 until value.size) {
                                 val vector = value[n] as Vector3D
                                 tempBuffer.setFloats(n * stride, vector.data, 0, stride)

@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.*
 import java.io.*
 import java.io.IOException
 import java.net.*
+import kotlin.math.*
 
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
@@ -94,7 +95,7 @@ class AndroidResourcesVfs(var context: Context?) : Vfs() {
             val temp = ByteArray(16 * 1024)
             var available = (range.endExclusiveClamped - range.start)
             while (available >= 0) {
-                val read = fs.read(temp, 0, min2(temp.size.toLong(), available).toInt())
+                val read = fs.read(temp, 0, min(temp.size.toLong(), available).toInt())
                 if (read <= 0) break
                 out.write(temp, 0, read)
                 available -= read
@@ -182,8 +183,8 @@ private class LocalVfsJvm : LocalVfsV2() {
 	override suspend fun readRange(path: String, range: LongRange): ByteArray = executeIo {
 		RandomAccessFile(resolveFile(path), "r").use { raf ->
 			val fileLength = raf.length()
-			val start = min2(range.start, fileLength)
-			val end = min2(range.endInclusive, fileLength - 1) + 1
+			val start = min(range.start, fileLength)
+			val end = min(range.endInclusive, fileLength - 1) + 1
 			val totalRead = (end - start).toInt()
 			val out = ByteArray(totalRead)
 			raf.seek(start)

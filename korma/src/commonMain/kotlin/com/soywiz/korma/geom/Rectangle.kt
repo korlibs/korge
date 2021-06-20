@@ -3,6 +3,7 @@ package com.soywiz.korma.geom
 import com.soywiz.kds.*
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
+import kotlin.math.*
 
 interface IRectangle {
     val x: Double
@@ -111,8 +112,8 @@ data class Rectangle(
     infix fun intersection(that: Rectangle) = intersection(that, Rectangle())
 
     fun intersection(that: Rectangle, target: Rectangle = Rectangle()) = if (this intersects that) target.setBounds(
-        max2(this.left, that.left), max2(this.top, that.top),
-        min2(this.right, that.right), min2(this.bottom, that.bottom)
+        max(this.left, that.left), max(this.top, that.top),
+        min(this.right, that.right), min(this.bottom, that.bottom)
     ) else null
 
     fun displaced(dx: Double, dy: Double) = Rectangle(this.x + dx, this.y + dy, width, height)
@@ -351,10 +352,10 @@ fun Iterable<IRectangle>.bounds(target: Rectangle = Rectangle()): Rectangle {
             bottom = r.bottom
             first = false
         } else {
-            left = min2(left, r.left)
-            right = max2(right, r.right)
-            top = min2(top, r.top)
-            bottom = max2(bottom, r.bottom)
+            left = min(left, r.left)
+            right = max(right, r.right)
+            top = min(top, r.top)
+            bottom = max(bottom, r.bottom)
         }
     }
     return target.setBounds(left, top, right, bottom)

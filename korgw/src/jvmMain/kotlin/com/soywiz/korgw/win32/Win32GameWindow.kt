@@ -315,8 +315,8 @@ class Win32GameWindow : GameWindow() {
             wClass.hCursor = Win32.LoadCursor(null, IDC_ARROW)
             RegisterClassEx(wClass)
 
-            val windowWidth = max2(128, width)
-            val windowHeight = max2(128, height)
+            val windowWidth = max(128, width)
+            val windowHeight = max(128, height)
             val screenWidth = GetSystemMetrics(SM_CXSCREEN)
             val screenHeight = GetSystemMetrics(SM_CYSCREEN)
 
@@ -331,8 +331,8 @@ class Win32GameWindow : GameWindow() {
                 windowClass,
                 title,
                 winStyle,
-                min(max2(0, (screenWidth - realWidth) / 2), screenWidth - 16),
-                min(max2(0, (screenHeight - realHeight) / 2), screenHeight - 16),
+                min(max(0, (screenWidth - realWidth) / 2), screenWidth - 16),
+                min(max(0, (screenHeight - realHeight) / 2), screenHeight - 16),
                 realWidth,
                 realHeight,
                 null, null, hInst, null

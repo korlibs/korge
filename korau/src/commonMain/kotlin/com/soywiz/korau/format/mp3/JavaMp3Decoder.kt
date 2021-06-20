@@ -1306,7 +1306,7 @@ object JavaMp3Decoder {
         var bits: Int = bits
         var number: Int = 0
         while (bits > 0) {
-            val advance: Int = min2(bits, 8 - reader.current)
+            val advance: Int = min(bits, 8 - reader.current)
             bits -= advance
             reader.current += advance
             number = number or ((((reader.array[reader.index].toInt() and 0xFF) ushr (8 - reader.current)) and (0xFF ushr (8 - advance))) shl bits)
@@ -1322,7 +1322,7 @@ object JavaMp3Decoder {
         var bits: Int = bits
         var number: Int = 0
         while (bits > 0) {
-            val advance: Int = min2(bits, 8 - buffer.current)
+            val advance: Int = min(bits, 8 - buffer.current)
             bits -= advance
             buffer.current += advance
             if (bits != 0 && buffer.lastByte == -1) {

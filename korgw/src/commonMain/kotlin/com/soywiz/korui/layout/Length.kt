@@ -1,7 +1,6 @@
 package com.soywiz.korui.layout
 
 import com.soywiz.kgl.internal.*
-import com.soywiz.kgl.internal.max2
 import com.soywiz.kmem.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -97,12 +96,12 @@ sealed class Length {
 	}
 
 	data class VMIN(val v: Double) : Fixed() {
-		override fun calc(ctx: LengthContext): Int = (v * min2(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * min(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
 		override fun toString() = "${v}em"
 	}
 
 	data class VMAX(val v: Double) : Fixed() {
-		override fun calc(ctx: LengthContext): Int = (v * max2(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
+		override fun calc(ctx: LengthContext): Int = (v * max(ctx.viewportWidth1pc, ctx.viewportHeight1pc)).toInt()
 		override fun toString() = "${v}em"
 	}
 
@@ -122,11 +121,11 @@ sealed class Length {
 	}
 
     data class Max(val a: Length, val b: Length) : Length() {
-        override fun calc(ctx: LengthContext): Int = max2(a.calc(ctx), b.calc(ctx))
+        override fun calc(ctx: LengthContext): Int = max(a.calc(ctx), b.calc(ctx))
     }
 
     data class Min(val a: Length, val b: Length) : Length() {
-        override fun calc(ctx: LengthContext): Int = min2(a.calc(ctx), b.calc(ctx))
+        override fun calc(ctx: LengthContext): Int = min(a.calc(ctx), b.calc(ctx))
     }
 
     abstract fun calc(ctx: LengthContext): Int

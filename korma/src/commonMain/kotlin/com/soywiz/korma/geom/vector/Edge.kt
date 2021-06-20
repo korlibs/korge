@@ -98,17 +98,17 @@ class Edge {
     }
 
     fun setToHalf(a: Edge, b: Edge): Edge = this.apply {
-        val minY = min2(a.minY, b.minY)
-        val maxY = min2(a.maxY, b.maxY)
+        val minY = min(a.minY, b.minY)
+        val maxY = min(a.maxY, b.maxY)
         val minX = (a.intersectX(minY) + b.intersectX(minY)) / 2
         val maxX = (a.intersectX(maxY) + b.intersectX(maxY)) / 2
         setTo(minX, minY, maxX, maxY, +1)
     }
 
-    val minX get() = min2(ax, bx)
-    val maxX get() = max2(ax, bx)
-    val minY get() = min2(ay, by)
-    val maxY get() = max2(ay, by)
+    val minX get() = min(ax, bx)
+    val maxX get() = max(ax, bx)
+    val minY get() = min(ay, by)
+    val maxY get() = max(ay, by)
 
     @Suppress("ConvertTwoComparisonsToRangeCheck")
     //fun containsY(y: Int): Boolean = if (ay == by) y == ay else if (wind >= 0) y >= ay && y < by else y > ay && y <= by
@@ -206,10 +206,10 @@ internal class LineSegment(ax: Double, ay: Double, bx: Double, by: Double) {
 }
 
 internal data class Line(val ax: Double, val ay: Double, val bx: Double, val by: Double) {
-    val minX get() = min2(ax, bx)
-    val maxX get() = max2(ax, bx)
-    val minY get() = min2(ay, by)
-    val maxY get() = max2(ay, by)
+    val minX get() = min(ax, bx)
+    val maxX get() = max(ax, bx)
+    val minY get() = min(ay, by)
+    val maxY get() = max(ay, by)
 
     val isCoplanarX get() = ay == by
     val isCoplanarY get() = ax == bx

@@ -23,11 +23,8 @@ package com.dragonbones.model
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 import com.dragonbones.core.*
-import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
-import com.soywiz.korge.dragonbones.internal.*
-import com.soywiz.korge.dragonbones.internal.max2
 import kotlin.math.*
 
 /**
@@ -234,7 +231,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 			return
 		}
 
-		this.cacheFrameRate = max2(ceil(frameRate * this.scale), 1.0)
+		this.cacheFrameRate = max(ceil(frameRate * this.scale), 1.0)
 		val cacheFrameCount = ceil(this.cacheFrameRate * this.duration).toInt() + 1 // Cache one more frame.
 
 		this.cachedFrames.length = cacheFrameCount

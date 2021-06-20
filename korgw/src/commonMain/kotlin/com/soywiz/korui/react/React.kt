@@ -2,10 +2,10 @@ package com.soywiz.korui.react
 
 import com.soywiz.kds.*
 import com.soywiz.kgl.internal.*
-import com.soywiz.kgl.internal.min2
 import com.soywiz.korio.async.*
 import com.soywiz.korui.*
 import com.soywiz.korui.layout.*
+import kotlin.math.*
 import kotlin.reflect.*
 
 var UiComponent.reactUid by Extra.PropertyThis<UiComponent, Any?> { null }
@@ -46,7 +46,7 @@ class ReactUiMyContainer(
     }
 
     private fun sync(current: UiContainer, cuids: ReactUids, next: UiContainer, nuids: ReactUids) {
-        val minSize = min2(current.size, next.size)
+        val minSize = min(current.size, next.size)
         for (n in 0 until minSize) {
             val cchild = current[n]
             val nchild = next[n]

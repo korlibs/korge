@@ -5,8 +5,6 @@ import com.soywiz.korio.lang.*
 import kotlin.collections.*
 import kotlin.math.*
 import com.soywiz.kds.*
-import com.soywiz.korio.internal.*
-import com.soywiz.korio.internal.max2
 
 class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     private val tempCharArray = CharArray(str.length)
@@ -105,7 +103,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     }
 
     private fun substr(pos: Int, length: Int): String {
-        return this.str.substring(min2(pos, this.length), min2(pos + length, this.length))
+        return this.str.substring(min(pos, this.length), min(pos + length, this.length))
     }
 
     fun tryLit(lit: String): String? {
@@ -211,7 +209,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     class TRange(val min: Int, val max: Int, val reader: StrReader) {
         companion object {
             fun combine(a: TRange, b: TRange): TRange {
-                return TRange(min2(a.min, b.min), max2(a.max, b.max), a.reader)
+                return TRange(min(a.min, b.min), max(a.max, b.max), a.reader)
             }
 
             fun combineList(list: List<TRange>): TRange? {
@@ -220,8 +218,8 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
                 var min = first.min
                 var max = first.max
                 list.fastForEach { i ->
-                    min = min2(min, i.min)
-                    max = max2(max, i.max)
+                    min = min(min, i.min)
+                    max = max(max, i.max)
                 }
                 return TRange(min, max, first.reader)
             }
@@ -241,7 +239,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     }
 
     fun readFixedSizeInt(count: Int, radix: Int = 10): Int {
-        val readCount = min2(available, count)
+        val readCount = min(available, count)
         skip(readCount)
         return NumberParser.parseInt(str, pos - readCount, pos, radix)
     }

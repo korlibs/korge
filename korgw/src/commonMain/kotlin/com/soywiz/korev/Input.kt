@@ -1,7 +1,5 @@
 package com.soywiz.korev
 
-import com.soywiz.kgl.internal.*
-import com.soywiz.kgl.internal.min2
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.Point
 import kotlin.math.*
@@ -228,9 +226,9 @@ class GamepadInfo(
 		this.connected = that.connected
         this.axesLength = that.axesLength
         this.buttonsLength = that.buttonsLength
-        arraycopy(that.axesData, 0, this.axesData, 0, min2(this.axesData.size, that.axesData.size))
-        arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min2(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
-		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min2(this.rawAxes.size, that.rawAxes.size))
+        arraycopy(that.axesData, 0, this.axesData, 0, min(this.axesData.size, that.axesData.size))
+        arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
+		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
 	}
 
 	operator fun get(button: GameButton): Double = mapping.get(button, this)

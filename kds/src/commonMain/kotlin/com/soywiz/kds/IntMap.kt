@@ -4,6 +4,7 @@ package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
 import kotlin.contracts.*
+import kotlin.math.*
 
 private fun _mask(value: Int, mask: Int) = (value + ((value ushr 8) and 0xFF) + ((value ushr 16) and 0xFF) + ((value shr 24) and 0xFF)) and mask
 //private fun _mask(value: Int, mask: Int) = (value + (value shr 16)) and mask
@@ -12,7 +13,7 @@ private fun _hash2(key: Int, mask: Int) = _mask(key * 0x4d2fa52d, mask)
 private fun _hash3(key: Int, mask: Int) = _mask((key * 0x1194e069), mask)
 
 class IntMap<T> internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean = false) {
-    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max2(4, ilog2Ceil(initialCapacity)), loadFactor, true)
+    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
 
     companion object {
         @PublishedApi
@@ -360,7 +361,7 @@ class IntFloatMap {
 */
 
 class IntIntMap internal constructor(private var nbits: Int, private val loadFactor: Double, dummy: Boolean) {
-    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max2(4, ilog2Ceil(initialCapacity)), loadFactor, true)
+    constructor(initialCapacity: Int = 16, loadFactor: Double = 0.75) : this(max(4, ilog2Ceil(initialCapacity)), loadFactor, true)
 
     companion object {
         @PublishedApi

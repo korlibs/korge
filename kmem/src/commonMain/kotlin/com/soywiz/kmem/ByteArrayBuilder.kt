@@ -1,6 +1,7 @@
 package com.soywiz.kmem
 
-import com.soywiz.kmem.internal.max2
+import kotlin.math.*
+
 
 /**
  * Analogous to [StringBuilder] but for [ByteArray]. Allows to [append] values to end calling [toByteArray].
@@ -24,7 +25,7 @@ class ByteArrayBuilder(var data: ByteArray, size: Int = data.size, val allowGrow
     private fun ensure(expected: Int) {
         if (data.size < expected) {
             if (!allowGrow) throw RuntimeException("ByteArrayBuffer configured to not grow!")
-            data = data.copyOf(max2(expected, (data.size + 7) * 5))
+            data = data.copyOf(max(expected, (data.size + 7) * 5))
         }
     }
 

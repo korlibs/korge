@@ -22,7 +22,7 @@ import kotlin.collections.set
 import kotlin.reflect.*
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
-
+import kotlin.math.*
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.native.concurrent.*
@@ -147,8 +147,8 @@ class LocalVfsNative : LocalVfsV2() {
 				//val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
 				val length: Long = ftell(fd).convert()
 
-				val start = min2(range.start, length)
-				val end = min2(range.endInclusive, length - 1) + 1
+				val start = min(range.start, length)
+				val end = min(range.endInclusive, length - 1) + 1
 				val totalRead = (end - start).toInt()
 
 				//println("range=$range")

@@ -35,8 +35,6 @@ import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.PathAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
-import com.esotericsoftware.spine.internal.*
-import com.esotericsoftware.spine.internal.min2
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
@@ -44,6 +42,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import kotlin.js.*
+import kotlin.math.*
 
 /** Stores the current pose for a skeleton.
  *
@@ -767,10 +766,10 @@ class Skeleton {
                 while (ii < verticesLength) {
                     val x = vertices[ii]
                     val y = vertices[ii + 1]
-                    minX = min2(minX, x)
-                    minY = min2(minY, y)
-                    maxX = max2(maxX, x)
-                    maxY = max2(maxY, y)
+                    minX = min(minX, x)
+                    minY = min(minY, y)
+                    maxX = max(maxX, x)
+                    maxY = max(maxY, y)
                     ii += 2
                 }
             }

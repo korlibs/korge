@@ -1,8 +1,6 @@
 package com.soywiz.korim.vector.chart
 
 import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.min2
 import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
@@ -115,8 +113,8 @@ open class ChartBars(val list: List<DataPoint>) : Chart() {
     var count = 0
     override fun Context2d.renderChart() {
         //println("Context2d.renderChart:$width,$height")
-        val hpadding = min2(64.0, width * 0.1)
-        val vpadding = min2(64.0, height * 0.1)
+        val hpadding = min(64.0, width * 0.1)
+        val vpadding = min(64.0, height * 0.1)
         renderBars(Rectangle.fromBounds(hpadding, vpadding, width - hpadding, height - vpadding))
     }
 }

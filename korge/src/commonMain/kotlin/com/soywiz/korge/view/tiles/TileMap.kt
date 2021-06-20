@@ -117,19 +117,19 @@ open class TileMap(
         val dVX = m.transformX(0.0, tileHeight) - posX
         val dVY = m.transformY(0.0, tileHeight) - posY
         val initY = (if (staggerAxis != null) tileSize.height - tileHeight else 0.0).let {
-            min2(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
+            min(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
         }
         val nextTileX = (tileSize.width / if (staggerAxis == TiledMap.StaggerAxis.X) 2.0 else 1.0).let { width ->
-            min2(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+            min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
         }
         val nextTileY = (tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0).let { height ->
-            min2(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+            min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
         }
         val staggerX = (tileWidth / 2.0).let{ width ->
-            min2(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
+            min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
         }
         val staggerY = (tileSize.height / 2.0).let{ height ->
-            min2(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
+            min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
         }
 
         val colMul = renderColorMul
@@ -151,10 +151,10 @@ open class TileMap(
         val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
         val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
 
-        val ymin = min2(min2(min2(my0, my1), my2), my3)
-        val ymax = max2(max2(max2(my0, my1), my2), my3)
-        val xmin = min2(min2(min2(mx0, mx1), mx2), mx3)
-        val xmax = max2(max2(max2(mx0, mx1), mx2), mx3)
+        val ymin = min(min(min(my0, my1), my2), my3)
+        val ymax = max(max(max(my0, my1), my2), my3)
+        val xmin = min(min(min(mx0, mx1), mx2), mx3)
+        val xmax = max(max(max(mx0, mx1), mx2), mx3)
 
         val yheight = ymax - ymin
         val xwidth = xmax - xmin

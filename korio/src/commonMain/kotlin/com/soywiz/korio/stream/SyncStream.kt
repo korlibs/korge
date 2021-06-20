@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
+import kotlin.math.*
 
 interface MarkableSyncInputStream : SyncInputStream {
     fun mark(readlimit: Int)
@@ -214,7 +215,7 @@ class SliceSyncStreamBase(internal val base: SyncStreamBase, internal val baseSt
 
 class FillSyncStreamBase(val fill: Byte, override var length: Long) : SyncStreamBase() {
 	override fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
-		val end = min2(length, position + len)
+		val end = min(length, position + len)
 		val actualLen = (end - position).toIntSafe()
 		buffer.fill(fill, offset, offset + actualLen)
 		return actualLen
@@ -305,15 +306,15 @@ class MemorySyncStreamBase(var data: ByteArrayBuilder) : SyncStreamBase() {
 		val ipos = position.toInt()
 		//if (position !in 0 until ilength) return -1
 		if (position !in 0 until ilength) return 0
-		val end = min2(this.ilength, ipos + len)
-		val actualLen = max2((end - ipos), 0)
+		val end = min(this.ilength, ipos + len)
+		val actualLen = max((end - ipos), 0)
 		arraycopy(this.data.data, ipos, buffer, offset, actualLen)
 		return actualLen
 	}
 
 	override fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
 		checkPosition(position)
-		data.size = max2(data.size, (position + len).toInt())
+		data.size = max(data.size, (position + len).toInt())
 		arraycopy(buffer, offset, this.data.data, position.toInt(), len)
 	}
 

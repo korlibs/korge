@@ -6,11 +6,12 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.max2
+
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 class NinePatchInfo(
 	val xranges: List<Pair<Boolean, IntRange>>,
@@ -44,8 +45,8 @@ class NinePatchInfo(
 
 	class AxisInfo(ranges: List<Pair<Boolean, IntRange>>, val totalLen: Int) {
 		val segments = ranges.map { AxisSegment(it.first, it.second) }
-		val fixedLen = max2(1, segments.filter { it.fixed }.map { it.length }.sum())
-		val scaledLen = max2(1, segments.filter { it.scaled }.map { it.length }.sum())
+		val fixedLen = max(1, segments.filter { it.fixed }.map { it.length }.sum())
+		val scaledLen = max(1, segments.filter { it.scaled }.map { it.length }.sum())
 	}
 
 	val xaxis = AxisInfo(xranges, width)
@@ -125,12 +126,12 @@ class NinePatchInfo(
                 if (x.fixed && y.fixed) {
                     val xScale = segWidth / x.length.toDouble()
                     val yScale = segHeight / y.length.toDouble()
-                    val minScale = min2(xScale, yScale)
-                    xComputed[xindex] = min2(xComputed[xindex], (x.length * minScale).toInt())
-                    yComputed[yindex] = min2(yComputed[yindex], (y.length * minScale).toInt())
+                    val minScale = min(xScale, yScale)
+                    xComputed[xindex] = min(xComputed[xindex], (x.length * minScale).toInt())
+                    yComputed[yindex] = min(yComputed[yindex], (y.length * minScale).toInt())
                 } else {
-                    xComputed[xindex] = min2(xComputed[xindex], segWidth.toInt())
-                    yComputed[yindex] = min2(yComputed[yindex], segHeight.toInt())
+                    xComputed[xindex] = min(xComputed[xindex], segWidth.toInt())
+                    yComputed[yindex] = min(yComputed[yindex], segHeight.toInt())
                 }
             }
         }

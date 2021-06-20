@@ -269,7 +269,7 @@ class FuncState constructor() : Constants() {
                 val pl = pfrom + Lua.GETARG_B(previous_code)
                 if (pfrom <= from && from <= pl + 1 || from <= pfrom && pfrom <= l + 1) { /* can connect both? */
                     if (pfrom < from)
-                        from = pfrom /* from = min2(from, pfrom) */
+                        from = pfrom /* from = min(from, pfrom) */
                     if (pl > l)
                         l = pl /* l = max(l, pl) */
                     val previous = InstructionPtr(this.f!!.code, this.pc - 1)

@@ -11,7 +11,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.*
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.max2
+
 import com.soywiz.korim.paint.DefaultPaint
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.text.*
@@ -49,7 +49,7 @@ class BitmapFont(
             fontSize, ascent, ascent, baseline, -descent, -descent, 0.0,
             maxWidth = run {
                 var width = 0.0
-                for (glyph in glyphs.values) if (glyph != null) width = max2(width, glyph.texture.width.toDouble())
+                for (glyph in glyphs.values) if (glyph != null) width = max(width, glyph.texture.width.toDouble())
                 width
             }
         )

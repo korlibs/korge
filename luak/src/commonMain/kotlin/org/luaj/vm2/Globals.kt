@@ -30,6 +30,7 @@ import org.luaj.vm2.lib.IoLib
 import org.luaj.vm2.lib.PackageLib
 import org.luaj.vm2.lib.ResourceFinder
 import kotlin.jvm.*
+import kotlin.math.*
 
 /**
  * Global environment used by luaj.  Contains global variables referenced by executing lua.
@@ -323,13 +324,13 @@ open class Globals(
         override fun read(b: ByteArray, off: Int, len: Int): Int {
             val a = avail()
             if (a <= 0) return -1
-            val n_read = min2(a, len)
+            val n_read = min(a, len)
             arraycopy(this.b, i, b, off, n_read)
             i += n_read
             return n_read
         }
 
-        override fun skip(n: Long): Long = min2(n, (j - i).toLong()).also { i += it.toInt() }
+        override fun skip(n: Long): Long = min(n, (j - i).toLong()).also { i += it.toInt() }
         override fun available(): Int = j - i
     }
 

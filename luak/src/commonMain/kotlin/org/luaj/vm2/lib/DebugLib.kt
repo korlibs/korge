@@ -39,6 +39,7 @@ import org.luaj.vm2.Prototype
 import org.luaj.vm2.Varargs
 import org.luaj.vm2.internal.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 /**
  * Subclass of [LibFunction] which implements the lua standard `debug`
@@ -493,7 +494,7 @@ class DebugLib : TwoArgFunction() {
         @Synchronized
         private fun pushcall(): CallFrame {
             if (calls >= frame.size) {
-                val n = max2(4, frame.size * 3 / 2)
+                val n = max(4, frame.size * 3 / 2)
                 val f = arrayOfNulls<CallFrame>(n)
                 arraycopy(frame as Array<CallFrame?>, 0, f, 0, frame.size)
                 for (i in frame.size until n)

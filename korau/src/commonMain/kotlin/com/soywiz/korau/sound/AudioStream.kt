@@ -43,7 +43,7 @@ abstract class AudioStream(
                     break
                 }
             }
-            val read = min2(length, availableRead)
+            val read = min(length, availableRead)
             deque.read(out, offset, read)
             return read
         }

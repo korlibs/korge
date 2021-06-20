@@ -3,6 +3,7 @@ package com.soywiz.korgw.platform
 import com.soywiz.kgl.internal.*
 import com.sun.jna.*
 import kotlin.reflect.KProperty
+import kotlin.math.*
 
 open class KStructure(pointer: Pointer? = null) : NativeMapped {
     protected val layout = LayoutBuilder()
@@ -30,7 +31,7 @@ class LayoutBuilder {
     var maxAlign = 4
 
     fun align(size: Int) = this.apply {
-        maxAlign = max2(maxAlign, size)
+        maxAlign = max(maxAlign, size)
         while (this.offset % size != 0) this.offset++
     }
 

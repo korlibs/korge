@@ -35,7 +35,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.max2
+
 import com.soywiz.korio.lang.*
 import kotlin.math.*
 
@@ -401,8 +401,8 @@ private class QRCodeModel(val typeNumber: Int, val errorCorrectLevel: QRErrorCor
             for (r in 0 until rsBlocks.size) {
                 val dcCount = rsBlocks[r].dataCount
                 val ecCount = rsBlocks[r].totalCount - dcCount
-                maxDcCount = max2(maxDcCount, dcCount)
-                maxEcCount = max2(maxEcCount, ecCount)
+                maxDcCount = max(maxDcCount, dcCount)
+                maxEcCount = max(maxEcCount, ecCount)
                 dcdata[r] = IntArray(dcCount)
                 for (i in 0 until dcdata[r].size) {
                     dcdata[r][i] = 0xff and buffer.buffer.getAt(i + offset)

@@ -2,8 +2,7 @@ package com.soywiz.korma.segment
 
 import com.soywiz.kds.*
 import com.soywiz.korma.annotations.*
-import com.soywiz.korma.internal.*
-import com.soywiz.korma.internal.max2
+import kotlin.math.*
 
 /**
  * Non-overlapping SegmentSet
@@ -92,8 +91,8 @@ class IntSegmentSet {
                 fastForEachInterestingRange(min, max) { n, x1, x2 ->
                     if (intersects(x1, x2, min, max)) {
                         if (removeStart == -1) removeStart = n
-                        this.min[removeStart] = min2(this.min.getAt(removeStart), min2(x1, min))
-                        this.max[removeStart] = max2(this.max.getAt(removeStart), max2(x2, max))
+                        this.min[removeStart] = min(this.min.getAt(removeStart), min(x1, min))
+                        this.max[removeStart] = max(this.max.getAt(removeStart), max(x2, max))
                         removeCount++
                     }
                 }
@@ -142,7 +141,7 @@ class IntSegmentSet {
         var count = 0
         fastForEachInterestingRange(min, max) { n, x1, x2 ->
             if (intersects(x1, x2, min, max)) {
-                out(max2(x1, min), min2(x2, max))
+                out(max(x1, min), min(x2, max))
                 count++
             }
         }
@@ -164,7 +163,7 @@ class IntSegmentSet {
         var count = 0
         fastForEach { n, x1, x2 ->
             if (intersects(x1, x2, min, max)) {
-                out(max2(x1, min), min2(x2, max))
+                out(max(x1, min), min(x2, max))
                 count++
             }
         }
@@ -209,7 +208,7 @@ class IntSegmentSet {
 // @TODO: In KDS latest versions
 @PublishedApi
 internal inline fun genericBinarySearchLeft(fromIndex: Int, toIndex: Int, check: (value: Int) -> Int): Int =
-    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> min2(low, high).coerceIn(from, to - 1) }, check = check)
+    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> min(low, high).coerceIn(from, to - 1) }, check = check)
 @PublishedApi
 internal inline fun genericBinarySearchRight(fromIndex: Int, toIndex: Int, check: (value: Int) -> Int): Int =
-    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> max2(low, high).coerceIn(from, to - 1) }, check = check)
+    genericBinarySearch(fromIndex, toIndex, invalid = { from, to, low, high -> max(low, high).coerceIn(from, to - 1) }, check = check)

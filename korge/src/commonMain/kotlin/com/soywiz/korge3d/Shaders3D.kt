@@ -3,7 +3,6 @@ package com.soywiz.korge3d
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.max2
 
 @Korge3DExperimental
 open class Shaders3D {

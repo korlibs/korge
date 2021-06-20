@@ -21,6 +21,7 @@ import java.nio.file.*
 import java.nio.file.Path
 import java.util.concurrent.*
 import kotlin.coroutines.*
+import kotlin.math.*
 
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
@@ -273,8 +274,8 @@ private class LocalVfsJvm : LocalVfsV2() {
 	override suspend fun readRange(path: String, range: LongRange): ByteArray = executeIo {
 		RandomAccessFile(resolveFile(path), "r").use { raf ->
 			val fileLength = raf.length()
-			val start = min2(range.start, fileLength)
-			val end = min2(range.endInclusive, fileLength - 1) + 1
+			val start = min(range.start, fileLength)
+			val end = min(range.endInclusive, fileLength - 1) + 1
 			val totalRead = (end - start).toInt()
 			val out = ByteArray(totalRead)
 			raf.seek(start)

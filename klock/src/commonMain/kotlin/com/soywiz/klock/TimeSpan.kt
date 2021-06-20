@@ -210,8 +210,8 @@ value class TimeSpan(
 fun TimeSpan.toTimeString(components: Int = 3, addMilliseconds: Boolean = false): String =
     TimeSpan.toTimeString(milliseconds, components, addMilliseconds)
 
-fun max(a: TimeSpan, b: TimeSpan): TimeSpan = max2(a.milliseconds, b.milliseconds).milliseconds
-fun min(a: TimeSpan, b: TimeSpan): TimeSpan = min2(a.milliseconds, b.milliseconds).milliseconds
+fun max(a: TimeSpan, b: TimeSpan): TimeSpan = max(a.milliseconds, b.milliseconds).milliseconds
+fun min(a: TimeSpan, b: TimeSpan): TimeSpan = min(a.milliseconds, b.milliseconds).milliseconds
 fun TimeSpan.clamp(min: TimeSpan, max: TimeSpan): TimeSpan = when {
     this < min -> min
     this > max -> max

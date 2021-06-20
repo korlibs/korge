@@ -3,7 +3,6 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*

@@ -4,7 +4,6 @@ package com.soywiz.korag.software
 
 import com.soywiz.kds.*
 import com.soywiz.kgl.internal.*
-import com.soywiz.kgl.internal.max2
 import com.soywiz.kmem.*
 import com.soywiz.korio.lang.*
 import kotlin.math.*
@@ -65,8 +64,8 @@ class SGVM(
             SGVMOpcode.FMUL -> fset { fsrc(it) * fsrc2(it) }
             SGVMOpcode.FDIV -> fset { fsrc(it) / fsrc2(it) }
             SGVMOpcode.FREM -> fset { fsrc(it) % fsrc2(it) }
-            SGVMOpcode.FMAX -> fset { max2(fsrc(it), fsrc2(it)) }
-            SGVMOpcode.FMIN -> fset { min2(fsrc(it), fsrc2(it)) }
+            SGVMOpcode.FMAX -> fset { max(fsrc(it), fsrc2(it)) }
+            SGVMOpcode.FMIN -> fset { min(fsrc(it), fsrc2(it)) }
             SGVMOpcode.TEX2D -> tex2d(SRC, fsrc2(0), fsrc2(1), freg, DST)
             SGVMOpcode.FTSW -> {
                 //println("FTSW[$EXT2]")

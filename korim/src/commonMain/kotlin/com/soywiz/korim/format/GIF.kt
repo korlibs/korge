@@ -4,7 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.max2
+
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
@@ -261,7 +261,7 @@ object GifDec {
     }
 
     fun new_table(key_size: Int): Table {
-        val init_bulk = max2(1 shl (key_size + 1), 0x100);
+        val init_bulk = max(1 shl (key_size + 1), 0x100);
         return Table(
             init_bulk,
             (1 shl key_size) + 2,
@@ -304,7 +304,7 @@ object GifDec {
                 s.byte = gif.fd.readU8()
                 s.sub_len--
             }
-            val frag_size = min2(key_size - bits_read, 8 - rpad);
+            val frag_size = min(key_size - bits_read, 8 - rpad);
             key = key or (( 0xFFFF and ((s.byte) ushr rpad)) shl bits_read)
             bits_read += frag_size
         }

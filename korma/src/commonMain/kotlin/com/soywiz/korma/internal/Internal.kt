@@ -25,11 +25,11 @@ internal val Double.niceStr: String get() = if (almostEquals(this.toLong().toDou
 @PublishedApi
 internal fun floorCeil(v: Double): Double = if (v < 0.0) ceil(v) else floor(v)
 
-@PublishedApi internal fun min2(a: Int, b: Int) = if (a < b) a else b
-@PublishedApi internal fun max2(a: Int, b: Int) = if (a > b) a else b
 
-@PublishedApi internal fun min2(a: Float, b: Float) = if (a < b) a else b
-@PublishedApi internal fun max2(a: Float, b: Float) = if (a > b) a else b
 
-@PublishedApi internal fun min2(a: Double, b: Double) = if (a < b) a else b
-@PublishedApi internal fun max2(a: Double, b: Double) = if (a > b) a else b
+
+
+
+
+
+

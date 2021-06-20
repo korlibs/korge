@@ -372,7 +372,7 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 			if (err != null) {
 				c.resumeWithException(IOException("Error reading from $file :: err=$err"))
 			} else {
-				//println("NODE READ[$file] read: ${bytesRead} : ${buffer.sliceArray(0 until min2(buffer.size, 5)).contentToString()}")
+				//println("NODE READ[$file] read: ${bytesRead} : ${buffer.sliceArray(0 until min(buffer.size, 5)).contentToString()}")
 				c.resume(bytesRead)
 			}
 			Unit

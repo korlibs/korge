@@ -3,9 +3,6 @@ package com.soywiz.korma.geom.vector
 import com.soywiz.korma.annotations.KorDslMarker
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.internal.*
-import com.soywiz.korma.internal.min2
-import com.soywiz.korma.math.*
 import kotlin.math.*
 
 @KorDslMarker
@@ -100,7 +97,7 @@ fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle)
 
     val startAngle = start.radians % PI_TWO
     val endAngle = end.radians % PI_TWO
-    var remainingAngle = min2(PI_TWO, abs(endAngle - startAngle))
+    var remainingAngle = min(PI_TWO, abs(endAngle - startAngle))
     if (remainingAngle.absoluteValue < EPSILON && start != end) remainingAngle = PI_TWO
     val sgn = if (startAngle < endAngle) +1 else -1
     var a1 = startAngle
@@ -110,7 +107,7 @@ fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle)
     val p4 = Point()
     var index = 0
     while (remainingAngle > EPSILON) {
-        val a2 = a1 + sgn * min2(remainingAngle, PI_OVER_TWO)
+        val a2 = a1 + sgn * min(remainingAngle, PI_OVER_TWO)
 
         val k = 0.5522847498
         val a = (a2 - a1) / 2.0

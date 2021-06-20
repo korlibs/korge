@@ -4,8 +4,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.util.*
 import com.soywiz.korio.experimental.*
-import com.soywiz.korio.internal.*
-import com.soywiz.korio.internal.min2
 import com.soywiz.korio.stream.*
 import kotlin.math.*
 
@@ -22,7 +20,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 	) {
 		while (i.hasAvailable()) {
 			val available = i.getAvailable()
-			val chunkSize = min2(available, 0xFFFFL).toInt()
+			val chunkSize = min(available, 0xFFFFL).toInt()
 			o.write8(if (chunkSize >= available) 1 else 0)
 			o.write16LE(chunkSize)
 			o.write16LE(chunkSize.inv())

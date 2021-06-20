@@ -274,7 +274,7 @@ class BufferedStreamBase(val base: AsyncStreamBase, val blockSize: Int = 2048, v
 		}
 		val soffset = (position % bsize).toInt()
 		val available = cachedData.size - soffset
-		val toRead = min2(available, len)
+		val toRead = min(available, len)
 		arraycopy(cachedData, soffset, buffer, offset, toRead)
 		return toRead
 	}
@@ -472,13 +472,13 @@ suspend fun AsyncInputStream.readBytesUpTo(len: Int): ByteArray {
 	val BYTES_TEMP_SIZE = 0x1000
 
     if (len <= BYTES_TEMP_SIZE) return readBytesUpToCopy(ByteArray(len))
-    if (this is AsyncPositionLengthStream) return readBytesUpToCopy(ByteArray(min2(len, this.getAvailable().toIntClamp())))
+    if (this is AsyncPositionLengthStream) return readBytesUpToCopy(ByteArray(min(len, this.getAvailable().toIntClamp())))
 
     var pending = len
     val temp = ByteArray(BYTES_TEMP_SIZE)
     val bout = ByteArrayBuilder()
     while (pending > 0) {
-        val read = this.read(temp, 0, min2(temp.size, pending))
+        val read = this.read(temp, 0, min(temp.size, pending))
         if (read <= 0) break
         bout.append(temp, 0, read)
         pending -= read
@@ -544,7 +544,7 @@ suspend fun AsyncInputStream.skip(count: Int) {
 		val temp = ByteArray(0x1000)
 		var remaining = count
 		while (remaining > 0) {
-			val toRead = min2(remaining, count)
+			val toRead = min(remaining, count)
 			readTempExact(toRead, temp)
 			remaining -= toRead
 		}
@@ -782,15 +782,15 @@ class MemoryAsyncStreamBase(var data: com.soywiz.kmem.ByteArrayBuilder) : AsyncS
 	override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
 		checkPosition(position)
 		if (position !in 0 until ilength) return 0
-		val end = min2(this.ilength.toLong(), position + len)
-		val actualLen = max2((end - position).toInt(), 0)
+		val end = min(this.ilength.toLong(), position + len)
+		val actualLen = max((end - position).toInt(), 0)
 		arraycopy(this.data.data, position.toInt(), buffer, offset, actualLen)
 		return actualLen
 	}
 
 	override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
 		checkPosition(position)
-		data.size = max2(data.size, (position + len).toInt())
+		data.size = max(data.size, (position + len).toInt())
 		arraycopy(buffer, offset, this.data.data, position.toInt(), len)
 
 	}

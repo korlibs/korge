@@ -5,9 +5,7 @@ import com.soywiz.kmem.extract
 import com.soywiz.kmem.toIntClamp
 import com.soywiz.kmem.unsigned
 import com.soywiz.korio.file.*
-import com.soywiz.korio.internal.*
 import com.soywiz.korio.internal.indexOf
-import com.soywiz.korio.internal.max2
 import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.*
 import kotlin.math.max
@@ -39,9 +37,9 @@ class ZipFile private constructor(
         val fileLength = s.getLength()
 
         for (chunkSize in listOf(0x16, 0x100, 0x1000, 0x10000)) {
-            val pos = max2(0L, fileLength - chunkSize)
+            val pos = max(0L, fileLength - chunkSize)
             s.setPosition(pos)
-            val bytesLen = max2(chunkSize, s.getAvailable().toIntClamp())
+            val bytesLen = max(chunkSize, s.getAvailable().toIntClamp())
             val ebytes = s.readBytesExact(bytesLen)
             endBytes = ebytes
             pk_endIndex = endBytes.indexOf(PK_END)

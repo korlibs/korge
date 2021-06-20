@@ -17,7 +17,7 @@ open class ByteRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun writeHead(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             readPos = (readPos - 1) and mask
             buffer[readPos] = data[offset + size - n - 1]
@@ -29,7 +29,7 @@ open class ByteRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun write(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             buffer[writePos] = data[offset + n]
             writePos = (writePos + 1) and mask
@@ -41,7 +41,7 @@ open class ByteRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun read(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toRead = min2(availableRead, size)
+        val toRead = min(availableRead, size)
         for (n in 0 until toRead) {
             data[offset + n] = buffer[readPos]
             readPos = (readPos + 1) and mask
@@ -93,7 +93,7 @@ class ShortRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun writeHead(data: ShortArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             readPos = (readPos - 1) and mask
             buffer[readPos] = data[offset + size - n - 1]
@@ -105,7 +105,7 @@ class ShortRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun write(data: ShortArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             buffer[writePos] = data[offset + n]
             writePos = (writePos + 1) and mask
@@ -117,7 +117,7 @@ class ShortRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun read(data: ShortArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toRead = min2(availableRead, size)
+        val toRead = min(availableRead, size)
         for (n in 0 until toRead) {
             data[offset + n] = buffer[readPos]
             readPos = (readPos + 1) and mask
@@ -161,7 +161,7 @@ class IntRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun writeHead(data: IntArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             readPos = (readPos - 1) and mask
             buffer[readPos] = data[offset + size - n - 1]
@@ -173,7 +173,7 @@ class IntRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun write(data: IntArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             buffer[writePos] = data[offset + n]
             writePos = (writePos + 1) and mask
@@ -185,7 +185,7 @@ class IntRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun read(data: IntArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toRead = min2(availableRead, size)
+        val toRead = min(availableRead, size)
         for (n in 0 until toRead) {
             data[offset + n] = buffer[readPos]
             readPos = (readPos + 1) and mask
@@ -219,7 +219,7 @@ class FloatRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun writeHead(data: FloatArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             readPos = (readPos - 1) and mask
             buffer[readPos] = data[offset + size - n - 1]
@@ -231,7 +231,7 @@ class FloatRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun write(data: FloatArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min2(availableWrite, size)
+        val toWrite = min(availableWrite, size)
         for (n in 0 until toWrite) {
             buffer[writePos] = data[offset + n]
             writePos = (writePos + 1) and mask
@@ -243,7 +243,7 @@ class FloatRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun read(data: FloatArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toRead = min2(availableRead, size)
+        val toRead = min(availableRead, size)
         for (n in 0 until toRead) {
             data[offset + n] = buffer[readPos]
             readPos = (readPos + 1) and mask

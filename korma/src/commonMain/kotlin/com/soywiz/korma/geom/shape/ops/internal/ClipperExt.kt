@@ -3,6 +3,7 @@ package com.soywiz.korma.geom.shape.ops.internal
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 fun Path.toPoints(): List<IPoint> = (0 until this.size).map { this@toPoints[it] }
 
@@ -15,10 +16,10 @@ fun Path.toShape2d(): Shape2d {
             val bl = this[(n + 3) % 4]
 
             if ((tl.x == bl.x) && (tr.x == br.x) && (tl.y == tr.y) && (bl.y == br.y)) {
-                val xmin = min2(tl.x, tr.x)
-                val xmax = max2(tl.x, tr.x)
-                val ymin = min2(tl.y, bl.y)
-                val ymax = max2(tl.y, bl.y)
+                val xmin = min(tl.x, tr.x)
+                val xmax = max(tl.x, tr.x)
+                val ymin = min(tl.y, bl.y)
+                val ymax = max(tl.y, bl.y)
                 //println("($xmin,$ymin)-($xmax-$ymax) : $tl,$tr,$br,$bl")
                 return Shape2d.Rectangle(xmin, ymin, xmax - xmin, ymax - ymin)
             }

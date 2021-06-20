@@ -3,6 +3,8 @@ package com.soywiz.korio.file.std
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.klock.max
+import com.soywiz.klock.min
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
@@ -12,6 +14,7 @@ import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.flow.*
+import kotlin.math.*
 
 fun SimpleStorage.toVfs(): VfsFile = MapLikeStorageVfs(this).root
 fun SimpleStorage.toVfs(timeProvider: TimeProvider): VfsFile = MapLikeStorageVfs(this).also { it.timeProvider = timeProvider }.root
@@ -130,7 +133,7 @@ class MapLikeStorageVfs(val storage: SimpleStorage) : VfsV2() {
 
 			override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
 				files.writeData(npath, position, buffer, offset, len)
-				updateInfo(info.copy(size = max2(info.size, position + len)))
+				updateInfo(info.copy(size = max(info.size, position + len)))
 			}
 
 			override suspend fun setLength(value: Long) {
@@ -257,7 +260,7 @@ private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> T
 			val inChunk = (apos % CHUNK_SIZE).toInt()
 			val c = getFileChunk(fileName, chunk) ?: byteArrayOf()
 			val available = CHUNK_SIZE - inChunk
-			val written = min2(available, pending)
+			val written = min(available, pending)
 			if (written <= 0) invalidOp("Unexpected written")
 			val cc = c.copyOf(inChunk + written)
 			arraycopy(buffer, aoffset, cc, inChunk, written)
@@ -275,7 +278,7 @@ private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> T
 		val inChunk = (position % CHUNK_SIZE).toInt()
 		val c = getFileChunk(fileName, chunk) ?: return 0
 		val available = c.size - inChunk
-		val read = min2(available, len)
+		val read = min(available, len)
 		arraycopy(c, inChunk, buffer, offset, read)
 		return read
 	}

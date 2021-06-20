@@ -5,7 +5,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.annotation.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.internal.min2
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
@@ -110,8 +109,8 @@ abstract class Bitmap(
         val dstX = dstX0
         val dstY = dstY0
 
-        val width = min2(srcX1 - srcX0, dstX1 - dstX0)
-        val height = min2(srcY1 - srcY0, dstY1 - dstY0)
+        val width = min(srcX1 - srcX0, dstX1 - dstX0)
+        val height = min(srcY1 - srcY0, dstY1 - dstY0)
 
         copyUnchecked(srcX, srcY, dst, dstX, dstY, width, height)
     }

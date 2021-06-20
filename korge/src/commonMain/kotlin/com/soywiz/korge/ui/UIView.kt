@@ -6,11 +6,11 @@ import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
+import kotlin.math.*
 import kotlin.reflect.*
 
 private val View._defaultUiSkin: UISkin by extraProperty { UISkin {  } }
@@ -73,7 +73,7 @@ open class UIView(
         fun fitIconInRect(iconView: Image, bmp: BmpSlice, width: Double, height: Double, anchor: Anchor) {
             val iconScaleX = width / bmp.width
             val iconScaleY = height / bmp.height
-            val iconScale = min2(iconScaleX, iconScaleY)
+            val iconScale = min(iconScaleX, iconScaleY)
 
             iconView.bitmap = bmp
             iconView.anchor(anchor)

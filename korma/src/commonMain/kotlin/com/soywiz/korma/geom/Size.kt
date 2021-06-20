@@ -2,6 +2,7 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
+import kotlin.math.*
 
 interface ISize {
     val width: Double
@@ -9,8 +10,8 @@ interface ISize {
 
     val area: Double get() = width * height
     val perimeter: Double get() = width * 2 + height * 2
-    val min: Double get() = min2(width, height)
-    val max: Double get() = max2(width, height)
+    val min: Double get() = min(width, height)
+    val max: Double get() = max(width, height)
 
     companion object {
         operator fun invoke(width: Double, height: Double): ISize = Size(Point(width, height))

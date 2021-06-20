@@ -18,6 +18,7 @@ import com.soywiz.korma.triangle.*
 import com.soywiz.korma.triangle.poly2tri.*
 import com.soywiz.korma.triangle.triangulate.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 private val logger = Logger("BatchBuilder2D")
 
@@ -39,7 +40,7 @@ class BatchBuilder2D constructor(
      */
     val reqMaxQuads: Int = DEFAULT_BATCH_QUADS
 ) {
-    val maxQuads: Int = min2(reqMaxQuads, MAX_BATCH_QUADS)
+    val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
 
     val texManager = ctx.agBitmapTextureManager
     constructor(ag: AG, maxQuads: Int = DEFAULT_BATCH_QUADS) : this(RenderContext(ag), maxQuads)
@@ -366,7 +367,7 @@ class BatchBuilder2D constructor(
 	inline fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
 		ensure(icount, vcount)
 
-		for (idx in 0 until min2(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
+		for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
 
         arraycopy(array._data.i32, 0, vertices.i32, vertexPos, vcount * 6)
 
@@ -377,7 +378,7 @@ class BatchBuilder2D constructor(
     fun drawVerticesTransformed(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize) {
         ensure(icount, vcount)
 
-        for (idx in 0 until min2(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
+        for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
 
         arraycopy(array._data.i32, 0, vertices.i32, vertexPos, vcount * 6)
 

@@ -30,6 +30,7 @@ import org.luaj.vm2.Varargs
 import org.luaj.vm2.compiler.DumpState
 import org.luaj.vm2.internal.*
 import org.luaj.vm2.io.*
+import kotlin.math.*
 
 /**
  * Subclass of [LibFunction] which implements the lua standard `string`
@@ -1093,9 +1094,9 @@ class StringLib : TwoArgFunction() {
             var init = args.optint(3, 1)
 
             if (init > 0) {
-                init = min2(init - 1, s!!.length())
+                init = min(init - 1, s!!.length())
             } else if (init < 0) {
-                init = max2(0, s!!.length() + init)
+                init = max(0, s!!.length() + init)
             }
 
             val fastMatch = find && (args.arg(4).toboolean() || pat!!.indexOfAny(SPECIALS) == -1)

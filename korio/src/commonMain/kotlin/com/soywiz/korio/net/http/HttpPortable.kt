@@ -1,8 +1,6 @@
 package com.soywiz.korio.net.http
 
 import com.soywiz.korio.async.*
-import com.soywiz.korio.internal.*
-import com.soywiz.korio.internal.min2
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.stream.*
@@ -156,7 +154,7 @@ open class HttpPortable(
 						if (contentLength != null) {
 							var remaining = contentLength
 							while (remaining > 0) {
-								val toRead = min2(BodyChunkSize.toLong(), remaining).toInt()
+								val toRead = min(BodyChunkSize.toLong(), remaining).toInt()
 								val read = cb.readBytesUpToFirst(toRead)
 								bodyHandler(read)
 								remaining -= read.size

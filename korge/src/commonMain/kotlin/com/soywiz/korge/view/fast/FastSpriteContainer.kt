@@ -1,13 +1,13 @@
 package com.soywiz.korge.view.fast
 
 import com.soywiz.kds.FastArrayList
-import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
+import kotlin.math.*
 
 inline fun Container.fastSpriteContainer(
     useRotation: Boolean = false,
@@ -65,7 +65,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
 
             ////////////////////////////
 
-            val batchSize = min2(sprites.size, bb.maxQuads)
+            val batchSize = min(sprites.size, bb.maxQuads)
             addQuadIndices(bb, batchSize)
             bb.vertexCount = 0
             bb.uploadIndices()
@@ -96,7 +96,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
         val sprites = this.sprites
         var vp = bb.vertexPos
         val vd = bb.verticesFast32
-        val mMax = min2(sprites.size, m + batchSize)
+        val mMax = min(sprites.size, m + batchSize)
         var count = mMax - m
         for (n in m until mMax) {
             //spriteCount++

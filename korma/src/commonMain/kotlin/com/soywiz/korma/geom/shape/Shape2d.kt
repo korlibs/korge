@@ -178,7 +178,7 @@ inline fun approximateCurve(
     crossinline compute: (ratio: Double, get: (x: Double, y: Double) -> Unit) -> Unit,
     crossinline emit: (x: Double, y: Double) -> Unit
 ) {
-    val rcurveSteps = max2(curveSteps, 20)
+    val rcurveSteps = max(curveSteps, 20)
     val dt = 1.0 / rcurveSteps
     var lastX = 0.0
     var lastY = 0.0

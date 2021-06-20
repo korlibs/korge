@@ -22,6 +22,7 @@
 package org.luaj.vm2
 
 import org.luaj.vm2.internal.*
+import kotlin.math.*
 import kotlin.reflect.*
 
 /**
@@ -621,7 +622,7 @@ abstract class Varargs {
         }
 
         override fun copyto(dest: Array<LuaValue>, offset: Int, length: Int) {
-            val n = min2(v.size, length)
+            val n = min(v.size, length)
             arraycopy(v, 0, dest, offset, n)
             r.copyto(dest, offset + n, length - n)
         }
@@ -688,7 +689,7 @@ abstract class Varargs {
         }
 
         override fun copyto(dest: Array<LuaValue>, offset: Int, length: Int) {
-            val n = min2(this.length, length)
+            val n = min(this.length, length)
             arraycopy(this.v, this.offset, dest, offset, n)
             more.copyto(dest, offset + n, length - n)
         }

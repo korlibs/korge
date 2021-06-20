@@ -71,7 +71,7 @@ class WaveFilter(
         get() = timeSeconds.seconds
         set(value) { timeSeconds = value.seconds }
 
-	override val border: Int get() = max2(amplitudeX.absoluteValue, amplitudeY.absoluteValue)
+	override val border: Int get() = max(amplitudeX.absoluteValue, amplitudeY.absoluteValue)
     override val fragment = FRAGMENT_SHADER
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {

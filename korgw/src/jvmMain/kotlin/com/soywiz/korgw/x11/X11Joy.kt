@@ -5,6 +5,7 @@ import com.soywiz.kgl.internal.*
 import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import java.io.RandomAccessFile
+import kotlin.math.*
 
 /*
 fun main() {
@@ -99,11 +100,11 @@ internal class X11JoystickReader(val index: Int) {
 
                         if (type hasFlags JS_EVENT_AXIS) {
                             axes[number] = (value.toDouble() / 32767).clamp(-1.0, +1.0)
-                            maxAxes = max2(maxAxes, number)
+                            maxAxes = max(maxAxes, number)
                         }
                         if (type hasFlags JS_EVENT_BUTTON) {
                             buttons = buttons.setBits(1 shl number, value != 0)
-                            maxButtons = max2(maxButtons, number)
+                            maxButtons = max(maxButtons, number)
                         }
                         //println("$time, $type, $number, $value: ${buttons.toStringUnsigned(2)}, ${axes.slice(0 until maxAxes).toList()}")
                     }

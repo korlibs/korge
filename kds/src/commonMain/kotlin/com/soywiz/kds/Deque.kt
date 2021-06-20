@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
+import kotlin.math.*
 
 typealias Deque<TGen> = TGenDeque<TGen>
 
@@ -37,7 +38,7 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
     }
 
     private fun copyCyclic(i: Array<TGen>, istart: Int, o: Array<TGen>, count: Int) {
-        val size1 = min2(i.size - istart, count)
+        val size1 = min(i.size - istart, count)
         val size2 = count - size1
         arraycopy(i, istart, o, 0, size1)
         if (size2 > 0) arraycopy(i, 0, o, size1, size2)
@@ -214,7 +215,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
     }
 
     private fun copyCyclic(i: IntArray, istart: Int, o: IntArray, count: Int) {
-        val size1 = min2(i.size - istart, count)
+        val size1 = min(i.size - istart, count)
         val size2 = count - size1
         arraycopy(i, istart, o, 0, size1)
         if (size2 > 0) arraycopy(i, 0, o, size1, size2)
@@ -391,7 +392,7 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
     }
 
     private fun copyCyclic(i: DoubleArray, istart: Int, o: DoubleArray, count: Int) {
-        val size1 = min2(i.size - istart, count)
+        val size1 = min(i.size - istart, count)
         val size2 = count - size1
         arraycopy(i, istart, o, 0, size1)
         if (size2 > 0) arraycopy(i, 0, o, size1, size2)
@@ -568,7 +569,7 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
     }
 
     private fun copyCyclic(i: FloatArray, istart: Int, o: FloatArray, count: Int) {
-        val size1 = min2(i.size - istart, count)
+        val size1 = min(i.size - istart, count)
         val size2 = count - size1
         arraycopy(i, istart, o, 0, size1)
         if (size2 > 0) arraycopy(i, 0, o, size1, size2)
@@ -745,7 +746,7 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
     }
 
     private fun copyCyclic(i: ByteArray, istart: Int, o: ByteArray, count: Int) {
-        val size1 = min2(i.size - istart, count)
+        val size1 = min(i.size - istart, count)
         val size2 = count - size1
         arraycopy(i, istart, o, 0, size1)
         if (size2 > 0) arraycopy(i, 0, o, size1, size2)

@@ -1,9 +1,10 @@
 package com.esotericsoftware.spine.utils
 
 import com.esotericsoftware.spine.internal.*
-import com.esotericsoftware.spine.internal.max2
+import com.esotericsoftware.spine.utils.truncate
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import kotlin.math.*
 
 internal fun FloatArrayList.setSize(size: Int) = run { this.size = size }.let { this.data }
 internal fun IntArrayList.setSize(size: Int) = run { this.size = size }.let { this.data }
@@ -40,7 +41,7 @@ internal fun <T> FastArrayList<T>.containsIdentity(value: T?): Boolean = indexOf
 
 internal fun <T> FastArrayList<T>.shrink() = run { if (size != size) resize(size) }
 internal fun <T> FastArrayList<T>.setSize(newSize: Int): FastArrayList<T> {
-    truncate(max2(8, newSize))
+    truncate(max(8, newSize))
     return this
 }
 internal fun <T> FastArrayList<T>.resize(newSize: Int) = run {

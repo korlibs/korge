@@ -22,8 +22,8 @@ fun transferBitmap32CGContext(bmp: Bitmap32, ctx: CGContextRef?, toBitmap: Boole
     val ctxWidth = CGBitmapContextGetWidth(ctx).toInt()
     val ctxHeight = CGBitmapContextGetHeight(ctx).toInt()
     val pixels = CGBitmapContextGetData(ctx)?.reinterpret<IntVar>() ?: error("Can't get pixels!")
-    val minWidth = min2(ctxWidth, bmp.width)
-    val minHeight = min2(ctxHeight, bmp.height)
+    val minWidth = min(ctxWidth, bmp.width)
+    val minHeight = min(ctxHeight, bmp.height)
     val out = bmp.data.ints
     out.usePinned { outPin ->
         val outStart = outPin.addressOf(0)

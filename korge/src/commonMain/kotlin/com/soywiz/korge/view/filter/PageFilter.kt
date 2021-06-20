@@ -4,7 +4,6 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.max2
 import com.soywiz.korge.view.*
 import com.soywiz.korui.*
 import kotlin.math.*
@@ -62,7 +61,7 @@ class PageFilter(
     var vamplitude1 by vamplitude.doubleDelegate(1, default = vamplitude1)
     var vamplitude2 by vamplitude.doubleDelegate(2, default = vamplitude2)
 
-    override val border: Int get() = max2(max2(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toInt()
+    override val border: Int get() = max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toInt()
     override val fragment = FRAGMENT_SHADER
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {

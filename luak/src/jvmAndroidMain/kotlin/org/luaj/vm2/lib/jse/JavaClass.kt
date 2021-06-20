@@ -24,6 +24,7 @@ package org.luaj.vm2.lib.jse
 import org.luaj.vm2.LuaValue
 import org.luaj.vm2.internal.*
 import java.lang.reflect.*
+import kotlin.math.*
 
 /**
  * LuaValue that represents a Java class.
@@ -115,7 +116,7 @@ class JavaClass internal constructor(c: Class<*>) : JavaInstance(c), CoerceJavaT
             for (i in c.indices) {
                 val ci = c[i]
                 val name = ci.name
-                val stub = name.substring(max2(name.lastIndexOf('$'), name.lastIndexOf('.')) + 1)
+                val stub = name.substring(max(name.lastIndexOf('$'), name.lastIndexOf('.')) + 1)
                 m[LuaValue.valueOf(stub)] = ci
             }
             innerclasses = m
