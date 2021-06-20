@@ -36,24 +36,29 @@ open class JvmObjectMapper2 : ObjectMapper2() {
     val KClass<*>.classInfo by WeakPropertyThis<KClass<*>, ClassReflectCache<*>> { ClassReflectCache(this) }
 
     override fun hasProperty(instance: Any, key: String): Boolean {
+        if (instance is DynamicType<*>) return instance.dynamicShape.hasProp(key)
         return key in instance::class.classInfo.propByName
     }
 
     override fun hasMethod(instance: Any, key: String): Boolean {
+        if (instance is DynamicType<*>) return instance.dynamicShape.hasMethod(key)
         return instance::class.classInfo.methodsByName[key] != null
     }
 
     override suspend fun invokeAsync(type: KClass<Any>, instance: Any?, key: String, args: List<Any?>): Any? {
+        if (instance is DynamicType<*>) return instance.dynamicShape.callMethod(instance, key, args)
         val method = type.classInfo.methodsByName[key] ?: return null
         return method.invokeSuspend(instance, args)
     }
 
     override suspend fun set(instance: Any, key: Any?, value: Any?) {
+        if (instance is DynamicType<*>) return instance.dynamicShape.setProp(instance, key, value)
         val prop = instance::class.classInfo.propByName[key] ?: return
         prop.setter?.invoke(instance, value)
     }
 
     override suspend fun get(instance: Any, key: Any?): Any? {
+        if (instance is DynamicType<*>) return instance.dynamicShape.getProp(instance, key)
         val prop = instance::class.classInfo.propByName[key] ?: return null
         return prop.getter?.invoke(instance)
     }
