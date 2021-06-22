@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import com.soywiz.kgl.internal.*
 import com.soywiz.kgl.toInt
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -130,9 +129,12 @@ class WindowsGameWindow : EventLoopGameWindow() {
     private var fsY = 0
     private var fsW = 128
     private var fsH = 128
+    private var lastFullScreen: Boolean? = null
     override var fullscreen: Boolean
-        get() = GetWindowLongPtrA(hwnd, GWL_STYLE.convert()).toLong().hasBits(WS_POPUP.toLong())
+        get() = if (hwnd != null) GetWindowLongPtrA(hwnd, GWL_STYLE.convert()).toLong().hasBits(WS_POPUP.toLong()) else lastFullScreen ?: false
         set(value) {
+            lastFullScreen = value
+            if (hwnd == null) return
             if (fullscreen == value) return
             memScoped {
                 val style = GetWindowLongPtrA(hwnd, GWL_STYLE.convert())
@@ -144,14 +146,14 @@ class WindowsGameWindow : EventLoopGameWindow() {
                     fsW = rect.width
                     fsH = rect.height
 
-                    SetWindowLongPtrA(hwnd, GWL_STYLE.convert(), style.toLong().without(WS_OVERLAPPEDWINDOW.toLong()).with(WS_POPUP.toLong()).convert())
+                    SetWindowLongPtrA(hwnd, GWL_STYLE.convert(), getWinStyle(true, style).convert())
                     MoveWindow(hwnd, 0, 0, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN), TRUE)
-                    SetWindowLongPtrA(hwnd, GWL_EXSTYLE.convert(), 0.convert())
+                    SetWindowLongPtrA(hwnd, GWL_EXSTYLE.convert(), getWinExStyle(true).convert())
                     //ShowWindow(hwnd, SW_MAXIMIZE)
                 } else {
-                    SetWindowLongPtrA(hwnd, GWL_STYLE.convert(), style.toLong().without(WS_POPUP.toLong()).with(WS_OVERLAPPEDWINDOW.toLong()).convert())
+                    SetWindowLongPtrA(hwnd, GWL_STYLE.convert(), getWinStyle(false, style).convert())
                     MoveWindow(hwnd, fsX, fsY, fsW, fsH, TRUE)
-                    SetWindowLongPtrA(hwnd, GWL_EXSTYLE.convert(), 256.convert())
+                    SetWindowLongPtrA(hwnd, GWL_EXSTYLE.convert(), getWinExStyle(false).convert())
                     //ShowWindow(hwnd, SW_RESTORE)
                 }
             }
@@ -303,34 +305,48 @@ class WindowsGameWindow : EventLoopGameWindow() {
             val screenHeight = GetSystemMetrics(SM_CYSCREEN)
 
             val realSize = getRealSize(windowWidth, windowHeight)
-            val realWidth = realSize.width
-            val realHeight = realSize.height
+            val realWidth = realSize.width//.clamp(0, screenWidth)
+            val realHeight = realSize.height//.clamp(0, screenHeight)
 
             //println("Initial window size: $windowWidth, $windowHeight")
 
+            fsX = ((screenWidth - realWidth) / 2).clamp(0, screenWidth - 16)
+            fsY = ((screenHeight - realHeight) / 2).clamp(0, realHeight - 16)
+            fsW = realWidth
+            fsH = realHeight
+
+            //val initialFullScreen = lastFullScreen
+            val initialFullScreen = false
+
             hwnd = CreateWindowExW(
-                winExStyle.convert(),
+                getWinExStyle(initialFullScreen).convert(),
                 clazzName,
                 title,
-                winStyle.convert(),
-                min(max(0, (screenWidth - realWidth) / 2), screenWidth - 16).convert(),
-                min(max(0, (screenHeight - realHeight) / 2), screenHeight - 16).convert(),
-                realWidth.convert(),
-                realHeight.convert(),
+                getWinStyle(initialFullScreen).convert(),
+                if (initialFullScreen) 0 else fsX.convert(),
+                if (initialFullScreen) 0 else fsY.convert(),
+                if (initialFullScreen) screenWidth else fsW.convert(),
+                if (initialFullScreen) screenHeight else fsH.convert(),
                 null, null, null, null
             )
             println("ERROR: " + GetLastError())
 
             _setIcon()
             ShowWindow(hwnd, SW_SHOWNORMAL.convert())
+            if (lastFullScreen != null) {
+                fullscreen = lastFullScreen!!
+            }
 
             //SetTimer(hwnd, 1, 1000 / 60, staticCFunction(::WndTimer))
         }
     }
 
     private val hasMenu = false
-    private val winStyle = WS_OVERLAPPEDWINDOW
-    private val winExStyle = WS_EX_CLIENTEDGE
+    private val winStyle: Long get() = getWinStyle(fullscreen)
+    private val winExStyle: Long get() = getWinExStyle(fullscreen)
+
+    fun getWinStyle(fullscreen: Boolean, extra: Long = 0): Long = if (fullscreen) extra.without(WS_OVERLAPPEDWINDOW.toLong()).with(WS_POPUP.toLong()) else extra.with(WS_OVERLAPPEDWINDOW.toLong()).without(WS_POPUP.toLong())
+    fun getWinExStyle(fullscreen: Boolean): Long = if (fullscreen) 0L else WS_EX_OVERLAPPEDWINDOW.toLong()
 
     fun getBorderSize(): SizeInt {
         val w = 1000
