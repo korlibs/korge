@@ -2040,6 +2040,15 @@ inline fun View.prevView(filter: (View) -> Boolean): View? {
 inline fun <reified T> View.nextViewOfType(): T? = nextView { it is T } as? T?
 inline fun <reified T> View.prevViewOfType(): T? = prevView { it is T } as? T?
 
+fun View?.isDescendantOf(other: View, include: Boolean = true): Boolean {
+    var current: View? = this
+    if (!include) current = current?.parent
+    while (current != null && current != other) {
+        current = current.parent
+    }
+    return current == other
+}
+
 /*
 fun <T : BaseView> T.addMouseComponent(block: (view: T, views: Views, event: MouseEvent) -> Unit): MouseComponent {
     return addComponent(object : MouseComponent {
