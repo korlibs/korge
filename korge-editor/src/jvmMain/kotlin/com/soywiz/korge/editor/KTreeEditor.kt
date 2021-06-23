@@ -672,11 +672,10 @@ suspend fun ktreeEditorKorge(
     }
 
     stage.addUpdater {
-        gameWindow.cursor = when {
+        stage.cursor = when {
             movingCameraMouse || spaceBarIsBeingPressed() -> GameWindow.Cursor.MOVE
             else -> com.soywiz.korgw.GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 10, AnchorKind.SCALING)?.angle)
                 ?: GameWindow.Cursor.fromAngle(getScaleAnchorPoint(actions.selectedView, 20, AnchorKind.ROTATING)?.angle)?.let { GameWindow.Cursor.CROSSHAIR }
-                ?: GameWindow.Cursor.DEFAULT
         }
 
 

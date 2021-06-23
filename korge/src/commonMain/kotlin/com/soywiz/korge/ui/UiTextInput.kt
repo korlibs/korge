@@ -242,15 +242,11 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     init {
         //println(metrics)
 
+        cursor = GameWindow.Cursor.TEXT
+
         mouse {
-            over {
-                bg.isOver = true
-                gameWindow.cursor = GameWindow.Cursor.TEXT
-            }
-            out {
-                bg.isOver = false
-                gameWindow.cursor = GameWindow.Cursor.DEFAULT
-            }
+            over { bg.isOver = true }
+            out { bg.isOver = false }
         }
 
         timers.interval(0.5.seconds) {

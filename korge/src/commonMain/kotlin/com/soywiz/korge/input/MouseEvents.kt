@@ -13,6 +13,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korgw.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
@@ -32,6 +33,11 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true
                 views.input.mouseHitResult = views.stage.mouseHitTest(views.nativeMouseX, views.nativeMouseY)
+
+                val newCursor = views.input.mouseHitResult?.cursor ?: GameWindow.Cursor.DEFAULT
+                if (views.gameWindow.cursor != newCursor) {
+                    views.gameWindow.cursor = newCursor
+                }
                 //if (frame.mouseHitResult != null) {
                 //val hitResult = frame.mouseHitResult!!
                 //println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
@@ -102,7 +108,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     val input get() = views.input
 
-
+    //var cursor: GameWindow.ICursor? = null
     val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()
 	val out = Signal<MouseEvents>()
@@ -310,8 +316,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		if (!overChanged && over && currentPosGlobal != lastPosGlobal) move(this)
 		if (!overChanged && !over && currentPosGlobal != lastPosGlobal) moveOutside(this)
 		if (currentPosGlobal != lastPosGlobal) moveAnywhere(this)
-		if (overChanged && over) over(this)
-		if (overChanged && !over) out(this)
+		if (overChanged && over) {
+		    //if (cursor != null) views.gameWindow.cursor = cursor!!
+		    over(this)
+        }
+		if (overChanged && !over) {
+            //if (cursor != null) views.gameWindow.cursor = GameWindow.Cursor.DEFAULT
+		    out(this)
+        }
 		if (over && pressingChanged && pressing) {
 			startedPosGlobal.copyFrom(currentPosGlobal)
 			down(this)
@@ -400,3 +412,11 @@ fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeab
         }
     }
 }
+
+var View.cursor: GameWindow.ICursor? by extraProperty { null }
+//    get() = mouse.cursor
+//    set(value) { mouse.cursor = value }
+
+//var View.cursor: GameWindow.ICursor?
+//    get() = mouse.cursor
+//    set(value) { mouse.cursor = value }

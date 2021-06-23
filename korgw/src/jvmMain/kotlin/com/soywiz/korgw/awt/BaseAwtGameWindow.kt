@@ -44,8 +44,9 @@ abstract class BaseAwtGameWindow : GameWindow() {
     }
     val windowOrComponent get() = window ?: component
 
-    override var cursor: Cursor = Cursor.DEFAULT
+    override var cursor: ICursor = Cursor.DEFAULT
         set(value) {
+            if (field == value) return
             field = value
             val awtCursor = when (value) {
                 Cursor.DEFAULT -> java.awt.Cursor.DEFAULT_CURSOR
@@ -62,6 +63,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
                 Cursor.RESIZE_NORTH_WEST -> java.awt.Cursor.NW_RESIZE_CURSOR
                 Cursor.RESIZE_SOUTH_EAST -> java.awt.Cursor.SE_RESIZE_CURSOR
                 Cursor.RESIZE_SOUTH_WEST -> java.awt.Cursor.SW_RESIZE_CURSOR
+                else -> java.awt.Cursor.DEFAULT_CURSOR
             }
             component.cursor = java.awt.Cursor(awtCursor)
         }

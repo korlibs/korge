@@ -175,7 +175,9 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 }
 
 open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, CoroutineContext.Element, AGWindow, Extra by Extra.Mixin() {
-    enum class Cursor {
+    interface ICursor
+
+    enum class Cursor : ICursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
         RESIZE_EAST, RESIZE_WEST, RESIZE_SOUTH, RESIZE_NORTH,
         RESIZE_NORTH_EAST, RESIZE_NORTH_WEST, RESIZE_SOUTH_EAST, RESIZE_SOUTH_WEST;
@@ -192,9 +194,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
                 (45.degrees * 7) to RESIZE_NORTH_EAST,
             )
 
-            fun fromAngle(angle: Angle?): Cursor? {
+            fun fromAngle(angle: Angle?): ICursor? {
                 var minDistance = 360.degrees
-                var cursor: Cursor? = null
+                var cursor: ICursor? = null
                 if (angle != null) {
                     for ((cangle, ccursor) in ANGLE_TO_CURSOR) {
                         val cdistance = (angle - cangle).absoluteValue
@@ -228,7 +230,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open fun hideSoftKeyboard() {
     }
 
-    open var cursor: Cursor = Cursor.DEFAULT
+    open var cursor: ICursor = Cursor.DEFAULT
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
     companion object CoroutineKey : CoroutineContext.Key<GameWindow>
