@@ -332,6 +332,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                     if (it.pressing) {
                         dragging = true
                         selectionEnd = getIndexAtPos(it.currentPosLocal)
+                        it.stopPropagation()
                     }
                 }
             }

@@ -34,7 +34,15 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                 views.input.mouseHitSearch = true
                 views.input.mouseHitResult = views.stage.mouseHitTest(views.nativeMouseX, views.nativeMouseY)
 
-                val newCursor = views.input.mouseHitResult?.cursor ?: GameWindow.Cursor.DEFAULT
+                var view: View? = views.input.mouseHitResult
+                while (view != null) {
+                    if (view.cursor != null) {
+                        break
+                    }
+                    view = view.parent
+                }
+
+                val newCursor = view?.cursor ?: GameWindow.Cursor.DEFAULT
                 if (views.gameWindow.cursor != newCursor) {
                     views.gameWindow.cursor = newCursor
                 }
