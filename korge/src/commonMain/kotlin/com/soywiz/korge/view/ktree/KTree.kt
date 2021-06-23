@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.particle.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
@@ -14,9 +15,12 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
+import kotlin.printStackTrace
 import kotlin.reflect.*
 
 interface KTreeSerializerHolder {
@@ -403,7 +407,36 @@ suspend fun VfsFile.readKTree(parent: Container? = null): View = readKTree(views
 suspend fun View.viewTreeToKTree(level: Int = 1): Xml = viewTreeToKTree(views(), level)
 suspend fun View.viewTreeToKTree(currentVfs: VfsFile, level: Int = 1): Xml = viewTreeToKTree(views(), currentVfs, level)
 
-
 class KTreeRoot(width: Double, height: Double) : FixedSizeContainer(width, height) {
     val grid = OrthographicGrid(20, 20)
+    var showGrid = false
+
+    override fun renderInternal(ctx: RenderContext) {
+        super.renderInternal(ctx)
+        if (showGrid) {
+            val ctxLine = ctx.debugLineRenderContext
+            val matrix = globalMatrix
+            val transform = matrix.toTransform()
+            ctxLine.draw(matrix) {
+                val rect = RectangleInt(0, 0, width.toInt(), height.toInt())
+                val dx = transform.scaleX * grid.width
+                val dy = transform.scaleY * grid.height
+                //println("dxy: $dx, $dy")
+                val smallX = dx < 3
+                val smallY = dy < 3
+                if (!smallX && !smallY) {
+                    ctxLine.drawVector(Colors["#d3d3d367"]) {
+                        //ctxLine.drawVector(Colors.RED) {
+                        grid.draw(ctxLine, rect)
+                    }
+                }
+                ctxLine.drawVector(Colors.BLACK) {
+                    rect(rect)
+                }
+                ctxLine.drawVector(Colors.WHITE) {
+                    rect(rect.left - 1, rect.top - 1, rect.width + 2, rect.height + 2)
+                }
+            }
+        }
+    }
 }
