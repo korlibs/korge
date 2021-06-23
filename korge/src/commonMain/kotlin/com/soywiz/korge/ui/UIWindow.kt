@@ -18,10 +18,18 @@ inline fun Container.uiWindow(
 class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : UIView(width, height) {
     private val titleHeight = 32.0
     private val buttonSeparation = 3.0
+    val isFocused get() = this.index == (parent?.numChildren ?: 0) -1
+    private val colorBg = Colors["#6f6e85"]
+    private val colorBgTitle = Colors["#6f6e85"]
+    private val borderColorFocused = Colors["#471175"]
+    private val borderColorNoFocused = Colors.BLACK
     private val bg = renderableView(width, height, ViewRenderer {
-        ctx2d.rect(0.0, 0.0, this@UIWindow.width, this@UIWindow.height, Colors["#6f6e85"])
-        ctx2d.rect(0.0, 0.0, this@UIWindow.width, titleHeight.toDouble(), Colors["#4c4b5b"])
-        ctx2d.rectOutline(-1.0, -1.0, this@UIWindow.width + 2.0, this@UIWindow.height + 2.0, 1.0, Colors.BLACK)
+        val isFocused = this@UIWindow.isFocused
+        ctx2d.rect(0.0, 0.0, this@UIWindow.width, this@UIWindow.height, colorBg)
+        ctx2d.rect(0.0, 0.0, this@UIWindow.width, titleHeight.toDouble(), colorBgTitle)
+        val borderSize = if (isFocused) 2.0 else 1.0
+        val borderColor = if (isFocused) borderColorFocused else borderColorNoFocused
+        ctx2d.rectOutline(-borderSize, -borderSize, this@UIWindow.width + borderSize * 2, this@UIWindow.height + borderSize * 2, borderSize, borderColor)
     })
     private val titleContainer = fixedSizeContainer(width, titleHeight)
     private val titleView = titleContainer.text(title).position(6, 6)
