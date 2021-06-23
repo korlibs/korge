@@ -69,8 +69,16 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
                 }
             }
 
-        @KorgeInternal fun scrollBarPositionToScrollTopLeft(pos: Double): Double = (pos / (size - scaledSize)) * scrollArea
-        @KorgeInternal fun scrollTopLeftToScrollBarPosition(pos: Double): Double = (pos / scrollArea) * (size - scaledSize)
+        @KorgeInternal fun scrollBarPositionToScrollTopLeft(pos: Double): Double {
+            val d = size - scaledSize
+            if (d == 0.0) return 0.0
+            return (pos / d) * scrollArea
+        }
+        @KorgeInternal fun scrollTopLeftToScrollBarPosition(pos: Double): Double {
+            val d = scrollArea
+            if (d == 0.0) return 0.0
+            return (pos / d) * (size - scaledSize)
+        }
 
 
         var positionRatio: Double
@@ -112,11 +120,12 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
 
     var frictionRate = 0.75
     var overflowRate = 0.1
-    val overflowPixels get() = height * overflowRate
-    val overflowPixelsTop get() = overflowPixels
-    val overflowPixelsBottom get() = overflowPixels
-    val overflowPixelsLeft get() = overflowPixels
-    val overflowPixelsRight get() = overflowPixels
+    val overflowPixelsVertical get() = height * overflowRate
+    val overflowPixelsHorizontal get() = width * overflowRate
+    val overflowPixelsTop get() = overflowPixelsVertical
+    val overflowPixelsBottom get() = overflowPixelsVertical
+    val overflowPixelsLeft get() = overflowPixelsHorizontal
+    val overflowPixelsRight get() = overflowPixelsHorizontal
     var timeScrollBar = 0.seconds
     var autohideScrollBar = false
     var scrollBarAlpha = 0.75
@@ -194,7 +203,9 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
         }
         addUpdater {
             if (it.milliseconds == 0.0) return@addUpdater
+            //println("horizontal.scrollbarSize=${horizontal.scrollBarPos},${horizontal.scrollbarSize}(${horizontal.view.visible},${horizontal.view.alpha}), vertical.scrollbarSize=${vertical.scrollbarSize}")
             infos.fastForEach { info ->
+                info.view.visible = (info.size < info.totalSize)
                 info.viewScaledSize = info.scrollbarSize
                 info.viewPos = vertical.scrollTopLeftToScrollBarPosition(info.position)
                 //verticalScrollBar.y = scrollTop
@@ -202,9 +213,9 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
                     info.pixelSpeed = 0.0
                 }
                 if (info.pixelSpeed != 0.0) {
-                    val oldScrollTop = info.position
+                    val oldScrollPos = info.position
                     info.position += info.pixelSpeed * it.seconds
-                    if (oldScrollTop == info.position) {
+                    if (oldScrollPos == info.position) {
                         info.pixelSpeed = 0.0
                     }
                 } else {

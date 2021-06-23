@@ -1,9 +1,12 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kmem.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.color.*
+import com.soywiz.korma.geom.*
 
 @KorgeExperimental
 inline fun Container.uiWindow(
@@ -23,6 +26,11 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     private val colorBgTitle = Colors["#6f6e85"]
     private val borderColorFocused = Colors["#471175"]
     private val borderColorNoFocused = Colors.BLACK
+    var minWidth = 128.0
+    var minHeight = 64.0
+    var maxWidth = 4096.0
+    var maxHeight = 4096.0
+
     private val bg = renderableView(width, height, ViewRenderer {
         val isFocused = this@UIWindow.isFocused
         ctx2d.rect(0.0, 0.0, this@UIWindow.width, this@UIWindow.height, colorBg)
@@ -39,6 +47,39 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
     var title: String by titleView::text
     val container = uiNewScrollable(width, height - titleHeight).position(0.0, titleHeight)
+    private val scaleHandlerRight = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {
+        val sh = this
+        anchor(Anchor.TOP_CENTER)
+        position(width, 0.0)
+        cursor = GameWindow.Cursor.RESIZE_EAST
+        sh.draggable {
+            sh.x = sh.x.clamp(minWidth, maxWidth)
+            sh.y = 0.0
+            this@UIWindow.scaledWidth = sh.x
+        }
+    }
+    private val scaleHandlerBottom = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {
+        val sh = this
+        anchor(Anchor.MIDDLE_LEFT)
+        position(0.0, height)
+        cursor = GameWindow.Cursor.RESIZE_SOUTH
+        sh.draggable {
+            sh.x = 0.0
+            sh.y = sh.y.clamp(minHeight, maxHeight)
+            this@UIWindow.scaledHeight = sh.y
+        }
+    }
+    private val scaleHandler = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {
+        val sh = this
+        anchor(Anchor.MIDDLE_CENTER)
+        position(width, height)
+        cursor = GameWindow.Cursor.RESIZE_SOUTH_EAST
+        sh.draggable {
+            sh.x = sh.x.clamp(minWidth, maxWidth)
+            sh.y = sh.y.clamp(minHeight, maxHeight)
+            this@UIWindow.setSize(sh.x, sh.y)
+        }
+    }
 
     init {
         this.mouse.down { this.bringToTop() }
@@ -51,6 +92,9 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         titleContainer.setSize(width, titleHeight)
         container.setSize(width, height - titleHeight)
         closeButton.position(width - titleHeight - buttonSeparation, buttonSeparation)
+        scaleHandler.position(width + 4.0, height + 4.0).size(10.0, 10.0)
+        scaleHandlerRight.position(width + 4.0, 0.0).size(10.0, height)
+        scaleHandlerBottom.position(0.0, height + 4.0).size(width, 10.0)
     }
 
     fun close() {
