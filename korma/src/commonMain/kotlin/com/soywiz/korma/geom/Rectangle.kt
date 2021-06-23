@@ -104,9 +104,8 @@ data class Rectangle(
     infix fun intersectsX(that: Rectangle): Boolean = that.left <= this.right && that.right >= this.left
     infix fun intersectsY(that: Rectangle): Boolean = that.top <= this.bottom && that.bottom >= this.top
 
-    fun setToIntersection(a: Rectangle, b: Rectangle): Rectangle {
-        a.intersection(b, this)
-        return this
+    fun setToIntersection(a: Rectangle, b: Rectangle): Rectangle? {
+        return if (a.intersection(b, this) != null) this else null
     }
 
     infix fun intersection(that: Rectangle) = intersection(that, Rectangle())

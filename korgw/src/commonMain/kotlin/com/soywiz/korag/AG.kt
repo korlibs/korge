@@ -139,6 +139,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             this.width = width
             this.height = height
         }
+
+        fun setTo(rect: Rectangle): Scissor = setTo(rect.x.toInt(), rect.y.toInt(), rect.width.toInt(), rect.height.toInt())
     }
 
     data class Blending(

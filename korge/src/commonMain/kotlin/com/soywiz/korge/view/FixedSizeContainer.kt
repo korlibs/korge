@@ -42,7 +42,16 @@ open class FixedSizeContainer(
         if (clip) {
             val c2d = ctx.ctx2d
             val bounds = getWindowBounds(tempBounds)
-            c2d.scissor(bounds) {
+            val rect = c2d.batch.scissor?.rect
+            var intersects = true
+            if (rect != null) {
+                intersects = bounds.setToIntersection(bounds, rect) != null
+            }
+            if (intersects) {
+                c2d.scissor(bounds) {
+                    super.renderInternal(ctx)
+                }
+            } else {
                 super.renderInternal(ctx)
             }
         } else {
