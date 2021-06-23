@@ -51,7 +51,8 @@ fun VectorBuilder.arcTo(ax: Double, ay: Double, cx: Double, cy: Double, r: Doubl
 fun VectorBuilder.arcTo(ax: Float, ay: Float, cx: Float, cy: Float, r: Float) = arcTo(ax.toDouble(), ay.toDouble(), cx.toDouble(), cy.toDouble(), r.toDouble())
 fun VectorBuilder.arcTo(ax: Int, ay: Int, cx: Int, cy: Int, r: Int) = arcTo(ax.toDouble(), ay.toDouble(), cx.toDouble(), cy.toDouble(), r.toDouble())
 
-fun VectorBuilder.rect(rect: Rectangle) = rect(rect.x, rect.y, rect.width, rect.height)
+fun VectorBuilder.rect(rect: IRectangleInt) = rect(rect.x, rect.y, rect.width, rect.height)
+fun VectorBuilder.rect(rect: IRectangle) = rect(rect.x, rect.y, rect.width, rect.height)
 fun VectorBuilder.rect(x: Double, y: Double, width: Double, height: Double) {
     moveTo(x, y)
     lineTo(x + width, y)

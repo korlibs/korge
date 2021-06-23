@@ -411,13 +411,15 @@ fun BoundsBuilder.add(path: VectorPath) {
     )
 }
 
-fun VectorPath.applyTransform(m: Matrix): VectorPath {
-    @Suppress("ReplaceManualRangeWithIndicesCalls")
-    for (n in 0 until data.size step 2) {
-        val x = data.getAt(n + 0)
-        val y = data.getAt(n + 1)
-        data[n + 0] = m.transformX(x, y)
-        data[n + 1] = m.transformY(x, y)
+fun VectorPath.applyTransform(m: Matrix?): VectorPath {
+    if (m != null) {
+        @Suppress("ReplaceManualRangeWithIndicesCalls")
+        for (n in 0 until data.size step 2) {
+            val x = data.getAt(n + 0)
+            val y = data.getAt(n + 1)
+            data[n + 0] = m.transformX(x, y)
+            data[n + 1] = m.transformY(x, y)
+        }
     }
     return this
 }
