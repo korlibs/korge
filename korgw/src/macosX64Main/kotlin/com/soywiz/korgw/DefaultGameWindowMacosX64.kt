@@ -472,7 +472,7 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
         return super.prompt(message, default)
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         val openDlg: NSOpenPanel = NSOpenPanel().apply {
             setCanChooseFiles(true)
             setAllowsMultipleSelection(false)

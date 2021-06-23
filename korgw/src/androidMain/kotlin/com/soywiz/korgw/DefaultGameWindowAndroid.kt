@@ -156,7 +156,7 @@ class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
         return deferred.await()
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         val result = activity.startActivityWithResult(Intent.createChooser(Intent().setType("*/*").setAction(Intent.ACTION_GET_CONTENT), "Select a file"))
         val uri = result?.data ?: throw CancellationException()
         return listOf(File(uri.toString()).toVfs())

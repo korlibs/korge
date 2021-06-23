@@ -16,6 +16,7 @@ import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -26,14 +27,28 @@ var GLOBAL_CHECK_GL = false
 
 expect fun CreateDefaultGameWindow(): GameWindow
 
+/**
+ * @example FileFilter("All files" to listOf("*.*"), "Image files" to listOf("*.png", "*.jpg", "*.jpeg", "*.gif"))
+ */
+data class FileFilter(val entries: List<Pair<String, List<String>>>) {
+    private val regexps = entries.flatMap { it.second }.map { Regex.fromGlob(it) }
+
+    constructor(vararg entries: Pair<String, List<String>>) : this(entries.toList())
+    fun matches(fileName: String): Boolean = entries.isEmpty() || regexps.any { it.matches(fileName) }
+}
+
 interface DialogInterface {
     suspend fun browse(url: URL): Unit = unsupported()
     suspend fun alert(message: String): Unit = unsupported()
     suspend fun confirm(message: String): Boolean = unsupported()
     suspend fun prompt(message: String, default: String = ""): String = unsupported()
     // @TODO: Provide current directory
-    suspend fun openFileDialog(filter: String? = null, write: Boolean = false, multi: Boolean = false): List<VfsFile> =
+    suspend fun openFileDialog(filter: FileFilter? = null, write: Boolean = false, multi: Boolean = false, currentDir: VfsFile? = null): List<VfsFile> =
         unsupported()
+}
+
+suspend fun DialogInterface.openFileDialog(filter: String? = null, write: Boolean = false, multi: Boolean = false): List<VfsFile> {
+    return openFileDialog(null, write, multi)
 }
 
 suspend fun DialogInterface.alertError(e: Throwable) {
@@ -687,7 +702,7 @@ open class ZenityDialogs : DialogInterface {
         ""
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         return exec(*com.soywiz.korio.util.buildList<String> {
             add("zenity")
             add("--file-selection")

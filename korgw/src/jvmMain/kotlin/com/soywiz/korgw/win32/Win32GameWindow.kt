@@ -105,7 +105,7 @@ class Win32GameWindow : GameWindow() {
         return super.prompt(message, default)
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         return super.openFileDialog(filter, write, multi)
     }
 

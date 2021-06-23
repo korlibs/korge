@@ -23,7 +23,6 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.net.*
 import javax.swing.*
-import java.awt.GraphicsDevice
 
 abstract class BaseAwtGameWindow : GameWindow() {
     abstract override val ag: AwtAg
@@ -70,17 +69,10 @@ abstract class BaseAwtGameWindow : GameWindow() {
     override fun showContextMenu(items: List<MenuItem?>) {
         val popupMenu = JPopupMenu()
         for (item in items) {
-            if (item?.text == null) {
-                popupMenu.add(JSeparator())
-            } else {
-                popupMenu.add(JMenuItem(item.text).also {
-                    it.isEnabled = item.enabled
-                    it.addActionListener {
-                        item.action()
-                    }
-                })
-            }
+            popupMenu.add(item.toJMenuItem())
         }
+        //println("showContextMenu: $items")
+        popupMenu.setLightWeightPopupEnabled(false)
         popupMenu.show(contentComponent, mouseX, mouseY)
     }
 
@@ -278,10 +270,14 @@ abstract class BaseAwtGameWindow : GameWindow() {
         return JOptionPane.showInputDialog(component, message, "Input", JOptionPane.PLAIN_MESSAGE, null, null, default).toString()
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         //val chooser = JFileChooser()
         val mode = if (write) FileDialog.SAVE else FileDialog.LOAD
         val chooser = FileDialog(this.component.getContainerFrame(), "Select file", mode)
+        if (currentDir != null) {
+            chooser.directory = currentDir.absolutePath
+        }
+        chooser.setFilenameFilter { dir, name -> filter == null || filter.matches(name) }
         chooser.setLocationRelativeTo(null)
         //chooser.fileFilter = filter // @TODO: Filters
         chooser.isMultipleMode = multi

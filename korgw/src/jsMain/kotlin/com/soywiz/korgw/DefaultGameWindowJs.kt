@@ -302,7 +302,7 @@ open class BrowserGameWindow : GameWindow() {
         return window.prompt(message, default) ?: throw CancellationException("cancelled")
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         val deferred = CompletableDeferred<List<VfsFile>>()
         val input = document.createElement("input").unsafeCast<HTMLInputElement>()
         input.style.position = "absolute"

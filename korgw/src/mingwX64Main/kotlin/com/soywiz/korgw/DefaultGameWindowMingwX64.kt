@@ -210,7 +210,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
         return super.prompt(message, default)
     }
 
-    override suspend fun openFileDialog(filter: String?, write: Boolean, multi: Boolean): List<VfsFile> {
+    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
         val selectedFile = openSelectFile(hwnd = hwnd)
         if (selectedFile != null) {
             return listOf(com.soywiz.korio.file.std.localVfs(selectedFile))
