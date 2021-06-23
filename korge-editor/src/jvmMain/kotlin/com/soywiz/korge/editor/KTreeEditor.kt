@@ -301,7 +301,8 @@ suspend fun ktreeEditorKorge(
         val window = stage.uiWindow("Title") { window ->
             //stage.uiNewScrollable {
             for (n in 0 until 10) {
-                uiButton(text = "HELLO WORLD").position(0.0, n * 32.0).onClick {
+            //for (n in 0 until 1) {
+                uiButton(text = "HELLO WORLD").position(n * 32.0, n * 32.0).onClick {
                     window.close()
                 }
             }
