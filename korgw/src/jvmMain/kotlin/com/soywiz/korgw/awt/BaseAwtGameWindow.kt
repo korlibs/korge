@@ -66,6 +66,46 @@ abstract class BaseAwtGameWindow : GameWindow() {
             component.cursor = java.awt.Cursor(awtCursor)
         }
 
+    fun MenuItem?.toJMenuItem(): JComponent {
+        val item = this
+        return when {
+            item == null || item.text == null -> JSeparator()
+            item.children != null -> {
+                JMenu(item.text).also {
+                    it.isEnabled = item.enabled
+                    it.addActionListener { item.action() }
+                    for (child in item.children) {
+                        it.add(child.toJMenuItem())
+                    }
+                }
+            }
+            else -> JMenuItem(item.text).also {
+                it.isEnabled = item.enabled
+                it.addActionListener { item.action() }
+            }
+        }
+    }
+
+    override fun setMainMenu(items: List<MenuItem?>) {
+        val component = this.component
+        if (component !is JFrame) {
+            println("GameWindow.setMainMenu: component=$component")
+            return
+        }
+
+        val bar = JMenuBar()
+        for (item in items) {
+            val mit = item.toJMenuItem()
+            if (mit is JMenu) {
+                bar.add(mit)
+            }
+        }
+        component.jMenuBar = bar
+        component.doLayout()
+        component.repaint()
+        println("GameWindow.setMainMenu: component=$component, bar=$bar")
+    }
+
     override fun showContextMenu(items: List<MenuItem?>) {
         val popupMenu = JPopupMenu()
         for (item in items) {

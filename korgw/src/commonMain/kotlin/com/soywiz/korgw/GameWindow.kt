@@ -208,7 +208,10 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         }
     }
 
-    data class MenuItem(val text: String?, val enabled: Boolean = true, val children: List<MenuItem>? = null, val action: () -> Unit)
+    data class MenuItem(val text: String?, val enabled: Boolean = true, val children: List<MenuItem>? = null, val action: () -> Unit = {})
+
+    open fun setMainMenu(items: List<MenuItem?>) {
+    }
 
     open fun showContextMenu(items: List<MenuItem?>) {
     }
