@@ -305,6 +305,8 @@ suspend fun ktreeEditorKorge(
                     window.closeAnimated()
                 }
             }
+
+            uiTextInput("HELLO WORLD").position(0.0, 64.0)
         }.centerOnStage()
         stage.launch {
             window.tween(window::x[0.0, window.x], window::y[0.0, window.y], window::width[0.0, window.width], window::height[0.0, window.height], window::alpha[0.0, 1.0], time = 300.milliseconds)
