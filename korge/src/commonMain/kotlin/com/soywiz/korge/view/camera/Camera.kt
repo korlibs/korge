@@ -99,20 +99,23 @@ class CameraContainer(
     fun getCurrentCamera(out: Camera = Camera()): Camera = out.copyFrom(currentCamera)
     fun getDefaultCamera(out: Camera = Camera()): Camera = out.setTo(x = width / 2.0, y = height / 2.0, anchorX = 0.5, anchorY = 0.5)
 
-    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera {
-        val size = Rectangle(0.0, 0.0, width, height).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
-        val scaleX = size.width / rect.width
-        val scaleY = size.height / rect.height
-        return out.setTo(
-            rect.x + rect.width * cameraAnchorX,
-            rect.y + rect.height * cameraAnchorY,
-            zoom = min(scaleX, scaleY),
-            angle = 0.degrees,
-            anchorX = cameraAnchorX,
-            anchorY = cameraAnchorY
-        )
+    companion object {
+        fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, cameraWidth: Double, cameraHeight: Double, cameraAnchorX: Double, cameraAnchorY: Double, out: Camera = Camera()): Camera {
+            val size = Rectangle(0.0, 0.0, cameraWidth, cameraHeight).place(rect.size, Anchor.TOP_LEFT, scale = scaleMode).size
+            val scaleX = size.width / rect.width
+            val scaleY = size.height / rect.height
+            return out.setTo(
+                rect.x + rect.width * cameraAnchorX,
+                rect.y + rect.height * cameraAnchorY,
+                zoom = min(scaleX, scaleY),
+                angle = 0.degrees,
+                anchorX = cameraAnchorX,
+                anchorY = cameraAnchorY
+            )
+        }
     }
 
+    fun getCameraRect(rect: Rectangle, scaleMode: ScaleMode = ScaleMode.SHOW_ALL, out: Camera = Camera()): Camera = getCameraRect(rect, scaleMode, width, height, cameraAnchorX, cameraAnchorY, out)
     fun getCameraToFit(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.SHOW_ALL, out)
     fun getCameraToCover(rect: Rectangle, out: Camera = Camera()): Camera = getCameraRect(rect, ScaleMode.COVER, out)
 
