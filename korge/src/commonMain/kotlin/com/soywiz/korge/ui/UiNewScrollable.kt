@@ -188,6 +188,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
     override fun onSizeChanged() {
         contentContainer.size(this.width, this.height)
         verticalScrollBar.position(width - 10.0, 0.0)
+        background.size(width, height)
         super.onSizeChanged()
     }
 }
