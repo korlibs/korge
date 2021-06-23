@@ -19,7 +19,6 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.interpolation.*
 import kotlin.reflect.*
 
 enum class AnchorKind { SCALING, ROTATING }
@@ -303,7 +302,7 @@ suspend fun ktreeEditorKorge(
             for (n in 0 until 10) {
             //for (n in 0 until 1) {
                 uiButton(text = "HELLO WORLD").position(n * 32.0, n * 32.0).onClick {
-                    window.close()
+                    window.closeAnimated()
                 }
             }
         }.centerOnStage()

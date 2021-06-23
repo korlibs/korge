@@ -21,6 +21,7 @@ val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaul
 open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0
+//) : FixedSizeContainer(width, height), UISkinable {
 ) : Container(), UISkinable {
     private val skinProps = LinkedHashMap<KProperty<*>, Any?>()
     override fun <T> setSkinProperty(property: KProperty<*>, value: T) { skinProps[property] = value }

@@ -206,8 +206,8 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
             //println("horizontal.scrollbarSize=${horizontal.scrollBarPos},${horizontal.scrollbarSize}(${horizontal.view.visible},${horizontal.view.alpha}), vertical.scrollbarSize=${vertical.scrollbarSize}")
             infos.fastForEach { info ->
                 info.view.visible = (info.size < info.totalSize)
-                info.viewScaledSize = info.scrollbarSize
-                info.viewPos = vertical.scrollTopLeftToScrollBarPosition(info.position)
+                info.viewScaledSize = max(info.scrollbarSize, 10.0)
+                info.viewPos = info.scrollTopLeftToScrollBarPosition(info.position)
                 //verticalScrollBar.y = scrollTop
                 if (info.pixelSpeed.absoluteValue <= 1.0) {
                     info.pixelSpeed = 0.0
