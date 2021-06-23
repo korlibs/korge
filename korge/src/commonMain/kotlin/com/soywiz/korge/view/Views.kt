@@ -24,7 +24,7 @@ import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.OS
@@ -57,7 +57,7 @@ class Views constructor(
     CoroutineScope, ViewsContainer,
 	BoundsProvider,
     DialogInterface by gameWindow,
-    AsyncCloseable,
+    Closeable,
     KTreeSerializerHolder,
     ResourcesContainer
 {
@@ -154,12 +154,18 @@ class Views constructor(
 	}
 
     @KorgeInternal
-	override suspend fun close() {
-		closeables.fastForEach { it.close() }
-		closeables.clear()
-		coroutineContext.cancel()
-		gameWindow.close()
+	override fun close() {
+        launchImmediately {
+            closeSuspend()
+        }
 	}
+
+    suspend fun closeSuspend() {
+        closeables.fastForEach { it.close() }
+        closeables.clear()
+        coroutineContext.cancel()
+        gameWindow.close()
+    }
 
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
     @KorgeInternal

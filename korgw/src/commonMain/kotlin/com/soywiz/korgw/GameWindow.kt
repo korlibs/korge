@@ -37,7 +37,7 @@ data class FileFilter(val entries: List<Pair<String, List<String>>>) {
     fun matches(fileName: String): Boolean = entries.isEmpty() || regexps.any { it.matches(fileName) }
 }
 
-interface DialogInterface {
+interface DialogInterface : Closeable {
     suspend fun browse(url: URL): Unit = unsupported()
     suspend fun alert(message: String): Unit = unsupported()
     suspend fun confirm(message: String): Boolean = unsupported()
@@ -45,6 +45,7 @@ interface DialogInterface {
     // @TODO: Provide current directory
     suspend fun openFileDialog(filter: FileFilter? = null, write: Boolean = false, multi: Boolean = false, currentDir: VfsFile? = null): List<VfsFile> =
         unsupported()
+    override fun close(): Unit = unsupported()
 }
 
 suspend fun DialogInterface.openFileDialog(filter: String? = null, write: Boolean = false, multi: Boolean = false): List<VfsFile> {
