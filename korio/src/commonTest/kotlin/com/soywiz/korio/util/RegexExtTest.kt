@@ -16,4 +16,10 @@ class RegexExtTest {
 		//assertEquals("""*+""", Regex.escapeReplacement("*+"))
 		//assertEquals("""*+""", Regex.fromLiteral("*+").pattern)
 	}
+
+    @Test
+    fun testGlob() {
+        assertEquals(true, Regex.fromGlob("*.txt").matches("hello.txt"))
+        assertEquals(false, Regex.fromGlob("*.txt").matches("hello.txt2"))
+    }
 }
