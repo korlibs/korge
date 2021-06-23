@@ -82,9 +82,10 @@ abstract class View internal constructor(
     //    }
     //}
 
-    internal open val anchorDispX get() = 0.0
-    //@KorgeInternal
-    internal open val anchorDispY get() = 0.0
+    @KorgeInternal
+    open val anchorDispX get() = 0.0
+    @KorgeInternal
+    open val anchorDispY get() = 0.0
 
     @KorgeInternal
     @PublishedApi
