@@ -134,13 +134,9 @@ data class Rectangle(
         val y = (this.height - oh) * anchor.sy
         return out.setTo(x, y, ow, oh)
     }
-
-    fun inflate(dx: Double, dy: Double = dx) {
-        x -= dx; width += 2 * dx
-        y -= dy; height += 2 * dy
-    }
-    fun inflate(dx: Float, dy: Float = dx) = inflate(dx.toDouble(), dy.toDouble())
-    fun inflate(dx: Int, dy: Int = dx) = inflate(dx.toDouble(), dy.toDouble())
+    
+    fun inflate(left: Double, top: Double = left, right: Double = left, bottom: Double = top): Rectangle = setBounds(this.left - left, this.top - top, this.right + right, this.bottom + bottom)
+    inline fun inflate(left: Number, top: Number = left, right: Number = left, bottom: Number = top): Rectangle = inflate(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
 
     fun clear() = setTo(0.0, 0.0, 0.0, 0.0)
 
