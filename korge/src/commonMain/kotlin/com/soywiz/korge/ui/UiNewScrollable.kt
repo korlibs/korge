@@ -56,7 +56,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
         val onScrollPosChange = Signal<UiNewScrollable>()
         val size get() = if (isHorizontal) scrollable.width else scrollable.height
-        val totalSize get() = container.getLocalBoundsOptimized().let { if (isHorizontal) it.right else it.bottom }
+        val totalSize get() = container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) }
         val scrollArea get() = totalSize - size
         var position: Double
             get() = -containerPos
