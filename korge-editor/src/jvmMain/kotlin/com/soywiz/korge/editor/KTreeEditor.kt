@@ -418,6 +418,7 @@ suspend fun ktreeEditorKorge(
                 it.isCtrlDown -> camera.cameraY += delta
                 else -> camera.setZoomAt(camera.localMouseXY(views), camera.cameraZoom * (1.0 - (0.1 * multiplier).withSign(delta)))
             }
+            it.stopPropagation()
             //it.isCtrlDown
         }
 

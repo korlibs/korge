@@ -1,7 +1,6 @@
 package com.soywiz.korev
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
@@ -78,6 +77,10 @@ inline operator fun <T : Event> T.invoke(callback: T.() -> Unit): T = this.apply
 
 open class Event {
 	var target: Any? = null
+    var _stopPropagation = false
+    fun stopPropagation() {
+        _stopPropagation = true
+    }
 }
 
 fun Event.preventDefault(reason: Any? = null): Nothing = throw PreventDefaultException(reason)

@@ -80,7 +80,6 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
             return (pos / d) * (size - scaledSize)
         }
 
-
         var positionRatio: Double
             get() = position / scrollArea
             set(value) {
@@ -153,6 +152,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
                 //infoAlt.position = (info.position + it.scrollDeltaX * (info.size / 16.0))
                 if (it.scrollDeltaY != 0.0) info.pixelSpeed = 0.0
                 //if (it.scrollDeltaX != 0.0) infoAlt.pixelSpeed = 0.0
+                it.stopPropagation()
             }
         }
 

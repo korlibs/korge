@@ -197,8 +197,13 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     var clickedCount = 0
 
+    fun stopPropagation() {
+        currentEvent?.stopPropagation()
+    }
+
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
     var lastEventSet = false
+    var currentEvent: MouseEvent? = null
     var lastEvent: MouseEvent = MouseEvent()
     var lastEventUp: MouseEvent = MouseEvent()
     //var lastEventDown: MouseEvent? = null
@@ -226,6 +231,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         if (!view.mouseEnabled) return
         this.views = views
         // Store event
+        this.currentEvent = event
         this.lastEvent.copyFrom(event)
         lastEventSet = true
 
