@@ -3,6 +3,7 @@ package com.soywiz.korge.ui
 import com.soywiz.korge.input.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -78,11 +79,6 @@ class UiTest : ViewsForTesting() {
     private class NativeProcess(views: Views) : NativeProcessBase(views) {
     }
 
-    private open class NativeProcessBase(val views: Views) {
-        open suspend fun alert(message: String) = views.gameWindow.alert(message)
-        open suspend fun confirm(message: String): Boolean = views.gameWindow.confirm(message)
-        open suspend fun openFileDialog(filter: String? = null, write: Boolean = false, multi: Boolean = false) = views.gameWindow.openFileDialog(filter, write, multi)
-        open suspend fun browse(url: URL) = views.gameWindow.browse(url)
-        open suspend fun close() = views.gameWindow.close()
+    private open class NativeProcessBase(val views: Views) : DialogInterface by views.gameWindow {
     }
 }
