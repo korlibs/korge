@@ -115,12 +115,19 @@ open class Container : View(true) {
 		if (view1.parent == view2.parent && view1.parent == this) {
 			val index1 = view1.index
 			val index2 = view2.index
-            __children.set(index1, view2)
+            __children[index1] = view2
             view2.index = index1
-            __children.set(index2, view1)
+            __children[index2] = view1
             view1.index = index2
 		}
 	}
+
+    fun moveChildTo(view: View, index: Int) {
+        if (view.parent != this) return
+        val targetIndex = index.clamp(0, numChildren - 1)
+        while (view.index < targetIndex) swapChildren(view, __children[view.index + 1])
+        while (view.index > targetIndex) swapChildren(view, __children[view.index - 1])
+    }
 
     fun sendChildToFront(view: View) {
         if (view.parent === this) {
@@ -230,9 +237,13 @@ open class Container : View(true) {
 	private val tempMatrix = Matrix()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
+        renderChildrenInternal(ctx)
+    }
+
+    open fun renderChildrenInternal(ctx: RenderContext) {
         fastForEachChild { child: View ->
-			child.render(ctx)
-		}
+            child.render(ctx)
+        }
     }
 
     override fun renderDebug(ctx: RenderContext) {
@@ -303,3 +314,13 @@ inline fun <T : View> Container.append(view: T): T {
 }
 
 inline fun <T : View> Container.append(view: T, block: (T) -> Unit): T = append(view).also(block)
+
+fun View.bringToTop() {
+    val parent = this.parent ?: return
+    parent.moveChildTo(this, parent.numChildren - 1)
+}
+
+fun View.bringToBottom() {
+    val parent = this.parent ?: return
+    parent.moveChildTo(this, 0)
+}
