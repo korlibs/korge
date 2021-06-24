@@ -19,9 +19,10 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
     uiSkin = UISkin {
         this.textFont = font
     }
-    uiNewScrollable(300.0, 100.0) {
-        it.mobileBehaviour = false
-        it.overflowRate = 0.0
+    uiWindow("Properties", 300.0, 100.0) {
+        it.isCloseable = false
+        it.container.mobileBehaviour = false
+        it.container.overflowRate = 0.0
         uiVerticalStack(300.0) {
             uiText("Properties") { textColor = Colors.RED }
             uiPropertyNumberRow("Alpha", *UIEditableNumberPropsList(solidRect::alpha))
@@ -30,6 +31,13 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
             uiPropertyNumberRow("Scale", *UIEditableNumberPropsList(solidRect::scaleX, solidRect::scaleY, min = -1.0, max = +1.0, clamped = false))
             uiPropertyNumberRow("Rotation", *UIEditableNumberPropsList(solidRect::rotationDeg, min = -360.0, max = +360.0, clamped = true))
             uiPropertyNumberRow("Skew", *UIEditableNumberPropsList(solidRect::skewXDeg, solidRect::skewYDeg, min = -360.0, max = +360.0, clamped = true))
+            append(UIPropertyRow("Visible")) {
+                this.container.append(uiCheckBox(checked = solidRect.visible, text = "").also {
+                    it.onChange {
+                        solidRect.visible = it.checked
+                    }
+                })
+            }
         }
     }
 }
