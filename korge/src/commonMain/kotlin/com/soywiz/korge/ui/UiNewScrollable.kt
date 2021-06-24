@@ -142,7 +142,12 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
         mouse {
             scroll {
                 showScrollBar()
-                val info = if (it.isAltDown) horizontal else vertical
+                val info = when {
+                    !horizontal.shouldBeVisible -> vertical
+                    !vertical.shouldBeVisible -> horizontal
+                    it.isAltDown -> horizontal
+                    else -> vertical
+                }
                 //val infoAlt = if (it.isAltDown) vertical else horizontal
                 info.position = (info.position + it.scrollDeltaY * (info.size / 16.0))
                 //infoAlt.position = (info.position + it.scrollDeltaX * (info.size / 16.0))
