@@ -152,8 +152,8 @@ open class Container : View(true) {
 	 */
     @KorgeUntested
 	fun addChildAt(view: View, index: Int) {
-        val aindex = index.clamp(0, this.numChildren)
         view.removeFromParent()
+        val aindex = index.clamp(0, this.numChildren)
         view.index = aindex
         val children = childrenInternal
         children.add(aindex, view)
@@ -216,7 +216,7 @@ open class Container : View(true) {
      *
      * If the [View] already belongs to a parent, it is removed from it and then added to the container.
 	 */
-	fun addChild(view: View) = this.plusAssign(view)
+	fun addChild(view: View) = addChildAt(view, numChildren)
 
     fun addChildren(views: List<View?>?) = views?.toList()?.fastForEach { it?.let { addChild(it) } }
 	/**
