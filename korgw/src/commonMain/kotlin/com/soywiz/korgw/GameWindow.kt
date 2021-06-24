@@ -602,6 +602,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
             }
         }
     }
+
+    //open fun lockMousePointer() = println("WARNING: lockMousePointer not implemented")
+    //open fun unlockMousePointer() = Unit
 }
 
 open class EventLoopGameWindow : GameWindow() {

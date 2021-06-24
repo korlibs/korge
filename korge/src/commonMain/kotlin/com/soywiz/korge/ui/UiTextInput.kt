@@ -37,7 +37,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
     private val bg = renderableView(width, height, skin)
     var skin by bg::viewRenderer
-    private val container = clipContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
+    private val container = clipContainer(0.0, 0.0)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
     private val caret = container.solidRect(2.0, 16.0, Colors.WHITE).also {
@@ -45,20 +45,29 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         it.visible = false
     }
 
+    var padding: Margin = Margin(3.0, 2.0, 2.0, 2.0)
+        set(value) {
+            field = value
+            onSizeChanged()
+        }
+
     init {
         onAttachDetach(onAttach = {
             this.stage.uiFocusManager
         })
+        onSizeChanged()
     }
 
     override fun onSizeChanged() {
         bg.setSize(width, height)
-        container.setSize(width - 4.0, height - 4.0)
+        container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
     }
 
+    val onEscPressed = Signal<UiTextInput>()
     val onReturnPressed = Signal<UiTextInput>()
     val onTextUpdated = Signal<UiTextInput>()
     val onFocused = Signal<UiTextInput>()
+    val onFocusLost = Signal<UiTextInput>()
 
     var text: String
         get() = textView.text
@@ -235,6 +244,8 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
             if (value) {
                 onFocused(this)
+            } else {
+                onFocusLost(this)
             }
         }
         get() = stage?.uiFocusedView == this
@@ -271,6 +282,9 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                         if (code == 10 || code == 13) {
                             onReturnPressed(this@UiTextInput)
                         }
+                    }
+                    27 -> {
+                        onEscPressed(this@UiTextInput)
                     }
                     else -> {
                         val range = selectionRange

@@ -8,7 +8,7 @@ import com.soywiz.korma.geom.*
 inline fun Container.uiText(
     text: String,
     width: Double = 128.0,
-    height: Double = 64.0,
+    height: Double = 18.0,
     block: @ViewDslMarker UIText.() -> Unit = {}
 ): UIText = UIText(text, width, height).addTo(this).apply(block)
 
@@ -20,7 +20,7 @@ class UIText(
     protected var bover by uiObservable(false) { updateState() }
     protected var bpressing by uiObservable(false) { updateState() }
 
-    private val background = solidRect(width, height, buttonBackColor)
+    //private val background = solidRect(width, height, buttonBackColor)
     private val textView = text(text)
 
     init {
@@ -66,7 +66,7 @@ class UIText(
         textBounds.setTo(0.0, 0.0, width, height)
         textView.setFormat(face = textFont, size = textSize.toInt(), color = textColor, align = textAlignment)
         textView.setTextBounds(textBounds)
-        background.size(width, height)
+        //background.size(width, height)
         textView.text = text
         super.renderInternal(ctx)
     }

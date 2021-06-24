@@ -25,13 +25,7 @@ inline fun Container.uiNewScrollable(
 // @TODO: Horizontal. And to be able to toggle vertical/horizontal
 @KorgeExperimental
 open class UiNewScrollable(width: Double, height: Double) : UIView(width, height) {
-    enum class Direction(val index: Int) {
-        HORIZONTAL(0), VERTICAL(1);
-        val isHorizontal get() = this == HORIZONTAL
-        val isVertical get() = this == VERTICAL
-    }
-
-    class MyScrollbarInfo(val scrollable: UiNewScrollable, val direction: Direction, val view: SolidRect) {
+    class MyScrollbarInfo(val scrollable: UiNewScrollable, val direction: UIDirection, val view: SolidRect) {
         val isHorizontal get() = direction.isHorizontal
         val isVertical get() = direction.isVertical
         val container get() = scrollable.container
@@ -56,6 +50,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
         val onScrollPosChange = Signal<UiNewScrollable>()
         val size get() = if (isHorizontal) scrollable.width else scrollable.height
+        val shouldBeVisible get() = (size < totalSize)
         val totalSize get() = container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) }
         val scrollArea get() = totalSize - size
         var position: Double
@@ -97,8 +92,8 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
     //private val verticalScrollBar = solidRect(10.0, height / 2, Colors["#57577a"])
     //private val horizontalScrollBar = solidRect(width / 2, 10.0, Colors["#57577a"])
 
-    private val vertical = MyScrollbarInfo(this, Direction.VERTICAL, solidRect(10.0, height / 2, Colors["#57577a"]))
-    private val horizontal = MyScrollbarInfo(this, Direction.HORIZONTAL, solidRect(width / 2, 10.0, Colors["#57577a"]))
+    private val vertical = MyScrollbarInfo(this, UIDirection.VERTICAL, solidRect(10.0, height / 2, Colors["#57577a"]))
+    private val horizontal = MyScrollbarInfo(this, UIDirection.HORIZONTAL, solidRect(width / 2, 10.0, Colors["#57577a"]))
     private val infos = arrayOf(horizontal, vertical)
 
     private val totalHeight: Double get() = vertical.totalSize
@@ -131,6 +126,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
     var backgroundColor: RGBA
         get() = background.colorMul
         set(value: RGBA) { background.colorMul = value }
+    var mobileBehaviour = true
 
     private fun showScrollBar() {
         horizontal.view.alpha = scrollBarAlpha
@@ -165,6 +161,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
         for (info in infos) {
             var startScrollBarPos = 0.0
             info.view.onMouseDrag {
+                if (!info.shouldBeVisible) return@onMouseDrag
                 val dxy = if (info.isHorizontal) it.dx else it.dy
                 if (it.start) {
                     startScrollBarPos = info.scrollBarPos
@@ -179,18 +176,21 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
                 showScrollBar()
                 dragging = true
                 for (info in infos) {
+                    if (!info.shouldBeVisible || !mobileBehaviour) continue
                     info.startScrollPos = info.position
                     info.pixelSpeed = 0.0
                 }
             }
 
             for (info in infos) {
+                if (!info.shouldBeVisible || !mobileBehaviour) continue
                 if (info.pixelSpeed.absoluteValue < 0.0001) {
                     info.pixelSpeed = 0.0
                 }
             }
 
             for (info in infos) {
+                if (!info.shouldBeVisible || !mobileBehaviour) continue
                 val localDXY = if (info.isHorizontal) it.localDX else it.localDY
                 info.position = info.startScrollPos - localDXY
                 if (it.end) {
@@ -205,7 +205,9 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
             if (it.milliseconds == 0.0) return@addUpdater
             //println("horizontal.scrollbarSize=${horizontal.scrollBarPos},${horizontal.scrollbarSize}(${horizontal.view.visible},${horizontal.view.alpha}), vertical.scrollbarSize=${vertical.scrollbarSize}")
             infos.fastForEach { info ->
-                info.view.visible = (info.size < info.totalSize)
+                info.view.visible = info.shouldBeVisible
+                if (!info.shouldBeVisible) return@fastForEach
+
                 info.viewScaledSize = max(info.scrollbarSize, 10.0)
                 info.viewPos = info.scrollTopLeftToScrollBarPosition(info.position)
                 //verticalScrollBar.y = scrollTop

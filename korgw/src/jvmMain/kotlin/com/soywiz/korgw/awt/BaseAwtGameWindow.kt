@@ -3,7 +3,6 @@ package com.soywiz.korgw.awt
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
@@ -400,6 +399,19 @@ abstract class BaseAwtGameWindow : GameWindow() {
             }
         })
 
+        var lastMouseX: Int = 0
+        var lastMouseY: Int = 0
+        var lockingX: Int = 0
+        var lockingY: Int = 0
+        var locking = false
+
+        mouseEvent.requestLock = {
+            val location = MouseInfo.getPointerInfo().location
+            lockingX = location.x
+            lockingY = location.y
+            locking = true
+        }
+
         fun handleMouseEvent(e: MouseEvent) {
             val ev = when (e.id) {
                 MouseEvent.MOUSE_MOVED -> com.soywiz.korev.MouseEvent.Type.MOVE
@@ -412,6 +424,16 @@ abstract class BaseAwtGameWindow : GameWindow() {
             queue {
                 val button = if (e.button == 0) MouseButton.NONE else MouseButton[e.button - 1]
                 val factor = frameScaleFactor
+
+                if (locking) {
+                    Robot().mouseMove(lockingX, lockingY)
+                    if (ev == com.soywiz.korev.MouseEvent.Type.UP) {
+                        locking = false
+                    }
+                }
+
+                lastMouseX = e.x
+                lastMouseY = e.y
                 val sx = e.x * factor
                 val sy = e.y * factor
                 val modifiers = e.modifiersEx

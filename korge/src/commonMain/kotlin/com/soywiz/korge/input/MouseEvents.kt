@@ -109,8 +109,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         }
     }
 
-    @PublishedApi
-    internal lateinit var views: Views
+    lateinit var views: Views
+        internal set
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
 

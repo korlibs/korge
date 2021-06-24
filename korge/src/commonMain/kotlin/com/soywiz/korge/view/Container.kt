@@ -152,15 +152,19 @@ open class Container : View(true) {
 	 */
     @KorgeUntested
 	fun addChildAt(view: View, index: Int) {
-		val aindex = index.clamp(0, this.numChildren)
-		view.removeFromParent()
-		view.index = aindex
+        val aindex = index.clamp(0, this.numChildren)
+        view.removeFromParent()
+        view.index = aindex
         val children = childrenInternal
         children.add(aindex, view)
-		for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
-		view.parent = this
-		view.invalidate()
+        for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
+        view.parent = this
+        view.invalidate()
+        onChildAdded(view)
 	}
+
+    protected open fun onChildAdded(view: View) {
+    }
 
 	/**
 	 * Retrieves the index of a given child [View].
@@ -219,11 +223,7 @@ open class Container : View(true) {
 	 * Alias for [addChild].
 	 */
 	operator fun plusAssign(view: View) {
-		view.removeFromParent()
-		view.index = numChildren
-		childrenInternal += view
-		view.parent = this
-		view.invalidate()
+        addChildAt(view, numChildren)
 	}
 
     /** Alias for [getChildAt] */
@@ -313,7 +313,7 @@ inline fun <T : View> Container.append(view: T): T {
     return view
 }
 
-inline fun <T : View> Container.append(view: T, block: (T) -> Unit): T = append(view).also(block)
+inline fun <T : View> Container.append(view: T, block: T.() -> Unit): T = append(view).also(block)
 
 fun View.bringToTop() {
     val parent = this.parent ?: return

@@ -1694,8 +1694,7 @@ inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder
 }
 
 fun <T : View> T.size(width: Double, height: Double): T {
-    this.width = width
-    this.height = height
+    this.setSize(width, height)
     return this
 }
 fun <T : View> T.size(width: Float, height: Float): T = size(width.toDouble(), height.toDouble())
@@ -1754,6 +1753,9 @@ fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
 fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)
 fun <T : View> T.position(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
 fun <T : View> T.position(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
+
+fun <T : View> T.bounds(left: Double, top: Double, right: Double, bottom: Double): T = xy(left, top).size(right - left, bottom - top)
+fun <T : View> T.bounds(rect: Rectangle): T = bounds(rect.left, rect.top, rect.right, rect.bottom)
 
 fun <T : View> T.positionX(x: Double): T {
     this.x = x

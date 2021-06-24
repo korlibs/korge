@@ -13,6 +13,7 @@ data class MouseDragInfo(
     var startTime: DateTime = DateTime.EPOCH,
     var time: DateTime = DateTime.EPOCH,
 ) {
+    lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
 
     val localDX get() = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
@@ -58,6 +59,7 @@ fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback
             sy = mousePos.y
             info.dx = 0.0
             info.dy = 0.0
+            info.mouseEvents = it
             callback(views(), info.set(0.0, 0.0, true, false, timeProvider.now()))
         }
         onUpAnywhere {
@@ -66,6 +68,7 @@ fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback
                 dragging = false
                 cx = mousePos.x
                 cy = mousePos.y
+                info.mouseEvents = it
                 callback(views(), info.set(cx - sx, cy - sy, false, true, timeProvider.now()))
             }
         }
@@ -74,6 +77,7 @@ fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback
                 updateMouse()
                 cx = mousePos.x
                 cy = mousePos.y
+                info.mouseEvents = it
                 callback(views(), info.set(cx - sx, cy - sy, false, false, timeProvider.now()))
             }
         }
