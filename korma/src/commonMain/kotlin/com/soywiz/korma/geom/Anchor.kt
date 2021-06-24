@@ -19,6 +19,8 @@ data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
         val BOTTOM_LEFT = Anchor(0.0, 1.0)
         val BOTTOM_CENTER = Anchor(0.5, 1.0)
         val BOTTOM_RIGHT = Anchor(1.0, 1.0)
+
+        val CENTER get() = MIDDLE_CENTER
     }
 
     override fun interpolateWith(ratio: Double, other: Anchor): Anchor = Anchor(
