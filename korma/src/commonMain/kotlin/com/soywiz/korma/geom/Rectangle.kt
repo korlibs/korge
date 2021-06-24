@@ -1,6 +1,5 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.*
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
@@ -355,3 +354,9 @@ fun Iterable<IRectangle>.bounds(target: Rectangle = Rectangle()): Rectangle {
     }
     return target.setBounds(left, top, right, bottom)
 }
+
+fun Rectangle.without(padding: Margin): Rectangle =
+    Rectangle.fromBounds(left + padding.left, top + padding.top, right - padding.right, bottom - padding.bottom)
+
+fun Rectangle.with(margin: Margin): Rectangle =
+    Rectangle.fromBounds(left - margin.left, top - margin.top, right + margin.right, bottom + margin.bottom)

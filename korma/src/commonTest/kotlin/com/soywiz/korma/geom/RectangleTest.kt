@@ -111,4 +111,10 @@ class RectangleTest {
         assertFalse(rect.contains(point.x.toFloat(), point.y.toFloat()))
         assertFalse(rect.contains(point.x, point.y))
     }
+
+    @Test
+    fun testMargin() {
+        assertEquals(Rectangle.fromBounds(10, 10, 90, 90), Rectangle(0, 0, 100, 100).without(Margin(10.0)))
+        assertEquals(Rectangle.fromBounds(-10, -10, 110, 110), Rectangle(0, 0, 100, 100).with(Margin(10.0)))
+    }
 }
