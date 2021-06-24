@@ -49,6 +49,12 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
     var title: String by titleView::text
     val container = uiNewScrollable(width, height - titleHeight).position(0.0, titleHeight)
+    var isCloseable: Boolean = true
+        set(value) {
+            field = value
+            closeButton.visible = value
+        }
+
     private val scaleHandlerRight = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {
         val sh = this
         anchor(Anchor.TOP_CENTER)
