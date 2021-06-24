@@ -58,9 +58,8 @@ public actual open class FastArrayList<E> internal constructor(
     }
 
     actual override fun add(index: Int, element: E): Unit {
-        val array = this.array
         allocSpace(index, 1)
-        array[index] = element
+        this.array[index] = element
     }
 
     actual override fun addAll(elements: Collection<E>): Boolean {

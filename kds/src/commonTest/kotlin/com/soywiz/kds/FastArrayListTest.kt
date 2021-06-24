@@ -35,6 +35,21 @@ class FastArrayListTest {
         fal.add(0, 1)
         fal.add(1, 2)
         assertEquals("[1, 2, 3, 4]", fal.toString())
+    }
 
+    @Test
+    fun testAddLast() {
+        run {
+            val a = ArrayList<Int>(1)
+            a.add(0, 0)
+            a.add(1, 1)
+            assertEquals(listOf(0, 1), a.toList())
+        }
+        run {
+            val a = FastArrayList<Int>(1)
+            a.add(0, 0)
+            a.add(1, 1)
+            assertEquals(listOf(0, 1), a.toList())
+        }
     }
 }
