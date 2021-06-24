@@ -76,7 +76,10 @@ public actual open class FastArrayList<E> internal constructor(
 
     private fun allocSpace(index: Int, count: Int) {
         ensureCapacity(this.size + count)
-        arraycopy(array, index, array, index + count, _size - index)
+        val displaceCount = _size - index
+        if (displaceCount > 0) {
+            arraycopy(array, index, array, index + count, displaceCount)
+        }
         _size += count
     }
 
