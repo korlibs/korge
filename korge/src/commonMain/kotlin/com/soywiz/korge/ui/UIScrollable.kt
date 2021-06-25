@@ -7,7 +7,9 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.interpolation.*
@@ -51,7 +53,8 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         val onScrollPosChange = Signal<UIScrollable>()
         val size get() = if (isHorizontal) scrollable.width else scrollable.height
         val shouldBeVisible get() = (size < totalSize)
-        val totalSize get() = container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) }
+        val totalSize get() = (container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) })
+            //.also { println("totalSize=$it") }
         val scrollArea get() = totalSize - size
         var position: Double
             get() = -containerPos
@@ -86,7 +89,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         var startScrollPos = 0.0
     }
 
-    private val background = solidRect(width, height, Colors["#161a1d"])
+    //private val background = solidRect(width, height, Colors["#161a1d"])
     private val contentContainer = fixedSizeContainer(width, height, clip = true)
     val container = contentContainer.container()
     //private val verticalScrollBar = solidRect(10.0, height / 2, Colors["#57577a"])
@@ -123,15 +126,18 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
     var timeScrollBar = 0.seconds
     var autohideScrollBar = false
     var scrollBarAlpha = 0.75
-    var backgroundColor: RGBA
-        get() = background.colorMul
-        set(value: RGBA) { background.colorMul = value }
+    var backgroundColor: RGBA = Colors["#161a1d"]
     var mobileBehaviour = true
 
     private fun showScrollBar() {
         horizontal.view.alpha = scrollBarAlpha
         vertical.view.alpha = scrollBarAlpha
         timeScrollBar = 0.seconds
+    }
+
+    override fun renderInternal(ctx: RenderContext) {
+        ctx.batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = backgroundColor * renderColorMul)
+        super.renderInternal(ctx)
     }
 
     init {
@@ -258,7 +264,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         contentContainer.size(this.width, this.height)
         vertical.view.position(width - 10.0, 0.0)
         horizontal.view.position(0.0, height - 10.0)
-        background.size(width, height)
+        //background.size(width, height)
         super.onSizeChanged()
     }
 }

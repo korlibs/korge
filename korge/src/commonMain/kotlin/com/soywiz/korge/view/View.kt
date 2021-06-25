@@ -175,14 +175,21 @@ abstract class View internal constructor(
     /** Property used for interpolable views like morph shapes, progress bars etc. */
     open var ratio: Double = 0.0
 
+    @PublishedApi internal var _index: Int = 0
+    @PublishedApi internal var _parent: Container? = null
+
     /** The index the child has in its parent */
-    var index: Int = 0; internal set
+    var index: Int
+        get() = _index
+        internal set(value) { _index = value }
 
     /** Ratio speed of this node, affecting all the [UpdateComponent] */
     var speed: Double = 1.0
 
     /** Parent [Container] of [this] View if any, or null */
-    var parent: Container? = null; internal set
+    var parent: Container?
+        get() = _parent
+        internal set(value) { _parent = value }
 
     /** Optional name of this view */
     var name: String? = null
@@ -307,6 +314,8 @@ abstract class View internal constructor(
     var globalY: Double
         get() = parent?.localToGlobalY(x, y) ?: y;
         set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
+
+    fun globalXY(out: Point = Point()): Point = out.setTo(globalX, globalY)
 
     /**
      * Changes the [width] and [height] to match the parameters.

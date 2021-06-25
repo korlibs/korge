@@ -211,6 +211,20 @@ open class Container : View(true) {
         __children.clear()
 	}
 
+    inline fun removeChildrenIf(cond: (index: Int, child: View) -> Boolean) {
+        var removedCount = 0
+        forEachChildWithIndex { index, child ->
+            if (cond(index, child)) {
+                child._parent = null
+                child._index = -1
+                removedCount++
+            } else {
+                child._index -= removedCount
+            }
+        }
+        for (n in 0 until removedCount) __children.removeAt(__children.size - 1)
+    }
+
 	/**
      * Adds a child [View] to the container.
      *

@@ -21,8 +21,7 @@ val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaul
 open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0
-//) : FixedSizeContainer(width, height), UISkinable {
-) : Container(), UISkinable {
+) : FixedSizeContainer(width, height), UISkinable {
     private val skinProps = LinkedHashMap<KProperty<*>, Any?>()
     override fun <T> setSkinProperty(property: KProperty<*>, value: T) { skinProps[property] = value }
     override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? = (skinProps[property] as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
@@ -30,7 +29,11 @@ open class UIView(
 	override var width: Double by uiObservable(width) { onSizeChanged() }
 	override var height: Double by uiObservable(height) { onSizeChanged() }
 
-	var enabled
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        out.setTo(0.0, 0.0, width, height)
+    }
+
+    var enabled
 		get() = mouseEnabled
 		set(value) {
 			mouseEnabled = value

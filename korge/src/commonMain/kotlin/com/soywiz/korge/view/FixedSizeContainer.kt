@@ -59,3 +59,10 @@ open class FixedSizeContainer(
         }
     }
 }
+
+fun View.getVisibleGlobalArea(out: Rectangle = Rectangle()): Rectangle {
+    forEachAscendant(includeThis = true) {
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds(out)
+    }
+    return out.setTo(0.0, 0.0, 4096.0, 4096.0)
+}
