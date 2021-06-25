@@ -414,29 +414,7 @@ class KTreeRoot(width: Double, height: Double) : FixedSizeContainer(width, heigh
     override fun renderInternal(ctx: RenderContext) {
         super.renderInternal(ctx)
         if (showGrid) {
-            val ctxLine = ctx.debugLineRenderContext
-            val matrix = globalMatrix
-            val transform = matrix.toTransform()
-            ctxLine.draw(matrix) {
-                val rect = RectangleInt(0, 0, width.toInt(), height.toInt())
-                val dx = transform.scaleX * grid.width
-                val dy = transform.scaleY * grid.height
-                //println("dxy: $dx, $dy")
-                val smallX = dx < 3
-                val smallY = dy < 3
-                if (!smallX && !smallY) {
-                    ctxLine.drawVector(Colors["#d3d3d367"]) {
-                        //ctxLine.drawVector(Colors.RED) {
-                        grid.draw(ctxLine, rect)
-                    }
-                }
-                ctxLine.drawVector(Colors.BLACK) {
-                    rect(rect)
-                }
-                ctxLine.drawVector(Colors.WHITE) {
-                    rect(rect.left - 1, rect.top - 1, rect.width + 2, rect.height + 2)
-                }
-            }
+            grid.draw(ctx, width, height, globalMatrix)
         }
     }
 }
