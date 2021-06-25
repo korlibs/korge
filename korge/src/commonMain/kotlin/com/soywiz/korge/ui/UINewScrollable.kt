@@ -160,7 +160,7 @@ open class UINewScrollable(width: Double, height: Double) : UIView(width, height
         var dragging = false
 
         for (info in infos) {
-            info.view.decorateOutOverAlpha({ 1.0 }, { scrollBarAlpha })
+            info.view.decorateOutOverAlphaSimple { if (it) 1.0 else scrollBarAlpha }
         }
 
         for (info in infos) {
