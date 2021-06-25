@@ -9,6 +9,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
+@Deprecated("Use UINewScrollable")
 inline fun Container.uiScrollBar(
     width: Double,
     height: Double,
@@ -21,6 +22,7 @@ inline fun Container.uiScrollBar(
     block: @ViewDslMarker UIScrollBar.() -> Unit = {}
 ): UIScrollBar = UIScrollBar(width, height, current, pageSize, totalSize, buttonSize, stepSize, direction).addTo(this).apply(block)
 
+@Deprecated("Use UINewScrollable")
 open class UIScrollBar(
     width: Double,
     height: Double,

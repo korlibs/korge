@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
 
+@Deprecated("Use UINewScrollable")
 inline fun Container.uiScrollableArea(
     width: Double = 256.0,
     height: Double = 256.0,
@@ -17,6 +18,7 @@ inline fun Container.uiScrollableArea(
 
 // @TODO: Optimize this!
 // @TODO: Add an actualContainer = this inside Container
+@Deprecated("Use UINewScrollable")
 open class UIScrollableArea(
     width: Double = 256.0,
     height: Double = 256.0,
