@@ -17,15 +17,15 @@ import kotlin.math.*
 inline fun Container.uiNewScrollable(
     width: Double = 256.0,
     height: Double = 256.0,
-    config: UiNewScrollable.() -> Unit = {},
-    block: @ViewDslMarker Container.(UiNewScrollable) -> Unit = {}
-): UiNewScrollable = UiNewScrollable(width, height)
+    config: UINewScrollable.() -> Unit = {},
+    block: @ViewDslMarker Container.(UINewScrollable) -> Unit = {}
+): UINewScrollable = UINewScrollable(width, height)
     .addTo(this).apply(config).also { block(it.container, it) }
 
 // @TODO: Horizontal. And to be able to toggle vertical/horizontal
 @KorgeExperimental
-open class UiNewScrollable(width: Double, height: Double) : UIView(width, height) {
-    class MyScrollbarInfo(val scrollable: UiNewScrollable, val direction: UIDirection, val view: SolidRect) {
+open class UINewScrollable(width: Double, height: Double) : UIView(width, height) {
+    class MyScrollbarInfo(val scrollable: UINewScrollable, val direction: UIDirection, val view: SolidRect) {
         val isHorizontal get() = direction.isHorizontal
         val isVertical get() = direction.isVertical
         val container get() = scrollable.container
@@ -48,7 +48,7 @@ open class UiNewScrollable(width: Double, height: Double) : UIView(width, height
 
         val overflowPixelsBegin get() = if (isHorizontal) scrollable.overflowPixelsLeft else scrollable.overflowPixelsTop
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
-        val onScrollPosChange = Signal<UiNewScrollable>()
+        val onScrollPosChange = Signal<UINewScrollable>()
         val size get() = if (isHorizontal) scrollable.width else scrollable.height
         val shouldBeVisible get() = (size < totalSize)
         val totalSize get() = container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) }

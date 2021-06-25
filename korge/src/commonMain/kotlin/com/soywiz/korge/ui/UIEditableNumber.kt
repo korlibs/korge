@@ -9,20 +9,19 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
-import kotlin.reflect.*
 
 @KorgeExperimental
 inline fun Container.uiEditableNumber(
     value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, decimals: Int = 2, clamped: Boolean = true,
     width: Double = 64.0,
     height: Double = 18.0,
-    block: @ViewDslMarker UiEditableNumber.() -> Unit = {}
-): UiEditableNumber = UiEditableNumber(value, min, max, decimals, clamped, width, height)
+    block: @ViewDslMarker UIEditableNumber.() -> Unit = {}
+): UIEditableNumber = UIEditableNumber(value, min, max, decimals, clamped, width, height)
     .addTo(this).also { block(it) }
 
 // @TODO: lock cursor while dragging
 @KorgeExperimental
-class UiEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, var decimals: Int = 2, var clamped: Boolean = true, width: Double = 64.0, height: Double = 18.0) : UIView(width, height) {
+class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0, var decimals: Int = 2, var clamped: Boolean = true, width: Double = 64.0, height: Double = 18.0) : UIView(width, height) {
     private val textView = uiText("", width, height)
     private val textInputView = uiTextInput("", width, height)
         .also { it.visible = false }
@@ -40,7 +39,7 @@ class UiEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
         return value.toStringDecimal(decimals)
     }
 
-    val onSetValue = Signal<UiEditableNumber>()
+    val onSetValue = Signal<UIEditableNumber>()
     var value: Double = Double.NaN
         set(value) {
             val clampedValue = if (clamped) value.clamp(min, max) else value
@@ -85,10 +84,10 @@ class UiEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
         }
         onMouseDrag {
             if (it.start) {
-                start = this@UiEditableNumber.value
+                start = this@UIEditableNumber.value
             }
             val dist = (max - min).absoluteValue
-            this@UiEditableNumber.value = (start + dist * (it.dx / (width * 2)))
+            this@UIEditableNumber.value = (start + dist * (it.dx / (width * 2)))
             it.mouseEvents.stopPropagation()
         }
     }

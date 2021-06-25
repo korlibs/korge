@@ -1,28 +1,24 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.component.*
-import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
 
 @KorgeExperimental
-interface UiFocusable {
+interface UIFocusable {
     var tabIndex: Int
     var focused: Boolean
 }
 
 @KorgeExperimental
-fun UiFocusable.focus() { focused = true }
+fun UIFocusable.focus() { focused = true }
 @KorgeExperimental
-fun UiFocusable.blur() { focused = false }
+fun UIFocusable.blur() { focused = false }
 
 @KorgeExperimental
-class UiFocusManager(override val view: Stage) : KeyComponent {
+class UIFocusManager(override val view: Stage) : KeyComponent {
     val stage = view
     val gameWindow get() = view.gameWindow
     var uiFocusedView: UIView? = null
@@ -47,9 +43,9 @@ class UiFocusManager(override val view: Stage) : KeyComponent {
         if (event.type == KeyEvent.Type.DOWN && event.key == Key.TAB) {
             val shift = event.shift
             val dir = if (shift) -1 else +1
-            val focusables = stage.descendantsOfType<UiFocusable>()
+            val focusables = stage.descendantsOfType<UIFocusable>()
             val sortedFocusables = focusables.sortedBy { it.tabIndex }
-            val index = sortedFocusables.indexOf(uiFocusedView as? UiFocusable?).takeIf { it >= 0 }
+            val index = sortedFocusables.indexOf(uiFocusedView as? UIFocusable?).takeIf { it >= 0 }
             sortedFocusables
                 .getCyclicOrNull(
                     when {
@@ -78,7 +74,7 @@ class UiFocusManager(override val view: Stage) : KeyComponent {
 }
 
 @KorgeExperimental
-val Stage.uiFocusManager get() = this.getOrCreateComponentKey { UiFocusManager(this) }
+val Stage.uiFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
 @KorgeExperimental
 var Stage.uiFocusedView: UIView?
     get() = uiFocusManager.uiFocusedView

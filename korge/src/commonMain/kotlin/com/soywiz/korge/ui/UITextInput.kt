@@ -24,15 +24,15 @@ inline fun Container.uiTextInput(
     width: Double = 128.0,
     height: Double = 24.0,
     skin: ViewRenderer = BoxUISkin(),
-    block: @ViewDslMarker UiTextInput.() -> Unit = {}
-): UiTextInput = UiTextInput(initialText, width, height, skin)
+    block: @ViewDslMarker UITextInput.() -> Unit = {}
+): UITextInput = UITextInput(initialText, width, height, skin)
     .addTo(this).also { block(it) }
 
 /**
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UiTextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) : UIView(width, height), UiFocusable {
+class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) : UIView(width, height), UIFocusable {
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
     private val bg = renderableView(width, height, skin)
@@ -63,11 +63,11 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
     }
 
-    val onEscPressed = Signal<UiTextInput>()
-    val onReturnPressed = Signal<UiTextInput>()
-    val onTextUpdated = Signal<UiTextInput>()
-    val onFocused = Signal<UiTextInput>()
-    val onFocusLost = Signal<UiTextInput>()
+    val onEscPressed = Signal<UITextInput>()
+    val onReturnPressed = Signal<UITextInput>()
+    val onTextUpdated = Signal<UITextInput>()
+    val onFocused = Signal<UITextInput>()
+    val onFocusLost = Signal<UITextInput>()
 
     var text: String
         get() = textView.text
@@ -226,7 +226,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
             if (value) {
                 if (stage?.uiFocusedView != this) {
-                    (stage?.uiFocusedView as? UiFocusable?)?.blur()
+                    (stage?.uiFocusedView as? UIFocusable?)?.blur()
                     stage?.uiFocusedView = this
                 }
                 caret.visible = true
@@ -236,7 +236,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 if (stage?.uiFocusedView == this) {
                     stage?.uiFocusedView = null
                     caret.visible = false
-                    if (stage?.uiFocusedView !is UiTextInput) {
+                    if (stage?.uiFocusedView !is UITextInput) {
                         stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
                     }
                 }
@@ -280,11 +280,11 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                     8, 127 -> Unit // backspace, backspace (handled by down event)
                     9, 10, 13 -> { // tab & return: Do nothing in single line text inputs
                         if (code == 10 || code == 13) {
-                            onReturnPressed(this@UiTextInput)
+                            onReturnPressed(this@UITextInput)
                         }
                     }
                     27 -> {
-                        onEscPressed(this@UiTextInput)
+                        onEscPressed(this@UITextInput)
                     }
                     else -> {
                         val range = selectionRange
@@ -351,7 +351,7 @@ class UiTextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 }
             }
             upOutside {
-                val isFocusedView = stage?.uiFocusedView == this@UiTextInput
+                val isFocusedView = stage?.uiFocusedView == this@UITextInput
                 //println("UiTextInput.upOutside: dragging=$dragging, isFocusedView=$isFocusedView, view=${it.view}, stage?.uiFocusedView=${stage?.uiFocusedView}")
                 if (!dragging && isFocusedView) {
                     //println(" -- BLUR")
