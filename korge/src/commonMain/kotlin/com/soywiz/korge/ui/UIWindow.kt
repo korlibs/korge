@@ -49,7 +49,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         onClick { closeAnimated() }
     }
     var title: String by titleView::text
-    val container = uiNewScrollable(width, height - titleHeight).position(0.0, titleHeight)
+    val container = uiScrollable(width, height - titleHeight).position(0.0, titleHeight)
     var isCloseable: Boolean = true
         set(value) {
             field = value

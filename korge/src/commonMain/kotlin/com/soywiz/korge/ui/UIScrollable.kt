@@ -14,18 +14,18 @@ import com.soywiz.korma.interpolation.*
 import kotlin.math.*
 
 @KorgeExperimental
-inline fun Container.uiNewScrollable(
+inline fun Container.uiScrollable(
     width: Double = 256.0,
     height: Double = 256.0,
-    config: UINewScrollable.() -> Unit = {},
-    block: @ViewDslMarker Container.(UINewScrollable) -> Unit = {}
-): UINewScrollable = UINewScrollable(width, height)
+    config: UIScrollable.() -> Unit = {},
+    block: @ViewDslMarker Container.(UIScrollable) -> Unit = {}
+): UIScrollable = UIScrollable(width, height)
     .addTo(this).apply(config).also { block(it.container, it) }
 
 // @TODO: Horizontal. And to be able to toggle vertical/horizontal
 @KorgeExperimental
-open class UINewScrollable(width: Double, height: Double) : UIView(width, height) {
-    class MyScrollbarInfo(val scrollable: UINewScrollable, val direction: UIDirection, val view: SolidRect) {
+open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
+    class MyScrollbarInfo(val scrollable: UIScrollable, val direction: UIDirection, val view: SolidRect) {
         val isHorizontal get() = direction.isHorizontal
         val isVertical get() = direction.isVertical
         val container get() = scrollable.container
@@ -48,7 +48,7 @@ open class UINewScrollable(width: Double, height: Double) : UIView(width, height
 
         val overflowPixelsBegin get() = if (isHorizontal) scrollable.overflowPixelsLeft else scrollable.overflowPixelsTop
         val overflowPixelsEnd get() = if (isHorizontal) scrollable.overflowPixelsRight else scrollable.overflowPixelsBottom
-        val onScrollPosChange = Signal<UINewScrollable>()
+        val onScrollPosChange = Signal<UIScrollable>()
         val size get() = if (isHorizontal) scrollable.width else scrollable.height
         val shouldBeVisible get() = (size < totalSize)
         val totalSize get() = container.getLocalBoundsOptimized().let { if (isHorizontal) max(scrollable.width, it.right) else max(scrollable.height, it.bottom) }
@@ -211,7 +211,6 @@ open class UINewScrollable(width: Double, height: Double) : UIView(width, height
             //println("horizontal.scrollbarSize=${horizontal.scrollBarPos},${horizontal.scrollbarSize}(${horizontal.view.visible},${horizontal.view.alpha}), vertical.scrollbarSize=${vertical.scrollbarSize}")
             infos.fastForEach { info ->
                 info.view.visible = info.shouldBeVisible
-                if (!info.shouldBeVisible) return@fastForEach
 
                 info.viewScaledSize = max(info.scrollbarSize, 10.0)
                 info.viewPos = info.scrollTopLeftToScrollBarPosition(info.position)
