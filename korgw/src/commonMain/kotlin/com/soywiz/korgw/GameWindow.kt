@@ -194,7 +194,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
                 (45.degrees * 7) to RESIZE_NORTH_EAST,
             )
 
-            fun fromAngle(angle: Angle?): ICursor? {
+            fun fromAngleResize(angle: Angle?): ICursor? {
                 var minDistance = 360.degrees
                 var cursor: ICursor? = null
                 if (angle != null) {
@@ -209,7 +209,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
                 return cursor
             }
 
-            fun resizeFromAnchor(anchor: Anchor): ICursor? {
+            fun fromAnchorResize(anchor: Anchor): ICursor? {
                 return when (anchor) {
                     Anchor.TOP_LEFT -> RESIZE_NORTH_WEST
                     Anchor.TOP -> RESIZE_NORTH

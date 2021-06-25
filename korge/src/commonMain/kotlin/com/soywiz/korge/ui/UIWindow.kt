@@ -62,7 +62,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT_BLACK) {
             val sh = this
             anchor(Anchor.CENTER)
-            cursor = GameWindow.Cursor.resizeFromAnchor(anchor)
+            cursor = GameWindow.Cursor.fromAnchorResize(anchor)
             // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
             sh.draggable {
                 sh.x = getExpectedX()
