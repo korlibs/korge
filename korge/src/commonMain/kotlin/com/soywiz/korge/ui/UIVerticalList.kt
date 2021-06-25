@@ -54,12 +54,11 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         return index.toInt()
     }
 
-    override fun invalidate() {
+    fun invalidateList() {
         dirty = true
         removeChildren()
         viewsByIndex.clear()
         updateList()
-        super.invalidate()
     }
 
     fun updateList() {
