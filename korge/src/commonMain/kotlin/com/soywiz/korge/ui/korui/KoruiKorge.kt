@@ -1,9 +1,10 @@
-package com.soywiz.korge.ui
+package com.soywiz.korge.ui.korui
 
 import com.soywiz.kds.*
 import com.soywiz.korev.*
 import com.soywiz.korge.component.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
