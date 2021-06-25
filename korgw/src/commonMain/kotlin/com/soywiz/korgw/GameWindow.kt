@@ -227,10 +227,32 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     data class MenuItem(val text: String?, val enabled: Boolean = true, val children: List<MenuItem>? = null, val action: () -> Unit = {})
 
-    open fun setMainMenu(items: List<MenuItem?>) {
+    open fun setMainMenu(items: List<MenuItem>) {
     }
 
-    open fun showContextMenu(items: List<MenuItem?>) {
+    open fun showContextMenu(items: List<MenuItem>) {
+    }
+
+    class MenuItemBuilder(private var text: String? = null, private var enabled: Boolean = true, private var action: () -> Unit = {}) {
+        @PublishedApi internal val children = arrayListOf<MenuItem>()
+
+        inline fun separator() {
+            item(null)
+        }
+
+        inline fun item(text: String?, enabled: Boolean = true, noinline action: () -> Unit = {}, block: MenuItemBuilder.() -> Unit = {}): MenuItem {
+            val mib = MenuItemBuilder(text, enabled, action)
+            block(mib)
+            val item = mib.toItem()
+            children.add(item)
+            return item
+        }
+
+        fun toItem() = MenuItem(text, enabled, children.ifEmpty { null }, action)
+    }
+
+    fun showContextMenu(block: MenuItemBuilder.() -> Unit) {
+        showContextMenu(MenuItemBuilder().also(block).toItem().children ?: listOf())
     }
 
     open val isSoftKeyboardVisible: Boolean get() = false
@@ -247,7 +269,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
     open var cursor: ICursor = Cursor.DEFAULT
 
     override val key: CoroutineContext.Key<*> get() = CoroutineKey
-    companion object CoroutineKey : CoroutineContext.Key<GameWindow>
+    companion object CoroutineKey : CoroutineContext.Key<GameWindow> {
+        val MenuItemSeparatror = MenuItem(null)
+    }
 
     override val ag: AG = LogAG()
     open val coroutineDispatcher: GameWindowCoroutineDispatcher = GameWindowCoroutineDispatcher()

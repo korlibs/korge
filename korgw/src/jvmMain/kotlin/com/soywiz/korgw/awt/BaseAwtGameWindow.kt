@@ -87,7 +87,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
         }
     }
 
-    override fun setMainMenu(items: List<MenuItem?>) {
+    override fun setMainMenu(items: List<MenuItem>) {
         val component = this.component
         if (component !is JFrame) {
             println("GameWindow.setMainMenu: component=$component")
@@ -107,7 +107,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
         println("GameWindow.setMainMenu: component=$component, bar=$bar")
     }
 
-    override fun showContextMenu(items: List<MenuItem?>) {
+    override fun showContextMenu(items: List<MenuItem>) {
         val popupMenu = JPopupMenu()
         for (item in items) {
             popupMenu.add(item.toJMenuItem())
