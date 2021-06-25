@@ -353,3 +353,8 @@ open class Text(
         super.buildDebugComponent(views, container)
     }
 }
+
+fun <T : Text> T.autoSize(value: Boolean): T {
+    this.autoSize = value
+    return this
+}
