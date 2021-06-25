@@ -433,7 +433,7 @@ suspend fun ktreeEditorKorge(
                     GameWindow.MenuItem("Copy", enabled = hasView) { actions.requestCopy() },
                     GameWindow.MenuItem("Paste") { actions.requestPaste() },
                     GameWindow.MenuItem("Duplicate") { actions.requestDuplicate() },
-                    null,
+                    GameWindow.MenuItemSeparatror,
                     GameWindow.MenuItem("Send to back", enabled = hasView) { actions.sendToBack() },
                     GameWindow.MenuItem("Bring to front", enabled = hasView) { actions.sendToFront() },
                     GameWindow.MenuItem("Add", children = myComponentFactory.getViewFactories(views).map {
