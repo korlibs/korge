@@ -19,9 +19,30 @@ data class MouseDragInfo(
     val localDX get() = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
     val localDY get() = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
 
+    private var lastDx: Double = Double.NaN
+    private var lastDy: Double = Double.NaN
+
+    var deltaDx: Double = 0.0
+    var deltaDy: Double = 0.0
+
+    fun reset() {
+        lastDx = Double.NaN
+        lastDy = Double.NaN
+        deltaDx = 0.0
+        deltaDy = 0.0
+        dx = 0.0
+        dy = 0.0
+    }
+
     fun set(dx: Double, dy: Double, start: Boolean, end: Boolean, time: DateTime): MouseDragInfo {
         this.dx = dx
         this.dy = dy
+        if (!lastDx.isNaN() && !lastDy.isNaN()) {
+            this.deltaDx = lastDx - dx
+            this.deltaDy = lastDy - dy
+        }
+        this.lastDx = dx
+        this.lastDy = dy
         this.start = start
         this.end = end
         if (start) this.startTime = time
@@ -57,8 +78,7 @@ fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback
             dragging = true
             sx = mousePos.x
             sy = mousePos.y
-            info.dx = 0.0
-            info.dy = 0.0
+            info.reset()
             info.mouseEvents = it
             callback(views(), info.set(0.0, 0.0, true, false, timeProvider.now()))
         }

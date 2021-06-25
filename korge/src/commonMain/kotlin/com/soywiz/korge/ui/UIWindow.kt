@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.annotations.*
@@ -55,6 +56,89 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             closeButton.visible = value
         }
 
+    class ScaleHandler(val window: UIWindow, val anchor: Anchor) {
+        val isCorner = (anchor.sx == anchor.sy)
+
+        val view = window.solidRect(0.0, 0.0, Colors.TRANSPARENT_BLACK) {
+            val sh = this
+            anchor(Anchor.CENTER)
+            cursor = GameWindow.Cursor.resizeFromAnchor(anchor)
+            // @TODO: clamping shouldn't affect (we should use it.start and get initial values to compute based on start and not on deltas)
+            sh.draggable {
+                sh.x = getExpectedX()
+                sh.y = getExpectedY()
+
+                val widthSign = if (anchor.sx < 0.5) +1 else -1
+                val heightSign = if (anchor.sy < 0.5) +1 else -1
+
+                val newWidth = (window.scaledWidth + it.deltaDx * widthSign).clamp(window.minWidth, window.maxWidth)
+                val deltaWidth = window.scaledWidth - newWidth
+                val newHeight = (window.scaledHeight + it.deltaDy * heightSign).clamp(window.minHeight, window.maxHeight)
+                val deltaHeight = window.scaledHeight - newHeight
+
+                if (anchor.sy == 0.0) window.y += deltaHeight
+                if (anchor.sy != 0.5) window.scaledHeight = newHeight
+
+                if (anchor.sx == 0.0) window.x += deltaWidth
+                if (anchor.sx != 0.5) window.scaledWidth = newWidth
+                ////this@UIWindow.scaledWidth = sh.x
+            }
+        }
+
+        private fun getExpectedX() = window.width * anchor.sx + when (anchor.sx) {
+            0.0 -> -2.0
+            1.0 -> +2.0
+            else -> 0.0
+        }
+        private fun getExpectedY() = window.height * anchor.sy + when (anchor.sy) {
+            0.0 -> -2.0
+            1.0 -> +2.0
+            else -> 0.0
+        }
+
+        fun resized(width: Double, height: Double) {
+            view
+                .position(getExpectedX(), getExpectedY())
+                .size(
+                    when {
+                        anchor.sx == 0.5 -> width
+                        //corner -> 14.0
+                        else -> 10.0
+                    }, when {
+                        anchor.sy == 0.5 -> height
+                        //corner -> 14.0
+                        else -> 10.0
+                    }
+                )
+            //view.bounds(width / 2, 0.0, width, 10.0)
+        }
+    }
+
+    private val anchors = listOf(
+        Anchor.TOP_LEFT, Anchor.TOP, Anchor.TOP_RIGHT, Anchor.RIGHT,
+        Anchor.BOTTOM_RIGHT, Anchor.BOTTOM, Anchor.BOTTOM_LEFT, Anchor.LEFT
+    )
+
+    private val scaleHandlers = anchors.map { ScaleHandler(this, it) }
+
+    /*
+    private val scaleHandlerTop = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {
+        val sh = this
+        anchor(Anchor.MIDDLE_LEFT)
+        position(0.0, 0.0)
+        cursor = GameWindow.Cursor.RESIZE_NORTH
+        sh.draggable {
+            sh.x = 0.0
+            sh.y = 0.0
+
+            val newHeight = (this@UIWindow.scaledHeight + it.deltaDy).clamp(minHeight, maxHeight)
+            val realDelta = this@UIWindow.scaledHeight - newHeight
+
+            this@UIWindow.y += realDelta
+            this@UIWindow.scaledHeight = newHeight
+            ////this@UIWindow.scaledWidth = sh.x
+        }
+    }
     private val scaleHandlerRight = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {
         val sh = this
         anchor(Anchor.TOP_CENTER)
@@ -88,6 +172,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
             this@UIWindow.setSize(sh.x, sh.y)
         }
     }
+    */
 
     init {
         this.mouse.down { this.bringToTop() }
@@ -100,9 +185,7 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
         titleContainer.setSize(width, titleHeight)
         container.setSize(width, height - titleHeight)
         closeButton.position(width - titleHeight - buttonSeparation, buttonSeparation)
-        scaleHandler.position(width + 4.0, height + 4.0).size(10.0, 10.0)
-        scaleHandlerRight.position(width + 4.0, 0.0).size(10.0, height)
-        scaleHandlerBottom.position(0.0, height + 4.0).size(width, 10.0)
+        scaleHandlers.fastForEach { it.resized(width, height) }
     }
 
     fun close() {

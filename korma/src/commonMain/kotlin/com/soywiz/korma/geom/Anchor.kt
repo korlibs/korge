@@ -20,6 +20,10 @@ data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
         val BOTTOM_CENTER = Anchor(0.5, 1.0)
         val BOTTOM_RIGHT = Anchor(1.0, 1.0)
 
+        val TOP get() = TOP_CENTER
+        val LEFT get() = MIDDLE_LEFT
+        val RIGHT get() = MIDDLE_RIGHT
+        val BOTTOM get() = BOTTOM_CENTER
         val CENTER get() = MIDDLE_CENTER
     }
 

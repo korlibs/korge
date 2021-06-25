@@ -208,6 +208,20 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
                 }
                 return cursor
             }
+
+            fun resizeFromAnchor(anchor: Anchor): ICursor? {
+                return when (anchor) {
+                    Anchor.TOP_LEFT -> RESIZE_NORTH_WEST
+                    Anchor.TOP -> RESIZE_NORTH
+                    Anchor.TOP_RIGHT -> RESIZE_NORTH_EAST
+                    Anchor.LEFT -> RESIZE_WEST
+                    Anchor.RIGHT -> RESIZE_EAST
+                    Anchor.BOTTOM_LEFT -> RESIZE_SOUTH_WEST
+                    Anchor.BOTTOM -> RESIZE_SOUTH
+                    Anchor.BOTTOM_RIGHT -> RESIZE_SOUTH_EAST
+                    else -> null
+                }
+            }
         }
     }
 
