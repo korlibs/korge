@@ -525,11 +525,11 @@ val GetOpenFileNameWFunc by lazy {
     GetProcAddress(COMDLG32_DLL, "GetOpenFileNameW") as CPointer<CFunction<Function1<CPointer<OPENFILENAMEW>, BOOL>>>
 }
 
-data class FileFilter(val name: String, val pattern: String)
+data class WinFileFilter(val name: String, val pattern: String)
 
 fun openSelectFile(
     initialDir: String? = null,
-    filters: List<FileFilter> = listOf(FileFilter("All (*.*)", "*.*")),
+    filters: List<WinFileFilter> = listOf(WinFileFilter("All (*.*)", "*.*")),
     hwnd: HWND? = null
 ): String? = memScoped {
     val szFileSize = 1024
