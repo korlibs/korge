@@ -5,11 +5,19 @@ actual open class EOFException actual constructor(msg: String) : IOException(msg
 actual open class FileNotFoundException actual constructor(msg: String) : IOException(msg)
 
 actual fun Throwable.printStackTrace() {
-	val e = this
-	console.error(e.asDynamic())
-	console.error(e.asDynamic().stack)
+    val e = this
+    try {
+        console.error(e.asDynamic())
+        console.error(e.asDynamic().stack)
+    } catch (e: dynamic) {
+        console.error("Error logging into console")
+        try {
+            console.error(e)
+        } catch (e: dynamic) {
+        }
+    }
 }
 
 actual fun enterDebugger() {
-	js("debugger;")
+    js("debugger;")
 }
