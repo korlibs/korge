@@ -30,3 +30,5 @@ jobs:
       run: ./gradlew --no-daemon jvmTest
     - name: Testing JS
       run: ./gradlew --no-daemon jsTest
+    - name: Testing ALL
+      run: ./gradlew --no-daemon check
