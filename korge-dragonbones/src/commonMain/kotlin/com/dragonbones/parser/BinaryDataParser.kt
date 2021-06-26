@@ -266,7 +266,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		}
 
 		if (rawData.containsDynamic(DataParser.TIMELINE)) {
-			val rawTimelines = rawData.getDynamic(DataParser.TIMELINE) as ArrayList<Any?>
+			val rawTimelines = rawData.getDynamic(DataParser.TIMELINE).asFastArrayList()
 			rawTimelines.fastForEach { rawTimeline ->
 				val timelineOffset = ObjectDataParser._getInt(rawTimeline, DataParser.OFFSET, 0)
 				if (timelineOffset >= 0) {

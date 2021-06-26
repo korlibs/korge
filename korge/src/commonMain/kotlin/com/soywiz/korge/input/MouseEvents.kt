@@ -13,20 +13,39 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korgw.*
+import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
 @OptIn(KorgeInternal::class)
 class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin() {
+    init {
+        view.mouseEnabled = true
+    }
+
     companion object {
         var Input.mouseHitSearch by Extra.Property { false }
         var Input.mouseHitResult by Extra.Property<View?> { null }
         var Input.mouseHitResultUsed by Extra.Property<View?> { null }
         var Views.mouseDebugHandlerOnce by Extra.Property { Once() }
 
-        private fun hitTest(views: Views): View? {
+        private fun mouseHitTest(views: Views): View? {
             if (!views.input.mouseHitSearch) {
                 views.input.mouseHitSearch = true
-                views.input.mouseHitResult = views.stage.hitTest(views.nativeMouseX, views.nativeMouseY)
+                views.input.mouseHitResult = views.stage.mouseHitTest(views.nativeMouseX, views.nativeMouseY)
+
+                var view: View? = views.input.mouseHitResult
+                while (view != null) {
+                    if (view.cursor != null) {
+                        break
+                    }
+                    view = view.parent
+                }
+
+                val newCursor = view?.cursor ?: GameWindow.Cursor.DEFAULT
+                if (views.gameWindow.cursor != newCursor) {
+                    views.gameWindow.cursor = newCursor
+                }
                 //if (frame.mouseHitResult != null) {
                 //val hitResult = frame.mouseHitResult!!
                 //println("BOUNDS: $hitResult : " + hitResult.getLocalBounds() + " : " + hitResult.getGlobalBounds())
@@ -44,9 +63,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                     var yy = 60.toDouble() * scale
                     val lineHeight = 8.toDouble() * scale
-                    val mouseHit = hitTest(views)
+                    val mouseHit = mouseHitTest(views)
                     if (mouseHit != null) {
-                        val bounds = mouseHit.getLocalBounds()
+                        val bounds = mouseHit.getLocalBoundsOptimizedAnchored()
                         renderContext.batch.drawQuad(
                             ctx.getTex(Bitmaps.white),
                             x = bounds.x.toFloat(),
@@ -68,7 +87,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
                     val mouseHitResultUsed = input.mouseHitResultUsed
                     if (mouseHitResultUsed != null) {
-                        val bounds = mouseHitResultUsed.getLocalBounds()
+                        val bounds = mouseHitResultUsed.getLocalBoundsOptimizedAnchored()
                         renderContext.batch.drawQuad(
                             ctx.getTex(Bitmaps.white),
                             x = bounds.x.toFloat(),
@@ -90,12 +109,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         }
     }
 
-    @PublishedApi
-    internal lateinit var views: Views
+    lateinit var views: Views
+        internal set
     @PublishedApi
     internal val coroutineContext get() = views.coroutineContext
 
+    val input get() = views.input
 
+    //var cursor: GameWindow.ICursor? = null
     val click = Signal<MouseEvents>()
 	val over = Signal<MouseEvents>()
 	val out = Signal<MouseEvents>()
@@ -103,6 +124,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 	val downFromOutside = Signal<MouseEvents>()
 	val up = Signal<MouseEvents>()
 	val upOutside = Signal<MouseEvents>()
+    val upOutsideExit = Signal<MouseEvents>()
+    val upOutsideAny = Signal<MouseEvents>()
 	val upAnywhere = Signal<MouseEvents>()
 	val move = Signal<MouseEvents>()
 	val moveAnywhere = Signal<MouseEvents>()
@@ -182,8 +205,13 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
     var clickedCount = 0
 
+    fun stopPropagation() {
+        currentEvent?.stopPropagation()
+    }
+
 	val isOver: Boolean get() = hitTest?.hasAncestor(view) ?: false
     var lastEventSet = false
+    var currentEvent: MouseEvent? = null
     var lastEvent: MouseEvent = MouseEvent()
     var lastEventUp: MouseEvent = MouseEvent()
     //var lastEventDown: MouseEvent? = null
@@ -211,6 +239,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         if (!view.mouseEnabled) return
         this.views = views
         // Store event
+        this.currentEvent = event
         this.lastEvent.copyFrom(event)
         lastEventSet = true
 
@@ -285,7 +314,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 
 		//println("${frame.mouseHitResult}")
 
-		hitTest = hitTest(views)
+		hitTest = mouseHitTest(views)
 		val over = isOver
         val inside = views.input.mouseInside
 		if (over) views.input.mouseHitResultUsed = view
@@ -301,8 +330,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		if (!overChanged && over && currentPosGlobal != lastPosGlobal) move(this)
 		if (!overChanged && !over && currentPosGlobal != lastPosGlobal) moveOutside(this)
 		if (currentPosGlobal != lastPosGlobal) moveAnywhere(this)
-		if (overChanged && over) over(this)
-		if (overChanged && !over) out(this)
+		if (overChanged && over) {
+		    //if (cursor != null) views.gameWindow.cursor = cursor!!
+		    over(this)
+        }
+		if (overChanged && !over) {
+            //if (cursor != null) views.gameWindow.cursor = GameWindow.Cursor.DEFAULT
+		    out(this)
+        }
 		if (over && pressingChanged && pressing) {
 			startedPosGlobal.copyFrom(currentPosGlobal)
 			down(this)
@@ -312,7 +347,12 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
 		}
 		if (pressingChanged && !pressing) {
 		    temporalLastEvent(lastEventUp) {
-                if (over) up(this) else upOutside(this)
+                if (over) {
+                    up(this)
+                } else {
+                    upOutside(this)
+                    upOutsideAny(this)
+                }
                 upAnywhere(this)
             }
 			//if ((currentPos - startedPos).length < CLICK_THRESHOLD) onClick(this)
@@ -323,7 +363,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         if (insideChanged && !inside) {
             moveOutside(this)
             out(this)
-            upOutside(this)
+            upOutsideExit(this)
+            upOutsideAny(this)
             exit(this)
         }
 
@@ -366,3 +407,30 @@ inline fun <T : View?> T.onMove(noinline handler: @EventsDslMarker suspend (Mous
 inline fun <T : View?> T.onScroll(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::scroll, handler)
 
 fun ViewsContainer.installMouseDebugExtensionOnce() = MouseEvents.installDebugExtensionOnce(views)
+
+fun MouseEvents.doubleClick(callback: (MouseEvents) -> Unit): Closeable = multiClick(2, callback)
+
+fun MouseEvents.multiClick(count: Int, callback: (MouseEvents) -> Unit): Closeable {
+    var clickCount = 0
+    var lastClickTime = DateTime.EPOCH
+    return this.click {
+        val currentClickTime = DateTime.now()
+        if (currentClickTime - lastClickTime > 0.3.seconds) {
+            clickCount = 0
+        }
+        lastClickTime = currentClickTime
+        clickCount++
+        it.clickedCount = clickCount
+        if (clickCount == count) {
+            callback(it)
+        }
+    }
+}
+
+var View.cursor: GameWindow.ICursor? by extraProperty { null }
+//    get() = mouse.cursor
+//    set(value) { mouse.cursor = value }
+
+//var View.cursor: GameWindow.ICursor?
+//    get() = mouse.cursor
+//    set(value) { mouse.cursor = value }

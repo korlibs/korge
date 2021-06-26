@@ -2,6 +2,7 @@ package com.soywiz.korge.ui
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -10,6 +11,33 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.native.concurrent.*
 import kotlin.reflect.*
+
+class BoxUISkin(
+    var bgColor: RGBA = Colors["#c3c3c3"],
+    var borderColor: RGBA = Colors["#1f1f1f"],
+    var borderSize: Double = 1.0,
+    var bgColorFocused: RGBA = Colors.WHITE,
+    var borderColorFocused: RGBA = Colors.BLACK,
+    var bgColorOver: RGBA = bgColor.mix(bgColorFocused, 0.5),
+    var borderColorOver: RGBA = borderColor.mix(borderColorFocused, 0.5),
+    val outlineColor: RGBA = Colors["#621a99"],
+) : ViewRenderer {
+    override fun RenderableView.render() {
+        if (isFocused && outlineColor.ad > 0.0) {
+            ctx2d.rectOutline(x - 1, y - 1, width + 2, height + 2, borderSize, outlineColor, false)
+        }
+        ctx2d.rect(0.0, 0.0, width, height, when {
+            isFocused -> bgColorFocused
+            isOver -> bgColorOver
+            else -> bgColor
+        }, false)
+        ctx2d.rectOutline(x, y, width, height, borderSize, when {
+            isFocused -> borderColorFocused
+            isOver -> borderColorOver
+            else -> borderColor
+        }, false)
+    }
+}
 
 interface UISkinable {
     fun <T> setSkinProperty(property: KProperty<*>, value: T)

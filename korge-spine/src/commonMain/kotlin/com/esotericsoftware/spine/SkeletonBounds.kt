@@ -33,6 +33,7 @@ import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
 import com.esotericsoftware.spine.internal.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
+import kotlin.math.*
 
 /** Collects each visible [BoundingBoxAttachment] and computes the world vertices for its polygon. The polygon vertices are
  * provided along with convenience methods for doing hit detection.  */
@@ -54,10 +55,10 @@ class SkeletonBounds {
         private set
 
     /** The visible bounding boxes.  */
-    val boundingBoxes: ArrayList<BoundingBoxAttachment> = ArrayList()
+    val boundingBoxes: FastArrayList<BoundingBoxAttachment> = FastArrayList()
 
     /** The world vertices for the bounding box polygons.  */
-    val polygons: ArrayList<FloatArrayList> = ArrayList()
+    val polygons: FastArrayList<FloatArrayList> = FastArrayList()
     private val polygonPool = Pool { FloatArrayList() }
 
     /** The width of the axis aligned bounding box.  */
@@ -123,10 +124,10 @@ class SkeletonBounds {
             while (ii < nn) {
                 val x = vertices[ii]
                 val y = vertices[ii + 1]
-                minX = min2(minX, x)
-                minY = min2(minY, y)
-                maxX = max2(maxX, x)
-                maxY = max2(maxY, y)
+                minX = min(minX, x)
+                minY = min(minY, y)
+                maxX = max(maxX, x)
+                maxY = max(maxY, y)
                 ii += 2
             }
             i++

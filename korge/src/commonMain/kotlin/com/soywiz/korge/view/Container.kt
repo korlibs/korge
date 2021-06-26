@@ -115,12 +115,19 @@ open class Container : View(true) {
 		if (view1.parent == view2.parent && view1.parent == this) {
 			val index1 = view1.index
 			val index2 = view2.index
-            __children.set(index1, view2)
+            __children[index1] = view2
             view2.index = index1
-            __children.set(index2, view1)
+            __children[index2] = view1
             view1.index = index2
 		}
 	}
+
+    fun moveChildTo(view: View, index: Int) {
+        if (view.parent != this) return
+        val targetIndex = index.clamp(0, numChildren - 1)
+        while (view.index < targetIndex) swapChildren(view, __children[view.index + 1])
+        while (view.index > targetIndex) swapChildren(view, __children[view.index - 1])
+    }
 
     fun sendChildToFront(view: View) {
         if (view.parent === this) {
@@ -145,15 +152,19 @@ open class Container : View(true) {
 	 */
     @KorgeUntested
 	fun addChildAt(view: View, index: Int) {
-		val aindex = index.clamp(0, this.numChildren)
-		view.removeFromParent()
-		view.index = aindex
+        view.removeFromParent()
+        val aindex = index.clamp(0, this.numChildren)
+        view.index = aindex
         val children = childrenInternal
         children.add(aindex, view)
-		for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
-		view.parent = this
-		view.invalidate()
+        for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
+        view.parent = this
+        view.invalidate()
+        onChildAdded(view)
 	}
+
+    protected open fun onChildAdded(view: View) {
+    }
 
 	/**
 	 * Retrieves the index of a given child [View].
@@ -200,23 +211,33 @@ open class Container : View(true) {
         __children.clear()
 	}
 
+    inline fun removeChildrenIf(cond: (index: Int, child: View) -> Boolean) {
+        var removedCount = 0
+        forEachChildWithIndex { index, child ->
+            if (cond(index, child)) {
+                child._parent = null
+                child._index = -1
+                removedCount++
+            } else {
+                child._index -= removedCount
+            }
+        }
+        for (n in 0 until removedCount) __children.removeAt(__children.size - 1)
+    }
+
 	/**
      * Adds a child [View] to the container.
      *
      * If the [View] already belongs to a parent, it is removed from it and then added to the container.
 	 */
-	fun addChild(view: View) = this.plusAssign(view)
+	fun addChild(view: View) = addChildAt(view, numChildren)
 
     fun addChildren(views: List<View?>?) = views?.toList()?.fastForEach { it?.let { addChild(it) } }
 	/**
 	 * Alias for [addChild].
 	 */
 	operator fun plusAssign(view: View) {
-		view.removeFromParent()
-		view.index = numChildren
-		childrenInternal += view
-		view.parent = this
-		view.invalidate()
+        addChildAt(view, numChildren)
 	}
 
     /** Alias for [getChildAt] */
@@ -230,9 +251,13 @@ open class Container : View(true) {
 	private val tempMatrix = Matrix()
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
+        renderChildrenInternal(ctx)
+    }
+
+    open fun renderChildrenInternal(ctx: RenderContext) {
         fastForEachChild { child: View ->
-			child.render(ctx)
-		}
+            child.render(ctx)
+        }
     }
 
     override fun renderDebug(ctx: RenderContext) {
@@ -296,3 +321,20 @@ operator fun View?.plusAssign(view: View?) {
 
 inline fun <T : View> T.addTo(instance: Container, callback: @ViewDslMarker T.() -> Unit = {}) =
     this.addTo(instance).apply(callback)
+
+inline fun <T : View> Container.append(view: T): T {
+    addChild(view)
+    return view
+}
+
+inline fun <T : View> Container.append(view: T, block: T.() -> Unit): T = append(view).also(block)
+
+fun View.bringToTop() {
+    val parent = this.parent ?: return
+    parent.moveChildTo(this, parent.numChildren - 1)
+}
+
+fun View.bringToBottom() {
+    val parent = this.parent ?: return
+    parent.moveChildTo(this, 0)
+}

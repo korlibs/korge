@@ -2,8 +2,6 @@ package com.soywiz.korfl.as3swf
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korfl.internal.*
-import com.soywiz.korfl.internal.min2
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
@@ -136,7 +134,7 @@ class SWFData : BitArray() {
 
 		fun dump(ba: FlashByteArray, length: Int, offset: Int = 0) {
 			val posOrig = ba.position
-			val pos = min2(max2(posOrig + offset, 0), ba.length - length)
+			val pos = min(max(posOrig + offset, 0), ba.length - length)
 			ba.position = pos
 			var str = "[Dump] total length: " + ba.length + ", original position: " + posOrig
 			for (i in 0 until length) {

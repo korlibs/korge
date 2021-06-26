@@ -2,8 +2,6 @@ package com.soywiz.korfl.as3swf
 
 import com.soywiz.kmem.*
 import com.soywiz.korfl.*
-import com.soywiz.korfl.internal.*
-import com.soywiz.korfl.internal.min2
 import com.soywiz.korio.async.*
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
@@ -76,7 +74,7 @@ open class FlashByteArray() {
 	var length: Int; get() = data.length.toInt(); set(value) = run { data.length = value.toLong() }
 
 	private fun ensureIndex(index: Int) = this.apply {
-		content.data.size = max2(content.data.size, index + 1)
+		content.data.size = max(content.data.size, index + 1)
 	}
 
 	operator fun get(index: Int): Int {
@@ -198,11 +196,11 @@ open class BitArray : FlashByteArray() {
 		val bitsConsumed: Int
 		if (bitsPending > 0) {
 			val byte: Int = this[position - 1] and (0xff ushr (8 - bitsPending))
-			bitsConsumed = min2(bitsPending, bits)
+			bitsConsumed = min(bitsPending, bits)
 			bitsPending -= bitsConsumed
 			partial = byte ushr bitsPending
 		} else {
-			bitsConsumed = min2(8, bits)
+			bitsConsumed = min(8, bits)
 			bitsPending = 8 - bitsConsumed
 			partial = readUnsignedByte() ushr bitsPending
 		}
@@ -234,7 +232,7 @@ open class BitArray : FlashByteArray() {
 				bitsPending = 0
 			}
 		} else {
-			bitsConsumed = min2(8, bits)
+			bitsConsumed = min(8, bits)
 			bitsPending = 8 - bitsConsumed
 			writeByte((value ushr (bits - bitsConsumed)) shl bitsPending)
 		}

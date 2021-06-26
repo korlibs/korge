@@ -2,6 +2,7 @@ package com.dragonbones.animation
 
 import com.soywiz.kds.iterators.*
 import com.dragonbones.util.*
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 
 /**
@@ -70,7 +71,7 @@ class WorldClock : IAnimatable {
 	var timeScale: Double = 1.0
 
 	private var _systemTime: DateTime = DateTime.EPOCH
-	private val _animatebles: ArrayList<IAnimatable?> = arrayListOf()
+	private val _animatebles: FastArrayList<IAnimatable?> = FastArrayList()
 	private var _clock: WorldClock? = null
 	/**
 	 * - Creating a Worldclock instance. Typically, you do not need to create Worldclock instance.

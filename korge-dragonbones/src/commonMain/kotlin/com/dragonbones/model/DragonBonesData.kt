@@ -108,7 +108,7 @@ class DragonBonesData(pool: SingleObjectPool<DragonBonesData>) : BaseObject(pool
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	val armatureNames: ArrayList<String> = arrayListOf()
+	val armatureNames: FastArrayList<String> = FastArrayList()
 	/**
 	 * @private
 	 */

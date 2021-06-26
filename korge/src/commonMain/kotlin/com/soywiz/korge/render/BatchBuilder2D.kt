@@ -12,7 +12,13 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.triangle.*
+import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.triangle.*
+import com.soywiz.korma.triangle.poly2tri.*
+import com.soywiz.korma.triangle.triangulate.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 private val logger = Logger("BatchBuilder2D")
 
@@ -34,7 +40,7 @@ class BatchBuilder2D constructor(
      */
     val reqMaxQuads: Int = DEFAULT_BATCH_QUADS
 ) {
-    val maxQuads: Int = min2(reqMaxQuads, MAX_BATCH_QUADS)
+    val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
 
     val texManager = ctx.agBitmapTextureManager
     constructor(ag: AG, maxQuads: Int = DEFAULT_BATCH_QUADS) : this(RenderContext(ag), maxQuads)
@@ -361,13 +367,36 @@ class BatchBuilder2D constructor(
 	inline fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
 		ensure(icount, vcount)
 
-		for (idx in 0 until min2(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
+		for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
 
         arraycopy(array._data.i32, 0, vertices.i32, vertexPos, vcount * 6)
 
 		_vertexCount += vcount
 		vertexPos += vcount * 6
 	}
+
+    fun drawVerticesTransformed(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize) {
+        ensure(icount, vcount)
+
+        for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
+
+        arraycopy(array._data.i32, 0, vertices.i32, vertexPos, vcount * 6)
+
+        if (matrix != null) {
+            val f32 = vertices.f32
+            var idx = vertexPos
+            for (n in 0 until vcount) {
+                val x = f32[idx + 0]
+                val y = f32[idx + 1]
+                f32[idx + 0] = matrix.transformXf(x, y)
+                f32[idx + 1] = matrix.transformYf(x, y)
+                idx += VERTEX_INDEX_SIZE
+            }
+        }
+
+        _vertexCount += vcount
+        vertexPos += vcount * 6
+    }
 
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
@@ -814,6 +843,14 @@ class BatchBuilder2D constructor(
     return out
 }
 
+@PublishedApi internal const val VERTEX_INDEX_SIZE = 6
+@PublishedApi internal const val VERTEX_INDEX_X = 0
+@PublishedApi internal const val VERTEX_INDEX_Y = 1
+@PublishedApi internal const val VERTEX_INDEX_U = 2
+@PublishedApi internal const val VERTEX_INDEX_V = 3
+@PublishedApi internal const val VERTEX_INDEX_COL_MUL = 4
+@PublishedApi internal const val VERTEX_INDEX_COL_ADD = 5
+
 // @TODO: Call this mesh?
 /**
  * Allows to build a set of textured and colored vertices. Where [vcount] is the number of vertices and [isize] [indices],
@@ -827,7 +864,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 	//internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
 	//internal val _data = FBuffer(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
     @PublishedApi internal val _data = FBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
-    private val fast = _data.fast32
+    @PublishedApi internal val fast = _data.fast32
 	//private val f32 = _data.f32
     //private val i32 = _data.i32
 	//val points = (0 until vcount).map { Item(data, it) }
@@ -845,42 +882,88 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
 		inline fun quadIndices(quadCount: Int): IntArray = TEXTURED_ARRAY_quadIndices(quadCount)
+
+        fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null, doClipper: Boolean = true): TexturedVertexArray {
+            //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
+            //return fromTriangles(path.triangulatePoly2tri(), colorMul, colorAdd, matrix)
+            return fromTriangles(path.triangulateSafe(doClipper), colorMul, colorAdd, matrix)
+        }
+
+        fun fromTriangles(triangles: TriangleList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+            val tva = TexturedVertexArray(triangles.pointCount, triangles.indices, triangles.numIndices)
+            tva.setSimplePoints(triangles.points, matrix, colorMul, colorAdd)
+            return tva
+        }
+
+        /** This doesn't handle holes */
+        fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
+            val indices = IntArray((points.size - 2) * 3)
+            for (n in 0 until points.size - 2) {
+                indices[n * 3 + 0] = 0
+                indices[n * 3 + 1] = n + 1
+                indices[n * 3 + 2] = n + 2
+            }
+            val tva = TexturedVertexArray(points.size, indices)
+            tva.setSimplePoints(points, matrix, colorMul, colorAdd)
+            return tva
+        }
+
 	}
 
-	private var offset = 0
-    
+    fun setSimplePoints(points: IPointArrayList, matrix: Matrix?, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL) {
+        if (matrix != null) {
+            points.fastForEachWithIndex { index, x, y ->
+                val xf = x.toFloat()
+                val yf = y.toFloat()
+                this.set(index, matrix.transformXf(xf, yf), matrix.transformYf(xf, yf), 0f, 0f, colorMul, colorAdd)
+            }
+        } else {
+            points.fastForEachWithIndex { index, x, y -> this.set(index, x.toFloat(), y.toFloat(), 0f, 0f, colorMul, colorAdd) }
+        }
+    }
+
+	@PublishedApi internal var offset = 0
+
+    fun set(index: Int, x: Float, y: Float, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
+        select(index).setX(x).setY(y).setU(u).setV(v).setCMul(colMul).setCAdd(colAdd)
+    }
+
+    fun setXY(x: Float, y: Float) {
+        setX(x).setY(y)
+    }
+
     /** Moves the cursor for setting vertexs to the vertex [i] */
-    fun select(i: Int): TexturedVertexArray {
+    inline fun select(i: Int): TexturedVertexArray {
         offset = i * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
         return this
     }
     /** Sets the [x] of the vertex previously selected calling [select] */
-	fun setX(v: Float): TexturedVertexArray {
+	inline fun setX(v: Float): TexturedVertexArray {
         fast.setF(offset + 0, v)
         return this
     }
     /** Sets the [y] of the vertex previously selected calling [select] */
-	fun setY(v: Float): TexturedVertexArray {
+    inline fun setY(v: Float): TexturedVertexArray {
         fast.setF(offset + 1, v)
         return this
     }
     /** Sets the [u] (x in texture) of the vertex previously selected calling [select] */
-	fun setU(v: Float): TexturedVertexArray {
+    inline fun setU(v: Float): TexturedVertexArray {
         fast.setF(offset + 2, v)
         return this
     }
     /** Sets the [v] (y in texture) of the vertex previously selected calling [select] */
-	fun setV(v: Float): TexturedVertexArray {
+    inline fun setV(v: Float): TexturedVertexArray {
         fast.setF(offset + 3, v)
         return this
     }
     /** Sets the [cMul] (multiplicative color) of the vertex previously selected calling [select] */
-	fun setCMul(v: RGBA): TexturedVertexArray {
+    inline fun setCMul(v: RGBA): TexturedVertexArray {
         fast.setI(offset + 4, v.value)
         return this
     }
     /** Sets the [cAdd] (additive color) of the vertex previously selected calling [select] */
-	fun setCAdd(v: ColorAdd): TexturedVertexArray {
+    inline fun setCAdd(v: ColorAdd): TexturedVertexArray {
         fast.setI(offset + 5, v.value)
         return this
     }
@@ -1002,7 +1085,22 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 		}
 	}
 
-	//class Item(private val data: IntArray, index: Int) {
+    fun applyMatrix(matrix: Matrix) {
+        for (n in 0 until vcount){
+            select(n)
+            val x = this.x
+            val y = this.y
+            setXY(matrix.transformXf(x, y), matrix.transformYf(x, y))
+        }
+    }
+
+    fun copy(): TexturedVertexArray {
+        val out = TexturedVertexArray(vcount, indices, isize)
+        arraycopy(this._data.arrayByte, 0, out._data.arrayByte, 0, _data.size)
+        return out
+    }
+
+    //class Item(private val data: IntArray, index: Int) {
 	//	val offset = index * TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
 	//	var x: Float; get() = Float.fromBits(data[offset + 0]); set(v) { data[offset + 0] = v.toBits() }
 	//	var y: Float; get() = Float.fromBits(data[offset + 1]); set(v) { data[offset + 1] = v.toBits() }

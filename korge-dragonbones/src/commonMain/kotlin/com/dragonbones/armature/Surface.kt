@@ -119,9 +119,10 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 		val verticesOffset = intArray[geometry.offset + BinaryOffset.GeometryFloatOffset]
 		val vertices = _vertices
 		val animationVertices = _deformVertices
+        val _parent = _parent
 
 		if (_parent != null) {
-			if (_parent?._boneData?.isSurface == true) {
+			if (_parent._boneData?.isSurface == true) {
 				//for (var i = 0, l = vertexCount; i < l; ++i) {
 				val surface = _parent as Surface
 				for (i in 0 until vertexCount) {
@@ -134,7 +135,7 @@ class Surface(pool: SingleObjectPool<out Surface>) :  Bone(pool) {
 				}
 			}
 			else {
-				val parentMatrix = _parent!!.globalTransformMatrix
+				val parentMatrix = _parent.globalTransformMatrix
 				//for (var i = 0, l = vertexCount; i < l; ++i) {
 				for (i in 0 until vertexCount) {
 					val iD = i * 2

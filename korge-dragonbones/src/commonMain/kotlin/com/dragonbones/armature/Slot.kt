@@ -248,11 +248,11 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * @internal
 	 */
-	val _displayFrames: ArrayList<DisplayFrame> = arrayListOf()
+	val _displayFrames: FastArrayList<DisplayFrame> = FastArrayList()
 	/**
 	 * @internal
 	 */
-	val _geometryBones: ArrayList<Bone?> = arrayListOf()
+	val _geometryBones: FastArrayList<Bone?> = FastArrayList()
 	/**
 	 * @internal
 	 */
@@ -284,7 +284,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	override fun _onClear(): Unit {
 		super._onClear()
 
-		val disposeDisplayList: ArrayList<Any> = arrayListOf()
+		val disposeDisplayList: FastArrayList<Any> = FastArrayList()
 		this._displayFrames.fastForEach { dispayFrame ->
 			val display = dispayFrame.display
 			if (
@@ -587,7 +587,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 
 					// Child armature action.
 					if (_displayFrame1 != null) {
-						var actions: ArrayList<ActionData>? = null
+						var actions: FastArrayList<ActionData>? = null
 						val displayData = this._displayFrame!!.displayData ?: this._displayFrame!!.rawDisplayData
 						if (displayData != null && displayData.type == DisplayType.Armature) {
 							actions = (displayData as ArmatureDisplayData).actions
@@ -1197,15 +1197,15 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	var displayList: ArrayList<Any?> get() {
-		val displays = ArrayList<Any?>()
+	var displayList: FastArrayList<Any?> get() {
+		val displays = FastArrayList<Any?>()
 		this._displayFrames.fastForEach { displayFrame ->
             displays.add(displayFrame.display)
 		}
 
 		return displays
 	}
-	set(value: ArrayList<Any?>) {
+	set(value: FastArrayList<Any?>) {
 		this.displayFrameCount = value.length
 		var index = 0
 		value.fastForEach { eachDisplay ->

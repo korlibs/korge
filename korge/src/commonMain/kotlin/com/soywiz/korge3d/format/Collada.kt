@@ -5,7 +5,6 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.max2
 import com.soywiz.korge3d.*
 import com.soywiz.korge3d.animation.*
 import com.soywiz.korge3d.internal.*
@@ -667,7 +666,7 @@ class ColladaParser {
                     val inputs = arrayListOf<Input>()
                     for (input in triangles["input"]) {
                         val offset = input.getInt("offset") ?: 0
-                        stride = max2(stride, offset + 1)
+                        stride = max(stride, offset + 1)
 
                         val semantic = input.getString("semantic") ?: "unknown"
                         val source = input.getString("source")?.trim('#') ?: "unknown"

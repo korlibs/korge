@@ -1,13 +1,15 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
-import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.triangle.*
+import com.soywiz.korma.geom.vector.*
 
 private val logger = Logger("RenderContext2D")
 
@@ -36,6 +38,8 @@ class RenderContext2D(
 ) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
 
+    inline fun getTexture(slice: BmpSlice): Texture = agBitmapTextureManager.getTexture(slice)
+
     @KorgeInternal
 	val mpool = Pool<Matrix> { Matrix() }
 
@@ -48,6 +52,7 @@ class RenderContext2D(
 	var blendFactors = AG.Blending.NORMAL
     /** Multiplicative color to be used in the renders */
 	var multiplyColor = Colors.WHITE
+    var filtering: Boolean = true
 
 	init { logger.trace { "RenderContext2D[2]" } }
 
@@ -81,12 +86,24 @@ class RenderContext2D(
         }
     }
 
+    /** Executes [callback] restoring the initial [filtering] at the end */
+    inline fun <T> keepFiltering(crossinline callback: () -> T): T {
+        val filtering = this.filtering
+        try {
+            return callback()
+        } finally {
+            this.filtering = filtering
+        }
+    }
+
     /** Executes [callback] restoring the transform matrix, the [blendFactors] and the [multiplyColor] at the end */
 	inline fun <T> keep(crossinline callback: () -> T): T {
 		return keepMatrix {
 			keepBlendFactors {
 				keepColor {
-					callback()
+                    keepFiltering {
+                        callback()
+                    }
 				}
 			}
 		}
@@ -118,22 +135,68 @@ class RenderContext2D(
 	}
 
     /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
-    fun rect(x: Double, y: Double, width: Double, height: Double) {
+    fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         batch.drawQuad(
-            agBitmapTextureManager.getTexture(Bitmaps.white),
+            getTexture(Bitmaps.white),
             x.toFloat(),
             y.toFloat(),
             width.toFloat(),
             height.toFloat(),
+            filtering = filtering,
             m = m,
-            colorMul = multiplyColor,
+            colorMul = color,
             blendFactors = blendFactors
         )
     }
 
+    /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
+    fun rectOutline(x: Double, y: Double, width: Double, height: Double, border: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        rect(x, y, width, border, color, filtering)
+        rect(x, y, border, height, color, filtering)
+        rect(x + width - border, y, border, height, color, filtering)
+        rect(x, y + height - border, width, border, color, filtering)
+    }
+
+    fun ellipse(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        simplePath(buildPath { ellipse(x, y, width, height) }, color, filtering)
+    }
+
+    fun ellipseOutline(x: Double, y: Double, width: Double, height: Double, lineWidth: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        simplePath(buildPath { ellipse(x, y, width, height) }.strokeToFill(lineWidth), color, filtering)
+    }
+
+    // @TODO: It doesn't handle holes (it uses a triangle fan approach)
+    fun simplePath(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        for (points in path.toPathList()) {
+            texturedVertexArrayNoTransform(TexturedVertexArray.fromPointArrayList(points, color, matrix = m), filtering)
+        }
+    }
+
+    fun pathFast(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m, doClipper = false), filtering)
+    }
+
+    fun path(path: VectorPath, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering, doClipper: Boolean = true) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromPath(path, color, matrix = m, doClipper = doClipper), filtering)
+    }
+
+    fun triangles(triangles: TriangleList, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
+        texturedVertexArrayNoTransform(TexturedVertexArray.fromTriangles(triangles, color, matrix = m), filtering)
+    }
+
+    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
+        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
+        batch.drawVertices(texturedVertexArray)
+    }
+
+    fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
+        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
+        batch.drawVerticesTransformed(texturedVertexArray, m)
+    }
+
     /** Renders a [texture] with the [blendFactors] at [x], [y] scaling it by [scale].
      * The texture colors will be multiplied by [multiplyColor]. Since it is multiplicative, white won't cause any effect. */
-	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0) {
+	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) {
 		//println(m)
 		batch.drawQuad(
 			texture,
@@ -141,6 +204,7 @@ class RenderContext2D(
 			y.toFloat(),
 			(texture.width * scale).toFloat(),
 			(texture.height * scale).toFloat(),
+            filtering = filtering,
 			m = m,
 			colorMul = multiplyColor,
 			blendFactors = blendFactors
@@ -157,8 +221,8 @@ class RenderContext2D(
     inline fun scissor(x: Float, y: Float, width: Float, height: Float, block: () -> Unit) = scissor(x.toInt(), y.toInt(), width.toInt(), height.toInt(), block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [rect] is executed. */
-    inline fun scissor(rect: Rectangle, block: () -> Unit) =
-        scissor(rect.x, rect.y, rect.width, rect.height, block)
+    inline fun scissor(rect: Rectangle?, block: () -> Unit) =
+        scissor(rect?.let { tempScissor.setTo(it) }, block)
 
     /** Temporarily sets the [scissor] (visible rendering area) to [scissor] is executed. */
     inline fun scissor(scissor: AG.Scissor?, block: () -> Unit) {

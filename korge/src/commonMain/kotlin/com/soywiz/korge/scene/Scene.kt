@@ -43,6 +43,8 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
     /** A reference to the [AG] from the [Views] */
     val ag: AG get() = views.ag
 
+    val stage get() = views.stage
+
     /** A [Container] view that will wrap the Scene view */
     internal val _sceneViewContainer: Container = Container()
 

@@ -9,6 +9,8 @@ import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.baseview.*
+import com.soywiz.korge.component.*
 import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -24,7 +26,7 @@ import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.OS
@@ -57,7 +59,7 @@ class Views constructor(
     CoroutineScope, ViewsContainer,
 	BoundsProvider,
     DialogInterface by gameWindow,
-    AsyncCloseable,
+    Closeable,
     KTreeSerializerHolder,
     ResourcesContainer
 {
@@ -154,12 +156,18 @@ class Views constructor(
 	}
 
     @KorgeInternal
-	override suspend fun close() {
-		closeables.fastForEach { it.close() }
-		closeables.clear()
-		coroutineContext.cancel()
-		gameWindow.close()
+	override fun close() {
+        launchImmediately {
+            closeSuspend()
+        }
 	}
+
+    suspend fun closeSuspend() {
+        closeables.fastForEach { it.close() }
+        closeables.clear()
+        coroutineContext.cancel()
+        gameWindow.close()
+    }
 
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
     @KorgeInternal
@@ -246,6 +254,20 @@ class Views constructor(
 		resized()
 	}
 
+    inline fun <E : Event, T : BaseView, R> FastArrayList<T>.fastEvents(e: E, get: (Components) -> FastArrayList<R>?, block: (R) -> Unit) {
+        e._stopPropagation = false
+        fastForEach {
+            val comps = it._components
+            comps?.let {
+                get(comps)?.fastForEach {
+                    //it.onMouseEvent(views, e)
+                    block(it)
+                    if (e._stopPropagation) return@fastEvents
+                }
+            }
+        }
+    }
+
 	@Suppress("EXPERIMENTAL_API_USAGE")
     override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
@@ -253,9 +275,9 @@ class Views constructor(
 			this.stage.dispatch(clazz, event)
             val stagedViews = getAllDescendantViews(stage, tempViews, true)
 			when (e) {
-				is MouseEvent -> stagedViews.fastForEach { it._components?.mouse?.fastForEach { it.onMouseEvent(views, e) } }
-                is TouchEvent -> stagedViews.fastForEach { it._components?.touch?.fastForEach { it.onTouchEvent(views, e) } }
-				is ReshapeEvent -> stagedViews.fastForEach { it._components?.resize?.fastForEach { it.resized(views, e.width, e.height) } }
+				is MouseEvent -> stagedViews.fastEvents(e, { it.mouse }) { it.onMouseEvent(views, e) }
+                is TouchEvent -> stagedViews.fastEvents(e, { it.touch }) { it.onTouchEvent(views, e) }
+				is ReshapeEvent -> stagedViews.fastEvents(e, { it.resize }) { it.resized(views, e.width, e.height) }
 				is KeyEvent -> {
                     input.triggerOldKeyEvent(e)
                     input.keys.triggerKeyEvent(e)
@@ -263,13 +285,13 @@ class Views constructor(
                         debugViews = !debugViews
                         gameWindow.debug = debugViews
                     }
-                    stagedViews.fastForEach { it._components?.key?.fastForEach { it.apply { views.onKeyEvent(e) } } }
+                    stagedViews.fastEvents(e, { it.key }) { it.apply { views.onKeyEvent(e) } }
                 }
-				is GamePadConnectionEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-				is GamePadUpdateEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+				is GamePadConnectionEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
+				is GamePadUpdateEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
 				//is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
 				//is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-                else -> stagedViews.fastForEach { it._components?.event?.fastForEach { it.onEvent(e) } }
+                else -> stagedViews.fastEvents(e, { it.event }) { it.apply { it.onEvent(e) } }
 			}
 		} catch (e: PreventDefaultException) {
 			//println("PreventDefaultException.Reason: ${e.reason}")

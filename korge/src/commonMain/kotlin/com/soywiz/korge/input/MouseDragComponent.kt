@@ -1,5 +1,6 @@
 package com.soywiz.korge.input
 
+import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.Point
 
@@ -8,21 +9,49 @@ data class MouseDragInfo(
     var dx: Double = 0.0,
     var dy: Double = 0.0,
     var start: Boolean = false,
-    var end: Boolean = false
+    var end: Boolean = false,
+    var startTime: DateTime = DateTime.EPOCH,
+    var time: DateTime = DateTime.EPOCH,
 ) {
+    lateinit var mouseEvents: MouseEvents
+    val elapsed: TimeSpan get() = time - startTime
+
     val localDX get() = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
     val localDY get() = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
 
-    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean): MouseDragInfo {
+    private var lastDx: Double = Double.NaN
+    private var lastDy: Double = Double.NaN
+
+    var deltaDx: Double = 0.0
+    var deltaDy: Double = 0.0
+
+    fun reset() {
+        lastDx = Double.NaN
+        lastDy = Double.NaN
+        deltaDx = 0.0
+        deltaDy = 0.0
+        dx = 0.0
+        dy = 0.0
+    }
+
+    fun set(dx: Double, dy: Double, start: Boolean, end: Boolean, time: DateTime): MouseDragInfo {
         this.dx = dx
         this.dy = dy
+        if (!lastDx.isNaN() && !lastDy.isNaN()) {
+            this.deltaDx = lastDx - dx
+            this.deltaDy = lastDy - dy
+        }
+        this.lastDx = dx
+        this.lastDy = dy
         this.start = start
         this.end = end
+        if (start) this.startTime = time
+        this.time = time
         return this
     }
 }
 
-fun <T : View> T.onMouseDrag(callback: Views.(MouseDragInfo) -> Unit): T {
+fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback: Views.(MouseDragInfo) -> Unit): T {
     var dragging = false
     var sx = 0.0
     var sy = 0.0
@@ -49,9 +78,9 @@ fun <T : View> T.onMouseDrag(callback: Views.(MouseDragInfo) -> Unit): T {
             dragging = true
             sx = mousePos.x
             sy = mousePos.y
-            info.dx = 0.0
-            info.dy = 0.0
-            callback(views(), info.set(0.0, 0.0, true, false))
+            info.reset()
+            info.mouseEvents = it
+            callback(views(), info.set(0.0, 0.0, true, false, timeProvider.now()))
         }
         onUpAnywhere {
             if (dragging) {
@@ -59,7 +88,8 @@ fun <T : View> T.onMouseDrag(callback: Views.(MouseDragInfo) -> Unit): T {
                 dragging = false
                 cx = mousePos.x
                 cy = mousePos.y
-                callback(views(), info.set(cx - sx, cy - sy, false, true))
+                info.mouseEvents = it
+                callback(views(), info.set(cx - sx, cy - sy, false, true, timeProvider.now()))
             }
         }
         onMoveAnywhere {
@@ -67,7 +97,8 @@ fun <T : View> T.onMouseDrag(callback: Views.(MouseDragInfo) -> Unit): T {
                 updateMouse()
                 cx = mousePos.x
                 cy = mousePos.y
-                callback(views(), info.set(cx - sx, cy - sy, false, false))
+                info.mouseEvents = it
+                callback(views(), info.set(cx - sx, cy - sy, false, false, timeProvider.now()))
             }
         }
     }

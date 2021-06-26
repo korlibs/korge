@@ -73,7 +73,7 @@ class UserData(pool: SingleObjectPool<UserData>) : BaseObject(pool) {
 	 * @version DragonBones 5.0
 	 * @language zh_CN
 	 */
-	val strings: ArrayList<String> = arrayListOf()
+	val strings: FastArrayList<String> = FastArrayList()
 
 	override fun _onClear() {
 		this.ints.clear()

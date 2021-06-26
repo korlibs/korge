@@ -42,11 +42,27 @@ open class FixedSizeContainer(
         if (clip) {
             val c2d = ctx.ctx2d
             val bounds = getWindowBounds(tempBounds)
-            c2d.scissor(bounds) {
+            val rect = c2d.batch.scissor?.rect
+            var intersects = true
+            if (rect != null) {
+                intersects = bounds.setToIntersection(bounds, rect) != null
+            }
+            if (intersects) {
+                c2d.scissor(bounds) {
+                    super.renderInternal(ctx)
+                }
+            } else {
                 super.renderInternal(ctx)
             }
         } else {
             super.renderInternal(ctx)
         }
     }
+}
+
+fun View.getVisibleGlobalArea(out: Rectangle = Rectangle()): Rectangle {
+    forEachAscendant(includeThis = true) {
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds(out)
+    }
+    return out.setTo(0.0, 0.0, 4096.0, 4096.0)
 }

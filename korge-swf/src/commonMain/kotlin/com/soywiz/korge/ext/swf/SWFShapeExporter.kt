@@ -3,8 +3,6 @@ package com.soywiz.korge.ext.swf
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korfl.internal.*
-import com.soywiz.korfl.internal.min2
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
@@ -38,8 +36,8 @@ class SWFShapeExporter(
 
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
 
-	val realBoundsWidth = max2(1, bounds.width.toIntCeil())
-	val realBoundsHeight = max2(1, bounds.height.toIntCeil())
+	val realBoundsWidth = max(1, bounds.width.toIntCeil())
+	val realBoundsHeight = max(1, bounds.height.toIntCeil())
 
 	val desiredBoundsWidth = (realBoundsWidth * requestScale).toInt()
 	val desiredBoundsHeight = (realBoundsHeight * requestScale).toInt()
@@ -47,7 +45,7 @@ class SWFShapeExporter(
 	val limitBoundsWidth = desiredBoundsWidth.clamp(minSide, maxSide)
 	val limitBoundsHeight = desiredBoundsHeight.clamp(minSide, maxSide)
 
-	val actualScale = min2(
+	val actualScale = min(
 		limitBoundsWidth.toDouble() / realBoundsWidth.toDouble(),
 		limitBoundsHeight.toDouble() / realBoundsHeight.toDouble()
 	)

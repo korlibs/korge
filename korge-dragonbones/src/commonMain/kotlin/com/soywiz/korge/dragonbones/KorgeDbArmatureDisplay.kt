@@ -29,6 +29,7 @@ import com.dragonbones.core.*
 import com.dragonbones.event.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
@@ -41,8 +42,8 @@ import com.soywiz.korui.*
  * @inheritDoc
  */
 class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
-	private val _events = arrayListOf<EventObject>()
-	private val _eventsReturnQueue: ArrayList<BaseObject> = arrayListOf()
+	private val _events = FastArrayList<EventObject>()
+	private val _eventsReturnQueue: FastArrayList<BaseObject> = FastArrayList()
 
 	/**
 	 * @private
@@ -216,7 +217,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 		//this.dispose() // Note: Korge doesn't require this!
 	}
 
-	private var eventListeners = LinkedHashMap<EventStringType, ArrayList<(EventObject) -> Unit>>()
+	private var eventListeners = LinkedHashMap<EventStringType, FastArrayList<(EventObject) -> Unit>>()
 
 	/**
 	 * @private
@@ -245,7 +246,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 	 */
 	override fun addDBEventListener(type: EventStringType, listener: (event: EventObject) -> Unit) {
 		//println("addDBEventListener:$type")
-		eventListeners.getOrPut(type) { arrayListOf() } += listener
+		eventListeners.getOrPut(type) { FastArrayList() } += listener
 	}
 
 	/**

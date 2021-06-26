@@ -23,7 +23,7 @@ class TweenComponent(
     val time: TimeSpan = TimeSpan.NIL,
     val easing: Easing = DEFAULT_EASING,
     val callback: (Double) -> Unit,
-    val c: CancellableContinuation<Unit>,
+    val c: CancellableContinuation<Unit>?,
     val waitTime: TimeSpan = TimeSpan.NIL
 ) : UpdateComponent {
 	var elapsed = 0.0.milliseconds
@@ -33,7 +33,7 @@ class TweenComponent(
     var resumed = false
 
 	init {
-		c.invokeOnCancellation {
+		c?.invokeOnCancellation {
 			cancelled = true
 			//println("TWEEN CANCELLED[$this, $vs]: $elapsed")
 		}
@@ -43,7 +43,7 @@ class TweenComponent(
     fun resumeOnce() {
         if (resumed) return
         resumed = true
-        c.resume(Unit)
+        c?.resume(Unit)
     }
 
 	fun completeOnce() {
@@ -59,7 +59,7 @@ class TweenComponent(
             //println(" --> cancelled")
             return completeOnce()
         }
-		//println("TWEEN UPDATE[$this, $vs]: $elapsed + $dtMs")
+		//println("TWEEN UPDATE[$this, $vs]: $elapsed + $dt")
 		elapsed += dt
 
 		val ratio = (elapsed / hrtime).clamp(0.0, 1.0)
@@ -90,7 +90,7 @@ class TweenComponent(
 			val elapsedInTween = (elapsed - v.startTime).clamp(0.0.milliseconds, durationInTween)
 			val ratioInTween = if (durationInTween <= 0.0.milliseconds || elapsedInTween >= durationInTween) 1.0 else elapsedInTween / durationInTween
             val easedRatioInTween = easing(ratioInTween)
-            //println("easedRatioInTween: $easedRatioInTween")
+            //println("easedRatioInTween: $easedRatioInTween, ratioInTween: $ratioInTween, durationInTween: $durationInTween, elapsedInTween: $elapsedInTween, elapsed: $elapsed")
 			v.set(easedRatioInTween)
 		}
 	}
@@ -128,6 +128,17 @@ suspend fun BaseView?.tween(
 			tc?.setTo(time)
 		}
 	}
+}
+
+fun BaseView?.tweenNoWait(
+    vararg vs: V2<*>,
+    time: TimeSpan = DEFAULT_TIME,
+    easing: Easing = DEFAULT_EASING,
+    waitTime: TimeSpan = TimeSpan.NIL,
+    callback: (Double) -> Unit = { }
+): Unit {
+    if (this == null) return
+    TweenComponent(this, vs.toList(), time, easing, callback, null, waitTime).attach()
 }
 
 suspend fun QView.tween(

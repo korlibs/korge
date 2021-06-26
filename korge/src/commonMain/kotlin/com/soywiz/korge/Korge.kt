@@ -452,8 +452,10 @@ object Korge {
                 try {
                     views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
 
+                    views.input.mouseOutside = false
                     if (moveMouseOutsideInNextFrame) {
                         moveMouseOutsideInNextFrame = false
+                        views.input.mouseOutside = true
                         views.input.mouseInside = false
                         views.mouseUpdated()
                     }

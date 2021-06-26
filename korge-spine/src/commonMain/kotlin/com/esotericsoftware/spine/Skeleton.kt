@@ -35,8 +35,6 @@ import com.esotericsoftware.spine.attachments.Attachment
 import com.esotericsoftware.spine.attachments.MeshAttachment
 import com.esotericsoftware.spine.attachments.PathAttachment
 import com.esotericsoftware.spine.attachments.RegionAttachment
-import com.esotericsoftware.spine.internal.*
-import com.esotericsoftware.spine.internal.min2
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
@@ -44,6 +42,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import kotlin.js.*
+import kotlin.math.*
 
 /** Stores the current pose for a skeleton.
  *
@@ -55,25 +54,25 @@ class Skeleton {
     val data: SkeletonData
 
     /** The skeleton's bones, sorted parent first. The root bone is always the first bone.  */
-    val bones: ArrayList<Bone>
+    val bones: FastArrayList<Bone>
 
     /** The skeleton's slots.  */
-    val slots: ArrayList<Slot>
-    internal var drawOrder: ArrayList<Slot>
+    val slots: FastArrayList<Slot>
+    internal var drawOrder: FastArrayList<Slot>
 
     /** The skeleton's IK constraints.  */
-    val ikConstraints: ArrayList<IkConstraint>
+    val ikConstraints: FastArrayList<IkConstraint>
 
     /** The skeleton's transform constraints.  */
-    val transformConstraints: ArrayList<TransformConstraint>
+    val transformConstraints: FastArrayList<TransformConstraint>
 
     /** The skeleton's path constraints.  */
-    val pathConstraints: ArrayList<PathConstraint>
+    val pathConstraints: FastArrayList<PathConstraint>
 
     /** The list of bones and constraints, sorted in the order they should be updated, as computed by [.updateCache].  */
     @JsName("updateCacheProp")
-    val updateCache: ArrayList<Updatable> = ArrayList()
-    internal val updateCacheReset: ArrayList<Bone> = ArrayList()
+    val updateCache: FastArrayList<Updatable> = FastArrayList()
+    internal val updateCacheReset: FastArrayList<Bone> = FastArrayList()
     internal var skin: Skin? = null
     internal var color: RGBAf
 
@@ -104,7 +103,7 @@ class Skeleton {
     constructor(data: SkeletonData) {
         this.data = data
 
-        bones = ArrayList(data.bones.size)
+        bones = FastArrayList(data.bones.size)
         data.bones.fastForEach { boneData ->
             val bone: Bone
             if (boneData.parent == null)
@@ -117,8 +116,8 @@ class Skeleton {
             bones.add(bone)
         }
 
-        slots = ArrayList(data.slots.size)
-        drawOrder = ArrayList(data.slots.size)
+        slots = FastArrayList(data.slots.size)
+        drawOrder = FastArrayList(data.slots.size)
         data.slots.fastForEach { slotData ->
             val bone = bones[slotData.boneData.index]
             val slot = Slot(slotData, bone)
@@ -126,17 +125,17 @@ class Skeleton {
             drawOrder.add(slot)
         }
 
-        ikConstraints = ArrayList(data.ikConstraints.size)
+        ikConstraints = FastArrayList(data.ikConstraints.size)
         data.ikConstraints.fastForEach { ikConstraintData ->
             ikConstraints.add(IkConstraint(ikConstraintData, this))
         }
 
-        transformConstraints = ArrayList(data.transformConstraints.size)
+        transformConstraints = FastArrayList(data.transformConstraints.size)
         data.transformConstraints.fastForEach { transformConstraintData ->
             transformConstraints.add(TransformConstraint(transformConstraintData, this))
         }
 
-        pathConstraints = ArrayList(data.pathConstraints.size)
+        pathConstraints = FastArrayList(data.pathConstraints.size)
         data.pathConstraints.fastForEach { pathConstraintData ->
             pathConstraints.add(PathConstraint(pathConstraintData, this))
         }
@@ -150,7 +149,7 @@ class Skeleton {
     constructor(skeleton: Skeleton) {
         data = skeleton.data
 
-        bones = ArrayList(skeleton.bones.size)
+        bones = FastArrayList(skeleton.bones.size)
         skeleton.bones.fastForEach { bone ->
             val newBone: Bone
             if (bone.parent == null)
@@ -163,28 +162,28 @@ class Skeleton {
             bones.add(newBone)
         }
 
-        slots = ArrayList(skeleton.slots.size)
+        slots = FastArrayList(skeleton.slots.size)
         skeleton.slots.fastForEach { slot ->
             val bone = bones[slot.bone.data.index]
             slots.add(Slot(slot, bone))
         }
 
-        drawOrder = ArrayList(slots.size)
+        drawOrder = FastArrayList(slots.size)
         skeleton.drawOrder.fastForEach { slot ->
             drawOrder.add(slots[slot.data.index])
         }
 
-        ikConstraints = ArrayList(skeleton.ikConstraints.size)
+        ikConstraints = FastArrayList(skeleton.ikConstraints.size)
         skeleton.ikConstraints.fastForEach { ikConstraint ->
             ikConstraints.add(IkConstraint(ikConstraint, this))
         }
 
-        transformConstraints = ArrayList(skeleton.transformConstraints.size)
+        transformConstraints = FastArrayList(skeleton.transformConstraints.size)
         skeleton.transformConstraints.fastForEach { transformConstraint ->
             transformConstraints.add(TransformConstraint(transformConstraint, this))
         }
 
-        pathConstraints = ArrayList(skeleton.pathConstraints.size)
+        pathConstraints = FastArrayList(skeleton.pathConstraints.size)
         skeleton.pathConstraints.fastForEach { pathConstraint ->
             pathConstraints.add(PathConstraint(pathConstraint, this))
         }
@@ -369,7 +368,7 @@ class Skeleton {
         updateCache.add(bone)
     }
 
-    private fun sortReset(bones: ArrayList<Bone>) {
+    private fun sortReset(bones: FastArrayList<Bone>) {
         var i = 0
         val n = bones.size
         while (i < n) {
@@ -581,11 +580,11 @@ class Skeleton {
     }
 
     /** The skeleton's slots in the order they should be drawn. The returned array may be modified to change the draw order.  */
-    fun getDrawOrder(): ArrayList<Slot> {
+    fun getDrawOrder(): FastArrayList<Slot> {
         return drawOrder
     }
 
-    fun setDrawOrder(drawOrder: ArrayList<Slot>) {
+    fun setDrawOrder(drawOrder: FastArrayList<Slot>) {
         this.drawOrder = drawOrder
     }
 
@@ -767,10 +766,10 @@ class Skeleton {
                 while (ii < verticesLength) {
                     val x = vertices[ii]
                     val y = vertices[ii + 1]
-                    minX = min2(minX, x)
-                    minY = min2(minY, y)
-                    maxX = max2(maxX, x)
-                    maxY = max2(maxY, y)
+                    minX = min(minX, x)
+                    minY = min(minY, y)
+                    maxX = max(maxX, x)
+                    maxY = max(maxY, y)
                     ii += 2
                 }
             }

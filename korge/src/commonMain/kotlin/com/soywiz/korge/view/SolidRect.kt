@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
@@ -24,6 +25,9 @@ class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : Rec
 
     override val bwidth: Double get() = width
     override val bheight: Double get() = height
+
+    // Allows to store a white bitmap in an atlas along for example a bitmap font to render in a single batch
+    var whiteBitmap: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
 
     /** The [color] of this [SolidRect]. Alias of [colorMul]. */
     var color: RGBA

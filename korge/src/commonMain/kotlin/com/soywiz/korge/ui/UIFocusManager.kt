@@ -1,0 +1,81 @@
+package com.soywiz.korge.ui
+
+import com.soywiz.kds.*
+import com.soywiz.korev.*
+import com.soywiz.korge.annotations.*
+import com.soywiz.korge.component.*
+import com.soywiz.korge.view.*
+
+@KorgeExperimental
+interface UIFocusable {
+    var tabIndex: Int
+    var focused: Boolean
+}
+
+@KorgeExperimental
+fun UIFocusable.focus() { focused = true }
+@KorgeExperimental
+fun UIFocusable.blur() { focused = false }
+
+@KorgeExperimental
+class UIFocusManager(override val view: Stage) : KeyComponent {
+    val stage = view
+    val gameWindow get() = view.gameWindow
+    var uiFocusedView: UIView? = null
+
+    //private var toggleKeyboardTimeout: Closeable? = null
+
+    fun requestToggleSoftKeyboard(show: Boolean, view: View?) {
+        //toggleKeyboardTimeout?.close()
+        //toggleKeyboardTimeout = stage.timeout(1.seconds) {
+            if (show) {
+                if (view != null) {
+                    gameWindow.setInputRectangle(view.windowBounds)
+                }
+                gameWindow.showSoftKeyboard()
+            } else {
+                gameWindow.hideSoftKeyboard()
+            }
+        //}
+    }
+
+    override fun Views.onKeyEvent(event: KeyEvent) {
+        if (event.type == KeyEvent.Type.DOWN && event.key == Key.TAB) {
+            val shift = event.shift
+            val dir = if (shift) -1 else +1
+            val focusables = stage.descendantsOfType<UIFocusable>()
+            val sortedFocusables = focusables.sortedBy { it.tabIndex }
+            val index = sortedFocusables.indexOf(uiFocusedView as? UIFocusable?).takeIf { it >= 0 }
+            sortedFocusables
+                .getCyclicOrNull(
+                    when {
+                        index != null -> index + dir
+                        shift -> -1
+                        else -> 0
+                    }
+                )
+                ?.focus()
+
+            //println("FOCUS MANAGER TAB shift=$shift")
+            //for (view in listOf(uiFocusedView, if (shift) stage.lastTreeView else stage)) {
+            //    //println("  view=$view")
+            //    val nview = when {
+            //        view != uiFocusedView && shift && view is UiFocusable -> view
+            //        shift -> view?.prevViewOfType<UiFocusable>()
+            //        else -> view?.nextViewOfType<UiFocusable>()
+            //    }
+            //    if (nview != null) {
+            //        nview.focus()
+            //        break
+            //    }
+            //}
+        }
+    }
+}
+
+@KorgeExperimental
+val Stage.uiFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
+@KorgeExperimental
+var Stage.uiFocusedView: UIView?
+    get() = uiFocusManager.uiFocusedView
+    set(value) { uiFocusManager.uiFocusedView = value }

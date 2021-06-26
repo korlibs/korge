@@ -2,7 +2,6 @@ package com.soywiz.korge.bitmapfont
 
 import com.soywiz.korge.html.*
 import com.soywiz.korge.internal.*
-import com.soywiz.korge.internal.max2
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
@@ -25,7 +24,7 @@ fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle
 		if (c1 == '\n'.toInt()) {
 			dx = 0.0
 			dy += fmetrics.lineHeight
-			height = max2(height, dy)
+			height = max(height, dy)
 			continue
 		}
 		var c2: Int = ' '.toInt()
@@ -33,7 +32,7 @@ fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle
 		val kerningOffset = font.getKerning(textSize, c1, c2)
 		val glyph = font.getGlyphMetrics(textSize, c1, glyph)
 		dx += glyph.xadvance + kerningOffset
-		width = max2(width, dx)
+		width = max(width, dx)
 	}
 	height += fmetrics.lineHeight
     //val scale = textSize / font.fontSize.toDouble()

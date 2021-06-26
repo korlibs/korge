@@ -24,6 +24,7 @@ package com.dragonbones.model
 
 import com.dragonbones.core.*
 import com.dragonbones.util.*
+import com.soywiz.kds.*
 
 /**
  * @private
@@ -73,7 +74,7 @@ class PathConstraintData(pool: SingleObjectPool<PathConstraintData>) : Constrain
 
 	var pathSlot: SlotData? = null
 	var pathDisplayData: PathDisplayData? = null
-	var bones: ArrayList<BoneData> = arrayListOf()
+	var bones: FastArrayList<BoneData> = FastArrayList()
 
 	var positionMode: PositionMode = PositionMode.Fixed
 	var spacingMode: SpacingMode = SpacingMode.Fixed

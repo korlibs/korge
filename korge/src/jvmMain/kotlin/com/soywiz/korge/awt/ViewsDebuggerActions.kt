@@ -7,9 +7,15 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.serialization.xml.*
 
 open class ViewsDebuggerActions(val views: Views) {
-    lateinit var component: ViewsDebuggerComponent
+    var componentOrNull: ViewsDebuggerComponent? = null
+    var component: ViewsDebuggerComponent
+        get() = componentOrNull!!
+        set(value) {
+            componentOrNull = value
+        }
     //var selectedView: View? = null
-    val selectedView: View? get() = (component.tree.selectionPath?.lastPathComponent as? ViewNode)?.view
+    val selectedView: View?
+        get() = (componentOrNull?.tree?.selectionPath?.lastPathComponent as? ViewNode)?.view
     var pasteboard: Xml? = null
     val stage get() = views.stage
     val currentVfs get() = views.currentVfs
@@ -27,9 +33,9 @@ open class ViewsDebuggerActions(val views: Views) {
     }
 
     var playing: Boolean
-        get() = views.stage.speed != 0.0
+        get() = root.speed != 0.0
         set(value) {
-            views.stage.speed = if (value) 1.0 else 0.0
+            root.speed = if (value) 1.0 else 0.0
         }
 
     fun togglePlay() {
@@ -118,10 +124,19 @@ open class ViewsDebuggerActions(val views: Views) {
         save("Move", view)
     }
 
-    fun attachNewView(newView: View?) {
+    val finalSelectedView: View?
+        get() {
+            var selectedViewEx: View? = selectedView ?: root
+            while (selectedViewEx != null && selectedViewEx !is Container) {
+                selectedViewEx = selectedViewEx.parent
+            }
+            return selectedViewEx
+        }
+
+    fun attachNewView(newView: View?, parent: View? = finalSelectedView) {
         if (newView == null) return
-        println("attachNewView.selectedView: $selectedView")
-        (selectedView as Container?)?.addChild(newView)
+        println("attachNewView.selectedView: $selectedView, selectedViewEx=$parent")
+        (parent as Container?)?.addChild(newView)
         selectView(newView)
         save("Create", newView)
     }

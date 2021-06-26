@@ -38,6 +38,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.cosDeg
 import com.esotericsoftware.spine.utils.SpineUtils.radDeg
 import com.esotericsoftware.spine.utils.SpineUtils.sin
 import com.esotericsoftware.spine.utils.SpineUtils.sinDeg
+import com.soywiz.kds.*
 import com.soywiz.korma.geom.*
 
 /** Stores a bone's current pose.
@@ -57,7 +58,7 @@ class Bone : Updatable {
     val parent: Bone?
 
     /** The immediate children of this bone.  */
-    val children: ArrayList<Bone> = ArrayList()
+    val children: FastArrayList<Bone> = FastArrayList()
     // -- Local transform
 
     /** The local x translation.  */

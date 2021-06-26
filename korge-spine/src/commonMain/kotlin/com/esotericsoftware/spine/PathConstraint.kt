@@ -48,7 +48,7 @@ class PathConstraint : Updatable {
     val data: PathConstraintData
 
     /** The bones that will be modified by this path constraint.  */
-    val bones: ArrayList<Bone>
+    val bones: FastArrayList<Bone>
 
     lateinit internal var target: Slot
 
@@ -76,7 +76,7 @@ class PathConstraint : Updatable {
 
     constructor(data: PathConstraintData, skeleton: Skeleton) {
         this.data = data
-        bones = ArrayList(data.bones.size)
+        bones = FastArrayList(data.bones.size)
         data.bones.fastForEach { boneData ->
             bones.add(skeleton.findBone(boneData.name)!!)
         }
@@ -90,7 +90,7 @@ class PathConstraint : Updatable {
     /** Copy constructor.  */
     constructor(constraint: PathConstraint, skeleton: Skeleton) {
         data = constraint.data
-        bones = ArrayList(constraint.bones.size)
+        bones = FastArrayList(constraint.bones.size)
         constraint.bones.fastForEach { bone ->
             bones.add(skeleton.bones[bone.data.index])
         }

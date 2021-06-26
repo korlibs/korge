@@ -4,6 +4,7 @@ package com.dragonbones.model
 
 import com.dragonbones.core.*
 import com.dragonbones.util.*
+import com.soywiz.kds.*
 
 /**
  * The MIT License (MIT)
@@ -280,7 +281,7 @@ class AnimationConfig(pool: SingleObjectPool<AnimationConfig>) : BaseObject(pool
 	/**
 	 * @private
 	 */
-	val boneMask: ArrayList<String> = arrayListOf()
+	val boneMask: FastArrayList<String> = FastArrayList()
 
 	override fun _onClear() {
 		this.pauseFadeOut = true

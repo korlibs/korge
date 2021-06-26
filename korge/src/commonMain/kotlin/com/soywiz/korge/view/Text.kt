@@ -172,13 +172,22 @@ open class Text(
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        if (text.isNotEmpty()) {
-            _renderInternal(ctx)
-            while (imagesToRemove.isNotEmpty()) {
-                ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
-            }
+        _renderInternal(ctx)
+        while (imagesToRemove.isNotEmpty()) {
+            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
         }
         super.renderInternal(ctx)
+    }
+
+    var cachedVersionGlyphMetrics = -1
+    private var _textMetricsResult: TextMetricsResult? = null
+
+    fun getGlyphMetrics(): TextMetricsResult {
+        if (cachedVersionGlyphMetrics != version) {
+            cachedVersionGlyphMetrics = version
+            _textMetricsResult = font.getOrNull()?.measureTextGlyphs(fontSize, text, renderer)
+        }
+        return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
     }
 
     private val tempBmpEntry = Text2TextRendererActions.Entry()
@@ -272,12 +281,21 @@ open class Text(
                     cachedVersion = version
                     val realTextSize = textSize * autoscaling.renderedAtScaleXY
                     //println("realTextSize=$realTextSize")
-                    textToBitmapResult = font.renderTextToBitmap(
-                        realTextSize, text,
-                        paint = Colors.WHITE, fill = true, renderer = renderer,
-                        //background = Colors.RED,
-                        nativeRendering = useNativeRendering, drawBorder = true
-                    )
+                    textToBitmapResult = when {
+                        text.isNotEmpty() -> {
+                            font.renderTextToBitmap(
+                                realTextSize, text,
+                                paint = Colors.WHITE, fill = true, renderer = renderer,
+                                //background = Colors.RED,
+                                nativeRendering = useNativeRendering, drawBorder = true
+                            )
+                        }
+                        else -> {
+                            TextToBitmapResult(Bitmaps.transparent.bmp, FontMetrics(), TextMetrics(), emptyList())
+                        }
+                    }
+
+                    //println("RENDER TEXT: '$text'")
 
                     val met = textToBitmapResult.metrics
                     val x = -horizontalAlign.getOffsetX(met.width) + met.left
@@ -334,4 +352,9 @@ open class Text(
         }
         super.buildDebugComponent(views, container)
     }
+}
+
+fun <T : Text> T.autoSize(value: Boolean): T {
+    this.autoSize = value
+    return this
 }

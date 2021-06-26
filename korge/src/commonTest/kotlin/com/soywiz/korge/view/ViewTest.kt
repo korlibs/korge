@@ -64,7 +64,7 @@ class ViewTest {
                 [8]:Rectangle(x=2180, y=610, w=1792, h=960)
             """.trimIndent(),
             """
-                [1]:${leaf.getLocalBounds(doAnchoring = true).toStringCompat()}
+                [1]:${leaf.getLocalBoundsOptimizedAnchored().toStringCompat()}
                 [3]:${leaf.getBounds().toStringCompat()}
                 [2]:${leaf.getBounds(leaf).toStringCompat()}
                 [4]:${leaf.getBounds(middle).toStringCompat()}

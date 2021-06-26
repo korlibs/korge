@@ -80,16 +80,31 @@ suspend fun TileSetData.toTiledSet(
 			TileSet(slices, tileset.tileWidth, tileset.tileHeight)
 		} else {
 			// No separation between tiles: create a new Bitmap adding that separation
-			val bitmaps = TileSet.extractBitmaps(
-				bmp,
-				tileset.tileWidth,
-				tileset.tileHeight,
-				tileset.columns,
-				tileset.tileCount,
-				tileset.spacing,
-				tileset.margin
-			)
-			TileSet.fromBitmaps(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
+			val bitmaps = if (bmp.width != 0 && bmp.height != 0) {
+				TileSet.extractBmpSlices(
+					bmp,
+					tileset.tileWidth,
+					tileset.tileHeight,
+					tileset.columns,
+					tileset.tileCount,
+					tileset.spacing,
+					tileset.margin
+				)
+			} else if (tileset.tiles.isNotEmpty()) {
+				tileset.tiles.map {
+					when (it.image) {
+						is Image.Embedded -> TODO()
+						is Image.External -> {
+                            val file = folder[it.image.source]
+                            file.readBitmapOptimized().toBMP32().slice(name = file.baseName)
+                        }
+						else -> Bitmap32(0, 0).slice()
+					}
+				}
+			} else {
+				emptyList()
+			}
+			TileSet.fromBitmapSlices(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
 		}
 	} else {
 		TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)
@@ -116,6 +131,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	val orientation = mapXml.getString("orientation")
 	tiledMap.orientation = when (orientation) {
 		"orthogonal" -> TiledMap.Orientation.ORTHOGONAL
+		"staggered" -> TiledMap.Orientation.STAGGERED
 		else -> unsupported("Orientation \"$orientation\" is not supported")
 	}
 	val renderOrder = mapXml.getString("renderorder")

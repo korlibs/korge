@@ -3,7 +3,6 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.internal.min2
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.ktree.*
@@ -14,8 +13,8 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
 inline fun Container.uiButton(
-    width: Double = 128.0,
-    height: Double = 64.0,
+    width: Double = 100.0,
+    height: Double = 32.0,
     text: String = "",
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
@@ -31,8 +30,8 @@ inline fun Container.iconButton(
 
 @Deprecated("Use uiButton instead")
 inline fun Container.uiTextButton(
-    width: Double = 128.0,
-    height: Double = 64.0,
+    width: Double = 100.0,
+    height: Double = 32.0,
     text: String = "Button",
     textFont: Font? = null,
     textSize: Double? = null,

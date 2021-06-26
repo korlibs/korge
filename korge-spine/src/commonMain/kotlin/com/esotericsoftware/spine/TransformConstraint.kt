@@ -36,6 +36,7 @@ import com.esotericsoftware.spine.utils.SpineUtils.cos
 import com.esotericsoftware.spine.utils.SpineUtils.degRad
 import com.esotericsoftware.spine.utils.SpineUtils.sin
 import com.esotericsoftware.spine.utils.SpineVector2
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 
 /** Stores the current pose for a transform constraint. A transform constraint adjusts the world transform of the constrained
@@ -48,7 +49,7 @@ class TransformConstraint : Updatable {
     val data: TransformConstraintData
 
     /** The bones that will be modified by this transform constraint.  */
-    val bones: ArrayList<Bone>
+    val bones: FastArrayList<Bone>
     internal var target: Bone? = null
 
     /** A percentage (0-1) that controls the mix between the constrained and unconstrained rotations.  */
@@ -73,7 +74,7 @@ class TransformConstraint : Updatable {
         translateMix = data.translateMix
         scaleMix = data.scaleMix
         shearMix = data.shearMix
-        bones = ArrayList(data.bones.size)
+        bones = FastArrayList(data.bones.size)
         data.bones.fastForEach { boneData ->
             bones.add(skeleton.findBone(boneData.name)!!)
         }
@@ -83,7 +84,7 @@ class TransformConstraint : Updatable {
     /** Copy constructor.  */
     constructor(constraint: TransformConstraint, skeleton: Skeleton) {
         data = constraint.data
-        bones = ArrayList(constraint.bones.size)
+        bones = FastArrayList(constraint.bones.size)
         constraint.bones.fastForEach { bone ->
             bones.add(skeleton.bones[bone.data.index])
         }

@@ -31,7 +31,6 @@ package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.internal.*
-import com.esotericsoftware.spine.internal.max2
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
@@ -48,9 +47,9 @@ class AnimationState {
     private var data: AnimationStateData? = null
 
     /** The list of tracks that currently have animations, which may contain null entries.  */
-    val tracks: ArrayList<TrackEntry?> = ArrayList()
-    private val events = ArrayList<Event>()
-    internal val listeners: ArrayList<AnimationStateListener> = ArrayList()
+    val tracks: FastArrayList<TrackEntry?> = FastArrayList()
+    private val events = FastArrayList<Event>()
+    internal val listeners: FastArrayList<AnimationStateListener> = FastArrayList()
     private val queue = EventQueue()
     private val propertyIDs = IntSet()
     @JsName("animationsChangedProp")
@@ -320,7 +319,7 @@ class AnimationState {
                     -> {
                         timelineBlend = MixBlend.setup
                         val holdMix = timelineHoldMix[i]
-                        alpha = alphaHold * max2(0f, 1 - holdMix.mixTime / holdMix.mixDuration)
+                        alpha = alphaHold * max(0f, 1 - holdMix.mixTime / holdMix.mixDuration)
                     }
                 }
                 from.totalAlpha += alpha
@@ -651,7 +650,7 @@ class AnimationState {
                     if (last.loop)
                         delay += duration * (1 + (last.trackTime / duration).toInt()) // Completion of next loop.
                     else
-                        delay += max2(duration, last.trackTime) // After duration, else next update.
+                        delay += max(duration, last.trackTime) // After duration, else next update.
                     delay -= data!!.getMix(last.animation, animation)
                 } else
                     delay = last.trackTime // Next update.
@@ -1052,7 +1051,7 @@ class AnimationState {
         internal var mixBlend = MixBlend.replace
 
         internal val timelineMode = IntArrayList()
-        internal val timelineHoldMix: ArrayList<TrackEntry> = ArrayList()
+        internal val timelineHoldMix: FastArrayList<TrackEntry> = FastArrayList()
         internal val timelinesRotation = FloatArrayList()
 
         /** Uses [.getTrackTime] to compute the `animationTime`, which is between [.getAnimationStart]
@@ -1140,7 +1139,7 @@ class AnimationState {
     }
 
     internal inner class EventQueue {
-        private val objects = ArrayList<Any>()
+        private val objects = FastArrayList<Any>()
         var drainDisabled: Boolean = false
 
         fun start(entry: TrackEntry) {
@@ -1288,7 +1287,7 @@ class AnimationState {
     }
 
     companion object {
-        private val emptyAnimation = Animation("<empty>", ArrayList(0), 0f)
+        private val emptyAnimation = Animation("<empty>", FastArrayList(0), 0f)
 
         /** 1) A previously applied timeline has set this property.<br></br>
          * Result: Mix from the current pose to the timeline pose.  */
