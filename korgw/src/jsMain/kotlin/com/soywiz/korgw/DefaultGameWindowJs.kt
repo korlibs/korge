@@ -252,6 +252,35 @@ open class BrowserGameWindow : GameWindow() {
     override val bufferWidth: Int get() = canvas.width
     override val bufferHeight: Int get() = canvas.height
 
+    override var cursor: ICursor = Cursor.DEFAULT
+        set(value) {
+            field = value
+            canvas.style.cursor = when (value) {
+                is Cursor -> {
+                    when (value) {
+                        Cursor.DEFAULT -> "default"
+                        Cursor.CROSSHAIR -> "crosshair"
+                        Cursor.TEXT -> "text"
+                        Cursor.HAND -> "pointer"
+                        Cursor.MOVE -> "move"
+                        Cursor.WAIT -> "wait"
+                        Cursor.RESIZE_EAST -> "e-resize"
+                        Cursor.RESIZE_WEST -> "w-resize"
+                        Cursor.RESIZE_SOUTH -> "s-resize"
+                        Cursor.RESIZE_NORTH -> "n-resize"
+                        Cursor.RESIZE_NORTH_EAST -> "ne-resize"
+                        Cursor.RESIZE_NORTH_WEST -> "nw-resize"
+                        Cursor.RESIZE_SOUTH_EAST -> "se-resize"
+                        Cursor.RESIZE_SOUTH_WEST -> "sw-resize"
+                        //Cursor.ZOOM_IN -> "zoom-in"
+                        //Cursor.ZOOM_OUT -> "zoom-out"
+                        else -> "default"
+                    }
+                }
+                else -> "default"
+            }
+        }
+
     override var icon: Bitmap? = null
         set(value) {
             field = value
