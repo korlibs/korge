@@ -55,7 +55,11 @@ data class MouseEvent(
         this.isMetaDown = other.isMetaDown
         this.scaleCoords = other.scaleCoords
         this.emulated = other.emulated
+        //this.scrollDeltaMode = other.scrollDeltaMode // @TODO: Enable after ABI change
     }
+
+    //var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.PIXEL // @TODO: Enable after ABI change
+    //enum class ScrollDeltaMode { PIXEL, LINE, PATH  } // @TODO: Enable after ABI change
 
     var requestLock: () -> Unit = { }
 }
