@@ -15,8 +15,11 @@ data class MouseEvent(
     var y: Int = 0,
     var button: MouseButton = MouseButton.NONE,
     var buttons: Int = 0,
+    @Deprecated("Use scrollDeltaX variants")
     var scrollDeltaX: Double = 0.0,
+    @Deprecated("Use scrollDeltaY variants")
     var scrollDeltaY: Double = 0.0,
+    @Deprecated("Use scrollDeltaZ variants")
     var scrollDeltaZ: Double = 0.0,
     var isShiftDown: Boolean = false,
     var isCtrlDown: Boolean = false,
@@ -55,11 +58,33 @@ data class MouseEvent(
         this.isMetaDown = other.isMetaDown
         this.scaleCoords = other.scaleCoords
         this.emulated = other.emulated
-        //this.scrollDeltaMode = other.scrollDeltaMode // @TODO: Enable after ABI change
+        this.scrollDeltaMode = other.scrollDeltaMode
     }
 
-    //var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.PIXEL // @TODO: Enable after ABI change
-    //enum class ScrollDeltaMode { PIXEL, LINE, PATH  } // @TODO: Enable after ABI change
+    var scrollDeltaMode: ScrollDeltaMode = ScrollDeltaMode.LINE
+    enum class ScrollDeltaMode(val scale: Double) {
+        PIXEL(1.0),
+        LINE(10.0),
+        PAGE(100.0);
+
+        fun convertTo(value: Double, target: ScrollDeltaMode): Double = value * (this.scale / target.scale)
+    }
+
+    fun scrollDeltaX(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaX, mode)
+    fun scrollDeltaY(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
+    fun scrollDeltaZ(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
+
+    inline val scrollDeltaXPixels: Double get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaYPixels: Double get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
+    inline val scrollDeltaZPixels: Double get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)
+
+    inline val scrollDeltaXLines: Double get() = scrollDeltaX(ScrollDeltaMode.LINE)
+    inline val scrollDeltaYLines: Double get() = scrollDeltaY(ScrollDeltaMode.LINE)
+    inline val scrollDeltaZLines: Double get() = scrollDeltaZ(ScrollDeltaMode.LINE)
+
+    inline val scrollDeltaXPages: Double get() = scrollDeltaX(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaYPages: Double get() = scrollDeltaY(ScrollDeltaMode.PAGE)
+    inline val scrollDeltaZPages: Double get() = scrollDeltaZ(ScrollDeltaMode.PAGE)
 
     var requestLock: () -> Unit = { }
 }

@@ -240,23 +240,17 @@ open class BrowserGameWindow : GameWindow() {
             this.isMetaDown = e.metaKey
             if (type == com.soywiz.korev.MouseEvent.Type.SCROLL) {
                 val we = e.unsafeCast<WheelEvent>()
-                val multiplier = when (we.deltaMode) {
-                    WheelEvent.DOM_DELTA_PIXEL -> 0.1
-                    WheelEvent.DOM_DELTA_LINE -> 1.0
-                    WheelEvent.DOM_DELTA_PAGE -> 10.0
-                    else -> 1.0
+
+                this.scrollDeltaMode = when (we.deltaMode) {
+                    WheelEvent.DOM_DELTA_PIXEL -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL
+                    WheelEvent.DOM_DELTA_LINE -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
+                    WheelEvent.DOM_DELTA_PAGE -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.PAGE
+                    else -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
                 }
 
-                this.scrollDeltaX = we.deltaX * multiplier
-                this.scrollDeltaY = we.deltaY * multiplier
-                this.scrollDeltaZ = we.deltaZ * multiplier
-                // @TODO: Enable after ABI change
-                //this.scrollDeltaMode = when (we.deltaMode) {
-                //    WheelEvent.DOM_DELTA_PIXEL -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL
-                //    WheelEvent.DOM_DELTA_LINE -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
-                //    WheelEvent.DOM_DELTA_PAGE -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.PAGE
-                //    else -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
-                //}
+                this.scrollDeltaX = we.deltaX
+                this.scrollDeltaY = we.deltaY
+                this.scrollDeltaZ = we.deltaZ
             }
         }
 

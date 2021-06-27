@@ -223,9 +223,26 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     //var lastEventExit: MouseEvent? = null
     val button: MouseButton get() = lastEvent.button
     val buttons: Int get() = lastEvent.buttons
+
+    @Deprecated("Use other variants")
     val scrollDeltaX: Double get() = lastEvent.scrollDeltaX
+    @Deprecated("Use other variants")
     val scrollDeltaY: Double get() = lastEvent.scrollDeltaY
+    @Deprecated("Use other variants")
     val scrollDeltaZ: Double get() = lastEvent.scrollDeltaZ
+
+    val scrollDeltaXPixels: Double get() = lastEvent.scrollDeltaXPixels
+    val scrollDeltaYPixels: Double get() = lastEvent.scrollDeltaYPixels
+    val scrollDeltaZPixels: Double get() = lastEvent.scrollDeltaZPixels
+
+    val scrollDeltaXLines: Double get() = lastEvent.scrollDeltaXLines
+    val scrollDeltaYLines: Double get() = lastEvent.scrollDeltaYLines
+    val scrollDeltaZLines: Double get() = lastEvent.scrollDeltaZLines
+
+    val scrollDeltaXPages: Double get() = lastEvent.scrollDeltaXPages
+    val scrollDeltaYPages: Double get() = lastEvent.scrollDeltaYPages
+    val scrollDeltaZPages: Double get() = lastEvent.scrollDeltaZPages
+
     val isShiftDown: Boolean get() = lastEvent.isShiftDown
     val isCtrlDown: Boolean get() = lastEvent.isCtrlDown
     val isAltDown: Boolean get() = lastEvent.isAltDown
