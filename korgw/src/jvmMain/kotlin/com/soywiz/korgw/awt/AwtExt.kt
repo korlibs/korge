@@ -22,7 +22,7 @@ private val cachedRefreshRates = WeakMap<GraphicsDevice, Int>()
 
 val GraphicsDevice.cachedRefreshRate: Int get() {
     return cachedRefreshRates.getOrPut(this) {
-        Console.info("COMPUTED REFRESH RATE for $it")
+        Console.info("COMPUTED REFRESH RATE for $it (${it.displayMode.refreshRate})")
         it.displayMode.refreshRate
     }
 }
