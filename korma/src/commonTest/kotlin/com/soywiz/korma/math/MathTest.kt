@@ -1,9 +1,24 @@
 package com.soywiz.korma.math
 
+import com.soywiz.kds.rotated
 import kotlin.math.E
 import kotlin.test.*
 
 class MathTest {
+    @Test
+    fun testMinMax34() {
+        for (n in 0 until 4) {
+            val list = listOf(1, 2, 3, 4).rotated(n)
+            assertEquals(1, min(list[0], list[1], list[2], list[3]))
+            assertEquals(4, max(list[0], list[1], list[2], list[3]))
+        }
+        for (n in 0 until 3) {
+            val list = listOf(1, 2, 3).rotated(n)
+            assertEquals(1, min(list[0], list[1], list[2]))
+            assertEquals(3, max(list[0], list[1], list[2]))
+        }
+    }
+
     @Test
     fun testConvertRange() {
         assertEquals(300.0, 100.0.convertRange(50.0, 150.0, 200.0, 400.0))

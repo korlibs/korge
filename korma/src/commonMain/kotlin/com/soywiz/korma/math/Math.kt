@@ -64,3 +64,19 @@ fun Long.prevMultipleOf(multiple: Long) = if (this.isMultipleOf(multiple)) this 
 
 fun Int.isMultipleOf(multiple: Int) = multiple == 0 || (this % multiple) == 0
 fun Long.isMultipleOf(multiple: Long) = multiple == 0L || (this % multiple) == 0L
+
+fun min(a: Int, b: Int, c: Int) = min(min(a, b), c)
+fun min(a: Float, b: Float, c: Float) = min(min(a, b), c)
+fun min(a: Double, b: Double, c: Double) = min(min(a, b), c)
+
+fun min(a: Int, b: Int, c: Int, d: Int) = min(min(min(a, b), c), d)
+fun min(a: Float, b: Float, c: Float, d: Float) = min(min(min(a, b), c), d)
+fun min(a: Double, b: Double, c: Double, d: Double) = min(min(min(a, b), c), d)
+
+fun max(a: Int, b: Int, c: Int) = max(max(a, b), c)
+fun max(a: Float, b: Float, c: Float) = max(max(a, b), c)
+fun max(a: Double, b: Double, c: Double) = max(max(a, b), c)
+
+fun max(a: Int, b: Int, c: Int, d: Int) = max(max(max(a, b), c), d)
+fun max(a: Float, b: Float, c: Float, d: Float) = max(max(max(a, b), c), d)
+fun max(a: Double, b: Double, c: Double, d: Double) = max(max(max(a, b), c), d)
