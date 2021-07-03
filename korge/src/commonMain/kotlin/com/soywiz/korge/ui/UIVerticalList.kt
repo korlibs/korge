@@ -61,8 +61,11 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         updateList()
     }
 
+    private val tempTransform = Matrix.Transform()
+
     fun updateList() {
-        val area = getVisibleGlobalArea(tempRect)
+        if (parent == null) return
+        val area = getVisibleWindowArea(tempRect)
         val point = globalXY(tempPoint)
         val numItems = provider.numItems
         if (area != lastArea || point != lastPoint) {
@@ -78,9 +81,13 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
             //val fromIndex = (startIndex).clamp(0, numItems - 1)
             //val toIndex = (startIndex + nItems).clamp(0, numItems - 1)
 
-            //println("area=$area, point=$point, fromIndex=$fromIndex, toIndex=$toIndex, nItems=$nItems")
+            //println("----")
 
-            val fromIndex = getIndexAtY(-point.y).clamp(0, numItems - 1)
+            //println("point=$point")
+
+            val transform = parent!!.globalMatrix.toTransform(tempTransform)
+            //println("transform=${transform.scaleAvg}")
+            val fromIndex = getIndexAtY((-point.y + tempRect.top) / transform.scaleY).clamp(0, numItems - 1)
             var toIndex = fromIndex
             for (index in fromIndex until numItems) {
                 val view = viewsByIndex.getOrPut(index) {
@@ -91,10 +98,15 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
                         .size(width, itemHeight.toDouble())
                 }
                 toIndex = index
-                if (view.y + view.height + point.y >= area.bottom) {
+
+                //val localViewY = view.localToGlobalY(0.0, view.height)
+
+                if (view.localToRenderY(0.0, view.height) >= area.bottom) {
+                    //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")
                     break
                 }
             }
+            //println("area=$area, point=$point, nItems=${toIndex - fromIndex}, fromIndex=$fromIndex, toIndex=$toIndex, globalBounds=${this.globalBounds}")
 
             val removeIndices = viewsByIndex.keys.filter { it !in fromIndex .. toIndex }.toSet()
 
