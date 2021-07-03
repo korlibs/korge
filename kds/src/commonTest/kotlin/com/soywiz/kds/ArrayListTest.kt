@@ -4,6 +4,19 @@ import kotlin.test.*
 
 class ArrayListTest {
     @Test
+    fun testRotated() {
+        assertEquals(listOf(1, 2, 3, 4), listOf(1, 2, 3, 4).rotated(0))
+
+        assertEquals(listOf(4, 1, 2, 3), listOf(1, 2, 3, 4).rotated(+1))
+        assertEquals(listOf(3, 4, 1, 2), listOf(1, 2, 3, 4).rotated(+2))
+        assertEquals(listOf(2, 3, 4, 1), listOf(1, 2, 3, 4).rotated(+3))
+
+        assertEquals(listOf(2, 3, 4, 1), listOf(1, 2, 3, 4).rotated(-1))
+        assertEquals(listOf(3, 4, 1, 2), listOf(1, 2, 3, 4).rotated(-2))
+        assertEquals(listOf(4, 1, 2, 3), listOf(1, 2, 3, 4).rotated(-3))
+    }
+
+    @Test
     fun testInt() {
         val values = IntArrayList(2)
         assertEquals(0, values.size)

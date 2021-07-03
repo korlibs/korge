@@ -83,3 +83,19 @@ fun <T> MutableList<T>.swap(lIndex: Int, rIndex: Int) {
     this[lIndex] = this[rIndex]
     this[rIndex] = temp
 }
+
+fun <T> List<T>.rotated(offset: Int): List<T> = ArrayList<T>(this.size).also {
+    for (n in 0 until this.size) it.add(this.getCyclic(n - offset))
+}
+
+fun IntArrayList.rotated(offset: Int): IntArrayList = IntArrayList(this.size).also {
+    for (n in 0 until this.size) it.add(this.getCyclic(n - offset))
+}
+
+fun FloatArrayList.rotated(offset: Int): FloatArrayList = FloatArrayList(this.size).also {
+    for (n in 0 until this.size) it.add(this.getCyclic(n - offset))
+}
+
+fun DoubleArrayList.rotated(offset: Int): DoubleArrayList = DoubleArrayList(this.size).also {
+    for (n in 0 until this.size) it.add(this.getCyclic(n - offset))
+}
