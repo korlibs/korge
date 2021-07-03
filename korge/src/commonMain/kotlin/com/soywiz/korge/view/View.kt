@@ -316,6 +316,7 @@ abstract class View internal constructor(
         set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
 
     fun globalXY(out: Point = Point()): Point = out.setTo(globalX, globalY)
+    fun localXY(out: Point = Point()): Point = out.setTo(x, y)
 
     /**
      * Changes the [width] and [height] to match the parameters.
