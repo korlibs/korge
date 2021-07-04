@@ -2,6 +2,8 @@ package com.soywiz.korio.net.http
 
 import com.soywiz.kds.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.compression.deflate.GZIP
+import com.soywiz.korio.compression.uncompressed
 import com.soywiz.korio.concurrent.atomic.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
@@ -23,9 +25,33 @@ abstract class HttpClient protected constructor() {
 		val status: Int,
 		val statusText: String,
 		val headers: Http.Headers,
-		val content: AsyncInputStream
+		val rawContent: AsyncInputStream,
+        val content: AsyncInputStream
 	) {
 		val success = status < 400
+
+        companion object {
+            suspend operator fun invoke(
+                status: Int,
+                statusText: String,
+                headers: Http.Headers,
+                rawContent: AsyncInputStream,
+            ): Response {
+                val contentEncoding = (headers["Content-Encoding"] ?: "").lowercase().trim()
+                return Response(
+                    status,
+                    statusText,
+                    headers,
+                    rawContent,
+                    when (contentEncoding) {
+                        "" -> rawContent
+                        "gzip" -> rawContent.uncompressed(GZIP)
+                        else -> error("Unsupported Content-Encoding '$contentEncoding'")
+                    }
+                )
+            }
+        }
+
 		suspend fun readAllBytes(): ByteArray {
 			//println(content)
 			val allContent = content.readAll()
@@ -180,8 +206,9 @@ fun HttpClient.delayed(ms: Long) = DelayedHttpClient(ms, this)
 
 class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
 	val log = arrayListOf<String>()
+    private val defaultContent = "LogHttpClient.response".toByteArray(UTF8).openAsync()
 	var defaultResponse =
-		HttpClient.Response(200, "OK", Http.Headers(), "LogHttpClient.response".toByteArray(UTF8).openAsync())
+		HttpClient.Response(200, "OK", Http.Headers(), defaultContent, defaultContent)
 	private val rules = LinkedHashMap<Rule, ArrayList<ResponseBuilder>>()
 
 	override suspend fun requestInternal(
@@ -233,7 +260,7 @@ class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
 		fun notFound(content: String = "404 - Not Found") = response(content, code = 404)
 		fun internalServerError(content: String = "500 - Internal Server Error") = response(content, code = 500)
 
-		internal fun buildResponse() = HttpClient.Response(
+		internal suspend fun buildResponse() = HttpClient.Response(
             responseCode,
             HttpStatusMessage(responseCode),
             responseHeaders,

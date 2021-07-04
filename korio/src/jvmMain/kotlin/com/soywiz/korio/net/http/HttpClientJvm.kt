@@ -147,7 +147,7 @@ class HttpClientJvm : HttpClient() {
 				status = con.responseCode,
 				statusText = con.responseMessage,
 				headers = pheaders,
-				content = if (length != null) acontent.withLength(length) else acontent
+				rawContent = if (length != null) acontent.withLength(length) else acontent
 			)
 		}
 		return result

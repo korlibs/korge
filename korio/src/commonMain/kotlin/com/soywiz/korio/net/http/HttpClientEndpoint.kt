@@ -43,8 +43,10 @@ class FakeHttpClientEndpoint(val defaultMessage: String = "{}") : HttpClientEndp
 	private var responsePointer = 0
 	private val responses = arrayListOf<HttpClient.Response>()
 
-	private fun getResponse(code: Int, content: String) =
-		HttpClient.Response(code, HttpStatusMessage.CODES[code] ?: "Code$code", Http.Headers(), content.openAsync())
+	private fun getResponse(code: Int, content: String): HttpClient.Response {
+        val contentAsync = content.openAsync()
+        return HttpClient.Response(code, HttpStatusMessage.CODES[code] ?: "Code$code", Http.Headers(), contentAsync, contentAsync)
+    }
 
 	fun addResponse(code: Int, content: String) {
 		responses += getResponse(code, content)

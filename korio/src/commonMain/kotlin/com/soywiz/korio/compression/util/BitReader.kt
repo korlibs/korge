@@ -8,7 +8,7 @@ import com.soywiz.korio.stream.*
 import kotlin.math.*
 
 @KorioExperimentalApi
-open class BitReader(val s: AsyncInputStreamWithLength) : AsyncInputStreamWithLength {
+open class BitReader(val s: AsyncInputStream) : AsyncInputStreamWithLength {
 	@PublishedApi
 	internal var bitdata = 0
 	@PublishedApi
@@ -112,6 +112,6 @@ open class BitReader(val s: AsyncInputStreamWithLength) : AsyncInputStreamWithLe
 	//suspend fun readBytesExact(count: Int): ByteArray = abytes(count)
 
 	override suspend fun getPosition(): Long = sbuffers.read
-	override suspend fun getLength(): Long = s.getLength()
+	override suspend fun getLength(): Long = (s as? AsyncGetLengthStream)?.getLength() ?: error("Length not available on Stream")
 }
 
