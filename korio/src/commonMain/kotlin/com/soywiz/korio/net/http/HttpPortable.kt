@@ -160,9 +160,26 @@ open class HttpPortable(
                                         send(WsFrame(msg, opcode, true, masked = false))
                                     }
 
+                                    var acceptHeaders = Http.Headers {
+                                        put("Upgrade", "websocket")
+                                        put("Connection", "Upgrade")
+                                        put("Sec-WebSocket-Accept", websocketAcceptKey)
+                                        val protocol = websocketProtocol.firstOrNull()
+                                        if (protocol != null) {
+                                            put("Sec-WebSocket-Protocol", protocol)
+                                        }
+                                        if (origin != null) {
+                                            put("Origin", origin)
+                                        }
+                                    }
+
                                     wshandler(object : WsRequest(url, headers, websocketScope) {
                                         override fun reject() {
                                             throw CancellationException("Rejected")
+                                        }
+
+                                        override fun accept(headers: Http.Headers) {
+                                            acceptHeaders += headers
                                         }
 
                                         override fun close() {
@@ -190,20 +207,10 @@ open class HttpPortable(
                                         }
                                     })
 
-                                    client.writeString(buildString {
-                                        append("$httpVersion 101 Switching Protocols\r\n")
-                                        append("Upgrade: websocket\r\n")
-                                        append("Connection: Upgrade\r\n")
-                                        append("Sec-WebSocket-Accept: $websocketAcceptKey\r\n")
-                                        val protocol = websocketProtocol.firstOrNull()
-                                        if (protocol != null) {
-                                            append("Sec-WebSocket-Protocol: $protocol\r\n")
-                                        }
-                                        if (origin != null) {
-                                            append("Origin: $origin\r\n")
-                                        }
-                                        append("\r\n")
-                                    })
+                                    client.writeString(
+                                        "$httpVersion 101 Switching Protocols\r\n" +
+                                            acceptHeaders.toHttpHeaderString()
+                                    )
 
                                     var receivedPong = false
 
@@ -257,8 +264,8 @@ open class HttpPortable(
                                     listOf(pingJob, readPacketJob).joinAll()
                                 }
                             } catch (e: CancellationException) {
-                                println("COMPLETED!")
-                                e.printStackTrace()
+                                //println("COMPLETED!")
+                                //e.printStackTrace()
                             } catch (e: Throwable) {
                                 e.printStackTrace()
                             }

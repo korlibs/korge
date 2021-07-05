@@ -170,13 +170,22 @@ interface Http {
 
 		override fun toString(): String = "Headers(${toListGrouped().joinToString(", ")})"
 
+        fun toHttpHeaderString(extraLine: Boolean = true) = buildString {
+            for ((key, value) in items) {
+                append("$key: $value\r\n")
+            }
+            if (extraLine) append("\r\n")
+        }
+
         class Builder {
             private val items = arrayListOf<Pair<String, String>>()
-            fun put(key: String, value: String) = run { items += key to value }
+            fun put(key: String, value: String) { items += key to value }
             fun build() = Headers(items)
         }
 
         companion object {
+            operator fun invoke(block: Builder.() -> Unit): Headers = Builder().apply(block).build()
+
             fun build(block: Builder.() -> Unit): Headers = Builder().apply(block).build()
 
 			fun fromListMap(map: Map<String?, List<String>>): Headers {

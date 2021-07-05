@@ -34,6 +34,7 @@ open class HttpServer protected constructor() : AsyncCloseable {
 		val scope: CoroutineScope
 	) : BaseRequest(uri, headers) {
 		abstract fun reject()
+		open fun accept(headers: Http.Headers) = Unit
 
 		abstract fun close()
 		abstract fun onStringMessage(handler: suspend (String) -> Unit)
