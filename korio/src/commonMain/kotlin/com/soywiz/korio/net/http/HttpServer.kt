@@ -5,6 +5,8 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
+import com.soywiz.korio.net.ws.WsCloseInfo
+import com.soywiz.korio.net.ws.WsFrame
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
@@ -36,7 +38,7 @@ open class HttpServer protected constructor() : AsyncCloseable {
 		abstract fun close()
 		abstract fun onStringMessage(handler: suspend (String) -> Unit)
 		abstract fun onBinaryMessage(handler: suspend (ByteArray) -> Unit)
-		abstract fun onClose(handler: suspend () -> Unit)
+		abstract fun onClose(handler: suspend (WsCloseInfo) -> Unit)
 		abstract fun send(msg: String)
 		abstract fun send(msg: ByteArray)
 
@@ -225,10 +227,12 @@ open class HttpServer protected constructor() : AsyncCloseable {
 
 	protected open suspend fun listenInternal(port: Int, host: String = "127.0.0.1") {
 		val deferred = CompletableDeferred<Unit>(Job())
+        //onListening(port)
 		deferred.await()
 	}
 
 	open val actualPort: Int = 0
+    //val onListening = Signal<Int>()
 
 	protected open suspend fun closeInternal() {
 	}

@@ -85,7 +85,14 @@ interface AsyncServer: AsyncCloseable {
 	suspend fun accept(): AsyncClient
 
 	suspend fun listen(handler: suspend (AsyncClient) -> Unit): Closeable {
-		val job = async(coroutineContext) { while (true) handler(accept()) }
+		val job = async(coroutineContext) {
+            while (true) {
+                val client = accept()
+                launchImmediately(coroutineContext) {
+                    handler(client)
+                }
+            }
+		}
 		return Closeable { job.cancel() }
 	}
 

@@ -32,6 +32,7 @@ abstract class WebSocketClient protected constructor(val url: String, val protoc
     }
 
     open fun close(code: Int = 1000, reason: String = "OK"): Unit = Unit
+    fun close(info: WsCloseInfo) = close(info.code, info.reason)
 	open suspend fun send(message: String): Unit = Unit
 	open suspend fun send(message: ByteArray): Unit = Unit
 }
