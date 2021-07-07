@@ -330,9 +330,13 @@ object NativeAsyncSocketFactory : AsyncSocketFactory() {
 		override suspend fun accept(): AsyncClient = NativeAsyncClient(socket.accept())
 	}
 
-	override suspend fun createClient(secure: Boolean): AsyncClient = NativeAsyncClient(NativeSocket())
+	override suspend fun createClient(secure: Boolean): AsyncClient {
+        if (secure) TODO("Secure sockets not implemented on Kotlin/Native Windows")
+        return NativeAsyncClient(NativeSocket())
+    }
 
 	override suspend fun createServer(port: Int, host: String, backlog: Int, secure: Boolean): AsyncServer {
+        if (secure) TODO("Secure sockets not implemented on Kotlin/Native Windows")
 		val socket = NativeSocket()
 		socket.bind(host, port, backlog)
 		return NativeAsyncServer(socket, port, backlog)
