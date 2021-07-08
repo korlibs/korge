@@ -76,15 +76,15 @@ class DebugLineRenderContext(
     private var vertexPos = 0
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
-    fun line(x0: Float, y0: Float, x1: Float, y1: Float) {
+    fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0) {
         if (vertexCount >= maxVertexCount - 2) {
             flush()
         }
-        addVertex(x0, y0)
-        addVertex(x1, y1)
+        addVertex(x0, y0, color0)
+        addVertex(x1, y1, color1)
     }
-    fun line(x0: Double, y0: Double, x1: Double, y1: Double) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat())
-    fun line(x0: Int, y0: Int, x1: Int, y1: Int) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat())
+    fun line(x0: Double, y0: Double, x1: Double, y1: Double, color0: RGBA = color, color1: RGBA = color0) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1)
+    fun line(x0: Int, y0: Int, x1: Int, y1: Int, color0: RGBA = color, color1: RGBA = color0) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1)
 
     fun drawVector(path: VectorPath) {
         var lastX = 0.0
@@ -142,7 +142,7 @@ class DebugLineRenderContext(
         vertexPos = 0
     }
 
-    private fun addVertex(x: Float, y: Float) {
+    private fun addVertex(x: Float, y: Float, color: RGBA = this.color) {
         vertices.setAlignedFloat32(vertexPos + 0, x)
         vertices.setAlignedFloat32(vertexPos + 1, y)
         vertices.setAlignedInt32(vertexPos + 2, color.value)
