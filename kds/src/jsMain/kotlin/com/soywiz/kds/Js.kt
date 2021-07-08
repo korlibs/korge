@@ -64,7 +64,11 @@ actual inline operator fun <T> FastStringMap<T>.set(key: String, value: T): Unit
 actual inline operator fun <T> FastStringMap<T>.contains(key: String): Boolean = (this.asDynamic()).has(key)
 actual inline fun <T> FastStringMap<T>.remove(key: String): Unit = run { (this.asDynamic()).delete(key) }
 actual inline fun <T> FastStringMap<T>.clear() = run { (this.asDynamic()).clear() }
-
+actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
+    for (key in other.keys) {
+        this[key] = other[key].asDynamic()
+    }
+}
 @Suppress("UnsafeCastFromDynamic")
 actual inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) -> Unit): Unit {
     //println("FastStringMap<T>.fastKeyForEach")
