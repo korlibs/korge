@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
@@ -48,28 +49,31 @@ fun <T> UISkinable.getSkinProperty(property: KProperty<*>, default: UISkinable.(
     val res = getSkinPropertyOrNull<T>(property)
     if (res == null) {
         val value = default()
+        //println("Property[$property] doesn't exists in $this. Computed new value $value")
         setSkinProperty(property, value)
         return value
     }
     return res
 }
 
-open class UISkin(val skins: List<UISkinable> = listOf(), val parent: UISkinable? = null) : UISkinable {
-    val skinProps = LinkedHashMap<KProperty<*>, Any?>()
+open class UISkin(val name: String? = null, val skins: List<UISkinable> = listOf(), val parent: UISkinable? = null) : UISkinable {
+    val skinProps = FastStringMap<Any?>()
 
     override fun <T> setSkinProperty(property: KProperty<*>, value: T) {
-        skinProps[property] = value
+        skinProps[property.name] = value
     }
 
     override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? {
-        skinProps[property]?.let { return it as T }
+        skinProps[property.name]?.let { return it as T }
         skins.fastForEach { it.getSkinPropertyOrNull<T>(property)?.let { return it } }
         return parent?.getSkinPropertyOrNull(property)
     }
 
-    fun copy(): UISkin = UISkin(skins, parent).also { it.skinProps.putAll(this.skinProps) }
+    fun copy(): UISkin = UISkin(name, skins, parent).also { it.skinProps.putAll(this.skinProps) }
 
     fun child() = UISkin(parent = this)
+
+    override fun toString(): String = "UISkin($name)"
 }
 
 open class UISkinableProperty<T>(val default: UISkinable.() -> T) {
@@ -111,7 +115,7 @@ var UISkinable.scrollbarIconRight by UISkinableProperty { iconRight }
 var UISkinable.scrollbarIconUp by UISkinableProperty { iconUp }
 var UISkinable.scrollbarIconDown by UISkinableProperty { iconDown }
 
-inline fun UISkin(block: UISkin.() -> Unit): UISkin = UISkin().apply(block)
+inline fun UISkin(name: String? = null, block: UISkin.() -> Unit): UISkin = UISkin(name).apply(block)
 
 /*
 @Deprecated("")
