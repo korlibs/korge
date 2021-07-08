@@ -60,7 +60,7 @@ abstract class View internal constructor(
     , BView
 //, EventDispatcher by EventDispatcher.Mixin()
 {
-    override var extra: LinkedHashMap<String, Any?>? = null
+    override var extra: ExtraType = null
 
     override val bview: View get() = this
     override val bviewAll: List<View> by lazy { listOf(this) }

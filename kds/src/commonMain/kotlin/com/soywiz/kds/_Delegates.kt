@@ -2,10 +2,13 @@ package com.soywiz.kds
 
 import kotlin.reflect.*
 
-interface Extra {
-    var extra: LinkedHashMap<String, Any?>?
+typealias ExtraType = FastStringMap<Any?>?
+fun ExtraTypeCreate() = FastStringMap<Any?>()
 
-    class Mixin(override var extra: LinkedHashMap<String, Any?>? = null) : Extra
+interface Extra {
+    var extra: ExtraType
+
+    open class Mixin(override var extra: ExtraType = null) : Extra
 
     @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 
@@ -40,7 +43,7 @@ interface Extra {
 
         inline operator fun setValue(thisRef: T2, property: KProperty<*>, value: T): Unit = run {
             //beforeSet(value)
-            if (thisRef.extra == null) thisRef.extra = LinkedHashMap()
+            if (thisRef.extra == null) thisRef.extra = ExtraTypeCreate()
             thisRef.extra?.set(name ?: property.name, value as Any?)
             //afterSet(value)
         }
@@ -52,7 +55,7 @@ fun Extra.getExtra(name: String): Any? = extra?.get(name)
 fun Extra.setExtra(name: String, value: Any?): Unit {
     if (extra == null) {
         if (value == null) return
-        extra = LinkedHashMap()
+        extra = ExtraTypeCreate()
     }
     extra?.set(name, value)
 }

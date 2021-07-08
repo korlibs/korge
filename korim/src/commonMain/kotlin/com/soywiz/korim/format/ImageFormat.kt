@@ -67,12 +67,12 @@ data class ImageDecodingProps(
     val filename: String = "unknown",
     val width: Int? = null,
     val height: Int? = null,
-    override var extra: LinkedHashMap<String, Any?>? = null
+    override var extra: ExtraType = null
 ) : Extra
 
 data class ImageEncodingProps(
     val filename: String = "",
     val quality: Double = 0.81,
-    override var extra: LinkedHashMap<String, Any?>? = null
+    override var extra: ExtraType = null
 ) : Extra
 
