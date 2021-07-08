@@ -41,7 +41,8 @@ class HttpClientBrowserJs : HttpClient() {
 					status = xhr.status.toInt(),
 					statusText = xhr.statusText,
 					headers = Http.Headers(xhr.getAllResponseHeaders()),
-					content = out.openAsync()
+					rawContent = out.openAsync(),
+                    content = out.openAsync(),
 				)
 			)
 		}
