@@ -2,6 +2,7 @@
 
 package com.soywiz.korge.render
 
+import com.soywiz.kds.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -12,11 +13,6 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.triangle.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.*
-import com.soywiz.korma.triangle.poly2tri.*
-import com.soywiz.korma.triangle.triangulate.*
 import kotlin.jvm.*
 import kotlin.math.*
 
@@ -230,35 +226,10 @@ class BatchBuilder2D constructor(
 		x2: Float, y2: Float,
 		x3: Float, y3: Float,
 		tex: Texture,
-		colorMul: RGBA, colorAdd: ColorAdd,
-        /** Not working right now */
-		rotated: Boolean = false
+		colorMul: RGBA, colorAdd: ColorAdd
 	) {
-        drawQuadFast(x0, y0, x1, y1, x2, y2, x3, y3, tex.x0, tex.y0, tex.x1, tex.y1, colorMul, colorAdd, rotated)
+        drawQuadFast(x0, y0, x1, y1, x2, y2, x3, y3, tex.x0, tex.y0, tex.x1, tex.y1, colorMul, colorAdd)
 	}
-
-    fun drawQuadFast(
-        x0: Float, y0: Float,
-        x1: Float, y1: Float,
-        x2: Float, y2: Float,
-        x3: Float, y3: Float,
-        tx0: Float, ty0: Float,
-        tx1: Float, ty1: Float,
-        colorMul: RGBA,
-        colorAdd: ColorAdd,
-        rotated: Boolean
-    ) {
-        ensure(6, 4)
-
-        addQuadIndices()
-
-        if (rotated) {
-            // @TODO:
-            addQuadVerticesFastRotated(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul, colorAdd)
-        } else {
-            addQuadVerticesFastNormal(x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul.value, colorAdd.value)
-        }
-    }
 
     fun drawQuadFast(
         x0: Float, y0: Float,
@@ -344,38 +315,10 @@ class BatchBuilder2D constructor(
         return vp
     }
 
-    fun addQuadVerticesFastRotated(
-        x0: Float, y0: Float,
-        x1: Float, y1: Float,
-        x2: Float, y2: Float,
-        x3: Float, y3: Float,
-        tx0: Float, ty0: Float,
-        tx1: Float, ty1: Float,
-        colorMul: RGBA,
-        colorAdd: ColorAdd,
-    ) {
-        // @TODO:
-        addVertex(x0, y0, tx0, ty0, colorMul, colorAdd)
-        addVertex(x1, y1, tx1, ty0, colorMul, colorAdd)
-        addVertex(x2, y2, tx1, ty1, colorMul, colorAdd)
-        addVertex(x3, y3, tx0, ty1, colorMul, colorAdd)
-    }
-
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the current state previously set by calling [setStateFast].
      */
-	inline fun drawVertices(array: TexturedVertexArray, vcount: Int = array.vcount, icount: Int = array.isize) {
-		ensure(icount, vcount)
-
-		for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
-
-        arraycopy(array._data.i32, 0, vertices.i32, vertexPos, vcount * 6)
-
-		_vertexCount += vcount
-		vertexPos += vcount * 6
-	}
-
-    fun drawVerticesTransformed(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize) {
+    fun drawVertices(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize) {
         ensure(icount, vcount)
 
         for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
@@ -398,13 +341,73 @@ class BatchBuilder2D constructor(
         vertexPos += vcount * 6
     }
 
+    data class DrawVerticesInfo(
+        var array: TexturedVertexArray = TexturedVertexArray(0, IntArray(0)),
+        var tex: Texture.Base = Texture.Base(null, 0, 0),
+        var smoothing: Boolean = false,
+        var blendFactors: AG.Blending = AG.Blending.NONE,
+        var vcount: Int = 0,
+        var icount: Int = 0,
+        var program: Program? = null,
+        var matrix: Matrix? = null,
+    ) {
+        val cachedMatrix = Matrix()
+    }
+
+    @PublishedApi internal val deferredDrawVerticesPool = Pool { DrawVerticesInfo() }
+
+    // Since this list is usually small, this acts as a LinkedHashMap
+    @PublishedApi internal val deferredVertices = FastArrayList<FastArrayList<DrawVerticesInfo>>()
+    @PublishedApi internal val deferredVerticesHash = IntArrayList()
+
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
      */
-    inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null) {
-		setStateFast(tex.base, smoothing, blendFactors, program)
-		drawVertices(array, vcount, icount)
+    inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null) {
+        if (this.isDeferredMode && !isCurrentStateFast(tex.base, smoothing, blendFactors, program)) {
+            deferVertices(array, tex, smoothing, blendFactors, vcount, icount, program, matrix)
+            return
+        }
+        setStateFast(tex.base, smoothing, blendFactors, program)
+        drawVertices(array, matrix, vcount, icount)
 	}
+
+    fun deferVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null) {
+        val item = deferredDrawVerticesPool.alloc().also {
+            it.array = array
+            it.tex = tex
+            it.smoothing = smoothing
+            it.blendFactors = blendFactors
+            it.vcount = vcount
+            it.icount = icount
+            it.program = program
+            it.matrix = if (matrix != null) it.cachedMatrix.copyFrom(matrix) else null
+        }
+        val hashCodeOfState = hashCode(tex, blendFactors, smoothing, program)
+        val index = deferredVerticesHash.indexOf(hashCodeOfState)
+        if (index < 0) {
+            deferredVertices.add(fastArrayListOf(item))
+            deferredVerticesHash.add(hashCodeOfState)
+        } else {
+            deferredVertices[index].add(item)
+        }
+        //deferredVertices.add(item)
+    }
+
+    enum class RenderMode { NORMAL, DEFERRED }
+
+    @PublishedApi internal var mode = RenderMode.NORMAL
+    val isDeferredMode get() = mode == RenderMode.DEFERRED
+
+    inline fun <T> mode(mode: RenderMode?, block: () -> T): T {
+        val old = this.mode
+        this.mode = mode ?: this.mode
+        try {
+            return block()
+        } finally {
+            this.mode = old
+        }
+    }
 
 	private fun checkAvailable(indices: Int, vertices: Int): Boolean {
 		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
@@ -425,13 +428,16 @@ class BatchBuilder2D constructor(
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
     inline fun setStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
-        if (currentTex === tex && currentSmoothing == smoothing && currentBlendFactors === blendFactors && currentProgram === program) return
+        if (isCurrentStateFast(tex, smoothing, blendFactors, program)) return
         flush()
         currentTex = tex
         currentSmoothing = smoothing
         currentBlendFactors = if (tex != null && tex.isFbo) blendFactors.toRenderFboIntoBack() else blendFactors
         currentProgram = program
     }
+
+    fun isCurrentStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?): Boolean =
+        currentTex === tex && currentSmoothing == smoothing && currentBlendFactors === blendFactors && currentProgram === program
 
     fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
         setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program)
@@ -544,6 +550,9 @@ class BatchBuilder2D constructor(
 		}
 	}
 
+    private val quadTVAPool = Pool { TexturedVertexArray(4, TexturedVertexArray.quadIndices(4)) }
+    private val quadTVAAllocated = FastArrayList<TexturedVertexArray>()
+
     /**
      * Draws a textured [tex] quad at [x], [y] and size [width]x[height].
      *
@@ -562,24 +571,27 @@ class BatchBuilder2D constructor(
 		colorMul: RGBA = Colors.WHITE,
 		colorAdd: ColorAdd = ColorAdd.NEUTRAL,
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
-        /** Not working right now */
-		rotated: Boolean = false,
 		program: Program? = null
 	) {
-		val x0 = x.toDouble()
-		val x1 = (x + width).toDouble()
-		val y0 = y.toDouble()
-		val y1 = (y + height).toDouble()
-
-		setStateFast(tex.base, filtering, blendFactors, program)
-
-		drawQuadFast(
-            m.transformXf(x0, y0), m.transformYf(x0, y0),
-            m.transformXf(x1, y0), m.transformYf(x1, y0),
-            m.transformXf(x1, y1), m.transformYf(x1, y1),
-            m.transformXf(x0, y1), m.transformYf(x0, y1),
-			tex, colorMul, colorAdd, rotated
-		)
+        if (this.isDeferredMode && !isCurrentStateFast(tex.base.base, filtering, blendFactors, program)) {
+            val tva = quadTVAPool.alloc()
+            quadTVAAllocated.add(tva)
+            tva.quad(0, x, y, width, height, m, tex, colorMul, colorAdd)
+            drawVertices(tva, tex.base, filtering, blendFactors, program = program)
+        } else {
+            val x0 = x.toDouble()
+            val x1 = (x + width).toDouble()
+            val y0 = y.toDouble()
+            val y1 = (y + height).toDouble()
+            setStateFast(tex.base, filtering, blendFactors, program)
+            drawQuadFast(
+                m.transformXf(x0, y0), m.transformYf(x0, y0),
+                m.transformXf(x1, y0), m.transformYf(x1, y0),
+                m.transformXf(x1, y1), m.transformYf(x1, y1),
+                m.transformXf(x0, y1), m.transformYf(x0, y1),
+            	tex, colorMul, colorAdd
+            )
+        }
 	}
 
 	companion object {
@@ -723,6 +735,7 @@ class BatchBuilder2D constructor(
 
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
+        //println("vertexCount=${vertexCount}")
 		if (vertexCount > 0) {
             updateStandardUniforms()
 
@@ -755,11 +768,44 @@ class BatchBuilder2D constructor(
             beforeFlush(this)
 		}
 
+        if (!flushingDeferred && deferredVertices.size > 0) {
+            flushDeferred()
+        }
+
 		vertexCount = 0
 		vertexPos = 0
 		indexPos = 0
 		currentTex = null
 	}
+
+    private fun flushDeferred() {
+        //println("deferredVertices=${deferredVertices.size}")
+        try {
+            flushingDeferred = true
+            mode(RenderMode.NORMAL) {
+                //deferredVertices.sortBy { it.tex.hashCode() }
+
+                for (deferredVerticesItems in deferredVertices) {
+                    deferredVerticesItems.fastForEach {
+                        drawVertices(it.array, it.tex, it.smoothing, it.blendFactors, it.vcount, it.icount, it.program, it.matrix)
+                        deferredDrawVerticesPool.free(it)
+                    }
+                    deferredVerticesItems.clear()
+                }
+                deferredVertices.clear()
+                deferredVerticesHash.clear()
+            }
+        } finally {
+            flushingDeferred = false
+        }
+
+        quadTVAPool.free(quadTVAAllocated)
+        quadTVAAllocated.clear()
+
+        flush()
+    }
+
+    var flushingDeferred = false
 
 	//private fun AG.Blending.toTextureRender(): AG.Blending {
 	//	//println("toTextureRender")
