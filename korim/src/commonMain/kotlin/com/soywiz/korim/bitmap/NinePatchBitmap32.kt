@@ -13,19 +13,21 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
-class NinePatchInfo(
+class NinePatchInfo constructor(
 	val xranges: List<Pair<Boolean, IntRange>>,
 	val yranges: List<Pair<Boolean, IntRange>>,
 	val width: Int,
-	val height: Int
+	val height: Int,
+    val content: BmpSlice? = null
 ) {
 	constructor(
 		width: Int, height: Int,
-		left: Int, top: Int, right: Int, bottom: Int
+		left: Int, top: Int, right: Int, bottom: Int,
+        content: BmpSlice? = null
 	) : this(
 		listOf(false to (0 until left), true to (left until right), false to (right until width)),
 		listOf(false to (0 until top), true to (top until bottom), false to (bottom until height)),
-		width, height
+		width, height, content
 	)
 
 	class AxisSegment(val scaled: Boolean, val range: IntRange) {
@@ -44,9 +46,9 @@ class NinePatchInfo(
 	}
 
 	class AxisInfo(ranges: List<Pair<Boolean, IntRange>>, val totalLen: Int) {
-		val segments = ranges.map { AxisSegment(it.first, it.second) }
-		val fixedLen = max(1, segments.filter { it.fixed }.map { it.length }.sum())
-		val scaledLen = max(1, segments.filter { it.scaled }.map { it.length }.sum())
+		val segments = ranges.map { AxisSegment(it.first, it.second) }.toFastList()
+		val fixedLen = max(1, segments.filter { it.fixed }.sumOf { it.length })
+		val scaledLen = max(1, segments.filter { it.scaled }.sumOf { it.length })
 	}
 
 	val xaxis = AxisInfo(xranges, width)
@@ -58,22 +60,30 @@ class NinePatchInfo(
 	val fixedWidth = xaxis.fixedLen
 	val fixedHeight = yaxis.fixedLen
 
+    val totalSegments get() = xsegments.size * ysegments.size
+
 	val scaledWidth = xaxis.scaledLen
 	val scaledHeight = yaxis.scaledLen
 
-	class Segment(val rect: RectangleInt, val x: AxisSegment, val y: AxisSegment) : Extra by Extra.Mixin() {
+	class Segment(val info: NinePatchInfo, val rect: RectangleInt, val x: AxisSegment, val y: AxisSegment) : Extra by Extra.Mixin() {
 		val scaleX: Boolean = x.scaled
 		val scaleY: Boolean = y.scaled
+
+        val bmpSlice = info.content?.slice(this.rect)
+        val bmp by lazy { bmpSlice?.extract() }
 	}
 
 	val segments = ysegments.map { y ->
 		xsegments.map { x ->
 			Segment(
+                this,
 				RectangleInt.fromBounds(x.range.start, y.range.start, x.range.endExclusive, y.range.endExclusive),
 				x, y
 			)
-		}
-	}
+		}.toFastList()
+	}.toFastList()
+
+    //init { println("Created NinePatchInfo") }
 
     fun computeScale(
         bounds: RectangleInt,
@@ -192,8 +202,10 @@ open class NinePatchBmpSlice(
     val bmpSlice: BmpSlice = content
 ) {
     companion object {
+        //val DUMMY = createSimple(Bitmap32(3, 3).slice(), 1, 1, 2, 2)
+
         fun createSimple(bmp: BmpSlice, left: Int, top: Int, right: Int, bottom: Int): NinePatchBmpSlice {
-            return NinePatchBmpSlice(bmp, NinePatchInfo(bmp.width, bmp.height, left, top, right, bottom))
+            return NinePatchBmpSlice(bmp, NinePatchInfo(bmp.width, bmp.height, left, top, right, bottom, bmp))
         }
 
         operator fun invoke(bmp: Bitmap) = invoke(bmp.slice())
@@ -207,7 +219,7 @@ open class NinePatchBmpSlice(
                     NinePatchInfo(
                         (1 until bmpSlice.width - 1).computeRle { topPixels[it].a != 0 },
                         (1 until bmpSlice.height - 1).computeRle { leftPixels[it].a != 0 },
-                        content.width, content.height
+                        content.width, content.height, content
                     )
                 },
                 bmpSlice = bmpSlice
@@ -220,15 +232,7 @@ open class NinePatchBmpSlice(
 	val dwidth get() = width.toDouble()
 	val dheight get() = height.toDouble()
 
-    val NinePatchInfo.Segment.bmpSlice by Extra.PropertyThis<NinePatchInfo.Segment, BmpSlice> {
-        this@NinePatchBmpSlice.content.slice(this.rect)
-    }
-
-    val NinePatchInfo.Segment.bmp by Extra.PropertyThis<NinePatchInfo.Segment, Bitmap> {
-		this@NinePatchBmpSlice.bmpSlice.extract()
-	}
-
-    fun getSegmentBmpSlice(segment: NinePatchInfo.Segment) = segment.bmpSlice
+    fun getSegmentBmpSlice(segment: NinePatchInfo.Segment) = segment.bmpSlice!!
 
 	fun <T : Bitmap> drawTo(
 		other: T,
@@ -238,7 +242,7 @@ open class NinePatchBmpSlice(
 	): T {
 		other.context2d(antialiased) {
 			info.computeScale(bounds) { seg, segLeft, segTop, segWidth, segHeight ->
-				drawImage(seg.bmp, segLeft, segTop, segWidth.toInt(), segHeight.toInt())
+				drawImage(seg.bmp!!, segLeft, segTop, segWidth.toInt(), segHeight.toInt())
 				if (drawRegions) {
 					stroke(Colors.RED) { rect(segLeft, segTop, segWidth, segHeight) }
 				}
@@ -267,7 +271,7 @@ fun BmpSlice.asNinePatchSimpleRatio(left: Double, top: Double, right: Double, bo
     (left * width).toInt(), (top * height).toInt(),
     (right * width).toInt(), (bottom * height).toInt()
 )
-fun BmpSlice.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = NinePatchBmpSlice(this, NinePatchInfo(width, height, left, top, right, bottom))
+fun BmpSlice.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = NinePatchBmpSlice.createSimple(this, left, top, right, bottom)
 fun Bitmap.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = this.slice().asNinePatchSimple(left, top, right, bottom)
 
 suspend fun VfsFile.readNinePatch(format: ImageFormat = RegisteredImageFormats) = NinePatchBitmap32(readBitmap(format).toBMP32())
@@ -277,7 +281,7 @@ private inline fun <T, R : Any> Iterable<T>.computeRle(callback: (T) -> R): List
     var pos = 0
     var startpos = 0
     lateinit var lastRes: R
-    val out = arrayListOf<Pair<R, IntRange>>()
+    val out = FastArrayList<Pair<R, IntRange>>()
     for (it in this) {
         val current = callback(it)
         if (!first) {

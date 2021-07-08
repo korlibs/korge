@@ -6,6 +6,20 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
+interface BmpCoords {
+    val tl_x: Float
+    val tl_y: Float
+
+    val tr_x: Float
+    val tr_y: Float
+
+    val br_x: Float
+    val br_y: Float
+
+    val bl_x: Float
+    val bl_y: Float
+}
+
 /**
  * @property virtFrame This defines a virtual frame [RectangleInt] which surrounds the bounds [RectangleInt] of the [Bitmap].
  *                     It is used in a trimmed texture atlas to specify the original size of a single texture.
@@ -18,7 +32,7 @@ abstract class BmpSlice(
     val name: String? = null,
     val rotated: Boolean = false,
     val virtFrame: RectangleInt? = null
-) : Extra, Resourceable<BmpSlice> {
+) : Extra, BmpCoords, Resourceable<BmpSlice> {
     override fun getOrNull() = this
     override suspend fun get() = this
     open val bmp: Bitmap = bmpBase
@@ -53,17 +67,14 @@ abstract class BmpSlice(
 
 	var parent: Any? = null
 
-    val tl_x = p0.x.toFloat()
-    val tl_y = p0.y.toFloat()
-
-    val tr_x = p1.x.toFloat()
-    val tr_y = p1.y.toFloat()
-
-    val br_x = p2.x.toFloat()
-    val br_y = p2.y.toFloat()
-
-    val bl_x = p3.x.toFloat()
-    val bl_y = p3.y.toFloat()
+    override val tl_x = p0.x.toFloat()
+    override val tl_y = p0.y.toFloat()
+    override val tr_x = p1.x.toFloat()
+    override val tr_y = p1.y.toFloat()
+    override val br_x = p2.x.toFloat()
+    override val br_y = p2.y.toFloat()
+    override val bl_x = p3.x.toFloat()
+    override val bl_y = p3.y.toFloat()
 
     val rotatedAngle: Int = 0
 
