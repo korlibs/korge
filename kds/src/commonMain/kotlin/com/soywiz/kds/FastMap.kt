@@ -60,6 +60,10 @@ fun <T> FastStringMap<T>.values(): List<T> = this.keys().map { this[it] } as Lis
 val <T> FastStringMap<T>.keys: List<String> get() = keys()
 val <T> FastStringMap<T>.values: List<T> get() = values()
 
+fun <T> FastStringMap<T>.toMap(): Map<String, T> = LinkedHashMap<String, T>(this.size).also { out ->
+    fastForEachNullable { key, value -> value?.let { out[key] = value } }
+}
+
 expect inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) -> Unit): Unit
 
 inline fun <T : Any?> FastStringMap<T>.fastValueForEachNullable(callback: (value: T?) -> Unit): Unit {
