@@ -73,13 +73,15 @@ data class Matrix(
         }
     }
 
-    fun setTo(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double): Matrix = this.apply {
+    fun setTo(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double): Matrix {
         this.a = a
         this.b = b
         this.c = c
         this.d = d
         this.tx = tx
         this.ty = ty
+        return this
+
     }
     fun setTo(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
     fun setTo(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
