@@ -288,7 +288,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                     }
                     else -> {
                         val range = selectionRange
-                        text = text.withoutRange(range).withInsertion(cursorIndex, "${it.character}")
+                        text = text.withoutRange(range).withInsertion(min(selectionStart, selectionEnd), "${it.character}")
                         cursorIndex++
                     }
                 }
