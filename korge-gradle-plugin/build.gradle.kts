@@ -78,6 +78,10 @@ dependencies {
     testImplementation("io.mockk:mockk:1.11.0")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions.suppressWarnings = true
+}
+
 tasks {
     //val publishJvmPublicationToMavenLocal by creating(Task::class) { dependsOn("publishToMavenLocal") }
 }
