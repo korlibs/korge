@@ -11,7 +11,6 @@ import com.soywiz.korma.geom.*
 import kotlinx.cinterop.*
 import platform.opengl32.*
 import platform.windows.*
-import kotlin.math.*
 
 
 //override val ag: AG = AGNative()
@@ -389,7 +388,8 @@ class WindowsGameWindow : EventLoopGameWindow() {
 
     fun mouseEvent(
         etype: com.soywiz.korev.MouseEvent.Type, ex: Int, ey: Int,
-        ebutton: Int, wParam: Int, scrollDeltaY: Double = 0.0
+        ebutton: Int, wParam: Int, scrollDeltaX: Double = 0.0, scrollDeltaY: Double = 0.0, scrollDeltaZ: Double = 0.0,
+        scrollDeltaMode: MouseEvent.ScrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
     ) {
         val lbutton = (wParam and MK_LBUTTON) != 0
         val rbutton = (wParam and MK_RBUTTON) != 0
@@ -416,7 +416,10 @@ class WindowsGameWindow : EventLoopGameWindow() {
             this.isCtrlDown = control
             this.isShiftDown = shift
             this.isMetaDown = GetKeyState(VK_LWIN) < 0 || GetKeyState(VK_RWIN) < 0
+            this.scrollDeltaX = scrollDeltaX
             this.scrollDeltaY = scrollDeltaY
+            this.scrollDeltaZ = scrollDeltaZ
+            this.scrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
             //this.scaleCoords = false
         })
     }
@@ -429,6 +432,7 @@ val _WM_QUIT: UINT = WM_QUIT.convert()
 val _WM_MOUSEMOVE: UINT = WM_MOUSEMOVE.convert()
 val _WM_MOUSELEAVE: UINT = WM_MOUSELEAVE.convert()
 val _WM_MOUSEWHEEL: UINT = WM_MOUSEWHEEL.convert()
+val _WM_MOUSEHWHEEL: UINT = WM_MOUSEHWHEEL.convert()
 val _WM_LBUTTONDOWN: UINT = WM_LBUTTONDOWN.convert()
 val _WM_MBUTTONDOWN: UINT = WM_MBUTTONDOWN.convert()
 val _WM_RBUTTONDOWN: UINT = WM_RBUTTONDOWN.convert()
@@ -496,10 +500,25 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
             val y = lParam.toInt().extract(16, 16)
             mouseMove(x, y, wParam.toInt())
         }
-        _WM_MOUSEWHEEL -> {
+        _WM_MOUSEWHEEL, _WM_MOUSEHWHEEL -> {
+            val vertical = message == _WM_MOUSEWHEEL
             val type = com.soywiz.korev.MouseEvent.Type.SCROLL
-            val scrollDeltaY = wParam.toInt().extract(16, 8).toByte().toDouble()
-            windowsGameWindow.mouseEvent(type, mouseX, mouseY, 8, wParam.toInt(), scrollDeltaY)
+            // #define GET_WHEEL_DELTA_WPARAM(wParam) ((short)HIWORD(wParam))
+            // @TODO: To retrieve the wheel scroll units, use the inputData filed of the POINTER_INFO
+            // @TODO: structure returned by calling GetPointerInfo function. This field contains a signed value
+            // @TODO: and is expressed in a multiple of WHEEL_DELTA. A positive value indicates a rotation forward
+            // @TODO: and a negative value indicates a rotation backward.
+            // @TODO: https://docs.microsoft.com/en-us/windows/win32/inputmsg/wm-pointerhwheel
+            val intWheelDelta = wParam.toInt().extract(16, 16).toShort().toInt()
+            val scrollDelta = (-intWheelDelta.toDouble() / 120) * 3
+            //println("vertical=$vertical, scrollDelta=$scrollDelta, intWheelDelta=$intWheelDelta")
+            windowsGameWindow.mouseEvent(
+                type, mouseX, mouseY, 8, wParam.toInt(),
+                scrollDeltaX = if (!vertical) scrollDelta else 0.0,
+                scrollDeltaY = if (vertical) scrollDelta else 0.0,
+                scrollDeltaZ = 0.0,
+                scrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
+            )
         }
         _WM_LBUTTONDOWN -> mouseButton(0, true, wParam.toInt())
         _WM_MBUTTONDOWN -> mouseButton(1, true, wParam.toInt())
