@@ -160,6 +160,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         val disabled: Boolean get() = srcRGB == BlendFactor.ONE && dstRGB == BlendFactor.ZERO && srcA == BlendFactor.ONE && dstA == BlendFactor.ZERO
         val enabled: Boolean get() = !disabled
 
+        private val cachedHashCode: Int = hashCode(srcRGB, dstRGB, srcA, dstA, eqRGB, eqA)
+        override fun hashCode(): Int = cachedHashCode
+
         companion object {
             val NONE = Blending(BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE, BlendFactor.ZERO)
             val NORMAL = Blending(
