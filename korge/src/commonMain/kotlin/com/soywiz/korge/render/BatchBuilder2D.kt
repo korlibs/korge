@@ -603,8 +603,8 @@ class BatchBuilder2D constructor(
 		}
 	}
 
-    private val quadTVAPool = Pool { TexturedVertexArray(4, TexturedVertexArray.quadIndices(4)) }
-    private val quadTVAAllocated = FastArrayList<TexturedVertexArray>()
+    //private val quadTVAPool = Pool { TexturedVertexArray(4, TexturedVertexArray.quadIndices(4)) }
+    //private val quadTVAAllocated = FastArrayList<TexturedVertexArray>()
 
     /**
      * Draws a textured [tex] quad at [x], [y] and size [width]x[height].
@@ -626,25 +626,18 @@ class BatchBuilder2D constructor(
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
 		program: Program? = null
 	) {
-        //if (this.isDeferredMode && !isCurrentStateFast(tex.base.base, filtering, blendFactors, program)) {
-            val tva = quadTVAPool.alloc()
-            quadTVAAllocated.add(tva)
-            tva.quad(0, x, y, width, height, m, tex, colorMul, colorAdd)
-            drawVertices(tva, tex.base, filtering, blendFactors, program = program)
-        //} else {
-        //    val x0 = x.toDouble()
-        //    val x1 = (x + width).toDouble()
-        //    val y0 = y.toDouble()
-        //    val y1 = (y + height).toDouble()
-        //    setStateFast(tex.base, filtering, blendFactors, program)
-        //    drawQuadFast(
-        //        m.transformXf(x0, y0), m.transformYf(x0, y0),
-        //        m.transformXf(x1, y0), m.transformYf(x1, y0),
-        //        m.transformXf(x1, y1), m.transformYf(x1, y1),
-        //        m.transformXf(x0, y1), m.transformYf(x0, y1),
-        //    	tex, colorMul, colorAdd
-        //    )
-        //}
+        val x0 = x
+        val x1 = (x + width)
+        val y0 = y
+        val y1 = (y + height)
+        setStateFast(tex.base, filtering, blendFactors, program)
+        drawQuadFast(
+            m.transformXf(x0, y0), m.transformYf(x0, y0),
+            m.transformXf(x1, y0), m.transformYf(x1, y0),
+            m.transformXf(x1, y1), m.transformYf(x1, y1),
+            m.transformXf(x0, y1), m.transformYf(x0, y1),
+        	tex, colorMul, colorAdd
+        )
 	}
 
 	companion object {
