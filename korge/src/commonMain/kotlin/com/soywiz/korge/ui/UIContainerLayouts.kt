@@ -27,12 +27,12 @@ abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, he
     var deferredRendering: Boolean? = true
     //var deferredRendering: Boolean? = false
 
-    override fun renderInternal(ctx: RenderContext) {
-        ctx.batch.mode(if (deferredRendering == true) BatchBuilder2D.RenderMode.DEFERRED else null) {
-            super.renderInternal(ctx)
-        }
-        //ctx.flush()
-    }
+    //override fun renderInternal(ctx: RenderContext) {
+    //    ctx.batch.mode(if (deferredRendering == true) BatchBuilder2D.RenderMode.DEFERRED else null) {
+    //        super.renderInternal(ctx)
+    //    }
+    //    //ctx.flush()
+    //}
 }
 
 inline fun Container.uiVerticalStack(

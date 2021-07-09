@@ -70,8 +70,9 @@ open class FSprites(val maxSize: Int) {
             ctx.batch.setTemporalUniform(u_i_texSize, u_i_texSizeData) {
                 ctx.batch.updateStandardUniforms()
                 ctx.batch.setViewMatrixTemp(globalMatrix) {
-                    ctx.batch.textureUnit.texture = ttex.base
-                    ctx.batch.textureUnit.linear = smoothing
+                    //ctx.batch.setStateFast()
+                    ctx.batch.textureUnit0.texture = ttex.base
+                    ctx.batch.textureUnit0.linear = smoothing
                     sprites.uploadVertices(ctx)
                     ctx.xyBuffer.buffer.upload(xyData)
                     ctx.ag.drawV2(
