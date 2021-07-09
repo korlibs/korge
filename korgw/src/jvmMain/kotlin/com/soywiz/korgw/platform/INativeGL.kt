@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
 
-typealias GLboolean = Boolean
+typealias GLboolean = Byte // Check https://github.com/korlibs/korge/issues/268#issuecomment-729056184 for details
 typealias GLbyte = Byte
 typealias GLubyte = Byte
 typealias GLshort = Short
