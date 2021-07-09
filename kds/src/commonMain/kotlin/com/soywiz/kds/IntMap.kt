@@ -586,4 +586,4 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     }
 }
 
-fun <T> IntMap<T>.toMap(): Map<Int, T> = keys.associateWith { this[it] as T }
+fun <T> IntMap<T>.toMap(): Map<Int, T> = keys.associateWith { this[it].fastCastTo<T>() }

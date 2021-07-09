@@ -4,7 +4,7 @@ package com.soywiz.kds
 
 import com.soywiz.kds.iterators.*
 
-actual inline fun <T> Any?.fastCastTo(): T = this.asDynamic()
+actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
 
 actual class FastIntMap<T>(dummy: Boolean)
 

@@ -64,7 +64,7 @@ open class UISkin(val name: String? = null, val skins: List<UISkinable> = listOf
     }
 
     override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? {
-        skinProps[property.name]?.let { return it as T }
+        skinProps[property.name]?.let { return it.fastCastTo() }
         skins.fastForEach { it.getSkinPropertyOrNull<T>(property)?.let { return it } }
         return parent?.getSkinPropertyOrNull(property)
     }

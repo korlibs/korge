@@ -194,7 +194,7 @@ abstract class Bitmap(
     }
 }
 
-fun <T : Bitmap> T.createWithThisFormatTyped(width: Int, height: Int): T = this.createWithThisFormat(width, height) as T
+fun <T : Bitmap> T.createWithThisFormatTyped(width: Int, height: Int): T = this.createWithThisFormat(width, height).fastCastTo<T>()
 
 fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {
 	val out = this.createWithThisFormatTyped(width, height)

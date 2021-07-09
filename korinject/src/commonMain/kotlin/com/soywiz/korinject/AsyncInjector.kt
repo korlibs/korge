@@ -79,7 +79,7 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
     }
 
     fun <T : Any> mapInstance(clazz: KClass<T>, instance: T): AsyncInjector = this.apply {
-        providersByClass[clazz] = InstanceAsyncObjectProvider<T>(instance as T)
+        providersByClass[clazz] = InstanceAsyncObjectProvider<T>(instance)
     }
 
     fun <T : Any> mapFactory(clazz: KClass<T>, gen: suspend AsyncInjector.() -> AsyncFactory<T>): AsyncInjector =
