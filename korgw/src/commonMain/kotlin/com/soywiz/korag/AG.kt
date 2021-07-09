@@ -334,7 +334,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     data class TextureUnit(
         var texture: AG.Texture? = null,
         var linear: Boolean = true
-    )
+    ) {
+        fun set(texture: AG.Texture?, linear: Boolean) {
+            this.texture = texture
+            this.linear = linear
+        }
+    }
 
     open class Buffer(val kind: Kind) : Closeable {
         enum class Kind { INDEX, VERTEX }

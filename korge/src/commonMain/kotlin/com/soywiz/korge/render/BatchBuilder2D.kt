@@ -3,6 +3,7 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -28,13 +29,14 @@ private val logger = Logger("BatchBuilder2D")
  * Then the engine will call [flush] when required, automatically once the buffer is filled, at the end of the frame, or when [RenderContext.flush] is executed
  * by other renderers.
  */
+// @TODO: We could dynamically select a fragment shader based on the number of textures to reduce the numbers of IFs per pixel
 class BatchBuilder2D constructor(
     @KorgeInternal
     val ctx: RenderContext,
     /** Maximum number of quads that could be drawn in a single batch.
      * Bigger numbers will increase memory usage, but might reduce the number of batches per frame when using the same texture and properties.
      */
-    val reqMaxQuads: Int = DEFAULT_BATCH_QUADS
+    val reqMaxQuads: Int = DEFAULT_BATCH_QUADS,
 ) {
     val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
 
@@ -80,8 +82,10 @@ class BatchBuilder2D constructor(
     @PublishedApi internal var indexPos = 0
     @PublishedApi internal var currentTexIndex = 0
 
-	@PublishedApi internal var currentTex0: AG.Texture? = null
-    @PublishedApi internal var currentTex1: AG.Texture? = null
+    @PublishedApi internal var currentTexN: Array<AG.Texture?> = Array(BB_MAX_TEXTURES) { null }
+
+	//@PublishedApi internal var currentTex0: AG.Texture? = null
+    //@PublishedApi internal var currentTex1: AG.Texture? = null
 
     @PublishedApi internal var currentSmoothing: Boolean = false
 
@@ -135,11 +139,10 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-    @KorgeInternal
-	val textureUnit0 = AG.TextureUnit(null, linear = false)
+    val textureUnitN = Array(BB_MAX_TEXTURES) { AG.TextureUnit(null, linear = false) }
 
-    @KorgeInternal
-    val textureUnit1 = AG.TextureUnit(null, linear = false)
+    //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
+    //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
 
     init { logger.trace { "BatchBuilder2D[10]" } }
 
@@ -153,8 +156,7 @@ class BatchBuilder2D constructor(
 		AG.UniformValues(
 			DefaultShaders.u_ProjMat to projMat,
 			DefaultShaders.u_ViewMat to viewMat,
-			u_Tex0 to textureUnit0,
-            u_Tex1 to textureUnit1,
+            *Array(BB_MAX_TEXTURES) { u_TexN[it] to textureUnitN[it] }
 		)
 	}
 
@@ -164,7 +166,7 @@ class BatchBuilder2D constructor(
 
     fun readVertex(n: Int, out: VertexInfo = VertexInfo()): VertexInfo {
         out.read(this.vertices, n)
-        val source = textureUnit0.texture?.source
+        val source = textureUnitN[0].texture?.source
         out.texWidth = source?.width ?: -1
         out.texHeight = source?.height ?: -1
         return out
@@ -325,7 +327,14 @@ class BatchBuilder2D constructor(
     fun drawVertices(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize, texIndex: Int = currentTexIndex) {
         ensure(icount, vcount)
 
-        for (idx in 0 until min(icount, array.isize)) addIndex(vertexCount + array.indices[idx])
+        val i16 = indicesI16
+        var ip = indexPos
+        val vc = vertexCount
+        val arrayIndices = array.indices
+        for (idx in 0 until min(icount, array.isize)) {
+            i16[ip++] = (vc + arrayIndices[idx]).toShort()
+        }
+        indexPos = ip
 
         val src = array._data.i32
         val dst = vertices.i32
@@ -352,7 +361,8 @@ class BatchBuilder2D constructor(
             }
         }
         //println("texIndex=$texIndex")
-        arrayfill(verticesTexIndex, texIndex.toByte(), vertexPos / 6, vertexPos / 6 + vcount)
+        val vp6 = vertexPos / 6
+        arrayfill(verticesTexIndex, texIndex.toByte(), vp6, vp6 + vcount)
 
         _vertexCount += vcount
         vertexPos += vcount * 6
@@ -448,17 +458,37 @@ class BatchBuilder2D constructor(
         if (isCurrentStateFast) return
         flush()
         currentTexIndex = 0
-        currentTex0 = tex
+        currentTexN[0] = tex
         currentSmoothing = smoothing
         currentBlendFactors = if (tex != null && tex.isFbo) blendFactors.toRenderFboIntoBack() else blendFactors
         currentProgram = program
     }
 
+    fun hasTex(tex: AG.Texture?): Boolean {
+        currentTexN.fastForEach { if (it === tex) return true }
+        return false
+    }
+
     @PublishedApi internal fun isCurrentStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?): Boolean {
-        if (currentTex0 !== null && currentTex1 === null) currentTex1 = tex
-        if (tex === currentTex0) currentTexIndex = 0
-        if (tex === currentTex1) currentTexIndex = 1
-        return ((tex === currentTex0) || (tex === currentTex1)) && (currentSmoothing == smoothing) && (currentBlendFactors === blendFactors) && (currentProgram === program)
+        var hasTex = hasTex(tex)
+        if (currentTexN[0] !== null && !hasTex) {
+            for (n in 1 until currentTexN.size) {
+                if (currentTexN[n] === null) {
+                    currentTexN[n] = tex
+                    hasTex = true
+                    break
+                }
+            }
+        }
+
+        for (n in currentTexN.indices) {
+            if (tex === currentTexN[n]) {
+                currentTexIndex = n
+                break
+            }
+        }
+
+        return hasTex && (currentSmoothing == smoothing) && (currentBlendFactors === blendFactors) && (currentProgram === program)
     }
 
     fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
@@ -638,8 +668,10 @@ class BatchBuilder2D constructor(
         val a_TexIndex = Attribute("a_TexIndex", VarType.UByte1, normalized = false, precision = Precision.LOW)
         val v_TexIndex = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
-        val u_Tex0 = DefaultShaders.u_Tex
-        val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
+
+        val u_TexN = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.TextureUnit) }
+        //val u_Tex0 = DefaultShaders.u_Tex
+        //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
 
 		init { logger.trace { "BatchBuilder2D.Companion[2]" } }
 
@@ -716,10 +748,10 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		fun buildTextureLookupFragment(premultiplied: Boolean, preadd: Boolean = false) = FragmentShader {
 			DefaultShaders.apply {
-                IF(v_TexIndex eq 0f.lit) {
-                    SET(out, texture2D(u_Tex0, v_Tex["xy"]))
-                } ELSE {
-                    SET(out, texture2D(u_Tex1, v_Tex["xy"]))
+                for (n in 0 until BB_MAX_TEXTURES) {
+                    IF(v_TexIndex eq (n.toFloat()).lit) {
+                        SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
+                    }
                 }
 				if (premultiplied) {
 					SET(out["rgb"], out["rgb"] / out["a"])
@@ -769,11 +801,11 @@ class BatchBuilder2D constructor(
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
         }
 
-        textureUnit0.texture = currentTex0
-        textureUnit0.linear = currentSmoothing
-
-        textureUnit1.texture = currentTex1
-        textureUnit1.linear = currentSmoothing
+        for (n in 0 until BB_MAX_TEXTURES) {
+            val textureUnit = textureUnitN[n]
+            textureUnit.texture = currentTexN[n]
+            textureUnit.linear = currentSmoothing
+        }
     }
 
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
@@ -798,7 +830,7 @@ class BatchBuilder2D constructor(
 			ag.drawV2(
                 vertexData = vertexData,
                 indices = indexBuffer,
-				program = currentProgram ?: (if (currentTex0?.premultiplied == true) PROGRAM_PRE else PROGRAM_NOPRE),
+				program = currentProgram ?: (if (currentTexN[0]?.premultiplied == true) PROGRAM_PRE else PROGRAM_NOPRE),
 				//program = PROGRAM_PRE,
 				type = AG.DrawType.TRIANGLES,
 				vertexCount = indexPos,
@@ -818,11 +850,11 @@ class BatchBuilder2D constructor(
 		vertexCount = 0
 		vertexPos = 0
 		indexPos = 0
-		currentTex0 = null
-        currentTex1 = null
+        for (n in 0 until BB_MAX_TEXTURES) currentTexN[n] = null
         currentTexIndex = 0
 	}
 
+    //var flushingDeferred = false
     //private fun flushDeferred() {
     //    //println("deferredVertices=${deferredVertices.size}")
     //    try {
@@ -846,8 +878,6 @@ class BatchBuilder2D constructor(
     //    quadTVAAllocated.clear()
     //    flush()
     //}
-
-    var flushingDeferred = false
 
 	//private fun AG.Blending.toTextureRender(): AG.Blending {
 	//	//println("toTextureRender")
@@ -907,3 +937,7 @@ class BatchBuilder2D constructor(
 		}
 	}
 }
+
+//internal const val BB_MAX_TEXTURES = 6
+internal const val BB_MAX_TEXTURES = 4
+//internal const val BB_MAX_TEXTURES = 2
