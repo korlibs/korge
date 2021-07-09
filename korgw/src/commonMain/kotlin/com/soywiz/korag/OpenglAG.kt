@@ -1,8 +1,6 @@
 package com.soywiz.korag
 
-import com.soywiz.kds.Extra
-import com.soywiz.kds.FastStringMap
-import com.soywiz.kds.getOrPut
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
 import com.soywiz.klock.*
@@ -268,8 +266,8 @@ abstract class AGOpengl : AG() {
             val value = uniforms.values[n]
             when (uniformType) {
                 VarType.TextureUnit -> {
-                    val unit = value as TextureUnit
-                    val tex = (unit.texture as GlTexture?)
+                    val unit = value.fastCastTo<TextureUnit>()
+                    val tex = (unit.texture.fastCastTo<GlTexture?>())
                     if (tex != null) {
                         if (tex.forcedTexTarget != gl.TEXTURE_2D && tex.forcedTexTarget != -1) {
                             useExternalSampler = true

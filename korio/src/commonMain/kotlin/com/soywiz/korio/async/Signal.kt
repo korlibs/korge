@@ -2,6 +2,7 @@
 
 package com.soywiz.korio.async
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korio.lang.*
@@ -21,8 +22,8 @@ abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {
 		}
 	}
 
-	protected var handlers = ArrayList<Node>()
-	protected var handlersToRemove = ArrayList<Node>()
+	protected var handlers = FastArrayList<Node>()
+	protected var handlersToRemove = FastArrayList<Node>()
 	val listenerCount: Int get() = handlers.size
     val hasListeners get() = listenerCount > 0
 	fun clear() = handlers.clear()
@@ -126,7 +127,7 @@ fun <TI, TO> Signal<TI>.mapSignal(transform: (TI) -> TO): Signal<TO> {
 operator fun Signal<Unit>.invoke() = invoke(Unit)
 
 suspend fun Iterable<Signal<*>>.waitOne(): Any? = suspendCancellableCoroutine { c ->
-	val closes = arrayListOf<Closeable>()
+	val closes = FastArrayList<Closeable>()
 	for (signal in this) {
 		closes += signal.once {
 			closes.close()
