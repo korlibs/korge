@@ -4,6 +4,7 @@ import com.soywiz.kgl.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.awt.AwtNativeImage
 import com.soywiz.korim.bitmap.NativeImage
+import com.sun.jna.NativeLong
 
 open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
@@ -18,8 +19,8 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun blendEquationSeparate(modeRGB: Int, modeAlpha: Int): Unit = gl.glBlendEquationSeparate(modeRGB, modeAlpha)
     override fun blendFunc(sfactor: Int, dfactor: Int): Unit = gl.glBlendFunc(sfactor, dfactor)
     override fun blendFuncSeparate(sfactorRGB: Int, dfactorRGB: Int, sfactorAlpha: Int, dfactorAlpha: Int): Unit = gl.glBlendFuncSeparate(sfactorRGB, dfactorRGB, sfactorAlpha, dfactorAlpha)
-    override fun bufferData(target: Int, size: Int, data: FBuffer, usage: Int): Unit = gl.glBufferData(target, size.toLong(), data.nioBuffer, usage)
-    override fun bufferSubData(target: Int, offset: Int, size: Int, data: FBuffer): Unit = gl.glBufferSubData(target, offset.toLong(), size.toLong(), data.nioBuffer)
+    override fun bufferData(target: Int, size: Int, data: FBuffer, usage: Int): Unit = gl.glBufferData(target, NativeLong(size.toLong()), data.nioBuffer, usage)
+    override fun bufferSubData(target: Int, offset: Int, size: Int, data: FBuffer): Unit = gl.glBufferSubData(target, NativeLong(offset.toLong()), NativeLong(size.toLong()), data.nioBuffer)
     override fun checkFramebufferStatus(target: Int): Int = gl.glCheckFramebufferStatus(target)
     override fun clear(mask: Int): Unit = gl.glClear(mask)
     override fun clearColor(red: Float, green: Float, blue: Float, alpha: Float): Unit = gl.glClearColor(red, green, blue, alpha)
@@ -47,7 +48,7 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun disable(cap: Int): Unit = gl.glDisable(cap)
     override fun disableVertexAttribArray(index: Int): Unit = gl.glDisableVertexAttribArray(index)
     override fun drawArrays(mode: Int, first: Int, count: Int): Unit = gl.glDrawArrays(mode, first, count)
-    override fun drawElements(mode: Int, count: Int, type: Int, indices: Int): Unit = gl.glDrawElements(mode, count, type, indices)
+    override fun drawElements(mode: Int, count: Int, type: Int, indices: Int): Unit = gl.glDrawElements(mode, count, type, NativeLong(indices.toLong()))
     override fun enable(cap: Int): Unit = gl.glEnable(cap)
     override fun enableVertexAttribArray(index: Int): Unit = gl.glEnableVertexAttribArray(index)
     override fun finish(): Unit = gl.glFinish()
@@ -147,14 +148,14 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun vertexAttrib3fv(index: Int, v: FBuffer): Unit = gl.glVertexAttrib3fv(index, v.nioFloatBuffer)
     override fun vertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float): Unit = gl.glVertexAttrib4f(index, x, y, z, w)
     override fun vertexAttrib4fv(index: Int, v: FBuffer): Unit = gl.glVertexAttrib4fv(index, v.nioFloatBuffer)
-    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.glVertexAttribPointer(index, size, type, normalized, stride, pointer)
+    override fun vertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: Long): Unit = gl.glVertexAttribPointer(index, size, type, normalized, stride, NativeLong(pointer))
     override fun viewport(x: Int, y: Int, width: Int, height: Int): Unit = gl.glViewport(x, y, width, height)
 
     // GL_ARB_instanced_arrays
     val isInstancedSupportedActual: Boolean get() = "GL_ARB_instanced_arrays" in extensions
     override val isInstancedSupported: Boolean get() = true
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = gl.glDrawArraysInstanced(mode, first, count, instancecount)
-    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = gl.glDrawElementsInstanced(mode, count, type, indices, instancecount)
+    override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = gl.glDrawElementsInstanced(mode, count, type, NativeLong(indices.toLong()), instancecount)
     override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = gl.glVertexAttribDivisor(index, divisor)
 }
 

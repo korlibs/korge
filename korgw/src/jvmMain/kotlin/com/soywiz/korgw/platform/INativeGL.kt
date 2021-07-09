@@ -2,6 +2,7 @@ package com.soywiz.korgw.platform
 
 import com.soywiz.kmem.FBuffer
 import com.soywiz.korim.bitmap.NativeImage
+import com.sun.jna.NativeLong
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -18,9 +19,9 @@ typealias GLint64 = Long
 typealias GLuint64 = Long
 typealias GLsizei = Int
 typealias GLenum = Int
-typealias GLintptr = Long
-typealias GLsizeiptr = Long
-typealias GLsync = Long
+typealias GLintptr = NativeLong
+typealias GLsizeiptr = NativeLong
+typealias GLsync = NativeLong
 typealias GLbitfield = Int
 typealias GLhalf = Short // Use com.soywiz.kmem.Float16
 typealias GLfloat = Float
@@ -28,7 +29,7 @@ typealias GLclampf = Float
 typealias GLdouble = Double
 typealias GLclampd = Double
 
-typealias IntSize = Int
+typealias IntSize = NativeLong
 typealias VoidPtr = ByteBuffer
 typealias IntPtr = IntBuffer
 typealias FloatPtr = FloatBuffer
@@ -176,7 +177,7 @@ interface INativeGL {
     fun glVertexAttrib3fv(index: GLuint, v: FloatPtr)
     fun glVertexAttrib4f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat, w: GLfloat)
     fun glVertexAttrib4fv(index: GLuint, v: FloatPtr)
-    fun glVertexAttribPointer(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, pointer: Long)
+    fun glVertexAttribPointer(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, pointer: IntSize)
     fun glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei)
 
     fun glDrawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instancecount: GLsizei)
