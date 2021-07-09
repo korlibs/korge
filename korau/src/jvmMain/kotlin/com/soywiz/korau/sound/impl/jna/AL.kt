@@ -231,6 +231,9 @@ object AL {
 }
 
 val nativeOpenALLibraryPath: String? by lazy {
+    Environment["OPENAL_LIB_PATH"]?.let { path ->
+        return@lazy path
+    }
     if (Environment["KORAU_JVM_DUMMY_SOUND"] == "true") {
         return@lazy null
     }
