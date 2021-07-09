@@ -26,7 +26,7 @@ import kotlin.math.*
 
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
-        RuntimeException("Error Compiling Shader : $errorInt : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
+        RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     open var isGlAvailable = true
     abstract val gl: KmlGl
