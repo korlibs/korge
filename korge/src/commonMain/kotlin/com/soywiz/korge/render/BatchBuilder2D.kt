@@ -368,71 +368,13 @@ class BatchBuilder2D constructor(
         vertexPos += vcount * 6
     }
 
-    //data class DrawVerticesInfo(
-    //    var array: TexturedVertexArray = TexturedVertexArray(0, IntArray(0)),
-    //    var tex: Texture.Base = Texture.Base(null, 0, 0),
-    //    var smoothing: Boolean = false,
-    //    var blendFactors: AG.Blending = AG.Blending.NONE,
-    //    var vcount: Int = 0,
-    //    var icount: Int = 0,
-    //    var program: Program? = null,
-    //    var matrix: Matrix? = null,
-    //) {
-    //    val cachedMatrix = Matrix()
-    //}
-
-    //@PublishedApi internal val deferredDrawVerticesPool = Pool { DrawVerticesInfo() }
-
-    // Since this list is usually small, this acts as a LinkedHashMap
-    //@PublishedApi internal val deferredVertices = FastArrayList<FastArrayList<DrawVerticesInfo>>()
-    //@PublishedApi internal val deferredVerticesHash = IntArrayList()
-
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
      */
     inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null) {
-        //if (this.isDeferredMode && !isCurrentStateFast(tex.base, smoothing, blendFactors, program)) {
-        //    deferVertices(array, tex, smoothing, blendFactors, vcount, icount, program, matrix)
-        //    return
-        //}
         setStateFast(tex.base, smoothing, blendFactors, program)
         drawVertices(array, matrix, vcount, icount)
 	}
-
-    //fun deferVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null) {
-    //    val item = deferredDrawVerticesPool.alloc().also {
-    //        it.array = array
-    //        it.tex = tex
-    //        it.smoothing = smoothing
-    //        it.blendFactors = blendFactors
-    //        it.vcount = vcount
-    //        it.icount = icount
-    //        it.program = program
-    //        it.matrix = if (matrix != null) it.cachedMatrix.copyFrom(matrix) else null
-    //    }
-    //    val hashCodeOfState = hashCode(tex, blendFactors, smoothing, program)
-    //    val index = deferredVerticesHash.indexOf(hashCodeOfState)
-    //    if (index < 0) {
-    //        deferredVertices.add(fastArrayListOf(item))
-    //        deferredVerticesHash.add(hashCodeOfState)
-    //    } else {
-    //        deferredVertices[index].add(item)
-    //    }
-    //    //deferredVertices.add(item)
-    //}
-
-    //enum class RenderMode { NORMAL, DEFERRED }
-    //@PublishedApi internal var mode = RenderMode.NORMAL
-    //val isDeferredMode get() = mode == RenderMode.DEFERRED
-    //inline fun <T> mode(mode: RenderMode?, block: () -> T): T {
-    //    val old = this.mode
-    //    this.mode = mode ?: this.mode
-    //    try {
-    //        return block()
-    //    } finally {
-    //        this.mode = old
-    //    }
-    //}
 
 	private fun checkAvailable(indices: Int, vertices: Int): Boolean {
 		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
@@ -602,9 +544,6 @@ class BatchBuilder2D constructor(
 			}
 		}
 	}
-
-    //private val quadTVAPool = Pool { TexturedVertexArray(4, TexturedVertexArray.quadIndices(4)) }
-    //private val quadTVAAllocated = FastArrayList<TexturedVertexArray>()
 
     /**
      * Draws a textured [tex] quad at [x], [y] and size [width]x[height].
@@ -836,50 +775,12 @@ class BatchBuilder2D constructor(
             beforeFlush(this)
 		}
 
-        //if (!flushingDeferred && deferredVertices.size > 0) {
-        //    flushDeferred()
-        //}
-
 		vertexCount = 0
 		vertexPos = 0
 		indexPos = 0
         for (n in 0 until BB_MAX_TEXTURES) currentTexN[n] = null
         currentTexIndex = 0
 	}
-
-    //var flushingDeferred = false
-    //private fun flushDeferred() {
-    //    //println("deferredVertices=${deferredVertices.size}")
-    //    try {
-    //        flushingDeferred = true
-    //        mode(RenderMode.NORMAL) {
-    //            //deferredVertices.sortBy { it.tex.hashCode() }
-    //            for (deferredVerticesItems in deferredVertices) {
-    //                deferredVerticesItems.fastForEach {
-    //                    drawVertices(it.array, it.tex, it.smoothing, it.blendFactors, it.vcount, it.icount, it.program, it.matrix)
-    //                    deferredDrawVerticesPool.free(it)
-    //                }
-    //                deferredVerticesItems.clear()
-    //            }
-    //            deferredVertices.clear()
-    //            deferredVerticesHash.clear()
-    //        }
-    //    } finally {
-    //        flushingDeferred = false
-    //    }
-    //    quadTVAPool.free(quadTVAAllocated)
-    //    quadTVAAllocated.clear()
-    //    flush()
-    //}
-
-	//private fun AG.Blending.toTextureRender(): AG.Blending {
-	//	//println("toTextureRender")
-	//	return when (this) {
-	//		BlendMode.NORMAL.factors -> BlendMode.ToTexture.NORMAL
-	//		//BlendMode.NORMAL.factors -> BlendMode.NORMAL.factors
-	//		else -> this
-	//	}
-	//}
 
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
