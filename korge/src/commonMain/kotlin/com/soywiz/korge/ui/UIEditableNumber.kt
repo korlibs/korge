@@ -83,6 +83,7 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
             }
         }
         onMouseDrag {
+            if (textInputView.visible) return@onMouseDrag
             if (it.start) {
                 start = this@UIEditableNumber.value
             }
