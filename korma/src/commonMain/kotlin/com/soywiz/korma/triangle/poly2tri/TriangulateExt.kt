@@ -32,5 +32,5 @@ fun VectorPath.triangulateSafe(doClipper: Boolean = true): TriangleList {
         points.add(it.p1.x, it.p1.y)
         points.add(it.p2.x, it.p2.y)
     }
-    return TriangleList(points, indices.toIntArray())
+    return TriangleList(points, indices.toShortArray())
 }

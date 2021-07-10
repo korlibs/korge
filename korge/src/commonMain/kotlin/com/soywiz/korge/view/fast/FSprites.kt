@@ -112,8 +112,8 @@ open class FSprites(val maxSize: Int) {
         val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
         }
-        val RenderContext.buffers by Extra.PropertyThis<RenderContext, List<AG.VertexData>> {
-            listOf(xyBuffer, fastSpriteBuffer)
+        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AG.VertexData>> {
+            fastArrayListOf(xyBuffer, fastSpriteBuffer)
         }
 
         val vprogram = Program(VertexShader {

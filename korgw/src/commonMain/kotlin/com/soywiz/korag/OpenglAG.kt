@@ -325,21 +325,18 @@ abstract class AGOpengl : AG() {
             //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
 
             when (uniformType) {
-                VarType.TextureUnit -> {
-                    val unit = value as TextureUnit
+                VarType.TextureUnit, VarType.SamplerCube -> {
+                    val unit = value.fastCastTo<TextureUnit>()
                     gl.activeTexture(gl.TEXTURE0 + textureUnit)
-                    val tex = (unit.texture as GlTexture?)
-                    tex?.bindEnsuring()
-                    tex?.setFilter(unit.linear)
-                    gl.uniform1i(location, textureUnit)
-                    textureUnit++
-                }
-                VarType.SamplerCube -> {
-                    val unit = value as TextureUnit
-                    gl.activeTexture(gl.TEXTURE0 + textureUnit)
-                    val tex = unit.texture as TextureGeneric
-                    tex.initialiseIfNeeded()
-                    tex.bindEnsuring()
+                    if (uniformType == VarType.TextureUnit) {
+                        val tex = (unit.texture.fastCastTo<GlTexture?>())
+                        tex?.bindEnsuring()
+                        tex?.setFilter(unit.linear)
+                    } else {
+                        val tex = unit.texture.fastCastTo<TextureGeneric>()
+                        tex.initialiseIfNeeded()
+                        tex.bindEnsuring()
+                    }
                     gl.uniform1i(location, textureUnit)
                     textureUnit++
                 }
@@ -348,7 +345,7 @@ abstract class AGOpengl : AG() {
                         is Array<*> -> value
                         is Matrix3D -> mat3dArray.also { it[0].copyFrom(value) }
                         else -> error("Not an array or a matrix3d")
-                    } as Array<Matrix3D>
+                    }.fastCastTo<Array<Matrix3D>>()
                     val arrayCount = min(declArrayCount, matArray.size)
 
                     val matSize = when (uniformType) {

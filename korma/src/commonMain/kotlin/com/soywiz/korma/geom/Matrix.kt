@@ -196,6 +196,7 @@ data class Matrix(
     fun deltaTransformY(x: Double, y: Double): Double = (x * b) + (y * d)
 
     fun identity() = setTo(1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
+    fun setToNan() = setTo(Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN, Double.NaN)
 
     fun isIdentity() = getType() == Type.IDENTITY
 

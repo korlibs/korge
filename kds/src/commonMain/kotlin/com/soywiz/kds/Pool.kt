@@ -56,7 +56,7 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
         }
     }
 
-    inline fun <R> allocMultiple(count: Int, temp: ArrayList<T> = arrayListOf(), callback: (List<T>) -> R): R {
+    inline fun <R> allocMultiple(count: Int, temp: FastArrayList<T> = FastArrayList(), callback: (FastArrayList<T>) -> R): R {
         temp.clear()
         for (n in 0 until count) temp.add(alloc())
         try {

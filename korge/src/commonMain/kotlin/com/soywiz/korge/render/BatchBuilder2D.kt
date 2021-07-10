@@ -62,9 +62,11 @@ class BatchBuilder2D constructor(
 	@PublishedApi internal val vertices = FBuffer.alloc(6 * 4 * maxVertices)
     @PublishedApi internal val verticesTexIndex = ByteArray(maxVertices)
     @PublishedApi internal val indices = FBuffer.alloc(2 * maxIndices)
+    //@PublishedApi internal val indices = ShortArray(maxIndices)
     //internal val vertices = FBuffer.allocNoDirect(6 * 4 * maxVertices)
     //internal val indices = FBuffer.allocNoDirect(2 * maxIndices)
     val indicesI16 = indices.i16
+    //val indicesI16 = indices
     private val verticesI32 = vertices.i32
     private val verticesF32 = vertices.f32
     private val verticesData = vertices.data
@@ -328,44 +330,52 @@ class BatchBuilder2D constructor(
         ensure(icount, vcount)
 
         val i16 = indicesI16
-        var ip = indexPos
+        val ip = indexPos
         val vc = vertexCount
         val arrayIndices = array.indices
-        for (idx in 0 until min(icount, array.isize)) {
-            i16[ip++] = (vc + arrayIndices[idx]).toShort()
-        }
-        indexPos = ip
+        val icount = min(icount, array.isize)
 
+        arraycopy(arrayIndices, 0, i16, ip, icount)
+        arrayadd(i16, vc.toShort(), ip, ip + icount)
+        //for (n in 0 until icount) i16[ip + n] = (vc + arrayIndices[n]).toShort()
+
+        val vp = vertexPos
         val src = array._data.i32
         val dst = vertices.i32
-        arraycopy(src, 0, dst, vertexPos, vcount * 6)
-        //for (n in 0 until vcount * 6) dst[vertexPos + n] = src[n]
+        arraycopy(src, 0, dst, vp, vcount * 6)
+        //for (n in 0 until vcount * 6) dst[vp + n] = src[n]
 
-        if (matrix != null) {
-            val f32 = vertices.f32
-            var idx = vertexPos
-
-            val ma = matrix.af
-            val mb = matrix.bf
-            val mc = matrix.cf
-            val md = matrix.df
-            val mtx = matrix.txf
-            val mty = matrix.tyf
-
-            for (n in 0 until vcount) {
-                val x = f32[idx + 0]
-                val y = f32[idx + 1]
-                f32[idx + 0] = Matrix.transformXf(ma, mb, mc, md, mtx, mty, x, y)
-                f32[idx + 1] = Matrix.transformYf(ma, mb, mc, md, mtx, mty, x, y)
-                idx += VERTEX_INDEX_SIZE
-            }
-        }
         //println("texIndex=$texIndex")
         val vp6 = vertexPos / 6
         arrayfill(verticesTexIndex, texIndex.toByte(), vp6, vp6 + vcount)
 
+        if (matrix != null) {
+            applyMatrix(matrix, vertexPos, vcount)
+        }
+
         _vertexCount += vcount
         vertexPos += vcount * 6
+        indexPos += icount
+    }
+
+    private fun applyMatrix(matrix: Matrix, idx: Int, vcount: Int) {
+        val f32 = vertices.f32
+        var idx = idx
+
+        val ma = matrix.af
+        val mb = matrix.bf
+        val mc = matrix.cf
+        val md = matrix.df
+        val mtx = matrix.txf
+        val mty = matrix.tyf
+
+        for (n in 0 until vcount) {
+            val x = f32[idx + 0]
+            val y = f32[idx + 1]
+            f32[idx + 0] = Matrix.transformXf(ma, mb, mc, md, mtx, mty, x, y)
+            f32[idx + 1] = Matrix.transformYf(ma, mb, mc, md, mtx, mty, x, y)
+            idx += VERTEX_INDEX_SIZE
+        }
     }
 
     /**
@@ -721,7 +731,7 @@ class BatchBuilder2D constructor(
         indexBuffer.upload(indices, 0, indexPos * 2)
     }
 
-    private val vertexData = listOf(
+    private val vertexData = fastArrayListOf(
         AG.VertexData(vertexBuffer, LAYOUT),
         AG.VertexData(texIndexVertexBuffer, LAYOUT_TEX_INDEX),
     )

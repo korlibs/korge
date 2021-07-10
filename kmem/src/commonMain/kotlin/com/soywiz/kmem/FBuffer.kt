@@ -1,5 +1,7 @@
 package com.soywiz.kmem
 
+import com.soywiz.kmem.FBuffer.Companion.sizeAligned
+
 /**
  * FastBuffer holding a chunk of [mem] memory
  */
@@ -23,7 +25,9 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 	inline val u16 get() = Uint16Buffer(arrayShort)
 
 	companion object {
-		private fun Int.sizeAligned() = (this + 0xF) and 0xF.inv()
+        fun getSizeAligned(size: Int) = (size + 0xF) and 0xF.inv()
+
+		private fun Int.sizeAligned() = getSizeAligned(this)
 
         fun allocUnaligned(size: Int): FBuffer = FBuffer(MemBufferAlloc(size), size)
 		fun alloc(size: Int): FBuffer = allocUnaligned(size.sizeAligned())

@@ -16,7 +16,7 @@ import com.soywiz.korma.triangle.poly2tri.*
  *
  * [vcount] and [isize] could be decreased later, but not increased since the buffer is created at the beginning.
  */
-class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int = indices.size) {
+class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var isize: Int = indices.size) {
     /** The initial/maximum number of vertices */
     val initialVcount = vcount
     //internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
@@ -29,6 +29,8 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
     //val icount = indices.size
 
     companion object {
+        val EMPTY = TexturedVertexArray(0, ShortArray(0))
+
         // // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
         @KorgeInternal
         inline val COMPONENTS_PER_VERTEX get() = TEXTURED_ARRAY_COMPONENTS_PER_VERTEX
@@ -39,7 +41,7 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         inline val EMPTY_INT_ARRAY get() = TEXTURED_ARRAY_EMPTY_INT_ARRAY
 
         /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
-        inline fun quadIndices(quadCount: Int): IntArray = TEXTURED_ARRAY_quadIndices(quadCount)
+        inline fun quadIndices(quadCount: Int): ShortArray = TEXTURED_ARRAY_quadIndices(quadCount)
 
         fun fromPath(path: VectorPath, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null, doClipper: Boolean = true): TexturedVertexArray {
             //return fromTriangles(path.triangulateEarCut(), colorMul, colorAdd, matrix)
@@ -55,11 +57,11 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
 
         /** This doesn't handle holes */
         fun fromPointArrayList(points: IPointArrayList, colorMul: RGBA = Colors.WHITE, colorAdd: ColorAdd = ColorAdd.NEUTRAL, matrix: Matrix? = null): TexturedVertexArray {
-            val indices = IntArray((points.size - 2) * 3)
+            val indices = ShortArray((points.size - 2) * 3)
             for (n in 0 until points.size - 2) {
-                indices[n * 3 + 0] = 0
-                indices[n * 3 + 1] = n + 1
-                indices[n * 3 + 2] = n + 2
+                indices[n * 3 + 0] = (0).toShort()
+                indices[n * 3 + 1] = (n + 1).toShort()
+                indices[n * 3 + 2] = (n + 2).toShort()
             }
             val tva = TexturedVertexArray(points.size, indices)
             tva.setSimplePoints(points, matrix, colorMul, colorAdd)
@@ -256,6 +258,11 @@ class TexturedVertexArray(var vcount: Int, val indices: IntArray, var isize: Int
         }
     }
 
+    fun copyFrom(other: TexturedVertexArray) {
+        arraycopy(other._data.arrayInt, 0, this._data.arrayInt, 0, this._data.size / 4)
+        arraycopy(other.indices, 0, this.indices, 0, this.indices.size)
+    }
+
     fun applyMatrix(matrix: Matrix) {
         for (n in 0 until vcount){
             select(n)
@@ -312,22 +319,23 @@ private fun IntArray.repeat(count: Int): IntArray {
 
 @PublishedApi internal const val TEXTURED_ARRAY_COMPONENTS_PER_VERTEX = 6
 @KorgeInternal
-@PublishedApi internal val TEXTURED_ARRAY_QUAD_INDICES = intArrayOf(0, 1, 2,  3, 0, 2)
+@PublishedApi internal val TEXTURED_ARRAY_QUAD_INDICES = shortArrayOf(0, 1, 2,  3, 0, 2)
 @PublishedApi internal val TEXTURED_ARRAY_EMPTY_INT_ARRAY = IntArray(0)
+@PublishedApi internal val TEXTURED_ARRAY_EMPTY_SHORT_ARRAY = ShortArray(0)
 
 /** Builds indices for drawing triangles when the vertices information is stored as quads (4 vertices per quad primitive) */
-@PublishedApi internal fun TEXTURED_ARRAY_quadIndices(quadCount: Int): IntArray {
-    if (quadCount == 0) return TEXTURED_ARRAY_EMPTY_INT_ARRAY
-    val out = IntArray(quadCount * 6)
+@PublishedApi internal fun TEXTURED_ARRAY_quadIndices(quadCount: Int): ShortArray {
+    if (quadCount == 0) return TEXTURED_ARRAY_EMPTY_SHORT_ARRAY
+    val out = ShortArray(quadCount * 6)
     var m = 0
     var base = 0
     for (n in 0 until quadCount) {
-        out[m++] = base + 0
-        out[m++] = base + 1
-        out[m++] = base + 2
-        out[m++] = base + 3
-        out[m++] = base + 0
-        out[m++] = base + 2
+        out[m++] = (base + 0).toShort()
+        out[m++] = (base + 1).toShort()
+        out[m++] = (base + 2).toShort()
+        out[m++] = (base + 3).toShort()
+        out[m++] = (base + 0).toShort()
+        out[m++] = (base + 2).toShort()
         base += 4
     }
     //QUAD_INDICES.repeat(quadCount)

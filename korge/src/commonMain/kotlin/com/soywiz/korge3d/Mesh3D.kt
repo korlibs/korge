@@ -1,5 +1,6 @@
 package com.soywiz.korge3d
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
@@ -14,8 +15,8 @@ data class BufferWithVertexLayout(
 
 @Korge3DExperimental
 data class Mesh3D constructor(
-    val vertexBuffers: List<BufferWithVertexLayout>,
-    val indexBuffer:FBuffer,
+    val vertexBuffers: FastArrayList<BufferWithVertexLayout>,
+    val indexBuffer: FBuffer,
     val indexType: AG.IndexType,
     val vertexCount:Int,
     val program: Program?,

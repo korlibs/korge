@@ -265,7 +265,7 @@ class ColladaParser {
             geometryDefs[geom.id] = Library3D.GeometryDef(
                 Mesh3D(
                     //combinedData.toFloatArray().toFBuffer(),
-                    listOf(BufferWithVertexLayout(
+                    fastArrayListOf(BufferWithVertexLayout(
                         buffer = combinedVertexData.toFBuffer(),
                         layout = VertexLayout(buildList {
                             add(Shaders3D.a_pos)

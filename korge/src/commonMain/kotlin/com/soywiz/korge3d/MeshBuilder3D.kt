@@ -234,7 +234,7 @@ class MeshBuilder3D(
     }
 
     fun build(): Mesh3D = Mesh3D(
-        listOf(BufferWithVertexLayout(
+        fastArrayListOf(BufferWithVertexLayout(
             buffer = vertexData.toFBuffer(),
             layout = layout
         )),

@@ -15,7 +15,7 @@ object EarCutTriangulator {
             floats[n * 2 + 1] = points.getY(n).toFloat()
         }
         val result = EarCut.earcut(floats, holeIndices, 2)
-        return TriangleList(points, result.toIntArray())
+        return TriangleList(points, result.toShortArray())
     }
 }
 

@@ -173,6 +173,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
     }
 
     fun toIntArray() = this.data.copyOf(length)
+    fun toShortArray() = ShortArray(length) { this.data[it].toShort() }
 
     // List interface
 

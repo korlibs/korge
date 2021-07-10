@@ -207,7 +207,7 @@ fun Triangle.edgeIndex(p1: IPoint, p2: IPoint): Int {
     return -1
 }
 
-class TriangleList(val points: PointArrayList, val indices: IntArray, val numTriangles: Int = indices.size / 3) : Iterable<Triangle> {
+class TriangleList(val points: PointArrayList, val indices: ShortArray, val numTriangles: Int = indices.size / 3) : Iterable<Triangle> {
     val numIndices get() = numTriangles * 3
     val pointCount get() = points.size
 
@@ -224,9 +224,9 @@ class TriangleList(val points: PointArrayList, val indices: IntArray, val numTri
     }
 
     fun getTriangle(index: Int, out: MutableTriangle = MutableTriangle()): MutableTriangle {
-        points.getPoint(indices[index * 3 + 0], out.p0)
-        points.getPoint(indices[index * 3 + 1], out.p1)
-        points.getPoint(indices[index * 3 + 2], out.p2)
+        points.getPoint(indices[index * 3 + 0].toInt() and 0xFFFF, out.p0)
+        points.getPoint(indices[index * 3 + 1].toInt() and 0xFFFF, out.p1)
+        points.getPoint(indices[index * 3 + 2].toInt() and 0xFFFF, out.p2)
         return out
     }
 
