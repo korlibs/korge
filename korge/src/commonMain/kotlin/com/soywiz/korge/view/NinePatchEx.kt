@@ -39,15 +39,22 @@ class NinePatchEx(
             val ninePatch = ninePatch
             if (ninePatch != null) {
                 recomputeVerticesIfRequired()
-                val tva = this@NinePatchEx.tva
-                if (tva != null) {
-                    ctx.batch.drawVertices(tva, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode.factors, matrix = m)
+                val tvaCached = this@NinePatchEx.tvaCached
+                if (tvaCached != null) {
+                    if (cachedMatrix != m) {
+                        cachedMatrix.copyFrom(m)
+                        tvaCached.copyFrom(tva!!)
+                        tvaCached.applyMatrix(m)
+                    }
+                    ctx.batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode.factors)
                 }
             }
 		}
 	}
 
     private var tva: TexturedVertexArray? = null
+    private var tvaCached: TexturedVertexArray? = null
+    private var cachedMatrix: Matrix = Matrix()
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
     private val cachedBounds = RectangleInt()
@@ -60,10 +67,12 @@ class NinePatchEx(
         val ninePatch = ninePatch
         if (ninePatch == null) {
             tva = null
+            tvaCached = null
             return
         }
         val numQuads = ninePatch.info.totalSegments
-        val tva = TexturedVertexArray(numQuads * 4, TexturedVertexArray.quadIndices(numQuads))
+        val indices = TexturedVertexArray.quadIndices(numQuads)
+        val tva = TexturedVertexArray(numQuads * 4, indices)
         var index = 0
         val matrix = Matrix()
         ninePatch.info.computeScale(viewBounds) { segment, x, y, width, height ->
@@ -75,6 +84,8 @@ class NinePatchEx(
             )
         }
         this.tva = tva
+        this.tvaCached = TexturedVertexArray(numQuads * 4, indices)
+        this.cachedMatrix.setToNan()
     }
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
