@@ -7,6 +7,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -154,7 +155,7 @@ val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //Bitmap32(64 * 3, 64).context2d {
     NativeImage(256, 512).context2d {
         for (n in 0 until 4) {
-            drawImage(buildDefaultButton(n), n * 64, 0)
+            drawImage(buildDefaultButton(UiSkinType(n)), n * 64, 0)
         }
         for (n in 0 until 5) {
             for (enabled in listOf(false, true)) {
@@ -169,20 +170,31 @@ val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //).toBMP32()
 }
 
-private fun buildDefaultButton(index: Int): Bitmap {
+inline class UiSkinType(val index: Int) {
+    companion object {
+        val NORMAL = UiSkinType(0)
+        val OVER = UiSkinType(1)
+        val DOWN = UiSkinType(2)
+        val DISABLED = UiSkinType(3)
+    }
+}
+
+private fun buildDefaultButton(index: UiSkinType): Bitmap {
     return NativeImage(64, 64).context2d {
-        val gradient = when (index) {
-            0 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#6C6C6C"]) // Out
-            1 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#9E9E9E"]) // Over
-            2 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#909090"]).addColorStop(1.0, Colors["#F5F5F5"]) // Down
-            3 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#A7A7A7"]).addColorStop(1.0, Colors["#A7A7A7"]) // Disabled
+        val gradient: Paint = when (index) {
+            UiSkinType.NORMAL -> ColorPaint(ColorPaint(Colors.DIMGREY))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#6C6C6C"]) // Out
+            UiSkinType.OVER -> ColorPaint(ColorPaint(Colors["#6b6b6b"]))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#9E9E9E"]) // Over
+            UiSkinType.DOWN -> ColorPaint(ColorPaint(Colors["#4f4f4f"]))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#909090"]).addColorStop(1.0, Colors["#F5F5F5"]) // Down
+            UiSkinType.DISABLED -> ColorPaint(ColorPaint(Colors["#494949"]))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#A7A7A7"]).addColorStop(1.0, Colors["#A7A7A7"]) // Disabled
             else -> TODO()
         }
 
-        val border = when (index) {
-            2 -> com.soywiz.korim.paint.ColorPaint(Colors["#4B4955"])
-            3 -> com.soywiz.korim.paint.ColorPaint(Colors["#6A6A6A"])
-            else -> com.soywiz.korim.paint.ColorPaint(Colors["#3C3A44"])
+        val border: Paint = when (index) {
+            UiSkinType.NORMAL -> gradient
+            UiSkinType.OVER -> ColorPaint(Colors["#b4b4b4"])
+            UiSkinType.DOWN -> ColorPaint(Colors["#c8c8c8"])
+            UiSkinType.DISABLED -> gradient
+            else -> ColorPaint(Colors["#3c3e3e"])
         }
         fill(gradient) {
             stroke(border, lineWidth = 8.0) {
