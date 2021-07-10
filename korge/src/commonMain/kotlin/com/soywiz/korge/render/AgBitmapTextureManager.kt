@@ -196,4 +196,3 @@ class AgBitmapTextureManager(
     }
 }
 
-private fun <K, V> FastIdentityMap<K, V>.getAndRemove(key: K): V? = get(key).also { remove(key) }

@@ -13,7 +13,7 @@ import com.soywiz.korma.geom.*
 import kotlin.math.*
 import kotlin.reflect.*
 
-private val View._defaultUiSkin: UISkin by extraProperty { UISkin {  } }
+private val View._defaultUiSkin: UISkin by extraProperty { UISkin("defaultUiSkin") {  } }
 
 var View.uiSkin: UISkin? by extraProperty { null }
 val View.realUiSkin: UISkin get() = uiSkin ?: parent?.realUiSkin ?: root._defaultUiSkin
@@ -22,9 +22,9 @@ open class UIView(
 	width: Double = 90.0,
 	height: Double = 32.0
 ) : FixedSizeContainer(width, height), UISkinable {
-    private val skinProps = LinkedHashMap<KProperty<*>, Any?>()
-    override fun <T> setSkinProperty(property: KProperty<*>, value: T) { skinProps[property] = value }
-    override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? = (skinProps[property] as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
+    private val skinProps = FastStringMap<Any?>()
+    override fun <T> setSkinProperty(property: KProperty<*>, value: T) { skinProps[property.name] = value }
+    override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? = (skinProps[property.name] as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
 
 	override var width: Double by uiObservable(width) { onSizeChanged() }
 	override var height: Double by uiObservable(height) { onSizeChanged() }

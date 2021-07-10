@@ -26,11 +26,13 @@ open class ViewsForTesting(
     val frameTime: TimeSpan = 10.milliseconds,
     val windowSize: SizeInt = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT),
     val virtualSize: SizeInt = SizeInt(windowSize.size.clone()),
-    val log: Boolean = false
+    val defaultDevicePixelRatio: Double = 1.0,
+    val log: Boolean = false,
 ) {
 	val startTime = DateTime(0.0)
 	var time = startTime
 	val elapsed get() = time - startTime
+    var devicePixelRatio = defaultDevicePixelRatio
 
 	val timeProvider = object : TimeProvider {
         override fun now(): DateTime = time
@@ -43,7 +45,14 @@ open class ViewsForTesting(
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
-    val ag = if (log) LogAG(windowSize.width, windowSize.height) else DummyAG(windowSize.width, windowSize.height)
+    val ag = object : LogAG(windowSize.width, windowSize.height) {
+        override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
+        override fun log(str: String) {
+            if (this@ViewsForTesting.log) {
+                super.log(str)
+            }
+        }
+    }
 	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
         viewsLog.views.virtualWidth = virtualSize.width
         viewsLog.views.virtualHeight = virtualSize.height
@@ -79,9 +88,11 @@ open class ViewsForTesting(
     suspend fun deferred(block: suspend CompletableDeferred<Unit>.() -> Unit) = deferred<Unit>(block)
 
     suspend inline fun mouseMoveAndClickTo(x: Number, y: Number, button: MouseButton = MouseButton.LEFT) {
-        mouseMoveTo(x.toDouble(), y.toDouble())
+        mouseMoveTo(x, y)
         mouseClick(button)
     }
+
+    suspend fun mouseMoveTo(point: IPoint) = mouseMoveTo(point.x, point.y)
 
     suspend fun mouseMoveTo(x: Int, y: Int) {
         gameWindow.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x, y = y))
@@ -89,7 +100,7 @@ open class ViewsForTesting(
         simulateFrame(count = 2)
     }
 
-    suspend fun mouseMoveTo(x: Double, y: Double) = mouseMoveTo(x.toInt(), y.toInt())
+    suspend fun mouseMoveTo(x: Number, y: Number) = mouseMoveTo(x.toInt(), y.toInt())
 
     private var mouseButtons = 0
 
@@ -185,8 +196,13 @@ open class ViewsForTesting(
 	}
 
 	// @TODO: Run a faster eventLoop where timers happen much faster
-    fun viewsTest(timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, frameTime: TimeSpan = this.frameTime, block: suspend Stage.() -> Unit) =
-        suspendTest(timeout = timeout, cond = { OS.isJvm && !OS.isAndroid }) {
+    fun viewsTest(
+        timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
+        frameTime: TimeSpan = this.frameTime,
+        //devicePixelRatio: Double = defaultDevicePixelRatio,
+        block: suspend Stage.() -> Unit
+    ) = suspendTest(timeout = timeout, cond = { OS.isJvm && !OS.isAndroid }) {
+        this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
         Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime)
 

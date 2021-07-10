@@ -1,11 +1,13 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -48,28 +50,31 @@ fun <T> UISkinable.getSkinProperty(property: KProperty<*>, default: UISkinable.(
     val res = getSkinPropertyOrNull<T>(property)
     if (res == null) {
         val value = default()
+        //println("Property[$property] doesn't exists in $this. Computed new value $value")
         setSkinProperty(property, value)
         return value
     }
     return res
 }
 
-open class UISkin(val skins: List<UISkinable> = listOf(), val parent: UISkinable? = null) : UISkinable {
-    val skinProps = LinkedHashMap<KProperty<*>, Any?>()
+open class UISkin(val name: String? = null, val skins: List<UISkinable> = listOf(), val parent: UISkinable? = null) : UISkinable {
+    val skinProps = FastStringMap<Any?>()
 
     override fun <T> setSkinProperty(property: KProperty<*>, value: T) {
-        skinProps[property] = value
+        skinProps[property.name] = value
     }
 
     override fun <T> getSkinPropertyOrNull(property: KProperty<*>): T? {
-        skinProps[property]?.let { return it as T }
+        skinProps[property.name]?.let { return it.fastCastTo() }
         skins.fastForEach { it.getSkinPropertyOrNull<T>(property)?.let { return it } }
         return parent?.getSkinPropertyOrNull(property)
     }
 
-    fun copy(): UISkin = UISkin(skins, parent).also { it.skinProps.putAll(this.skinProps) }
+    fun copy(): UISkin = UISkin(name, skins, parent).also { it.skinProps.putAll(this.skinProps) }
 
     fun child() = UISkin(parent = this)
+
+    override fun toString(): String = "UISkin($name)"
 }
 
 open class UISkinableProperty<T>(val default: UISkinable.() -> T) {
@@ -111,7 +116,7 @@ var UISkinable.scrollbarIconRight by UISkinableProperty { iconRight }
 var UISkinable.scrollbarIconUp by UISkinableProperty { iconUp }
 var UISkinable.scrollbarIconDown by UISkinableProperty { iconDown }
 
-inline fun UISkin(block: UISkin.() -> Unit): UISkin = UISkin().apply(block)
+inline fun UISkin(name: String? = null, block: UISkin.() -> Unit): UISkin = UISkin(name).apply(block)
 
 /*
 @Deprecated("")
@@ -150,7 +155,7 @@ val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //Bitmap32(64 * 3, 64).context2d {
     NativeImage(256, 512).context2d {
         for (n in 0 until 4) {
-            drawImage(buildDefaultButton(n), n * 64, 0)
+            drawImage(buildDefaultButton(UiSkinType(n)), n * 64, 0)
         }
         for (n in 0 until 5) {
             for (enabled in listOf(false, true)) {
@@ -165,20 +170,31 @@ val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //).toBMP32()
 }
 
-private fun buildDefaultButton(index: Int): Bitmap {
+inline class UiSkinType(val index: Int) {
+    companion object {
+        val NORMAL = UiSkinType(0)
+        val OVER = UiSkinType(1)
+        val DOWN = UiSkinType(2)
+        val DISABLED = UiSkinType(3)
+    }
+}
+
+private fun buildDefaultButton(index: UiSkinType): Bitmap {
     return NativeImage(64, 64).context2d {
-        val gradient = when (index) {
-            0 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#6C6C6C"]) // Out
-            1 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#9E9E9E"]) // Over
-            2 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#909090"]).addColorStop(1.0, Colors["#F5F5F5"]) // Down
-            3 -> createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#A7A7A7"]).addColorStop(1.0, Colors["#A7A7A7"]) // Disabled
+        val gradient: Paint = when (index) {
+            UiSkinType.NORMAL -> ColorPaint(ColorPaint(Colors.DIMGREY))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#6C6C6C"]) // Out
+            UiSkinType.OVER -> ColorPaint(ColorPaint(Colors["#6b6b6b"]))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#9E9E9E"]) // Over
+            UiSkinType.DOWN -> ColorPaint(ColorPaint(Colors["#4f4f4f"]))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#909090"]).addColorStop(1.0, Colors["#F5F5F5"]) // Down
+            UiSkinType.DISABLED -> ColorPaint(ColorPaint(Colors["#494949"]))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#A7A7A7"]).addColorStop(1.0, Colors["#A7A7A7"]) // Disabled
             else -> TODO()
         }
 
-        val border = when (index) {
-            2 -> com.soywiz.korim.paint.ColorPaint(Colors["#4B4955"])
-            3 -> com.soywiz.korim.paint.ColorPaint(Colors["#6A6A6A"])
-            else -> com.soywiz.korim.paint.ColorPaint(Colors["#3C3A44"])
+        val border: Paint = when (index) {
+            UiSkinType.NORMAL -> gradient
+            UiSkinType.OVER -> ColorPaint(Colors["#b4b4b4"])
+            UiSkinType.DOWN -> ColorPaint(Colors["#c8c8c8"])
+            UiSkinType.DISABLED -> gradient
+            else -> ColorPaint(Colors["#3c3e3e"])
         }
         fill(gradient) {
             stroke(border, lineWidth = 8.0) {

@@ -4,6 +4,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.math.*
 
 inline fun Container.fixedSizeContainer(
     width: Double,
@@ -60,9 +61,40 @@ open class FixedSizeContainer(
     }
 }
 
+fun View.getVisibleLocalArea(out: Rectangle = Rectangle()): Rectangle {
+    getVisibleGlobalArea(out)
+    val x0 = globalToLocalX(out.left, out.top)
+    val x1 = globalToLocalX(out.right, out.top)
+    val x2 = globalToLocalX(out.right, out.bottom)
+    val x3 = globalToLocalX(out.left, out.bottom)
+    val y0 = globalToLocalY(out.left, out.top)
+    val y1 = globalToLocalY(out.right, out.top)
+    val y2 = globalToLocalY(out.right, out.bottom)
+    val y3 = globalToLocalY(out.left, out.bottom)
+    val xmin = min(x0, x1, x2, x3)
+    val xmax = max(x0, x1, x2, x3)
+    val ymin = min(y0, y1, y2, y3)
+    val ymax = max(y0, y1, y2, y3)
+    return out.setBounds(xmin, ymin, xmax, ymax)
+}
+
+fun View.getNextClippingView(): View {
+    forEachAscendant(includeThis = true) {
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getNextClippingView it
+    }
+    return this
+}
+
 fun View.getVisibleGlobalArea(out: Rectangle = Rectangle()): Rectangle {
     forEachAscendant(includeThis = true) {
         if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleGlobalArea it.getGlobalBounds(out)
+    }
+    return out.setTo(0.0, 0.0, 4096.0, 4096.0)
+}
+
+fun View.getVisibleWindowArea(out: Rectangle = Rectangle()): Rectangle {
+    forEachAscendant(includeThis = true) {
+        if ((it is FixedSizeContainer && it.clip) || it is Stage) return@getVisibleWindowArea it.getWindowBounds(out)
     }
     return out.setTo(0.0, 0.0, 4096.0, 4096.0)
 }

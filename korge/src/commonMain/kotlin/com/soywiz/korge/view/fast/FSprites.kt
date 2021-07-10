@@ -70,8 +70,8 @@ open class FSprites(val maxSize: Int) {
             ctx.batch.setTemporalUniform(u_i_texSize, u_i_texSizeData) {
                 ctx.batch.updateStandardUniforms()
                 ctx.batch.setViewMatrixTemp(globalMatrix) {
-                    ctx.batch.textureUnit.texture = ttex.base
-                    ctx.batch.textureUnit.linear = smoothing
+                    //ctx.batch.setStateFast()
+                    ctx.batch.textureUnitN[0].set(ttex.base, smoothing)
                     sprites.uploadVertices(ctx)
                     ctx.xyBuffer.buffer.upload(xyData)
                     ctx.ag.drawV2(
@@ -112,8 +112,8 @@ open class FSprites(val maxSize: Int) {
         val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
         }
-        val RenderContext.buffers by Extra.PropertyThis<RenderContext, List<AG.VertexData>> {
-            listOf(xyBuffer, fastSpriteBuffer)
+        val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AG.VertexData>> {
+            fastArrayListOf(xyBuffer, fastSpriteBuffer)
         }
 
         val vprogram = Program(VertexShader {

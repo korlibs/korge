@@ -13,7 +13,7 @@ class RenderContext3D() {
     val textureUnit = AG.TextureUnit()
     val bindMat4 = Matrix3D()
     val bones = Array(128) { Matrix3D() }
-    val tmepMat = Matrix3D()
+    val tempMat = Matrix3D()
     val projMat: Matrix3D = Matrix3D()
     val lights = arrayListOf<Light3D>()
     val projCameraMat: Matrix3D = Matrix3D()
@@ -24,9 +24,9 @@ class RenderContext3D() {
     val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
     val ambientColor: Vector3D = Vector3D()
 
-    val tempAgVertexData = arrayListOf<AG.VertexData>()
+    val tempAgVertexData = FastArrayList<AG.VertexData>()
 
-    inline fun useDynamicVertexData(vertexBuffers: List<BufferWithVertexLayout>, block: (List<AG.VertexData>) -> Unit) {
+    inline fun useDynamicVertexData(vertexBuffers: FastArrayList<BufferWithVertexLayout>, block: (FastArrayList<AG.VertexData>) -> Unit) {
         dynamicVertexDataPool.allocMultiple(vertexBuffers.size, tempAgVertexData) { vertexData ->
             for (n in 0 until vertexBuffers.size) {
                 val bufferWithVertexLayout = vertexBuffers[n]

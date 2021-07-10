@@ -1,8 +1,19 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 
-abstract class UIContainer(width: Double, height: Double) : UIView(width, height) {
+inline fun Container.uiContainer(
+    width: Double = 128.0,
+    height: Double = 128.0,
+    block: @ViewDslMarker UIContainer.() -> Unit = {}
+) = UIContainer(width, height).addTo(this).apply(block)
+
+open class UIContainer(width: Double, height: Double) : UIBaseContainer(width, height) {
+    override fun relayout() {}
+}
+
+abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, height) {
     override fun onChildAdded(view: View) {
         relayout()
     }
@@ -12,6 +23,16 @@ abstract class UIContainer(width: Double, height: Double) : UIView(width, height
     }
 
     abstract fun relayout()
+
+    var deferredRendering: Boolean? = true
+    //var deferredRendering: Boolean? = false
+
+    //override fun renderInternal(ctx: RenderContext) {
+    //    ctx.batch.mode(if (deferredRendering == true) BatchBuilder2D.RenderMode.DEFERRED else null) {
+    //        super.renderInternal(ctx)
+    //    }
+    //    //ctx.flush()
+    //}
 }
 
 inline fun Container.uiVerticalStack(

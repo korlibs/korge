@@ -60,7 +60,7 @@ abstract class View internal constructor(
     , BView
 //, EventDispatcher by EventDispatcher.Mixin()
 {
-    override var extra: LinkedHashMap<String, Any?>? = null
+    override var extra: ExtraType = null
 
     override val bview: View get() = this
     override val bviewAll: List<View> by lazy { listOf(this) }
@@ -316,6 +316,7 @@ abstract class View internal constructor(
         set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
 
     fun globalXY(out: Point = Point()): Point = out.setTo(globalX, globalY)
+    fun localXY(out: Point = Point()): Point = out.setTo(x, y)
 
     /**
      * Changes the [width] and [height] to match the parameters.

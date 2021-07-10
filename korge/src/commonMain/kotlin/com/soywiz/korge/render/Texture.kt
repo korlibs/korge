@@ -24,7 +24,7 @@ class Texture(
 	val right: Int = base.width,
     /** Bottom position of the region of the texture in pixels */
 	val bottom: Int = base.height
-) : Closeable {
+) : Closeable, BmpCoords {
     /** Wether the texture is multiplied or not */
 	val premultiplied get() = base.premultiplied
     /** Left position of the region of the texture in pixels */
@@ -44,6 +44,18 @@ class Texture(
 	val y0: Float = (top).toFloat() / base.height.toFloat()
     /** Bottom coord of the texture region as a ratio (a value between 0 and 1) */
 	val y1: Float = (bottom).toFloat() / base.height.toFloat()
+
+    override val tl_x get() = x0
+    override val tl_y get() = y0
+
+    override val tr_x get() = x1
+    override val tr_y get() = y0
+
+    override val bl_x get() = x0
+    override val bl_y get() = y1
+
+    override val br_x get() = x1
+    override val br_y get() = y1
 
     /**
      * Creates a slice of this texture, by [x], [y], [width] and [height].

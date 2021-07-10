@@ -26,7 +26,7 @@ open class Mesh(
 		dirtyVertices = true
 	}
 
-	private var tva = TexturedVertexArray(0, intArrayOf())
+	private var tva = TexturedVertexArray.EMPTY
 	private val bb = BoundsBuilder()
 	private val localBounds = Rectangle()
 
@@ -40,14 +40,14 @@ open class Mesh(
 		val cadd = this.renderColorAdd
 		val vcount = vertices.size / 2
 		val isize = indices.size
-		tva = if (vcount > tva.initialVcount || isize > tva.indices.size) TexturedVertexArray(vcount, IntArray(isize)) else tva
+		tva = if (vcount > tva.initialVcount || isize > tva.indices.size) TexturedVertexArray(vcount, ShortArray(isize)) else tva
 		tva.vcount = vcount
 		tva.isize = isize
 
 		bb.reset()
         val pivotXf = pivotX.toFloat()
         val pivotYf = pivotY.toFloat()
-		for (n in 0 until tva.isize) tva.indices[n] = indices[n]
+		for (n in 0 until tva.isize) tva.indices[n] = indices[n].toShort()
 		for (n in 0 until tva.vcount) {
 			val x = vertices[n * 2 + 0] + pivotXf
 			val y = vertices[n * 2 + 1] + pivotYf

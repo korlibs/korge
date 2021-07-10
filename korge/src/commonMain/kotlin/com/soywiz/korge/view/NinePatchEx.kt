@@ -9,16 +9,16 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
 inline fun Container.ninePatch(
-	ninePatch: NinePatchBmpSlice, width: Double = ninePatch.dwidth, height: Double = ninePatch.dheight,
+	ninePatch: NinePatchBmpSlice?, width: Double = ninePatch?.dwidth ?: 16.0, height: Double = ninePatch?.dheight ?: 16.0,
 	callback: @ViewDslMarker NinePatchEx.() -> Unit = {}
 ) = NinePatchEx(ninePatch, width, height).addTo(this, callback)
 
 class NinePatchEx(
-	ninePatch: NinePatchBmpSlice,
-	override var width: Double = ninePatch.width.toDouble(),
-	override var height: Double = ninePatch.height.toDouble()
+	ninePatch: NinePatchBmpSlice?,
+	override var width: Double = ninePatch?.width?.toDouble() ?: 16.0,
+	override var height: Double = ninePatch?.height?.toDouble() ?: 16.0
 ) : View(), ViewFileRef by ViewFileRef.Mixin() {
-    var ninePatch: NinePatchBmpSlice = ninePatch
+    var ninePatch: NinePatchBmpSlice? = ninePatch
 	var smoothing = true
 
 	private val bounds = RectangleInt()
@@ -36,20 +36,57 @@ class NinePatchEx(
 
 		m.keep {
 			prescale(1.0 / xscale, 1.0 / yscale)
-			ninePatch.info.computeScale(bounds) { segment, x, y, width, height ->
-				ctx.batch.drawQuad(
-					ctx.getTex(ninePatch.getSegmentBmpSlice(segment)),
-					x.toFloat(), y.toFloat(),
-					width.toFloat(), height.toFloat(),
-					m = m,
-					colorMul = renderColorMul,
-					colorAdd = renderColorAdd,
-					filtering = smoothing,
-					blendFactors = renderBlendMode.factors
-				)
-			}
+            val ninePatch = ninePatch
+            if (ninePatch != null) {
+                recomputeVerticesIfRequired()
+                val tvaCached = this@NinePatchEx.tvaCached
+                if (tvaCached != null) {
+                    if (cachedMatrix != m) {
+                        cachedMatrix.copyFrom(m)
+                        tvaCached.copyFrom(tva!!)
+                        tvaCached.applyMatrix(m)
+                    }
+                    ctx.batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode.factors)
+                }
+            }
 		}
 	}
+
+    private var tva: TexturedVertexArray? = null
+    private var tvaCached: TexturedVertexArray? = null
+    private var cachedMatrix: Matrix = Matrix()
+
+    private var cachedNinePatch: NinePatchBmpSlice? = null
+    private val cachedBounds = RectangleInt()
+
+    private fun recomputeVerticesIfRequired() {
+        val viewBounds = this.bounds
+        if (cachedBounds.rect == viewBounds.rect && cachedNinePatch == ninePatch) return
+        cachedBounds.rect.copyFrom(viewBounds.rect)
+        cachedNinePatch = ninePatch
+        val ninePatch = ninePatch
+        if (ninePatch == null) {
+            tva = null
+            tvaCached = null
+            return
+        }
+        val numQuads = ninePatch.info.totalSegments
+        val indices = TexturedVertexArray.quadIndices(numQuads)
+        val tva = TexturedVertexArray(numQuads * 4, indices)
+        var index = 0
+        val matrix = Matrix()
+        ninePatch.info.computeScale(viewBounds) { segment, x, y, width, height ->
+            val bmpSlice = ninePatch.getSegmentBmpSlice(segment)
+            tva.quad(index++ * 4,
+                x.toFloat(), y.toFloat(),
+                width.toFloat(), height.toFloat(),
+                matrix, bmpSlice, renderColorMul, renderColorAdd
+            )
+        }
+        this.tva = tva
+        this.tvaCached = TexturedVertexArray(numQuads * 4, indices)
+        this.cachedMatrix.setToNan()
+    }
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0.0, 0.0, width, height)

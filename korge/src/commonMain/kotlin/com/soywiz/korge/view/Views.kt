@@ -65,6 +65,8 @@ class Views constructor(
 {
     override val views = this
 
+    val devicePixelRatio get() = ag.devicePixelRatio
+
     override val serializer = KTreeSerializer(this)
 
     val keys get() = input.keys
@@ -175,6 +177,8 @@ class Views constructor(
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
     @KorgeInternal
 	val nativeMouseY: Double get() = input.mouse.y
+    @KorgeInternal
+    val nativeMouseXY: Point get() = input.mouse
 
     /** Mouse coordinates relative to the [Stage] singleton */
     val globalMouseXY get() = stage.mouseXY

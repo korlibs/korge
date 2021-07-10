@@ -184,14 +184,14 @@ class RenderContext2D(
         texturedVertexArrayNoTransform(TexturedVertexArray.fromTriangles(triangles, color, matrix = m), filtering)
     }
 
-    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
+    fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: Matrix? = null) {
         batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
-        batch.drawVertices(texturedVertexArray)
+        batch.drawVertices(texturedVertexArray, matrix)
     }
 
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
         batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
-        batch.drawVerticesTransformed(texturedVertexArray, m)
+        batch.drawVertices(texturedVertexArray, m)
     }
 
     /** Renders a [texture] with the [blendFactors] at [x], [y] scaling it by [scale].

@@ -276,7 +276,7 @@ open class TileMap(
 	private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
     private val infos = arrayListOf<Info>()
     companion object {
-        private val dummyTexturedVertexArray = TexturedVertexArray(0, IntArray(0))
+        private val dummyTexturedVertexArray = TexturedVertexArray.EMPTY
 
         fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
             // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425

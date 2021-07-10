@@ -1,17 +1,32 @@
-import com.soywiz.kmem.*
 import com.soywiz.korge.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.format.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Rectangle
+
+fun Container.mybutton(font: Font): View {
+    return container {
+        solidRect(100, 100, Colors.BLUE)
+        text("HELLO WORLD!", font = font)
+    }
+}
 
 suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false) {
+    //image(resourcesVfs["korge-256.png"].readBitmap()).xy(0, 0)
+    //image(resourcesVfs["korio-128.png"].readBitmap()).xy(128, 128)
+    //return@Korge
+
     val font = DefaultTtfFont.toBitmapFont(16.0)
     uiSkin = UISkin {
         this.textFont = font
     }
+    //solidRect(100, 100, Colors.RED).xy(0, 0)
+    ////solidRect(100, 100, Colors.BLUE).xy(50, 50)
+    //text("A", 32.0, font = font)
+
 
     /*
     uiBreadCrumbArray("hello", "world") {
@@ -28,14 +43,27 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
     //val component = injector.get<ViewsDebuggerComponent>()
     //ktreeEditorKorge(stage, component.actions, views, BaseKorgeFileToEdit(MemoryVfsMix(mapOf("test.ktree" to "<ktree></ktree>"))["test.ktree"]), { })
 
-    val solidRect = solidRect(100, 100, Colors.RED).position(300, 300).anchor(Anchor.CENTER)
     //val grid = OrthographicGrid(20, 20)
     //renderableView() { grid.draw(ctx, 500.0, 500.0, globalMatrix) }
+    */
 
+    //deferred(deferred = false) {
+    //deferred(deferred = true) {
+    //container {
+    uiContainer {
+        //append(UIContainer(200.0, 200.0)) {
+        for (mx in 0 until 20) {
+            for (my in 0 until 20) {
+                uiButton(100.0, 32.0, "$mx,$my").xy(100 * mx, 32 * my)
+                //uiButton(100.0, 32.0, "$mx,$my").xy(100 * mx + 5, 32 * my + 5)
+                //mybutton(font).xy(100 * mx, 100 * my)
+            }
+        }
+    }
 
-
+    val solidRect = solidRect(100, 100, Colors.RED).position(300, 300).anchor(Anchor.CENTER)
     uiWindow("Properties", 300.0, 100.0) {
-        it.isCloseable = false
+        //it.isCloseable = false
         it.container.mobileBehaviour = false
         it.container.overflowRate = 0.0
         uiVerticalStack(300.0) {
@@ -58,8 +86,18 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
 
         }
     }
-    */
 
+    //text("HELLO", font = font)
+    uiContainer {
+        uiTextInput("HELLO").position(0.0, 0.0)
+        uiTextInput("WORLD").position(0.0, 32.0)
+        uiTextInput("DEMO").position(0.0, 64.0)
+        uiTextInput("TEST").position(0.0, 96.0)
+        uiTextInput("LOL").position(0.0, 128.0)
+    }
+
+
+    /*
     uiScrollable {
         uiVerticalList(object : UIVerticalList.Provider {
             override val numItems: Int = 1000
@@ -68,6 +106,7 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
             override fun getItemView(index: Int): View = UIText("HELLO WORLD $index")
         })
     }
+     */
 }
 
 private var View.rotationDeg: Double

@@ -65,3 +65,4 @@ class BonePositionTest {
         return assertEquals(a, b, "($a != $b) -- ($originalA != $originalB)")
     }
 }
+

@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
@@ -54,16 +55,17 @@ open class UIButton(
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 
 	var forcePressed = false
-    protected val rect: NinePatchEx = ninePatch(buttonNormal, width, height)
+    protected val rect: NinePatchEx = ninePatch(null, width, height)
     protected val textShadowView = text("", 16.0)
     protected val textView = text("", 16.0)
     protected val iconView = image(Bitmaps.transparent)
-    private  val textAndShadow = listOf(textView, textShadowView)
+    private val textAndShadow = fastArrayListOf(textView, textShadowView)
 	protected var bover = false
 	protected var bpressing = false
 
     override fun renderInternal(ctx: RenderContext) {
         val skin = realUiSkin
+        //println("UIButton: skin=$skin")
         rect.ninePatch = when {
             !enabled -> skin.buttonDisabled
             bpressing || forcePressed -> skin.buttonDown

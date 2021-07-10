@@ -4,7 +4,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korma.geom.Point
 
-data class MouseDragInfo(
+open class MouseDragInfo(
     val view: View,
     var dx: Double = 0.0,
     var dy: Double = 0.0,
@@ -16,8 +16,11 @@ data class MouseDragInfo(
     lateinit var mouseEvents: MouseEvents
     val elapsed: TimeSpan get() = time - startTime
 
-    val localDX get() = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
-    val localDY get() = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
+    val localDX get() = localDX(view)
+    val localDY get() = localDY(view)
+
+    fun localDX(view: View) = view.parent?.globalToLocalDX(0.0, 0.0, dx, dy) ?: dx
+    fun localDY(view: View) = view.parent?.globalToLocalDY(0.0, 0.0, dx, dy) ?: dy
 
     private var lastDx: Double = Double.NaN
     private var lastDy: Double = Double.NaN
@@ -51,7 +54,15 @@ data class MouseDragInfo(
     }
 }
 
-fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback: Views.(MouseDragInfo) -> Unit): T {
+enum class MouseDragState {
+    START, DRAG, END;
+
+    val isDrag get() = this == DRAG
+    val isStart get() = this == START
+    val isEnd get() = this == END
+}
+
+fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, info: MouseDragInfo = MouseDragInfo(this), callback: Views.(MouseDragInfo) -> Unit): T {
     var dragging = false
     var sx = 0.0
     var sy = 0.0
@@ -59,63 +70,65 @@ fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, callback
     var cy = 0.0
     val view = this
 
-    val info = MouseDragInfo(view)
     val mousePos = Point()
 
     fun views() = view.stage!!.views
 
     fun updateMouse() {
         val views = views()
-        mousePos.setTo(
-            views.nativeMouseX,
-            views.nativeMouseY
-        )
+        //println("views.globalMouse=${views.globalMouseXY}, views.nativeMouse=${views.nativeMouseXY}")
+        //mousePos.copyFrom(views.globalMouseXY)
+        mousePos.copyFrom(views.nativeMouseXY)
+    }
+
+    fun handle(it: MouseEvents, state: MouseDragState) {
+        if (state != MouseDragState.START && !dragging) return
+        updateMouse()
+        info.mouseEvents = it
+        val px = mousePos.x
+        val py = mousePos.y
+        when (state) {
+            MouseDragState.START -> {
+                dragging = true
+                sx = px
+                sy = py
+                info.reset()
+            }
+            MouseDragState.END -> {
+                dragging = false
+            }
+        }
+        cx = mousePos.x
+        cy = mousePos.y
+        val dx = cx - sx
+        val dy = cy - sy
+        callback(views(), info.set(dx, dy, state.isStart, state.isEnd, timeProvider.now()))
     }
 
     this.mouse {
-        onDown {
-            updateMouse()
-            dragging = true
-            sx = mousePos.x
-            sy = mousePos.y
-            info.reset()
-            info.mouseEvents = it
-            callback(views(), info.set(0.0, 0.0, true, false, timeProvider.now()))
-        }
-        onUpAnywhere {
-            if (dragging) {
-                updateMouse()
-                dragging = false
-                cx = mousePos.x
-                cy = mousePos.y
-                info.mouseEvents = it
-                callback(views(), info.set(cx - sx, cy - sy, false, true, timeProvider.now()))
-            }
-        }
-        onMoveAnywhere {
-            if (dragging) {
-                updateMouse()
-                cx = mousePos.x
-                cy = mousePos.y
-                info.mouseEvents = it
-                callback(views(), info.set(cx - sx, cy - sy, false, false, timeProvider.now()))
-            }
-        }
+        onDown { handle(it, MouseDragState.START) }
+        onUpAnywhere { handle(it, MouseDragState.END) }
+        onMoveAnywhere { handle(it, MouseDragState.DRAG) }
     }
     return this
 }
 
-fun <T : View> T.draggable(selector: View = this, onDrag: ((MouseDragInfo) -> Unit)? = null): T {
+open class DraggableInfo(view: View) : MouseDragInfo(view) {
+    var viewStartX: Double = 0.0
+    var viewStartY: Double = 0.0
+}
+
+fun <T : View> T.draggable(selector: View = this, onDrag: ((DraggableInfo) -> Unit)? = null): T {
     val view = this
-    var sx = 0.0
-    var sy = 0.0
-    selector.onMouseDrag { info ->
+    val info = DraggableInfo(view)
+    selector.onMouseDrag(info = info) {
         if (info.start) {
-            sx = view.x
-            sy = view.y
+            info.viewStartX = view.x
+            info.viewStartY = view.y
         }
-        view.x = sx + info.localDX
-        view.y = sy + info.localDY
+        //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
+        view.x = info.viewStartX + info.localDX(view)
+        view.y = info.viewStartY + info.localDY(view)
         onDrag?.invoke(info)
         //println("DRAG: $dx, $dy, $start, $end")
     }

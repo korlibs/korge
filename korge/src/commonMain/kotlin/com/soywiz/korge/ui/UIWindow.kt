@@ -5,6 +5,7 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -21,7 +22,7 @@ inline fun Container.uiWindow(
 ): UIWindow = UIWindow(title, width, height).addTo(this).apply(configure).also { block(it.container.container, it) }
 
 @KorgeExperimental
-class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : UIView(width, height) {
+class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : UIContainer(width, height) {
     private val titleHeight = 32.0
     private val buttonSeparation = 3.0
     val isFocused get() = this.index == (parent?.numChildren ?: 0) -1
@@ -120,6 +121,11 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     )
 
     private val scaleHandlers = anchors.map { ScaleHandler(this, it) }
+    override fun renderInternal(ctx: RenderContext) {
+        ctx.flush()
+        super.renderInternal(ctx)
+        ctx.flush()
+    }
 
     /*
     private val scaleHandlerTop = solidRect(10.0, 10.0, Colors.TRANSPARENT_BLACK) {

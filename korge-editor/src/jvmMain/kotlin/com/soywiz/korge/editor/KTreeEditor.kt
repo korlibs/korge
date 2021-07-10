@@ -414,6 +414,7 @@ suspend fun ktreeEditorKorge(
             //println("${it.scrollDeltaX}, ${it.scrollDeltaY}, ${it.scrollDeltaZ}")
             val multiplier = if (it.isShiftDown) 4 else 1
             val delta = (32.0 * multiplier).withSign(it.scrollDeltaY)
+            //val delta = it.scrollDeltaYPixels * multiplier
             when {
                 it.isAltDown -> camera.cameraX += delta
                 it.isCtrlDown -> camera.cameraY += delta

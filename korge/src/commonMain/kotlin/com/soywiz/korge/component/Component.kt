@@ -424,54 +424,54 @@ class Components {
     }
 
     inline fun <reified T : Component> getOrCreateComponent(view: BaseView, clazz: KClass<out T>, gen: (BaseView) -> T): T =
-        getOrCreateComponent(view, eother, clazz, gen) as T
+        getOrCreateComponent(view, eother, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : MouseComponent> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, emouse, clazz, gen) as T
+    ): T = getOrCreateComponent(view, emouse, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : KeyComponent> getOrCreateComponent(view: BaseView, clazz: KClass<out T>, gen: (BaseView) -> T): T =
-        getOrCreateComponent(view, ekey, clazz, gen) as T
+        getOrCreateComponent(view, ekey, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : GamepadComponent> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, egamepad, clazz, gen) as T
+    ): T = getOrCreateComponent(view, egamepad, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : TouchComponent> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, etouch, clazz, gen) as T
+    ): T = getOrCreateComponent(view, etouch, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : EventComponent> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, eevent, clazz, gen) as T
+    ): T = getOrCreateComponent(view, eevent, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : UpdateComponentWithViews> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, eupdateWV, clazz, gen) as T
+    ): T = getOrCreateComponent(view, eupdateWV, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : UpdateComponent> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, eupdate, clazz, gen) as T
+    ): T = getOrCreateComponent(view, eupdate, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : ResizeComponent> getOrCreateComponent(
         view: BaseView,
         clazz: KClass<out T>,
         gen: (BaseView) -> T
-    ): T = getOrCreateComponent(view, eresize, clazz, gen) as T
+    ): T = getOrCreateComponent(view, eresize, clazz, gen).fastCastTo<T>()
 
-    inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = findFirstComponentOfType(eupdate, T::class) as T?
+    inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = findFirstComponentOfType(eupdate, T::class).fastCastTo<T?>()
 
     fun <T : Component> findFirstComponentOfType(array: FastArrayList<T>, clazz: KClass<out T>): T? {
         array.fastForEach { if (it::class == clazz) return it }

@@ -173,7 +173,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
             var startScrollBarPos = 0.0
             info.view.onMouseDrag {
                 if (!info.shouldBeVisible) return@onMouseDrag
-                val dxy = if (info.isHorizontal) it.dx else it.dy
+                val dxy = if (info.isHorizontal) it.localDX else it.localDY
                 if (it.start) {
                     startScrollBarPos = info.scrollBarPos
                 }
