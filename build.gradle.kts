@@ -878,6 +878,14 @@ subprojects {
                     dependsOn("publishToMavenLocal")
                 }
             }
+
+            val publishJsLocal by creating(Task::class) {
+                if (findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
+                    dependsOn("publishJsPublicationToMavenLocal")
+                    //dependsOn("publishMetadataPublicationToMavenLocal")
+                    dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
+                }
+            }
         }
         tasks.withType(Test::class.java).all {
             testLogging {

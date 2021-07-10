@@ -49,7 +49,18 @@ fun Project.configureJavaScript() {
         }
 	}
 
+    // @TODO: jsBrowserProductionRun is much faster than jsBrowserDevelopmentRun at runtime. Why is that??
     val runJs = project.addTask<Task>(name = "runJs") { task ->
+        task.group = GROUP_KORGE_RUN
+        task.dependsOn("jsBrowserProductionRun")
+    }
+
+    val runJsRelease = project.addTask<Task>(name = "runJsRelease") { task ->
+        task.group = GROUP_KORGE_RUN
+        task.dependsOn("jsBrowserProductionRun")
+    }
+
+    val runJsDebug = project.addTask<Task>(name = "runJsDebug") { task ->
         task.group = GROUP_KORGE_RUN
         task.dependsOn("jsBrowserDevelopmentRun")
     }
