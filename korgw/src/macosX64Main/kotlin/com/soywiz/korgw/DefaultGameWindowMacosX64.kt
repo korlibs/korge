@@ -456,6 +456,7 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
         //window.setFrameTopLeftPoint()
     }
 
+    // @TODO: https://developer.apple.com/documentation/appkit/nsworkspace/1533463-openurl
     override suspend fun browse(url: URL) {
         super.browse(url)
     }
