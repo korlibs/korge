@@ -193,8 +193,9 @@ class WindowsGameWindow : EventLoopGameWindow() {
         Unit
     }
 
+    // https://stackoverflow.com/questions/3037088/how-to-open-the-default-web-browser-in-windows-in-c
     override suspend fun browse(url: URL) {
-        super.browse(url)
+        ShellExecute(NULL, "open", url.fullUrl, NULL, NULL, SW_SHOWNORMAL);
     }
 
     override suspend fun alert(message: String) {
