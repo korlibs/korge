@@ -99,7 +99,8 @@ interface AsyncRAOutputStream {
 fun AsyncBaseStream.toAsyncStream(): AsyncStream {
 	val input = this as? AsyncInputStream
 	val output = this as? AsyncOutputStream
-	val rlen = this as? AsyncLengthStream
+    val rlenSet = this as? AsyncLengthStream
+	val rlenGet = this as? AsyncGetLengthStream
 	val closeable = this
 
 	return object : AsyncStreamBase() {
@@ -125,15 +126,17 @@ fun AsyncBaseStream.toAsyncStream(): AsyncStream {
 
 		private fun checkPosition(position: Long) {
 			if (position != expectedPosition) {
-				throw UnsupportedOperationException("Seeking not supported!")
+				throw SeekNotSupportedException()
 			}
 		}
 
-		override suspend fun setLength(value: Long) = rlen?.setLength(value) ?: throw UnsupportedOperationException()
-		override suspend fun getLength(): Long = rlen?.getLength() ?: throw UnsupportedOperationException()
+		override suspend fun setLength(value: Long) = rlenSet?.setLength(value) ?: throw UnsupportedOperationException()
+		override suspend fun getLength(): Long = rlenGet?.getLength() ?: throw UnsupportedOperationException()
 		override suspend fun close() = closeable.close()
 	}.toAsyncStream()
 }
+
+open class SeekNotSupportedException(message: String = "Seeking not supported!") : UnsupportedOperationException(message)
 
 open class AsyncStreamBase : AsyncCloseable, AsyncRAInputStream, AsyncRAOutputStream, AsyncLengthStream {
 	//var refCount = 0

@@ -125,6 +125,28 @@ class ZipVfsTest {
 		}
 	}
 
+    @Test
+    fun testCopy() = suspendTestNoBrowser {
+        val data = MemoryVfs()
+
+        resourcesVfs["compressedHello.zip"].openAsZip { helloZip ->
+            helloZip["hello/compressedWorld.txt"].copyTo(data["out.txt"])
+        }
+        assertEquals(
+            "HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO WORLD!",
+            data["out.txt"].readString()
+        )
+    }
+
+    @Test
+    fun testSeekNotAvailable() = suspendTestNoBrowser {
+        resourcesVfs["compressedHello.zip"].openAsZip { helloZip ->
+            val stream = helloZip["hello/compressedWorld.txt"].open()
+            stream.setPosition(10L)
+            assertFailsWith(SeekNotSupportedException::class) { stream.read() }
+        }
+    }
+
 	//@Test
 	//fun testZip1() = suspendTestNoBrowser {
 	//	val mem = MemoryVfs()

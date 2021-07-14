@@ -60,15 +60,14 @@ suspend fun ZipVfs(
                             8 -> Deflate
                             else -> TODO("Not implemented zip method ${entry.compressionMethod}")
                         }
+                        compressedData.uncompressed(method).withLength(uncompressedSize.toLong()).toAsyncStream()
                         //val compressed = compressedData.uncompressed(method).readAll()
-                        val compressed = compressedData.readAll().uncompress(method)
-
-                        if (crc != 0) {
-                            val computedCrc = CRC32.compute(compressed)
-                            if (computedCrc != crc) error("Uncompressed file crc doesn't match: expected=${crc.hex}, actual=${computedCrc.hex}")
-                        }
-
-                        compressed.openAsync()
+                        //val compressed = compressedData.readAll().uncompress(method)
+                        //if (crc != 0) {
+                        //    val computedCrc = CRC32.compute(compressed)
+                        //    if (computedCrc != crc) error("Uncompressed file crc doesn't match: expected=${crc.hex}, actual=${computedCrc.hex}")
+                        //}
+                        //compressed.openAsync()
                     }
                 }
             }
