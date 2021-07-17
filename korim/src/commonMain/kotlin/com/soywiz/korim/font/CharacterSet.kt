@@ -11,6 +11,7 @@ class CharacterSet(val codePoints: IntArray) {
         val NUMBERS = CharacterSet(('0'..'9').joinToString(""))
         val PUNCTUATION = CharacterSet("!\"#\$%&'()*+,-./:;<=>?@[\\]^_`{|}")
         val LATIN_BASIC = CharacterSet("çÇ ñÑ åÅ æÆ ÿ ¢£¥Pª°¿¬½¼¡«»ßµø±÷°·.² áéíóúäëïöüàèìòùâêîôû ÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÂÊÎÔÛ")
+        val CYRILLIC = CharacterSet("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
         val LATIN_ALL = SPACE + UPPERCASE + LOWERCASE + NUMBERS + PUNCTUATION + LATIN_BASIC
     }
 }
