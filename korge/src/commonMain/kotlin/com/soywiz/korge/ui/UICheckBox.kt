@@ -58,7 +58,10 @@ open class UICheckBox(
         textView.setTextBounds(textBounds)
 
         background.size(width, height)
-        box.ninePatch = buttonNormal
+        box.ninePatch = when {
+            this@UICheckBox.over -> buttonOver
+            else -> buttonNormal
+        }
         box.size(height, height)
         textBounds.setTo(0.0, 0.0, width - height - 8.0, height)
 
