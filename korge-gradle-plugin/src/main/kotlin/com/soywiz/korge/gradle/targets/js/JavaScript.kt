@@ -106,8 +106,7 @@ fun Project.configureJavaScript() {
                 groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
                     mapOf(
                         "OUTPUT" to jsFile,
-                        //"TITLE" to korge.name,
-                        "TITLE" to "TODO",
+                        "TITLE" to korge.title ?: korge.name,
                         "CUSTOM_CSS" to customCss,
                         "CUSTOM_HTML_HEAD" to customHtmlHead,
                         "CUSTOM_HTML_BODY" to customHtmlBody

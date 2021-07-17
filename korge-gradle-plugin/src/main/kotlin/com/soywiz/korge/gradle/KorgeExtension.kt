@@ -258,6 +258,7 @@ class KorgeExtension(val project: Project) {
 	var exeBaseName: String = "app"
 
 	var name: String = "unnamed"
+    var title: String? = null
 	var description: String = "description"
 	var orientation: Orientation = Orientation.DEFAULT
 
