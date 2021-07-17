@@ -94,4 +94,10 @@ class XmlTest {
         assertEquals("<xml><![CDATA[<&>]]></xml>", Xml("<xml><![CDATA[<&>]]></xml>").outerXml)
         assertEquals("<xml>&lt;&amp;&gt;</xml>", Xml("<xml>&lt;&amp;&gt;</xml>").outerXml)
     }
+
+    @Test
+    fun testNAmedDescendant() {
+        val xml = Xml("<xml><a><b/><b/></a><c><b/><b/></c></xml>")
+        assertEquals(4, xml.descendants("b").count())
+    }
 }

@@ -17,7 +17,7 @@ data class Xml(
 
 	val attributesLC = attributes.toCaseInsensitiveMap()
 	val nameLC: String = name.toLowerCase().trim()
-	val descendants: Iterable<Xml> get() = allChildren.flatMap { it.descendants + it }
+	val descendants: Sequence<Xml> get() = allChildren.asSequence().flatMap { it.descendants + it }
 	val allChildrenNoComments get() = allChildren.filter { !it.isComment }
 	val allNodeChildren get() = allChildren.filter { it.isNode }
 
@@ -329,13 +329,23 @@ fun Iterable<Xml>.str(name: String, defaultValue: String = ""): String = this.fi
 fun Iterable<Xml>.children(name: String): Iterable<Xml> = this.flatMap { it.children(name) }
 val Iterable<Xml>.allChildren: Iterable<Xml> get() = this.flatMap(Xml::allChildren)
 val Iterable<Xml>.allNodeChildren: Iterable<Xml> get() = this.flatMap(Xml::allNodeChildren)
-
 val Iterable<Xml>.firstText: String? get() = this.firstOrNull()?.text
 val Iterable<Xml>.text: String get() = this.joinToString("") { it.text }
-
 operator fun Iterable<Xml>.get(name: String): Iterable<Xml> = this.children(name)
+
+fun Sequence<Xml>.str(name: String, defaultValue: String = ""): String = this.first().attributes[name] ?: defaultValue
+fun Sequence<Xml>.children(name: String): Sequence<Xml> = this.flatMap { it.children(name) }
+val Sequence<Xml>.allChildren: Sequence<Xml> get() = this.flatMap(Xml::allChildren)
+val Sequence<Xml>.allNodeChildren: Sequence<Xml> get() = this.flatMap(Xml::allNodeChildren)
+val Sequence<Xml>.firstText: String? get() = this.firstOrNull()?.text
+val Sequence<Xml>.text: String get() = this.joinToString("") { it.text }
+operator fun Sequence<Xml>.get(name: String): Sequence<Xml> = this.children(name)
+
 fun String.toXml(): Xml = Xml.parse(this)
 
 fun Xml(str: String): Xml = Xml.parse(str)
+
+fun Xml.descendants(name: String) = descendants.filter { it.name.equals(name, ignoreCase = true) }
+fun Xml.firstDescendant(name: String) = descendants(name).firstOrNull()
 
 suspend fun VfsFile.readXml(): Xml = Xml(this.readString())
