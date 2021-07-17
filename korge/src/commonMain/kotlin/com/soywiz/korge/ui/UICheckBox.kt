@@ -1,5 +1,6 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
@@ -25,15 +26,30 @@ open class UICheckBox(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
+    text: String = "CheckBox",
+) : UIBaseCheckBox<UICheckBox>(width, height, checked, text) {
+    object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
+        add(UICheckBox::text)
+        add(UICheckBox::checked)
+        add(UICheckBox::width)
+        add(UICheckBox::height)
+    })
+}
+
+open class UIBaseCheckBox<T>(
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
+    checked: Boolean = false,
     var text: String = "CheckBox",
 ) : UIView(width, height), ViewLeaf {
-    val onChange = Signal<UICheckBox>()
+    val thisAsT get() = this.fastCastTo<T>()
+    val onChange = Signal<T>()
 
-    var checked: Boolean = checked
+    open var checked: Boolean = checked
         get() = field
         set(value) {
             field = value
-            onChange(this)
+            onChange(thisAsT)
         }
 
     private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
@@ -58,10 +74,7 @@ open class UICheckBox(
         textView.setTextBounds(textBounds)
 
         background.size(width, height)
-        box.ninePatch = when {
-            this@UICheckBox.over -> buttonOver
-            else -> buttonNormal
-        }
+        box.ninePatch = getNinePatch(this@UIBaseCheckBox.over)
         box.size(height, height)
         textBounds.setTo(0.0, 0.0, width - height - 8.0, height)
 
@@ -70,26 +83,25 @@ open class UICheckBox(
         super.renderInternal(ctx)
     }
 
+    open fun getNinePatch(over: Boolean): NinePatchBmpSlice {
+        return when {
+            over -> buttonOver
+            else -> buttonNormal
+        }
+    }
+
     init {
         mouse {
-            onOver {
-                this@UICheckBox.over = true
-            }
-            onOut {
-                this@UICheckBox.over = false
-            }
-            onDown {
-                this@UICheckBox.pressing = true
-            }
-            onUpAnywhere {
-                this@UICheckBox.pressing = false
-            }
-            onClick {
-                if (!it.views.editingMode) {
-                    this@UICheckBox.checked = !this@UICheckBox.checked
-                }
-            }
+            onOver { this@UIBaseCheckBox.over = true }
+            onOut { this@UIBaseCheckBox.over = false }
+            onDown { this@UIBaseCheckBox.pressing = true }
+            onUpAnywhere { this@UIBaseCheckBox.pressing = false }
+            onClick { if (!it.views.editingMode) this@UIBaseCheckBox.onComponentClick() }
         }
+    }
+
+    protected open fun onComponentClick() {
+        this@UIBaseCheckBox.checked = !this@UIBaseCheckBox.checked
     }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
@@ -99,11 +111,4 @@ open class UICheckBox(
         }
         super.buildDebugComponent(views, container)
     }
-
-    object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
-        add(UICheckBox::text)
-        add(UICheckBox::checked)
-        add(UICheckBox::width)
-        add(UICheckBox::height)
-    })
 }

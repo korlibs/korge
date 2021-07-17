@@ -95,6 +95,12 @@ var UISkinable.buttonNormal by UISkinableProperty { uiSkinBitmap.sliceWithSize(0
 var UISkinable.buttonOver by UISkinableProperty { uiSkinBitmap.sliceWithSize(64, 0, 64, 64).asNinePatchSimple(16, 16, 48, 48) }
 var UISkinable.buttonDown by UISkinableProperty { uiSkinBitmap.sliceWithSize(128, 0, 64, 64).asNinePatchSimple(16, 16, 48, 48) }
 var UISkinable.buttonDisabled by UISkinableProperty { uiSkinBitmap.sliceWithSize(192, 0, 64, 64).asNinePatchSimple(16, 16, 48, 48) }
+
+var UISkinable.radioNormal by UISkinableProperty { uiSkinBitmap.sliceWithSize(256 + 0, 0, 64, 64).asNinePatchSimple(0, 0, 64, 64) }
+var UISkinable.radioOver by UISkinableProperty { uiSkinBitmap.sliceWithSize(256 + 64, 0, 64, 64).asNinePatchSimple(0, 0, 64, 64) }
+var UISkinable.radioDown by UISkinableProperty { uiSkinBitmap.sliceWithSize(256 + 128, 0, 64, 64).asNinePatchSimple(0, 0, 64, 64) }
+var UISkinable.radioDisabled by UISkinableProperty { uiSkinBitmap.sliceWithSize(256 + 192, 0, 64, 64).asNinePatchSimple(0, 0, 64, 64) }
+
 var UISkinable.buttonBackColor by UISkinableProperty { Colors.DARKGREY }
 var UISkinable.buttonTextAlignment by UISkinableProperty { TextAlignment.MIDDLE_CENTER }
 
@@ -153,9 +159,11 @@ val DefaultUIVectorFont get() = DefaultTtfFont
 @SharedImmutable
 val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //Bitmap32(64 * 3, 64).context2d {
-    NativeImage(256, 512).context2d {
-        for (n in 0 until 4) {
-            drawImage(buildDefaultButton(UiSkinType(n)), n * 64, 0)
+    NativeImage(512, 512).context2d {
+        for (kind in listOf(UiSkinKind.BUTTON, UiSkinKind.RADIO)) {
+            for (n in 0 until 4) {
+                drawImage(buildDefaultButton(UiSkinType(n), kind), (kind.id * 256) + (n * 64), 0)
+            }
         }
         for (n in 0 until 5) {
             for (enabled in listOf(false, true)) {
@@ -170,6 +178,10 @@ val DEFAULT_UI_SKIN_IMG: Bitmap32 by lazy {
     //).toBMP32()
 }
 
+enum class UiSkinKind(val id: Int) {
+    BUTTON(0), RADIO(1)
+}
+
 inline class UiSkinType(val index: Int) {
     companion object {
         val NORMAL = UiSkinType(0)
@@ -179,7 +191,7 @@ inline class UiSkinType(val index: Int) {
     }
 }
 
-private fun buildDefaultButton(index: UiSkinType): Bitmap {
+private fun buildDefaultButton(index: UiSkinType, kind: UiSkinKind): Bitmap {
     return NativeImage(64, 64).context2d {
         val gradient: Paint = when (index) {
             UiSkinType.NORMAL -> ColorPaint(ColorPaint(Colors.DIMGREY))//createLinearGradient(0, 0, 0, 64).addColorStop(0.0, Colors["#F9F9F9"]).addColorStop(1.0, Colors["#6C6C6C"]) // Out
@@ -198,7 +210,10 @@ private fun buildDefaultButton(index: UiSkinType): Bitmap {
         }
         fill(gradient) {
             stroke(border, lineWidth = 8.0) {
-                roundRect(4, 4, 64 - 4 * 2, 64 - 4 * 2, 6, 6)
+                when (kind) {
+                    UiSkinKind.RADIO -> circle(32.0, 32.0, 28.0)
+                    UiSkinKind.BUTTON -> roundRect(4, 4, 64 - 4 * 2, 64 - 4 * 2, 6, 6)
+                }
             }
         }
     }
