@@ -357,13 +357,13 @@ fun SyncStream.readSlice(length: Long): SyncStream = sliceWithSize(position, len
 fun SyncStream.readStream(length: Int): SyncStream = readSlice(length.toLong())
 fun SyncStream.readStream(length: Long): SyncStream = readSlice(length)
 
-fun SyncInputStream.readStringz(charset: Charset = UTF8): String {
+fun SyncInputStream.readStringz(charset: Charset = UTF8, zero: Byte = 0): String {
 	val buf = ByteArrayBuilder()
 	return bytesTempPool.alloc { temp ->
 		while (true) {
 			val read = read(temp, 0, 1)
 			if (read <= 0) break
-			if (temp[0] == 0.toByte()) break
+			if (temp[0] == zero.toByte()) break
 			buf.append(temp[0].toByte())
 		}
 		buf.toByteArray().toString(charset)
@@ -413,6 +413,7 @@ fun SyncOutputStream.writeBytes(data: ByteArray): Unit = write(data, 0, data.siz
 fun SyncOutputStream.writeBytes(data: ByteArray, position: Int, length: Int): Unit = write(data, position, length)
 
 val SyncStream.eof: Boolean get () = this.available <= 0L
+val SyncStream.hasMore: Boolean get () = this.available > 0L
 
 fun SyncInputStream.readU8(): Int = read()
 fun SyncInputStream.readS8(): Int = read().toByte().toInt()

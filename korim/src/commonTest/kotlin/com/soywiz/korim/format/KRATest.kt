@@ -12,7 +12,7 @@ class KRATest {
     fun kraTest() = suspendTestNoBrowser {
         val output = resourcesVfs["krita1.kra"].readBitmapNoNative(formats)
         val expected = resourcesVfs["krita1.kra.png"].readBitmapNoNative(formats)
-        //showImageAndWait(output)
+        //output.showImageAndWait()
         assertEquals(0, output.matchContentsDistinctCount(expected))
     }
 }
