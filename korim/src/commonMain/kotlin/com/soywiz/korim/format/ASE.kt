@@ -42,13 +42,14 @@ object ASE : ImageFormat("ase") {
 
     open class AseCell(val bmp: Bitmap, val x: Int, val y: Int, val opacity: Int, val linkedCell: AseCell? = null) : AseEntity by AseEntity()
     open class AseLayer(
+        index: Int,
         name: String,
         val flags: Int,
         val type: Int,
         val childLevel: Int,
         val blendModeInt: Int,
         val opacity: Int
-    ) : ImageLayer(name), AseEntity by AseEntity() {
+    ) : ImageLayer(index, name), AseEntity by AseEntity() {
         val isVisible = flags.hasBitSet(0)
         val isEditable = flags.hasBitSet(1)
         val lockMovement = flags.hasBitSet(2)
@@ -183,7 +184,7 @@ object ASE : ImageFormat("ase") {
                         cs.skip(3)
                         val name = cs.readAseString()
                         //println("- layer = $name, childLevel = $childLevel, blendMode = $blendMode")
-                        val layer = AseLayer(name, flags, type, childLevel, blendModeInt, opacity)
+                        val layer = AseLayer(image.layers.size, name, flags, type, childLevel, blendModeInt, opacity)
                         image.layers.add(layer)
                         lastEntity = layer
                     }
@@ -302,7 +303,7 @@ object ASE : ImageFormat("ase") {
         }
 
         val animations = image.tags.map {
-            val framesRange = frames.slice(it.fromFrame.clamp(0, frames.size) until it.toFrame.clamp(0, frames.size))
+            val framesRange = frames.slice(it.fromFrame.clamp(0, frames.size) .. it.toFrame.clamp(0, frames.size - 1))
 
             ImageAnimation(framesRange, it.direction, it.tagName)
         }

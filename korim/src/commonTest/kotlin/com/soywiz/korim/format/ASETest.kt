@@ -10,7 +10,7 @@ class ASETest {
     @Test
     fun test() = suspendTest({ !OS.isJs }) {
         //val image = resourcesVfs["simple2.ase"].readImageData(ASE)
-        val image = resourcesVfs["simple.ase"].readImageData(ASE)
+        val image = resourcesVfs["simple.ase"].readImageDataWithAtlas(ASE)
         //val image = resourcesVfs["simple3.ase"].readImageData(ASE)
         val packed = image.packInAtlas()
         //for (img in image.frames.flatMap { it.layerData }.map { it.bitmap }) img.showImageAndWait()

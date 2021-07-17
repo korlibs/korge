@@ -7,11 +7,16 @@ import com.soywiz.korma.geom.*
 
 open class ImageFrame @Deprecated("") constructor(
     val index: Int,
+    @Deprecated("")
 	val slice: BmpSlice,
 	val time: TimeSpan = 0.seconds,
+    @Deprecated("")
 	val targetX: Int = 0,
+    @Deprecated("")
 	val targetY: Int = 0,
+    @Deprecated("")
 	val main: Boolean = true,
+    @Deprecated("")
     val includeInAtlas: Boolean = true,
     val layerData: List<ImageFrameLayer> = emptyList()
 ) : Extra by Extra.Mixin() {

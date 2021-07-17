@@ -9,7 +9,7 @@ open class ImageData(
     val loopCount: Int = 0,
     val width: Int = frames.firstOrNull()?.width ?: 1,
     val height: Int = frames.firstOrNull()?.height ?: 1,
-    val layers: List<ImageLayer>? = null,
+    val layers: List<ImageLayer> = fastArrayListOf(),
     val animations: List<ImageAnimation> = fastArrayListOf(),
 ) : Extra by Extra.Mixin() {
     val defaultAnimation = ImageAnimation(frames, ImageAnimation.Direction.FORWARD, "default")

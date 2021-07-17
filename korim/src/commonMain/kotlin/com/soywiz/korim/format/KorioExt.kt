@@ -73,6 +73,9 @@ suspend fun VfsFile.readBitmapInfo(
 suspend fun VfsFile.readImageData(formats: ImageFormat): ImageData =
 	formats.readImage(this.readAsSyncStream(), ImageDecodingProps(this.baseName))
 
+suspend fun VfsFile.readImageDataWithAtlas(formats: ImageFormat): ImageData =
+    readImageData(formats).packInAtlas().image
+
 suspend fun VfsFile.readBitmapListNoNative(formats: ImageFormat): List<Bitmap> =
 	this.readImageData(formats).frames.map { it.bitmap }
 
