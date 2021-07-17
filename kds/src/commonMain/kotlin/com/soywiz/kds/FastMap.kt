@@ -1,5 +1,7 @@
 package com.soywiz.kds
 
+import kotlin.jvm.*
+
 expect class FastIntMap<T>
 
 expect fun <T> FastIntMap(): FastIntMap<T>
@@ -15,6 +17,14 @@ expect fun <T> FastIntMap<T>.clear()
 fun <T> FastIntMap<T>.values(): List<T> = this.keys().map { this[it] } as List<T>
 val <T> FastIntMap<T>.keys: List<Int> get() = keys()
 val <T> FastIntMap<T>.values: List<T> get() = values()
+
+fun <T> FastIntMap<T>.toLinkedMap(): Map<Int, T> {
+    val out = linkedHashMapOf<Int, T>()
+    fastForEachNullable { key, value ->
+        if (value != null) out[key] = value
+    }
+    return out
+}
 
 expect inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit): Unit
 

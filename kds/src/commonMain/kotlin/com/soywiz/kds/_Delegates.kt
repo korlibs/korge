@@ -12,6 +12,10 @@ interface Extra {
 
     @Suppress("UNCHECKED_CAST", "NOTHING_TO_INLINE")
 
+    companion object {
+        operator fun invoke() = Mixin()
+    }
+
     class Property<T : Any?>(val name: String? = null, val defaultGen: () -> T) {
         inline operator fun getValue(thisRef: Extra, property: KProperty<*>): T {
             val res = (thisRef.extra?.get(name ?: property.name).fastCastTo<T?>())

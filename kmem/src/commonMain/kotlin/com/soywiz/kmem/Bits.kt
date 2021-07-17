@@ -148,6 +148,8 @@ fun Int.insertScaledFF(value: Int, offset: Int, count: Int): Int = if (count == 
 infix fun Int.hasFlags(bits: Int) = (this and bits) == bits
 infix fun Int.hasBits(bits: Int) = (this and bits) == bits
 
+infix fun Int.hasBitSet(index: Int) = ((this ushr index) and 1) != 0
+
 infix fun Long.hasFlags(bits: Long) = (this and bits) == bits
 infix fun Long.hasBits(bits: Long) = (this and bits) == bits
 
