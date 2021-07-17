@@ -26,6 +26,8 @@ plugins {
     kotlin("multiplatform") version realKotlinVersion
 }
 
+val headlessTests = false
+
 val kotlinVersion: String by project
 val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 val coroutinesVersion: String by project
@@ -206,7 +208,9 @@ subprojects {
         afterEvaluate {
             val jvmTest = tasks.findByName("jvmTest")
             if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
-                jvmTest.systemProperty("java.awt.headless", "true")
+                if (headlessTests) {
+                    jvmTest.systemProperty("java.awt.headless", "true")
+                }
             }
         }
 
