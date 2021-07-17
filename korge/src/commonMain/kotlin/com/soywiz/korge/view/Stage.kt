@@ -19,6 +19,8 @@ class Stage(override val views: Views) : Container()
     , ViewsContainer
     , ResourcesContainer
 {
+    val keys get() = views.input.keys
+    val input get() = views.input
     val injector get() = views.injector
     val ag get() = views.ag
     val gameWindow get() = views.gameWindow
