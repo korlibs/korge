@@ -49,6 +49,7 @@ open class UIVerticalStack(width: Double = UI_DEFAULT_WIDTH, padding: Double = U
             it.scaledWidth = width
             y += it.height + padding
         }
+        height = y
     }
 }
 
@@ -66,6 +67,7 @@ open class UIHorizontalStack(height: Double = UI_DEFAULT_HEIGHT, padding: Double
             it.scaledHeight = height
             x += it.width + padding
         }
+        width = y
     }
 }
 

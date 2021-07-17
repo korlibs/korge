@@ -11,4 +11,4 @@ inline fun Container.uiSpacing(
 open class UISpacing(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
-) : UIView(width, height)
+) : UIView(width, height), ViewLeaf

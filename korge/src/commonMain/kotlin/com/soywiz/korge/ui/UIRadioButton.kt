@@ -1,6 +1,7 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 
 class UIRadioButtonGroup {
@@ -77,4 +78,11 @@ open class UIRadioButton(
             else -> radioNormal
         }
     }
+
+    object Serializer : KTreeSerializerExt<UIRadioButton>("UIRadioButton", UIRadioButton::class, { UIRadioButton() }, {
+        add(UIRadioButton::text)
+        add(UIRadioButton::checked)
+        add(UIRadioButton::width)
+        add(UIRadioButton::height)
+    })
 }
