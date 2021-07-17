@@ -70,7 +70,10 @@ fun Bitmap.toUri(): String {
 
 fun NativeImageOrBitmap32(width: Int, height: Int, native: Boolean = true, premultiplied: Boolean? = null) =
     if (native) NativeImage(width, height, premultiplied) else Bitmap32(width, height, premultiplied = premultiplied ?: true)
-fun NativeImage(width: Int, height: Int, premultiplied: Boolean? = null) = nativeImageFormatProvider.create(width, height, premultiplied)
+fun NativeImage(width: Int, height: Int, premultiplied: Boolean? = null) =
+    nativeImageFormatProvider.create(width, height, premultiplied)
+fun NativeImage(width: Int, height: Int, pixels: RgbaArray, premultiplied: Boolean? = null): NativeImage =
+    nativeImageFormatProvider.create(width, height, pixels, premultiplied)
 
 fun NativeImage(
 	width: Int,

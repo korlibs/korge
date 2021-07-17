@@ -28,6 +28,11 @@ abstract class NativeImageFormatProvider {
 
     abstract suspend fun display(bitmap: Bitmap, kind: Int): Unit
     abstract fun create(width: Int, height: Int, premultiplied: Boolean? = null): NativeImage
+    open fun create(width: Int, height: Int, pixels: RgbaArray, premultiplied: Boolean? = null): NativeImage {
+        val image = create(width, height, premultiplied)
+        image.writePixelsUnsafe(0, 0, width, height, pixels)
+        return image
+    }
     //open fun create(width: Int, height: Int, premultiplied: Boolean): NativeImage = create(width, height)
 	open fun copy(bmp: Bitmap): NativeImage = create(bmp.width, bmp.height, bmp.premultiplied).apply { context2d { drawImage(bmp, 0, 0) } }
 	open fun mipmap(bmp: Bitmap, levels: Int): NativeImage = bmp.toBMP32().mipmap(levels).ensureNative()

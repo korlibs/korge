@@ -197,6 +197,12 @@ abstract class Bitmap(
     }
 }
 
+fun Bitmap.readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int): RgbaArray {
+    val out = RgbaArray(width * height)
+    readPixelsUnsafe(x, y, width, height, out, 0)
+    return out
+}
+
 fun <T : Bitmap> T.createWithThisFormatTyped(width: Int, height: Int): T = this.createWithThisFormat(width, height).fastCastTo<T>()
 
 fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {

@@ -56,6 +56,7 @@ abstract class BmpSlice(
     val top: Int get() = bounds.top
     val width: Int get() = bounds.width
     val height: Int get() = bounds.height
+    val area: Int get() = width * height
     val right get() = bounds.right
     val bottom get() = bounds.bottom
 

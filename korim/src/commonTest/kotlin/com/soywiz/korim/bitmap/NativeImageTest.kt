@@ -34,4 +34,29 @@ class NativeImageTest {
         image.writePixelsUnsafe(0, 0, 0, 0, array, 0)
         image.readPixelsUnsafe(0, 0, 0, 0, array, 0)
     }
+
+    @Test
+    fun testFlipNativeImage() {
+        val pixels = RgbaArray(intArrayOf(
+            Colors.RED.value, Colors.GREEN.value,
+            Colors.BLUE.value, Colors.PINK.value,
+        ))
+
+        val original = NativeImage(2, 2, pixels)
+        val flippedX = NativeImage(2, 2, pixels).flipX()
+        val flippedY = NativeImage(2, 2, pixels).flipY()
+
+        assertEquals(
+            "#ff0000,#00ff00,#0000ff,#ffc0cb",
+            original.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+        )
+        assertEquals(
+            "#00ff00,#ff0000,#ffc0cb,#0000ff",
+            flippedX.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+        )
+        assertEquals(
+            "#0000ff,#ffc0cb,#ff0000,#00ff00",
+            flippedY.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+        )
+    }
 }

@@ -309,6 +309,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         BlendMode.SATURATION -> "saturation"
         BlendMode.COLOR -> "color"
         BlendMode.LUMINOSITY -> "luminosity"
+        else -> this.name.lowercase()
     }
 
     fun CompositeOperation.toJsStr() = when (this) {
