@@ -52,11 +52,10 @@ class HttpClientBrowserJs : HttpClient() {
 		}
 
 		for (header in headers) {
-			val hnname = header.first.toLowerCase().trim()
-			when (hnname) {
-				"connection", Http.Headers.ContentLength -> Unit // Refused to set unsafe header
-				else -> xhr.setRequestHeader(header.first, header.second)
-			}
+			val hnname = header.first.lowercase().trim()
+            if (hnname !in unsafeHeadersNormalized) {
+                xhr.setRequestHeader(header.first, header.second)
+            }
 		}
 
 		deferred.invokeOnCompletion {
@@ -72,4 +71,11 @@ class HttpClientBrowserJs : HttpClient() {
 		}
 		return deferred.await()
 	}
+
+    companion object {
+        val unsafeHeadersNormalized = setOf(
+            "connection",
+            Http.Headers.ContentLength.lowercase()
+        )
+    }
 }
