@@ -29,7 +29,8 @@ open class HttpPortable(
 
     fun createClient(): HttpClient {
         return object : HttpClient() {
-            override suspend fun requestInternal(method: Http.Method, url: String, headers: Http.Headers, content: AsyncStream?): Response {
+            override suspend fun requestInternal(method: Http.Method, url: String, headers: Http.Headers, content: AsyncStream?): Response =
+                withContext(Dispatchers.Default) { // @TODO: We should try to execute pending events from the eventloop while waiting for vsync
                 val url = URL(url)
                 val secure = url.scheme == "https"
                 //println("HTTP CLIENT: host=${url.host}, port=${url.port}, secure=$secure")
@@ -37,7 +38,11 @@ open class HttpPortable(
 
                 val rheaders = combineHeadersForHost(headers, url.host)
                 val rheaders2 = if (content != null)
-                    rheaders.withReplaceHeaders(Http.Headers(Http.Headers.ContentLength to content.getLength().toString()))
+                    rheaders.withReplaceHeaders(
+                        Http.Headers(
+                            Http.Headers.ContentLength to content.getLength().toString()
+                        )
+                    )
                 else
                     rheaders
                 client.writeString(computeHeader(method, url, rheaders2))
@@ -67,7 +72,7 @@ open class HttpPortable(
                     parts.getOrElse(0) { "" } to parts.getOrElse(1) { "" }.trimStart()
                 })
 
-                return Response(responseCode, responseMessage, responseHeaders, client)
+                Response(responseCode, responseMessage, responseHeaders, client)
             }
         }
     }
