@@ -14,16 +14,16 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
 inline fun Container.uiCheckBox(
-    width: Double = 120.0,
-    height: Double = 32.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     text: String = "CheckBox",
     block: @ViewDslMarker UICheckBox.() -> Unit = {}
 ): UICheckBox = UICheckBox(width, height, checked, text).addTo(this).apply(block)
 
 open class UICheckBox(
-    width: Double = 120.0,
-    height: Double = 32.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     checked: Boolean = false,
     var text: String = "CheckBox",
 ) : UIView(width, height), ViewLeaf {

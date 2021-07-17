@@ -6,16 +6,16 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 
 inline fun <T> Container.uiComboBox(
-    width: Double = 192.0,
-    height: Double = 32.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T>,
     block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
 ) = UIComboBox(width, height, selectedIndex, items).addTo(this).apply(block)
 
 open class UIComboBox<T>(
-    width: Double = 192.0,
-    height: Double = 32.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T> = listOf(),
 ) : UIView(width, height) {
