@@ -133,11 +133,14 @@ abstract class Bitmap(
     fun clampWidth(x: Int) = x.clamp(0, width)
     fun clampHeight(y: Int) = y.clamp(0, height)
 
-    fun flipY() = this.apply {
+    open fun flipY(): Bitmap {
 		for (y in 0 until height / 2) swapRows(y, height - y - 1)
+        return this
 	}
-	fun flipX() = this.apply {
+
+    open fun flipX(): Bitmap {
 		for (x in 0 until width / 2) swapColumns(x, width - x - 1)
+        return this
 	}
 	
 	open fun swapRows(y0: Int, y1: Int) {

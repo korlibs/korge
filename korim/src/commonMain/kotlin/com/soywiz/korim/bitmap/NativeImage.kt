@@ -34,6 +34,15 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
     override fun setInt(x: Int, y: Int, color: Int) = setRgba(x, y, RGBA(color))
     override fun getInt(x: Int, y: Int): Int = getRgba(x, y).value
 
+    override fun flipY(): Bitmap {
+        writePixelsUnsafe(0, 0, width, height, (toBMP32().flipY() as Bitmap32).data)
+        return this
+    }
+    override fun flipX(): Bitmap {
+        writePixelsUnsafe(0, 0, width, height, (toBMP32().flipX() as Bitmap32).data)
+        return this
+    }
+
     override fun swapRows(y0: Int, y1: Int) {
         readPixelsUnsafe(0, y0, width, 1, tempRgba, 0)
         readPixelsUnsafe(0, y1, width, 1, tempRgba, width)
@@ -41,7 +50,14 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
         writePixelsUnsafe(0, y0, width, 1, tempRgba, width)
     }
 
-	override fun createWithThisFormat(width: Int, height: Int): Bitmap = NativeImage(width, height)
+    override fun swapColumns(x0: Int, x1: Int) {
+        readPixelsUnsafe(x0, 0, 1, height, tempRgba, 0)
+        readPixelsUnsafe(x1, 0, 1, height, tempRgba, width)
+        writePixelsUnsafe(x1, 0, 1, height, tempRgba, 0)
+        writePixelsUnsafe(x0, 0, 1, height, tempRgba, width)
+    }
+
+    override fun createWithThisFormat(width: Int, height: Int): Bitmap = NativeImage(width, height)
     override fun toString(): String = "$name($width, $height)"
 }
 
