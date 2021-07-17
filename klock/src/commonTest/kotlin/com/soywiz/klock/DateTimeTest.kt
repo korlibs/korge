@@ -475,4 +475,25 @@ class DateTimeTest {
         assertEquals(TimezoneOffset((-15).hours), DateFormat("z").parse("-15:00").offset)
         assertEquals(TimezoneOffset(0.hours), DateFormat("z").parse("+00:00").offset)
     }
+
+    @Test
+    fun testPatternFormatRegex() {
+        val dtmilli = 1536379689000L
+        assertEquals(dtmilli, DateTime(2018, 9, 8, 4, 8, 9).unixMillisLong)
+
+        val fmt = DateFormat("EEE, dd MMM yyyy HH:mm:ss z")
+        val msg = "[Sat, 08 Sep 2018 04:08:09 UTC]  Example log message"
+        val nomsg = "[Sat, 08 Sep 20G8 04:08:09 UTC]  Example log message" // 20G8
+
+        val logPattern = Regex("""^\[(""" + fmt.matchingRegexString() + """)\]  """)
+
+        assertTrue(logPattern.containsMatchIn(msg), message = "correct datestamp should match")
+        assertFalse(logPattern.containsMatchIn(nomsg), message = "incorrect datestamp shouldn't match")
+
+        val match = logPattern.find(msg)
+        assertNotNull(match)
+
+        assertEquals(dtmilli, fmt.parseLong(match.groups[1]!!.value), message = "datestamp parsed from log line has correct value")
+        assertEquals("Example log message", msg.drop(match.value.length), message = "total match length for composed regex")
+    }
 }
