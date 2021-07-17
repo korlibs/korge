@@ -352,7 +352,6 @@ infix fun RGBAPremultiplied.mix(src: RGBAPremultiplied): RGBAPremultiplied {
     //return RGBAPremultiplied(RB or G, A)
 }
 
-
 inline class RgbaArray(val ints: IntArray) : List<RGBA> {
     companion object {
         operator fun invoke(colors: Array<RGBA>): RgbaArray = RgbaArray(colors.map { it.value }.toIntArray())

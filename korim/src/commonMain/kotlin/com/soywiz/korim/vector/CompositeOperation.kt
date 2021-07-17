@@ -94,5 +94,8 @@ enum class BlendMode(val op: CompositeOperation) : CompositeOperation by op {
     HUE(CompositeOperation.UNIMPLEMENTED),
     SATURATION(CompositeOperation.UNIMPLEMENTED),
     COLOR(CompositeOperation.UNIMPLEMENTED),
-    LUMINOSITY(CompositeOperation.UNIMPLEMENTED);
+    LUMINOSITY(CompositeOperation.UNIMPLEMENTED),
+    ADDITION(CompositeOperation.UNIMPLEMENTED),
+    SUBTRACT(CompositeOperation.UNIMPLEMENTED),
+    DIVIDE(CompositeOperation.UNIMPLEMENTED),
 }

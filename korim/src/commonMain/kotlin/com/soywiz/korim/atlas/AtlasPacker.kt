@@ -12,12 +12,23 @@ object AtlasPacker {
     data class Entry<T>(val item: T, val originalSlice: BmpSlice, val slice: BitmapSlice<Bitmap32>, val rectWithBorder: Rectangle, val rect: Rectangle)
 
     data class AtlasResult<T>(val tex: Bitmap32, val atlas: Atlas, val packedItems: List<Entry<T>>) : AtlasLookup {
+        val packedItemsByItem = packedItems.associateBy { it.item }
+
+        fun tryGetEntryByKey(key: T) = packedItemsByItem[key]
         override fun tryGetEntryByName(name: String): Atlas.Entry? = atlas.tryGetEntryByName(name)
 
         val atlasInfo get() = atlas.info
     }
 
     data class Result<T>(val atlases: List<AtlasResult<T>>) : AtlasLookup {
+        fun tryGetEntryByKey(key: T): Entry<T>? {
+            atlases.fastForEach {
+                val result = it.tryGetEntryByKey(key)
+                if (result != null) return result
+            }
+            return null
+        }
+
         override fun tryGetEntryByName(name: String): Atlas.Entry? {
             atlases.fastForEach {
                 val result = it.tryGetEntryByName(name)

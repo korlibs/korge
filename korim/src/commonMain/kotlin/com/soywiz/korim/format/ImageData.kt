@@ -8,8 +8,12 @@ open class ImageData(
     val frames: List<ImageFrame>,
     val loopCount: Int = 0,
     val width: Int = frames.firstOrNull()?.width ?: 1,
-    val height: Int = frames.firstOrNull()?.height ?: 1
+    val height: Int = frames.firstOrNull()?.height ?: 1,
+    val layers: List<ImageLayer>? = null,
+    val animations: List<ImageAnimation> = fastArrayListOf(),
 ) : Extra by Extra.Mixin() {
+    val defaultAnimation = ImageAnimation(frames, ImageAnimation.Direction.FORWARD, "default")
+    val animationsByName = animations.associateBy { it.name }
     val area: Int get() = frames.area
     val framesByName = frames.associateBy { it.name }
     val framesSortedByProority = frames.sortedByDescending {
@@ -25,6 +29,27 @@ open class ImageData(
 
     override fun toString(): String = "ImageData($frames)"
 }
+
+data class ImageDataWithAtlas(val image: ImageData, val atlas: AtlasPacker.Result<ImageFrameLayer>)
+
+fun ImageData.packInAtlas(): ImageDataWithAtlas {
+    val frameLayers = frames.flatMap { it.layerData }.filter { it.includeInAtlas }
+    val atlasResult = AtlasPacker.pack(frameLayers.map { it to it.slice })
+    val translatedFrames = frames.map {
+        ImageFrame(it.index, it.layerData.map {
+            ImageFrameLayer(it.layer, atlasResult.tryGetEntryByKey(it)!!.slice, it.targetX, it.targetY, it.main, it.includeInAtlas)
+        }, it.time)
+    }
+    return ImageDataWithAtlas(ImageData(
+        frames = translatedFrames,
+        loopCount = loopCount,
+        width = width,
+        height = height,
+        layers = layers,
+        animations = animations.map { ImageAnimation(it.frames.map { translatedFrames[it.index] }, it.direction, it.name) }
+    ), atlasResult)
+}
+
 
 fun ImageData.toAtlas(): AtlasPacker.Result<BmpSlice> {
     val slices = frames.filter { it.includeInAtlas }.map { it.slice }
