@@ -3,6 +3,8 @@ package com.soywiz.korim.atlas
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.binpack.*
 
+typealias MutableAtlasUnit = MutableAtlas<Unit>
+
 class MutableAtlas<T>(
     var binPacker: BinPacker,
     val border: Int = 2,
@@ -11,8 +13,8 @@ class MutableAtlas<T>(
     val growMethod: GrowMethod = GrowMethod.NEW_IMAGES
 ) {
     constructor(
-        width: Int,
-        height: Int,
+        width: Int = 2048,
+        height: Int = width,
         border: Int = 2,
         premultiplied: Boolean = true,
         allowToGrow: Boolean = true,
@@ -46,10 +48,11 @@ class MutableAtlas<T>(
         for (entry in slices) add(entry.slice, entry.data, entry.slice.name)
     }
 
-    private fun grow() {
+    private fun grow(bmp: BmpSlice) {
         when (growMethod) {
-            GrowMethod.NEW_IMAGES -> reconstructWithSize(this.width * 2, this.height * 2)
-            GrowMethod.GROW_IMAGE -> {
+            GrowMethod.GROW_IMAGE -> reconstructWithSize(this.width * 2, this.height * 2)
+            GrowMethod.NEW_IMAGES -> {
+                if (bmp.width > width || bmp.height > height) error("Atlas is too small (${width}x${height}) to hold a slice of (${bmp.width}x${bmp.height})")
                 binPacker = BinPacker(width, height)
                 bitmap = Bitmap32(width, height, premultiplied = premultiplied)
                 allBitmaps.add(bitmap)
@@ -58,6 +61,12 @@ class MutableAtlas<T>(
     }
 
     fun add(bmp: Bitmap32, data: T, name: String? = "Slice$size") = add(bmp.slice(name = name), data, name)
+
+    @Suppress("UNCHECKED_CAST")
+    fun add(bmp: BmpSlice, data: T, name: String? = bmp.name): Entry<T> = when {
+        bmp is BitmapSlice<*> && bmp.bmp is Bitmap32 -> add(bmp as BitmapSlice<Bitmap32>, data, name)
+        else -> add(bmp.extract().toBMP32IfRequired(), data, name)
+    }
 
     fun add(bmp: BitmapSlice<Bitmap32>, data: T, name: String? = bmp.name): Entry<T> {
         try {
@@ -81,7 +90,7 @@ class MutableAtlas<T>(
             return entry
         } catch (e: Throwable) {
             if (!allowToGrow) throw e
-            grow()
+            grow(bmp)
             return this.add(bmp, data, name)
         }
     }
