@@ -167,6 +167,34 @@ data class VfsFile(
 		handler: VfsProcessHandler = VfsProcessHandler()
 	): Int = vfs.exec(this.path, cmdAndArgs, env, handler)
 
+    data class ProcessResult(val exitCode: Int, val stdout: String, val stderr: String)
+
+    suspend fun execProcess(
+        cmdAndArgs: List<String>,
+        env: Map<String, String> = LinkedHashMap(),
+        captureError: Boolean = false,
+        charset: Charset = UTF8,
+    ): ProcessResult {
+        val out = ByteArrayBuilder()
+        val err = ByteArrayBuilder()
+
+        val result = exec(cmdAndArgs, env, object : VfsProcessHandler() {
+            override suspend fun onOut(data: ByteArray) {
+                out.append(data)
+            }
+
+            override suspend fun onErr(data: ByteArray) {
+                if (captureError) out.append(data)
+                err.append(data)
+            }
+        })
+
+        val errString = err.toByteArray().toString(charset)
+        val outString = out.toByteArray().toString(charset)
+
+        return ProcessResult(result, outString, errString)
+    }
+
 	suspend fun execToString(
 		cmdAndArgs: List<String>,
 		env: Map<String, String> = LinkedHashMap(),
@@ -174,27 +202,19 @@ data class VfsFile(
 		captureError: Boolean = false,
 		throwOnError: Boolean = true
 	): String {
-		val out = ByteArrayBuilder()
-		val err = ByteArrayBuilder()
+        val result = execProcess(cmdAndArgs, env, captureError, charset)
+        if (throwOnError && result.exitCode != 0) {
+            throw VfsProcessException("Process not returned 0, but ${result.exitCode}. Error: ${result.stderr}, Output: ${result.stdout}")
+        }
+        return result.stdout
+    }
 
-		val result = exec(cmdAndArgs, env, object : VfsProcessHandler() {
-			override suspend fun onOut(data: ByteArray) {
-				out.append(data)
-			}
-
-			override suspend fun onErr(data: ByteArray) {
-				if (captureError) out.append(data)
-				err.append(data)
-			}
-		})
-
-		val errString = err.toByteArray().toString(charset)
-		val outString = out.toByteArray().toString(charset)
-
-		if (throwOnError && result != 0) throw VfsProcessException("Process not returned 0, but $result. Error: $errString, Output: $outString")
-
-		return outString
-	}
+    suspend fun execProcess(
+        vararg cmdAndArgs: String,
+        env: Map<String, String> = LinkedHashMap(),
+        captureError: Boolean = false,
+        charset: Charset = UTF8,
+    ): ProcessResult = execProcess(cmdAndArgs.toList(), env, captureError, charset)
 
 	suspend fun execToString(vararg cmdAndArgs: String, charset: Charset = UTF8): String =
 		execToString(cmdAndArgs.toList(), charset = charset)
