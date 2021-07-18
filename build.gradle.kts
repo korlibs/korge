@@ -27,6 +27,8 @@ plugins {
 }
 
 val headlessTests = false
+val useMimalloc = true
+//val useMimalloc = false
 
 val kotlinVersion: String by project
 val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
@@ -259,11 +261,10 @@ subprojects {
             for (target in desktopAndMobileTargets) {
                 target.compilations.all {
                     // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
-                    kotlinOptions.freeCompilerArgs = listOf(
-                        "-Xallocator=mimalloc",
-                        //"-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -femulated-tls -target-cpu x86-64"
-                        "-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64"
-                    )
+                    kotlinOptions.freeCompilerArgs = ArrayList<String>().apply {
+                        if (useMimalloc) add("-Xallocator=mimalloc")
+                        add("-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64")
+                    }
                     kotlinOptions.suppressWarnings = true
                 }
             }
