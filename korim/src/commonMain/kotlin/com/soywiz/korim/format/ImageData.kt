@@ -50,8 +50,18 @@ fun ImageData.packInAtlas(): ImageDataWithAtlas {
     ), atlasResult)
 }
 
-
-fun ImageData.toAtlas(): AtlasPacker.Result<BmpSlice> {
-    val slices = frames.filter { it.includeInAtlas }.map { it.slice }
-    return AtlasPacker.pack(slices)
+fun ImageData.packInMutableAtlas(mutableAtlas: MutableAtlas<Unit>): ImageData {
+    val translatedFrames = frames.map {
+        ImageFrame(it.index, it.layerData.map {
+            ImageFrameLayer(it.layer, mutableAtlas.add(it.bitmap32, Unit, it.slice.name).slice, it.targetX, it.targetY, it.main, it.includeInAtlas)
+        }, it.time)
+    }
+    return ImageData(
+        frames = translatedFrames,
+        loopCount = loopCount,
+        width = width,
+        height = height,
+        layers = layers,
+        animations = animations.map { ImageAnimation(it.frames.map { translatedFrames[it.index] }, it.direction, it.name) }
+    )
 }

@@ -1,12 +1,28 @@
 package com.soywiz.korim.atlas
 
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.binpack.BinPacker
+import com.soywiz.korma.geom.binpack.*
 
-class MutableAtlas<T>(var binPacker: BinPacker, val border: Int = 2, val premultiplied: Boolean = true, val allowToGrow: Boolean = true) {
-    constructor(width: Int, height: Int, border: Int = 2, allowToGrow: Boolean = true) : this(BinPacker(width, height), border)
+class MutableAtlas<T>(
+    var binPacker: BinPacker,
+    val border: Int = 2,
+    val premultiplied: Boolean = true,
+    val allowToGrow: Boolean = true,
+    val growMethod: GrowMethod = GrowMethod.NEW_IMAGES
+) {
+    constructor(
+        width: Int,
+        height: Int,
+        border: Int = 2,
+        premultiplied: Boolean = true,
+        allowToGrow: Boolean = true,
+        growMethod: GrowMethod = GrowMethod.NEW_IMAGES
+    ) : this(BinPacker(width, height), border, premultiplied, allowToGrow, growMethod)
+
     val width get() = binPacker.width.toInt()
     val height get() = binPacker.height.toInt()
+
+    enum class GrowMethod { GROW_IMAGE, NEW_IMAGES }
 
     data class Entry<T>(val slice: BitmapSlice<Bitmap32>, val data: T) {
         val name get() = slice.name
@@ -14,20 +30,34 @@ class MutableAtlas<T>(var binPacker: BinPacker, val border: Int = 2, val premult
 
     //val bitmap = NativeImage(binPacker.width.toInt(), binPacker.height.toInt(), premultiplied = premultiplied)
     var bitmap = Bitmap32(width, height, premultiplied = premultiplied)
+    val allBitmaps = arrayListOf<Bitmap32>(bitmap)
     val entries = arrayListOf<Entry<T>>()
     val entriesByName = LinkedHashMap<String, Entry<T>>()
     val size get() = entries.size
 
-    fun reconstructWithSize(width: Int, height: Int) {
+    private fun reconstructWithSize(width: Int, height: Int) {
         val slices = entries.toList()
         binPacker = BinPacker(width, height)
         bitmap = Bitmap32(width, height, premultiplied = premultiplied)
+        allBitmaps.clear()
+        allBitmaps.add(bitmap)
         entriesByName.clear()
         entries.clear()
         for (entry in slices) add(entry.slice, entry.data, entry.slice.name)
     }
 
-    fun add(bmp: Bitmap32, data: T, name: String? = null) = add(bmp.slice(name = "Slice$size"), data, name)
+    private fun grow() {
+        when (growMethod) {
+            GrowMethod.NEW_IMAGES -> reconstructWithSize(this.width * 2, this.height * 2)
+            GrowMethod.GROW_IMAGE -> {
+                binPacker = BinPacker(width, height)
+                bitmap = Bitmap32(width, height, premultiplied = premultiplied)
+                allBitmaps.add(bitmap)
+            }
+        }
+    }
+
+    fun add(bmp: Bitmap32, data: T, name: String? = "Slice$size") = add(bmp.slice(name = name), data, name)
 
     fun add(bmp: BitmapSlice<Bitmap32>, data: T, name: String? = bmp.name): Entry<T> {
         try {
@@ -51,7 +81,7 @@ class MutableAtlas<T>(var binPacker: BinPacker, val border: Int = 2, val premult
             return entry
         } catch (e: Throwable) {
             if (!allowToGrow) throw e
-            reconstructWithSize(this.width * 2, this.height * 2)
+            grow()
             return this.add(bmp, data, name)
         }
     }

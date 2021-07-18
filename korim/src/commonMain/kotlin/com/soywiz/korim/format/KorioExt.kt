@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.format.*
@@ -75,6 +76,9 @@ suspend fun VfsFile.readImageData(formats: ImageFormat): ImageData =
 
 suspend fun VfsFile.readImageDataWithAtlas(formats: ImageFormat): ImageData =
     readImageData(formats).packInAtlas().image
+
+suspend fun VfsFile.readImageDataWithAtlas(formats: ImageFormat, atlas: MutableAtlas<Unit>): ImageData =
+    readImageData(formats).packInMutableAtlas(atlas)
 
 suspend fun VfsFile.readBitmapListNoNative(formats: ImageFormat): List<Bitmap> =
 	this.readImageData(formats).frames.map { it.bitmap }

@@ -15,4 +15,5 @@ open class ImageFrameLayer constructor(
     val height get() = slice.height
     val area: Int get() = slice.area
     val bitmap by lazy { slice.extract() }
+    val bitmap32 by lazy { bitmap.toBMP32IfRequired() }
 }
