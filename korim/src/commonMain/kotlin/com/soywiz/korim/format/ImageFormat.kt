@@ -6,8 +6,14 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 
+abstract class ImageFormatWithContainer(vararg exts: String) : ImageFormat(*exts) {
+    override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer = TODO()
+    final override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData = readImageContainer(s, props).imageDatas.first()
+}
+
 abstract class ImageFormat(vararg exts: String) {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
+    open fun readImageContainer(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps()): ImageDataContainer = ImageDataContainer(listOf(readImage(s, props)))
 	open fun readImage(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps()): ImageData = TODO()
 	open fun writeImage(
 		image: ImageData,

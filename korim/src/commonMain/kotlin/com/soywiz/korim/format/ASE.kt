@@ -9,10 +9,11 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.*
 
 // Aseprite: https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
-object ASE : ImageFormat("ase") {
+object ASE : ImageFormatWithContainer("ase") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
         val ss = s.clone()
         ss.readBytesExact(4)
@@ -93,6 +94,41 @@ object ASE : ImageFormat("ase") {
         changeEnd: Int = 0
     ) : Palette(colors, names, changeStart, changeEnd), AseEntity by AseEntity()
 
+    open class AseSliceKey(
+        val frameIndex: Int,
+        val sliceXOrigin: Int,
+        val sliceYOrigin: Int,
+        val sliceWidth: Int,
+        val sliceHeight: Int,
+        // 9-patch
+        val centerXPos: Int,
+        val centerYPos: Int,
+        val centerWidth: Int,
+        val centerHeight: Int,
+        // Pivot
+        val pivotX: Int,
+        val pivotY: Int,
+    ) {
+        val sliceFrame = RectangleInt(sliceXOrigin, sliceYOrigin, sliceWidth, sliceHeight)
+    }
+
+    open class AseSlice(val name: String, val hasNinePatch: Boolean, val hasPivotInfo: Boolean) : AseEntity by AseEntity() {
+        val keys = FastArrayList<AseSliceKey>()
+
+        fun sortKeys() {
+            keys.sortBy { it.frameIndex }
+        }
+
+        // @TODO: Optimize performance of this
+        fun getSliceForFrame(index: Int): AseSliceKey {
+            //keys.binarySearch()
+            keys.fastForEachReverse {
+                if (index >= it.frameIndex) return it
+            }
+            return keys.firstOrNull() ?: error("No frames key frames for slice!")
+        }
+    }
+
     open class AseTag(
         val fromFrame: Int,
         val toFrame: Int,
@@ -113,9 +149,10 @@ object ASE : ImageFormat("ase") {
         val layers = FastArrayList<AseLayer>()
         val frames = FastArrayList<AseFrame>()
         val tags = FastArrayList<AseTag>()
+        val slices = FastArrayList<AseSlice>()
     }
 
-    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+    override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer {
         val fileSize = s.readS32LE()
         if (s.length < fileSize) error("File too short")
         if (s.readU16LE() != 0xA5E0) error("Not an Aseprite file")
@@ -287,8 +324,44 @@ object ASE : ImageFormat("ase") {
                         }
                     }
                     0x2022 -> { // SLICE KEYS
-                        // @TODO
-                        //val nkeys =
+                        val numSliceKeys = cs.readS32LE()
+                        val sliceFlags = cs.readS32LE()
+                        cs.skip(4)
+                        val sliceName = cs.readAseString()
+                        val hasNinePatch = sliceFlags.hasBitSet(0)
+                        val hasPivotInfo = sliceFlags.hasBitSet(1)
+
+                        val slice = AseSlice(sliceName, hasNinePatch, hasPivotInfo)
+                        image.slices.add(slice)
+                        lastEntity = slice
+
+                        for (nsk in 0 until numSliceKeys) {
+                            val sliceFrameIndex = cs.readS32LE()
+                            val sliceXOrigin = cs.readS32LE()
+                            val sliceYOrigin = cs.readS32LE()
+                            val sliceWidth = cs.readS32LE()
+                            val sliceHeight = cs.readS32LE()
+                            val centerXPos = if (hasNinePatch) cs.readS32LE() else 0
+                            val centerYPos = if (hasNinePatch) cs.readS32LE() else 0
+                            val centerWidth = if (hasNinePatch) cs.readS32LE() else sliceWidth
+                            val centerHeight = if (hasNinePatch) cs.readS32LE() else sliceHeight
+                            val pivotX = if (hasPivotInfo) cs.readS32LE() else 0
+                            val pivotY = if (hasPivotInfo) cs.readS32LE() else 0
+
+                            slice.keys.add(AseSliceKey(
+                                sliceFrameIndex,
+                                sliceXOrigin,
+                                sliceYOrigin,
+                                sliceWidth,
+                                sliceHeight,
+                                centerXPos,
+                                centerYPos,
+                                centerWidth,
+                                centerHeight,
+                                pivotX,
+                                pivotY,
+                            ))
+                        }
                     }
                     else -> println("WARNING: Aseprite: Not implemented chunkType=${chunkType.hex}")
                 }
@@ -299,7 +372,7 @@ object ASE : ImageFormat("ase") {
         val frames = image.frames.map { frame ->
             val cells = frame.celsByLayer.toLinkedMap()
             val layerData = cells.map { (key, value) -> ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = true) }
-            ImageFrame(frame.index, layerData, frame.time.milliseconds)
+            ImageFrame(frame.index, frame.time.milliseconds, layerData)
         }
 
         val animations = image.tags.map {
@@ -308,13 +381,43 @@ object ASE : ImageFormat("ase") {
             ImageAnimation(framesRange, it.direction, it.tagName)
         }
 
-        return ImageData(
+        val defaultData = ImageData(
             frames = frames,
             width = imageWidth,
             height = imageHeight,
             layers = imageLayers,
             animations = animations,
         )
+
+        val datas = image.slices.map { slice ->
+            slice.sortKeys()
+            val maxWidth = slice.keys.map { it.sliceWidth }.maxOrNull() ?: 0
+            val maxHeight = slice.keys.map { it.sliceHeight }.maxOrNull() ?: 0
+            val frames = defaultData.frames.map {
+                val sliceKey = slice.getSliceForFrame(it.index)
+                ImageFrame(it.index, it.time, layerData = it.layerData.map {
+                    // @TODO: What should we do with layers here?
+                    // @TODO: Linked frame?
+                    //ImageFrameLayer(it.layer, it.slice.bmp.slice(sliceKey.sliceFrame, it.slice.name), it.targetX, it.targetY, it.main, it.includeInAtlas, null)
+                    //println("name=${slice.name}: it.slice=${it.slice.bounds}, sliceKey.sliceFrame=${sliceKey.sliceFrame}")
+                    ImageFrameLayer(it.layer, it.slice.slice(sliceKey.sliceFrame, it.slice.name), it.targetX, it.targetY, it.main, it.includeInAtlas, null)
+                })
+            }
+            val animations = image.tags.map {
+                val framesRange = frames.slice(it.fromFrame.clamp(0, frames.size) .. it.toFrame.clamp(0, frames.size - 1))
+                ImageAnimation(framesRange, it.direction, it.tagName)
+            }
+            ImageData(
+                frames = frames,
+                width = maxWidth,
+                height = maxHeight,
+                layers = imageLayers,
+                animations = animations,
+                name = slice.name
+            )
+        }
+
+        return ImageDataContainer(listOf(defaultData) + datas)
     }
 
     fun SyncStream.readRGB(): RGBA = RGBA(readU8(), readU8(), readU8())

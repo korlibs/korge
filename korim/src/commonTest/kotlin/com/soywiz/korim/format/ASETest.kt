@@ -1,5 +1,7 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kds.iterators.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
@@ -9,12 +11,12 @@ import kotlin.test.*
 class ASETest {
     @Test
     fun test() = suspendTest({ !OS.isJs }) {
-        //val image = resourcesVfs["simple2.ase"].readImageData(ASE)
-        val image = resourcesVfs["simple.ase"].readImageDataWithAtlas(ASE)
-        //val image = resourcesVfs["simple3.ase"].readImageData(ASE)
-        val packed = image.packInAtlas()
-        //for (img in image.frames.flatMap { it.layerData }.map { it.bitmap }) img.showImageAndWait()
-        //for (img in packed.atlas.atlases.map { it.tex }) img.showImageAndWait()
-        //Bitmap32(10, 10).flipX()
+        val atlas = MutableAtlasUnit(2048)
+        val simple = resourcesVfs["simple.ase"].readImageData(ASE, atlas = atlas)
+        val simple2 = resourcesVfs["simple2.ase"].readImageData(ASE, atlas = atlas)
+        val simple3 = resourcesVfs["simple3.ase"].readImageData(ASE, atlas = atlas)
+        val sliceExample = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+        //println(sliceExample)
+        //atlas.allBitmaps.showImagesAndWait()
     }
 }

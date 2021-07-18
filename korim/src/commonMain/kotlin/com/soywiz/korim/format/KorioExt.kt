@@ -4,10 +4,8 @@ import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.format.*
-import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korio.stream.*
 
 suspend fun ImageFormat.decode(s: VfsFile, props: ImageDecodingProps = ImageDecodingProps()) =
@@ -50,17 +48,10 @@ suspend fun decodeImageFile(file: VfsFile): NativeImage {
 }
 
 suspend fun VfsFile.readNativeImage(): NativeImage = decodeImageFile(this)
-suspend fun VfsFile.readImageData(formats: ImageFormat = RegisteredImageFormats, props: ImageDecodingProps = ImageDecodingProps()): ImageData =
-	formats.readImage(this.readAsSyncStream(), props.copy(filename = this.baseName))
-
 
 suspend fun AsyncInputStream.readNativeImage(): NativeImage = decodeImageBytes(this.readAll())
 suspend fun AsyncInputStream.readImageData(formats: ImageFormat = RegisteredImageFormats, basename: String = "file.bin"): ImageData =
 	formats.readImage(this.readAll().openSync(), ImageDecodingProps(basename))
-
-suspend fun AsyncInputStream.readImageDataProps(
-	formats: ImageFormat = RegisteredImageFormats, props: ImageDecodingProps = ImageDecodingProps("file.bin")
-): ImageData = formats.readImage(this.readAll().openSync(), props)
 
 suspend fun AsyncInputStream.readBitmapListNoNative(formats: ImageFormat): List<Bitmap> =
 	this.readImageData(formats).frames.map { it.bitmap }
@@ -71,14 +62,13 @@ suspend fun VfsFile.readBitmapInfo(
 ): ImageInfo? =
 	formats.decodeHeader(this.readAsSyncStream(), props)
 
-suspend fun VfsFile.readImageData(formats: ImageFormat): ImageData =
-	formats.readImage(this.readAsSyncStream(), ImageDecodingProps(this.baseName))
+suspend fun VfsFile.readImageData(formats: ImageFormat = RegisteredImageFormats, props: ImageDecodingProps = ImageDecodingProps(), atlas: MutableAtlas<Unit>? = null): ImageData =
+    readImageDataContainer(formats, props, atlas).default
 
-suspend fun VfsFile.readImageDataWithAtlas(formats: ImageFormat): ImageData =
-    readImageData(formats).packInAtlas().image
-
-suspend fun VfsFile.readImageDataWithAtlas(formats: ImageFormat, atlas: MutableAtlas<Unit>): ImageData =
-    readImageData(formats).packInMutableAtlas(atlas)
+suspend fun VfsFile.readImageDataContainer(formats: ImageFormat = RegisteredImageFormats, props: ImageDecodingProps = ImageDecodingProps(), atlas: MutableAtlas<Unit>? = null): ImageDataContainer {
+    val out = formats.readImageContainer(this.readAsSyncStream(), props.copy(filename = this.baseName))
+    return if (atlas != null) out.packInMutableAtlas(atlas) else out
+}
 
 suspend fun VfsFile.readBitmapListNoNative(formats: ImageFormat): List<Bitmap> =
 	this.readImageData(formats).frames.map { it.bitmap }
