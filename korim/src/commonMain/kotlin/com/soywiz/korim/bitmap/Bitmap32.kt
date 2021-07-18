@@ -15,6 +15,7 @@ import kotlin.math.*
 class Bitmap32(
     width: Int,
     height: Int,
+    //val data: RgbaArray = kotlin.run { println("width=$width,height=$height"); RgbaArray(width * height) },
     val data: RgbaArray = RgbaArray(width * height),
     premultiplied: Boolean = false
 ) : Bitmap(width, height, 32, premultiplied, data), Iterable<RGBA> {
@@ -96,8 +97,8 @@ class Bitmap32(
 
     @KorimInternal
 	fun _draw(src: Bitmap32, dx: Int, dy: Int, sleft: Int, stop: Int, sright: Int, sbottom: Int, mix: Boolean) {
-        var sleft = 0
-        var stop = 0
+        var sleft = sleft
+        var stop = stop
         var dx = dx
         var dy = dy
         if (dx < 0) {
