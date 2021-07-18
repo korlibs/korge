@@ -47,6 +47,7 @@ abstract class NativeImageFormatProvider {
 
 suspend fun Bitmap.showImageAndWait(kind: Int = 0) = nativeImageFormatProvider.display(this, kind)
 suspend fun ImageData.showImagesAndWait(kind: Int = 0) = run { for (frame in frames) frame.bitmap.showImageAndWait(kind) }
+suspend fun List<Bitmap>.showImagesAndWait(kind: Int = 0) = run { for (bitmap in this) bitmap.showImageAndWait(kind) }
 suspend fun SizedDrawable.showImageAndWait(kind: Int = 0) = this.render().toBMP32().showImageAndWait(kind)
 
 open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
