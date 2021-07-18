@@ -8,10 +8,12 @@ import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 
@@ -23,9 +25,24 @@ fun Container.mybutton(font: Font): View {
 }
 
 suspend fun Stage.mainVampire() {
-    val ase = resourcesVfs["vampire.ase"].readImageDataWithAtlas(ASE)
+    val atlas = MutableAtlas<Unit>(512, 512)
+    //val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
+    //val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+    val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
+    val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
 
-    //image(ase.frames.first().slice.bmp)
+    //image(atlas.bitmap)
+
+    container {
+        scale = 2.0
+        imageDataView(slices["wizHat"]).xy(0, 50)
+        imageDataView(slices["giantHilt"]).xy(32, 50)
+        imageDataView(slices["pumpkin"]).xy(64, 50)
+    }
+
+    //val ase2 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
+    //val ase3 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
+    //for (bitmap in atlas.allBitmaps) image(bitmap) // atlas generation
 
     val character = imageDataView(ase, "down") {
         stop()
@@ -51,10 +68,19 @@ suspend fun Stage.mainVampire() {
             character.rewind()
         }
     }
-
 }
 
 suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false) {
+    //mainVampire()
+    //return@Korge
+
+    val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
+
+    for (n in 0 until 10) {
+        text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = font2, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
+    }
+
+    //return@Korge
 
     //val result = UrlVfs("https://raw.githubusercontent.com/korlibs/korio/master/README.md").readString()
     //println("result=$result")
