@@ -76,7 +76,9 @@ val doEnableKotlinMobile get() = enableKotlinMobile == "true"
 
 val KotlinTarget.isLinux get() = this.name == "linuxX64"
 val KotlinTarget.isWin get() = this.name == "mingwX64"
-val KotlinTarget.isMacos get() = this.name == "macosX64"
+val KotlinTarget.isMacosX64 get() = this.name == "macosX64"
+val KotlinTarget.isMacosArm64 get() = this.name == "macosArm64"
+val KotlinTarget.isMacos get() = isMacosX64 || isMacosArm64
 val KotlinTarget.isIosArm64 get() = this.name == "iosArm64"
 val KotlinTarget.isIosX64 get() = this.name == "iosX64"
 val KotlinTarget.isIos get() = isIosArm64 || isIosX64
@@ -91,6 +93,7 @@ val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
 
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
 val isMacos get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)
+val isArm get() = listOf("arm", "arm64", "aarch64").any { org.apache.tools.ant.taskdefs.condition.Os.isArch(it) }
 
 fun guessAndroidSdkPath(): String? {
     val userHome = System.getProperty("user.home")
@@ -123,8 +126,8 @@ kotlin {
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOf(mingwX64())
-        isMacos -> listOf(macosX64())
-        else -> listOf(linuxX64(), mingwX64(), macosX64())
+        isMacos -> listOf(macosX64(), macosArm64())
+        else -> listOf(linuxX64(), mingwX64(), macosX64(), macosArm64())
     }
 }
 
@@ -605,7 +608,7 @@ samples {
         fun Task.dependsOnNativeTask(kind: String) {
             when {
                 isWindows -> dependsOn("run${kind}ExecutableMingwX64")
-                isMacos -> dependsOn("run${kind}ExecutableMacosX64")
+                isMacos -> if (isArm) dependsOn("run${kind}ExecutableMacosArm64") else dependsOn("run${kind}ExecutableMacosX64")
                 else -> dependsOn("run${kind}ExecutableLinuxX64")
             }
         }

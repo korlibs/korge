@@ -31,9 +31,9 @@ private val logger = Logger("RenderContext2D")
  */
 @UseExperimental(KorgeInternal::class)
 class RenderContext2D(
-    @KorgeInternal
+    @property:KorgeInternal
     val batch: BatchBuilder2D,
-    @KorgeInternal
+    @property:KorgeInternal
     val agBitmapTextureManager: AgBitmapTextureManager
 ) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }

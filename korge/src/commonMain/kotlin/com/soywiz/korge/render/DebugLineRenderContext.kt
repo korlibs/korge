@@ -25,7 +25,7 @@ val RenderContext.debugLineRenderContext: DebugLineRenderContext by Extra.Proper
  * }
  */
 class DebugLineRenderContext(
-    @KorgeInternal
+    @property:KorgeInternal
     val ctx: RenderContext
 ) {
     init {
