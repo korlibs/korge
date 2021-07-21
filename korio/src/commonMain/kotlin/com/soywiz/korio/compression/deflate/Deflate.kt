@@ -49,7 +49,6 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 
 			if (blockType == 0) {
 				//println("uncompress[2]")
-				reader.discardBits()
 				val len = reader.su16LE()
 				val nlen = reader.su16LE()
 				val nnlen = nlen.inv() and 0xFFFF
@@ -71,7 +70,8 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
                     codeLenCodeLen.fill(0)
                     for (i in 0 until hclen) codeLenCodeLen[HCLENPOS[i]] = reader.readBits(3)
                     //console.info(codeLenCodeLen);
-                    val codeLen = tempTree.fromLengths(codeLenCodeLen)
+                    tempTree.setFromLengths(codeLenCodeLen)
+                    val codeLen = tempTree
                     val hlithdist = hlit + hdist
                     var n = 0
                     lengths.fill(0)
@@ -95,17 +95,19 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
                         lengths.fill(vv, n, n + len)
                         n += len
                     }
-                    tree = tempTree.fromLengths(lengths, 0, hlit)
-                    dist = tempDist.fromLengths(lengths, hlit, hlithdist)
+                    tempTree.setFromLengths(lengths, 0, hlit)
+                    tempDist.setFromLengths(lengths, hlit, hlithdist)
+                    tree = tempTree
+                    dist = tempDist
                 }
 				while (true) {
+				    // @TODO: Read in parallel while decoding
 					reader.prepareBigChunkIfRequired()
 					val value = tree.read(reader)
 					if (value == 256) break
 					if (value < 256) {
 						sout.putOut(value.toByte())
 					} else {
-						reader.prepareBigChunkIfRequired()
 						val zlenof = value - 257
 						val lengthExtra = reader.readBits(LEN_EXTRA[zlenof])
 						val distanceData = reader.read(dist)
@@ -123,14 +125,25 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 		//println("uncompress[5]")
 	}
 
-	private fun BitReader.read(tree: HuffmanTree): Int = tree.read(this)
+	private inline fun BitReader.read(tree: HuffmanTree): Int = tree.read(this)
 
-	internal class SlidingWindowWithOutput(val sliding: SlidingWindow, val out: AsyncOutputStream) {
+	internal class SlidingWindowWithOutput(
+        val sliding: SlidingWindow,
+        val out: AsyncOutputStream,
+        val flushSize: Int = FLUSH_SIZE,
+    ) {
+        companion object {
+            const val FLUSH_SIZE = 512 * 1024
+            const val EXTRA_SIZE = 32 * 1024
+            //const val FLUSH_SIZE = 4 * 1024
+            //const val EXTRA_SIZE = 4 * 1024
+        }
+
 		// @TODO: Optimize with buffering and copying
-		val bab = ByteArrayBuilder(8 * 1024)
+		val bab = ByteArrayBuilder(flushSize + EXTRA_SIZE)
 
 		val output get() = bab.size
-		val mustFlush get() = bab.size >= 4 * 1024
+		val mustFlush get() = bab.size >= flushSize
 
 		fun getPutCopyOut(distance: Int, length: Int) {
 			//print("LZ: distance=$distance, length=$length   :: ")
@@ -152,7 +165,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 
 		fun putOut(byte: Byte) {
 			//println("BYTE: $byte")
-			bab.append(byte)
+			bab.appendFast(byte)
 			sliding.put(byte.unsigned)
 		}
 

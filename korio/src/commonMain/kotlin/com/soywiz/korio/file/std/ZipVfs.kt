@@ -17,7 +17,8 @@ suspend fun ZipVfs(
     s: AsyncStream,
     zipFile: VfsFile? = null,
     caseSensitive: Boolean = true,
-    closeStream: Boolean = false
+    closeStream: Boolean = false,
+    useNativeDecompression: Boolean = true
 ): VfsFile {
     //val s = zipFile.open(VfsOpenMode.READ)
     val zipFile = ZipFile(s, caseSensitive)
@@ -57,7 +58,7 @@ suspend fun ZipVfs(
                     0 -> compressedData
                     else -> {
                         val method = when (entry.compressionMethod) {
-                            8 -> Deflate
+                            8 -> if (useNativeDecompression) Deflate else DeflatePortable
                             else -> TODO("Not implemented zip method ${entry.compressionMethod}")
                         }
                         compressedData.uncompressed(method).withLength(uncompressedSize.toLong()).toAsyncStream()
@@ -90,14 +91,14 @@ suspend fun ZipVfs(
     return Impl().root
 }
 
-suspend fun VfsFile.openAsZip(caseSensitive: Boolean = true): VfsFile =
-    ZipVfs(this.open(VfsOpenMode.READ), this, caseSensitive = caseSensitive, closeStream = true)
+suspend fun VfsFile.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true): VfsFile =
+    ZipVfs(this.open(VfsOpenMode.READ), this, caseSensitive = caseSensitive, closeStream = true, useNativeDecompression = useNativeDecompression)
 
-suspend fun AsyncStream.openAsZip(caseSensitive: Boolean = true) =
-    ZipVfs(this, caseSensitive = caseSensitive, closeStream = false)
+suspend fun AsyncStream.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true) =
+    ZipVfs(this, caseSensitive = caseSensitive, closeStream = false, useNativeDecompression = useNativeDecompression)
 
-suspend fun <R> VfsFile.openAsZip(caseSensitive: Boolean = true, callback: suspend (VfsFile) -> R): R {
-    val file = openAsZip(caseSensitive)
+suspend fun <R> VfsFile.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true, callback: suspend (VfsFile) -> R): R {
+    val file = openAsZip(caseSensitive, useNativeDecompression = useNativeDecompression)
     try {
         return callback(file)
     } finally {
@@ -105,8 +106,8 @@ suspend fun <R> VfsFile.openAsZip(caseSensitive: Boolean = true, callback: suspe
     }
 }
 
-suspend fun <R> AsyncStream.openAsZip(caseSensitive: Boolean = true, callback: suspend (VfsFile) -> R): R {
-    val file = openAsZip(caseSensitive)
+suspend fun <R> AsyncStream.openAsZip(caseSensitive: Boolean = true, useNativeDecompression: Boolean = true, callback: suspend (VfsFile) -> R): R {
+    val file = openAsZip(caseSensitive, useNativeDecompression = useNativeDecompression)
     try {
         return callback(file)
     } finally {

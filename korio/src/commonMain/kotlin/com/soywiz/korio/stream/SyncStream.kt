@@ -299,7 +299,7 @@ class MemorySyncStreamBase(var data: ByteArrayBuilder) : SyncStreamBase() {
 		get() = data.size.toLong()
 		set(value) = run { data.size = value.toInt() }
 
-	fun checkPosition(position: Long) = run { if (position < 0) invalidOp("Invalid position $position") }
+	fun checkPosition(position: Long) { if (position < 0) invalidOp("Invalid position $position") }
 
 	override fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
 		checkPosition(position)

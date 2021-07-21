@@ -25,22 +25,40 @@ class ByteArrayBuilder(var data: ByteArray, size: Int = data.size, val allowGrow
     private fun ensure(expected: Int) {
         if (data.size < expected) {
             if (!allowGrow) throw RuntimeException("ByteArrayBuffer configured to not grow!")
-            data = data.copyOf(max(expected, (data.size + 7) * 5))
+            //val oldCapacity = data.size
+            val newSize = (data.size + 7) * 5
+            val realNewSize = if (newSize < 0) Int.MAX_VALUE / 2 else newSize
+            if (newSize < 0 && expected > realNewSize) error("ByteArrayBuffer can't grow that much")
+            data = data.copyOf(max(expected, realNewSize))
+            //val newCapacity = data.size
+            //println("GROW: $oldCapacity -> $newCapacity")
         }
     }
 
-    private inline fun <T> prepare(count: Int, callback: () -> T): T {
+    private fun ensureCount(count: Int) {
         ensure(_size + count)
+    }
+
+    private inline fun <T> prepare(count: Int, callback: () -> T): T {
+        ensureCount(count)
         return callback().also { _size += count }
     }
 
     fun append(array: ByteArray, offset: Int = 0, len: Int = array.size - offset) {
-        prepare(len) {
-            arraycopy(array, offset, this.data, _size, len)
-        }
+        ensureCount(len)
+        arraycopy(array, offset, this.data, _size, len)
+        this._size += len
     }
 
-    fun append(v: Byte) = this.apply { prepare(1) { data[_size] = v } }
+    fun appendFast(v: Byte) {
+        ensure(_size + 1)
+        data[_size++] = v
+    }
+
+    inline fun append(v: Byte): ByteArrayBuilder {
+        appendFast(v)
+        return this
+    }
 
     fun append(vararg v: Byte) = append(v)
     fun append(vararg v: Int) = this.apply {

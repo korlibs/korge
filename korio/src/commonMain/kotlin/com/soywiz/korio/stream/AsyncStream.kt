@@ -644,7 +644,7 @@ suspend inline fun AsyncInputStream.consume(autoclose: Boolean = true, temp: Byt
     }
 }
 
-suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 0x10000): Long {
+suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 64 * 1024): Long {
 	// Optimization to reduce suspensions
 	if (this is AsyncStream && base is MemoryAsyncStreamBase) {
 		target.write(base.data.data, position.toInt(), base.ilength - position.toInt())

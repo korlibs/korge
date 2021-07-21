@@ -6,12 +6,15 @@ import com.soywiz.korio.experimental.*
 import com.soywiz.korio.stream.*
 import java.util.zip.*
 
+//actual fun Deflate(windowBits: Int): CompressionMethod = DeflatePortable(windowBits)
+actual fun Deflate(windowBits: Int): CompressionMethod = DeflateNative(windowBits)
+
 @UseExperimental(KorioExperimentalApi::class)
-actual fun Deflate(windowBits: Int): CompressionMethod = object : CompressionMethod {
+fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMethod {
 	override suspend fun uncompress(i: BitReader, o: AsyncOutputStream) {
-		val tempInput = ByteArray(1024)
+		val tempInput = ByteArray(64 * 1024)
 		var tempInputSize = 0
-		val tempOutput = ByteArray(1024)
+		val tempOutput = ByteArray(128 * 1024)
 		val inflater = Inflater(true)
 		try {
 			do {
