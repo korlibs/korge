@@ -28,7 +28,7 @@ actual val tempVfs: VfsFile by lazy {
 	}
 }
 
-actual fun localVfs(path: String): VfsFile {
+actual fun localVfs(path: String, async: Boolean): VfsFile {
 	return when {
 		//isNodeJs -> NodeJsLocalVfs()[path]
 		else -> {

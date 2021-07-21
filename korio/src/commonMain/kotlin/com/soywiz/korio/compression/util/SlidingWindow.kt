@@ -19,6 +19,7 @@ internal class SlidingWindow(val nbits: Int) {
 		return value
 	}
 
+    // @TODO: Optimize?
 	fun putBytes(bytes: ByteArray, offset: Int, len: Int) {
 		for (n in 0 until len) put(bytes[offset + n].unsigned)
 	}

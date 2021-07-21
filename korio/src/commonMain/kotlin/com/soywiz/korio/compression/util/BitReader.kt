@@ -14,10 +14,11 @@ open class BitReader(
     val readWithSize: Int = READ_WHEN_LESS_THAN
 ) : AsyncInputStreamWithLength {
     companion object {
-        const val BIG_CHUNK_SIZE = 128 * 1024
+        const val BIG_CHUNK_SIZE = 8 * 1024 * 1024 // 8 MB
+        //const val BIG_CHUNK_SIZE = 128 * 1024
         //const val BIG_CHUNK_SIZE = 8 * 1024
 
-        const val READ_WHEN_LESS_THAN = 8 * 1024
+        const val READ_WHEN_LESS_THAN = 32 * 1024
     }
 
 	@PublishedApi
@@ -32,7 +33,10 @@ open class BitReader(
 		return this
 	}
 
-	private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE))
+	//private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = false)
+    //private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = true)
+    private val sbuffers = RingBuffer(ilog2(BIG_CHUNK_SIZE))
+    private var sbuffersPos = 0.0
 	val requirePrepare get() = sbuffers.availableRead < readWithSize
 
 	suspend inline fun prepareBigChunkIfRequired() {
@@ -41,14 +45,16 @@ open class BitReader(
 
 	fun returnToBuffer(data: ByteArray, offset: Int, size: Int) {
 		sbuffers.write(data, offset, size)
+        sbuffersPos += size
 	}
 
 	private val tempBA = ByteArray(bigChunkSize)
 	suspend fun prepareBytesUpTo(expectedBytes: Int): BitReader {
 		while (sbuffers.availableRead < expectedBytes) {
-			val read = s.read(tempBA, 0, min(tempBA.size, expectedBytes))
+			val read = s.read(tempBA, 0, min(min(tempBA.size, expectedBytes), sbuffers.availableWrite))
 			if (read <= 0) break // No more data
 			sbuffers.write(tempBA, 0, read)
+            sbuffersPos += read
 		}
 		return this
 	}
@@ -169,7 +175,7 @@ open class BitReader(
 	//suspend fun getAvailable(): Long = s.getAvailable()
 	//suspend fun readBytesExact(count: Int): ByteArray = abytes(count)
 
-	override suspend fun getPosition(): Long = sbuffers.read
+	override suspend fun getPosition(): Long = sbuffersPos.toLong()
 	override suspend fun getLength(): Long = (s as? AsyncGetLengthStream)?.getLength() ?: error("Length not available on Stream")
 }
 

@@ -31,5 +31,5 @@ expect val userHomeVfs: VfsFile
 expect val tempVfs: VfsFile
 val localCurrentDirVfs: VfsFile get() = applicationVfs
 
-expect fun localVfs(path: String): VfsFile
+expect fun localVfs(path: String, async: Boolean = true): VfsFile
 fun jailedLocalVfs(base: String): VfsFile = localVfs(base).jail()

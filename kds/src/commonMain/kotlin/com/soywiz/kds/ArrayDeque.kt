@@ -3,7 +3,7 @@ package com.soywiz.kds
 import com.soywiz.kds.internal.*
 import kotlin.jvm.*
 
-class ByteArrayDeque(val initialBits: Int = 10) {
+class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     private var ring = RingBuffer(initialBits)
     private val tempBuffer = ByteArray(1024)
 
@@ -38,6 +38,11 @@ class ByteArrayDeque(val initialBits: Int = 10) {
 
     private fun ensureWrite(count: Int): ByteArrayDeque {
         if (count > ring.availableWrite) {
+            if (!allowGrow) {
+                val message = "Can't grow ByteArrayDeque. Need to write $count, but only ${ring.availableWrite} is available"
+                println("ERROR: $message")
+                error(message)
+            }
             val minNewSize = ring.availableRead + count
             val newBits = ilog2(minNewSize) + 2
             val newRing = RingBuffer(newBits)

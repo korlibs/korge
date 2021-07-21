@@ -1,5 +1,6 @@
 package com.soywiz.korio.compression.deflate
 
+import com.soywiz.kds.*
 import kotlinx.cinterop.*
 import platform.posix.*
 import platform.zlib.*
@@ -15,7 +16,7 @@ import kotlin.math.*
 //actual fun Deflate(windowBits: Int): CompressionMethod = DeflatePortable(windowBits)
 actual fun Deflate(windowBits: Int): CompressionMethod = DeflateNative(windowBits)
 
-private const val CHUNK = 64 * 1024
+private const val CHUNK = 8 * 1024 * 1024
 
 @UseExperimental(KorioExperimentalApi::class)
 fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMethod {
@@ -27,6 +28,17 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
 
 			val inpArray = ByteArray(CHUNK)
 			val outArray = ByteArray(CHUNK)
+
+            //val buffer = ByteArrayDeque(17)
+            //suspend fun flush(force: Boolean) {
+            //    if (force || buffer.availableRead >= CHUNK) {
+            //        while (buffer.availableRead > 0) {
+            //            val readCount = buffer.read(outArray, 0, outArray.size)
+            //            if (readCount <= 0) break
+            //            output.write(outArray, 0, readCount)
+            //        }
+            //    }
+            //}
 
 			try {
 				inpArray.usePinned { _inp ->
@@ -60,6 +72,8 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
 									Z_MEM_ERROR  -> error("mem error")
 								}
 								val have = CHUNK - strm.avail_out.toInt()
+                                //buffer.write(outArray, 0, have)
+                                //flush(false)
 								output.write(outArray, 0, have)
 							} while (strm.avail_out == 0u)
 						} while (ret != Z_STREAM_END)
@@ -70,6 +84,8 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
 							input.returnToBuffer(inpArray, tempInputSize - remaining, remaining)
 							//error("too much data in DeflateNative stream")
 						}
+
+                        //flush(true)
 					}
 				}
 			} finally {

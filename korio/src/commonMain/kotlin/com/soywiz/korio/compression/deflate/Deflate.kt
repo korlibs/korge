@@ -38,6 +38,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 		val lengths = IntArray(512)
 		//println("uncompress[0]")
 		while (!lastBlock) {
+            sout.flushIfRequired()
 			reader.prepareBigChunkIfRequired()
 			//println("uncompress[1]")
 
@@ -55,6 +56,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 				if (len != nnlen) error("Invalid deflate stream: len($len) != ~nlen($nnlen) :: nlen=$nlen")
 				val bytes = reader.abytes(len)
 				sout.putOut(bytes, 0, len)
+                sout.flushIfRequired()
 			} else {
 				//println("uncompress[3]")
 				val tree: HuffmanTree
@@ -133,14 +135,15 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
         val flushSize: Int = FLUSH_SIZE,
     ) {
         companion object {
-            const val FLUSH_SIZE = 512 * 1024
-            const val EXTRA_SIZE = 32 * 1024
+            const val FLUSH_SIZE = 8 * 1024 * 1024
+            const val EXTRA_SIZE = 128 * 1024
             //const val FLUSH_SIZE = 4 * 1024
             //const val EXTRA_SIZE = 4 * 1024
         }
 
 		// @TODO: Optimize with buffering and copying
-		val bab = ByteArrayBuilder(flushSize + EXTRA_SIZE)
+		val bab = FixedSizeByteArrayBuilder(flushSize + EXTRA_SIZE)
+        //val bab = ByteArrayBuilder(flushSize + EXTRA_SIZE)
 
 		val output get() = bab.size
 		val mustFlush get() = bab.size >= flushSize
@@ -149,7 +152,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 			//print("LZ: distance=$distance, length=$length   :: ")
 			for (n in 0 until length) {
 				val v = sliding.getPut(distance)
-				bab.append(v.toByte())
+				bab.appendFast(v.toByte())
 				//print("$v,")
 			}
 			//println()
@@ -169,18 +172,16 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 			sliding.put(byte.unsigned)
 		}
 
-		suspend fun flush(finish: Boolean = false) {
-			if (finish || mustFlush) {
-				//print("FLUSH[$finish][${bab.size}]")
-				//for (n in 0 until bab.size) print("${bab.data[n]},")
-				//println()
-				out.write(bab.data, 0, bab.size)
-				bab.clear()
-			}
+		suspend inline fun flush() {
+            //print("FLUSH[$finish][${bab.size}]")
+            //for (n in 0 until bab.size) print("${bab.data[n]},")
+            //println()
+            out.write(bab.data, 0, bab.size)
+            bab.clear()
 		}
 
 		suspend inline fun flushIfRequired(finish: Boolean = false) {
-			if (finish || mustFlush) flush(finish)
+			if (finish || mustFlush) flush()
 		}
 	}
 

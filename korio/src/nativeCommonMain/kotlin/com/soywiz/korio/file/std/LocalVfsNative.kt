@@ -46,9 +46,10 @@ actual val applicationDataVfs: VfsFile get() = cwdVfs
 actual val externalStorageVfs: VfsFile get() = cwdVfs
 actual val userHomeVfs: VfsFile get() = cwdVfs
 
-val rootLocalVfsNative by lazy { LocalVfsNative() }
+val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
+val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
-actual fun localVfs(path: String): VfsFile = rootLocalVfsNative[path]
+actual fun localVfs(path: String, async: Boolean): VfsFile = (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
 
 private val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isMemoryLeakCheckerActive = false } }
 
@@ -127,13 +128,22 @@ internal suspend fun fileWrite(file: CPointer<FILE>, position: Long, data: ByteA
 	}
 }
 
-class LocalVfsNative : LocalVfsV2() {
+class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 	val that get() = this
 	override val absolutePath: String get() = ""
 
 	fun resolve(path: String) = path
 
-	override suspend fun exec(
+    suspend fun <T, R> executeInIOWorker(value: T, func: (T) -> R): R {
+        if (async) {
+            return executeInWorker(IOWorker, value, func)
+        } else {
+            return func(value)
+        }
+        //return executeInTempWorker(value, func)
+    }
+
+    override suspend fun exec(
 		path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
 	): Int = posixExec(path, cmdAndArgs, env, handler)
 

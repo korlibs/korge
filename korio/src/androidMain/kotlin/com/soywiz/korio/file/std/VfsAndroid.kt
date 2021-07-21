@@ -40,7 +40,7 @@ actual val externalStorageVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val userHomeVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val tempVfs: VfsFile by lazy { localVfs(tmpdir) }
 
-actual fun localVfs(path: String): VfsFile = LocalVfsJvm()[path]
+actual fun localVfs(path: String, async: Boolean): VfsFile = LocalVfsJvm()[path]
 
 // Extensions
 operator fun LocalVfs.Companion.get(base: File) = localVfs(base)
