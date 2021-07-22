@@ -30,7 +30,8 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 	}
 
 	override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) {
-		val sout = SlidingWindowWithOutput(SlidingWindow(windowBits), out)
+        //println("reader.bigChunkSize=${reader.bigChunkSize}, reader.readWithSize=${reader.readWithSize}")
+		val sout = SlidingWindowWithOutput(SlidingWindow(windowBits), out, reader.bigChunkSize, reader.readWithSize)
 		var lastBlock = false
 		val tempTree = HuffmanTree()
 		val tempDist = HuffmanTree()
@@ -133,6 +134,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
         val sliding: SlidingWindow,
         val out: AsyncOutputStream,
         val flushSize: Int = FLUSH_SIZE,
+        val extraSize: Int = EXTRA_SIZE
     ) {
         companion object {
             const val FLUSH_SIZE = 8 * 1024 * 1024
@@ -142,7 +144,7 @@ open class DeflatePortable(val windowBits: Int) : CompressionMethod {
         }
 
 		// @TODO: Optimize with buffering and copying
-		val bab = FixedSizeByteArrayBuilder(flushSize + EXTRA_SIZE)
+		val bab = FixedSizeByteArrayBuilder(flushSize + extraSize)
         //val bab = ByteArrayBuilder(flushSize + EXTRA_SIZE)
 
 		val output get() = bab.size

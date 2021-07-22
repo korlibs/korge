@@ -31,9 +31,9 @@ interface CompressionMethod {
 }
 
 @UseExperimental(KorioExperimentalApi::class)
-suspend fun CompressionMethod.uncompress(i: AsyncInputStream, o: AsyncOutputStream): Unit = uncompress(BitReader(i), o)
+suspend fun CompressionMethod.uncompress(i: AsyncInputStream, o: AsyncOutputStream): Unit = uncompress(BitReader.forInput(i), o)
 @UseExperimental(KorioExperimentalApi::class)
-suspend fun CompressionMethod.compress(i: AsyncInputStream, o: AsyncOutputStream, context: CompressionContext = CompressionContext()): Unit = compress(BitReader(i), o, context)
+suspend fun CompressionMethod.compress(i: AsyncInputStream, o: AsyncOutputStream, context: CompressionContext = CompressionContext()): Unit = compress(BitReader.forInput(i), o, context)
 
 suspend fun CompressionMethod.uncompressStream(input: AsyncInputStream): AsyncInputStream = asyncStreamWriter { output -> uncompress(input, output) }
 suspend fun CompressionMethod.compressStream(input: AsyncInputStream, context: CompressionContext = CompressionContext()): AsyncInputStream = asyncStreamWriter { output -> compress(input, output, context) }

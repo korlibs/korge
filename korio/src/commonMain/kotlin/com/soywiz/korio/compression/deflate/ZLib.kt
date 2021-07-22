@@ -13,6 +13,8 @@ import com.soywiz.krypto.encoding.*
 open class ZLib(val deflater: (windowBits: Int) -> CompressionMethod) : CompressionMethod {
 	companion object : ZLib({ Deflate(it) })
 
+    object Portable : ZLib({ DeflatePortable(it) })
+
 	override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) {
 		val r =reader
 		val o = out

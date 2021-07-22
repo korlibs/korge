@@ -75,7 +75,7 @@ open class GZIPBase(val checkCrc: Boolean, val deflater: () -> CompressionMethod
 
 		var size = 0
 		var crc32 = CRC32.initialValue
-		deflater().compress(BitReader(object : AsyncInputStreamWithLength by i {
+		deflater().compress(BitReader.forInput(object : AsyncInputStreamWithLength by i {
 			override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int {
 				val read = i.read(buffer, offset, len)
 				if (read > 0) {

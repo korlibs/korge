@@ -239,6 +239,7 @@ object ASE : ImageFormatWithContainer("ase") {
                                 //cs.skip(6)
                                 val data = cs.readAvailable()
                                 val udata = if (celType == 2) data.uncompress(ZLib) else data
+                                //val udata = if (celType == 2) data.uncompress(ZLib.Portable) else data
                                 //println("celType = $celType, width=$width, height=$height, data=${data.size}, udata=${udata.size}")
                                 val bmp = when (bitsPerPixel) {
                                     32 -> Bitmap32(width, height, RgbaArray(udata.readIntArray(0, width * height, true)))

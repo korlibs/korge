@@ -8,7 +8,7 @@ import com.soywiz.korio.stream.*
 import kotlin.math.*
 
 @KorioExperimentalApi
-open class BitReader(
+open class BitReader constructor(
     val s: AsyncInputStream,
     val bigChunkSize: Int = BIG_CHUNK_SIZE,
     val readWithSize: Int = READ_WHEN_LESS_THAN
@@ -17,8 +17,16 @@ open class BitReader(
         const val BIG_CHUNK_SIZE = 8 * 1024 * 1024 // 8 MB
         //const val BIG_CHUNK_SIZE = 128 * 1024
         //const val BIG_CHUNK_SIZE = 8 * 1024
-
         const val READ_WHEN_LESS_THAN = 32 * 1024
+
+        suspend fun forInput(s: AsyncInputStream): BitReader {
+            if (s is AsyncGetLengthStream && s.hasLength()) {
+                val bigChunkSize = max(READ_WHEN_LESS_THAN, min(s.getLength(), BIG_CHUNK_SIZE.toLong()).toInt())
+                val readWithSize = max(bigChunkSize / 2, READ_WHEN_LESS_THAN)
+                return BitReader(s, bigChunkSize, readWithSize)
+            }
+            return BitReader(s)
+        }
     }
 
 	@PublishedApi
@@ -35,7 +43,7 @@ open class BitReader(
 
 	//private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = false)
     //private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = true)
-    private val sbuffers = RingBuffer(ilog2(BIG_CHUNK_SIZE))
+    private val sbuffers = RingBuffer(ilog2(bigChunkSize))
     private var sbuffersPos = 0.0
 	val requirePrepare get() = sbuffers.availableRead < readWithSize
 
