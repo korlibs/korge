@@ -10,28 +10,29 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
     return when {
         isWindows -> listOf(mingwX64())
         isMacos -> listOf(macosX64(), iosArm64(), iosX64())
-        else -> listOf(linuxX64(), mingwX64(), macosX64(), iosArm64(), iosX64())
+        else -> listOf(linuxX64(), linuxArm32Hfp(), mingwX64(), macosX64(), iosArm64(), iosX64())
     }
 }
 
 if (doEnableKotlinNative) {
-	kotlin {
-		for (target in nativeTargets() ) {
-			target.compilations["main"].cinterops {
+    kotlin {
+        for (target in nativeTargets()) {
+            target.compilations["main"].cinterops {
                 if (target.name == "mingwX64") maybeCreate("win32_winmm")
                 if (target.name == "linuxX64") maybeCreate("linux_OpenAL")
-				maybeCreate("minimp3")
-				maybeCreate("stb_vorbis")
-			}
-		}
+                if (target.name == "linuxArm32Hfp") maybeCreate("linux_rpi_OpenAL")
+                maybeCreate("minimp3")
+                maybeCreate("stb_vorbis")
+            }
+        }
 
-	}
+    }
 }
 
 dependencies {
-	add("commonMainApi", project(":korio"))
-	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
-	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
+    add("commonMainApi", project(":korio"))
+    add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
+    add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
 }
 
 /*

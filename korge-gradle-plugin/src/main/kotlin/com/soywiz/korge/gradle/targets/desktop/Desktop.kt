@@ -28,8 +28,8 @@ private val DESKTOP_NATIVE_TARGET = when {
 val DESKTOP_NATIVE_TARGETS = when {
 	isWindows -> listOf("mingwX64")
 	isMacos -> listOf("macosX64")
-	isLinux -> listOf("linuxX64")
-	else -> listOf("mingwX64", "linuxX64", "macosX64")
+	isLinux -> listOf("linuxX64", "linuxArm32Hfp")
+	else -> listOf("mingwX64", "linuxX64", "linuxArm32Hfp", "macosX64")
 }
 
 private val cnativeTarget = DESKTOP_NATIVE_TARGET.capitalize()
@@ -102,12 +102,11 @@ fun Project.configureNativeDesktop() {
 
 	afterEvaluate {
 		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64())) {
-
 		for (target in when {
 			isWindows -> listOf(kotlin.mingwX64())
 			isMacos -> listOf(kotlin.macosX64())
-			isLinux -> listOf(kotlin.linuxX64())
-			else -> listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64())
+			isLinux -> listOf(kotlin.linuxX64(), kotlin.linuxArm32Hfp())
+			else -> listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.linuxArm32Hfp(), kotlin.mingwX64())
 		}) {
 			val mainCompilation = target.compilations["main"]
 			//println("TARGET: $target")
@@ -125,6 +124,10 @@ fun Project.configureNativeDesktop() {
 
 	project.afterEvaluate {
 		for (target in DESKTOP_NATIVE_TARGETS) {
+			if (isLinux && target.endsWith("Arm32Hfp")) {
+				// don't create an Arm32Hfp test task
+				continue
+			}
 			val taskName = "copyResourcesToExecutableTest_${target.capitalize()}"
 			val targetTestTask = project.tasks.getByName("${target}Test") as KotlinNativeTest
 			val task = project.addTask<Copy>(taskName) { task ->

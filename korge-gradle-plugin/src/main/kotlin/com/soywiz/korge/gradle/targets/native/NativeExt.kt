@@ -22,7 +22,8 @@ fun KotlinNativeCompilation.getCompileTask(kind: NativeOutputKind, type: NativeB
 val KotlinNativeTest.executableFolder get() = executable.parentFile ?: error("Can't get executable folder for KotlinNativeTest")
 
 fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
-    if (project.korge.useMimalloc) {
+    // mimalloc is broken on raspberry pi
+    if (project.korge.useMimalloc && !targetName.contains("Arm32Hfp")) {
         compilations.all {
             it.kotlinOptions.freeCompilerArgs = it.kotlinOptions.freeCompilerArgs + listOf(
                 "-Xallocator=mimalloc",

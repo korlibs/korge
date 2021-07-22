@@ -139,6 +139,7 @@ class KorgeExtension(val project: Project) {
      *
      * - mingwX64
      * - linuxX64
+     * - linuxArm32Hfp
      * - macosX64
      */
     fun targetDesktop() {

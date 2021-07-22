@@ -11,25 +11,26 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
     return when {
         isWindows -> listOf(mingwX64())
         isMacos -> listOf(macosX64(), iosArm64(), iosX64())
-        else -> listOf(linuxX64(), mingwX64(), macosX64())
+        else -> listOf(linuxX64(), linuxArm32Hfp(), mingwX64(), macosX64())
     }
 }
 
 if (doEnableKotlinNative) {
-	kotlin {
+    kotlin {
         for (target in nativeTargets()) {
             target.compilations["main"].cinterops {
                 if (target.name == "linuxX64") maybeCreate("GL")
+                if (target.name == "linuxArm32Hfp") maybeCreate("GL_rpi")
                 //if (target.name == "linuxX64") maybeCreate("X11")
             }
         }
-	}
+    }
 }
 
 dependencies {
     add("commonMainApi", project(":korim"))
-	add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
-	add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
+    add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
+    add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
     if (hasAndroid) {
         add("androidMainApi", "com.android.support:appcompat-v7:28.0.0")
     }

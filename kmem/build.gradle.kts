@@ -11,8 +11,8 @@ dependencies {
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOf(mingwX64())
-            isMacos -> listOf(macosX64(), iosArm64(), iosX64())
-            else -> listOf(linuxX64(), mingwX64(), macosX64(), iosArm64(), iosX64())
+        isMacos -> listOf(macosX64(), iosArm64(), iosX64())
+        else -> listOf(linuxX64(), linuxArm32Hfp(), mingwX64(), macosX64(), iosArm64(), iosX64())
     }
 }
 

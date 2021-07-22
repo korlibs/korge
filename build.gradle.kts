@@ -74,7 +74,12 @@ val doEnableKotlinAndroid get() = enableKotlinAndroid == "true"
 val enableKotlinMobile:String by project
 val doEnableKotlinMobile get() = enableKotlinMobile == "true"
 
-val KotlinTarget.isLinux get() = this.name == "linuxX64"
+val enableKotlinRaspberryPi: String by project
+val doEnableKotlinRaspberryPi get() = enableKotlinRaspberryPi == "true"
+
+val KotlinTarget.isLinuxX64 get() = this.name == "linuxX64"
+val KotlinTarget.isLinuxArm32Hfp get() = this.name == "linuxArm32Hfp" && doEnableKotlinRaspberryPi
+val KotlinTarget.isLinux get() = isLinuxX64 || isLinuxArm32Hfp
 val KotlinTarget.isWin get() = this.name == "mingwX64"
 val KotlinTarget.isMacosX64 get() = this.name == "macosX64"
 val KotlinTarget.isMacosArm64 get() = this.name == "macosArm64"
@@ -124,10 +129,12 @@ kotlin {
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+    val targetRaspberryPi = if (doEnableKotlinRaspberryPi) listOf(linuxArm32Hfp()) else listOf()
+
     return when {
         isWindows -> listOf(mingwX64())
         isMacos -> listOf(macosX64(), macosArm64())
-        else -> listOf(linuxX64(), mingwX64(), macosX64(), macosArm64())
+        else -> listOf(linuxX64(), mingwX64(), macosX64(), macosArm64()) + targetRaspberryPi
     }
 }
 
@@ -265,7 +272,8 @@ subprojects {
                 target.compilations.all {
                     // https://github.com/JetBrains/kotlin/blob/ec6c25ef7ee3e9d89bf9a03c01e4dd91789000f5/kotlin-native/konan/konan.properties#L875
                     kotlinOptions.freeCompilerArgs = ArrayList<String>().apply {
-                        if (useMimalloc) add("-Xallocator=mimalloc")
+                        // Raspberry Pi doesn't support mimalloc at this time
+                        if (useMimalloc && !target.name.contains("Arm32Hfp")) add("-Xallocator=mimalloc")
                         add("-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64")
                     }
                     kotlinOptions.suppressWarnings = true
