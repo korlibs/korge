@@ -1,0 +1,5 @@
+
+Sprites:
+
+<http://finalbossblues.com/timefantasy/freebies/evil-transforming-vampires/>
+Author despain, Jason
