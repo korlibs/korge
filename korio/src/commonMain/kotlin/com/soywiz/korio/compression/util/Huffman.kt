@@ -12,6 +12,7 @@ internal class HuffmanTree {
 		private const val MAX_LEN = 16
 		private const val MAX_CODES = 288
 
+        //private const val ENABLE_EXPERIMENTAL_FAST_READ = false
 		private const val ENABLE_EXPERIMENTAL_FAST_READ = true
         private const val ENABLE_EXPERIMENTAL_FAST_READ_V2 = true
 		//private const val ENABLE_EXPERIMENTAL_FAST_READ = false
@@ -41,9 +42,9 @@ internal class HuffmanTree {
     //var slowReadCount = 0
 
 	fun read(reader: BitReader): Int {
-        reader.ensureBits(FAST_BITS)
+        if (ENABLE_EXPERIMENTAL_FAST_READ) reader.ensureBits(FAST_BITS)
         var node = this.root
-        if (reader.bitsavailable >= FAST_BITS) {
+        if (ENABLE_EXPERIMENTAL_FAST_READ && reader.bitsavailable >= FAST_BITS) {
             //println("${reader.bitsavailable} >= $FAST_BITS")
             val bits = reader.peekBits(FAST_BITS)
             val raw = FAST_INFO[bits]
