@@ -418,7 +418,7 @@ object ASE : ImageFormatWithContainer("ase") {
             )
         }
 
-        return ImageDataContainer(listOf(defaultData) + datas)
+        return ImageDataContainer(datas.ifEmpty { listOf(defaultData) })
     }
 
     fun SyncStream.readRGB(): RGBA = RGBA(readU8(), readU8(), readU8())
