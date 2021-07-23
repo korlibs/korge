@@ -1,20 +1,9 @@
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korev.*
 import com.soywiz.korge.*
-import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.animation.*
-import com.soywiz.korim.atlas.*
-import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 
 fun Container.mybutton(font: Font): View {
@@ -24,55 +13,7 @@ fun Container.mybutton(font: Font): View {
     }
 }
 
-suspend fun Stage.mainVampire() {
-    val atlas = MutableAtlas<Unit>(512, 512)
-    //val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
-    //val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
-    val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
-    val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
-
-    //image(atlas.bitmap)
-
-    container {
-        scale = 2.0
-        imageDataView(slices["wizHat"]).xy(0, 50)
-        imageDataView(slices["giantHilt"]).xy(32, 50)
-        imageDataView(slices["pumpkin"]).xy(64, 50)
-    }
-
-    //val ase2 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
-    //val ase3 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
-    //for (bitmap in atlas.allBitmaps) image(bitmap) // atlas generation
-
-    val character = imageDataView(ase, "down") {
-        stop()
-    }
-
-    addUpdater {
-        val left = keys[Key.LEFT]
-        val right = keys[Key.RIGHT]
-        val up = keys[Key.UP]
-        val down = keys[Key.DOWN]
-        if (left) character.x -= 2.0
-        if (right) character.x += 2.0
-        if (up) character.y -= 2.0
-        if (down) character.y += 2.0
-        character.animation = when {
-            left -> "left"; right -> "right"; up -> "up"; down -> "down"
-            else -> character.animation
-        }
-        if (left || right || up || down) {
-            character.play()
-        } else {
-            character.stop()
-            character.rewind()
-        }
-    }
-}
-
 suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false) {
-    //mainVampire()
-    //return@Korge
 
     val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
 
