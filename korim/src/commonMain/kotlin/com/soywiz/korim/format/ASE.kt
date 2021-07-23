@@ -401,7 +401,7 @@ object ASE : ImageFormatWithContainer("ase") {
                     // @TODO: Linked frame?
                     //ImageFrameLayer(it.layer, it.slice.bmp.slice(sliceKey.sliceFrame, it.slice.name), it.targetX, it.targetY, it.main, it.includeInAtlas, null)
                     //println("name=${slice.name}: it.slice=${it.slice.bounds}, sliceKey.sliceFrame=${sliceKey.sliceFrame}")
-                    ImageFrameLayer(it.layer, it.slice.slice(sliceKey.sliceFrame, it.slice.name), it.targetX, it.targetY, it.main, it.includeInAtlas, null)
+                    ImageFrameLayer(it.layer, it.slice.slice(sliceKey.sliceFrame, it.slice.name), it.targetX - sliceKey.pivotX, it.targetY - sliceKey.pivotY, it.main, it.includeInAtlas, null)
                 })
             }
             val animations = image.tags.map {
