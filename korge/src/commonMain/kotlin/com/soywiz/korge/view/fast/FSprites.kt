@@ -7,6 +7,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 @PublishedApi
@@ -16,18 +17,40 @@ open class FSprites(val maxSize: Int) {
     var size = 0
     val available get() = maxSize - size
     val data = FBuffer(maxSize * FSPRITES_STRIDE * 4)
+    val dataColorMul = FBuffer(maxSize * 4)
+    private val freeItems = IntArrayList()
     private val i32 = data.i32
     private val f32 = data.f32
+    private val icolorMul32 = dataColorMul.i32
 
     fun uploadVertices(ctx: RenderContext) {
         ctx.fastSpriteBuffer.buffer.upload(data, 0, size * FSPRITES_STRIDE * 4)
+        ctx.fastSpriteBufferMul.buffer.upload(dataColorMul, 0, size * 4)
     }
 
     fun unloadVertices(ctx: RenderContext) {
         ctx.fastSpriteBuffer.buffer.upload(data, 0, 0)
     }
 
-    fun alloc() = FSprite(size++ * FSPRITES_STRIDE)
+    fun FSprite.reset() {
+        x = 0f
+        y = 0f
+        scaleX = 1f
+        scaleY = 1f
+        radiansf = 0f
+        colorMul = Colors.WHITE
+    }
+
+    fun alloc(): FSprite =
+        FSprite(when {
+            freeItems.isNotEmpty() -> freeItems.removeAt(freeItems.size - 1)
+            else -> size++ * FSPRITES_STRIDE
+        }).also { it.reset() }
+
+    fun free(item: FSprite) {
+        freeItems.add(item.id)
+        item.colorMul = Colors.TRANSPARENT_BLACK // Hide this
+    }
 
     var FSprite.x: Float get() = f32[offset + 0] ; set(value) { f32[offset + 0] = value }
     var FSprite.y: Float get() = f32[offset + 1] ; set(value) { f32[offset + 1] = value }
@@ -37,6 +60,8 @@ open class FSprites(val maxSize: Int) {
     var FSprite.anchorRaw: Int get() = i32[offset + 5] ; set(value) { i32[offset + 5] = value }
     var FSprite.tex0Raw: Int get() = i32[offset + 6] ; set(value) { i32[offset + 6] = value }
     var FSprite.tex1Raw: Int get() = i32[offset + 7] ; set(value) { i32[offset + 7] = value }
+
+    var FSprite.colorMul: RGBA get() = RGBA(icolorMul32[index]) ; set(value) { icolorMul32[index] = value.value }
 
     var FSprite.angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians.toFloat() }
 
@@ -96,7 +121,6 @@ open class FSprites(val maxSize: Int) {
         //const val STRIDE = 8
 
         val u_i_texSize = Uniform("u_texSize", VarType.Float2)
-        val v_color = Varying("v_color", VarType.Float4)
         val a_xy = Attribute("a_xy", VarType.Float2, false)
 
         val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
@@ -105,6 +129,7 @@ open class FSprites(val maxSize: Int) {
         val a_anchor = Attribute("a_axy", VarType.SShort2, true).withDivisor(1)
         val a_uv0 = Attribute("a_uv0", VarType.UShort2, false).withDivisor(1)
         val a_uv1 = Attribute("a_uv1", VarType.UShort2, false).withDivisor(1)
+        val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW).withDivisor(1)
 
         val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_xy)
@@ -112,8 +137,11 @@ open class FSprites(val maxSize: Int) {
         val RenderContext.fastSpriteBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_pos, a_scale, a_angle, a_anchor, a_uv0, a_uv1)
         }
+        val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AG.VertexData> {
+            ag.createVertexData(a_colMul)
+        }
         val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AG.VertexData>> {
-            fastArrayListOf(xyBuffer, fastSpriteBuffer)
+            fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul)
         }
 
         val vprogram = Program(VertexShader {
@@ -122,6 +150,7 @@ open class FSprites(val maxSize: Int) {
                 //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
                 val baseSize = t_Temp1["xy"]
                 SET(baseSize, a_uv1 - a_uv0)
+                SET(v_Col, a_colMul)
 
                 SET(v_Tex, vec2(
                     mix(a_uv0.x, a_uv1.x, a_xy.x),
@@ -149,6 +178,7 @@ open class FSprites(val maxSize: Int) {
                 //SET(out, vec4(1f.lit, 0f.lit, 1f.lit, .5f.lit))
                 IF(out["a"] le 0f.lit) { DISCARD() }
                 SET(out["rgb"], out["rgb"] / out["a"])
+                SET(out["rgba"], out["rgba"] * v_Col)
             }
         })
 
@@ -167,6 +197,8 @@ inline class FSprite(val id: Int) {
     val index get() = offset / FSPRITES_STRIDE
     //val offset get() = index * STRIDE
 }
+
+fun FSpriteFromIndex(index: Int) = FSprite(index * FSPRITES_STRIDE)
 
 inline fun <T : FSprites> T.fastForEach(callback: T.(sprite: FSprite) -> Unit) {
     var m = 0
