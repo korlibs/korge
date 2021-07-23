@@ -25,8 +25,8 @@ suspend fun Stage.mainVampire() {
     val sw = Stopwatch().start()
     val aseAll = resourcesVfs["characters.ase"].readImageDataContainer(ASE, atlas = atlas)
     val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
-    val ase = aseAll["vampire"]
-    val ase2 = aseAll["vamp"]
+    val vampireSprite = aseAll["vampire"]
+    val vampSprite = aseAll["vamp"]
     //val ase = aseAll["vamp"]
     //for (n in 0 until 10000) {
     //    resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
@@ -50,11 +50,11 @@ suspend fun Stage.mainVampire() {
     container {
         keepChildrenSortedByY()
 
-        val character1 = imageDataView(ase, "down") {
+        val character1 = imageDataView(vampireSprite, "down") {
             stop()
         }
 
-        val character2 = imageDataView(ase2, "down") {
+        val character2 = imageDataView(vampSprite, "down") {
             stop()
         }
 

@@ -1,3 +1,15 @@
+import kotlinx.coroutines.*
+
+object KorgeEditor {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        runBlocking {
+            main()
+        }
+    }
+}
+
+/*
 import com.soywiz.korge.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
@@ -144,3 +156,4 @@ private var View.skewXDeg: Double
 private var View.skewYDeg: Double
     get() = skewY.degrees
     set(value) { skewY = value.degrees }
+*/
