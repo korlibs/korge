@@ -9,6 +9,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.collider.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
@@ -91,20 +92,20 @@ fun Stage.controlWithKeyboard(
     down: Key = Key.DOWN,
     left: Key = Key.LEFT,
 ) {
-    addUpdater {
-        val speed = 2.0
+    addUpdater { dt ->
+        val speed = 5.0 * (dt / 16.0.milliseconds)
         var dx = 0.0
         var dy = 0.0
         val pressingLeft = keys[left]
         val pressingRight = keys[right]
         val pressingUp = keys[up]
         val pressingDown = keys[down]
-        if (pressingLeft) dx = -speed
-        if (pressingRight) dx = +speed
-        if (pressingUp) dy = -speed
-        if (pressingDown) dy = +speed
+        if (pressingLeft) dx = -1.0
+        if (pressingRight) dx = +1.0
+        if (pressingUp) dy = -1.0
+        if (pressingDown) dy = +1.0
         if (dx != 0.0 || dy != 0.0) {
-            char.moveWithCollider(dx, dy, collider)
+            char.moveWithCollider(Point(dx, dy).normalized * speed, collider)
         }
         char.animation = when {
             pressingLeft -> "left"

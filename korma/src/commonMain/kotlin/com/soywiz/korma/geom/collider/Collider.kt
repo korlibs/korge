@@ -160,3 +160,5 @@ fun XY.moveWithCollider(dx: Double, dy: Double, collider: MovementCollider) {
     if (this.x != tempOut.x && !tempOut.x.isNanOrInfinite()) this.x = tempOut.x
     if (this.y != tempOut.y && !tempOut.y.isNanOrInfinite()) this.y = tempOut.y
 }
+
+fun XY.moveWithCollider(delta: IPoint, collider: MovementCollider) = moveWithCollider(delta.x, delta.y, collider)
