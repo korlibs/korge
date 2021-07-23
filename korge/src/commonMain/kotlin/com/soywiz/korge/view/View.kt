@@ -58,6 +58,7 @@ abstract class View internal constructor(
     , Extra
     , KorgeDebugNode
     , BView
+    , XY
 //, EventDispatcher by EventDispatcher.Mixin()
 {
     override var extra: ExtraType = null
@@ -232,7 +233,7 @@ abstract class View internal constructor(
         }
 
     /** Local X position of this view */
-    var x: Double
+    override var x: Double
         get() {
             ensureTransform()
             return _x
@@ -246,7 +247,7 @@ abstract class View internal constructor(
         }
 
     /** Local Y position of this view */
-    var y: Double
+    override var y: Double
         get() {
             ensureTransform()
             return _y

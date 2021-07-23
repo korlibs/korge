@@ -7,6 +7,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.collider.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
 
@@ -19,7 +20,8 @@ open class Graphics @JvmOverloads constructor(
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
-	private val compoundShape = CompoundShape(shapes)
+    val allShapes: List<Shape> get() = shapes
+    private val compoundShape = CompoundShape(shapes)
 	private var fill: Paint? = null
 	private var stroke: Paint? = null
 	@PublishedApi
@@ -217,3 +219,5 @@ open class Graphics @JvmOverloads constructor(
         shapes.fastForEach { it.addBounds(bb) }
     }
 }
+
+fun Graphics.toCollider(): MovementCollider = this.allShapes.map { it.getPath() }.toCollider()

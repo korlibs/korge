@@ -5,9 +5,12 @@ import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.atlas.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.collider.*
+import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 
 suspend fun main() = Korge {
@@ -47,50 +50,74 @@ suspend fun Stage.mainVampire() {
     //val ase3 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
     //for (bitmap in atlas.allBitmaps) image(bitmap) // atlas generation
 
+    val gg = graphics {
+        fill(Colors.RED) {
+            rect(300, 0, 100, 100)
+        }
+        fill(Colors.RED) {
+            circle(400, 400, 50)
+        }
+        fill(Colors.BLUE) {
+            star(5, 30.0, 100.0, x = 400.0, y = 300.0)
+            //star(400, 400, 50)
+        }
+    }
+    //val path = buildPath { rect(300, 0, 100, 100) }
+    val collider = gg.toCollider()
+
     container {
         keepChildrenSortedByY()
 
         val character1 = imageDataView(vampireSprite, "down") {
             stop()
+            xy(100, 100)
         }
 
         val character2 = imageDataView(vampSprite, "down") {
             stop()
+            xy(120, 110)
         }
 
-        controlWithKeyboard(character1, up = Key.UP, right = Key.RIGHT, down = Key.DOWN, left = Key.LEFT)
-        controlWithKeyboard(character2, up = Key.W, right = Key.D, down = Key.S, left = Key.A)
+        controlWithKeyboard(character1, collider, up = Key.UP, right = Key.RIGHT, down = Key.DOWN, left = Key.LEFT)
+        controlWithKeyboard(character2, collider, up = Key.W, right = Key.D, down = Key.S, left = Key.A)
     }
 }
 
 fun Stage.controlWithKeyboard(
-    character1: ImageDataView,
+    char: ImageDataView,
+    collider: MovementCollider,
     up: Key = Key.UP,
     right: Key = Key.RIGHT,
     down: Key = Key.DOWN,
     left: Key = Key.LEFT,
 ) {
     addUpdater {
+        val speed = 2.0
+        var dx = 0.0
+        var dy = 0.0
         val pressingLeft = keys[left]
         val pressingRight = keys[right]
         val pressingUp = keys[up]
         val pressingDown = keys[down]
-        if (pressingLeft) character1.x -= 2.0
-        if (pressingRight) character1.x += 2.0
-        if (pressingUp) character1.y -= 2.0
-        if (pressingDown) character1.y += 2.0
-        character1.animation = when {
+        if (pressingLeft) dx = -speed
+        if (pressingRight) dx = +speed
+        if (pressingUp) dy = -speed
+        if (pressingDown) dy = +speed
+        if (dx != 0.0 || dy != 0.0) {
+            char.moveWithCollider(dx, dy, collider)
+        }
+        char.animation = when {
             pressingLeft -> "left"
             pressingRight -> "right"
             pressingUp -> "up"
             pressingDown -> "down"
-            else -> character1.animation
+            else -> char.animation
         }
         if (pressingLeft || pressingRight || pressingUp || pressingDown) {
-            character1.play()
+            char.play()
         } else {
-            character1.stop()
-            character1.rewind()
+            char.stop()
+            char.rewind()
         }
     }
 }

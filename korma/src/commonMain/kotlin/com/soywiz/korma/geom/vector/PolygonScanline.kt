@@ -1,7 +1,6 @@
 package com.soywiz.korma.geom.vector
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
@@ -25,6 +24,7 @@ open class RastScale {
     val hscale get() = RAST_FIXED_SCALE_HALF
 
     val Double.s: Int get() = ((this * sscale).toInt() + hscale)
+    val Int.d: Double get() = (this.toDouble() - hscale) / sscale
     //@PublishedApi
     //internal val Int.us: Double get() = (this.toDouble() - RAST_FIXED_SCALE_HALF) * scale / RAST_FIXED_SCALE
     //@PublishedApi
@@ -35,7 +35,7 @@ open class RastScale {
 // @TODO: We shouldn't propagate the complexity of coordinate scaling here. We should just support integers here and do the conversions outside.
 @KormaExperimental
 class PolygonScanline : RastScale() {
-    var version = 0
+    var version = -1
     var winding = Winding.NON_ZERO
     private val boundsBuilder = BoundsBuilder()
 
@@ -103,6 +103,9 @@ class PolygonScanline : RastScale() {
 
     @PublishedApi
     internal val edges = FastArrayList<Edge>()
+    @PublishedApi
+    internal val hedges = FastArrayList<Edge>()
+    internal val allEdges = FastArrayList<Edge>()
     private val buckets = AllBuckets()
 
     fun getBounds(out: Rectangle = Rectangle()) = boundsBuilder.getBounds(out)
@@ -112,7 +115,10 @@ class PolygonScanline : RastScale() {
         closed = true
         boundsBuilder.reset()
         edges.fastForEach { edgesPool.free(it) }
+        hedges.fastForEach { edgesPool.free(it) }
         edges.clear()
+        hedges.clear()
+        allEdges.clear()
         points.clear()
         buckets.clear()
         moveToX = 0.0
@@ -137,14 +143,19 @@ class PolygonScanline : RastScale() {
 
     private fun addEdge(ax: Double, ay: Double, bx: Double, by: Double) {
         if (ax == bx && ay == by) return
-        if (ay == by) return // Do not add coplanar to X edges
+        val isHorizontal = ay == by
         val iax = ax.s
         val ibx = bx.s
         val iay = ay.s
         val iby = by.s
         val edge = if (ay < by) edgesPool.alloc().setTo(iax, iay, ibx, iby, +1) else edgesPool.alloc().setTo(ibx, iby, iax, iay, -1)
-        edges.add(edge)
-        buckets.add(edge)
+        allEdges.add(edge)
+        if (isHorizontal) {
+            hedges.add(edge)
+        } else {
+            edges.add(edge)
+            buckets.add(edge)
+        }
 
         boundsBuilder.add(ax, ay)
         boundsBuilder.add(bx, by)
@@ -279,6 +290,38 @@ class PolygonScanline : RastScale() {
         scanline(y, winding, ss.clear())
         return ss.contains(x)
     }
+
+    fun getAllLines(): List<Line> = allEdges.map { Line(it.ax.d, it.ay.d, it.bx.d, it.by.d) }
+
+    fun getLineIntersection(x0: Int, y0: Int, x1: Int, y1: Int, out: LineIntersection = LineIntersection()): LineIntersection? {
+        // @TODO: Optimize not iterating over all the edges, but only the ones between y0 and y1
+        allEdges.fastForEachWithIndex { index, edge ->
+            val res = Edge.getIntersectXY(
+                edge.ax.toDouble(), edge.ay.toDouble(), edge.bx.toDouble(), edge.by.toDouble(),
+                x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble(),
+                out.intersection
+            )
+            val iX = out.intersection.x
+            val iY = out.intersection.y
+            if (res != null) {
+                if (iY.toInt() in y0..y1 || iY.toInt() in y1..y0) {
+                    println("index=$index, edge=$edge")
+                    out.setFrom(
+                        edge.ax.d, edge.ay.d, edge.bx.d, edge.by.d,
+                        out.intersection.x.toInt().d, out.intersection.y.toInt().d,
+                        Point.distance(x0.d, y0.d, x1.d, y1.d)
+                    )
+                    return out
+                }
+            }
+        }
+        return null
+    }
+
+    fun getLineIntersection(x0: Double, y0: Double, x1: Double, y1: Double, out: LineIntersection = LineIntersection()) = getLineIntersection(x0.s, y0.s, x1.s, y1.s, out)
+    fun getLineIntersection(a: IPointInt, b: IPointInt, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x, a.y, b.x, b.y, out)
+    fun getLineIntersection(a: IPoint, b: IPoint, out: LineIntersection = LineIntersection()) = getLineIntersection(a.x.s, a.y.s, b.x.s, b.y.s, out)
+    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()) = getLineIntersection(line.a, line.b, out)
 
     private class XWithWind {
         val x = IntArrayList(1024)

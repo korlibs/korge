@@ -133,7 +133,9 @@ data class Point(
         inline operator fun invoke(angle: Angle, length: Double = 1.0): Point = fromPolar(angle, length)
 
         /** Constructs a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-        fun fromPolar(angle: Angle, length: Double = 1.0): Point = Point(angle.cosine * length, angle.sine * length)
+        fun fromPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = Point(x + angle.cosine * length, y + angle.sine * length)
+        fun fromPolar(angle: Angle, length: Double = 1.0): Point = fromPolar(0.0, 0.0, angle, length)
+        fun fromPolar(base: IPoint, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
 
         fun middle(a: Point, b: Point): Point = Point((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
         fun angle(a: Point, b: Point): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
@@ -150,6 +152,12 @@ data class Point(
 
         fun angle(x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Angle = Angle.between(x1 - x2, y1 - y2, x1 - x3, y1 - y3)
 
+        private fun square(x: Double) = x * x
+        private fun square(x: Int) = x * x
+
+        fun distanceSquared(x1: Double, y1: Double, x2: Double, y2: Double): Double = square(x1 - x2) + square(y1 - y2)
+        fun distanceSquared(x1: Int, y1: Int, x2: Int, y2: Int): Int = square(x1 - x2) + square(y1 - y2)
+
         fun distance(a: Double, b: Double): Double = kotlin.math.abs(a - b)
         fun distance(x1: Double, y1: Double, x2: Double, y2: Double): Double = kotlin.math.hypot(x1 - x2, y1 - y2)
         fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
@@ -157,6 +165,11 @@ data class Point(
 
         fun distance(a: Point, b: Point): Double = distance(a.x, a.y, b.x, b.y)
         fun distance(a: IPointInt, b: IPointInt): Double = distance(a.x, a.y, b.x, b.y)
+
+        fun distanceSquared(a: Point, b: Point): Double = distanceSquared(a.x, a.y, b.x, b.y)
+        fun distanceSquared(a: IPointInt, b: IPointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
+
+        fun dot(a: IPoint, b: IPoint): Double = (a.x * b.x) + (a.y * b.y)
 
         //val ax = x1 - x2
         //val ay = y1 - y2
@@ -166,6 +179,10 @@ data class Point(
         //val bl = hypot(bx, by)
         //return acos((ax * bx + ay * by) / (al * bl))
     }
+
+    fun floor() = setTo(floor(x), floor(y))
+    fun round() = setTo(round(x), round(y))
+    fun ceil() = setTo(ceil(x), ceil(y))
 
     fun setTo(x: Double, y: Double): Point {
         this.x = x
@@ -180,7 +197,9 @@ data class Point(
     }
 
     /** Updates a point from polar coordinates determined by an [angle] and a [length]. Angle 0 is pointing to the right, and the direction is counter-clock-wise */
-    fun setToPolar(angle: Angle, length: Double = 1.0): Point = setTo(angle.cosine * length, angle.sine * length)
+    fun setToPolar(angle: Angle, length: Double = 1.0): Point = setToPolar(0.0, 0.0, angle, length)
+    fun setToPolar(base: IPoint, angle: Angle, length: Double = 1.0): Point = setToPolar(base.x, base.y, angle, length)
+    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = setTo(x + angle.cosine * length, y + angle.sine * length)
 
     fun neg() = setTo(-this.x, -this.y)
     fun mul(s: Double) = setTo(this.x * s, this.y * s)
@@ -190,10 +209,14 @@ data class Point(
     fun add(p: Point) = this.setToAdd(this, p)
     fun sub(p: Point) = this.setToSub(this, p)
 
+    fun add(x: Double, y: Double) = this.setTo(this.x + x, this.y + y)
+    fun sub(x: Double, y: Double) = this.setTo(this.x - x, this.y - y)
+
     fun copyFrom(that: Point) = setTo(that.x, that.y)
 
     fun setToTransform(mat: Matrix, p: Point): Point = setToTransform(mat, p.x, p.y)
     fun setToTransform(mat: Matrix, x: Double, y: Double): Point = setTo(mat.transformX(x, y), mat.transformY(x, y))
+
     fun setToAdd(a: Point, b: Point): Point = setTo(a.x + b.x, a.y + b.y)
     fun setToSub(a: Point, b: Point): Point = setTo(a.x - b.x, a.y - b.y)
     fun setToMul(a: Point, b: Point): Point = setTo(a.x * b.x, a.y * b.y)

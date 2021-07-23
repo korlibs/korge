@@ -124,6 +124,35 @@ inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (x: Doub
     flush(false)
 }
 
+inline fun VectorPath.emitEdges(
+    crossinline edge: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit
+) {
+    var firstX = 0.0
+    var firstY = 0.0
+    var lastX = 0.0
+    var lastY = 0.0
+
+    emitPoints2(
+        flush = { close ->
+            if (close) {
+                edge(lastX, lastY, firstX, firstY)
+                lastX = firstX
+                lastY = firstY
+            }
+        },
+        emit = { x, y, move ->
+            if (move) {
+                firstX = x
+                firstY = y
+            } else {
+                edge(lastX, lastY, x, y)
+            }
+            lastX = x
+            lastY = y
+        }
+    )
+}
+
 inline fun VectorPath.emitPoints2(
     crossinline flush: (close: Boolean) -> Unit = {},
     crossinline joint: (close: Boolean) -> Unit = {},

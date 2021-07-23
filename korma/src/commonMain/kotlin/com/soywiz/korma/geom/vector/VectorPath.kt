@@ -5,7 +5,6 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.korma.annotations.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.internal.niceStr
 import kotlin.native.concurrent.ThreadLocal
 
@@ -98,6 +97,8 @@ open class VectorPath(
             }
         )
     }
+
+    fun getAllLines(): List<Line> = scanline.getAllLines()
 
     inline fun visitEdgesSimple(
         line: (x0: Double, y0: Double, x1: Double, y1: Double) -> Unit,
@@ -229,22 +230,27 @@ open class VectorPath(
     // https://www.particleincell.com/2013/cubic-line-intersection/
     // I run a semi-infinite ray horizontally (increasing x, fixed y) out from the test point, and count how many edges it crosses.
     // At each crossing, the ray switches between inside and outside. This is called the Jordan curve theorem.
+    fun containsPoint(p: Point): Boolean = containsPoint(p.x, p.y, this.winding)
     fun containsPoint(x: Double, y: Double): Boolean = containsPoint(x, y, this.winding)
     fun containsPoint(x: Int, y: Int): Boolean = containsPoint(x.toDouble(), y.toDouble())
     fun containsPoint(x: Float, y: Float): Boolean = containsPoint(x.toDouble(), y.toDouble())
 
-    private val scanline by lazy { PolygonScanline().also {
-        it.add(this)
-        it.version = this.version
-    } }
-    private fun ensureScanline() = scanline.also {
-        if (it.version != this.version) {
-            it.reset()
-            it.add(this)
-            it.version = this.version
+    private var _scanline: PolygonScanline? = null
+
+    @KormaExperimental
+    val scanline: PolygonScanline get() {
+        if (_scanline == null) _scanline = PolygonScanline()
+        val scanline = _scanline!!
+
+        if (scanline.version != this.version) {
+            scanline.reset()
+            scanline.add(this)
+            scanline.version = this.version
         }
+
+        return _scanline!!
     }
-    fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = ensureScanline().containsPoint(x, y, winding)
+    fun containsPoint(x: Double, y: Double, winding: Winding): Boolean = scanline.containsPoint(x, y, winding)
     fun containsPoint(x: Int, y: Int, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
     fun containsPoint(x: Float, y: Float, winding: Winding): Boolean = containsPoint(x.toDouble(), y.toDouble(), winding)
 
@@ -252,8 +258,8 @@ open class VectorPath(
 
     fun intersectsWith(leftMatrix: Matrix, right: VectorPath, rightMatrix: Matrix): Boolean {
         val left = this
-        val leftScanline = left.ensureScanline()
-        val rightScanline = right.ensureScanline()
+        val leftScanline = left.scanline
+        val rightScanline = right.scanline
 
         tempMatrix.invert(rightMatrix)
         tempMatrix.premultiply(leftMatrix)
@@ -274,6 +280,14 @@ open class VectorPath(
             if (leftScanline.containsPoint(tx, ty)) return true
         }
         return false
+    }
+
+    fun getLineIntersection(line: Line, out: LineIntersection = LineIntersection()): LineIntersection? {
+        // Directs from outside the shape, to inside the shape
+//        if (this.containsPoint(line.b) && !this.containsPoint(line.a)) {
+            return this.scanline.getLineIntersection(line, out)
+        //}
+        //return null
     }
 
     //private val p1 = Point()
@@ -355,6 +369,33 @@ open class VectorPath(
         )
     }.trimEnd()
     override fun toString(): String = "VectorPath(${toSvgString()})"
+
+    fun scale(sx: Double, sy: Double = sx): VectorPath {
+        for (n in 0 until data.size step 2) {
+            data[n + 0] *= sx
+            data[n + 1] *= sy
+        }
+        version++
+        return this
+    }
+
+    fun floor(): VectorPath {
+        for (n in 0 until data.size) data[n] = kotlin.math.floor(data[n])
+        version++
+        return this
+    }
+
+    fun round(): VectorPath {
+        for (n in 0 until data.size) data[n] = kotlin.math.round(data[n])
+        version++
+        return this
+    }
+
+    fun ceil(): VectorPath {
+        for (n in 0 until data.size) data[n] = kotlin.math.ceil(data[n])
+        version++
+        return this
+    }
 }
 
 fun VectorBuilder.path(path: VectorPath) {
