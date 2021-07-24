@@ -2,17 +2,43 @@ import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.component.docking.*
+import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.atlas.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.collider.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
+
+//suspend fun main() {
+//    for (n in 0 until 1000) {
+//        val sw = Stopwatch().start()
+//        val atlas = MutableAtlasUnit(1024, 1024)
+//        atlas.add(Bitmap32(64, 64))
+//        //val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
+//        //val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+//        //resourcesVfs["korim.png"].readBitmapSlice().split(32, 32).toAtlas(atlas = atlas)
+//        //val korim = resourcesVfs["korim.png"].readBitmapSlice(atlas = atlas)
+//        val aseAll = resourcesVfs["characters.ase"].readImageDataContainer(ASE, atlas = atlas)
+//        val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+//        val vampireSprite = aseAll["vampire"]
+//        val vampSprite = aseAll["vamp"]
+//        val tiledMap = resourcesVfs["Tilemap/untitled.tmx"].readTiledMap(atlas = atlas)
+//        //val ase = aseAll["vamp"]
+//        //for (n in 0 until 10000) {
+//        //    resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
+//        //    resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+//        //}
+//        println(sw.elapsed)
+//    }
+//}
 
 suspend fun main() = Korge {
     mainVampire()
@@ -21,16 +47,21 @@ suspend fun main() = Korge {
     //withContext(Dispatchers.Unconfined) {
 }
 
-
 suspend fun Stage.mainVampire() {
-    val atlas = MutableAtlas<Unit>(512, 512)
+    val atlas = MutableAtlasUnit(1024, 512, border = 2)
+    //atlas.add(Bitmap32(64, 64))
     //val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
     //val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
     val sw = Stopwatch().start()
+    //resourcesVfs["korim.png"].readBitmapSlice().split(32, 32).toAtlas(atlas = atlas)
+    //val korim = resourcesVfs["korim.png"].readBitmapSlice(atlas = atlas)
     val aseAll = resourcesVfs["characters.ase"].readImageDataContainer(ASE, atlas = atlas)
     val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
     val vampireSprite = aseAll["vampire"]
     val vampSprite = aseAll["vamp"]
+
+    val tiledMap = resourcesVfs["Tilemap/untitled.tmx"].readTiledMap(atlas = atlas)
+    //val tiledMap = resourcesVfs["Tilemap/untitled.tmx"].readTiledMap()
     //val ase = aseAll["vamp"]
     //for (n in 0 until 10000) {
     //    resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
@@ -38,7 +69,15 @@ suspend fun Stage.mainVampire() {
     //}
     println(sw.elapsed)
 
-    //image(atlas.bitmap)
+    //image(korim)
+
+    image(atlas.bitmap);return
+
+    container {
+        scale(2.0)
+        //tiledMapView(tiledMap, smoothing = false)
+        tiledMapView(tiledMap, smoothing = true)
+    }
 
     container {
         scale = 2.0
@@ -50,6 +89,13 @@ suspend fun Stage.mainVampire() {
     //val ase2 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
     //val ase3 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
     //for (bitmap in atlas.allBitmaps) image(bitmap) // atlas generation
+
+    //val gg = buildPath {
+    //    rect(300, 0, 100, 100)
+    //    circle(400, 400, 50)
+    //    star(5, 30.0, 100.0, x = 400.0, y = 300.0)
+    //    //star(400, 400, 50)
+    //}
 
     val gg = graphics {
         fill(Colors.RED) {
