@@ -41,13 +41,20 @@ jobs:
       - run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal -DCI=true
         env:
           DISABLE_JAVASCRIPT_TEST: true
-  publish-android-jvm-js:
+  publish-jvm-js:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal publishJsPublicationToMavenLocal publishAndroidPublicationToMavenLocal -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal publishJsPublicationToMavenLocal -DCI=true
+  publish-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishAndroidPublicationToMavenLocal -DCI=true
   publish-linux:
     runs-on: ubuntu-latest
     steps:
