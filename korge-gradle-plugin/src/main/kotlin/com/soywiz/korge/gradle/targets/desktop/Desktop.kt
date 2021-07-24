@@ -108,22 +108,20 @@ fun Project.configureNativeDesktop() {
 	afterEvaluate {
 		//for (target in listOf(kotlin.macosX64(), kotlin.linuxX64(), kotlin.mingwX64(), kotlin.iosX64(), kotlin.iosArm64())) {
 
-		for (target in ArrayList<KotlinNativeTarget>().apply {
-            when {
-                isWindows -> listOfNotNull(kotlin.mingwX64())
-                isMacos -> listOfNotNull(kotlin.macosX64())
-                isLinux -> listOfNotNull(
-                    kotlin.linuxX64(),
-                    if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null
-                )
-                else -> listOfNotNull(
-                    kotlin.macosX64(),
-                    kotlin.linuxX64(),
-                    if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null,
-                    kotlin.mingwX64()
-                )
-            }
-        }) {
+		for (target in when {
+            isWindows -> listOfNotNull(kotlin.mingwX64())
+            isMacos -> listOfNotNull(kotlin.macosX64())
+            isLinux -> listOfNotNull(
+                kotlin.linuxX64(),
+                if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null
+            )
+            else -> listOfNotNull(
+                kotlin.macosX64(),
+                kotlin.linuxX64(),
+                if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null,
+                kotlin.mingwX64()
+            )
+		}) {
 			val mainCompilation = target.compilations["main"]
 			//println("TARGET: $target")
 			//println(this.binariesTaskName)
