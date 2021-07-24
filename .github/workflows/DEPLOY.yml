@@ -44,9 +44,9 @@ jobs:
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository -DCI=true
       #- run: xvfb-run --auto-servernum ./gradlew --no-daemon assemble check lint testDebugUnitTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository
 
-#  publish-finalize:
-#    needs: [publish-windows, publish-mac, publish-linux]
-#    runs-on: ubuntu-latest
-#    steps:
-#      - uses: actions/checkout@v1
-#      - run: ./gradlew releaseMavenCentral
+  publish-finalize:
+    needs: [publish-windows, publish-mac, publish-linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew releaseMavenCentral
