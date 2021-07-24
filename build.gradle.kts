@@ -381,7 +381,9 @@ subprojects {
                     val macosIosWatchosCommon by lazy { createPairSourceSet("macosIosWatchosCommon", nativePosixApple) }
                     val iosCommon by lazy { createPairSourceSet("iosCommon", iosWatchosTvosCommon) }
 
-                    for (target in nativeTargets()) {
+                    val nativeTargets = nativeTargets()
+
+                    for (target in nativeTargets) {
                         val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
                         if (target.isDesktop) {
                             native.dependsOn(nativeDesktop)
@@ -423,6 +425,37 @@ subprojects {
                                 native.dependsOn(iosTvosCommon)
                                 native.dependsOn(macosIosTvosCommon)
                             }
+                        }
+                    }
+
+
+                    // Copy test resources
+                    afterEvaluate {
+                        for (targetV in nativeTargets) {
+                            val target = targetV.name
+                            val taskName = "copyResourcesToExecutable_$target"
+                            val targetTestTask = tasks.findByName("${target}Test") as? org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest? ?: continue
+                            val compileTestTask = tasks.findByName("compileTestKotlin${target.capitalize()}") ?: continue
+                            val compileMainTask = tasks.findByName("compileKotlin${target.capitalize()}") ?: continue
+
+                            //println("$targetTestTask -> $target")
+
+                            tasks {
+                                create<Copy>(taskName) {
+                                    for (sourceSet in kotlin.sourceSets) {
+                                        from(sourceSet.resources)
+                                    }
+
+                                    into(targetTestTask.executable.parentFile)
+                                }
+                            }
+
+                            targetTestTask.inputs.files(
+                                *compileTestTask.outputs.files.files.toTypedArray(),
+                                *compileMainTask.outputs.files.files.toTypedArray()
+                            )
+
+                            targetTestTask.dependsOn(taskName)
                         }
                     }
                 }
