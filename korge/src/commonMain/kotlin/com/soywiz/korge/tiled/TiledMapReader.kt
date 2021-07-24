@@ -1,9 +1,11 @@
 package com.soywiz.korge.tiled
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.tiled.TiledMap.*
 import com.soywiz.korge.view.tiles.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -19,7 +21,8 @@ import kotlin.collections.set
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
-	createBorder: Int = 1
+	createBorder: Int = 1,
+    atlas: MutableAtlasUnit? = null
 ): TiledMap {
 	val folder = this.parent.jail()
 	val data = readTiledMapData()
@@ -27,7 +30,7 @@ suspend fun VfsFile.readTiledMap(
 	val tiledTilesets = arrayListOf<TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
-		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder)
+		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder, atlas = atlas)
 	}
 
 	return TiledMap(data, tiledTilesets)
@@ -41,7 +44,8 @@ suspend fun TileSetData.toTiledSet(
 	folder: VfsFile,
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
-	createBorder: Int = 1
+	createBorder: Int = 1,
+    atlas: MutableAtlasUnit? = null
 ): TiledTileset {
 	val tileset = this
 	var bmp = try {
@@ -63,52 +67,65 @@ suspend fun TileSetData.toTiledSet(
 		}
 	}
 
-	val ptileset = if (createBorder > 0) {
-		bmp = bmp.toBMP32()
+	val ptileset = when {
+	    atlas != null -> {
+            val tileSet = TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)
+            val map = IntMap<BmpSlice>()
+            tileSet.textures.fastForEachWithIndex { index, value ->
+                if (value != null) {
+                    map[index] = atlas.add(value, Unit).slice
+                }
+            }
+            TileSet(map, tileset.tileWidth, tileset.tileHeight)
+	    }
+        createBorder > 0 -> {
+            bmp = bmp.toBMP32()
 
-		if (tileset.spacing >= createBorder) {
-			// There is already separation between tiles, use it as it is
-			val slices = TileSet.extractBmpSlices(
-				bmp,
-				tileset.tileWidth,
-				tileset.tileHeight,
-				tileset.columns,
-				tileset.tileCount,
-				tileset.spacing,
-				tileset.margin
-			)
-			TileSet(slices, tileset.tileWidth, tileset.tileHeight)
-		} else {
-			// No separation between tiles: create a new Bitmap adding that separation
-			val bitmaps = if (bmp.width != 0 && bmp.height != 0) {
-				TileSet.extractBmpSlices(
-					bmp,
-					tileset.tileWidth,
-					tileset.tileHeight,
-					tileset.columns,
-					tileset.tileCount,
-					tileset.spacing,
-					tileset.margin
-				)
-			} else if (tileset.tiles.isNotEmpty()) {
-				tileset.tiles.map {
-					when (it.image) {
-						is Image.Embedded -> TODO()
-						is Image.External -> {
-                            val file = folder[it.image.source]
-                            file.readBitmapOptimized().toBMP32().slice(name = file.baseName)
+            if (tileset.spacing >= createBorder) {
+                // There is already separation between tiles, use it as it is
+                val slices = TileSet.extractBmpSlices(
+                    bmp,
+                    tileset.tileWidth,
+                    tileset.tileHeight,
+                    tileset.columns,
+                    tileset.tileCount,
+                    tileset.spacing,
+                    tileset.margin
+                )
+                TileSet(slices, tileset.tileWidth, tileset.tileHeight)
+            } else {
+                // No separation between tiles: create a new Bitmap adding that separation
+                val bitmaps = if (bmp.width != 0 && bmp.height != 0) {
+                    TileSet.extractBmpSlices(
+                        bmp,
+                        tileset.tileWidth,
+                        tileset.tileHeight,
+                        tileset.columns,
+                        tileset.tileCount,
+                        tileset.spacing,
+                        tileset.margin
+                    )
+                } else if (tileset.tiles.isNotEmpty()) {
+                    tileset.tiles.map {
+                        when (it.image) {
+                            is Image.Embedded -> TODO()
+                            is Image.External -> {
+                                val file = folder[it.image.source]
+                                file.readBitmapOptimized().toBMP32().slice(name = file.baseName)
+                            }
+                            else -> Bitmap32(0, 0).slice()
                         }
-						else -> Bitmap32(0, 0).slice()
-					}
-				}
-			} else {
-				emptyList()
-			}
-			TileSet.fromBitmapSlices(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
-		}
-	} else {
-		TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)
-	}
+                    }
+                } else {
+                    emptyList()
+                }
+                TileSet.fromBitmapSlices(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
+            }
+        }
+        else -> {
+            TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)
+        }
+    }
 
 	val tiledTileset = TiledTileset(
 		tileset = ptileset,
