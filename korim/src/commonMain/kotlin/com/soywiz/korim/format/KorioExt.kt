@@ -120,7 +120,16 @@ suspend fun VfsFile.readBitmap(
     else -> formats.decode(this.read(), props.copy(filename = this.baseName))
 }
 
-suspend fun VfsFile.readBitmapSlice(premultiplied: Boolean = true): BitmapSlice<Bitmap> = readBitmapOptimized(premultiplied = premultiplied).slice()
+suspend fun VfsFile.readBitmapSlice(premultiplied: Boolean = true, name: String? = null, atlas: MutableAtlasUnit? = null): BitmapSlice<Bitmap> {
+    val result = readBitmapOptimized(premultiplied = premultiplied)
+    return when {
+        atlas != null -> atlas.add(result.toBMP32IfRequired(), Unit, name).slice
+        else -> result.slice()
+    }
+}
+
+fun BmpSlice.toAtlas(atlas: MutableAtlasUnit): BitmapSlice<Bitmap32> = atlas.add(this, Unit).slice
+fun List<BmpSlice>.toAtlas(atlas: MutableAtlasUnit): List<BitmapSlice<Bitmap32>> = this.map { it.toAtlas(atlas) }
 
 suspend fun VfsFile.readVectorImage(): SizedDrawable = readSVG()
 
