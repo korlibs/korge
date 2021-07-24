@@ -62,7 +62,7 @@ suspend fun Stage.mainVampire() {
 
     //image(korim)
 
-    image(atlas.bitmap);return
+    //image(atlas.bitmap);return
 
     container {
         scale(2.0)
