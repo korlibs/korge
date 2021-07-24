@@ -6,6 +6,10 @@ import com.soywiz.korma.geom.binpack.*
 
 typealias MutableAtlasUnit = MutableAtlas<Unit>
 
+fun MutableAtlasUnit.add(bmp: Bitmap32, name: String? = "Slice$size") = add(bmp, Unit, name)
+fun MutableAtlasUnit.add(bmp: BmpSlice, name: String? = bmp.name) = this.add(bmp, Unit, name)
+fun MutableAtlasUnit.add(bmp: BitmapSlice<Bitmap32>, name: String? = bmp.name) = this.add(bmp, Unit, name)
+
 class MutableAtlas<T>(
     var binPacker: BinPacker,
     val border: Int = 2,
