@@ -1,0 +1,57 @@
+name: DEPLOY
+
+on:
+  push:
+    tags:
+      - 'w*'
+
+env:
+  FORCED_VERSION: ${{ github.ref }}
+  BINTRAY_USER: ${{ secrets.BINTRAY_USER }}
+  BINTRAY_KEY: ${{ secrets.BINTRAY_KEY }}
+  ORG_GRADLE_PROJECT_signingKey: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGKEY }}
+  ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.ORG_GRADLE_PROJECT_SIGNINGPASSWORD }}
+  SONATYPE_USERNAME: ${{ secrets.SONATYPEUSERNAME }}
+  SONATYPE_PASSWORD: ${{ secrets.SONATYPEPASSWORD }}
+
+jobs:
+  publish-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: CALL gradlew.bat --no-daemon -DCI=true
+        shell: cmd
+      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenLocal -DCI=true
+        shell: cmd
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
+  publish-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew -DCI=true
+      - run: ./gradlew jvmTest publishMacosX64PublicationToMavenLocal -DCI=true
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
+  publish-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: ./gradlew -DCI=true
+      - run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosX64PublicationToMavenLocal -DCI=true
+        env:
+          DISABLE_JAVASCRIPT_TEST: true
+  publish-android-jvm-js:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenLocal publishJvmPublicationToMavenLocal publishJsPublicationToMavenLocal publishAndroidPublicationToMavenLocal -DCI=true
+  publish-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenLocal -DCI=true
