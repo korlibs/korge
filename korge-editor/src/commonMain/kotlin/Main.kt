@@ -49,24 +49,15 @@ suspend fun main() = Korge {
 
 suspend fun Stage.mainVampire() {
     val atlas = MutableAtlasUnit(1024, 512, border = 2)
-    //atlas.add(Bitmap32(64, 64))
-    //val ase = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
-    //val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
-    val sw = Stopwatch().start()
-    //resourcesVfs["korim.png"].readBitmapSlice().split(32, 32).toAtlas(atlas = atlas)
-    //val korim = resourcesVfs["korim.png"].readBitmapSlice(atlas = atlas)
-    val aseAll = resourcesVfs["characters.ase"].readImageDataContainer(ASE, atlas = atlas)
-    val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
-    val vampireSprite = aseAll["vampire"]
-    val vampSprite = aseAll["vamp"]
 
+    val sw = Stopwatch().start()
+
+    resourcesVfs["korim.png"].readBitmapSlice().split(32, 32).toAtlas(atlas = atlas)
+    val korim = resourcesVfs["korim.png"].readBitmapSlice(atlas = atlas)
+    val characters = resourcesVfs["characters.ase"].readImageDataContainer(ASE, atlas = atlas)
+    val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
     val tiledMap = resourcesVfs["Tilemap/untitled.tmx"].readTiledMap(atlas = atlas)
-    //val tiledMap = resourcesVfs["Tilemap/untitled.tmx"].readTiledMap()
-    //val ase = aseAll["vamp"]
-    //for (n in 0 until 10000) {
-    //    resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
-    //    resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
-    //}
+
     println(sw.elapsed)
 
     //image(korim)
@@ -115,12 +106,12 @@ suspend fun Stage.mainVampire() {
     container {
         keepChildrenSortedByY()
 
-        val character1 = imageDataView(vampireSprite, "down") {
+        val character1 = imageDataView(characters["vampire"], "down") {
             stop()
             xy(100, 100)
         }
 
-        val character2 = imageDataView(vampSprite, "down") {
+        val character2 = imageDataView(characters["vamp"], "down") {
             stop()
             xy(120, 110)
         }
