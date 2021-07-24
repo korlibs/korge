@@ -1,6 +1,7 @@
 package com.soywiz.korim.atlas
 
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.binpack.*
 
 typealias MutableAtlasUnit = MutableAtlas<Unit>
@@ -68,25 +69,49 @@ class MutableAtlas<T>(
         else -> add(bmp.extract().toBMP32IfRequired(), data, name)
     }
 
+    var biggestEmptyEntry: Entry<T>? = null
+
     fun add(bmp: BitmapSlice<Bitmap32>, data: T, name: String? = bmp.name): Entry<T> {
         try {
             val rname = name ?: "Slice$size"
-            val rect = binPacker.add(bmp.width.toDouble() + border * 2, bmp.height.toDouble() + border * 2)
-            val slice = this.bitmap.sliceWithSize(
-                (rect.left + border).toInt(),
-                (rect.top + border).toInt(),
-                bmp.width,
-                bmp.height,
-                rname
-            )
-            val dstX = slice.left
-            val dstY = slice.top
-            this.bitmap.draw(bmp, dstX, dstY)
-            //bmp.bmp.copy(srcX, srcY, this.bitmap, dstX, dstY, w, h)
-            val entry = Entry(slice, data)
+            val isEmpty = bmp.isFullyTransparent()
+            var entry: Entry<T>? = null
+
+            if (isEmpty && biggestEmptyEntry != null) {
+                val bigEmptySlice = biggestEmptyEntry!!.slice
+                if (bigEmptySlice.width >= bmp.width && bigEmptySlice.height >= bmp.height) {
+                    entry = Entry(
+                        bigEmptySlice.slice(RectangleInt(0, 0, bmp.width, bmp.height)),
+                        data
+                    )
+                }
+            }
+
+            if (entry == null) {
+                val rect = binPacker.add(bmp.width.toDouble() + border * 2, bmp.height.toDouble() + border * 2)
+                val slice = this.bitmap.sliceWithSize(
+                    (rect.left + border).toInt(),
+                    (rect.top + border).toInt(),
+                    bmp.width,
+                    bmp.height,
+                    rname
+                )
+                val dstX = slice.left
+                val dstY = slice.top
+                this.bitmap.draw(bmp, dstX, dstY)
+                //this.bitmap.expandBorder(slice.bounds, border)
+                //bmp.bmp.copy(srcX, srcY, this.bitmap, dstX, dstY, w, h)
+                entry = Entry(slice, data)
+
+                if (biggestEmptyEntry == null || bmp.area > biggestEmptyEntry!!.slice.area) {
+                    biggestEmptyEntry = entry
+                }
+            }
+
             entries += entry
             entriesByName[rname] = entry
             bitmap.contentVersion++
+
             return entry
         } catch (e: Throwable) {
             if (!allowToGrow) throw e
