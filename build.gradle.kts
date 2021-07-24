@@ -45,7 +45,8 @@ val kotlinSerializationVersion: String by project
 val forcedVersion = System.getenv("FORCED_VERSION")
 
 allprojects {
-    project.version = forcedVersion?.removePrefix("refs/tags/v")?.removePrefix("v") ?: project.version
+    project.version = forcedVersion?.removePrefix("refs/tags/")?.removePrefix("v")?.removePrefix("w")
+        ?: project.version
 }
 
 allprojects {
