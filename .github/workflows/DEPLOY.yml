@@ -41,13 +41,20 @@ jobs:
       - run: ./gradlew publishIosArm64PublicationToMavenRepository publishIosX64PublicationToMavenRepository -DCI=true
         env:
           DISABLE_JAVASCRIPT_TEST: true
-  publish-android-jvm-js:
+  publish-jvm-multiplatform:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishKotlinMultiplatformPublicationToMavenRepository publishJvmPublicationToMavenRepository -DCI=true
+  publish-js-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - run: sudo apt-get install xvfb
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishJsPublicationToMavenRepository publishAndroidPublicationToMavenRepository -DCI=true
   publish-linux:
     runs-on: ubuntu-latest
     steps:
@@ -57,7 +64,7 @@ jobs:
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenRepository -DCI=true
 
   publish-finalize:
-    needs: [publish-windows, publish-mac, publish-linux, publish-ios, publish-android-jvm-js]
+    needs: [publish-windows, publish-mac, publish-linux, publish-ios, publish-jvm-multiplatform, publish-js-android]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v1
