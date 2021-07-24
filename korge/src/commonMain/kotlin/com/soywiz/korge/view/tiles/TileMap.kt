@@ -329,7 +329,7 @@ open class TileMap(
                 buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
             )
         }
-		ctx.flush()
+		//ctx.flush()
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
