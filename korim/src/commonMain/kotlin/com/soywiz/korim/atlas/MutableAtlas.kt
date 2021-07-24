@@ -99,7 +99,7 @@ class MutableAtlas<T>(
                 val dstX = slice.left
                 val dstY = slice.top
                 this.bitmap.draw(bmp, dstX, dstY)
-                //this.bitmap.expandBorder(slice.bounds, border)
+                this.bitmap.expandBorder(slice.bounds, border)
                 //bmp.bmp.copy(srcX, srcY, this.bitmap, dstX, dstY, w, h)
                 entry = Entry(slice, data)
 
