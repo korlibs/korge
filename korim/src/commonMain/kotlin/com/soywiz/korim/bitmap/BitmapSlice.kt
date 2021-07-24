@@ -123,7 +123,9 @@ class BitmapSlice<out T : Bitmap>(
     override fun slice(rect: RectangleInt, name: String?): BitmapSlice<T> = sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name)
     override fun slice(rect: Rectangle, name: String?): BitmapSlice<T> = slice(rect.toInt(), name)
 
-    fun split(width: Int, height: Int): List<BitmapSlice<T>> {
+    fun split(width: Int, height: Int): List<BitmapSlice<T>> = splitInRows(width, height)
+
+    fun splitInRows(width: Int, height: Int): List<BitmapSlice<T>> {
         val self = this
         val nheight = self.height / height
         val nwidth = self.width / width

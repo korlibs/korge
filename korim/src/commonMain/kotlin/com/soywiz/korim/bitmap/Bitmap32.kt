@@ -495,3 +495,37 @@ class Bitmap32(
 
     override fun toBMP32(): Bitmap32 = this
 }
+
+
+fun BitmapSlice<Bitmap32>.isFullyTransparent(): Boolean {
+    val bmp = this.bmp
+    val data = this.bmp.data
+    val width = right - left
+    for (y in top until bottom) {
+        val index = bmp.index(left, y)
+        for (n in 0 until width) if (data[index + n].a != 0) return false
+    }
+    return true
+}
+
+fun Bitmap32.expandBorder(area: IRectangleInt, border: Int) {
+    val data = this.data.ints
+    var x0Index = index(area.left, area.top)
+    var x1Index = index(area.right - 1, area.top)
+    for (n in 0 until area.height) {
+        val x0Color = data[x0Index]
+        val x1Color = data[x1Index]
+        for (m in 0 until border) {
+            data[x0Index - m - 1] = x0Color
+            data[x1Index + m + 1] = x1Color
+        }
+        x0Index += width
+        x1Index += width
+    }
+    for (m in 0 until border) {
+        val x = area.left - border
+        val npixels = area.width + border * 2
+        arraycopy(data, index(x, area.top), data, index(x, area.top - m - 1), npixels)
+        arraycopy(data, index(x, area.bottom - 1), data, index(x, area.bottom + m), npixels)
+    }
+}
