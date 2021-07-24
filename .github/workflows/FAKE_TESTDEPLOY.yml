@@ -1,4 +1,4 @@
-name: DEPLOY
+name: FAKE_TESTDEPLOY
 
 on:
   push:
