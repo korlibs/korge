@@ -8,6 +8,8 @@ pluginManagement {
 	}
 }
 
+val inCI = System.getProperty("CI") == "true"
+
 /*
 for (file in rootDir.listFiles()) {
 	if (file.name == "build" || file.name == "buildSrc" || file.name.startsWith(".")) continue
@@ -36,11 +38,14 @@ include(":korgw")
 include(":korvi")
 include(":kbox2d")
 include(":korge")
-include(":korge-editor")
 include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
 include(":korge-gradle-plugin")
+
+if (!inCI) {
+    include(":korge-editor")
+}
 
 /*
 for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {

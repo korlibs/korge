@@ -19,10 +19,10 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
-      - run: CALL gradlew.bat --no-daemon
+      - run: CALL gradlew.bat --no-daemon -DCI=true
         shell: cmd
       #- run: CALL gradlew.bat --no-daemon assemble check publishMingwX64PublicationToMavenRepository
-      - run: CALL gradlew.bat --no-daemon assemble jvmTest publishMingwX64PublicationToMavenRepository
+      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenRepository -DCI=true
         shell: cmd
         env:
           DISABLE_JAVASCRIPT_TEST: true
@@ -30,8 +30,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v1
-      - run: ./gradlew
-      - run: ./gradlew assemble jvmTest publish -x publishKotlinMultiplatformPublicationToMavenRepository
+      - run: ./gradlew -DCI=true
+      - run: ./gradlew jvmTest publish -x publishKotlinMultiplatformPublicationToMavenRepository -DCI=true
       #- run: ./gradlew assemble check publish -x publishKotlinMultiplatformPublicationToMavenRepository
         env:
           DISABLE_JAVASCRIPT_TEST: true
@@ -40,8 +40,8 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: sudo apt-get install xvfb
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon assemble jvmTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon -DCI=true
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository -DCI=true
       #- run: xvfb-run --auto-servernum ./gradlew --no-daemon assemble check lint testDebugUnitTest publishKotlinMultiplatformPublicationToMavenRepository publishLinuxX64PublicationToMavenRepository
 
 #  publish-finalize:
