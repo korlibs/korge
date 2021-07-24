@@ -115,6 +115,7 @@ class KorgeExtension(val project: Project) {
 
     // https://github.com/JetBrains/kotlin/pull/4339
     var mingwX64PatchedLegacyMemoryManager: Boolean = true
+    var enableLinuxArm: Boolean = false
     
     /**
      * Configures JVM target
@@ -441,9 +442,9 @@ class KorgeExtension(val project: Project) {
 		}
 	}
 
-	val ALL_NATIVE_TARGETS = listOf("iosArm64", "iosX64") + DESKTOP_NATIVE_TARGETS
+	val ALL_NATIVE_TARGETS by lazy { listOf("iosArm64", "iosX64") + project.DESKTOP_NATIVE_TARGETS }
 	//val ALL_TARGETS = listOf("android", "js", "jvm", "metadata") + ALL_NATIVE_TARGETS
-	val ALL_TARGETS = listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS
+	val ALL_TARGETS by lazy { listOf("js", "jvm", "metadata") + ALL_NATIVE_TARGETS }
 
 	@JvmOverloads
 	fun dependencyMulti(group: String, name: String, version: String, targets: List<String> = ALL_TARGETS, suffixCommonRename: Boolean = false, androidIsJvm: Boolean = false): Unit = project {

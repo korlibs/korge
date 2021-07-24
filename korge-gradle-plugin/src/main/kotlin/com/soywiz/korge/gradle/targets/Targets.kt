@@ -7,8 +7,9 @@ import org.jetbrains.kotlin.gradle.plugin.*
 val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
 val isMacos get() = Os.isFamily(Os.FAMILY_MAC)
 val isLinux get() = Os.isFamily(Os.FAMILY_UNIX) && !isMacos
+val isArm get() = listOf("arm", "arm64", "aarch64").any { Os.isArch(it) }
 
-val ALL_NATIVE_TARGETS = listOf("iosX64", "iosArm64", "mingwX64", "linuxX64", "linuxArm32Hfp", "macosX64")
+//val ALL_NATIVE_TARGETS = listOf("iosX64", "iosArm64", "mingwX64", "linuxX64", "linuxArm32Hfp", "macosX64")
 
 val KotlinTarget.isJvm get() = name in setOf("jvm")
 val KotlinTarget.isJs get() = name in setOf("js")

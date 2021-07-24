@@ -129,12 +129,16 @@ kotlin {
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    val targetRaspberryPi = if (doEnableKotlinRaspberryPi) listOf(linuxArm32Hfp()) else listOf()
-
     return when {
-        isWindows -> listOf(mingwX64())
-        isMacos -> listOf(macosX64(), macosArm64())
-        else -> listOf(linuxX64(), mingwX64(), macosX64(), macosArm64()) + targetRaspberryPi
+        isWindows -> listOfNotNull(mingwX64())
+        //isMacos -> listOf(macosX64(), macosArm64())
+        isMacos -> listOfNotNull(macosX64())
+        else -> listOfNotNull(
+            linuxX64(),
+            mingwX64(),
+            macosX64(),
+            if (doEnableKotlinRaspberryPi) linuxArm32Hfp() else null
+        )
     }
 }
 
