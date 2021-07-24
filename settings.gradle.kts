@@ -58,7 +58,7 @@ for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory 
 //val skipKorgeSamples = System.getenv("SKIP_KORGE_SAMPLES") == "true"
 val skipKorgeSamples = true
 
-if (!skipKorgeSamples) {
+if (!skipKorgeSamples && !inCI) {
     fileTree(File(rootProject.projectDir, "samples")) {
         include("**" + "/build.gradle.kts")
         include("**" + "/build.gradle")
