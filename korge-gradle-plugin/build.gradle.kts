@@ -1,3 +1,5 @@
+import com.soywiz.korlibs.modules.*
+
 description = "Multiplatform Game Engine written in Kotlin"
 
 plugins {
@@ -9,6 +11,9 @@ plugins {
 }
 
 group = "com.soywiz.korlibs.korge.plugins"
+//com.soywiz.korge:com.soywiz.korge.gradle.plugin
+//group = "com.soywiz.korge"
+//name = "com.soywiz.korge.gradle.plugin"
 
 //apply(plugin = "kotlin")
 //apply(plugin = "org.jetbrains.intellij")
@@ -53,6 +58,9 @@ tasks {
         dependsOn("test")
     }
 }
+
+configurePublishing(multiplatform = false)
+configureSigning()
 
 //val kotlinVersion: String by project
 val androidBuildGradleVersion: String by project
