@@ -54,6 +54,10 @@ tasks {
         dependsOn("publishToMavenLocal")
     }
 
+    val publishJvmPublicationToMavenRepository by creating(Task::class) {
+        dependsOn("publishAllPublicationsToMavenRepository")
+    }
+
     val jvmTest by creating(Task::class) {
         dependsOn("test")
     }
