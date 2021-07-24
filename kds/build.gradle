@@ -1,3 +1,5 @@
+description = "Kotlin Optimized Data Structures"
+
 dependencies {
     //add("jvmTestApi", "org.powermock:powermock-mockito-release-full:1.6.4")
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")

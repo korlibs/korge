@@ -1,3 +1,4 @@
+import com.soywiz.korlibs.modules.*
 import org.gradle.kotlin.dsl.kotlin
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.File
@@ -23,7 +24,9 @@ plugins {
     val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 
 	java
-    kotlin("multiplatform") version realKotlinVersion
+    kotlin("multiplatform") //version realKotlinVersion
+    signing
+    `maven-publish`
 }
 
 val headlessTests = false
@@ -509,13 +512,22 @@ allprojects {
     }
 }
 
+rootProject.configureMavenCentralRelease()
+
 nonSamples {
     plugins.apply("maven-publish")
 
+    val doConfigure = project.name != "korge-gradle-plugin" && project.hasBuildGradle()
+
+    if (doConfigure) {
+        configurePublishing()
+        configureSigning()
+    }
+
+    /*
     val javadocJar = tasks.maybeCreate<Jar>("javadocJar").apply { archiveClassifier.set("javadoc") }
     val sourcesJar = tasks.maybeCreate<Jar>("sourceJar").apply { archiveClassifier.set("sources") }
     //val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
-
     extensions.getByType(PublishingExtension::class.java).apply {
         repositories {
             //maven {
@@ -635,6 +647,7 @@ nonSamples {
             }
         }
     }
+    */
 }
 
 samples {

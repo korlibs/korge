@@ -1,3 +1,5 @@
+description = "I/O utilities for Kotlin"
+
 val coroutinesVersion: String by project
 
 kotlin {

@@ -1,3 +1,5 @@
+description = "Multiplatform Game Engine written in Kotlin"
+
 kotlin {
     jvm {
         jvm {

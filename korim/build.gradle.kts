@@ -1,3 +1,5 @@
+description = "Korim: Kotlin cORoutines IMaging utilities for JVM, JS, Native and Common"
+
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 

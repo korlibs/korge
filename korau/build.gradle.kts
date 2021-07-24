@@ -1,3 +1,5 @@
+description = "Portable Audio library for Kotlin"
+
 val jnaVersion: String by project
 
 val enableKotlinNative: String by project

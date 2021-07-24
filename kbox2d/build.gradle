@@ -1,3 +1,5 @@
+description = "Port of JBox2d"
+
 dependencies {
 	add("commonMainApi", project(":korma"))
 }

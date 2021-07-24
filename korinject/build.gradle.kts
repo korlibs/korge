@@ -1,3 +1,5 @@
+description = "Asynchronous Injector for Kotlin"
+
 val coroutinesVersion: String by project
 
 dependencies {

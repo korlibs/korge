@@ -1,3 +1,5 @@
+description = "Template Engine for Multiplatform Kotlin"
+
 dependencies {
     //add("commonMainApi", project(":kds"))
     add("commonTestApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")

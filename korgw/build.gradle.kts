@@ -1,3 +1,5 @@
+description = "Portable UI with accelerated graphics support for Kotlin"
+
 val jnaVersion: String by project
 
 val enableKotlinNative: String by project
