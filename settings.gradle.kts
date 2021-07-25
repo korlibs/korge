@@ -45,6 +45,7 @@ include(":korge-gradle-plugin")
 
 if (!inCI) {
     include(":korge-editor")
+    include(":korge-starter-kit-rpg")
 }
 
 /*
