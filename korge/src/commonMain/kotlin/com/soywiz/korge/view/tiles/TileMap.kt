@@ -66,7 +66,8 @@ open class TileMap(
 	val tileHeight = tileset.height.toDouble()
 
     fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
-        if (x < 0 || y < 0) return false // Outside bounds
+        //if (x < 0 || y < 0) return false // Outside bounds
+        if (x < 0 || y < 0) return true // Outside bounds
         val tw = tileset.width
         val th = tileset.height
         return pixelHitTest(x / tw, y / th, x % tw, y % th, direction)
@@ -129,8 +130,11 @@ open class TileMap(
         val dUY = m.transformY(tileWidth, 0.0) - posY
         val dVX = m.transformX(0.0, tileHeight) - posX
         val dVY = m.transformY(0.0, tileHeight) - posY
-        val initY = (if (staggerAxis != null) tileSize.height - tileHeight else 0.0).let {
+        val initY = if (staggerAxis != null) {
+            val it = (tileSize.height - tileHeight)
             min(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
+        } else {
+            0.0
         }
         val nextTileX = (tileSize.width / if (staggerAxis == TiledMap.StaggerAxis.X) 2.0 else 1.0).let { width ->
             min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
@@ -180,6 +184,7 @@ open class TileMap(
 
         var count = 0
         val passes = if (staggerAxis == TiledMap.StaggerAxis.X) 2 else 1
+
         for (y in ymin until ymax) {
             // interlace rows when staggered on X to ensure proper z-index
             for (pass in 0 until passes) {
@@ -215,6 +220,8 @@ open class TileMap(
                         TiledMap.StaggerAxis.X -> staggerY
                         else -> 0.0
                     }
+
+                    //println("staggerOffsetX=$staggerOffsetX, staggerOffsetY=$staggerOffsetY, initY=$initY")
 
                     count++
 
