@@ -11,7 +11,7 @@ import kotlin.math.*
 inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
 	TiledMapView(tiledMap, showShapes, smoothing).addTo(this, callback)
 
-class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true) : Container() {
+class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true) : Container() {
     val tileset = tiledMap.tilesets.toTileSet()
 
     override fun hitTest(x: Double, y: Double, direction: HitTestDirection): View? {

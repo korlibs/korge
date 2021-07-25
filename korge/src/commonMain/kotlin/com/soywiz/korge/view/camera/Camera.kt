@@ -27,6 +27,7 @@ class CameraContainer(
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(width, height, clip), View.Reference {
     var clampToBounds: Boolean = false
+    val cameraViewportBounds: Rectangle = Rectangle(0, 0, 4096, 4096)
 
     private val contentContainer = Container()
 
@@ -219,6 +220,7 @@ class CameraContainer(
         }
     }
 
+
     fun sync() {
         //val realScaleX = (content.unscaledWidth / width) * cameraZoom
         //val realScaleY = (content.unscaledHeight / height) * cameraZoom
@@ -228,8 +230,10 @@ class CameraContainer(
         val contentContainerX = width * cameraAnchorX
         val contentContainerY = height * cameraAnchorY
 
-        content.x = if (clampToBounds) -cameraX.clamp(contentContainerX, contentContainerX + 4096.0) else -cameraX
-        content.y = if (clampToBounds) -cameraY.clamp(contentContainerY, contentContainerY + 4096.0) else -cameraY
+        //println("content=${content.getLocalBoundsOptimized()}, contentContainer=${contentContainer.getLocalBoundsOptimized()}, cameraViewportBounds=$cameraViewportBounds")
+
+        content.x = if (clampToBounds) -cameraX.clamp(contentContainerX + cameraViewportBounds.left, contentContainerX + cameraViewportBounds.width - width) else -cameraX
+        content.y = if (clampToBounds) -cameraY.clamp(contentContainerY + cameraViewportBounds.top, contentContainerY + cameraViewportBounds.height - height) else -cameraY
         contentContainer.x = contentContainerX
         contentContainer.y = contentContainerY
         contentContainer.rotation = cameraAngle

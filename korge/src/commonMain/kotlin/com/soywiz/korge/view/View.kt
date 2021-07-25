@@ -1763,6 +1763,7 @@ fun <T : View> T.xy(x: Double, y: Double): T {
 }
 fun <T : View> T.xy(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
 fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
+fun <T : View> T.xy(p: IPoint): T = xy(p.x, p.y)
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
 fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)

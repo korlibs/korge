@@ -3,6 +3,7 @@ package com.soywiz.korge.view.tiles
 import com.soywiz.kds.*
 import com.soywiz.kds.IntArray2
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -51,6 +52,10 @@ open class TileMap(
     val staggerIndex: TiledMap.StaggerIndex? = null,
     val tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : View() {
+    val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+    val animationIndex = Array(tileset.textures.size) { 0 }
+    val animationElapsed = Array(tileset.textures.size) { 0.0 }
+
     private var contentVersion = 0
 	constructor(
         map: Bitmap32,
@@ -76,7 +81,7 @@ open class TileMap(
     fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
         //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
         //println(tileset.collisions.toList())
-        if (!intMap.inside(tileX, tileY)) return false
+        if (!intMap.inside(tileX, tileY)) return true
         val tile = intMap[tileX, tileY]
         val collision = tileset.collisions[tile] ?: return false
         return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
@@ -227,7 +232,7 @@ open class TileMap(
 
                     //println("CELL_DATA: $cellData")
 
-                    val tex = tileset[cellData] ?: continue
+                    val tex = tilesetTextures[cellData] ?: continue
 
                     //println("CELL_DATA_TEX: $tex")
 
@@ -351,6 +356,27 @@ open class TileMap(
         }
 		//ctx.flush()
 	}
+
+
+    init {
+        addUpdater { dt ->
+            tileset.infos.fastForEachWithIndex { tileIndex, info ->
+                if (info != null && info.frames.isNotEmpty()) {
+                    val aindex = animationIndex[tileIndex]
+                    val currentFrame = info.frames[aindex]
+                    animationElapsed[tileIndex] += dt.milliseconds
+                    if (animationElapsed[tileIndex].milliseconds >= currentFrame.duration) {
+                        //println("Changed ${info.id} [${info.id}] -> ${info.frames}")
+                        val nextIndex = (aindex + 1) % info.frames.size
+                        animationElapsed[tileIndex] -= currentFrame.duration.milliseconds
+                        animationIndex[tileIndex] = nextIndex
+                        tilesetTextures[tileIndex] = tileset.textures[info.frames[nextIndex].tileId]
+                        contentVersion++
+                    }
+                }
+            }
+        }
+    }
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0, 0, tileWidth * intMap.width, tileHeight * intMap.height)

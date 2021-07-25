@@ -62,7 +62,8 @@ class TiledMapData(
 
     val maxGid get() = tilesets.map { it.firstgid + it.tileCount }.maxOrNull() ?: 0
 
-    fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
+    fun getObjectByName(name: String) = objectLayers.firstNotNullOfOrNull { it.getByName(name) }
+    fun getObjectByType(type: String) = objectLayers.flatMap { it.getByType(type) }
 
     fun clone() = TiledMapData(
         orientation, renderOrder, compressionLevel,
@@ -160,11 +161,12 @@ data class TileSetData(
 fun List<TiledMap.TiledTileset>.toTileSet(): TileSet {
     val tilesets = this
     val maxGid = tilesets.map { it.maxgid }.maxOrNull() ?: 0
-    val tiles = IntMap<BmpSlice>(maxGid * 2)
+    val tiles = IntMap<TileSetTileInfo>(maxGid * 2)
     val collisions = IntMap<HitTestable>(maxGid * 2)
     tilesets.fastForEach { tileset ->
         tileset.tileset.texturesMap.fastForEach { key, value ->
-            tiles[tileset.firstgid + key] = value
+            val id = tileset.firstgid + key
+            tiles[id] = value.copy(id = id)
         }
         tileset.tileset.collisionsMap.fastForEach { key, value ->
             collisions[tileset.firstgid + key] = value
@@ -250,6 +252,15 @@ class TiledMap constructor(
         var objectShape: Shape = Shape.PPoint,
         val properties: MutableMap<String, Property> = mutableMapOf()
     ) {
+        val x: Double get() = bounds.x
+        val y: Double get() = bounds.y
+
+        fun strOrNull(propName: String) = properties[propName]?.string
+        fun str(propName: String, default: String = "") = strOrNull(propName) ?: default
+        fun int(propName: String, default: Int = 0) = properties[propName]?.int ?: default
+        fun double(propName: String, default: Double = 0.0) = properties[propName]?.double ?: default
+        fun bool(propName: String, default: Boolean = false) = properties[propName]?.bool ?: default
+
         enum class DrawOrder(val value: String) {
             INDEX("index"), TOP_DOWN("topdown")
         }
@@ -335,18 +346,25 @@ class TiledMap constructor(
 
     sealed class Property {
         abstract val string: String
+        val int: Int get() = number.toInt()
+        val double: Double get() = number.toDouble()
+        val bool: Boolean get() = double != 0.0
+        open val number: Number get() = string.toDoubleOrNull() ?: 0.0
         override fun toString(): String = string
 
         class StringT(var value: String) : Property() {
             override val string: String get() = value
         }
         class IntT(var value: Int) : Property() {
+            override val number: Number get() = value
             override val string: String get() = "$value"
         }
         class FloatT(var value: Double) : Property() {
+            override val number: Number get() = value
             override val string: String get() = "$value"
         }
         class BoolT(var value: Boolean) : Property() {
+            override val number: Number get() = if (value) 1 else 0
             override val string: String get() = "$value"
         }
         class ColorT(var value: RGBA) : Property() {
@@ -427,9 +445,12 @@ class TiledMap constructor(
         ) : Layer() {
             val objectsById by lazy { objects.associateBy { it.id } }
             val objectsByName by lazy { objects.associateBy { it.name } }
+            val objectsByType by lazy { objects.groupBy { it.type } }
 
             fun getById(id: Int): Object? = objectsById[id]
             fun getByName(name: String): Object? = objectsByName[name]
+            //fun getByType(type: String): List<Object> = objectsByType[type] ?: emptyList()
+            fun getByType(type: String): List<Object> = objects.filter { it.type == type }
 
             override fun clone() = Objects(color, drawOrder, FastArrayList(objects)).also { it.copyFrom(this) }
         }
