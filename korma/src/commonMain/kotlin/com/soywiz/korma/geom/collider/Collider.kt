@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom.collider
 
+/*
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korma.geom.*
@@ -162,3 +163,4 @@ fun XY.moveWithCollider(dx: Double, dy: Double, collider: MovementCollider) {
 }
 
 fun XY.moveWithCollider(delta: IPoint, collider: MovementCollider) = moveWithCollider(delta.x, delta.y, collider)
+*/

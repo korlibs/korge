@@ -4,14 +4,11 @@ import com.soywiz.kds.*
 import com.soywiz.kds.IntArray2
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tiled.TiledMap
-import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -67,6 +64,22 @@ open class TileMap(
 
 	val tileWidth = tileset.width.toDouble()
 	val tileHeight = tileset.height.toDouble()
+
+    fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
+        if (x < 0 || y < 0) return false // Outside bounds
+        val tw = tileset.width
+        val th = tileset.height
+        return pixelHitTest(x / tw, y / th, x % tw, y % th, direction)
+    }
+
+    fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
+        //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
+        //println(tileset.collisions.toList())
+        if (!intMap.inside(tileX, tileY)) return false
+        val tile = intMap[tileX, tileY]
+        val collision = tileset.collisions[tile] ?: return false
+        return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
+    }
 
 	enum class Repeat(val get: (v: Int, max: Int) -> Int) {
 		NONE({ v, max -> v }),

@@ -59,6 +59,7 @@ abstract class View internal constructor(
     , KorgeDebugNode
     , BView
     , XY
+    , HitTestable
 //, EventDispatcher by EventDispatcher.Mixin()
 {
     override var extra: ExtraType = null
@@ -949,12 +950,12 @@ abstract class View internal constructor(
      *
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
-    fun hitTest(x: Double, y: Double): View? {
+    open fun hitTest(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
 
         _children?.fastForEachReverse { child ->
-            child.hitTest(x, y)?.let {
+            child.hitTest(x, y, direction)?.let {
                 return it
             }
         }
@@ -964,6 +965,9 @@ abstract class View internal constructor(
     }
     fun hitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
     fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
+
+    override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean =
+        hitTest(x, y, direction) != null
 
     // @TODO: we should compute view bounds on demand
     fun mouseHitTest(x: Double, y: Double): View? {
@@ -1016,7 +1020,7 @@ abstract class View internal constructor(
     var hitTestUsingShapes: Boolean? = null
 
     /** [x] and [y] coordinates are global */
-    protected fun hitTestInternal(x: Double, y: Double): View? {
+    open protected fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
         //println("x,y: $x,$y")

@@ -37,6 +37,7 @@ abstract class Bitmap(
 	val stride: Int get() = (width * bpp) / 8
 	val area: Int get() = width * height
 	fun index(x: Int, y: Int) = y * width + x
+    fun inside(x: Int, y: Int) = x in 0 until width && y in 0 until height
 	override val size: Size get() = Size(width, height)
 
     open fun lock() = Unit

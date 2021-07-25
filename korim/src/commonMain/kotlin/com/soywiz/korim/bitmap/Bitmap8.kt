@@ -28,6 +28,10 @@ class Bitmap8(
 	override fun toString(): String = "Bitmap8($width, $height, palette=${palette.size})"
 
     companion object {
+        inline operator fun invoke(width: Int, height: Int, palette: RgbaArray = RgbaArray(0x100), pixelProvider: (x: Int, y: Int) -> Byte): Bitmap8 {
+            return Bitmap8(width, height, ByteArray(width * height) { pixelProvider(it % width, it / width) }, palette)
+        }
+
         fun copyRect(
             src: Bitmap8,
             srcX: Int,

@@ -219,5 +219,3 @@ open class Graphics @JvmOverloads constructor(
         shapes.fastForEach { it.addBounds(bb) }
     }
 }
-
-fun Graphics.toCollider(): MovementCollider = this.allShapes.map { it.getPath() }.toCollider()

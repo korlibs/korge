@@ -3,19 +3,14 @@ package com.soywiz.korge.tiled
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import kotlin.collections.set
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 class TiledMapData(
     var orientation: TiledMap.Orientation = TiledMap.Orientation.ORTHOGONAL,
@@ -124,7 +119,7 @@ class WangSet(
 
 data class TileData(
     val id: Int,
-    val type: Int = -1,
+    val type: String? = null,
     val terrain: List<Int?>? = null,
     val probability: Double = 0.0,
     val image: TiledMap.Image? = null,
@@ -155,6 +150,8 @@ data class TileSetData(
     val tiles: List<TileData> = listOf(),
     val properties: Map<String, TiledMap.Property> = mapOf()
 ) {
+    val tilesById = tiles.associateByInt { _, it -> it.id }
+
     val width: Int get() = image?.width ?: 0
     val height: Int get() = image?.height ?: 0
     fun clone() = copy()
@@ -164,12 +161,16 @@ fun List<TiledMap.TiledTileset>.toTileSet(): TileSet {
     val tilesets = this
     val maxGid = tilesets.map { it.maxgid }.maxOrNull() ?: 0
     val tiles = IntMap<BmpSlice>(maxGid * 2)
+    val collisions = IntMap<HitTestable>(maxGid * 2)
     tilesets.fastForEach { tileset ->
         tileset.tileset.texturesMap.fastForEach { key, value ->
             tiles[tileset.firstgid + key] = value
         }
+        tileset.tileset.collisionsMap.fastForEach { key, value ->
+            collisions[tileset.firstgid + key] = value
+        }
     }
-    return TileSet(tiles)
+    return TileSet(tiles, collisionsMap = collisions)
 }
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -238,7 +239,7 @@ class TiledMap constructor(
         }
     }
 
-    data class Object(
+    data class Object constructor(
         val id: Int,
         var gid: Int?,
         var name: String,
@@ -246,19 +247,41 @@ class TiledMap constructor(
         var bounds: Rectangle,
         var rotation: Double, // in degrees
         var visible: Boolean,
-        var objectType: Type = Type.Rectangle,
+        var objectShape: Shape = Shape.PPoint,
         val properties: MutableMap<String, Property> = mutableMapOf()
     ) {
         enum class DrawOrder(val value: String) {
             INDEX("index"), TOP_DOWN("topdown")
         }
 
-        sealed class Type {
-            object Rectangle : Type()
-            object Ellipse : Type()
-            object PPoint : Type()
-            class Polygon(val points: List<Point>) : Type()
-            class Polyline(val points: List<Point>) : Type()
+        fun toVectorPath(): VectorPath {
+            return objectShape.toVectorPath().clone().apply {
+                applyTransform(
+                    Matrix()
+                        .translate(bounds.x, bounds.y)
+                        .prerotate(rotation.degrees)
+                )
+            }
+        }
+
+        sealed class Shape {
+            abstract fun toVectorPath(): VectorPath
+
+            class Rectangle(val width: Double, val height: Double) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { rect(0.0, 0.0, width, height) }
+            }
+            class Ellipse(val width: Double, val height: Double) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { ellipse(0.0, 0.0, width, height) }
+            }
+            object PPoint : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath {  }
+            }
+            class Polygon(val points: List<Point>) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+            }
+            class Polyline(val points: List<Point>) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+            }
             class Text(
                 val fontFamily: String,
                 val pixelSize: Int,
@@ -271,7 +294,9 @@ class TiledMap constructor(
                 val kerning: Boolean,
                 val hAlign: TextHAlignment,
                 val vAlign: TextVAlignment
-            ) : Type()
+            ) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath {  }
+            }
         }
     }
 
@@ -398,7 +423,7 @@ class TiledMap constructor(
         class Objects(
             var color: RGBA = Colors.WHITE,
             var drawOrder: Object.DrawOrder = Object.DrawOrder.TOP_DOWN,
-            val objects: MutableList<Object> = arrayListOf()
+            val objects: FastArrayList<Object> = FastArrayList()
         ) : Layer() {
             val objectsById by lazy { objects.associateBy { it.id } }
             val objectsByName by lazy { objects.associateBy { it.name } }
@@ -406,7 +431,7 @@ class TiledMap constructor(
             fun getById(id: Int): Object? = objectsById[id]
             fun getByName(name: String): Object? = objectsByName[name]
 
-            override fun clone() = Objects(color, drawOrder, ArrayList(objects)).also { it.copyFrom(this) }
+            override fun clone() = Objects(color, drawOrder, FastArrayList(objects)).also { it.copyFrom(this) }
         }
 
         class Image(var image: TiledMap.Image? = null) : Layer() {

@@ -13,7 +13,6 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.collider.*
-import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 
@@ -64,10 +63,12 @@ suspend fun Stage.mainVampire() {
 
     //image(atlas.bitmap);return
 
+    lateinit var tiledMapView: TiledMapView
+
     container {
         scale(2.0)
         //tiledMapView(tiledMap, smoothing = false)
-        tiledMapView(tiledMap, smoothing = true)
+        tiledMapView = tiledMapView(tiledMap, smoothing = true)
     }
 
     container {
@@ -76,6 +77,8 @@ suspend fun Stage.mainVampire() {
         imageDataView(slices["giantHilt"]).xy(32, 50)
         imageDataView(slices["pumpkin"]).xy(64, 50)
     }
+
+    //image(tiledMapView.collisionToBitmap()).scale(2.0)
 
     //val ase2 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
     //val ase3 = resourcesVfs["vampire.ase"].readImageData(ASE, atlas = atlas)
@@ -100,30 +103,38 @@ suspend fun Stage.mainVampire() {
             //star(400, 400, 50)
         }
     }
-    //val path = buildPath { rect(300, 0, 100, 100) }
-    val collider = gg.toCollider()
 
     container {
         keepChildrenSortedByY()
 
         val character1 = imageDataView(characters["vampire"], "down") {
             stop()
-            xy(100, 100)
+            xy(200, 200)
         }
 
         val character2 = imageDataView(characters["vamp"], "down") {
             stop()
-            xy(120, 110)
+            xy(160, 110)
         }
 
-        controlWithKeyboard(character1, collider, up = Key.UP, right = Key.RIGHT, down = Key.DOWN, left = Key.LEFT)
-        controlWithKeyboard(character2, collider, up = Key.W, right = Key.D, down = Key.S, left = Key.A)
+        val hitTestable = listOf(tiledMapView, gg).toHitTestable()
+
+        controlWithKeyboard(character1, hitTestable, up = Key.UP, right = Key.RIGHT, down = Key.DOWN, left = Key.LEFT,)
+        controlWithKeyboard(character2, hitTestable, up = Key.W, right = Key.D, down = Key.S, left = Key.A)
     }
+}
+
+fun TiledMapView.collisionToBitmap(): Bitmap {
+    val bmp = Bitmap32(this.width.toInt(), this.height.toInt())
+    for (y in 0 until bmp.height) for (x in 0 until bmp.width) {
+        bmp[x, y] = if (pixelHitTest(x, y) != null) Colors.WHITE else Colors.TRANSPARENT_BLACK
+    }
+    return bmp
 }
 
 fun Stage.controlWithKeyboard(
     char: ImageDataView,
-    collider: MovementCollider,
+    collider: HitTestable,
     up: Key = Key.UP,
     right: Key = Key.RIGHT,
     down: Key = Key.DOWN,
@@ -142,7 +153,8 @@ fun Stage.controlWithKeyboard(
         if (pressingUp) dy = -1.0
         if (pressingDown) dy = +1.0
         if (dx != 0.0 || dy != 0.0) {
-            char.moveWithCollider(Point(dx, dy).normalized * speed, collider)
+            val dpos = Point(dx, dy).normalized * speed
+            char.moveWithHitTestable(collider, dpos.x, dpos.y)
         }
         char.animation = when {
             pressingLeft -> "left"

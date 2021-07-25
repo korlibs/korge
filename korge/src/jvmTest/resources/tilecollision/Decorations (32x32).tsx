@@ -3,22 +3,22 @@
  <image source="Decorations (32x32).png" width="224" height="192"/>
  <tile id="9">
   <objectgroup draworder="index" id="2">
-   <object id="1" type="collision" x="0" y="0" width="32" height="10"/>
+   <object id="1" type="up_collision" x="0" y="0" width="32" height="7"/>
   </objectgroup>
  </tile>
  <tile id="10">
   <objectgroup draworder="index" id="2">
-   <object id="1" type="collision" x="0" y="0" width="32" height="10"/>
+   <object id="1" type="up_collision" x="0" y="0" width="32" height="6"/>
   </objectgroup>
  </tile>
  <tile id="11">
   <objectgroup draworder="index" id="2">
-   <object id="1" type="collision" x="0" y="0" width="32" height="10"/>
+   <object id="1" type="up_collision" x="0" y="0" width="32" height="7"/>
   </objectgroup>
  </tile>
  <tile id="12">
   <objectgroup draworder="index" id="2">
-   <object id="1" type="collision" x="0" y="0" width="32" height="10"/>
+   <object id="1" type="collision" x="0" y="0" width="32" height="7"/>
   </objectgroup>
  </tile>
  <tile id="16">
@@ -41,5 +41,5 @@
    <object id="1" type="collision" x="0" y="0" width="32" height="15"/>
   </objectgroup>
  </tile>
- <tile id="25"/>
+ <tile id="25" type="collision"/>
 </tileset>
