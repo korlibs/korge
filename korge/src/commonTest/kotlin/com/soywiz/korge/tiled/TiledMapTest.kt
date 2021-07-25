@@ -69,7 +69,7 @@ class TiledMapTest : ViewsForTesting() {
 
     @Test
     fun testMultiTexture() = suspendTestNoJs {
-        val tileSet = TileSet(listOf(Bitmap32(32, 32, Colors.RED).slice(), Bitmap32(32, 32, Colors.BLUE).slice()), 32, 32)
+        val tileSet = TileSet(listOf(TileSetTileInfo(1, Bitmap32(32, 32, Colors.RED).slice()), TileSetTileInfo(2, Bitmap32(32, 32, Colors.BLUE).slice())), 32, 32)
         val tileMap = TileMap(Bitmap32(32, 32), tileSet)
         tileMap.intMap[0, 0] = 0
         tileMap.intMap[1, 0] = 1
