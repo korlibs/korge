@@ -34,7 +34,8 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 			}
 		) {
 			tiledMapView = tiledMapView(tilemap, smoothing = false)
-			character = imageDataView(characters["vampire"], "right", playing = false, smoothing = false) {
+            val charactersLayer = tiledMapView["characters"].first as Container
+			character = charactersLayer.imageDataView(characters["vampire"], "right", playing = false, smoothing = false) {
 				xy(50.0, 50.0)
 			}
 		}
