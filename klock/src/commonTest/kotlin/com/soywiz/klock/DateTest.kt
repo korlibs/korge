@@ -1,5 +1,6 @@
 package com.soywiz.klock
 
+import com.soywiz.klock.locale.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -53,4 +54,25 @@ class DateTest {
         assertEquals("Wed, 18 Sep 2019 23:58:39.700", (Date(2019, Month.September, 18) - Time(hour = 1, minute = 1, second = 80, millisecond = 300)).format(format))
         assertEquals("Wed, 18 Sep 2019 23:58:38.700", (Date(2019, Month.September, 18) - Time(hour = 1, minute = 1, second = 80, millisecond = 1300)).format(format))
 	}
+
+    @Test
+    fun test2() {
+        fun date(dayOfMonth: Int, dayOfWeek: DayOfWeek, locale: KlockLocale) = Date(2019, Month.September, dayOfMonth).inThisWeek(dayOfWeek, locale).toString()
+
+        for (dayOfMonth in 16..22) assertEquals("2019-09-16", date(dayOfMonth, DayOfWeek.Monday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 16..22) assertEquals("2019-09-17", date(dayOfMonth, DayOfWeek.Tuesday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 16..22) assertEquals("2019-09-18", date(dayOfMonth, DayOfWeek.Wednesday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 16..22) assertEquals("2019-09-19", date(dayOfMonth, DayOfWeek.Thursday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 16..22) assertEquals("2019-09-20", date(dayOfMonth, DayOfWeek.Friday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 16..22) assertEquals("2019-09-21", date(dayOfMonth, DayOfWeek.Saturday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 16..22) assertEquals("2019-09-22", date(dayOfMonth, DayOfWeek.Sunday, KlockLocale.spanish), "failed for day = $dayOfMonth")
+
+        for (dayOfMonth in 15..21) assertEquals("2019-09-15", date(dayOfMonth, DayOfWeek.Sunday, KlockLocale.english), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 15..21) assertEquals("2019-09-16", date(dayOfMonth, DayOfWeek.Monday, KlockLocale.english), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 15..21) assertEquals("2019-09-17", date(dayOfMonth, DayOfWeek.Tuesday, KlockLocale.english), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 15..21) assertEquals("2019-09-18", date(dayOfMonth, DayOfWeek.Wednesday, KlockLocale.english), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 15..21) assertEquals("2019-09-19", date(dayOfMonth, DayOfWeek.Thursday, KlockLocale.english), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 15..21) assertEquals("2019-09-20", date(dayOfMonth, DayOfWeek.Friday, KlockLocale.english), "failed for day = $dayOfMonth")
+        for (dayOfMonth in 15..21) assertEquals("2019-09-21", date(dayOfMonth, DayOfWeek.Saturday, KlockLocale.english), "failed for day = $dayOfMonth")
+    }
 }

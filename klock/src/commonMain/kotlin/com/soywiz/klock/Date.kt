@@ -66,3 +66,7 @@ operator fun Date.minus(time: TimeSpan) = (this.dateTimeDayStart - time).date
 operator fun Date.minus(time: MonthSpan) = (this.dateTimeDayStart - time).date
 operator fun Date.minus(time: DateTimeSpan) = (this.dateTimeDayStart - time).date
 operator fun Date.minus(time: Time) = DateTime.createAdjusted(year, month1, day, -time.hour, -time.minute, -time.second, -time.millisecond)
+
+fun Date.inThisWeek(dayOfWeek: DayOfWeekWithLocale): Date =
+    this + (dayOfWeek.index0 - this.dayOfWeek.withLocale(dayOfWeek.locale).index0).days
+fun Date.inThisWeek(dayOfWeek: DayOfWeek, locale: KlockLocale = KlockLocale.default): Date = inThisWeek(dayOfWeek.withLocale(locale))

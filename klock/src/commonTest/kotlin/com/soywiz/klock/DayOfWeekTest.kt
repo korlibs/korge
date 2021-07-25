@@ -1,5 +1,6 @@
 package com.soywiz.klock
 
+import com.soywiz.klock.locale.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -37,5 +38,36 @@ class DayOfWeekTest {
         assertEquals(DayOfWeek.Wednesday, DayOfWeek.Thursday.prev)
         assertEquals(DayOfWeek.Thursday, DayOfWeek.Friday.prev)
         assertEquals(DayOfWeek.Friday, DayOfWeek.Saturday.prev)
+    }
+
+    @Test
+    fun testCompareLocale() {
+        assertEquals(true, DayOfWeek.Monday.withLocale(KlockLocale.spanish) < DayOfWeek.Sunday.withLocale(KlockLocale.spanish))
+        assertEquals(true, DayOfWeek.Monday.withLocale(KlockLocale.english) > DayOfWeek.Sunday.withLocale(KlockLocale.english))
+
+        assertEquals(
+            listOf(0, 1, 2, 3, 4, 5, 6),
+            (0 until 7).map { DayOfWeek[it].index0Locale(KlockLocale.english) }
+        )
+
+        assertEquals(
+            listOf(6, 0, 1, 2, 3, 4, 5),
+            (0 until 7).map { DayOfWeek[it].index0Locale(KlockLocale.spanish) }
+        )
+
+        assertEquals(
+            listOf(
+                DayOfWeek.Sunday, DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday
+            ),
+            (0 until 7).map { DayOfWeek.get0(it, KlockLocale.english) }
+        )
+        assertEquals(
+            listOf(
+                DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                DayOfWeek.Thursday, DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
+            ),
+            (0 until 7).map { DayOfWeek.get0(it, KlockLocale.spanish) }
+        )
     }
 }

@@ -16,6 +16,14 @@ abstract class KlockLocale {
     open val monthsShort: List<String> by klockLazyOrGet { months.map { it.substr(0, 3) } }
     open val daysOfWeekShort: List<String> by klockLazyOrGet { daysOfWeek.map { it.substr(0, 3) } }
 
+    private val daysOfWeekWithLocaleList: Array<DayOfWeekWithLocale> = Array(7) { DayOfWeekWithLocale(DayOfWeek[it], this) }
+
+    fun localizedDayOfWeek(dayOfWeek: DayOfWeek) = daysOfWeekWithLocaleList[dayOfWeek.index0]
+
+    val daysOfWeekComparator = Comparator<DayOfWeek> { a, b ->
+        a.index0Locale(this).compareTo(b.index0Locale(this))
+    }
+
     open val ordinals = Array(32) {
         if (it in 11..13) {
             "${it}th"

@@ -30,6 +30,9 @@ enum class DayOfWeek(
     /** 1: [Monday], 2: [Tuesday], 3: [Wednesday], 4: [Thursday], 5: [Friday], 6: [Saturday], 7: [Sunday] */
     val index1Monday get() = index0Monday + 1
 
+    fun index0Locale(locale: KlockLocale): Int = (index0 - locale.firstDayOfWeek.index0) umod 7
+    fun index1Locale(locale: KlockLocale): Int = index0Locale(locale) + 1
+
     /** Returns if this day of the week is weekend for a specific [locale]  */
     fun isWeekend(locale: KlockLocale = KlockLocale.default) = locale.isWeekend(this)
 
@@ -61,9 +64,26 @@ enum class DayOfWeek(
          */
         operator fun get(index0: Int) = BY_INDEX0[index0 umod 7]
 
+        fun get0(index0: Int, locale: KlockLocale = KlockLocale.default): DayOfWeek = DayOfWeek[index0 + locale.firstDayOfWeek.index0]
+        fun get1(index1: Int, locale: KlockLocale = KlockLocale.default): DayOfWeek = get0((index1 - 1) umod 7, locale)
+
         /**
          * Returns the first day of the week for a specific [locale].
          */
         fun firstDayOfWeek(locale: KlockLocale = KlockLocale.default) = locale.firstDayOfWeek
+
+        fun comparator(locale: KlockLocale = KlockLocale.default) = locale.daysOfWeekComparator
+    }
+}
+
+fun DayOfWeek.withLocale(locale: KlockLocale) = locale.localizedDayOfWeek(this)
+
+data class DayOfWeekWithLocale(val dayOfWeek: DayOfWeek, val locale: KlockLocale) : Comparable<DayOfWeekWithLocale> {
+    val index0: Int get() = dayOfWeek.index0Locale(locale)
+    val index1: Int get() = dayOfWeek.index1Locale(locale)
+
+    override fun compareTo(other: DayOfWeekWithLocale): Int {
+        if (other.locale != this.locale) error("Can't compare two day of weeks with different locales")
+        return locale.daysOfWeekComparator.compare(dayOfWeek, other.dayOfWeek)
     }
 }
