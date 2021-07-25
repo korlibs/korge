@@ -49,20 +49,6 @@ kotlin.sourceSets.main.configure {
     kotlin.srcDir(File(buildDir, "srcgen"))
 }
 
-tasks {
-    val publishJvmPublicationToMavenLocal by creating(Task::class) {
-        dependsOn("publishToMavenLocal")
-    }
-
-    val publishJvmPublicationToMavenRepository by creating(Task::class) {
-        dependsOn("publishAllPublicationsToMavenRepository")
-    }
-
-    val jvmTest by creating(Task::class) {
-        dependsOn("test")
-    }
-}
-
 configurePublishing(multiplatform = false)
 configureSigning()
 
@@ -90,6 +76,21 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
     kotlinOptions.suppressWarnings = true
 }
 
+
 tasks {
-    //val publishJvmPublicationToMavenLocal by creating(Task::class) { dependsOn("publishToMavenLocal") }
+    val publishJvmPublicationToMavenLocal by creating(Task::class) {
+        dependsOn("publishToMavenLocal")
+    }
+
+    val publishAllPublicationsToMavenRepositoryOrNull = project.tasks.findByName("publishAllPublicationsToMavenRepository")
+
+    if (publishAllPublicationsToMavenRepositoryOrNull != null) {
+        val publishJvmPublicationToMavenRepository by creating(Task::class) {
+            dependsOn(publishAllPublicationsToMavenRepositoryOrNull)
+        }
+    }
+
+    val jvmTest by creating(Task::class) {
+        dependsOn("test")
+    }
 }
