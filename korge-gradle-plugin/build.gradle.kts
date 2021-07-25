@@ -78,15 +78,25 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 
 
 tasks {
+    val publishAllPublications = false
+
     val publishJvmPublicationToMavenLocal by creating(Task::class) {
-        dependsOn("publishToMavenLocal")
+        dependsOn(when {
+            publishAllPublications -> "publishToMavenLocal"
+            else -> "publishPluginMavenPublicationToMavenLocal"
+        })
     }
 
-    val publishAllPublicationsToMavenRepositoryOrNull = project.tasks.findByName("publishAllPublicationsToMavenRepository")
+    afterEvaluate {
+        val publishTaskOrNull = project.tasks.findByName(when {
+            publishAllPublications -> "publishAllPublicationsToMavenRepository"
+            else -> "publishPluginMavenPublicationToMavenRepository"
+        })
 
-    if (publishAllPublicationsToMavenRepositoryOrNull != null) {
-        val publishJvmPublicationToMavenRepository by creating(Task::class) {
-            dependsOn(publishAllPublicationsToMavenRepositoryOrNull)
+        if (publishTaskOrNull != null) {
+            val publishJvmPublicationToMavenRepository by creating(Task::class) {
+                dependsOn(publishTaskOrNull)
+            }
         }
     }
 

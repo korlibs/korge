@@ -78,7 +78,15 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                     publication.artifact(javadocJar)
                 }
 
-                if (multiplatform) {
+                if (!multiplatform) {
+                    publication.artifact(sourcesJar)
+                }
+
+                val isGradlePluginMarker = publication.name.endsWith("PluginMarkerMaven")
+                //println("PUBLICATION: ${publication.name}")
+
+                //if (multiplatform) {
+                if (!isGradlePluginMarker) {
                     publication.pom.withXml {
                         val defaultGitUrl = "https://github.com/korlibs/korge-next"
                         this.asNode().apply {
