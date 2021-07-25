@@ -12,7 +12,6 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.collider.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 
