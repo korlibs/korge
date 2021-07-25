@@ -30,12 +30,12 @@ suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"
 		val cameraContainer = cameraContainer(
 			300.0, 300.0, clip = true,
 			block = {
+                clampToBounds = true
 			}
 		) {
-			tiledMapView = tiledMapView(tilemap)
-			character = imageDataView(characters["vampire"], "right") {
+			tiledMapView = tiledMapView(tilemap, smoothing = false)
+			character = imageDataView(characters["vampire"], "right", playing = false, smoothing = false) {
 				xy(50.0, 50.0)
-				stop()
 			}
 		}
 

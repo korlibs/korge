@@ -29,12 +29,22 @@ open class ImageAnimationView(animation: ImageAnimation? = null, direction: Imag
     private var nextFrameIndex = 0
     private var dir = +1
 
+    var smoothing: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                layers.fastForEach { it.smoothing = value }
+            }
+        }
+
+
     private fun setFrame(frameIndex: Int) {
         val frame = animation?.frames?.getCyclicOrNull(frameIndex)
         if (frame != null) {
             frame.layerData.fastForEach {
                 val image = layers[it.layer.index]
                 image.bitmap = it.slice
+                image.smoothing = smoothing
                 image.xy(it.targetX, it.targetY)
             }
             nextFrameIn = frame.duration

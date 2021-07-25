@@ -1,6 +1,7 @@
 package com.soywiz.korge.view.camera
 
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -25,6 +26,7 @@ class CameraContainer(
     contentBuilder: (camera: CameraContainer) -> Container = { FixedSizeContainer(it.width, it.height) },
     block: @ViewDslMarker CameraContainer.() -> Unit = {}
 ) : FixedSizeContainer(width, height, clip), View.Reference {
+    var clampToBounds: Boolean = false
 
     private val contentContainer = Container()
 
@@ -226,8 +228,8 @@ class CameraContainer(
         val contentContainerX = width * cameraAnchorX
         val contentContainerY = height * cameraAnchorY
 
-        content.x = -cameraX
-        content.y = -cameraY
+        content.x = if (clampToBounds) -cameraX.clamp(contentContainerX, contentContainerX + 4096.0) else -cameraX
+        content.y = if (clampToBounds) -cameraY.clamp(contentContainerY, contentContainerY + 4096.0) else -cameraY
         contentContainer.x = contentContainerX
         contentContainer.y = contentContainerY
         contentContainer.rotation = cameraAngle

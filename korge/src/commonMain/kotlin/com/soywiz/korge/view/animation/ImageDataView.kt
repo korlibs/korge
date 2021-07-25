@@ -3,8 +3,12 @@ package com.soywiz.korge.view.animation
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.*
 
-inline fun Container.imageDataView(data: ImageData? = null, animation: String? = null, block: @ViewDslMarker ImageDataView.() -> Unit = {})
-    = ImageDataView(data, animation).addTo(this, block)
+inline fun Container.imageDataView(
+    data: ImageData? = null, animation: String? = null,
+    playing: Boolean = false, smoothing: Boolean = true,
+    block: @ViewDslMarker ImageDataView.() -> Unit = {}
+)
+    = ImageDataView(data, animation, playing, smoothing).addTo(this, block)
 
 /**
  * @example
@@ -34,8 +38,21 @@ inline fun Container.imageDataView(data: ImageData? = null, animation: String? =
  *     }
  * }
  */
-open class ImageDataView(data: ImageData? = null, animation: String? = null) : Container() {
+open class ImageDataView(
+    data: ImageData? = null,
+    animation: String? = null,
+    playing: Boolean = false,
+    smoothing: Boolean = true,
+) : Container() {
     private val animationView = imageAnimationView()
+
+    var smoothing: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                animationView.smoothing = value
+            }
+        }
 
     var data: ImageData? = data
         set(value) {
@@ -57,6 +74,8 @@ open class ImageDataView(data: ImageData? = null, animation: String? = null) : C
 
     init {
         updatedDataAnimation()
+        if (playing) play() else stop()
+        this.smoothing = smoothing
     }
 
     fun play() { animationView.play() }
