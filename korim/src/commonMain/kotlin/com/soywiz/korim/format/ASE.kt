@@ -372,7 +372,7 @@ object ASE : ImageFormatWithContainer("ase") {
 
         val frames = image.frames.map { frame ->
             val cells = frame.celsByLayer.toLinkedMap()
-            val layerData = cells.map { (key, value) -> ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = true) }
+            val layerData = cells.map { (key, value) -> ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = imageLayers[key].isVisible) }
             ImageFrame(frame.index, frame.time.milliseconds, layerData)
         }
 
