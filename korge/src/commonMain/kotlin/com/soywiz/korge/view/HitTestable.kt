@@ -24,8 +24,8 @@ inline class HitTestDirectionFlags(val value: Int) {
         val ALL = HitTestDirectionFlags(true, true, true, true)
         val NONE = HitTestDirectionFlags(false, false, false, false)
 
-        fun fromString(kind: String?): HitTestDirectionFlags {
-            if (kind == null) return NONE
+        fun fromString(kind: String?, default: HitTestDirectionFlags = ALL): HitTestDirectionFlags {
+            if (kind == null || kind == "") return default
             if (!kind.startsWith("collision")) return NONE
             if (kind == "collision") return ALL
             return HitTestDirectionFlags(kind.contains("_up"), kind.contains("_right"), kind.contains("_down"), kind.contains("_left"))

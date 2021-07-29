@@ -95,7 +95,7 @@ suspend fun TileSetData.toTiledSet(
 
     val collisionsMap = IntMap<HitTestable>()
     tileset.tiles.fastForEach { tile ->
-        val collisionType = HitTestDirectionFlags.fromString(tile.type)
+        val collisionType = HitTestDirectionFlags.fromString(tile.type, HitTestDirectionFlags.NONE)
         val vectorPaths = fastArrayListOf<ShapeInfo>()
         if (tile.objectGroup != null) {
             tile.objectGroup.objects.fastForEach {
