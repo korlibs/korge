@@ -9,6 +9,3 @@ HOME=`echo ~` docker run --rm -it \
 	-v "gradlew_konan_win:/home/user/.wine/drive_c/users/user/.konan:delegated" \
 	soywiz/kotlin-native-win:opengl-openal \
 	/bin/bash -c "cp -f /home/user/.gradle-host/gradle.properties /home/user/.wine/drive_c/users/user/.gradle/gradle.properties 2> /dev/null; winecmd gradlew.bat --no-daemon $*"
-
-#        -e BINTRAY_API_KEY="$BINTRAY_API_KEY" \
-#        -e BINTRAY_USER="$BINTRAY_USER" \

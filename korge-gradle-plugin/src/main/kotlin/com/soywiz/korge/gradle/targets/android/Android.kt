@@ -79,7 +79,7 @@ fun Project.configureAndroidIndirect() {
 				//		}
 				//		allprojects {
 				//			repositories {
-				//				mavenLocal(); maven { url = "https://dl.bintray.com/korlibs/korlibs" }; google(); jcenter()
+				//				mavenLocal(); google(); jcenter()
 				//			}
 				//		}
 				//		task clean(type: Delete) { delete rootProject.buildDir }
@@ -126,9 +126,6 @@ fun Project.configureAndroidIndirect() {
 						line("buildscript") {
 							//line("repositories { google(); jcenter(); }")
                             line("repositories { mavenLocal(); google(); mavenCentral() }")
-                            if (isKotlinDevOrEap) {
-                                line("repositories { maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-eap\") }; maven { url = uri(\"https://dl.bintray.com/kotlin/kotlin-dev\") } }")
-                            }
 							line("dependencies { classpath 'com.android.tools.build:gradle:$androidBuildGradleVersion'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
 						}
 						line("repositories") {

@@ -530,15 +530,6 @@ nonSamples {
     val sourcesJar = tasks.maybeCreate<Jar>("sourceJar").apply { archiveClassifier.set("sources") }
     //val emptyJar = tasks.maybeCreate<Jar>("emptyJar").apply {}
     extensions.getByType(PublishingExtension::class.java).apply {
-        repositories {
-            //maven {
-            //    credentials {
-            //        username = BINTRAY_USER
-            //        password = BINTRAY_KEY
-            //    }
-            //    url = uri("https://api.bintray.com/maven/${project.property("project.bintray.org")}/${project.property("project.bintray.repository")}/${project.property("project.bintray.package")}/")
-            //}
-        }
         afterEvaluate {
             //println(gkotlin.sourceSets.names)
 

@@ -9,6 +9,3 @@ HOME=`echo ~` docker run --rm -it \
 	-v "gradlew_konan_linux:/home/user/.konan:delegated" \
 	soywiz/kotlin-native-win:android \
 	/bin/bash -c "cp -f /home/user/.gradle-host/gradle.properties /home/user/.gradle/gradle.properties 2> /dev/null; ./gradlew --no-daemon $*"
-
-#	-e BINTRAY_API_KEY="$BINTRAY_API_KEY" \
-#	-e BINTRAY_USER="$BINTRAY_USER" \
