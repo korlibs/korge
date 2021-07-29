@@ -10,6 +10,9 @@ fun interface HitTestable {
     fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean
 }
 
+fun HitTestable.hitTestAny(x: Int, y: Int, direction: HitTestDirection): Boolean =
+    this.hitTestAny(x.toDouble(), y.toDouble(), direction)
+
 inline class HitTestDirectionFlags(val value: Int) {
     operator fun plus(that: HitTestDirectionFlags): HitTestDirectionFlags = HitTestDirectionFlags(this.value or that.value)
 

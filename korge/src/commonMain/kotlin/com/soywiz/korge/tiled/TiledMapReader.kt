@@ -40,9 +40,22 @@ suspend fun VfsFile.readTiledMap(
 	return TiledMap(data, tiledTilesets)
 }
 
-suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData {
-	return parseTileSetData(this.readXml(), firstgid, this.baseName)
+suspend fun VfsFile.readTiledSet(
+    firstgid: Int = 1,
+    hasTransparentColor: Boolean = false,
+    transparentColor: RGBA = Colors.FUCHSIA,
+    createBorder: Int = 1,
+    atlas: MutableAtlasUnit? = null,
+): TiledTileset {
+    return readTileSetData(firstgid).toTiledSet(this.parent, hasTransparentColor, transparentColor, createBorder, atlas)
 }
+
+suspend fun VfsFile.readTiledSetData(firstgid: Int = 1): TileSetData {
+    return parseTileSetData(this.readXml(), firstgid, this.baseName)
+}
+
+@Deprecated("Use readTiledSetData", ReplaceWith("readTiledSetData(firstgid)"))
+suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData = readTiledSetData(firstgid)
 
 suspend fun TileSetData.toTiledSet(
 	folder: VfsFile,
@@ -74,7 +87,7 @@ suspend fun TileSetData.toTiledSet(
 		}
 	}
 
-    class ShapeInfo(val type: HitTestDirectionFlags, val path: VectorPath) : HitTestable {
+    data class ShapeInfo(val type: HitTestDirectionFlags, val path: VectorPath) : HitTestable {
         override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean {
             return path.containsPoint(x, y) && type.matches(direction)
         }
@@ -99,6 +112,8 @@ suspend fun TileSetData.toTiledSet(
                 }
                 return collisionType.matches(direction)
             }
+
+            override fun toString(): String = "HitTestable[id=${tile.id}]($vectorPaths)"
         }
     }
 

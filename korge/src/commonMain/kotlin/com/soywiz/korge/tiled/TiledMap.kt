@@ -267,9 +267,10 @@ class TiledMap constructor(
 
         fun toVectorPath(): VectorPath {
             return objectShape.toVectorPath().clone().apply {
+                //println("objectShape=$objectShape, bounds=$bounds, rotation=$rotation")
                 applyTransform(
                     Matrix()
-                        .translate(bounds.x, bounds.y)
+                        .pretranslate(bounds.x, bounds.y)
                         .prerotate(rotation.degrees)
                 )
             }
@@ -278,22 +279,22 @@ class TiledMap constructor(
         sealed class Shape {
             abstract fun toVectorPath(): VectorPath
 
-            class Rectangle(val width: Double, val height: Double) : Shape() {
+            data class Rectangle(val width: Double, val height: Double) : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath { rect(0.0, 0.0, width, height) }
             }
-            class Ellipse(val width: Double, val height: Double) : Shape() {
+            data class Ellipse(val width: Double, val height: Double) : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath { ellipse(0.0, 0.0, width, height) }
             }
             object PPoint : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath {  }
             }
-            class Polygon(val points: List<Point>) : Shape() {
+            data class Polygon(val points: List<Point>) : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
             }
-            class Polyline(val points: List<Point>) : Shape() {
+            data class Polyline(val points: List<Point>) : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
             }
-            class Text(
+            data class Text(
                 val fontFamily: String,
                 val pixelSize: Int,
                 val wordWrap: Boolean,
@@ -438,7 +439,7 @@ class TiledMap constructor(
             override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
         }
 
-        class Objects(
+        data class Objects(
             var color: RGBA = Colors.WHITE,
             var drawOrder: Object.DrawOrder = Object.DrawOrder.TOP_DOWN,
             val objects: FastArrayList<Object> = FastArrayList()
