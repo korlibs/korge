@@ -13,17 +13,17 @@ class EnvironmentTest {
     @Test
     fun testExpand() {
         // Windows
-        EnvironmentCustom(mutableMapOf(
+        Environment(
             "HOMEDrive" to "C:",
             "Homepath" to "\\Users\\soywiz",
-        )).also { env ->
+        ).also { env ->
             assertEquals("C:\\Users\\soywiz/.game", env.expand("~/.game"))
         }
 
         // Linux
-        EnvironmentCustom(mutableMapOf(
+        Environment(
             "hOme" to "/home/soywiz",
-        )).also { env ->
+        ).also { env ->
             assertEquals("/home/soywiz/.game", env.expand("~/.game"))
         }
     }
