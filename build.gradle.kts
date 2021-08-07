@@ -231,6 +231,14 @@ subprojects {
                 if (headlessTests) {
                     jvmTest.systemProperty("java.awt.headless", "true")
                 }
+
+                val jvmTestFix = tasks.create("jvmTestFix", Test::class)
+                jvmTestFix.group = "verification"
+                //jvmTestFix.group = jvmTest.group
+                jvmTestFix.environment("UPDATE_TEST_REF", "true")
+                jvmTestFix.testClassesDirs = jvmTest.testClassesDirs
+                jvmTestFix.classpath = jvmTest.classpath
+                jvmTestFix.bootstrapClasspath = jvmTest.bootstrapClasspath
             }
         }
 

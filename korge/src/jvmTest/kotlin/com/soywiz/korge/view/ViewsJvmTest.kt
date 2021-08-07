@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.scene.*
+import com.soywiz.korge.test.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
@@ -23,39 +24,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 			views.stage.dumpToString()
 		)
 		views.render()
-		assertEquals(
-			"""
-            createBuffer(VERTEX):0
-            createBuffer(VERTEX):1
-            createBuffer(INDEX):2
-            clear(#000000ff, 1.0, 0, true, true, true)
-            createTexture():0
-            Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=10, height=10), 10, 10)
-            Buffer[0].afterSetMem(mem[393216])
-            Buffer[1].afterSetMem(mem[4])
-            Buffer[2].afterSetMem(mem[49152])
-            draw(vertices=Buffer[0], indices=Buffer[2], program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), type=TRIANGLES, vertexLayout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2], vertexCount=6, offset=0, blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD), uniforms={Uniform(u_ProjMat)=Matrix3D(
-              [ 0.015625, 0, 0, -1 ],
-              [ 0, -0.015625, 0, 1 ],
-              [ 0, 0, -1, 0 ],
-              [ 0, 0, 0, 1 ],
-            ), Uniform(u_ViewMat)=Matrix3D(
-              [ 1, 0, 0, 0 ],
-              [ 0, 1, 0, 0 ],
-              [ 0, 0, 1, 0 ],
-              [ 0, 0, 0, 1 ],
-            ), Uniform(u_Tex0)=TextureUnit(texture=Texture[0], linear=true), Uniform(u_Tex1)=TextureUnit(texture=null, linear=true), Uniform(u_Tex2)=TextureUnit(texture=null, linear=true), Uniform(u_Tex3)=TextureUnit(texture=null, linear=true)}, stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255), colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true))
-            ::draw.ERROR.Unexpected:[Attribute(a_TexIndex)]
-            ::draw.indices=[0, 1, 2, 3, 0, 2]
-            ::draw.vertex[0]: a_Pos[vec2(0.0,0.0)], a_Tex[vec2(0.0,0.0)], a_Col[byte4(-1)], a_Col2[byte4(2139062143)]
-            ::draw.vertex[1]: a_Pos[vec2(10.0,0.0)], a_Tex[vec2(1.0,0.0)], a_Col[byte4(-1)], a_Col2[byte4(2139062143)]
-            ::draw.vertex[2]: a_Pos[vec2(10.0,10.0)], a_Tex[vec2(1.0,1.0)], a_Col[byte4(-1)], a_Col2[byte4(2139062143)]
-            ::draw.vertex[3]: a_Pos[vec2(0.0,10.0)], a_Tex[vec2(0.0,1.0)], a_Col[byte4(-1)], a_Col2[byte4(2139062143)]
-            disposeTemporalPerFrameStuff()
-            flipInternal()
-			""".trimIndent(),
-            (logAg)?.getLogAsString()
-		)
+        assertEqualsFileReference("korge/render/ViewsJvmTest1.log", ag.getLogAsString())
 	}
 
 	@Test
