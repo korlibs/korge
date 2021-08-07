@@ -368,11 +368,20 @@ object ASE : ImageFormatWithContainer("ase") {
                 }
             }
         }
+
         val imageLayers = image.layers
+        val imageVisibleLayers = imageLayers.filter { it.isVisible }
 
         val frames = image.frames.map { frame ->
-            val cells = frame.celsByLayer.toLinkedMap()
-            val layerData = cells.map { (key, value) -> ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = imageLayers[key].isVisible) }
+            // First collect within a frame only cells which are on a visible layer
+            val cells = frame.celsByLayer.toLinkedMap().filter { imageLayers[it.key].isVisible }
+            // Then create list of layer data from those cells and their corresponding visible layers
+            val layerData = cells.map { (key, value) ->
+                ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = true)
+            }
+            // Finally the index in the layer details needs to be adjusted because the invisible layers do not exist
+            // in ImageAnimationView objects. The index would be out of bounds otherwise.
+            imageVisibleLayers.forEachIndexed { index, element -> element.index = index }
             ImageFrame(frame.index, frame.time.milliseconds, layerData)
         }
 
@@ -386,7 +395,7 @@ object ASE : ImageFormatWithContainer("ase") {
             frames = frames,
             width = imageWidth,
             height = imageHeight,
-            layers = imageLayers,
+            layers = imageVisibleLayers,
             animations = animations,
         )
 
@@ -412,7 +421,7 @@ object ASE : ImageFormatWithContainer("ase") {
                 frames = frames,
                 width = maxWidth,
                 height = maxHeight,
-                layers = imageLayers,
+                layers = imageVisibleLayers,
                 animations = animations,
                 name = slice.name
             )

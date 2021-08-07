@@ -16,6 +16,10 @@ class ASETest {
         val simple2 = resourcesVfs["simple2.ase"].readImageData(ASE, atlas = atlas)
         val simple3 = resourcesVfs["simple3.ase"].readImageData(ASE, atlas = atlas)
         val sliceExample = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+        val hiddenLayer = resourcesVfs["hidden-layer.ase"].readImageData(ASE, atlas = atlas)
+
+        assertEquals(2, hiddenLayer.frames[0].layerData.size, "There are only two (visible) layers in layerDate of hidden-layer.ase file")
+
         //println(sliceExample)
         //atlas.allBitmaps.showImagesAndWait()
     }
