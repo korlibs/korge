@@ -69,6 +69,11 @@ open class FSprites(val maxSize: Int) {
         anchorRaw = packAnchor(x, y)
     }
 
+    fun FSprite.xy(x: Float, y: Float) {
+        this.x = x
+        this.y = y
+    }
+
     fun FSprite.scale(sx: Float, sy: Float = sx) {
         this.scaleX = sx
         this.scaleY = sy

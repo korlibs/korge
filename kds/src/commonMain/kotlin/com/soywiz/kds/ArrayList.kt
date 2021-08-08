@@ -203,6 +203,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
 }
 
 fun intArrayListOf(vararg values: Int) = IntArrayList(*values)
+fun IntArray.toIntArrayList() = IntArrayList(*this)
 
 
 // Double
@@ -556,3 +557,4 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
 }
 
 fun floatArrayListOf(vararg values: Float) = FloatArrayList(*values)
+fun FloatArray.toFloatArrayList() = FloatArrayList(*this)

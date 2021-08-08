@@ -6,7 +6,7 @@ Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=361, height=512), 36
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[16])
 Buffer[2].afterSetMem(mem[49152])
-draw(vertexCount=24, indices=Buffer[2], type=TRIANGLES, offset=0)
+draw(vertexCount=24, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=null
@@ -35,19 +35,19 @@ draw(vertexCount=24, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
 ::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 0, 2, 4, 5, 6, 7, 4, 6, 8, 9, 10, 11, 8, 10, 12, 13, 14, 15, 12, 14]
-::draw.vertex[0]: a_Pos[0.0,1.25], a_Tex[0.21052632,0.19726562], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[12.75,1.25], a_Tex[0.35180056,0.19726562], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[12.75,14.75], a_Tex[0.35180056,0.30273438], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[0.0,14.75], a_Tex[0.21052632,0.30273438], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[4]: a_Pos[13.25,1.25], a_Tex[0.33240998,0.0859375], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[5]: a_Pos[23.5,1.25], a_Tex[0.44598338,0.0859375], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[6]: a_Pos[23.5,14.75], a_Tex[0.44598338,0.19140625], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[7]: a_Pos[13.25,14.75], a_Tex[0.33240998,0.19140625], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[8]: a_Pos[25.5,1.25], a_Tex[0.35734072,0.1953125], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[9]: a_Pos[34.75,1.25], a_Tex[0.4598338,0.1953125], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[10]: a_Pos[34.75,14.75], a_Tex[0.4598338,0.30078125], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[11]: a_Pos[25.5,14.75], a_Tex[0.35734072,0.30078125], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[12]: a_Pos[34.5,12.25], a_Tex[0.5734072,0.69921875], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[13]: a_Pos[37.0,12.25], a_Tex[0.601108,0.69921875], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[14]: a_Pos[37.0,17.25], a_Tex[0.601108,0.73828125], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
-::draw.vertex[15]: a_Pos[34.5,17.25], a_Tex[0.5734072,0.73828125], a_Col[255,255,255,255], a_Col2[127,127,127,127], a_TexIndex[0]
+::draw.vertex[0]: a_Pos[0,1.25], a_Tex[0.21052632,0.19726562], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[12.75,1.25], a_Tex[0.35180056,0.19726562], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[12.75,14.75], a_Tex[0.35180056,0.30273438], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,14.75], a_Tex[0.21052632,0.30273438], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[4]: a_Pos[13.25,1.25], a_Tex[0.33240998,0.0859375], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[5]: a_Pos[23.5,1.25], a_Tex[0.44598338,0.0859375], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[6]: a_Pos[23.5,14.75], a_Tex[0.44598338,0.19140625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[7]: a_Pos[13.25,14.75], a_Tex[0.33240998,0.19140625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[8]: a_Pos[25.5,1.25], a_Tex[0.35734072,0.1953125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[9]: a_Pos[34.75,1.25], a_Tex[0.4598338,0.1953125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[10]: a_Pos[34.75,14.75], a_Tex[0.4598338,0.30078125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[11]: a_Pos[25.5,14.75], a_Tex[0.35734072,0.30078125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[12]: a_Pos[34.5,12.25], a_Tex[0.5734072,0.69921875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[13]: a_Pos[37,12.25], a_Tex[0.601108,0.69921875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[14]: a_Pos[37,17.25], a_Tex[0.601108,0.73828125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[15]: a_Pos[34.5,17.25], a_Tex[0.5734072,0.73828125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]

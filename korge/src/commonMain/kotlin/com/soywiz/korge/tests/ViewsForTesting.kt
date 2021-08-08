@@ -58,7 +58,8 @@ open class ViewsForTesting(
         viewsLog.views.virtualHeight = virtualSize.height
     }
 	val injector get() = viewsLog.injector
-    val logAg get() = ag as? LogAG?
+    val logAgOrNull get() = ag as? LogAG?
+    val logAg get() = logAgOrNull ?: error("Must call ViewsForTesting(log = true) to access logAg")
     val dummyAg get() = ag as? DummyAG?
 	val input get() = viewsLog.input
 	val views get() = viewsLog.views
