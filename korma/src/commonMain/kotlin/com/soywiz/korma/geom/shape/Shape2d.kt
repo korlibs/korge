@@ -175,8 +175,18 @@ abstract class Shape2d {
         override val area: Double get() = PI.toDouble() * ellipseRadiusX * ellipseRadiusY
     }
 
-    data class Ellipse(val x: Double, val y: Double, val radiusX: Double, val radiusY: Double, val angle: Angle = Angle.ZERO, val totalPoints: Int = 32) : BaseEllipse(x, y, radiusX, radiusY, angle, totalPoints)
-    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints)
+    data class Ellipse(val x: Double, val y: Double, val radiusX: Double, val radiusY: Double, val angle: Angle = Angle.ZERO, val totalPoints: Int = 32) : BaseEllipse(x, y, radiusX, radiusY, angle, totalPoints) {
+        companion object {
+            operator fun invoke(x: Float, y: Float, radiusX: Float, radiusY: Float, angle: Angle = Angle.ZERO, totalPoints: Int = 32) = Ellipse(x.toDouble(), y.toDouble(), radiusX.toDouble(), radiusY.toDouble(), angle, totalPoints)
+            operator fun invoke(x: Int, y: Int, radiusX: Int, radiusY: Int, angle: Angle = Angle.ZERO, totalPoints: Int = 32) = Ellipse(x.toDouble(), y.toDouble(), radiusX.toDouble(), radiusY.toDouble(), angle, totalPoints)
+        }
+    }
+    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints) {
+        companion object {
+            operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
+            operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
+        }
+    }
 
     data class Rectangle(val rect: com.soywiz.korma.geom.Rectangle) : Shape2d(), WithArea, IRectangle by rect {
         companion object {
