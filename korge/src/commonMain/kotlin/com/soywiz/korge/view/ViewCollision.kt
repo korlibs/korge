@@ -48,7 +48,7 @@ internal class ViewCollisionContext {
             val rightPaths = getVectorPath(right, tempVectorPath2)
             leftPaths.fastForEach { leftPath ->
                 rightPaths.fastForEach { rightPath ->
-                    if  (VectorPath.intersects(leftPath, getGlobalMatrix(left, lmat), rightPath, getGlobalMatrix(right, rmat))) return true
+                    if (VectorPath.intersects(leftPath, getGlobalMatrix(left, lmat), rightPath, getGlobalMatrix(right, rmat))) return true
                 }
             }
             return false
