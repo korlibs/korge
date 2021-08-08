@@ -2,7 +2,6 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.view.tiles.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
@@ -98,7 +97,7 @@ private val MOVE_ANGLES = arrayOf(0.degrees, 5.degrees, 10.degrees, 15.degrees, 
 private val MOVE_SCALES = arrayOf(+1.0, -1.0)
 
 // @TODO: if dx & dy are big, we should check intermediary positions to ensure we are not jumping to the other side of the object
-fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double) {
+fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hitTestDirection: HitTestDirection? = null) {
     val char = this
     val deltaXY = Point(dx, dy)
     val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
@@ -112,8 +111,33 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double) {
             val dpoint = Point.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y
-            val hitTestDirection = HitTestDirection.fromAngle(angle)
-            if (!collision.hitTestAny(char.globalX, char.globalY, hitTestDirection)) {
+            if (!collision.hitTestAny(
+                char.globalX, char.globalY,
+                hitTestDirection ?: HitTestDirection.fromAngle(angle))
+            ) {
+                return // Accept movement
+            }
+        }
+    }
+    char.x = oldX
+    char.y = oldY
+}
+
+fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind: CollisionKind = CollisionKind.SHAPE) {
+    val char = this
+    val deltaXY = Point(dx, dy)
+    val angle = Angle.between(0.0, 0.0, deltaXY.x, deltaXY.y)
+    val length = deltaXY.length
+    val oldX = char.x
+    val oldY = char.y
+    MOVE_ANGLES.fastForEach { dangle ->
+        MOVE_SCALES.fastForEach { dscale ->
+            val rangle = angle + dangle * dscale
+            val lengthScale = dangle.cosine
+            val dpoint = Point.fromPolar(rangle, length * lengthScale)
+            char.x = oldX + dpoint.x
+            char.y = oldY + dpoint.y
+            if (!char.collidesWith(collision, kind)) {
                 return // Accept movement
             }
         }
