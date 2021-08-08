@@ -23,6 +23,7 @@ class TransitionFilter(
     reversed: Boolean = false,
     smooth: Boolean = true,
     ratio: Double = 1.0,
+    filtering: Boolean = false,
 ) : ShaderFilter() {
     class Transition(val bmp: Bitmap) {
         fun inverted() = bmp.toBMP32().also { it.invert() }
@@ -71,6 +72,10 @@ class TransitionFilter(
             //out setTo texture2D(u_Mask, v_Tex["xy"])
             //out setTo vec4(1.lit, 1.lit, 1.lit, 1.lit)
         }
+    }
+
+    init {
+        this.filtering = filtering
     }
 
     override val fragment: FragmentShader = FRAGMENT_SHADER
