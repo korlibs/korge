@@ -120,7 +120,7 @@ open class LogBaseAG(
             for (index in 0 until uniforms.size) {
                 val uniform = uniforms.keys[index]
                 val value = uniforms.values[index]
-                log("::draw.uniform.$uniform = $value")
+                log("::draw.uniform.$uniform = ${value.convertToStriangle()}")
             }
 
             val vertexLayoutAttributesEx = vertexData.flatMap { vd ->
@@ -195,6 +195,12 @@ open class LogBaseAG(
             log("LogBaseAG.draw.ERROR: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    fun Any?.convertToStriangle(): Any? = when (this) {
+        is IntArray -> this.toList()
+        is FloatArray -> this.toList()
+        else -> this
     }
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()")
