@@ -1,9 +1,13 @@
 createBuffer(VERTEX):0
 createBuffer(VERTEX):1
 createBuffer(INDEX):2
+RenderBuffer[0].setSize(1280, 720)
+createMainRenderBuffer():0
+RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 disposeTemporalPerFrameStuff()
 flipInternal()
+RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=16, height=16), 16, 16)

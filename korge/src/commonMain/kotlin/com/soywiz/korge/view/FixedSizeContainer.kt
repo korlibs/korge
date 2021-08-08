@@ -43,6 +43,8 @@ open class FixedSizeContainer(
         if (clip) {
             val c2d = ctx.ctx2d
             val bounds = getWindowBounds(tempBounds)
+            bounds.applyTransform(ctx.batch.viewMat2D)
+            //println("FIXED_CLIP: bounds=$bounds")
             val rect = c2d.batch.scissor?.rect
             var intersects = true
             if (rect != null) {

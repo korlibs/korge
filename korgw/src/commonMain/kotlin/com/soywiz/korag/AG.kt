@@ -9,6 +9,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
@@ -117,12 +118,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     }
 
     data class Scissor(
-        var x: Int, var y: Int,
-        var width: Int, var height: Int
+        var x: Double = 0.0, var y: Double = 0.0,
+        var width: Double = 0.0, var height: Double = 0.0
     ) {
         val rect: Rectangle = Rectangle()
             get() {
-                field.setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+                field.setTo(x, y, width, height)
                 return field
             }
 
@@ -133,14 +134,27 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
         fun copyFrom(that: Scissor): Scissor = setTo(that.x, that.y, that.width, that.height)
 
-        fun setTo(x: Int, y: Int, width: Int, height: Int): Scissor = this.apply {
+        fun setTo(x: Double, y: Double, width: Double, height: Double): Scissor = this.apply {
             this.x = x
             this.y = y
             this.width = width
             this.height = height
         }
 
-        fun setTo(rect: Rectangle): Scissor = setTo(rect.x.toInt(), rect.y.toInt(), rect.width.toInt(), rect.height.toInt())
+        fun setTo(x: Int, y: Int, width: Int, height: Int): Scissor =
+            setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+
+        fun setTo(rect: Rectangle): Scissor = setTo(rect.x, rect.y, rect.width, rect.height)
+
+        fun applyTransform(m: Matrix) {
+            val l = m.transformX(left, top)
+            val t = m.transformY(left, top)
+            val r = m.transformX(right, bottom)
+            val b = m.transformY(right, bottom)
+            setTo(l, t, r - l, b - t)
+        }
+
+        override fun toString(): String = "Scissor(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
     }
 
     data class Blending(
@@ -700,7 +714,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     val mainRenderBuffer: BaseRenderBuffer by lazy { createMainRenderBuffer() }
 
-    open fun createMainRenderBuffer() = BaseRenderBufferImpl()
+    open fun createMainRenderBuffer(): BaseRenderBuffer = BaseRenderBufferImpl()
 
     open inner class RenderBuffer : Closeable, BaseRenderBufferImpl() {
         open val id: Int = -1

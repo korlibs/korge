@@ -3,6 +3,8 @@ createBuffer(VERTEX):1
 createBuffer(INDEX):2
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=361, height=512), 361, 512)
+RenderBuffer[0].setSize(640, 480)
+createMainRenderBuffer():0
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[16])
 Buffer[2].afterSetMem(mem[49152])

@@ -138,6 +138,8 @@ class BatchBuilder2D constructor(
 
     @KorgeInternal
 	val viewMat = Matrix3D()
+    @KorgeInternal
+    val viewMat2D = Matrix()
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
@@ -797,15 +799,20 @@ class BatchBuilder2D constructor(
      */
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
         ctx.matrix3DPool.alloc { temp ->
-            flush()
-            temp.copyFrom(this.viewMat)
-            this.viewMat.copyFrom(matrix)
-            //println("viewMat: $viewMat, matrix: $matrix")
-            try {
-                callback()
-            } finally {
+            ctx.matrixPool.alloc { temp2d ->
                 flush()
-                this.viewMat.copyFrom(temp)
+                temp.copyFrom(this.viewMat)
+                temp2d.copyFrom(this.viewMat2D)
+                this.viewMat2D.copyFrom(matrix)
+                this.viewMat.copyFrom(matrix)
+                //println("viewMat: $viewMat, matrix: $matrix")
+                try {
+                    callback()
+                } finally {
+                    flush()
+                    this.viewMat.copyFrom(temp)
+                    this.viewMat2D.copyFrom(temp2d)
+                }
             }
         }
 	}

@@ -214,7 +214,12 @@ abstract class AGOpengl : AG() {
             var realScissors: Rectangle? = finalScissorBL
             realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
             if (scissor != null) {
-                tempRect.setTo(currentRenderBuffer.x + scissor.x, ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)), (scissor.width), scissor.height)
+                tempRect.setTo(
+                    currentRenderBuffer.x + scissor.x,
+                    ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
+                    (scissor.width),
+                    scissor.height
+                )
                 realScissors = realScissors?.intersection(tempRect, realScissors)
             }
 
@@ -225,7 +230,7 @@ abstract class AGOpengl : AG() {
                 realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
             }
 
-            //println("finalScissorBL: $finalScissorBL, renderBufferScissor: $renderBufferScissor")
+            //println("[MAIN_BUFFER] realScissors: $realScissors")
 
             gl.enable(gl.SCISSOR_TEST)
             if (realScissors != null) {
@@ -234,9 +239,11 @@ abstract class AGOpengl : AG() {
                 gl.scissor(0, 0, 0, 0)
             }
         } else {
+            //println("[RENDER_TARGET] scissor: $scissor")
+
             gl.enableDisable(gl.SCISSOR_TEST, scissor != null)
             if (scissor != null) {
-                gl.scissor(scissor.x, scissor.y, scissor.width, scissor.height)
+                gl.scissor(scissor.x.toIntRound(), scissor.y.toIntRound(), scissor.width.toIntRound(), scissor.height.toIntRound())
             }
         }
     }
@@ -255,6 +262,8 @@ abstract class AGOpengl : AG() {
         val colorMask = batch.colorMask
         val renderState = batch.renderState
         val scissor = batch.scissor
+
+        //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
         applyScissorState(scissor)

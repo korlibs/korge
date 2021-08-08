@@ -360,3 +360,11 @@ fun Rectangle.without(padding: Margin): Rectangle =
 
 fun Rectangle.with(margin: Margin): Rectangle =
     Rectangle.fromBounds(left - margin.left, top - margin.top, right + margin.right, bottom + margin.bottom)
+
+fun Rectangle.applyTransform(m: Matrix): Rectangle {
+    val l = m.transformX(left, top)
+    val t = m.transformY(left, top)
+    val r = m.transformX(right, bottom)
+    val b = m.transformY(right, bottom)
+    return setTo(l, t, r - l, b - t)
+}

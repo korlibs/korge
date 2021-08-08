@@ -5,6 +5,8 @@ createBuffer(VERTEX):3
 createBuffer(VERTEX):4
 createBuffer(INDEX):5
 createTexture():0
+RenderBuffer[0].setSize(16, 16)
+createMainRenderBuffer():0
 Buffer[3].afterSetMem(mem[393216])
 Buffer[4].afterSetMem(mem[4])
 Buffer[5].afterSetMem(mem[49152])

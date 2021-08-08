@@ -72,11 +72,16 @@ open class LogBaseAG(
 		override fun toString(): String = "Buffer[$id]"
 	}
 
-	inner class LogRenderBuffer(override val id: Int) : RenderBuffer() {
+	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : RenderBuffer() {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) = log("$this.setSize($width, $height)")
         override fun set() = log("$this.set()")
 		override fun close() = log("$this.close()")
 		override fun toString(): String = "RenderBuffer[$id]"
+        init {
+            if (isMain) {
+                setSize(0, 0, this@LogBaseAG.backWidth, this@LogBaseAG.backHeight)
+            }
+        }
 	}
 
 	private var textureId = 0
@@ -205,9 +210,12 @@ open class LogBaseAG(
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()")
 	override fun createRenderBuffer(): RenderBuffer =
-		LogRenderBuffer(renderBufferId++).apply { log("createRenderBuffer():$id") }
+		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id") }
 
-	override fun flipInternal() = log("flipInternal()")
+    override fun createMainRenderBuffer(): RenderBuffer =
+        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id") }
+
+    override fun flipInternal() = log("flipInternal()")
 	override fun readColor(bitmap: Bitmap32) = log("$this.readBitmap($bitmap)")
 	override fun readDepth(width: Int, height: Int, out: FloatArray) = log("$this.readDepth($width, $height, $out)")
 }
