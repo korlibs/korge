@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
 fun interface HitTestable {

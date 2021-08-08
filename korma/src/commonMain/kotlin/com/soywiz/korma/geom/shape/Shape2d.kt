@@ -1,45 +1,135 @@
 package com.soywiz.korma.geom.shape
 
+import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.internal.*
 import kotlin.math.*
 
+private fun Matrix?.tx(x: Double, y: Double) = this?.transformX(x, y) ?: x
+private fun Matrix?.ty(x: Double, y: Double) = this?.transformY(x, y) ?: y
+private fun Matrix?.dtx(x: Double, y: Double) = this?.deltaTransformX(x, y) ?: x
+private fun Matrix?.dty(x: Double, y: Double) = this?.deltaTransformY(x, y) ?: y
+
+private fun optimizedIntersect(l: Shape2d.Circle, r: Shape2d.Circle): Boolean {
+    return Point.distance(l.x, l.y, r.x, r.y) < (l.radius + r.radius)
+}
+
+private fun optimizedIntersect(l: Shape2d.Circle, ml: Matrix?, r: Shape2d.Circle, mr: Matrix?): Boolean {
+    if (ml == null && mr == null) return optimizedIntersect(l, r)
+    val radiusL = ml.dtx(l.radius, l.radius)
+    val radiusR = mr.dtx(r.radius, r.radius)
+    //println("radiusL=$radiusL, radiusR=$radiusR")
+    return Point.distance(
+        ml.tx(l.x, l.y), ml.ty(l.x, l.y),
+        mr.tx(r.x, r.y), mr.ty(r.x, r.y),
+    ) < radiusL + radiusR
+}
+
+interface WithHitShape2d {
+    val hitShape2d: Shape2d
+}
+
 abstract class Shape2d {
+    abstract val type: Int
     abstract val paths: List<IPointArrayList>
     abstract val closed: Boolean
     open fun containsPoint(x: Double, y: Double) = false
+    companion object {
+        fun intersects(l: Shape2d, ml: Matrix?, r: Shape2d, mr: Matrix?, tempMatrix: Matrix? = Matrix()): Boolean {
+            if (l.type == r.type) {
+                when (l.type) {
+                    Circle.TYPE -> {
+                        return optimizedIntersect(l as Circle, ml, r as Circle, mr)
+                    }
+                }
+            }
+
+            return _intersectsStep0(l, ml, r, mr, tempMatrix) || _intersectsStep0(r, mr, l, ml, tempMatrix)
+        }
+
+        private fun _intersectsStep0(l: Shape2d, ml: Matrix?, r: Shape2d, mr: Matrix?, tempMatrix: Matrix? = Matrix()): Boolean {
+            if (tempMatrix != null && (ml != null || mr != null)) {
+                if (mr != null) tempMatrix.invert(mr) else tempMatrix.identity()
+                if (ml != null) tempMatrix.premultiply(ml)
+
+                l.paths.fastForEach {
+                    it.fastForEach { x, y ->
+                        val tx = tempMatrix.transformX(x, y)
+                        val ty = tempMatrix.transformY(x, y)
+                        if (r.containsPoint(tx, ty)) return true
+                    }
+                }
+            } else {
+                l.paths.fastForEach {
+                    it.fastForEach { x, y ->
+                        if (r.containsPoint(x, y)) return true
+                    }
+                }
+            }
+            return false
+        }
+
+        fun intersects(l: Shape2d, r: Shape2d): Boolean = intersects(l, null, r, null, null)
+    }
+
+    fun intersectsWith(that: Shape2d) = intersects(this, null, that, null, null)
+    fun intersectsWith(ml: Matrix?, that: Shape2d, mr: Matrix?) = intersects(this, ml, that, mr)
+
+    operator fun plus(that: Shape2d): Shape2d {
+        val left = this
+        val right = that
+        if (left is Empty) return right
+        if (right is Empty) return left
+        return Complex(buildFastList {
+            if (left is Complex) addAll(left.items) else add(left)
+            if (right is Complex) addAll(right.items) else add(right)
+        })
+    }
 
     interface WithArea {
         val area: Double
     }
 
     object Empty : Shape2d(), WithArea {
-        override val paths: List<PointArrayList> = listOf(PointArrayList(0))
-        override val closed: Boolean = false
-        override val area: Double = 0.0
+        const val TYPE = 0
+        override val type: Int = TYPE
+        override val paths = listOf(PointArrayList(0))
+        override val closed = false
+        override val area = 0.0
         override fun containsPoint(x: Double, y: Double) = false
     }
 
     data class Line(val x0: Double, val y0: Double, val x1: Double, val y1: Double) : Shape2d(), WithArea {
         companion object {
+            const val TYPE = 1
             operator fun invoke(x0: Float, y0: Float, x1: Float, y1: Float) = Line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
             operator fun invoke(x0: Int, y0: Int, x1: Int, y1: Int) = Line(x0.toDouble(), y0.toDouble(), x1.toDouble(), y1.toDouble())
         }
 
-        override val paths get() = listOf(PointArrayList(2).apply { add(x0, y0).add(x1, y1) })
-        override val closed: Boolean = false
-        override val area: Double get() = 0.0
+        override val type: Int = TYPE
+        override val paths = listOf(PointArrayList(2).apply { add(x0, y0).add(x1, y1) })
+        override val closed = false
+        override val area get() = 0.0
         override fun containsPoint(x: Double, y: Double) = false
     }
 
-    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : Shape2d(), WithArea {
+    // @TODO: Ellipse
+    // https://en.wikipedia.org/wiki/Matrix_representation_of_conic_sections
+    // https://math.stackexchange.com/questions/425366/finding-intersection-of-an-ellipse-with-another-ellipse-when-both-are-rotated/425412#425412
+    abstract class BaseEllipse(val ellipseX: Double, val ellipseY: Double, val ellipseRadiusX: Double, val ellipseRadiusY: Double = ellipseRadiusX, val ellipseAngle: Angle = Angle.ZERO, val ellipseTotalPoints: Int = 32) : Shape2d(), WithArea {
+    }
+
+    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints) {
         companion object {
+            const val TYPE = 2
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
         }
 
+        override val type: Int = TYPE
         override val paths by lazy {
             listOf(PointArrayList(totalPoints) {
                 for (it in 0 until totalPoints) {
@@ -57,11 +147,17 @@ abstract class Shape2d {
 
     data class Rectangle(val rect: com.soywiz.korma.geom.Rectangle) : Shape2d(), WithArea, IRectangle by rect {
         companion object {
+            const val TYPE = 3
             inline operator fun invoke(x: Double, y: Double, width: Double, height: Double) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
             inline operator fun invoke(x: Float, y: Float, width: Float, height: Float) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
             inline operator fun invoke(x: Int, y: Int, width: Int, height: Int) = Rectangle(com.soywiz.korma.geom.Rectangle(x, y, width, height))
+
+            inline fun fromBounds(left: Double, top: Double, right: Double, down: Double) = Rectangle(com.soywiz.korma.geom.Rectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Float, top: Float, right: Float, down: Float) = Rectangle(com.soywiz.korma.geom.Rectangle.fromBounds(left, top, right, down))
+            inline fun fromBounds(left: Int, top: Int, right: Int, down: Int) = Rectangle(com.soywiz.korma.geom.Rectangle.fromBounds(left, top, right, down))
         }
 
+        override val type: Int = TYPE
         override val paths = listOf(PointArrayList(4) { add(x, y).add(x + width, y).add(x + width, y + height).add(x, y + height) })
         override val closed: Boolean = true
         override val area: Double get() = width * height
@@ -70,13 +166,31 @@ abstract class Shape2d {
             "Rectangle(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
     }
 
+    data class Path(val vectorPath: VectorPath, override val closed: Boolean = true) : Shape2d() {
+        companion object {
+            const val TYPE = 4
+        }
+        override val type: Int = TYPE
+        override val paths = listOf(vectorPath.getPoints2())
+        override fun containsPoint(x: Double, y: Double): Boolean = if (closed) vectorPath.containsPoint(x, y) else false
+    }
+
     data class Polygon(val points: IPointArrayList) : Shape2d() {
+        companion object {
+            const val TYPE = 5
+        }
+        override val type: Int = TYPE
         override val paths = listOf(points)
         override val closed: Boolean = true
-        override fun containsPoint(x: Double, y: Double): Boolean = this.points.contains(x, y)
+        val vectorPath by lazy { buildPath { polygon(points) } }
+        override fun containsPoint(x: Double, y: Double): Boolean = vectorPath.containsPoint(x, y)
     }
 
     data class Polyline(val points: IPointArrayList) : Shape2d(), WithArea {
+        companion object {
+            const val TYPE = 6
+        }
+        override val type: Int = TYPE
         override val paths = listOf(points)
         override val closed: Boolean = false
         override val area: Double get() = 0.0
@@ -84,11 +198,20 @@ abstract class Shape2d {
     }
 
     data class Complex(val items: List<Shape2d>) : Shape2d() {
+        companion object {
+            const val TYPE = 7
+        }
+        override val type: Int = TYPE
         override val paths by lazy { items.flatMap { it.paths } }
         override val closed: Boolean = false
-        override fun containsPoint(x: Double, y: Double): Boolean = this.getAllPoints().contains(x, y)
+        override fun containsPoint(x: Double, y: Double): Boolean {
+            items.fastForEach { if (it.containsPoint(x, y)) return true }
+            return false
+        }
     }
 }
+
+fun Iterable<VectorPath>.toShape2d(closed: Boolean = true) = Shape2d.Complex(this.map { it.toShape2d(closed) })
 
 val List<IPointArrayList>.totalVertices get() = this.map { it.size }.sum()
 
@@ -266,6 +389,8 @@ fun IPointArrayList.toShape2d(closed: Boolean = true): Shape2d {
     }
     return if (closed) Shape2d.Polygon(this) else Shape2d.Polyline(this)
 }
+
+fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2d = Shape2d.Path(this, closed)
 
 fun VectorPath.toShape2d(closed: Boolean = true): Shape2d {
     val items = toPathList().map { it.toShape2d(closed) }

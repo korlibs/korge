@@ -93,4 +93,10 @@ class Shape2dTest {
             (Shape2d.Rectangle(0, 0, 10, 10).extend(10.0)).toString()
         )
     }
+
+    @Test
+    fun testIntersects() {
+        assertEquals(false, Shape2d.Circle(0, 0, 20).intersectsWith(Shape2d.Circle(40, 0, 20)))
+        assertEquals(true, Shape2d.Circle(0, 0, 20).intersectsWith(Shape2d.Circle(38, 0, 20)))
+    }
 }

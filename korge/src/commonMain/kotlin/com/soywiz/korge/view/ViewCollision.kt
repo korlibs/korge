@@ -1,14 +1,15 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.korge.util.*
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.threadLocal
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
 @PublishedApi
 internal class ViewCollisionContext {
+    val tempMat = Matrix()
     val tempRect1 = Rectangle()
     val tempRect2 = Rectangle()
     val tempVectorPath1 = listOf(VectorPath())
@@ -44,6 +45,16 @@ internal class ViewCollisionContext {
         right.getGlobalBounds(tempRect2)
         if (!tempRect1.intersects(tempRect2)) return false
         if (kind == CollisionKind.SHAPE) {
+            val leftShape = left.hitShape2d
+            val rightShape = right.hitShape2d
+            val ml = getGlobalMatrix(left, lmat)
+            val mr = getGlobalMatrix(right, rmat)
+
+            //println("intersects[$result]: left=$leftShape, right=$rightShape, ml=$ml, mr=$mr")
+
+            return Shape2d.intersects(leftShape, ml, rightShape, mr, tempMat)
+
+            /*
             val leftPaths = getVectorPath(left, tempVectorPath1)
             val rightPaths = getVectorPath(right, tempVectorPath2)
             leftPaths.fastForEach { leftPath ->
@@ -52,6 +63,7 @@ internal class ViewCollisionContext {
                 }
             }
             return false
+            */
         }
         return true
     }

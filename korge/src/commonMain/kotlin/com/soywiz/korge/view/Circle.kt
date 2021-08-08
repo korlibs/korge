@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
 /**
@@ -11,12 +12,12 @@ import com.soywiz.korma.geom.vector.*
  * The [callback] allows to configure the [Circle] instance.
  */
 inline fun Container.circle(
-        radius: Double = 16.0,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
-        callback: @ViewDslMarker Circle.() -> Unit = {}
+    radius: Double = 16.0,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
+    callback: @ViewDslMarker Circle.() -> Unit = {}
 ): Circle = Circle(radius, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
@@ -24,11 +25,11 @@ inline fun Container.circle(
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Circle(
-        radius: Double = 16.0,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
+    radius: Double = 16.0,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
     /** Radius of the circle */
     var radius: Double by uiObservable(radius) { updateGraphics() }
@@ -46,6 +47,7 @@ open class Circle(
     }
 
     private fun updateGraphics() {
+        hitShape2d = Shape2d.Circle(radius, radius, radius)
         updateShape {
             clear()
             circle(this@Circle.radius, this@Circle.radius, this@Circle.radius)

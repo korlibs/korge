@@ -201,7 +201,7 @@ fun VectorBuilder.lineTo(p: IPoint) = lineTo(p.x, p.y)
 fun VectorBuilder.quadTo(c: IPoint, a: IPoint) = quadTo(c.x, c.y, a.x, a.y)
 fun VectorBuilder.cubicTo(c1: IPoint, c2: IPoint, a: IPoint) = cubicTo(c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
-fun VectorBuilder.polygon(path: PointArrayList, close: Boolean = true) {
+fun VectorBuilder.polygon(path: IPointArrayList, close: Boolean = true) {
     moveTo(path.getX(0), path.getY(0))
     for (i in 1 until path.size) {
         lineTo(path.getX(i), path.getY(i))

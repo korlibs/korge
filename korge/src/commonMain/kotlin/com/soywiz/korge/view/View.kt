@@ -60,6 +60,7 @@ abstract class View internal constructor(
     , BView
     , XY
     , HitTestable
+    , WithHitShape2d
 //, EventDispatcher by EventDispatcher.Mixin()
 {
     override var extra: ExtraType = null
@@ -139,8 +140,25 @@ abstract class View internal constructor(
     interface Reference // View that breaks batching Viewport
     interface ColorReference // View that breaks batching Viewport
 
+    private var _hitShape2d: Shape2d? = null
+
+    @Deprecated("Use hitShape2d instead")
     open var hitShape: VectorPath? = null
+    @Deprecated("Use hitShape2d instead")
     open var hitShapes: List<VectorPath>? = null
+
+    override var hitShape2d: Shape2d
+        get() {
+            if (_hitShape2d == null) {
+                if (_hitShape2d == null && hitShapes != null) _hitShape2d = hitShapes!!.toShape2d()
+                if (_hitShape2d == null && hitShape != null) _hitShape2d = hitShape!!.toShape2d()
+                if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
+            }
+            return _hitShape2d!!
+        }
+        set(value) {
+            _hitShape2d = value
+        }
 
     companion object {
         //private val identity = Matrix()

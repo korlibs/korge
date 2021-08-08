@@ -2,6 +2,7 @@ import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.component.docking.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
@@ -12,6 +13,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 
@@ -39,10 +41,27 @@ import kotlinx.coroutines.*
 //}
 
 suspend fun main() = Korge {
+    //mainCircles()
     mainVampire()
     //mainCompression()
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
+}
+
+suspend fun Stage.mainCircles() {
+    val rect1 = circle(50.0, fill = Colors.RED).xy(300, 300).centered
+    val rect2 = circle(50.0, fill = Colors.GREEN).xy(120, 0).draggable {  }
+    println(rect1.hitShape2d)
+    println(rect2.hitShape2d)
+    addUpdater { dt ->
+        val dx = keys.getDeltaAxis(Key.LEFT, Key.RIGHT)
+        val dy = keys.getDeltaAxis(Key.UP, Key.DOWN)
+        if (dx != 0.0 || dy != 0.0) {
+            val speed = (dt / 16.milliseconds) * 5.0
+            rect2.moveWithCollisions(listOf(rect1), dx * speed, dy * speed)
+        }
+        //rect2.alpha = if (rect1.collidesWith(rect2, kind = CollisionKind.SHAPE)) 1.0 else 0.3
+    }
 }
 
 suspend fun Stage.mainVampire() {
@@ -109,6 +128,7 @@ suspend fun Stage.mainVampire() {
         val character1 = imageDataView(characters["vampire"], "down") {
             stop()
             xy(200, 200)
+            hitShape2d = Shape2d.Rectangle.fromBounds(-8.0, -3.0, +8.0, +3.0)
         }
 
         val character2 = imageDataView(characters["vamp"], "down") {
@@ -116,7 +136,8 @@ suspend fun Stage.mainVampire() {
             xy(160, 110)
         }
 
-        val hitTestable = listOf(tiledMapView, gg).toHitTestable()
+        //val hitTestable = listOf(tiledMapView, gg).toHitTestable()
+        val hitTestable = listOf(gg)
 
         controlWithKeyboard(character1, hitTestable, up = Key.UP, right = Key.RIGHT, down = Key.DOWN, left = Key.LEFT,)
         controlWithKeyboard(character2, hitTestable, up = Key.W, right = Key.D, down = Key.S, left = Key.A)
@@ -133,7 +154,7 @@ fun TiledMapView.collisionToBitmap(): Bitmap {
 
 fun Stage.controlWithKeyboard(
     char: ImageDataView,
-    collider: HitTestable,
+    collider: List<View>,
     up: Key = Key.UP,
     right: Key = Key.RIGHT,
     down: Key = Key.DOWN,
@@ -141,28 +162,20 @@ fun Stage.controlWithKeyboard(
 ) {
     addUpdater { dt ->
         val speed = 5.0 * (dt / 16.0.milliseconds)
-        var dx = 0.0
-        var dy = 0.0
-        val pressingLeft = keys[left]
-        val pressingRight = keys[right]
-        val pressingUp = keys[up]
-        val pressingDown = keys[down]
-        if (pressingLeft) dx = -1.0
-        if (pressingRight) dx = +1.0
-        if (pressingUp) dy = -1.0
-        if (pressingDown) dy = +1.0
+        val dx = keys.getDeltaAxis(left, right)
+        val dy = keys.getDeltaAxis(up, down)
         if (dx != 0.0 || dy != 0.0) {
             val dpos = Point(dx, dy).normalized * speed
-            char.moveWithHitTestable(collider, dpos.x, dpos.y)
+            char.moveWithCollisions(collider, dpos.x, dpos.y)
         }
         char.animation = when {
-            pressingLeft -> "left"
-            pressingRight -> "right"
-            pressingUp -> "up"
-            pressingDown -> "down"
+            dx < 0.0 -> "left"
+            dx > 0.0 -> "right"
+            dy < 0.0 -> "up"
+            dy > 0.0 -> "down"
             else -> char.animation
         }
-        if (pressingLeft || pressingRight || pressingUp || pressingDown) {
+        if (dx != 0.0 || dy != 0.0) {
             char.play()
         } else {
             char.stop()

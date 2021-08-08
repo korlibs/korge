@@ -52,3 +52,5 @@ fun <T> fastArrayListOf(vararg values: T): FastArrayList<T> = FastArrayList<T>(v
 
 fun <T> List<T>.toFastList(): List<T> = if (this is FastArrayList) this else FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
 fun <T> Array<T>.toFastList(): List<T> = FastArrayList<T>(this.size).also { out -> fastForEach { out.add(it) } }
+
+inline fun <T> buildFastList(block: FastArrayList<T>.() -> Unit): FastArrayList<T> = FastArrayList<T>().apply(block)
