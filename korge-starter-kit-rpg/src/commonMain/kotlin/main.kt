@@ -109,28 +109,20 @@ fun Stage.controlWithKeyboard(
 ) {
 	addUpdater { dt ->
 		val speed = 2.0 * (dt / 16.0.milliseconds)
-		var dx = 0.0
-		var dy = 0.0
-		val pressingLeft = keys[left]
-		val pressingRight = keys[right]
-		val pressingUp = keys[up]
-		val pressingDown = keys[down]
-		if (pressingLeft) dx = -1.0
-		if (pressingRight) dx = +1.0
-		if (pressingUp) dy = -1.0
-		if (pressingDown) dy = +1.0
+		val dx = if (keys[left]) -1.0 else if (keys[right]) +1.0 else 0.0
+		val dy = if (keys[up]) -1.0 else if (keys[down]) +1.0 else 0.0
 		if (dx != 0.0 || dy != 0.0) {
 			val dpos = Point(dx, dy).normalized * speed
 			char.moveWithHitTestable(collider, dpos.x, dpos.y)
 		}
 		char.animation = when {
-			pressingLeft -> "left"
-			pressingRight -> "right"
-			pressingUp -> "up"
-			pressingDown -> "down"
+			dx < 0.0 -> "left"
+			dx > 0.0 -> "right"
+			dy < 0.0 -> "up"
+			dy > 0.0 -> "down"
 			else -> char.animation
 		}
-		if (pressingLeft || pressingRight || pressingUp || pressingDown) {
+		if (dx != 0.0 || dy != 0.0) {
 			char.play()
 		} else {
 			char.stop()
