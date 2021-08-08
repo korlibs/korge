@@ -78,7 +78,7 @@ abstract class Shape2d {
     fun intersectsWith(that: Shape2d) = intersects(this, null, that, null, null)
     fun intersectsWith(ml: Matrix?, that: Shape2d, mr: Matrix?) = intersects(this, ml, that, mr)
 
-    operator fun plus(that: Shape2d): Shape2d {
+    infix fun with(that: Shape2d): Shape2d {
         val left = this
         val right = that
         if (left is Empty) return right

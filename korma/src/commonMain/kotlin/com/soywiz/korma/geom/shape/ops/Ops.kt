@@ -12,8 +12,10 @@ infix fun Shape2d.union(other: Shape2d): Shape2d = this.clipperOp(other, Clipper
 infix fun Shape2d.xor(other: Shape2d): Shape2d = this.clipperOp(other, Clipper.ClipType.XOR)
 infix fun Shape2d.difference(other: Shape2d): Shape2d = this.clipperOp(other, Clipper.ClipType.DIFFERENCE)
 
-operator fun Shape2d.plus(other: Shape2d): Shape2d = this.clipperOp(other, Clipper.ClipType.UNION)
-operator fun Shape2d.minus(other: Shape2d): Shape2d = this.clipperOp(other, Clipper.ClipType.DIFFERENCE)
+@Deprecated("Use union instead", ReplaceWith("this union other"))
+operator fun Shape2d.plus(other: Shape2d): Shape2d = this union other
+@Deprecated("Use difference instead", ReplaceWith("this difference other"))
+operator fun Shape2d.minus(other: Shape2d): Shape2d = this difference other
 
 fun Shape2d.extend(size: Double, cap: LineCap = LineCap.ROUND): Shape2d {
     val clipper = ClipperOffset()
