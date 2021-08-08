@@ -1,5 +1,14 @@
 description = "Kotlin Optimized Data Structures"
 
+project.ext.props = [
+    "project.scm.url" : "https://github.com/korlibs/kds",
+    "project.license.name" : "CC0 1.0 Universal",
+    "project.license.url" : "https://raw.githubusercontent.com/korlibs/kds/master/LICENSE",
+    "project.author.id" : "soywiz",
+    "project.author.name" : "Carlos Ballesteros Velasco",
+    "project.author.email" : "soywiz@gmail.com",
+]
+
 dependencies {
     //add("jvmTestApi", "org.powermock:powermock-mockito-release-full:1.6.4")
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")

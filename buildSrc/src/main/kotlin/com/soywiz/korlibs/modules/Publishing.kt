@@ -88,13 +88,15 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                 //if (multiplatform) {
                 if (!isGradlePluginMarker) {
                     publication.pom.withXml {
-                        val defaultGitUrl = "https://github.com/korlibs/korge-next"
+                        val baseProjectName = project.name.substringBefore('-')
+                        //println("baseProjectName=$baseProjectName")
+                        val defaultGitUrl = "https://github.com/korlibs/$baseProjectName"
                         this.asNode().apply {
                             //replaceNode(Node(this, "name", project.name))
                             appendNode("name", project.name)
                             appendNode(
                                 "description",
-                                project.getCustomProp("project.description", project.description ?: project.name)
+                                project.description ?: project.getCustomProp("project.description", project.description ?: project.name)
                             )
                             appendNode("url", project.getCustomProp("project.scm.url", defaultGitUrl))
                             appendNode("licenses").apply {
@@ -103,7 +105,7 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                                     appendNode("url").setValue(
                                         project.getCustomProp(
                                             "project.license.url",
-                                            "https://raw.githubusercontent.com/korlibs/korge-next/master/LICENSE"
+                                            "https://raw.githubusercontent.com/korlibs/$baseProjectName/master/LICENSE"
                                         )
                                     )
                                 }
@@ -112,16 +114,10 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                                 appendNode("developer").apply {
                                     appendNode("id").setValue(project.getCustomProp("project.author.id", "soywiz"))
                                     appendNode("name").setValue(
-                                        project.getCustomProp(
-                                            "project.author.name",
-                                            "Carlos Ballesteros Velasco"
-                                        )
+                                        project.getCustomProp("project.author.name", "Carlos Ballesteros Velasco")
                                     )
                                     appendNode("email").setValue(
-                                        project.getCustomProp(
-                                            "project.author.email",
-                                            "soywiz@gmail.com"
-                                        )
+                                        project.getCustomProp("project.author.email", "soywiz@gmail.com")
                                     )
                                 }
                             }

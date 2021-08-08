@@ -1,5 +1,14 @@
 description = "Port of JBox2d"
 
+project.ext.props = [
+    "project.scm.url" : "https://github.com/korlibs/kbox2d",
+    "project.license.name" : "MIT License",
+    "project.license.url" : "https://raw.githubusercontent.com/korlibs/kbox2d/master/LICENSE",
+    "project.author.id" : "soywiz",
+    "project.author.name" : "Carlos Ballesteros Velasco",
+    "project.author.email" : "soywiz@gmail.com",
+]
+
 dependencies {
 	add("commonMainApi", project(":korma"))
 }

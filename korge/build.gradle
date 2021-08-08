@@ -1,5 +1,14 @@
 description = "Multiplatform Game Engine written in Kotlin"
 
+project.ext.props = [
+    "project.scm.url" : "https://github.com/korlibs/klogger",
+    "project.license.name" : "MIT License",
+    "project.license.url" : "https://raw.githubusercontent.com/korlibs/korge/master/LICENSE",
+    "project.author.id" : "soywiz",
+    "project.author.name" : "Carlos Ballesteros Velasco",
+    "project.author.email" : "soywiz@gmail.com",
+]
+
 dependencies {
 	add("commonMainApi", project(":korgw"))
 	add("commonMainApi", project(":korau"))
