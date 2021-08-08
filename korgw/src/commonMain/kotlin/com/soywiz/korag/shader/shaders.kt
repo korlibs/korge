@@ -155,6 +155,7 @@ open class Attribute(
     fun inactived() = copy(active = false)
     fun withDivisor(divisor: Int) = copy(divisor = divisor)
 	override fun toString(): String = "Attribute($name)"
+    fun toStringEx(): String = "Attribute($name, type=$type, normalized=$normalized, offset=$offset, active=$active, precision=$precision, divisor=$divisor)"
     override fun equals(other: Any?): Boolean = mequals<Attribute>(other) && this.normalized == (other as Attribute).normalized && this.offset == other.offset && this.active == other.active
     override fun hashCode(): Int {
         var out = mhashcode()

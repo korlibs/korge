@@ -1,7 +1,7 @@
 package com.soywiz.korag.log
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -88,11 +88,15 @@ open class LogBaseAG(
 	override fun createBuffer(kind: Buffer.Kind): Buffer =
 		LogBuffer(bufferId++, kind).apply { log("createBuffer($kind):$id") }
 
+    data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
+        val layout = data.layout
+        val buffer = data.buffer as LogBuffer
+    }
+
     override fun draw(batch: Batch) {
-        val vertices = batch.vertices
         val program = batch.program
         val type = batch.type
-        val vertexLayout = batch.vertexLayout
+        val vertexData = batch.vertexData
         val vertexCount = batch.vertexCount
         val indices = batch.indices
         val offset = batch.offset
@@ -103,12 +107,31 @@ open class LogBaseAG(
         val renderState = batch.renderState
         val scissor = batch.scissor
         try {
-            log("draw(vertices=$vertices, indices=$indices, program=$program, type=$type, vertexLayout=$vertexLayout, vertexCount=$vertexCount, offset=$offset, blending=$blending, uniforms=$uniforms, stencil=$stencil, colorMask=$colorMask)")
+            log("draw(vertexCount=$vertexCount, indices=$indices, type=$type, offset=$offset)")
+            log("::draw.program=$program")
+            log("::draw.renderState=$renderState")
+            log("::draw.scissor=$scissor")
+            log("::draw.stencil=$stencil")
+            log("::draw.blending=$blending")
+            log("::draw.colorMask=$colorMask")
+
+            for (index in 0 until uniforms.size) {
+                val uniform = uniforms.keys[index]
+                val value = uniforms.values[index]
+                log("::draw.uniform.$uniform = $value")
+            }
+
+            val vertexLayoutAttributesEx = vertexData.flatMap { vd ->
+                vd.layout.attributes.zip(vd.layout.attributePositions).mapIndexed { index, pair ->
+                    VertexAttributeEx(index, pair.first, pair.second, vd)
+                }
+            }
+            val vertexLayoutAttributes = vertexLayoutAttributesEx.map { it.attribute }.toSet()
 
             val missingUniforms = program.uniforms - uniforms.keys
             val extraUniforms = uniforms.keys - program.uniforms
-            val missingAttributes = vertexLayout.attributes.toSet() - program.attributes
-            val extraAttributes = program.attributes - vertexLayout.attributes.toSet()
+            val missingAttributes = vertexLayoutAttributes - program.attributes
+            val extraAttributes = program.attributes - vertexLayoutAttributes
 
             if (missingUniforms.isNotEmpty()) log("::draw.ERROR.Missing:$missingUniforms")
             if (extraUniforms.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraUniforms")
@@ -116,32 +139,38 @@ open class LogBaseAG(
             if (missingAttributes.isNotEmpty()) log("::draw.ERROR.Missing:$missingAttributes")
             if (extraAttributes.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraAttributes")
 
-            val vertexBuffer = vertices as LogBuffer
-            val vertexMem = vertexBuffer.logmem!!
-            val vertexMemOffset = vertexBuffer.logmemOffset
             val indexMem = (indices as LogBuffer).logmem
-            val _indices = (offset until offset + vertexCount).map { indexMem!!.getAlignedInt16(it) }
+            val _indices = when (batch.indexType) {
+                IndexType.UBYTE -> (offset until offset + vertexCount).mapInt { indexMem!!.getAlignedUInt8(it).toInt() }
+                IndexType.USHORT -> (offset until offset + vertexCount).map { indexMem!!.getAlignedUInt16(it).toInt() }
+                IndexType.UINT -> (offset until offset + vertexCount).map { indexMem!!.getAlignedInt32(it).toInt() }
+            }
+            for (vlae in vertexLayoutAttributesEx) {
+                log("::draw.attribute[${vlae.buffer.id}][${vlae.index}]=${vlae.attribute.toStringEx()}")
+            }
+
             log("::draw.indices=$_indices")
             for (index in _indices.sorted().distinct()) {
-                val os = index * vertexLayout.totalSize
                 val attributes = arrayListOf<String>()
-                for ((attribute, pos) in vertexLayout.attributes.zip(vertexLayout.attributePositions)) {
-                    val o = os + pos + vertexMemOffset
+                for (vlae in vertexLayoutAttributesEx) {
+                    val attribute = vlae.attribute
+                    val vm = vlae.buffer.logmem!!
+                    val attributeType = attribute.type
+                    val o = (index * vlae.layout.totalSize) + vlae.pos + vlae.buffer.logmemOffset
+                    val acount = attributeType.elementCount
 
-                    val info = when (attribute.type) {
-                        VarType.Int1 -> "int(" + vertexMem.getUnalignedInt32(o + 0) + ")"
-                        VarType.Float1 -> "float(" + vertexMem.getUnalignedFloat32(o + 0) + ")"
-                        VarType.Float2 -> "vec2(" + vertexMem.getUnalignedFloat32(o + 0) + "," + vertexMem.getUnalignedFloat32(o + 4) + ")"
-                        VarType.Float3 -> "vec3(" + vertexMem.getUnalignedFloat32(o + 0) + "," + vertexMem.getUnalignedFloat32(o + 4) + "," + vertexMem.getUnalignedFloat32(
-                            o + 8
-                        ) + ")"
-                        VarType.Byte4 -> "byte4(" + vertexMem.getUnalignedInt32(o + 0) + ")"
-                        else -> "Unsupported(${attribute.type})"
+                    val info = when (attributeType.kind) {
+                        VarKind.TBYTE -> (0 until acount).map { vm.getUnalignedInt8(o + it * 1) }.joinToString(",")
+                        VarKind.TUNSIGNED_BYTE -> (0 until acount).map { vm.getUnalignedUInt8(o + it * 1) }.joinToString(",")
+                        VarKind.TSHORT -> (0 until acount).map { vm.getUnalignedInt16(o + it * 2) }.joinToString(",")
+                        VarKind.TUNSIGNED_SHORT -> (0 until acount).map { vm.getUnalignedUInt16(o + it * 2) }.joinToString(",")
+                        VarKind.TINT -> (0 until acount).map { vm.getUnalignedInt32(o + it * 4) }.joinToString(",")
+                        VarKind.TFLOAT -> (0 until acount).map { vm.getUnalignedFloat32(o + it * 4) }.joinToString(",")
                     }
 
-                    attributes += attribute.name + "[" + info + "]"
+                    attributes += "${attribute.name}[$info]"
                 }
-                log("::draw.vertex[$index]: " + attributes.joinToString(", "))
+                log("::draw.vertex[$index]: ${attributes.joinToString(", ")}")
             }
         } catch (e: Throwable) {
             log("LogBaseAG.draw.ERROR: ${e.message}")

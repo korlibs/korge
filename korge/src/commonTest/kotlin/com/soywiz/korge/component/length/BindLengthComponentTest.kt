@@ -8,21 +8,6 @@ import kotlin.test.*
 @KorgeExperimental
 class BindLengthComponentTest : ViewsForTesting(log = true) {
     @Test
-    fun testPercent() = viewsTest {
-        val container = fixedSizeContainer(300.0, 500.0)
-        val rect = container.solidRect(100, 100)
-        rect.bindLength(View::x) { 50.percent }
-        rect.bindLength(View::y) { 50.percent }
-        assertEquals(0.0, rect.x)
-        assertEquals(0.0, rect.y)
-        delayFrame()
-        val logStr = logAg!!.getLogAsString().replace(".0", "")
-        assertTrue { logStr.contains("a_Pos[vec2(150,350)]") }
-        assertEquals(150.0, rect.x)
-        assertEquals(250.0, rect.y)
-    }
-
-    @Test
     fun testPercent2() = viewsTest {
         val container = fixedSizeContainer(300.0, 500.0)
         val rect = container.solidRect(100, 100)

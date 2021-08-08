@@ -94,6 +94,12 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 
 	fun dispose() = Unit
 
+    fun setAlignedInt8(index: Int, value: Int): Unit { i8[index] = value.toByte() }
+    fun getAlignedInt8(index: Int): Int = i8[index].toInt()
+
+    fun setAlignedUInt8(index: Int, value: Int): Unit { u8[index] = value }
+    fun getAlignedUInt8(index: Int): Int = u8[index].toInt() and 0xFF
+
     fun setAlignedUInt16(index: Int, value: Int): Unit { i16[index] = value.toShort() }
     fun getAlignedUInt16(index: Int): Int = i16[index].toInt() and 0xFFFF
 
@@ -111,9 +117,19 @@ class FBuffer private constructor(val mem: MemBuffer, val size: Int = mem.size) 
 	fun setAlignedFloat64(index: Int, value: Double): Unit { f64[index] = value }
 	fun getAlignedFloat64(index: Int): Double = f64[index]
 
-	fun getUnalignedInt16(index: Int): Short = data.getShort(index)
+    fun getUnalignedInt8(index: Int): Byte = data.getByte(index)
+    fun setUnalignedInt8(index: Int, value: Byte): Unit { data.setByte(index, value) }
+
+    fun getUnalignedUInt8(index: Int): Int = data.getByte(index).toInt() and 0xFF
+    fun setUnalignedUInt8(index: Int, value: Int): Unit { data.setByte(index, value.toByte()) }
+
+    fun getUnalignedInt16(index: Int): Short = data.getShort(index)
 	fun setUnalignedInt16(index: Int, value: Short): Unit { data.setShort(index, value) }
-	fun setUnalignedInt32(index: Int, value: Int): Unit { data.setInt(index, value) }
+
+    fun getUnalignedUInt16(index: Int): Int = data.getShort(index).toInt() and 0xFFFF
+    fun setUnalignedUInt16(index: Int, value: Int): Unit { data.setShort(index, value.toShort()) }
+
+    fun setUnalignedInt32(index: Int, value: Int): Unit { data.setInt(index, value) }
 	fun getUnalignedInt32(index: Int): Int = data.getInt(index)
 	fun setUnalignedFloat32(index: Int, value: Float): Unit { data.setFloat(index, value) }
 	fun getUnalignedFloat32(index: Int): Float = data.getFloat(index)
