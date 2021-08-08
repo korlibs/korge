@@ -36,13 +36,36 @@ abstract class Shape2d {
     abstract val type: Int
     abstract val paths: List<IPointArrayList>
     abstract val closed: Boolean
-    open fun containsPoint(x: Double, y: Double) = false
+    abstract fun containsPoint(x: Double, y: Double): Boolean
+    fun containsPoint(x: Double, y: Double, mat: Matrix) = containsPoint(mat.transformX(x, y), mat.transformY(x, y))
+    open fun getBounds(out: com.soywiz.korma.geom.Rectangle = com.soywiz.korma.geom.Rectangle()): com.soywiz.korma.geom.Rectangle {
+        var minx = Double.POSITIVE_INFINITY
+        var miny = Double.POSITIVE_INFINITY
+        var maxx = Double.NEGATIVE_INFINITY
+        var maxy = Double.NEGATIVE_INFINITY
+        paths.fastForEach { path ->
+            path.fastForEach { x, y ->
+                minx = min(minx, x)
+                miny = min(miny, y)
+                maxx = max(maxx, x)
+                maxy = max(maxy, y)
+            }
+        }
+        return out.setBounds(minx, miny, maxx, maxy)
+    }
+    open fun getCenter(): com.soywiz.korma.geom.Point {
+        return getBounds().center
+    }
     companion object {
         fun intersects(l: Shape2d, ml: Matrix?, r: Shape2d, mr: Matrix?, tempMatrix: Matrix? = Matrix()): Boolean {
+            //println("Shape2d.intersects:"); println(" - l=$l[$ml]"); println(" - r=$r[$mr]")
+
             if (l.type == r.type) {
                 when (l.type) {
-                    Circle.TYPE -> {
-                        return optimizedIntersect(l as Circle, ml, r as Circle, mr)
+                    BaseEllipse.TYPE -> {
+                        if (l is Circle && r is Circle) {
+                            return optimizedIntersect(l, ml, r, mr)
+                        }
                     }
                 }
             }
@@ -73,6 +96,9 @@ abstract class Shape2d {
         }
 
         fun intersects(l: Shape2d, r: Shape2d): Boolean = intersects(l, null, r, null, null)
+
+        fun EllipseOrCircle(x: Double, y: Double, radiusX: Double, radiusY: Double, angle: Angle = Angle.ZERO, totalPoints: Int = 32): BaseEllipse =
+            if (radiusX == radiusY) Circle(x, y, radiusX, totalPoints) else Ellipse(x, y, radiusX, radiusY, angle, totalPoints)
     }
 
     fun intersectsWith(that: Shape2d) = intersects(this, null, that, null, null)
@@ -120,30 +146,37 @@ abstract class Shape2d {
     // https://en.wikipedia.org/wiki/Matrix_representation_of_conic_sections
     // https://math.stackexchange.com/questions/425366/finding-intersection-of-an-ellipse-with-another-ellipse-when-both-are-rotated/425412#425412
     abstract class BaseEllipse(val ellipseX: Double, val ellipseY: Double, val ellipseRadiusX: Double, val ellipseRadiusY: Double = ellipseRadiusX, val ellipseAngle: Angle = Angle.ZERO, val ellipseTotalPoints: Int = 32) : Shape2d(), WithArea {
-    }
-
-    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints) {
         companion object {
-            const val TYPE = 2
-            operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
-            operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
+            const val TYPE = -2
         }
+        override val type: Int get() = TYPE
 
-        override val type: Int = TYPE
-        override val paths by lazy {
-            listOf(PointArrayList(totalPoints) {
-                for (it in 0 until totalPoints) {
+        val isCircle get() = ellipseRadiusX == ellipseRadiusY
+        val vectorPath by lazy { buildPath { ellipse(0.0, 0.0, ellipseRadiusX, ellipseRadiusY) }.applyTransform(Matrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle)) }
+
+        override val paths: List<IPointArrayList> = when {
+            isCircle -> listOf(PointArrayList(ellipseTotalPoints) {
+                for (it in 0 until ellipseTotalPoints) {
                     add(
-                        x + Angle.cos01(it.toDouble() / totalPoints.toDouble()) * radius,
-                        y + Angle.sin01(it.toDouble() / totalPoints.toDouble()) * radius
+                        ellipseX + Angle.cos01(it.toDouble() / ellipseTotalPoints.toDouble()) * ellipseRadiusX,
+                        ellipseY + Angle.sin01(it.toDouble() / ellipseTotalPoints.toDouble()) * ellipseRadiusY
                     )
                 }
             })
+            else -> listOf(vectorPath.getPoints2())
         }
-        override val closed: Boolean = true
-        override val area: Double get() = PI.toDouble() * radius * radius
-        override fun containsPoint(x: Double, y: Double) = hypot(this.x - x, this.y - y) < radius
+        override val closed: Boolean get() = true
+        override fun containsPoint(x: Double, y: Double): Boolean {
+            if (isCircle) {
+                return hypot(this.ellipseX - x, this.ellipseY - y) < ellipseRadiusX
+            }
+            return vectorPath.containsPoint(x, y)
+        }
+        override val area: Double get() = PI.toDouble() * ellipseRadiusX * ellipseRadiusY
     }
+
+    data class Ellipse(val x: Double, val y: Double, val radiusX: Double, val radiusY: Double, val angle: Angle = Angle.ZERO, val totalPoints: Int = 32) : BaseEllipse(x, y, radiusX, radiusY, angle, totalPoints)
+    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints)
 
     data class Rectangle(val rect: com.soywiz.korma.geom.Rectangle) : Shape2d(), WithArea, IRectangle by rect {
         companion object {
@@ -392,7 +425,10 @@ fun IPointArrayList.toShape2d(closed: Boolean = true): Shape2d {
 
 fun VectorPath.toShape2dNew(closed: Boolean = true): Shape2d = Shape2d.Path(this, closed)
 
-fun VectorPath.toShape2d(closed: Boolean = true): Shape2d {
+//fun VectorPath.toShape2d(closed: Boolean = true): Shape2d = toShape2dNew(closed)
+fun VectorPath.toShape2d(closed: Boolean = true): Shape2d = toShape2dOld(closed)
+
+fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
     val items = toPathList().map { it.toShape2d(closed) }
     return when (items.size) {
         0 -> Shape2d.Empty

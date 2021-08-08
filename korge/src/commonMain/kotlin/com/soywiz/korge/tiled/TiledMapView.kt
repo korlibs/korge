@@ -6,6 +6,7 @@ import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import kotlin.math.*
 
 inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
@@ -17,6 +18,15 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true, smoothing
     override fun hitTest(x: Double, y: Double, direction: HitTestDirection): View? {
         //return super.hitTest(x, y, direction)
         return globalPixelHitTest(x, y, direction)
+    }
+
+    override val customHitShape get() = true
+    override protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+        // @TODO: Use shape
+        val p = matrix.transform(shape.getCenter())
+        return globalPixelHitTest(p.x, p.y, direction)
+        //println("TiledMapView.hitTestShapeInternal: $shape, $matrix")
+        //return super.hitTestShapeInternal(shape, matrix, direction)
     }
 
     //protected override fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection): View? = globalPixelHitTest(x, y, direction)

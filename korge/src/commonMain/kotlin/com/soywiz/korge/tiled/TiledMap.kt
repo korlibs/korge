@@ -162,7 +162,7 @@ fun List<TiledMap.TiledTileset>.toTileSet(): TileSet {
     val tilesets = this
     val maxGid = tilesets.map { it.maxgid }.maxOrNull() ?: 0
     val tiles = IntMap<TileSetTileInfo>(maxGid * 2)
-    val collisions = IntMap<HitTestable>(maxGid * 2)
+    val collisions = IntMap<TileShapeInfo>(maxGid * 2)
     tilesets.fastForEach { tileset ->
         tileset.tileset.texturesMap.fastForEach { key, value ->
             val id = tileset.firstgid + key
@@ -255,6 +255,8 @@ class TiledMap constructor(
         val x: Double get() = bounds.x
         val y: Double get() = bounds.y
 
+        //val transform get() = getTransform()
+
         fun strOrNull(propName: String) = properties[propName]?.string
         fun str(propName: String, default: String = "") = strOrNull(propName) ?: default
         fun int(propName: String, default: Int = 0) = properties[propName]?.int ?: default
@@ -265,25 +267,27 @@ class TiledMap constructor(
             INDEX("index"), TOP_DOWN("topdown")
         }
 
-        fun toVectorPath(): VectorPath {
-            return objectShape.toVectorPath().clone().apply {
-                //println("objectShape=$objectShape, bounds=$bounds, rotation=$rotation")
-                applyTransform(
-                    Matrix()
-                        .pretranslate(bounds.x, bounds.y)
-                        .prerotate(rotation.degrees)
-                )
-            }
+        fun getTransform() = Matrix()
+            .pretranslate(bounds.x, bounds.y)
+            .prerotate(rotation.degrees)
+
+        fun toVectorPath(): VectorPath = objectShape.toVectorPath().clone().apply {
+            applyTransform(getTransform())
         }
+
+        fun toShape2dNoTransformed(): Shape2d = objectShape.toShape2d()
 
         sealed class Shape {
             abstract fun toVectorPath(): VectorPath
+            open fun toShape2d(): Shape2d = toVectorPath().toShape2dNew()
 
             data class Rectangle(val width: Double, val height: Double) : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath { rect(0.0, 0.0, width, height) }
+                override fun toShape2d(): Shape2d = Shape2d.Rectangle(0.0, 0.0, width, height)
             }
             data class Ellipse(val width: Double, val height: Double) : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath { ellipse(0.0, 0.0, width, height) }
+                override fun toShape2d() = Shape2d.EllipseOrCircle(0.0, 0.0, width, height)
             }
             object PPoint : Shape() {
                 override fun toVectorPath(): VectorPath = buildPath {  }

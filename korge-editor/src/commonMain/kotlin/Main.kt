@@ -41,8 +41,8 @@ import kotlinx.coroutines.*
 //}
 
 suspend fun main() = Korge {
-    //mainCircles()
-    mainVampire()
+    mainCircles()
+    //mainVampire()
     //mainCompression()
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
@@ -56,10 +56,10 @@ suspend fun Stage.mainCircles() {
     addUpdater { dt ->
         val dx = keys.getDeltaAxis(Key.LEFT, Key.RIGHT)
         val dy = keys.getDeltaAxis(Key.UP, Key.DOWN)
-        if (dx != 0.0 || dy != 0.0) {
+        //if (dx != 0.0 || dy != 0.0) {
             val speed = (dt / 16.milliseconds) * 5.0
             rect2.moveWithCollisions(listOf(rect1), dx * speed, dy * speed)
-        }
+        //}
         //rect2.alpha = if (rect1.collidesWith(rect2, kind = CollisionKind.SHAPE)) 1.0 else 0.3
     }
 }

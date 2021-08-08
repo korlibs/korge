@@ -15,6 +15,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.interpolation.*
 
 suspend fun main() = Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"]) {
@@ -79,18 +80,20 @@ class RpgIngameScene : Scene() {
                         playing = false,
                         smoothing = false
                     ) {
+                        hitShape2d = Shape2d.Rectangle.fromBounds(-8.0, -3.0, +8.0, +3.0)
                         xy(obj.x, obj.y)
                     }
                 }
                 character =
                     charactersLayer.imageDataView(characters["vampire"], "right", playing = false, smoothing = false) {
+                        hitShape2d = Shape2d.Rectangle.fromBounds(-8.0, -3.0, +8.0, +3.0)
                         xy(startPos)
                     }
             }
 
             cameraContainer.cameraViewportBounds.copyFrom(tiledMapView.getLocalBoundsOptimized())
 
-            stage!!.controlWithKeyboard(character, tiledMapView)
+            stage!!.controlWithKeyboard(character, listOf(tiledMapView))
 
             cameraContainer.follow(character, setImmediately = true)
 
@@ -101,7 +104,8 @@ class RpgIngameScene : Scene() {
 
 fun Stage.controlWithKeyboard(
 	char: ImageDataView,
-	collider: HitTestable,
+	//collider: HitTestable,
+    collider: List<View>,
 	up: Key = Key.UP,
 	right: Key = Key.RIGHT,
 	down: Key = Key.DOWN,
@@ -113,7 +117,8 @@ fun Stage.controlWithKeyboard(
 		val dy = if (keys[up]) -1.0 else if (keys[down]) +1.0 else 0.0
 		if (dx != 0.0 || dy != 0.0) {
 			val dpos = Point(dx, dy).normalized * speed
-			char.moveWithHitTestable(collider, dpos.x, dpos.y)
+			//char.moveWithHitTestable(collider.first(), dpos.x, dpos.y)
+            char.moveWithCollisions(collider, dpos.x, dpos.y)
 		}
 		char.animation = when {
 			dx < 0.0 -> "left"

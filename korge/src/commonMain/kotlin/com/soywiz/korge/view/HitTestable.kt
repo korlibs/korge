@@ -138,7 +138,10 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
             val dpoint = Point.fromPolar(rangle, length * lengthScale)
             char.x = oldX + dpoint.x
             char.y = oldY + dpoint.y
-            if (!char.collidesWith(collision, kind)) {
+            //char.hitTestView(collision, kind)
+            //if (!char.collidesWith(collision, kind)) {
+            if (collision.all { it.hitTestView(char) == null }) {
+            //if (char.hitTestView(collision) == null) {
                 return // Accept movement
             }
         }

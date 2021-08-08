@@ -36,6 +36,10 @@ val IRectangle.topRight get() = Point(right, top)
 val IRectangle.bottomLeft get() = Point(left, bottom)
 val IRectangle.bottomRight get() = Point(right, bottom)
 
+val IRectangle.centerX get() = (right + left) * 0.5
+val IRectangle.centerY get() = (bottom + top) * 0.5
+val IRectangle.center get() = Point(centerX, centerY)
+
 operator fun IRectangle.contains(that: IPoint) = contains(that.x, that.y)
 operator fun IRectangle.contains(that: IPointInt) = contains(that.x, that.y)
 fun IRectangle.contains(x: Double, y: Double) = (x >= left && x < right) && (y >= top && y < bottom)

@@ -152,9 +152,9 @@ abstract class View internal constructor(
             if (_hitShape2d == null) {
                 if (_hitShape2d == null && hitShapes != null) _hitShape2d = hitShapes!!.toShape2d()
                 if (_hitShape2d == null && hitShape != null) _hitShape2d = hitShape!!.toShape2d()
-                if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
+                //if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
             }
-            return _hitShape2d!!
+            return _hitShape2d ?: Shape2d.Empty
         }
         set(value) {
             _hitShape2d = value
@@ -987,6 +987,57 @@ abstract class View internal constructor(
     override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean =
         hitTest(x, y, direction) != null
 
+    fun hitTestView(views: List<View>, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        views.fastForEach { view -> hitTestView(view, direction)?.let { return it } }
+        return null
+    }
+
+    fun hitTestView(view: View, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        if (!hitTestEnabled) return null
+        if (!visible) return null
+        if (_hitShape2d == null) {
+            _children?.fastForEachReverse { child ->
+                if (child != view) {
+                    child.hitTestView(view, direction)?.let {
+                        return it
+                    }
+                }
+            }
+        }
+        val res = hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        if (res != null) return res
+        return if (this is Stage) this else null
+    }
+
+    fun hitTestShape(shape: Shape2d, matrix: Matrix, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        if (!hitTestEnabled) return null
+        if (!visible) return null
+        if (_hitShape2d == null) {
+            _children?.fastForEachReverse { child ->
+                child.hitTestShape(shape, matrix)?.let {
+                    return it
+                }
+            }
+        }
+        val res = hitTestShapeInternal(shape, matrix, direction)
+        if (res != null) return res
+        return if (this is Stage) this else null
+    }
+
+    private val tempMatrix1 = Matrix()
+    private val tempMatrix2 = Matrix()
+    private val tempMatrix = Matrix()
+
+    open val customHitShape get() = false
+    open protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+        //println("View.hitTestShapeInternal: $this, $shape")
+        if (Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix)) {
+            //println(" -> true")
+            return this
+        }
+        return null
+    }
+
     // @TODO: we should compute view bounds on demand
     fun mouseHitTest(x: Double, y: Double): View? {
         if (!hitTestEnabled) return null
@@ -1389,6 +1440,14 @@ abstract class View internal constructor(
         views.viewExtraBuildDebugComponent.fastForEach {
             it(views, view, container)
         }
+    }
+
+    fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {
+        val view = this
+        out.copyFrom(view.localMatrix)
+        out.pretranslate(-view.anchorDispX, -view.anchorDispY)
+        view.parent?.globalMatrix?.let { out.multiply(out, it) }
+        return out
     }
 }
 

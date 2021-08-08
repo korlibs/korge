@@ -18,7 +18,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.krypto.encoding.*
 import kotlin.collections.set
 
@@ -87,27 +87,38 @@ suspend fun TileSetData.toTiledSet(
 		}
 	}
 
-    data class ShapeInfo(val type: HitTestDirectionFlags, val path: VectorPath) : HitTestable {
-        override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean {
-            return path.containsPoint(x, y) && type.matches(direction)
-        }
-    }
 
-    val collisionsMap = IntMap<HitTestable>()
+    val collisionsMap = IntMap<TileShapeInfo>()
     tileset.tiles.fastForEach { tile ->
         val collisionType = HitTestDirectionFlags.fromString(tile.type, HitTestDirectionFlags.NONE)
-        val vectorPaths = fastArrayListOf<ShapeInfo>()
+        val vectorPaths = fastArrayListOf<TileShapeInfo>()
         if (tile.objectGroup != null) {
             tile.objectGroup.objects.fastForEach {
-                vectorPaths.add(ShapeInfo(HitTestDirectionFlags.fromString(it.type), it.toVectorPath()))
+                vectorPaths.add(
+                    TileShapeInfoImpl(
+                        HitTestDirectionFlags.fromString(it.type),
+                        it.toShape2dNoTransformed(),
+                        it.getTransform(),
+                        //it.toVectorPath()
+                    )
+                )
             }
         }
         //println("tile.objectGroup=${tile.objectGroup}")
-        collisionsMap[tile.id] = object : HitTestable {
+        collisionsMap[tile.id] = object : TileShapeInfo {
             override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean {
                 if (vectorPaths.isNotEmpty()) {
                     vectorPaths.fastForEach {
                         if (it.hitTestAny(x, y, direction)) return true
+                    }
+                }
+                return collisionType.matches(direction)
+            }
+
+            override fun hitTestAny(shape2d: Shape2d, matrix: Matrix, direction: HitTestDirection): Boolean {
+                if (vectorPaths.isNotEmpty()) {
+                    vectorPaths.fastForEach {
+                        if (it.hitTestAny(shape2d, matrix, direction)) return true
                     }
                 }
                 return collisionType.matches(direction)

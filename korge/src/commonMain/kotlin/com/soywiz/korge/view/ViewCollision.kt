@@ -32,14 +32,6 @@ internal class ViewCollisionContext {
         return out
     }
 
-    fun getGlobalMatrix(view: View, out: Matrix): Matrix {
-        out.copyFrom(view.localMatrix)
-        out.pretranslate(-view.anchorDispX, -view.anchorDispY)
-        out.multiply(out, view.parent?.globalMatrix ?: ident)
-        //return view.globalMatrix
-        return out
-    }
-
     fun collidesWith(left: View, right: View, kind: CollisionKind): Boolean {
         left.getGlobalBounds(tempRect1)
         right.getGlobalBounds(tempRect2)
@@ -47,23 +39,10 @@ internal class ViewCollisionContext {
         if (kind == CollisionKind.SHAPE) {
             val leftShape = left.hitShape2d
             val rightShape = right.hitShape2d
-            val ml = getGlobalMatrix(left, lmat)
-            val mr = getGlobalMatrix(right, rmat)
-
+            val ml = left.getGlobalMatrixWithAnchor(lmat)
+            val mr = right.getGlobalMatrixWithAnchor(rmat)
             //println("intersects[$result]: left=$leftShape, right=$rightShape, ml=$ml, mr=$mr")
-
             return Shape2d.intersects(leftShape, ml, rightShape, mr, tempMat)
-
-            /*
-            val leftPaths = getVectorPath(left, tempVectorPath1)
-            val rightPaths = getVectorPath(right, tempVectorPath2)
-            leftPaths.fastForEach { leftPath ->
-                rightPaths.fastForEach { rightPath ->
-                    if (VectorPath.intersects(leftPath, getGlobalMatrix(left, lmat), rightPath, getGlobalMatrix(right, rmat))) return true
-                }
-            }
-            return false
-            */
         }
         return true
     }
