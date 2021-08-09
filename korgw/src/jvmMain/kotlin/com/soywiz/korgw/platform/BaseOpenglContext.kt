@@ -173,10 +173,19 @@ fun glContextFromComponent(c: Component): BaseOpenglContext {
 fun getDisplayScalingFactor(component: Component): Double {
     val device = (component.graphicsConfiguration?.device ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice)
     val getScaleFactorMethod: Method? = try { device.javaClass.getMethod("getScaleFactor") } catch (e: Throwable) { null }
-    return if (getScaleFactorMethod != null) {
-        val scale: Any = getScaleFactorMethod.invoke(device)
-        ((scale as? Number)?.toDouble()) ?: 1.0
-    } else {
-        (component.graphicsConfiguration ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration).defaultTransform.scaleX
+
+    val nativeScaleFactor = if (getScaleFactorMethod == null) null else {
+        try {
+            val scale: Any = getScaleFactorMethod.invoke(device)
+            ((scale as? Number)?.toDouble()) ?: 1.0
+        } catch (e: Throwable) {
+            if (e::class.qualifiedName != "java.lang.IllegalAccessException") {
+                e.printStackTrace()
+            }
+            null
+        }
     }
+
+    return nativeScaleFactor ?:
+        ((component.graphicsConfiguration ?: GraphicsEnvironment.getLocalGraphicsEnvironment().defaultScreenDevice.defaultConfiguration).defaultTransform.scaleX)
 }
