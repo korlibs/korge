@@ -45,6 +45,14 @@ class TileSet(
     fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
 
 	companion object {
+        @Deprecated("")
+        operator fun invoke(
+            texturesMap: Map<Int, BmpSlice>,
+            width: Int = texturesMap.values.first().width,
+            height: Int = texturesMap.values.first().height,
+            collisionsMap: IntMap<TileShapeInfo> = IntMap(),
+        ) = TileSet(texturesMap.map { (key, value) -> key to TileSetTileInfo(key, value) }.toMap().toIntMap(), width, height, collisionsMap)
+
 		operator fun invoke(
             textureMap: Map<Int, TileSetTileInfo>,
             collisionsMap: IntMap<TileShapeInfo> = IntMap(),
@@ -73,8 +81,8 @@ class TileSet(
 
 		operator fun invoke(
             base: BitmapSlice<Bitmap>,
-            tileWidth: Int,
-            tileHeight: Int,
+            tileWidth: Int = base.width,
+            tileHeight: Int = base.height,
             columns: Int = -1,
             totalTiles: Int = -1,
             collisionsMap: IntMap<TileShapeInfo> = IntMap(),

@@ -92,4 +92,14 @@ class IntMapTest {
         assertTrue { set.all { it in map } }
         assertTrue { set.all { it in mapInt } }
     }
+
+    @Test
+    fun testIntMapOf() {
+        val map = intMapOf(1 to "one", 2 to "two")
+        assertEquals(null, map[0])
+        assertEquals("one", map[1])
+        assertEquals("two", map[2])
+        assertEquals(null, map[3])
+    }
+
 }
