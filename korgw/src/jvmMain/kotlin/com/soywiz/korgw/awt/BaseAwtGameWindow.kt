@@ -414,10 +414,13 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         fun handleMouseEvent(e: MouseEvent) {
             val ev = when (e.id) {
+                MouseEvent.MOUSE_DRAGGED -> com.soywiz.korev.MouseEvent.Type.DRAG
                 MouseEvent.MOUSE_MOVED -> com.soywiz.korev.MouseEvent.Type.MOVE
                 MouseEvent.MOUSE_CLICKED -> com.soywiz.korev.MouseEvent.Type.CLICK
                 MouseEvent.MOUSE_PRESSED -> com.soywiz.korev.MouseEvent.Type.DOWN
                 MouseEvent.MOUSE_RELEASED -> com.soywiz.korev.MouseEvent.Type.UP
+                MouseEvent.MOUSE_ENTERED -> com.soywiz.korev.MouseEvent.Type.ENTER
+                MouseEvent.MOUSE_EXITED -> com.soywiz.korev.MouseEvent.Type.EXIT
                 else -> com.soywiz.korev.MouseEvent.Type.MOVE
             }
             //println("MOUSE EVENT: $ev : ${e.button} : ${MouseButton[e.button - 1]}")
