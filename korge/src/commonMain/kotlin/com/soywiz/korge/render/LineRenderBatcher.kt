@@ -1,3 +1,5 @@
+@file:OptIn(KorgeInternal::class)
+
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
@@ -6,12 +8,19 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
-/** Creates/gets a [DebugLineRenderContext] associated to [this] [RenderContext] */
-val RenderContext.debugLineRenderContext: DebugLineRenderContext by Extra.PropertyThis<RenderContext, DebugLineRenderContext> { DebugLineRenderContext(this) }
+/** Creates/gets a [LineRenderBatcher] associated to [this] [RenderContext] */
+@Deprecated("USe useDebugLineRenderContext instead")
+val RenderContext.debugLineRenderContext: LineRenderBatcher by Extra.PropertyThis<RenderContext, LineRenderBatcher> { LineRenderBatcher(this) }
+
+@Suppress("DEPRECATION")
+inline fun RenderContext.useLineBatcher(block: (LineRenderBatcher) -> Unit) = debugLineRenderContext.use(block)
+
+typealias DebugLineRenderContext = LineRenderBatcher
 
 /**
  * A context that allows to draw lines using [AG] (Accelerated Graphics).
@@ -24,10 +33,14 @@ val RenderContext.debugLineRenderContext: DebugLineRenderContext by Extra.Proper
  *  // ...
  * }
  */
-class DebugLineRenderContext(
+class LineRenderBatcher(
     @property:KorgeInternal
     val ctx: RenderContext
 ) {
+    inline fun use(block: (LineRenderBatcher) -> Unit) = ctx.useBatcher(this, block)
+
+    val beforeFlush = Signal<LineRenderBatcher>()
+
     init {
         ctx.flushers.add { flush() }
     }
@@ -72,8 +85,10 @@ class DebugLineRenderContext(
     internal val viewMat = Matrix3D()
     @PublishedApi
     internal val tempViewMat = Pool { Matrix3D() }
-    private var vertexCount = 0
-    private var vertexPos = 0
+    @PublishedApi
+    internal var vertexCount = 0
+    @PublishedApi
+    internal var vertexPos = 0
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
     fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0) {
@@ -126,6 +141,7 @@ class DebugLineRenderContext(
     @KorgeInternal
     fun flush() {
         if (vertexCount > 0) {
+            beforeFlush(this)
             vertexBuffer.upload(vertices, 0, vertexPos * 4)
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 

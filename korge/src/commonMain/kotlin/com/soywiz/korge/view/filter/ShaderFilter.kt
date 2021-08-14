@@ -87,19 +87,21 @@ abstract class ShaderFilter : Filter {
         textureSizeHolder[1] = texture.base.height.toFloat()
         updateUniforms(ctx)
 
-        ctx.batch.setTemporalUniforms(this.uniforms) {
-            //println("renderColorMulInt=" + RGBA(renderColorMulInt))
-            //println("blendMode:$blendMode")
-            ctx.batch.drawQuad(
-                texture,
-                m = matrix,
-                filtering = filtering,
-                colorAdd = renderColorAdd,
-                colorMul = renderColorMul,
-                blendFactors = blendMode.factors,
-                program = if (texture.premultiplied) programPremult else programNormal
-            )
-            //ctx.batch.flush()
+        ctx.useBatcher { batch ->
+            batch.setTemporalUniforms(this.uniforms) {
+                //println("renderColorMulInt=" + RGBA(renderColorMulInt))
+                //println("blendMode:$blendMode")
+                batch.drawQuad(
+                    texture,
+                    m = matrix,
+                    filtering = filtering,
+                    colorAdd = renderColorAdd,
+                    colorMul = renderColorMul,
+                    blendFactors = blendMode.factors,
+                    program = if (texture.premultiplied) programPremult else programNormal
+                )
+                //ctx.batch.flush()
+            }
         }
     }
 }

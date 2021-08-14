@@ -38,6 +38,8 @@ class BatchBuilder2D constructor(
      */
     val reqMaxQuads: Int = DEFAULT_BATCH_QUADS,
 ) {
+    inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
+
     val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
 
     val texManager = ctx.agBitmapTextureManager

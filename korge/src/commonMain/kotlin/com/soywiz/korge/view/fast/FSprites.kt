@@ -97,28 +97,30 @@ open class FSprites(val maxSize: Int) {
             val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
             u_i_texSizeData[0] = 1f / ttex.width.toFloat()
             u_i_texSizeData[1] = 1f / ttex.height.toFloat()
-            ctx.batch.setTemporalUniform(u_i_texSize, u_i_texSizeData) {
-                ctx.batch.updateStandardUniforms()
-                ctx.batch.setViewMatrixTemp(globalMatrix) {
-                    //ctx.batch.setStateFast()
-                    ctx.batch.textureUnitN[0].set(ttex.base, smoothing)
-                    sprites.uploadVertices(ctx)
-                    ctx.xyBuffer.buffer.upload(xyData)
-                    ctx.ag.drawV2(
-                        vertexData = ctx.buffers,
-                        program = vprogram,
-                        type = AG.DrawType.TRIANGLE_FAN,
-                        vertexCount = 4,
-                        instances = sprites.size,
-                        uniforms = ctx.batch.uniforms,
-                        //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
-                        //blending = AG.Blending.NONE
-                    )
-                    sprites.unloadVertices(ctx)
+            ctx.useBatcher { batch ->
+                batch.setTemporalUniform(u_i_texSize, u_i_texSizeData) {
+                    batch.updateStandardUniforms()
+                    batch.setViewMatrixTemp(globalMatrix) {
+                        //ctx.batch.setStateFast()
+                        batch.textureUnitN[0].set(ttex.base, smoothing)
+                        sprites.uploadVertices(ctx)
+                        ctx.xyBuffer.buffer.upload(xyData)
+                        ctx.ag.drawV2(
+                            vertexData = ctx.buffers,
+                            program = vprogram,
+                            type = AG.DrawType.TRIANGLE_FAN,
+                            vertexCount = 4,
+                            instances = sprites.size,
+                            uniforms = batch.uniforms,
+                            //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
+                            //blending = AG.Blending.NONE
+                        )
+                        sprites.unloadVertices(ctx)
 
+                    }
                 }
+                batch.onInstanceCount(sprites.size)
             }
-            ctx.batch.onInstanceCount(sprites.size)
         }
     }
 

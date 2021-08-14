@@ -46,8 +46,10 @@ class Stage(override val views: Views) : Container()
 
     override fun renderInternal(ctx: RenderContext) {
         if (views.clipBorders) {
-            ctx.ctx2d.scissor(x, y, (views.virtualWidth * scaleX), (views.virtualHeight * scaleY)) {
-                super.renderInternal(ctx)
+            ctx.useCtx2d { ctx2d ->
+                ctx2d.scissor(x, y, (views.virtualWidth * scaleX), (views.virtualHeight * scaleY)) {
+                    super.renderInternal(ctx)
+                }
             }
         } else {
             super.renderInternal(ctx)

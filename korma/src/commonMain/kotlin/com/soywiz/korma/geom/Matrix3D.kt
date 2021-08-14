@@ -197,6 +197,23 @@ class Matrix3D {
         return target
     }
 
+    fun getRowVector(n: Int, target: Vector3D = Vector3D()): Vector3D {
+        val m = n * 4
+        target.x = data[m + 0]
+        target.y = data[m + 1]
+        target.z = data[m + 2]
+        target.w = data[m + 3]
+        return target
+    }
+
+    fun getColumnVector(n: Int, target: Vector3D = Vector3D()): Vector3D {
+        target.x = data[n + 0]
+        target.y = data[n + 4]
+        target.z = data[n + 8]
+        target.w = data[n + 12]
+        return target
+    }
+
     val determinant: Float get() = 0f +
         (v30 * v21 * v12 * v03) -
         (v20 * v31 * v12 * v03) -
@@ -418,7 +435,14 @@ class Matrix3D {
         transform3(x, y, z, w)
     )
 
+    fun transform(x: Float, y: Float, z: Float, out: Vector3 = Vector3(0, 0, 0)): Vector3 = out.setTo(
+        transform0(x, y, z, 0f),
+        transform1(x, y, z, 0f),
+        transform2(x, y, z, 0f),
+    )
+
     fun transform(v: Vector3D, out: Vector3D = Vector3D()): Vector3D = transform(v.x, v.y, v.z, v.w, out)
+    fun transform(v: Vector3, out: Vector3 = Vector3()): Vector3 = transform(v.x, v.y, v.z, out)
 
     fun setToOrtho(left: Float, right: Float, bottom: Float, top: Float, near: Float = 0f, far: Float = 1f): Matrix3D {
         val sx = 2f / (right - left)
@@ -489,6 +513,66 @@ class Matrix3D {
     fun setToPerspective(fovy: Angle, aspect: Double, zNear: Double, zFar: Double): Matrix3D
         = setToPerspective(fovy, aspect.toFloat(), zNear.toFloat(), zFar.toFloat())
 
+    fun extractTranslation(out: Vector3D = Vector3D()): Vector3D = getRowVector(3, out).also { it.w = 1f }
+    
+    fun extractScale(out: Vector3D = Vector3D()): Vector3D {
+        val x = getRowVector(0).length3
+        val y = getRowVector(1).length3
+        val z = getRowVector(2).length3
+        return out.setTo(x, y, z, 1f)
+    }
+
+    fun extractRotation(row_normalise: Boolean = true, out: Quaternion = Quaternion()): Quaternion
+    {
+        val v1 = this.getRowVector(0)
+        val v2 = this.getRowVector(1)
+        val v3 = this.getRowVector(2)
+        if (row_normalise)
+        {
+            v1.normalize()
+            v2.normalize()
+            v3.normalize()
+        }
+        val d = 0.25 * (v1[0].toDouble() + v2[1].toDouble() + v3[2].toDouble() + 1.0)
+        when {
+            d > 0.0 -> {
+                val num1 = sqrt(d)
+                out.w = num1
+                val num2 = 1.0 / (4.0 * num1)
+                out.x = ((v2[2].toDouble() - v3[1].toDouble()) * num2)
+                out.y = ((v3[0].toDouble() - v1[2].toDouble()) * num2)
+                out.z = ((v1[1].toDouble() - v2[0].toDouble()) * num2)
+            }
+            v1[0].toDouble() > v2[1].toDouble() && v1[0].toDouble() > v3[2].toDouble() -> {
+                val num1 = 2.0 * sqrt(1.0 + v1[0].toDouble() - v2[1].toDouble() - v3[2].toDouble())
+                out.x = (0.25 * num1)
+                val num2 = 1.0 / num1
+                out.w = ((v3[1].toDouble() - v2[2].toDouble()) * num2)
+                out.y = ((v2[0].toDouble() + v1[1].toDouble()) * num2)
+                out.z = ((v3[0].toDouble() + v1[2].toDouble()) * num2)
+            }
+            v2[1].toDouble() > v3[2].toDouble() -> {
+                val num5 = 2.0 * sqrt(1.0 + v2[1].toDouble() - v1[0].toDouble() - v3[2].toDouble())
+                out.y = (0.25 * num5)
+                val num6 = 1.0 / num5
+                out.w = ((v3[0].toDouble() - v1[2].toDouble()) * num6)
+                out.x = ((v2[0].toDouble() + v1[1].toDouble()) * num6)
+                out.z = ((v3[1].toDouble() + v2[2].toDouble()) * num6)
+            }
+            else -> {
+                val num7 = 2.0 * sqrt(1.0 + v3[2].toDouble() - v1[0].toDouble() - v2[1].toDouble())
+                out.z = (0.25 * num7)
+                val num8 = 1.0 / num7
+                out.w = ((v2[0].toDouble() - v1[1].toDouble()) * num8)
+                out.x = ((v3[0].toDouble() + v1[2].toDouble()) * num8)
+                out.y = ((v3[1].toDouble() + v2[2].toDouble()) * num8)
+            }
+        }
+        out.normalize()
+        return out
+    }
+
+    fun extractProjection(out: Vector3D = Vector3D()) = this.getColumnVector(3, out)
 
     override fun equals(other: Any?): Boolean = (other is Matrix3D) && this.data.contentEquals(other.data)
     override fun hashCode(): Int = data.contentHashCode()

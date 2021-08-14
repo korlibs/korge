@@ -21,6 +21,7 @@ class MaskedViewTest : ViewsForTesting() {
                 stencils += batch.stencil.copy()
             }
         }) { ctx ->
+            @Suppress("EXPERIMENTAL_API_USAGE")
             ctx.batch.beforeFlush { vertices.add(it.readVertices()) }
             masked.render(ctx)
         }

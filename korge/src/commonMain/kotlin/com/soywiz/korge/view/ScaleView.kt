@@ -24,18 +24,19 @@ class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boo
 		ctx.renderToTexture(iwidth, iheight, render = {
 			super.renderInternal(ctx)
 		}, use = { renderTexture ->
-			ctx.batch.drawQuad(
-				tex = renderTexture,
-				x = 0f, y = 0f,
-				width = iwidth.toFloat(),
-				height = iheight.toFloat(),
-				m = globalMatrix,
-				colorMul = renderColorMul,
-				colorAdd = renderColorAdd,
-				filtering = filtering,
-				blendFactors = renderBlendMode.factors
-			)
-			ctx.flush()
+            ctx.useBatcher { batch ->
+                batch.drawQuad(
+                    tex = renderTexture,
+                    x = 0f, y = 0f,
+                    width = iwidth.toFloat(),
+                    height = iheight.toFloat(),
+                    m = globalMatrix,
+                    colorMul = renderColorMul,
+                    colorAdd = renderColorAdd,
+                    filtering = filtering,
+                    blendFactors = renderBlendMode.factors
+                )
+            }
 		})
 	}
 }

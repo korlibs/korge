@@ -349,11 +349,14 @@ open class TileMap(
 		}
 		computeVertexIfRequired(ctx)
 
-        infos.fastForEach { buffer ->
-            ctx.batch.drawVertices(
-                buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
-            )
+        ctx.useBatcher { batch ->
+            infos.fastForEach { buffer ->
+                batch.drawVertices(
+                    buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
+                )
+            }
         }
+
 		//ctx.flush()
 	}
 

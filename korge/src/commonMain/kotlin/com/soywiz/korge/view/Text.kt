@@ -185,8 +185,10 @@ open class Text(
         if (tva != null) {
             tempMatrix.copyFrom(globalMatrix)
             tempMatrix.pretranslate(container.x, container.y)
-            ctx.batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null)
-            ctx.batch.drawVertices(tva!!, tempMatrix)
+            ctx.useBatcher { batch ->
+                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null)
+                batch.drawVertices(tva!!, tempMatrix)
+            }
         } else {
             super.renderInternal(ctx)
         }

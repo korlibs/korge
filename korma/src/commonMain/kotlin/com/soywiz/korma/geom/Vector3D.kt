@@ -5,13 +5,36 @@ import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.*
 import kotlin.math.*
 
-class Vector3D {
+/*
+interface IVector3 {
+    val x: Float
+    val y: Float
+    val z: Float
+}
+
+interface Vector3 : IVector3 {
+    override var x: Float
+    override var y: Float
+    override var z: Float
+}
+
+interface IVector4 : IVector3 {
+    val w: Float
+}
+
+interface Vector4 : Vector3, IVector4 {
+    override var w: Float
+}
+*/
+
+// @TODO: To inline class wrapping FloatArray?
+class Vector3D : MVector3 {
     val data = floatArrayOf(0f, 0f, 0f, 1f)
 
-    var x: Float get() = data[0]; set(value) = run { data[0] = value }
-    var y: Float get() = data[1]; set(value) = run { data[1] = value }
-    var z: Float get() = data[2]; set(value) = run { data[2] = value }
-    var w: Float get() = data[3]; set(value) = run { data[3] = value }
+    override var x: Float get() = data[0]; set(value) { data[0] = value }
+    override var y: Float get() = data[1]; set(value) { data[1] = value }
+    override var z: Float get() = data[2]; set(value) { data[2] = value }
+    var w: Float get() = data[3]; set(value) { data[3] = value }
 
     val lengthSquared: Float get() = (x * x) + (y * y) + (z * z) + (w * w)
     val length: Float get() = sqrt(lengthSquared)
@@ -71,6 +94,10 @@ class Vector3D {
     fun normalized(out: Vector3D = Vector3D()): Vector3D = out.copyFrom(this).normalize()
 
     fun dot(v2: Vector3D): Float = this.x*v2.x + this.y*v2.y + this.z*v2.y
+
+    operator fun plus(that: Vector3D) = Vector3D(this.x + that.x, this.y + that.y, this.z + that.z, this.w + that.w)
+    operator fun minus(that: Vector3D) = Vector3D(this.x - that.x, this.y - that.y, this.z - that.z, this.w - that.w)
+    operator fun times(scale: Float) = Vector3D(x * scale, y * scale, z * scale, w * scale)
 
     fun sub(l: Vector3D, r: Vector3D): Vector3D = setTo(l.x - r.x, l.y - r.y, l.z - r.z, l.w - r.w)
     fun add(l: Vector3D, r: Vector3D): Vector3D = setTo(l.x + r.x, l.y + r.y, l.z + r.z, l.w + r.w)

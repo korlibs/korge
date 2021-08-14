@@ -38,25 +38,27 @@ open class DropshadowFilter(
         }, { newtex ->
             tm.copyFrom(matrix)
             tm.pretranslate(dropX - blur.border, dropY - blur.border)
-            ctx.batch.drawQuad(
-                newtex,
-                m = tm,
-                filtering = smoothing,
-                colorAdd = ColorAdd(+255, +255, +255, 0),
-                colorMul = shadowColor,
-                blendFactors = blendMode.factors,
-                program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, preadd = true)
-            )
+            ctx.useBatcher { batch ->
+                batch.drawQuad(
+                    newtex,
+                    m = tm,
+                    filtering = smoothing,
+                    colorAdd = ColorAdd(+255, +255, +255, 0),
+                    colorMul = shadowColor,
+                    blendFactors = blendMode.factors,
+                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, preadd = true)
+                )
 
-            ctx.batch.drawQuad(
-                texture,
-                m = matrix,
-                filtering = smoothing,
-                colorAdd = renderColorAdd,
-                colorMul = renderColorMul,
-                blendFactors = blendMode.factors,
-                program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied)
-            )
+                batch.drawQuad(
+                    texture,
+                    m = matrix,
+                    filtering = smoothing,
+                    colorAdd = renderColorAdd,
+                    colorMul = renderColorMul,
+                    blendFactors = blendMode.factors,
+                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied)
+                )
+            }
         })
     }
 }

@@ -789,34 +789,36 @@ abstract class View internal constructor(
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
         val local = getLocalBoundsOptimizedAnchored()
-        val debugLineRenderContext = ctx.debugLineRenderContext
-        debugLineRenderContext.drawVector(Colors.RED) {
-            rect(windowBounds)
+        ctx.useLineBatcher { lines ->
+            lines.drawVector(Colors.RED) {
+                rect(windowBounds)
+            }
+            lines.drawVector(Colors.WHITE) {
+                moveTo(localToGlobal(Point(local.left, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.bottom)))
+                lineTo(localToGlobal(Point(local.left, local.bottom)))
+                close()
+            }
+            lines.drawVector(Colors.YELLOW) {
+                val anchorSize = 5.0
+                circle(localToGlobal(local.topLeft), anchorSize)
+                circle(localToGlobal(local.topRight), anchorSize)
+                circle(localToGlobal(local.bottomRight), anchorSize)
+                circle(localToGlobal(local.bottomLeft), anchorSize)
+                circle(localToGlobal(local.topLeft.interpolateWith(0.5, local.topRight)), anchorSize)
+                circle(localToGlobal(local.topRight.interpolateWith(0.5, local.bottomRight)), anchorSize)
+                circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
+                circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
+            }
+            lines.drawVector(Colors.BLUE) {
+                val centerX = globalX
+                val centerY = globalY
+                line(centerX, centerY - 5, centerX, centerY + 5)
+                line(centerX - 5, centerY, centerX + 5, centerY)
+            }
         }
-        debugLineRenderContext.drawVector(Colors.WHITE) {
-            moveTo(localToGlobal(Point(local.left, local.top)))
-            lineTo(localToGlobal(Point(local.right, local.top)))
-            lineTo(localToGlobal(Point(local.right, local.bottom)))
-            lineTo(localToGlobal(Point(local.left, local.bottom)))
-            close()
-        }
-        debugLineRenderContext.drawVector(Colors.YELLOW) {
-            val anchorSize = 5.0
-            circle(localToGlobal(local.topLeft), anchorSize)
-            circle(localToGlobal(local.topRight), anchorSize)
-            circle(localToGlobal(local.bottomRight), anchorSize)
-            circle(localToGlobal(local.bottomLeft), anchorSize)
-            circle(localToGlobal(local.topLeft.interpolateWith(0.5, local.topRight)), anchorSize)
-            circle(localToGlobal(local.topRight.interpolateWith(0.5, local.bottomRight)), anchorSize)
-            circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
-            circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
-        }
-        debugLineRenderContext.drawVector(Colors.BLUE) {
-            val centerX = globalX
-            val centerY = globalY
-            line(centerX, centerY - 5, centerX, centerY + 5)
-            line(centerX - 5, centerY, centerX + 5, centerY)
-        }
+
         //ctx.flush()
     }
 
@@ -860,6 +862,7 @@ abstract class View internal constructor(
                 tempMat2d.translate(addx, addy)
                 //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
                 //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+                @Suppress("DEPRECATION")
                 ctx.batch.setViewMatrixTemp(tempMat2d) {
                     renderInternal(ctx)
                 }

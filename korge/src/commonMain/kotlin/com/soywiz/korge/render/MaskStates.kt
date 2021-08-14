@@ -8,6 +8,7 @@ object MaskStates {
     }
 
     class RenderState(val stencil: AG.StencilState, val colorMask: AG.ColorMaskState) {
+        @Suppress("DEPRECATION")
         fun set(ctx: RenderContext, referenceValue: Int, temp: LocalRenderState) {
             ctx.flush()
             if (ctx.masksEnabled) {

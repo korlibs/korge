@@ -23,15 +23,17 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
         renderColorMul: RGBA,
         blendMode: BlendMode
     ) {
-        ctx.batch.drawQuad(
-            texture,
-            m = matrix,
-            filtering = smoothing,
-            colorAdd = renderColorAdd,
-            colorMul = renderColorMul,
-            blendFactors = blendMode.factors,
-            program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied)
-        )
+        ctx.useBatcher { batch ->
+            batch.drawQuad(
+                texture,
+                m = matrix,
+                filtering = smoothing,
+                colorAdd = renderColorAdd,
+                colorMul = renderColorMul,
+                blendFactors = blendMode.factors,
+                program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied)
+            )
+        }
     }
 }
 

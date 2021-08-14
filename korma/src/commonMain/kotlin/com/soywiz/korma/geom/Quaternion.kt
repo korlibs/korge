@@ -9,6 +9,11 @@ data class Quaternion(
     var z: Double = 0.0,
     var w: Double = 1.0
 ) {
+    constructor(xyz: IVector3, w: Double) : this(xyz.x.toDouble(), xyz.y.toDouble(), xyz.z.toDouble(), w)
+
+    val lengthSquared: Double get() = (x * x) + (y * y) + (z * z) + (w * w)
+    val length: Double get() = sqrt(lengthSquared)
+
     companion object {
         fun dotProduct(l: Quaternion, r: Quaternion): Double = l.x * r.x + l.y * r.y + l.z * r.z + l.w * r.w
         operator fun invoke(x: Float, y: Float, z: Float, w: Float) = Quaternion(x.toDouble(), y.toDouble(), z.toDouble(), w.toDouble())
@@ -143,6 +148,35 @@ data class Quaternion(
         y, -x, w, -z,
         x, y, z, w,
     )
+
+    fun inverted(out: Quaternion = Quaternion()): Quaternion {
+        val q = this
+        val lengthSquared = q.lengthSquared
+        return if (lengthSquared != 0.0) {
+            val num = 1.0 / lengthSquared
+            out.setTo(q.x * -num, q.y * -num, q.z * -num, q.w * num)
+        } else {
+            out.copyFrom(q)
+        }
+    }
+
+    val xyz get() = Vector3D(x, y, z)
+
+    // @TODO: Optimize
+    operator fun times(other: Quaternion): Quaternion {
+        val left = this
+        val right = other
+        return Quaternion(
+            (left.xyz * right.w.toFloat()) + (right.xyz * left.w.toFloat()) + Vector3D().cross(left.xyz, right.xyz),
+            left.w * right.w - left.xyz.dot(right.xyz)
+        )
+    }
+
+    // @TODO: Optimize
+    fun transform(vec: Vector3D, out: Vector3D = Vector3D()): Vector3D {
+        val result4 = (this * Quaternion(vec.x, vec.y, vec.z, vec.w)) * this.inverted()
+        return out.setTo(result4.x, result4.y, result4.z, result4.w)
+    }
 }
 
 operator fun Double.times(scale: Quaternion): Quaternion = scale.times(this)

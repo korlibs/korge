@@ -4,11 +4,13 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.convertRange
 import com.soywiz.korge.bitmapfont.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.math.*
 
+@OptIn(KorgeInternal::class)
 internal fun ViewsContainer.installFpsDebugOverlay() {
     val longWindow = TimeSlidingWindow(240)
     val mediumWindow = TimeSlidingWindow(60)
@@ -27,6 +29,11 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         instanceCount = 0
     }
 
+    @Suppress("DEPRECATION")
+    views.renderContext.debugLineRenderContext.beforeFlush {
+        batchCount++
+        vertexCount += it.vertexCount
+    }
     views.renderContext.batch.beforeFlush {
         batchCount++
         vertexCount += it.vertexCount
@@ -75,64 +82,64 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         val overlayHeight = 30 * scale
         val overlayHeightGap = 5.0
 
-        val debugLineRenderContext = renderContext.debugLineRenderContext
+        renderContext.useLineBatcher { debugLineRenderContext ->
+            debugLineRenderContext.color(Colors.YELLOW) {
+                // y-axis
+                debugLineRenderContext.line(
+                    graphLeft, graphTop,
+                    graphLeft, graphTop + overlayHeight.toFloat()
+                )
+                // x-axis
+                debugLineRenderContext.line(
+                    graphLeft, graphTop + overlayHeight.toFloat(),
+                    graphLeft + overlayWidth, graphTop + overlayHeight.toFloat()
+                )
+            }
 
-        debugLineRenderContext.color(Colors.YELLOW) {
-            // y-axis
-            debugLineRenderContext.line(
-                graphLeft, graphTop,
-                graphLeft, graphTop + overlayHeight.toFloat()
-            )
-            // x-axis
-            debugLineRenderContext.line(
-                graphLeft, graphTop + overlayHeight.toFloat(),
-                graphLeft + overlayWidth, graphTop + overlayHeight.toFloat()
-            )
-        }
-
-        debugLineRenderContext.color(Colors.WHITE) {
-            val ratio = longWindow.size.toDouble() / longWindow.capacity.toDouble()
-            val totalOverlayLines = (overlayLines * ratio).toInt().coerceAtLeast(1)
-            if (longWindow.size > 0) {
-                var previousX = 0f
-                var previousY = 0f
-                //val minFps = longWindow.minFps
-                //val maxFps = longWindow.maxFps
-                val minFps = 0.0
-                val maxFps = 150.0
-                for (n in 0 until totalOverlayLines) {
-                    // Compute fps sample
-                    val fps = run {
-                        val p0 = n.convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
-                        val p1 = (n + 1).convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
-                        var plen = 0
-                        var timeSum = 0.milliseconds
-                        for (m in p0 until p1.coerceAtMost(longWindow.size)) {
-                            timeSum += longWindow[m]
-                            plen++
+            debugLineRenderContext.color(Colors.WHITE) {
+                val ratio = longWindow.size.toDouble() / longWindow.capacity.toDouble()
+                val totalOverlayLines = (overlayLines * ratio).toInt().coerceAtLeast(1)
+                if (longWindow.size > 0) {
+                    var previousX = 0f
+                    var previousY = 0f
+                    //val minFps = longWindow.minFps
+                    //val maxFps = longWindow.maxFps
+                    val minFps = 0.0
+                    val maxFps = 150.0
+                    for (n in 0 until totalOverlayLines) {
+                        // Compute fps sample
+                        val fps = run {
+                            val p0 = n.convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
+                            val p1 = (n + 1).convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
+                            var plen = 0
+                            var timeSum = 0.milliseconds
+                            for (m in p0 until p1.coerceAtMost(longWindow.size)) {
+                                timeSum += longWindow[m]
+                                plen++
+                            }
+                            if (plen == 0) {
+                                timeSum += longWindow[p0]
+                                plen++
+                            }
+                            val time = (timeSum / plen.toDouble())
+                            val fps = time.toFrequency().hertz
+                            //print("$fps[$p0,$p1]{$minFps,$maxFps},")
+                            fps
                         }
-                        if (plen == 0) {
-                            timeSum += longWindow[p0]
-                            plen++
+                        val scaledFreq = fps.convertRange(
+                            minFps, maxFps,
+                            overlayHeightGap, overlayHeight
+                        )
+                        val y = (graphTop + overlayHeight - scaledFreq).toFloat()
+                        val x = graphLeft + (n.toFloat() * overlayWidth / overlayLines.toFloat())
+                        if (n > 0) {
+                            debugLineRenderContext.line(previousX, previousY, x, y)
                         }
-                        val time = (timeSum / plen.toDouble())
-                        val fps = time.toFrequency().hertz
-                        //print("$fps[$p0,$p1]{$minFps,$maxFps},")
-                        fps
+                        previousY = y
+                        previousX = x
                     }
-                    val scaledFreq = fps.convertRange(
-                        minFps, maxFps,
-                        overlayHeightGap, overlayHeight
-                    )
-                    val y = (graphTop + overlayHeight - scaledFreq).toFloat()
-                    val x = graphLeft + (n.toFloat() * overlayWidth / overlayLines.toFloat())
-                    if (n > 0) {
-                        debugLineRenderContext.line(previousX, previousY, x, y)
-                    }
-                    previousY = y
-                    previousX = x
+                    //println()
                 }
-                //println()
             }
         }
     }

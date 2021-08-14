@@ -3,6 +3,7 @@ import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.input.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
@@ -13,9 +14,12 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.ds.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.random.*
 import kotlinx.coroutines.*
+import kotlin.random.*
 
 //suspend fun main() {
 //    for (n in 0 until 1000) {
@@ -41,11 +45,58 @@ import kotlinx.coroutines.*
 //}
 
 suspend fun main() = Korge {
-    mainCircles()
+    mainBVH()
+    //mainCircles()
     //mainVampire()
     //mainCompression()
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
+}
+
+suspend fun Stage.mainBVH() {
+    val bvh = BVH2D<View>()
+    val rand = Random(0)
+    for (n in 0 until 2_000) {
+        val x = rand[0.0, width]
+        val y = rand[0.0, height]
+        val width = rand[1.0, 50.0]
+        val height = rand[1.0, 50.0]
+        val view = solidRect(width, height, rand[Colors.RED, Colors.BLUE]).xy(x, y)
+        bvh.insert(Rectangle(x, y, width, height), view)
+    }
+    val center = Point(width / 2, height / 2)
+    val dir = Point(-1, -1)
+    val ray = Ray(center, dir)
+    val statusText = text("", font = debugBmpFont)
+    val rayLine = line(center, center + (dir * 1000), Colors.WHITE)
+    //outline(buildPath { star(5, 50.0, 100.0, x = 100.0, y = 100.0) })
+    //debugLine(center, center + (dir * 1000), Colors.WHITE)
+    fun updateRay() {
+        var allObjectsSize = 0
+        var rayObjectsSize = 0
+        val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
+        val time = measureTime {
+            val rayObjects = bvh.intersect(ray)
+            for (result in allObjects) result.value?.alpha = 0.2
+            for (result in rayObjects) result.obj.value?.alpha = 1.0
+            allObjectsSize = allObjects.size
+            rayObjectsSize = rayObjects.size
+        }
+        statusText.text = "All objects: ${allObjectsSize}, raycast = ${rayObjectsSize}, time = $time"
+    }
+    updateRay()
+    mouse {
+        onMove {
+            //println("moved")
+            val mousePos = mouse.currentPosStage
+            val angle = Point.angle(center, mousePos)
+            //println("center=$center, mousePos=$mousePos, angle = $angle")
+            dir.setTo(angle.cosine, angle.sine)
+            rayLine.setPoints(center, center + (dir * 1000))
+
+            updateRay()
+        }
+    }
 }
 
 suspend fun Stage.mainCircles() {
