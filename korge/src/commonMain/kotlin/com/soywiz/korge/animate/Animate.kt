@@ -52,59 +52,61 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-		//println("%08X".format(globalColor))
-		//println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
-		//println(ninePatch)
+        ctx.useBatcher { batch ->
+            //println("%08X".format(globalColor))
+            //println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
+            //println(ninePatch)
 
-		if (ninePatch != null) {
-			val np = ninePatch!!
-			val lm = parent!!.localMatrix
+            if (ninePatch != null) {
+                val np = ninePatch!!
+                val lm = parent!!.localMatrix
 
-			val npLeft = np.left - dx
-			val npTop = np.top - dy
+                val npLeft = np.left - dx
+                val npTop = np.top - dy
 
-			val npRight = np.right - dx
-			val npBottom = np.bottom - dy
+                val npRight = np.right - dx
+                val npBottom = np.bottom - dy
 
-			val ascaleX = lm.a
-			val ascaleY = lm.d
+                val ascaleX = lm.a
+                val ascaleY = lm.d
 
-			posCuts[1].setTo(((npLeft) / texWidth) / ascaleX, ((npTop) / texHeight) / ascaleY)
-			posCuts[2].setTo(
-				1.0 - ((texWidth - npRight) / texWidth) / ascaleX,
-				1.0 - ((texHeight - npBottom) / texHeight) / ascaleY
-			)
-			texCuts[1].setTo((npLeft / texWidth), (npTop / texHeight))
-			texCuts[2].setTo((npRight / texWidth), (npBottom / texWidth))
+                posCuts[1].setTo(((npLeft) / texWidth) / ascaleX, ((npTop) / texHeight) / ascaleY)
+                posCuts[2].setTo(
+                    1.0 - ((texWidth - npRight) / texWidth) / ascaleX,
+                    1.0 - ((texHeight - npBottom) / texHeight) / ascaleY
+                )
+                texCuts[1].setTo((npLeft / texWidth), (npTop / texHeight))
+                texCuts[2].setTo((npRight / texWidth), (npBottom / texWidth))
 
-			ctx.batch.drawNinePatch(
-				ctx.getTex(tex),
-				x = dx,
-				y = dy,
-				width = texWidth,
-				height = texHeight,
-				posCuts = posCuts,
-				texCuts = texCuts,
-				m = this.globalMatrix,
-				filtering = smoothing,
-				colorMul = renderColorMul,
-				colorAdd = renderColorAdd,
-				blendFactors = renderBlendMode.factors
-			)
-		} else {
-			ctx.batch.drawQuad(
-				ctx.getTex(tex),
-				x = dx,
-				y = dy,
-				width = texWidth,
-				height = texHeight,
-				m = globalMatrix,
-				filtering = smoothing,
-				colorMul = renderColorMul,
-				colorAdd = renderColorAdd,
-				blendFactors = renderBlendMode.factors
-			)
-		}
+                batch.drawNinePatch(
+                    ctx.getTex(tex),
+                    x = dx,
+                    y = dy,
+                    width = texWidth,
+                    height = texHeight,
+                    posCuts = posCuts,
+                    texCuts = texCuts,
+                    m = this.globalMatrix,
+                    filtering = smoothing,
+                    colorMul = renderColorMul,
+                    colorAdd = renderColorAdd,
+                    blendFactors = renderBlendMode.factors
+                )
+            } else {
+                batch.drawQuad(
+                    ctx.getTex(tex),
+                    x = dx,
+                    y = dy,
+                    width = texWidth,
+                    height = texHeight,
+                    m = globalMatrix,
+                    filtering = smoothing,
+                    colorMul = renderColorMul,
+                    colorAdd = renderColorAdd,
+                    blendFactors = renderBlendMode.factors
+                )
+            }
+        }
 	}
 
     override var hitShape: VectorPath? = null

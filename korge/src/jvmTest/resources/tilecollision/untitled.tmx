@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.1" orientation="orthogonal" renderorder="right-down" width="8" height="15" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="1">
+ <tileset firstgid="1" source="Terrain (32x32).tsx"/>
+ <tileset firstgid="248" source="Decorations (32x32).tsx"/>
+ <layer id="1" name="background" width="8" height="15">
+  <data encoding="base64" compression="zlib">
+   eJx90LENwjAQhWEvkaQAUWMKkGghwwAFowAFDAApYACSYeiYhv+ki/R0sii+6tm+d84ppQm2YoosFjjhjAs24ZzldzzwlHPzQn5Fj8Fzm33EwfMOO+wxC7NL7+vbqpP8jZvM1vlLNP6G3alQu5X3ayUv7W79Xn92H+fHbpavfXf9nyHc/+ArvSvvlr1/HYyZ+QFbyiyz
+  </data>
+ </layer>
+ <layer id="2" name="decorations" width="8" height="15">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAOCDIyMAgx4paXAMpJ4pEnBjDj0o9NHEmMHcrmANKcQMwFxKJI8nxANgsRbmPEowan24CAHygngCyPplYMyBdnhLgP5DY+CsOJFAAAK0MBKQ==
+  </data>
+ </layer>
+</map>

@@ -58,6 +58,9 @@ abstract class View internal constructor(
     , Extra
     , KorgeDebugNode
     , BView
+    , XY
+    , HitTestable
+    , WithHitShape2d
 //, EventDispatcher by EventDispatcher.Mixin()
 {
     override var extra: ExtraType = null
@@ -137,8 +140,25 @@ abstract class View internal constructor(
     interface Reference // View that breaks batching Viewport
     interface ColorReference // View that breaks batching Viewport
 
+    private var _hitShape2d: Shape2d? = null
+
+    @Deprecated("Use hitShape2d instead")
     open var hitShape: VectorPath? = null
+    @Deprecated("Use hitShape2d instead")
     open var hitShapes: List<VectorPath>? = null
+
+    override var hitShape2d: Shape2d
+        get() {
+            if (_hitShape2d == null) {
+                if (_hitShape2d == null && hitShapes != null) _hitShape2d = hitShapes!!.toShape2d()
+                if (_hitShape2d == null && hitShape != null) _hitShape2d = hitShape!!.toShape2d()
+                //if (_hitShape2d == null) _hitShape2d = Shape2d.Rectangle(getLocalBounds())
+            }
+            return _hitShape2d ?: Shape2d.Empty
+        }
+        set(value) {
+            _hitShape2d = value
+        }
 
     companion object {
         //private val identity = Matrix()
@@ -232,7 +252,7 @@ abstract class View internal constructor(
         }
 
     /** Local X position of this view */
-    var x: Double
+    override var x: Double
         get() {
             ensureTransform()
             return _x
@@ -246,7 +266,7 @@ abstract class View internal constructor(
         }
 
     /** Local Y position of this view */
-    var y: Double
+    override var y: Double
         get() {
             ensureTransform()
             return _y
@@ -769,34 +789,36 @@ abstract class View internal constructor(
         //println("DEBUG ANNOTATE VIEW!")
         //ctx.flush()
         val local = getLocalBoundsOptimizedAnchored()
-        val debugLineRenderContext = ctx.debugLineRenderContext
-        debugLineRenderContext.drawVector(Colors.RED) {
-            rect(windowBounds)
+        ctx.useLineBatcher { lines ->
+            lines.drawVector(Colors.RED) {
+                rect(windowBounds)
+            }
+            lines.drawVector(Colors.WHITE) {
+                moveTo(localToGlobal(Point(local.left, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.top)))
+                lineTo(localToGlobal(Point(local.right, local.bottom)))
+                lineTo(localToGlobal(Point(local.left, local.bottom)))
+                close()
+            }
+            lines.drawVector(Colors.YELLOW) {
+                val anchorSize = 5.0
+                circle(localToGlobal(local.topLeft), anchorSize)
+                circle(localToGlobal(local.topRight), anchorSize)
+                circle(localToGlobal(local.bottomRight), anchorSize)
+                circle(localToGlobal(local.bottomLeft), anchorSize)
+                circle(localToGlobal(local.topLeft.interpolateWith(0.5, local.topRight)), anchorSize)
+                circle(localToGlobal(local.topRight.interpolateWith(0.5, local.bottomRight)), anchorSize)
+                circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
+                circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
+            }
+            lines.drawVector(Colors.BLUE) {
+                val centerX = globalX
+                val centerY = globalY
+                line(centerX, centerY - 5, centerX, centerY + 5)
+                line(centerX - 5, centerY, centerX + 5, centerY)
+            }
         }
-        debugLineRenderContext.drawVector(Colors.WHITE) {
-            moveTo(localToGlobal(Point(local.left, local.top)))
-            lineTo(localToGlobal(Point(local.right, local.top)))
-            lineTo(localToGlobal(Point(local.right, local.bottom)))
-            lineTo(localToGlobal(Point(local.left, local.bottom)))
-            close()
-        }
-        debugLineRenderContext.drawVector(Colors.YELLOW) {
-            val anchorSize = 5.0
-            circle(localToGlobal(local.topLeft), anchorSize)
-            circle(localToGlobal(local.topRight), anchorSize)
-            circle(localToGlobal(local.bottomRight), anchorSize)
-            circle(localToGlobal(local.bottomLeft), anchorSize)
-            circle(localToGlobal(local.topLeft.interpolateWith(0.5, local.topRight)), anchorSize)
-            circle(localToGlobal(local.topRight.interpolateWith(0.5, local.bottomRight)), anchorSize)
-            circle(localToGlobal(local.bottomRight.interpolateWith(0.5, local.bottomLeft)), anchorSize)
-            circle(localToGlobal(local.bottomLeft.interpolateWith(0.5, local.topLeft)), anchorSize)
-        }
-        debugLineRenderContext.drawVector(Colors.BLUE) {
-            val centerX = globalX
-            val centerY = globalY
-            line(centerX, centerY - 5, centerX, centerY + 5)
-            line(centerX - 5, centerY, centerX + 5, centerY)
-        }
+
         //ctx.flush()
     }
 
@@ -840,6 +862,7 @@ abstract class View internal constructor(
                 tempMat2d.translate(addx, addy)
                 //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
                 //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
+                @Suppress("DEPRECATION")
                 ctx.batch.setViewMatrixTemp(tempMat2d) {
                     renderInternal(ctx)
                 }
@@ -948,12 +971,12 @@ abstract class View internal constructor(
      *
      * @returns The (visible) [View] displayed at the given coordinates or `null` if none is found.
      */
-    fun hitTest(x: Double, y: Double): View? {
+    open fun hitTest(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
 
         _children?.fastForEachReverse { child ->
-            child.hitTest(x, y)?.let {
+            child.hitTest(x, y, direction)?.let {
                 return it
             }
         }
@@ -963,6 +986,60 @@ abstract class View internal constructor(
     }
     fun hitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
     fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
+
+    override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean =
+        hitTest(x, y, direction) != null
+
+    fun hitTestView(views: List<View>, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        views.fastForEach { view -> hitTestView(view, direction)?.let { return it } }
+        return null
+    }
+
+    fun hitTestView(view: View, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        if (!hitTestEnabled) return null
+        if (!visible) return null
+        if (_hitShape2d == null) {
+            _children?.fastForEachReverse { child ->
+                if (child != view) {
+                    child.hitTestView(view, direction)?.let {
+                        return it
+                    }
+                }
+            }
+        }
+        val res = hitTestShapeInternal(view.hitShape2d, view.getGlobalMatrixWithAnchor(tempMatrix1), direction)
+        if (res != null) return res
+        return if (this is Stage) this else null
+    }
+
+    fun hitTestShape(shape: Shape2d, matrix: Matrix, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        if (!hitTestEnabled) return null
+        if (!visible) return null
+        if (_hitShape2d == null) {
+            _children?.fastForEachReverse { child ->
+                child.hitTestShape(shape, matrix)?.let {
+                    return it
+                }
+            }
+        }
+        val res = hitTestShapeInternal(shape, matrix, direction)
+        if (res != null) return res
+        return if (this is Stage) this else null
+    }
+
+    private val tempMatrix1 = Matrix()
+    private val tempMatrix2 = Matrix()
+    private val tempMatrix = Matrix()
+
+    open val customHitShape get() = false
+    open protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+        //println("View.hitTestShapeInternal: $this, $shape")
+        if (Shape2d.intersects(this.hitShape2d, getGlobalMatrixWithAnchor(tempMatrix2), shape, matrix, tempMatrix)) {
+            //println(" -> true")
+            return this
+        }
+        return null
+    }
 
     // @TODO: we should compute view bounds on demand
     fun mouseHitTest(x: Double, y: Double): View? {
@@ -1015,7 +1092,7 @@ abstract class View internal constructor(
     var hitTestUsingShapes: Boolean? = null
 
     /** [x] and [y] coordinates are global */
-    protected fun hitTestInternal(x: Double, y: Double): View? {
+    open protected fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
         if (!hitTestEnabled) return null
 
         //println("x,y: $x,$y")
@@ -1367,6 +1444,14 @@ abstract class View internal constructor(
             it(views, view, container)
         }
     }
+
+    fun getGlobalMatrixWithAnchor(out: Matrix = Matrix()): Matrix {
+        val view = this
+        out.copyFrom(view.localMatrix)
+        out.pretranslate(-view.anchorDispX, -view.anchorDispY)
+        view.parent?.globalMatrix?.let { out.multiply(out, it) }
+        return out
+    }
 }
 
 val View.width: Double get() = unscaledWidth
@@ -1569,6 +1654,9 @@ fun <T : View> T.addFixedUpdater(
     return Cancellable { component.detach() }
 }
 
+@Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
+inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
+
 fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
     object : UpdateComponentWithViews {
         override val view: View get() = this@onNextFrame
@@ -1758,6 +1846,7 @@ fun <T : View> T.xy(x: Double, y: Double): T {
 }
 fun <T : View> T.xy(x: Float, y: Float): T = xy(x.toDouble(), y.toDouble())
 fun <T : View> T.xy(x: Int, y: Int): T = xy(x.toDouble(), y.toDouble())
+fun <T : View> T.xy(p: IPoint): T = xy(p.x, p.y)
 
 /** Chainable method returning this that sets [View.x] and [View.y] */
 fun <T : View> T.position(x: Double, y: Double): T = xy(x, y)

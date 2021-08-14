@@ -1,10 +1,21 @@
+import kotlinx.coroutines.*
+
+object KorgeEditor {
+    @JvmStatic
+    fun main(args: Array<String>) {
+        runBlocking {
+            main()
+        }
+    }
+}
+
+/*
 import com.soywiz.korge.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
+import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 fun Container.mybutton(font: Font): View {
@@ -15,6 +26,18 @@ fun Container.mybutton(font: Font): View {
 }
 
 suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.TOP_LEFT, clipBorders = false) {
+
+    val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
+
+    for (n in 0 until 10) {
+        text("HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ HELLO АБВГДЕЖ", font = font2, renderer = DefaultStringTextRenderer).xy(100, 100 + n * 2)
+    }
+
+    //return@Korge
+
+    //val result = UrlVfs("https://raw.githubusercontent.com/korlibs/korio/master/README.md").readString()
+    //println("result=$result")
+
     //image(resourcesVfs["korge-256.png"].readBitmap()).xy(0, 0)
     //image(resourcesVfs["korio-128.png"].readBitmap()).xy(128, 128)
     //return@Korge
@@ -50,6 +73,16 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
     //deferred(deferred = false) {
     //deferred(deferred = true) {
     //container {
+    uiVerticalStack {
+        xy(400, 200)
+        val group = UIRadioButtonGroup()
+        uiRadioButton(group = group)
+        uiRadioButton(group = group)
+        uiRadioButton(group = group)
+        uiSpacing()
+        uiRadioButton(group = group)
+    }
+    /*
     uiContainer {
         //append(UIContainer(200.0, 200.0)) {
         for (mx in 0 until 20) {
@@ -60,6 +93,7 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
             }
         }
     }
+    */
 
     val solidRect = solidRect(100, 100, Colors.RED).position(300, 300).anchor(Anchor.CENTER)
     uiWindow("Properties", 300.0, 100.0) {
@@ -107,6 +141,8 @@ suspend fun main() = Korge(scaleMode = ScaleMode.NO_SCALE, scaleAnchor = Anchor.
         })
     }
      */
+
+    mainVampire()
 }
 
 private var View.rotationDeg: Double
@@ -120,3 +156,4 @@ private var View.skewXDeg: Double
 private var View.skewYDeg: Double
     get() = skewY.degrees
     set(value) { skewY = value.degrees }
+*/

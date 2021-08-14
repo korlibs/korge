@@ -54,37 +54,38 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
         val sprites = this.sprites
         if (sprites.isEmpty()) return
         ctx.flush()
-        val bb = ctx.batch
-        val fsprite = sprites.first()
-        val bmp = fsprite.tex.bmpBase
+        ctx.useBatcher { bb ->
+            val fsprite = sprites.first()
+            val bmp = fsprite.tex.bmpBase
 
-        bb.setViewMatrixTemp(globalMatrix) {
-            ////////////////////////////
+            bb.setViewMatrixTemp(globalMatrix) {
+                ////////////////////////////
 
-            bb.setStateFast(bmp, smoothing, blendMode.factors, null)
+                bb.setStateFast(bmp, smoothing, blendMode.factors, null)
 
-            ////////////////////////////
+                ////////////////////////////
 
-            val batchSize = min(sprites.size, bb.maxQuads)
-            addQuadIndices(bb, batchSize)
-            bb.vertexCount = 0
-            bb.uploadIndices()
-            val realIndexPos = bb.indexPos
+                val batchSize = min(sprites.size, bb.maxQuads)
+                addQuadIndices(bb, batchSize)
+                bb.vertexCount = 0
+                bb.uploadIndices()
+                val realIndexPos = bb.indexPos
 
-            ////////////////////////////
+                ////////////////////////////
 
-            //var batchCount = 0
-            //var spriteCount = 0
-            //for (m in 0 until sprites.size step bb.maxQuads) { // @TODO: Not optimized on Kotlin/JS
-            for (m2 in 0 until (sprites.size divCeil bb.maxQuads)) {
-                val m = m2 * bb.maxQuads
-                //batchCount++
-                bb.indexPos = realIndexPos
-                renderInternalBatch(bb, m, batchSize, colorMul, colorAdd)
-                flush(bb)
+                //var batchCount = 0
+                //var spriteCount = 0
+                //for (m in 0 until sprites.size step bb.maxQuads) { // @TODO: Not optimized on Kotlin/JS
+                for (m2 in 0 until (sprites.size divCeil bb.maxQuads)) {
+                    val m = m2 * bb.maxQuads
+                    //batchCount++
+                    bb.indexPos = realIndexPos
+                    renderInternalBatch(bb, m, batchSize, colorMul, colorAdd)
+                    flush(bb)
+                }
+
+                //println("batchCount: $batchCount, spriteCount: $spriteCount")
             }
-
-            //println("batchCount: $batchCount, spriteCount: $spriteCount")
         }
     }
 

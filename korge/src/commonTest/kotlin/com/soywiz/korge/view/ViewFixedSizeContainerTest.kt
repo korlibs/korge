@@ -20,11 +20,11 @@ class ViewFixedSizeContainerTest : ViewsForTesting(
         val log = arrayListOf<String>()
         testRenderContext(object : LogBaseAG() {
             override fun draw(batch: Batch) {
-                log += batch.scissor!!.run { "[$left,$top,$right,$bottom]" }
+                log += batch.scissor.toString()
             }
         }) {
             stage.render(it)
         }
-        assertEquals("[235,105,385,255]", log.joinToString(","))
+        assertEquals("Scissor(x=235, y=105, width=150, height=150)", log.joinToString(","))
     }
 }

@@ -171,12 +171,27 @@ open class Text(
         out.copyFrom(_textBounds)
     }
 
+    private val tempMatrix = Matrix()
+
+    //var newTvaRenderer = true
+    var newTvaRenderer = false
+
     override fun renderInternal(ctx: RenderContext) {
         _renderInternal(ctx)
         while (imagesToRemove.isNotEmpty()) {
             ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
         }
-        super.renderInternal(ctx)
+        //val tva: TexturedVertexArray? = null
+        if (tva != null) {
+            tempMatrix.copyFrom(globalMatrix)
+            tempMatrix.pretranslate(container.x, container.y)
+            ctx.useBatcher { batch ->
+                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null)
+                batch.drawVertices(tva!!, tempMatrix)
+            }
+        } else {
+            super.renderInternal(ctx)
+        }
     }
 
     var cachedVersionGlyphMetrics = -1
@@ -196,6 +211,8 @@ open class Text(
     private var lastAutoScaling: Boolean? = null
     private var lastSmoothing: Boolean? = null
     private var lastNativeRendering: Boolean? = null
+    private var tva: TexturedVertexArray? = null
+    private val identityMat = Matrix()
 
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
@@ -250,17 +267,25 @@ open class Text(
 
                     val dx = -textWidth * horizontalAlign.ratio
 
+                    if (newTvaRenderer) {
+                        this.tva = TexturedVertexArray.forQuads(bitmapFontActions.size)
+                    }
+
                     for (n in 0 until bitmapFontActions.size) {
-                        val it = (container[n] as Image)
-                        it.anchor(0, 0)
-                        it.smoothing = smoothing
                         val entry = bitmapFontActions.read(n, tempBmpEntry)
-                        it.bitmap = entry.tex
-                        it.x = entry.x + dx
-                        it.y = entry.y
-                        it.scaleX = entry.sx
-                        it.scaleY = entry.sy
-                        it.rotation = entry.rot
+                        if (newTvaRenderer) {
+                            tva?.quad(n * 4, entry.x + dx, entry.y, entry.tex.width * entry.sx, entry.tex.height * entry.sy, identityMat, entry.tex, renderColorMul, renderColorAdd)
+                        } else {
+                            val it = (container[n] as Image)
+                            it.anchor(0, 0)
+                            it.smoothing = smoothing
+                            it.bitmap = entry.tex
+                            it.x = entry.x + dx
+                            it.y = entry.y
+                            it.scaleX = entry.sx
+                            it.scaleY = entry.sy
+                            it.rotation = entry.rot
+                        }
                     }
 
                     setContainerPosition(0.0, 0.0, font.base)
@@ -323,11 +348,15 @@ open class Text(
 
     private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
         if (autoSize) {
-            container.position(x, y)
+            setRealContainerPosition(x, y)
         } else {
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
-            container.position(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
+            setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
         }
+    }
+
+    private fun setRealContainerPosition(x: Double, y: Double) {
+        container.position(x, y)
     }
 
     private val imagesToRemove = arrayListOf<Bitmap>()

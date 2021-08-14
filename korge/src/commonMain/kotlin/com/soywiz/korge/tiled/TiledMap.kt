@@ -3,19 +3,14 @@ package com.soywiz.korge.tiled
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.*
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import kotlin.collections.set
+import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.vector.*
 
 class TiledMapData(
     var orientation: TiledMap.Orientation = TiledMap.Orientation.ORTHOGONAL,
@@ -67,7 +62,8 @@ class TiledMapData(
 
     val maxGid get() = tilesets.map { it.firstgid + it.tileCount }.maxOrNull() ?: 0
 
-    fun getObjectByName(name: String) = objectLayers.mapNotNull { it.getByName(name) }.firstOrNull()
+    fun getObjectByName(name: String) = objectLayers.firstNotNullOfOrNull { it.getByName(name) }
+    fun getObjectByType(type: String) = objectLayers.flatMap { it.getByType(type) }
 
     fun clone() = TiledMapData(
         orientation, renderOrder, compressionLevel,
@@ -124,7 +120,7 @@ class WangSet(
 
 data class TileData(
     val id: Int,
-    val type: Int = -1,
+    val type: String? = null,
     val terrain: List<Int?>? = null,
     val probability: Double = 0.0,
     val image: TiledMap.Image? = null,
@@ -155,6 +151,8 @@ data class TileSetData(
     val tiles: List<TileData> = listOf(),
     val properties: Map<String, TiledMap.Property> = mapOf()
 ) {
+    val tilesById = tiles.associateByInt { _, it -> it.id }
+
     val width: Int get() = image?.width ?: 0
     val height: Int get() = image?.height ?: 0
     fun clone() = copy()
@@ -163,13 +161,18 @@ data class TileSetData(
 fun List<TiledMap.TiledTileset>.toTileSet(): TileSet {
     val tilesets = this
     val maxGid = tilesets.map { it.maxgid }.maxOrNull() ?: 0
-    val tiles = IntMap<BmpSlice>(maxGid * 2)
+    val tiles = IntMap<TileSetTileInfo>(maxGid * 2)
+    val collisions = IntMap<TileShapeInfo>(maxGid * 2)
     tilesets.fastForEach { tileset ->
         tileset.tileset.texturesMap.fastForEach { key, value ->
-            tiles[tileset.firstgid + key] = value
+            val id = tileset.firstgid + key
+            tiles[id] = value.copy(id = id)
+        }
+        tileset.tileset.collisionsMap.fastForEach { key, value ->
+            collisions[tileset.firstgid + key] = value
         }
     }
-    return TileSet(tiles)
+    return TileSet(tiles, collisionsMap = collisions)
 }
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
@@ -238,7 +241,7 @@ class TiledMap constructor(
         }
     }
 
-    data class Object(
+    data class Object constructor(
         val id: Int,
         var gid: Int?,
         var name: String,
@@ -246,20 +249,56 @@ class TiledMap constructor(
         var bounds: Rectangle,
         var rotation: Double, // in degrees
         var visible: Boolean,
-        var objectType: Type = Type.Rectangle,
+        var objectShape: Shape = Shape.PPoint,
         val properties: MutableMap<String, Property> = mutableMapOf()
     ) {
+        val x: Double get() = bounds.x
+        val y: Double get() = bounds.y
+
+        //val transform get() = getTransform()
+
+        fun strOrNull(propName: String) = properties[propName]?.string
+        fun str(propName: String, default: String = "") = strOrNull(propName) ?: default
+        fun int(propName: String, default: Int = 0) = properties[propName]?.int ?: default
+        fun double(propName: String, default: Double = 0.0) = properties[propName]?.double ?: default
+        fun bool(propName: String, default: Boolean = false) = properties[propName]?.bool ?: default
+
         enum class DrawOrder(val value: String) {
             INDEX("index"), TOP_DOWN("topdown")
         }
 
-        sealed class Type {
-            object Rectangle : Type()
-            object Ellipse : Type()
-            object PPoint : Type()
-            class Polygon(val points: List<Point>) : Type()
-            class Polyline(val points: List<Point>) : Type()
-            class Text(
+        fun getTransform() = Matrix()
+            .pretranslate(bounds.x, bounds.y)
+            .prerotate(rotation.degrees)
+
+        fun toVectorPath(): VectorPath = objectShape.toVectorPath().clone().apply {
+            applyTransform(getTransform())
+        }
+
+        fun toShape2dNoTransformed(): Shape2d = objectShape.toShape2d()
+
+        sealed class Shape {
+            abstract fun toVectorPath(): VectorPath
+            open fun toShape2d(): Shape2d = toVectorPath().toShape2dNew()
+
+            data class Rectangle(val width: Double, val height: Double) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { rect(0.0, 0.0, width, height) }
+                override fun toShape2d(): Shape2d = Shape2d.Rectangle(0.0, 0.0, width, height)
+            }
+            data class Ellipse(val width: Double, val height: Double) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { ellipse(0.0, 0.0, width, height) }
+                override fun toShape2d() = Shape2d.EllipseOrCircle(0.0, 0.0, width, height)
+            }
+            object PPoint : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath {  }
+            }
+            data class Polygon(val points: List<Point>) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+            }
+            data class Polyline(val points: List<Point>) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+            }
+            data class Text(
                 val fontFamily: String,
                 val pixelSize: Int,
                 val wordWrap: Boolean,
@@ -271,7 +310,9 @@ class TiledMap constructor(
                 val kerning: Boolean,
                 val hAlign: TextHAlignment,
                 val vAlign: TextVAlignment
-            ) : Type()
+            ) : Shape() {
+                override fun toVectorPath(): VectorPath = buildPath {  }
+            }
         }
     }
 
@@ -310,18 +351,25 @@ class TiledMap constructor(
 
     sealed class Property {
         abstract val string: String
+        val int: Int get() = number.toInt()
+        val double: Double get() = number.toDouble()
+        val bool: Boolean get() = double != 0.0
+        open val number: Number get() = string.toDoubleOrNull() ?: 0.0
         override fun toString(): String = string
 
         class StringT(var value: String) : Property() {
             override val string: String get() = value
         }
         class IntT(var value: Int) : Property() {
+            override val number: Number get() = value
             override val string: String get() = "$value"
         }
         class FloatT(var value: Double) : Property() {
+            override val number: Number get() = value
             override val string: String get() = "$value"
         }
         class BoolT(var value: Boolean) : Property() {
+            override val number: Number get() = if (value) 1 else 0
             override val string: String get() = "$value"
         }
         class ColorT(var value: RGBA) : Property() {
@@ -395,18 +443,21 @@ class TiledMap constructor(
             override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
         }
 
-        class Objects(
+        data class Objects(
             var color: RGBA = Colors.WHITE,
             var drawOrder: Object.DrawOrder = Object.DrawOrder.TOP_DOWN,
-            val objects: MutableList<Object> = arrayListOf()
+            val objects: FastArrayList<Object> = FastArrayList()
         ) : Layer() {
             val objectsById by lazy { objects.associateBy { it.id } }
             val objectsByName by lazy { objects.associateBy { it.name } }
+            val objectsByType by lazy { objects.groupBy { it.type } }
 
             fun getById(id: Int): Object? = objectsById[id]
             fun getByName(name: String): Object? = objectsByName[name]
+            //fun getByType(type: String): List<Object> = objectsByType[type] ?: emptyList()
+            fun getByType(type: String): List<Object> = objects.filter { it.type == type }
 
-            override fun clone() = Objects(color, drawOrder, ArrayList(objects)).also { it.copyFrom(this) }
+            override fun clone() = Objects(color, drawOrder, FastArrayList(objects)).also { it.copyFrom(this) }
         }
 
         class Image(var image: TiledMap.Image? = null) : Layer() {

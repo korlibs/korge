@@ -46,7 +46,9 @@ class NinePatchEx(
                         tvaCached.copyFrom(tva!!)
                         tvaCached.applyMatrix(m)
                     }
-                    ctx.batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode.factors)
+                    ctx.useBatcher { batch ->
+                        batch.drawVertices(tvaCached, ctx.getTex(ninePatch.content.bmp), smoothing, blendMode.factors)
+                    }
                 }
             }
 		}

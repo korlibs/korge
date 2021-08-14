@@ -1,3 +1,5 @@
+@file:OptIn(KorgeInternal::class)
+
 package com.soywiz.korge.render
 
 import com.soywiz.kds.*
@@ -6,12 +8,19 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
-/** Creates/gets a [DebugLineRenderContext] associated to [this] [RenderContext] */
-val RenderContext.debugLineRenderContext: DebugLineRenderContext by Extra.PropertyThis<RenderContext, DebugLineRenderContext> { DebugLineRenderContext(this) }
+/** Creates/gets a [LineRenderBatcher] associated to [this] [RenderContext] */
+@Deprecated("USe useDebugLineRenderContext instead")
+val RenderContext.debugLineRenderContext: LineRenderBatcher by Extra.PropertyThis<RenderContext, LineRenderBatcher> { LineRenderBatcher(this) }
+
+@Suppress("DEPRECATION")
+inline fun RenderContext.useLineBatcher(block: (LineRenderBatcher) -> Unit) = debugLineRenderContext.use(block)
+
+typealias DebugLineRenderContext = LineRenderBatcher
 
 /**
  * A context that allows to draw lines using [AG] (Accelerated Graphics).
@@ -24,10 +33,14 @@ val RenderContext.debugLineRenderContext: DebugLineRenderContext by Extra.Proper
  *  // ...
  * }
  */
-class DebugLineRenderContext(
-    @KorgeInternal
+class LineRenderBatcher(
+    @property:KorgeInternal
     val ctx: RenderContext
 ) {
+    inline fun use(block: (LineRenderBatcher) -> Unit) = ctx.useBatcher(this, block)
+
+    val beforeFlush = Signal<LineRenderBatcher>()
+
     init {
         ctx.flushers.add { flush() }
     }
@@ -72,39 +85,41 @@ class DebugLineRenderContext(
     internal val viewMat = Matrix3D()
     @PublishedApi
     internal val tempViewMat = Pool { Matrix3D() }
-    private var vertexCount = 0
-    private var vertexPos = 0
+    @PublishedApi
+    internal var vertexCount = 0
+    @PublishedApi
+    internal var vertexPos = 0
 
     /** Draw a line from [x0],[y0] to [x1],[y1] */
-    fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0) {
+    fun line(x0: Float, y0: Float, x1: Float, y1: Float, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) {
         if (vertexCount >= maxVertexCount - 2) {
             flush()
         }
-        addVertex(x0, y0, color0)
-        addVertex(x1, y1, color1)
+        addVertex(x0, y0, color0, m)
+        addVertex(x1, y1, color1, m)
     }
-    fun line(x0: Double, y0: Double, x1: Double, y1: Double, color0: RGBA = color, color1: RGBA = color0) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1)
-    fun line(x0: Int, y0: Int, x1: Int, y1: Int, color0: RGBA = color, color1: RGBA = color0) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1)
+    fun line(x0: Double, y0: Double, x1: Double, y1: Double, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
+    fun line(x0: Int, y0: Int, x1: Int, y1: Int, color0: RGBA = color, color1: RGBA = color0, m: Matrix = currentMatrix) = line(x0.toFloat(), y0.toFloat(), x1.toFloat(), y1.toFloat(), color0, color1, m)
 
-    fun drawVector(path: VectorPath) {
+    fun drawVector(path: VectorPath, m: Matrix = currentMatrix) {
         var lastX = 0.0
         var lastY = 0.0
         path.emitPoints2 { x, y, move ->
             if (!move) {
-                line(lastX, lastY, x, y)
+                line(lastX, lastY, x, y, m = m)
             }
             lastX = x
             lastY = y
         }
     }
 
-    inline fun drawVector(block: VectorBuilder.() -> Unit) {
-        drawVector(VectorPath().apply(block))
+    inline fun drawVector(m: Matrix = currentMatrix, block: VectorBuilder.() -> Unit) {
+        drawVector(VectorPath().apply(block), m = m)
     }
 
-    inline fun drawVector(color: RGBA, block: VectorBuilder.() -> Unit) {
+    inline fun drawVector(color: RGBA, m: Matrix = currentMatrix, block: VectorBuilder.() -> Unit) {
         color(color) {
-            drawVector(block)
+            drawVector(m, block)
         }
     }
 
@@ -126,6 +141,7 @@ class DebugLineRenderContext(
     @KorgeInternal
     fun flush() {
         if (vertexCount > 0) {
+            beforeFlush(this)
             vertexBuffer.upload(vertices, 0, vertexPos * 4)
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
@@ -142,9 +158,19 @@ class DebugLineRenderContext(
         vertexPos = 0
     }
 
-    private fun addVertex(x: Float, y: Float, color: RGBA = this.color) {
-        vertices.setAlignedFloat32(vertexPos + 0, x)
-        vertices.setAlignedFloat32(vertexPos + 1, y)
+    @PublishedApi
+    internal val currentMatrix: Matrix = Matrix()
+
+    fun <T> drawWithGlobalMatrix(matrix: Matrix, block: () -> T): T {
+        return currentMatrix.keep {
+            currentMatrix.copyFrom(matrix)
+            block()
+        }
+    }
+
+    private fun addVertex(x: Float, y: Float, color: RGBA = this.color, m: Matrix = currentMatrix) {
+        vertices.setAlignedFloat32(vertexPos + 0, m.transformXf(x, y))
+        vertices.setAlignedFloat32(vertexPos + 1, m.transformYf(x, y))
         vertices.setAlignedInt32(vertexPos + 2, color.value)
         vertexPos += LAYOUT.totalSize / Int.SIZE_BYTES
         vertexCount++

@@ -29,6 +29,8 @@ class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var isize: I
     //val icount = indices.size
 
     companion object {
+        fun forQuads(quadCount: Int) = TexturedVertexArray(quadCount * 4, quadIndices(quadCount))
+
         val EMPTY = TexturedVertexArray(0, ShortArray(0))
 
         // // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425

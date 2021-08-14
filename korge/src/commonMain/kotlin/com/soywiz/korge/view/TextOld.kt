@@ -151,18 +151,20 @@ class TextOld : View(), IText, IHtml {
 			val py = textBounds.y + (textBounds.height - tempRect.height) * anchor.sy
 
 			if (bgcolor.a != 0) {
-				ctx.batch.drawQuad(
-					ctx.getTex(Bitmaps.white),
-					x = textBounds.x.toFloat(),
-					y = textBounds.y.toFloat(),
-					width = textBounds.width.toFloat(),
-					height = textBounds.height.toFloat(),
-					m = m,
-					filtering = false,
-					colorMul = RGBA.multiply(bgcolor, renderColorMul),
-					colorAdd = colorAdd,
-					blendFactors = renderBlendMode.factors
-				)
+                ctx.useBatcher { batch ->
+                    batch.drawQuad(
+                        ctx.getTex(Bitmaps.white),
+                        x = textBounds.x.toFloat(),
+                        y = textBounds.y.toFloat(),
+                        width = textBounds.width.toFloat(),
+                        height = textBounds.height.toFloat(),
+                        m = m,
+                        filtering = false,
+                        colorMul = RGBA.multiply(bgcolor, renderColorMul),
+                        colorAdd = colorAdd,
+                        blendFactors = renderBlendMode.factors
+                    )
+                }
 			}
 
 			//println(" -> ($x, $y)")

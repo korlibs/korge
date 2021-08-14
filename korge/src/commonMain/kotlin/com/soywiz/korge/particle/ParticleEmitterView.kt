@@ -78,22 +78,23 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             cachedBlending = AG.Blending(emitter.blendFuncSource, emitter.blendFuncDestination)
         }
 
-		val context = ctx.ctx2d
-		val texture = emitter.texture ?: return
-		val cx = texture.width * 0.5
-		val cy = texture.height * 0.5
-		context.keep {
-			context.blendFactors = cachedBlending
-			context.setMatrix(globalMatrix)
+        ctx.useCtx2d { context ->
+            val texture = emitter.texture ?: return
+            val cx = texture.width * 0.5
+            val cy = texture.height * 0.5
+            context.keep {
+                context.blendFactors = cachedBlending
+                context.setMatrix(globalMatrix)
 
-			simulator.particles.fastForEach { p ->
-                if (p.alive) {
-                    val scale = p.scale
-                    context.multiplyColor = p.color * this@ParticleEmitterView.colorMul
-                    context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale.toDouble())
+                simulator.particles.fastForEach { p ->
+                    if (p.alive) {
+                        val scale = p.scale
+                        context.multiplyColor = p.color * this@ParticleEmitterView.colorMul
+                        context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale.toDouble())
+                    }
                 }
-			}
-		}
+            }
+        }
 	}
 
     override fun getLocalBoundsInternal(out: Rectangle) {

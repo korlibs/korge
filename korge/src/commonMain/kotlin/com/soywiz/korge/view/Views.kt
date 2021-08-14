@@ -130,13 +130,13 @@ class Views constructor(
     @KorgeExperimental
 	var actualVirtualHeight = DefaultViewport.HEIGHT; private set
 
-    @KorgeExperimental
+    //@KorgeExperimental
 	override val virtualLeft get() = -actualVirtualLeft * views.stage.scaleX
-    @KorgeExperimental
+    //@KorgeExperimental
 	override val virtualTop get() = -actualVirtualTop * views.stage.scaleY
-    @KorgeExperimental
+    //@KorgeExperimental
 	override val virtualRight get() = virtualLeft + virtualWidth * views.stage.scaleX
-    @KorgeExperimental
+    //@KorgeExperimental
 	override val virtualBottom get() = virtualTop + virtualHeight * views.stage.scaleY
 
     @KorgeExperimental
@@ -157,7 +157,7 @@ class Views constructor(
 		}
 	}
 
-    @KorgeInternal
+    //@KorgeInternal
 	override fun close() {
         launchImmediately {
             closeSuspend()

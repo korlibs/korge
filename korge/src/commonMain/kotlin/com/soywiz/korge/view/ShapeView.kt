@@ -6,20 +6,20 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.vector.*
 
 inline fun Container.shapeView(
-        shape: VectorPath? = null,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
-        callback: @ViewDslMarker ShapeView.() -> Unit = {}
+    shape: VectorPath? = null,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
+    callback: @ViewDslMarker ShapeView.() -> Unit = {}
 ): ShapeView = ShapeView(shape, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 open class ShapeView(
-        shape: VectorPath? = null,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
+    shape: VectorPath? = null,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
 ) : Graphics(autoScaling = autoScaling) {
     var shape: VectorPath? = shape
         set(value) {

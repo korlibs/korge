@@ -62,18 +62,20 @@ class NinePatch(
 		posCuts[1].setTo(texLeftWidth * actualRatioX / width, texTopHeight * actualRatioY / height)
 		posCuts[2].setTo(1.0 - texRighttWidth * actualRatioX / width, 1.0 - texBottomHeight * actualRatioY / height)
 
-		ctx.batch.drawNinePatch(
-			ctx.getTex(tex),
-			sLeft.toFloat(), sTop.toFloat(),
-			width.toFloat(), height.toFloat(),
-			posCuts = posCuts,
-			texCuts = texCuts,
-			m = globalMatrix,
-			colorMul = renderColorMul,
-			colorAdd = renderColorAdd,
-			filtering = smoothing,
-			blendFactors = renderBlendMode.factors
-		)
+        ctx.useBatcher { batch ->
+            batch.drawNinePatch(
+                ctx.getTex(tex),
+                sLeft.toFloat(), sTop.toFloat(),
+                width.toFloat(), height.toFloat(),
+                posCuts = posCuts,
+                texCuts = texCuts,
+                m = globalMatrix,
+                colorMul = renderColorMul,
+                colorAdd = renderColorAdd,
+                filtering = smoothing,
+                blendFactors = renderBlendMode.factors
+            )
+        }
 	}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {

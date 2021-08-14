@@ -1,9 +1,14 @@
 package com.soywiz.korge.tiled
 
+import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.tiled.TiledMap.*
+import com.soywiz.korge.tiled.TiledMap.Image
+import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.*
+import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -13,13 +18,15 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.krypto.encoding.*
 import kotlin.collections.set
 
 suspend fun VfsFile.readTiledMap(
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
-	createBorder: Int = 1
+	createBorder: Int = 1,
+    atlas: MutableAtlasUnit? = null
 ): TiledMap {
 	val folder = this.parent.jail()
 	val data = readTiledMapData()
@@ -27,27 +34,48 @@ suspend fun VfsFile.readTiledMap(
 	val tiledTilesets = arrayListOf<TiledTileset>()
 
 	data.tilesets.fastForEach { tileset ->
-		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder)
+		tiledTilesets += tileset.toTiledSet(folder, hasTransparentColor, transparentColor, createBorder, atlas = atlas)
 	}
 
 	return TiledMap(data, tiledTilesets)
 }
 
-suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData {
-	return parseTileSetData(this.readXml(), firstgid, this.baseName)
+suspend fun VfsFile.readTiledSet(
+    firstgid: Int = 1,
+    hasTransparentColor: Boolean = false,
+    transparentColor: RGBA = Colors.FUCHSIA,
+    createBorder: Int = 1,
+    atlas: MutableAtlasUnit? = null,
+): TiledTileset {
+    return readTileSetData(firstgid).toTiledSet(this.parent, hasTransparentColor, transparentColor, createBorder, atlas)
 }
+
+suspend fun VfsFile.readTiledSetData(firstgid: Int = 1): TileSetData {
+    return parseTileSetData(this.readXml(), firstgid, this.baseName)
+}
+
+@Deprecated("Use readTiledSetData", ReplaceWith("readTiledSetData(firstgid)"))
+suspend fun VfsFile.readTileSetData(firstgid: Int = 1): TileSetData = readTiledSetData(firstgid)
 
 suspend fun TileSetData.toTiledSet(
 	folder: VfsFile,
 	hasTransparentColor: Boolean = false,
 	transparentColor: RGBA = Colors.FUCHSIA,
-	createBorder: Int = 1
+	createBorder: Int = 1,
+    atlas: MutableAtlasUnit? = null
 ): TiledTileset {
+    val atlas = when {
+        atlas != null -> atlas
+        createBorder > 0 -> MutableAtlas(2048, border = createBorder.clamp(1, 4))
+        else -> null
+    }
+
 	val tileset = this
 	var bmp = try {
 		when (tileset.image) {
 			is Image.Embedded -> TODO()
 			is Image.External -> folder[tileset.image.source].readBitmapOptimized()
+                .let { if (atlas != null) it.toBMP32IfRequired() else it }
 			null -> Bitmap32(0, 0)
 		}
 	} catch (e: Throwable) {
@@ -63,52 +91,110 @@ suspend fun TileSetData.toTiledSet(
 		}
 	}
 
-	val ptileset = if (createBorder > 0) {
-		bmp = bmp.toBMP32()
 
-		if (tileset.spacing >= createBorder) {
-			// There is already separation between tiles, use it as it is
-			val slices = TileSet.extractBmpSlices(
-				bmp,
-				tileset.tileWidth,
-				tileset.tileHeight,
-				tileset.columns,
-				tileset.tileCount,
-				tileset.spacing,
-				tileset.margin
-			)
-			TileSet(slices, tileset.tileWidth, tileset.tileHeight)
-		} else {
-			// No separation between tiles: create a new Bitmap adding that separation
-			val bitmaps = if (bmp.width != 0 && bmp.height != 0) {
-				TileSet.extractBmpSlices(
-					bmp,
-					tileset.tileWidth,
-					tileset.tileHeight,
-					tileset.columns,
-					tileset.tileCount,
-					tileset.spacing,
-					tileset.margin
-				)
-			} else if (tileset.tiles.isNotEmpty()) {
-				tileset.tiles.map {
-					when (it.image) {
-						is Image.Embedded -> TODO()
-						is Image.External -> {
-                            val file = folder[it.image.source]
-                            file.readBitmapOptimized().toBMP32().slice(name = file.baseName)
-                        }
-						else -> Bitmap32(0, 0).slice()
-					}
-				}
-			} else {
-				emptyList()
-			}
-			TileSet.fromBitmapSlices(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false)
-		}
-	} else {
-		TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount)
-	}
+    val collisionsMap = IntMap<TileShapeInfo>()
+    tileset.tiles.fastForEach { tile ->
+        val collisionType = HitTestDirectionFlags.fromString(tile.type, HitTestDirectionFlags.NONE)
+        val vectorPaths = fastArrayListOf<TileShapeInfo>()
+        if (tile.objectGroup != null) {
+            tile.objectGroup.objects.fastForEach {
+                vectorPaths.add(
+                    TileShapeInfoImpl(
+                        HitTestDirectionFlags.fromString(it.type),
+                        it.toShape2dNoTransformed(),
+                        it.getTransform(),
+                        //it.toVectorPath()
+                    )
+                )
+            }
+        }
+        //println("tile.objectGroup=${tile.objectGroup}")
+        collisionsMap[tile.id] = object : TileShapeInfo {
+            override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean {
+                if (vectorPaths.isNotEmpty()) {
+                    vectorPaths.fastForEach {
+                        if (it.hitTestAny(x, y, direction)) return true
+                    }
+                }
+                return collisionType.matches(direction)
+            }
+
+            override fun hitTestAny(shape2d: Shape2d, matrix: Matrix, direction: HitTestDirection): Boolean {
+                if (vectorPaths.isNotEmpty()) {
+                    vectorPaths.fastForEach {
+                        if (it.hitTestAny(shape2d, matrix, direction)) return true
+                    }
+                }
+                return collisionType.matches(direction)
+            }
+
+            override fun toString(): String = "HitTestable[id=${tile.id}]($vectorPaths)"
+        }
+    }
+
+
+    val ptileset = when {
+	    atlas != null -> {
+            val tileSet = TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount, collisionsMap)
+            val map = IntMap<TileSetTileInfo>()
+            tileSet.infos.fastForEachWithIndex { index, value ->
+                if (value != null) {
+                    val tile = tileset.tilesById[value.id]
+                    map[index] = value.copy(
+                        slice = atlas.add(value.slice, Unit).slice,
+                        frames = (tile?.frames ?: emptyList()).map { TileSetAnimationFrame(it.tileId, it.duration.milliseconds) }
+                    )
+                }
+            }
+            TileSet(map, tileset.tileWidth, tileset.tileHeight, collisionsMap)
+	    }
+        //createBorder > 0 -> {
+        //    bmp = bmp.toBMP32()
+        //    if (tileset.spacing >= createBorder) {
+        //        // There is already separation between tiles, use it as it is
+        //        val slices = TileSet.extractBmpSlices(
+        //            bmp,
+        //            tileset.tileWidth,
+        //            tileset.tileHeight,
+        //            tileset.columns,
+        //            tileset.tileCount,
+        //            tileset.spacing,
+        //            tileset.margin
+        //        ).mapIndexed { index, bitmapSlice -> TileSetTileInfo(index, bitmapSlice) }
+        //        TileSet(slices, tileset.tileWidth, tileset.tileHeight, collisionsMap)
+        //    } else {
+        //        // No separation between tiles: create a new Bitmap adding that separation
+        //        val bitmaps = if (bmp.width != 0 && bmp.height != 0) {
+        //            TileSet.extractBmpSlices(
+        //                bmp,
+        //                tileset.tileWidth,
+        //                tileset.tileHeight,
+        //                tileset.columns,
+        //                tileset.tileCount,
+        //                tileset.spacing,
+        //                tileset.margin
+        //            )
+        //        } else if (tileset.tiles.isNotEmpty()) {
+        //            tileset.tiles.map {
+        //                when (it.image) {
+        //                    is Image.Embedded -> TODO()
+        //                    is Image.External -> {
+        //                        val file = folder[it.image.source]
+        //                        file.readBitmapOptimized().toBMP32().slice(name = file.baseName)
+        //                    }
+        //                    else -> Bitmap32(0, 0).slice()
+        //                }
+        //            }
+        //        } else {
+        //            emptyList()
+        //        }
+        //        TileSet.fromBitmapSlices(tileset.tileWidth, tileset.tileHeight, bitmaps, border = createBorder, mipmaps = false, collisionsMap = collisionsMap)
+        //    }
+        //}
+        else -> {
+            TileSet(bmp.slice(), tileset.tileWidth, tileset.tileHeight, tileset.columns, tileset.tileCount, collisionsMap)
+        }
+    }
 
 	val tiledTileset = TiledTileset(
 		tileset = ptileset,
@@ -266,7 +352,7 @@ private fun Xml.parseTile(): TileData {
 	}
 	return TileData(
 		id = tile.int("id"),
-		type = tile.int("type", -1),
+		type = tile.strNull("type"),
 		terrain = tile.str("terrain").takeIf { it.isNotEmpty() }?.split(',')?.map { it.toIntOrNull() },
 		probability = tile.double("probability"),
 		image = tile.child("image")?.parseImage(),
@@ -458,12 +544,12 @@ private fun Xml.parseObjectLayer(): Layer.Objects {
 		val polygon = obj.child("polygon")
 		val polyline = obj.child("polyline")
 		val text = obj.child("text")
-		val objectType: Object.Type = when {
-			ellipse != null -> Object.Type.Ellipse
-			point != null -> Object.Type.PPoint
-			polygon != null -> Object.Type.Polygon(polygon.readPoints())
-			polyline != null -> Object.Type.Polyline(polyline.readPoints())
-			text != null -> Object.Type.Text(
+		val objectShape: Object.Shape = when {
+			ellipse != null -> Object.Shape.Ellipse(objInstance.bounds.width, objInstance.bounds.height)
+			point != null -> Object.Shape.PPoint
+			polygon != null -> Object.Shape.Polygon(polygon.readPoints())
+			polyline != null -> Object.Shape.Polyline(polyline.readPoints())
+			text != null -> Object.Shape.Text(
 				fontFamily = text.str("fontfamily", "sans-serif"),
 				pixelSize = text.int("pixelsize", 16),
 				wordWrap = text.int("wrap", 0) == 1,
@@ -480,10 +566,10 @@ private fun Xml.parseObjectLayer(): Layer.Objects {
 					TextVAlignment.values().find { it.value == align } ?: TextVAlignment.TOP
 				}
 			)
-			else -> Object.Type.Rectangle
+			else -> Object.Shape.Rectangle(objInstance.bounds.width, objInstance.bounds.height)
 		}
 
-		objInstance.objectType = objectType
+		objInstance.objectShape = objectShape
 		layer.objects.add(objInstance)
 	}
 

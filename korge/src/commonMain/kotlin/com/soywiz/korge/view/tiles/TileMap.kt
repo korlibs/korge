@@ -3,15 +3,13 @@ package com.soywiz.korge.view.tiles
 import com.soywiz.kds.*
 import com.soywiz.kds.IntArray2
 import com.soywiz.kds.iterators.*
+import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korag.AG
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tiled.TiledMap
-import com.soywiz.korge.util.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
 
@@ -54,6 +52,10 @@ open class TileMap(
     val staggerIndex: TiledMap.StaggerIndex? = null,
     val tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : View() {
+    val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+    val animationIndex = Array(tileset.textures.size) { 0 }
+    val animationElapsed = Array(tileset.textures.size) { 0.0 }
+
     private var contentVersion = 0
 	constructor(
         map: Bitmap32,
@@ -67,6 +69,23 @@ open class TileMap(
 
 	val tileWidth = tileset.width.toDouble()
 	val tileHeight = tileset.height.toDouble()
+
+    fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
+        //if (x < 0 || y < 0) return false // Outside bounds
+        if (x < 0 || y < 0) return true // Outside bounds
+        val tw = tileset.width
+        val th = tileset.height
+        return pixelHitTest(x / tw, y / th, x % tw, y % th, direction)
+    }
+
+    fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
+        //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
+        //println(tileset.collisions.toList())
+        if (!intMap.inside(tileX, tileY)) return true
+        val tile = intMap[tileX, tileY]
+        val collision = tileset.collisions[tile] ?: return false
+        return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
+    }
 
 	enum class Repeat(val get: (v: Int, max: Int) -> Int) {
 		NONE({ v, max -> v }),
@@ -116,8 +135,11 @@ open class TileMap(
         val dUY = m.transformY(tileWidth, 0.0) - posY
         val dVX = m.transformX(0.0, tileHeight) - posX
         val dVY = m.transformY(0.0, tileHeight) - posY
-        val initY = (if (staggerAxis != null) tileSize.height - tileHeight else 0.0).let {
+        val initY = if (staggerAxis != null) {
+            val it = (tileSize.height - tileHeight)
             min(m.transformX(it, 0.0) - posX, m.transformY(0.0, it))
+        } else {
+            0.0
         }
         val nextTileX = (tileSize.width / if (staggerAxis == TiledMap.StaggerAxis.X) 2.0 else 1.0).let { width ->
             min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
@@ -167,6 +189,7 @@ open class TileMap(
 
         var count = 0
         val passes = if (staggerAxis == TiledMap.StaggerAxis.X) 2 else 1
+
         for (y in ymin until ymax) {
             // interlace rows when staggered on X to ensure proper z-index
             for (pass in 0 until passes) {
@@ -203,11 +226,13 @@ open class TileMap(
                         else -> 0.0
                     }
 
+                    //println("staggerOffsetX=$staggerOffsetX, staggerOffsetY=$staggerOffsetY, initY=$initY")
+
                     count++
 
                     //println("CELL_DATA: $cellData")
 
-                    val tex = tileset[cellData] ?: continue
+                    val tex = tilesetTextures[cellData] ?: continue
 
                     //println("CELL_DATA_TEX: $tex")
 
@@ -324,13 +349,37 @@ open class TileMap(
 		}
 		computeVertexIfRequired(ctx)
 
-        infos.fastForEach { buffer ->
-            ctx.batch.drawVertices(
-                buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
-            )
+        ctx.useBatcher { batch ->
+            infos.fastForEach { buffer ->
+                batch.drawVertices(
+                    buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
+                )
+            }
         }
-		ctx.flush()
+
+		//ctx.flush()
 	}
+
+
+    init {
+        addUpdater { dt ->
+            tileset.infos.fastForEachWithIndex { tileIndex, info ->
+                if (info != null && info.frames.isNotEmpty()) {
+                    val aindex = animationIndex[tileIndex]
+                    val currentFrame = info.frames[aindex]
+                    animationElapsed[tileIndex] += dt.milliseconds
+                    if (animationElapsed[tileIndex].milliseconds >= currentFrame.duration) {
+                        //println("Changed ${info.id} [${info.id}] -> ${info.frames}")
+                        val nextIndex = (aindex + 1) % info.frames.size
+                        animationElapsed[tileIndex] -= currentFrame.duration.milliseconds
+                        animationIndex[tileIndex] = nextIndex
+                        tilesetTextures[tileIndex] = tileset.textures[info.frames[nextIndex].tileId]
+                        contentVersion++
+                    }
+                }
+            }
+        }
+    }
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
 		out.setTo(0, 0, tileWidth * intMap.width, tileHeight * intMap.height)

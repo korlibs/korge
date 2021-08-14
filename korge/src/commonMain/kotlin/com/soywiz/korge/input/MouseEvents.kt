@@ -66,42 +66,46 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                     val mouseHit = mouseHitTest(views)
                     if (mouseHit != null) {
                         val bounds = mouseHit.getLocalBoundsOptimizedAnchored()
-                        renderContext.batch.drawQuad(
-                            ctx.getTex(Bitmaps.white),
-                            x = bounds.x.toFloat(),
-                            y = bounds.y.toFloat(),
-                            width = bounds.width.toFloat(),
-                            height = bounds.height.toFloat(),
-                            colorMul = RGBA(0xFF, 0, 0, 0x3F),
-                            m = mouseHit.globalMatrix
-                        )
-                        renderContext.drawText(
-                            debugBmpFont,
-                            lineHeight.toDouble(),
-                            mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY,
-                            x = 0,
-                            y = yy.toInt()
-                        )
+                        renderContext.useBatcher { batch ->
+                            batch.drawQuad(
+                                ctx.getTex(Bitmaps.white),
+                                x = bounds.x.toFloat(),
+                                y = bounds.y.toFloat(),
+                                width = bounds.width.toFloat(),
+                                height = bounds.height.toFloat(),
+                                colorMul = RGBA(0xFF, 0, 0, 0x3F),
+                                m = mouseHit.globalMatrix
+                            )
+                            renderContext.drawText(
+                                debugBmpFont,
+                                lineHeight.toDouble(),
+                                mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY,
+                                x = 0,
+                                y = yy.toInt()
+                            )
+                        }
                         yy += lineHeight
                     }
 
                     val mouseHitResultUsed = input.mouseHitResultUsed
                     if (mouseHitResultUsed != null) {
                         val bounds = mouseHitResultUsed.getLocalBoundsOptimizedAnchored()
-                        renderContext.batch.drawQuad(
-                            ctx.getTex(Bitmaps.white),
-                            x = bounds.x.toFloat(),
-                            y = bounds.y.toFloat(),
-                            width = bounds.width.toFloat(),
-                            height = bounds.height.toFloat(),
-                            colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
-                            m = mouseHitResultUsed.globalMatrix
-                        )
-                        var vview = mouseHitResultUsed
-                        while (vview != null) {
-                            renderContext.drawText(debugBmpFont, lineHeight.toDouble(), vview.toString(), x = 0, y = yy.toInt())
-                            vview = vview?.parent
-                            yy += lineHeight
+                        renderContext.useBatcher { batch ->
+                            batch.drawQuad(
+                                ctx.getTex(Bitmaps.white),
+                                x = bounds.x.toFloat(),
+                                y = bounds.y.toFloat(),
+                                width = bounds.width.toFloat(),
+                                height = bounds.height.toFloat(),
+                                colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
+                                m = mouseHitResultUsed.globalMatrix
+                            )
+                            var vview = mouseHitResultUsed
+                            while (vview != null) {
+                                renderContext.drawText(debugBmpFont, lineHeight.toDouble(), vview.toString(), x = 0, y = yy.toInt())
+                                vview = vview?.parent
+                                yy += lineHeight
+                            }
                         }
                     }
                 }

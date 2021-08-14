@@ -3,6 +3,7 @@ package com.soywiz.korge.render
 import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
+import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -49,10 +50,21 @@ class RenderContext constructor(
     var stencilIndex: Int = 0
 
     /** Allows to draw quads, sprites and nine patches using a precomputed global matrix or raw vertices */
+    @Deprecated("Use useBatcher instead")
+    @KorgeInternal
     val batch = BatchBuilder2D(this, batchMaxQuads)
 
+    @OptIn(KorgeInternal::class)
+    inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)
+
     /** [RenderContext2D] similar to the one from JS, that keeps an matrix (affine transformation) and allows to draw shapes using the current matrix */
+    @KorgeInternal
+    @Deprecated("Use useCtx2d instead")
     val ctx2d = RenderContext2D(batch, agBitmapTextureManager)
+
+    @Suppress("DEPRECATION")
+    @OptIn(KorgeInternal::class)
+    inline fun useCtx2d(block: (RenderContext2D) -> Unit) { useBatcher(batch) { block(ctx2d) } }
 
     /** Pool of [Matrix] objects that could be used temporarily by renders */
     val matrixPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix() }
@@ -65,6 +77,7 @@ class RenderContext constructor(
      * Allows to toggle whether stencil-based masks are enabled or not.
      */
 	var masksEnabled = true
+    var currentBatcher: Any? = null
 
     /**
      * Flushes all the pending renderings. This is called automatically at the end of the frame.
@@ -72,6 +85,7 @@ class RenderContext constructor(
      * so all the pending vertices are drawn.
      */
 	fun flush() {
+        currentBatcher = null
         flushers(Unit)
 	}
 
@@ -132,6 +146,14 @@ class RenderContext constructor(
      * It is just the whole texture/bitmap.
      */
     fun getTex(bmp: Bitmap): Texture.Base = agBitmapTextureManager.getTextureBase(bmp)
+
+    inline fun <T> useBatcher(batcher: T, block: (T) -> Unit) {
+        if (currentBatcher !== batcher) {
+            flush()
+            currentBatcher = batcher
+        }
+        block(batcher)
+    }
 }
 
 inline fun <T : AG> testRenderContext(ag: T, block: (RenderContext) -> Unit): T {

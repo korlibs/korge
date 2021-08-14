@@ -31,13 +31,15 @@ private val logger = Logger("BatchBuilder2D")
  */
 // @TODO: We could dynamically select a fragment shader based on the number of textures to reduce the numbers of IFs per pixel
 class BatchBuilder2D constructor(
-    @KorgeInternal
+    @property:KorgeInternal
     val ctx: RenderContext,
     /** Maximum number of quads that could be drawn in a single batch.
      * Bigger numbers will increase memory usage, but might reduce the number of batches per frame when using the same texture and properties.
      */
     val reqMaxQuads: Int = DEFAULT_BATCH_QUADS,
 ) {
+    inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
+
     val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
 
     val texManager = ctx.agBitmapTextureManager
@@ -138,6 +140,8 @@ class BatchBuilder2D constructor(
 
     @KorgeInternal
 	val viewMat = Matrix3D()
+    @KorgeInternal
+    val viewMat2D = Matrix()
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
@@ -797,15 +801,20 @@ class BatchBuilder2D constructor(
      */
 	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
         ctx.matrix3DPool.alloc { temp ->
-            flush()
-            temp.copyFrom(this.viewMat)
-            this.viewMat.copyFrom(matrix)
-            //println("viewMat: $viewMat, matrix: $matrix")
-            try {
-                callback()
-            } finally {
+            ctx.matrixPool.alloc { temp2d ->
                 flush()
-                this.viewMat.copyFrom(temp)
+                temp.copyFrom(this.viewMat)
+                temp2d.copyFrom(this.viewMat2D)
+                this.viewMat2D.copyFrom(matrix)
+                this.viewMat.copyFrom(matrix)
+                //println("viewMat: $viewMat, matrix: $matrix")
+                try {
+                    callback()
+                } finally {
+                    flush()
+                    this.viewMat.copyFrom(temp)
+                    this.viewMat2D.copyFrom(temp2d)
+                }
             }
         }
 	}

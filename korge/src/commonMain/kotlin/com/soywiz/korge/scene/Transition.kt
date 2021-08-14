@@ -126,8 +126,9 @@ fun MaskTransition(
     transition: TransitionFilter.Transition = TransitionFilter.Transition.CIRCULAR,
     reversed: Boolean = false,
     smooth: Boolean = true,
+    filtering: Boolean = true,
 ) = TransitionCreate {
-    val filter = TransitionFilter(transition, reversed, smooth)
+    val filter = TransitionFilter(transition, reversed, smooth, filtering = filtering)
     TransitionProcess { ctx, prev, next, ratio ->
             filter.ratio = ratio
             prev.render(ctx)

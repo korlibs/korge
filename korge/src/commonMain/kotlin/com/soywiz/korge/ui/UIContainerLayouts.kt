@@ -36,35 +36,47 @@ abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, he
 }
 
 inline fun Container.uiVerticalStack(
-    width: Double = 192.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    padding: Double = UI_DEFAULT_PADDING,
     block: @ViewDslMarker UIVerticalStack.() -> Unit = {}
-) = UIVerticalStack(width).addTo(this).apply(block)
+) = UIVerticalStack(width, padding).addTo(this).apply(block)
 
-open class UIVerticalStack(width: Double = 128.0) : UIContainer(width, 0.0) {
+open class UIVerticalStack(width: Double = UI_DEFAULT_WIDTH, padding: Double = UI_DEFAULT_PADDING) : UIVerticalHorizontalStack(width, 0.0, padding) {
     override fun relayout() {
         var y = 0.0
         forEachChild {
             it.y = y
             it.scaledWidth = width
-            y += it.height
+            y += it.height + padding
         }
+        height = y
     }
 }
 
 inline fun Container.uiHorizontalStack(
-    height: Double = 20.0,
+    height: Double = UI_DEFAULT_HEIGHT,
+    padding: Double = UI_DEFAULT_PADDING,
     block: @ViewDslMarker UIHorizontalStack.() -> Unit = {}
-) = UIHorizontalStack(width).addTo(this).apply(block)
+) = UIHorizontalStack(height, padding).addTo(this).apply(block)
 
-open class UIHorizontalStack(height: Double = 20.0) : UIContainer(0.0, height) {
+open class UIHorizontalStack(height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING) : UIVerticalHorizontalStack(0.0, height, padding) {
     override fun relayout() {
         var x = 0.0
         forEachChild {
             it.x = x
             it.scaledHeight = height
-            x += it.width
+            x += it.width + padding
         }
+        width = y
     }
+}
+
+abstract class UIVerticalHorizontalStack(width: Double = UI_DEFAULT_WIDTH, height: Double = UI_DEFAULT_HEIGHT, padding: Double = UI_DEFAULT_PADDING) : UIContainer(width, height) {
+    var padding: Double = padding
+        set(value) {
+            field = value
+            relayout()
+        }
 }
 
 inline fun Container.uiHorizontalFill(

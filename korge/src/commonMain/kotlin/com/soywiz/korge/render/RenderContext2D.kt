@@ -31,9 +31,9 @@ private val logger = Logger("RenderContext2D")
  */
 @UseExperimental(KorgeInternal::class)
 class RenderContext2D(
-    @KorgeInternal
+    @property:KorgeInternal
     val batch: BatchBuilder2D,
-    @KorgeInternal
+    @property:KorgeInternal
     val agBitmapTextureManager: AgBitmapTextureManager
 ) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
@@ -236,7 +236,7 @@ class RenderContext2D(
     }
 
     @PublishedApi
-    internal val scissorPool = Pool(8) { AG.Scissor(0, 0, 0, 0) }
+    internal val scissorPool = Pool(8) { AG.Scissor() }
 
     @PublishedApi
     internal fun scissorStart(scissor: AG.Scissor?): AG.Scissor? {
@@ -244,10 +244,10 @@ class RenderContext2D(
 
         batch.flush()
         if (scissor != null) {
-            val left = m.transformX(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
-            val top = m.transformY(scissor.left.toDouble(), scissor.top.toDouble()).toInt()
-            val right = m.transformX(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
-            val bottom = m.transformY(scissor.right.toDouble(), scissor.bottom.toDouble()).toInt()
+            val left = m.transformX(scissor.left, scissor.top)
+            val top = m.transformY(scissor.left, scissor.top)
+            val right = m.transformX(scissor.right, scissor.bottom)
+            val bottom = m.transformY(scissor.right, scissor.bottom)
 
             returnScissor = scissorPool.alloc().setTo(left, top, right - left, bottom - top)
 
@@ -271,25 +271,5 @@ class RenderContext2D(
     }
 
     @PublishedApi
-    internal val tempScissor: AG.Scissor = AG.Scissor(0, 0, 0, 0)
-}
-
-// @TODO: Remove once KorGW is updated
-@PublishedApi
-internal fun AG.Scissor.copyFrom(that: AG.Scissor): AG.Scissor {
-    this.x = that.x
-    this.y = that.y
-    this.width = that.width
-    this.height = that.height
-    return this
-}
-
-// @TODO: Remove once KorGW is updated
-@PublishedApi
-internal fun AG.Scissor.setTo(x: Int, y: Int, width: Int, height: Int): AG.Scissor {
-    this.x = x
-    this.y = y
-    this.width = width
-    this.height = height
-    return this
+    internal val tempScissor: AG.Scissor = AG.Scissor()
 }

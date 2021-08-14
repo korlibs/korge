@@ -166,7 +166,7 @@ private fun WangSet.toXml(): Xml {
 private fun TileData.toXml(): Xml {
 	return buildXml("tile",
 		"id" to id,
-		"type" to type.takeIf { it != -1 },
+		"type" to type,
 		"terrain" to terrain?.joinToString(",") { it?.toString() ?: "" },
 		"probability" to probability.takeIf { it != 0.0 }?.niceStr
 	) {
@@ -318,13 +318,13 @@ private fun XmlBuilder.objectLayerToXml(layer: Layer.Objects?) {
 
 				fun List<Point>.toXml() = joinToString(" ") { p -> "${p.x.niceStr},${p.y.niceStr}" }
 
-				when (val type = obj.objectType) {
-					is Object.Type.Rectangle -> Unit
-					is Object.Type.Ellipse -> node("ellipse")
-					is Object.Type.PPoint -> node("point")
-					is Object.Type.Polygon -> node("polygon", "points" to type.points.toXml())
-					is Object.Type.Polyline -> node("polyline", "points" to type.points.toXml())
-					is Object.Type.Text -> node(
+				when (val type = obj.objectShape) {
+					is Object.Shape.Rectangle -> Unit
+					is Object.Shape.Ellipse -> node("ellipse")
+					is Object.Shape.PPoint -> node("point")
+					is Object.Shape.Polygon -> node("polygon", "points" to type.points.toXml())
+					is Object.Shape.Polyline -> node("polyline", "points" to type.points.toXml())
+					is Object.Shape.Text -> node(
 						"text",
 						"fontfamily" to type.fontFamily,
 						"pixelsize" to type.pixelSize.takeIf { it != 16 },

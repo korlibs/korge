@@ -14,8 +14,8 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
 inline fun Container.uiButton(
-    width: Double = 100.0,
-    height: Double = 32.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     text: String = "",
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
@@ -23,16 +23,16 @@ inline fun Container.uiButton(
 
 @Deprecated("Use uiButton instead")
 inline fun Container.iconButton(
-    width: Double = 128.0,
-    height: Double = 64.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     icon: BmpSlice? = null,
     block: @ViewDslMarker UIButton.() -> Unit = {}
 ): UIButton = UIButton(width, height, icon = icon).addTo(this).apply(block)
 
 @Deprecated("Use uiButton instead")
 inline fun Container.uiTextButton(
-    width: Double = 100.0,
-    height: Double = 32.0,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
     text: String = "Button",
     textFont: Font? = null,
     textSize: Double? = null,
@@ -47,7 +47,7 @@ typealias IconButton = UIButton
 
 open class UIButton(
 	width: Double = 128.0,
-	height: Double = 64.0,
+	height: Double = 32.0,
     var text: String = "",
     var icon: BmpSlice? = null,
 ) : UIView(width, height) {

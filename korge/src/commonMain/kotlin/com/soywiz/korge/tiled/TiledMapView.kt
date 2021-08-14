@@ -6,13 +6,53 @@ import com.soywiz.korge.view.tiles.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
+import kotlin.math.*
 
 inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
 	TiledMapView(tiledMap, showShapes, smoothing).addTo(this, callback)
 
-class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true) : Container() {
+class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true) : Container() {
     val tileset = tiledMap.tilesets.toTileSet()
-	init {
+
+    override fun hitTest(x: Double, y: Double, direction: HitTestDirection): View? {
+        //return super.hitTest(x, y, direction)
+        return globalPixelHitTest(x, y, direction)
+    }
+
+    override val customHitShape get() = true
+    override protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
+        // @TODO: Use shape
+        val p = matrix.transform(shape.getCenter())
+        return globalPixelHitTest(p.x, p.y, direction)
+        //println("TiledMapView.hitTestShapeInternal: $shape, $matrix")
+        //return super.hitTestShapeInternal(shape, matrix, direction)
+    }
+
+    //protected override fun hitTestInternal(x: Double, y: Double, direction: HitTestDirection): View? = globalPixelHitTest(x, y, direction)
+
+    //fun globalPixelHitTest(globalXY: IPoint, direction: HitTestDirection = HitTestDirection.ANY): View? = globalPixelHitTest(globalXY.x, globalXY.y, direction)
+
+    fun globalPixelHitTest(globalX: Double, globalY: Double, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        return pixelHitTest(
+            round(globalToLocalX(globalX, globalY) / scaleX).toInt(),
+            round(globalToLocalY(globalX, globalY) / scaleY).toInt(),
+            direction
+        )
+    }
+
+    fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? {
+        fastForEachChild { child ->
+            when (child) {
+                is TileMap -> {
+                    if (child.pixelHitTest(x, y, direction)) return child
+                }
+            }
+        }
+        return null
+    }
+
+    init {
 		tiledMap.allLayers.fastForEachWithIndex { index, layer ->
             val view: View = when (layer) {
                 is TiledMap.Layer.Tiles -> tileMap(
@@ -32,15 +72,15 @@ class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Bo
                             val gid = obj.gid
                             //println("ID:${obj.id} : ${obj::class}")
                             var shouldShow = showShapes
-                            val view: View = when (val type = obj.objectType) {
-                                is TiledMap.Object.Type.PPoint -> {
+                            val view: View = when (val type = obj.objectShape) {
+                                is TiledMap.Object.Shape.PPoint -> {
                                     solidRect(1.0, 1.0, Colors.WHITE)
                                 }
-                                is TiledMap.Object.Type.Ellipse -> {
+                                is TiledMap.Object.Shape.Ellipse -> {
                                     ellipse(bounds.width / 2, bounds.height / 2)
                                     //solidRect(bounds.width, bounds.width, Colors.RED)
                                 }
-                                is TiledMap.Object.Type.Rectangle -> {
+                                is TiledMap.Object.Shape.Rectangle -> {
                                     if (gid != null) {
                                         val tileTex = tileset[gid] ?: Bitmaps.transparent
                                         //println("tileTex[gid=$gid]: $tileTex!")
@@ -51,7 +91,7 @@ class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Bo
                                         solidRect(bounds.width, bounds.height, Colors.WHITE)
                                     }
                                 }
-                                is TiledMap.Object.Type.Polygon -> graphics {
+                                is TiledMap.Object.Shape.Polygon -> graphics {
                                     fill(Colors.WHITE) {
                                         var first = true
                                         var firstPoint: Point? = null
@@ -68,7 +108,7 @@ class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Bo
                                         close()
                                     }
                                 }
-                                is TiledMap.Object.Type.Polyline -> graphics {
+                                is TiledMap.Object.Shape.Polyline -> graphics {
                                     fill(Colors.WHITE) {
                                         var first = true
                                         for (point in type.points) {
@@ -82,7 +122,7 @@ class TiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Bo
                                         close()
                                     }
                                 }
-                                is TiledMap.Object.Type.Text -> {
+                                is TiledMap.Object.Shape.Text -> {
                                     TODO("Unsupported tiled object $obj")
                                 }
                             }

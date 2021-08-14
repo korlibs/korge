@@ -112,12 +112,13 @@ suspend fun BaseView?.tween(
     time: TimeSpan = DEFAULT_TIME,
     easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
+    timeout: Boolean = false,
     callback: (Double) -> Unit = { }
 ): Unit {
 	if (this != null) {
 		var tc: TweenComponent? = null
 		try {
-			kotlinx.coroutines.withTimeout(300 + time.millisecondsLong * 2) {
+			withTimeout(if (timeout) time * 2 + 300.milliseconds else TimeSpan.NIL) {
 				suspendCancellableCoroutine<Unit> { c ->
 					val view = this@tween
 					//println("STARTED TWEEN at thread $currentThreadId")

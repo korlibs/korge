@@ -11,13 +11,14 @@ abstract class CustomContextRenderizableView(width: Double, height: Double) : Re
 
     final override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
-        val context = ctx.ctx2d
-        this.ctx = ctx
-        ctx2d = context
-        context.keep {
-            context.blendFactors = blendMode.factors
-            context.setMatrix(globalMatrix)
-            renderer(context, width, height)
+        ctx.useCtx2d { context ->
+            this.ctx = ctx
+            ctx2d = context
+            context.keep {
+                context.blendFactors = blendMode.factors
+                context.setMatrix(globalMatrix)
+                renderer(context, width, height)
+            }
         }
     }
 

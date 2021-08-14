@@ -41,19 +41,23 @@ open class FixedSizeContainer(
     @OptIn(KorgeInternal::class)
     override fun renderInternal(ctx: RenderContext) {
         if (clip) {
-            val c2d = ctx.ctx2d
-            val bounds = getWindowBounds(tempBounds)
-            val rect = c2d.batch.scissor?.rect
-            var intersects = true
-            if (rect != null) {
-                intersects = bounds.setToIntersection(bounds, rect) != null
-            }
-            if (intersects) {
-                c2d.scissor(bounds) {
+            ctx.useCtx2d { c2d ->
+                val bounds = getWindowBounds(tempBounds)
+                @Suppress("DEPRECATION")
+                bounds.applyTransform(ctx.batch.viewMat2D) // @TODO: Should viewMat2D be in the context instead?
+                //println("FIXED_CLIP: bounds=$bounds")
+                val rect = c2d.batch.scissor?.rect
+                var intersects = true
+                if (rect != null) {
+                    intersects = bounds.setToIntersection(bounds, rect) != null
+                }
+                if (intersects) {
+                    c2d.scissor(bounds) {
+                        super.renderInternal(ctx)
+                    }
+                } else {
                     super.renderInternal(ctx)
                 }
-            } else {
-                super.renderInternal(ctx)
             }
         } else {
             super.renderInternal(ctx)

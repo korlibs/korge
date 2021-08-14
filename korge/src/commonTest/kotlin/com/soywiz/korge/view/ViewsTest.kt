@@ -252,6 +252,14 @@ class ViewsTest : ViewsForTesting() {
     }
 
     @Test
+    fun testRoundRect() = viewsTest {
+        RoundRect(32.0, 24.0, 5.0, 5.0, Colors.RED).also { addChild(it) }.also { rect3 ->
+            assertEquals(Rectangle(0, 0, 32, 24), rect3.getLocalBounds(), message = "local")
+            assertEquals(Rectangle(0, 0, 32, 24), rect3.globalBounds, message = "global")
+        }
+    }
+
+    @Test
     fun testAddUpdatable() {
         lateinit var rect: SolidRect
         val container = Container().apply {

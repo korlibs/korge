@@ -7,6 +7,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.jvm.*
 
@@ -19,17 +20,20 @@ open class Graphics @JvmOverloads constructor(
     internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
-	private val compoundShape = CompoundShape(shapes)
+    val allShapes: List<Shape> get() = shapes
+    private val compoundShape = CompoundShape(shapes)
 	private var fill: Paint? = null
 	private var stroke: Paint? = null
 	@PublishedApi
 	internal var currentPath = graphicsPathPool.alloc()
 
     private var hitShapeVersion = -1
+    private var hitShape2dVersion = -1
     private var hitShapeAnchorVersion = -1
 
     private var tempVectorPaths = arrayListOf<VectorPath>()
     private val tempMatrix = Matrix()
+    private var customHitShape2d: Shape2d? = null
     private var customHitShapes: List<VectorPath>? = null
 
     override var hitShape: VectorPath?
@@ -65,6 +69,21 @@ open class Graphics @JvmOverloads constructor(
 
             //println("AAAAAAAAAAAAAAAA")
             return tempVectorPaths
+        }
+
+    override var hitShape2d: Shape2d
+        set(value) {
+            customHitShape2d = value
+        }
+        get() {
+            if (customHitShape2d != null) return customHitShape2d!!
+            if (hitShape2dVersion != shapeVersion) {
+                hitShape2dVersion = shapeVersion
+                customHitShape2d = hitShapes!!.toShape2d()
+            }
+
+            //println("AAAAAAAAAAAAAAAA")
+            return customHitShape2d!!
         }
 
     /**

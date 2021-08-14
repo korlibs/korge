@@ -1,14 +1,15 @@
 package com.soywiz.korge.view
 
 import com.soywiz.kds.iterators.*
-import com.soywiz.korge.util.*
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.threadLocal
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
 @PublishedApi
 internal class ViewCollisionContext {
+    val tempMat = Matrix()
     val tempRect1 = Rectangle()
     val tempRect2 = Rectangle()
     val tempVectorPath1 = listOf(VectorPath())
@@ -31,27 +32,17 @@ internal class ViewCollisionContext {
         return out
     }
 
-    fun getGlobalMatrix(view: View, out: Matrix): Matrix {
-        out.copyFrom(view.localMatrix)
-        out.pretranslate(-view.anchorDispX, -view.anchorDispY)
-        out.multiply(out, view.parent?.globalMatrix ?: ident)
-        //return view.globalMatrix
-        return out
-    }
-
     fun collidesWith(left: View, right: View, kind: CollisionKind): Boolean {
         left.getGlobalBounds(tempRect1)
         right.getGlobalBounds(tempRect2)
         if (!tempRect1.intersects(tempRect2)) return false
         if (kind == CollisionKind.SHAPE) {
-            val leftPaths = getVectorPath(left, tempVectorPath1)
-            val rightPaths = getVectorPath(right, tempVectorPath2)
-            leftPaths.fastForEach { leftPath ->
-                rightPaths.fastForEach { rightPath ->
-                    if  (VectorPath.intersects(leftPath, getGlobalMatrix(left, lmat), rightPath, getGlobalMatrix(right, rmat))) return true
-                }
-            }
-            return false
+            val leftShape = left.hitShape2d
+            val rightShape = right.hitShape2d
+            val ml = left.getGlobalMatrixWithAnchor(lmat)
+            val mr = right.getGlobalMatrixWithAnchor(rmat)
+            //println("intersects[$result]: left=$leftShape, right=$rightShape, ml=$ml, mr=$mr")
+            return Shape2d.intersects(leftShape, ml, rightShape, mr, tempMat)
         }
         return true
     }

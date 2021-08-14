@@ -285,10 +285,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                 bb.add(x, -y)
             }
         }
-        if (ctx != null) {
-            val batch = ctx.batch
-            //ctx.flush()
-
+        ctx?.useBatcher { batch ->
             val viewBlendMode = when (blendMode) {
                 BlendMode.normal -> com.soywiz.korge.view.BlendMode.NORMAL
                 BlendMode.additive -> com.soywiz.korge.view.BlendMode.ADD
