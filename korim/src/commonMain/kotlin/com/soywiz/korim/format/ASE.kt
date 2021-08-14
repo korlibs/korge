@@ -387,7 +387,6 @@ object ASE : ImageFormatWithContainer("ase") {
 
         val animations = image.tags.map {
             val framesRange = frames.slice(it.fromFrame.clamp(0, frames.size) .. it.toFrame.clamp(0, frames.size - 1))
-
             ImageAnimation(framesRange, it.direction, it.tagName)
         }
 
@@ -409,8 +408,9 @@ object ASE : ImageFormatWithContainer("ase") {
                     // @TODO: What should we do with layers here?
                     // @TODO: Linked frame?
                     //ImageFrameLayer(it.layer, it.slice.bmp.slice(sliceKey.sliceFrame, it.slice.name), it.targetX, it.targetY, it.main, it.includeInAtlas, null)
-                    //println("name=${slice.name}: it.slice=${it.slice.bounds}, sliceKey.sliceFrame=${sliceKey.sliceFrame}")
-                    ImageFrameLayer(it.layer, it.slice.slice(sliceKey.sliceFrame, it.slice.name), it.targetX - sliceKey.pivotX, it.targetY - sliceKey.pivotY, it.main, it.includeInAtlas, null)
+                    //println("name=${slice.name}: it.slice=${it.slice.bounds}, x=${it.targetX}, y=${it.targetY}, sliceKey.sliceFrame=${sliceKey.sliceFrame}")
+                    val sliceFrame = RectangleInt(sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY, sliceKey.sliceFrame.width, sliceKey.sliceFrame.height)
+                    ImageFrameLayer(it.layer, it.slice.slice(sliceFrame, it.slice.name), it.targetX - sliceKey.pivotX, it.targetY - sliceKey.pivotY, it.main, it.includeInAtlas, null)
                 })
             }
             val animations = image.tags.map {
