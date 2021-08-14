@@ -6,7 +6,6 @@ import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
-import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.atlas.*
@@ -88,21 +87,27 @@ suspend fun Stage.mainBVH() {
     val dir = Point(-1, -1)
     val ray = Ray(center, dir)
     val statusText = text("", font = debugBmpFont)
+    var selectedRectangle = Rectangle(Point(100, 100) - Point(50, 50), Size(100, 100))
     val rayLine = line(center, center + (dir * 1000), Colors.WHITE)
+    val selectedRect = outline(buildPath { rect(selectedRectangle) })
     //outline(buildPath { star(5, 50.0, 100.0, x = 100.0, y = 100.0) })
     //debugLine(center, center + (dir * 1000), Colors.WHITE)
     fun updateRay() {
         var allObjectsSize = 0
         var rayObjectsSize = 0
+        var rectangleObjectsSize = 0
         val allObjects = bvh.search(Rectangle(0.0, 0.0, width, height))
         val time = measureTime {
             val rayObjects = bvh.intersect(ray)
+            val rectangleObjects = bvh.search(selectedRectangle)
             for (result in allObjects) result.value?.alpha = 0.2
+            for (result in rectangleObjects) result.value?.alpha = 0.8
             for (result in rayObjects) result.obj.value?.alpha = 1.0
             allObjectsSize = allObjects.size
             rayObjectsSize = rayObjects.size
+            rectangleObjectsSize = rectangleObjects.size
         }
-        statusText.text = "All objects: ${allObjectsSize}, raycast = ${rayObjectsSize}, time = $time"
+        statusText.text = "All objects: ${allObjectsSize}, raycast = ${rayObjectsSize}, rect = ${rectangleObjectsSize}, time = $time"
     }
     updateRay()
 
@@ -118,7 +123,13 @@ suspend fun Stage.mainBVH() {
     }
 
     mouse {
-        onMove {
+        onDown {
+            selectedRectangle = Rectangle(stage.mouseXY - Point(50, 50), Size(100, 100))
+            selectedRect.vectorPath = buildPath { rect(selectedRectangle) }
+        }
+        onMouseDrag {
+            selectedRectangle = Rectangle(stage.mouseXY - Point(50, 50), Size(100, 100))
+            selectedRect.vectorPath = buildPath { rect(selectedRectangle) }
         }
     }
 }
