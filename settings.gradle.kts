@@ -41,6 +41,7 @@ include(":korge")
 include(":korge-dragonbones")
 include(":korge-spine")
 include(":korge-swf")
+include(":korge-box2d")
 include(":korge-gradle-plugin")
 
 if (!inCI) {
