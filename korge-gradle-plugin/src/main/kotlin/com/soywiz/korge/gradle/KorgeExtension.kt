@@ -413,7 +413,15 @@ class KorgeExtension(val project: Project) {
         dependencyMulti("com.soywiz.korlibs.korge2:korge-box2d:${BuildVersions.KORGE}", registerPlugin = false)
 	}
 
-	fun admob(ADMOB_APP_ID: String) {
+    fun supportVideo() {
+        dependencyMulti("com.soywiz.korlibs.korge2:korge-korvi:${BuildVersions.KORGE}", registerPlugin = false)
+    }
+
+    fun supportKorvi() {
+        supportVideo()
+    }
+
+    fun admob(ADMOB_APP_ID: String) {
         bundle("https://github.com/korlibs/korge-bundles.git::korge-admob::4ac7fcee689e1b541849cedd1e017016128624b9##2ca2bf24ab19e4618077f57092abfc8c5c8fba50b2797a9c6d0e139cd24d8b35")
         config("ADMOB_APP_ID", ADMOB_APP_ID)
     }
