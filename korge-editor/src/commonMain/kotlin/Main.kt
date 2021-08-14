@@ -46,8 +46,8 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge {
-    mainBVH()
-    //mainCircles()
+    //mainBVH()
+    mainCircles()
     //mainVampire()
     //mainCompression()
     //println("HELLO WORLD!")
@@ -135,8 +135,15 @@ suspend fun Stage.mainBVH() {
 }
 
 suspend fun Stage.mainCircles() {
+    // @TODO: USe BVH2D to limit collision view checkings
+    lateinit var collisionViews: List<View>
     val rect1 = circle(50.0, fill = Colors.RED).xy(300, 300).centered
-    val rect2 = circle(50.0, fill = Colors.GREEN).xy(120, 0).draggable {  }
+    val rect1b = circle(50.0, fill = Colors.RED).xy(520, 300).centered
+    val rect2 = circle(50.0, fill = Colors.GREEN).xy(120, 0).draggable(autoMove = false) {
+        //it.view.xy(it.viewPrevXY)
+        it.view.moveWithCollisions(collisionViews, it.viewDeltaXY)
+    }
+    collisionViews = fastArrayListOf<View>(rect1, rect1b, rect2)
     println(rect1.hitShape2d)
     println(rect2.hitShape2d)
     addUpdater { dt ->
@@ -144,7 +151,7 @@ suspend fun Stage.mainCircles() {
         val dy = keys.getDeltaAxis(Key.UP, Key.DOWN)
         //if (dx != 0.0 || dy != 0.0) {
             val speed = (dt / 16.milliseconds) * 5.0
-            rect2.moveWithCollisions(listOf(rect1), dx * speed, dy * speed)
+            rect2.moveWithCollisions(collisionViews, dx * speed, dy * speed)
         //}
         //rect2.alpha = if (rect1.collidesWith(rect2, kind = CollisionKind.SHAPE)) 1.0 else 0.3
     }

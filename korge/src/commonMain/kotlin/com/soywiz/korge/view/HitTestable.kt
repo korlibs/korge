@@ -124,6 +124,10 @@ fun View.moveWithHitTestable(collision: HitTestable, dx: Double, dy: Double, hit
     char.y = oldY
 }
 
+fun View.moveWithCollisions(collision: List<View>, delta: Vector2D, kind: CollisionKind = CollisionKind.SHAPE) {
+    return moveWithCollisions(collision, delta.x, delta.y, kind)
+}
+
 fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind: CollisionKind = CollisionKind.SHAPE) {
     val char = this
     val deltaXY = Point(dx, dy)
@@ -140,7 +144,7 @@ fun View.moveWithCollisions(collision: List<View>, dx: Double, dy: Double, kind:
             char.y = oldY + dpoint.y
             //char.hitTestView(collision, kind)
             //if (!char.collidesWith(collision, kind)) {
-            if (collision.all { it.hitTestView(char) == null }) {
+            if (collision.all { it == this || it.hitTestView(char) == null }) {
             //if (char.hitTestView(collision) == null) {
                 return // Accept movement
             }

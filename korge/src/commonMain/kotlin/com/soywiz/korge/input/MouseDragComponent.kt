@@ -114,21 +114,41 @@ fun <T : View> T.onMouseDrag(timeProvider: TimeProvider = TimeProvider, info: Mo
 }
 
 open class DraggableInfo(view: View) : MouseDragInfo(view) {
-    var viewStartX: Double = 0.0
-    var viewStartY: Double = 0.0
+    val viewStartXY = Point()
+
+    var viewStartX: Double get() = viewStartXY.x ; set(value) { viewStartXY.x = value }
+    var viewStartY: Double get() = viewStartXY.y ; set(value) { viewStartXY.y = value }
+
+    val viewPrevXY = Point()
+
+    var viewPrevX: Double get() = viewPrevXY.x ; set(value) { viewPrevXY.x = value }
+    var viewPrevY: Double get() = viewPrevXY.y ; set(value) { viewPrevXY.y = value }
+
+    val viewNextXY = Point()
+
+    var viewNextX: Double get() = viewNextXY.x ; set(value) { viewNextXY.x = value }
+    var viewNextY: Double get() = viewNextXY.y ; set(value) { viewNextXY.y = value }
+
+    val viewDeltaXY = Point()
+
+    var viewDeltaX: Double get() = viewDeltaXY.x ; set(value) { viewDeltaXY.x = value }
+    var viewDeltaY: Double get() = viewDeltaXY.y ; set(value) { viewDeltaXY.y = value }
 }
 
-fun <T : View> T.draggable(selector: View = this, onDrag: ((DraggableInfo) -> Unit)? = null): T {
+fun <T : View> T.draggable(selector: View = this, autoMove: Boolean = true, onDrag: ((DraggableInfo) -> Unit)? = null): T {
     val view = this
     val info = DraggableInfo(view)
     selector.onMouseDrag(info = info) {
         if (info.start) {
-            info.viewStartX = view.x
-            info.viewStartY = view.y
+            info.viewStartXY.copyFrom(view.pos)
         }
         //println("localDXY=${info.localDX(view)},${info.localDY(view)}")
-        view.x = info.viewStartX + info.localDX(view)
-        view.y = info.viewStartY + info.localDY(view)
+        info.viewPrevXY.copyFrom(view.pos)
+        info.viewNextXY.setTo(info.viewStartX + info.localDX(view), info.viewStartY + info.localDY(view))
+        info.viewDeltaXY.setTo(info.viewNextX - info.viewPrevX, info.viewNextY - info.viewPrevY)
+        if (autoMove) {
+            view.xy(info.viewNextXY)
+        }
         onDrag?.invoke(info)
         //println("DRAG: $dx, $dy, $start, $end")
     }
