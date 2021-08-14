@@ -140,6 +140,7 @@ data class Point(
         fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         @Deprecated("")
         fun angle(a: IPoint, b: IPoint): Angle = angleArc(a, b)
+        fun angleFull(a: IPoint, b: IPoint): Angle = Angle.between(a, b)
 
         fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
             //acos(((ax * bx) + (ay * by)) / (hypot(ax, ay) * hypot(bx, by)))

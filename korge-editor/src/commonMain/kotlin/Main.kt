@@ -109,7 +109,7 @@ suspend fun Stage.mainBVH() {
     addUpdater {
         //println("moved")
         val mousePos = stage.mouseXY
-        val angle = Point.angle(center, mousePos)
+        val angle = Point.angleFull(center, mousePos)
         //println("center=$center, mousePos=$mousePos, angle = $angle")
         dir.setTo(angle.cosine, angle.sine)
         rayLine.setPoints(center, center + (dir * 1000))
