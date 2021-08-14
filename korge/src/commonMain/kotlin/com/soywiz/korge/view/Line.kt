@@ -37,8 +37,10 @@ class Line(
 
     override fun renderInternal(ctx: RenderContext) {
         ctx.useLineBatcher { lines ->
-            val col = renderColorMul
-            lines.line(x1, y1, x2, y2, col, col)
+            lines.drawWithGlobalMatrix(globalMatrix) {
+                val col = renderColorMul
+                lines.line(0.0, 0.0, x2 - x1, y2 - y1, col, col)
+            }
         }
     }
 }

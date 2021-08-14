@@ -1,6 +1,7 @@
 createBuffer(VERTEX):0
 createBuffer(VERTEX):1
 createBuffer(INDEX):2
+createBuffer(VERTEX):3
 RenderBuffer[0].setSize(1280, 720)
 createMainRenderBuffer():0
 RenderBuffer[0].set()

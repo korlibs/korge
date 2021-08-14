@@ -17,8 +17,10 @@ fun Ray.toBVH(out: BVHIntervals = BVHIntervals(2)): BVHIntervals {
  * A Bounding Volume Hierarchy implementation for 2D.
  * It uses [Rectangle] to describe volumes and [Ray] for raycasting.
  */
-open class BVH2D<T>() {
-    val bvh = BVH<T>()
+open class BVH2D<T>(
+    val allowUpdateObjects: Boolean = true
+) {
+    val bvh = BVH<T>(allowUpdateObjects = allowUpdateObjects)
 
     fun intersectRay(ray: Ray, rect: Rectangle? = null) = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
 
@@ -34,9 +36,13 @@ open class BVH2D<T>() {
         return_array: FastArrayList<BVH.Node<T>> = fastArrayListOf(),
     ): FastArrayList<BVH.Node<T>> = bvh.search(intervals = rect.toBVH(), return_array = return_array)
 
-    fun insert(rect: IRectangle, obj: T) = bvh.insert(rect.toBVH(), obj)
+    fun insertOrUpdate(rect: IRectangle, obj: T) = bvh.insertOrUpdate(rect.toBVH(), obj)
 
     fun remove(rect: IRectangle, obj: T? = null) = bvh.remove(rect.toBVH(), obj = obj)
+
+    fun remove(obj: T) = bvh.remove(obj)
+
+    fun getObjectBounds(obj: T, out: Rectangle = Rectangle()) = bvh.getObjectBounds(obj)?.toRectangle(out)
 
     fun debug() {
         bvh.debug()

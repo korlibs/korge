@@ -27,9 +27,11 @@ class Outline(
     }
 
     override fun renderInternal(ctx: RenderContext) {
-        ctx.useLineBatcher { debugLine ->
-            debugLine.color(renderColorMul) {
-                debugLine.drawVector(vectorPath)
+        ctx.useLineBatcher { lines ->
+            lines.drawWithGlobalMatrix(globalMatrix) {
+                lines.color(renderColorMul) {
+                    lines.drawVector(vectorPath)
+                }
             }
         }
     }

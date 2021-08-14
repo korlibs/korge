@@ -1,3 +1,4 @@
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -5,6 +6,7 @@ import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
+import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.atlas.*
@@ -53,16 +55,34 @@ suspend fun main() = Korge {
     //withContext(Dispatchers.Unconfined) {
 }
 
+var SolidRect.movingDirection by extraProperty { -1 }
+
 suspend fun Stage.mainBVH() {
     val bvh = BVH2D<View>()
     val rand = Random(0)
+    val rects = arrayListOf<SolidRect>()
     for (n in 0 until 2_000) {
         val x = rand[0.0, width]
         val y = rand[0.0, height]
         val width = rand[1.0, 50.0]
         val height = rand[1.0, 50.0]
         val view = solidRect(width, height, rand[Colors.RED, Colors.BLUE]).xy(x, y)
-        bvh.insert(Rectangle(x, y, width, height), view)
+        view.movingDirection = if (rand.nextBoolean()) -1 else +1
+        rects += view
+        bvh.insertOrUpdate(view.globalBounds, view)
+    }
+    addUpdater {
+        for (n in rects.size - 100 until rects.size) {
+            val view = rects[n]
+            if (view.x < 0) {
+                view.movingDirection = +1
+            }
+            if (view.x > stage.width) {
+                view.movingDirection = -1
+            }
+            view.x += view.movingDirection
+            bvh.insertOrUpdate(view.globalBounds, view)
+        }
     }
     val center = Point(width / 2, height / 2)
     val dir = Point(-1, -1)
@@ -85,16 +105,20 @@ suspend fun Stage.mainBVH() {
         statusText.text = "All objects: ${allObjectsSize}, raycast = ${rayObjectsSize}, time = $time"
     }
     updateRay()
+
+    addUpdater {
+        //println("moved")
+        val mousePos = stage.mouseXY
+        val angle = Point.angle(center, mousePos)
+        //println("center=$center, mousePos=$mousePos, angle = $angle")
+        dir.setTo(angle.cosine, angle.sine)
+        rayLine.setPoints(center, center + (dir * 1000))
+
+        updateRay()
+    }
+
     mouse {
         onMove {
-            //println("moved")
-            val mousePos = mouse.currentPosStage
-            val angle = Point.angle(center, mousePos)
-            //println("center=$center, mousePos=$mousePos, angle = $angle")
-            dir.setTo(angle.cosine, angle.sine)
-            rayLine.setPoints(center, center + (dir * 1000))
-
-            updateRay()
         }
     }
 }

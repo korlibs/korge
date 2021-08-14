@@ -41,7 +41,7 @@ fun VectorBuilder.arcTo(ax: Double, ay: Double, cx: Double, cy: Double, r: Doubl
     val c = IPoint(cx, cy)
     val AB = b - a
     val AC = c - a
-    val angle = Point.angle(AB, AC).radians * 0.5
+    val angle = Point.angleArc(AB, AC).radians * 0.5
     val x = r * sin((PI / 2.0) - angle) / sin(angle)
     val A = a + AB.unit * x
     val B = a + AC.unit * x

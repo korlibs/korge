@@ -30,6 +30,7 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
 package com.soywiz.korma.geom.ds
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import kotlin.math.*
 
 /**
@@ -39,7 +40,8 @@ import kotlin.math.*
  */
 class BVH<T>(
     val dimensions: Int = 2,
-    width: Int = dimensions * 3
+    width: Int = dimensions * 3,
+    val allowUpdateObjects: Boolean = true
 ) {
     // Variables to control tree
     // Number of "interval pairs" per node
@@ -723,13 +725,26 @@ class BVH<T>(
     /* non-recursive insert function
 	 * [] = NTree.insert(intervals, object to insert)
 	 */
-    fun insert(
+    fun insertOrUpdate(
         intervals: BVHIntervals,
         obj: T,
     ) {
         intervals.checkDimensions()
+        if (allowUpdateObjects) if (obj in objectToIntervalMap) remove(obj)
         _insert_subtree(root = this.root, node = Node(d = intervals, value = obj))
+        if (allowUpdateObjects) objectToIntervalMap[obj] = intervals
     }
+
+    fun remove(obj: T) {
+        if (!allowUpdateObjects) error("allowUpdateObjects not enabled")
+        val intervals = objectToIntervalMap[obj]
+        if (intervals != null) remove(intervals, obj)
+    }
+
+    fun getObjectBounds(obj: T): BVHIntervals? = objectToIntervalMap[obj]
+
+    //private val objectToIntervalMap = FastIdentityMap<T, BVHIntervals>()
+    private val objectToIntervalMap = HashMap<T, BVHIntervals>()
 
     /* non-recursive function that deletes a specific
 	 * [ number ] = NTree.remove(intervals, obj)
@@ -756,6 +771,12 @@ class BVH<T>(
             ret_array
         } else { // Delete a specific item
             _remove_subtree(root = this.root, intervals = intervals, obj = obj, comparators = comparators)
+        }.also {
+            if (allowUpdateObjects) {
+                it.fastForEach { node ->
+                    objectToIntervalMap.remove(node.value)
+                }
+            }
         }
     }
 

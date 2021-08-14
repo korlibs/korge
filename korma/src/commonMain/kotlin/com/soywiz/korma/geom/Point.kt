@@ -2,7 +2,6 @@
 
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.*
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.*
 import kotlin.math.*
@@ -138,8 +137,9 @@ data class Point(
         fun fromPolar(base: IPoint, angle: Angle, length: Double = 1.0): Point = fromPolar(base.x, base.y, angle, length)
 
         fun middle(a: IPoint, b: IPoint, out: Point = Point()): Point = out.setTo((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
-        fun angleOld(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
-        fun angle(a: IPoint, b: IPoint): Angle = Angle.between(a, b)
+        fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
+        @Deprecated("")
+        fun angle(a: IPoint, b: IPoint): Angle = angleArc(a, b)
 
         fun angle(ax: Double, ay: Double, bx: Double, by: Double): Angle = Angle.between(ax, ay, bx, by)
             //acos(((ax * bx) + (ay * by)) / (hypot(ax, ay) * hypot(bx, by)))

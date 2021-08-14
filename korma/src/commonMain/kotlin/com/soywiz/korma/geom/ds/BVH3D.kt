@@ -29,8 +29,10 @@ fun Ray3D.toBVH(out: BVHIntervals = BVHIntervals(3)): BVHIntervals {
  * A Bounding Volume Hierarchy implementation for 3D.
  * It uses [AABB3D] to describe volumes and [Ray3D] for raycasting.
  */
-open class BVH3D<T>() {
-    val bvh = BVH<T>()
+open class BVH3D<T>(
+    val allowUpdateObjects: Boolean = true
+) {
+    val bvh = BVH<T>(allowUpdateObjects = allowUpdateObjects)
 
     fun intersectRay(ray: Ray3D, rect: AABB3D? = null) = bvh.intersectRay(ray.toBVH(), rect?.toBVH())
 
@@ -46,9 +48,13 @@ open class BVH3D<T>() {
         return_array: FastArrayList<BVH.Node<T>> = fastArrayListOf(),
     ): FastArrayList<BVH.Node<T>> = bvh.search(intervals = rect.toBVH(), return_array = return_array)
 
-    fun insert(rect: AABB3D, obj: T) = bvh.insert(rect.toBVH(), obj)
+    fun insertOrUpdate(rect: AABB3D, obj: T) = bvh.insertOrUpdate(rect.toBVH(), obj)
 
     fun remove(rect: AABB3D, obj: T? = null) = bvh.remove(rect.toBVH(), obj = obj)
+
+    fun remove(obj: T) = bvh.remove(obj)
+
+    fun getObjectBounds(obj: T, out: AABB3D = AABB3D()) = bvh.getObjectBounds(obj)?.toAABB3D(out)
 
     fun debug() {
         bvh.debug()

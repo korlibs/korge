@@ -9,8 +9,8 @@ class BVHTest {
         val tree = BVH2D<String>()
         //for (n in 0 until 1_000_000) tree.insert(Rectangle(n * 5, 5, 10, 10), "$n")
         //for (n in 0 until 10_000_000) tree.insert(Rectangle(n * 5, 5, 10, 10), "$n")
-        tree.insert(Rectangle(20, 15, 20, 20), "1")
-        tree.insert(Rectangle(50, 50, 20, 20), "2")
+        tree.insertOrUpdate(Rectangle(20, 15, 20, 20), "1")
+        tree.insertOrUpdate(Rectangle(50, 50, 20, 20), "2")
         //tree.remove(Rectangle(20, 15, 20, 20), "1")
 
         println(tree.intersect(Ray(Point(25, 100), Vector2D(0, -1))))
