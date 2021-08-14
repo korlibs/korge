@@ -64,7 +64,11 @@ suspend fun TileSetData.toTiledSet(
 	createBorder: Int = 1,
     atlas: MutableAtlasUnit? = null
 ): TiledTileset {
-    val atlas = if (atlas == null || createBorder > 0) MutableAtlasUnit(2048, border = createBorder.clamp(2, 4)) else null
+    val atlas = when {
+        atlas != null -> atlas
+        createBorder > 0 -> MutableAtlas(2048, border = createBorder.clamp(1, 4))
+        else -> null
+    }
 
 	val tileset = this
 	var bmp = try {
