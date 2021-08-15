@@ -186,6 +186,8 @@ data class Point(
     fun round() = setTo(round(x), round(y))
     fun ceil() = setTo(ceil(x), ceil(y))
 
+    fun setTo(x: Int, y: Int): Point = setTo(x.toDouble(), y.toDouble())
+
     fun setTo(x: Double, y: Double): Point {
         this.x = x
         this.y = y

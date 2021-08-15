@@ -56,13 +56,16 @@ suspend fun main() = Korge {
     //withContext(Dispatchers.Unconfined) {
 }
 
-var SolidRect.movingDirection by extraProperty { -1 }
-
 suspend fun Stage.mainEmoji() {
-    val emojiFont = SystemFont.getEmojiFont()
-    //println("emojiFont=$emojiFont")
-    text("HELLO 😀😁😂🥰🤩🦍", textSize = 64.0, font = emojiFont).xy(100.0, 100.0)
+    val fontEmojiApple = localVfs("C:/temp/AppleColorEmoji.ttf").takeIfExists()?.readTtfFont()
+    val fontEmojiSystem = SystemFont.getEmojiFont()
+    val font1 = DefaultTtfFont.withFallback(fontEmojiApple, fontEmojiSystem)
+    val font2 = DefaultTtfFont.withFallback(fontEmojiSystem)
+    text("HELLO 😀😁😂🥰🤩🦍", font = font1, textSize = 128.0).xy(100, 100)
+    text("HELLO 😀😁😂🥰🤩🦍", font = font2, textSize = 128.0).xy(100, 228)
 }
+
+var SolidRect.movingDirection by extraProperty { -1 }
 
 suspend fun Stage.mainBVH() {
     val bvh = BVH2D<View>()

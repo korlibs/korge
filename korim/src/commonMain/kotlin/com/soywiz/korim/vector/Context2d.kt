@@ -496,10 +496,10 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         fontSize: Double = this.fontSize,
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
-        color: RGBA? = null
+        color: Paint? = null
     ): Unit {
         font(font, halign, valign, fontSize) {
-            fillStyle(color?.let { createColor(it) } ?: fillStyle) {
+            fillStyle(color ?: fillStyle) {
                 drawText(text, x.toDouble(), y.toDouble(), fill = true)
             }
         }

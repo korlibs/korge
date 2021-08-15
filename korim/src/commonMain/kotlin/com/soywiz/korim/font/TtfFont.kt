@@ -6,6 +6,7 @@ import com.soywiz.kmem.extract16Signed
 import com.soywiz.kmem.insert
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.format.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
@@ -27,7 +28,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
     constructor(d: ByteArray, freeze: Boolean = false, extName: String? = null) : this(d.openFastStream(), freeze, extName)
 
     fun getAllBytes() = s.getAllBytes()
-    fun getAllBytesUnsafe() = s.getAllBytesUnsafe()
+    fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
 
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
@@ -47,11 +48,29 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
     override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath): GlyphPath? {
         val g = getGlyphByCodePoint(codePoint) ?: return null
         val scale = getTextScale(size)
+        //println("unitsPerEm = $unitsPerEm")
         path.path = g.path
         path.colorPaths = g.colorEntry?.getColorPaths()
+        val bitmapEntry = g.bitmapEntry
+        val bitmap = bitmapEntry?.getBitmap()
+        path.bitmap = bitmap
+        if (bitmapEntry != null) {
+            //println("bitmapEntry=$bitmapEntry")
+            val scaleX = unitsPerEm.toDouble() / bitmapEntry.info.ppemX.toDouble()
+            val scaleY = unitsPerEm.toDouble() / bitmapEntry.info.ppemY.toDouble()
+            path.bitmapOffset.setTo(
+                0.0,
+                ((-bitmapEntry.height - bitmapEntry.descender) * scaleY),
+            )
+            path.bitmapScale.setTo(
+                scaleX,
+                scaleY,
+            )
+        }
         path.transform.identity()
         //path.transform.scale(scale, -scale)
         path.transform.scale(scale, scale)
+        path.scale = scale
         return path
     }
 
@@ -93,7 +112,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
     private var locs = IntArray(0)
 
     private var fontRev = Fixed(0, 0)
-    private var unitsPerEm = 128
+    var unitsPerEm = 128; private set
     // Coordinates have to be divided between unitsPerEm and multiplied per font size
     private var xMin = 0
     private var yMin = 0
@@ -118,6 +137,9 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         characterMapsReverse[index] = codePoint
     }
 
+    // Bitmap extension
+    var bitmapGlyphInfos = LinkedHashMap<Int, BitmapGlyphInfo>()
+
     // Color extension
     private var colrLayerInfos = arrayOf<ColrLayerInfo>()
     private val colrGlyphInfos = IntMap<ColrGlyphInfo>()
@@ -136,6 +158,9 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         readHmtx()
         readCpal()
         readColr()
+        //readPost()
+        readCblc()
+        readCbdt()
 
         //println("tablesByName=$tablesByName")
 
@@ -188,7 +213,8 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 		}
 	}
 
-    fun FastByteArrayInputStream.readFixed() = Fixed(readS16LE(), readS16LE())
+    internal fun FastByteArrayInputStream.readFWord() = FWord(readU16LE())
+    internal fun FastByteArrayInputStream.readFixed() = Fixed(readS16LE(), readS16LE())
 	data class HorMetric(val advanceWidth: Int, val lsb: Int)
 
     @PublishedApi
@@ -411,6 +437,199 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         }
     }
 
+    //private fun readPost() = runTableUnit("post") {
+    //    val versionHi = readU16BE()
+    //    val versionLo = readU16BE()
+    //    when (versionHi) {
+    //        1, 2, 3 -> {
+    //            val italicAngle = readFixed()
+    //            val underlinePosition = readFWord()
+    //            val underlineThickness = readFWord()
+    //            val isFixedPitch = readS32BE()
+    //            val minMemType42 = readS32BE()
+    //            val maxMemType42 = readS32BE()
+    //            val minMemType1 = readS32BE()
+    //            val maxMemType1 = readS32BE()
+    //            if (versionHi < 3) {
+    //                val numGlyphs = readU16LE()
+    //                val glyphNameIndex = readCharArrayBE(numGlyphs)
+    //                //println("isFixedPitch=$isFixedPitch")
+    //                //println("numGlyphs=$numGlyphs")
+    //                //println("glyphNameIndex=${glyphNameIndex.map { it.toInt() }.toList()}")
+    //            }
+    //        }
+    //    }
+    //}
+
+    data class ColorBitmapInfo(
+        val indexSubTableArrayOffset: Int,
+        val indexTablesSize: Int,
+        val numberofIndexSubTables: Int,
+        val colorRef: Int,
+        val hori: SbitLineMetrics,
+        val vert: SbitLineMetrics,
+        val startGlyphIndex: Int,
+        val endGlyphIndex: Int,
+        val ppemX: Int,
+        val ppemY: Int,
+        val bitDepth: Int,
+        val flags: Int,
+    )
+
+    //var colorBitmapInfos = listOf<ColorBitmapInfo>()
+
+    data class SbitLineMetrics(
+        val ascender: Int,
+        val descender: Int,
+        val widthMax: Int,
+        val caretSlopeNumerator: Int,
+        val caretSlopeDenominator: Int,
+        val caretOffset: Int,
+        val minOriginSB: Int,
+        val minAdvanceSB: Int,
+        val maxBeforeBL: Int,
+        val minAfterBL: Int,
+        val pad1: Int,
+        val pad2: Int,
+    )
+
+    private fun FastByteArrayInputStream.readSibLineMetrics(): SbitLineMetrics = SbitLineMetrics(
+        readS8(), readS8(), readU8(), readS8(), readS8(), readS8(),
+        readS8(), readS8(), readS8(), readS8(), readS8(), readS8()
+    )
+
+    data class BitmapGlyphInfo(
+        val glyphID: Int,
+        val imageFormat: Int,
+        val offset: Int,
+        val size: Int,
+        val info: ColorBitmapInfo,
+        var height: Int = 0,
+        var width: Int = 0,
+        var horiBearingX: Int = 0,
+        var horiBearingY: Int = 0,
+        var horiAdvance: Int = 0,
+        var vertBearingX: Int = 0,
+        var vertBearingY: Int = 0,
+        var vertAdvance: Int = 0,
+    ) {
+        var s: FastByteArrayInputStream? = null
+        var bitmap: Bitmap? = null
+
+        val descender get() = info.hori.descender
+        val ascender get() = info.hori.ascender
+
+        fun getBitmap(cache: Boolean = false): Bitmap {
+            val bmp = bitmap ?: PNG.decode(s!!.toSyncStream())
+            if (cache) bitmap = bmp
+            return bmp
+        }
+    }
+
+    //fun ColorGlyphInfo.getBytes(): FastByteArrayInputStream = tablesByName["CBDT"]!!.open().sliceWithSize(offset, size)
+
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/eblc
+    private fun readCblc() = runTableUnit("CBLC") { // Color Bitmap Location Table
+        val majorVersion = readU16BE()
+        val minorVersion = readU16BE()
+        when (majorVersion) {
+            3 -> {
+                val numSizes = readS32BE()
+                val colorBitmapInfos = Array(numSizes) {
+                    ColorBitmapInfo(
+                        readS32BE(),
+                        readS32BE(),
+                        readS32BE(),
+                        readS32BE(),
+                        readSibLineMetrics(),
+                        readSibLineMetrics(),
+                        readU16BE(),
+                        readU16BE(),
+                        readU8(),
+                        readU8(),
+                        readU8(),
+                        readS8(),
+                    )
+                }.toList()
+
+                //println("------------------")
+                for (cbi in colorBitmapInfos) {
+                    val glyphCount = cbi.endGlyphIndex - cbi.startGlyphIndex
+
+                    data class Subtable(val firstGlyphIndex: Int, val lastGlyphIndex: Int, val additionalOffsetToIndexSubtable: Int) {
+                        val numGlyphs get() = lastGlyphIndex - firstGlyphIndex
+                    }
+
+                    position = cbi.indexSubTableArrayOffset
+                    val subtables = Array(cbi.numberofIndexSubTables) { Subtable(readU16BE(), readU16BE(), readS32BE()) }
+
+                    for (subtable in subtables) {
+                        position = cbi.indexSubTableArrayOffset + subtable.additionalOffsetToIndexSubtable
+                        val indexFormat = readU16BE()
+                        val imageFormat = readU16BE()
+                        val imageDataOffset = readS32BE()
+                        val offsets = when (indexFormat) {
+                            1 -> Array(subtable.numGlyphs + 1) { imageDataOffset + readS32BE() }
+                            else -> emptyArray()
+                        }
+                        for (n in 0 until offsets.size - 1) {
+                            val offset = offsets[n]
+                            val size = offsets[n + 1] - offset
+                            val glyphID = subtable.firstGlyphIndex + n - 1
+                            bitmapGlyphInfos[glyphID] = BitmapGlyphInfo(glyphID, imageFormat, offset, size, cbi)
+                        }
+
+                        //for (g in colorGlyphInfos.values) println("g=${g.glyphID}, ${g.offset}")
+                        //for (n in 0 until )
+                        //ColorGlyphInfo()
+                        //println("offsets=${offsets.toList()}")
+                    }
+                    //println(subtables.map { it.numGlyphs })
+                    //for (n in 0 until glyphCount) println(readS32BE())
+                    //println("glyphCount=$glyphCount, bitDepth=${cbi.bitDepth}")
+                }
+
+                //println("CBLC, pos=$position, len=$length")
+            }
+            else -> {
+                println("Unsupported CBLC $majorVersion.$minorVersion")
+            }
+        }
+    }
+
+    private fun readCbdt() = runTableUnit("CBDT") { // Color Bitmap Data Table
+        //println("readCbdt")
+        val majorVersion = readU16BE()
+        val minorVersion = readU16BE()
+        when (majorVersion) {
+            3 -> {
+                for (i in bitmapGlyphInfos.values) {
+                    val format = i.imageFormat
+                    when (format) {
+                        17, 18 -> {
+                            i.height = readU8()
+                            i.width = readU8()
+                            i.horiBearingX = readS8()
+                            i.horiBearingY = readS8()
+                            i.horiAdvance = readU8()
+                            i.vertBearingX = if (format == 18) readS8() else i.horiBearingX
+                            i.vertBearingY = if (format == 18) readS8() else i.horiBearingY
+                            i.vertAdvance  = if (format == 18) readS8() else i.horiAdvance
+                        }
+                    }
+                    val dataLen = readS32BE()
+                    i.s = readSlice(dataLen)
+                    //println(i.bytes!!.getAllBytes().hex)
+                    //break
+                }
+                //println("bitmapGlyphInfos=$bitmapGlyphInfos")
+            }
+            else -> {
+                println("Unsupported CBDT $majorVersion.$minorVersion")
+            }
+        }
+    }
+
     private fun readColr() = runTableUnit("COLR") {
         val version = readU16BE()
         when (version) {
@@ -448,8 +667,15 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 		for (table in tables) {
 			sliceStart(table.offset).run {
 				val format = readU16BE()
+                //println("TABLE FORMAT: $format")
 				when (format) {
-					4 -> {
+				    0 -> { // Byte encoding table
+                        println("UNSUPPORTED CMAP format = $format")
+				    }
+                    2 -> { // High-byte mapping through table
+                        println("UNSUPPORTED CMAP format = $format")
+                    }
+					4 -> { // Segment mapping to delta values
 						val length = readU16BE()
 						//s.readStream(length - 4).run {
 						val language = readU16BE()
@@ -493,7 +719,22 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
 						//for ((c, index) in characterMaps) println("\\u%04X -> %d".format(c.toInt(), index))
 					}
-					12 -> {
+                    6 -> { // Trimmed table mapping
+                        val length = readU16BE()
+                        val language = readU16BE()
+                        val firstCode = readU16BE()
+                        val entryCount = readU16BE()
+                        for (n in 0 until entryCount) {
+                            addCharacterMap(firstCode + readU16BE(), n)
+                        }
+                    }
+                    8 -> { // mixed 16-bit and 32-bit coverage
+                        println("UNSUPPORTED CMAP format = $format")
+                    }
+                    10 -> { // Trimmed array
+                        println("UNSUPPORTED CMAP format = $format")
+                    }
+					12 -> { // Segmented coverage
 						readU16BE() // reserved
 						val length = readS32BE()
 						val language = readS32BE()
@@ -506,18 +747,60 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
 							var glyphId = startGlyphId
 							for (c in startCharCode..endCharCode) {
-                                addCharacterMap(c, glyphId++)
+                                addCharacterMap(c, glyphId)
+                                //println(" - $c -> $glyphId")
+                                glyphId++
 							}
 						}
 					}
+                    13 -> { // Many-to-one range mappings
+                        println("UNSUPPORTED CMAP format = $format")
+                    }
+                    14 -> {
+                        //println("UNSUPPORTED CMAP format = $format")
+                    }
+                    //14 -> { // Unicode Variation Sequences
+                    //    val length = readS32BE()
+                    //    val numVarSelectorRecords = readS32BE()
+                    //    data class VarSelectorRecord(val varSelector: Int, val defaultUVSOffset: Int, val nonDefaultUVSOffset: Int)
+                    //    val records = Array(numVarSelectorRecords) { VarSelectorRecord(readU24BE(), readS32BE(), readS32BE()) }
+                    //    var glyphId = 0
+                    //    for (record in records) {
+                    //        run {
+                    //            position = record.defaultUVSOffset
+                    //            val numUnicodeValueRanges = readS32BE()
+                    //            for (n in 0 until numUnicodeValueRanges) {
+                    //                val startUnicodeValue = readU24BE()
+                    //                val additionalCount = readU8()
+                    //                val count = 1 + additionalCount
+                    //                //println("startUnicodeValue=$startUnicodeValue, additionalCount=$additionalCount")
+                    //                for (m in 0 until count) {
+                    //                    //addCharacterMap(startUnicodeValue + m, glyphId++)
+                    //                }
+                    //            }
+                    //        }
+                    //        run {
+                    //            position = record.nonDefaultUVSOffset
+                    //            val numUVSMappings = readS32BE()
+                    //            for (n in 0 until numUVSMappings) {
+                    //                val unicodeValue = readU24BE()
+                    //                val glyphID = readU16BE()
+                    //                //println("startUnicodeValue=$unicodeValue, glyphID=$glyphID")
+                    //            }
+                    //        }
+                    //    }
+                    //    //println(characterMaps)
+                    //}
 					else -> { // Ignored
-
+                        println("UNSUPPORTED CMAP format = $format")
 					}
 				}
 				//println("cmap.table.format: $format")
 			}
 		}
-		//println(tables)
+        //println("${this@TtfFont.name}: $characterMaps")
+
+        //println(tables)
 	}
 
     fun getCodePointFromCharIndex(charIndex: Int): Int? = characterMapsReverse[charIndex]
@@ -612,6 +895,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
         //val colorEntry get() = colrGlyphInfos[codePoint]
         val colorEntry get() = colrGlyphInfos[index]
+        val bitmapEntry get() = bitmapGlyphInfos[index]
 
         val metrics1px = run {
             val size = unitsPerEm.toDouble()
@@ -895,6 +1179,9 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 			)
 		}
 	}
+}
+
+internal inline class FWord(val data: Int) {
 }
 
 internal inline class Fixed(val data: Int) {

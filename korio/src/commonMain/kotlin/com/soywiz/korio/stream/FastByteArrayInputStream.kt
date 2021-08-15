@@ -19,6 +19,7 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 
     fun Int.coerceRange() = this.coerceIn(start, end)
 
+    fun readSlice(size: Int) = increment(size) { sliceWithSize(position, size) }
     fun sliceStart(offset: Int = 0) = FastByteArrayInputStream(ba, 0, (start + offset).coerceRange(), end)
     fun clone() = FastByteArrayInputStream(ba, position, start, end)
     fun sliceWithSize(offset: Int, len: Int) = FastByteArrayInputStream(ba, 0, (start + offset).coerceRange(), (start + offset + len).coerceRange())
@@ -146,7 +147,9 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 	}
 
     fun getAllBytes() = ba.copyOfRange(start, end)
-    fun getAllBytesUnsafe() = ba
+    fun getBackingArrayUnsafe() = ba
+    //fun toByteArray(): ByteArray = ba.copyOfRange(start, end)
 }
 
 fun ByteArray.openFastStream(offset: Int = 0) = FastByteArrayInputStream(this, offset)
+fun FastByteArrayInputStream.toSyncStream() = ReadonlySyncStreamBase(ba, start, end - start).open()
