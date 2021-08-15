@@ -8,12 +8,14 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
+import com.soywiz.korge.view.text
 import com.soywiz.korim.annotation.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.text.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
@@ -63,7 +65,7 @@ suspend fun Stage.mainEmoji() {
     val fontEmojiOther = SystemFont("emoji")
     val fontEmojiApple = localVfs("C:/temp/AppleColorEmoji.ttf").takeIfExists()?.readTtfFont()
     val fontEmojiSystem = SystemFont.getEmojiFont()
-    val font0 = DefaultTtfFont
+    val font0 = DefaultTtfFont.withFallback(SystemFont.getDefaultFont())
     //val font0 = localVfs("C:/temp/FrankRuhlHofshi-Regular-ttf.ttf").readTtfFont()
     //val font0 = SystemFont.getDefaultFont().ttf
     //val font0 = SystemFont("Arial Unicode").ttf
@@ -76,6 +78,11 @@ suspend fun Stage.mainEmoji() {
     text("HELLO　쌍디귿 😃😀😁😂🥰🤩🦍", font = font2, textSize = 90.0).xy(100, 228)
     text("HELLO　あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0).xy(100, 368)
 
+    graphics {
+        fill(Colors.RED) {
+            text("h̷̷̶̨͋ͩ̏ͣ̒̉ͤ͛̓̄͢͡͠͡͏͈̬̜̲̙̤̙̤̯e̷͛̒ͪ́ͤ̒̃͏̶͠͏̞̰̻͙̟̜͕̞̮͟͟͡ļ̸̥͎̼̪̘̜̞͓̩ͧ̈̌ͣͨ́̕͡͞ͅl̡̡̛̦̫͖̞̯̻̓̆͆̑̅ͣ̑̕̕͡ͅǫ̴̸̊͐̈́̈̀͛̾́͏̸̡̡̦̤̦͚̬̯͔͉͇́͞HELLO　зклмн 쌍디귿 あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0, x = 100.0, y = 368.0)
+        }
+    }
 }
 
 var SolidRect.movingDirection by extraProperty { -1 }

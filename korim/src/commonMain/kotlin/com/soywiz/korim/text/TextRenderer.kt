@@ -229,7 +229,7 @@ val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer {
 }
 
 fun <T> VectorBuilder.text(
-    text: T, font: VectorFont, size: Double = 16.0,
+    text: T, font: VectorFont, textSize: Double = 16.0,
     x: Double = 0.0, y: Double = 0.0,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
 ) {
@@ -251,5 +251,5 @@ fun <T> VectorBuilder.text(
             return glyphMetrics
         }
     }
-    renderer.invoke(actions, text, size, font)
+    renderer.invoke(actions, text, textSize, font)
 }
