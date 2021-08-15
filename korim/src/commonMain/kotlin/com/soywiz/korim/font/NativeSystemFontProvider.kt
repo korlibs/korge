@@ -8,6 +8,8 @@ import com.soywiz.korio.lang.*
 expect val nativeSystemFontProvider: NativeSystemFontProvider
 
 open class NativeSystemFontProvider {
+    open fun getEmojiFontName() = listFontNames().firstOrNull { it.contains("emoji", ignoreCase = true) }
+
     open fun listFontNames(): List<String> = listFontNamesWithFiles().keys.toList()
 
     open fun listFontNamesWithFiles(): Map<String, VfsFile> {
@@ -46,6 +48,13 @@ open class NativeSystemFontProvider {
 private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
 private val windowsFolders = listOf("%WINDIR%\\Fonts")
 private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
+
+// @TODO: Maybe we can just filter fonts containing "emoji" (ignoring case)
+private val emojiFontNames = listOf(
+    "Segoe UI Emoji", // Windows
+    "Apple Color Emoji", // Apple
+    "Noto Color Emoji", // Google
+)
 
 open class FolderBasedNativeSystemFontProvider(val folders: List<String> = linuxFolders + windowsFolders + macosFolders, val fontCacheFile: String = "~/.korimFontCache") : TtfNativeSystemFontProvider() {
     fun listFontNamesMap(): Map<String, VfsFile> = runBlockingNoJs {
