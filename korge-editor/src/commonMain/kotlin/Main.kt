@@ -8,6 +8,7 @@ import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
+import com.soywiz.korim.annotation.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -56,13 +57,25 @@ suspend fun main() = Korge {
     //withContext(Dispatchers.Unconfined) {
 }
 
+@OptIn(KorimInternal::class)
 suspend fun Stage.mainEmoji() {
+    //val fontEmojiOther = localVfs("C:/temp/emoji.ttf").takeIfExists()?.readTtfFont()
+    val fontEmojiOther = SystemFont("emoji")
     val fontEmojiApple = localVfs("C:/temp/AppleColorEmoji.ttf").takeIfExists()?.readTtfFont()
     val fontEmojiSystem = SystemFont.getEmojiFont()
-    val font1 = DefaultTtfFont.withFallback(fontEmojiApple, fontEmojiSystem)
-    val font2 = DefaultTtfFont.withFallback(fontEmojiSystem)
-    text("HELLO 😀😁😂🥰🤩🦍", font = font1, textSize = 128.0).xy(100, 100)
-    text("HELLO 😀😁😂🥰🤩🦍", font = font2, textSize = 128.0).xy(100, 228)
+    val font0 = DefaultTtfFont
+    //val font0 = localVfs("C:/temp/FrankRuhlHofshi-Regular-ttf.ttf").readTtfFont()
+    //val font0 = SystemFont.getDefaultFont().ttf
+    //val font0 = SystemFont("Arial Unicode").ttf
+    //val font0 = localVfs("c:/temp/arialuni.ttf").readTtfFont()
+    val font1 = font0.withFallback(fontEmojiApple, fontEmojiSystem)
+    val font2 = font0.withFallback(fontEmojiSystem)
+    val font3 = font0.withFallback(fontEmojiOther)
+
+    text("HELLO　зклмн 😃😀😁😂🥰🤩🦍", font = font1, textSize = 90.0).xy(100, 100)
+    text("HELLO　쌍디귿 😃😀😁😂🥰🤩🦍", font = font2, textSize = 90.0).xy(100, 228)
+    text("HELLO　あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0).xy(100, 368)
+
 }
 
 var SolidRect.movingDirection by extraProperty { -1 }

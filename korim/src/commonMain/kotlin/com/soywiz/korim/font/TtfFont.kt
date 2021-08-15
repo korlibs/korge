@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.extract16Signed
 import com.soywiz.kmem.insert
+import com.soywiz.korim.annotation.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -24,8 +25,19 @@ import kotlin.collections.set
 // - https://en.wikipedia.org/wiki/Em_(typography)
 // - http://stevehanov.ca/blog/index.php?id=143 (Let's read a Truetype font file from scratch)
 // - http://chanae.walon.org/pub/ttf/ttf_glyphs.htm
-class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boolean = false, private val extName: String? = null) : VectorFont {
-    constructor(d: ByteArray, freeze: Boolean = false, extName: String? = null) : this(d.openFastStream(), freeze, extName)
+@OptIn(KorimInternal::class)
+class TtfFont(
+    private val s: FastByteArrayInputStream,
+    private val freeze: Boolean = false,
+    private val extName: String? = null,
+    private val onlyReadMetadata: Boolean = false,
+) : VectorFont {
+    constructor(
+        d: ByteArray,
+        freeze: Boolean = false,
+        extName: String? = null,
+        onlyReadMetadata: Boolean = false,
+    ) : this(d.openFastStream(), freeze, extName, onlyReadMetadata)
 
     fun getAllBytes() = s.getAllBytes()
     fun getAllBytesUnsafe() = s.getBackingArrayUnsafe()
@@ -76,7 +88,38 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
     private fun getTextScale(size: Double) = size / unitsPerEm.toDouble()
 
-    private val names = LinkedHashMap<Int, String>()
+    class NamesInfo {
+        internal val names = arrayOfNulls<String>(NameId.MAX_ID)
+        internal val namesOffsets = IntArray(NameId.MAX_ID)
+        internal val namesLengths = IntArray(NameId.MAX_ID) { -1 }
+        internal val namesCharsets = Array(NameId.MAX_ID) { UTF8 }
+        internal var namesS: FastByteArrayInputStream? = null
+
+        val ttfName: String get() = getName(NameId.NAME) ?: getName(NameId.COMPLETE_NAME) ?: "TtfFont"
+        val ttfCompleteName: String get() = getName(NameId.COMPLETE_NAME) ?: ttfName
+
+        fun getName(nameId: Int): String? {
+            if (names[nameId] == null) {
+                val nameLength = namesLengths[nameId]
+                if (nameLength < 0) return null
+                val string = namesS!!.extractString(namesOffsets[nameId], nameLength, namesCharsets[nameId])
+                names[nameId] = when {
+                    string.isEmpty() -> string
+                    string[0] == '\u0000' -> string.filter { it != '\u0000' }
+                    else -> string
+                }
+            }
+            return names[nameId]
+        }
+
+        fun getName(nameId: NameId): String? = getName(nameId.id)
+
+        fun toMap() = NameId.values().map { it to getName(it) }.toMap()
+
+        override fun toString(): String = "NamesInfo(${toMap()})"
+    }
+
+    private val namesi = NamesInfo()
     private val tempContours = Array(3) { Contour() }
     private val lineHeight get() = yMax - yMin
 
@@ -126,8 +169,10 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
     private var glyphDataFormat = 0
 
     private var horMetrics = listOf<HorMetric>()
-    private val characterMaps = LinkedHashMap<Int, Int>()
-    private val characterMapsReverse = LinkedHashMap<Int, Int>()
+    @KorimInternal
+    val characterMaps = LinkedHashMap<Int, Int>()
+    @KorimInternal
+    val characterMapsReverse = LinkedHashMap<Int, Int>()
     private val tablesByName = LinkedHashMap<String, Table>()
     private val glyphCache = IntMap<Glyph>(512)
     private fun getCharacterMapOrNull(key: Int): Int? = characterMaps[key]
@@ -153,14 +198,16 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         readMaxp()
         readHhea()
         readNames()
-        readLoca()
-        readCmap()
-        readHmtx()
-        readCpal()
-        readColr()
-        //readPost()
-        readCblc()
-        readCbdt()
+        if (!onlyReadMetadata) {
+            readLoca()
+            readCmap()
+            readHmtx()
+            readCpal()
+            readColr()
+            //readPost()
+            readCblc()
+            readCbdt()
+        }
 
         //println("tablesByName=$tablesByName")
 
@@ -174,8 +221,8 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         frozen = true
     }
 
-    val ttfName: String get() = getName(NameId.NAME) ?: getName(NameId.COMPLETE_NAME) ?: "TtfFont"
-    val ttfCompleteName: String get() = getName(NameId.COMPLETE_NAME) ?: ttfName
+    val ttfName: String get() = namesi.ttfName
+    val ttfCompleteName: String get() = namesi.ttfCompleteName
     override val name: String get() = extName ?: ttfName
 
     override fun toString(): String = "TtfFont(name=$name)"
@@ -220,25 +267,78 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
     @PublishedApi
 	internal fun openTable(name: String) = tablesByName[name]?.open()
 
-	private fun readHeaderTables() = s.sliceStart().apply {
-		val majorVersion = readU16BE().apply { if (this != 1) invalidOp("Not a TTF file") }
-		val minorVersion = readU16BE().apply { if (this != 0) invalidOp("Not a TTF file") }
-		val numTables = readU16BE()
-		val searchRange = readU16BE()
-		val entrySelector = readU16BE()
-		val rangeShift = readU16BE()
+    var isOpenType = false
 
-		val tables = (0 until numTables).map {
-            Table(readStringz(4), readS32BE(), readS32BE(), readS32BE())
-		}
-
-		for (table in tables) {
-			table.s = sliceWithSize(table.offset, table.length)
-			tablesByName[table.id] = table
-		}
-
-		//for (table in tables) println(table)
+	private fun readHeaderTables() {
+        tablesByName.putAll(readHeaderTables(s.sliceStart()))
 	}
+    companion object {
+        suspend fun readNames(s: AsyncInputOpenable): NamesInfo = s.openUse {
+            readNames(it as AsyncStream)
+        }
+
+        suspend fun readNames(s: AsyncStream): NamesInfo {
+            s.setPosition(0L)
+            //s.readAll()
+            val header = s.readBytesUpTo(0x400)
+            val table = readHeaderTables(header.openFastStream())
+            val tableName = table["name"]!!
+            s.setPosition(tableName.offset.toLong())
+            val nameBytes = s.readBytesUpTo(tableName.length)
+            return NamesInfo().also { readNamesSection(nameBytes.openFastStream(), it) }
+        }
+
+        fun readNamesSection(s: FastByteArrayInputStream, info: NamesInfo) = s.run {
+            val format = readU16BE()
+            val count = readU16BE()
+            val stringOffset = readU16BE()
+            for (n in 0 until count) {
+                val platformId = readU16BE()
+                val encodingId = readU16BE()
+                val languageId = readU16BE()
+                val nameId = readU16BE()
+                val length = readU16BE()
+                val offset = readU16BE()
+                if (nameId < 0 || nameId >= NameId.MAX_ID) continue
+
+                val charset = when (encodingId) {
+                    0 -> UTF8
+                    1 -> UTF16_BE
+                    else -> UTF16_BE
+                }
+                //if ((platformId == 0 && languageId == 0) || nameId !in namesInfo) {
+                if ((platformId == 0 && languageId == 0) || info.namesLengths[nameId] == -1) {
+                    info.namesOffsets[nameId] = stringOffset + offset
+                    info.namesLengths[nameId] = length
+                    info.namesCharsets[nameId] = charset
+                    info.namesS = this
+                }
+                //println("p=$platformId, e=$encodingId, l=$languageId, n=$nameId, l=$length, o=$offset: $string")
+            }
+        }
+
+        private fun readHeaderTables(s: FastByteArrayInputStream): Map<String, Table> = s.run {
+            val majorVersion = readU16BE().apply { if (this != 1 && this != 0x4F54) invalidOp("Not a TTF/OTF file") }
+            val minorVersion = readU16BE().apply { if (this != 0 && this != 0x544F) invalidOp("Not a TTF/OTF file") }
+            val numTables = readU16BE()
+            val searchRange = readU16BE()
+            val entrySelector = readU16BE()
+            val rangeShift = readU16BE()
+
+            val tables = (0 until numTables).map {
+                Table(readStringz(4), readS32BE(), readS32BE(), readS32BE())
+            }
+
+            val tablesByName = LinkedHashMap<String, Table>()
+
+            for (table in tables) {
+                table.s = sliceWithSize(table.offset, table.length)
+                tablesByName[table.id] = table
+            }
+
+            return tablesByName
+        }
+    }
 
     private inline fun runTableUnit(name: String, callback: FastByteArrayInputStream.() -> Unit) {
 		openTable(name)?.callback()
@@ -272,37 +372,21 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         WWS_SUBFAMILY_NAME(22),
         LIGHT_BACKGROUND(23),
         DARK_BACKGROUND(23),
-        VARIATION_POSTSCRIPT_PREFIX(25),
+        VARIATION_POSTSCRIPT_PREFIX(25);
+
+        companion object {
+            const val MAX_ID = 26
+        }
     }
 
-    fun getName(nameId: Int): String? = names[nameId]
+    fun getName(nameId: Int): String? = namesi.getName(nameId)
     fun getName(nameId: NameId): String? = getName(nameId.id)
 
     private fun readNames() = runTableUnit("name") {
-		val format = readU16BE()
-		val count = readU16BE()
-		val stringOffset = readU16BE()
-		for (n in 0 until count) {
-			val platformId = readU16BE()
-			val encodingId = readU16BE()
-			val languageId = readU16BE()
-			val nameId = readU16BE()
-			val length = readU16BE()
-			val offset = readU16BE()
-
-			val charset = when (encodingId) {
-				0 -> UTF8
-				1 -> UTF16_BE
-				else -> UTF16_BE
-			}
-			//println("" + (stringOffset.toLong() + offset) + " : " + length + " : " + charset)
-			val string = this.clone().sliceWithSize(stringOffset + offset, length).readAll().toString(charset)
-            if ((platformId == 0 && languageId == 0) || nameId !in names) {
-                names[nameId] = string
-            }
-			//println("p=$platformId, e=$encodingId, l=$languageId, n=$nameId, l=$length, o=$offset: $string")
-		}
+        readNamesSection(this, namesi)
 	}
+
+    data class NameInfo(val offset: Int, val length: Int, val charset: Charset)
 
     private fun readLoca() = runTableUnit("loca") {
         //println("readLoca! $name")
@@ -1192,7 +1276,10 @@ internal inline class Fixed(val data: Int) {
     }
 }
 
-suspend fun VfsFile.readTtfFont(preload: Boolean = false) = TtfFont(this.readAll(), freeze = preload, extName = this.baseName)
+suspend fun VfsFile.readTtfFont(
+    preload: Boolean = false,
+    onlyReadMetadata: Boolean = false,
+) = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
 
 // @TODO: Move to KorMA
 private fun VectorPath.write(path: VectorPath, transform: Matrix) {

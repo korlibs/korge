@@ -135,12 +135,12 @@ abstract class BaseSingleByteCharset(name: String) : Charset(name) {
 
 open class SingleByteCharset(name: String, val conv: String) : BaseSingleByteCharset(name) {
 	val v: IntIntMap = IntIntMap().apply {
-		for (n in 0 until conv.length) this[conv[n].toInt()] = n
+		for (n in 0 until conv.length) this[conv[n].code] = n
 	}
 
 	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {
 		for (n in start until end) {
-			val c = src[n].toInt()
+			val c = src[n].code
 			out.append(if (v.contains(c)) v[c].toByte() else '?'.toByte())
 		}
 	}
@@ -162,13 +162,16 @@ class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE
     override fun estimateNumberOfBytesForCharacters(nchars: Int): Int = nchars * 2
 
 	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
-		for (n in start until end step 2) out.append(src.readS16(n, le).toChar())
+		for (n in start until end step 2) {
+		    val char = src.readS16(n, le).toChar()
+		    out.append(char)
+        }
 	}
 
 	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {
 		val temp = ByteArray(2)
 		for (n in start until end) {
-			temp.write16(0, src[n].toInt(), le)
+			temp.write16(0, src[n].code, le)
 			out.append(temp)
 		}
 	}
@@ -198,15 +201,15 @@ object Charsets {
 	val UTF16_BE get() = com.soywiz.korio.lang.UTF16_BE
 }
 
-fun String.toByteArray(charset: Charset = UTF8): ByteArray {
-	val out = ByteArrayBuilder(charset.estimateNumberOfBytesForCharacters(this.length))
-	charset.encode(out, this)
+fun String.toByteArray(charset: Charset = UTF8, start: Int = 0, end: Int = this.length): ByteArray {
+	val out = ByteArrayBuilder(charset.estimateNumberOfBytesForCharacters(end - start))
+	charset.encode(out, this, start, end)
 	return out.toByteArray()
 }
 
-fun ByteArray.toString(charset: Charset): String {
-	val out = StringBuilder(charset.estimateNumberOfCharactersForBytes(this.size))
-	charset.decode(out, this)
+fun ByteArray.toString(charset: Charset, start: Int = 0, end: Int = this.size): String {
+	val out = StringBuilder(charset.estimateNumberOfCharactersForBytes(end - start))
+	charset.decode(out, this, start, end)
 	return out.toString()
 }
 

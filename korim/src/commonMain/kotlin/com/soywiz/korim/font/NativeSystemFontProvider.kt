@@ -1,5 +1,6 @@
 package com.soywiz.korim.font
 
+import com.soywiz.klock.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
@@ -10,15 +11,21 @@ expect val nativeSystemFontProvider: NativeSystemFontProvider
 open class NativeSystemFontProvider {
     open fun getDefaultFontName(): String = listFontNames().maxByOrNull {
         when {
+            it.equals("arial unicode ms", ignoreCase = true) -> 2000
+            it.equals("arialuni", ignoreCase = true) -> 2000
             it.equals("arial", ignoreCase = true) -> 1000
             it.contains("arial", ignoreCase = true) -> 1000 - it.length
             else -> 0
         }
     } ?: "default"
 
-    open fun getEmojiFontName(): String {
-        return listFontNames().firstOrNull { it.contains("emoji", ignoreCase = true) } ?: getDefaultFontName()
-    }
+    open fun getEmojiFontName(): String = listFontNames().maxByOrNull {
+        when {
+            it.equals("segoe ui emoji", ignoreCase = true) -> 2000
+            it.contains("emoji", ignoreCase = true) -> 1000 + it.length
+            else -> 0
+        }
+    } ?: getDefaultFontName()
 
     open fun listFontNames(): List<String> = listFontNamesWithFiles().keys.toList()
 
@@ -60,7 +67,7 @@ open class NativeSystemFontProvider {
 // MacOS: /System/Library/Fonts, /Library/Fonts, ~/Library/Fonts
 
 private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
-private val windowsFolders = listOf("%WINDIR%\\Fonts")
+private val windowsFolders = listOf("%WINDIR%\\Fonts", "%LOCALAPPDATA%\\Microsoft\\Windows\\Fonts")
 private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
 private val iosFolders = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
 private val androidFolders = listOf("/system/Fonts", "/system/font", "/data/fonts")
@@ -72,35 +79,52 @@ private val emojiFontNames = listOf(
     "Noto Color Emoji", // Google
 )
 
-open class FolderBasedNativeSystemFontProvider(val folders: List<String> = linuxFolders + windowsFolders + macosFolders + androidFolders + iosFolders, val fontCacheFile: String = "~/.korimFontCache") : TtfNativeSystemFontProvider() {
+open class FolderBasedNativeSystemFontProvider(
+    val folders: List<String> = linuxFolders + windowsFolders + macosFolders + androidFolders + iosFolders,
+    val fontCacheFile: String = "~/.korimFontCache"
+) : TtfNativeSystemFontProvider() {
     fun listFontNamesMap(): Map<String, VfsFile> = runBlockingNoJs {
-        val fontCacheVfsFile = localVfs(com.soywiz.korio.lang.Environment.expand(fontCacheFile))
         val out = LinkedHashMap<String, VfsFile>()
-        val fileNamesToName = LinkedHashMap<String, String>()
-        val oldFontCacheVfsFileText = try { fontCacheVfsFile.readString() } catch (e: Throwable) { "" }
-        for (line in oldFontCacheVfsFileText.split("\n")) {
-            val (file, name) = line.split("=", limit = 2) + listOf("", "")
-            fileNamesToName[file] = name
-        }
-        for (folder in folders) {
-            try {
-                val file = localVfs(Environment.expand(folder))
-                for (f in file.listSimple()) {
-                    try {
-                        val name = fileNamesToName.getOrPut(f.baseName) { com.soywiz.korim.font.TtfFont(f.readAll()).ttfCompleteName }
-                        if (name != "") {
-                            out[name] = f
-                        }
-                    } catch (e: Throwable) {
-                        fileNamesToName.getOrPut(f.baseName) { "" }
-                    }
-                }
+        val time = measureTime {
+            val fontCacheVfsFile = localVfs(com.soywiz.korio.lang.Environment.expand(fontCacheFile))
+            val fileNamesToName = LinkedHashMap<String, String>()
+            val oldFontCacheVfsFileText = try {
+                fontCacheVfsFile.readString()
             } catch (e: Throwable) {
+                ""
+            }
+            for (line in oldFontCacheVfsFileText.split("\n")) {
+                val (file, name) = line.split("=", limit = 2) + listOf("", "")
+                fileNamesToName[file] = name
+            }
+            for (folder in folders) {
+                try {
+                    val file = localVfs(Environment.expand(folder))
+                    for (f in file.listSimple()) {
+                        try {
+                            val name = fileNamesToName.getOrPut(f.baseName) {
+                                val (ttf, totalTime) = measureTimeWithResult { TtfFont.readNames(f) }
+                                //if (totalTime >= 1.milliseconds) println("Compute name size[${f.size()}] '${ttf.ttfCompleteName}' $totalTime")
+                                ttf.ttfCompleteName
+                            }
+                            //println("name=$name, f=$f")
+                            if (name != "") {
+                                out[name] = f
+                            }
+                        } catch (e: Throwable) {
+                            fileNamesToName.getOrPut(f.baseName) { "" }
+                        }
+                    }
+                } catch (e: Throwable) {
+                }
+            }
+            val newFontCacheVfsFileText = fileNamesToName.map { "${it.key}=${it.value}" }.joinToString("\n")
+            if (newFontCacheVfsFileText != oldFontCacheVfsFileText) {
+                fontCacheVfsFile.writeString(newFontCacheVfsFileText)
             }
         }
-        val newFontCacheVfsFileText = fileNamesToName.map { "${it.key}=${it.value}" }.joinToString("\n")
-        if (newFontCacheVfsFileText != oldFontCacheVfsFileText) {
-            fontCacheVfsFile.writeString(newFontCacheVfsFileText)
+        if (time >= 100.milliseconds) {
+            println("Load System font names in $time")
         }
         //println("fileNamesToName: $fileNamesToName")
         out

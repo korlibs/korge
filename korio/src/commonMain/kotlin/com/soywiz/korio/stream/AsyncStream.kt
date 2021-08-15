@@ -26,6 +26,8 @@ interface AsyncInputOpenable {
 	suspend fun openRead(): AsyncInputStream
 }
 
+suspend inline fun <T> AsyncInputOpenable.openUse(block: (AsyncInputStream) -> T): T = openRead().use(block)
+
 interface AsyncInputStream : AsyncBaseStream {
 	suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int
 	suspend fun read(): Int = smallBytesPool.alloc { if (read(it, 0, 1) > 0) it[0].unsigned else -1 }

@@ -1,5 +1,6 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.krypto.encoding.*
 import kotlin.test.*
 
 class CharsetTest {
@@ -37,5 +38,11 @@ class CharsetTest {
             text,
             text.toByteArray(UTF8).toString(UTF8)
         )
+    }
+
+    @Test
+    fun testUTF16() {
+        assertEquals("emoji", "0065006d006f006a0069".unhex.toString(UTF16_BE))
+        assertEquals("emoji", "65006d006f006a006900".unhex.toString(UTF16_LE))
     }
 }
