@@ -5,11 +5,14 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.paint.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 
 abstract class TextRendererActions {
+    protected val glyphPath = GlyphPath()
     protected val glyphMetrics = GlyphMetrics()
     val fontMetrics = FontMetrics()
     val lineHeight get() = fontMetrics.lineHeight
@@ -196,20 +199,27 @@ fun CreateStringTextRenderer(
 ): TextRenderer<String> = object : TextRenderer<String> {
     override val version: Int get() = getVersion()
 
+    private fun TextRendererActions.runStep(n: Int, c: Int, c1: Int, text: String) {
+        if (c == '\n'.toInt()) {
+            newLine(lineHeight)
+        } else {
+            val g = getGlyphMetrics(c)
+            transform.identity()
+            handler(text, n, c, c1, g, (g.xadvance + getKerning(c, c1)))
+        }
+    }
+
     override fun TextRendererActions.run(text: String, size: Double, defaultFont: Font) {
         reset()
         setFont(defaultFont, size)
-        for (n in text.indices) {
-            val c = text[n].toInt()
-            val c1 = text.getOrElse(n + 1) { '\u0000' }.toInt()
-            if (c == '\n'.toInt()) {
-                newLine(lineHeight)
-            } else {
-                val g = getGlyphMetrics(c)
-                transform.identity()
-                handler(text, n, c, c1, g, (g.xadvance + getKerning(c, c1)))
+        var lastCodePoint = -1
+        val length = text.forEachCodePoint { index, codePoint, error ->
+            if (index > 0) {
+                runStep(index - 1, lastCodePoint, codePoint, text)
             }
+            lastCodePoint = codePoint
         }
+        runStep(length - 1, lastCodePoint, 0, text)
     }
 }
 
