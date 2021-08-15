@@ -8,11 +8,13 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 
-fun Bitmap32.trace(func: (RGBA) -> Boolean = { it.a >= 0x7F }): VectorPath = this.toBitmap1(func).trace()
+inline fun Bitmap.trace() = toBMP32().trace()
+inline fun Bitmap.trace(func: (RGBA) -> Boolean): VectorPath = toBMP32().trace(func)
 
-fun Bitmap1.trace(): VectorPath {
-    return VectorTracer().trace(this)
-}
+inline fun Bitmap32.trace() = trace { it.a >= 0x7F }
+inline fun Bitmap32.trace(func: (RGBA) -> Boolean): VectorPath = this.toBitmap1(func).trace()
+
+inline fun Bitmap1.trace(): VectorPath = VectorTracer().trace(this)
 
 class VectorTracer(val doDebug: Boolean = false) {
 

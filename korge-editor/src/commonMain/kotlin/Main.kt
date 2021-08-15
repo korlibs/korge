@@ -63,7 +63,7 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
 }
 
 suspend fun Stage.mainImageTrace() {
-    val bmp = Bitmap32(200, 200).context2d {
+    val bmp = Bitmap32(300, 200).context2d {
         fill(Colors.WHITE) {
             rect(Rectangle.fromBounds(2, 2, 18, 18))
             rectHole(Rectangle.fromBounds(6, 6, 9, 12))
@@ -71,6 +71,7 @@ suspend fun Stage.mainImageTrace() {
             rect(Rectangle.fromBounds(50, 2, 68, 18))
             circle(100, 100, 40)
             circle(100, 100, 20)
+            roundRect(200, 50, 50, 50, 5, 5)
             //circle(130, 100, 20) // @TODO: Bug
         }
     }
