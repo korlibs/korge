@@ -69,10 +69,10 @@ suspend fun Stage.mainImageTrace() {
             rectHole(Rectangle.fromBounds(6, 6, 9, 12))
             rectHole(Rectangle.fromBounds(10, 5, 15, 12))
             rect(Rectangle.fromBounds(50, 2, 68, 18))
-            circle(100, 100, 40)
-            circle(100, 100, 20)
+            circle(100, 100, 60)
+            circle(100, 100, 30)
             roundRect(200, 50, 50, 50, 5, 5)
-            circle(130, 100, 20) // @TODO: Bug
+            circle(140, 100, 30)
         }
     }
     val path = bmp.trace()

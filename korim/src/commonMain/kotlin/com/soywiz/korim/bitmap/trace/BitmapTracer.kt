@@ -11,7 +11,7 @@ import com.soywiz.korma.geom.vector.*
 inline fun Bitmap.trace() = toBMP32().trace()
 inline fun Bitmap.trace(func: (RGBA) -> Boolean): VectorPath = toBMP32().trace(func)
 
-inline fun Bitmap32.trace() = trace { it.a >= 0x7F }
+inline fun Bitmap32.trace() = trace { it.a >= 0x3F }
 inline fun Bitmap32.trace(func: (RGBA) -> Boolean): VectorPath = this.toBitmap1(func).trace()
 
 //inline fun Bitmap1.trace(): VectorPath = VectorTracer(this).trace()

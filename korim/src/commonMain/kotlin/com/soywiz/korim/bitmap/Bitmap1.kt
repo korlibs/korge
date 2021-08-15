@@ -12,7 +12,7 @@ class Bitmap1(
 	override fun createWithThisFormat(width: Int, height: Int): Bitmap = Bitmap1(width, height, palette = palette)
 }
 
-inline fun Bitmap32.toBitmap1(): Bitmap1 = toBitmap1 { it.a >= 0x7F }
+inline fun Bitmap32.toBitmap1(): Bitmap1 = toBitmap1 { it.a >= 0x3F }
 inline fun Bitmap32.toBitmap1(func: (value: RGBA) -> Boolean): Bitmap1 {
     val out = Bitmap1(width, height, palette = RgbaArray(intArrayOf(Colors.TRANSPARENT_BLACK.value, Colors.WHITE.value)))
     var n = 0
