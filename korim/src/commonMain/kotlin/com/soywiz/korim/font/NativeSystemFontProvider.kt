@@ -8,8 +8,10 @@ import com.soywiz.korio.lang.*
 expect val nativeSystemFontProvider: NativeSystemFontProvider
 
 open class NativeSystemFontProvider {
-    open fun listFontNames(): List<String> {
-        return listOf()
+    open fun listFontNames(): List<String> = listFontNamesWithFiles().keys.toList()
+
+    open fun listFontNamesWithFiles(): Map<String, VfsFile> {
+        return mapOf()
     }
 
     open fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath = GlyphPath()): GlyphPath? {
@@ -81,7 +83,7 @@ open class FolderBasedNativeSystemFontProvider(val folders: List<String> = linux
 
     fun listFontNamesMapLC(): Map<String, VfsFile> = listFontNamesMap().mapKeys { it.key.normalizeName() }
 
-    override fun listFontNames(): List<String> = listFontNamesMap().keys.toList()
+    override fun listFontNamesWithFiles(): Map<String, VfsFile> = listFontNamesMap()
 
     private val namesMapLC by lazy { listFontNamesMapLC() }
 
@@ -128,6 +130,7 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 }
 
 open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemFontProvider() {
-    override fun listFontNames(): List<String> = listOf(ttf.ttfCompleteName)
+    val vfs = VfsFileFromData(ttf.getAllBytesUnsafe(), "ttf")
+    override fun listFontNamesWithFiles(): Map<String, VfsFile> = mapOf(ttf.ttfCompleteName to vfs)
     override fun loadFontByName(name: String): TtfFont? = ttf
 }

@@ -5,6 +5,7 @@ import com.soywiz.korio.resources.*
 inline class SystemFont(override val name: String) : VectorFont, Resourceable<Font> {
     companion object {
         fun listFontNames() = nativeSystemFontProvider.listFontNames()
+        fun listFontNamesWithFiles() = nativeSystemFontProvider.listFontNamesWithFiles()
     }
 
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =

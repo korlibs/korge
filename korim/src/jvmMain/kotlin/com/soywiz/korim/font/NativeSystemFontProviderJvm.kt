@@ -8,6 +8,9 @@ import java.awt.font.*
 import java.awt.geom.*
 import java.awt.image.*
 
+actual val nativeSystemFontProvider: NativeSystemFontProvider = FolderBasedNativeSystemFontProvider()
+
+/*
 actual val nativeSystemFontProvider: NativeSystemFontProvider = AwtNativeSystemFontProvider
 
 object AwtNativeSystemFontProvider : NativeSystemFontProvider() {
@@ -90,3 +93,4 @@ object AwtNativeSystemFontProvider : NativeSystemFontProvider() {
     fun SystemFont.toAwt(size: Double): java.awt.Font
         = java.awt.Font(this.name, java.awt.Font.PLAIN, size.toInt())
 }
+*/

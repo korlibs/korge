@@ -25,6 +25,9 @@ import kotlin.collections.set
 class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boolean = false, private val extName: String? = null) : VectorFont {
     constructor(d: ByteArray, freeze: Boolean = false, extName: String? = null) : this(d.openFastStream(), freeze, extName)
 
+    fun getAllBytes() = s.getAllBytes()
+    fun getAllBytesUnsafe() = s.getAllBytesUnsafe()
+
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
 
