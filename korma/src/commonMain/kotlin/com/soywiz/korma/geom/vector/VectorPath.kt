@@ -173,6 +173,33 @@ open class VectorPath(
         version++
     }
 
+    fun removeLastCommand() {
+        if (commands.isEmpty()) return
+        val command = commands.removeAt(commands.size - 1)
+        val commandParams = Command.getParamCount(command)
+        data.removeAt(data.size - commandParams, commandParams)
+    }
+
+    fun optimizeLastCommand() {
+        if (commands.size < 3) return
+        val commandC = commands[commands.size - 3]
+        val commandA = commands[commands.size - 2]
+        val commandB = commands[commands.size - 1]
+        if (commandA == Command.LINE_TO && commandB == Command.LINE_TO && commandC != Command.CLOSE) {
+            val x0 = data[data.size - 6]
+            val y0 = data[data.size - 5]
+            val x = data[data.size - 4]
+            val y = data[data.size - 3]
+            val x1 = data[data.size - 2]
+            val y1 = data[data.size - 1]
+            if (Point.isCollinear(x0, y0, x, y, x1, y1)) {
+                removeLastCommand()
+                data[data.size - 2] = x1
+                data[data.size - 1] = y1
+            }
+        }
+    }
+
     override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
         ensureMoveTo(cx, cy)
         commands.add(Command.QUAD_TO)
@@ -332,6 +359,14 @@ open class VectorPath(
         const val QUAD_TO = 2
         const val CUBIC_TO = 3
         const val CLOSE = 4
+
+        fun getParamCount(command: Int): Int = when (command) {
+            MOVE_TO, LINE_TO -> 2
+            QUAD_TO -> 4
+            CUBIC_TO -> 6
+            CLOSE -> 0
+            else -> 0
+        }
     }
 
     fun write(path: VectorPath, transform: Matrix = identityMatrix) {

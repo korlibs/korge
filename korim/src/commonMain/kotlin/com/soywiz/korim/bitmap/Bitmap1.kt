@@ -11,3 +11,13 @@ class Bitmap1(
 ) : BitmapIndexed(1, width, height, data, palette) {
 	override fun createWithThisFormat(width: Int, height: Int): Bitmap = Bitmap1(width, height, palette = palette)
 }
+inline fun Bitmap32.toBitmap1(func: (value: RGBA) -> Boolean = { it.a >= 0x7F }): Bitmap1 {
+    val out = Bitmap1(width, height, palette = RgbaArray(intArrayOf(Colors.TRANSPARENT_BLACK.value, Colors.WHITE.value)))
+    var n = 0
+    for (y in 0 until height) {
+        for (x in 0 until width) {
+            out[x, y] = if (func(data[n++])) 1 else 0
+        }
+    }
+    return out
+}

@@ -4,6 +4,7 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.*
 import kotlin.math.*
 
 interface IPoint {
@@ -172,6 +173,15 @@ data class Point(
         fun distanceSquared(a: IPointInt, b: IPointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
 
         fun dot(a: IPoint, b: IPoint): Double = (a.x * b.x) + (a.y * b.y)
+        fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean {
+            return (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
+        }
+
+        fun isCollinear(xa: Int, ya: Int, x: Int, y: Int, xb: Int, yb: Int): Boolean = isCollinear(
+            xa.toDouble(), ya.toDouble(),
+            x.toDouble(), y.toDouble(),
+            xb.toDouble(), yb.toDouble(),
+        )
 
         //val ax = x1 - x2
         //val ay = y1 - y2

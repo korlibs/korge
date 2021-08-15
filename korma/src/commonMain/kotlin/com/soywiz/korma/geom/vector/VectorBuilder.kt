@@ -89,6 +89,7 @@ fun VectorBuilder.roundRect(x: Int, y: Int, w: Int, h: Int, rx: Int, ry: Int = r
 
 fun VectorBuilder.rectHole(x: Float, y: Float, width: Float, height: Float) = rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 fun VectorBuilder.rectHole(x: Int, y: Int, width: Int, height: Int) = rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
+fun VectorBuilder.rectHole(rect: IRectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
 
 fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle) {
     // http://hansmuller-flex.blogspot.com.es/2011/04/approximating-circular-arc-with-cubic.html

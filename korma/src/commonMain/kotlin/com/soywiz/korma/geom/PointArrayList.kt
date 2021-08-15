@@ -199,7 +199,14 @@ inline fun IPointIntArrayList.fastForEach(block: (x: Int, y: Int) -> Unit) {
     }
 }
 
-class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList {
+inline fun IPointIntArrayList.fastForEachReverse(block: (x: Int, y: Int) -> Unit) {
+    for (n in 0 until size) {
+        val m = size - 1 - n
+        block(getX(m), getY(m))
+    }
+}
+
+open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by Extra.Mixin() {
     private val xList = IntArrayList(capacity)
     private val yList = IntArrayList(capacity)
     override val size get() = xList.size
@@ -228,6 +235,7 @@ class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList {
     }
     fun add(p: IPointInt) = add(p.x, p.y)
     fun add(p: IPointIntArrayList) = this.apply { p.fastForEach { x, y -> add(x, y) } }
+    fun addReverse(p: IPointIntArrayList) = this.apply { p.fastForEachReverse { x, y -> add(x, y) } }
 
     inline fun fastForEach(block: (x: Int, y: Int) -> Unit) {
         for (n in 0 until size) {

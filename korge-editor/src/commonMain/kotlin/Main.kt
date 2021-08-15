@@ -1,4 +1,5 @@
 import com.soywiz.kds.*
+import com.soywiz.kds.algo.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -12,6 +13,7 @@ import com.soywiz.korge.view.text
 import com.soywiz.korim.annotation.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.trace.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
@@ -49,14 +51,41 @@ import kotlin.random.*
 //    }
 //}
 
-suspend fun main() = Korge {
-    mainEmoji()
+suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
+    mainImageTrace()
+    //mainEmoji()
     //mainBVH()
     //mainCircles()
     //mainVampire()
     //mainCompression()
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
+}
+
+suspend fun Stage.mainImageTrace() {
+    val bmp = Bitmap32(200, 200).context2d {
+        fill(Colors.WHITE) {
+            rect(Rectangle.fromBounds(2, 2, 18, 18))
+            rectHole(Rectangle.fromBounds(6, 6, 9, 12))
+            rectHole(Rectangle.fromBounds(10, 5, 15, 12))
+            rect(Rectangle.fromBounds(50, 2, 68, 18))
+            circle(100, 100, 40)
+            circle(100, 100, 20)
+            //circle(130, 100, 20) // @TODO: Bug
+        }
+    }
+    val path = bmp.trace()
+    image(bmp)
+    graphics { fill(Colors.RED) { write(path) } }.scale(3)
+    //image(bmp)
+    /*
+    Bitmap2(bmp.width, bmp.height).also {
+        for (y in 0 until)
+        it[x, y] =
+    }
+    bmp.
+    bmp.trace()
+     */
 }
 
 @OptIn(KorimInternal::class)
