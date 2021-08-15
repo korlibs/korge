@@ -11,5 +11,6 @@ class WStringTest {
         assertEquals(1, WString("😀").length)
         assertEquals(128512, WString("😀")[0].codePoint)
         assertEquals(WString("😀"), WString("😀").toString().toWString())
+        assertEquals(WString("Ｇ"), WString("Ｇ").toString().toWString())
     }
 }
