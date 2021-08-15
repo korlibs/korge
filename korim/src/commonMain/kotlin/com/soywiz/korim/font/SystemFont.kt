@@ -6,7 +6,8 @@ inline class SystemFont(override val name: String) : VectorFont, Resourceable<Fo
     companion object {
         fun listFontNames() = nativeSystemFontProvider.listFontNames()
         fun listFontNamesWithFiles() = nativeSystemFontProvider.listFontNamesWithFiles()
-        fun getEmojiFont() = nativeSystemFontProvider.getEmojiFontName()?.let { SystemFont(it) }
+        fun getDefaultFont() = SystemFont(nativeSystemFontProvider.getDefaultFontName())
+        fun getEmojiFont() = SystemFont(nativeSystemFontProvider.getEmojiFontName())
     }
 
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
@@ -24,4 +25,6 @@ inline class SystemFont(override val name: String) : VectorFont, Resourceable<Fo
     override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath): GlyphPath? {
         return nativeSystemFontProvider.getSystemFontGlyph(this, size, codePoint, path)
     }
+
+    val ttf get() = nativeSystemFontProvider.getTtfFromSystemFont(this)
 }

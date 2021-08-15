@@ -8,9 +8,23 @@ import com.soywiz.korio.lang.*
 expect val nativeSystemFontProvider: NativeSystemFontProvider
 
 open class NativeSystemFontProvider {
-    open fun getEmojiFontName() = listFontNames().firstOrNull { it.contains("emoji", ignoreCase = true) }
+    open fun getDefaultFontName(): String = listFontNames().maxByOrNull {
+        when {
+            it.equals("arial", ignoreCase = true) -> 1000
+            it.contains("arial", ignoreCase = true) -> 1000 - it.length
+            else -> 0
+        }
+    } ?: "default"
+
+    open fun getEmojiFontName(): String {
+        return listFontNames().firstOrNull { it.contains("emoji", ignoreCase = true) } ?: getDefaultFontName()
+    }
 
     open fun listFontNames(): List<String> = listFontNamesWithFiles().keys.toList()
+
+    open fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont {
+        return DefaultTtfFont
+    }
 
     open fun listFontNamesWithFiles(): Map<String, VfsFile> {
         return mapOf()
@@ -48,6 +62,8 @@ open class NativeSystemFontProvider {
 private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
 private val windowsFolders = listOf("%WINDIR%\\Fonts")
 private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
+private val iosFolders = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
+private val androidFolders = listOf("/system/Fonts", "/system/font", "/data/fonts")
 
 // @TODO: Maybe we can just filter fonts containing "emoji" (ignoring case)
 private val emojiFontNames = listOf(
@@ -56,7 +72,7 @@ private val emojiFontNames = listOf(
     "Noto Color Emoji", // Google
 )
 
-open class FolderBasedNativeSystemFontProvider(val folders: List<String> = linuxFolders + windowsFolders + macosFolders, val fontCacheFile: String = "~/.korimFontCache") : TtfNativeSystemFontProvider() {
+open class FolderBasedNativeSystemFontProvider(val folders: List<String> = linuxFolders + windowsFolders + macosFolders + androidFolders + iosFolders, val fontCacheFile: String = "~/.korimFontCache") : TtfNativeSystemFontProvider() {
     fun listFontNamesMap(): Map<String, VfsFile> = runBlockingNoJs {
         val fontCacheVfsFile = localVfs(com.soywiz.korio.lang.Environment.expand(fontCacheFile))
         val out = LinkedHashMap<String, VfsFile>()
@@ -114,6 +130,8 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     fun ttf(systemFont: SystemFont) = locateFontByName(systemFont.name) ?: DefaultTtfFont
 
+    override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf(systemFont)
+
     override fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath): GlyphPath? =
         ttf(systemFont).getGlyphPath(size, codePoint, path)
 
@@ -140,6 +158,7 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
 open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemFontProvider() {
     val vfs = VfsFileFromData(ttf.getAllBytesUnsafe(), "ttf")
+    override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf
     override fun listFontNamesWithFiles(): Map<String, VfsFile> = mapOf(ttf.ttfCompleteName to vfs)
     override fun loadFontByName(name: String): TtfFont? = ttf
 }
