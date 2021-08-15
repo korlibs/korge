@@ -11,6 +11,7 @@ import com.soywiz.korge.view.animation.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
@@ -46,8 +47,9 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge {
+    mainEmoji()
     //mainBVH()
-    mainCircles()
+    //mainCircles()
     //mainVampire()
     //mainCompression()
     //println("HELLO WORLD!")
@@ -55,6 +57,12 @@ suspend fun main() = Korge {
 }
 
 var SolidRect.movingDirection by extraProperty { -1 }
+
+suspend fun Stage.mainEmoji() {
+    val emojiFont = SystemFont.getEmojiFont()
+    //println("emojiFont=$emojiFont")
+    text("HELLO 😀😁😂🥰🤩🦍", textSize = 64.0, font = emojiFont).xy(100.0, 100.0)
+}
 
 suspend fun Stage.mainBVH() {
     val bvh = BVH2D<View>()

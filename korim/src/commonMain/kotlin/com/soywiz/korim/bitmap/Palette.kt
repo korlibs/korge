@@ -8,4 +8,18 @@ open class Palette(
     val changeStart: Int = 0,
     val changeEnd: Int = 0
 ) {
+    override fun toString(): String = buildString {
+        append("Palette(")
+        for (n in 0 until colors.size) {
+            val color = colors[n]
+            val name = names?.get(n)
+            if (n > 0) append(", ")
+            if (name != null) {
+                append(name)
+                append(": ")
+            }
+            append(color.toString())
+        }
+        append(")")
+    }
 }

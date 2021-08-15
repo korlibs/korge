@@ -7,7 +7,11 @@ import kotlin.math.*
 
 class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: Int = 0, val end: Int = ba.size) {
     private var offset = offset + start
-    val position get() = offset - start
+    var position: Int
+        get() = offset - start
+        set(value) {
+            offset = start + value
+        }
 	val length: Int get() = end - start
 	val available: Int get() = end - offset
 	val hasMore: Boolean get() = available > 0

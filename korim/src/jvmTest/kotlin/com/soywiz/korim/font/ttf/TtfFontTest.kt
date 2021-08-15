@@ -7,6 +7,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
@@ -36,6 +37,16 @@ class TtfFontTest {
             "Rectangle(x=-3, y=-12, width=342, height=56)",
             DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int.toString()
         )
+    }
+
+    @Test
+    fun testColorFont() {
+        println(SystemFont.getEmojiFont().name)
+        val smileyGlyph = SystemFont.getEmojiFont().ttf[WString("😀")[0]]
+        //Colors["#ffc83dff"]
+        //println("smileyGlyph=${smileyGlyph?.codePoint},$smileyGlyph")
+        //println(smileyGlyph?.colorEntry)
+        //for (path in smileyGlyph!!.paths) println("path = $path")
     }
 
     //@Test

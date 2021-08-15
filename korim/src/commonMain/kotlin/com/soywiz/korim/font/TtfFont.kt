@@ -4,7 +4,8 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.extract16Signed
 import com.soywiz.kmem.insert
-import com.soywiz.kmem.unsigned
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
@@ -47,6 +48,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         val g = getGlyphByCodePoint(codePoint) ?: return null
         val scale = getTextScale(size)
         path.path = g.path
+        path.colorPaths = g.colorEntry?.getColorPaths()
         path.transform.identity()
         //path.transform.scale(scale, -scale)
         path.transform.scale(scale, scale)
@@ -106,9 +108,20 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
     private var horMetrics = listOf<HorMetric>()
     private val characterMaps = LinkedHashMap<Int, Int>()
+    private val characterMapsReverse = LinkedHashMap<Int, Int>()
     private val tablesByName = LinkedHashMap<String, Table>()
     private val glyphCache = IntMap<Glyph>(512)
     private fun getCharacterMapOrNull(key: Int): Int? = characterMaps[key]
+
+    private fun addCharacterMap(codePoint: Int, index: Int) {
+        characterMaps[codePoint] = index
+        characterMapsReverse[index] = codePoint
+    }
+
+    // Color extension
+    private var colrLayerInfos = arrayOf<ColrLayerInfo>()
+    private val colrGlyphInfos = IntMap<ColrGlyphInfo>()
+    var palettes = listOf<Palette>()
 
     private var frozen = false
 
@@ -121,6 +134,10 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         readLoca()
         readCmap()
         readHmtx()
+        readCpal()
+        readColr()
+
+        //println("tablesByName=$tablesByName")
 
         if (freeze) {
             getAllGlyphs(cache = true).fastForEach {
@@ -365,6 +382,62 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 		horMetrics = firstMetrics + compressedMetrics
 	}
 
+    private fun readCpal() = runTableUnit("CPAL") {
+        val version = readU16BE()
+        when (version) {
+            0, 1 -> {
+                val numPaletteEntries = readU16BE()
+                val numPalettes = readU16BE()
+                val numColorRecords = readU16BE()
+                val colorRecordsArrayOffset = readS32BE()
+                val colorRecordIndices = readShortArrayBE(numPalettes)
+                val paletteTypesArrayOffset = if (version == 1) readS32BE() else -1
+                val paletteLabelsArrayOffset = if (version == 1) readS32BE() else -1
+                val paletteEntryLabelsArrayOffset = if (version == 1) readS32BE() else -1
+                position = colorRecordsArrayOffset
+                val colorInts = readIntArrayLE(numColorRecords)
+                for (n in 0 until colorInts.size) {
+                    val c = RGBA(colorInts[n])
+                    colorInts[n] = RGBA(c.b, c.g, c.r, c.a).value
+                }
+                palettes = colorRecordIndices.map {
+                    Palette(RgbaArray(colorInts.copyOfRange(it.toInt(), it.toInt() + numPaletteEntries)))
+                }
+                // @TODO: Handle CPAL v1 info
+            }
+            else -> {
+                println("TTF WARNING CPAL version != 0,1")
+            }
+        }
+    }
+
+    private fun readColr() = runTableUnit("COLR") {
+        val version = readU16BE()
+        when (version) {
+            0 -> {
+                val numBaseGlyphRecords = readU16BE()
+                val baseGlyphRecordsOffset = readS32BE()
+                val layerRecordsOffset =  readS32BE()
+                val numLayerRecords = readU16BE()
+                //println("numBaseGlyphRecords=$numBaseGlyphRecords")
+                //println("baseGlyphRecordsOffset=$baseGlyphRecordsOffset")
+                //println("layerRecordsOffset=$layerRecordsOffset")
+                //println("numLayerRecords=$numLayerRecords")
+                position = layerRecordsOffset
+                colrLayerInfos = Array(numLayerRecords) { ColrLayerInfo(readU16BE(), readU16BE()) }
+                position = baseGlyphRecordsOffset
+                for (n in 0 until numBaseGlyphRecords) {
+                    val info = ColrGlyphInfo(readU16BE(), readU16BE(), readU16BE())
+                    colrGlyphInfos[info.glyphID] = info
+                    //println("- $glyphID = $firstLayerIndex / $numLayers")
+                }
+            }
+            else -> {
+                println("TTF WARNING CCOL version != 0")
+            }
+        }
+    }
+
 	private fun readCmap() = runTableUnit("cmap") {
 		data class EncodingRecord(val platformId: Int, val encodingId: Int, val offset: Int)
 
@@ -413,7 +486,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 								} else {
 									index = c + delta
 								}
-								characterMaps[c] = index and 0xFFFF
+                                addCharacterMap(c, index and 0xFFFF)
 								//println("%04X --> %d".format(c, index and 0xFFFF))
 							}
 						}
@@ -433,7 +506,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 
 							var glyphId = startGlyphId
 							for (c in startCharCode..endCharCode) {
-								characterMaps[c] = glyphId++
+                                addCharacterMap(c, glyphId++)
 							}
 						}
 					}
@@ -447,16 +520,21 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 		//println(tables)
 	}
 
+    fun getCodePointFromCharIndex(charIndex: Int): Int? = characterMapsReverse[charIndex]
     fun getCharIndexFromCodePoint(codePoint: Int): Int? = getCharacterMapOrNull(codePoint)
-    fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.toInt())
+    fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.code)
+    fun getCharIndexFromWChar(char: WChar): Int? = getCharacterMapOrNull(char.code)
 
-    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache) }
-    fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.toInt(), cache)
+    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache, codePoint) }
+    fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
+    fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
 
     operator fun get(char: Char) = getGlyphByChar(char)
     operator fun get(codePoint: Int) = getGlyphByCodePoint(codePoint)
+    operator fun get(codePoint: WChar) = getGlyphByCodePoint(codePoint.code)
 
-    fun getGlyphByIndex(index: Int, cache: Boolean = true): Glyph? {
+    fun getGlyphByIndex(index: Int, cache: Boolean = true, codePoint: Int = -1): Glyph? {
+        //val finalCodePoint = if (codePoint < 0) getCodePointFromCharIndex(index) ?: -1 else codePoint
         val start = locs.getOrNull(index) ?: 0
         val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
@@ -464,11 +542,15 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         val glyph = when {
             size != 0 -> this.glyphCache[index] ?: runTable("glyf") { table ->
                 //println("READ GLYPH[$index]: start=$start, end=$end, size=$size, table=$table")
-                sliceStart(start).readGlyph(index)
+                sliceStart(start).readGlyph(index).also {
+                    //it.codePoint = finalCodePoint
+                }
             }
             else -> {
                 //println("EMPTY GLYPH: SIZE: $size, index=$index")
-                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth)
+                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth).also {
+                    //it.codePoint = finalCodePoint
+                }
             }
         }
         if (cache && !frozen) this.glyphCache[index] = glyph
@@ -496,13 +578,40 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
         val scaleY: Float
 	)
 
+    inner class ColrLayerInfo(val glyphID: Int, val paletteIndex: Int) {
+        fun color(pal: Int) = palettes.getCyclic(pal).colors.getOrElse(paletteIndex) { Colors.FUCHSIA }
+        val color: RGBA get() = color(0)
+        fun getColorPath(pal: Int = 0) = getGlyphByIndex(glyphID)?.path?.let { FillShape(it, null, color(pal)) }
+        override fun toString(): String = "ColrLayerInfo($glyphID, $paletteIndex, $color)"
+    }
+    inner class ColrGlyphInfo(val glyphID: Int, val firstLayerIndex: Int, val numLayers: Int) {
+        operator fun get(index: Int) = colrLayerInfos[firstLayerIndex + index]
+        fun toList() = Array(numLayers) { this[it] }.toList()
+
+        fun getColorPaths(pal: Int = 0): List<FillShape> = toList().mapNotNull { it.getColorPath(pal) }
+        override fun toString(): String = "ColrGlyphInfo[$glyphID][$numLayers](${toList()})"
+    }
+
+    open class GlyphGraphicsPath(
+        val glpyhIndex: Int,
+        commands: IntArrayList = IntArrayList(),
+        data: DoubleArrayList = DoubleArrayList(),
+        winding: Winding = Winding.EVEN_ODD
+    ) : GraphicsPath(commands, data, winding) {
+        override fun toString(): String = "GraphicsPath(glpyhIndex=$glpyhIndex, \"${this.toSvgPathString()}\")"
+    }
+
     abstract inner class Glyph(
         val index: Int,
         val xMin: Int, val yMin: Int,
         val xMax: Int, val yMax: Int,
         val advanceWidth: Int
     ) {
-        abstract val path: GraphicsPath
+        abstract val path: GlyphGraphicsPath
+        abstract val paths: List<GlyphGraphicsPath>
+
+        //val colorEntry get() = colrGlyphInfos[codePoint]
+        val colorEntry get() = colrGlyphInfos[index]
 
         val metrics1px = run {
             val size = unitsPerEm.toDouble()
@@ -523,28 +632,31 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
 	) : Glyph(index, xMin, yMin, xMax, yMax, advanceWidth) {
         override fun toString(): String = "CompositeGlyph[$advanceWidth](${refs})"
 
+        override val paths = refs.map { ref ->
+            val gpath = ref.glyph.path
+            GlyphGraphicsPath(ref.glyph.index, IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size)).also { out ->
+                val m = Matrix()
+                m.translate(ref.x, -ref.y)
+                m.scale(ref.scaleX, ref.scaleY)
+                out.write(ref.glyph.path, m)
+            }
+        }
+
         // @TODO: Do not use by lazy, since this causes a crash on Kotlin/Native
-        override val path: GraphicsPath = run {
+        override val path: GlyphGraphicsPath = run {
             var commandsSize = 0
             var dataSize = 0
 
-            refs.fastForEach { ref ->
-                val gpath = ref.glyph.path
+            paths.fastForEach { gpath ->
                 commandsSize += gpath.commands.size
                 dataSize += gpath.data.size
             }
 
-            GraphicsPath(IntArrayList(commandsSize), DoubleArrayList(dataSize)).also { out ->
-                refs.fastForEach { ref ->
-                    val m = Matrix()
-                    m.translate(ref.x, -ref.y)
-                    m.scale(ref.scaleX, ref.scaleY)
-                    out.write(ref.glyph.path, m)
-                }
+            GlyphGraphicsPath(index, IntArrayList(commandsSize), DoubleArrayList(dataSize)).also { out ->
+                paths.fastForEach { out.write(it) }
             }
         }
-	}
-
+    }
 
     inner class SimpleGlyph(
         index: Int,
@@ -575,7 +687,7 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
                 dataSize += 2 + (csize * 8) // Bigger than required
             }
 
-            GraphicsPath(IntArrayList(commandSize), DoubleArrayList(dataSize)).also { p ->
+            GlyphGraphicsPath(index, IntArrayList(commandSize), DoubleArrayList(dataSize)).also { p ->
                 //println("flags.size: ${flags.size}, contoursIndices.size=${contoursIndices.size}, xPos.size=${xPos.size}, yPos.size=${yPos.size}")
                 //assert(flags.size == contoursIndices.size)
                 //assert(xPos.size == contoursIndices.size)
@@ -624,6 +736,8 @@ class TtfFont(private val s: FastByteArrayInputStream, private val freeze: Boole
                 }
             }
         }
+
+        override val paths = listOf(path)
 
         private inline fun forEachContour(block: (cstart: Int, cend: Int, csize: Int) -> Unit) {
             for (n in 0 until contoursIndices.size - 1) {
