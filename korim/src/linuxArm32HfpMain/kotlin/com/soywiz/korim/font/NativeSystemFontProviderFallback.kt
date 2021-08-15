@@ -1,3 +1,6 @@
 package com.soywiz.korim.font
 
-actual val nativeSystemFontProvider: NativeSystemFontProvider = FallbackNativeSystemFontProvider(DefaultTtfFont)
+import kotlin.native.concurrent.*
+
+@ThreadLocal
+actual val nativeSystemFontProvider: NativeSystemFontProvider = FolderBasedNativeSystemFontProvider()
