@@ -140,6 +140,9 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 		offset += count
 		return out
 	}
+
+    fun getAllBytes() = ba.copyOfRange(start, end)
+    fun getAllBytesUnsafe() = ba
 }
 
 fun ByteArray.openFastStream(offset: Int = 0) = FastByteArrayInputStream(this, offset)

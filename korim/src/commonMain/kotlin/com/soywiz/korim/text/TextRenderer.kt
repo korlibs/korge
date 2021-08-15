@@ -227,3 +227,29 @@ val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer {
     put(c)
     advance(advance)
 }
+
+fun <T> VectorBuilder.text(
+    text: T, font: VectorFont, size: Double = 16.0,
+    x: Double = 0.0, y: Double = 0.0,
+    renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
+) {
+    val transform = Matrix()
+    //transform.pretranslate(x, y)
+
+    val actions = object : TextRendererActions() {
+        override fun put(codePoint: Int): GlyphMetrics {
+            val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath)
+            if (glyph != null) {
+                transform.keepMatrix {
+                    transform.premultiply(glyph.transform)
+                    transform.translate(this.x + x, this.y + y)
+                    transform.premultiply(this.transform)
+                    //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
+                    path(glyph.path, transform)
+                }
+            }
+            return glyphMetrics
+        }
+    }
+    renderer.invoke(actions, text, size, font)
+}
