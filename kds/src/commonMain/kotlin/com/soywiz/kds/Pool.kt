@@ -42,8 +42,8 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
     }
 
     fun free(vararg elements: T) { elements.fastForEach { free(it) } }
-
     fun free(elements: Iterable<T>) { for (element in elements) free(element) }
+    fun free(elements: List<T>) { elements.fastForEach { free(it) } }
 
     inline operator fun <R> invoke(callback: (T) -> R): R = alloc(callback)
 

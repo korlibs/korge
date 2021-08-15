@@ -72,12 +72,12 @@ suspend fun Stage.mainImageTrace() {
             circle(100, 100, 40)
             circle(100, 100, 20)
             roundRect(200, 50, 50, 50, 5, 5)
-            //circle(130, 100, 20) // @TODO: Bug
+            circle(130, 100, 20) // @TODO: Bug
         }
     }
     val path = bmp.trace()
     image(bmp)
-    graphics { fill(Colors.RED) { write(path) } }.scale(3)
+    graphics { fill(Colors.RED) { write(path) } }.xy(50, 50).scale(3).alpha(0.5)
     //image(bmp)
     /*
     Bitmap2(bmp.width, bmp.height).also {
