@@ -7,7 +7,7 @@ import org.gradle.kotlin.dsl.*
 import java.io.*
 
 fun Project.configureEsbuild() {
-    val wwwFolder = File(rootProject.buildDir, "www")
+    val wwwFolder = File(buildDir, "www")
     val esbuildFolder = File(rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
     val esbuildCmd = if (isWindows) File(esbuildFolder, "esbuild.cmd") else File(esbuildFolder, "esbuild")
@@ -46,6 +46,7 @@ fun Project.configureEsbuild() {
 
     for (debug in listOf(false, true)) {
         val debugPrefix = if (debug) "Debug" else "Release"
+        val productionInfix = if (debug) "Development" else "Production"
         val browserPrepareEsbuild = when {
             debug -> browserPrepareEsbuildDebug
             else -> browserPrepareEsbuildRelease
@@ -57,16 +58,20 @@ fun Project.configureEsbuild() {
 
             // browserDebugEsbuild
             // browserReleaseEsbuild
-            tasks.create("browser${debugPrefix}Esbuild${runSuffix}", Exec::class) {
-                it.dependsOn(browserPrepareEsbuild)
+            tasks.create("browser${debugPrefix}Esbuild${runSuffix}", Exec::class) { task ->
+                task.dependsOn(browserPrepareEsbuild)
 
-                it.commandLine(ArrayList<Any>().apply {
+                val jsPath = tasks.getByName("compile${productionInfix}ExecutableKotlinJs").outputs.files.first {
+                    it.extension.toLowerCase() == "js"
+                }
+
+                task.commandLine(ArrayList<Any>().apply {
                     add(esbuildCmd)
                     //add("--watch",)
                     add("--bundle")
                     add("--minify")
                     add("--sourcemap=external")
-                    add(File(buildDir, "js/node_modules/${project.name}/kotlin/${project.name}.js"))
+                    add(jsPath)
                     add("--outfile=${File(wwwFolder, "${project.name}.js")}")
                     // @TODO: Close this command on CTRL+C
                     //if (run) add("--servedir=$wwwFolder")
