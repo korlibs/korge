@@ -67,6 +67,8 @@ dependencies {
 
 	implementation(gradleApi())
 	implementation(localGroovy())
+    compileOnly(gradleKotlinDsl())
+    //implementation(gradleKotlinDsl())
 
     testImplementation(kotlin("test-junit"))
     testImplementation("io.mockk:mockk:1.11.0")

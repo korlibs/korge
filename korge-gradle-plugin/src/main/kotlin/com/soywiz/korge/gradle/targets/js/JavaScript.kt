@@ -4,15 +4,9 @@ import com.soywiz.korge.gradle.*
 import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
-import groovy.text.*
-import org.gradle.*
 import org.gradle.api.*
-import org.gradle.api.file.*
 import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
-import java.lang.management.*
 
 private object JavaScriptClass
 
@@ -49,27 +43,11 @@ fun Project.configureJavaScript() {
         }
 	}
 
-    // @TODO: jsBrowserProductionRun is much faster than jsBrowserDevelopmentRun at runtime. Why is that??
-    val runJs = project.addTask<Task>(name = "runJs") { task ->
-        task.group = GROUP_KORGE_RUN
-        task.dependsOn("jsBrowserProductionRun")
-    }
-
-    val runJsRelease = project.addTask<Task>(name = "runJsRelease") { task ->
-        task.group = GROUP_KORGE_RUN
-        task.dependsOn("jsBrowserProductionRun")
-    }
-
-    val runJsDebug = project.addTask<Task>(name = "runJsDebug") { task ->
-        task.group = GROUP_KORGE_RUN
-        task.dependsOn("jsBrowserDevelopmentRun")
-    }
-
     project.tasks.getByName("jsProcessResources").apply {
         //println(this.outputs.files.toList())
         doLast {
             val targetDir = this.outputs.files.first()
-            logger.debug("jsProcessResources.targetDir: $targetDir")
+            logger.info("jsProcessResources.targetDir: $targetDir")
             val jsMainCompilation = kotlin.js().compilations["main"]!!
             //val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
             // @TODO: How to get the actual .js file generated/served?
@@ -115,4 +93,7 @@ fun Project.configureJavaScript() {
             )
         }
     }
+    configureEsbuild()
+    configureWebpackFixes()
+    configureJavascriptRun()
 }
