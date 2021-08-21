@@ -11,28 +11,30 @@ import com.soywiz.korio.util.*
 open class PrintAG(
     width: Int = 640,
     height: Int = 480
-) : LogBaseAG() {
-    override fun log(str: String) {
+) : LogBaseAG(width, height) {
+    override fun log(str: String, kind: Kind) {
         println("PrintAG: $str")
     }
 }
 
 open class LogAG(
     width: Int = 640,
-    height: Int = 480
+    height: Int = 480,
 ) : LogBaseAG(width, height) {
     val log = arrayListOf<String>()
     fun getLogAsString(): String = log.joinToString("\n")
-    override fun log(str: String) {
+    override fun log(str: String, kind: Kind) {
         this.log += str
     }
 }
 
 open class LogBaseAG(
 	width: Int = 640,
-	height: Int = 480
+	height: Int = 480,
 ) : DummyAG(width, height) {
-	open fun log(str: String) {
+    enum class Kind { DRAW, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, RENDER_BUFFER, BUFFER, TEXTURE }
+
+	open fun log(str: String, kind: Kind) {
 	}
 
 	override fun clear(
@@ -42,23 +44,23 @@ open class LogBaseAG(
 		clearColor: Boolean,
 		clearDepth: Boolean,
 		clearStencil: Boolean
-	) = log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)")
+	) = log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
 
-	override var backWidth: Int = width; set(value) = run { field = value; log("backWidth = $value") }
-	override var backHeight: Int = height; set(value) = run { field = value; log("backHeight = $value") }
+	override var backWidth: Int = width; set(value) = run { field = value; log("backWidth = $value", Kind.METRICS) }
+	override var backHeight: Int = height; set(value) = run { field = value; log("backHeight = $value", Kind.METRICS) }
 
-	override fun repaint() = log("repaint()")
+	override fun repaint() = log("repaint()", Kind.REPAINT)
 
-	override fun dispose() = log("dispose()")
+	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
 	inner class LogTexture(val id: Int, override val premultiplied: Boolean) : Texture() {
 		override fun uploadedSource() {
-			log("$this.uploadedBitmap($source, ${source.width}, ${source.height})")
+			log("$this.uploadedBitmap($source, ${source.width}, ${source.height})", Kind.TEXTURE_UPLOAD)
 		}
 
 		override fun close() {
 			super.close()
-			log("$this.close()")
+			log("$this.close()", Kind.CLOSE)
 		}
 		override fun toString(): String = "Texture[$id]"
 	}
@@ -67,15 +69,15 @@ open class LogBaseAG(
 		val logmem: FBuffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
-		override fun afterSetMem() = log("$this.afterSetMem(mem[${mem!!.size}])")
-		override fun close() = log("$this.close()")
+		override fun afterSetMem() = log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
+		override fun close() = log("$this.close()", LogBaseAG.Kind.BUFFER)
 		override fun toString(): String = "Buffer[$id]"
 	}
 
 	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : RenderBuffer() {
-        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) = log("$this.setSize($width, $height)")
-        override fun set() = log("$this.set()")
-		override fun close() = log("$this.close()")
+        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) = log("$this.setSize($width, $height)", LogBaseAG.Kind.RENDER_BUFFER)
+        override fun set() = log("$this.set()", LogBaseAG.Kind.RENDER_BUFFER)
+		override fun close() = log("$this.close()", LogBaseAG.Kind.RENDER_BUFFER)
 		override fun toString(): String = "RenderBuffer[$id]"
         init {
             if (isMain) {
@@ -89,10 +91,10 @@ open class LogBaseAG(
 	private var renderBufferId = 0
 
 	override fun createTexture(premultiplied: Boolean): Texture =
-		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id") }
+		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
 	override fun createBuffer(kind: Buffer.Kind): Buffer =
-		LogBuffer(bufferId++, kind).apply { log("createBuffer($kind):$id") }
+		LogBuffer(bufferId++, kind).apply { log("createBuffer($kind):$id", Kind.BUFFER) }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
         val layout = data.layout
@@ -114,18 +116,18 @@ open class LogBaseAG(
         val renderState = batch.renderState
         val scissor = batch.scissor
         try {
-            log("draw(vertexCount=$vertexCount, instances=$instances, indices=$indices, type=$type, offset=$offset)")
-            log("::draw.program=$program")
-            log("::draw.renderState=$renderState")
-            log("::draw.scissor=$scissor")
-            log("::draw.stencil=$stencil")
-            log("::draw.blending=$blending")
-            log("::draw.colorMask=$colorMask")
+            log("draw(vertexCount=$vertexCount, instances=$instances, indices=$indices, type=$type, offset=$offset)", Kind.DRAW)
+            log("::draw.program=$program", Kind.DRAW)
+            log("::draw.renderState=$renderState", Kind.DRAW)
+            log("::draw.scissor=$scissor", Kind.DRAW)
+            log("::draw.stencil=$stencil", Kind.DRAW)
+            log("::draw.blending=$blending", Kind.DRAW)
+            log("::draw.colorMask=$colorMask", Kind.DRAW)
 
             for (index in 0 until uniforms.size) {
                 val uniform = uniforms.keys[index]
                 val value = uniforms.values[index]
-                log("::draw.uniform.$uniform = ${value.convertToStriangle()}")
+                log("::draw.uniform.$uniform = ${value.convertToStriangle()}", Kind.DRAW)
             }
 
             val vertexLayoutAttributesEx = vertexData.flatMap { vd ->
@@ -140,11 +142,11 @@ open class LogBaseAG(
             val missingAttributes = vertexLayoutAttributes - program.attributes
             val extraAttributes = program.attributes - vertexLayoutAttributes
 
-            if (missingUniforms.isNotEmpty()) log("::draw.ERROR.Missing:$missingUniforms")
-            if (extraUniforms.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraUniforms")
+            if (missingUniforms.isNotEmpty()) log("::draw.ERROR.Missing:$missingUniforms", Kind.DRAW)
+            if (extraUniforms.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraUniforms", Kind.DRAW)
 
-            if (missingAttributes.isNotEmpty()) log("::draw.ERROR.Missing:$missingAttributes")
-            if (extraAttributes.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraAttributes")
+            if (missingAttributes.isNotEmpty()) log("::draw.ERROR.Missing:$missingAttributes", Kind.DRAW)
+            if (extraAttributes.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraAttributes", Kind.DRAW)
 
             val _indices = when {
                 indices != null -> {
@@ -161,10 +163,10 @@ open class LogBaseAG(
                 }
             }
             for (vlae in vertexLayoutAttributesEx) {
-                log("::draw.attribute[${vlae.buffer.id}][${vlae.index}]=${vlae.attribute.toStringEx()}")
+                log("::draw.attribute[${vlae.buffer.id}][${vlae.index}]=${vlae.attribute.toStringEx()}", Kind.DRAW)
             }
 
-            log("::draw.indices=$_indices")
+            log("::draw.indices=$_indices", Kind.DRAW)
             for (doInstances in listOf(false, true)) {
                 for (index in if (doInstances) IntArray(instances) { it }.toIntArrayList() else _indices.sorted().distinct()) {
                     val attributes = arrayListOf<String>()
@@ -189,15 +191,15 @@ open class LogBaseAG(
                     }
                     if (doInstances) {
                         if (attributes.isNotEmpty()) {
-                            log("::draw.instance[$index]: ${attributes.joinToString(", ")}")
+                            log("::draw.instance[$index]: ${attributes.joinToString(", ")}", Kind.DRAW)
                         }
                     } else {
-                        log("::draw.vertex[$index]: ${attributes.joinToString(", ")}")
+                        log("::draw.vertex[$index]: ${attributes.joinToString(", ")}", Kind.DRAW)
                     }
                 }
             }
         } catch (e: Throwable) {
-            log("LogBaseAG.draw.ERROR: ${e.message}")
+            log("LogBaseAG.draw.ERROR: ${e.message}", Kind.DRAW)
             e.printStackTrace()
         }
     }
@@ -208,14 +210,14 @@ open class LogBaseAG(
         else -> this
     }
 
-    override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()")
+    override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
 	override fun createRenderBuffer(): RenderBuffer =
-		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id") }
+		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.RENDER_BUFFER) }
 
     override fun createMainRenderBuffer(): RenderBuffer =
-        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id") }
+        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.RENDER_BUFFER) }
 
-    override fun flipInternal() = log("flipInternal()")
-	override fun readColor(bitmap: Bitmap32) = log("$this.readBitmap($bitmap)")
-	override fun readDepth(width: Int, height: Int, out: FloatArray) = log("$this.readDepth($width, $height, $out)")
+    override fun flipInternal() = log("flipInternal()", Kind.FLIP)
+	override fun readColor(bitmap: Bitmap32) = log("$this.readBitmap($bitmap)", Kind.READ)
+	override fun readDepth(width: Int, height: Int, out: FloatArray) = log("$this.readDepth($width, $height, $out)", Kind.READ)
 }

@@ -29,7 +29,8 @@ plugins {
     `maven-publish`
 }
 
-val headlessTests = false
+val headlessTests = true
+//val headlessTests = false
 val useMimalloc = true
 //val useMimalloc = false
 
@@ -230,11 +231,6 @@ subprojects {
         afterEvaluate {
             val jvmTest = tasks.findByName("jvmTest")
             if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
-                if (!beforeJava9) jvmTest.jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
-                if (headlessTests) {
-                    jvmTest.systemProperty("java.awt.headless", "true")
-                }
-
                 val jvmTestFix = tasks.create("jvmTestFix", Test::class)
                 jvmTestFix.group = "verification"
                 //jvmTestFix.group = jvmTest.group
@@ -242,6 +238,14 @@ subprojects {
                 jvmTestFix.testClassesDirs = jvmTest.testClassesDirs
                 jvmTestFix.classpath = jvmTest.classpath
                 jvmTestFix.bootstrapClasspath = jvmTest.bootstrapClasspath
+                if (!beforeJava9) {
+                    jvmTest.jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
+                    jvmTestFix.jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
+                }
+                if (headlessTests) {
+                    jvmTest.systemProperty("java.awt.headless", "true")
+                    jvmTestFix.systemProperty("java.awt.headless", "true")
+                }
             }
         }
 

@@ -43,13 +43,16 @@ open class ViewsForTesting(
         override var height: Int = initialSize.height
         override val coroutineDispatcher = dispatcher
     }
+    open fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean {
+        return true
+    }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
     val ag = object : LogAG(windowSize.width, windowSize.height) {
         override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
-        override fun log(str: String) {
-            if (this@ViewsForTesting.log) {
-                super.log(str)
+        override fun log(str: String, kind: Kind) {
+            if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
+                super.log(str, kind)
             }
         }
     }
