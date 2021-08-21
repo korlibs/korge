@@ -228,6 +228,8 @@ subprojects {
         afterEvaluate {
             val jvmTest = tasks.findByName("jvmTest")
             if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
+            val beforeJava9 = System.getProperty("java.version").startsWith("1.")
+            if (!beforeJava9) jvmTest.jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
                 if (headlessTests) {
                     jvmTest.systemProperty("java.awt.headless", "true")
                 }
