@@ -52,7 +52,8 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
-    mainImageTrace()
+    mainRotateCircle()
+    //mainImageTrace()
     //mainEmoji()
     //mainBVH()
     //mainCircles()
@@ -61,6 +62,29 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
 }
+
+suspend fun Stage.mainRotateCircle() {
+    //val circle = circle(radius = 50.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 20.0).xy(0, 0).also {
+    //val circle = circle(radius = 50.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 20.0).xy(0, 0).centered.also {
+    solidRect(300.0, 300.0, Colors.YELLOW).xy(250, 250).centered
+    val circle = circle(radius = 150.0, fill = Colors.RED, stroke = Colors.BLUE, strokeThickness = 20.0).xy(250, 250).centered.also {
+        //val circle = circle(radius = 50.0, fill = Colors.RED).xy(100, 100).centered.also {
+        //it.autoScaling = false
+        it.autoScaling = true
+        it.preciseAutoScaling = true
+        //it.useNativeRendering = false
+    }
+    graphics {
+        fill(Colors.PURPLE) {
+            rect(-50, -50, 60, 60)
+        }
+    }
+    stage.keys {
+        downFrame(Key.LEFT) { circle.rotation -= 10.degrees }
+        downFrame(Key.RIGHT) { circle.rotation += 10.degrees }
+    }
+}
+
 
 suspend fun Stage.mainImageTrace() {
     val bmp = Bitmap32(300, 200).context2d {

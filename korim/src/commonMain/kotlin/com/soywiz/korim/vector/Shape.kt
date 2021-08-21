@@ -1,19 +1,23 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korim.bitmap.toUri
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.Font
-import com.soywiz.korim.internal.*
-
 import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.VerticalAlign
+import com.soywiz.korio.serialization.xml.Xml
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korio.util.toStringDecimal
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.contains
 import com.soywiz.korma.geom.vector.*
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.round
 
 /*
 <svg width="80px" height="30px" viewBox="0 0 80 30"
@@ -106,7 +110,7 @@ fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1):
 //}
 
 interface Shape : BoundsDrawable {
-	fun addBounds(bb: BoundsBuilder): Unit
+	fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean = false): Unit
 	fun buildSvg(svg: SvgBuilder): Unit = Unit
     fun getPath(path: GraphicsPath = GraphicsPath()): GraphicsPath = path
 
@@ -134,7 +138,7 @@ interface StyledShape : Shape {
 	val paint: Paint
 	val transform: Matrix
 
-	override fun addBounds(bb: BoundsBuilder): Unit {
+	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean): Unit {
         path?.let { path ->
             bb.add(path, transform)
         }
@@ -297,7 +301,7 @@ fun Paint.toSvg(svg: SvgBuilder): String {
 }
 
 object EmptyShape : Shape {
-    override fun addBounds(bb: BoundsBuilder) = Unit
+    override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) = Unit
     override fun draw(c: Context2d) = Unit
 }
 
@@ -339,13 +343,19 @@ data class PolylineShape(
     private val tempBB = BoundsBuilder()
     private val tempRect = Rectangle()
 
-    override fun addBounds(bb: BoundsBuilder) {
+    override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
+        if (!includeStrokes) return
+
         tempBB.reset()
         tempBB.add(path)
         tempBB.getBounds(tempRect)
 
-        val halfThickness = thickness / 2
-        tempRect.inflate(max(halfThickness, 0.0), max(halfThickness, 0.0))
+        println("TEMP_RECT: ${tempRect}")
+
+        val halfThickness = max(thickness / 2.0, 0.0)
+        tempRect.inflate(halfThickness, halfThickness)
+
+        println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
 
         //println("PolylineShape.addBounds: thickness=$thickness, rect=$tempRect")
         bb.add(tempRect)
@@ -376,7 +386,7 @@ data class PolylineShape(
 class CompoundShape(
 	val components: List<Shape>
 ) : Shape {
-	override fun addBounds(bb: BoundsBuilder) = run { components.fastForEach { it.addBounds(bb)}  }
+	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) = run { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
 	override fun draw(c: Context2d) = c.buffering { components.fastForEach { it.draw(c) } }
 	override fun buildSvg(svg: SvgBuilder) = run { components.fastForEach { it.buildSvg(svg) } }
     override fun getPath(path: GraphicsPath): GraphicsPath = path.also { components.fastForEach { it.getPath(path) } }
@@ -400,7 +410,7 @@ class TextShape(
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
 
-    override fun addBounds(bb: BoundsBuilder) {
+    override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
         bb.add(x, y)
         bb.add(x + fontSize * text.length, y + fontSize) // @TODO: this is not right since we don't have information about Glyph metrics
     }

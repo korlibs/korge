@@ -2,6 +2,8 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.isAlmostZero
 import kotlin.math.*
 
 interface IRectangle {
@@ -158,6 +160,12 @@ data class Rectangle(
     fun toStringBounds(): String = "Rectangle([${left.niceStr},${top.niceStr}]-[${right.niceStr},${bottom.niceStr}])"
     fun toStringSize(): String = "Rectangle([${left.niceStr},${top.niceStr}],[${width.niceStr},${height.niceStr}])"
     fun toStringCompat(): String = "Rectangle(x=${left.niceStr}, y=${top.niceStr}, w=${width.niceStr}, h=${height.niceStr})"
+
+    override fun equals(other: Any?): Boolean = other is Rectangle
+        && x.isAlmostEquals(other.x)
+        && y.isAlmostEquals(other.y)
+        && width.isAlmostEquals(other.width)
+        && height.isAlmostEquals(other.height)
 
     override fun interpolateWith(ratio: Double, other: Rectangle): Rectangle =
         Rectangle().setToInterpolated(ratio, this, other)

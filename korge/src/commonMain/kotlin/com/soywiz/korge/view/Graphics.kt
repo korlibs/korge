@@ -42,7 +42,7 @@ open class Graphics @JvmOverloads constructor(
 
     @PublishedApi
     internal inline fun dirty(callback: () -> Unit): Graphics {
-        this.dirty = true
+        dirty()
         callback()
         return this
     }
@@ -232,7 +232,10 @@ open class Graphics @JvmOverloads constructor(
     override fun drawShape(ctx: Context2d) {
         this@Graphics.compoundShape.draw(ctx)    }
 
-    override fun getShapeBounds(bb: BoundsBuilder) {
-        shapes.fastForEach { it.addBounds(bb) }
+    override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
+        shapes.fastForEach {
+            //println("getShapeBounds: $it")
+            it.addBounds(bb, includeStrokes)
+        }
     }
 }

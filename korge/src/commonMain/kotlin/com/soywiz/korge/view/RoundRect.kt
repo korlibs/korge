@@ -37,21 +37,18 @@ inline fun Container.roundRect(
  * A Rect [View] with rounded corners of size [width] and [height] with the initial [color].
  */
 class RoundRect(
-        width: Double,
-        height: Double,
-        rx: Double,
-        ry: Double = rx,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true
+    width: Double,
+    height: Double,
+    rx: Double,
+    ry: Double = rx,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
 
     override var width: Double by uiObservable(width) { updateGraphics() }
     override var height: Double by uiObservable(height) { updateGraphics() }
-
-    override val bwidth: Double get() = width
-    override val bheight: Double get() = height
 
     var rx: Double by uiObservable(rx) { updateGraphics() }
     var ry: Double by uiObservable(ry) { updateGraphics() }

@@ -25,7 +25,7 @@ class VectorImage(
         set(value) {
             if (field !== value) {
                 field = value
-                dirty = true
+                dirty()
                 redrawIfRequired()
                 scale = 1.0
             }
@@ -35,7 +35,7 @@ class VectorImage(
         ctx.draw(shape)
     }
 
-    override fun getShapeBounds(bb: BoundsBuilder) {
+    override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
         bb.add(0.0, 0.0)
         bb.add(shape.width, shape.height)
     }

@@ -63,11 +63,12 @@ open class ShapeView(
         val shape = this.shape
         clear()
         if (shape != null && shape.isNotEmpty()) {
-            fill(this@ShapeView.fill) {
-                this.path(shape)
-            }
             if (strokeThickness != 0.0) {
-                stroke(this@ShapeView.stroke, StrokeInfo(thickness = strokeThickness)) {
+                fillStroke(this@ShapeView.fill, this@ShapeView.stroke, StrokeInfo(thickness = strokeThickness)) {
+                    this.path(shape)
+                }
+            } else {
+                fill(this@ShapeView.fill) {
                     this.path(shape)
                 }
             }

@@ -59,8 +59,8 @@ class Polygon(
         get() = colorMul
         set(value) { colorMul = value }
 
-    override val bwidth get() = radius * 2
-    override val bheight get() = radius * 2
+    //override val bwidth get() = radius * 2
+    //override val bheight get() = radius * 2
 
     init {
         this.color = color

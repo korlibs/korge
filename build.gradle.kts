@@ -168,6 +168,8 @@ allprojects {
     }
 }
 
+val beforeJava9 = System.getProperty("java.version").startsWith("1.")
+
 subprojects {
     val doConfigure =
             project.name != "korge-gradle-plugin" &&
@@ -228,8 +230,7 @@ subprojects {
         afterEvaluate {
             val jvmTest = tasks.findByName("jvmTest")
             if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
-            val beforeJava9 = System.getProperty("java.version").startsWith("1.")
-            if (!beforeJava9) jvmTest.jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
+                if (!beforeJava9) jvmTest.jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
                 if (headlessTests) {
                     jvmTest.systemProperty("java.awt.headless", "true")
                 }
@@ -665,6 +666,7 @@ samples {
         val runJvm by creating(KorgeJavaExec::class) {
             group = "run"
             main = "MainKt"
+            if (!beforeJava9) jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
         }
         val runJs by creating {
             group = "run"

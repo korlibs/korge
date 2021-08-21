@@ -38,19 +38,21 @@ open class Circle(
         get() = colorMul
         set(value) { colorMul = value }
 
-    override val bwidth get() = radius * 2
-    override val bheight get() = radius * 2
-
     init {
         this.color = color
         updateGraphics()
     }
 
     private fun updateGraphics() {
+        val halfStroke = this@Circle.strokeThickness / 2
+        val radius = this.radius
         hitShape2d = Shape2d.Circle(radius, radius, radius)
+        //println("radius=$radius, halfStroke=$halfStroke")
         updateShape {
             clear()
-            circle(this@Circle.radius, this@Circle.radius, this@Circle.radius)
+            circle(radius, radius, radius)
+            //circle(radius + halfStroke, radius + halfStroke, radius)
+            //println(toSvgString())
         }
     }
 }

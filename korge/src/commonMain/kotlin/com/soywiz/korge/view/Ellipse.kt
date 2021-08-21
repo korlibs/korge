@@ -27,12 +27,12 @@ inline fun Container.ellipse(
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Ellipse(
-        radiusX: Double = 16.0,
-        radiusY: Double = 16.0,
-        fill: Paint = Colors.WHITE,
-        stroke: Paint = Colors.WHITE,
-        strokeThickness: Double = 0.0,
-        autoScaling: Boolean = true,
+    radiusX: Double = 16.0,
+    radiusY: Double = 16.0,
+    fill: Paint = Colors.WHITE,
+    stroke: Paint = Colors.WHITE,
+    strokeThickness: Double = 0.0,
+    autoScaling: Boolean = true,
 ) : ShapeView(shape = VectorPath(), fill = fill, stroke = stroke, strokeThickness = strokeThickness, autoScaling = autoScaling) {
     /** Radius of the circle */
     var radiusX: Double by uiObservable(radiusX) { updateGraphics() }
@@ -54,9 +54,6 @@ open class Ellipse(
         set(value) {
             radiusY = value / 2
         }
-
-    override val bwidth get() = width
-    override val bheight get() = height
 
     init {
         updateGraphics()

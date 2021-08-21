@@ -3,7 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.korma.geom.*
 
 interface Anchorable {
+    /** Normally in the range [0.0, 1.0] */
     var anchorX: Double
+    /** Normally in the range [0.0, 1.0] */
     var anchorY: Double
 }
 

@@ -116,6 +116,11 @@ open class Text(
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
     var autoScaling = autoScaling
+    var preciseAutoscaling = false
+        set(value) {
+            field = value
+            if (value) autoScaling = true
+        }
     var fontSource: String? = null
         set(value) {
             field = value
@@ -292,7 +297,7 @@ open class Text(
                 }
             }
             else -> {
-                val onRenderResult = autoscaling.onRender(autoScaling, this.globalMatrix)
+                val onRenderResult = autoscaling.onRender(autoScaling, preciseAutoscaling, this.globalMatrix)
                 val lastAutoScalingResult = lastAutoScaling != autoScaling
                 if (onRenderResult || lastAutoScalingResult || lastSmoothing != smoothing || lastNativeRendering != useNativeRendering) {
                     version++
