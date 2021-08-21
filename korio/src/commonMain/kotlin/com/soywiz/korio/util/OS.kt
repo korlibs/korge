@@ -28,6 +28,7 @@ object OS {
 
 	val isJsShell get() = platformNameLC == "shell.js"
 	val isJsNodeJs get() = platformNameLC == "node.js"
+    val isJsDenoJs get() = platformNameLC == "deno.js"
 	val isJsBrowser get() = platformNameLC == "web.js"
 	val isJsWorker get() = platformNameLC == "worker.js"
 	val isJsBrowserOrWorker get() = isJsBrowser || isJsWorker

@@ -1,4 +1,4 @@
-package com.soywiz.korio
+package com.soywiz.korio.runtime.browser
 
 import org.w3c.dom.url.*
 import org.w3c.files.*

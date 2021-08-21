@@ -1,22 +1,14 @@
 package com.soywiz.korio
 
+import com.soywiz.korio.runtime.browser.JsRuntimeBrowser
+import com.soywiz.korio.runtime.deno.JsRuntimeDeno
+import com.soywiz.korio.runtime.node.JsRuntimeNode
 import com.soywiz.korio.util.OS
 import org.w3c.dom.*
 import org.w3c.dom.events.*
 import org.w3c.performance.*
 import kotlinx.browser.*
 import kotlin.collections.set
-
-val jsbaseUrl by lazy {
-    when {
-        OS.isJsNodeJs -> "."
-        else -> {
-            val href = document.location?.href ?: "."
-            if (href.endsWith("/")) href else href.substringBeforeLast('/')
-        }
-    }
-
-}
 
 abstract external class GlobalScope : EventTarget, WindowOrWorkerGlobalScope, GlobalPerformance {
 	fun postMessage(message: dynamic, targetOrigin: dynamic = definedExternally, transfer: dynamic = definedExternally)
@@ -26,17 +18,20 @@ abstract external class GlobalScope : EventTarget, WindowOrWorkerGlobalScope, Gl
 
 val jsGlobalDynamic: dynamic = js("(typeof global !== 'undefined') ? global : self")
 val jsGlobal: GlobalScope  = jsGlobalDynamic
-external val process: dynamic // node.js
-external val navigator: dynamic // browser
-
-//val isNodeJs by lazy { jsTypeOf(window) === "undefined" }
 
 val isDenoJs by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
 val isWeb by lazy { js("(typeof window === 'object')").unsafeCast<Boolean>() }
 val isWorker by lazy { js("(typeof importScripts === 'function')").unsafeCast<Boolean>() }
 val isNodeJs by lazy { js("((typeof process !== 'undefined') && process.release && (process.release.name.search(/node|io.js/) !== -1))").unsafeCast<Boolean>() }
-//val isNodeJs by lazy { !isWeb && !isWorker }
 val isShell get() = !isWeb && !isNodeJs && !isWorker
+
+val jsRuntime by lazy {
+    when {
+        isDenoJs -> JsRuntimeDeno
+        isNodeJs -> JsRuntimeNode
+        else -> JsRuntimeBrowser
+    }
+}
 
 fun HTMLCollection.toList(): List<Element?> = (0 until length).map { this[it] }
 fun <T : Element> HTMLCollection.toTypedList(): List<T> = (0 until length).map { this[it].unsafeCast<T>() }
