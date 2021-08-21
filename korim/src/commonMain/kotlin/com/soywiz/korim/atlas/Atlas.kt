@@ -14,11 +14,16 @@ class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo 
     inner class Entry(val info: AtlasInfo.Region, val page: AtlasInfo.Page) {
         val texture = textures[page.fileName]
             ?: error("Can't find '${page.fileName}' in ${textures.keys}")
-        val slice = texture.slice(info.frame.rect).let {
+        val slice = texture.slice(info.frame.rect, info.name).let {
             // Define virtual frame with offsets "info.spriteSourceSize.x" and "info.spriteSourceSize.y"
             // and original texture size "info.sourceSize.width" and "info.sourceSize.height"
-            BitmapSlice(it.bmpBase, it.bounds, info.name, info.rotated,
-                virtFrame = if (info.trimmed) RectangleInt(info.spriteSourceSize.x, info.spriteSourceSize.y, info.sourceSize.width, info.sourceSize.height) else null)
+            it.copy(
+                rotated = info.rotated,
+                virtFrame = when {
+                    info.trimmed -> RectangleInt(info.spriteSourceSize.x, info.spriteSourceSize.y, info.sourceSize.width, info.sourceSize.height)
+                    else -> null
+                }
+            )
         }
         val name get() = info.name
         // @TODO: Use name instead

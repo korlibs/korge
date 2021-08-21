@@ -118,7 +118,7 @@ class BitmapSlice<out T : Bitmap>(
 	fun extract(): T = bmp.extract(bounds.x, bounds.y, bounds.width, bounds.height)
 
 	override fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String?): BitmapSlice<T> =
-		BitmapSlice(bmp, createRectangleInt(bounds.left, bounds.top, bounds.right, bounds.bottom, left, top, right, bottom), name)
+		copy(bounds = createRectangleInt(bounds.left, bounds.top, bounds.right, bounds.bottom, left, top, right, bottom), name = name)
     override fun sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String?): BitmapSlice<T> = sliceWithBounds(x, y, x + width, y + height, name)
     override fun slice(rect: RectangleInt, name: String?): BitmapSlice<T> = sliceWithBounds(rect.left, rect.top, rect.right, rect.bottom, name)
     override fun slice(rect: Rectangle, name: String?): BitmapSlice<T> = slice(rect.toInt(), name)
@@ -138,10 +138,18 @@ class BitmapSlice<out T : Bitmap>(
         }
     }
 
-    fun withName(name: String? = null)  = BitmapSlice<T>(bmp, bounds, name, rotated, virtFrame)
+    fun withName(name: String? = null) = copy(name = name)
 
 	override fun toString(): String = "BitmapSlice($name:${SizeInt(bounds.width, bounds.height)})"
 }
+
+inline fun <T : Bitmap> BitmapSlice<T>.copy(
+    bmp: T = this.bmp,
+    bounds: RectangleInt = this.bounds,
+    name: String? = this.name,
+    rotated: Boolean = this.rotated,
+    virtFrame: RectangleInt? = this.virtFrame
+) = BitmapSlice(bmp, bounds, name, rotated, virtFrame)
 
 // http://pixijs.download/dev/docs/PIXI.Texture.html#Texture
 fun BitmapSliceCompat(
@@ -161,11 +169,9 @@ private fun createRectangleInt(
     bleft: Int, btop: Int, bright: Int, bbottom: Int,
     left: Int, top: Int, right: Int, bottom: Int,
     allowInvalidBounds: Boolean = false
-): RectangleInt {
-    return RectangleInt.fromBounds(
-        (bleft + left).clamp(bleft, bright),
-        (btop + top).clamp(btop, bbottom),
-        (bleft + right).clamp(if (allowInvalidBounds) bleft else bleft + left, bright),
-        (btop + bottom).clamp(if (allowInvalidBounds) btop else btop + top, bbottom)
-    )
-}
+): RectangleInt = RectangleInt.fromBounds(
+    (bleft + left).clamp(bleft, bright),
+    (btop + top).clamp(btop, bbottom),
+    (bleft + right).clamp(if (allowInvalidBounds) bleft else bleft + left, bright),
+    (btop + bottom).clamp(if (allowInvalidBounds) btop else btop + top, bbottom)
+)

@@ -41,9 +41,7 @@ open class RectBase(
     protected open val bwidth get() = 0.0
 	protected open val bheight get() = 0.0
 
-    //@KorgeInternal
     override val anchorDispX get() = (anchorX * bwidth)
-    //@KorgeInternal
     override val anchorDispY get() = (anchorY * bheight)
 
     protected open val sLeft get() = -anchorDispX

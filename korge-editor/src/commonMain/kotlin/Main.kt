@@ -52,7 +52,8 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
-    mainRotateCircle()
+    mainTrimmedAtlas()
+    //mainRotateCircle()
     //mainImageTrace()
     //mainEmoji()
     //mainBVH()
@@ -61,6 +62,17 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
     //mainCompression()
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
+}
+
+suspend fun Stage.mainTrimmedAtlas() {
+    val bmp = BitmapSlice(
+        Bitmap32(64, 64) { x, y -> Colors.PURPLE },
+        RectangleInt(0, 0, 64, 64),
+        virtFrame = RectangleInt(64, 64, 196, 196)
+    )
+    val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
+    val image2 = image(bmp).anchor(0.0, 0.0).xy(200, 200)
+    //addUpdater { image.rotation += 4.degrees }
 }
 
 suspend fun Stage.mainRotateCircle() {

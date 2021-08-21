@@ -6,6 +6,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.resources.*
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 
@@ -79,14 +80,25 @@ open class BaseImage(
     override val anchorDispY get() = (anchorY * baseBitmap.frameHeight.toDouble() - baseBitmap.frameOffsetY.toDouble())
      */
 
-    override val bwidth: Double get() = baseBitmap.frameWidth.toDouble()
-    override val bheight: Double get() = baseBitmap.frameHeight.toDouble()
+    //override val bwidth: Double get() = baseBitmap.frameWidth.toDouble()
+    //override val bheight: Double get() = baseBitmap.frameHeight.toDouble()
+    override val bwidth: Double get() = baseBitmap.width.toDouble()
+    override val bheight: Double get() = baseBitmap.height.toDouble()
 
     open val frameOffsetX: Double get() = baseBitmap.frameOffsetX.toDouble()
     open val frameOffsetY: Double get() = baseBitmap.frameOffsetY.toDouble()
+    open val frameWidth: Double get() = baseBitmap.frameWidth.toDouble()
+    open val frameHeight: Double get() = baseBitmap.frameHeight.toDouble()
 
-    override val anchorDispX get() = (anchorX * bwidth - frameOffsetX)
-    override val anchorDispY get() = (anchorY * bheight - frameOffsetY)
+    open val anchorDispXNoOffset get() = (anchorX * frameWidth)
+    open val anchorDispYNoOffset get() = (anchorY * frameHeight)
+
+    override val anchorDispX get() = (anchorDispXNoOffset - frameOffsetX)
+    override val anchorDispY get() = (anchorDispYNoOffset - frameOffsetY)
+
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        out.setTo(-anchorDispXNoOffset, -anchorDispYNoOffset, frameWidth, frameHeight)
+    }
 
     override fun createInstance(): View = BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing)
 
