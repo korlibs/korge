@@ -105,9 +105,11 @@ class GraphicsTest {
                 circle(0.0, 0.0, 16.0)
             }
         }
-        assertEquals(graphics, graphics.hitTest(0, 0))
-        assertEquals(graphics, graphics.hitTest(20, 0))
-        assertEquals(null, graphics.hitTest(33, 0))
+        //println(graphics.hitShape2d)
+        assertNotNull(graphics.hitShape2d, "hitShape2d should be defined")
+        assertEquals(graphics, graphics.hitTestLocal(0, 0))
+        assertEquals(graphics, graphics.hitTestLocal(20, 0))
+        assertEquals(null, graphics.hitTestLocal(33, 0))
     }
 
     @Test

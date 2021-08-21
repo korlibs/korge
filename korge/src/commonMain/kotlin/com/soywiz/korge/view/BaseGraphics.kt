@@ -128,12 +128,15 @@ abstract class BaseGraphics(
     final override val bwidth: Double get() = fillWidth
     final override val bheight: Double get() = fillHeight
 
-    final override val anchorDispX: Double get() =
-        //(anchorX * bwidth)
-        -boundsUnsafe(strokes = false).x + (anchorX * bwidth)
-    final override val anchorDispY: Double get() =
-        //(anchorY * bheight)
-        -boundsUnsafe(strokes = false).y + (anchorY * bheight)
+    //final override val anchorDispX: Double get() = -boundsUnsafe(strokes = false).x + (anchorX * bwidth)
+    //final override val anchorDispY: Double get() = -boundsUnsafe(strokes = false).y + (anchorY * bheight)
+    //override val sLeft: Double get() = super.sLeft
+    //override val sTop: Double get() = super.sTop
+
+    final override val anchorDispX: Double get() = (anchorX * bwidth)
+    final override val anchorDispY: Double get() = (anchorY * bheight)
+    override val sLeft: Double get() = +boundsUnsafe(strokes = false).x - anchorDispX
+    override val sTop: Double get() = +boundsUnsafe(strokes = false).y - anchorDispY
 
     final internal val _sLeft get() = sLeft
     final internal val _sTop get() = sTop

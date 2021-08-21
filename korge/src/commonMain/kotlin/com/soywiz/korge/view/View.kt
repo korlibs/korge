@@ -984,8 +984,12 @@ abstract class View internal constructor(
         if (res != null) return res
         return if (this is Stage) this else null
     }
-    fun hitTest(x: Float, y: Float): View? = hitTest(x.toDouble(), y.toDouble())
-    fun hitTest(x: Int, y: Int): View? = hitTest(x.toDouble(), y.toDouble())
+    fun hitTest(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
+    fun hitTest(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(x.toDouble(), y.toDouble(), direction)
+
+    fun hitTestLocal(x: Double, y: Double, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTest(localToGlobalX(x, y), localToGlobalY(x, y), direction)
+    fun hitTestLocal(x: Float, y: Float, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
+    fun hitTestLocal(x: Int, y: Int, direction: HitTestDirection = HitTestDirection.ANY): View? = hitTestLocal(x.toDouble(), y.toDouble(), direction)
 
     override fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean =
         hitTest(x, y, direction) != null
@@ -1104,12 +1108,17 @@ abstract class View internal constructor(
         val lly = globalToLocalY(x, y)
 
         val bounds = getLocalBoundsOptimizedAnchored()
-        if (!bounds.contains(llx, lly)) return null
+        if (!bounds.contains(llx, lly)) {
+            //println("bounds = null : $bounds")
+            return null
+        }
         val anchorDispX = this.anchorDispX
         val anchorDispY = this.anchorDispY
 
         val lx = llx + anchorDispX
         val ly = lly + anchorDispY
+
+        if (hitTestUsingShapes == false) return this
 
         /*
         val sLeft = bounds.left
@@ -1133,15 +1142,25 @@ abstract class View internal constructor(
         //println("lx=$lx,ly=$ly")
         //println("localBounds:$bounds")
 
+        //println("result=$anchorDispX,$anchorDispY")
+        //println("result=$lx,$ly")
+        //println("result=$llx,$lly")
+        //println("result=${hitShape2d}")
+        //println("result=${hitShape2d.containsPoint(lx, ly)}")
+
+        //return if (hitShape2d.containsPoint(lx, ly)) this else null
+
+        // @TODO: Use hitShape2d
         val hitShape = this.hitShape
         val hitShapes = this.hitShapes
-        if (hitTestUsingShapes == true || (hitTestUsingShapes == null && (hitShape != null || hitShapes != null))) {
+        if (hitTestUsingShapes == null && (hitShape != null || hitShapes != null)) {
             hitShapes?.fastForEach { if (it.containsPoint(lx, ly)) return this }
             if (hitShape != null && hitShape.containsPoint(lx, ly)) return this
             return null
         } else {
             return this
         }
+
     }
 
     //fun hitTest(x: Double, y: Double): View? {
