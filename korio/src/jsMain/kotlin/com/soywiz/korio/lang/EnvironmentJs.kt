@@ -7,7 +7,10 @@ import kotlinx.browser.*
 
 internal actual object EnvironmentInternal {
 	val allEnvs: Map<String, String> = when {
-		OS.isJsNodeJs -> jsObjectKeysArray(process.env).associate { it to process.env[it] }
+		NodeDeno.available -> {
+            val envs = NodeDeno.envs()
+            jsObjectKeysArray(envs).associate { it to envs[it] }
+        }
 		else -> QueryString.decode((document.location?.search ?: "").trimStart('?')).map { it.key to (it.value.firstOrNull() ?: it.key) }.toMap()
 	}
 	val allEnvsUpperCase = allEnvs.map { it.key.toUpperCase() to it.value }.toMap()

@@ -2,16 +2,28 @@ package com.soywiz.korio.file.std
 
 import com.soywiz.korio.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.tempPath
 
-val tmpdir: String by lazy {
-	when {
-		//isNodeJs -> require_node("os").tmpdir().unsafeCast<String>()
-		else -> "/tmp"
-	}
+val tmpdir: String by lazy { Environment.tempPath }
+
+private val absoluteCwd: String by lazy {
+    when {
+        NodeDeno.available -> {
+            val path = NodeDeno.currentDir()
+            when {
+                NodeDeno.existsSync("$path/node_modules") && NodeDeno.existsSync("$path/kotlin") && NodeDeno.existsSync("$path/adapter-nodejs.js") ->
+                    // We are probably on tests `build/js/packages/korlibs-next-korge-test` and resources are in the `kotlin` directory
+                    "$path/kotlin"
+                else -> path
+            }.also {
+                println("absoluteCwd=$it")
+            }
+        }
+        else -> "."
+    }
 }
-
-//private val absoluteCwd: String by lazy { if (isNodeJs) require_node("path").resolve(".") else "." }
-private val absoluteCwd: String by lazy { "." }
+//private val absoluteCwd: String by lazy { "." }
 
 actual val resourcesVfs: VfsFile by lazy { applicationVfs.jail() }
 actual val rootLocalVfs: VfsFile by lazy { localVfs(absoluteCwd) }
@@ -30,7 +42,7 @@ actual val tempVfs: VfsFile by lazy {
 
 actual fun localVfs(path: String, async: Boolean): VfsFile {
 	return when {
-		//isNodeJs -> NodeJsLocalVfs()[path]
+		isNodeJs -> NodeJsLocalVfs()[path]
 		else -> {
 			//println("localVfs.url: href=$href, url=$url")
 			UrlVfs(jsbaseUrl)[path]

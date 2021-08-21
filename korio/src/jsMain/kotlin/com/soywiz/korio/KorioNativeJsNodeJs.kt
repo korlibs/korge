@@ -10,13 +10,56 @@ import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
 import org.khronos.webgl.*
 import kotlin.coroutines.*
-/*
 
 // @TODO: Try to prevent webpack to not get confused about this
 private external val require: dynamic
 //private external fun require(name: String): dynamic
 private val require_req: dynamic by lazy { require }
-internal fun require_node(name: String): dynamic = require_req(name)
+private fun require_node(name: String): dynamic = require_req(name)
+private external val Deno: dynamic
+
+internal object NodeDeno {
+    val node by lazy { isNodeJs }
+    val deno by lazy { isDenoJs }
+    val available by lazy { deno || node }
+    internal val fs by lazy { require_node("fs") }
+    internal val path by lazy { require_node("path") }
+    internal val http by lazy { require_node("http") }
+    internal val url by lazy { require_node("url") }
+    internal val net by lazy { require_node("net") }
+    internal val child_process by lazy { require_node("child_process") }
+
+    val mkdir by lazy  { if (deno) TODO("Deno.mkdir") else fs.mkdir }
+    val rename by lazy { if (deno) TODO("Deno.rename") else fs.rename }
+    val unlink by lazy { if (deno) TODO("Deno.remove") else fs.unlink }
+    val rmdir by lazy  { if (deno) TODO("Deno.remove") else fs.rmdir }
+    val open by lazy   { if (deno) TODO("Deno.open") else fs.open }
+    val read by lazy   { if (deno) TODO("Deno.read") else fs.read }
+    val write by lazy  { if (deno) TODO("Deno.write") else fs.write }
+    val ftruncate by lazy { if (deno) TODO("Deno.ftruncate") else fs.ftruncate }
+    val fstat by lazy  { if (deno) TODO("Deno.fstat") else fs.fstat }
+    val close by lazy  { if (deno) TODO("Deno.close") else fs.close }
+
+    fun existsSync(path: String): Boolean {
+        return when {
+            deno -> try {
+                Deno.statSync(path)
+                true
+            } catch (e: dynamic) {
+                false
+            }
+            else -> fs.existsSync(path)
+        }
+    }
+
+    fun currentDir(): String = when {
+        deno -> Deno.cwd()
+        else -> path.resolve(".")
+    }
+
+    fun env(key: String): String? = if (deno) Deno.env.get(key) else process.env[key]
+    fun envs(): dynamic = if (deno) Deno.env.toObject() else process.env
+}
 
 typealias NodeJsBuffer = Uint8Array
 
@@ -31,7 +74,7 @@ fun ByteArray.asUint8Array(): Uint8Array {
 
 fun ByteArray.toNodeJsBuffer(): NodeJsBuffer = this.asUint8Array().unsafeCast<NodeJsBuffer>()
 fun ByteArray.toNodeJsBuffer(offset: Int, size: Int): NodeJsBuffer =
-	global.asDynamic().Buffer.from(this, offset, size).unsafeCast<NodeJsBuffer>()
+	jsGlobal.asDynamic().Buffer.from(this, offset, size).unsafeCast<NodeJsBuffer>()
 
 class HttpClientNodeJs : HttpClient() {
 	override suspend fun requestInternal(
@@ -43,8 +86,8 @@ class HttpClientNodeJs : HttpClient() {
 		val deferred = CompletableDeferred<Response>(Job())
 		//println(url)
 
-		val http = require_node("http")
-		val jsurl = require_node("url")
+		val http = NodeDeno.http
+		val jsurl = NodeDeno.url
 		val info = jsurl.parse(url)
 		val reqHeaders = jsEmptyObj()
 
@@ -68,7 +111,7 @@ class HttpClientNodeJs : HttpClient() {
 			val body = jsEmptyArray()
 			res.on("data") { d -> body.push(d) }
 			res.on("end") {
-				val r = global.asDynamic().Buffer.concat(body)
+				val r = jsGlobal.asDynamic().Buffer.concat(body)
 				val u8array = Int8Array(r.unsafeCast<ArrayBuffer>())
 				val out = ByteArray(u8array.length)
 				for (n in 0 until u8array.length) out[n] = u8array[n]
@@ -78,6 +121,7 @@ class HttpClientNodeJs : HttpClient() {
 					headers = Http.Headers(
 						(jsToObjectMap(jsHeadersObj) ?: LinkedHashMap()).mapValues { "${it.value}" }
 					),
+                    rawContent = out.openAsync(),
 					content = out.openAsync()
 				)
 
@@ -109,7 +153,7 @@ class HttpSeverNodeJs : HttpServer() {
 	private var context: CoroutineContext = EmptyCoroutineContext
 	private var handler: suspend (req: dynamic, res: dynamic) -> Unit = { req, res -> }
 
-	val http = require_node("http")
+	val http = NodeDeno.http
 	val server = http.createServer { req, res ->
 		launchImmediately(context) {
 			handler(req, res)
@@ -192,7 +236,7 @@ class HttpSeverNodeJs : HttpServer() {
 }
 
 class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncClient {
-	private val net = require_node("net")
+	private val net = NodeDeno.net
 	private var connection: dynamic = null
 	private val input = AsyncByteArrayDeque()
 
@@ -257,27 +301,14 @@ class NodeJsAsyncServer : AsyncServer {
 
 
 class NodeJsLocalVfs : LocalVfs() {
-	val fs = require_node("fs")
-
 	interface FD
 
 	private fun getFullPath(path: String): String {
 		return path.pathInfo.normalize()
 	}
 
-
-	//fun String.escapeShellCmd(): String {
-	//	// @TODO: escapeShellArg @TODO: Consider all cases and windows
-	//	return this
-	//}
-	//
-	//fun String.escapeShellArg(): String {
-	//	// @TODO: escapeShellArg @TODO: Consider all cases and windows
-	//	return "'" + this.replace("'", "\'") + "'"
-	//}
-
 	override suspend fun exec(path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler): Int {
-		val process = require_node("child_process").spawn(cmdAndArgs.first(), cmdAndArgs.drop(1).toTypedArray(), jsObject(
+		val process = NodeDeno.child_process.spawn(cmdAndArgs.first(), cmdAndArgs.drop(1).toTypedArray(), jsObject(
 			"cwd" to path,
 			"env" to env.toJsObject(),
 			"encoding" to "buffer",
@@ -295,7 +326,7 @@ class NodeJsLocalVfs : LocalVfs() {
 	}
 
 	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = suspendCoroutine { c ->
-		fs.mkdir(getFullPath(path), "777".toInt(8)) { err ->
+        NodeDeno.mkdir(getFullPath(path), "777".toInt(8)) { err ->
 			c.resume((err == null))
 			Unit
 		}
@@ -303,7 +334,7 @@ class NodeJsLocalVfs : LocalVfs() {
 	}
 
 	override suspend fun rename(src: String, dst: String): Boolean = suspendCoroutine { c ->
-		fs.rename(getFullPath(src), getFullPath(dst)) { err ->
+        NodeDeno.rename(getFullPath(src), getFullPath(dst)) { err ->
 			c.resume((err == null))
 			Unit
 		}
@@ -311,7 +342,7 @@ class NodeJsLocalVfs : LocalVfs() {
 	}
 
 	override suspend fun delete(path: String): Boolean = suspendCoroutine { c ->
-		fs.unlink(getFullPath(path)) { err ->
+        NodeDeno.unlink(getFullPath(path)) { err ->
 			c.resume((err == null))
 			Unit
 		}
@@ -319,7 +350,7 @@ class NodeJsLocalVfs : LocalVfs() {
 	}
 
 	override suspend fun rmdir(path: String): Boolean = suspendCoroutine { c ->
-		fs.rmdir(getFullPath(path)) { err ->
+        NodeDeno.rmdir(getFullPath(path)) { err ->
 			c.resume((err == null))
 			Unit
 		}
@@ -345,12 +376,12 @@ class NodeJsLocalVfs : LocalVfs() {
 	suspend fun _open(path: String, cmode: String): AsyncStream {
 		val file = this.file(path)
 		return suspendCoroutine { cc ->
-			fs.open(getFullPath(path), cmode) { err: Any?, fd: FD? ->
+            NodeDeno.open(getFullPath(path), cmode) { err: Any?, fd: FD? ->
 				//println("OPENED path=$path, cmode=$cmode, err=$err, fd=$fd")
 				if (err != null || fd == null) {
 					cc.resumeWithException(FileNotFoundException("Can't open '$path' with mode '$cmode': err=$err"))
 				} else {
-					cc.resume(NodeFDStream(file, fs, fd).toAsyncStream())
+					cc.resume(NodeFDStream(file, fd).toAsyncStream())
 				}
 				Unit
 			}
@@ -361,14 +392,14 @@ class NodeJsLocalVfs : LocalVfs() {
 	override fun toString(): String = "NodeJsLocalVfs"
 }
 
-class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD?) : AsyncStreamBase() {
+class NodeFDStream(val file: VfsFile, var fd: NodeJsLocalVfs.FD?) : AsyncStreamBase() {
 	private fun checkFd() {
 		if (fd == null) error("File $file already closed")
 	}
 
 	override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int = suspendCoroutine { c ->
 		checkFd()
-		fs.read(fd, buffer.toNodeJsBuffer(), offset, len, position.toDouble()) { err, bytesRead, buf ->
+        NodeDeno.read(fd, buffer.toNodeJsBuffer(), offset, len, position.toDouble()) { err, bytesRead, buf ->
 			if (err != null) {
 				c.resumeWithException(IOException("Error reading from $file :: err=$err"))
 			} else {
@@ -382,7 +413,7 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 
 	override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int): Unit = suspendCoroutine { c ->
 		checkFd()
-		fs.write(fd, buffer.toNodeJsBuffer(), offset, len, position.toDouble()) { err, bytesWritten, buffer ->
+        NodeDeno.write(fd, buffer.toNodeJsBuffer(), offset, len, position.toDouble()) { err, bytesWritten, buffer ->
 			if (err != null) {
 				c.resumeWithException(IOException("Error writting to $file :: err=$err"))
 			} else {
@@ -395,7 +426,7 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 
 	override suspend fun setLength(value: Long): Unit = suspendCoroutine { c ->
 		checkFd()
-		fs.ftruncate(fd, value.toDouble()) { err ->
+        NodeDeno.ftruncate(fd, value.toDouble()) { err ->
 			if (err != null) {
 				c.resumeWithException(IOException("Error setting length to $file :: err=$err"))
 			} else {
@@ -408,7 +439,7 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 
 	override suspend fun getLength(): Long = suspendCoroutine { c ->
 		checkFd()
-		fs.fstat(fd) { err, stats ->
+        NodeDeno.fstat(fd) { err, stats ->
 			if (err != null) {
 				c.resumeWithException(IOException("Error getting length from $file :: err=$err"))
 			} else {
@@ -427,7 +458,7 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 		//closed = true
 		if (fd != null) {
 			return suspendCoroutine { c ->
-				fs.close(fd) { err ->
+                NodeDeno.close(fd) { err ->
 					fd = null
 					if (err != null) {
 						//c.resumeWithException(IOException("Error closing err=$err"))
@@ -442,4 +473,3 @@ class NodeFDStream(val file: VfsFile, val fs: dynamic, var fd: NodeJsLocalVfs.FD
 		}
 	}
 }
-*/

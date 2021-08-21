@@ -1,14 +1,23 @@
 package com.soywiz.korio.util.i18n
 
 import com.soywiz.korio.*
+import com.soywiz.korio.lang.Environment
 import kotlinx.browser.*
 
 internal actual val systemLanguageStrings: List<String> by lazy {
-	if (isNodeJs) {
-		val env = process.env
-		listOf<String>(env.LANG ?: env.LANGUAGE ?: env.LC_ALL ?: env.LC_MESSAGES ?: "english")
-	} else {
-		window.navigator.languages.asList()
-	}
+    when {
+        NodeDeno.available -> {
+            listOf(
+                Environment["LANG"]
+                    ?: Environment["LANGUAGE"]
+                    ?: Environment["LC_ALL"]
+                    ?: Environment["LC_MESSAGES"]
+                    ?: "english"
+            )
+        }
+        else -> {
+            window.navigator.languages.asList()
+        }
+    }
 }
 

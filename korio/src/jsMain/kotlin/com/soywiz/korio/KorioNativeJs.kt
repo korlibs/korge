@@ -1,27 +1,20 @@
 package com.soywiz.korio
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.net.http.*
-import com.soywiz.korio.net.ws.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import org.khronos.webgl.*
-import org.khronos.webgl.set
+import com.soywiz.korio.util.OS
 import org.w3c.dom.*
 import org.w3c.dom.events.*
 import org.w3c.performance.*
-import org.w3c.xhr.*
 import kotlinx.browser.*
 import kotlin.collections.set
-import kotlin.coroutines.*
 
 val jsbaseUrl by lazy {
-	val href = document.location?.href ?: "."
-	if (href.endsWith("/")) href else href.substringBeforeLast('/')
+    when {
+        OS.isJsNodeJs -> "."
+        else -> {
+            val href = document.location?.href ?: "."
+            if (href.endsWith("/")) href else href.substringBeforeLast('/')
+        }
+    }
 
 }
 
@@ -31,13 +24,14 @@ abstract external class GlobalScope : EventTarget, WindowOrWorkerGlobalScope, Gl
 	fun cancelAnimationFrame(handle: Int): Unit
 }
 
-val globalDynamic: dynamic = js("(typeof global !== 'undefined') ? global : self")
-val global: GlobalScope  = globalDynamic
+val jsGlobalDynamic: dynamic = js("(typeof global !== 'undefined') ? global : self")
+val jsGlobal: GlobalScope  = jsGlobalDynamic
 external val process: dynamic // node.js
 external val navigator: dynamic // browser
 
 //val isNodeJs by lazy { jsTypeOf(window) === "undefined" }
 
+val isDenoJs by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
 val isWeb by lazy { js("(typeof window === 'object')").unsafeCast<Boolean>() }
 val isWorker by lazy { js("(typeof importScripts === 'function')").unsafeCast<Boolean>() }
 val isNodeJs by lazy { js("((typeof process !== 'undefined') && process.release && (process.release.name.search(/node|io.js/) !== -1))").unsafeCast<Boolean>() }

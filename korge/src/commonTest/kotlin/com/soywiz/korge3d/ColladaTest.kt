@@ -10,7 +10,7 @@ import kotlin.test.*
 @Korge3DExperimental
 class ColladaTest {
 	@Test
-	fun testParseSourcesFloat() = suspendTestNoBrowser {
+	fun testParseSourcesFloat() = suspendTestNoJs {
 		val sources = ColladaParser().parseSources(
 			"""<xml>
 				<source id="Cube-mesh-positions">
@@ -29,7 +29,10 @@ class ColladaTest {
 		assertEquals(1, sources.size)
 		assertEquals("Cube-mesh-positions", sources.first().id)
 		assertEquals("X,Y,Z", sources.first().params.keys.sorted().joinToString(","))
-		assertEquals("[1.0, 1.0, -1.0, -0.9999997, 1.0, 0.9999994, -1.0, -1.0]", (sources.first().params["X"] as ColladaParser.FloatSourceParam).floats.toString())
+        assertContentEquals(
+            floatArrayOf(1.0f, 1.0f, -1.0f, -0.9999997f, 1.0f, 0.9999994f, -1.0f, -1.0f),
+            (sources.first().params["X"] as ColladaParser.FloatSourceParam).floats.toFloatArray()
+        )
 	}
 
 	@Test
@@ -116,7 +119,7 @@ class ColladaTest {
 	}
 
 	@Test
-	fun testLoadSkinedModel() = suspendTestNoBrowser {
+	fun testLoadSkinedModel() = suspendTestNoJs {
 		val library = resourcesVfs["skinning.dae"].readColladaLibrary()
 		val instance = library.mainScene.instantiate()
 		assertNotNull(instance["Cylinder"])
@@ -124,7 +127,7 @@ class ColladaTest {
 	}
 
 	@Test
-	fun testLoadTexturedModel() = suspendTestNoBrowser {
+	fun testLoadTexturedModel() = suspendTestNoJs {
 		val library = resourcesVfs["box_textured.dae"].readColladaLibrary()
 		val instance = library.mainScene.instantiate()
 		assertNotNull(instance["Cube"])
@@ -132,13 +135,13 @@ class ColladaTest {
 	}
 
     @Test
-    fun testParseAnimations_animationsAsFlatStructure() = suspendTestNoBrowser {
+    fun testParseAnimations_animationsAsFlatStructure() = suspendTestNoJs {
         val library = resourcesVfs["animations_flat.dae"].readColladaLibrary()
         assertEquals(library.animationDefs.size, 1)
     }
 
     @Test
-    fun testParseAnimations_animationsAsNestedStructure() = suspendTestNoBrowser {
+    fun testParseAnimations_animationsAsNestedStructure() = suspendTestNoJs {
         val library = resourcesVfs["animations_nested.dae"].readColladaLibrary()
         assertEquals(library.animationDefs.size, 1)
     }

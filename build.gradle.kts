@@ -276,6 +276,11 @@ subprojects {
                         }
                     }
                 }
+                nodejs {
+                    testTask {
+                        useMocha()
+                    }
+                }
             }
             if (hasAndroid) {
                 apply(from = "${rootProject.rootDir}/build.android.srcset.gradle")

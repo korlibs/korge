@@ -3,7 +3,6 @@ package com.soywiz.korio.async
 import com.soywiz.klock.*
 import com.soywiz.korio.*
 import com.soywiz.korio.util.*
-import kotlinx.browser.*
 import kotlin.test.*
 
 class PromiseJsTest {
@@ -18,7 +17,7 @@ class PromiseJsTest {
         assertEquals(true, endTime - startTime >= 100.milliseconds)
     }
 
-    fun delay(ms: Int): Promise<Unit> = Promise { resolve, reject -> global.setTimeout({ resolve(Unit) }, ms) }
+    fun delay(ms: Int): Promise<Unit> = Promise { resolve, reject -> jsGlobal.setTimeout({ resolve(Unit) }, ms) }
 }
 
 @JsName("Promise")

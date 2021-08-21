@@ -13,7 +13,7 @@ import kotlin.test.*
 @Korge3DExperimental
 class Animator3DTest {
     @Test
-    fun updateWithDefaultPlaybackPattern() = suspendTestNoBrowser {
+    fun updateWithDefaultPlaybackPattern() = suspendTestNoJs {
         val library = resourcesVfs["skinning.dae"].readColladaLibrary()
         val animation = library.animationDefs["Armature_Bone_pose_matrix"]
             ?: throw RuntimeException("Animation not found")
@@ -41,7 +41,7 @@ class Animator3DTest {
     }
 
     @Test
-    fun updateWithCustomPlaybackPattern() = suspendTestNoBrowser {
+    fun updateWithCustomPlaybackPattern() = suspendTestNoJs {
         val library = resourcesVfs["skinning.dae"].readColladaLibrary()
         val animation = library.animationDefs["Armature_Bone_pose_matrix"]
             ?: throw RuntimeException("Animation not found")

@@ -64,3 +64,5 @@ fun Environment.expand(str: String): String {
         } ?: ""
     }
 }
+
+val Environment.tempPath get() = this["TMPDIR"] ?: this["TEMP"] ?: "/tmp"

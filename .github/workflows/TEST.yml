@@ -28,6 +28,8 @@ jobs:
       run: ./gradlew
     - name: Testing JVM
       run: ./gradlew --no-daemon jvmTest
+    - name: Testing Node JS
+      run: ./gradlew --no-daemon jsNodeTest
     #- name: Testing JS
     #  run: ./gradlew --no-daemon jsTest
     #- name: Testing ALL
