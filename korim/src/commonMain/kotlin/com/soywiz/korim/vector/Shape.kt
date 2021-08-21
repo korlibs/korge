@@ -350,12 +350,12 @@ data class PolylineShape(
         tempBB.add(path)
         tempBB.getBounds(tempRect)
 
-        println("TEMP_RECT: ${tempRect}")
+        //println("TEMP_RECT: ${tempRect}")
 
         val halfThickness = max(thickness / 2.0, 0.0)
         tempRect.inflate(halfThickness, halfThickness)
 
-        println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
+        //println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
 
         //println("PolylineShape.addBounds: thickness=$thickness, rect=$tempRect")
         bb.add(tempRect)
