@@ -207,6 +207,7 @@ class TtfFont(
             //readPost()
             readCblc()
             readCbdt()
+            readSbix()
         }
 
         //println("tablesByName=$tablesByName")
@@ -318,6 +319,23 @@ class TtfFont(
         }
 
         private fun readHeaderTables(s: FastByteArrayInputStream): Map<String, Table> = s.run {
+            // https://docs.microsoft.com/en-us/typography/opentype/spec/otff#collections
+            // ttcf
+            if (readS32BE() == 0x74746366) {
+                // Read first font
+                val majorVersion = readU16BE()
+                val minorVersion = readU16BE()
+                val numFonts = readS32BE()
+                val tableDirectoryOffsets = readIntArrayBE(numFonts)
+                if (majorVersion >= 2) {
+                    val dsigTag = readS32BE()
+                    val dsigLength = readS32BE()
+                    val dsigOffset = readS32BE()
+                }
+                position = tableDirectoryOffsets[0]
+            } else {
+                unread(4)
+            }
             val majorVersion = readU16BE().apply { if (this != 1 && this != 0x4F54) invalidOp("Not a TTF/OTF file") }
             val minorVersion = readU16BE().apply { if (this != 0 && this != 0x544F) invalidOp("Not a TTF/OTF file") }
             val numTables = readU16BE()
@@ -546,35 +564,35 @@ class TtfFont(
     //}
 
     data class ColorBitmapInfo(
-        val indexSubTableArrayOffset: Int,
-        val indexTablesSize: Int,
-        val numberofIndexSubTables: Int,
-        val colorRef: Int,
-        val hori: SbitLineMetrics,
-        val vert: SbitLineMetrics,
-        val startGlyphIndex: Int,
-        val endGlyphIndex: Int,
-        val ppemX: Int,
-        val ppemY: Int,
-        val bitDepth: Int,
-        val flags: Int,
+        val indexSubTableArrayOffset: Int = 0,
+        val indexTablesSize: Int = 0,
+        val numberofIndexSubTables: Int = 0,
+        val colorRef: Int = 0,
+        val hori: SbitLineMetrics = SbitLineMetrics(),
+        val vert: SbitLineMetrics = SbitLineMetrics(),
+        val startGlyphIndex: Int = 0,
+        val endGlyphIndex: Int = 0,
+        val ppemX: Int = 0,
+        val ppemY: Int = 0,
+        val bitDepth: Int = 0,
+        val flags: Int = 0,
     )
 
     //var colorBitmapInfos = listOf<ColorBitmapInfo>()
 
     data class SbitLineMetrics(
-        val ascender: Int,
-        val descender: Int,
-        val widthMax: Int,
-        val caretSlopeNumerator: Int,
-        val caretSlopeDenominator: Int,
-        val caretOffset: Int,
-        val minOriginSB: Int,
-        val minAdvanceSB: Int,
-        val maxBeforeBL: Int,
-        val minAfterBL: Int,
-        val pad1: Int,
-        val pad2: Int,
+        val ascender: Int = 0,
+        val descender: Int = 0,
+        val widthMax: Int = 0,
+        val caretSlopeNumerator: Int = 0,
+        val caretSlopeDenominator: Int = 0,
+        val caretOffset: Int = 0,
+        val minOriginSB: Int = 0,
+        val minAdvanceSB: Int = 0,
+        val maxBeforeBL: Int = 0,
+        val minAfterBL: Int = 0,
+        val pad1: Int = 0,
+        val pad2: Int = 0,
     )
 
     private fun FastByteArrayInputStream.readSibLineMetrics(): SbitLineMetrics = SbitLineMetrics(
@@ -584,9 +602,9 @@ class TtfFont(
 
     data class BitmapGlyphInfo(
         val glyphID: Int,
-        val imageFormat: Int,
-        val offset: Int,
-        val size: Int,
+        val imageFormat: Int = 0,
+        val offset: Int = 0,
+        val size: Int = 0,
         val info: ColorBitmapInfo,
         var height: Int = 0,
         var width: Int = 0,
@@ -714,6 +732,41 @@ class TtfFont(
         }
     }
 
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/sbix
+    private fun readSbix() = runTableUnit("sbix") { // Standard Bitmap Graphics Table
+        val version = readU16BE()
+        val flags = readU16BE()
+        val numStrikes = readS32BE()
+        val strikeOffsets = readIntArrayBE(numStrikes)
+        data class StrikeInfo(val ppem: Int, val ppi: Int, val strikeOffset: Int, val offsets: IntArrayList)
+        val strikes = strikeOffsets.map { strikeOffset ->
+            position = strikeOffset
+            StrikeInfo(ppem = readU16BE(), ppi = readU16BE(), strikeOffset = strikeOffset, offsets = readIntArrayBE(numGlyphs + 1).toIntArrayList())
+        }
+        // @TODO: Read all strikes and select right one
+        val strike = strikes.maxByOrNull { it.ppem }!!
+        for (n in 0 until numGlyphs) {
+            val glyphID = n
+            val offset = strike.offsets[n]
+            val len = strike.offsets[n + 1] - offset
+            val start = strike.strikeOffset + offset
+            val end = start + len
+            position = start
+            val originOffsetX = readS16BE()
+            val originOffsetY = readS16BE()
+            val graphicType = readStringz(4)
+            val bytes = readSlice(len - 8)
+            //println("$n: originOffset=$originOffsetX,$originOffsetY, graphicType=$graphicType")
+
+            // @TODO: Proper metrics
+            bitmapGlyphInfos[glyphID] = BitmapGlyphInfo(glyphID, info = ColorBitmapInfo(
+                ppemX = strike.ppem, ppemY = strike.ppem,
+            )).also {
+                it.s = bytes
+            }
+        }
+    }
+
     private fun readColr() = runTableUnit("COLR") {
         val version = readU16BE()
         when (version) {
@@ -748,10 +801,12 @@ class TtfFont(
 		val numTables = readU16BE()
 		val tables = (0 until numTables).map { EncodingRecord(readU16BE(), readU16BE(), readS32BE()) }
 
-		for (table in tables) {
+        var index: Int = 0
+
+        for (table in tables) {
 			sliceStart(table.offset).run {
 				val format = readU16BE()
-                //println("TABLE FORMAT: $format")
+                //println("TABLE FORMAT[${this@TtfFont}]: $format")
 				when (format) {
 				    0 -> { // Byte encoding table
                         println("UNSUPPORTED CMAP format = $format")
@@ -784,7 +839,6 @@ class TtfFont(
 							val iro = idRangeOffset[n].toInt()
 							//println("%04X-%04X : %d : %d".format(sc, ec, delta, iro))
 							for (c in sc..ec) {
-								var index: Int
 								if (iro != 0) {
 									var glyphIndexOffset = rangeOffsetPos + n * 2
 									glyphIndexOffset += iro
@@ -796,6 +850,7 @@ class TtfFont(
 								} else {
 									index = c + delta
 								}
+                                //index = index and 0xFFFF
                                 addCharacterMap(c, index and 0xFFFF)
 								//println("%04X --> %d".format(c, index and 0xFFFF))
 							}
@@ -809,7 +864,9 @@ class TtfFont(
                         val firstCode = readU16BE()
                         val entryCount = readU16BE()
                         for (n in 0 until entryCount) {
-                            addCharacterMap(firstCode + readU16BE(), n)
+                            val codePoint = firstCode + n
+                            //if (codePoint in characterMaps) println("For codePoint=$codePoint, old=${characterMaps[codePoint]}, new=$n")
+                            addCharacterMap(codePoint, readU16BE())
                         }
                     }
                     8 -> { // mixed 16-bit and 32-bit coverage
