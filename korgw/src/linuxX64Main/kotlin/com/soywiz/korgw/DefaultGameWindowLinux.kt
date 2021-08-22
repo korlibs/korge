@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import GL.getenv
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
@@ -12,11 +11,10 @@ import kotlin.coroutines.*
 
 //actual fun CreateDefaultGameWindow(): GameWindow = glutGameWindow
 actual fun CreateDefaultGameWindow(): GameWindow {
-    val engine = getenv("KORGW_NATIVE_ENGINE")?.toKStringFromUtf8()
+    val engine = com.soywiz.korio.lang.Environment["KORGW_NATIVE_ENGINE"]
         ?: "default"
     println("Engine: $engine")
     return when (engine) {
-        "sdl" -> SdlGameWindowNative()
         else -> X11GameWindow()
     }
 }

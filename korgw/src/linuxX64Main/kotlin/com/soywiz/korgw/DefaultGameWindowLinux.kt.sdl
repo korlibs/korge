@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import GL.getenv
 import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
@@ -15,6 +16,8 @@ actual fun CreateDefaultGameWindow(): GameWindow {
         ?: "default"
     println("Engine: $engine")
     return when (engine) {
+        "sdl" -> SdlGameWindowNative()
         else -> X11GameWindow()
     }
 }
+

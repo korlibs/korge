@@ -15,6 +15,7 @@ actual fun CreateDefaultGameWindow(): GameWindow {
         ?: "default"
     println("Engine: $engine")
     return when (engine) {
+        "sdl" -> SdlGameWindowNative()
         else -> X11GameWindow()
     }
 }

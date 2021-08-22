@@ -5,6 +5,9 @@ val jnaVersion: String by project
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
+val enableKotlinNativeSDL: String by project
+val doEnableKotlinNativeSDL get() = enableKotlinNativeSDL == "true"
+
 val enableKotlinRaspberryPi: String by project
 val doEnableKotlinRaspberryPi get() = enableKotlinRaspberryPi == "true"
 
@@ -30,11 +33,11 @@ if (doEnableKotlinNative) {
             target.compilations["main"].cinterops {
                 if (target.name == "linuxX64") {
                     maybeCreate("GL")
-                    maybeCreate("SDL2")
+                    if (doEnableKotlinNativeSDL) maybeCreate("SDL2")
                 }
                 if (target.name == "linuxArm32Hfp") {
                     maybeCreate("GL_rpi")
-                    maybeCreate("SDL2_rpi")
+                    if (doEnableKotlinNativeSDL) maybeCreate("SDL2_rpi")
                 }
                 //if (target.name == "linuxX64") maybeCreate("X11")
             }
