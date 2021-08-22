@@ -948,21 +948,30 @@ allprojects {
 subprojects {
     afterEvaluate {
         tasks {
+            val publishKotlinMultiplatformPublicationToMavenLocal = "publishKotlinMultiplatformPublicationToMavenLocal"
+
             val publishJvmLocal by creating(Task::class) {
-                if (findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
+                if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
                     dependsOn("publishJvmPublicationToMavenLocal")
                     //dependsOn("publishMetadataPublicationToMavenLocal")
-                    dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
+                    dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                 } else if (findByName("publishToMavenLocal") != null) {
                     dependsOn("publishToMavenLocal")
                 }
             }
 
             val publishJsLocal by creating(Task::class) {
-                if (findByName("publishKotlinMultiplatformPublicationToMavenLocal") != null) {
+                if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
                     dependsOn("publishJsPublicationToMavenLocal")
                     //dependsOn("publishMetadataPublicationToMavenLocal")
-                    dependsOn("publishKotlinMultiplatformPublicationToMavenLocal")
+                    dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
+                }
+            }
+
+            val publishMacosX64Local by creating(Task::class) {
+                if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
+                    dependsOn("publishMacosX64PublicationToMavenLocal")
+                    dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                 }
             }
         }

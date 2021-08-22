@@ -8,17 +8,12 @@ import com.soywiz.korio.util.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
 import com.soywiz.korio.internal.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.net.http.*
 import com.soywiz.korio.net.ws.*
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.flow.*
-import com.soywiz.korio.util.*
-import kotlin.collections.set
 import kotlin.reflect.*
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
@@ -148,10 +143,11 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 	): Int = posixExec(path, cmdAndArgs, env, handler)
 
 	override suspend fun readRange(path: String, range: LongRange): ByteArray {
+        val rpath = resolve(path)
 		data class Info(val path: String, val range: LongRange)
 
-		return executeInIOWorker(Info(path, range)) { (path, range) ->
-			val fd = fopen(path, "rb")
+		return executeInIOWorker(Info(rpath, range)) { (rpath, range) ->
+			val fd = fopen(rpath, "rb")
 			if (fd != null) {
 				fseek(fd, 0L.convert(), SEEK_END)
 				//val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
@@ -184,7 +180,7 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 			} else {
 				null
 			}
-		} ?: throw FileNotFoundException("Can't open '$path' for reading")
+		} ?: throw FileNotFoundException("Can't open '${rpath}' for reading")
 	}
 
 	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {

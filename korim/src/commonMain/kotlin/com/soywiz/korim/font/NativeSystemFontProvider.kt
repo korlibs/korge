@@ -1,10 +1,14 @@
 package com.soywiz.korim.font
 
+import com.soywiz.kds.CopyOnWriteFrozenMap
+import com.soywiz.kds.atomic.kdsFreeze
 import com.soywiz.klock.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import kotlin.native.concurrent.SharedImmutable
 
 expect val nativeSystemFontProvider: NativeSystemFontProvider
 
@@ -66,14 +70,14 @@ open class NativeSystemFontProvider {
 // Linux: /usr/share/fonts , /usr/local/share/fonts and ~/.fonts
 // MacOS: /System/Library/Fonts, /Library/Fonts, ~/Library/Fonts
 
-private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
-private val windowsFolders = listOf("%WINDIR%\\Fonts", "%LOCALAPPDATA%\\Microsoft\\Windows\\Fonts")
-private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
-private val iosFolders = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
-private val androidFolders = listOf("/system/Fonts", "/system/font", "/data/fonts")
+@SharedImmutable private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
+@SharedImmutable private val windowsFolders = listOf("%WINDIR%\\Fonts", "%LOCALAPPDATA%\\Microsoft\\Windows\\Fonts")
+@SharedImmutable private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
+@SharedImmutable private val iosFolders = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
+@SharedImmutable private val androidFolders = listOf("/system/Fonts", "/system/font", "/data/fonts")
 
 // @TODO: Maybe we can just filter fonts containing "emoji" (ignoring case)
-private val emojiFontNames = listOf(
+@SharedImmutable private val emojiFontNames = listOf(
     "Segoe UI Emoji", // Windows
     "Apple Color Emoji", // Apple
     "Noto Color Emoji", // Google
@@ -134,22 +138,29 @@ open class FolderBasedNativeSystemFontProvider(
 
     override fun listFontNamesWithFiles(): Map<String, VfsFile> = listFontNamesMap()
 
-    private val namesMapLC by lazy { listFontNamesMapLC() }
+    private val _namesMapLC = KorAtomicRef<Map<String, VfsFile>?>(null)
+    private val namesMapLC: Map<String, VfsFile> get() {
+        if (_namesMapLC.value == null) {
+            _namesMapLC.value = kdsFreeze(listFontNamesMapLC())
+        }
+        return _namesMapLC.value!!
+    }
 
-    override fun loadFontByName(name: String): TtfFont? =
-        runBlockingNoJs { namesMapLC[name.normalizeName()]?.let { com.soywiz.korim.font.TtfFont(it.readAll()) } }
+    override fun loadFontByName(name: String, freeze: Boolean): TtfFont? =
+        runBlockingNoJs { namesMapLC[name.normalizeName()]?.let { TtfFont(it.readAll(), freeze = freeze) } }
 }
 
 abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
-    abstract fun loadFontByName(name: String): TtfFont?
+    abstract fun loadFontByName(name: String, freeze: Boolean = false): TtfFont?
 
     fun String.normalizeName() = this.toLowerCase().trim()
 
-    private val ttfCache by lazy { LinkedHashMap<String, TtfFont?>() }
+    //private val ttfCache = CopyOnWriteFrozenMap<String, TtfFont?>()
+    private val ttfCache = LinkedHashMap<String, TtfFont?>()
 
     fun locateFontByName(name: String): TtfFont? {
         val normalizedName = name.normalizeName()
-        return ttfCache.getOrPut(normalizedName) { loadFontByName(name) }
+        return ttfCache.getOrPut(normalizedName) { loadFontByName(name, freeze = false) }
     }
 
     fun ttf(systemFont: SystemFont) = locateFontByName(systemFont.name) ?: DefaultTtfFont
@@ -184,5 +195,5 @@ open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemF
     val vfs = VfsFileFromData(ttf.getAllBytesUnsafe(), "ttf")
     override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf
     override fun listFontNamesWithFiles(): Map<String, VfsFile> = mapOf(ttf.ttfCompleteName to vfs)
-    override fun loadFontByName(name: String): TtfFont? = ttf
+    override fun loadFontByName(name: String, freeze: Boolean): TtfFont? = ttf
 }

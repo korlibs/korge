@@ -10,7 +10,7 @@ env:
   SKIP_KORGE_SAMPLES: true
 
 jobs:
-  build:
+  test:
     timeout-minutes: 60
 
     runs-on: ubuntu-latest
@@ -30,7 +30,21 @@ jobs:
       run: ./gradlew --no-daemon jvmTest
     - name: Testing Node JS
       run: ./gradlew --no-daemon jsNodeTest
-    #- name: Testing JS
-    #  run: ./gradlew --no-daemon jsTest
-    #- name: Testing ALL
-    #  run: ./gradlew --no-daemon check
+  test-native:
+    timeout-minutes: 60
+
+    runs-on: ubuntu-latest
+    #continue-on-error: true
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.8
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Start gradle
+        run: ./gradlew
+      - name: Testing Kotlin/Native Linux
+        run: ./gradlew --no-daemon linuxX64Test
