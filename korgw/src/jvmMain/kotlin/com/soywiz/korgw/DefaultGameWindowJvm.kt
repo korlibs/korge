@@ -72,7 +72,13 @@ actual fun CreateDefaultGameWindow(): GameWindow {
         //        JoglGameWindow()
         //    }
         //}
-        "sdl" -> SdlGameWindowJvm(checkGl)
+        // On mac you should install https://www.libsdl.org/release/SDL2-2.0.16.dmg on `/Library/Frameworks` or `~/Library/Frameworks`
+        "sdl" -> {
+            if (!isOSXMainThread) {
+                println("WARNING. NOT in main thread! Can't use SDL backend. Need to use -XstartOnFirstThread")
+            }
+            SdlGameWindowJvm(checkGl)
+        }
         else -> {
             error("Unsupported KORGW_JVM_ENGINE,korgw.jvm.engine='$engine'")
         }

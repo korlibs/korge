@@ -84,12 +84,29 @@ open class KorgeJavaExec : JavaExec() {
     }
 
     override fun exec() {
+        val firstThread = firstThread
+            ?: (
+                System.getenv("KORGE_START_ON_FIRST_THREAD") == "true" ||
+                    System.getenv("KORGW_JVM_ENGINE") == "sdl" ||
+                    project.findProperty("korgw.jvm.engine") == "sdl"
+                )
+
+        if (firstThread && isMacos) {
+            jvmArgs("-XstartOnFirstThread")
+            //println("Executed jvmArgs(\"-XstartOnFirstThread\")")
+        } else {
+            //println("firstThread=$firstThread, isMacos=$isMacos")
+        }
         classpath = korgeClassPath
         for (classPath in korgeClassPath.toList()) {
             project.logger.info("- $classPath")
         }
         super.exec()
     }
+
+    @get:Input
+    @Optional
+    var firstThread: Boolean? = null
 
     init {
         systemProperties = (System.getProperties().toMutableMap() as MutableMap<String, Any>) - "java.awt.headless"

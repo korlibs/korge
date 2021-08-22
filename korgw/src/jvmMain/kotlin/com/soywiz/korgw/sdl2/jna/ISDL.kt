@@ -41,4 +41,7 @@ interface ISDL : Library {
     fun SDL_GL_SetSwapInterval(interval: Int): Int
     fun SDL_GL_SwapWindow(window: SDL_Window)
     fun SDL_GetDesktopDisplayMode(displayIndex: Int, mode: SDL_DisplayMode.Ref): Int
+
+    // Error
+    fun SDL_GetError(): String?
 }

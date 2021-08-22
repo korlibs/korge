@@ -17,6 +17,7 @@ import com.soywiz.korgw.sdl2.jna.SDL_Window
 import com.soywiz.korgw.sdl2.jna.enums.*
 import com.soywiz.korgw.sdl2.jna.events.SDL_Event
 import com.soywiz.korgw.sdl2.jna.structs.SDL_DisplayMode
+import com.soywiz.korio.util.OS
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
@@ -33,7 +34,13 @@ interface GL : INativeGL, Library
 
 object SDL :
     ISDL by Native.load(System.getenv("SDL2_PATH") ?: "SDL2", ISDL::class.java),
-    GL by Native.load(System.getenv("GLLIB_PATH") ?: "libGL", GL::class.java)
+    GL by Native.load(
+        System.getenv("GLLIB_PATH") ?: (when {
+            OS.isMac -> "OpenGL"
+            else -> "libGL"
+        }),
+        GL::class.java
+    )
 
 const val SDL_SUCCESS = 0
 val NULLPTR = Pointer(0)
@@ -68,21 +75,21 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
 
     override fun doInitialize() {
         if (SDL.SDL_Init(SDL_Init.EVERYTHING) != SDL_SUCCESS) {
-            throw RuntimeException("Couldn't initialize SDL")
+            error("Couldn't initialize SDL: ${SDL.SDL_GetError()}")
         }
 
         val displayMode = SDL_DisplayMode.Ref()
         if (SDL.SDL_GetDesktopDisplayMode(0, displayMode) != SDL_SUCCESS) {
-            throw RuntimeException("Couldn't get desktop display mode")
+            error("Couldn't get desktop display mode: ${SDL.SDL_GetError()}")
         }
         winX = displayMode.w / 2
         winY = displayMode.h / 2
 
         w = SDL.SDL_CreateWindow(title, winX, winY, width, height, SDL_WindowFlags.OPENGL or SDL_WindowFlags.SHOWN)
-            ?: throw RuntimeException("Couldn't create SDL window")
+            ?: error("Couldn't create SDL window: ${SDL.SDL_GetError()}")
 
         r = SDL.SDL_CreateRenderer(w, -1, SDL_RendererFlags.ACCELERATED)
-            ?: throw RuntimeException("Couldn't create SDL renderer")
+            ?: error("Couldn't create SDL renderer: ${SDL.SDL_GetError()}")
 
         ctx = SDL.SDL_GL_CreateContext(w)
         SDL.SDL_GL_MakeCurrent(w, ctx)
