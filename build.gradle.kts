@@ -937,7 +937,7 @@ if (
     (!(File("/usr/include/GL/glut.h").exists()) || !(File("/usr/include/AL/al.h").exists()))
 ) {
     exec { commandLine("sudo", "apt-get", "update") }
-    exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev") }
+    exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev", "libsdl2-dev") }
     // exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
 }
 
