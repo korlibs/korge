@@ -74,11 +74,7 @@ enum class SDL_EventType(val value: Int) {
     LASTEVENT(0xFFFF);
 
     companion object {
-        private val sLookup = mutableMapOf<Int, SDL_EventType>()
-
-        init {
-            values().forEach { sLookup[it.value] = it }
-        }
+        private val sLookup = values().associateBy { it.value }
 
         fun fromInt(value: Int): SDL_EventType = sLookup[value] as SDL_EventType
     }
@@ -358,12 +354,7 @@ enum class SDL_KeyCode(val value: Int) {
     AUDIOFASTFORWARD(SDL_Scancode.AUDIOFASTFORWARD.keycode);
 
     companion object {
-        private val lookup = mutableMapOf<Int, SDL_KeyCode>()
-
-        init {
-            values().forEach { lookup[it.value] = it }
-        }
-
+        private val lookup = values().associateBy { it.value }
         fun fromInt(value: Int): SDL_KeyCode = lookup[value] ?: UNKNOWN
     }
 }
@@ -670,11 +661,7 @@ enum class SDL_WindowEventID {
     HIT_TEST;
 
     companion object {
-        val lookup = mutableMapOf<Int, SDL_WindowEventID>()
-
-        init {
-            values().forEach { lookup[it.ordinal] = it }
-        }
+        val lookup = values().associateBy { it.ordinal }
 
         fun fromInt(value: Int) = lookup[value] ?: NONE
     }
