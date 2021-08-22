@@ -56,10 +56,14 @@ dependencies {
 
 afterEvaluate {
     kotlin {
-        for (targetName in listOf("linuxX64", "linuxArm32Hfp")) {
+        for (targetName in listOf("linuxX64", "linuxArm32Hfp", "macosX64")) {
+            //println("targetName=$targetName")
             val target = targets.findByName(targetName) ?: continue
+            //println("target=$target")
             val suffix = if (doEnableKotlinNativeSDL) "sdl" else "nosdl"
-            target.compilations["main"].defaultSourceSet.kotlin.srcDir(project.file("${targetName}Main/kotlin-$suffix"))
+            val folder = project.file("src/${targetName}Main/kotlin-$suffix")
+            //println(" - $folder")
+            target.compilations["main"].defaultSourceSet.kotlin.srcDir(folder)
         }
     }
 }
