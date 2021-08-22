@@ -52,10 +52,10 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
-    mainTrimmedAtlas()
+    //mainTrimmedAtlas()
     //mainRotateCircle()
     //mainImageTrace()
-    //mainEmoji()
+    mainEmoji()
     //mainBVH()
     //mainCircles()
     //mainVampire()
