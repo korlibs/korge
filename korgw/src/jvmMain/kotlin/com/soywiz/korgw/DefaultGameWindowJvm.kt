@@ -1,5 +1,6 @@
 package com.soywiz.korgw
 
+import SdlGameWindowJvm
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGConfig
 import com.soywiz.korag.AGFactory
@@ -71,6 +72,7 @@ actual fun CreateDefaultGameWindow(): GameWindow {
         //        JoglGameWindow()
         //    }
         //}
+        "sdl" -> SdlGameWindowJvm(checkGl)
         else -> {
             error("Unsupported KORGW_JVM_ENGINE,korgw.jvm.engine='$engine'")
         }
