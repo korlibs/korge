@@ -54,6 +54,16 @@ dependencies {
     }
 }
 
+afterEvaluate {
+    kotlin {
+        for (targetName in listOf("linuxX64", "linuxArm32Hfp")) {
+            val target = targets.findByName(targetName) ?: continue
+            val suffix = if (doEnableKotlinNativeSDL) "sdl" else "nosdl"
+            target.compilations["main"].defaultSourceSet.kotlin.srcDir(project.file("${targetName}Main/kotlin-$suffix"))
+        }
+    }
+}
+
 /*
 import org.apache.tools.ant.taskdefs.condition.Os
 
