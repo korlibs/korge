@@ -10,16 +10,23 @@ fun Project.configureEsbuild() {
     val wwwFolder = File(buildDir, "www")
     val esbuildFolder = File(rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-    val esbuildCmd = if (isWindows) File(esbuildFolder, "esbuild.cmd") else File(esbuildFolder, "esbuild")
+    val esbuildCmd = if (isWindows) File(esbuildFolder, "esbuild.cmd") else File(esbuildFolder, "bin/esbuild")
     val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
-    val npmCmd by lazy { File(env.nodeDir, if (env.isWindows) "npm.cmd" else "npm") }
+    val npmCmd by lazy {
+        arrayOf(
+            File(env.nodeExecutable),
+            File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js")
+        )
+    }
 
     val npmInstallEsbuild = "npmInstallEsbuild"
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
         rootProject.tasks.create(npmInstallEsbuild, Exec::class) {
+            it.dependsOn("kotlinNodeJsSetup")
             it.onlyIf { !esbuildCmd.exists() }
-            val esbuildVersion = "0.12.20"
-            it.commandLine(npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder)
+
+            val esbuildVersion = korge.esbuildVersion
+            it.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder)
         }
     }
 
