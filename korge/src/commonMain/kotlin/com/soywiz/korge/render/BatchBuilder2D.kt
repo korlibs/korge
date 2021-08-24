@@ -694,11 +694,14 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		fun buildTextureLookupFragment(premultiplied: Boolean, preadd: Boolean = false) = FragmentShader {
 			DefaultShaders.apply {
-                for (n in 0 until BB_MAX_TEXTURES) {
-                    IF(v_TexIndex eq (n.toFloat()).lit) {
-                        SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
-                    }
+                IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) {
+                    SET(out, texture2D(u_TexN[it], v_Tex["xy"]))
                 }
+                //for (n in 0 until BB_MAX_TEXTURES) {
+                //    IF(v_TexIndex eq (n.toFloat()).lit) {
+                //        SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
+                //    }
+                //}
 				if (premultiplied) {
 					SET(out["rgb"], out["rgb"] / out["a"])
 				}

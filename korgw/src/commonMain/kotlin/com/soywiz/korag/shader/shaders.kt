@@ -275,6 +275,29 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 			return stmIf
 		}
 
+        fun IF_ELSE_BINARY_LOOKUP(ref: Operand, min: Int, max: Int, block: Builder.(Int) -> Unit) {
+            if (min >= max) {
+                block(min)
+            } else if (max - min <= 1) {
+                IF(ref eq min.toFloat().lit) { block(min) } ELSE { block(max) }
+            } else {
+                val middle = ((min + max) / 2)
+                IF(ref le middle.toFloat().lit) {
+                    IF_ELSE_BINARY_LOOKUP(ref, min, middle, block)
+                } ELSE {
+                    IF_ELSE_BINARY_LOOKUP(ref, middle + 1, max, block)
+                }
+            }
+        }
+
+        fun IF_ELSE_LIST(ref: Operand, min: Int, max: Int, block: Builder.(Int) -> Unit) {
+            if (min >= max) {
+                block(min)
+            } else {
+                IF(ref eq min.toFloat().lit) { block(min) } ELSE { IF_ELSE_LIST(ref, min + 1, max, block) }
+            }
+        }
+
         fun PUT(shader: Shader) {
             outputStms.add(shader.stm)
         }
@@ -401,7 +424,8 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 	}
 
 	open class Visitor<E>(val default: E) {
-		open fun visit(stm: Stm) = when (stm) {
+		open fun visit(stm: Stm?) = when (stm) {
+		    null -> Unit
 			is Stm.Stms -> visit(stm)
 			is Stm.Set -> visit(stm)
 			is Stm.If -> visit(stm)
@@ -415,6 +439,7 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 		open fun visit(stm: Stm.If) {
 			visit(stm.cond)
 			visit(stm.tbody)
+            visit(stm.fbody)
 		}
 
 		open fun visit(stm: Stm.Set) {

@@ -1,5 +1,5 @@
 draw(vertexCount=4, instances=4, indices=null, type=TRIANGLE_FAN, offset=0)
-::draw.program=Program(name=program, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1])
+::draw.program=Program(name=FSprites2, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=null
 ::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
@@ -79,7 +79,7 @@ void main() {
 	if ((a_texId == 0.0)) {
 		temp1.zw = u_texSize0;
 	}
-	if ((a_texId == 1.0)) {
+	else {
 		temp1.zw = u_texSize1;
 	}
 	v_Tex = (vec2(mix(a_uv0.x, a_uv1.x, a_xy.x), mix(a_uv0.y, a_uv1.y, a_xy.y)) * temp1.zw);
@@ -102,16 +102,16 @@ void main() {
 	  #define mediump 
 	  #define lowp 
 #endif
-attribute lowp float a_texId;
 uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
+varying lowp float v_TexId;
 varying mediump vec2 v_Tex;
 varying vec4 v_Col;
 void main() {
-	if ((a_texId == 0.0)) {
+	if ((v_TexId == 0.0)) {
 		gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
 	}
-	if ((a_texId == 1.0)) {
+	else {
 		gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
 	}
 	if ((gl_FragColor.a <= 0.0)) {

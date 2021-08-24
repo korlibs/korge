@@ -1,5 +1,4 @@
 package com.soywiz.korge.view.fast
-
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -103,8 +102,11 @@ open class FSprites(val maxSize: Int) {
         constructor(sprites: FSprites, tex: Bitmap) : this(sprites, arrayOf(tex))
         var smoothing: Boolean = true
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
-        private val u_i_texSizeDataN = Array(4) { FloatArray(2) }
-        private val olds = arrayOfNulls<FloatArray>(4)
+        private val u_i_texSizeDataN = Array(texs.size) { FloatArray(2) }
+        private val olds = arrayOfNulls<FloatArray>(texs.size)
+
+        //val program = vprograms.getOrElse(texs.size) { createProgram(texs.size) }
+        val program = vprograms.getOrElse(texs.size) { error("Only supported up to $MAX_SUPPORTED_TEXTURES textures") }
 
         // @TODO: fallback version when instanced rendering is not supported
         override fun renderInternal(ctx: RenderContext) {
@@ -127,7 +129,7 @@ open class FSprites(val maxSize: Int) {
                         ctx.xyBuffer.buffer.upload(xyData)
                         ctx.ag.drawV2(
                             vertexData = ctx.buffers,
-                            program = vprograms[texs.size],
+                            program = program,
                             type = AG.DrawType.TRIANGLE_FAN,
                             vertexCount = 4,
                             instances = sprites.size,
@@ -149,7 +151,7 @@ open class FSprites(val maxSize: Int) {
 
         //const val STRIDE = 8
 
-        val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES) { Uniform("u_texSize$it", VarType.Float2) }
+        val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { Uniform("u_texSize$it", VarType.Float2) }
         val a_xy = Attribute("a_xy", VarType.Float2, false)
 
         val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
@@ -180,12 +182,9 @@ open class FSprites(val maxSize: Int) {
         }
 
         fun createProgram(maxTexs: Int = 4): Program {
-            fun Program.Builder.blockN(block: Program.Builder.(Int) -> Unit) {
-                if (maxTexs <= 1) {
-                    block(0)
-                } else {
-                    for (n in 0 until maxTexs) IF(a_texId eq n.toFloat().lit) { block(n) }
-                }
+            fun Program.Builder.blockN(ref: Operand, block: Program.Builder.(Int) -> Unit) {
+                //IF_ELSE_LIST(a_texId, 0, maxTexs - 1, block)
+                IF_ELSE_BINARY_LOOKUP(ref, 0, maxTexs - 1, block)
             }
 
             return Program(VertexShader {
@@ -199,7 +198,7 @@ open class FSprites(val maxSize: Int) {
                     SET(v_TexId, a_texId)
 
                     //SET(texSize, u_i_texSizeN[0])
-                    blockN { SET(texSize, u_i_texSizeN[it]) }
+                    blockN(a_texId) { SET(texSize, u_i_texSizeN[it]) }
 
                     SET(v_Tex, vec2(
                         mix(a_uv0.x, a_uv1.x, a_xy.x),
@@ -222,16 +221,16 @@ open class FSprites(val maxSize: Int) {
                 }
             }, FragmentShader {
                 DefaultShaders.apply {
-                    //SET(out, texture2D(BatchBuilder2D.u_TexN[0], v_Tex["xy"]))
-                    blockN { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
+                    blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
                     IF(out["a"] le 0f.lit) { DISCARD() }
                     SET(out["rgb"], out["rgb"] / out["a"])
                     SET(out["rgba"], out["rgba"] * v_Col)
                 }
-            })
+            }, name = "FSprites$maxTexs")
         }
 
         val vprograms = Array(MAX_SUPPORTED_TEXTURES + 1) { createProgram(it) }
+        //val vprograms by lazy { Array(MAX_SUPPORTED_TEXTURES + 1) { createProgram(it) } }
 
         private fun unpackAnchorComponent(v: Int): Float = (v and 0xFFFF).toFloat() / 0xFFFF
         private fun packAnchorComponent(v: Float): Int = (v.clamp01() * 0xFFFF).toInt() and 0xFFFF
