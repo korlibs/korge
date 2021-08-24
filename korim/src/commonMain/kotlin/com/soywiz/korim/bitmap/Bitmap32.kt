@@ -250,7 +250,16 @@ class Bitmap32(
         updateColors(x, y, width, height) { RGBA(R[it.r], G[it.g], B[it.b], A[it.a]) }
 	}
 
-	fun mipmap(levels: Int): Bitmap32 {
+    fun applyColorMatrix(matrix: Matrix3D, x: Int = 0, y: Int = 0, width: Int = this.width - x, height: Int = this.height - y, temp: Vector3D = Vector3D()) {
+        val v = temp
+        updateColors(x, y, width, height) {
+            v.setTo(it.rf, it.gf, it.bf, it.af)
+            matrix.transform(v, v)
+            RGBA.float(v.x, v.y, v.z, v.w)
+        }
+    }
+
+    fun mipmap(levels: Int): Bitmap32 {
 		val temp = this.clone()
 		temp.premultiplyInplaceIfRequired()
 		val dst = temp.data.asPremultiplied()
