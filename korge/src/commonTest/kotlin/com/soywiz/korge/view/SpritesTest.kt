@@ -90,10 +90,10 @@ class SpritesTest : ViewsForTesting() {
     @Test
     fun testSpriteAnimationPlay346Times() = viewsTest(timeout = 100.seconds) {
         testPlayAnimation {
-            countDownSprite.playAnimation(1000)
+            countDownSprite.playAnimation(100)
         }
         assertEquals("started,stopped,completed", logs.joinToString(","))
-        assertEquals(10000, countDownSprite.totalFramesPlayed)
+        assertEquals(1000, countDownSprite.totalFramesPlayed)
         assertEquals(countDownSprite.bitmap, countDownAnimation[0])
     }
 
@@ -120,20 +120,20 @@ class SpritesTest : ViewsForTesting() {
     @Test
     fun testSpriteAnimationReversed() = viewsTest {
         testPlayAnimation {
-            countDownSprite.playAnimation(reversed = true, times = 1000)
+            countDownSprite.playAnimation(reversed = true, times = 100)
         }
         assertEquals("started,stopped,completed", logs.joinToString(","))
-        assertEquals(10000, countDownSprite.totalFramesPlayed)
+        assertEquals(1000, countDownSprite.totalFramesPlayed)
         assertEquals(countDownSprite.bitmap, countDownAnimation[0])
     }
 
     @Test
     fun testSpriteAnimationReversedStartFrame() = viewsTest {
         testPlayAnimation {
-            countDownSprite.playAnimation(reversed = true, times = 1000, startFrame = 7)
+            countDownSprite.playAnimation(reversed = true, times = 100, startFrame = 7)
         }
         assertEquals("started,stopped,completed", logs.joinToString(","))
-        assertEquals(10007, countDownSprite.totalFramesPlayed)
+        assertEquals(1007, countDownSprite.totalFramesPlayed)
         assertEquals(countDownSprite.bitmap, countDownAnimation[0])
     }
 

@@ -65,6 +65,8 @@ class Views constructor(
 {
     override val views = this
 
+    var rethrowRenderError = false
+
     val devicePixelRatio get() = ag.devicePixelRatio
 
     override val serializer = KTreeSerializer(this)
@@ -482,7 +484,9 @@ class ViewsLog(
 	val stats: Stats = Stats(),
 	val gameWindow: GameWindow = GameWindowLog()
 ) : CoroutineScope {
-	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow)
+	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
+	    it.rethrowRenderError = true
+    }
 }
 
 fun Views.texture(bmp: Bitmap, mipmaps: Boolean = false): Texture = Texture(Texture.Base(ag.createTexture(bmp, mipmaps), bmp.width, bmp.height))

@@ -49,33 +49,47 @@ class ReferenceGraphicsTest : ViewsForTesting(
     }
 
     @Test
-    fun testFSprites() = viewsTest {
+    fun testFSprites1() = testFSpritesN(1)
+
+    @Test
+    fun testFSprites2() = testFSpritesN(2)
+
+    @Test
+    fun testFSprites3() = testFSpritesN(3)
+
+    @Test
+    fun testFSprites4() = testFSpritesN(4)
+
+    fun testFSpritesN(N: Int) = viewsTest {
         val bmp = Bitmap32(32, 32, Colors.RED).slice()
         val sprites = FSprites(16)
+        val anchorsX = listOf(.5f, .5f, .5f, .0f)
+        val anchorsY = listOf(.5f, 1f, .0f, 1f)
         sprites.apply {
             run {
-                alloc().also { sprite ->
-                    sprite.xy(100f, 100f)
-                    sprite.setAnchor(.5f, .5f)
-                    sprite.scale(2f, 1f)
-                    sprite.colorMul = Colors.WHITE.withAf(.5f)
-                    sprite.setTex(bmp)
-                }
-                alloc().also { sprite ->
-                    sprite.xy(200f, 100f)
-                    sprite.setAnchor(.5f, 1f)
-                    sprite.scale(1f, 2f)
-                    sprite.colorMul = Colors.WHITE.withAf(.5f)
-                    sprite.setTex(bmp)
+                for (n in 0 until 4) {
+                    alloc().also { sprite ->
+                        sprite.xy(100f + 100f * n, 100f)
+                        sprite.setAnchor(anchorsX[n], anchorsY[n])
+                        sprite.scale(2f, 1f)
+                        sprite.colorMul = Colors.WHITE.withAf(.5f)
+                        sprite.setTex(bmp)
+                        sprite.setTexIndex(n % N)
+                    }
                 }
             }
         }
-        val fview = FSprites.FView(sprites, bmp.bmpBase)
+        val fview = FSprites.FView(sprites, Array(N) { bmp.bmpBase })
         addChild(fview)
 
         delayFrame()
+        "korge/render/FSprites.log"
+        "korge/render/FSprites1.log"
+        "korge/render/FSprites2.log"
+        "korge/render/FSprites3.log"
+        "korge/render/FSprites4.log"
         assertEqualsFileReference(
-            "korge/render/FSprites.log",
+            "korge/render/FSprites$N.log",
             listOf(
                 logAg.getLogAsString(),
             ).joinToString("\n")

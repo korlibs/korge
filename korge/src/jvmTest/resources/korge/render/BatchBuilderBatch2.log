@@ -47,3 +47,71 @@ draw(vertexCount=12, instances=1, indices=Buffer[5], type=TRIANGLES, offset=0)
 ::draw.vertex[5]: a_Pos[200,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[6]: a_Pos[200,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[7]: a_Pos[100,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute mediump vec2 a_Tex;
+attribute lowp float a_TexIndex;
+attribute lowp vec4 a_Col;
+attribute vec4 a_Col2;
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+varying lowp float v_TexIndex;
+varying vec4 v_Col;
+varying vec4 v_Col2;
+void main() {
+	v_Tex = a_Tex;
+	v_TexIndex = a_TexIndex;
+	v_Col = a_Col;
+	v_Col2 = a_Col2;
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform sampler2D u_Tex0;
+uniform sampler2D u_Tex1;
+uniform sampler2D u_Tex2;
+uniform sampler2D u_Tex3;
+varying lowp float v_TexIndex;
+varying mediump vec2 v_Tex;
+varying vec4 v_Col;
+varying vec4 v_Col2;
+void main() {
+	if ((v_TexIndex == 0.0)) {
+		gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
+	}
+	if ((v_TexIndex == 1.0)) {
+		gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
+	}
+	if ((v_TexIndex == 2.0)) {
+		gl_FragColor = texture2D(u_Tex2, v_Tex.xy);
+	}
+	if ((v_TexIndex == 3.0)) {
+		gl_FragColor = texture2D(u_Tex3, v_Tex.xy);
+	}
+	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	gl_FragColor = ((gl_FragColor.rgba * v_Col.rgba) + ((v_Col2.rgba - vec4(0.5, 0.5, 0.5, 0.5)) * 2.0));
+	if ((gl_FragColor.a <= 0.0)) {
+		discard;
+	}
+}

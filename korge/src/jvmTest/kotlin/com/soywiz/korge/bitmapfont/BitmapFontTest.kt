@@ -11,7 +11,13 @@ import kotlin.coroutines.*
 import kotlin.test.*
 
 class BitmapFontTest {
-	val ag = LogAG()
+	val ag = object : LogAG() {
+        override fun log(str: String, kind: Kind) {
+            if (kind != Kind.SHADER) {
+                super.log(str, kind)
+            }
+        }
+    }
 	val ctx = RenderContext(ag, coroutineContext = EmptyCoroutineContext)
 
 	@Test

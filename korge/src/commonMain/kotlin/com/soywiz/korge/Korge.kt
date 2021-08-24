@@ -460,7 +460,9 @@ object Korge {
                         views.mouseUpdated()
                     }
                 } catch (e: Throwable) {
+                    Console.error("views.gameWindow.onRenderEvent:")
                     e.printStackTrace()
+                    if (views.rethrowRenderError) throw e
                 }
             }
         }

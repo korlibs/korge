@@ -145,9 +145,11 @@ open class FSprites(val maxSize: Int) {
     }
 
     companion object {
+        const val MAX_SUPPORTED_TEXTURES = 4
+
         //const val STRIDE = 8
 
-        val u_i_texSizeN = Array(4) { Uniform("u_texSize$it", VarType.Float2) }
+        val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES) { Uniform("u_texSize$it", VarType.Float2) }
         val a_xy = Attribute("a_xy", VarType.Float2, false)
 
         val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
@@ -157,9 +159,9 @@ open class FSprites(val maxSize: Int) {
         val a_uv0 = Attribute("a_uv0", VarType.UShort2, false).withDivisor(1)
         val a_uv1 = Attribute("a_uv1", VarType.UShort2, false).withDivisor(1)
         val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW).withDivisor(1)
-        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
 
-        val v_TexId = Varying("v_TexId", VarType.UByte1, precision = Precision.LOW)
+        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
+        val v_TexId = Varying("v_TexId", VarType.Float1, precision = Precision.LOW)
 
         val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_xy)
@@ -178,6 +180,14 @@ open class FSprites(val maxSize: Int) {
         }
 
         fun createProgram(maxTexs: Int = 4): Program {
+            fun Program.Builder.blockN(block: Program.Builder.(Int) -> Unit) {
+                if (maxTexs <= 1) {
+                    block(0)
+                } else {
+                    for (n in 0 until maxTexs) IF(a_texId eq n.toFloat().lit) { block(n) }
+                }
+            }
+
             return Program(VertexShader {
                 DefaultShaders.apply {
                     //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
@@ -189,7 +199,7 @@ open class FSprites(val maxSize: Int) {
                     SET(v_TexId, a_texId)
 
                     //SET(texSize, u_i_texSizeN[0])
-                    for (n in 0 until maxTexs) IF(a_texId eq n.lit) { SET(texSize, u_i_texSizeN[n]) }
+                    blockN { SET(texSize, u_i_texSizeN[it]) }
 
                     SET(v_Tex, vec2(
                         mix(a_uv0.x, a_uv1.x, a_xy.x),
@@ -213,7 +223,7 @@ open class FSprites(val maxSize: Int) {
             }, FragmentShader {
                 DefaultShaders.apply {
                     //SET(out, texture2D(BatchBuilder2D.u_TexN[0], v_Tex["xy"]))
-                    for (n in 0 until maxTexs) IF(v_TexId eq n.lit) { SET(out, texture2D(BatchBuilder2D.u_TexN[n], v_Tex["xy"])) }
+                    blockN { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
                     IF(out["a"] le 0f.lit) { DISCARD() }
                     SET(out["rgb"], out["rgb"] / out["a"])
                     SET(out["rgba"], out["rgba"] * v_Col)
@@ -221,7 +231,7 @@ open class FSprites(val maxSize: Int) {
             })
         }
 
-        val vprograms = Array(4) { createProgram(it) }
+        val vprograms = Array(MAX_SUPPORTED_TEXTURES + 1) { createProgram(it) }
 
         private fun unpackAnchorComponent(v: Int): Float = (v and 0xFFFF).toFloat() / 0xFFFF
         private fun packAnchorComponent(v: Float): Int = (v.clamp01() * 0xFFFF).toInt() and 0xFFFF
