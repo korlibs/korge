@@ -1,24 +1,4 @@
-createBuffer(VERTEX):0
-createBuffer(VERTEX):1
-createBuffer(INDEX):2
-createBuffer(VERTEX):3
-RenderBuffer[0].setSize(1280, 720)
-createMainRenderBuffer():0
-RenderBuffer[0].set()
-clear(#00000000, 1.0, 0, true, true, true)
-disposeTemporalPerFrameStuff()
-flipInternal()
-RenderBuffer[0].set()
-clear(#00000000, 1.0, 0, true, true, true)
-createTexture():0
-Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=1, height=1), 1, 1)
-createBuffer(VERTEX):4
-Buffer[4].afterSetMem(mem[2048])
-createBuffer(VERTEX):5
-Buffer[5].afterSetMem(mem[256])
-createBuffer(VERTEX):6
-Buffer[6].afterSetMem(mem[32])
-draw(vertexCount=4, instances=10, indices=null, type=TRIANGLE_FAN, offset=0)
+draw(vertexCount=4, instances=2, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_uv1, a_uv0, a_colMul, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize, u_ProjMat, u_ViewMat, u_Tex0])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=null
@@ -32,8 +12,8 @@ draw(vertexCount=4, instances=10, indices=null, type=TRIANGLE_FAN, offset=0)
   [ 0, 0, 0, 1 ],
 )
 ::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
+  [ 2, 0, 0, 0 ],
+  [ 0, 2, 0, 0 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -41,7 +21,7 @@ draw(vertexCount=4, instances=10, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false)
-::draw.uniform.Uniform(u_texSize) = [1.0, 1.0]
+::draw.uniform.Uniform(u_texSize) = [0.03125, 0.03125]
 ::draw.ERROR.Unexpected:[Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
 ::draw.attribute[6][0]=Attribute(a_xy, type=Float2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=0)
 ::draw.attribute[4][0]=Attribute(a_rxy, type=Float2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=1)
@@ -56,16 +36,5 @@ draw(vertexCount=4, instances=10, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.vertex[1]: a_xy[1,0]
 ::draw.vertex[2]: a_xy[1,1]
 ::draw.vertex[3]: a_xy[0,1]
-::draw.instance[0]: a_rxy[1,2], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[1]: a_rxy[2,3], a_scale[1,1], a_rangle[0.5235988], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[2]: a_rxy[3,4], a_scale[1,1], a_rangle[1.0471976], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[3]: a_rxy[4,5], a_scale[1,1], a_rangle[1.5707964], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[4]: a_rxy[5,6], a_scale[1,1], a_rangle[2.0943952], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[5]: a_rxy[6,7], a_scale[1,1], a_rangle[2.6179938], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[6]: a_rxy[7,8], a_scale[1,1], a_rangle[3.1415927], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[7]: a_rxy[8,9], a_scale[1,1], a_rangle[3.6651914], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[8]: a_rxy[9,10], a_scale[1,1], a_rangle[4.1887903], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-::draw.instance[9]: a_rxy[10,11], a_scale[1,1], a_rangle[4.712389], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1]
-Buffer[4].afterSetMem(mem[2048])
-disposeTemporalPerFrameStuff()
-flipInternal()
+::draw.instance[0]: a_rxy[100,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922]
+::draw.instance[1]: a_rxy[200,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922]

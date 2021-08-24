@@ -3,8 +3,8 @@ package com.soywiz.korge.view
 import com.soywiz.korag.log.LogBaseAG
 import com.soywiz.korge.test.assertEqualsFileReference
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korge.view.fast.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.SizeInt
@@ -47,4 +47,39 @@ class ReferenceGraphicsTest : ViewsForTesting(
             ).joinToString("\n")
         )
     }
+
+    @Test
+    fun testFSprites() = viewsTest {
+        val bmp = Bitmap32(32, 32, Colors.RED).slice()
+        val sprites = FSprites(16)
+        sprites.apply {
+            run {
+                alloc().also { sprite ->
+                    sprite.xy(100f, 100f)
+                    sprite.setAnchor(.5f, .5f)
+                    sprite.scale(2f, 1f)
+                    sprite.colorMul = Colors.WHITE.withAf(.5f)
+                    sprite.setTex(bmp)
+                }
+                alloc().also { sprite ->
+                    sprite.xy(200f, 100f)
+                    sprite.setAnchor(.5f, 1f)
+                    sprite.scale(1f, 2f)
+                    sprite.colorMul = Colors.WHITE.withAf(.5f)
+                    sprite.setTex(bmp)
+                }
+            }
+        }
+        val fview = FSprites.FView(sprites, bmp.bmpBase)
+        addChild(fview)
+
+        delayFrame()
+        assertEqualsFileReference(
+            "korge/render/FSprites.log",
+            listOf(
+                logAg.getLogAsString(),
+            ).joinToString("\n")
+        )
+    }
+
 }

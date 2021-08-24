@@ -65,9 +65,14 @@ open class FSprites(val maxSize: Int) {
 
     var FSprite.angle: Angle get() = radiansf.radians ; set(value) { radiansf = value.radians.toFloat() }
 
+    var FSprite.anchorX: Float get() = unpackAnchorComponent(anchorRaw ushr 0) ; set(value) { anchorRaw = packAnchorComponent(value) or (anchorRaw and 0xFFFF.inv()) }
+    var FSprite.anchorY: Float get() = unpackAnchorComponent(anchorRaw ushr 16) ; set(value) { anchorRaw = (packAnchorComponent(value) shl 16) or (anchorRaw and 0xFFFF) }
+
     fun FSprite.setAnchor(x: Float, y: Float) {
         anchorRaw = packAnchor(x, y)
     }
+
+    fun FSprite.setPos(x: Float, y: Float) = xy(x, y)
 
     fun FSprite.xy(x: Float, y: Float) {
         this.x = x
@@ -86,6 +91,14 @@ open class FSprites(val maxSize: Int) {
 
     fun createView(tex: Bitmap) = FView(this, tex)
 
+    //val dataTexIds = FBuffer(maxSize)
+    //private val texIds = dataTexIds.u8
+    //var FSprite.texId: Int get() = texIds[index] ; set(value) { texIds[index] = value }
+    //fun FSprite.setTexId(id: Int) { texId = id }
+
+    //class FView(val sprites: FSprites, val texs: Array<Bitmap>) : View() {
+    //    var tex: Bitmap get() = texs[0]; set(value) { texs[0] = value }
+    //    constructor(sprites: FSprites, tex: Bitmap) : this(sprites, arrayOf(tex))
     class FView(val sprites: FSprites, var tex: Bitmap) : View() {
         var smoothing: Boolean = true
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
@@ -133,10 +146,11 @@ open class FSprites(val maxSize: Int) {
         val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
         val a_scale = Attribute("a_scale", VarType.Float2, true).withDivisor(1)
         val a_angle = Attribute("a_rangle", VarType.Float1, false).withDivisor(1)
-        val a_anchor = Attribute("a_axy", VarType.SShort2, true).withDivisor(1)
+        val a_anchor = Attribute("a_axy", VarType.UShort2, true).withDivisor(1)
         val a_uv0 = Attribute("a_uv0", VarType.UShort2, false).withDivisor(1)
         val a_uv1 = Attribute("a_uv1", VarType.UShort2, false).withDivisor(1)
         val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW).withDivisor(1)
+        //val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
 
         val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_xy)
@@ -174,14 +188,13 @@ open class FSprites(val maxSize: Int) {
                 val size = t_Temp0["zw"]
                 val localPos = t_Temp0["xy"]
 
-                //SET(size, (a_scale * ((a_uv1 - a_uv0) / u_texSize) * 10f.lit))
-                SET(size, baseSize)
+                SET(size, baseSize * a_scale)
                 SET(localPos, t_TempMat2 * (a_xy - a_anchor) * size)
                 SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
             }
         }, FragmentShader {
             DefaultShaders.apply {
-                SET(out, texture2D(u_Tex, v_Tex["xy"]))
+                SET(out, texture2D(BatchBuilder2D.u_TexN[0], v_Tex["xy"]))
                 //SET(out, vec4(1f.lit, 0f.lit, 1f.lit, .5f.lit))
                 IF(out["a"] le 0f.lit) { DISCARD() }
                 SET(out["rgb"], out["rgb"] / out["a"])
@@ -189,13 +202,9 @@ open class FSprites(val maxSize: Int) {
             }
         })
 
-        private fun packAnchorComponent(v: Float): Int {
-            return (((v + 1f) * .5f) * 0xFFFF).toInt() and 0xFFFF
-        }
-
-        fun packAnchor(x: Float, y: Float): Int {
-            return (packAnchorComponent(x) and 0xFFFF) or (packAnchorComponent(y) shl 16)
-        }
+        private fun unpackAnchorComponent(v: Int): Float = (v and 0xFFFF).toFloat() / 0xFFFF
+        private fun packAnchorComponent(v: Float): Int = (v.clamp01() * 0xFFFF).toInt() and 0xFFFF
+        fun packAnchor(x: Float, y: Float): Int = (packAnchorComponent(x) and 0xFFFF) or (packAnchorComponent(y) shl 16)
     }
 }
 
