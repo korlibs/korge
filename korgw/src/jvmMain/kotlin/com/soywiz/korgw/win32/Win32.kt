@@ -24,7 +24,6 @@ internal const val WM_SETICON = 0x0080
 interface MyUser32 : User32 {
     fun SetWindowText(hWnd: WinDef.HWND?, lpString: String?): Boolean
     fun SetActiveWindow(hWnd: WinDef.HWND?): WinDef.HWND?
-    fun BringWindowToTop(hWnd: WinDef.HWND?): WinDef.HWND?
     fun MessageBox(hWnd: WinDef.HWND?, text: String, caption: String, type: Int): Int
     fun LoadCursor(hInstance: WinDef.HINSTANCE?, lpCursorName: String?): WinDef.HCURSOR?
     fun LoadCursor(hInstance: WinDef.HINSTANCE?, lpCursorName: Int): WinDef.HCURSOR?
