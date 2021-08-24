@@ -55,7 +55,8 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)) {
     //mainTrimmedAtlas()
     //mainRotateCircle()
     //mainImageTrace()
-    mainEmoji()
+    //mainEmoji()
+    Bunnymark().apply { bunnymarkMain() }
     //mainBVH()
     //mainCircles()
     //mainVampire()
