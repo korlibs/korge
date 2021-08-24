@@ -32,8 +32,8 @@ object JsRuntimeBrowser : JsRuntime() {
     override val rawOsName: String = navigator.platform.unsafeCast<String>()
     override val isBrowser get() = true
 
-    val href = document.location?.href ?: "."
-    val baseUrl = if (href.endsWith("/")) href else href.substringBeforeLast('/')
+    val href by lazy { document.location?.href ?: "." }
+    val baseUrl by lazy { if (href.endsWith("/")) href else href.substringBeforeLast('/') }
 
     override fun existsSync(path: String): Boolean {
         TODO("Not yet implemented")
@@ -45,7 +45,11 @@ object JsRuntimeBrowser : JsRuntime() {
         QueryString.decode((document.location?.search ?: "").trimStart('?')).map { it.key to (it.value.firstOrNull() ?: it.key) }.toMap()
 
     override fun langs(): List<String> = window.navigator.languages.asList()
-    override fun openVfs(path: String): VfsFile = UrlVfs(currentDir())[path]
+    override fun openVfs(path: String): VfsFile {
+        return UrlVfs(currentDir())[path].also {
+            println("BROWSER openVfs: currentDir=${currentDir()}, path=$path, urlVfs=$it")
+        }
+    }
 
     private val jsLocalStorageVfs by lazy {
         MapLikeStorageVfs(object : SimpleStorage {

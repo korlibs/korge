@@ -16,8 +16,8 @@ abstract external class GlobalScope : EventTarget, WindowOrWorkerGlobalScope, Gl
 	fun cancelAnimationFrame(handle: Int): Unit
 }
 
-val jsGlobalDynamic: dynamic = js("(typeof global !== 'undefined') ? global : self")
-val jsGlobal: GlobalScope  = jsGlobalDynamic
+val jsGlobalDynamic: dynamic = js("((typeof globalThis !== 'undefined') ? globalThis : ((typeof global !== 'undefined') ? global : self))")
+val jsGlobal: GlobalScope = jsGlobalDynamic
 
 val isDenoJs by lazy { js("(typeof Deno === 'object' && Deno.statSync)").unsafeCast<Boolean>() }
 val isWeb by lazy { js("(typeof window === 'object')").unsafeCast<Boolean>() }

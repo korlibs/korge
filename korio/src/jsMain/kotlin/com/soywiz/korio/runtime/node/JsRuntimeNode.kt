@@ -67,7 +67,21 @@ object JsRuntimeNode : JsRuntime() {
     override fun currentDir(): String = path.resolve(".")
     override fun env(key: String): String? = process.env[key]
     override fun envs() = jsObjectToMap(process.env)
-    override fun openVfs(path: String): VfsFile = NodeJsLocalVfs()[path]
+    override fun openVfs(path: String): VfsFile {
+        val rpath = if (path == ".") {
+            val path = jsRuntime.currentDir()
+
+            when {
+                jsRuntime.existsSync("$path/node_modules") && jsRuntime.existsSync("$path/kotlin") && jsRuntime.existsSync("$path/adapter-nodejs.js") ->
+                    // We are probably on tests `build/js/packages/korlibs-next-korge-test` and resources are in the `kotlin` directory
+                    "$path/kotlin"
+                else -> path
+            }
+        } else {
+            path
+        }
+        return NodeJsLocalVfs()[rpath]
+    }
 
     override suspend fun createClient(secure: Boolean): AsyncClient = NodeJsAsyncClient(coroutineContext)
     override suspend fun createServer(port: Int, host: String, backlog: Int, secure: Boolean): AsyncServer =

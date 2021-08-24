@@ -3,7 +3,7 @@ package com.soywiz.korio.dynamic
 import com.soywiz.korio.jsGlobalDynamic
 
 internal actual object DynamicInternal : DynApi {
-	override val global: Any = jsGlobalDynamic
+	override val global: Any get() = jsGlobalDynamic
 
     override fun get(instance: Any?, key: String): Any? = (instance.asDynamic())[key]
     override fun set(instance: Any?, key: String, value: Any?) { (instance.asDynamic())[key] = value }
