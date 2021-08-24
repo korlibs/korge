@@ -44,7 +44,7 @@ open class ViewsForTesting(
         override val coroutineDispatcher = dispatcher
     }
     open fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean {
-        return true
+        return kind != LogBaseAG.Kind.SHADER
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)

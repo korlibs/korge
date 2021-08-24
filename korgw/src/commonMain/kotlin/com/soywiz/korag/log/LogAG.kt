@@ -3,6 +3,7 @@ package com.soywiz.korag.log
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
@@ -32,7 +33,7 @@ open class LogBaseAG(
 	width: Int = 640,
 	height: Int = 480,
 ) : DummyAG(width, height) {
-    enum class Kind { DRAW, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, RENDER_BUFFER, BUFFER, TEXTURE }
+    enum class Kind { DRAW, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, RENDER_BUFFER, BUFFER, TEXTURE, SHADER }
 
 	open fun log(str: String, kind: Kind) {
 	}
@@ -198,6 +199,8 @@ open class LogBaseAG(
                     }
                 }
             }
+            log("::draw.shader.vertex=${GlslGenerator(ShaderType.VERTEX).generate(program.vertex.stm)}", Kind.SHADER)
+            log("::draw.shader.fragment=${GlslGenerator(ShaderType.FRAGMENT).generate(program.fragment.stm)}", Kind.SHADER)
         } catch (e: Throwable) {
             log("LogBaseAG.draw.ERROR: ${e.message}", Kind.DRAW)
             e.printStackTrace()

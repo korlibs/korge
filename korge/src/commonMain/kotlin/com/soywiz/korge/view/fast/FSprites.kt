@@ -26,6 +26,7 @@ open class FSprites(val maxSize: Int) {
     fun uploadVertices(ctx: RenderContext) {
         ctx.fastSpriteBuffer.buffer.upload(data, 0, size * FSPRITES_STRIDE * 4)
         ctx.fastSpriteBufferMul.buffer.upload(dataColorMul, 0, size * 4)
+        ctx.fastSpriteBufferTexId.buffer.upload(texIds, 0, size)
     }
 
     fun unloadVertices(ctx: RenderContext) {
@@ -90,37 +91,43 @@ open class FSprites(val maxSize: Int) {
     }
 
     fun createView(tex: Bitmap) = FView(this, tex)
+    fun createView(vararg texs: Bitmap) = FView(this, texs)
 
-    //val dataTexIds = FBuffer(maxSize)
-    //private val texIds = dataTexIds.u8
-    //var FSprite.texId: Int get() = texIds[index] ; set(value) { texIds[index] = value }
-    //fun FSprite.setTexId(id: Int) { texId = id }
+    private val texIds = ByteArray(maxSize)
+    var FSprite.texId: Int get() = texIds[index].toInt() and 0xFF ; set(value) { texIds[index] = value.toByte() }
+    fun FSprite.setTexIndex(id: Int) { texId = id }
 
-    //class FView(val sprites: FSprites, val texs: Array<Bitmap>) : View() {
-    //    var tex: Bitmap get() = texs[0]; set(value) { texs[0] = value }
-    //    constructor(sprites: FSprites, tex: Bitmap) : this(sprites, arrayOf(tex))
-    class FView(val sprites: FSprites, var tex: Bitmap) : View() {
+    class FView(val sprites: FSprites, val texs: Array<out Bitmap>) : View() {
+        //var tex: Bitmap get() = texs[0]; set(value) { texs[0] = value }
+
+        constructor(sprites: FSprites, tex: Bitmap) : this(sprites, arrayOf(tex))
         var smoothing: Boolean = true
         private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
-        private val u_i_texSizeData = FloatArray(2)
+        private val u_i_texSizeDataN = Array(4) { FloatArray(2) }
+        private val olds = arrayOfNulls<FloatArray>(4)
 
         // @TODO: fallback version when instanced rendering is not supported
         override fun renderInternal(ctx: RenderContext) {
             ctx.flush()
-            val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
-            u_i_texSizeData[0] = 1f / ttex.width.toFloat()
-            u_i_texSizeData[1] = 1f / ttex.height.toFloat()
             ctx.useBatcher { batch ->
-                batch.setTemporalUniform(u_i_texSize, u_i_texSizeData) {
-                    batch.updateStandardUniforms()
+                batch.updateStandardUniforms()
+                for (n in 0 until texs.size) {
+                    val tex = texs[n]
+                    val ttex = ctx.agBitmapTextureManager.getTextureBase(tex)
+                    u_i_texSizeDataN[n][0] = 1f / ttex.width.toFloat()
+                    u_i_texSizeDataN[n][1] = 1f / ttex.height.toFloat()
+                    batch.textureUnitN[n].set(ttex.base, smoothing)
+                    //println(ttex.base)
+                }
+                //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
+                batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) {
                     batch.setViewMatrixTemp(globalMatrix) {
                         //ctx.batch.setStateFast()
-                        batch.textureUnitN[0].set(ttex.base, smoothing)
                         sprites.uploadVertices(ctx)
                         ctx.xyBuffer.buffer.upload(xyData)
                         ctx.ag.drawV2(
                             vertexData = ctx.buffers,
-                            program = vprogram,
+                            program = vprograms[texs.size],
                             type = AG.DrawType.TRIANGLE_FAN,
                             vertexCount = 4,
                             instances = sprites.size,
@@ -140,7 +147,7 @@ open class FSprites(val maxSize: Int) {
     companion object {
         //const val STRIDE = 8
 
-        val u_i_texSize = Uniform("u_texSize", VarType.Float2)
+        val u_i_texSizeN = Array(4) { Uniform("u_texSize$it", VarType.Float2) }
         val a_xy = Attribute("a_xy", VarType.Float2, false)
 
         val a_pos = Attribute("a_rxy", VarType.Float2, false).withDivisor(1)
@@ -150,7 +157,9 @@ open class FSprites(val maxSize: Int) {
         val a_uv0 = Attribute("a_uv0", VarType.UShort2, false).withDivisor(1)
         val a_uv1 = Attribute("a_uv1", VarType.UShort2, false).withDivisor(1)
         val a_colMul = Attribute("a_colMul", VarType.Byte4, normalized = true, precision = Precision.LOW).withDivisor(1)
-        //val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
+        val a_texId = Attribute("a_texId", VarType.UByte1, normalized = false, precision = Precision.LOW).withDivisor(1)
+
+        val v_TexId = Varying("v_TexId", VarType.UByte1, precision = Precision.LOW)
 
         val RenderContext.xyBuffer by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_xy)
@@ -161,46 +170,58 @@ open class FSprites(val maxSize: Int) {
         val RenderContext.fastSpriteBufferMul by Extra.PropertyThis<RenderContext, AG.VertexData> {
             ag.createVertexData(a_colMul)
         }
+        val RenderContext.fastSpriteBufferTexId by Extra.PropertyThis<RenderContext, AG.VertexData> {
+            ag.createVertexData(a_texId)
+        }
         val RenderContext.buffers by Extra.PropertyThis<RenderContext, FastArrayList<AG.VertexData>> {
-            fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul)
+            fastArrayListOf(xyBuffer, fastSpriteBuffer, fastSpriteBufferMul, fastSpriteBufferTexId)
         }
 
-        val vprogram = Program(VertexShader {
-            DefaultShaders.apply {
-                //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
-                //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
-                val baseSize = t_Temp1["xy"]
-                SET(baseSize, a_uv1 - a_uv0)
-                SET(v_Col, a_colMul)
+        fun createProgram(maxTexs: Int = 4): Program {
+            return Program(VertexShader {
+                DefaultShaders.apply {
+                    //SET(out, (u_ProjMat * u_ViewMat) * vec4(vec2(a_x, a_y), 0f.lit, 1f.lit))
+                    //SET(v_color, texture2D(u_Tex, vec2(vec1(id) / 4f.lit, 0f.lit)))
+                    val baseSize = t_Temp1["xy"]
+                    val texSize = t_Temp1["zw"]
+                    SET(baseSize, a_uv1 - a_uv0)
+                    SET(v_Col, a_colMul)
+                    SET(v_TexId, a_texId)
 
-                SET(v_Tex, vec2(
-                    mix(a_uv0.x, a_uv1.x, a_xy.x),
-                    mix(a_uv0.y, a_uv1.y, a_xy.y),
-                ) * u_i_texSize)
-                val cos = t_Temp0["x"]
-                val sin = t_Temp0["y"]
-                SET(cos, cos(a_angle))
-                SET(sin, sin(a_angle))
-                SET(t_TempMat2, mat2(
-                    cos, -sin,
-                    sin, cos,
-                ))
-                val size = t_Temp0["zw"]
-                val localPos = t_Temp0["xy"]
+                    //SET(texSize, u_i_texSizeN[0])
+                    for (n in 0 until maxTexs) IF(a_texId eq n.lit) { SET(texSize, u_i_texSizeN[n]) }
 
-                SET(size, baseSize * a_scale)
-                SET(localPos, t_TempMat2 * (a_xy - a_anchor) * size)
-                SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
-            }
-        }, FragmentShader {
-            DefaultShaders.apply {
-                SET(out, texture2D(BatchBuilder2D.u_TexN[0], v_Tex["xy"]))
-                //SET(out, vec4(1f.lit, 0f.lit, 1f.lit, .5f.lit))
-                IF(out["a"] le 0f.lit) { DISCARD() }
-                SET(out["rgb"], out["rgb"] / out["a"])
-                SET(out["rgba"], out["rgba"] * v_Col)
-            }
-        })
+                    SET(v_Tex, vec2(
+                        mix(a_uv0.x, a_uv1.x, a_xy.x),
+                        mix(a_uv0.y, a_uv1.y, a_xy.y),
+                    ) * texSize)
+                    val cos = t_Temp0["x"]
+                    val sin = t_Temp0["y"]
+                    SET(cos, cos(a_angle))
+                    SET(sin, sin(a_angle))
+                    SET(t_TempMat2, mat2(
+                        cos, -sin,
+                        sin, cos,
+                    ))
+                    val size = t_Temp0["zw"]
+                    val localPos = t_Temp0["xy"]
+
+                    SET(size, baseSize * a_scale)
+                    SET(localPos, t_TempMat2 * (a_xy - a_anchor) * size)
+                    SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
+                }
+            }, FragmentShader {
+                DefaultShaders.apply {
+                    //SET(out, texture2D(BatchBuilder2D.u_TexN[0], v_Tex["xy"]))
+                    for (n in 0 until maxTexs) IF(v_TexId eq n.lit) { SET(out, texture2D(BatchBuilder2D.u_TexN[n], v_Tex["xy"])) }
+                    IF(out["a"] le 0f.lit) { DISCARD() }
+                    SET(out["rgb"], out["rgb"] / out["a"])
+                    SET(out["rgba"], out["rgba"] * v_Col)
+                }
+            })
+        }
+
+        val vprograms = Array(4) { createProgram(it) }
 
         private fun unpackAnchorComponent(v: Int): Float = (v and 0xFFFF).toFloat() / 0xFFFF
         private fun packAnchorComponent(v: Float): Int = (v.clamp01() * 0xFFFF).toInt() and 0xFFFF

@@ -832,7 +832,22 @@ class BatchBuilder2D constructor(
 		}
 	}
 
-	@PublishedApi
+    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), callback: () -> Unit) {
+        for (n in 0 until count) {
+            olds[n] = this.uniforms[uniforms[n]] as T?
+            this.uniforms.putOrRemove(uniforms[n], values[n])
+        }
+        try {
+            callback()
+        } finally {
+            for (n in 0 until count) {
+                val m = olds.size - 1 - n
+                this.uniforms.putOrRemove(uniforms[m], olds[m])
+            }
+        }
+    }
+
+    @PublishedApi
 	internal val tempOldUniforms = AG.UniformValues()
 
     /**

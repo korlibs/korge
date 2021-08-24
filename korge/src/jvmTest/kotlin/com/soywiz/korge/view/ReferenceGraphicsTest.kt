@@ -17,7 +17,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
     virtualSize = SizeInt(100, 100),
     log = true,
 ) {
-    override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW
+    override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW || kind == LogBaseAG.Kind.SHADER
 
     @Test
     fun test() = viewsTest {
