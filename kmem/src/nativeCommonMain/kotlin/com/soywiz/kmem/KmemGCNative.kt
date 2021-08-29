@@ -12,10 +12,10 @@ actual val KmemGC: KmemGCImpl = object : KmemGCImpl() {
 
     override var threshold: Int
         get() = GC.threshold
-        set(value) = run { GC.threshold = value }
+        set(value) { GC.threshold = value }
     override var thresholdAllocations: Long
         get() = GC.thresholdAllocations
-        set(value) = run { GC.thresholdAllocations = value }
+        set(value) { GC.thresholdAllocations = value }
     override var autotune: Boolean
         get() = GC.autotune
         set(value) { GC.autotune = value }

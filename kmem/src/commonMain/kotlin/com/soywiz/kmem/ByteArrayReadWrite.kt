@@ -84,8 +84,8 @@ fun ByteArray.readDoubleArray(o: Int, count: Int, little: Boolean): DoubleArray 
 /////////////////////////////////////////
 
 
-fun ByteArray.write8(o: Int, v: Int) = run { this[o] = v.toByte() }
-fun ByteArray.write8(o: Int, v: Long) = run { this[o] = v.toByte() }
+fun ByteArray.write8(o: Int, v: Int) { this[o] = v.toByte() }
+fun ByteArray.write8(o: Int, v: Long) { this[o] = v.toByte() }
 fun ByteArray.write16(o: Int, v: Int, little: Boolean) = if (little) write16LE(o, v) else write16BE(o, v)
 fun ByteArray.write24(o: Int, v: Int, little: Boolean) = if (little) write24LE(o, v) else write24BE(o, v)
 fun ByteArray.write32(o: Int, v: Int, little: Boolean) = if (little) write32LE(o, v) else write32BE(o, v)
@@ -94,28 +94,28 @@ fun ByteArray.writeF16(o: Int, v: Float16, little: Boolean) = if (little) writeF
 fun ByteArray.writeF32(o: Int, v: Float, little: Boolean) = if (little) writeF32LE(o, v) else writeF32BE(o, v)
 fun ByteArray.writeF64(o: Int, v: Double, little: Boolean) = if (little) writeF64LE(o, v) else writeF64BE(o, v)
 
-fun ByteArray.write16LE(o: Int, v: Int) = run { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8) }
-fun ByteArray.write24LE(o: Int, v: Int) = run { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 2] = v.extractByte(16) }
-fun ByteArray.write32LE(o: Int, v: Int) = run { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 2] = v.extractByte(16); this[o + 3] = v.extractByte(24) }
+fun ByteArray.write16LE(o: Int, v: Int) { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8) }
+fun ByteArray.write24LE(o: Int, v: Int) { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 2] = v.extractByte(16) }
+fun ByteArray.write32LE(o: Int, v: Int) { this[o + 0] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 2] = v.extractByte(16); this[o + 3] = v.extractByte(24) }
 fun ByteArray.write32LE(o: Int, v: Long) = write32LE(o, v.toInt())
-fun ByteArray.write64LE(o: Int, v: Long) = run { write32LE(o + 0, (v ushr 0).toInt()); write32LE(o + 4, (v ushr 32).toInt()) }
-fun ByteArray.writeF16LE(o: Int, v: Float16) = run { write16LE(o + 0, v.toRawBits().toInt()) }
-fun ByteArray.writeF32LE(o: Int, v: Float) = run { write32LE(o + 0, v.toRawBits()) }
-fun ByteArray.writeF64LE(o: Int, v: Double) = run { write64LE(o + 0, v.toRawBits()) }
+fun ByteArray.write64LE(o: Int, v: Long) { write32LE(o + 0, (v ushr 0).toInt()); write32LE(o + 4, (v ushr 32).toInt()) }
+fun ByteArray.writeF16LE(o: Int, v: Float16) { write16LE(o + 0, v.toRawBits().toInt()) }
+fun ByteArray.writeF32LE(o: Int, v: Float) { write32LE(o + 0, v.toRawBits()) }
+fun ByteArray.writeF64LE(o: Int, v: Double) { write64LE(o + 0, v.toRawBits()) }
 
-fun ByteArray.write16BE(o: Int, v: Int) = run { this[o + 1] = v.extractByte(0); this[o + 0] = v.extractByte(8) }
-fun ByteArray.write24BE(o: Int, v: Int) = run { this[o + 2] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 0] = v.extractByte(16) }
-fun ByteArray.write32BE(o: Int, v: Int) = run { this[o + 3] = v.extractByte(0); this[o + 2] = v.extractByte(8); this[o + 1] = v.extractByte(16); this[o + 0] = v.extractByte(24) }
+fun ByteArray.write16BE(o: Int, v: Int) { this[o + 1] = v.extractByte(0); this[o + 0] = v.extractByte(8) }
+fun ByteArray.write24BE(o: Int, v: Int) { this[o + 2] = v.extractByte(0); this[o + 1] = v.extractByte(8); this[o + 0] = v.extractByte(16) }
+fun ByteArray.write32BE(o: Int, v: Int) { this[o + 3] = v.extractByte(0); this[o + 2] = v.extractByte(8); this[o + 1] = v.extractByte(16); this[o + 0] = v.extractByte(24) }
 fun ByteArray.write32BE(o: Int, v: Long) = write32BE(o, v.toInt())
-fun ByteArray.write64BE(o: Int, v: Long) = run { write32BE(o + 0, (v ushr 32).toInt()); write32BE(o + 4, (v ushr 0).toInt()) }
-fun ByteArray.writeF16BE(o: Int, v: Float16) = run { write16BE(o + 0, v.toRawBits().toInt()) }
-fun ByteArray.writeF32BE(o: Int, v: Float) = run { write32BE(o + 0, v.toRawBits()) }
-fun ByteArray.writeF64BE(o: Int, v: Double) = run { write64BE(o + 0, v.toRawBits()) }
+fun ByteArray.write64BE(o: Int, v: Long) { write32BE(o + 0, (v ushr 32).toInt()); write32BE(o + 4, (v ushr 0).toInt()) }
+fun ByteArray.writeF16BE(o: Int, v: Float16) { write16BE(o + 0, v.toRawBits().toInt()) }
+fun ByteArray.writeF32BE(o: Int, v: Float) { write32BE(o + 0, v.toRawBits()) }
+fun ByteArray.writeF64BE(o: Int, v: Double) { write64BE(o + 0, v.toRawBits()) }
 
 
 fun ByteArray.writeBytes(o: Int, bytes: ByteArray) = arraycopy(bytes, 0, this, o, bytes.size)
 
-private inline fun wa(o: Int, elementSize: Int, size: Int, write: (p: Int, n: Int) -> Unit) = run { for (n in 0 until size) write(o + n * elementSize, n) }
+private inline fun wa(o: Int, elementSize: Int, size: Int, write: (p: Int, n: Int) -> Unit) { for (n in 0 until size) write(o + n * elementSize, n) }
 
 fun ByteArray.writeArrayLE(o: Int, array: CharArray) = wa(o, 2, array.size) { p, n -> write16LE(p, array[n].toInt()) }
 fun ByteArray.writeArrayLE(o: Int, array: ShortArray) = wa(o, 2, array.size) { p, n -> write16LE(p, array[n].toInt()) }

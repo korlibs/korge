@@ -11,11 +11,11 @@ private fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
 	//if (end !in 0 until this.capacity()) error("offset=$offset, size=$size not inside ${this.capacity()}")
 }
 
-fun ByteBuffer.slice(offset: Int, size: Int): ByteBuffer = run { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun ShortBuffer.slice(offset: Int, size: Int): ShortBuffer = run { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun IntBuffer.slice(offset: Int, size: Int): IntBuffer = run { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer = run { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer = run { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
+fun ByteBuffer.slice(offset: Int, size: Int): ByteBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
+fun ShortBuffer.slice(offset: Int, size: Int): ShortBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
+fun IntBuffer.slice(offset: Int, size: Int): IntBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
+fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
+fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
 actual class MemBuffer(val buffer: ByteBuffer, val size: Int) {
     val sbuffer = buffer.order(ByteOrder.nativeOrder()).asShortBuffer()
     val ibuffer = buffer.order(ByteOrder.nativeOrder()).asIntBuffer()
@@ -37,15 +37,15 @@ actual typealias DataBuffer = MemBuffer
 actual val DataBuffer.mem: MemBuffer get() = this
 actual fun MemBuffer.getData(): DataBuffer = this
 actual fun DataBuffer.getByte(index: Int): Byte = buffer.get(index)
-actual fun DataBuffer.setByte(index: Int, value: Byte): Unit = run { buffer.put(index, value) }
+actual fun DataBuffer.setByte(index: Int, value: Byte): Unit { buffer.put(index, value) }
 actual fun DataBuffer.getShort(index: Int): Short = buffer.getShort(index)
-actual fun DataBuffer.setShort(index: Int, value: Short): Unit = run { buffer.putShort(index, value) }
+actual fun DataBuffer.setShort(index: Int, value: Short): Unit { buffer.putShort(index, value) }
 actual fun DataBuffer.getInt(index: Int): Int = buffer.getInt(index)
-actual fun DataBuffer.setInt(index: Int, value: Int): Unit = run { buffer.putInt(index, value) }
+actual fun DataBuffer.setInt(index: Int, value: Int): Unit { buffer.putInt(index, value) }
 actual fun DataBuffer.getFloat(index: Int): Float = buffer.getFloat(index)
-actual fun DataBuffer.setFloat(index: Int, value: Float): Unit = run { buffer.putFloat(index, value) }
+actual fun DataBuffer.setFloat(index: Int, value: Float): Unit { buffer.putFloat(index, value) }
 actual fun DataBuffer.getDouble(index: Int): Double = buffer.getDouble(index)
-actual fun DataBuffer.setDouble(index: Int, value: Double): Unit = run { buffer.putDouble(index, value) }
+actual fun DataBuffer.setDouble(index: Int, value: Double): Unit { buffer.putDouble(index, value) }
 
 actual class Int8Buffer(val mbuffer: MemBuffer, val jbuffer: ByteBuffer)
 
@@ -53,7 +53,7 @@ actual val Int8Buffer.mem: MemBuffer get() = mbuffer
 actual val Int8Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
 actual val Int8Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
 actual operator fun Int8Buffer.get(index: Int): Byte = jbuffer.get(offset + index)
-actual operator fun Int8Buffer.set(index: Int, value: Byte): Unit = run { jbuffer.put(offset + index, value) }
+actual operator fun Int8Buffer.set(index: Int, value: Byte): Unit { jbuffer.put(offset + index, value) }
 
 actual class Int16Buffer(val mbuffer: MemBuffer, val jbuffer: ShortBuffer)
 
@@ -61,7 +61,7 @@ actual val Int16Buffer.mem: MemBuffer get() = mbuffer
 actual val Int16Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
 actual val Int16Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
 actual operator fun Int16Buffer.get(index: Int): Short = jbuffer.get(offset + index)
-actual operator fun Int16Buffer.set(index: Int, value: Short): Unit = run { jbuffer.put(offset + index, value) }
+actual operator fun Int16Buffer.set(index: Int, value: Short): Unit { jbuffer.put(offset + index, value) }
 
 actual class Int32Buffer(val mbuffer: MemBuffer, val jbuffer: IntBuffer)
 
@@ -69,7 +69,7 @@ actual val Int32Buffer.mem: MemBuffer get() = mbuffer
 actual val Int32Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
 actual val Int32Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
 actual operator fun Int32Buffer.get(index: Int): Int = jbuffer.get(offset + index)
-actual operator fun Int32Buffer.set(index: Int, value: Int): Unit = run { jbuffer.put(offset + index, value) }
+actual operator fun Int32Buffer.set(index: Int, value: Int): Unit { jbuffer.put(offset + index, value) }
 
 actual class Float32Buffer(val mbuffer: MemBuffer, val jbuffer: FloatBuffer)
 
@@ -77,7 +77,7 @@ actual val Float32Buffer.mem: MemBuffer get() = mbuffer
 actual val Float32Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
 actual val Float32Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
 actual operator fun Float32Buffer.get(index: Int): Float = jbuffer.get(offset + index)
-actual operator fun Float32Buffer.set(index: Int, value: Float): Unit = run { jbuffer.put(offset + index, value) }
+actual operator fun Float32Buffer.set(index: Int, value: Float): Unit { jbuffer.put(offset + index, value) }
 
 actual class Float64Buffer(val mbuffer: MemBuffer, val jbuffer: DoubleBuffer)
 
@@ -85,7 +85,7 @@ actual val Float64Buffer.mem: MemBuffer get() = mbuffer
 actual val Float64Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
 actual val Float64Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
 actual operator fun Float64Buffer.get(index: Int): Double = jbuffer.get(offset + index)
-actual operator fun Float64Buffer.set(index: Int, value: Double): Unit = run { jbuffer.put(offset + index, value) }
+actual operator fun Float64Buffer.set(index: Int, value: Double): Unit { jbuffer.put(offset + index, value) }
 
 inline operator fun ByteBuffer.set(index: Int, value: Byte) = this.put(index, value)
 inline operator fun ShortBuffer.set(index: Int, value: Short) = this.put(index, value)

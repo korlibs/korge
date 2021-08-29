@@ -15,12 +15,12 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
 
     /** [Level] of this [Logger]. If not set, it will use the [Logger.defaultLevel] */
     var level: Level
-        set(value) = run { Logger_levels[name] = value }
+        set(value) { Logger_levels[name] = value }
         get() = Logger_levels[name] ?: Logger.defaultLevel ?: Level.WARN
 
     /** [Output] of this [Logger]. If not set, it will use the [Logger.defaultOutput] */
     var output: Output
-        set(value) = run { Logger_outputs[name] = value }
+        set(value) { Logger_outputs[name] = value }
         get() = Logger_outputs[name] ?: Logger.defaultOutput
 
     /** Check if the [level] is set for this [Logger] */
@@ -91,7 +91,7 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     inline val isTraceEnabled get() = isEnabled(Level.TRACE)
 
     /** Traces the lazily executed [msg] if the [Logger.level] is at least [level] */
-    inline fun log(level: Level, msg: () -> Any?) = run { if (isEnabled(level)) actualLog(level, msg()) }
+    inline fun log(level: Level, msg: () -> Any?) { if (isEnabled(level)) actualLog(level, msg()) }
 
     /** Traces the lazily executed [msg] if the [Logger.level] is at least [Level.FATAL] */
     inline fun fatal(msg: () -> Any?) = log(Level.FATAL, msg)
@@ -112,7 +112,7 @@ class Logger private constructor(val name: String, val dummy: Boolean) {
     inline fun trace(msg: () -> Any?) = log(Level.TRACE, msg)
 
     @PublishedApi
-    internal fun actualLog(level: Level, msg: Any?) = run { output.output(this, level, msg) }
+    internal fun actualLog(level: Level, msg: Any?) { output.output(this, level, msg) }
 }
 
 /** Sets the [Logger.level] */

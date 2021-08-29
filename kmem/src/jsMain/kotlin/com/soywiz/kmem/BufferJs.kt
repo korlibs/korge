@@ -48,7 +48,7 @@ actual inline val Int8Buffer.mem: MemBuffer get() = this.buffer
 actual inline val Int8Buffer.offset: Int get() = this.byteOffset / 1
 actual inline val Int8Buffer.size: Int get() = this.asDynamic().length
 actual inline operator fun Int8Buffer.get(index: Int): Byte = this.asDynamic()[index]
-actual inline operator fun Int8Buffer.set(index: Int, value: Byte): Unit = run { this.asDynamic()[index] = value }
+actual inline operator fun Int8Buffer.set(index: Int, value: Byte): Unit { this.asDynamic()[index] = value }
 
 actual typealias Int16Buffer = Int16Array
 
@@ -56,7 +56,7 @@ actual inline val Int16Buffer.mem: MemBuffer get() = this.buffer
 actual inline val Int16Buffer.offset: Int get() = this.byteOffset / 2
 actual inline val Int16Buffer.size: Int get() = this.asDynamic().length
 actual inline operator fun Int16Buffer.get(index: Int): Short = this.asDynamic()[index]
-actual inline operator fun Int16Buffer.set(index: Int, value: Short): Unit = run { this.asDynamic()[index] = value }
+actual inline operator fun Int16Buffer.set(index: Int, value: Short): Unit { this.asDynamic()[index] = value }
 
 actual typealias Int32Buffer = Int32Array
 
@@ -64,7 +64,7 @@ actual inline val Int32Buffer.mem: MemBuffer get() = this.buffer
 actual inline val Int32Buffer.offset: Int get() = this.byteOffset / 4
 actual inline val Int32Buffer.size: Int get() = this.asDynamic().length
 actual inline operator fun Int32Buffer.get(index: Int): Int = this.asDynamic()[index]
-actual inline operator fun Int32Buffer.set(index: Int, value: Int): Unit = run { this.asDynamic()[index] = value }
+actual inline operator fun Int32Buffer.set(index: Int, value: Int): Unit { this.asDynamic()[index] = value }
 
 actual typealias Float32Buffer = Float32Array
 
@@ -72,7 +72,7 @@ actual inline val Float32Buffer.mem: MemBuffer get() = this.buffer
 actual inline val Float32Buffer.offset: Int get() = this.byteOffset / 4
 actual inline val Float32Buffer.size: Int get() = this.asDynamic().length
 actual inline operator fun Float32Buffer.get(index: Int): Float = this.asDynamic()[index]
-actual inline operator fun Float32Buffer.set(index: Int, value: Float): Unit = run { this.asDynamic()[index] = value }
+actual inline operator fun Float32Buffer.set(index: Int, value: Float): Unit { this.asDynamic()[index] = value }
 
 actual typealias Float64Buffer = Float64Array
 
@@ -80,7 +80,7 @@ actual inline val Float64Buffer.mem: MemBuffer get() = this.buffer
 actual inline val Float64Buffer.offset: Int get() = this.byteOffset / 8
 actual inline val Float64Buffer.size: Int get() = this.asDynamic().length
 actual inline operator fun Float64Buffer.get(index: Int): Double = this.asDynamic()[index]
-actual inline operator fun Float64Buffer.set(index: Int, value: Double): Unit = run { this.asDynamic()[index] = value }
+actual inline operator fun Float64Buffer.set(index: Int, value: Double): Unit { this.asDynamic()[index] = value }
 
 inline fun ByteArray.asInt8Array(): Int8Array = this.unsafeCast<Int8Array>()
 inline fun ByteArray.asTyped(): Int8Array = this.unsafeCast<Int8Array>()
