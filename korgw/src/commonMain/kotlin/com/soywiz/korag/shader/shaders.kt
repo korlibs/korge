@@ -301,17 +301,17 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
         fun PUT(shader: Shader) {
             outputStms.add(shader.stm)
         }
-		fun SET(target: Operand, expr: Operand) = run { outputStms += Stm.Set(target, expr) }
-		fun DISCARD() = run { outputStms += Stm.Discard() }
+		fun SET(target: Operand, expr: Operand) { outputStms += Stm.Set(target, expr) }
+		fun DISCARD() { outputStms += Stm.Discard() }
 
 		private var tempLastId = 3
         fun createTemp(type: VarType, arrayCount: Int) = Temp(tempLastId++, type, arrayCount)
 		fun createTemp(type: VarType) = Temp(tempLastId++, type, 1)
 
-		infix fun Operand.set(from: Operand) = run { outputStms += Stm.Set(this, from) }
-		infix fun Operand.setTo(from: Operand) = run { outputStms += Stm.Set(this, from) }
+		infix fun Operand.set(from: Operand) { outputStms += Stm.Set(this, from) }
+		infix fun Operand.setTo(from: Operand) { outputStms += Stm.Set(this, from) }
 
-		fun Operand.assign(from: Operand) = run { outputStms += Stm.Set(this, from) }
+		fun Operand.assign(from: Operand) { outputStms += Stm.Set(this, from) }
 
 		//infix fun Operand.set(to: Operand) = Stm.Set(this, to)
 		val out: Output = Output
@@ -516,13 +516,13 @@ open class Shader(val type: ShaderType, val stm: Program.Stm) {
 
 	val uniforms = LinkedHashSet<Uniform>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
-            override fun visit(uniform: Uniform) = run { out += uniform }
+            override fun visit(uniform: Uniform) { out += uniform }
         }.visit(stm)
     }.toSet()
 
 	val attributes = LinkedHashSet<Attribute>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
-            override fun visit(attribute: Attribute) = run { out += attribute }
+            override fun visit(attribute: Attribute) { out += attribute }
         }.visit(stm)
     }.toSet()
 
@@ -583,7 +583,7 @@ class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 
 	val maxAlignment = alignments.maxOrNull() ?: 1
     /** Size in bytes for each vertex */
-	val totalSize: Int = run { layoutSize ?: _lastPos.nextAlignedTo(maxAlignment) }
+	val totalSize: Int = layoutSize ?: _lastPos.nextAlignedTo(maxAlignment)
 
 	override fun toString(): String = "VertexLayout[${myattr.joinToString(", ") { it.name }}]"
 }

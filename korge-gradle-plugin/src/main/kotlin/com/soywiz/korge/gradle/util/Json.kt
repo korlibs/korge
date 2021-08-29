@@ -119,7 +119,7 @@ private class StrReader(val str: String, val file: String = "file", var pos: Int
 	fun peek(count: Int): String = substr(this.pos, count)
 	fun peekChar(): Char = if (hasMore) this.str[this.pos] else '\u0000'
 	fun read(count: Int): String = this.peek(count).apply { skip(count) }
-	inline fun skipWhile(filter: (Char) -> Boolean) = run { while (hasMore && filter(this.peekChar())) this.readChar() }
+	inline fun skipWhile(filter: (Char) -> Boolean) { while (hasMore && filter(this.peekChar())) this.readChar() }
 
 	inline fun readWhile(filter: (Char) -> Boolean) = this.slice { skipWhile(filter) } ?: ""
 	fun unread(count: Int = 1) = this.apply { this.pos -= count; }

@@ -39,7 +39,7 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
 
     fun getChildIndex(child: UiComponent): Int = _children.indexOf(child)
     fun getChildAt(index: Int): UiComponent = _children[index]
-    fun removeChildAt(index: Int): Unit = run {
+    fun removeChildAt(index: Int): Unit {
         _children.removeAt(index)
         container.removeChildAt(index)
     }

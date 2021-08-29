@@ -52,7 +52,7 @@ inline class YUVA(val value: Int) {
 inline class YuvaArray(val ints: IntArray) {
     val size get() = ints.size
     operator fun get(index: Int): YUVA = YUVA(ints[index])
-    operator fun set(index: Int, color: YUVA) = run { ints[index] = color.value }
+    operator fun set(index: Int, color: YUVA) { ints[index] = color.value }
 }
 
 fun RGBA.toYUVA(): YUVA = YUVA(YUVA.getY(r, g, b), YUVA.getU(r, g, b), YUVA.getV(r, g, b), a)

@@ -386,9 +386,9 @@ data class PolylineShape(
 class CompoundShape(
 	val components: List<Shape>
 ) : Shape {
-	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) = run { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
+	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
 	override fun draw(c: Context2d) = c.buffering { components.fastForEach { it.draw(c) } }
-	override fun buildSvg(svg: SvgBuilder) = run { components.fastForEach { it.buildSvg(svg) } }
+	override fun buildSvg(svg: SvgBuilder) { components.fastForEach { it.buildSvg(svg) } }
     override fun getPath(path: GraphicsPath): GraphicsPath = path.also { components.fastForEach { it.getPath(path) } }
 	override fun containsPoint(x: Double, y: Double): Boolean {
 		return components.any { it.containsPoint(x, y) }

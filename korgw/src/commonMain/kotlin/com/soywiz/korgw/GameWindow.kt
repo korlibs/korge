@@ -727,8 +727,8 @@ open class EventLoopGameWindow : GameWindow() {
 
 open class ZenityDialogs : DialogInterface {
     open suspend fun exec(vararg args: String): String = localCurrentDirVfs.execToString(args.toList())
-    override suspend fun browse(url: URL): Unit = run { exec("xdg-open", url.toString()) }
-    override suspend fun alert(message: String): Unit = run { exec("zenity", "--warning", "--text=$message") }
+    override suspend fun browse(url: URL): Unit { exec("xdg-open", url.toString()) }
+    override suspend fun alert(message: String): Unit { exec("zenity", "--warning", "--text=$message") }
     override suspend fun confirm(message: String): Boolean =
         try {
             exec("zenity", "--question", "--text=$message")
@@ -768,7 +768,7 @@ open class ZenityDialogs : DialogInterface {
 
 fun GameWindow.mainLoop(entry: suspend GameWindow.() -> Unit) = Korio { loop(entry) }
 
-fun GameWindow.toggleFullScreen() = run { fullscreen = !fullscreen }
+fun GameWindow.toggleFullScreen()  { fullscreen = !fullscreen }
 
 fun GameWindow.configure(
     width: Int,

@@ -47,8 +47,8 @@ open class LogBaseAG(
 		clearStencil: Boolean
 	) = log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
 
-	override var backWidth: Int = width; set(value) = run { field = value; log("backWidth = $value", Kind.METRICS) }
-	override var backHeight: Int = height; set(value) = run { field = value; log("backHeight = $value", Kind.METRICS) }
+	override var backWidth: Int = width; set(value) { field = value; log("backWidth = $value", Kind.METRICS) }
+	override var backHeight: Int = height; set(value) { field = value; log("backHeight = $value", Kind.METRICS) }
 
 	override fun repaint() = log("repaint()", Kind.REPAINT)
 

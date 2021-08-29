@@ -7,7 +7,7 @@ import javax.swing.*
 open class AwtButton(factory: BaseAwtUiFactory, val button: JButton = JButton()) : AwtComponent(factory, button), NativeUiFactory.NativeButton {
     override var text: String
         get() = button.text
-        set(value) = run { button.text = value }
+        set(value) { button.text = value }
 
     override var icon: Bitmap? = null
         set(value) {

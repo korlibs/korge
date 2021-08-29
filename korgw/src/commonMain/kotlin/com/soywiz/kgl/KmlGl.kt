@@ -343,14 +343,12 @@ abstract class KmlGlWithExtensions : KmlGl() {
 
     open val extensions: Set<String> get() {
         if (_extensions == null) {
-            _extensions = run {
-                try {
-                    val numExtensions = getIntegerv(GL_NUM_EXTENSIONS)
-                    if (numExtensions <= 0) TODO()
-                    (0 until numExtensions).mapNotNull { getStringi(EXTENSIONS, it) }.toSet()
-                } catch (e: Throwable) {
-                    getString(EXTENSIONS).split(" ").toSet()
-                }
+            _extensions = try {
+                val numExtensions = getIntegerv(GL_NUM_EXTENSIONS)
+                if (numExtensions <= 0) TODO()
+                (0 until numExtensions).mapNotNull { getStringi(EXTENSIONS, it) }.toSet()
+            } catch (e: Throwable) {
+                getString(EXTENSIONS).split(" ").toSet()
             }
         }
         //println("GL_EXTENSIONS=$_extensions")

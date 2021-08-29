@@ -16,7 +16,7 @@ open class AwtComboBox<T>(factory: BaseAwtUiFactory, val comboBox: JComboBox<T> 
 
     override var selectedItem: T?
         get() = comboBox.selectedItem as T?
-        set(value) = run { comboBox.selectedItem = value }
+        set(value) { comboBox.selectedItem = value }
 
     override fun open() {
         comboBox.showPopup()

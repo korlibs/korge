@@ -14,7 +14,7 @@ class Bitmap8(
 	override fun getInt(x: Int, y: Int): Int = datau[index(x, y)]
 	override fun getRgba(x: Int, y: Int): RGBA = palette[get(x, y)]
     override fun getIntIndex(n: Int): Int = datau[n]
-    override fun setIntIndex(n: Int, color: Int) = run { datau[n] = color }
+    override fun setIntIndex(n: Int, color: Int) { datau[n] = color }
 
     override fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
         if (dst !is Bitmap8) return super.copyUnchecked(srcX, srcY, dst, dstX, dstY, width, height)

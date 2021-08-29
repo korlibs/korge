@@ -293,7 +293,7 @@ inline class RgbaPremultipliedArray(val ints: IntArray) {
 
     val size: Int get() = ints.size
     operator fun get(index: Int): RGBAPremultiplied = RGBAPremultiplied(ints[index])
-    operator fun set(index: Int, color: RGBAPremultiplied) = run { ints[index] = color.value }
+    operator fun set(index: Int, color: RGBAPremultiplied) { ints[index] = color.value }
 
     fun fill(value: RGBAPremultiplied, start: Int = 0, end: Int = this.size): Unit = ints.fill(value.value, start, end)
 
@@ -371,7 +371,7 @@ inline class RgbaArray(val ints: IntArray) : List<RGBA> {
 
 	override val size get() = ints.size
 	override operator fun get(index: Int): RGBA = RGBA(ints[index])
-	operator fun set(index: Int, color: RGBA) = run { ints[index] = color.value }
+	operator fun set(index: Int, color: RGBA) { ints[index] = color.value }
 	fun fill(value: RGBA, start: Int = 0, end: Int = this.size): Unit = ints.fill(value.value, start, end)
 
     fun depremultiply(start: Int = 0, end: Int = size): RgbaPremultipliedArray {

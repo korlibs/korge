@@ -168,10 +168,10 @@ class WindowsGameWindow : EventLoopGameWindow() {
         set(value) {}
 
     var RECT.width
-        set(value) = run { right = left + value }
+        set(value) { right = left + value }
         get() = right - left
     var RECT.height
-        set(value) = run { bottom = top + value }
+        set(value) { bottom = top + value }
         get() = bottom - top
 
     private var lastTitle: String = ""

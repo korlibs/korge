@@ -40,7 +40,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
         }
     private val items = arrayOfNulls<Any>(8 * 1024)
     private val freeList = (1 until items.size).reversed().toMutableList()
-    private fun <T> T.alloc(): Int = run {
+    private fun <T> T.alloc(): Int {
 		if (this === null) return 0
 		if (this.asDynamic().id === undefined) {
 		    if (freeList.isEmpty()) error("KmlGlJsCanvas.freeList is empty. (Probably allocating lots of OpenGL objects without releasing them)")
@@ -48,10 +48,10 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             items[index] = this
             (this.asDynamic()).id = index
 		}
-        this.asDynamic().id.unsafeCast<Int>()
+        return this.asDynamic().id.unsafeCast<Int>()
 	}
 	private fun <T> Int.get(): T? = if (this != 0) items[this].unsafeCast<T>() else null
-    private fun <T> Int.free(): T? = run { if (this != 0) { val out = items[this].unsafeCast<T>(); freeList += this; items[this] = null; out } else { null } }
+    private fun <T> Int.free(): T? = if (this != 0) { val out = items[this].unsafeCast<T>(); freeList += this; items[this] = null; out } else { null }
 
     override fun activeTexture(texture: Int): Unit = gl.activeTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.attachShader(program.get(), shader.get())
@@ -81,12 +81,12 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun createProgram(): Int = gl.createProgram().alloc()
     override fun createShader(type: Int): Int = gl.createShader(type).alloc()
     override fun cullFace(mode: Int): Unit = gl.cullFace(mode)
-    override fun deleteBuffers(n: Int, items: FBuffer): Unit = run { for (p in 0 until n) gl.deleteBuffer(items.arrayInt[p].free()) }
-    override fun deleteFramebuffers(n: Int, items: FBuffer): Unit = run { for (p in 0 until n) gl.deleteFramebuffer(items.arrayInt[p].free()) }
+    override fun deleteBuffers(n: Int, items: FBuffer): Unit { for (p in 0 until n) gl.deleteBuffer(items.arrayInt[p].free()) }
+    override fun deleteFramebuffers(n: Int, items: FBuffer): Unit { for (p in 0 until n) gl.deleteFramebuffer(items.arrayInt[p].free()) }
     override fun deleteProgram(program: Int): Unit = gl.deleteProgram(program.get())
-    override fun deleteRenderbuffers(n: Int, items: FBuffer): Unit = run { for (p in 0 until n) gl.deleteRenderbuffer(items.arrayInt[p].free()) }
+    override fun deleteRenderbuffers(n: Int, items: FBuffer): Unit { for (p in 0 until n) gl.deleteRenderbuffer(items.arrayInt[p].free()) }
     override fun deleteShader(shader: Int): Unit = gl.deleteShader(shader.get())
-    override fun deleteTextures(n: Int, items: FBuffer): Unit = run { for (p in 0 until n) gl.deleteTexture(items.arrayInt[p].free()) }
+    override fun deleteTextures(n: Int, items: FBuffer): Unit { for (p in 0 until n) gl.deleteTexture(items.arrayInt[p].free()) }
     override fun depthFunc(func: Int): Unit = gl.depthFunc(func)
     override fun depthMask(flag: Boolean): Unit = gl.depthMask(flag)
     override fun depthRangef(n: Float, f: Float): Unit = gl.depthRange(n, f)
@@ -102,47 +102,47 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: Int): Unit = gl.framebufferRenderbuffer(target, attachment, renderbuffertarget, renderbuffer.get())
     override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int): Unit = gl.framebufferTexture2D(target, attachment, textarget, texture.get(), level)
     override fun frontFace(mode: Int): Unit = gl.frontFace(mode)
-    override fun genBuffers(n: Int, buffers: FBuffer): Unit = run { for (p in 0 until n) buffers.arrayInt[p] = gl.createBuffer().alloc() }
+    override fun genBuffers(n: Int, buffers: FBuffer): Unit { for (p in 0 until n) buffers.arrayInt[p] = gl.createBuffer().alloc() }
     override fun generateMipmap(target: Int): Unit = gl.generateMipmap(target)
-    override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = run { for (p in 0 until n) framebuffers.arrayInt[p] = gl.createFramebuffer().alloc() }
-    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = run { for (p in 0 until n) renderbuffers.arrayInt[p] = gl.createRenderbuffer().alloc() }
-    override fun genTextures(n: Int, textures: FBuffer): Unit = run { for (p in 0 until n) textures.arrayInt[p] = gl.createTexture().alloc() }
-    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = run { val info = gl.getActiveAttrib(program.get(), index)!!; size.arrayInt[0] = info.size; type.arrayInt[0] = info.type; name.putAsciiString(info.name); length.arrayInt[0] = info.size + 1 }
-    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = run { val info = gl.getActiveUniform(program.get(), index)!!; size.arrayInt[0] = info.size; type.arrayInt[0] = info.type; name.putAsciiString(info.name); length.arrayInt[0] = info.size + 1 }
-    override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit = run { val ashaders = gl.getAttachedShaders(program.get())!!; count.arrayInt[0] = ashaders.size; for (n in 0 until min(maxCount, ashaders.size)) shaders.arrayInt[n] = ashaders[n].asDynamic().id.unsafeCast<Int>() }
+    override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit { for (p in 0 until n) framebuffers.arrayInt[p] = gl.createFramebuffer().alloc() }
+    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit { for (p in 0 until n) renderbuffers.arrayInt[p] = gl.createRenderbuffer().alloc() }
+    override fun genTextures(n: Int, textures: FBuffer): Unit { for (p in 0 until n) textures.arrayInt[p] = gl.createTexture().alloc() }
+    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit { val info = gl.getActiveAttrib(program.get(), index)!!; size.arrayInt[0] = info.size; type.arrayInt[0] = info.type; name.putAsciiString(info.name); length.arrayInt[0] = info.size + 1 }
+    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit { val info = gl.getActiveUniform(program.get(), index)!!; size.arrayInt[0] = info.size; type.arrayInt[0] = info.type; name.putAsciiString(info.name); length.arrayInt[0] = info.size + 1 }
+    override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit { val ashaders = gl.getAttachedShaders(program.get())!!; count.arrayInt[0] = ashaders.size; for (n in 0 until min(maxCount, ashaders.size)) shaders.arrayInt[n] = ashaders[n].asDynamic().id.unsafeCast<Int>() }
     override fun getAttribLocation(program: Int, name: String): Int = gl.getAttribLocation(program.get(), name)
-    override fun getUniformLocation(program: Int, name: String): Int = run { val prg = program.get<WebGLProgram>().asDynamic(); if (prg.uniforms === undefined) prg.uniforms = js("({})"); if (prg.uniforms[name] === undefined) prg.uniforms[name] = gl.getUniformLocation(prg, name).alloc(); return prg.uniforms[name].unsafeCast<Int>() }
-    override fun getBooleanv(pname: Int, data: FBuffer): Unit = run { data.arrayInt[0] = gl.getParameter(pname).unsafeCast<Int>() }
-    override fun getBufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit = run { params.arrayInt[0] = gl.getBufferParameter(target, pname).unsafeCast<Int>() }
+    override fun getUniformLocation(program: Int, name: String): Int { val prg = program.get<WebGLProgram>().asDynamic(); if (prg.uniforms === undefined) prg.uniforms = js("({})"); if (prg.uniforms[name] === undefined) prg.uniforms[name] = gl.getUniformLocation(prg, name).alloc(); return prg.uniforms[name].unsafeCast<Int>() }
+    override fun getBooleanv(pname: Int, data: FBuffer): Unit { data.arrayInt[0] = gl.getParameter(pname).unsafeCast<Int>() }
+    override fun getBufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getBufferParameter(target, pname).unsafeCast<Int>() }
     override fun getError(): Int = gl.getError()
-    override fun getFloatv(pname: Int, data: FBuffer): Unit = run { data.arrayFloat[0] = gl.getParameter(pname).unsafeCast<Float>() }
-    override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: FBuffer): Unit = run { params.arrayInt[0] = gl.getFramebufferAttachmentParameter(target, attachment, pname).unsafeCast<Int>() }
-    override fun getIntegerv(pname: Int, data: FBuffer): Unit = run { data.arrayInt[0] = gl.getParameter(pname).unsafeCast<Int>() }
-    override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit = run { val str = gl.getProgramInfoLog(program.get()) ?: ""; length.arrayInt[0] = str.length; infoLog.putAsciiString(str) }
-    override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit = run { params.arrayInt[0] = gl.getRenderbufferParameter(target, pname).unsafeCast<Int>() }
-    override fun getProgramiv(program: Int, pname: Int, params: FBuffer): Unit = run {
+    override fun getFloatv(pname: Int, data: FBuffer): Unit { data.arrayFloat[0] = gl.getParameter(pname).unsafeCast<Float>() }
+    override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getFramebufferAttachmentParameter(target, attachment, pname).unsafeCast<Int>() }
+    override fun getIntegerv(pname: Int, data: FBuffer): Unit { data.arrayInt[0] = gl.getParameter(pname).unsafeCast<Int>() }
+    override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit { val str = gl.getProgramInfoLog(program.get()) ?: ""; length.arrayInt[0] = str.length; infoLog.putAsciiString(str) }
+    override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getRenderbufferParameter(target, pname).unsafeCast<Int>() }
+    override fun getProgramiv(program: Int, pname: Int, params: FBuffer): Unit {
                 when (pname) {
                     INFO_LOG_LENGTH -> params.arrayInt[0] = gl.getProgramInfoLog(program.get())?.length?.plus(1) ?: 1
                     else -> params.arrayInt[0] = gl.getProgramParameter(program.get(), pname).unsafeCast<Int>()
                 }
             }
-    override fun getShaderiv(shader: Int, pname: Int, params: FBuffer): Unit = run {
+    override fun getShaderiv(shader: Int, pname: Int, params: FBuffer): Unit {
                 when (pname) {
                     INFO_LOG_LENGTH -> params.arrayInt[0] = gl.getShaderInfoLog(shader.get())?.length?.plus(1) ?: 1
                     else -> params.arrayInt[0] = gl.getShaderParameter(shader.get(), pname).unsafeCast<Int>()
                 }
             }
-    override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit = run { val str = gl.getShaderInfoLog(shader.get()) ?: ""; length.arrayInt[0] = str.length; infoLog.putAsciiString(str) }
-    override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: FBuffer, precision: FBuffer): Unit = run { val info = gl.getShaderPrecisionFormat(shadertype, precisiontype); if (info != null) { range.arrayInt[0] = info.rangeMin; range.arrayInt[1] = info.rangeMax; precision.arrayInt[0] = info.precision } }
-    override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer): Unit = run { val str = gl.getShaderSource(shader.get()) ?: ""; length.arrayInt[0] = str.length; source.putAsciiString(str) }
+    override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit { val str = gl.getShaderInfoLog(shader.get()) ?: ""; length.arrayInt[0] = str.length; infoLog.putAsciiString(str) }
+    override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: FBuffer, precision: FBuffer): Unit { val info = gl.getShaderPrecisionFormat(shadertype, precisiontype); if (info != null) { range.arrayInt[0] = info.rangeMin; range.arrayInt[1] = info.rangeMax; precision.arrayInt[0] = info.precision } }
+    override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer): Unit { val str = gl.getShaderSource(shader.get()) ?: ""; length.arrayInt[0] = str.length; source.putAsciiString(str) }
     override fun getString(name: Int): String = gl.getParameter(name).unsafeCast<String>()
-    override fun getTexParameterfv(target: Int, pname: Int, params: FBuffer): Unit = run { params.arrayFloat[0] = gl.getTexParameter(target, pname).unsafeCast<Float>() }
-    override fun getTexParameteriv(target: Int, pname: Int, params: FBuffer): Unit = run { params.arrayInt[0] = gl.getTexParameter(target, pname).unsafeCast<Int>() }
-    override fun getUniformfv(program: Int, location: Int, params: FBuffer): Unit = run { params.arrayFloat[0] = gl.getUniform(program.get(), location.get()).unsafeCast<Float>() }
-    override fun getUniformiv(program: Int, location: Int, params: FBuffer): Unit = run { params.arrayInt[0] = gl.getUniform(program.get(), location.get()).unsafeCast<Int>() }
-    override fun getVertexAttribfv(index: Int, pname: Int, params: FBuffer): Unit = run { params.arrayFloat[0] = gl.getVertexAttrib(index, pname).unsafeCast<Float>() }
-    override fun getVertexAttribiv(index: Int, pname: Int, params: FBuffer): Unit = run { params.arrayInt[0] = gl.getVertexAttrib(index, pname).unsafeCast<Int>() }
-    override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: FBuffer): Unit = run { pointer.arrayInt[0] = gl.getVertexAttrib(index, pname).unsafeCast<Int>() }
+    override fun getTexParameterfv(target: Int, pname: Int, params: FBuffer): Unit { params.arrayFloat[0] = gl.getTexParameter(target, pname).unsafeCast<Float>() }
+    override fun getTexParameteriv(target: Int, pname: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getTexParameter(target, pname).unsafeCast<Int>() }
+    override fun getUniformfv(program: Int, location: Int, params: FBuffer): Unit { params.arrayFloat[0] = gl.getUniform(program.get(), location.get()).unsafeCast<Float>() }
+    override fun getUniformiv(program: Int, location: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getUniform(program.get(), location.get()).unsafeCast<Int>() }
+    override fun getVertexAttribfv(index: Int, pname: Int, params: FBuffer): Unit { params.arrayFloat[0] = gl.getVertexAttrib(index, pname).unsafeCast<Float>() }
+    override fun getVertexAttribiv(index: Int, pname: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getVertexAttrib(index, pname).unsafeCast<Int>() }
+    override fun getVertexAttribPointerv(index: Int, pname: Int, pointer: FBuffer): Unit { pointer.arrayInt[0] = gl.getVertexAttrib(index, pname).unsafeCast<Int>() }
     override fun hint(target: Int, mode: Int): Unit = gl.hint(target, mode)
     override fun isBuffer(buffer: Int): Boolean = gl.isBuffer(buffer.get())
     override fun isEnabled(cap: Int): Boolean = gl.isEnabled(cap)
@@ -161,7 +161,7 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun sampleCoverage(value: Float, invert: Boolean): Unit = gl.sampleCoverage(value, invert)
     override fun scissor(x: Int, y: Int, width: Int, height: Int): Unit = gl.scissor(x, y, width, height)
     override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int): Unit = throw KmlGlException("shaderBinary not implemented in Webgl")
-    override fun shaderSource(shader: Int, string: String): Unit = run { gl.shaderSource(shader.get(), "#ifdef GL_ES\nprecision mediump float;\n#endif\n$string") }
+    override fun shaderSource(shader: Int, string: String): Unit { gl.shaderSource(shader.get(), "#ifdef GL_ES\nprecision mediump float;\n#endif\n$string") }
     override fun stencilFunc(func: Int, ref: Int, mask: Int): Unit = gl.stencilFunc(func, ref, mask)
     override fun stencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int): Unit = gl.stencilFuncSeparate(face, func, ref, mask)
     override fun stencilMask(mask: Int): Unit = gl.stencilMask(mask)

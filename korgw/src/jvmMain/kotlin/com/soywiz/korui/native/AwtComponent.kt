@@ -58,15 +58,15 @@ open class AwtComponent(override val factory: BaseAwtUiFactory, val component: C
 
     override var visible: Boolean
         get() = component.isVisible
-        set(value) = run { component.isVisible = value }
+        set(value) { component.isVisible = value }
 
     override var focusable: Boolean
         get() = component.isFocusable
-        set(value) = run { component.isFocusable = value }
+        set(value) { component.isFocusable = value }
 
     override var enabled: Boolean
         get() = component.isEnabled
-        set(value) = run { component.isEnabled = value }
+        set(value) { component.isEnabled = value }
 
     //var lastMouseEvent: java.awt.event.MouseEvent? = null
 

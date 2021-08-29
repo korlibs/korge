@@ -32,7 +32,7 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 
     var debug: Boolean
         get() = renderer.debug
-        set(value) = run { renderer.debug = value }
+        set(value) { renderer.debug = value }
 
     protected open val rendererWidth get() = renderer.width
     protected open val rendererHeight get() = renderer.height
@@ -235,8 +235,8 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		}
 	}
 
-	fun save() = run { stack.push(state.clone()) }
-	fun restore() = run { state = stack.pop() }
+	fun save() { stack.push(state.clone()) }
+	fun restore() { state = stack.pop() }
 
 	inline fun scale(sx: Number, sy: Number = sx) = scale(sx.toDouble(), sy.toDouble())
 	inline fun translate(tx: Number, ty: Number) = translate(tx.toDouble(), ty.toDouble())
@@ -252,19 +252,17 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     inline fun rotate(angle: Angle, block: () -> Unit) = keep { rotate(angle).also { block() } }
     inline fun translate(tx: Double, ty: Double, block: () -> Unit) = keep { translate(tx, ty).also { block() } }
 
-	fun scale(sx: Double, sy: Double = sx) = run { state.transform.prescale(sx, sy) }
-    fun rotate(angle: Angle) = run { state.transform.prerotate(angle) }
-	fun rotate(angle: Double) = run { state.transform.prerotate(angle.radians) }
-	fun rotateDeg(degs: Double) = run { state.transform.prerotate(degs.degrees) }
+	fun scale(sx: Double, sy: Double = sx) { state.transform.prescale(sx, sy) }
+    fun rotate(angle: Angle) { state.transform.prerotate(angle) }
+	fun rotate(angle: Double) { state.transform.prerotate(angle.radians) }
+	fun rotateDeg(degs: Double) { state.transform.prerotate(degs.degrees) }
 
-	fun translate(tx: Double, ty: Double) = run { state.transform.pretranslate(tx, ty) }
-	fun transform(m: Matrix) = run { state.transform.premultiply(m) }
-	fun transform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) =
-		run { state.transform.premultiply(a, b, c, d, tx, ty) }
+	fun translate(tx: Double, ty: Double) { state.transform.pretranslate(tx, ty) }
+	fun transform(m: Matrix) { state.transform.premultiply(m) }
+	fun transform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) { state.transform.premultiply(a, b, c, d, tx, ty) }
 
-	fun setTransform(m: Matrix) = run { state.transform.copyFrom(m) }
-	fun setTransform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) =
-		run { state.transform.setTo(a, b, c, d, tx, ty) }
+	fun setTransform(m: Matrix) { state.transform.copyFrom(m) }
+	fun setTransform(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double) { state.transform.setTo(a, b, c, d, tx, ty) }
 
 	fun shear(sx: Double, sy: Double) = transform(1.0, sy, sx, 1.0, 0.0, 0.0)
 
@@ -328,26 +326,24 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		fill()
 	}
 
-	fun strokeDot(x: Double, y: Double) = run { beginPath(); moveTo(x, y); lineTo(x, y); stroke() }
+	fun strokeDot(x: Double, y: Double) { beginPath(); moveTo(x, y); lineTo(x, y); stroke() }
 
 	fun path(path: GraphicsPath) {
         this.write(path)
         //this.write(path, state.transform)
     }
-	fun draw(d: Drawable) = run { d.draw(this) }
+	fun draw(d: Drawable) { d.draw(this) }
 
-	fun strokeRect(x: Double, y: Double, width: Double, height: Double) =
-		run { beginPath(); rect(x, y, width, height); stroke() }
+	fun strokeRect(x: Double, y: Double, width: Double, height: Double) { beginPath(); rect(x, y, width, height); stroke() }
 
-	fun fillRect(x: Double, y: Double, width: Double, height: Double) =
-		run { beginPath(); rect(x, y, width, height); fill() }
+	fun fillRect(x: Double, y: Double, width: Double, height: Double) { beginPath(); rect(x, y, width, height); fill() }
 
-	fun beginPath() = run { state.path = GraphicsPath() }
+	fun beginPath() { state.path = GraphicsPath() }
 
 	fun getBounds(out: Rectangle = Rectangle()) = state.path.getBounds(out)
 
-	fun stroke() = run { if (state.strokeStyle != NonePaint) rendererRender(state, fill = false) }
-    fun fill() = run { if (state.fillStyle != NonePaint) rendererRender(state, fill = true) }
+	fun stroke() { if (state.strokeStyle != NonePaint) rendererRender(state, fill = false) }
+    fun fill() { if (state.fillStyle != NonePaint) rendererRender(state, fill = true) }
 
     fun fill(paint: Paint) {
 		this.fillStyle(paint) {
@@ -386,7 +382,7 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         stroke(stroke)
     }
 
-    fun fillStroke() = run { fill(); stroke() }
+    fun fillStroke() { fill(); stroke() }
     fun unclip() = clip(null)
     fun clip(path: VectorPath? = state.path, winding: Winding = Winding.NON_ZERO) {
         if (path != null) {

@@ -9,7 +9,7 @@ import javax.swing.*
 open class AwtTextField(factory: BaseAwtUiFactory, val textField: JTextField = JTextField()) : AwtComponent(factory, textField), NativeUiFactory.NativeTextField {
     override var text: String
         get() = textField.text
-        set(value) = run { textField.text = value }
+        set(value) { textField.text = value }
 
     override fun select(range: IntRange?) {
         if (range == null) {

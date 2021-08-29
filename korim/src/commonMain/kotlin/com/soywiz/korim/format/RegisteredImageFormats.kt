@@ -10,7 +10,7 @@ private var RegisteredImageFormats_formats: ImageFormats = ImageFormats(BMP, TGA
 object RegisteredImageFormats : ImageFormat() {
     var formats: ImageFormats
         get() = RegisteredImageFormats_formats
-        set(value) = run { RegisteredImageFormats_formats = value }
+        set(value) { RegisteredImageFormats_formats = value }
 
     fun register(vararg formats: ImageFormat) {
         this.formats = ImageFormats(this.formats.formats + formats)

@@ -158,11 +158,11 @@ internal const val WS_EX_CLIENTEDGE = 0x200
 internal const val WS_EX_TOPMOST = 0x00000008
 
 var WinDef.RECT.width: Int
-    set(value) = run { right = left + value }
+    set(value) { right = left + value }
     get() = right - left
 
 var WinDef.RECT.height: Int
-    set(value) = run { bottom = top + value }
+    set(value) { bottom = top + value }
     get() = bottom - top
 
 internal const val WM_CAPTURECHANGED = 0x0215

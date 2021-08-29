@@ -265,7 +265,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 				val tokens = tokenizePath(d)
 				val tl = ListReader(tokens)
 
-				fun dumpTokens() = run { for ((n, token) in tokens.withIndex()) warningProcessor?.invoke("- $n: $token") }
+				fun dumpTokens() { for ((n, token) in tokens.withIndex()) warningProcessor?.invoke("- $n: $token") }
 				fun isNextNumber(): Boolean = if (tl.hasMore) tl.peek() is PathTokenNumber else false
 				fun readNumber(): Double {
 					while (tl.hasMore) {

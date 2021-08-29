@@ -378,14 +378,14 @@ public class NativeNSRect {
         return pointer;
     }
 
-    var a: Int get() = pointer.getInt(0L); set(value) = run { pointer.setInt(0L, value) }
-    var b: Int get() = pointer.getInt(4L); set(value) = run { pointer.setInt(4L, value) }
-    var c: Int get() = pointer.getInt(8L); set(value) = run { pointer.setInt(8L, value) }
-    var d: Int get() = pointer.getInt(12L); set(value) = run { pointer.setInt(12L, value) }
-    var e: Int get() = pointer.getInt(16L); set(value) = run { pointer.setInt(16L, value) }
-    var f: Int get() = pointer.getInt(20L); set(value) = run { pointer.setInt(20L, value) }
-    var g: Int get() = pointer.getInt(24L); set(value) = run { pointer.setInt(24L, value) }
-    var h: Int get() = pointer.getInt(28L); set(value) = run { pointer.setInt(28L, value) }
+    var a: Int get() = pointer.getInt(0L); set(value) { pointer.setInt(0L, value) }
+    var b: Int get() = pointer.getInt(4L); set(value) { pointer.setInt(4L, value) }
+    var c: Int get() = pointer.getInt(8L); set(value) { pointer.setInt(8L, value) }
+    var d: Int get() = pointer.getInt(12L); set(value) { pointer.setInt(12L, value) }
+    var e: Int get() = pointer.getInt(16L); set(value) { pointer.setInt(16L, value) }
+    var f: Int get() = pointer.getInt(20L); set(value) { pointer.setInt(20L, value) }
+    var g: Int get() = pointer.getInt(24L); set(value) { pointer.setInt(24L, value) }
+    var h: Int get() = pointer.getInt(28L); set(value) { pointer.setInt(28L, value) }
 
     override fun toString(): String = "NativeNSRect($a, $b, $c, $d, $e, $f, $g, $h)"
 }

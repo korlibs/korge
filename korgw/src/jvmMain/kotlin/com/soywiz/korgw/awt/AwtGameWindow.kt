@@ -140,7 +140,7 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
 
     override var title: String
         get() = frame.title
-        set(value) = run { frame.title = value }
+        set(value) { frame.title = value }
     override var icon: Bitmap? = null
         set(value) {
             field = value

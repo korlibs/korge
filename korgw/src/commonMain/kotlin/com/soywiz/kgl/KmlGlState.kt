@@ -59,7 +59,7 @@ class KmlGlState(val gl: KmlGl) {
         elementArrayBufferBinding = gl.getIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING)
     }
 
-    fun saveEnable() = run { for (n in enabledList.indices) enabledArray[n] = gl.isEnabled(enabledList[n]) }
+    fun saveEnable() { for (n in enabledList.indices) enabledArray[n] = gl.isEnabled(enabledList[n]) }
 
     fun restore() {
         restoreEnable()
@@ -114,7 +114,7 @@ class KmlGlState(val gl: KmlGl) {
         //println("restored!")
     }
 
-    fun restoreEnable() = run { for (n in enabledList.indices) gl.enableDisable(enabledList[n], enabledArray[n]) }
+    fun restoreEnable() { for (n in enabledList.indices) gl.enableDisable(enabledList[n], enabledArray[n]) }
 
     inline fun keep(block: () -> Unit): Unit {
         save()

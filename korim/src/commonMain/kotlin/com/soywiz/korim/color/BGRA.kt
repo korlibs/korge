@@ -10,6 +10,6 @@ object BGRA : ColorFormat by ColorFormat.Mixin(
     fun rgbaToBgra(v: Int): Int = ((v shl 16) and 0x00FF0000) or ((v shr 16) and 0x000000FF) or (v and 0xFF00FF00.toInt())
     fun bgraToRgba(v: Int): Int = rgbaToBgra(v)
 
-    fun rgbaToBgra(v: IntArray, offset: Int, count: Int) = run { for (n in offset until offset + count) v[n] = rgbaToBgra(v[n]) }
-    fun bgraToRgba(v: IntArray, offset: Int, count: Int) = run { for (n in offset until offset + count) v[n] = bgraToRgba(v[n]) }
+    fun rgbaToBgra(v: IntArray, offset: Int, count: Int) { for (n in offset until offset + count) v[n] = rgbaToBgra(v[n]) }
+    fun bgraToRgba(v: IntArray, offset: Int, count: Int) { for (n in offset until offset + count) v[n] = bgraToRgba(v[n]) }
 }

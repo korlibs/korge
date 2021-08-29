@@ -7,7 +7,7 @@ import javax.swing.*
 open class AwtToggleButton(factory: BaseAwtUiFactory, val button: JToggleButton = JToggleButton()) : AwtComponent(factory, button), NativeUiFactory.NativeToggleButton {
     override var text: String
         get() = button.text
-        set(value) = run { button.text = value }
+        set(value) { button.text = value }
 
     override var icon: Bitmap? = null
         set(value) {

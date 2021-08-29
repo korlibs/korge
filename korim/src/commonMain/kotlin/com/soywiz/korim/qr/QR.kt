@@ -188,7 +188,7 @@ private class QR8bitByte(parsedDataS: ByteArray) {
     }
 
     fun getLength(): Int = parsedData.size
-    fun write(buffer: QRBitBuffer) = run { for (i in 0 until this.parsedData.size) buffer.put(this.parsedData[i], 8) }
+    fun write(buffer: QRBitBuffer) { for (i in 0 until this.parsedData.size) buffer.put(this.parsedData[i], 8) }
 }
 
 private class QRCodeModel(val typeNumber: Int, val errorCorrectLevel: QRErrorCorrectLevel) {

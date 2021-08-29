@@ -19,15 +19,15 @@ class RGBAf(
 
     private var dirty = true
 
-    var r: Float; set(v) = run { _r = v; makeDirty() }; get() = _r
-    var g: Float; set(v) = run { _g = v; makeDirty() }; get() = _g
-    var b: Float; set(v) = run { _b = v; makeDirty() }; get() = _b
-    var a: Float; set(v) = run { _a = v; makeDirty() }; get() = _a
+    var r: Float; get() = _r; set(v) { _r = v; makeDirty() }
+    var g: Float; get() = _g; set(v) { _g = v; makeDirty() }
+    var b: Float; get() = _b; set(v) { _b = v; makeDirty() }
+    var a: Float; get() = _a; set(v) { _a = v; makeDirty() }
 
-    var rd: Double; set(v) = run { _r = v.toFloat(); makeDirty() }; get() = _r.toDouble()
-    var gd: Double; set(v) = run { _g = v.toFloat(); makeDirty() }; get() = _g.toDouble()
-    var bd: Double; set(v) = run { _b = v.toFloat(); makeDirty() }; get() = _b.toDouble()
-    var ad: Double; set(v) = run { _a = v.toFloat(); makeDirty() }; get() = _a.toDouble()
+    var rd: Double; get() = _r.toDouble(); set(v) { _r = v.toFloat(); makeDirty() }
+    var gd: Double; get() = _g.toDouble(); set(v) { _g = v.toFloat(); makeDirty() }
+    var bd: Double; get() = _b.toDouble(); set(v) { _b = v.toFloat(); makeDirty() }
+    var ad: Double; get() = _a.toDouble(); set(v) { _a = v.toFloat(); makeDirty() }
 
     val ri: Int get() = (r * 255).toInt() and 0xFF
     val gi: Int get() = (g * 255).toInt() and 0xFF

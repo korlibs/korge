@@ -4,20 +4,20 @@ import com.soywiz.kds.*
 
 internal var IntArrayList.lengthSet: Int
 	get() = size
-	set(value) = run { size = value }
+	set(value) { size = value }
 
 
 internal var DoubleArrayList.lengthSet: Int
 	get() = size
-	set(value) = run { size = value }
+	set(value) { size = value }
 
 internal var IntArrayList.length: Int
 	get() = size
-	set(value) = run { size = value }
+	set(value) { size = value }
 
 internal var DoubleArrayList.length: Int
 	get() = size
-	set(value) = run { size = value }
+	set(value) { size = value }
 
 
 internal var <T> FastArrayList<T>.lengthSet
@@ -28,7 +28,7 @@ internal var <T> FastArrayList<T>.lengthSet
 		while (size < value) (this as FastArrayList<T?>).add(null)
 	}
 
-internal var <T> FastArrayList<T>.length; get() = size; set(value) = run { lengthSet = value }
+internal var <T> FastArrayList<T>.length; get() = size; set(value) { lengthSet = value }
 
 internal fun DoubleArrayList.push(value: Double) = this.add(value)
 internal fun IntArrayList.push(value: Int) = this.add(value)

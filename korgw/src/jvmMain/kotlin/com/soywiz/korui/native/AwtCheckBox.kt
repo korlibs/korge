@@ -7,10 +7,10 @@ import javax.swing.event.*
 open class AwtCheckBox(factory: BaseAwtUiFactory, val checkBox: JCheckBox = JCheckBox()) : AwtComponent(factory, checkBox), NativeUiFactory.NativeCheckBox {
     override var text: String
         get() = checkBox.text
-        set(value) = run { checkBox.text = value }
+        set(value) { checkBox.text = value }
     override var checked: Boolean
         get() = checkBox.isSelected
-        set(value) = run { checkBox.isSelected = value }
+        set(value) { checkBox.isSelected = value }
 
     override fun onChange(block: () -> Unit): Disposable {
         val listener = ChangeListener { block() }

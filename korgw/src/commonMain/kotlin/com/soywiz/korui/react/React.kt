@@ -91,7 +91,7 @@ class ReactUids {
 
 class ReactState<T>(val states: ReactUiMyContainer, val initial: () -> T) {
     operator fun getValue(obj: Any?, property: KProperty<*>): T = (states.data as MutableMap<String, T>).getOrPut(property.name) { initial() }
-    operator fun setValue(obj: Any?, property: KProperty<*>, value: T) = run {
+    operator fun setValue(obj: Any?, property: KProperty<*>, value: T) {
         //if (value != getValue(obj, property)) {
         run {
             states.data[property.name] = value

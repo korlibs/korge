@@ -60,8 +60,8 @@ open class UiComponent(val app: UiApplication, val component: NativeUiFactory.Na
     fun openFileDialog(file: VfsFile?, filter: (VfsFile) -> Boolean) = component.openFileDialog(file, filter)
     fun openColorPickerDialog(color: RGBA, listener: ((RGBA) -> Unit)?): RGBA? = component.openColorPickerDialog(color, listener)
     fun focus(focus: Boolean = true) = component.focus(focus)
-    fun show() = run { visible = true }
-    fun hide() = run { visible = false }
+    fun show() { visible = true }
+    fun hide() { visible = false }
     fun onClick(block: (MouseEvent) -> Unit) = onMouseEvent { if (it.typeClick) block(it) }
     fun onResize(handler: (ReshapeEvent) -> Unit): Disposable = component.onResize(handler)
 

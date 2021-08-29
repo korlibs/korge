@@ -159,14 +159,14 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
     var w: Window = 0u
     var s: Int = 0
 
-    fun realSetTitle(title: String): Unit = run {
+    fun realSetTitle(title: String): Unit {
         if (d == null || w == NilWin) return@run
         //X.XSetWMIconName(d, w, )
         XStoreName(d, w, title)
         XSetIconName(d, w, title)
     }
 
-    fun realSetIcon(value: Bitmap?): Unit = run {
+    fun realSetIcon(value: Bitmap?): Unit {
         if (d == null || w == NilWin || value == null) return@run
         memScoped {
             val property = XInternAtom(d, "_NET_WM_ICON", 0)
@@ -248,7 +248,7 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
         }
     }
 
-    fun realSetVisible(value: Boolean): Unit = run {
+    fun realSetVisible(value: Boolean): Unit {
         if (d == null || w == NilWin) return@run
     }
 

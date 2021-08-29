@@ -266,8 +266,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
 
     val frameScaleFactor: Double
-        get() = run {
-            getDisplayScalingFactor(component)
+        get() {
+            return getDisplayScalingFactor(component)
             //val res = frame.toolkit.getDesktopProperty("apple.awt.contentScaleFactor") as? Number
             //if (res != null) return res.toDouble()
         }
