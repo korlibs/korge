@@ -26,7 +26,7 @@ class MeshBuilder3D(
     operator fun invoke(callback: MeshBuilder3D.() -> Unit): Mesh3D = this.apply(callback).build()
 
     companion object {
-        operator fun invoke(callback: MeshBuilder3D.() -> Unit): Mesh3D = MeshBuilder3D().apply(callback).build()
+        operator fun invoke(drawType: AG.DrawType = AG.DrawType.TRIANGLES, callback: MeshBuilder3D.() -> Unit): Mesh3D = MeshBuilder3D(drawType).apply(callback).build()
     }
 
     val vertexData = floatArrayListOf()
