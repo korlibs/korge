@@ -37,7 +37,7 @@ internal class SpineJsonValue {
 
     fun getSure(name: String): SpineJsonValue = get(name) ?: throw IllegalArgumentException("Named value not found: $name")
     fun has(name: String): Boolean = get(name) != null
-    inline fun fastForEach(block: (value: SpineJsonValue) -> Unit) = run { children?.fastForEach(block) }
+    inline fun fastForEach(block: (value: SpineJsonValue) -> Unit) { children?.fastForEach(block) }
     fun require(name: String): SpineJsonValue {
         fastForEach { current -> if (current.name?.equals(name, ignoreCase = true) == true) return current }
         error("Child not found with name: $name")

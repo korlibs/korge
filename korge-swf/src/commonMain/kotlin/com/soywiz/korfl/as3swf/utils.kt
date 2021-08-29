@@ -70,8 +70,8 @@ open class FlashByteArray() {
 	val data = SyncStream(content)
 
 	var endian = Endian.BIG_ENDIAN
-	var position: Int; get() = data.position.toInt(); set(value) = run { data.position = value.toLong() }
-	var length: Int; get() = data.length.toInt(); set(value) = run { data.length = value.toLong() }
+	var position: Int; get() = data.position.toInt(); set(value) { data.position = value.toLong() }
+	var length: Int; get() = data.length.toInt(); set(value) { data.length = value.toLong() }
 
 	private fun ensureIndex(index: Int) = this.apply {
 		content.data.size = max(content.data.size, index + 1)
@@ -107,7 +107,7 @@ open class FlashByteArray() {
 	fun writeByte(i: Int): Unit = data.write8(i)
 	fun writeShort(i: Int): Unit = if (little) data.write16LE(i) else data.write16BE(i)
 	fun writeInt(i: Int): Unit = if (little) data.write32LE(i) else data.write32BE(i)
-	fun writeLong(i: Long): Unit = run { if (little) data.write64LE(i) else data.write64BE(i) }
+	fun writeLong(i: Long): Unit { if (little) data.write64LE(i) else data.write64BE(i) }
 
 	fun writeUnsignedByte(i: Int): Unit = writeByte(i)
 	fun writeUnsignedShort(i: Int): Unit = writeShort(i)
@@ -118,7 +118,7 @@ open class FlashByteArray() {
 
 	fun writeUTF(value: String): Unit = TODO()
 	fun writeUTFBytes(str: String, position: Int = 0, length: Int = -1): Unit = throw Error("")
-	fun writeBytes(bytes: ByteArray) = run { this.data.writeBytes(bytes) }
+	fun writeBytes(bytes: ByteArray) { this.data.writeBytes(bytes) }
 
 	fun writeBytes(bytes: FlashByteArray, offset: Int = 0, length: Int = -1): Unit {
 		val len = if (length >= 0) length else bytes.length

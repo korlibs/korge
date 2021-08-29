@@ -112,7 +112,7 @@ class ActionExecutionContext(
 }
 
 class ActionUnknown(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
-	override fun parse(data: SWFData) = run { if (length > 0) data.skipBytes(length) }
+	override fun parse(data: SWFData): Unit { if (length > 0) data.skipBytes(length) }
 
 	override fun toString(indent: Int): String = "[????] Code: " + code.toString(16) + ", Length: " + length
 }
@@ -151,7 +151,7 @@ class ActionGetURL(code: Int, length: Int, pos: Int) : Action(code, length, pos)
 
 class ActionGotoFrame(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
 	var frame = 0
-	override fun parse(data: SWFData) = run { frame = data.readUI16() }
+	override fun parse(data: SWFData) { frame = data.readUI16() }
 	override fun toString(indent: Int): String = "[ActionGotoFrame] Frame: $frame"
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String =
 		toBytecodeLabel(indent) + "gotoFrame " + frame
@@ -159,7 +159,7 @@ class ActionGotoFrame(code: Int, length: Int, pos: Int) : Action(code, length, p
 
 class ActionGotoLabel(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
 	var label: String? = null
-	override fun parse(data: SWFData) = run { label = data.readString() }
+	override fun parse(data: SWFData) { label = data.readString() }
 	override fun toString(indent: Int): String = "[ActionGotoLabel] Label: $label"
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String =
 		"${toBytecodeLabel(indent)}gotoLabel \"$label\""
@@ -184,7 +184,7 @@ class ActionPreviousFrame(code: Int, length: Int, pos: Int) : Action(code, lengt
 
 class ActionSetTarget(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
 	var targetName: String? = null
-	override fun parse(data: SWFData) = run { targetName = data.readString() }
+	override fun parse(data: SWFData) { targetName = data.readString() }
 	override fun toString(indent: Int): String = "[ActionSetTarget] TargetName: $targetName"
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String =
 		"${toBytecodeLabel(indent)}setTarget \"$targetName\""
@@ -349,7 +349,7 @@ class ActionIf(code: Int, length: Int, pos: Int) : Action(code, length, pos), IA
 	// branchIndex is resolved in TagDoAction::parse()
 	override var branchIndex: Int = -2
 
-	override fun parse(data: SWFData): Unit = run { branchOffset = data.readSI16() }
+	override fun parse(data: SWFData): Unit { branchOffset = data.readSI16() }
 
 	override fun toString(indent: Int): String {
 		val bi = "[" + when {
@@ -376,7 +376,7 @@ class ActionJump(code: Int, length: Int, pos: Int) : Action(code, length, pos), 
 	// branchIndex is resolved in TagDoAction::parse()
 	override var branchIndex: Int = -2
 
-	override fun parse(data: SWFData): Unit = run { branchOffset = data.readSI16() }
+	override fun parse(data: SWFData): Unit { branchOffset = data.readSI16() }
 
 	override fun toString(indent: Int): String {
 		val bi = " [" + when {
@@ -552,7 +552,7 @@ class ActionTrace(code: Int, length: Int, pos: Int) : Action(code, length, pos),
 
 class ActionWaitForFrame2(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
 	var skipCount: Int = 0
-	override fun parse(data: SWFData) = run { skipCount = data.readUI8() }
+	override fun parse(data: SWFData) { skipCount = data.readUI8() }
 	override fun toString(indent: Int): String = "[ActionWaitForFrame2] SkipCount: " + skipCount
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String =
 		toBytecodeLabel(indent) + "waitForFrame2 (" + skipCount + ")"
@@ -794,7 +794,7 @@ class ActionStackSwap(code: Int, length: Int, pos: Int) : Action(code, length, p
 class ActionStoreRegister(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
 	var registerNumber: Int = 0
 
-	override fun parse(data: SWFData) = run { registerNumber = data.readUI8() }
+	override fun parse(data: SWFData) { registerNumber = data.readUI8() }
 	override fun toString(indent: Int): String = "[ActionStoreRegister] RegisterNumber: $registerNumber"
 	override fun toBytecode(indent: Int, context: ActionExecutionContext): String =
 		toBytecodeLabel(indent) + "store $" + registerNumber

@@ -312,7 +312,7 @@ class ABC {
 			val hasMetadata = (info and 0x04) != 0
 			val traitKind = kind and 0x0f
 
-			fun handleTraitSlot() = run {
+			fun handleTraitSlot(): TraitSlot {
 				val slotIndex = s.readU30()
 				val type = multinames[s.readU30()]
 				val valueIndex = s.readU30()
@@ -322,15 +322,15 @@ class ABC {
 				} else {
 					null
 				}
-				TraitSlot(name, slotIndex, type, value)
+				return TraitSlot(name, slotIndex, type, value)
 			}
 
-			fun handleTraitMethod() = run {
+			fun handleTraitMethod(): TraitMethod {
 				val dispIndex = s.readU30()
 				val methodIndex = s.readU30()
 				val isFinal = (info and 0x01) != 0
 				val isOverride = (info and 0x02) != 0
-				TraitMethod(name, dispIndex, methodIndex)
+				return TraitMethod(name, dispIndex, methodIndex)
 			}
 
 			val trait: Trait = when (traitKind) {

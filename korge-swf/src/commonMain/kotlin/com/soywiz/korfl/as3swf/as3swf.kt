@@ -512,7 +512,7 @@ class SWFData : BitArray() {
 
 	fun readRawTag(): SWFRawTag = SWFRawTag().apply { parse(this@SWFData) }
 
-	fun skipBytes(length: Int) = run { position += length }
+	fun skipBytes(length: Int) { position += length }
 }
 
 @Suppress("unused", "UNUSED_PARAMETER")

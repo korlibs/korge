@@ -3,9 +3,9 @@ package com.esotericsoftware.spine.utils
 import com.soywiz.kds.*
 import kotlin.math.*
 
-internal fun FloatArrayList.setSize(size: Int) = run { this.size = size }.let { this.data }
-internal fun IntArrayList.setSize(size: Int) = run { this.size = size }.let { this.data }
-internal fun ShortArrayList.setSize(size: Int) = run { this.size = size }.let { this }
+internal fun FloatArrayList.setSize(size: Int): FloatArray { this.size = size; return this.data }
+internal fun IntArrayList.setSize(size: Int): IntArray { this.size = size; return this.data }
+internal fun ShortArrayList.setSize(size: Int): ShortArrayList { this.size = size; return this}
 
 internal fun FloatArrayList.toArray() = this.toFloatArray()
 
@@ -36,14 +36,12 @@ internal fun <T> FastArrayList<T>.removeValueIdentity(value: T?): Boolean {
 }
 internal fun <T> FastArrayList<T>.containsIdentity(value: T?): Boolean = indexOfIdentity(value) >= 0
 
-internal fun <T> FastArrayList<T>.shrink() = run { if (size != size) resize(size) }
+internal fun <T> FastArrayList<T>.shrink() { if (size != size) resize(size) }
 internal fun <T> FastArrayList<T>.setSize(newSize: Int): FastArrayList<T> {
     truncate(max(8, newSize))
     return this
 }
-internal fun <T> FastArrayList<T>.resize(newSize: Int) = run {
-    truncate(newSize)
-}
+internal fun <T> FastArrayList<T>.resize(newSize: Int) { truncate(newSize) }
 
 internal fun <T> FastArrayList<T>.truncate(newSize: Int) {
     require(newSize >= 0) { "newSize must be >= 0: $newSize" }

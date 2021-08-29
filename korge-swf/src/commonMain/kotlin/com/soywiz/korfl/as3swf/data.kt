@@ -377,29 +377,29 @@ open class SWFColorTransform {
 
 	var rMult: Double
 		get() = (_rMult.toDouble() / 256)
-		set(value) = run {
+		set(value) {
 			_rMult = clamp((value * 256).toInt()); updateHasMultTerms()
 		}
 	var gMult: Double
 		get() = (_gMult.toDouble() / 256)
-		set(value) = run {
+		set(value) {
 			_gMult = clamp((value * 256).toInt()); updateHasMultTerms()
 		}
 	var bMult: Double
 		get() = (_bMult.toDouble() / 256)
-		set(value) = run {
+		set(value) {
 			_bMult = clamp((value * 256).toInt()); updateHasMultTerms()
 		}
 	open var aMult: Double
 		get() = (_aMult.toDouble() / 256)
-		set(value) = run {
+		set(value) {
 			_aMult = clamp((value * 256).toInt()); updateHasMultTerms()
 		}
 
-	var rAdd: Int get() = _rAdd; set(value) = run { _rAdd = clamp(value); updateHasAddTerms() }
-	var gAdd: Int get() = _gAdd; set(value) = run { _gAdd = clamp(value); updateHasAddTerms() }
-	var bAdd: Int get() = _bAdd; set(value) = run { _bAdd = clamp(value); updateHasAddTerms() }
-	open var aAdd: Int get() = _aAdd; set(value) = run { _aAdd = clamp(value); updateHasAddTerms() }
+	var rAdd: Int get() = _rAdd; set(value) { _rAdd = clamp(value); updateHasAddTerms() }
+	var gAdd: Int get() = _gAdd; set(value) { _gAdd = clamp(value); updateHasAddTerms() }
+	var bAdd: Int get() = _bAdd; set(value) { _bAdd = clamp(value); updateHasAddTerms() }
+	open var aAdd: Int get() = _aAdd; set(value) { _aAdd = clamp(value); updateHasAddTerms() }
 
 	open fun parse(data: SWFData) {
 		data.resetBitsPending()
@@ -429,7 +429,7 @@ open class SWFColorTransform {
 	protected open fun updateHasMultTerms(): Unit =
 		run { hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256) }
 
-	protected open fun updateHasAddTerms(): Unit = run { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
+	protected open fun updateHasAddTerms(): Unit { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
 
 	protected fun clamp(value: Int): Int = min(max(value, -32768), 32767)
 	fun isIdentity(): Boolean = !hasMultTerms && !hasAddTerms

@@ -98,12 +98,12 @@ class MySwfFrame(val index0: Int, maxDepths: Int) {
 	val hasGoto: Boolean get() = actions.any { it is Action.Goto }
 	val hasFlow: Boolean get() = hasStop || hasGoto
 
-	fun stop() = run { actions += Action.Stop }
-	fun play() = run { actions += Action.Play }
-	fun goto(frame: Int) = run { actions += Action.Goto(frame) }
-	fun gotoAndStop(frame: Int) = run { goto(frame); stop() }
-	fun gotoAndPlay(frame: Int) = run { goto(frame); play() }
-	fun playSound(soundId: Int) = run { actions += Action.PlaySound(soundId) }
+	fun stop() { actions += Action.Stop }
+	fun play() { actions += Action.Play }
+	fun goto(frame: Int) { actions += Action.Goto(frame) }
+	fun gotoAndStop(frame: Int) { goto(frame); stop() }
+	fun gotoAndPlay(frame: Int) { goto(frame); play() }
+	fun playSound(soundId: Int) { actions += Action.PlaySound(soundId) }
 }
 
 class MySwfTimeline {
