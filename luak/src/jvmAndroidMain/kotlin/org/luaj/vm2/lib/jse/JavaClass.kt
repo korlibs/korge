@@ -85,8 +85,11 @@ class JavaClass internal constructor(c: Class<*>) : JavaInstance(c), CoerceJavaT
                 if (Modifier.isPublic(mi.modifiers)) {
                     val name = mi.name
                     var list = namedlists[name]
-                    if (list == null) namedlists[name] = run { list = ArrayList(); list!! }
-                    list!!.add(JavaMethod.forMethod(mi))
+                    if (list == null) {
+                        list = ArrayList()
+                        namedlists[name] = list
+                    }
+                    list.add(JavaMethod.forMethod(mi))
                 }
             }
             val map = HashMap<LuaValue, LuaValue>()

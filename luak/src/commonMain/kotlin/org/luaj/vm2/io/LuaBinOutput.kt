@@ -6,7 +6,7 @@ import kotlin.math.*
 
 abstract class LuaBinOutput {
     abstract fun write(value: Int)
-    open fun write(b: ByteArray, i: Int, size: Int) = run { for (n in 0 until size) write(b[i + n].toInt() and 0xFF) }
+    open fun write(b: ByteArray, i: Int, size: Int) { for (n in 0 until size) write(b[i + n].toInt() and 0xFF) }
     fun write(b: ByteArray) = write(b, 0, b.size)
 
     open fun writeByte(v: Int): Unit = write(v)

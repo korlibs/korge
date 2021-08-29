@@ -710,7 +710,7 @@ class LuaClosure
     }
 
     protected fun getUpvalue(i: Int): LuaValue? = upValues[i]?.value
-    protected fun setUpvalue(i: Int, v: LuaValue) = run { upValues[i]?.value = v }
+    protected fun setUpvalue(i: Int, v: LuaValue) { upValues[i]?.value = v }
     override fun name(): String = "<" + p.shortsource() + ":" + p.linedefined + ">"
 
     companion object {

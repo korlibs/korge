@@ -22,7 +22,7 @@ open class StrLuaReader(val s: String) : LuaReader() {
     var i = 0
     val n: Int = s.length
 
-    override fun close() = run { i = n }
+    override fun close() { i = n }
     override fun read(): Int = if (i < n) s[i++].toInt() and 0xFF else -1
 
     override fun read(cbuf: CharArray, off: Int, len: Int): Int {

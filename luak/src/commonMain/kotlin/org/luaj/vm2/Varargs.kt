@@ -418,7 +418,7 @@ abstract class Varargs {
      * @param msg the error message to use when the test fails
      * @exception LuaError if the the value of `test` is `false`
      */
-    fun argcheck(test: Boolean, i: Int, msg: String) = run { if (!test) LuaValue.argerror(i, msg) }
+    fun argcheck(test: Boolean, i: Int, msg: String) { if (!test) LuaValue.argerror(i, msg) }
 
     /** Return true if there is no argument or nil at argument i.
      * @param i the index of the argument to test, 1 is the first argument

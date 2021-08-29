@@ -355,7 +355,7 @@ open class Globals(
             return j
         }
 
-        override fun close() = run { r.close() }
+        override fun close() { r.close() }
     }
 
     /** Simple buffered InputStream that supports mark.
@@ -386,7 +386,7 @@ open class Globals(
             return n
         }
 
-        override fun close() = run { s.close() }
+        override fun close() { s.close() }
 
         @Synchronized
         override fun mark(n: Int) {
@@ -402,6 +402,6 @@ open class Globals(
         override fun markSupported(): Boolean = true
 
         @Synchronized
-        override fun reset() = run { i = 0 }
+        override fun reset() { i = 0 }
     }
 }

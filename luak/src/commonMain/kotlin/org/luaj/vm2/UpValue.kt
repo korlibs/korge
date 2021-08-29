@@ -49,7 +49,7 @@ class UpValue(
      */
     var value: LuaValue?
         get() = array[index]
-        set(value) = run { array[index] = value }
+        set(value) { array[index] = value }
 
     override fun toString(): String = "$index/${array.size} ${array[index]}"
 

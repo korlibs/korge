@@ -60,8 +60,8 @@ open class BytesLuaBinInput(val buf: ByteArray, val start: Int = 0, val size: In
     private var mark = 0
     //override fun markSupported(): Boolean = true
     override fun markSupported(): Boolean = false
-    override fun mark(value: Int) = run { mark = offset }
-    override fun reset() = run { offset = mark }
+    override fun mark(value: Int) { mark = offset }
+    override fun reset() { offset = mark }
 }
 
 class BufferedLuaBinInput(val base: LuaBinInput) : LuaBinInput() {
