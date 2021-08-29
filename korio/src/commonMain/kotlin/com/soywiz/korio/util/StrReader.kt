@@ -18,7 +18,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     val eof: Boolean get() = (this.pos >= this.str.length)
     val hasMore: Boolean get() = (this.pos < this.str.length)
 
-    fun reset() = run { this.pos = 0 }
+    fun reset() { this.pos = 0 }
     fun createRange(range: IntRange): TRange = createRange(range.start, range.endInclusive + 1)
     fun createRange(start: Int = this.pos, end: Int = this.pos): TRange = TRange(start, end, this)
 

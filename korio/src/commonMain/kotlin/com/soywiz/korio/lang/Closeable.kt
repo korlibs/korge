@@ -73,7 +73,7 @@ fun Iterable<Cancellable>.cancel(e: Throwable = CancellationException("")): Unit
 
 fun Iterable<Cancellable>.cancellable() = Cancellable { this.cancel() }
 
-fun Iterable<Closeable>.close() = run { for (c in this) c.close() }
+fun Iterable<Closeable>.close() { for (c in this) c.close() }
 fun Iterable<Closeable>.closeable() = Closeable { this.close() }
 
 fun Closeable.cancellable() = Cancellable { this.close() }

@@ -933,7 +933,7 @@ object SevenZip {
 				_counters[posState] = _tableSize
 			}
 
-			fun updateTables(numPosStates: Int) = run { for (posState in 0 until numPosStates) updateTable(posState) }
+			fun updateTables(numPosStates: Int) { for (posState in 0 until numPosStates) updateTable(posState) }
 
 			override fun encode(rangeEncoder: RangeEncoder, symbol: Int, posState: Int) {
 				super.encode(rangeEncoder, symbol, posState)

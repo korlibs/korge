@@ -11,7 +11,7 @@ class ReadSpecialTest {
 	class CharArray2(val width: Int, val height: Int, val data: CharArray) {
 		fun index(x: Int, y: Int): Int = y * width + x
 		operator fun get(x: Int, y: Int): Char = data[index(x, y)]
-		operator fun set(x: Int, y: Int, v: Char): Unit = run { data[index(x, y)] = v }
+		operator fun set(x: Int, y: Int, v: Char): Unit { data[index(x, y)] = v }
 	}
 
 	suspend fun VfsFile.readCharArray2(): CharArray2 {

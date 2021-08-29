@@ -19,7 +19,7 @@ class FileSyncStreamBase(val file: java.io.File, val mode: String = "r") : SyncS
 
 	override var length: Long
 		get() = ra.length()
-		set(value) = run { ra.setLength(value) }
+		set(value) { ra.setLength(value) }
 
 	override fun close() = ra.close()
 }

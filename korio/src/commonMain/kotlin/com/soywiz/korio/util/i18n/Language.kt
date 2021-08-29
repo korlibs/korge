@@ -27,7 +27,7 @@ enum class Language(val iso6391: String, val iso6392: String) {
 		val SYSTEM: Language by lazy { SYSTEM_LANGS.firstOrNull() ?: ENGLISH }
 
 		var CURRENT: Language
-			set(value) = run { Language_CURRENT.value = value }
+			set(value) { Language_CURRENT.value = value }
 			get() = Language_CURRENT.value
 	}
 }

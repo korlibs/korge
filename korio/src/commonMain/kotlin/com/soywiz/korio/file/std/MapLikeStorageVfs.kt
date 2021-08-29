@@ -244,7 +244,7 @@ private class StorageFiles(val storage: SimpleStorage, val timeProvider: () -> T
         return true
 	}
 
-	suspend fun setFileChunk(fileName: String, chunk: Int, data: ByteArray) = run {
+	suspend fun setFileChunk(fileName: String, chunk: Int, data: ByteArray) {
 		storage.set(getChunkKey(fileName, chunk), data.hex)
 	}
 

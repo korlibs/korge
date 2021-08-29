@@ -141,7 +141,7 @@ class SyncStream constructor(
 	}
 
 	override var length: Long
-		set(value) = run { base.length = value }
+		set(value) { base.length = value }
 		get() = base.length
 
     val availableRead: Long get() = length - positionRead
@@ -319,11 +319,11 @@ class MemorySyncStreamBase(var data: ByteArrayBuilder) : SyncStreamBase() {
 
 	var ilength: Int
 		get() = data.size
-		set(value) = run { data.size = value }
+		set(value) { data.size = value }
 
 	override var length: Long
 		get() = data.size.toLong()
-		set(value) = run { data.size = value.toInt() }
+		set(value) { data.size = value.toInt() }
 
 	fun checkPosition(position: Long) { if (position < 0) invalidOp("Invalid position $position") }
 
@@ -493,19 +493,19 @@ fun SyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(
 
 fun SyncOutputStream.write8(v: Int): Unit = write(v)
 
-fun SyncOutputStream.write16LE(v: Int): Unit = run { write8(v and 0xFF); write8((v ushr 8) and 0xFF) }
-fun SyncOutputStream.write24LE(v: Int): Unit = run { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF) }
-fun SyncOutputStream.write32LE(v: Int): Unit = run { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 24) and 0xFF) }
+fun SyncOutputStream.write16LE(v: Int): Unit { write8(v and 0xFF); write8((v ushr 8) and 0xFF) }
+fun SyncOutputStream.write24LE(v: Int): Unit { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF) }
+fun SyncOutputStream.write32LE(v: Int): Unit { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 24) and 0xFF) }
 fun SyncOutputStream.write32LE(v: Long): Unit = write32LE(v.toInt())
-fun SyncOutputStream.write64LE(v: Long): Unit = run { write32LE(v.toInt()); write32LE((v ushr 32).toInt()) }
+fun SyncOutputStream.write64LE(v: Long): Unit { write32LE(v.toInt()); write32LE((v ushr 32).toInt()) }
 fun SyncOutputStream.writeF32LE(v: Float): Unit = write32LE(v.reinterpretAsInt())
 fun SyncOutputStream.writeF64LE(v: Double): Unit = write64LE(v.reinterpretAsLong())
 
-fun SyncOutputStream.write16BE(v: Int): Unit = run { write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
-fun SyncOutputStream.write24BE(v: Int): Unit = run { write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
-fun SyncOutputStream.write32BE(v: Int): Unit = run { write8((v ushr 24) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
+fun SyncOutputStream.write16BE(v: Int): Unit { write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
+fun SyncOutputStream.write24BE(v: Int): Unit { write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
+fun SyncOutputStream.write32BE(v: Int): Unit { write8((v ushr 24) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
 fun SyncOutputStream.write32BE(v: Long): Unit = write32BE(v.toInt())
-fun SyncOutputStream.write64BE(v: Long): Unit = run { write32BE((v ushr 32).toInt()); write32BE(v.toInt()) }
+fun SyncOutputStream.write64BE(v: Long): Unit { write32BE((v ushr 32).toInt()); write32BE(v.toInt()) }
 fun SyncOutputStream.writeF32BE(v: Float): Unit = write32BE(v.reinterpretAsInt())
 fun SyncOutputStream.writeF64BE(v: Double): Unit = write64BE(v.reinterpretAsLong())
 
@@ -549,7 +549,7 @@ fun SyncStream.skipToAlign(alignment: Int) {
 	readBytes((nextPosition - position).toInt())
 }
 
-fun SyncStream.truncate() = run { length = position }
+fun SyncStream.truncate() { length = position }
 
 fun SyncOutputStream.writeCharArrayLE(array: CharArray) =
 	writeBytes(ByteArray(array.size * 2).apply { writeArrayLE(0, array) })

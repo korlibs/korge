@@ -24,9 +24,9 @@ interface CompressionMethod {
 
 	object Uncompressed : CompressionMethod {
 		@UseExperimental(KorioExperimentalApi::class)
-		override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream): Unit = run { reader.copyTo(out) }
+		override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream): Unit { reader.copyTo(out) }
 		@UseExperimental(KorioExperimentalApi::class)
-		override suspend fun compress(i: BitReader, o: AsyncOutputStream, context: CompressionContext): Unit = run { i.copyTo(o) }
+		override suspend fun compress(i: BitReader, o: AsyncOutputStream, context: CompressionContext): Unit { i.copyTo(o) }
 	}
 }
 

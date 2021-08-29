@@ -42,7 +42,7 @@ class JvmAsyncServerSocketChannel(override val requestPort: Int, override val ho
                 }
             }
 
-            override fun failed(exc: Throwable, attachment: Unit) = run {
+            override fun failed(exc: Throwable, attachment: Unit) {
                 exc.printStackTrace()
                 c.resumeWithException(exc)
             }
@@ -69,8 +69,8 @@ class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocket
             AsynchronousChannelGroup.withThreadPool(EventLoopExecutorService(c.context))
         )
         sc?.connect(InetSocketAddress(host, port), this, object : CompletionHandler<Void, AsyncClient> {
-            override fun completed(result: Void?, attachment: AsyncClient): Unit = run { c.resume(Unit) }
-            override fun failed(exc: Throwable, attachment: AsyncClient): Unit = run { c.resumeWithException(exc) }
+            override fun completed(result: Void?, attachment: AsyncClient): Unit { c.resume(Unit) }
+            override fun failed(exc: Throwable, attachment: AsyncClient): Unit { c.resumeWithException(exc) }
         })
     }
 

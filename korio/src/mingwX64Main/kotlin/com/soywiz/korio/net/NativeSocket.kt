@@ -157,13 +157,13 @@ class NativeSocket private constructor(internal val sockfd: SOCKET, private var 
 		}
 	}
 
-	val availableBytes
-		get() = run {
+	val availableBytes: Int
+		get() {
 			val bytes_available = uintArrayOf(0u, 0u)
 			//platform.windows.ioctlsocket(sockfd, platform.windows.FIONREAD, bytes_available.refTo(0).reinterpret())
 			platform.windows.ioctlsocket(sockfd, platform.windows.FIONREAD, bytes_available.refTo(0))
 			checkErrors("ioctlsocket")
-			bytes_available[0].toInt()
+			return bytes_available[0].toInt()
 		}
 
 	//val connected: Boolean
@@ -316,7 +316,7 @@ internal actual val asyncSocketFactory: AsyncSocketFactory = NativeAsyncSocketFa
 
 object NativeAsyncSocketFactory : AsyncSocketFactory() {
 	class NativeAsyncClient(val socket: NativeSocket) : AsyncClient {
-		override suspend fun connect(host: String, port: Int) = run { socket.connect(host, port) }
+		override suspend fun connect(host: String, port: Int) { socket.connect(host, port) }
 		override val connected: Boolean get() = socket.connected
 		override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = socket.suspendRecvUpTo(buffer, offset, len)
 		override suspend fun write(buffer: ByteArray, offset: Int, len: Int) = socket.suspendSend(buffer, offset, len)

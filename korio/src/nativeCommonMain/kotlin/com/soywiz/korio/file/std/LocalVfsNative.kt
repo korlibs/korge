@@ -228,14 +228,13 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 		}.toAsyncStream()
 	}
 
-	override suspend fun setSize(path: String, size: Long): Unit = run {
+	override suspend fun setSize(path: String, size: Long): Unit {
 		platform.posix.truncate(resolve(path), size.convert())
-		Unit
 	}
 
-	override suspend fun stat(path: String): VfsStat = run {
+	override suspend fun stat(path: String): VfsStat {
 		val rpath = resolve(path)
-		val result = memScoped {
+		return memScoped {
 			val s = alloc<stat>()
 			if (platform.posix.stat(rpath, s.ptr) == 0) {
 				val size: Long = s.st_size.toLong()
@@ -245,7 +244,6 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 				createNonExistsStat(rpath)
 			}
 		}
-		result
 	}
 
 	override suspend fun listFlow(path: String) = flow {
@@ -264,22 +262,15 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 		}
 	}
 
-	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = run {
-		com.soywiz.korio.doMkdir(resolve(path), "0777".toInt(8).convert()) == 0
-	}
+	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = com.soywiz.korio.doMkdir(resolve(path), "0777".toInt(8).convert()) == 0
 
-	override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit = run {
+	override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit {
 		// @TODO:
 		println("TODO:LocalVfsNative.touch")
 	}
 
-	override suspend fun delete(path: String): Boolean = run {
-		platform.posix.unlink(resolve(path)) == 0
-	}
-
-	override suspend fun rmdir(path: String): Boolean = run {
-		platform.posix.rmdir(resolve(path)) == 0
-	}
+	override suspend fun delete(path: String): Boolean = platform.posix.unlink(resolve(path)) == 0
+	override suspend fun rmdir(path: String): Boolean = platform.posix.rmdir(resolve(path)) == 0
 
 	override suspend fun rename(src: String, dst: String): Boolean = run {
 		platform.posix.rename(resolve(src), resolve(dst)) == 0

@@ -280,7 +280,7 @@ open class HttpPortable(
                                     override suspend fun _handler(handler: (ByteArray) -> Unit) =
                                         run { bodyHandler = handler }
 
-                                    override suspend fun _endHandler(handler: () -> Unit) = run { endHandler = handler }
+                                    override suspend fun _endHandler(handler: () -> Unit) { endHandler = handler }
 
                                     override suspend fun _sendHeader(code: Int, message: String, headers: Http.Headers) {
                                         client.writeString(buildString {

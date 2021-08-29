@@ -20,7 +20,7 @@ fun InputStream.toAsync(length: Long? = null): AsyncInputStream {
 		return object : AsyncInputStream {
 			override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = syncIS.read(buffer, offset, len)
 			override suspend fun read(): Int = syncIS.read()
-			override suspend fun close() = run { syncIS.close() }
+			override suspend fun close() { syncIS.close() }
 		}
 	}
 }

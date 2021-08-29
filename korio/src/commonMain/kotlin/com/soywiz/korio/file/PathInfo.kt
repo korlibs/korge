@@ -52,9 +52,9 @@ val PathInfo.baseName: String get() = fullPathNormalized.substringAfterLast('/')
  * /path\to/file.ext -> /path\to/file
  */
 val PathInfo.fullPathWithoutExtension: String
-	get() = run {
+	get() {
 		val startIndex = fullPathNormalized.lastIndexOfOrNull('/')?.plus(1) ?: 0
-		fullPath.substring(0, fullPathNormalized.indexOfOrNull('.', startIndex) ?: fullPathNormalized.length)
+		return fullPath.substring(0, fullPathNormalized.indexOfOrNull('.', startIndex) ?: fullPathNormalized.length)
 	}
 
 /**

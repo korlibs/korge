@@ -182,10 +182,10 @@ private class ResourcesVfsProviderJvm {
 						return MemorySyncStream(getResourceAsStream(npath).readBytes()).toAsync()
 					}
 
-					override suspend fun stat(path: String): VfsStat = run {
+					override suspend fun stat(path: String): VfsStat {
 						val npath = normalize(path)
 						//println("ResourcesVfsProviderJvm:stat: $npath")
-						try {
+						return try {
 							val s = getResourceAsStream(npath)
 							val size = s.available()
 							s.read()

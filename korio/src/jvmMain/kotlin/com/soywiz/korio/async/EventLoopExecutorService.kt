@@ -7,7 +7,7 @@ import kotlin.coroutines.*
 class EventLoopExecutorService(val context: CoroutineContext) : ExecutorService {
 	var shutdown = false
 
-	override fun shutdown() = run { shutdown = true }
+	override fun shutdown() { shutdown = true }
 	override fun shutdownNow(): MutableList<Runnable> = ArrayList<Runnable>().apply { shutdown() }
 	override fun isShutdown(): Boolean = shutdown
 

@@ -622,7 +622,7 @@ class SyncAsyncStreamBase(val sync: SyncStreamBase) : AsyncStreamBase() {
 	override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) =
 		sync.write(position, buffer, offset, len)
 
-	override suspend fun setLength(value: Long) = run { sync.length = value }
+	override suspend fun setLength(value: Long) { sync.length = value }
 	override suspend fun getLength(): Long = sync.length
 }
 
@@ -633,7 +633,7 @@ class SyncAsyncStreamBaseInWorker(val sync: SyncStreamBase) : AsyncStreamBase() 
 	override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) =
 		sync.write(position, buffer, offset, len)
 
-	override suspend fun setLength(value: Long) = run { sync.length = value }
+	override suspend fun setLength(value: Long) { sync.length = value }
 	override suspend fun getLength(): Long = sync.length
 }
 
@@ -733,7 +733,7 @@ fun SyncInputStream.toAsyncInputStream() = object : AsyncInputStreamWithLength {
 	val sync = this@toAsyncInputStream
 
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = sync.read(buffer, offset, len)
-	override suspend fun close(): Unit = run { (sync as? Closeable)?.close() }
+	override suspend fun close(): Unit { (sync as? Closeable)?.close() }
 	override suspend fun getPosition(): Long = (sync as? SyncPositionStream)?.position ?: super.getPosition()
 	override suspend fun getLength(): Long = (sync as? SyncLengthStream)?.length ?: super.getLength()
 }
@@ -742,7 +742,7 @@ fun SyncOutputStream.toAsyncOutputStream() = object : AsyncOutputStream {
 	override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit =
 		this@toAsyncOutputStream.write(buffer, offset, len)
 
-	override suspend fun close(): Unit = run { (this@toAsyncOutputStream as? Closeable)?.close() }
+	override suspend fun close(): Unit { (this@toAsyncOutputStream as? Closeable)?.close() }
 }
 
 fun AsyncStream.asVfsFile(name: String = "unknown.bin"): VfsFile = MemoryVfs(
@@ -785,12 +785,12 @@ class MemoryAsyncStreamBase(var data: com.soywiz.kmem.ByteArrayBuilder) : AsyncS
 
 	var ilength: Int
 		get() = data.size
-		set(value) = run { data.size = value }
+		set(value) { data.size = value }
 
-	override suspend fun setLength(value: Long) = run { ilength = value.toInt() }
+	override suspend fun setLength(value: Long) { ilength = value.toInt() }
 	override suspend fun getLength(): Long = ilength.toLong()
 
-	fun checkPosition(position: Long) = run { if (position < 0) invalidOp("Invalid position $position") }
+	fun checkPosition(position: Long) { if (position < 0) invalidOp("Invalid position $position") }
 
 	override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
 		checkPosition(position)

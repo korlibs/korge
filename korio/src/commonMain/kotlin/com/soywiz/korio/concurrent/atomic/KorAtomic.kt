@@ -93,13 +93,13 @@ fun KorAtomicLong.incrementAndGet() = addAndGet(1)
 
 
 inline operator fun <T> KorAtomicRef<T>.getValue(obj: Any, prop: KProperty<Any?>): T = this.value
-inline operator fun <T> KorAtomicRef<T>.setValue(obj: Any, prop: KProperty<Any?>, v: T) = run { this.value = v }
+inline operator fun <T> KorAtomicRef<T>.setValue(obj: Any, prop: KProperty<Any?>, v: T) { this.value = v }
 
 inline operator fun KorAtomicBoolean.getValue(obj: Any, prop: KProperty<Any?>): Boolean = this.value
-inline operator fun KorAtomicBoolean.setValue(obj: Any, prop: KProperty<Any?>, v: Boolean) = run { this.value = v }
+inline operator fun KorAtomicBoolean.setValue(obj: Any, prop: KProperty<Any?>, v: Boolean) { this.value = v }
 
 inline operator fun KorAtomicInt.getValue(obj: Any, prop: KProperty<Any?>): Int = this.value
-inline operator fun KorAtomicInt.setValue(obj: Any, prop: KProperty<Any?>, v: Int) = run { this.value = v }
+inline operator fun KorAtomicInt.setValue(obj: Any, prop: KProperty<Any?>, v: Int) { this.value = v }
 
 inline operator fun KorAtomicLong.getValue(obj: Any, prop: KProperty<Any?>): Long = this.value
-inline operator fun KorAtomicLong.setValue(obj: Any, prop: KProperty<Any?>, v: Long) = run { this.value = v }
+inline operator fun KorAtomicLong.setValue(obj: Any, prop: KProperty<Any?>, v: Long) { this.value = v }

@@ -106,7 +106,7 @@ class VfsFileTest {
 		var initialized = false
 		val vfs = object : Vfs.Proxy() {
 			override suspend fun access(path: String): VfsFile = memoryVfs[path]
-			override suspend fun init() = run { initialized = true }
+			override suspend fun init() { initialized = true }
 		}.root
 		assertEquals(memoryVfs["test"], vfs["test"].getUnderlyingUnscapedFile().toFile())
 		assertEquals(initialized, true)
