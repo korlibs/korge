@@ -84,10 +84,10 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
         return returnList
     }
 
-    private fun addToOpenedList(node: SpatialNode): Unit = run { openedList.add(node) }
+    private fun addToOpenedList(node: SpatialNode): Unit { openedList.add(node) }
     private fun openedListHasItems(): Boolean = openedList.size > 0
     private fun getAndRemoveFirstFromOpenedList(): SpatialNode = openedList.removeHead()
-    private fun addNodeToClosedList(node: SpatialNode): Unit = run { node.closed = true }
+    private fun addNodeToClosedList(node: SpatialNode): Unit { node.closed = true }
     private fun inClosedList(node: SpatialNode): Boolean = node.closed
     private fun getNodeNeighbors(node: SpatialNode): ArrayList<SpatialNode> = node.neighbors
     private fun inOpenedList(node: SpatialNode): Boolean = openedList.contains(node)

@@ -85,7 +85,7 @@ class Board(
 
 	// Returns the time in seconds that has passed since the timer started
 	val elapsed: Int
-		get() = run {
+		get() {
 			var ctime = time
 			if (tstop != DateTime.EPOCH) ctime = tstop
 			return (ctime - tstart).seconds.toInt()

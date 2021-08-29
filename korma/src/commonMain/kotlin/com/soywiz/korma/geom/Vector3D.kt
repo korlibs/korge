@@ -43,7 +43,7 @@ class Vector3D : MVector3 {
     val length3: Float get() = sqrt(length3Squared)
 
     operator fun get(index: Int): Float = data[index]
-    operator fun set(index: Int, value: Float) = run { data[index] = value }
+    operator fun set(index: Int, value: Float) { data[index] = value }
 
     companion object {
         operator fun invoke(x: Float, y: Float, z: Float, w: Float = 1f): Vector3D = Vector3D().setTo(x, y, z, w)

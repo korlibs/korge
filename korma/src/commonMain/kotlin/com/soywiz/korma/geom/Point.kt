@@ -84,7 +84,7 @@ inline fun Point.setToMul(a: IPoint, s: Number): Point = setToMul(a, s.toDouble(
 fun Point.setToDiv(a: IPoint, b: IPoint): Point = setTo(a.x / b.x, a.y / b.y)
 fun Point.setToDiv(a: IPoint, s: Double): Point = setTo(a.x / s, a.y / s)
 inline fun Point.setToDiv(a: IPoint, s: Number): Point = setToDiv(a, s.toDouble())
-operator fun Point.plusAssign(that: IPoint): Unit = run { setTo(this.x + that.x, this.y + that.y) }
+operator fun Point.plusAssign(that: IPoint): Unit { setTo(this.x + that.x, this.y + that.y) }
 
 data class Point(
     override var x: Double,
@@ -239,7 +239,7 @@ data class Point(
     fun setToDiv(a: Point, b: Point): Point = setTo(a.x / b.x, a.y / b.y)
     fun setToDiv(a: Point, s: Double): Point = setTo(a.x / s, a.y / s)
     fun setToDiv(a: Point, s: Float): Point = setToDiv(a, s.toDouble())
-    operator fun plusAssign(that: Point): Unit = run { setTo(this.x + that.x, this.y + that.y) }
+    operator fun plusAssign(that: Point): Unit { setTo(this.x + that.x, this.y + that.y) }
 
     operator fun plus(that: Point): Point = Point(this.x + that.x, this.y + that.y)
     operator fun minus(that: Point): Point = Point(this.x - that.x, this.y - that.y)
@@ -328,10 +328,10 @@ inline class PointInt(val p: Point) : IPointInt, Comparable<IPointInt> {
         }
     }
     override var x: Int
-        set(value) = run { p.x = value.toDouble() }
+        set(value) { p.x = value.toDouble() }
         get() = p.x.toInt()
     override var y: Int
-        set(value) = run { p.y = value.toDouble() }
+        set(value) { p.y = value.toDouble() }
         get() = p.y.toInt()
     fun setTo(x: Int, y: Int) : PointInt {
         this.x = x

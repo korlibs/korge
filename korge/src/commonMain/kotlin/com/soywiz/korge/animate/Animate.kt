@@ -41,11 +41,11 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 
     var dxDouble: Double
         get() = dx.toDouble()
-        set(value) = run { dx = value.toFloat() }
+        set(value) { dx = value.toFloat() }
 
     var dyDouble: Double
         get() = dy.toDouble()
-        set(value) = run { dy = value.toFloat() }
+        set(value) { dy = value.toFloat() }
 
     val posCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
 	val texCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))

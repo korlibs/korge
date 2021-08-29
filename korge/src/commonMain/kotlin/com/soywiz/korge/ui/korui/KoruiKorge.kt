@@ -48,7 +48,7 @@ open class KorgeNativeUiFactory : NativeUiFactory {
 
         override var visible: Boolean
             get() = view.visible
-            set(value) = run { view.visible = value }
+            set(value) { view.visible = value }
 
         override fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable {
             var startedHere = false

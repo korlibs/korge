@@ -189,11 +189,11 @@ class Styled<T : Component> constructor(val component: T) {
 
     var width: MUnit
         get() = preferred.width
-        set(value) = run { preferred = preferred.copy(width = value) }
+        set(value) { preferred = preferred.copy(width = value) }
 
     var height: MUnit
         get() = preferred.height
-        set(value) = run { preferred = preferred.copy(height = value) }
+        set(value) { preferred = preferred.copy(height = value) }
 
     fun fill() {
         fillWidth()

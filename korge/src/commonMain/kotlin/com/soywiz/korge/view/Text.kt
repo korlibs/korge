@@ -106,10 +106,10 @@ open class Text(
     var alignment: TextAlignment = alignment; set(value) { if (field != value) { field = value; version++ } }
     var horizontalAlign: HorizontalAlign
         get() = alignment.horizontal
-        set(value) = run { alignment = alignment.withHorizontal(value) }
+        set(value) { alignment = alignment.withHorizontal(value) }
     var verticalAlign: VerticalAlign
         get() = alignment.vertical
-        set(value) = run { alignment = alignment.withVertical(value) }
+        set(value) { alignment = alignment.withVertical(value) }
 
     private lateinit var textToBitmapResult: TextToBitmapResult
     private val container = container()

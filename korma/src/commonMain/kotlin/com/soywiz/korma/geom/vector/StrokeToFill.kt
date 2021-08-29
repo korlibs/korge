@@ -41,8 +41,8 @@ class StrokeToFill {
     internal fun PointIntArrayList.addEdgePointA(e: Edge) = add(e.ax, e.ay)
     internal fun PointIntArrayList.addEdgePointB(e: Edge) = add(e.bx, e.by)
     internal fun PointIntArrayList.addEdgePointAB(e: Edge, point: EdgePoint) = if (point == EdgePoint.A) addEdgePointA(e) else addEdgePointB(e)
-    internal fun PointIntArrayList.add(e: Point?) = run { if (e != null) add(e.x.toInt(), e.y.toInt()) }
-    internal fun PointIntArrayList.add(x: Double, y: Double) = run { add(x.toInt(), y.toInt()) }
+    internal fun PointIntArrayList.add(e: Point?) { if (e != null) add(e.x.toInt(), e.y.toInt()) }
+    internal fun PointIntArrayList.add(x: Double, y: Double) { add(x.toInt(), y.toInt()) }
 
     private val tempP1 = Point()
     private val tempP2 = Point()

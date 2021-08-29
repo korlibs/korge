@@ -33,10 +33,10 @@ inline class Size(val p: Point) : MutableInterpolable<Size>, Interpolable<Size>,
     override val size: Size get() = this
 
     override var width: Double
-        set(value) = run { p.x = value }
+        set(value) { p.x = value }
         get() = p.x
     override var height: Double
-        set(value) = run { p.y = value }
+        set(value) { p.y = value }
         get() = p.y
 
     fun setTo(width: Double, height: Double): Size {
@@ -83,10 +83,10 @@ inline class SizeInt(val size: Size) : ISizeInt {
     fun clone() = SizeInt(size.clone())
 
     override var width: Int
-        set(value) = run { size.width = value.toDouble() }
+        set(value) { size.width = value.toDouble() }
         get() = size.width.toInt()
     override var height: Int
-        set(value) = run { size.height = value.toDouble() }
+        set(value) { size.height = value.toDouble() }
         get() = size.height.toInt()
 
     //override fun toString(): String = "SizeInt($width, $height)"

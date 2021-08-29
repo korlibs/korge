@@ -3218,9 +3218,9 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
 class Edge {
     enum class Side { LEFT, RIGHT }
 
-    var bot: Point = Point(); set(v) = run { field.copyFrom(v) }
-    var current: Point = Point(); set(v) = run { field.copyFrom(v) }
-    var top: Point = Point(); set(v) = run { field.copyFrom(v) }
+    var bot: Point = Point(); set(v) { field.copyFrom(v) }
+    var current: Point = Point(); set(v) { field.copyFrom(v) }
+    var top: Point = Point(); set(v) { field.copyFrom(v) }
 
     val delta: Point = Point()
     var deltaX: Double = 0.0
@@ -3813,7 +3813,7 @@ class Paths private constructor(private val al: FastArrayList<Path>) : MutableLi
             return bb.getBounds()
         }
 
-    fun reversePaths() = run { for (poly in this) poly.reverse() }
+    fun reversePaths() { for (poly in this) poly.reverse() }
 
     companion object {
         fun closedPathsFromPolyTree(polytree: PolyTree): Paths =

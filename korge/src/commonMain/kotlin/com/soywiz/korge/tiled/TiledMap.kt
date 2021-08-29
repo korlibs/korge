@@ -438,7 +438,7 @@ class TiledMap constructor(
             val width: Int get() = map.width
             val height: Int get() = map.height
             val area: Int get() = width * height
-            operator fun set(x: Int, y: Int, value: Int) = run { map.setInt(x, y, value) }
+            operator fun set(x: Int, y: Int, value: Int) { map.setInt(x, y, value) }
             operator fun get(x: Int, y: Int): Int = map.getInt(x, y)
             override fun clone(): Tiles = Tiles(map.clone(), encoding, compression).also { it.copyFrom(this) }
         }

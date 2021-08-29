@@ -100,7 +100,7 @@ class Convolute3Filter(
 
     var namedKernel: String
         get() = NAMED_KERNELS.entries.firstOrNull { it.value == weights }?.key ?: NAMED_KERNELS.keys.first()
-        set(value) = run { weights = (NAMED_KERNELS[value] ?: KERNEL_IDENTITY) }
+        set(value) { weights = (NAMED_KERNELS[value] ?: KERNEL_IDENTITY) }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(listOf(weights::v00, weights::v01, weights::v02), name = "row0")

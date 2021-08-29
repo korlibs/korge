@@ -36,7 +36,7 @@ class Board(val width: Int = 3, val height: Int = width, val lineSize: Int = wid
 	}
 
 	operator fun get(x: Int, y: Int) = cells[x, y]
-	operator fun set(x: Int, y: Int, value: Chip) = run { cells[x, y].value = value }
+	operator fun set(x: Int, y: Int, value: Chip) { cells[x, y].value = value }
 
 	val Iterable<Cell>.chipLine: Chip?
 		get() {

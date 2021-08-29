@@ -70,10 +70,10 @@ data class Rectangle(
     val isEmpty: Boolean get() = area == 0.0
     val isNotEmpty: Boolean get() = area != 0.0
     val area: Double get() = width * height
-    var left: Double; get() = x; set(value) = run { x = value }
-    var top: Double; get() = y; set(value) = run { y = value }
-    var right: Double; get() = x + width; set(value) = run { width = value - x }
-    var bottom: Double; get() = y + height; set(value) = run { height = value - y }
+    var left: Double; get() = x; set(value) { x = value }
+    var top: Double; get() = y; set(value) { y = value }
+    var right: Double; get() = x + width; set(value) { width = value - x }
+    var bottom: Double; get() = y + height; set(value) { height = value - y }
 
     val position: Point get() = Point(x, y)
     override val size: Size get() = Size(width, height)
@@ -231,35 +231,35 @@ val IRectangleInt.bottomRight get() = PointInt(right, bottom)
 
 inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
     override var x: Int
-        set(value) = run { rect.x = value.toDouble() }
+        set(value) { rect.x = value.toDouble() }
         get() = rect.x.toInt()
 
     override var y: Int
-        set(value) = run { rect.y = value.toDouble() }
+        set(value) { rect.y = value.toDouble() }
         get() = rect.y.toInt()
 
     override var width: Int
-        set(value) = run { rect.width = value.toDouble() }
+        set(value) { rect.width = value.toDouble() }
         get() = rect.width.toInt()
 
     override var height: Int
-        set(value) = run { rect.height = value.toDouble() }
+        set(value) { rect.height = value.toDouble() }
         get() = rect.height.toInt()
 
     var left: Int
-        set(value) = run { rect.left = value.toDouble() }
+        set(value) { rect.left = value.toDouble() }
         get() = rect.left.toInt()
 
     var top: Int
-        set(value) = run { rect.top = value.toDouble() }
+        set(value) { rect.top = value.toDouble() }
         get() = rect.top.toInt()
 
     var right: Int
-        set(value) = run { rect.right = value.toDouble() }
+        set(value) { rect.right = value.toDouble() }
         get() = rect.right.toInt()
 
     var bottom: Int
-        set(value) = run { rect.bottom = value.toDouble() }
+        set(value) { rect.bottom = value.toDouble() }
         get() = rect.bottom.toInt()
 
     companion object {

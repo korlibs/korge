@@ -252,8 +252,8 @@ open class PointIntArrayList(capacity: Int = 7) : IPointIntArrayList, Extra by E
     override fun getX(index: Int) = xList.getAt(index)
     override fun getY(index: Int) = yList.getAt(index)
 
-    fun setX(index: Int, x: Int) = run { xList[index] = x }
-    fun setY(index: Int, y: Int) = run { yList[index] = y }
+    fun setX(index: Int, x: Int) { xList[index] = x }
+    fun setY(index: Int, y: Int) { yList[index] = y }
     fun setXY(index: Int, x: Int, y: Int) {
         xList[index] = x
         yList[index] = y

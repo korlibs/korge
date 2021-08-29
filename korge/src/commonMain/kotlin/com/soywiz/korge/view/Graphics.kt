@@ -37,7 +37,7 @@ open class Graphics @JvmOverloads constructor(
     private var customHitShapes: List<VectorPath>? = null
 
     override var hitShape: VectorPath?
-        set(value) = run { customHitShapes = value?.let { listOf(it) } }
+        set(value) { customHitShapes = value?.let { listOf(it) } }
         get() = hitShapes?.firstOrNull()
 
     @PublishedApi

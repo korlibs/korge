@@ -75,10 +75,10 @@ class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) ->
     private val AStarNode.posY: Int get() = this@AStar.posY[index]
     private val AStarNode.value: Boolean get() = isBlocking(posX, posY)
     private var AStarNode.weight: Int
-        set(value) = run { this@AStar.weights[index] = value }
+        set(value) { this@AStar.weights[index] = value }
         get() = this@AStar.weights[index]
     private var AStarNode.prev: AStarNode
-        set(value) = run { this@AStar.prev[index] = value.index }
+        set(value) { this@AStar.prev[index] = value.index }
         get() = AStarNode(this@AStar.prev[index])
 
     private inline fun AStarNode.neighborhoods(diagonals: Boolean, emit: (AStarNode) -> Unit) {

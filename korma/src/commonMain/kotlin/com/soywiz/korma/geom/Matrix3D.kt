@@ -57,29 +57,29 @@ class Matrix3D {
     }
 
     operator fun get(row: Int, column: Int): Float = data[columnMajorIndex(row, column)]
-    operator fun set(row: Int, column: Int, value: Float) = run { data[columnMajorIndex(row, column)] = value }
+    operator fun set(row: Int, column: Int, value: Float) { data[columnMajorIndex(row, column)] = value }
     operator fun set(row: Int, column: Int, value: Double) = this.set(row, column, value.toFloat())
     operator fun set(row: Int, column: Int, value: Int) = this.set(row, column, value.toFloat())
 
-    inline var v00: Float get() = data[M00]; set(v) = run { data[M00] = v }
-    inline var v01: Float get() = data[M01]; set(v) = run { data[M01] = v }
-    inline var v02: Float get() = data[M02]; set(v) = run { data[M02] = v }
-    inline var v03: Float get() = data[M03]; set(v) = run { data[M03] = v }
+    var v00: Float get() = data[M00]; set(v) { data[M00] = v }
+    var v01: Float get() = data[M01]; set(v) { data[M01] = v }
+    var v02: Float get() = data[M02]; set(v) { data[M02] = v }
+    var v03: Float get() = data[M03]; set(v) { data[M03] = v }
 
-    inline var v10: Float get() = data[M10]; set(v) = run { data[M10] = v }
-    inline var v11: Float get() = data[M11]; set(v) = run { data[M11] = v }
-    inline var v12: Float get() = data[M12]; set(v) = run { data[M12] = v }
-    inline var v13: Float get() = data[M13]; set(v) = run { data[M13] = v }
+    var v10: Float get() = data[M10]; set(v) { data[M10] = v }
+    var v11: Float get() = data[M11]; set(v) { data[M11] = v }
+    var v12: Float get() = data[M12]; set(v) { data[M12] = v }
+    var v13: Float get() = data[M13]; set(v) { data[M13] = v }
 
-    inline var v20: Float get() = data[M20]; set(v) = run { data[M20] = v }
-    inline var v21: Float get() = data[M21]; set(v) = run { data[M21] = v }
-    inline var v22: Float get() = data[M22]; set(v) = run { data[M22] = v }
-    inline var v23: Float get() = data[M23]; set(v) = run { data[M23] = v }
+    var v20: Float get() = data[M20]; set(v) { data[M20] = v }
+    var v21: Float get() = data[M21]; set(v) { data[M21] = v }
+    var v22: Float get() = data[M22]; set(v) { data[M22] = v }
+    var v23: Float get() = data[M23]; set(v) { data[M23] = v }
 
-    inline var v30: Float get() = data[M30]; set(v) = run { data[M30] = v }
-    inline var v31: Float get() = data[M31]; set(v) = run { data[M31] = v }
-    inline var v32: Float get() = data[M32]; set(v) = run { data[M32] = v }
-    inline var v33: Float get() = data[M33]; set(v) = run { data[M33] = v }
+    var v30: Float get() = data[M30]; set(v) { data[M30] = v }
+    var v31: Float get() = data[M31]; set(v) { data[M31] = v }
+    var v32: Float get() = data[M32]; set(v) { data[M32] = v }
+    var v33: Float get() = data[M33]; set(v) { data[M33] = v }
 
     val transposed: Matrix3D get() = this.clone().transpose()
 
@@ -107,11 +107,12 @@ class Matrix3D {
         a01: Float, a11: Float, a21: Float, a31: Float,
         a02: Float, a12: Float, a22: Float, a32: Float,
         a03: Float, a13: Float, a23: Float, a33: Float
-    ): Matrix3D = this.apply {
+    ): Matrix3D {
         v00 = a00; v01 = a01; v02 = a02; v03 = a03
         v10 = a10; v11 = a11; v12 = a12; v13 = a13
         v20 = a20; v21 = a21; v22 = a22; v23 = a23
         v30 = a30; v31 = a31; v32 = a32; v33 = a33
+        return this
     }
 
     fun setColumns4x4(f: FloatArray, offset: Int) = setColumns(
