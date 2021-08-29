@@ -53,7 +53,7 @@ class JsPlatformAudioOutput(coroutineContext: CoroutineContext, val freq: Int) :
 		}
 	}
 
-	private fun ensureInit() = run { node }
+	private fun ensureInit() { node }
 
 	private var startPromise: Cancellable? = null
 

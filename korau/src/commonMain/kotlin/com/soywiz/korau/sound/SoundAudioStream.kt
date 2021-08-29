@@ -73,7 +73,7 @@ class SoundAudioStream(
             override var panning: Double by nas::panning
             override var current: TimeSpan
                 get() = stream.currentTime
-                set(value) = run { stream.currentTime = value }
+                set(value) { stream.currentTime = value }
             override val total: TimeSpan get() = stream.totalLength
             override val state: SoundChannelState get() = when {
                 paused -> SoundChannelState.PAUSED

@@ -166,22 +166,22 @@ object HtmlSimpleSound {
 
 		var currentTime: TimeSpan
             get() = DateTime.now() - startedAt
-            set(value) = run {
+            set(value) {
                 job?.cancel()
                 job = createJobAt(value)
             }
         var volume: Double = params.volume
-            set(value) = run {
+            set(value) {
                 field = value
                 updateVolume()
             }
         var pitch: Double = params.pitch
-            set(value) = run {
+            set(value) {
                 field = value
                 updatePitch()
             }
         var panning: Double = params.panning
-            set(value) = run {
+            set(value) {
                 field = value
                 updatePanning()
             }

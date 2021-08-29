@@ -165,7 +165,7 @@ class AudioBufferSound(
 				set(value) { channel?.panning = value }
 			override var current: TimeSpan
                 get() = channel?.currentTime ?: 0.seconds
-                set(value) = run { channel?.currentTime = value }
+                set(value) { channel?.currentTime = value }
 			override val total: TimeSpan = buffer?.duration?.seconds ?: 0.seconds
             override val state: SoundChannelState get() = when {
                 channel?.pausedAt != null -> SoundChannelState.PAUSED

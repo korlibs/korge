@@ -64,7 +64,7 @@ class OpenALPlatformAudioOutput(
 
     var source: ALuint
         get() = sourceProvider.source
-        set(value) = run { sourceProvider.source = value }
+        set(value) { sourceProvider.source = value }
 
     //val source
 
@@ -176,7 +176,7 @@ class OpenALNativeSoundNoStream(
 
     var source: ALuint
         get() = sourceProvider.source
-        set(value) = run { sourceProvider.source = value }
+        set(value) { sourceProvider.source = value }
 
     override val length: TimeSpan get() = data?.totalTime ?: 0.seconds
 
@@ -196,13 +196,13 @@ class OpenALNativeSoundNoStream(
             val totalSamples get() = data.totalSamples
             var currentSampleOffset: Int
                 get() = alGetSourcei(source, AL_SAMPLE_OFFSET)
-                set(value) = run {
+                set(value) {
                     alSourcei(source, AL_SAMPLE_OFFSET, value)
                 }
 
             override var current: TimeSpan
                 get() = data.timeAtSample(currentSampleOffset)
-                set(value) = run { alSourcef(source, AL_SEC_OFFSET, value.seconds.toFloat())  }
+                set(value) { alSourcef(source, AL_SEC_OFFSET, value.seconds.toFloat())  }
             override val total: TimeSpan get() = data.totalTime
 
             override val state: SoundChannelState get() {
@@ -281,7 +281,7 @@ class JnaSoundPropsProvider(val sourceProvider: SourceProvider) : SoundProps {
             alGetSource3f(source, AL_POSITION, temp1.ptr, temp2.ptr, temp3.ptr)
             temp1.value.toDouble()
         }
-        set(value) = run {
+        set(value) {
             val pan = value.toFloat()
             alSourcef(source, AL_ROLLOFF_FACTOR, 0.0f);
             alSourcei(source, AL_SOURCE_RELATIVE, 1);

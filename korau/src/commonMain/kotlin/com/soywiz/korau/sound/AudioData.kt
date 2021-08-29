@@ -26,7 +26,7 @@ class AudioData(
     operator fun get(channel: Int): ShortArray = samples.data[channel]
     operator fun get(channel: Int, sample: Int): Short = samples.data[channel][sample]
 
-    operator fun set(channel: Int, sample: Int, value: Short): Unit = run { samples.data[channel][sample] = value }
+    operator fun set(channel: Int, sample: Int, value: Short): Unit { samples.data[channel][sample] = value }
 
     override fun toString(): String = "AudioData(rate=$rate, channels=$channels, samples=$totalSamples)"
 }

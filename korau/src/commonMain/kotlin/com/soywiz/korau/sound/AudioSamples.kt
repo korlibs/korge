@@ -14,7 +14,7 @@ interface IAudioSamples {
     operator fun get(channel: Int, sample: Int): Short
     operator fun set(channel: Int, sample: Int, value: Short): Unit
     fun getFloat(channel: Int, sample: Int): Float = SampleConvert.shortToFloat(this[channel, sample])
-    fun setFloat(channel: Int, sample: Int, value: Float) = run { this[channel, sample] = SampleConvert.floatToShort(value) }
+    fun setFloat(channel: Int, sample: Int, value: Float) { this[channel, sample] = SampleConvert.floatToShort(value) }
 }
 
 internal fun AudioSamples.resample(scale: Double, totalSamples: Int = (this.totalSamples * scale).toInt(), out: AudioSamples = AudioSamples(channels, totalSamples)): AudioSamples {
@@ -86,7 +86,7 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     operator fun get(channel: Int): ShortArray = data[channel]
 
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
-    override operator fun set(channel: Int, sample: Int, value: Short) = run { data[channel][sample] = value }
+    override operator fun set(channel: Int, sample: Int, value: Short) { data[channel][sample] = value }
 
     fun scaleVolume(scale: Double): AudioSamples = scaleVolume(scale.toFloat())
 
@@ -122,7 +122,7 @@ class AudioSamplesInterleaved(override val channels: Int, override val totalSamp
 
     private fun index(channel: Int, sample: Int) = (sample * channels) + channel
     override operator fun get(channel: Int, sample: Int): Short = data[index(channel, sample)]
-    override operator fun set(channel: Int, sample: Int, value: Short) = run { data[index(channel, sample)] = value }
+    override operator fun set(channel: Int, sample: Int, value: Short) { data[index(channel, sample)] = value }
 
     override fun toString(): String = "AudioSamplesInterleaved(channels=$channels, totalSamples=$totalSamples)"
 }

@@ -41,12 +41,9 @@ open class DequeBasedPlatformAudioOutput(
     }
     private val deque = AudioSamplesDeque(nchannels)
 
-    override var pitch: Double = 1.0
-        set(value) = run { field = value }.also { updateProps() }
-    override var volume: Double = 1.0
-        set(value) = run { field = value }.also { updateProps() }
-    override var panning: Double = 0.0
-        set(value) = run { field = value }.also { updateProps() }
+    override var pitch: Double = 1.0 ; set(value) { field = value; updateProps() }
+    override var volume: Double = 1.0 ; set(value) { field = value; updateProps() }
+    override var panning: Double = 0.0 ; set(value) { field = value; updateProps() }
 
     var volumes = FloatArray(2) { 1f }
 

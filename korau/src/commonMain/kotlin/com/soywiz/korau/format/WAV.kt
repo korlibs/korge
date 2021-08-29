@@ -47,7 +47,7 @@ open class WAV : AudioFormat("wav") {
         override val totalLengthInSamples: Long? get() = bufferLength / bytesPerSample
         override var currentPositionInSamples: Long
             get() = buffer.position / bytesPerSample
-            set(value) = run {
+            set(value) {
                 finished = false
                 buffer.position = value * bytesPerSample
             }
