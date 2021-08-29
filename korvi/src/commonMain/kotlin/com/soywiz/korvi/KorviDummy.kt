@@ -40,8 +40,8 @@ class DummyKorviVideoLL(
 
         override suspend fun getTotalFrames(): Long? = base.totalFrames
         override suspend fun getDuration(): HRTimeSpan? = base.timePerFrame * base.totalFrames.toDouble()
-        override suspend fun seek(frame: Long) = run { currentFrame = frame }
-        override suspend fun seek(time: HRTimeSpan) = run { seek((time / base.timePerFrame).toLong()) }
+        override suspend fun seek(frame: Long) { currentFrame = frame }
+        override suspend fun seek(time: HRTimeSpan) { seek((time / base.timePerFrame).toLong()) }
     }
 
     class DummyKorviVideoStream(base: DummyKorviVideoLL) : DummyBaseStream<KorviVideoFrame>(base) {

@@ -48,10 +48,10 @@ internal class KorviQueue<TGen>() : Collection<TGen> {
         for (item in items) enqueue(item)
     }
 
-    fun enqueue(v: TGen) = run {  items.addLast(v) }
+    fun enqueue(v: TGen) {  items.addLast(v) }
     fun dequeue(): TGen = items.removeFirst()
     fun peek(): TGen = items.first
-    fun remove(v: TGen) = run { items.remove(v) }
+    fun remove(v: TGen) { items.remove(v) }
     fun toList() = items.toList()
 
     override fun contains(element: TGen): Boolean = items.contains(element)
@@ -167,7 +167,7 @@ internal fun SyncStream.seekableByteChannel(): SeekableByteChannel {
             TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
         }
         override fun size(): Long = ss.length
-        override fun close() = run { ss.close().also { open = false } }
+        override fun close() { ss.close().also { open = false } }
         override fun truncate(size: Long): SeekableByteChannel = this.apply { ss.length = size }
         override fun read(bb: ByteBuffer): Int {
             val data = ss.readBytes(bb.remaining())

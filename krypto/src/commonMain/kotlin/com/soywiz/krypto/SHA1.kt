@@ -23,7 +23,7 @@ class SHA1 : SHA(chunkSize = 64, digestSize = 20) {
     private val w = IntArray(80)
     private val h = IntArray(5)
 
-    override fun coreReset(): Unit = run { arraycopy(H, 0, h, 0, 5) }
+    override fun coreReset(): Unit { arraycopy(H, 0, h, 0, 5) }
 
     init {
         coreReset()

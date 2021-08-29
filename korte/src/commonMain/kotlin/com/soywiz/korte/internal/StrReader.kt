@@ -4,7 +4,7 @@ internal class StrReader(val str: String, var pos: Int = 0) {
 	val length get() = str.length
 	val hasMore get() = pos < length
 
-	inline fun skipWhile(f: (Char) -> Boolean): Unit = run { while (hasMore && f(peek())) skip() }
+	inline fun skipWhile(f: (Char) -> Boolean): Unit { while (hasMore && f(peek())) skip() }
 	fun skipUntil(f: (Char) -> Boolean): Unit = skipWhile { !f(it) }
 
 	// @TODO: https://youtrack.jetbrains.com/issue/KT-29577

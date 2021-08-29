@@ -23,7 +23,7 @@ class DynamicShape<T> : DynamicShapeRegister<T> {
     fun hasProp(key: String): Boolean = key in propertiesByName
     fun hasMethod(key: String): Boolean = key in methodsByName || key in smethodsByName
     fun getProp(instance: T, key: Any?): Any? = (propertiesByName[key] as? KProperty1<Any?, Any?>?)?.get(instance)
-    fun setProp(instance: T, key: Any?, value: Any?): Unit = run { (propertiesByName[key] as? KMutableProperty1<Any?, Any?>?)?.set(instance, value) }
+    fun setProp(instance: T, key: Any?, value: Any?): Unit { (propertiesByName[key] as? KMutableProperty1<Any?, Any?>?)?.set(instance, value) }
 
     @Suppress("RedundantSuspendModifier")
     suspend fun callMethod(instance: T, key: Any?, args: List<Any?>): Any? {

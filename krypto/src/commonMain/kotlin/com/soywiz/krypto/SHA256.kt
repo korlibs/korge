@@ -40,7 +40,7 @@ class SHA256 : SHA(chunkSize = 64, digestSize = 32) {
         coreReset()
     }
 
-    override fun coreReset(): Unit = run { arraycopy(H, 0, h, 0, 8) }
+    override fun coreReset(): Unit { arraycopy(H, 0, h, 0, 8) }
 
     override fun coreUpdate(chunk: ByteArray) {
         arraycopy(h, 0, r, 0, 8)

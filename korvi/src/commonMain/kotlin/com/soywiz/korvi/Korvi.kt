@@ -177,8 +177,8 @@ open class KorviVideoLL() : BaseKorviSeekable {
     val streams: List<BaseKorviStream<out KorviFrame>> by lazy { video + audio }
     final override suspend fun getTotalFrames(): Long? = streams.mapNotNull { it.getTotalFrames() }.maxOrNull()
     final override suspend fun getDuration(): HRTimeSpan? = streams.mapNotNull { it.getDuration() }.maxOrNull()
-    final override suspend fun seek(frame: Long): Unit = run { for (v in streams) v.seek(frame) }
-    final override suspend fun seek(time: HRTimeSpan): Unit = run { for (v in streams) v.seek(time) }
+    final override suspend fun seek(frame: Long): Unit { for (v in streams) v.seek(frame) }
+    final override suspend fun seek(time: HRTimeSpan): Unit { for (v in streams) v.seek(time) }
     override suspend fun close() = Unit
 }
 

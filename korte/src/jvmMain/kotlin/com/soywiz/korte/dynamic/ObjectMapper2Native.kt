@@ -68,7 +68,7 @@ private class WeakPropertyThis<T : Any, V>(val gen: T.() -> V) {
     val map = WeakHashMap<T, V>()
 
     operator fun getValue(obj: T, property: KProperty<*>): V = map.getOrPut(obj) { gen(obj) }
-    operator fun setValue(obj: T, property: KProperty<*>, value: V) = run { map[obj] = value }
+    operator fun setValue(obj: T, property: KProperty<*>, value: V) { map[obj] = value }
 }
 
 private val Class<*>.allDeclaredFields: List<Field>
