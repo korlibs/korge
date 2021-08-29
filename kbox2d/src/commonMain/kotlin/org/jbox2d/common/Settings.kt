@@ -74,35 +74,35 @@ object Settings {
 
     var FAST_ABS: Boolean
 		get() = _FAST_ABS
-		set(value) = run { _FAST_ABS = value }
+		set(value) { _FAST_ABS = value }
 
     var FAST_FLOOR: Boolean
 		get() = _FAST_FLOOR
-		set(value) = run { _FAST_FLOOR = value }
+		set(value) { _FAST_FLOOR = value }
 
     var FAST_CEIL
 		get() = _FAST_CEIL
-		set(value) = run { _FAST_CEIL = value }
+		set(value) { _FAST_CEIL = value }
 
     var FAST_ROUND
 		get() = _FAST_ROUND
-		set(value) = run { _FAST_ROUND = value }
+		set(value) { _FAST_ROUND = value }
 
     var FAST_ATAN2
 		get() = _FAST_ATAN2
-		set(value) = run { _FAST_ATAN2 = value }
+		set(value) { _FAST_ATAN2 = value }
 
     var FAST_POW
 		get() = _FAST_POW
-		set(value) = run { _FAST_POW = value }
+		set(value) { _FAST_POW = value }
 
     var CONTACT_STACK_INIT_SIZE
 		get() = _CONTACT_STACK_INIT_SIZE
-		set(value) = run { _CONTACT_STACK_INIT_SIZE = value }
+		set(value) { _CONTACT_STACK_INIT_SIZE = value }
 
     var SINCOS_LUT_ENABLED
 		get() = _SINCOS_LUT_ENABLED
-		set(value) = run { _SINCOS_LUT_ENABLED = value }
+		set(value) { _SINCOS_LUT_ENABLED = value }
     /**
      * smaller the precision, the larger the table. If a small table is used (eg, precision is .006 or
      * greater), make sure you set the table to lerp it's results. Accuracy chart is in the MathUtils
@@ -139,7 +139,7 @@ object Settings {
 
     var SINCOS_LUT_LERP
 		get() = _SINCOS_LUT_LERP
-		set(value) = run { _SINCOS_LUT_LERP = value }
+		set(value) { _SINCOS_LUT_LERP = value }
 
 
     // Collision
@@ -150,7 +150,7 @@ object Settings {
 
     var maxManifoldPoints
 		get() = _maxManifoldPoints
-		set(value) = run { _maxManifoldPoints = value }
+		set(value) { _maxManifoldPoints = value }
 
     /**
      * The maximum number of vertices on a convex polygon.
@@ -158,7 +158,7 @@ object Settings {
 
     var maxPolygonVertices
 		get() = _maxPolygonVertices
-		set(value) = run { _maxPolygonVertices = value }
+		set(value) { _maxPolygonVertices = value }
 
     /**
      * This is used to fatten AABBs in the dynamic tree. This allows proxies to move by a small amount
@@ -167,7 +167,7 @@ object Settings {
 
     var aabbExtension
 		get() = _aabbExtension
-		set(value) = run { _aabbExtension = value }
+		set(value) { _aabbExtension = value }
 
     /**
      * This is used to fatten AABBs in the dynamic tree. This is used to predict the future position
@@ -176,7 +176,7 @@ object Settings {
 
     var aabbMultiplier
 		get() = _aabbMultiplier
-		set(value) = run { _aabbMultiplier = value }
+		set(value) { _aabbMultiplier = value }
 
     /**
      * A small length used as a collision and constraint tolerance. Usually it is chosen to be
@@ -185,7 +185,7 @@ object Settings {
 
     var linearSlop
 		get() = _linearSlop
-		set(value) = run { _linearSlop = value }
+		set(value) { _linearSlop = value }
 
     /**
      * A small angle used as a collision and constraint tolerance. Usually it is chosen to be
@@ -194,7 +194,7 @@ object Settings {
 
     var angularSlop
 		get() = _angularSlop
-		set(value) = run { _angularSlop = value }
+		set(value) { _angularSlop = value }
 
     /**
      * The radius of the polygon/edge shape skin. This should not be modified. Making this smaller
@@ -204,13 +204,13 @@ object Settings {
 
     var polygonRadius
 		get() = _polygonRadius
-		set(value) = run { _polygonRadius = value }
+		set(value) { _polygonRadius = value }
 
     /** Maximum number of sub-steps per contact in continuous physics simulation.  */
 
     var maxSubSteps
 		get() = _maxSubSteps
-		set(value) = run { _maxSubSteps = value }
+		set(value) { _maxSubSteps = value }
 
     // Dynamics
 
@@ -220,7 +220,7 @@ object Settings {
 
     var maxTOIContacts
 		get() = _maxTOIContacts
-		set(value) = run { _maxTOIContacts = value }
+		set(value) { _maxTOIContacts = value }
 
     /**
      * A velocity threshold for elastic collisions. Any collision with a relative linear velocity
@@ -229,7 +229,7 @@ object Settings {
 
     var velocityThreshold
 		get() = _velocityThreshold
-		set(value) = run { _velocityThreshold = value }
+		set(value) { _velocityThreshold = value }
 
     /**
      * The maximum linear position correction used when solving constraints. This helps to prevent
@@ -238,7 +238,7 @@ object Settings {
 
     var maxLinearCorrection
 		get() = _maxLinearCorrection
-		set(value) = run { _maxLinearCorrection = value }
+		set(value) { _maxLinearCorrection = value }
 
     /**
      * The maximum angular position correction used when solving constraints. This helps to prevent
@@ -247,7 +247,7 @@ object Settings {
 
     var maxAngularCorrection
 		get() = _maxAngularCorrection
-		set(value) = run { _maxAngularCorrection = value }
+		set(value) { _maxAngularCorrection = value }
 
     /**
      * The maximum linear velocity of a body. This limit is very large and is used to prevent
@@ -256,11 +256,11 @@ object Settings {
 
     var maxTranslation
 		get() = _maxTranslation
-		set(value) = run { _maxTranslation = value }
+		set(value) { _maxTranslation = value }
 
     var maxTranslationSquared
 		get() = _maxTranslationSquared
-		set(value) = run { _maxTranslationSquared = value }
+		set(value) { _maxTranslationSquared = value }
 
     /**
      * The maximum angular velocity of a body. This limit is very large and is used to prevent
@@ -269,11 +269,11 @@ object Settings {
 
     var maxRotation
 		get() = _maxRotation
-		set(value) = run { _maxRotation = value }
+		set(value) { _maxRotation = value }
 
     var maxRotationSquared
 		get() = _maxRotationSquared
-		set(value) = run { _maxRotationSquared = value }
+		set(value) { _maxRotationSquared = value }
 
     /**
      * This scale factor controls how fast overlap is resolved. Ideally this would be 1 so that
@@ -282,11 +282,11 @@ object Settings {
 
     var baumgarte
 		get() = _baumgarte
-		set(value) = run { _baumgarte = value }
+		set(value) { _baumgarte = value }
 
     var toiBaugarte
 		get() = _toiBaugarte
-		set(value) = run { _toiBaugarte = value }
+		set(value) { _toiBaugarte = value }
 
 
     // Sleep
@@ -297,7 +297,7 @@ object Settings {
 
     var timeToSleep
 		get() = _timeToSleep
-		set(value) = run { _timeToSleep = value }
+		set(value) { _timeToSleep = value }
 
     /**
      * A body cannot sleep if its linear velocity is above this tolerance.
@@ -305,7 +305,7 @@ object Settings {
 
     var linearSleepTolerance
 		get() = _linearSleepTolerance
-		set(value) = run { _linearSleepTolerance = value }
+		set(value) { _linearSleepTolerance = value }
 
     /**
      * A body cannot sleep if its angular velocity is above this tolerance.
@@ -313,7 +313,7 @@ object Settings {
 
     var angularSleepTolerance
 		get() = _angularSleepTolerance
-		set(value) = run { _angularSleepTolerance = value }
+		set(value) { _angularSleepTolerance = value }
 
     // Particle
 

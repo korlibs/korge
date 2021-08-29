@@ -56,14 +56,14 @@ class WeldJointDef : JointDef(JointType.WELD) {
      * The body2 angle minus body1 angle in the reference state (degrees).
      */
     var referenceAngleDegrees: Float
-        set(value) = run { referenceAngleRadians = value * MathUtils.DEG2RAD }
+        set(value) { referenceAngleRadians = value * MathUtils.DEG2RAD }
         get() = referenceAngleRadians * MathUtils.RAD2DEG
 
     /**
      * The body2 angle minus body1 angle in the reference state.
      */
     var referenceAngle: Angle
-        set(value) = run { referenceAngleRadians = value.radians.toFloat() }
+        set(value) { referenceAngleRadians = value.radians.toFloat() }
         get() = referenceAngleRadians.radians
 
     /**

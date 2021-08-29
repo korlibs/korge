@@ -84,14 +84,14 @@ class RevoluteJointDef : JointDef(JointType.REVOLUTE) {
      * The body2 angle minus body1 angle in the reference state (degrees).
      */
     var referenceAngleDegrees: Float
-        set(value) = run { referenceAngleRadians = value * MathUtils.DEG2RAD }
+        set(value) { referenceAngleRadians = value * MathUtils.DEG2RAD }
         get() = referenceAngleRadians * MathUtils.RAD2DEG
 
     /**
      * The body2 angle minus body1 angle in the reference state.
      */
     var referenceAngle: Angle
-        set(value) = run { referenceAngleRadians = value.radians.toFloat() }
+        set(value) { referenceAngleRadians = value.radians.toFloat() }
         get() = referenceAngleRadians.radians
 
     /**
@@ -105,12 +105,12 @@ class RevoluteJointDef : JointDef(JointType.REVOLUTE) {
 
     /** The lower angle for the joint limit (degrees). */
     var lowerAngleDegrees: Float
-        set(value) = run { lowerAngleRadians = value * MathUtils.DEG2RAD }
+        set(value) { lowerAngleRadians = value * MathUtils.DEG2RAD }
         get() = lowerAngleRadians * MathUtils.RAD2DEG
 
     /** The lower angle for the joint limit. */
     var lowerAngle: Angle
-        set(value) = run { lowerAngleRadians = value.radians.toFloat() }
+        set(value) { lowerAngleRadians = value.radians.toFloat() }
         get() = lowerAngleRadians.radians
 
     /** The upper angle for the joint limit (radians). */
@@ -118,12 +118,12 @@ class RevoluteJointDef : JointDef(JointType.REVOLUTE) {
 
     /** The upper angle for the joint limit (degrees). */
     var upperAngleDegrees: Float
-        set(value) = run { upperAngleRadians = value * MathUtils.DEG2RAD }
+        set(value) { upperAngleRadians = value * MathUtils.DEG2RAD }
         get() = upperAngleRadians * MathUtils.RAD2DEG
 
     /** The lower angle for the joint limit. */
     var upperAngle: Angle
-        set(value) = run { upperAngleRadians = value.radians.toFloat() }
+        set(value) { upperAngleRadians = value.radians.toFloat() }
         get() = upperAngleRadians.radians
 
     /**

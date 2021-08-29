@@ -76,10 +76,10 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
     var m_referenceAngleRadians: Float = 0.toFloat()
         protected set
     var m_referenceAngleDegrees: Float
-        protected set(value) = run { m_referenceAngleRadians = value * MathUtils.DEG2RAD }
+        protected set(value) { m_referenceAngleRadians = value * MathUtils.DEG2RAD }
         get() = m_referenceAngleRadians * MathUtils.RAD2DEG
     var m_referenceAngle: Angle
-        protected set(value) = run { m_referenceAngleRadians = value.radians.toFloat() }
+        protected set(value) { m_referenceAngleRadians = value.radians.toFloat() }
         get() = m_referenceAngleRadians.radians
     var lowerLimit: Float = 0.toFloat()
         private set

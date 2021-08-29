@@ -37,7 +37,7 @@ class ParticleGroupDef : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
      * angle.
      */
     var angleDegrees: Float
-        set(value) = run { angleRadians = value * MathUtils.DEG2RAD }
+        set(value) { angleRadians = value * MathUtils.DEG2RAD }
         get() = angleRadians * MathUtils.RAD2DEG
 
     /**
@@ -45,7 +45,7 @@ class ParticleGroupDef : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
      * angle.
      */
     var angle: Angle
-        set(value) = run { angleRadians = value.radians.toFloat() }
+        set(value) { angleRadians = value.radians.toFloat() }
         get() = angleRadians.radians
 
     /** The linear velocity of the group's origin in world co-ordinates.  */

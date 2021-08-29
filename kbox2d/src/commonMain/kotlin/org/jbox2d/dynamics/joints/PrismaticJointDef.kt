@@ -67,14 +67,14 @@ class PrismaticJointDef : JointDef(JointType.PRISMATIC) {
      * The constrained angle in degrees between the bodies: body2_angle - body1_angle.
      */
     var referenceAngleDegrees: Float
-        set(value) = run { referenceAngleRadians = value * MathUtils.DEG2RAD }
+        set(value) { referenceAngleRadians = value * MathUtils.DEG2RAD }
         get() = referenceAngleRadians * MathUtils.RAD2DEG
 
     /**
      * The constrained angle between the bodies: body2_angle - body1_angle.
      */
     var referenceAngle: Angle
-        set(value) = run { referenceAngleRadians = value.radians.toFloat() }
+        set(value) { referenceAngleRadians = value.radians.toFloat() }
         get() = referenceAngleRadians.radians
 
     /**

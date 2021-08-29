@@ -119,13 +119,13 @@ data class BodyDef(
      * The world angle of the body in degrees.
      */
     var angleDegrees: Float
-        set(value) = run { angleRadians = value * MathUtils.DEG2RAD }
+        set(value) { angleRadians = value * MathUtils.DEG2RAD }
         get() = angleRadians * MathUtils.RAD2DEG
 
     /**
      * The world angle of the body.
      */
     var angle: Angle
-        set(value) = run { angleRadians = value.radians.toFloat() }
+        set(value) { angleRadians = value.radians.toFloat() }
         get() = angleRadians.radians
 }
