@@ -21,9 +21,9 @@ actual fun <T> FastIntMap(): FastIntMap<T> = JsMap().asDynamic()
 actual val <T> FastIntMap<T>.size: Int get() = (this.asDynamic()).size
 actual fun <T> FastIntMap<T>.keys(): List<Int> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<Int>>().toList()
 actual inline operator fun <T> FastIntMap<T>.get(key: Int): T? = (this.asDynamic()).get(key)
-actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T): Unit = run { (this.asDynamic()).set(key, value) }
+actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T): Unit { (this.asDynamic()).set(key, value) }
 actual inline operator fun <T> FastIntMap<T>.contains(key: Int): Boolean = (this.asDynamic()).contains(key) != undefined
-actual inline fun <T> FastIntMap<T>.remove(key: Int): Unit = run { (this.asDynamic()).delete(key) }
+actual inline fun <T> FastIntMap<T>.remove(key: Int): Unit { (this.asDynamic()).delete(key) }
 actual inline fun <T> FastIntMap<T>.removeRange(src: Int, dst: Int) {
     //@Suppress("UNUSED_VARIABLE") val obj = this.asDynamic()
     //js("for (var key in obj.keys()) if (key >= src && key <= dst) obj.delete(key);")
@@ -62,8 +62,8 @@ actual inline operator fun <T> FastStringMap<T>.set(key: String, value: T): Unit
     run { (this.asDynamic()).set(key, value) }
 
 actual inline operator fun <T> FastStringMap<T>.contains(key: String): Boolean = (this.asDynamic()).has(key)
-actual inline fun <T> FastStringMap<T>.remove(key: String): Unit = run { (this.asDynamic()).delete(key) }
-actual inline fun <T> FastStringMap<T>.clear() = run { (this.asDynamic()).clear() }
+actual inline fun <T> FastStringMap<T>.remove(key: String): Unit { (this.asDynamic()).delete(key) }
+actual inline fun <T> FastStringMap<T>.clear() { (this.asDynamic()).clear() }
 actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
     for (key in other.keys) {
         this[key] = other[key].asDynamic()
@@ -90,10 +90,10 @@ actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = JsMap().asDynamic()
 actual val <K, V> FastIdentityMap<K, V>.size: Int get() = this.asDynamic().size
 actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<K>>().toList()
 actual operator fun <K, V> FastIdentityMap<K, V>.get(key: K): V? = (this.asDynamic()).get(key)
-actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V): Unit = run { (this.asDynamic()).set(key, value) }
+actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V): Unit { (this.asDynamic()).set(key, value) }
 actual operator fun <K, V> FastIdentityMap<K, V>.contains(key: K): Boolean = (this.asDynamic()).has(key)
-actual fun <K, V> FastIdentityMap<K, V>.remove(key: K): Unit = run { (this.asDynamic()).delete(key) }
-actual fun <K, V> FastIdentityMap<K, V>.clear() = run { (this.asDynamic()).clear() }
+actual fun <K, V> FastIdentityMap<K, V>.remove(key: K): Unit { (this.asDynamic()).delete(key) }
+actual fun <K, V> FastIdentityMap<K, V>.clear() { (this.asDynamic()).clear() }
 actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit): Unit {
     //println("FastStringMap<T>.fastKeyForEach")
     val mapIterator = this.asDynamic().keys()

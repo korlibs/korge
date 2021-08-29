@@ -52,8 +52,8 @@ internal fun arraycopy(src: FloatArray, srcPos: Int, dst: FloatArray, dstPos: In
 internal fun arraycopy(src: DoubleArray, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int) =
     src.copyInto(dst, dstPos, srcPos, srcPos + size)
 
-internal fun <T> Array<T>.fill(value: T) = run { for (n in 0 until this.size) this[n] = value }
-internal fun IntArray.fill(value: Int) = run { for (n in 0 until this.size) this[n] = value }
+internal fun <T> Array<T>.fill(value: T) { for (n in 0 until this.size) this[n] = value }
+internal fun IntArray.fill(value: Int) { for (n in 0 until this.size) this[n] = value }
 
 internal inline fun <T> contentHashCode(size: Int, gen: (index: Int) -> T): Int {
     var result = 1

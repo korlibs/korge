@@ -54,6 +54,8 @@ interface Extra {
     }
 }
 
+fun <T> Extra.extraCache(name: String, block: () -> T): T =
+    (getExtra(name) as? T?) ?: block().also { setExtra(name, it) }
 fun <T : Any> Extra.getExtraTyped(name: String): T? = extra?.get(name).fastCastTo<T?>()
 fun Extra.getExtra(name: String): Any? = extra?.get(name)
 fun Extra.setExtra(name: String, value: Any?): Unit {

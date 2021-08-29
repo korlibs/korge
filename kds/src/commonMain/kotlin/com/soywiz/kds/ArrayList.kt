@@ -37,7 +37,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
         }
     }
 
-    fun clear() = run { length = 0 }
+    fun clear() { length = 0 }
 
     fun add(v0: Int) {
         ensure(1)
@@ -96,7 +96,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
     }
 
     fun add(values: IntArrayList) = add(values.data, 0, values.size)
-    fun add(values: Iterable<Int>) = run { for (v in values) add(v) }
+    fun add(values: Iterable<Int>) { for (v in values) add(v) }
 
     operator fun get(index: Int): Int = data[index]
 
@@ -105,7 +105,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
 
     fun setAt(index: Int, value: Int): Int = value.also { set(index, value) }
 
-    operator fun set(index: Int, value: Int) = run {
+    operator fun set(index: Int, value: Int) {
         if (index >= length) {
             ensure(index + 1)
             length = index + 1
@@ -238,7 +238,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
         }
     }
 
-    fun clear() = run { length = 0 }
+    fun clear() { length = 0 }
 
     fun add(v0: Double) {
         ensure(1)
@@ -292,7 +292,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
     }
 
     fun add(values: DoubleArrayList) = add(values.data, 0, values.size)
-    fun add(values: Iterable<Double>) = run { for (v in values) add(v) }
+    fun add(values: Iterable<Double>) { for (v in values) add(v) }
 
     operator fun get(index: Int): Double = data[index]
 
@@ -301,7 +301,7 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
 
     fun setAt(index: Int, value: Double): Double = value.also { set(index, value) }
 
-    operator fun set(index: Int, value: Double) = run {
+    operator fun set(index: Int, value: Double) {
         if (index >= length) {
             ensure(index + 1)
             length = index + 1
@@ -432,7 +432,7 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
         }
     }
 
-    fun clear() = run { length = 0 }
+    fun clear() { length = 0 }
 
     fun add(value: Float) {
         ensure(1)
@@ -451,7 +451,7 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
     }
 
     fun add(values: FloatArrayList) = add(values.data, 0, values.size)
-    fun add(values: Iterable<Float>) = run { for (v in values) add(v) }
+    fun add(values: Iterable<Float>) { for (v in values) add(v) }
 
     operator fun get(index: Int): Float = data[index]
 
@@ -460,7 +460,7 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
 
     fun setAt(index: Int, value: Float): Float = value.also { set(index, value) }
 
-    operator fun set(index: Int, value: Float) = run {
+    operator fun set(index: Int, value: Float) {
         if (index >= length) {
             ensure(index + 1)
             length = index + 1

@@ -46,7 +46,7 @@ class IntStack() : Collection<Int> {
         for (item in items) push(item)
     }
 
-    fun push(v: Int) = run { items.add(v) }
+    fun push(v: Int) { items.add(v) }
     fun pop(): Int = items.removeAt(items.size - 1)
     fun peek(): Int? = items.lastOrNull()
 
@@ -74,7 +74,7 @@ class DoubleStack() : Collection<Double> {
         for (item in items) push(item)
     }
 
-    fun push(v: Double) = run { items.add(v) }
+    fun push(v: Double) { items.add(v) }
     fun pop(): Double = items.removeAt(items.size - 1)
     fun peek(): Double? = items.lastOrNull()
 
@@ -102,7 +102,7 @@ class FloatStack() : Collection<Float> {
         for (item in items) push(item)
     }
 
-    fun push(v: Float) = run { items.add(v) }
+    fun push(v: Float) { items.add(v) }
     fun pop(): Float = items.removeAt(items.size - 1)
     fun peek(): Float? = items.lastOrNull()
 

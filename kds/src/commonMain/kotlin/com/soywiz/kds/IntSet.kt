@@ -21,7 +21,7 @@ class IntSet : MutableSet<Int> {
     }
 
     fun clear(maxCapacity: Int) = clear()
-    override fun clear() = run { data.clear() }
+    override fun clear() { data.clear() }
     override fun add(element: Int): Boolean = data.set(element, Unit) == null
     override fun addAll(elements: Collection<Int>): Boolean = elements.any { add(it) }
     override fun removeAll(elements: Collection<Int>): Boolean = elements.any { remove(it) }
@@ -33,14 +33,14 @@ class IntSet : MutableSet<Int> {
         return oldSize == this.size
     }
 
-    fun addAll(vararg elements: Int) = run { for (item in elements) add(item) }
-    fun addAll(elements: Iterable<Int>) = run { for (item in elements) add(item) }
+    fun addAll(vararg elements: Int) { for (item in elements) add(item) }
+    fun addAll(elements: Iterable<Int>) { for (item in elements) add(item) }
 
     override operator fun contains(element: Int) = element in data
     override fun remove(element: Int) = data.remove(element)
 
-    operator fun plusAssign(value: Int) = run { add(value); Unit }
-    operator fun minusAssign(value: Int) = run { remove(value); Unit }
+    operator fun plusAssign(value: Int) { add(value); Unit }
+    operator fun minusAssign(value: Int) { remove(value); Unit }
 
     override fun toString(): String = "[${data.keys.joinToString(", ")}]"
 

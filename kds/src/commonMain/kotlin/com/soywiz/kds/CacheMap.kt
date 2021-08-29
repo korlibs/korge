@@ -18,7 +18,7 @@ class CacheMap<K, V> private constructor(
         return value
     }
 
-    override fun putAll(from: Map<out K, V>) = run { for ((k, v) in from) put(k, v) }
+    override fun putAll(from: Map<out K, V>) { for ((k, v) in from) put(k, v) }
     override fun put(key: K, value: V): V? {
         if (size >= maxSize && !map.containsKey(key)) remove(map.keys.first())
 

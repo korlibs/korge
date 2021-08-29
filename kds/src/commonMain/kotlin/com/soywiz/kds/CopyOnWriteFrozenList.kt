@@ -29,7 +29,7 @@ class CopyOnWriteFrozenList<T> : MutableList<T> {
 
     override fun addAll(elements: Collection<T>): Boolean = true.also { list.value = list.value + elements }
 
-    override fun clear() = run { list.value = emptyList() }
+    override fun clear() { list.value = emptyList() }
     override fun listIterator(): MutableListIterator<T> = list.value.listIterator().asFakeMutable()
     override fun listIterator(index: Int): MutableListIterator<T> = list.value.listIterator(index).asFakeMutable()
     override fun remove(element: T): Boolean {

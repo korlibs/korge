@@ -24,7 +24,7 @@ class TGenPriorityQueue<TGen>
 
     private var Int.value
         get() = data[this]
-        set(value) = run { data[this] = value }
+        set(value) { data[this] = value }
     private val Int.isRoot get() = this == 0
     private val Int.parent: Int get() = (this - 1) / 2
     private val Int.left: Int get() = 2 * this + 1
@@ -135,8 +135,11 @@ class TGenPriorityQueue<TGen>
     }
 
     override fun isEmpty(): Boolean = size == 0
-    override fun addAll(elements: Collection<TGen>): Boolean = run { for (e in elements) add(e); elements.isNotEmpty() }
-    override fun clear() = run { size = 0 }
+    override fun addAll(elements: Collection<TGen>): Boolean {
+        for (e in elements) add(e)
+        return elements.isNotEmpty()
+    }
+    override fun clear() { size = 0 }
 
     //fun poll() = head
 
@@ -197,7 +200,7 @@ class IntPriorityQueue
 
     private var Int.value
         get() = data[this]
-        set(value) = run { data[this] = value }
+        set(value) { data[this] = value }
     private val Int.isRoot get() = this == 0
     private val Int.parent: Int get() = (this - 1) / 2
     private val Int.left: Int get() = 2 * this + 1
@@ -308,8 +311,11 @@ class IntPriorityQueue
     }
 
     override fun isEmpty(): Boolean = size == 0
-    override fun addAll(elements: Collection<Int>): Boolean = run { for (e in elements) add(e); elements.isNotEmpty() }
-    override fun clear() = run { size = 0 }
+    override fun addAll(elements: Collection<Int>): Boolean {
+        for (e in elements) add(e)
+        return elements.isNotEmpty()
+    }
+    override fun clear() { size = 0 }
 
     override fun removeAll(elements: Collection<Int>): Boolean {
         val temp = ArrayList(toList())
@@ -368,7 +374,7 @@ class DoublePriorityQueue
 
     private var Int.value
         get() = data[this]
-        set(value) = run { data[this] = value }
+        set(value) { data[this] = value }
     private val Int.isRoot get() = this == 0
     private val Int.parent: Int get() = (this - 1) / 2
     private val Int.left: Int get() = 2 * this + 1
@@ -479,8 +485,11 @@ class DoublePriorityQueue
     }
 
     override fun isEmpty(): Boolean = size == 0
-    override fun addAll(elements: Collection<Double>): Boolean = run { for (e in elements) add(e); elements.isNotEmpty() }
-    override fun clear() = run { size = 0 }
+    override fun addAll(elements: Collection<Double>): Boolean {
+        for (e in elements) add(e)
+        return elements.isNotEmpty()
+    }
+    override fun clear() { size = 0 }
 
     override fun removeAll(elements: Collection<Double>): Boolean {
         val temp = ArrayList(toList())
@@ -539,7 +548,7 @@ class FloatPriorityQueue
 
     private var Int.value
         get() = data[this]
-        set(value) = run { data[this] = value }
+        set(value) { data[this] = value }
     private val Int.isRoot get() = this == 0
     private val Int.parent: Int get() = (this - 1) / 2
     private val Int.left: Int get() = 2 * this + 1
@@ -650,8 +659,11 @@ class FloatPriorityQueue
     }
 
     override fun isEmpty(): Boolean = size == 0
-    override fun addAll(elements: Collection<Float>): Boolean = run { for (e in elements) add(e); elements.isNotEmpty() }
-    override fun clear() = run { size = 0 }
+    override fun addAll(elements: Collection<Float>): Boolean {
+        for (e in elements) add(e)
+        return elements.isNotEmpty()
+    }
+    override fun clear() { size = 0 }
 
     override fun removeAll(elements: Collection<Float>): Boolean {
         val temp = ArrayList(toList())

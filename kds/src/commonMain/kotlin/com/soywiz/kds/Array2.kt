@@ -117,9 +117,9 @@ data class Array2<TGen>(val width: Int, val height: Int, val data: Array<TGen>) 
     }
 
     operator fun get(x: Int, y: Int): TGen = data[index(x, y)]
-    operator fun set(x: Int, y: Int, value: TGen): Unit = run { data[index(x, y)] = value }
+    operator fun set(x: Int, y: Int, value: TGen): Unit { data[index(x, y)] = value }
     fun tryGet(x: Int, y: Int): TGen? = if (inside(x, y)) data[index(x, y)] else null
-    fun trySet(x: Int, y: Int, value: TGen): Unit = run { if (inside(x, y)) data[index(x, y)] = value }
+    fun trySet(x: Int, y: Int, value: TGen): Unit { if (inside(x, y)) data[index(x, y)] = value }
 
     fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 
@@ -265,9 +265,9 @@ data class IntArray2(val width: Int, val height: Int, val data: IntArray) : Iter
     }
 
     operator fun get(x: Int, y: Int): Int = data[index(x, y)]
-    operator fun set(x: Int, y: Int, value: Int): Unit = run { data[index(x, y)] = value }
+    operator fun set(x: Int, y: Int, value: Int): Unit { data[index(x, y)] = value }
     fun tryGet(x: Int, y: Int): Int? = if (inside(x, y)) data[index(x, y)] else null
-    fun trySet(x: Int, y: Int, value: Int): Unit = run { if (inside(x, y)) data[index(x, y)] = value }
+    fun trySet(x: Int, y: Int, value: Int): Unit { if (inside(x, y)) data[index(x, y)] = value }
 
     fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 
@@ -413,9 +413,9 @@ data class DoubleArray2(val width: Int, val height: Int, val data: DoubleArray) 
     }
 
     operator fun get(x: Int, y: Int): Double = data[index(x, y)]
-    operator fun set(x: Int, y: Int, value: Double): Unit = run { data[index(x, y)] = value }
+    operator fun set(x: Int, y: Int, value: Double): Unit { data[index(x, y)] = value }
     fun tryGet(x: Int, y: Int): Double? = if (inside(x, y)) data[index(x, y)] else null
-    fun trySet(x: Int, y: Int, value: Double): Unit = run { if (inside(x, y)) data[index(x, y)] = value }
+    fun trySet(x: Int, y: Int, value: Double): Unit { if (inside(x, y)) data[index(x, y)] = value }
 
     fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 
@@ -561,9 +561,9 @@ data class FloatArray2(val width: Int, val height: Int, val data: FloatArray) : 
     }
 
     operator fun get(x: Int, y: Int): Float = data[index(x, y)]
-    operator fun set(x: Int, y: Int, value: Float): Unit = run { data[index(x, y)] = value }
+    operator fun set(x: Int, y: Int, value: Float): Unit { data[index(x, y)] = value }
     fun tryGet(x: Int, y: Int): Float? = if (inside(x, y)) data[index(x, y)] else null
-    fun trySet(x: Int, y: Int, value: Float): Unit = run { if (inside(x, y)) data[index(x, y)] = value }
+    fun trySet(x: Int, y: Int, value: Float): Unit { if (inside(x, y)) data[index(x, y)] = value }
 
     fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 
