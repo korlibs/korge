@@ -15,16 +15,16 @@ import java.io.*
 import java.net.URL
 
 class MultiOutputStream(val outs: List<OutputStream>) : OutputStream() {
-    override fun write(b: Int) = run { for (out in outs) out.write(b) }
-    override fun write(b: ByteArray, off: Int, len: Int) = run { for (out in outs) out.write(b, off, len) }
-    override fun flush() = run { for (out in outs) out.flush() }
-    override fun close() = run { for (out in outs) out.close() }
+    override fun write(b: Int) { for (out in outs) out.write(b) }
+    override fun write(b: ByteArray, off: Int, len: Int) { for (out in outs) out.write(b, off, len) }
+    override fun flush() { for (out in outs) out.flush() }
+    override fun close() { for (out in outs) out.close() }
 }
 
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
-var File.text get() = this.readText(); set(value) = run { this.also { it.parentFile.mkdirs() }.writeText(value) }
+var File.text get() = this.readText(); set(value) { this.also { it.parentFile.mkdirs() }.writeText(value) }
 fun File.ensureParents() = this.apply { this.parentFile.mkdirs() }
 
 // File and archives

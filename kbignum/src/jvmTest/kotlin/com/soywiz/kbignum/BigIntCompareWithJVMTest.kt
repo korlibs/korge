@@ -48,7 +48,7 @@ class BigIntCompareWithJVMTest {
 		testBinary { jvmL, jvmR, kL, kR -> if (!kR.isZero) assertEquals("${jvmL / jvmR}", "${kL / kR}", "$kL / $kR") }
 
 	@Test
-	fun testDiv2() = run {
+	fun testDiv2() {
 		assertEquals(
 			"${BigInteger("-9999999") / BigInteger("-65536")}",
 			"${"-9999999".bi / "-65536".bi}", "-9999999 / -65536"
