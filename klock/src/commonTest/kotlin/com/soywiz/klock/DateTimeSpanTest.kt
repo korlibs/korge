@@ -5,7 +5,7 @@ import kotlin.test.*
 class DateTimeSpanTest {
     @Test
     fun testBasic() {
-        assertEquals("Thu, 13 Dec 2018 00:00:00 UTC", DateTime(2018, 12, 13).toString())
+        assertEquals("Thu, 13 Dec 2018 00:00:00 UTC", DateTime(2018, 12, 13).toStringDefault())
     }
 
     @Test

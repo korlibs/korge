@@ -5,7 +5,7 @@ import com.soywiz.klock.internal.substr
 import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal
-private var KlockLocale_default: KlockLocale = KlockLocale.English
+private var KlockLocale_default: KlockLocale? = null
 
 abstract class KlockLocale {
 	abstract val ISO639_1: String
@@ -13,18 +13,19 @@ abstract class KlockLocale {
 	abstract val months: List<String>
 	abstract val firstDayOfWeek: DayOfWeek
     // @TODO: This allocates for each get, but Kotlin/Native by lazy or atomic refs are causing issues with this. So let's do this temporarily until a solution is found
-    open val monthsShort: List<String> by klockLazyOrGet { months.map { it.substr(0, 3) } }
-    open val daysOfWeekShort: List<String> by klockLazyOrGet { daysOfWeek.map { it.substr(0, 3) } }
+    open val monthsShort: List<String> get() = months.map { it.substr(0, 3) }
+    open val daysOfWeekShort: List<String> get() = daysOfWeek.map { it.substr(0, 3) }
 
-    private val daysOfWeekWithLocaleList: Array<DayOfWeekWithLocale> = Array(7) { DayOfWeekWithLocale(DayOfWeek[it], this) }
+    //private val daysOfWeekWithLocaleList: Array<DayOfWeekWithLocale> = Array(7) { DayOfWeekWithLocale(DayOfWeek[it], this) }
 
-    fun localizedDayOfWeek(dayOfWeek: DayOfWeek) = daysOfWeekWithLocaleList[dayOfWeek.index0]
+    //fun localizedDayOfWeek(dayOfWeek: DayOfWeek) = daysOfWeekWithLocaleList[dayOfWeek.index0]
+    fun localizedDayOfWeek(dayOfWeek: DayOfWeek) = DayOfWeekWithLocale(DayOfWeek[dayOfWeek.index0], this)
 
-    val daysOfWeekComparator = Comparator<DayOfWeek> { a, b ->
+    val daysOfWeekComparator get() = Comparator<DayOfWeek> { a, b ->
         a.index0Locale(this).compareTo(b.index0Locale(this))
     }
 
-    open val ordinals = Array(32) {
+    open val ordinals get() = Array(32) {
         if (it in 11..13) {
             "${it}th"
         } else {
@@ -62,7 +63,7 @@ abstract class KlockLocale {
     }
     */
 
-	open val h12Marker = listOf("AM", "OM")
+	open val h12Marker get() = listOf("AM", "OM")
 
 	// This might be required for some languages like chinese?
 	open fun intToString(value: Int) = "$value"
@@ -71,23 +72,23 @@ abstract class KlockLocale {
 
 	protected fun format(str: String) = PatternDateFormat(str, this)
 
-	open val formatDateTimeMedium = format("MMM d, y h:mm:ss a")
-	open val formatDateTimeShort = format("M/d/yy h:mm a")
+	open val formatDateTimeMedium get() = format("MMM d, y h:mm:ss a")
+	open val formatDateTimeShort get() = format("M/d/yy h:mm a")
 
-	open val formatDateFull = format("EEEE, MMMM d, y")
-	open val formatDateLong = format("MMMM d, y")
-	open val formatDateMedium = format("MMM d, y")
-	open val formatDateShort = format("M/d/yy")
+	open val formatDateFull get() = format("EEEE, MMMM d, y")
+	open val formatDateLong get() = format("MMMM d, y")
+	open val formatDateMedium get() = format("MMM d, y")
+	open val formatDateShort get() = format("M/d/yy")
 
-	open val formatTimeMedium = format("HH:mm:ss")
-	open val formatTimeShort = format("HH:mm")
+	open val formatTimeMedium get() = format("HH:mm:ss")
+	open val formatTimeShort get() = format("HH:mm")
 
 	companion object {
 		val english get() = English
 
 		var default: KlockLocale
-			set(value) = run { KlockLocale_default = value }
-			get() = KlockLocale_default
+			set(value) { KlockLocale_default = value }
+			get() = KlockLocale_default ?: English
 
 		inline fun <R> setTemporarily(locale: KlockLocale, callback: () -> R): R {
 			val old = default
@@ -103,19 +104,19 @@ abstract class KlockLocale {
 	open class English : KlockLocale() {
 		companion object : English()
 
-		override val ISO639_1 = "en"
+		override val ISO639_1 get() = "en"
 
-		override val firstDayOfWeek: DayOfWeek = DayOfWeek.Sunday
+		override val firstDayOfWeek: DayOfWeek get() = DayOfWeek.Sunday
 
-		override val daysOfWeek: List<String> = listOf(
+		override val daysOfWeek: List<String> get() = listOf(
 			"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 		)
-		override val months: List<String> = listOf(
+		override val months: List<String> get() = listOf(
 			"January", "February", "March", "April", "May", "June",
 			"July", "August", "September", "October", "November", "December"
 		)
 
-		override val formatTimeMedium = format("h:mm:ss a")
-		override val formatTimeShort = format("h:mm a")
+		override val formatTimeMedium get() = format("h:mm:ss a")
+		override val formatTimeShort get() = format("h:mm a")
 	}
 }

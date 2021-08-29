@@ -92,8 +92,8 @@ class ISO8601Test {
         assertEquals("20190917T114805", ISO8601.DATETIME_COMPLETE.basic.format(1568720885000))
         assertEquals("2019-09-17T11:48:05", ISO8601.DATETIME_COMPLETE.extended.format(1568720885000))
 
-        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_COMPLETE.parse("20190917T114805").utc.toString())
-        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_COMPLETE.parse("2019-09-17T11:48:05").utc.toString())
+        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_COMPLETE.parse("20190917T114805").utc.toStringDefault())
+        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_COMPLETE.parse("2019-09-17T11:48:05").utc.toStringDefault())
     }
 
     @Test
@@ -101,8 +101,8 @@ class ISO8601Test {
         assertEquals("20190917T114805Z", ISO8601.DATETIME_UTC_COMPLETE.basic.format(1568720885000))
         assertEquals("2019-09-17T11:48:05Z", ISO8601.DATETIME_UTC_COMPLETE.extended.format(1568720885000))
 
-        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE.parse("20190917T114805Z").utc.toString())
-        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE.parse("2019-09-17T11:48:05Z").utc.toString())
+        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE.parse("20190917T114805Z").utc.toStringDefault())
+        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE.parse("2019-09-17T11:48:05Z").utc.toStringDefault())
     }
 
     @Test
@@ -110,8 +110,8 @@ class ISO8601Test {
         assertEquals("20190917T114805.000Z", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.basic.format(1568720885000))
         assertEquals("2019-09-17T11:48:05.000Z", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.extended.format(1568720885000))
 
-        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.parse("20190917T114805.000Z").utc.toString())
-        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.parse("2019-09-17T11:48:05.000Z").utc.toString())
+        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.parse("20190917T114805.000Z").utc.toStringDefault())
+        assertEquals("Tue, 17 Sep 2019 11:48:05 UTC", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.parse("2019-09-17T11:48:05.000Z").utc.toStringDefault())
     }
 
     @Test

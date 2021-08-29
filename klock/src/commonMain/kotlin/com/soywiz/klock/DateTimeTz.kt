@@ -121,7 +121,8 @@ class DateTimeTz private constructor(
     fun toString(format: DateFormat): String = format.format(this)
     /** Converts this date to String using [format] for representing it */
     fun toString(format: String): String = DateFormat(format).format(this)
-
     /** Converts this date to String using the [DateFormat.DEFAULT_FORMAT] for representing it */
-    override fun toString(): String = DateFormat.DEFAULT_FORMAT.format(this)
+    fun toStringDefault(): String = DateFormat.DEFAULT_FORMAT.format(this)
+
+    override fun toString(): String = "DateTimeTz($adjusted, $offset)"
 }

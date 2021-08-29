@@ -15,8 +15,8 @@ class KlockInternalTest {
             override val microClock: Double get() = TODO()
             override fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = 2.hours
         }) {
-            assertEquals("Mon, 24 Jun 2019 19:15:54 UTC", DateTime.now().toString())
-            assertEquals("Mon, 24 Jun 2019 21:15:54 GMT+0200", DateTime.nowLocal().toString())
+            assertEquals("Mon, 24 Jun 2019 19:15:54 UTC", DateTime.now().toStringDefault())
+            assertEquals("Mon, 24 Jun 2019 21:15:54 GMT+0200", DateTime.nowLocal().toStringDefault())
         }
     }
 
@@ -29,10 +29,10 @@ class KlockInternalTest {
 			override fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = (+9).hours
 		}) {
 
-			assertEquals("Mon, 15 Apr 2019 11:14:30 UTC", DateTime.now().toString())
-			assertEquals("Mon, 15 Apr 2019 20:14:30 GMT+0900", DateTime.nowLocal().toString())
+			assertEquals("Mon, 15 Apr 2019 11:14:30 UTC", DateTime.now().toStringDefault())
+			assertEquals("Mon, 15 Apr 2019 20:14:30 GMT+0900", DateTime.nowLocal().toStringDefault())
 			assertEquals("1555326870000", DateTime.nowUnixLong().toString())
-			assertEquals("Mon, 15 Apr 2019 20:14:30 GMT+0900", DateTimeTz.nowLocal().toString())
+			assertEquals("Mon, 15 Apr 2019 20:14:30 GMT+0900", DateTimeTz.nowLocal().toStringDefault())
 			//println(SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX").format(Date(fixedUtcTime)))
 		}
 

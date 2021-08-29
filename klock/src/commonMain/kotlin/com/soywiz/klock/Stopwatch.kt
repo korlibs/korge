@@ -4,7 +4,7 @@ class Stopwatch(val nanosecondProvider: () -> Double = { PerformanceCounter.nano
     private var running = false
     private var nanoseconds = 0.0
     private val clock get() = nanosecondProvider()
-    private fun setStart() = run { nanoseconds = clock }
+    private fun setStart() { nanoseconds = clock }
     init {
         setStart()
     }

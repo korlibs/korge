@@ -421,7 +421,9 @@ value class DateTime(
     fun toString(format: DateFormat): String = format.format(this)
 
     /** Converts this date to String using the [DateFormat.DEFAULT_FORMAT] for representing it */
-    override fun toString(): String = DateFormat.DEFAULT_FORMAT.format(this)
+    fun toStringDefault(): String = DateFormat.DEFAULT_FORMAT.format(this)
+    //override fun toString(): String = DateFormat.DEFAULT_FORMAT.format(this)
+    override fun toString(): String = "DateTime($unixMillisLong)"
 }
 
 fun max(a: DateTime, b: DateTime): DateTime = DateTime.fromUnix(max(a.unixMillis, b.unixMillis))

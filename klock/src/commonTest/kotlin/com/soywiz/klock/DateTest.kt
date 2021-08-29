@@ -21,8 +21,8 @@ class DateTest {
 
 		assertEquals("2019-09-18", date.toString())
 		assertEquals("13:09:37.150", time.toString())
-		assertEquals("Wed, 18 Sep 2019 00:00:00 UTC", (date.dateTimeDayStart).toString())
-		assertEquals("Wed, 18 Sep 2019 13:09:37 UTC", (date + time).toString())
+		assertEquals("Wed, 18 Sep 2019 00:00:00 UTC", (date.dateTimeDayStart).toStringDefault())
+		assertEquals("Wed, 18 Sep 2019 13:09:37 UTC", (date + time).toStringDefault())
 		assertEquals("2019-10-01", (Date(2019, Month.September, 30) + 1.days).toString())
 		assertEquals("2019-10-30", (Date(2019, Month.September, 30) + 1.months).toString())
         assertEquals("2019-09-30", (Date(2019, Month.October, 1) - 1.days).toString())
@@ -44,10 +44,10 @@ class DateTest {
 			assertEquals(false, range.contains(Date(2019, 10, 3)))
 		}
 
-		assertEquals("Wed, 18 Sep 2019 00:00:00 UTC", (Date(2019, Month.September, 17) + Time(24)).toString())
-        assertEquals("Tue, 17 Sep 2019 00:00:00 UTC", (Date(2019, Month.September, 18) - Time(24)).toString())
+		assertEquals("Wed, 18 Sep 2019 00:00:00 UTC", (Date(2019, Month.September, 17) + Time(24)).toStringDefault())
+        assertEquals("Tue, 17 Sep 2019 00:00:00 UTC", (Date(2019, Month.September, 18) - Time(24)).toStringDefault())
 
-        assertEquals("Wed, 18 Sep 2019 01:02:20 UTC", (Date(2019, Month.September, 18) + Time(hour = 1, minute = 1, second = 80)).toString())
+        assertEquals("Wed, 18 Sep 2019 01:02:20 UTC", (Date(2019, Month.September, 18) + Time(hour = 1, minute = 1, second = 80)).toStringDefault())
         val format = "EEE, dd MMM YYYY HH:mm:ss.SSS"
         assertEquals("Wed, 18 Sep 2019 01:02:20.300", (Date(2019, Month.September, 18) + Time(hour = 1, minute = 1, second = 80, millisecond = 300)).format(format))
         assertEquals("Wed, 18 Sep 2019 01:02:21.300", (Date(2019, Month.September, 18) + Time(hour = 1, minute = 1, second = 80, millisecond = 1300)).format(format))

@@ -270,11 +270,11 @@ class KlockLocaleTest {
 
 	@Test
 	fun testTemporalSetDefault() {
-		assertEquals("Wed, 13 Mar 2019 21:36:45 UTC", date.toString())
+		assertEquals("Wed, 13 Mar 2019 21:36:45 UTC", date.toStringDefault())
 		KlockLocale.setTemporarily(KlockLocale.spanish) {
-			assertEquals("mié, 13 mar 2019 21:36:45 UTC", date.toString())
+			assertEquals("mié, 13 mar 2019 21:36:45 UTC", date.toStringDefault())
 		}
-		assertEquals("Wed, 13 Mar 2019 21:36:45 UTC", date.toString())
+		assertEquals("Wed, 13 Mar 2019 21:36:45 UTC", date.toStringDefault())
 	}
 
 	val HttpDate = DateFormat("EEE, dd MMM yyyy HH:mm:ss z")
@@ -283,7 +283,7 @@ class KlockLocaleTest {
 	fun testExtendedTimezoneNames() {
 		assertEquals(
 			"Tue, 19 Sep 2017 00:58:45 GMT+0300",
-			HttpDate.withTimezoneNames(ExtendedTimezoneNames).parse("Tue, 19 Sep 2017 00:58:45 MSK").toString()
+			HttpDate.withTimezoneNames(ExtendedTimezoneNames).parse("Tue, 19 Sep 2017 00:58:45 MSK").toStringDefault()
 		)
 	}
 

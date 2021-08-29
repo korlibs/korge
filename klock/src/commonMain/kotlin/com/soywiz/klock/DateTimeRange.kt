@@ -136,7 +136,9 @@ data class DateTimeRange(val from: DateTime, val to: DateTime) : Comparable<Date
 
     fun toString(format: DateFormat): String = "${min.toString(format)}..${max.toString(format)}"
     fun toStringLongs(): String = "${min.unixMillisLong}..${max.unixMillisLong}"
-    override fun toString(): String = toString(DateFormat.FORMAT1)
+    fun toStringDefault(): String = toString(DateFormat.FORMAT1)
+    //override fun toString(): String = toString(DateFormat.FORMAT1)
+    override fun toString(): String = "$min..$max"
 
     override fun compareTo(other: DateTime): Int {
         if (this.max <= other) return -1
