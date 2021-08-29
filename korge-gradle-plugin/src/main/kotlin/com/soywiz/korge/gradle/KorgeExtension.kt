@@ -142,6 +142,7 @@ class KorgeExtension(val project: Project) {
      * - linuxX64
      * - linuxArm32Hfp
      * - macosX64
+     * - macosArm64
      */
     fun targetDesktop() {
         target("desktop") {
