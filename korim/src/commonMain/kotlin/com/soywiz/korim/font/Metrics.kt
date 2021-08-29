@@ -54,6 +54,9 @@ data class FontMetrics(
         append("lineHeight=${lineHeight.toIntRound()}")
         append(")")
     }
+
+    fun clear() {
+    }
 }
 
 data class GlyphMetrics(
@@ -119,6 +122,13 @@ data class TextMetrics(
         bounds.round()
         firstLineBounds.round()
         return this
+    }
+
+    fun clear() {
+        bounds.setTo(0, 0, 0, 0)
+        firstLineBounds.setTo(0, 0, 0, 0)
+        fontMetrics.clear()
+        nlines = 0
     }
 
     override fun toString(): String = "TextMetrics[${left.niceStr}, ${top.niceStr}, ${width.niceStr}, ${height.niceStr}][${drawLeft.niceStr}, ${drawTop.niceStr}]"

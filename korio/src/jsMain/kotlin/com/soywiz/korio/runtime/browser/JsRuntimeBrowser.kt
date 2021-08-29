@@ -51,15 +51,11 @@ object JsRuntimeBrowser : JsRuntime() {
         }
     }
 
-    private val jsLocalStorageVfs by lazy {
-        MapLikeStorageVfs(object : SimpleStorage {
-            override suspend fun get(key: String): String? = kotlinx.browser.localStorage[key]
-            override suspend fun set(key: String, value: String) = run { kotlinx.browser.localStorage[key] = value }
-            override suspend fun remove(key: String) = kotlinx.browser.localStorage.removeItem(key)
-        })
-    }
-
-    override fun localStorage(): VfsFile = jsLocalStorageVfs.root
+    override fun localStorage(): VfsFile = MapLikeStorageVfs(object : SimpleStorage {
+        override suspend fun get(key: String): String? = kotlinx.browser.localStorage[key]
+        override suspend fun set(key: String, value: String) { kotlinx.browser.localStorage[key] = value }
+        override suspend fun remove(key: String) = kotlinx.browser.localStorage.removeItem(key)
+    }).root
     override fun tempVfs(): VfsFile = MemoryVfs()
     override fun createHttpClient(): HttpClient = HttpClientBrowserJs()
 }

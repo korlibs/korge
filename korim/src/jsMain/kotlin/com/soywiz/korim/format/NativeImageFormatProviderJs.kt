@@ -28,7 +28,8 @@ import kotlin.math.*
 actual val nativeImageFormatProvider: NativeImageFormatProvider = if (OS.isJsNodeJs) NodeJsNativeImageFormatProvider else HtmlNativeImageFormatProvider
 
 object NodeJsNativeImageFormatProvider : BaseNativeImageFormatProvider() {
-    override val formats: ImageFormat by lazy { RegisteredImageFormats.also { it.register(PNG) } }
+    //override val formats: ImageFormat by lazy { RegisteredImageFormats.also { it.register(PNG) } }
+    override val formats: ImageFormat = RegisteredImageFormats
 }
 
 private val tempB = ArrayBuffer(4)
@@ -102,6 +103,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
     }
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(CanvasContext2dRenderer(lazyCanvasElement))
+    fun toDataURL(type: String = "image/png"): String = lazyCanvasElement.toDataURL(type)
 }
 
 object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
@@ -269,12 +271,12 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 	}
 
     private var cachedFontSize: Double = Double.NaN
-    private var cachedFontName: String = ""
-	private fun setFont(font: Font, fontSize: Double) {
-        if (font.name == cachedFontName && fontSize == cachedFontSize) return
-        cachedFontName = font.name
+    private var cachedFontName: String? = null
+	private fun setFont(font: Font?, fontSize: Double) {
+        if (font?.name == cachedFontName && fontSize == cachedFontSize) return
+        cachedFontName = font?.name
         cachedFontSize = fontSize
-		ctx.font = "${fontSize}px '${font.name}'"
+		ctx.font = "${fontSize}px '${font?.name ?: "default"}'"
 	}
 
     fun CompositeMode.toJsStr() = when (this) {

@@ -10,7 +10,6 @@ var Views.registerFilterSerialization: Boolean by Extra.Property { false }
 fun ViewsContainer.registerFilterSerialization() {
     if (views.registerFilterSerialization) return
     views.registerFilterSerialization = true
-    //views.serializer.registerExtension(PhysicsKTreeSerializerExtension)
     views.viewExtraBuildDebugComponent.add { views, view, container ->
         val contentContainer = container.container {  }
         fun updateContentContainer() {

@@ -1,10 +1,12 @@
 package com.soywiz.korge.dragonbones
 
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.serialization.xml.*
 
+@Deprecated("KTree is going to be removed in a future version")
 fun Views.registerDragonBones() {
-    serializer.register(
+    ktreeSerializer.register(
         name = "dragonbones",
         deserializer = { xml ->
             when (xml.nameLC) {

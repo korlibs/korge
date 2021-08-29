@@ -515,14 +515,14 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
                 "stroke-opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
                 "fill" -> applyFill(c, it, bounds)
                 "font-size" -> fontSize = parseSizeAsDouble(it)
-                "font-family" -> font = fontRegistry[it]
-                "text-anchor" -> horizontalAlign = when (it.toLowerCase().trim()) {
+                "font-family" -> font = fontRegistry?.get(it)
+                "text-anchor" -> horizontalAlign = when (it.lowercase().trim()) {
                     "left" -> HorizontalAlign.LEFT
                     "center", "middle" -> HorizontalAlign.CENTER
                     "right", "end" -> HorizontalAlign.RIGHT
                     else -> horizontalAlign
                 }
-                "alignment-baseline" ->  verticalAlign = when (it.toLowerCase().trim()) {
+                "alignment-baseline" -> verticalAlign = when (it.lowercase().trim()) {
                     "hanging" -> VerticalAlign.TOP
                     "center", "middle" -> VerticalAlign.MIDDLE
                     "baseline" -> VerticalAlign.BASELINE

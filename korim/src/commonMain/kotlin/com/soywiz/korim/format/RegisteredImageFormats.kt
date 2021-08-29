@@ -4,8 +4,9 @@ import com.soywiz.korio.stream.*
 import kotlin.native.concurrent.*
 
 @ThreadLocal
+private var RegisteredImageFormats_formats: ImageFormats = ImageFormats()
 //private var RegisteredImageFormats_formats: ImageFormats = ImageFormats(PNG) // Do not register anything to not include inflater if not required
-private var RegisteredImageFormats_formats: ImageFormats = ImageFormats(BMP, TGA)
+//private var RegisteredImageFormats_formats: ImageFormats = ImageFormats(BMP, TGA)
 
 object RegisteredImageFormats : ImageFormat() {
     var formats: ImageFormats
@@ -13,7 +14,7 @@ object RegisteredImageFormats : ImageFormat() {
         set(value) { RegisteredImageFormats_formats = value }
 
     fun register(vararg formats: ImageFormat) {
-        this.formats = ImageFormats(this.formats.formats + formats)
+        this.formats = ImageFormats((this.formats.formats + formats).distinct())
     }
 
     fun unregister(vararg formats: ImageFormat) {

@@ -282,20 +282,21 @@ class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : An
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }
 
-val Views.animateLibraryLoaders by Extra.Property {
-	arrayListOf<KorgeFileLoaderTester<AnLibrary>>(
-		KorgeFileLoaderTester("core/ani") { s, injector ->
-			when {
-				(s.readString(8) == AniFile.MAGIC) -> KorgeFileLoader("ani") { content, views ->
-					this.readAni(
+// Do not use by extraProperty because it would be included in the output
+val Views.animateLibraryLoaders get() = extraCache("animateLibraryLoaders") {
+    arrayListOf(
+        KorgeFileLoaderTester("core/ani") { s, injector ->
+            when {
+                (s.readString(8) == AniFile.MAGIC) -> KorgeFileLoader("ani") { content, views ->
+                    this.readAni(
                         AnLibrary.Context(views),
-						content = content
-					)
-				}
-				else -> null
-			}
-		}
-	)
+                        content = content
+                    )
+                }
+                else -> null
+            }
+        }
+    )
 }
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory

@@ -172,8 +172,8 @@ fun AsyncStreamBase.toAsyncStream(position: Long = 0L): AsyncStream = AsyncStrea
 
 class AsyncStream(val base: AsyncStreamBase, var position: Long = 0L, val queue: Boolean = false) : Extra by Extra.Mixin(), AsyncInputStream, AsyncInputStreamWithLength, AsyncOutputStream, AsyncPositionLengthStream,
 	AsyncCloseable {
-	private val readQueue by lazy { AsyncThread() }
-	private val writeQueue by lazy { AsyncThread() }
+	private val readQueue = AsyncThread()
+	private val writeQueue = AsyncThread()
 
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = when {
         queue -> readQueue { readInternal(buffer, offset, len) }
@@ -696,12 +696,12 @@ suspend fun AsyncOutputStream.writeLongArrayBE(array: LongArray) = writeTempByte
 suspend fun AsyncOutputStream.writeFloatArrayBE(array: FloatArray) = writeTempBytes(array.size * 4) { writeArrayBE(0, array) }
 suspend fun AsyncOutputStream.writeDoubleArrayBE(array: DoubleArray) = writeTempBytes(array.size * 8) { writeArrayBE(0, array) }
 
-suspend fun AsyncInputStream.readUntil(endByte: Byte, limit: Int = 0x1000): ByteArray {
-	val temp = ByteArray(1)
+suspend fun AsyncInputStream.readUntil(endByte: Byte, limit: Int = 0x1000, temp: ByteArray = ByteArray(1)): ByteArray {
 	val out = ByteArrayBuilder()
 	try {
 		while (true) {
-			val c = run { readExact(temp, 0, 1); temp[0] }
+            readExact(temp, 0, 1)
+			val c = temp[0]
 			//val c = readS8().toByte()
 			if (c == endByte) break
 			out.append(c)

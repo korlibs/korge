@@ -16,7 +16,7 @@ inline fun Container.textOld(
     text: String,
     textSize: Double = 16.0,
     color: RGBA = Colors.WHITE,
-    font: BitmapFont = debugBmpFont,
+    font: BitmapFont = debugBmpFontSync,
     fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
     callback: @ViewDslMarker TextOld.() -> Unit = {}
 ) = TextOld(text, textSize = textSize, color = color, font = font, fontsCatalog = fontsCatalog).addTo(this, callback)
@@ -25,10 +25,10 @@ inline fun Container.textOld(
 class TextOld : View(), IText, IHtml {
 	companion object {
 		operator fun invoke(
-			text: String,
-			textSize: Double = 16.0,
-			color: RGBA = Colors.WHITE,
-			font: BitmapFont = debugBmpFont,
+            text: String,
+            textSize: Double = 16.0,
+            color: RGBA = Colors.WHITE,
+            font: BitmapFont = debugBmpFontSync,
             fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
 		): TextOld = TextOld().apply {
 			this.format = Html.Format(color = color, face = font, size = textSize.toInt())
@@ -79,15 +79,15 @@ class TextOld : View(), IText, IHtml {
 
     var font: Font?
         get() = format.computedFace
-        set(value) = run { format.face = value }
+        set(value) { format.face = value }
 
     var color: RGBA
         get() = format.computedColor
-        set(value) = run { format.color = value }
+        set(value) { format.color = value }
 
     var textSize: Double
         get() = format.computedSize.toDouble()
-        set(value) = run { format.size = value.toInt() }
+        set(value) { format.size = value.toInt() }
 
 	override var text: String
 		get() = if (document != null) document?.xml?.text ?: "" else _text

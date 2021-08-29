@@ -4,7 +4,9 @@ import com.soywiz.kds.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.util.i18n.*
 
-private var Views.extraLanguage by Extra.Property { Language.CURRENT }
+private var Views.extraLanguage: Language
+    get() = getExtra("extraLanguage") as? Language ?: Language.CURRENT
+    set(value) { setExtra("extraLanguage", value) }
 
 var Views.language: Language
 	get() = this.extraLanguage

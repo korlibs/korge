@@ -11,21 +11,21 @@ import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 
 object Html {
-    class FontsCatalog(val default: Font?, val fonts: Map<String, Font> = hashMapOf()) : MetricsProvider {
-        fun String.normalize() = this.toLowerCase().trim()
+    class FontsCatalog(val default: Font?, val fonts: Map<String?, Font?> = hashMapOf()) : MetricsProvider {
+        fun String.normalize() = this.lowercase().trim()
         fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
-        fun getBitmapFont(name: String, font: Font? = null): Font = fonts[name.normalize()] ?: font ?: default ?: SystemFont(name)
-        fun getBitmapFont(font: Font): BitmapFont {
+        fun getBitmapFont(name: String?, font: Font? = null): Font = fonts[name?.normalize()] ?: font ?: default ?: SystemFont(name ?: "default")
+        fun getBitmapFont(font: Font?): BitmapFont {
             if (font is BitmapFont) return font
-            val fontName = font.name.normalize()
+            val fontName = font?.name?.normalize()
             (fonts[fontName] as? BitmapFont)?.let { return it }
-            return (fonts as MutableMap<String, Font>)?.getOrPut("$fontName.\$BitmapFont") {
-                font.toBitmapFont(32.0)
-            } as BitmapFont
+            return (fonts as MutableMap<String?, Font?>)?.getOrPut("$fontName.\$BitmapFont") {
+                font?.toBitmapFont(32.0)
+            } as? BitmapFont? ?: debugBmpFontSync
         }
         override fun getBounds(text: String, format: Format, out: Rectangle) {
             val font = format.computedFace
-            getBitmapFont(font.name, font).getBounds(text, format, out)
+            getBitmapFont(font?.name, font).getBounds(text, format, out)
         }
     }
 
@@ -49,7 +49,7 @@ object Html {
 		val computedColor: RGBA get() = parent?.computedColor ?: color ?: Colors.WHITE
 
 		//val computedFace by Computed(Format::face) { FontFace.Named("Arial") }
-        val computedFace by Computed(Format::face) { debugBmpFont }
+        val computedFace by Computed(Format::face) { null }
 		val computedSize by Computed(Format::size) { 16 }
 		val computedLetterSpacing by Computed(Format::letterSpacing) { 0.0 }
 		val computedKerning by Computed(Format::kerning) { 0 }

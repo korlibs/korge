@@ -53,7 +53,7 @@ class MutableAtlas<T>(
         for (entry in slices) add(entry.slice, entry.data, entry.slice.name)
     }
 
-    private fun grow(bmp: BmpSlice) {
+    private fun growAtlas(bmp: BmpSlice) {
         when (growMethod) {
             GrowMethod.GROW_IMAGE -> reconstructWithSize(this.width * 2, this.height * 2)
             GrowMethod.NEW_IMAGES -> {
@@ -119,7 +119,7 @@ class MutableAtlas<T>(
             return entry
         } catch (e: Throwable) {
             if (!allowToGrow) throw e
-            grow(bmp)
+            growAtlas(bmp)
             return this.add(bmp, data, name)
         }
     }

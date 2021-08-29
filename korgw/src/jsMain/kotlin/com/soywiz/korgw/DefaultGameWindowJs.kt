@@ -6,7 +6,7 @@ import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korev.Touch
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.net.*
@@ -304,7 +304,8 @@ open class BrowserGameWindow : GameWindow() {
                 val link: HTMLLinkElement = document.querySelector("link[rel*='icon']").unsafeCast<HTMLLinkElement>()
                 link.type = "image/png"
                 link.rel = "shortcut icon"
-                link.href = "data:image/png;base64," + PNG.encode(value).toBase64()
+                //link.href = "data:image/png;base64," + PNG.encode(value).toBase64()
+                link.href = value.toHtmlNative().toDataURL()
                 document.getElementsByTagName("head")[0]?.appendChild(link)
             } else {
                 document.querySelector("link[rel*='icon']")?.remove()
@@ -325,7 +326,7 @@ open class BrowserGameWindow : GameWindow() {
         }
     override var visible: Boolean
         get() = canvas.style.visibility == "visible"
-        set(value) = run { canvas.style.visibility = if (value) "visible" else "hidden" }
+        set(value) { canvas.style.visibility = if (value) "visible" else "hidden" }
 
     override fun setSize(width: Int, height: Int) {
         // Do nothing!

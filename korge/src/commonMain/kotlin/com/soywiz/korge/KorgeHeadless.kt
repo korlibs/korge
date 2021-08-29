@@ -26,8 +26,9 @@ object KorgeHeadless {
         virtualWidth: Int = width, virtualHeight: Int = height,
         icon: Bitmap? = null,
         iconPath: String? = null,
-        iconDrawable: SizedDrawable? = null,
-        imageFormats: ImageFormat = ImageFormats(PNG),
+        //iconDrawable: SizedDrawable? = null,
+        //imageFormats: ImageFormat = ImageFormats(PNG),
+        imageFormats: ImageFormat = ImageFormats(),
         quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
         targetFps: Double = 0.0,
         scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
@@ -43,8 +44,8 @@ object KorgeHeadless {
         debugAg: Boolean = false,
         entry: suspend Stage.() -> Unit
     ) = Korge(
-        title, width, height, virtualWidth, virtualHeight, icon, iconPath, iconDrawable, imageFormats, quality,
+        title, width, height, virtualWidth, virtualHeight, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
         targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args, HeadlessGameWindow(), timeProvider, injector,
-        blocking=blocking,debugAg = debugAg, entry = entry
+        blocking = blocking,debugAg = debugAg, entry = entry
     )
 }

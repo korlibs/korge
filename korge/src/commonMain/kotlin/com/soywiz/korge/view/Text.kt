@@ -4,7 +4,6 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.html.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -55,28 +54,6 @@ open class Text(
     }
 
     var smoothing: Boolean = true
-
-    object Serializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
-        add(Text::text, "Text")
-        add(Text::fontSource)
-        add(Text::textSize, DEFAULT_TEXT_SIZE)
-        add(Text::autoScaling, DEFAULT_AUTO_SCALING)
-        add(Text::verticalAlign, { VerticalAlign(it) }, { it.toString() })
-        add(Text::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
-        //view.fontSource = xml.str("fontSource", "")
-    }) {
-        override suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile): Text {
-            return super.ktreeToViewTree(xml, currentVfs).also { view ->
-                if ((view.fontSource ?: "").isNotBlank()) {
-                    try {
-                        view.forceLoadFontSource(currentVfs, view.fontSource)
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }
-    }
 
     private var cachedVersion = -1
     private var cachedVersionRenderer = -1

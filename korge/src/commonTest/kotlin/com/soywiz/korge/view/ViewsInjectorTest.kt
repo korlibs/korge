@@ -16,12 +16,12 @@ class ViewsInjectorTest : ViewsForTesting() {
         val log = arrayListOf<String>()
 
         class MyScene(val str: String) : Scene() {
-            override suspend fun Container.sceneInit() = run {  log += "sinit:$str"; log += "init:${injector().getOrNull<String>()}" }
-            override suspend fun Container.sceneMain() = run { log += "main:${injector().getOrNull<String>()}" }
-            override suspend fun sceneAfterInit() = run { log += "ainit:${injector().getOrNull<String>()}" }
-            override suspend fun sceneBeforeLeaving() = run { log += "bleav:${injector().getOrNull<String>()}" }
-            override suspend fun sceneDestroy() = run { log += "destroy:${injector().getOrNull<String>()}" }
-            override suspend fun sceneAfterDestroy() = run { log += "adestroy:${injector().getOrNull<String>()}" }
+            override suspend fun Container.sceneInit() {  log += "sinit:$str"; log += "init:${injector().getOrNull<String>()}" }
+            override suspend fun Container.sceneMain() { log += "main:${injector().getOrNull<String>()}" }
+            override suspend fun sceneAfterInit() { log += "ainit:${injector().getOrNull<String>()}" }
+            override suspend fun sceneBeforeLeaving() { log += "bleav:${injector().getOrNull<String>()}" }
+            override suspend fun sceneDestroy() { log += "destroy:${injector().getOrNull<String>()}" }
+            override suspend fun sceneAfterDestroy() { log += "adestroy:${injector().getOrNull<String>()}" }
         }
 
         injector.mapPrototype { MyScene(get()) }

@@ -1,7 +1,6 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.render.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 

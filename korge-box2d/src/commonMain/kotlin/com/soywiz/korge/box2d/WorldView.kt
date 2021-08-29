@@ -100,7 +100,7 @@ object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
 fun ViewsContainer.registerBox2dSupportOnce() {
     if (views.registeredBox2dSupport) return
     views.registeredBox2dSupport = true
-    views.serializer.registerExtension(PhysicsKTreeSerializerExtension)
+    views.ktreeSerializer.registerExtension(PhysicsKTreeSerializerExtension)
     views.viewExtraBuildDebugComponent.add { views, view, container ->
         val physicsContainer = container.container {
         }

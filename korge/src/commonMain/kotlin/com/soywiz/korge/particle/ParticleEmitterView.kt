@@ -1,20 +1,16 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.korag.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
-import kotlin.math.*
 
 inline fun Container.particleEmitter(
 	emitter: ParticleEmitter, emitterPos: IPoint = IPoint(),

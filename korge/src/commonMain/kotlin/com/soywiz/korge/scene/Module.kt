@@ -15,12 +15,12 @@ open class KorgeModule(mainScene: KClass<out Scene>) : Module() {
 }
 
 open class Module {
-	open val imageFormats: List<ImageFormat> = listOf(PNG)
+	open val imageFormats: List<ImageFormat> = listOf()
 
 	open val bgcolor: RGBA = Colors.BLACK
 	open val title: String = "Game"
 	open val icon: String? = null
-	open val iconImage: SizedDrawable? = null
+	//open val iconImage: SizedDrawable? = null
 
 	open val quality: GameWindow.Quality = GameWindow.Quality.PERFORMANCE
 

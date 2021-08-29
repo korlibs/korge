@@ -5,10 +5,8 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -28,12 +26,7 @@ open class UICheckBox(
     checked: Boolean = false,
     text: String = "CheckBox",
 ) : UIBaseCheckBox<UICheckBox>(width, height, checked, text) {
-    object Serializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
-        add(UICheckBox::text)
-        add(UICheckBox::checked)
-        add(UICheckBox::width)
-        add(UICheckBox::height)
-    })
+
 }
 
 open class UIBaseCheckBox<T>(

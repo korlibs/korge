@@ -15,11 +15,12 @@ import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.scene.*
 import com.soywiz.korge.stat.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korinject.*
 import com.soywiz.korio.*
@@ -60,7 +61,6 @@ class Views constructor(
 	BoundsProvider,
     DialogInterface by gameWindow,
     Closeable,
-    KTreeSerializerHolder,
     ResourcesContainer
 {
     override val views = this
@@ -68,8 +68,6 @@ class Views constructor(
     var rethrowRenderError = false
 
     val devicePixelRatio get() = ag.devicePixelRatio
-
-    override val serializer = KTreeSerializer(this)
 
     val keys get() = input.keys
 
@@ -84,6 +82,13 @@ class Views constructor(
                 else -> "${Environment["HOME"]}/.config/$gameIdFolder"
             }
         }
+    }
+
+    lateinit var debugBmpFont: BitmapFont
+        private set
+
+    suspend fun init() {
+        debugBmpFont = debugBmpFont()
     }
 
     var name: String? = null
@@ -117,10 +122,10 @@ class Views constructor(
 
     var virtualWidthDouble: Double
         get() = virtualWidth.toDouble()
-        set(value) = run { virtualWidth = value.toInt() }
+        set(value) { virtualWidth = value.toInt() }
     var virtualHeightDouble: Double
         get() = virtualHeight.toDouble()
-        set(value) = run { virtualHeight = value.toInt() }
+        set(value) { virtualHeight = value.toInt() }
 
     @KorgeExperimental
 	var actualVirtualLeft = 0; private set
@@ -468,14 +473,18 @@ class Views constructor(
 }
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
-	val log = ViewsLog(coroutineContext)
-	callback(log.views.stage, log)
+    viewsLogSuspend(callback)
+}
+
+suspend fun viewsLogSuspend(callback: suspend Stage.(log: ViewsLog) -> Unit) {
+    val log = ViewsLog(coroutineContext).also { it.init() }
+    callback(log.views.stage, log)
 }
 
 open class GameWindowLog : GameWindow() {
 }
 
-class ViewsLog(
+class ViewsLog constructor(
 	override val coroutineContext: CoroutineContext,
 	val injector: AsyncInjector = AsyncInjector(),
 	val ag: AG = LogAG(),
@@ -486,6 +495,14 @@ class ViewsLog(
 ) : CoroutineScope {
 	val views = Views(coroutineContext + AsyncInjectorContext(injector), ag, injector, input, timeProvider, stats, gameWindow).also {
 	    it.rethrowRenderError = true
+    }
+    private var initialized = false
+    suspend fun init() {
+        if (!initialized) {
+            initialized = true
+            RegisteredImageFormats.register(PNG) // This might be required for Node.JS debug bitmap font in tests
+            views.init()
+        }
     }
 }
 

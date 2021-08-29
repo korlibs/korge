@@ -17,7 +17,7 @@ class ZipVfsTest {
 	fun testZipUncompressed1() = suspendTestNoBrowser {
 		resourcesVfs["hello.zip"].openAsZip { helloZip ->
 			assertEquals(
-				"[VfsStat(file=/hello, exists=true, isDirectory=true, size=0, device=-1, inode=0, mode=511, owner=nobody, group=nobody, createTime=Mon, 26 Dec 2016 00:00:10 UTC, modifiedTime=Thu, 01 Jan 1970 00:00:00 UTC, lastAccessTime=Thu, 01 Jan 1970 00:00:00 UTC, extraInfo=null, id=null)]",
+				"[VfsStat(file=/hello, exists=true, isDirectory=true, size=0, device=-1, inode=0, mode=511, owner=nobody, group=nobody, createTime=DateTime(1482710410000), modifiedTime=DateTime(0), lastAccessTime=DateTime(0), extraInfo=null, id=null)]",
 				helloZip.list().toList().map { it.stat().toString(showFile = false) }.toString()
 			)
 		}
@@ -27,7 +27,7 @@ class ZipVfsTest {
 	fun testZipUncompressed2() = suspendTestNoBrowser {
 		resourcesVfs["hello.zip"].openAsZip { helloZip ->
 			assertEquals(
-				"[VfsStat(file=/hello/world.txt, exists=true, isDirectory=false, size=12, device=-1, inode=1, mode=511, owner=nobody, group=nobody, createTime=Mon, 26 Dec 2016 00:00:10 UTC, modifiedTime=Thu, 01 Jan 1970 00:00:00 UTC, lastAccessTime=Thu, 01 Jan 1970 00:00:00 UTC, extraInfo=null, id=null)]",
+				"[VfsStat(file=/hello/world.txt, exists=true, isDirectory=false, size=12, device=-1, inode=1, mode=511, owner=nobody, group=nobody, createTime=DateTime(1482710410000), modifiedTime=DateTime(0), lastAccessTime=DateTime(0), extraInfo=null, id=null)]",
 				helloZip["hello"].list().toList().map { it.stat().toString(showFile = false) }.toString()
 			)
 		}
@@ -37,7 +37,7 @@ class ZipVfsTest {
 	fun testZipUncompressed3() = suspendTestNoBrowser {
 		resourcesVfs["hello.zip"].openAsZip { helloZip ->
 			assertEquals(
-				"VfsStat(file=/hello/world.txt, exists=true, isDirectory=false, size=12, device=-1, inode=1, mode=511, owner=nobody, group=nobody, createTime=Mon, 26 Dec 2016 00:00:10 UTC, modifiedTime=Thu, 01 Jan 1970 00:00:00 UTC, lastAccessTime=Thu, 01 Jan 1970 00:00:00 UTC, extraInfo=null, id=null)",
+				"VfsStat(file=/hello/world.txt, exists=true, isDirectory=false, size=12, device=-1, inode=1, mode=511, owner=nobody, group=nobody, createTime=DateTime(1482710410000), modifiedTime=DateTime(0), lastAccessTime=DateTime(0), extraInfo=null, id=null)",
 				helloZip["hello/world.txt"].stat().toString(showFile = false)
 			)
 		}

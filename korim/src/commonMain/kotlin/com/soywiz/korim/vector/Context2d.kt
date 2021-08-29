@@ -13,7 +13,11 @@ import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
 
-open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBuilder {
+open class Context2d constructor(
+    val renderer: Renderer,
+    val defaultFontRegistry: FontRegistry? = null,
+    val defaultFont: Font? = null
+) : Disposable, VectorBuilder {
     companion object {
         @Deprecated(
             "",
@@ -41,8 +45,8 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
     protected open fun rendererDispose() = renderer.dispose()
     protected open fun rendererBufferingStart() = renderer.bufferingStart()
     protected open fun rendererBufferingEnd() = renderer.bufferingEnd()
-    protected open fun rendererRenderSystemText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean) {
-        font.drawText(this, fontSize, text, if (fill) state.fillStyle else state.strokeStyle, x, y, fill = fill)
+    protected open fun rendererRenderSystemText(state: State, font: Font?, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean) {
+        font?.drawText(this, fontSize, text, if (fill) state.fillStyle else state.strokeStyle, x, y, fill = fill)
     }
 
     fun fillText(text: String, x: Double, y: Double) = rendererRenderSystemText(state, font, fontSize, text, x, y, fill = true)
@@ -104,8 +108,8 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         var miterLimit: Double = 4.0,
         var strokeStyle: Paint = DefaultPaint,
         var fillStyle: Paint = DefaultPaint,
-        var fontRegistry: FontRegistry = SystemFontRegistry,
-        var font: Font = SystemFontRegistry.DEFAULT_FONT,
+        var fontRegistry: FontRegistry? = null,
+        var font: Font? = null,
         var fontSize: Double = 24.0,
         var verticalAlign: VerticalAlign = VerticalAlign.BASELINE,
         var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT,
@@ -138,31 +142,31 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 		)
 	}
 
-	var state = State()
+	var state = State(fontRegistry = defaultFontRegistry, font = defaultFont)
 	private val stack = Stack<State>()
 
-	var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) = run { state.lineScaleMode = value }
-	var lineWidth: Double ; get() = state.lineWidth ; set(value) = run { state.lineWidth = value }
-	var lineCap: LineCap ; get() = state.lineCap ; set(value) = run { state.lineCap = value }
-    var startLineCap: LineCap ; get() = state.startLineCap ; set(value) = run { state.startLineCap = value }
-    var endLineCap: LineCap ; get() = state.endLineCap ; set(value) = run { state.endLineCap = value }
-    var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) = run { state.lineJoin = value }
-	var strokeStyle: Paint; get() = state.strokeStyle ; set(value) = run { state.strokeStyle = value }
-	var fillStyle: Paint; get() = state.fillStyle ; set(value) = run { state.fillStyle = value }
-    var fontRegistry: FontRegistry ; get() = state.fontRegistry ; set(value) = run { state.fontRegistry = value }
-	var font: Font ; get() = state.font ; set(value) = run { state.font = value }
-    var fontName: String ; get() = font.name ; set(value) = run { font = fontRegistry[value] }
-    var fontSize: Double ; get() = state.fontSize ; set(value) = run { state.fontSize = value }
-	var verticalAlign: VerticalAlign; get() = state.verticalAlign ; set(value) = run { state.verticalAlign = value }
-	var horizontalAlign: HorizontalAlign; get() = state.horizontalAlign ; set(value) = run { state.horizontalAlign = value }
+	var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) { state.lineScaleMode = value }
+	var lineWidth: Double ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
+	var lineCap: LineCap ; get() = state.lineCap ; set(value) { state.lineCap = value }
+    var startLineCap: LineCap ; get() = state.startLineCap ; set(value) { state.startLineCap = value }
+    var endLineCap: LineCap ; get() = state.endLineCap ; set(value) { state.endLineCap = value }
+    var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) { state.lineJoin = value }
+	var strokeStyle: Paint; get() = state.strokeStyle ; set(value) { state.strokeStyle = value }
+	var fillStyle: Paint; get() = state.fillStyle ; set(value) { state.fillStyle = value }
+    var fontRegistry: FontRegistry? ; get() = state.fontRegistry ; set(value) { state.fontRegistry = value }
+	var font: Font? ; get() = state.font ; set(value) { state.font = value }
+    var fontName: String? ; get() = font?.name ; set(value) { font = fontRegistry?.get(value) }
+    var fontSize: Double ; get() = state.fontSize ; set(value) { state.fontSize = value }
+	var verticalAlign: VerticalAlign; get() = state.verticalAlign ; set(value) { state.verticalAlign = value }
+	var horizontalAlign: HorizontalAlign; get() = state.horizontalAlign ; set(value) { state.horizontalAlign = value }
     var alignment: TextAlignment
         get() = TextAlignment.fromAlign(horizontalAlign, verticalAlign)
         set(value) {
             horizontalAlign = value.horizontal
             verticalAlign = value.vertical
         }
-	var globalAlpha: Double ; get() = state.globalAlpha ; set(value) = run { state.globalAlpha = value }
-    var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) = run { state.globalCompositeOperation = value }
+	var globalAlpha: Double ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
+    var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) { state.globalCompositeOperation = value }
 
 	inline fun fillStyle(paint: Paint, callback: () -> Unit) {
 		val oldStyle = fillStyle
@@ -185,7 +189,7 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
 	}
 
 	inline fun font(
-        font: Font = this.font,
+        font: Font? = this.font,
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
         fontSize: Double = this.fontSize,
@@ -472,8 +476,15 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         transform: Matrix = Matrix()
     ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
-    fun getTextBounds(text: String, out: TextMetrics = TextMetrics()): TextMetrics =
-        font.getTextBounds(fontSize, text, out = out)
+    fun getTextBounds(text: String, out: TextMetrics = TextMetrics()): TextMetrics {
+        val font = font
+        if (font != null) {
+            font.getTextBounds(fontSize, text, out = out)
+        } else {
+            out.clear()
+        }
+        return out
+    }
 
     @Suppress("NOTHING_TO_INLINE") // Number inlining
     inline fun fillText(text: String, x: Number, y: Number): Unit =
@@ -488,7 +499,7 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         text: String,
         x: Number,
         y: Number,
-        font: Font = this.font,
+        font: Font? = this.font,
         fontSize: Double = this.fontSize,
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
@@ -501,9 +512,9 @@ open class Context2d constructor(val renderer: Renderer) : Disposable, VectorBui
         }
     }
 
-    fun <T> drawText(text: T, x: Double = 0.0, y: Double = 0.0, fill: Boolean = true, paint: Paint? = null, font: Font = this.font, size: Double = this.fontSize, renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>) {
+    fun <T> drawText(text: T, x: Double = 0.0, y: Double = 0.0, fill: Boolean = true, paint: Paint? = null, font: Font? = this.font, size: Double = this.fontSize, renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>) {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        font.drawText(this, size, text, paint, x, y, fill, renderer = renderer)
+        font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer)
     }
 
     // @TODO: Fix this!

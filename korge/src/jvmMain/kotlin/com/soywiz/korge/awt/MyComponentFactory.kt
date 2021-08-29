@@ -9,6 +9,7 @@ import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Image
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
@@ -56,7 +57,7 @@ open class MyComponentFactory {
         list.add(ViewFactory("AnimationViewRef") { AnimationViewRef() })
         list.add(ViewFactory("TiledMapViewRef") { TiledMapViewRef() })
         list.add(ViewFactory("9-Patch") { NinePatchEx(NinePatchBitmap32(Bitmap32(62, 62))) })
-        for (registration in views.serializer.registrationsExt) {
+        for (registration in views.ktreeSerializer.registrationsExt) {
             list.add(ViewFactory(registration.name) { registration.factory() })
         }
     }

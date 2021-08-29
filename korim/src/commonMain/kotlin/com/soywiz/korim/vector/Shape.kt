@@ -399,7 +399,7 @@ class TextShape(
     val text: String,
     val x: Double,
     val y: Double,
-    val font: Font,
+    val font: Font?,
     val fontSize: Double,
     override val clip: GraphicsPath?,
     val fill: Paint?,
@@ -427,7 +427,7 @@ class TextShape(
                 "y" to y,
                 "fill" to (fill?.toSvg(svg) ?: "none"),
                 "stroke" to (stroke?.toSvg(svg) ?: "none"),
-                "font-family" to font.name,
+                "font-family" to font?.name,
                 "font-size" to "${fontSize}px",
                 "text-anchor" to when (halign) {
                     HorizontalAlign.JUSTIFY -> "justify"

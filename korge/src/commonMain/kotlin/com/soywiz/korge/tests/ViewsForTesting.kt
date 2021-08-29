@@ -206,6 +206,7 @@ open class ViewsForTesting(
         //devicePixelRatio: Double = defaultDevicePixelRatio,
         block: suspend Stage.() -> Unit
     ) = suspendTest(timeout = timeout, cond = { OS.isJvm && !OS.isAndroid }) {
+        viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
         Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime)

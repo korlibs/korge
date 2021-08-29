@@ -1,12 +1,10 @@
 package com.soywiz.korge.ui
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.font.*
 import com.soywiz.korio.async.*
@@ -158,11 +156,4 @@ open class UIButton(
         }
         super.buildDebugComponent(views, container)
     }
-
-    object Serializer : KTreeSerializerExt<UIButton>("UIButton", UIButton::class, { UIButton().also { it.text = "Button" } }, {
-        add(UIButton::text)
-        add(UIButton::textSize)
-        add(UIButton::width)
-        add(UIButton::height)
-    })
 }

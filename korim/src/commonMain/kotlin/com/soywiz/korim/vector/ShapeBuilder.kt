@@ -44,7 +44,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         super.rendererRender(state, fill)
     }
 
-    override fun rendererRenderSystemText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean) {
+    override fun rendererRenderSystemText(state: State, font: Font?, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean) {
         shapes += TextShape(
             text = text,
             x = x, y = y,

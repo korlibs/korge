@@ -70,14 +70,14 @@ open class NativeSystemFontProvider {
 // Linux: /usr/share/fonts , /usr/local/share/fonts and ~/.fonts
 // MacOS: /System/Library/Fonts, /Library/Fonts, ~/Library/Fonts
 
-@SharedImmutable private val linuxFolders = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
-@SharedImmutable private val windowsFolders = listOf("%WINDIR%\\Fonts", "%LOCALAPPDATA%\\Microsoft\\Windows\\Fonts")
-@SharedImmutable private val macosFolders = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
-@SharedImmutable private val iosFolders = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
-@SharedImmutable private val androidFolders = listOf("/system/Fonts", "/system/font", "/data/fonts")
+private val linuxFolders get() = listOf("/usr/share/fonts", "/usr/local/share/fonts", "~/.fonts")
+private val windowsFolders get() = listOf("%WINDIR%\\Fonts", "%LOCALAPPDATA%\\Microsoft\\Windows\\Fonts")
+private val macosFolders get() = listOf("/System/Library/Fonts/", "/Library/Fonts/", "~/Library/Fonts/", "/Network/Library/Fonts/")
+private val iosFolders get() = listOf("/System/Library/Fonts/Cache", "/System/Library/Fonts")
+private val androidFolders get() = listOf("/system/Fonts", "/system/font", "/data/fonts")
 
 // @TODO: Maybe we can just filter fonts containing "emoji" (ignoring case)
-@SharedImmutable private val emojiFontNames = listOf(
+private val emojiFontNames get() = listOf(
     "Segoe UI Emoji", // Windows
     "Apple Color Emoji", // Apple
     "Noto Color Emoji", // Google
@@ -135,6 +135,7 @@ open class FolderBasedNativeSystemFontProvider(
     }
 
     fun listFontNamesMapLC(): Map<String, VfsFile> = listFontNamesMap().mapKeys { it.key.normalizeName() }
+    override fun defaultFont(): TtfFont = DefaultTtfFont
 
     override fun listFontNamesWithFiles(): Map<String, VfsFile> = listFontNamesMap()
 
@@ -152,6 +153,7 @@ open class FolderBasedNativeSystemFontProvider(
 
 abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
     abstract fun loadFontByName(name: String, freeze: Boolean = false): TtfFont?
+    abstract fun defaultFont(): TtfFont
 
     fun String.normalizeName() = this.toLowerCase().trim()
 
@@ -163,7 +165,7 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
         return ttfCache.getOrPut(normalizedName) { loadFontByName(name, freeze = false) }
     }
 
-    fun ttf(systemFont: SystemFont) = locateFontByName(systemFont.name) ?: DefaultTtfFont
+    fun ttf(systemFont: SystemFont) = locateFontByName(systemFont.name) ?: defaultFont()
 
     override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf(systemFont)
 
@@ -196,4 +198,5 @@ open class FallbackNativeSystemFontProvider(val ttf: TtfFont) : TtfNativeSystemF
     override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf
     override fun listFontNamesWithFiles(): Map<String, VfsFile> = mapOf(ttf.ttfCompleteName to vfs)
     override fun loadFontByName(name: String, freeze: Boolean): TtfFont? = ttf
+    override fun defaultFont(): TtfFont = ttf
 }

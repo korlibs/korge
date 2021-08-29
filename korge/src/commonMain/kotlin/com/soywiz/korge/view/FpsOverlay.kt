@@ -13,7 +13,7 @@ import com.soywiz.korma.math.*
 @OptIn(KorgeInternal::class)
 internal fun ViewsContainer.installFpsDebugOverlay() {
     val longWindow = TimeSlidingWindow(240)
-    val mediumWindow = TimeSlidingWindow(60)
+    //val mediumWindow = TimeSlidingWindow(60)
     val shortWindow = TimeSlidingWindow(10)
 
     var previousTime = PerformanceCounter.reference
@@ -54,7 +54,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
             // @TODO: We are discarding for now too low values. We have to check why this happening. Maybe because vsync is near?
             if (elapsedTime > 4.milliseconds) {
                 longWindow.add(elapsedTime)
-                mediumWindow.add(elapsedTime)
+                //mediumWindow.add(elapsedTime)
                 shortWindow.add(elapsedTime)
             }
         }
@@ -171,3 +171,46 @@ private class TimeSlidingWindow(val capacity: Int) {
         }
     }
 }
+
+/*
+private class TimeSlidingWindow(val capacity: Int) {
+    private val deque = IntArray(capacity)
+    private var pos = 0
+    private var count = 0
+    private var totalMicroseconds = 0
+
+    val size get() = count
+
+    val avg: TimeSpan get() = (totalMicroseconds.toDouble() / size).microseconds
+    // @TODO: Can we compute this incrementally?
+    val min: TimeSpan get() {
+        var out: Int = if (size > 0) deque[0] else 1
+        for (n in 0 until size) out = kotlin.math.min(out, deque[n])
+        return out.microseconds
+    }
+    val max: TimeSpan get() {
+        var out: Int = if (size > 0) deque[0] else 1
+        for (n in 0 until size) out = kotlin.math.max(out, deque[n])
+        return out.microseconds
+    }
+
+    val avgFps: Double get() = 1.seconds / avg
+    val minFps: Double get() = 1.seconds / max
+    val maxFps: Double get() = 1.seconds / min
+
+    operator fun get(index: Int): TimeSpan = deque[index].microseconds
+
+    fun add(value: TimeSpan) {
+        val intValue = value.microsecondsInt
+        if (count == capacity - 1) {
+            totalMicroseconds -= deque[pos]
+        }
+
+        deque[pos] = intValue
+        count = (count + 1).coerceAtMost(capacity - 1)
+        pos = (pos + 1) % capacity
+
+        totalMicroseconds += intValue
+    }
+}
+*/

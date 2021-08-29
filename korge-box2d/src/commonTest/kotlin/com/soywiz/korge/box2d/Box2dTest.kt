@@ -2,15 +2,16 @@ package com.soywiz.korge.box2d
 
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
+import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.vector.*
 import org.jbox2d.dynamics.*
 import kotlin.test.*
 
-class Box2dTest {
+class Box2dTest : ViewsForTesting() {
 	@Test
-	fun test() = viewsLog { log ->
+	fun test() = viewsTest {
         /*
 		lateinit var body: Body
 

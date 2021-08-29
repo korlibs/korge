@@ -1,10 +1,12 @@
 package com.esotericsoftware.spine.korge
 
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.serialization.xml.*
 
+@Deprecated("KTree is going to be removed in a future version")
 fun Views.registerSpine() {
-    serializer.register(
+    ktreeSerializer.register(
         name = "spine",
         deserializer = { xml ->
             when (xml.nameLC) {

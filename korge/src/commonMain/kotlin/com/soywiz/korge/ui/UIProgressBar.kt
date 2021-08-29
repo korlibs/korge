@@ -4,7 +4,6 @@ import com.soywiz.kmem.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.ktree.*
 import com.soywiz.korui.*
 
 inline fun Container.uiProgressBar(
@@ -48,11 +47,4 @@ open class UIProgressBar(
         }
         super.buildDebugComponent(views, container)
     }
-
-    object Serializer : KTreeSerializerExt<UIProgressBar>("UIProgressBar", UIProgressBar::class, { UIProgressBar() }, {
-        add(UIProgressBar::current)
-        add(UIProgressBar::maximum)
-        add(UIProgressBar::width)
-        add(UIProgressBar::height)
-    })
 }

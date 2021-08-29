@@ -273,7 +273,9 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
         val MenuItemSeparatror = MenuItem(null)
     }
 
-    override val ag: AG = LogAG()
+    //override val ag: AG = LogAG()
+    override val ag: AG = DummyAG()
+
     open val coroutineDispatcher: GameWindowCoroutineDispatcher = GameWindowCoroutineDispatcher()
 
     fun getCoroutineDispatcherWithCurrentContext(coroutineContext: CoroutineContext): CoroutineContext = coroutineContext + coroutineDispatcher

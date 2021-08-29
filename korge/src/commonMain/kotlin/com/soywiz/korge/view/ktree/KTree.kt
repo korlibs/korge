@@ -1,34 +1,37 @@
+@file:Suppress("DEPRECATION")
+
 package com.soywiz.korge.view.ktree
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.debug.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tiled.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.grid.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korui.*
 import kotlin.jvm.*
-import kotlin.printStackTrace
 import kotlin.reflect.*
 
+//views.serializer.registerExtension(PhysicsKTreeSerializerExtension)
+
+@Deprecated("KTree is going to be removed in a future version")
 interface KTreeSerializerHolder {
     val serializer: KTreeSerializer
 }
 
+@Deprecated("KTree is going to be removed in a future version")
 open class KTreeSerializerExtension(val name: String) {
-    val nameLC = name.toLowerCase()
+    val nameLC = name.lowercase()
 
     open fun complete(serializer: KTreeSerializer, view: View) {
     }
@@ -46,8 +49,9 @@ open class KTreeSerializerExtension(val name: String) {
     }
 }
 
+@Deprecated("KTree is going to be removed in a future version")
 open class KTreeSerializerExt<T : View>(val name: String, val clazz: KClass<T>, val factory: () -> T, val block: KTreeSerializerExt<T>.() -> Unit) {
-    val nameLC = name.toLowerCase()
+    val nameLC = name.lowercase()
     data class Prop<T, R>(val prop: KMutableProperty1<T, R>, val default: R) {
         val name get() = prop.name
     }
@@ -103,6 +107,7 @@ open class KTreeSerializerExt<T : View>(val name: String, val clazz: KClass<T>, 
         propsDouble.fastForEach { it.prop.set(instance, xml.double(it.prop.name, it.default)) }
         propsInt.fastForEach { it.prop.set(instance, xml.int(it.prop.name, it.default)) }
         propsCustom.fastForEach {
+            @Suppress("UNCHECKED_CAST")
             it as CustomProp<T, Any>
             it.prop.set(instance, it.serialize(xml.str(it.prop.name)))
         }
@@ -116,6 +121,7 @@ open class KTreeSerializerExt<T : View>(val name: String, val clazz: KClass<T>, 
                 list.fastForEach { props[it.name] = it.prop.get(view) }
             }
             propsCustom.fastForEach {
+                @Suppress("UNCHECKED_CAST")
                 it as CustomProp<T, Any>
                 props[it.name] = it.deserialize(it.prop.get(view))
             }
@@ -124,7 +130,18 @@ open class KTreeSerializerExt<T : View>(val name: String, val clazz: KClass<T>, 
     }
 }
 
+@Deprecated("", ReplaceWith("ktreeSerializer"))
+val Views.serializer get() = ktreeSerializer
+
+//@Deprecated("KTree is going to be removed in a future version") val Views.ktreeSerializer by Extra.PropertyThis { KTreeSerializer(this) }
+//@Deprecated("KTree is going to be removed in a future version") val Views.ktreeSerializerHolder by Extra.PropertyThis { object : KTreeSerializerHolder { override val serializer: KTreeSerializer get() = ktreeSerializer } }
+
+@Deprecated("KTree is going to be removed in a future version") val Views.ktreeSerializer get() = extraCache("ktreeSerializer") { KTreeSerializer(this) }
+@Deprecated("KTree is going to be removed in a future version") val Views.ktreeSerializerHolder get() = extraCache("ktreeSerializerHolder") { object : KTreeSerializerHolder { override val serializer: KTreeSerializer get() = ktreeSerializer } }
+
+
 @OptIn(KorgeExperimental::class)
+@Deprecated("KTree is going to be removed in a future version")
 open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by Extra.Mixin() {
     override val serializer get() = this
 
@@ -136,10 +153,10 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
     val extensionsByName = LinkedHashMap<String, KTreeSerializerExtension>()
 
     init {
-        register(UIButton.Serializer)
-        register(Text.Serializer)
-        register(UIProgressBar.Serializer)
-        register(UICheckBox.Serializer)
+        register(UIButtonSerializer())
+        register(TextSerializer())
+        register(UIProgressBarSerializer())
+        register(UICheckBoxSerializer())
     }
 
     class Registration(
@@ -386,27 +403,98 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
     }
 
     companion object {
-        internal val __ex_ = "__ex_"
+        internal const val __ex_ = "__ex_"
     }
 }
 
-suspend fun Xml.ktreeToViewTree(views: Views, currentVfs: VfsFile = views.currentVfs, parent: Container? = null): View = views.serializer.ktreeToViewTree(this, currentVfs, parent)
-suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile, parent: Container? = null): View = serializer.serializer.ktreeToViewTree(this, currentVfs, parent)
-suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder, parent: Container? = null): View = readXml().ktreeToViewTree(serializer, this.parent, parent)
+@Deprecated("KTree is going to be removed in a future version")
+class TextSerializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Text") }, {
+    add(Text::text, "Text")
+    add(Text::fontSource)
+    add(Text::textSize, Text.DEFAULT_TEXT_SIZE)
+    add(Text::autoScaling, Text.DEFAULT_AUTO_SCALING)
+    add(Text::verticalAlign, { VerticalAlign(it) }, { it.toString() })
+    add(Text::horizontalAlign, { HorizontalAlign(it) }, { it.toString() })
+    //view.fontSource = xml.str("fontSource", "")
+}) {
+    override suspend fun ktreeToViewTree(xml: Xml, currentVfs: VfsFile): Text {
+        return super.ktreeToViewTree(xml, currentVfs).also { view ->
+            if ((view.fontSource ?: "").isNotBlank()) {
+                try {
+                    view.forceLoadFontSource(currentVfs, view.fontSource)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
+        }
+    }
+}
 
-fun View.viewTreeToKTree(views: Views, level: Int = 1): Xml = views.serializer.viewTreeToKTree(this, views.currentVfs, level)
+@Deprecated("KTree is going to be removed in a future version")
+class UIButtonSerializer : KTreeSerializerExt<UIButton>("UIButton", UIButton::class, { UIButton().also { it.text = "Button" } }, {
+    add(UIButton::text)
+    add(UIButton::textSize)
+    add(UIButton::width)
+    add(UIButton::height)
+})
+
+@Deprecated("KTree is going to be removed in a future version")
+class UIProgressBarSerializer : KTreeSerializerExt<UIProgressBar>("UIProgressBar", UIProgressBar::class, { UIProgressBar() }, {
+    add(UIProgressBar::current)
+    add(UIProgressBar::maximum)
+    add(UIProgressBar::width)
+    add(UIProgressBar::height)
+})
+
+@Deprecated("KTree is going to be removed in a future version")
+class UICheckBoxSerializer : KTreeSerializerExt<UICheckBox>("UICheckBox", UICheckBox::class, { UICheckBox() }, {
+    add(UICheckBox::text)
+    add(UICheckBox::checked)
+    add(UICheckBox::width)
+    add(UICheckBox::height)
+})
+
+@Deprecated("KTree is going to be removed in a future version")
+class UIRadioButtonSerializer : KTreeSerializerExt<UIRadioButton>("UIRadioButton", UIRadioButton::class, { UIRadioButton() }, {
+    add(UIRadioButton::text)
+    add(UIRadioButton::checked)
+    add(UIRadioButton::width)
+    add(UIRadioButton::height)
+})
+
+
+@Deprecated("KTree is going to be removed in a future version")
+suspend fun Xml.ktreeToViewTree(views: Views, currentVfs: VfsFile = views.currentVfs, parent: Container? = null): View = views.ktreeSerializer.ktreeToViewTree(this, currentVfs, parent)
+@Deprecated("KTree is going to be removed in a future version")
+fun View.viewTreeToKTree(views: Views, level: Int = 1): Xml = views.ktreeSerializer.viewTreeToKTree(this, views.currentVfs, level)
+
+@Deprecated("KTree is going to be removed in a future version")
+suspend fun Xml.ktreeToViewTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile, parent: Container? = null): View = serializer.serializer.ktreeToViewTree(this, currentVfs, parent)
+@Deprecated("KTree is going to be removed in a future version")
+suspend fun VfsFile.readKTree(serializer: KTreeSerializerHolder, parent: Container? = null): View = readXml().ktreeToViewTree(serializer, this.parent, parent)
+@Deprecated("KTree is going to be removed in a future version")
 fun View.viewTreeToKTree(serializer: KTreeSerializerHolder, currentVfs: VfsFile, level: Int = 1): Xml = serializer.serializer.viewTreeToKTree(this, currentVfs, level)
+
+@Deprecated("KTree is going to be removed in a future version")
+suspend fun VfsFile.readKTree(views: Views, parent: Container? = null): View = readKTree(views.ktreeSerializerHolder, parent)
+@Deprecated("KTree is going to be removed in a future version")
+fun View.viewTreeToKTree(views: Views, currentVfs: VfsFile, level: Int = 1): Xml = viewTreeToKTree(views.ktreeSerializerHolder, currentVfs, level)
 
 // Views from context versions
 
+@Deprecated("KTree is going to be removed in a future version")
 suspend fun Xml.ktreeToViewTree(currentVfs: VfsFile? = null, parent: Container? = null): View {
     val views = views()
     return ktreeToViewTree(views, currentVfs ?: views.currentVfs, parent)
 }
+@Deprecated("KTree is going to be removed in a future version")
 suspend fun VfsFile.readKTree(parent: Container? = null): View = readKTree(views(), parent)
+@Deprecated("KTree is going to be removed in a future version")
 suspend fun View.viewTreeToKTree(level: Int = 1): Xml = viewTreeToKTree(views(), level)
+@Deprecated("KTree is going to be removed in a future version")
 suspend fun View.viewTreeToKTree(currentVfs: VfsFile, level: Int = 1): Xml = viewTreeToKTree(views(), currentVfs, level)
 
+@Deprecated("KTree is going to be removed in a future version")
 class KTreeRoot(width: Double, height: Double) : FixedSizeContainer(width, height) {
     val grid = OrthographicGrid(20, 20)
     var showGrid = false
@@ -416,5 +504,29 @@ class KTreeRoot(width: Double, height: Double) : FixedSizeContainer(width, heigh
         if (showGrid) {
             grid.draw(ctx, width, height, globalMatrix)
         }
+    }
+}
+
+@Deprecated("KTree is going to be removed in a future version")
+class TreeViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
+    override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {
+        baseForceLoadSourceFile(views, currentVfs, sourceFile)
+        removeChildren()
+        addChildren((currentVfs["$sourceFile"].readKTree(views) as Container).children.toList())
+        scale = 1.0
+    }
+
+    override fun renderInternal(ctx: RenderContext) {
+        this.lazyLoadRenderInternal(ctx, this)
+        super.renderInternal(ctx)
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        container.uiCollapsibleSection("Tree") {
+            uiEditableValue(::sourceFile, kind = UiTextEditableValue.Kind.FILE(views.currentVfs) {
+                it.extensionLC == "ktree"
+            })
+        }
+        super.buildDebugComponent(views, container)
     }
 }

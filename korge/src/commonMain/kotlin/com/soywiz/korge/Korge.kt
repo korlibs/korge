@@ -54,7 +54,7 @@ object Korge {
             quality = module.quality,
             icon = null,
             iconPath = module.icon,
-            iconDrawable = module.iconImage,
+            //iconDrawable = module.iconImage,
             imageFormats = ImageFormats(module.imageFormats),
             targetFps = module.targetFps,
             scaleAnchor = module.scaleAnchor,
@@ -94,8 +94,8 @@ object Korge {
         virtualWidth: Int = width, virtualHeight: Int = height,
         icon: Bitmap? = null,
         iconPath: String? = null,
-        iconDrawable: SizedDrawable? = null,
-        imageFormats: ImageFormat = ImageFormats(PNG),
+        //iconDrawable: SizedDrawable? = null,
+        imageFormats: ImageFormat = ImageFormats(),
         quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC,
         targetFps: Double = 0.0,
         scaleAnchor: Anchor = Anchor.MIDDLE_CENTER,
@@ -133,7 +133,7 @@ object Korge {
                 try {
                     // Do nothing
                     when {
-                        iconDrawable != null -> this.icon = iconDrawable.render()
+                        //iconDrawable != null -> this.icon = iconDrawable.render()
                         iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
                         else -> Unit
                     }
@@ -151,7 +151,8 @@ object Korge {
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
-                ag = if (debugAg) PrintAG() else ag,
+                //ag = if (debugAg) PrintAG() else ag,
+                ag = ag,
                 injector = injector,
                 input = input,
                 timeProvider = timeProvider,
@@ -160,7 +161,9 @@ object Korge {
                 gameId = gameId,
                 settingsFolder = settingsFolder,
                 batchMaxQuads = batchMaxQuads
-            )
+            ).also {
+                it.init()
+            }
 
             if (OS.isJsBrowser) KDynamic { global["views"] = views }
             injector
