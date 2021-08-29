@@ -11,22 +11,24 @@ fun Project.configureEsbuild() {
     val esbuildFolder = File(rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
     val esbuildCmd = if (isWindows) File(esbuildFolder, "esbuild.cmd") else File(esbuildFolder, "bin/esbuild")
-    val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
-    val npmCmd by lazy {
-        arrayOf(
-            File(env.nodeExecutable),
-            File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js")
-        )
-    }
 
     val npmInstallEsbuild = "npmInstallEsbuild"
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
-        rootProject.tasks.create(npmInstallEsbuild, Exec::class) {
-            it.dependsOn("kotlinNodeJsSetup")
-            it.onlyIf { !esbuildCmd.exists() }
+        rootProject.tasks.create(npmInstallEsbuild, Exec::class) { task ->
+            task.dependsOn("kotlinNodeJsSetup")
+            task.onlyIf { !esbuildCmd.exists() }
 
             val esbuildVersion = korge.esbuildVersion
-            it.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder)
+            task.doFirst {
+                val env = org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured()
+                val npmCmd = arrayOf(
+                    File(env.nodeExecutable),
+                    File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                        ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                        ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
+                )
+                task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder)
+            }
         }
     }
 
@@ -66,12 +68,16 @@ fun Project.configureEsbuild() {
             // browserDebugEsbuild
             // browserReleaseEsbuild
             tasks.create("browser${debugPrefix}Esbuild${runSuffix}", Exec::class) { task ->
+                task.group = "kotlin browser"
                 task.dependsOn(browserPrepareEsbuild)
 
                 val jsPath = tasks.getByName("compile${productionInfix}ExecutableKotlinJs").outputs.files.first {
                     it.extension.toLowerCase() == "js"
                 }
 
+                val output = File(wwwFolder, "${project.name}.js")
+                task.inputs.file(jsPath)
+                task.outputs.file(output)
                 task.commandLine(ArrayList<Any>().apply {
                     add(esbuildCmd)
                     //add("--watch",)
@@ -79,7 +85,7 @@ fun Project.configureEsbuild() {
                     add("--minify")
                     add("--sourcemap=external")
                     add(jsPath)
-                    add("--outfile=${File(wwwFolder, "${project.name}.js")}")
+                    add("--outfile=$output")
                     // @TODO: Close this command on CTRL+C
                     //if (run) add("--servedir=$wwwFolder")
                 })

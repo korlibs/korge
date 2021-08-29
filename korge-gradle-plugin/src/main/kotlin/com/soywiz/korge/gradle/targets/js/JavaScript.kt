@@ -96,4 +96,5 @@ fun Project.configureJavaScript() {
     configureEsbuild()
     configureWebpackFixes()
     configureJavascriptRun()
+    configureClosureCompiler()
 }
