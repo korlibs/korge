@@ -7,6 +7,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.*
 
@@ -135,6 +136,39 @@ class GraphicsTest {
         val rc = TestRenderContext()
         g.render(rc)
         assertEquals(0, g.bitmapsToRemove.size)
+    }
+
+    @Test
+    fun testGraphicsBoundsWithOnlyStrokes() {
+        val p0 = Point(109, 135)
+        val p1 = Point(25, 190)
+        val p2 = Point(210, 250)
+        val p3 = Point(234, 49)
+        val g = Graphics()
+        assertEquals(Rectangle(), g.getLocalBounds())
+        run {
+            g.clear()
+            g.stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
+                moveTo(p0)
+                lineTo(p1)
+                lineTo(p2)
+                lineTo(p3)
+            }
+            g.stroke(Colors.WHITE, info = StrokeInfo(thickness = 2.0)) {
+                cubic(p0, p1, p2, p3)
+            }
+            val ratio = 0.3
+            val cubic2 = Bezier.Cubic().setToSplitFirst(Bezier.Cubic(p0, p1, p2, p3), ratio)
+            val cubic3 = Bezier.Cubic().setToSplitSecond(Bezier.Cubic(p0, p1, p2, p3), ratio)
+
+            g.stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
+                cubic(cubic2)
+            }
+            g.stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
+                cubic(cubic3)
+            }
+        }
+        assertEquals(Rectangle(0, 0, 234, 250), g.getLocalBounds())
     }
 }
 

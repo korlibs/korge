@@ -204,29 +204,34 @@ open class Graphics @JvmOverloads constructor(
     fun shape(shape: Shape) {
         shapes += shape
         currentPath = graphicsPathPool.alloc()
-        shapeVersion++
+        dirtyShape()
     }
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
     inline fun shape(shape: VectorPath, matrix: Matrix) = dirty { currentPath.write(shape, matrix) }
 
+    private fun dirtyShape() {
+        shapeVersion++
+        dirty()
+    }
+
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		currentPath = graphicsPathPool.alloc()
-        shapeVersion++
+        dirtyShape()
 	}
 
 	fun endStroke() = dirty {
 		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = graphicsPathPool.alloc()
-        shapeVersion++
+        dirtyShape()
 	}
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		shapes += PolylineShape(graphicsPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		currentPath = graphicsPathPool.alloc()
-        shapeVersion++
+        dirtyShape()
 	}
 
     override fun drawShape(ctx: Context2d) {

@@ -344,16 +344,16 @@ data class PolylineShape(
     private val tempRect = Rectangle()
 
     override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        if (!includeStrokes) return
-
         tempBB.reset()
         tempBB.add(path)
         tempBB.getBounds(tempRect)
 
         //println("TEMP_RECT: ${tempRect}")
 
-        val halfThickness = max(thickness / 2.0, 0.0)
-        tempRect.inflate(halfThickness, halfThickness)
+        if (includeStrokes) {
+            val halfThickness = max(thickness / 2.0, 0.0)
+            tempRect.inflate(halfThickness, halfThickness)
+        }
 
         //println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
 
