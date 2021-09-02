@@ -5,6 +5,8 @@ import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
+import org.gradle.api.file.*
+import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.*
 
@@ -43,11 +45,13 @@ fun Project.configureJavaScript() {
         }
 	}
 
-    project.tasks.getByName("jsProcessResources").apply {
-        //println(this.outputs.files.toList())
+    val generatedIndexHtmlDir = File(project.buildDir, "processedResources-www")
+
+    val jsCreateIndexHtml = project.tasks.create("jsCreateIndexHtml", Task::class.java).apply {
         doLast {
-            val targetDir = this.outputs.files.first()
-            logger.info("jsProcessResources.targetDir: $targetDir")
+            val targetDir = generatedIndexHtmlDir
+            generatedIndexHtmlDir.mkdirs()
+            logger.info("jsCreateIndexHtml.targetDir: $targetDir")
             val jsMainCompilation = kotlin.js().compilations["main"]!!
             //val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
             // @TODO: How to get the actual .js file generated/served?
@@ -92,6 +96,15 @@ fun Project.configureJavaScript() {
                 ).toString()
             )
         }
+    }
+
+    (project.tasks.getByName("jsProcessResources") as Copy).apply {
+        dependsOn(jsCreateIndexHtml)
+        from(generatedIndexHtmlDir) {
+            it.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        }
+        //println(this.outputs.files.toList())
+
     }
     configureEsbuild()
     configureWebpackFixes()
