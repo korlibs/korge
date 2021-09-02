@@ -30,6 +30,13 @@ jobs:
       run: ./gradlew --no-daemon jvmTest
     - name: Testing Node JS
       run: ./gradlew --no-daemon jsNodeTest
+    - name: Test Report
+      uses: dorny/test-reporter@v1
+      if: success() || failure()
+      with:
+        name: JUnit Tests
+        path: test-results/**/TEST-*.xml
+        reporter: java-junit
   test-native:
     timeout-minutes: 60
 
