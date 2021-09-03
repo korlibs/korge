@@ -111,6 +111,20 @@ class Tensor internal constructor(private val graph: TensorGraph.Node, private v
 
     // Convolution
 
+    // @TODO
+
+    // Logical
+    fun equal(other: Tensor) = binop(TensorOp.equal, other)
+    fun greater(other: Tensor) = binop(TensorOp.greater, other)
+    fun greaterEqual(other: Tensor) = binop(TensorOp.greaterEqual, other)
+    fun less(other: Tensor) = binop(TensorOp.less, other)
+    fun lessEqual(other: Tensor) = binop(TensorOp.lessEqual, other)
+    fun logicalAnd(other: Tensor) = binop(TensorOp.logicalAnd, other)
+    fun logicalNot() = unop(TensorOp.logicalNot)
+    fun logicalOr(other: Tensor) = binop(TensorOp.logicalOr, other)
+    fun logicalXor(other: Tensor) = binop(TensorOp.logicalXor, other)
+    fun notEqual(other: Tensor) = binop(TensorOp.notEqual, other)
+    fun where(vtrue: Tensor, vfalse: Tensor) = multiop(TensorOp.where, vtrue, vfalse)
 
     operator fun unaryMinus() = neg()
     operator fun unaryPlus() = this
@@ -121,5 +135,6 @@ class Tensor internal constructor(private val graph: TensorGraph.Node, private v
     operator fun rem(other: Tensor) = mod(other)
 
     fun clone() = Tensor(graph, backend)
+    fun toStringSimple(): String = "Tensor(${computed.toStringSimple()})"
     override fun toString(): String = "Tensor($computed)"
 }

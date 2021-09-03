@@ -21,9 +21,8 @@ open class ShapedTensorBuffer(val buffer: TensorBuffer, val shape: TensorShape) 
         return sb
     }
 
-    override fun toString(): String {
-        return toStringPart(StringBuilder(), buffer.readSync(false)).toString()
-    }
+    fun toStringSimple(): String = toStringPart(StringBuilder(), buffer.readSync(false)).toString()
+    override fun toString(): String = toStringSimple()
 }
 
 interface TensorBuffer {

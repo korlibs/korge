@@ -1,0 +1,7 @@
+description = "A prototype tensor implementation for ML"
+
+dependencies {
+    jvmMainApi("org.tensorflow:tensorflow-framework:0.3.3")
+    jvmMainApi("org.tensorflow:tensorflow-core-platform:0.3.3")
+    jvmMainApi("org.tensorflow:tensorflow-core-platform-gpu:0.3.3")
+}

@@ -61,4 +61,16 @@ enum class TensorOp {
     norm,
     outerProd,
     transpose,
+    // Logical
+    equal,
+    greater,
+    greaterEqual,
+    less,
+    lessEqual,
+    logicalAnd,
+    logicalNot,
+    logicalOr,
+    logicalXor,
+    notEqual,
+    where,
 }

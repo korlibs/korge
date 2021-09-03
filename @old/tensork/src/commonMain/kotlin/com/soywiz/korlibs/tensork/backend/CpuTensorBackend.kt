@@ -76,6 +76,18 @@ object CpuTensorBackend : TensorBackend() {
         CpuOperation(TensorOp.norm) { TODO() },
         CpuOperation(TensorOp.outerProd) { TODO() },
         CpuOperation(TensorOp.transpose) { TODO() },
+        // Logical
+        CpuOperation(TensorOp.equal) { binary1DFunc { a, b -> (a == b).toFloat() } },
+        CpuOperation(TensorOp.greater) { binary1DFunc { a, b -> (a > b).toFloat() } },
+        CpuOperation(TensorOp.greaterEqual) { binary1DFunc { a, b -> (a >= b).toFloat() } },
+        CpuOperation(TensorOp.less) { binary1DFunc { a, b -> (a < b).toFloat() } },
+        CpuOperation(TensorOp.lessEqual) { binary1DFunc { a, b -> (a <= b).toFloat() } },
+        CpuOperation(TensorOp.logicalAnd) { binary1DFunc { a, b -> (a.toBool() && b.toBool()).toFloat() } },
+        CpuOperation(TensorOp.logicalNot) { unary1DFunc { (!it.toBool()).toFloat() } },
+        CpuOperation(TensorOp.logicalOr) { binary1DFunc { a, b -> (a.toBool() || b.toBool()).toFloat() } },
+        CpuOperation(TensorOp.logicalXor) { binary1DFunc { a, b -> (a.toBool() xor b.toBool()).toFloat() } },
+        CpuOperation(TensorOp.notEqual) { binary1DFunc { a, b -> (a != b).toFloat() } },
+        CpuOperation(TensorOp.where) { ternary1DFunc { a, b, c -> if (a.toBool()) b else c } },
     ).associate { it.op to it.func }
 
 
@@ -129,7 +141,9 @@ object CpuTensorBackend : TensorBackend() {
         }
         return out
     }
-}
 
-fun <T : Comparable<T>> min(a: T, b: T) = if (a < b) a else b
-fun <T : Comparable<T>> max(a: T, b: T) = if (a > b) a else b
+    inline fun <T : Comparable<T>> min(a: T, b: T) = if (a < b) a else b
+    inline fun <T : Comparable<T>> max(a: T, b: T) = if (a > b) a else b
+    inline fun Boolean.toFloat() = if (this) 1f else 0f
+    inline fun Float.toBool() = (this != 0f)
+}
