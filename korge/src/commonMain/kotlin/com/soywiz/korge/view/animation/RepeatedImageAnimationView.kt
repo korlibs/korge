@@ -1,33 +1,26 @@
 package com.soywiz.korge.view.animation
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
+import com.soywiz.korim.format.ImageAnimation
 
-inline fun Container.imageAnimationView(
+inline fun Container.repeatedImageAnimationView(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
-    block: @ViewDslMarker ImageAnimationView.() -> Unit = {}
-) = ImageAnimationView(animation, direction).addTo(this, block)
+    repeatX: Boolean = false,
+    repeatY: Boolean = false,
+    block: @ViewDslMarker RepeatedImageAnimationView.() -> Unit = {}
+) = RepeatedImageAnimationView(animation, direction, repeatX, repeatY).addTo(this, block)
 
-abstract class AbstractImageAnimationView : Container() {
-    open var animation: ImageAnimation? = null
-    open var smoothing: Boolean = false
-    protected var running = true
-    fun play() { running = true }
-    fun stop() { running = false }
-    protected abstract fun setFirstFrame()
-    fun rewind() { setFirstFrame() }
-    abstract fun getLayer(name: String) : View?
-}
-
-open class ImageAnimationView(
+open class RepeatedImageAnimationView(
     animation: ImageAnimation? = null,
-    direction: ImageAnimation.Direction? = null
+    direction: ImageAnimation.Direction? = null,
+    var repeatX: Boolean = false,
+    var repeatY: Boolean = false
 ) : AbstractImageAnimationView() {
     private var nframes: Int = 1
 
@@ -41,7 +34,7 @@ open class ImageAnimationView(
     var direction: ImageAnimation.Direction? = direction
 
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
-    private val layers = mutableMapOf<String, Image>()
+    val layers = mutableMapOf<String, RepeatedImageView>()
     private var nextFrameIn = 0.milliseconds
     private var nextFrameIndex = 0
     private var dir = +1
@@ -62,9 +55,8 @@ open class ImageAnimationView(
         val frame = animation?.frames?.getCyclicOrNull(frameIndex)
         if (frame != null) {
             frame.layerData.fastForEach {
-                val image = layers[it.layer.name ?: "default"] ?: Image(Bitmaps.transparent)
+                val image = layers[it.layer.name ?: "default"] ?: RepeatedImageView(Bitmaps.transparent)
                 image.bitmap = it.slice
-                image.smoothing = smoothing
                 image.xy(it.targetX, it.targetY)
             }
             nextFrameIn = frame.duration
@@ -95,7 +87,7 @@ open class ImageAnimationView(
         val animation = this.animation
         if (animation != null) {
             for (layer in animation.layers) {
-                val image = Image(Bitmaps.transparent)
+                val image = RepeatedImageView(Bitmaps.transparent, smoothing, repeatX, repeatY)
                 layers[layer.name ?: "default"] = image
                 addChild(image)
             }
@@ -116,3 +108,4 @@ open class ImageAnimationView(
         }
     }
 }
+

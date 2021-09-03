@@ -8,6 +8,7 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
+import com.soywiz.korio.lang.toCharArray
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.*
@@ -152,6 +153,34 @@ object ASE : ImageFormatWithContainer("ase") {
         val slices = FastArrayList<AseSlice>()
     }
 
+    /**
+     * This function reads the Aseprite image file, decodes its content and stores selected details into an
+     * [ImageDataContainer] object.
+     *
+     * With the [props] parameter it is possible to selectively load data from an Aseprite image file. If props are
+     * not defined than the whole image will be read with all layers and slices.
+     *
+     * [props] can be defined as: (name, type)
+     * - "layers", String:
+     *   With this property it is possible to define layer names (comma separated string) which shall be read from the
+     *   Aseprite file. Other layers will be ignored.
+     *
+     * - "disableSlicing", Boolean:
+     *   With this it is possible to switch of slicing of the Aseprite image even if slices are defined in
+     *   the image. This can be used to selectively slice only specific layers. While all other layers are not sliced.
+     *
+     * - "useSlicePosition", Boolean:
+     *   With this it is possible to set the position of a sliced image object relative to the original image. This is
+     *   useful if the sliced image should be placed relative to another sliced image in the view which uses these images.
+     *   This property has only an effect if "disableSlicing" is set to "false".
+     *
+     * Example for [props]:
+     *
+     *     val props = ImageDecodingProps(this.baseName, extra = ExtraTypeCreate())
+     *     props.setExtra("layers", "layer_1,layer_2,layer_3")
+     *     props.setExtra("disableSlicing", false)
+     *     props.setExtra("useSlicePosition", true)
+     */
     override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer {
         val fileSize = s.readS32LE()
         if (s.length < fileSize) error("File too short")
@@ -370,19 +399,19 @@ object ASE : ImageFormatWithContainer("ase") {
         }
 
         val imageLayers = image.layers
-        val imageVisibleLayers = imageLayers.filter { it.isVisible }
+        val imageVisibleLayers = imageLayers.filter { it.isVisible && props.takeLayersByName(it.name as String) }
 
-        val frames = image.frames.map { frame ->
+        val frames = image.frames.mapNotNull { frame ->
             // First collect within a frame only cells which are on a visible layer
-            val cells = frame.celsByLayer.toLinkedMap().filter { imageLayers[it.key].isVisible }
+            val cells = frame.celsByLayer.toLinkedMap().filter {
+                imageLayers[it.key].isVisible && props.takeLayersByName(imageLayers[it.key].name as String) }
             // Then create list of layer data from those cells and their corresponding visible layers
             val layerData = cells.map { (key, value) ->
                 ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = true)
             }
-            // Finally the index in the layer details needs to be adjusted because the invisible layers do not exist
-            // in ImageAnimationView objects. The index would be out of bounds otherwise.
-            imageVisibleLayers.forEachIndexed { index, element -> element.index = index }
-            ImageFrame(frame.index, frame.time.milliseconds, layerData)
+            if (layerData.isNotEmpty()) {
+                ImageFrame(frame.index, frame.time.milliseconds, layerData)
+            } else null
         }
 
         val animations = image.tags.map {
@@ -395,40 +424,70 @@ object ASE : ImageFormatWithContainer("ase") {
             width = imageWidth,
             height = imageHeight,
             layers = imageVisibleLayers,
-            animations = animations,
+            animations = animations
         )
 
-        val datas = image.slices.map { slice ->
+        // Create image data for all slices of frames but take only layers which are defined in "props"
+        val datas = image.slices.mapNotNull { slice ->
             slice.sortKeys()
             val maxWidth = slice.keys.map { it.sliceWidth }.maxOrNull() ?: 0
             val maxHeight = slice.keys.map { it.sliceHeight }.maxOrNull() ?: 0
-            val frames = defaultData.frames.map {
-                val sliceKey = slice.getSliceForFrame(it.index)
-                ImageFrame(it.index, it.time, layerData = it.layerData.map {
-                    // @TODO: What should we do with layers here?
-                    // @TODO: Linked frame?
-                    //ImageFrameLayer(it.layer, it.slice.bmp.slice(sliceKey.sliceFrame, it.slice.name), it.targetX, it.targetY, it.main, it.includeInAtlas, null)
-                    //println("name=${slice.name}: it.slice=${it.slice.bounds}, x=${it.targetX}, y=${it.targetY}, sliceKey.sliceFrame=${sliceKey.sliceFrame}")
-                    val sliceFrame = RectangleInt(sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY, sliceKey.sliceFrame.width, sliceKey.sliceFrame.height)
-                    ImageFrameLayer(it.layer, it.slice.slice(sliceFrame, it.slice.name), it.targetX - sliceKey.pivotX, it.targetY - sliceKey.pivotY, it.main, it.includeInAtlas, null)
-                })
+
+            val frames = image.frames.mapNotNull { frame ->
+                val sliceKey = slice.getSliceForFrame(frame.index)
+                // Collect cells which are on a visible layer and that layer should also be sliced
+                val cells = frame.celsByLayer.toLinkedMap().filter {
+                    imageLayers[it.key].isVisible && props.takeLayersByName(imageLayers[it.key].name as String)
+                }
+                // Create list of layer data from found cells and slice them
+                val layerData = cells.map { (key, value) ->
+                    ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y,
+                        main = false, includeInAtlas = true
+                    )
+                }.map {
+                    val sliceFrame = RectangleInt(
+                        sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY,
+                        sliceKey.sliceFrame.width, sliceKey.sliceFrame.height
+                    )
+                    ImageFrameLayer(
+                        it.layer, it.slice.slice(sliceFrame, it.slice.name),
+                        (if (props.useSlicePosition()) sliceKey.sliceFrame.x else it.targetX) - sliceKey.pivotX,
+                        (if (props.useSlicePosition()) sliceKey.sliceFrame.y else it.targetY) - sliceKey.pivotY,
+                        it.main, it.includeInAtlas, null
+                    )
+                }
+                if (layerData.isNotEmpty()) {
+                    ImageFrame(frame.index, frame.time.milliseconds, layerData = layerData)
+                } else null
             }
-            val animations = image.tags.map {
-                val framesRange = frames.slice(it.fromFrame.clamp(0, frames.size) .. it.toFrame.clamp(0, frames.size - 1))
-                ImageAnimation(framesRange, it.direction, it.tagName)
-            }
-            ImageData(
-                frames = frames,
-                width = maxWidth,
-                height = maxHeight,
-                layers = imageVisibleLayers,
-                animations = animations,
-                name = slice.name
-            )
+            if (frames.isNotEmpty() && props.slicingEnabled()) {
+                val animations = image.tags.map {
+                    val framesRange =
+                        frames.slice(it.fromFrame.clamp(0, frames.size)..it.toFrame.clamp(0, frames.size - 1))
+                    ImageAnimation(framesRange, it.direction, it.tagName)
+                }
+                //println("Add sliced layer: ${slice.name}")
+                ImageData(
+                    frames = frames,
+                    width = maxWidth,
+                    height = maxHeight,
+                    layers = imageVisibleLayers,
+                    animations = animations,
+                    name = slice.name
+                )
+            } else null
         }
+
+        // Finally the index in the layer details needs to be adjusted because the invisible layers do not exist
+        // in ImageAnimationView objects. The index would be out of bounds otherwise.
+        imageVisibleLayers.forEachIndexed { index, element -> element.index = index }
 
         return ImageDataContainer(datas.ifEmpty { listOf(defaultData) })
     }
+
+    private fun ImageDecodingProps.takeLayersByName(name : String) : Boolean = getExtra("layers") == null || (getExtra("layers") as String).contains(name)
+    private fun ImageDecodingProps.slicingEnabled() : Boolean = getExtraTyped<Boolean>("disableSlicing") == null || !(getExtraTyped<Boolean>("disableSlicing")!!)
+    private fun ImageDecodingProps.useSlicePosition() : Boolean = getExtraTyped<Boolean>("useSlicePosition") != null && getExtraTyped<Boolean>("useSlicePosition")!!
 
     fun SyncStream.readRGB(): RGBA = RGBA(readU8(), readU8(), readU8())
     fun SyncStream.readRGBA(): RGBA = RGBA(readS32LE())

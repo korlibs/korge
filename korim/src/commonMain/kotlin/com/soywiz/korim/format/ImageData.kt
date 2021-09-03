@@ -28,7 +28,7 @@ open class ImageData constructor(
     val animationsByName = animations.associateBy { it.name }
     val area: Int get() = frames.area
     val framesByName = frames.associateBy { it.name }
-    val framesSortedByProority = frames.sortedByDescending {
+    val framesSortedByPriority = frames.sortedByDescending {
         if (it.main) {
             Int.MAX_VALUE
         } else {
@@ -36,7 +36,7 @@ open class ImageData constructor(
         }
     }
 
-    val mainBitmap: Bitmap get() = framesSortedByProority.firstOrNull()?.bitmap
+    val mainBitmap: Bitmap get() = framesSortedByPriority.firstOrNull()?.bitmap
         ?: throw IllegalArgumentException("No bitmap found")
 
     override fun toString(): String = "ImageData($frames)"

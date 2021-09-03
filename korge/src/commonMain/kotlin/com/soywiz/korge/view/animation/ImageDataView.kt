@@ -3,12 +3,26 @@ package com.soywiz.korge.view.animation
 import com.soywiz.korge.view.*
 import com.soywiz.korim.format.*
 
+/**
+ * With imageDataView it is possible to display an image inside a Container or View.
+ * It supports layers and animations. Animations consist of a series of frames which
+ * are defined e.g. by tag names in Aseprite files.
+ *
+ * The image can be repeating in X and/or Y direction. That needs to be enabled by setting
+ * repeating to true. The repeating values can be set per layer as repeatX and repeatY.
+ *
+ * TODO add more description...
+ *
+ */
 inline fun Container.imageDataView(
-    data: ImageData? = null, animation: String? = null,
-    playing: Boolean = false, smoothing: Boolean = true,
+    data: ImageData? = null,
+    animation: String? = null,
+    playing: Boolean = false,
+    smoothing: Boolean = true,
+    repeating: Boolean = false,
     block: @ViewDslMarker ImageDataView.() -> Unit = {}
 )
-    = ImageDataView(data, animation, playing, smoothing).addTo(this, block)
+    = ImageDataView(data, animation, playing, smoothing, repeating).addTo(this, block)
 
 /**
  * @example
@@ -43,8 +57,17 @@ open class ImageDataView(
     animation: String? = null,
     playing: Boolean = false,
     smoothing: Boolean = true,
+    repeating: Boolean = false
 ) : Container() {
-    private val animationView = imageAnimationView()
+    private val animationView = if (repeating) {
+        repeatedImageAnimationView()
+    } else {
+        imageAnimationView()
+    }
+
+    fun getLayer(name: String): View? {
+        return animationView.getLayer(name)
+    }
 
     var smoothing: Boolean = true
         set(value) {
