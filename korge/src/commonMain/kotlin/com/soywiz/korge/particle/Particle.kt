@@ -2,6 +2,7 @@ package com.soywiz.korge.particle
 
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 
 internal const val PARTICLE_STRIDE = 27
@@ -62,7 +63,11 @@ open class ParticleContainer(val max: Int) {
         set(value) { initializedFloat = if (value) 1f else 0f }
         get() = initializedFloat != 0f
 
-    fun Particle.toStringDefault() = "Particle(initialized=$initialized,pos=($x,$y),start=($startX,$startY),velocity=($velocityX,$velocityY),scale=$scale,rotation=$rotation,time=$currentTime/$totalTime,color=$color,colorDelta=$colorRdelta,$colorGdelta,$colorBdelta,$colorAdelta),radialAcceleration=$radialAcceleration,tangentialAcceleration=$tangentialAcceleration,emitRadius=$emitRadius,emitRadiusDelta=$emitRadiusDelta,scaleDelta=$scaleDelta,emitRotation=$emitRotation,emitRotationDelta=$emitRotationDelta"
+    fun Particle.toStringDefault() = "Particle[$index](initialized=$initialized,pos=(${x.nice},${y.nice}),start=(${startX.nice},${startY.nice}),velocity=(${velocityX.nice},${velocityY.nice}),scale=${scale.nice},rotation=${rotation},time=${currentTime.nice}/${totalTime.nice},color=${color.nice},colorDelta=${colorRdelta.nice},${colorGdelta.nice},${colorBdelta.nice},${colorAdelta.nice}),radialAcceleration=${radialAcceleration.nice},tangentialAcceleration=${tangentialAcceleration.nice},emitRadius=${emitRadius.nice},emitRadiusDelta=${emitRadiusDelta.nice},scaleDelta=${scaleDelta.nice},emitRotation=${emitRotation.nice},emitRotationDelta=${emitRotationDelta.nice}"
+    private val RGBA.nice get() = this.toString()
+    private val Float.nice get() = this.toStringDecimal(1)
+    private val Double.nice get() = this.toStringDecimal(1)
+    private val Angle.nice get() = this.degrees.toStringDecimal(1)
 
     init {
         for (n in 0 until max) {
@@ -75,7 +80,7 @@ open class ParticleContainer(val max: Int) {
         }
     }
 
-    override fun toString(): String = "ParticleContainer[$max](\n${map { it.toStringDefault() }.joinToString("\n")}\n)"
+    override fun toString(): String = "ParticleContainer[$max](\n${map { if (it.initialized) it.toStringDefault() else null }.filterNotNull().joinToString("\n")}\n)"
 }
 
 inline fun <T : ParticleContainer> T.fastForEach(max: Int = this.max, block: T.(Particle) -> Unit): T {
