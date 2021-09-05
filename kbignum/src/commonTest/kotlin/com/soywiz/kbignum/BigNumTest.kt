@@ -91,4 +91,45 @@ class BigNumTest {
         //"0.001".bn.convertToScale()
         //assertEquals("-0.0001", "-0.0001".bn.toString())
     }
+
+    @Test
+    fun testConvert() {
+        assertEquals(1.bi, "1.2".bn.toBigInt())
+        assertEquals(1.bi, "1.9".bn.toBigInt())
+    }
+
+    @Test
+    fun testConvertCeil() {
+        assertEquals(1.bi, "1.0".bn.toBigIntCeil())
+        assertEquals(2.bi, "1.1".bn.toBigIntCeil())
+        assertEquals(2.bi, "1.9123".bn.toBigIntCeil())
+    }
+
+    @Test
+    fun testConvertFloor() {
+        assertEquals(1.bi, "1.0".bn.toBigIntFloor())
+        assertEquals(1.bi, "1.1".bn.toBigIntFloor())
+        assertEquals(1.bi, "1.9123".bn.toBigIntFloor())
+    }
+
+    @Test
+    fun testConvertRound() {
+        assertEquals(1.bi, "1.0".bn.toBigIntRound())
+        assertEquals(1.bi, "1.4".bn.toBigIntRound())
+        assertEquals(1.bi, "1.49".bn.toBigIntRound())
+        assertEquals(1.bi, "1.4123456".bn.toBigIntRound())
+        assertEquals(1.bi, "1.499999".bn.toBigIntRound())
+        assertEquals(2.bi, "1.5".bn.toBigIntRound())
+        assertEquals(2.bi, "1.500".bn.toBigIntRound())
+        assertEquals(2.bi, "1.51".bn.toBigIntRound())
+        assertEquals(2.bi, "1.512345".bn.toBigIntRound())
+        assertEquals(2.bi, "1.6".bn.toBigIntRound())
+        assertEquals(2.bi, "1.9123".bn.toBigIntRound())
+    }
+
+    @Test
+    fun testDecimalPart() {
+        assertEquals(9123.bi, "1.9123".bn.decimalPart)
+        assertEquals(0.bi, "1.0".bn.decimalPart)
+    }
 }
