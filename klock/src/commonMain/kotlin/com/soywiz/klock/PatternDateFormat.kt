@@ -65,7 +65,7 @@ data class PatternDateFormat @JvmOverloads constructor(
     internal val regexChunks = chunks.map {
         when (it) {
             "E", "EE", "EEE", "EEEE", "EEEEE", "EEEEEE" -> """(\w+)"""
-            "z", "zzz" -> """([\w\s\-+:]+)"""
+            "z", "zzz" -> """([\w\s\-\+:]+)"""
             "do" -> """(\d{1,2}\w+)"""
             "d" -> """(\d{1,2})"""
             "dd" -> """(\d{2})"""
@@ -242,18 +242,14 @@ data class PatternDateFormat @JvmOverloads constructor(
                         if (doThrow) throw RuntimeException("Zulu Time Zone is only accepted with X-XXX formats.") else return null
                     }
                     value.first() != 'Z' -> {
-                        val valueUnsigned = value.drop(1)
-                        val hours = when (name) {
-                            "X", "x" -> valueUnsigned.toInt()
-                            "XX", "xx" -> valueUnsigned.take(2).toInt()
-                            "XXX", "xxx" -> valueUnsigned.substringBefore(':').toInt()
-                            else -> throw RuntimeException("Unreachable code! Incorrect implementation!")
+                        val valueUnsigned = value.replace(":", "").removePrefix("-").removePrefix("+")
+                        val hours = when (name.length) {
+                            1 -> valueUnsigned.toInt()
+                            else -> valueUnsigned.take(2).toInt()
                         }
-                        val minutes = when (name) {
-                            "X", "x" -> 0
-                            "XX", "xx" -> valueUnsigned.drop(2).toInt()
-                            "XXX", "xxx" -> valueUnsigned.substringAfter(':', "0").toInt()
-                            else -> throw RuntimeException("Unreachable code! Incorrect implementation!")
+                        val minutes = when (name.length) {
+                            1 -> 0
+                            else -> valueUnsigned.drop(2).toInt()
                         }
                         offset = hours.hours + minutes.minutes
                         if (value.first() == '-') {
