@@ -22,7 +22,6 @@ abstract class ShaderFilter : Filter {
     companion object {
         //val u_Time = Uniform("time", VarType.Float1)
         val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
-        val DEFAULT_FRAGMENT = BatchBuilder2D.buildTextureLookupFragment(premultiplied = false)
 
         val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
         val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize

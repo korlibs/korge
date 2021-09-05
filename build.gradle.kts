@@ -73,9 +73,6 @@ allprojects {
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
-val enableKotlinNativeSDL: String by project
-val doEnableKotlinNativeSDL get() = enableKotlinNativeSDL == "true"
-
 val enableKotlinAndroid: String by project
 val doEnableKotlinAndroid get() = enableKotlinAndroid == "true"
 
@@ -941,9 +938,6 @@ if (
 ) {
     exec { commandLine("sudo", "apt-get", "update") }
     exec { commandLine("sudo", "apt-get", "-y", "install", "freeglut3-dev", "libopenal-dev") }
-    if (doEnableKotlinNativeSDL) {
-        exec { commandLine("sudo", "apt-get", "-y", "libsdl2-dev") }
-    }
     // exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
 }
 

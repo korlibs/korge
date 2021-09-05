@@ -13,6 +13,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 import kotlin.math.*
@@ -36,8 +37,10 @@ class BatchBuilder2D constructor(
     /** Maximum number of quads that could be drawn in a single batch.
      * Bigger numbers will increase memory usage, but might reduce the number of batches per frame when using the same texture and properties.
      */
-    val reqMaxQuads: Int = DEFAULT_BATCH_QUADS,
+    val reqMaxQuads: Int = DEFAULT_BATCH_QUADS
 ) {
+    val maxTextures = BB_MAX_TEXTURES
+
     inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
 
     val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
@@ -86,7 +89,7 @@ class BatchBuilder2D constructor(
     @PublishedApi internal var indexPos = 0
     @PublishedApi internal var currentTexIndex = 0
 
-    @PublishedApi internal var currentTexN: Array<AG.Texture?> = Array(BB_MAX_TEXTURES) { null }
+    @PublishedApi internal var currentTexN: Array<AG.Texture?> = Array(maxTextures) { null }
 
 	//@PublishedApi internal var currentTex0: AG.Texture? = null
     //@PublishedApi internal var currentTex1: AG.Texture? = null
@@ -145,7 +148,7 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
-    val textureUnitN = Array(BB_MAX_TEXTURES) { AG.TextureUnit(null, linear = false) }
+    val textureUnitN = Array(maxTextures) { AG.TextureUnit(null, linear = false) }
 
     //@KorgeInternal val textureUnit0 = AG.TextureUnit(null, linear = false)
     //@KorgeInternal val textureUnit1 = AG.TextureUnit(null, linear = false)
@@ -162,7 +165,7 @@ class BatchBuilder2D constructor(
 		AG.UniformValues(
 			DefaultShaders.u_ProjMat to projMat,
 			DefaultShaders.u_ViewMat to viewMat,
-            *Array(BB_MAX_TEXTURES) { u_TexN[it] to textureUnitN[it] }
+            *Array(maxTextures) { u_TexN[it] to textureUnitN[it] }
 		)
 	}
 
@@ -750,7 +753,7 @@ class BatchBuilder2D constructor(
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
         }
 
-        for (n in 0 until BB_MAX_TEXTURES) {
+        for (n in 0 until maxTextures) {
             val textureUnit = textureUnitN[n]
             textureUnit.texture = currentTexN[n]
             textureUnit.linear = currentSmoothing
@@ -795,7 +798,7 @@ class BatchBuilder2D constructor(
 		vertexCount = 0
 		vertexPos = 0
 		indexPos = 0
-        for (n in 0 until BB_MAX_TEXTURES) currentTexN[n] = null
+        for (n in 0 until maxTextures) currentTexN[n] = null
         currentTexIndex = 0
 	}
 
@@ -869,6 +872,8 @@ class BatchBuilder2D constructor(
 	}
 }
 
-//internal const val BB_MAX_TEXTURES = 6
-internal const val BB_MAX_TEXTURES = 1
-//internal const val BB_MAX_TEXTURES = 2
+
+internal val BB_MAX_TEXTURES = when (OS.rawName) {
+    "iosArm32" -> 1
+    else -> 4
+}
