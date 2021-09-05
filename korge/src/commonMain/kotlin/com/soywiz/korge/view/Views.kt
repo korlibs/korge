@@ -201,7 +201,7 @@ class Views constructor(
 	private val resizedEvent = ReshapeEvent(0, 0)
 
     /** Reference to the root node [Stage] */
-	val stage = Stage(this)
+	val stage: Stage = Stage(this)
 
     /** Reference to the root node [Stage] (alias) */
 	val root = stage

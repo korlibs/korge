@@ -4,14 +4,14 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
-const val PARTICLE_STRIDE = 26
+internal const val PARTICLE_STRIDE = 27
 
 inline class Particle(val index: Int) {
     val offset get() = index * PARTICLE_STRIDE
 }
 
 open class ParticleContainer(val max: Int) {
-    val data = FBuffer(max * 26 * Float.SIZE_BYTES)
+    val data = FBuffer(max * PARTICLE_STRIDE * Float.SIZE_BYTES)
     val f32 = data.f32
 
     var Particle.rotation: Angle get() = rotationRadians.radians; set(value) { rotationRadians = value.radians.toFloat() }
@@ -50,12 +50,19 @@ open class ParticleContainer(val max: Int) {
     var Particle.emitRotationDeltaRadians: Float get() = f32[offset + 24]; set(value) { f32[offset + 24] = value }
     var Particle.rotationDeltaRadians: Float get() = f32[offset + 25]; set(value) { f32[offset + 25] = value }
 
+    var Particle.initializedFloat: Float get() = f32[offset + 26]; set(value) { f32[offset + 26] = value }
+
     var Particle.emitRotation: Angle get() = emitRotationRadians.radians; set(value) { emitRotationRadians = value.radians.toFloat() }
     var Particle.emitRotationDelta: Angle get() = emitRotationDeltaRadians.radians; set(value) { emitRotationDeltaRadians = value.radians.toFloat() }
     var Particle.rotationDelta: Angle get() = rotationDeltaRadians.radians; set(value) { rotationDeltaRadians = value.radians.toFloat() }
 
     val Particle.color: RGBA get() = RGBA.float(colorR, colorG, colorB, colorA)
     val Particle.alive: Boolean get() = this.currentTime >= 0.0 && this.currentTime < this.totalTime
+    var Particle.initialized: Boolean
+        set(value) { initializedFloat = if (value) 1f else 0f }
+        get() = initializedFloat != 0f
+
+    fun Particle.toStringDefault() = "Particle(initialized=$initialized,pos=($x,$y),start=($startX,$startY),velocity=($velocityX,$velocityY),scale=$scale,rotation=$rotation,time=$currentTime/$totalTime,color=$color,colorDelta=$colorRdelta,$colorGdelta,$colorBdelta,$colorAdelta),radialAcceleration=$radialAcceleration,tangentialAcceleration=$tangentialAcceleration,emitRadius=$emitRadius,emitRadiusDelta=$emitRadiusDelta,scaleDelta=$scaleDelta,emitRotation=$emitRotation,emitRotationDelta=$emitRotationDelta"
 
     init {
         for (n in 0 until max) {
@@ -67,6 +74,8 @@ open class ParticleContainer(val max: Int) {
             particle.colorA = 1f
         }
     }
+
+    override fun toString(): String = "ParticleContainer[$max](\n${map { it.toStringDefault() }.joinToString("\n")}\n)"
 }
 
 inline fun <T : ParticleContainer> T.fastForEach(max: Int = this.max, block: T.(Particle) -> Unit): T {
@@ -75,3 +84,6 @@ inline fun <T : ParticleContainer> T.fastForEach(max: Int = this.max, block: T.(
     }
     return this
 }
+
+inline fun <T : ParticleContainer, R> T.map(max: Int = this.max, block: T.(Particle) -> R): List<R> =
+    (0 until max).map { block(Particle(it)) }

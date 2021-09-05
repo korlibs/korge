@@ -226,8 +226,8 @@ abstract class View internal constructor(
     /** Computed [speed] combining all the speeds from ancestors */
     val globalSpeed: Double get() = if (parent != null) parent!!.globalSpeed * speed else speed
 
-    private var _x: Double = 0.0
-    private var _y: Double = 0.0
+    protected var _x: Double = 0.0
+    protected var _y: Double = 0.0
     private var _scaleX: Double = 1.0
     private var _scaleY: Double = 1.0
     private var _skewX: Angle = 0.0.radians
@@ -236,6 +236,20 @@ abstract class View internal constructor(
 
     private val _pos = Point()
 
+    protected open fun setXY(x: Double, y: Double) {
+        ensureTransform()
+        if (this._x != x || this._y != y) {
+            this._x = x
+            this._y = y
+            invalidateMatrix()
+        }
+    }
+
+    fun getPosition(out: Point = Point()): Point {
+        out.copyFrom(out)
+        return out
+    }
+
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
     var pos: Point
         get() {
@@ -243,12 +257,7 @@ abstract class View internal constructor(
             return _pos
         }
         set(value) {
-            ensureTransform()
-            if (_x != value.x || _y != value.y) {
-                this._x = value.x
-                this._y = value.y
-                invalidateMatrix()
-            }
+            setXY(value.x, value.y)
         }
 
     /** Local X position of this view */
@@ -257,13 +266,7 @@ abstract class View internal constructor(
             ensureTransform()
             return _x
         }
-        set(v) {
-            ensureTransform()
-            if (_x != v) {
-                _x = v
-                invalidateMatrix()
-            }
-        }
+        set(v) { setXY(v, y) }
 
     /** Local Y position of this view */
     override var y: Double
@@ -271,13 +274,7 @@ abstract class View internal constructor(
             ensureTransform()
             return _y
         }
-        set(v) {
-            ensureTransform()
-            if (_y != v) {
-                _y = v
-                invalidateMatrix()
-            }
-        }
+        set(v) { setXY(x, v) }
 
     /*
     var xf: Float get() = x.toFloat() ; set(v) { x = v.toDouble() }
@@ -327,13 +324,24 @@ abstract class View internal constructor(
 
     /** The global x position of this view */
     var globalX: Double
-        get() = parent?.localToGlobalX(x, y) ?: x;
-        set(value) { x = parent?.globalToLocalX(value, globalY) ?: value }
+        get() = parent?.localToGlobalX(x, y) ?: x
+        set(value) { setGlobalXY(value, globalY) }
 
     /** The global y position of this view */
     var globalY: Double
-        get() = parent?.localToGlobalY(x, y) ?: y;
-        set(value) { y = parent?.globalToLocalY(globalX, value) ?: value }
+        get() = parent?.localToGlobalY(x, y) ?: y
+        set(value) {
+            setGlobalXY(globalX, value)
+        }
+
+    fun setGlobalXY(pos: Point) = setGlobalXY(pos.x, pos.y)
+
+    fun setGlobalXY(x: Double, y: Double) {
+        setXY(
+            parent?.globalToLocalX(x, y) ?: x,
+            parent?.globalToLocalY(x, y) ?: y,
+        )
+    }
 
     fun globalXY(out: Point = Point()): Point = out.setTo(globalX, globalY)
     fun localXY(out: Point = Point()): Point = out.setTo(x, y)
@@ -452,7 +460,7 @@ abstract class View internal constructor(
     private val tempTransform = Matrix.Transform()
     //private val tempMatrix = Matrix2d()
 
-    private fun ensureTransform() {
+    protected fun ensureTransform() {
         if (validLocalProps) return
         validLocalProps = true
         val t = tempTransform

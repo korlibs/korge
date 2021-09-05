@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.klogger.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.*
@@ -29,7 +30,11 @@ suspend fun decodeImageBytes(bytes: ByteArray): NativeImage {
 		}
 	}
     for (v in nativeImageFormatProviders) println(v)
-    for (v in exceptions) v.printStackTrace()
+    for (v in exceptions) {
+        if (v !is FileNotFoundException) {
+            v.printStackTrace()
+        }
+    }
 	throw UnsupportedOperationException("No format supported trying to decode ByteArray")
 }
 
@@ -43,7 +48,11 @@ suspend fun decodeImageFile(file: VfsFile): NativeImage {
 		}
 	}
     for (v in nativeImageFormatProviders) println(v)
-    for (e in exceptions) e.printStackTrace()
+    for (e in exceptions) {
+        if (e !is FileNotFoundException) {
+            e.printStackTrace()
+        }
+    }
 	throw UnsupportedOperationException("No format supported trying to decode $file")
 }
 
@@ -99,7 +108,9 @@ suspend fun VfsFile.readBitmapOptimized(formats: ImageFormat = RegisteredImageFo
 	try {
 		return nativeImageFormatProvider.decode(this, premultiplied)
 	} catch (t: Throwable) {
-		t.printStackTrace()
+        if (t !is FileNotFoundException) {
+            t.printStackTrace()
+        }
 		return this.readBitmap(formats)
 	}
 }
@@ -112,8 +123,10 @@ suspend fun VfsFile.readBitmap(
         try {
             nativeImageFormatProvider.decode(this)
         } catch (e: Throwable) {
-            println("Couldn't read native image: $e")
-            e.printStackTrace()
+            if (e !is FileNotFoundException) {
+                Console.error("Couldn't read native image: $e")
+                e.printStackTrace()
+            }
             formats.decode(this.read(), props.copy(filename = this.baseName))
         }
     }

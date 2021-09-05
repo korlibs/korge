@@ -11,12 +11,16 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import kotlin.random.*
 
 inline fun Container.particleEmitter(
-	emitter: ParticleEmitter, emitterPos: IPoint = IPoint(),
+    emitter: ParticleEmitter,
+    emitterPos: IPoint = IPoint(),
     time: TimeSpan = TimeSpan.NIL,
-	callback: ParticleEmitterView.() -> Unit = {}
-) = ParticleEmitterView(emitter, emitterPos).apply { this.timeUntilStop = time }.addTo(this, callback)
+    localCoords: Boolean = false,
+    random: Random = Random,
+    callback: ParticleEmitterView.() -> Unit = {}
+) = ParticleEmitterView(emitter, emitterPos, localCoords, random).apply { this.timeUntilStop = time }.addTo(this, callback)
 
 suspend fun Container.attachParticleAndWait(
     particle: ParticleEmitter,
@@ -32,19 +36,54 @@ suspend fun Container.attachParticleAndWait(
     this -= p
 }
 
-class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint()) : View(), ViewFileRef by ViewFileRef.Mixin() {
-    var emitter: ParticleEmitter = emitter
-	var simulator = ParticleEmitterSimulator(emitter, emitterPos)
+class ParticleEmitterView(
+    emitter: ParticleEmitter,
+    emitterPos: IPoint = IPoint(),
+    localCoords: Boolean = false,
+    random: Random = Random,
+) : View(), ViewFileRef by ViewFileRef.Mixin() {
+    private var emitter = emitter
+	var simulator = ParticleEmitterSimulator(emitter, Point(emitterPos), random)
 
 	var timeUntilStop by simulator::timeUntilStop
-	val emitterPos by simulator::emitterPos
 	var emitting by simulator::emitting
 	val aliveCount by simulator::aliveCount
 	val anyAlive by simulator::anyAlive
+    var emitterPos: Point
+        get() = simulator.emitterPos
+        set(value) {
+            simulator.emitterPos.copyFrom(value)
+        }
+    var emitterXY: Point
+        get() = emitterPos
+        set(value) { emitterPos = value }
+    var emitterX: Double
+        get() = emitterPos.x
+        set(value) { emitterPos.x = value }
+    var emitterY: Double
+        get() = emitterPos.y
+        set(value) { emitterPos.y = value }
 
-	init {
+    var localCoords: Boolean = localCoords
+
+    //override fun setXY(x: Double, y: Double) {
+    //    if (localCoords) {
+    //        super.setXY(x, y)
+    //    } else {
+    //        super.setXY(0.0, 0.0)
+    //        emitterX = x
+    //        emitterY = y
+    //    }
+    //}
+
+    init {
 		addUpdater { dt ->
-			simulator.simulate(dt)
+            if (!this.localCoords) {
+                simulator.emitterPos.setTo(globalX, globalY)
+            }
+            if (dt > 0.milliseconds) {
+                simulator.simulate(dt)
+            }
 		}
 	}
 
@@ -57,6 +96,7 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
 	}
 
     private var cachedBlending = AG.Blending.NORMAL
+    private val transform = Matrix.Transform()
 
 	// @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
 	override fun renderInternal(ctx: RenderContext) {
@@ -80,11 +120,20 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             val cy = texture.height * 0.5
             context.keep {
                 context.blendFactors = cachedBlending
-                context.setMatrix(globalMatrix)
+                if (localCoords) {
+                    context.setMatrix(globalMatrix)
+                } else {
+                    context.setMatrix(ctx.views!!.stage!!.localMatrix)
+                    transform.setMatrix(globalMatrix)
+                    //context.scale(transform.scaleX, transform.scaleY)
+                    //println("---------------------- ${simulator.emitterPos}")
+                }
+                val localScale = if (localCoords) 1.0 else transform.scaleAvg
 
                 simulator.particles.fastForEach { p ->
                     if (p.alive) {
-                        val scale = p.scale
+                        //if (p.x == 0f && p.y == 0f) println("00: ${p.index}")
+                        val scale = p.scale * localScale
                         context.multiplyColor = p.color * this@ParticleEmitterView.colorMul
                         context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale.toDouble())
                     }
@@ -138,6 +187,8 @@ class ParticleEmitterView(emitter: ParticleEmitter, emitterPos: IPoint = IPoint(
             uiEditableValue(::texture, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "png" || it.extensionLC == "jpg"
             })
+            uiEditableValue(this@ParticleEmitterView::localCoords)
+            uiEditableValue(Pair(this@ParticleEmitterView::emitterX, this@ParticleEmitterView::emitterY), min = -1000.0, max = +1000.0, clamp = false, name = "emitterPos")
             uiEditableValue(particle::emitterType, values = { ParticleEmitter.Type.values().toList() })
             uiEditableValue(particle::blendFuncSource, values = { AG.BlendFactor.values().toList() })
             uiEditableValue(particle::blendFuncDestination, values = { AG.BlendFactor.values().toList() })

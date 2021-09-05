@@ -7,10 +7,9 @@ import kotlin.random.*
 
 class ParticleEmitterSimulator(
     private val emitter: ParticleEmitter,
-    var emitterPos: IPoint = IPoint(),
-    val seed: Long = Random.nextLong()
+    var emitterPos: Point = Point(),
+    val random: Random = Random
 ) {
-    val random = Random(seed)
     var totalElapsedTime = 0.seconds
     var timeUntilStop = TimeSpan.NIL
     var emitting = true
@@ -38,19 +37,29 @@ class ParticleEmitterSimulator(
 
         if (initialization) {
             val ratio = particle.index.toFloat() / emitter.maxParticles.toFloat()
-            particle.currentTime = -(emitter.lifeSpan + emitter.lifespanVariance.absoluteValue).toFloat() * ratio
+            particle.currentTime = if (ratio == 0f) 0f else -(emitter.lifeSpan + emitter.lifespanVariance.absoluteValue).toFloat() * ratio
             //println(particle.currentTime)
         } else {
             particle.currentTime = 0f
         }
+        particle.initialized = false
+
+        return particle
+    }
+
+    fun ParticleContainer.init2(particle: Particle): Particle {
+        val lifespan = particle.totalTime
 
         val emitterX = emitterPos.x.toFloat()
         val emitterY = emitterPos.y.toFloat()
+        //println("init:$emitterPos")
 
         particle.x = randomVariance(emitterX, emitter.sourcePositionVariance.x.toFloat())
         particle.y = randomVariance(emitterY, emitter.sourcePositionVariance.y.toFloat())
-        particle.startX = emitterX.toFloat()
-        particle.startY = emitterY.toFloat()
+        particle.startX = emitterX
+        particle.startY = emitterY
+
+        //println("PARTICLE POS[${particle.index}]: ${particle.x},${particle.y}")
 
         val angle = randomVariance(emitter.angle, emitter.angleVariance)
         val speed = randomVariance(emitter.speed, emitter.speedVariance).toFloat()
@@ -93,6 +102,8 @@ class ParticleEmitterSimulator(
         particle.rotation = startRotation
         particle.rotationDelta = (endRotation - startRotation) / lifespan
 
+        particle.initialized = true
+
         return particle
     }
 
@@ -101,15 +112,11 @@ class ParticleEmitterSimulator(
         val elapsedTime = if (restTime > _elapsedTime) _elapsedTime else restTime
         particle.currentTime += elapsedTime.toFloat()
 
-        //if (particle.index == 0) {
-            //println("currentTime=${particle.currentTime}, totalTime=${particle.totalTime}, emitting=$emitting, elapsedTime=$elapsedTime, alive=${particle.alive}")
-            //3.253971163270661, 3.253971163270661, false
-        //}
-
         if (particle.currentTime < 0.0) return
 
-        if (!particle.alive && emitting) {
+        if ((!particle.initialized || !particle.alive) && emitting) {
             init(particle, false)
+            init2(particle)
         }
 
         if (!particle.alive) return
@@ -157,6 +164,8 @@ class ParticleEmitterSimulator(
         if (emitting) {
             totalElapsedTime += time
             if (timeUntilStop != TimeSpan.NIL && totalElapsedTime >= timeUntilStop) emitting = false
+        } else {
+            //println("NOT EMITTING")
         }
         val timeSeconds = time.seconds.toFloat()
         particles.fastForEach { p -> advance(p, timeSeconds) }
