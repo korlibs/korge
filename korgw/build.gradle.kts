@@ -5,9 +5,6 @@ val jnaVersion: String by project
 val enableKotlinNative: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
-val enableKotlinNativeSDL: String by project
-val doEnableKotlinNativeSDL get() = enableKotlinNativeSDL == "true"
-
 val enableKotlinRaspberryPi: String by project
 val doEnableKotlinRaspberryPi get() = enableKotlinRaspberryPi == "true"
 
@@ -33,11 +30,9 @@ if (doEnableKotlinNative) {
             target.compilations["main"].cinterops {
                 if (target.name == "linuxX64") {
                     maybeCreate("GL")
-                    if (doEnableKotlinNativeSDL) maybeCreate("SDL2")
                 }
                 if (target.name == "linuxArm32Hfp") {
                     maybeCreate("GL_rpi")
-                    if (doEnableKotlinNativeSDL) maybeCreate("SDL2_rpi")
                 }
                 //if (target.name == "linuxX64") maybeCreate("X11")
             }
@@ -60,8 +55,7 @@ afterEvaluate {
             //println("targetName=$targetName")
             val target = targets.findByName(targetName) ?: continue
             //println("target=$target")
-            val suffix = if (doEnableKotlinNativeSDL) "sdl" else "nosdl"
-            val folder = project.file("src/${targetName}Main/kotlin-$suffix")
+            val folder = project.file("src/${targetName}Main/kotlin")
             //println(" - $folder")
             target.compilations["main"].defaultSourceSet.kotlin.srcDir(folder)
         }

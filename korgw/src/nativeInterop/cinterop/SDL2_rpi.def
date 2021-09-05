@@ -1,6 +1,0 @@
-package = SDL2
-headers = SDL2/SDL.h SDL2/SDL_video.h
-compilerOpts = -I/tmp/rpi-sysroot/usr/include -I/tmp/rpi-sysroot/usr/include/arm-linux-gnueabihf
-linkerOpts = -L/tmp/rpi-sysroot/usr/lib -L/tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -rpath /tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -rpath-link /tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -lSDL2
----
-//

@@ -870,5 +870,5 @@ class BatchBuilder2D constructor(
 }
 
 //internal const val BB_MAX_TEXTURES = 6
-internal const val BB_MAX_TEXTURES = 4
+internal const val BB_MAX_TEXTURES = 1
 //internal const val BB_MAX_TEXTURES = 2

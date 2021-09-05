@@ -1,6 +1,0 @@
-package = SDL2
-headers = SDL2/SDL.h SDL2/SDL_video.h
-compilerOpts = -I/usr/include -I/usr/include/x86_64-linux-gnu
-linkerOpts = -L/usr/lib -L/usr/lib/x86_64-linux-gnu -lSDL2
----
-//
