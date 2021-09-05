@@ -101,6 +101,7 @@ class Cube3D(var width: Double, var height: Double, var depth: Double) : BaseVie
         }
     }
 }
+
 @Korge3DExperimental
 inline fun Container3D.sphere(radius: Int, callback: Sphere3D.() -> Unit = {}): Sphere3D = sphere(radius.toDouble(), callback)
 

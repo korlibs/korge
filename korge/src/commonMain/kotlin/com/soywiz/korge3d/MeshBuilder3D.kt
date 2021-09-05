@@ -27,6 +27,7 @@ class MeshBuilder3D(
 
     companion object {
         operator fun invoke(drawType: AG.DrawType = AG.DrawType.TRIANGLES, callback: MeshBuilder3D.() -> Unit): Mesh3D = MeshBuilder3D(drawType).apply(callback).build()
+        private const val PIf = PI.toFloat()
     }
 
     val vertexData = floatArrayListOf()
@@ -201,19 +202,19 @@ class MeshBuilder3D(
 
     fun parametric(longitudeLines: Int = 10, latitudeLines: Int = 10, F: (u: Float, v: Float) -> Vector3D) {
         // modified from [https://stackoverflow.com/questions/7687148/drawing-sphere-in-opengl-without-using-glusphere]
-        val startU = 0
-        val startV = 0
-        val endU = PI * 2
-        val endV = PI
+        val startU = 0f
+        val startV = 0f
+        val endU = PIf * 2
+        val endV = PIf
         val stepU = (endU - startU) / longitudeLines // step size between U-points on the grid
         val stepV = (endV - startV) / latitudeLines // step size between V-points on the grid
         //TODO: addVertices then indices to reduce number of vertices uploaded
         for (i in 0 until longitudeLines) { // U-points
             for (j in 0 until latitudeLines) { // V-points
-                val u = (i * stepU + startU).toFloat()
-                val v = (j * stepV + startV).toFloat()
-                val un = (if (i + 1 == longitudeLines) endU else (i + 1) * stepU + startU).toFloat()
-                val vn = (if (j + 1 == latitudeLines) endV else (j + 1) * stepV + startV).toFloat()
+                val u = (i * stepU + startU)
+                val v = (j * stepV + startV)
+                val un = (if (i + 1 == longitudeLines) endU else (i + 1) * stepU + startU)
+                val vn = (if (j + 1 == latitudeLines) endV else (j + 1) * stepV + startV)
                 // Find the four points of the grid
                 // square by evaluating the parametric
                 // surface function
