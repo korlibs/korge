@@ -501,7 +501,7 @@ Particle(initialized=false,pos=(0.0,0.0),start=(0.0,0.0),velocity=(0.0,0.0),scal
 Particle(initialized=false,pos=(0.0,0.0),start=(0.0,0.0),velocity=(0.0,0.0),scale=1.0,rotation=0.0.degrees,time=-3.6822004/3.4204142,color=#ffffffff,colorDelta=0.0,0.0,0.0,0.0),radialAcceleration=0.0,tangentialAcceleration=0.0,emitRadius=0.0,emitRadiusDelta=0.0,scaleDelta=0.0,emitRotation=0.0.degrees,emitRotationDelta=0.0.degrees
 )
 draw(vertexCount=162, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
-::draw.program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=0, y=0, width=1280, height=720)
 ::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
@@ -519,7 +519,7 @@ draw(vertexCount=162, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)

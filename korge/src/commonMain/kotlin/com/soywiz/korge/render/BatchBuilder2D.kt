@@ -428,6 +428,16 @@ class BatchBuilder2D constructor(
         return false
     }
 
+    //@PublishedApi internal fun resetCachedState() {
+    //    for (n in currentTexN.indices) {
+    //        currentTexN[n] = null
+    //    }
+    //    currentTexIndex = 0
+    //    currentSmoothing = false
+    //    currentBlendFactors = BlendMode.NORMAL.factors
+    //    currentProgram = null
+    //}
+
     @PublishedApi internal fun isCurrentStateFast(tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?): Boolean {
         var hasTex = hasTex(tex)
         if (currentTexN[0] !== null && !hasTex) {
@@ -800,6 +810,7 @@ class BatchBuilder2D constructor(
 		indexPos = 0
         for (n in 0 until maxTextures) currentTexN[n] = null
         currentTexIndex = 0
+        //resetCachedState()
 	}
 
     /**

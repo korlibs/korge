@@ -116,6 +116,7 @@ class ParticleEmitterView(
 
         ctx.useCtx2d { context ->
             val texture = emitter.texture ?: return
+            val tex = ctx.getTex(texture)
             val cx = texture.width * 0.5
             val cy = texture.height * 0.5
             context.keep {
@@ -135,7 +136,7 @@ class ParticleEmitterView(
                         //if (p.x == 0f && p.y == 0f) println("00: ${p.index}")
                         val scale = p.scale * localScale
                         context.multiplyColor = p.color * this@ParticleEmitterView.colorMul
-                        context.imageScale(ctx.getTex(texture), p.x - cx * scale, p.y - cy * scale, scale.toDouble())
+                        context.imageScale(tex, p.x - cx * scale, p.y - cy * scale, scale.toDouble())
                     }
                 }
             }
