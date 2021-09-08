@@ -360,21 +360,16 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 
 	override fun toString() = toString(10)
 
-	fun toString(radix: Int): String {
-		return when (radix) {
-			2 -> toString2()
-			else -> toStringGeneric(radix)
-		}
-	}
+	fun toString(radix: Int): String = when (radix) {
+        2 -> toString2()
+        else -> toStringGeneric(radix)
+    }
 
-	fun toString2(): String {
-		if (this.isNegative) return "-" + this.abs().toString2()
-		var out = ""
-		for (n in 0 until maxBits) out += if (getBit(n)) '1' else '0'
-		out = out.trimEnd('0')
-		if (out.isEmpty()) out = "0"
-		return out.reversed()
-	}
+	fun toString2(): String = when {
+        this.isZero -> "0"
+        this.isNegative -> "-" + this.abs().toString2()
+        else -> buildString(maxBits) { for (n in 0 until maxBits) append(if (getBit(n)) '1' else '0') }.trimEnd('0').reversed()
+    }
 
 	private fun toStringGeneric(radix: Int): String {
 		if (radix !in 2..26) throw BigIntInvalidFormatException("Invalid radix $radix!")
