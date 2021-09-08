@@ -72,13 +72,22 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 			}
 		}
 
-		operator fun invoke(str: String, radix: Int = 10): BigInt {
+        operator fun invoke(str: String): BigInt = when {
+            str.startsWith("0x") -> BigInt(str.substring(2), 16)
+            str.startsWith("0o") -> BigInt(str.substring(2), 8)
+            str.startsWith("0b") -> BigInt(str.substring(2), 2)
+            else -> BigInt(str, 10)
+        }
+
+		operator fun invoke(str: String, radix: Int): BigInt {
 			if (str == "0") return ZERO
 			if (str.startsWith('-')) return -invoke(str.substring(1), radix)
 			var out = ZERO
 			for (c in str) {
+                val d = digit(c)
+                if (d >= radix) throw BigIntInvalidFormatException("Invalid digit '$c' for radix $radix")
 				out *= radix
-				out += digit(c)
+                out += d
 			}
 			return out
 		}
@@ -144,7 +153,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 
 	@OptIn(ExperimentalTime::class)
     infix fun pow(exponent: BigInt): BigInt {
-		if (exponent.isNegative) error("Negative exponent")
+		if (exponent.isNegative) throw BigIntOverflowException("Negative exponent")
         if (exponent.isZero) return 1.bi
         if (exponent == 1.bi) return this
         var base = this
@@ -163,7 +172,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 
 	infix fun pow(exponent: Int): BigInt {
         //return this pow exponent.bi
-        if (exponent < 0) error("Negative exponent")
+        if (exponent < 0) throw BigIntOverflowException("Negative exponent")
         if (exponent == 0) return 1.bi
         if (exponent == 1) return this
         var result = ONE
@@ -208,7 +217,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 				ZERO,
 				ZERO
 			)
-			other.isZero -> error("Division by zero")
+			other.isZero -> throw BigIntDivisionByZeroException("Division by zero")
 			this.isNegative && other.isNegative -> this.absoluteValue.divRem(other.absoluteValue).let {
 				DivRem(it.div, -it.rem)
 			}
@@ -240,8 +249,8 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 			ZERO,
 			ZERO
 		)
-		if (other.isZero) error("division by zero")
-		if (this.isNegative || other.isNegative) error("Non positive numbers")
+		if (other.isZero) throw BigIntDivisionByZeroException("division by zero")
+		if (this.isNegative || other.isNegative) throw BigIntInvalidOperationException("Non positive numbers")
 		val lbits = this.significantBits
 		val rbits = other.significantBits
 		var rem = this
@@ -253,7 +262,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 		divisor = divisor shl initialShiftBits
 
 		while (divisorShift >= 0) {
-			if (divisor.isZero) error("divisor is zero!")
+			if (divisor.isZero) throw BigIntDivisionByZeroException("divisor is zero!")
 
 			if (divisor <= rem) {
 				res += 1 shl divisorShift
@@ -281,7 +290,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 			out[n + blockShift] = ((carry) or (v shl smallShift))
 			carry = v ushr count_rcp
 		}
-		if (carry != 0) error("ERROR!")
+		if (carry != 0) throw BigIntException("ERROR!")
 		return BigInt(out, signum)
 	}
 
@@ -360,7 +369,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	}
 
 	private fun toStringGeneric(radix: Int): String {
-		if (radix !in 2..26) error("Invalid radix $radix!")
+		if (radix !in 2..26) throw BigIntInvalidFormatException("Invalid radix $radix!")
 		if (this.isZero) return "0"
 		if (this.isNegative) return "-" + this.absoluteValue.toStringGeneric(radix)
 		val out = StringBuilder()
@@ -375,7 +384,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	}
 
 	fun toInt(): Int {
-		if (significantBits > 31) error("Can't represent BigInt($this) as integer: maxBits=$maxBits, significantBits=$significantBits, trailingZeros=${trailingZeros()}")
+		if (significantBits > 31) throw BigIntOverflowException("Can't represent BigInt($this) as integer: maxBits=$maxBits, significantBits=$significantBits, trailingZeros=${trailingZeros()}")
 		val magnitude = (this.data[0].toLong() or (this.data[1].toLong() shl 16)) * signum
 		return magnitude.toInt()
 	}
@@ -407,7 +416,7 @@ internal fun uint16ArrayZeroPadOf(vararg values: Int) =
 private fun digit(v: Int): Char {
 	if (v in 0..9) return '0' + v
 	if (v in 10..26) return 'a' + (v - 10)
-	error("Invalid digit $v")
+    throw BigIntInvalidFormatException("Invalid digit $v")
 }
 
 private fun digit(c: Char): Int {
@@ -415,7 +424,7 @@ private fun digit(c: Char): Int {
 		in '0'..'9' -> c - '0'
 		in 'a'..'z' -> c - 'a' + 10
 		in 'A'..'Z' -> c - 'A' + 10
-		else -> error("Invalid digit '$c'")
+		else -> throw BigIntInvalidFormatException("Invalid digit '$c'")
 	}
 }
 
@@ -456,7 +465,7 @@ internal object UnsignedBigInt {
 				out[n] = res and 0xFFFF
 				carry = res ushr 16
 			}
-			if (carry != 0) error("carry expected to be zero at this point")
+			if (carry != 0) throw BigIntOverflowException("carry expected to be zero at this point")
 		}
 		return out
 	}

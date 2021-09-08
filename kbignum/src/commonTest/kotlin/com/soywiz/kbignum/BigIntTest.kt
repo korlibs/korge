@@ -1,6 +1,6 @@
 package com.soywiz
 
-import com.soywiz.kbignum.bi
+import com.soywiz.kbignum.*
 import com.soywiz.kbignum.internal.leadingZeros
 import com.soywiz.kbignum.internal.trailingZeros
 import kotlin.test.*
@@ -148,5 +148,21 @@ class BigIntTest {
         assertEquals(32, 0xFFFFFFFFL.bi.significantBits)
         assertEquals(40, 0xFFFFFFFFFFL.bi.significantBits)
         assertEquals(48, 0xFFFFFFFFFFFFL.bi.significantBits)
+    }
+
+    @Test
+    fun testRadixPrefix() {
+        assertEquals("FF".toInt(16), "0xFF".bi.toInt())
+        assertEquals("777".toInt(8), "0o777".bi.toInt())
+        assertEquals("111".toInt(2), "0b111".bi.toInt())
+    }
+
+    @Test
+    fun testInvalid() {
+        assertFailsWith<BigIntInvalidFormatException> { "2".bi(2) }
+        assertFailsWith<BigIntInvalidFormatException> { "a".bi(10) }
+        assertFailsWith<BigIntInvalidFormatException> { "0xg".bi }
+        assertFailsWith<BigIntInvalidFormatException> { "0o8".bi }
+        assertFailsWith<BigIntInvalidFormatException> { "0b2".bi }
     }
 }
