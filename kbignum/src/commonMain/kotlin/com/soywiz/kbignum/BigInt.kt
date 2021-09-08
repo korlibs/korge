@@ -207,8 +207,18 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	operator fun div(other: BigInt): BigInt = divRem(other).div
 	operator fun rem(other: BigInt): BigInt = divRem(other).rem
 
+    fun withBit(bit: Int, set: Boolean = true): BigInt {
+        // return if (set) this or (ONE shl bit) else this and (ONE shl bit).inv()
+        val bitShift = (bit % 16)
+        val bitMask = 1 shl bitShift
+        val wordPos = bit / 16
+        val out = BigInt(data.copyOf(max(data.size, wordPos + 1)), if (signum == 0) 1 else signum, dummy)
+        val outData = out.data
+        outData[wordPos] = if (set) outData[wordPos] or bitMask else outData[wordPos] and bitMask.inv()
+        return out
+    }
 
-	// Asumes positive non zero values this > 0 && other > 0
+	// Assumes positive non-zero values this > 0 && other > 0
 	data class DivRem(val div: BigInt, val rem: BigInt)
 
 	fun divRem(other: BigInt): DivRem {
@@ -245,10 +255,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 
 	// Simple euclidean division
 	private fun divRemBig(other: BigInt): DivRem {
-		if (this.isZero) return DivRem(
-			ZERO,
-			ZERO
-		)
+		if (this.isZero) return DivRem(ZERO, ZERO)
 		if (other.isZero) throw BigIntDivisionByZeroException("division by zero")
 		if (this.isNegative || other.isNegative) throw BigIntInvalidOperationException("Non positive numbers")
 		val lbits = this.significantBits
@@ -265,7 +272,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 			if (divisor.isZero) throw BigIntDivisionByZeroException("divisor is zero!")
 
 			if (divisor <= rem) {
-				res += 1 shl divisorShift
+                res = res.withBit(divisorShift)
 				rem -= divisor
 			}
 			divisorShift--
@@ -337,14 +344,15 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	infix fun or(other: BigInt): BigInt = bitwise(other, Int::or)
 	infix fun xor(other: BigInt): BigInt = bitwise(other, Int::xor)
 
+    fun inv(): BigInt = BigInt(
+        UInt16ArrayZeroPad(this.data.size).also {
+            for (n in 0 until it.size) it[n] = this.data[n].inv()
+        }, 1
+    )
+
 	private inline fun bitwise(other: BigInt, op: (a: Int, b: Int) -> Int): BigInt {
 		return BigInt(
-            UInt16ArrayZeroPad(
-                max(
-                    this.data.size,
-                    other.data.size
-                )
-            ).also {
+            UInt16ArrayZeroPad(max(this.data.size, other.data.size)).also {
 				for (n in 0 until it.size) it[n] = op(this.data[n], other.data[n])
 			}, 1
 		)
@@ -407,7 +415,7 @@ class UInt16ArrayZeroPad private constructor(val data: IntArray) {
 	}
 
 	fun contentEquals(other: UInt16ArrayZeroPad) = this.data.contentEquals(other.data)
-	fun copyOf(size: Int): UInt16ArrayZeroPad = UInt16ArrayZeroPad(data.copyOf(size))
+	fun copyOf(size: Int = this.size): UInt16ArrayZeroPad = UInt16ArrayZeroPad(data.copyOf(size))
 }
 
 internal fun uint16ArrayZeroPadOf(vararg values: Int) =

@@ -41,7 +41,8 @@ class BigNum(val int: BigInt, val scale: Int) {
     operator fun div(other: BigNum): BigNum = div(other, 0)
 
     fun div(other: BigNum, precision: Int): BigNum {
-        val li = this.int * (10.bi pow (other.scale + precision))
+        val scale = (10.bi pow (other.scale + precision))
+        val li = this.int * scale
         val ri = other.int
         val res = li / ri
         return BigNum(res, this.scale) * BigNum(1.bi, precision)

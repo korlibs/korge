@@ -165,4 +165,20 @@ class BigIntTest {
         assertFailsWith<BigIntInvalidFormatException> { "0o8".bi }
         assertFailsWith<BigIntInvalidFormatException> { "0b2".bi }
     }
+
+    @Test
+    fun testLongDiv() {
+        //assertEquals("500000000".bi, "1000000000000000000".bi / "2000000000".bi)
+        assertEquals("5000000000".bi, "100000000000000000000".bi / "20000000000".bi)
+        assertEquals("-5000000000".bi, "-100000000000000000000".bi / "20000000000".bi)
+        assertEquals("-5000000000".bi, "100000000000000000000".bi / "-20000000000".bi)
+        assertEquals("5000000000".bi, "-100000000000000000000".bi / "-20000000000".bi)
+    }
+
+    @Test
+    fun testInv() {
+        assertEquals("0x0000".bi, "0xFFFF".bi.inv())
+        assertEquals("0xFFFF".bi, "0x0000".bi.inv())
+        assertEquals("0xedcb".bi, "0x1234".bi.inv())
+    }
 }

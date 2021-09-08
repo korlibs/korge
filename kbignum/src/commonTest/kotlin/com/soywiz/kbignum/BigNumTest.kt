@@ -132,4 +132,24 @@ class BigNumTest {
         assertEquals(9123.bi, "1.9123".bn.decimalPart)
         assertEquals(0.bi, "1.0".bn.decimalPart)
     }
+
+    @Test
+    fun testDiv() {
+        val bi1 = BigNum("1.000000000")
+        val bi2 = BigNum("2.000000000")
+        assertEquals(
+            expected = 0.5.bn,
+            actual = bi1 / bi2
+        )
+    }
+
+    @Test
+    fun testDiv2() {
+        val bi1 = BigNum("1.000000000000000000000000000000000000000")
+        val bi2 = BigNum("2.000000000000000000000000000000000000000")
+        assertEquals(
+            expected = 0.5.bn,
+            actual = bi1 / bi2
+        )
+    }
 }
