@@ -8,6 +8,7 @@ import com.soywiz.korio.net.ws.WsCloseInfo
 import com.soywiz.korio.net.ws.WsFrame
 import com.soywiz.korio.net.ws.WsOpcode
 import com.soywiz.korio.stream.*
+import com.soywiz.korio.util.*
 import com.soywiz.krypto.sha1
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
@@ -30,7 +31,7 @@ open class HttpPortable(
     fun createClient(): HttpClient {
         return object : HttpClient() {
             override suspend fun requestInternal(method: Http.Method, url: String, headers: Http.Headers, content: AsyncStream?): Response =
-                withContext(Dispatchers.Default) { // @TODO: We should try to execute pending events from the eventloop while waiting for vsync
+                withContext(if (OS.isNative) coroutineContext else Dispatchers.Default) { // @TODO: We should try to execute pending events from the eventloop while waiting for vsync
                 val url = URL(url)
                 val secure = url.scheme == "https"
                 //println("HTTP CLIENT: host=${url.host}, port=${url.port}, secure=$secure")
