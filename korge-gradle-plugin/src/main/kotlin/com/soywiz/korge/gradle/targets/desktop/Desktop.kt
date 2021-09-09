@@ -200,6 +200,7 @@ private fun Project.addNativeRun() {
 					//println("executableFile.parentFile: ${executableFile.parentFile}")
 					task.into(executableFile.parentFile)
 					if (target == "mingwX64") {
+                    //if (false) {
 						val appRcFile = buildDir["app.rc"]
 						val appRcObjFile = buildDir["app.obj"]
 						val appIcoFile = buildDir["icon.ico"]
@@ -216,9 +217,7 @@ private fun Project.addNativeRun() {
 
                             val isConsole = korge.enableConsole ?: (kind == DEBUG)
 							val subsystem = if (isConsole) "console" else "windows"
-							linkTask.binary.linkerOpts(
-								appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem"
-							)
+							linkTask.binary.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem")
 						}
 						//println("compilation:$compilation")
 						//compilation.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,console")

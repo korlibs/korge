@@ -4,6 +4,15 @@ pluginManagement {
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
+
+        //val gradleProperties = java.util.Properties().also { it.load(File(rootDir, "gradle.properties").readText().reader()) }
+        //val kotlinVersion = gradleProperties["kotlinVersion"].toString()
+        val kotlinVersion: String by settings
+
+        if (kotlinVersion.contains("-M")) {
+            maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary")
+            maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
+        }
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
 	}
 }

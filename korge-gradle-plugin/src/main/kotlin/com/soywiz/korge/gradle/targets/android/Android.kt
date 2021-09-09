@@ -133,6 +133,10 @@ fun Project.configureAndroidIndirect() {
                             line("mavenCentral()")
                             //line("jcenter()")
 							line("google()")
+                            if (kotlinVersion.contains("-M")) {
+                                line("maven { url = uri(\"https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary\") }")
+                                line("maven { url = uri(\"https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven\") }")
+                            }
 						}
 
 						if (korge.androidLibrary) {
