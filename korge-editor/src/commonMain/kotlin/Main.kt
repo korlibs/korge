@@ -59,7 +59,8 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), cli
     //mainEmoji()
     //Bunnymark().apply { bunnymarkMain() }
     //bezierSample()
-    particlesMain()
+    //particlesMain()
+    terminalEmulatorMain()
     //mainBVH()
     //mainCircles()
     //mainVampire()
