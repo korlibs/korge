@@ -10,13 +10,15 @@ fun Project.configureEsbuild() {
     val wwwFolder = File(buildDir, "www")
     val esbuildFolder = File(rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-    val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else File(esbuildFolder, "bin/esbuild")
+    val esbuildCmdUnix = File(esbuildFolder, "bin/esbuild")
+    val esbuildCmdCheck = if (isWindows) File(esbuildFolder, "esbuild.cmd") else esbuildCmdUnix
+    val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else esbuildCmdUnix
 
     val npmInstallEsbuild = "npmInstallEsbuild"
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
         rootProject.tasks.create(npmInstallEsbuild, Exec::class) { task ->
             task.dependsOn("kotlinNodeJsSetup")
-            task.onlyIf { !esbuildCmd.exists() }
+            task.onlyIf { !esbuildCmdCheck.exists() }
 
             val esbuildVersion = korge.esbuildVersion
             task.doFirst {
