@@ -10,7 +10,7 @@ fun Project.configureEsbuild() {
     val wwwFolder = File(buildDir, "www")
     val esbuildFolder = File(rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-    val esbuildCmd = if (isWindows) File(esbuildFolder, "esbuild.cmd") else File(esbuildFolder, "bin/esbuild")
+    val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else File(esbuildFolder, "bin/esbuild")
 
     val npmInstallEsbuild = "npmInstallEsbuild"
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
@@ -27,7 +27,7 @@ fun Project.configureEsbuild() {
                         ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
                         ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
                 )
-                task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder)
+                task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
             }
         }
     }
