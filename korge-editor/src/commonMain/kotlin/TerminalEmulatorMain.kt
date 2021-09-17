@@ -18,10 +18,10 @@ suspend fun Stage.terminalEmulatorMain() {
             .split(16, 16)
             .toTypedArray()
 
-        val terminalEmulatorView = TerminalEmulatorView(128, 64, glyphs)
+        val terminalEmulatorView = TerminalEmulatorView(128, 64, glyphs).xy(32, 128)
         addChild(terminalEmulatorView)
         val colors =
-            listOf(Colors.BLACK, Colors.BLUE, Colors.GREEN, Colors.CYAN, Colors.PURPLE, Colors.YELLOW, Colors.WHITE)
+            arrayOf(Colors.BLACK, Colors.BLUE, Colors.GREEN, Colors.CYAN, Colors.PURPLE, Colors.YELLOW, Colors.WHITE)
         val chars = CharArray(256) { it.toChar() }
         addUpdater {
             for (row in 0 until terminalEmulatorView.rows) {
