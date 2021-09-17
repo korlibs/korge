@@ -8,7 +8,7 @@ import com.soywiz.korio.file.std.*
 
 suspend fun Stage.terminalEmulatorMain() {
     container {
-        scale(0.5)
+        scale(1)
 
         val glyphs = resourcesVfs["cp437.png"]
             .readBitmap()
