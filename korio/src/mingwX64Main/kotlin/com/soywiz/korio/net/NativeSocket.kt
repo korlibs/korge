@@ -15,7 +15,7 @@ class NativeSocket private constructor(internal val sockfd: SOCKET, private var 
 	companion object {
 		init {
             InitCommonControls()
-            OleInitialize(null)
+            //OleInitialize(null) // @TODO: C:\Users\soywi\.konan\dependencies\msys2-mingw-w64-x86_64-clang-llvm-lld-compiler_rt-8.0.1\bin\ld: C:\Users\soywi\AppData\Local\Temp\konan_temp15231878231369805640\result.o:out:(.text+0xaf7403): referencia a `__imp_OleInitialize' sin definir  //clang++: error: linker command failed with exit code 1 (use -v to see invocation)
 
 			init_sockets()
             // @TODO: Is WSAStartup already called by init_sockets?
