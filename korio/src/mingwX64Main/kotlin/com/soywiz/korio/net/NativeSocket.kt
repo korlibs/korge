@@ -9,10 +9,14 @@ import platform.posix.AF_INET
 import platform.posix.SOCK_STREAM
 import platform.windows.*
 import platform.windows.WSAStartup
+import platform.windows.WSAGetLastError
 
 class NativeSocket private constructor(internal val sockfd: SOCKET, private var endpoint: Endpoint, val secure: Boolean, val debug: Boolean) {
 	companion object {
 		init {
+            InitCommonControls()
+            OleInitialize(null)
+
 			init_sockets()
             // @TODO: Is WSAStartup already called by init_sockets?
             memScoped {
@@ -40,7 +44,6 @@ class NativeSocket private constructor(internal val sockfd: SOCKET, private var 
         operator fun invoke(secure: Boolean): NativeSocket {
             if (secure) TODO("Secure sockets not implemented on Kotlin/Native Windows")
             val debug = secure
-            WSAGetLastError()
             if (debug) println("NativeSocket.secure=$secure")
             val socket = WSASocket!!(platform.windows.AF_INET, platform.windows.SOCK_STREAM, platform.windows.IPPROTO_TCP, null, 0u, 0u)
             checkErrors("WSASocket")
@@ -69,7 +72,7 @@ class NativeSocket private constructor(internal val sockfd: SOCKET, private var 
 		//suspend fun listen(host: String, port: Int) = NativeSocket().listen(host, port)
 
 		fun checkErrors(name: String = "") {
-			val error = platform.windows.WSAGetLastError()
+			val error = WSAGetLastError()
 			if (error != 0) {
                 val errorStr = GetErrorAsString(error.convert())
                 error("WSA error($name): $error :: $errorStr")
@@ -212,7 +215,7 @@ class NativeSocket private constructor(internal val sockfd: SOCKET, private var 
 		)
 	}
 
-    fun wouldBlock() = platform.windows.WSAGetLastError() == platform.windows.WSAEWOULDBLOCK
+    fun wouldBlock() = WSAGetLastError() == platform.windows.WSAEWOULDBLOCK
 
 	fun tryAccept(): NativeSocket? {
 		return memScoped {
