@@ -18,7 +18,7 @@ fun Project.configureEsbuild() {
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
         rootProject.tasks.create(npmInstallEsbuild, Exec::class) { task ->
             task.dependsOn("kotlinNodeJsSetup")
-            task.onlyIf { !esbuildCmdCheck.exists() }
+            task.onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
 
             val esbuildVersion = korge.esbuildVersion
             task.doFirst {
