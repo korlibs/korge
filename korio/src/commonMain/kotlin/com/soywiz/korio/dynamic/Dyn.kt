@@ -145,7 +145,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
          */
     }
 
-    fun toList(): List<Dyn> = toList().map { it.dyn }
+    fun toList(): List<Dyn> = toListAny().map { it.dyn }
     fun toIterable(): Iterable<Dyn> = toIterableAny().map { it.dyn }
 
     fun toListAny(): List<*> = toIterableAny().toList()

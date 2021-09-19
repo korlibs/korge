@@ -42,4 +42,12 @@ class DynCommonTest {
         assertEquals(false, (3.dyn ne "3".dyn))
         assertEquals(true, (3.dyn ne "4".dyn))
     }
+
+    @Test
+    fun testList() {
+        assertEquals(emptyList(), null.dyn.toList())
+        assertEquals(listOf("1", "2", "3"), "123".dyn.toList().map { it.str })
+        assertEquals(listOf("1", "2", "3"), listOf(1, 2, 3).dyn.toList().map { it.str })
+        assertEquals(listOf("(a, 1)", "(b, 2)"), mapOf("a" to 1, "b" to 2).dyn.toList().map { it.str })
+    }
 }
