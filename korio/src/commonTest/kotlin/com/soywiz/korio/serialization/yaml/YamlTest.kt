@@ -272,4 +272,15 @@ class YamlTest {
             Yaml.decode("key1:\r\n  read: true\r\nkey2:\r\n  read: false\r\n")
         )
     }
+
+    @Test
+    fun testWindowsLineEndings2() {
+        assertEquals(
+            mapOf(
+                "key1" to mapOf("read" to true),
+                "key2" to mapOf("read" to false),
+            ),
+            Yaml.decode("key1:\r\n  read: true\r\n\r\nkey2:\r\n  read: false\r\n")
+        )
+    }
 }

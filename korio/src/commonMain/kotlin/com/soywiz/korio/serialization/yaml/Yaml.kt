@@ -17,8 +17,8 @@ import kotlin.collections.set
 import kotlin.reflect.*
 
 object Yaml {
-    fun decode(str: String) = read(ListReader(StrReader(str).tokenize()), level = 0)
-    fun read(str: String) = read(ListReader(StrReader(str).tokenize()), level = 0)
+    fun decode(str: String) = read(ListReader(tokenize(str)), level = 0)
+    fun read(str: String) = read(ListReader(tokenize(str)), level = 0)
 
     private fun parseStr(tok: Token) = when (tok) {
         is Token.STR -> tok.ustr
@@ -140,9 +140,7 @@ object Yaml {
         }
     }
 
-    fun tokenize(str: String): List<Token> {
-        return StrReader(str).tokenize()
-    }
+    fun tokenize(str: String): List<Token> = StrReader(str.replace("\r\n", "\n")).tokenize()
 
     private fun StrReader.tokenize(): List<Token> {
         val out = arrayListOf<Token>()
