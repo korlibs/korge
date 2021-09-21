@@ -32,6 +32,7 @@ abstract class Bitmap(
 	var texture: Any? = null
 
     var dirtyRegion: Rectangle? = null
+        private set
 
     private val dirtyRegionObj: Rectangle = Rectangle()
 
@@ -43,6 +44,12 @@ abstract class Bitmap(
 	fun index(x: Int, y: Int) = y * width + x
     fun inside(x: Int, y: Int) = x in 0 until width && y in 0 until height
 	override val size: Size get() = Size(width, height)
+
+    fun clearDirtyRegion() {
+        if (dirtyRegion != null) {
+            dirtyRegion = null
+        }
+    }
 
     open fun lock() = Unit
     open fun unlock(rect: Rectangle? = null): Int {
