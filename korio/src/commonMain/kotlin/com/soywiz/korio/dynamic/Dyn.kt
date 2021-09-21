@@ -96,7 +96,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         return if (lc::class.isInstance(rc)) lc.compareTo(rc) else -1
     }
 
-    override fun toString(): String = value.toString()
+    override fun toString(): String = toString(value)
 
     companion object {
         val global get() = dynApi.global.dyn
@@ -258,7 +258,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         else -> value.toString().toNumber()
     }
 
-    fun toString(value: Any?): String = when (value) {
+    private fun toString(value: Any?): String = when (value) {
         null -> ""
         is String -> value
         is Double -> {
