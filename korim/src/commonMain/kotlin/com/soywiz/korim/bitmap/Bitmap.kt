@@ -31,6 +31,10 @@ abstract class Bitmap(
     /** Associated texture object to this Bitmap that could be used by other engines */
 	var texture: Any? = null
 
+    var dirtyRegion: Rectangle? = null
+
+    private val dirtyRegionObj: Rectangle = Rectangle()
+
     /** Specifies whether mipmaps should be created for this [Bitmap] */
     var mipmaps: Boolean = false
 
@@ -41,14 +45,26 @@ abstract class Bitmap(
 	override val size: Size get() = Size(width, height)
 
     open fun lock() = Unit
-    open fun unlock(rect: Rectangle? = null) = contentVersion++
+    open fun unlock(rect: Rectangle? = null): Int {
+        if (rect != null) {
+            if (dirtyRegion == null) {
+                dirtyRegionObj.copyFrom(rect)
+            } else {
+                dirtyRegionObj.setToUnion(dirtyRegionObj, rect)
+            }
+        } else {
+            dirtyRegionObj.setTo(0, 0, width, height)
+        }
+        dirtyRegion = dirtyRegionObj
+        return ++contentVersion
+    }
 
-    inline fun lock(rect: Rectangle? = null, block: () -> Unit) {
+    inline fun lock(rect: Rectangle? = null, block: () -> Unit): Int {
         lock()
         try {
             block()
         } finally {
-            unlock(rect)
+            return unlock(rect)
         }
     }
 

@@ -78,6 +78,9 @@ data class Rectangle(
     val position: Point get() = Point(x, y)
     override val size: Size get() = Size(width, height)
 
+    fun setToBounds(left: Double, top: Double, right: Double, bottom: Double): Rectangle =
+        setTo(left, top, right - left, bottom - top)
+
     fun setTo(x: Double, y: Double, width: Double, height: Double): Rectangle {
         this.x = x
         this.y = y
@@ -112,6 +115,9 @@ data class Rectangle(
     fun setToIntersection(a: Rectangle, b: Rectangle): Rectangle? {
         return if (a.intersection(b, this) != null) this else null
     }
+
+    fun setToUnion(a: Rectangle, b: Rectangle): Rectangle =
+        setToBounds(min(a.left, b.left), min(a.top, b.top), max(a.right, b.right), max(a.bottom, b.bottom))
 
     infix fun intersection(that: Rectangle) = intersection(that, Rectangle())
 

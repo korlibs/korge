@@ -115,7 +115,9 @@ class AgBitmapTextureManager(
 		cachedBitmapTextureInfo = textureInfo
         if (bitmap.contentVersion != base.version) {
             base.version = bitmap.contentVersion
+            // @TODO: Use dirtyRegion to upload only a fragment of the image
             base.update(bitmap, bitmap.mipmaps)
+            bitmap.dirtyRegion = null
         }
 
 		return textureInfo
