@@ -17,4 +17,15 @@ class SHA1Test {
         assertEquals("86f7e437faa5a7fce15d1ddcb9eaeaea377667b8", ASCII("a").hash(SHA1).hex)
         assertEquals("86f7e437faa5a7fce15d1ddcb9eaeaea377667b8", ASCII("a").sha1().hex)
     }
+
+    @Test
+    fun testReset() {
+        val sha1 = SHA1()
+        sha1.update(ByteArray(16))
+        assertEquals(ByteArray(16).sha1().hex, sha1.digest().hex)
+
+        sha1.reset()
+        sha1.update(ByteArray(20))
+        assertEquals(ByteArray(20).sha1().hex, sha1.digest().hex)
+    }
 }
