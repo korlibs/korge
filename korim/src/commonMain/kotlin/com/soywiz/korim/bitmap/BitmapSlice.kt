@@ -37,7 +37,7 @@ abstract class BmpSlice(
     override suspend fun get() = this
     open val bmp: Bitmap = bmpBase
     val bmpWidth = bmpBase.width
-    val bmpHeight = bmpBase.width
+    val bmpHeight = bmpBase.height
 
     private val tl = Point(left.toFloat() / bmpBase.width.toFloat(), top.toFloat() / bmpBase.height.toFloat())
     private val br = Point(right.toFloat() / bmpBase.width.toFloat(), bottom.toFloat() / bmpBase.height.toFloat())
