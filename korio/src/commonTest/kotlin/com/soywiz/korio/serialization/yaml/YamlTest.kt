@@ -283,4 +283,17 @@ class YamlTest {
             Yaml.decode("key1:\r\n  read: true\r\n\r\nkey2:\r\n  read: false\r\n")
         )
     }
+
+    @Test
+    fun testHyphenInKeys() {
+        assertEquals(
+            mapOf(
+                "this-is-an-example" to mapOf("fail" to true),
+            ),
+            Yaml.decode("""
+                this-is-an-example:
+                  fail: true
+            """.trimIndent())
+        )
+    }
 }
