@@ -16,7 +16,7 @@ class BitmapLockingTest {
         assertEquals(2, bmp.lock(Rectangle(0, 0, 8, 8)) {  })
         assertEquals(Rectangle(0, 0, 16, 16), bmp.dirtyRegion)
 
-        bmp.dirtyRegion = null
+        bmp.clearDirtyRegion()
 
         bmp.lock(Rectangle.fromBounds(2, 2, 8, 8)) { }
         assertEquals(Rectangle.fromBounds(2, 2, 8, 8), bmp.dirtyRegion)
