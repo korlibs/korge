@@ -195,12 +195,12 @@ class AES(val keyWords: IntArray) {
             return dstIV
         }
 
-        fun encryptAes128Cbc(data: ByteArray, key: ByteArray, padding: Padding = Padding.NoPadding): ByteArray {
-            return encryptAesCbc(data, key, ByteArray(16), padding)
+        fun encryptAes128Cbc(data: ByteArray, key: ByteArray, iv: ByteArray = ByteArray(16), padding: Padding = Padding.NoPadding): ByteArray {
+            return encryptAesCbc(data, key, iv, padding)
         }
 
-        fun decryptAes128Cbc(data: ByteArray, key: ByteArray, padding: Padding = Padding.NoPadding): ByteArray {
-            return decryptAesCbc(data, key, ByteArray(16), padding)
+        fun decryptAes128Cbc(data: ByteArray, key: ByteArray, iv: ByteArray = ByteArray(16), padding: Padding = Padding.NoPadding): ByteArray {
+            return decryptAesCbc(data, key, iv, padding)
         }
 
         fun encryptAesEcb(data: ByteArray, key: ByteArray, padding: Padding): ByteArray {

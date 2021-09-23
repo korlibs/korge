@@ -150,9 +150,14 @@ class AESTest {
 
         // Data not aligned, and NoPadding used, it should fail
         assertFailsWith<IllegalArgumentException> { AES.encryptAesCbc(data, key, iv, Padding.NoPadding) }
+        assertFailsWith<IllegalArgumentException> { AES.encryptAes128Cbc(data, key) }
         assertEquals(
             "6ed24a2790e3bb1a3cecd89c6d33b487cb2c38471ea7e3c2771ab537fb23875e",
             AES.encryptAesCbc(data, key, iv, Padding.ZeroPadding).hex
+        )
+        assertEquals(
+            "6ed24a2790e3bb1a3cecd89c6d33b487cb2c38471ea7e3c2771ab537fb23875e",
+            AES.encryptAes128Cbc(data, key, iv, padding = Padding.ZeroPadding).hex
         )
     }
 }
