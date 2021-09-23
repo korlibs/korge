@@ -233,6 +233,10 @@ class AES(val keyWords: IntArray) {
             val wordsLength = words.size
             val ivWords = getIV(iv).toIntArray()
 
+            if (words.size % 4 != 0) {
+                throw IllegalArgumentException("Data is not multiple of $BLOCK_SIZE, and padding was set to ${Padding.NoPadding}")
+            }
+
             var s0 = ivWords[0]
             var s1 = ivWords[1]
             var s2 = ivWords[2]

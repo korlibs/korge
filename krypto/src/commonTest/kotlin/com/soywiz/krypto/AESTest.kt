@@ -1,6 +1,6 @@
 package com.soywiz.krypto
 
-import com.soywiz.krypto.encoding.Hex
+import com.soywiz.krypto.encoding.*
 import kotlin.random.Random
 import kotlin.test.*
 
@@ -139,6 +139,21 @@ class AESTest {
             //println()
             assertEquals(plainText.toHexStringLower(), decryptedText.toHexStringLower())
         }
+    }
+
+    // https://github.com/korlibs/krypto/discussions/44
+    @Test
+    fun aesEncryptOutOfBounds() {
+        val iv = "000102030405060708090a0b0c0d0e0f".unhex
+        val data = "0000040100000000000e0000000e000104010100".unhex
+        val key = "11090c51a42c0b98cd2b7b7480d80dc86458258c010c306e60e94cde7f8eaffb".unhex
+
+        // Data not aligned, and NoPadding used, it should fail
+        assertFailsWith<IllegalArgumentException> { AES.encryptAesCbc(data, key, iv, Padding.NoPadding) }
+        assertEquals(
+            "6ed24a2790e3bb1a3cecd89c6d33b487cb2c38471ea7e3c2771ab537fb23875e",
+            AES.encryptAesCbc(data, key, iv, Padding.ZeroPadding).hex
+        )
     }
 }
 
