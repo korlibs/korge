@@ -280,6 +280,17 @@ class DateTimeTest {
     }
 
     @Test
+    fun testParseAmPmFormat() {
+        val format = DateFormat("MMM d, yyyy h:mm:ss a")
+
+        assertEquals("Tue, 07 Sep 2021 12:50:08 UTC", HttpDate.format(format.parse("Sep 7, 2021 12:50:08 pm")))
+        assertEquals("Tue, 07 Sep 2021 13:50:08 UTC", HttpDate.format(format.parse("Sep 7, 2021 1:50:08 PM")))
+        assertEquals("Tue, 07 Sep 2021 00:50:08 UTC", HttpDate.format(format.parse("Sep 7, 2021 12:50:08 am")))
+        assertEquals("Tue, 07 Sep 2021 00:00:00 UTC", HttpDate.format(format.parse("Sep 7, 2021 12:00:00 am")))
+        assertEquals("Tue, 07 Sep 2021 12:00:00 UTC", HttpDate.format(format.parse("Sep 7, 2021 12:00:00 pm")))
+    }
+
+    @Test
     fun testCheckedCreation() {
         assertEquals("Mon, 18 Sep 2017 23:58:45 UTC", HttpDate.format(DateTime(2017, 9, 18, 23, 58, 45)))
     }
