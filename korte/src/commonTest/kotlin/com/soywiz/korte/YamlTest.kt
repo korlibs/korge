@@ -4,6 +4,7 @@ import com.soywiz.korte.internal.Yaml
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+// http://nodeca.github.io/js-yaml/
 class YamlTest {
     @kotlin.test.Test
     fun basic() {
@@ -137,9 +138,6 @@ class YamlTest {
         )
     }
 
-    enum class MyEnum { DEMO, HELLO, WORLD }
-    data class ClassWithEnum(val size: Int = 70, val a: MyEnum = MyEnum.HELLO)
-
     @Test
     fun testChunk() {
         val yamlStr = """
@@ -173,14 +171,6 @@ class YamlTest {
             Yaml.decode("layout:null")
         )
     }
-
-    //@Test
-    //fun name8() {
-    //	assertEquals(
-    //		null,
-    //		Yaml.read("[a:1,b:2]")
-    //	)
-    //}
 
     @Test
     fun testChunk2() {
@@ -222,6 +212,13 @@ class YamlTest {
             )
         )
     }
+    //@Test
+    //fun name8() {
+    //	assertEquals(
+    //		null,
+    //		Yaml.read("[a:1,b:2]")
+    //	)
+    //}
 
     @Test
     fun testMapListIssue() {
@@ -232,43 +229,51 @@ class YamlTest {
                 "test" to listOf("e", "f")
             ),
             Yaml.decode("""
-                hello:
-                - a
-                - b
-                world:
-                - c
-                - d
-                test:
-                - e
-                - f
-            """.trimIndent())
+			hello:
+			- a
+			- b
+			world:
+			- c
+			- d
+			test:
+			- e
+			- f
+		""".trimIndent())
         )
     }
 
     @Test
-    fun testYaml2() {
+    fun testWindowsLineEndings() {
         assertEquals(
             mapOf(
-                "map" to listOf(
-                    mapOf("id" to "asdsadsa", "noaudio" to true),
-                    mapOf("id" to "sadasdsadas", "noaudio" to true),
-                    mapOf("id" to "asdasdasdsad"),
-                    mapOf("id" to "asdasdss"),
-                    mapOf("id" to "sadasdsa-ASd", "noaudio" to true)
-                )
+                "key1" to mapOf("read" to true),
+                "key2" to mapOf("read" to false),
+            ),
+            Yaml.decode("key1:\r\n  read: true\r\nkey2:\r\n  read: false\r\n")
+        )
+    }
+
+    @Test
+    fun testWindowsLineEndings2() {
+        assertEquals(
+            mapOf(
+                "key1" to mapOf("read" to true),
+                "key2" to mapOf("read" to false),
+            ),
+            Yaml.decode("key1:\r\n  read: true\r\n\r\nkey2:\r\n  read: false\r\n")
+        )
+    }
+
+    @Test
+    fun testHyphenInKeys() {
+        assertEquals(
+            mapOf(
+                "this-is-an-example" to mapOf("fail" to true),
             ),
             Yaml.decode("""
-            map:
-                - id: asdsadsa
-                  noaudio: true
-                - id: sadasdsadas
-                  noaudio: true
-                - id: asdasdasdsad
-                - id: asdasdss
-                - id: sadasdsa-ASd
-                  noaudio: true
-        """.trimIndent())
+                this-is-an-example:
+                  fail: true
+            """.trimIndent())
         )
-
     }
 }

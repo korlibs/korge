@@ -3,12 +3,12 @@ package com.soywiz.korte.internal
 import com.soywiz.korte.util.*
 
 internal object Yaml {
-    fun decode(str: String) = read(ListReader(StrReader(str).tokenize()), level = 0)
-    fun read(str: String) = read(ListReader(StrReader(str).tokenize()), level = 0)
+    fun decode(str: String) = read(ListReader(tokenize(str)), level = 0)
+    fun read(str: String) = read(ListReader(tokenize(str)), level = 0)
 
-    private fun parseStr(tok: Token) = when (tok) {
-        is Token.STR -> tok.ustr
-        else -> parseStr(tok.str)
+    private fun parseStr(toks: List<Token>): Any? {
+        if (toks.size == 1 && toks[0] is Token.STR) return toks[0].ustr
+        return parseStr(toks.joinToString("") { it.ustr })
     }
 
     private fun parseStr(str: String) = when (str) {
@@ -85,12 +85,13 @@ internal object Yaml {
                         return olist
                     }
                     else -> {
-                        val kkey = s.read()
-                        val key = kkey.str
+                        val keyIds = s.readId()
                         if (s.eof || s.peek().str != ":") {
+                            val key = parseStr(keyIds)
                             if (TRACE) println("${levelStr}LIT: $key")
-                            return parseStr(kkey)
+                            return key
                         } else {
+                            val key = parseStr(keyIds).toString()
                             if (map == null) map = LinkedHashMap()
                             if (s.read().str != ":") invalidOp
                             if (TRACE) println("${levelStr}MAP[$key]...")
@@ -111,6 +112,20 @@ internal object Yaml {
         return map ?: list
     }
 
+    fun ListReader<Token>.readId(): List<Token> {
+        val tokens = arrayListOf<Token>()
+        while (hasMore) {
+            val token = peek()
+            if (token is Token.ID || token is Token.STR || ((token is Token.SYMBOL) && token.str == "-")) {
+                tokens.add(token)
+                read()
+            } else {
+                break
+            }
+        }
+        return tokens
+    }
+
     fun readOrString(s: ListReader<Token>, level: Int, delimiters: Set<String>): Any? {
         return if (s.peek() is Token.ID) {
             var str = ""
@@ -126,9 +141,7 @@ internal object Yaml {
         }
     }
 
-    fun tokenize(str: String): List<Token> {
-        return StrReader(str).tokenize()
-    }
+    fun tokenize(str: String): List<Token> = StrReader(str.replace("\r\n", "\n")).tokenize()
 
     private fun StrReader.tokenize(): List<Token> {
         val out = arrayListOf<Token>()
@@ -183,6 +196,7 @@ internal object Yaml {
 
     interface Token {
         val str: String
+        val ustr get() = str
 
         data class LINE(override val str: String, val level: Int) : Token {
             override fun toString(): String = "LINE($level)"
@@ -190,7 +204,7 @@ internal object Yaml {
 
         data class ID(override val str: String) : Token
         data class STR(override val str: String) : Token {
-            val ustr = str.unquote()
+            override val ustr = str.unquote()
         }
 
         data class SYMBOL(override val str: String) : Token
@@ -198,4 +212,3 @@ internal object Yaml {
 
     private fun StrReader.readUntilLineEnd() = this.readUntil { it == '\n' }
 }
-
