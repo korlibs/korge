@@ -98,6 +98,14 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
     override fun toString(): String = toString(value)
 
+    fun toStringOrNull(): String? {
+        return if (this.isNotNull) {
+            toString()
+        } else {
+            null
+        }
+    }
+
     companion object {
         val global get() = dynApi.global.dyn
 

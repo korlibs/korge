@@ -52,4 +52,14 @@ class DynTest {
     fun test5() {
         assertEquals(Integer.TYPE, Dyn.global["java.lang.Integer"]["TYPE"].value)
     }
+
+    @Test
+    fun testToStringOrNull() {
+        assertEquals("test", Dyn("test").toStringOrNull())
+        assertEquals("10", Dyn(10).toStringOrNull())
+        assertEquals("null", Dyn("null").toStringOrNull())
+        assertEquals("true", Dyn(true).toStringOrNull())
+        assertEquals("false", Dyn(false).toStringOrNull())
+        assertEquals(null, Dyn(null).toStringOrNull())
+    }
 }
