@@ -1,0 +1,11 @@
+/.gradle
+/.idea
+/build
+*.iml
+*.hprof
+*.log
+korge.keystore
+local.properties
+src/main/*
+.DS_Store
+
