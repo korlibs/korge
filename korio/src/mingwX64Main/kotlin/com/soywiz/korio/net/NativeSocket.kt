@@ -374,11 +374,14 @@ suspend fun NativeSocket.suspendRecvUpTo(data: ByteArray, offset: Int = 0, count
 
 	while (true) {
 		val read = tryRecv(data, offset, count)
-		if (read <= 0) {
-			delay(10L)
-			continue
-		}
-		return read
+        when {
+            read < 0 -> error("Socket error")
+            read == 0 -> {
+                delay(10L)
+                continue
+            }
+            else -> return read
+        }
 	}
 }
 
