@@ -43,8 +43,16 @@ open class FastRandom private constructor(
     }
 
     override fun nextBits(bitCount: Int): Int = nextInt().takeUpperBits(bitCount)
-    override fun nextInt(from: Int, until: Int): Int = (nextBits(31) % (until - from)) + from
+    override fun nextInt(from: Int, until: Int): Int {
+        require(until > from) { boundsErrorMessage(from, until) }
+        return (nextBits(31) % (until - from)) + from
+    }
+    override fun nextLong(from: Long, until: Long): Long {
+        require(until > from) { boundsErrorMessage(from, until) }
+        return (nextLong() and 0x7FFFFFFFFFFFFFFFL % (until - from)) + from
+    }
     private inline fun Int.takeUpperBits(bitCount: Int): Int = this ushr (32 - bitCount)
+    private fun boundsErrorMessage(from: Any, until: Any) = "Random range is empty: [$from, $until)."
 }
 
 inline fun <T> Collection<T>.fastRandom() = this.random(FastRandom)
