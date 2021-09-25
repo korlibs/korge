@@ -1,4 +1,5 @@
 import com.soywiz.kds.*
+import com.soywiz.kds.random.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.fast.*
 import com.soywiz.korim.bitmap.*
@@ -28,7 +29,7 @@ suspend fun Stage.terminalEmulatorMain() {
         addUpdater {
             for (row in 0 until terminalEmulatorView.rows) {
                 for (col in 0 until terminalEmulatorView.columns) {
-                    terminalEmulatorView.setGlyph(col, row, chars.random(), colors.random(), colors.random(), flips.random(), flips.random())
+                    terminalEmulatorView.setGlyph(col, row, chars.fastRandom(), colors.fastRandom(), colors.fastRandom(), flips.fastRandom(), flips.fastRandom())
                 }
             }
             terminalEmulatorView.setString(0, 0, "Hello WORLD", Colors.WHITE, Colors.RED, true, true)
