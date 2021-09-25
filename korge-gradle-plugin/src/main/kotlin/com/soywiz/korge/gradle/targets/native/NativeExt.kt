@@ -34,4 +34,11 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
             )
         }
     }
+    if (project.korge.useNewMemoryModel) {
+        (this as? KotlinNativeTarget?)?.apply {
+            binaries.all {
+                it.binaryOptions["memoryModel"] = "experimental"
+            }
+        }
+    }
 }

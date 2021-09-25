@@ -9,6 +9,14 @@ fun File.ensureParents() = this.apply { parentFile.mkdirs() }
 fun <T> File.conditionally(ifNotExists: Boolean = true, block: File.() -> T): T? = if (!ifNotExists || !this.exists()) block() else null
 fun <T> File.always(block: File.() -> T): T = block()
 operator fun File.get(name: String) = File(this, name)
+
+fun File.getFirstRegexOrNull(regex: Regex) = this
+    .listFiles { dir, name -> regex.containsMatchIn(name) }
+    ?.firstOrNull()
+
+fun File.getFirstRegexOrFail(regex: Regex) = this.getFirstRegexOrNull(regex)
+    ?: error("Can't find file matching '$regex' in folder '$this'")
+
 fun File.writeTextIfChanged(text: String, charset: Charset = Charsets.UTF_8) {
     val originalText = this.takeIf { it.exists() }?.readText(charset)
     if (originalText != text) {
