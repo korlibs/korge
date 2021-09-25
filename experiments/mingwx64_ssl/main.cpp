@@ -1,4 +1,5 @@
 #pragma clang diagnostic ignored "-Wwritable-strings"
+#pragma ide diagnostic ignored "OCUnusedMacroInspection"
 #pragma ide diagnostic ignored "UnusedValue"
 #pragma ide diagnostic ignored "modernize-use-nullptr"
 #pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
@@ -9,10 +10,10 @@
 #include <sspi.h>
 #include <schannel.h>
 #include <cstdio>
-#include <process.h>
 #include <commctrl.h>
 #include <cstring>
 #include <tchar.h>
+#include <cassert>
 
 template<class T> class GB {
 private:
@@ -72,9 +73,7 @@ public:
 
     void SetDestinationName(TCHAR *n);
 
-    int ClientInit(bool = false);
-
-    int ClientLoop();
+    int ClientNegotiate();
 
     ~SSL_SOCKET();
 
@@ -116,6 +115,12 @@ SSL_SOCKET::SSL_SOCKET(SOCKET x) {
     InitContext = false;
     ExtraDataSize = 0;
     PendingRecvDataSize = 0;
+    memset(&m_SchannelCred, 0, sizeof(m_SchannelCred));
+    m_SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
+    m_SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
+    m_SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
+    SECURITY_STATUS ss = AcquireCredentialsHandle(0, SCHANNEL_NAME, SECPKG_CRED_OUTBOUND, 0, NULL, 0, 0, &hCred, 0);
+    assert(!FAILED(ss));
 }
 
 SSL_SOCKET::~SSL_SOCKET() {
@@ -200,8 +205,17 @@ int SSL_SOCKET::recv_p(char *b, int sz) const { return recv(X, b, sz, 0); }
 
 int SSL_SOCKET::s_recv(char *b, int sz) {
     SecPkgContext_StreamSizes Sizes;
+
+    retry:
     SECURITY_STATUS ss = QueryContextAttributes(&hCtx, SECPKG_ATTR_STREAM_SIZES, &Sizes);
-    if (FAILED(ss))return -1;
+    if (FAILED(ss)) {
+        if (ss == SEC_E_INVALID_HANDLE) {
+            ClientNegotiate();
+            goto retry;
+        }
+
+        return -1;
+    }
 
     int TotalR = 0;
     int pI = 0;
@@ -272,7 +286,7 @@ int SSL_SOCKET::s_recv(char *b, int sz) {
         }
 
         if (ss == SEC_I_RENEGOTIATE) {
-            ss = ClientLoop();
+            ss = ClientNegotiate();
             if (FAILED(ss)) return -1;
         }
 
@@ -299,19 +313,22 @@ int SSL_SOCKET::s_recv(char *b, int sz) {
 }
 
 int SSL_SOCKET::s_ssend(char *b, int sz) {
-    // QueryContextAttributes
-    // Encrypt Message
-    // ssend
-
     SecPkgContext_StreamSizes Sizes;
-    SECURITY_STATUS ss = 0;
-    ss = QueryContextAttributes(&hCtx, SECPKG_ATTR_STREAM_SIZES, &Sizes);
-    if (FAILED(ss))
-        return -1;
 
-    GB<SecBuffer> Buffers(100);
+    retry:
+    SECURITY_STATUS ss = QueryContextAttributes(&hCtx, SECPKG_ATTR_STREAM_SIZES, &Sizes);
+    if (FAILED(ss)) {
+        if (ss == SEC_E_INVALID_HANDLE) {
+            ClientNegotiate();
+            goto retry;
+        }
+
+        return -1;
+    }
+
+    SecBuffer Buffers[4];
     int mPos = 0;
-    for (;;) {
+    while (true) {
         GB<char> mmsg(Sizes.cbMaximumMessage * 2);
         GB<char> mhdr(Sizes.cbHeader * 2);
         GB<char> mtrl(Sizes.cbTrailer * 2);
@@ -361,7 +378,7 @@ int SSL_SOCKET::s_ssend(char *b, int sz) {
 }
 
 
-int SSL_SOCKET::ClientLoop() {
+int SSL_SOCKET::ClientNegotiate() {
     SECURITY_STATUS ss = SEC_I_CONTINUE_NEEDED;
     GB<char> t(0x11000);
     GB<SecBuffer> bufsi(100);
@@ -451,8 +468,6 @@ int SSL_SOCKET::ClientLoop() {
         if (InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED) return -1;
 
         if (!InitContext) {
-            // Send the data we got to the remote part
-            //cbData = Send(OutBuffers[0].pvBuffer,OutBuffers[0].cbBuffer);
             int rval = ssend_p((char *) bufso[0].pvBuffer, bufso[0].cbBuffer);
             FreeContextBuffer(bufso[0].pvBuffer);
             if (rval != bufso[0].cbBuffer) return -1;
@@ -470,46 +485,16 @@ int SSL_SOCKET::ClientLoop() {
     return 0;
 }
 
-int SSL_SOCKET::ClientInit(bool NoLoop) {
-    memset(&m_SchannelCred, 0, sizeof(m_SchannelCred));
-    m_SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
-    m_SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
-    m_SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
-    SECURITY_STATUS ss = AcquireCredentialsHandle(0, SCHANNEL_NAME, SECPKG_CRED_OUTBOUND, 0, NULL, 0, 0, &hCred, 0);
-    if (FAILED(ss)) return 0;
-    if (NoLoop) return 0;
-    return ClientLoop();
-}
-
-
-SOCKET s;
-SSL_SOCKET *sx = 0;
-sockaddr_in dA, aa;
-int slen = sizeof(sockaddr_in);
-
-#pragma warning(disable:4996)
-#pragma comment(lib, "ws2_32.lib")
-#pragma comment(lib, "Crypt32.lib")
-#pragma comment(lib, "Secur32.lib")
-
-void r(void *) {
-    for (;;) {
-        char c;
-        int rval;
-
-        rval = sx->s_recv(&c, 1);
-
-        if (rval == 0 || rval == -1) {
-            printf("--- Disconnected !\r\n\r\n");
-            exit(0);
-        }
-        putc(c, stdout);
-    }
-}
+#define REQUEST_HOST "www.google.es"
+//#define REQUEST_HOST "php.net"
 
 int main() {
     int argc = 3;
-    char *argv[] = {"program", "google.es", "443"};
+    char *argv[] = {"program", REQUEST_HOST, "443"};
+    SOCKET s;
+    SSL_SOCKET *sx = 0;
+    sockaddr_in dA, aa;
+    int slen = sizeof(sockaddr_in);
 
     InitCommonControls();
     OleInitialize(0);
@@ -552,16 +537,19 @@ int main() {
 
     printf("OK , connected with %s:%u...\r\n\r\n", inet_ntoa(aa.sin_addr), ntohs(aa.sin_port));
     sx = new SSL_SOCKET(s);
-    sx->ClientInit();
     sx->SetDestinationName(argv[1]);
 
-    _beginthread(r, 4096, 0);
+    char *message = "GET / HTTP/1.1\r\nHost: " REQUEST_HOST "\r\nConnection: close\r\n\r\n";
+    printf("%s\n", message);
+    sx->s_ssend(message, strlen(message));
+
     for (;;) {
-        char c = getc(stdin);
-        int rval = sx->s_ssend(&c, 1);
+        char c;
+        int rval = sx->s_recv(&c, 1);
         if (rval == 0 || rval == -1) {
             printf("--- Disconnected !\r\n\r\n");
             exit(0);
         }
+        putc(c, stdout);
     }
 }
