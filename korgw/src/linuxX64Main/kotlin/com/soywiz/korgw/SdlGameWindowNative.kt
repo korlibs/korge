@@ -51,6 +51,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
             throw RuntimeException("Couldn't initialize SDL")
         }
 
+        sdl.showCursor(false)
 
         val displayMode = SDL_DisplayMode()
         if (sdl.getDesktopDisplayMode(0, displayMode) != 0) {

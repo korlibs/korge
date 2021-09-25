@@ -51,6 +51,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
             throw RuntimeException("Couldn't initialize SDL")
         }
 
+        sdl.showCursor(false)
 
         val displayMode = SDL_DisplayMode()
         if (sdl.getDesktopDisplayMode(0, displayMode) != 0) {
@@ -91,7 +92,8 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                         SDL_WindowEventID.EXPOSED -> render(doUpdate = false)
                         SDL_WindowEventID.MOVED,
                         SDL_WindowEventID.RESIZED,
-                        SDL_WindowEventID.SIZE_CHANGED -> {
+                        SDL_WindowEventID.SIZE_CHANGED,
+                        -> {
                             if (windowEventType == SDL_WindowEventID.MOVED) {
                                 winX = event.window.data1
                                 winY = event.window.data2
@@ -106,7 +108,8 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                     }
                 }
                 SDL_EventType.KEYDOWN,
-                SDL_EventType.KEYUP -> {
+                SDL_EventType.KEYUP,
+                -> {
                     val evType = when (event.type) {
                         SDL_EventType.KEYDOWN.value -> KeyEvent.Type.DOWN
                         else -> KeyEvent.Type.UP
@@ -128,7 +131,8 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                     lastMouseY = event.motion.y
                 }
                 SDL_EventType.MOUSEBUTTONDOWN,
-                SDL_EventType.MOUSEBUTTONUP -> {
+                SDL_EventType.MOUSEBUTTONUP,
+                -> {
                     val evType = when (event.type) {
                         SDL_EventType.MOUSEBUTTONDOWN.value -> MouseEvent.Type.DOWN
                         else -> MouseEvent.Type.UP
@@ -164,7 +168,8 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                     )
                 }
                 SDL_EventType.JOYBUTTONDOWN,
-                SDL_EventType.JOYBUTTONUP -> {
+                SDL_EventType.JOYBUTTONUP,
+                -> {
 
                 }
                 // TODO: joystick, controller

@@ -36,6 +36,7 @@ internal val SDL_DestroyWindow by lazy { sdlFunc<(SDL_Window) -> Unit>("SDL_Dest
 internal val SDL_SetWindowTitle by lazy { sdlFunc<(SDL_Window, CValues<ByteVar>) -> Unit>("SDL_SetWindowTitle") }
 internal val SDL_SetWindowSize by lazy { sdlFunc<(SDL_Window, Int, Int) -> Unit>("SDL_SetWindowSize") }
 internal val SDL_GetDesktopDisplayMode by lazy { sdlFunc<(Int, CValuesRef<*>) -> Int>("SDL_GetDesktopDisplayMode") }
+internal val SDL_ShowCursor by lazy { sdlFunc<(Int) -> Int>("SDL_ShowCursor") }
 
 internal val SDL_GL_CreateContext by lazy { sdlFunc<(SDL_Window) -> SDL_GLContext>("SDL_GL_CreateContext") }
 internal val SDL_GL_DeleteContext by lazy { sdlFunc<(SDL_GLContext) -> Unit>("SDL_GL_DeleteContext") }
@@ -83,6 +84,10 @@ class SDL {
 
     fun getError(): String? =
         SDL_GetError().takeIf { it.rawValue != nativeNullPtr }?.reinterpret<ByteVar>()?.toKString()
+
+    fun showCursor(visible: Boolean) {
+        SDL_ShowCursor(if (visible) 1 else 0)
+    }
 
     class Window(val w: SDL_Window) {
         companion object {
