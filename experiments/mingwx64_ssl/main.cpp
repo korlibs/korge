@@ -14,8 +14,15 @@
 #include <cstring>
 #include <tchar.h>
 #include <cassert>
+#include <ntdef.h>
+#include <cmath>
+#include <algorithm>
 
-template<class T> class GB {
+#define SET_SSL_BUFFER(buffer, type, count, pv) buffer.BufferType = type; buffer.cbBuffer = count; buffer.pvBuffer = pv;
+
+
+template<class T>
+class GB {
 private:
 
     T *buffer;
@@ -36,34 +43,16 @@ public:
 
     void clear() { ZeroMemory(buffer, size * sizeof(T)); }
 
-    int bs() { return size * sizeof(T); }
-
-    int is() { return size; }
-
     void Resize(unsigned int news) {
-        if (news == size)
-            return; // same size
-
-        // Create buffer to store existing data
+        if (news == size) return;
         T *newd = new T[news];
         int newbs = news * sizeof(T);
         ZeroMemory((void *) newd, newbs);
-
-        if (size < news)
-            // we created a larger data structure
-            memcpy((void *) newd, buffer, size * sizeof(T));
-        else
-            // we created a smaller data structure
-            memcpy((void *) newd, buffer, news * sizeof(T));
+        memcpy((void *) newd, buffer, std::min(news, size) * sizeof(T));
         delete[] buffer;
         buffer = newd;
         size = news;
     }
-
-    void AddResize(int More) {
-        Resize(size + More);
-    }
-
 };
 
 class SSL_SOCKET {
@@ -117,8 +106,7 @@ SSL_SOCKET::SSL_SOCKET(SOCKET x) {
     PendingRecvDataSize = 0;
     memset(&m_SchannelCred, 0, sizeof(m_SchannelCred));
     m_SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
-    m_SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS;
-    m_SchannelCred.dwFlags |= SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
+    m_SchannelCred.dwFlags = SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
     SECURITY_STATUS ss = AcquireCredentialsHandle(0, SCHANNEL_NAME, SECPKG_CRED_OUTBOUND, 0, NULL, 0, 0, &hCred, 0);
     assert(!FAILED(ss));
 }
@@ -140,19 +128,17 @@ int SSL_SOCKET::ClientOff() {
     // Client wants to disconnect
 
     SECURITY_STATUS ss;
-    GB<SecBuffer> OutBuffers(100);
+    SecBuffer OutBuffers[1];
     DWORD dwType = SCHANNEL_SHUTDOWN;
-    OutBuffers[0].pvBuffer = &dwType;
-    OutBuffers[0].BufferType = SECBUFFER_TOKEN;
-    OutBuffers[0].cbBuffer = sizeof(dwType);
 
+    SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, sizeof(dwType), &dwType)
     sbout.cBuffers = 1;
     sbout.pBuffers = OutBuffers;
     sbout.ulVersion = SECBUFFER_VERSION;
 
-    for (;;) {
+    while (true) {
         ss = ApplyControlToken(&hCtx, &sbout);
-        if (FAILED(ss))return -1;
+        if (FAILED(ss)) return -1;
 
         DWORD dwSSPIFlags;
         DWORD dwSSPIOutFlags;
@@ -160,9 +146,7 @@ int SSL_SOCKET::ClientOff() {
                 ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY | ISC_RET_EXTENDED_ERROR |
                 ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM;
 
-        OutBuffers[0].pvBuffer = NULL;
-        OutBuffers[0].BufferType = SECBUFFER_TOKEN;
-        OutBuffers[0].cbBuffer = 0;
+        SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, 0, 0)
         sbout.cBuffers = 1;
         sbout.pBuffers = OutBuffers;
         sbout.ulVersion = SECBUFFER_VERSION;
@@ -192,7 +176,7 @@ int SSL_SOCKET::ClientOff() {
 int SSL_SOCKET::ssend_p(char *b, int sz) const {
     // same as send, but forces reading ALL sz
     int rs = 0;
-    for (;;) {
+    while (true) {
         int rval = send(X, b + rs, sz - rs, 0);
         if (rval == 0 || rval == SOCKET_ERROR) return rs;
         rs += rval;
@@ -224,7 +208,6 @@ int SSL_SOCKET::s_recv(char *b, int sz) {
     SecBuffer *pExtraBuffer;
     GB<char> mmsg(Sizes.cbMaximumMessage * 10);
 
-
     if (PendingRecvDataSize) {
         if (sz <= PendingRecvDataSize) {
             memcpy(b, PendingRecvData, sz);
@@ -240,7 +223,7 @@ int SSL_SOCKET::s_recv(char *b, int sz) {
         return sz;
     }
 
-    for (;;) {
+    while (true) {
         unsigned int dwMessage = Sizes.cbMaximumMessage;
 
         if (dwMessage > Sizes.cbMaximumMessage) dwMessage = Sizes.cbMaximumMessage;
@@ -255,14 +238,10 @@ int SSL_SOCKET::s_recv(char *b, int sz) {
             pI += rval;
         }
 
-
-        Buffers[0].pvBuffer = mmsg;
-        Buffers[0].cbBuffer = pI;
-        Buffers[0].BufferType = SECBUFFER_DATA;
-
-        Buffers[1].BufferType = SECBUFFER_EMPTY;
-        Buffers[2].BufferType = SECBUFFER_EMPTY;
-        Buffers[3].BufferType = SECBUFFER_EMPTY;
+        SET_SSL_BUFFER(Buffers[0], SECBUFFER_DATA, pI, mmsg)
+        SET_SSL_BUFFER(Buffers[1], SECBUFFER_EMPTY, 0, NULL)
+        SET_SSL_BUFFER(Buffers[2], SECBUFFER_EMPTY, 0, NULL)
+        SET_SSL_BUFFER(Buffers[3], SECBUFFER_EMPTY, 0, NULL)
 
         sbin.ulVersion = SECBUFFER_VERSION;
         sbin.pBuffers = Buffers;
@@ -344,18 +323,10 @@ int SSL_SOCKET::s_ssend(char *b, int sz) {
         mPos += dwMessage;
 
 
-        Buffers[0].pvBuffer = mhdr;
-        Buffers[0].cbBuffer = Sizes.cbHeader;
-        Buffers[0].BufferType = SECBUFFER_STREAM_HEADER;
-        Buffers[1].pvBuffer = mmsg;
-        Buffers[1].cbBuffer = dwMessage;
-        Buffers[1].BufferType = SECBUFFER_DATA;
-        Buffers[2].pvBuffer = mtrl;
-        Buffers[2].cbBuffer = Sizes.cbTrailer;
-        Buffers[2].BufferType = SECBUFFER_STREAM_TRAILER;
-        Buffers[3].pvBuffer = 0;
-        Buffers[3].cbBuffer = 0;
-        Buffers[3].BufferType = SECBUFFER_EMPTY;
+        SET_SSL_BUFFER(Buffers[0], SECBUFFER_STREAM_HEADER, Sizes.cbHeader, mhdr)
+        SET_SSL_BUFFER(Buffers[1], SECBUFFER_DATA, dwMessage, mmsg)
+        SET_SSL_BUFFER(Buffers[2], SECBUFFER_STREAM_TRAILER, Sizes.cbTrailer, mtrl)
+        SET_SSL_BUFFER(Buffers[3], SECBUFFER_EMPTY, 0, 0)
         sbin.ulVersion = SECBUFFER_VERSION;
         sbin.pBuffers = Buffers;
         sbin.cBuffers = 4;
@@ -381,26 +352,22 @@ int SSL_SOCKET::s_ssend(char *b, int sz) {
 int SSL_SOCKET::ClientNegotiate() {
     SECURITY_STATUS ss = SEC_I_CONTINUE_NEEDED;
     GB<char> t(0x11000);
-    GB<SecBuffer> bufsi(100);
-    GB<SecBuffer> bufso(100);
+    SecBuffer bufsi[2];
+    SecBuffer bufso[1];
     int pt = 0;
 
     // Loop using InitializeSecurityContext until success
-    for (;;) {
+    while (true) {
         if (ss != SEC_I_CONTINUE_NEEDED && ss != SEC_E_INCOMPLETE_MESSAGE && ss != SEC_I_INCOMPLETE_CREDENTIALS)
             break;
 
         DWORD dwSSPIFlags =
                 ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY |
-                ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM;
-
-        dwSSPIFlags |= ISC_REQ_MANUAL_CRED_VALIDATION;
+                ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM | ISC_REQ_MANUAL_CRED_VALIDATION;
 
         if (InitContext == 0) {
             // Initialize sbout
-            bufso[0].pvBuffer = NULL;
-            bufso[0].BufferType = SECBUFFER_TOKEN;
-            bufso[0].cbBuffer = 0;
+            SET_SSL_BUFFER(bufso[0], SECBUFFER_TOKEN, 0, 0)
             sbout.ulVersion = SECBUFFER_VERSION;
             sbout.cBuffers = 1;
             sbout.pBuffers = bufso;
@@ -416,29 +383,21 @@ int SSL_SOCKET::ClientNegotiate() {
 
 
             int rval = recv(X, t + pt, 0x10000, 0);
-            if (rval == 0 || rval == -1)
-                return rval;
+            if (rval == 0 || rval == -1) return rval;
             pt += rval;
 
             // Put this data into the buffer so InitializeSecurityContext will do
 
-            bufsi[0].BufferType = SECBUFFER_TOKEN;
-            bufsi[0].cbBuffer = pt;
-            bufsi[0].pvBuffer = t;
-            bufsi[1].BufferType = SECBUFFER_EMPTY;
-            bufsi[1].cbBuffer = 0;
-            bufsi[1].pvBuffer = 0;
+            SET_SSL_BUFFER(bufsi[0], SECBUFFER_TOKEN, pt, t)
+            SET_SSL_BUFFER(bufsi[1], SECBUFFER_EMPTY, 0, 0)
             sbin.ulVersion = SECBUFFER_VERSION;
             sbin.pBuffers = bufsi;
             sbin.cBuffers = 2;
 
-            bufso[0].pvBuffer = NULL;
-            bufso[0].BufferType = SECBUFFER_TOKEN;
-            bufso[0].cbBuffer = 0;
+            SET_SSL_BUFFER(bufso[0], SECBUFFER_TOKEN, 0, 0)
             sbout.cBuffers = 1;
             sbout.pBuffers = bufso;
             sbout.ulVersion = SECBUFFER_VERSION;
-
         }
 
         DWORD dwSSPIOutFlags = 0;
@@ -543,7 +502,7 @@ int main() {
     printf("%s\n", message);
     sx->s_ssend(message, strlen(message));
 
-    for (;;) {
+    while (true) {
         char c;
         int rval = sx->s_recv(&c, 1);
         if (rval == 0 || rval == -1) {
