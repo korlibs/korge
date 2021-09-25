@@ -6,7 +6,7 @@ plugins {
     //kotlin("multiplatform")
     //kotlin("gradle-plugin")
 }
-val kotlinVersion = "1.5.21"
+val kotlinVersion = "1.5.31"
 val androidToolsBuildGradleVersion = "4.2.0"
 
 dependencies {
