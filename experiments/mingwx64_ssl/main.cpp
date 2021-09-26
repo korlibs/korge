@@ -18,8 +18,102 @@
 #include <cmath>
 #include <algorithm>
 
-#define SET_SSL_BUFFER(buffer, type, count, pv) buffer.BufferType = type; buffer.cbBuffer = count; buffer.pvBuffer = pv;
+#define SET_SSL_BUFFER(buffer, type, count, pv) { buffer.BufferType = type; buffer.cbBuffer = count; buffer.pvBuffer = pv; }
 
+typedef struct {
+    long long int read;
+    long long int written;
+    int allocatedSize;
+    unsigned char *ptr;
+} GrowableDeque;
+
+GrowableDeque *GD_alloc(int capacity) {
+    GrowableDeque *out = (GrowableDeque *)malloc(sizeof(GrowableDeque));
+    memset(out, 0, sizeof(*out));
+    return out;
+}
+
+void GD_free(GrowableDeque *gd) {
+    if (gd->ptr != NULL) {
+        free(gd->ptr);
+        memset(gd, 0, sizeof(GrowableDeque));
+    }
+    free(gd);
+}
+
+long long int GD_get_pending_read(GrowableDeque *gd) {
+    return gd->written - gd->read;
+}
+
+void GD_ensure_append(GrowableDeque *gd, int count) {
+    long long int pendingRead = GD_get_pending_read(gd);
+    if (pendingRead >= gd->allocatedSize) {
+        int oldSize = gd->allocatedSize;
+        int newSize = std::max(gd->allocatedSize + count, gd->allocatedSize * 3);
+        unsigned char *oldPtr = gd->ptr;
+        unsigned char *newPtr = (unsigned char *)malloc(newSize);
+        memset(newPtr, 0, newSize);
+        gd->allocatedSize = newSize;
+        gd->ptr = newPtr;
+
+        for (int n = 0; n < pendingRead; n++) {
+            newPtr[(gd->read + n) % newSize] = oldPtr[(gd->read + n) % oldSize];
+        }
+
+        free(oldPtr);
+    }
+}
+
+void GD_append_byte(GrowableDeque *gd, char data) {
+    GD_ensure_append(gd, 1);
+    gd->ptr[gd->written++ % gd->allocatedSize] = data;
+}
+
+int GD_read_byte(GrowableDeque *gd) {
+    if (gd->read >= gd->written) return -1;
+    return gd->ptr[gd->read++ % gd->allocatedSize];
+}
+
+int GD_peek_byte(GrowableDeque *gd, int offset) {
+    if ((gd->read + offset) >= gd->written) return -1;
+    return gd->ptr[(gd->read + offset) % gd->allocatedSize];
+}
+
+// @TODO: Optimize
+void GD_append(GrowableDeque *gd, char *data, int count) {
+    GD_ensure_append(gd, count);
+    for (int n = 0; n < count; n++) GD_append_byte(gd, data[n]);
+}
+
+// @TODO: Optimize
+int GD_read(GrowableDeque *gd, char *data, int count) {
+    for (int n = 0; n < count; n++) {
+        int byte = GD_read_byte(gd);
+        if (byte < 0) return n;
+        data[n] = byte;
+    }
+    return count;
+}
+
+// @TODO: Optimize
+int GD_peek(GrowableDeque *gd, int offset, char *data, int count) {
+    for (int n = 0; n < count; n++) {
+        int byte = GD_peek_byte(gd, offset + n);
+        if (byte < 0) return n;
+        data[n] = byte;
+    }
+    return count;
+}
+
+// @TODO: Optimize
+int GD_copy(GrowableDeque *src, GrowableDeque *dst, int count) {
+    GD_ensure_append(dst, count);
+    for (int n = 0; n < count; n++) {
+        int data = GD_read_byte(src);
+        if (data < 0) break;
+        GD_append_byte(dst, data);
+    }
+}
 
 template<class T>
 class GB {
@@ -72,12 +166,26 @@ public:
 
     int ssend_p(char *b, int sz) const;
 
+    void send_pending();
+
+    int out_queue(char *b, int sz) const;
+    int out_dequeue(char *b, int sz) const;
+    int out_dequeue_peek(char *b, int sz) const;
+    int out_get_pending() const;
+
+    int in_queue(char *b, int sz) const;
+    int in_dequeue(char *b, int sz) const;
+    int in_dequeue_peek(char *b, int sz) const;
+    int in_get_pending() const;
+
     int recv_p(char *b, int sz) const;
 
     int ClientOff();
 
 
 private:
+    GrowableDeque *in_buffer;
+    GrowableDeque *out_buffer;
     SOCKET X;
     HCERTSTORE hCS;
     SCHANNEL_CRED m_SchannelCred;
@@ -109,6 +217,8 @@ SSL_SOCKET::SSL_SOCKET(SOCKET x) {
     m_SchannelCred.dwFlags = SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
     SECURITY_STATUS ss = AcquireCredentialsHandle(0, SCHANNEL_NAME, SECPKG_CRED_OUTBOUND, 0, NULL, 0, 0, &hCred, 0);
     assert(!FAILED(ss));
+    out_buffer = GD_alloc(64);
+    in_buffer = GD_alloc(64);
 }
 
 SSL_SOCKET::~SSL_SOCKET() {
@@ -116,6 +226,10 @@ SSL_SOCKET::~SSL_SOCKET() {
     if (hCtx.dwLower || hCtx.dwLower) DeleteSecurityContext(&hCtx);
     if (hCred.dwLower || hCred.dwLower) FreeCredentialHandle;
     if (hCS) CertCloseStore(hCS, 0);
+    GD_free(out_buffer);
+    GD_free(in_buffer);
+    out_buffer = NULL;
+    in_buffer = NULL;
     hCS = 0;
 }
 
@@ -164,13 +278,32 @@ int SSL_SOCKET::ClientOff() {
         cbMessage = OutBuffers[0].cbBuffer;
 
         if (pbMessage != NULL && cbMessage != 0) {
-            int rval = ssend_p((char *) pbMessage, cbMessage);
+            int rval = out_queue((char *) pbMessage, cbMessage);
+            send_pending();
             FreeContextBuffer(pbMessage);
             return rval;
         }
         break;
     }
     return 1;
+}
+
+int SSL_SOCKET::out_queue(char *b, int sz) const { GD_append(out_buffer, b, sz); return sz; }
+int SSL_SOCKET::out_get_pending() const { return GD_get_pending_read(out_buffer); }
+int SSL_SOCKET::out_dequeue_peek(char *out, int size) const { return GD_peek(out_buffer, 0, out, size); }
+int SSL_SOCKET::out_dequeue(char *out, int size) const { return GD_read(out_buffer, out, size); }
+
+int SSL_SOCKET::in_queue(char *b, int sz) const { GD_append(in_buffer, b, sz); return sz; }
+int SSL_SOCKET::in_get_pending() const { return GD_get_pending_read(in_buffer); }
+int SSL_SOCKET::in_dequeue_peek(char *out, int size) const { return GD_peek(in_buffer, 0, out, size); }
+int SSL_SOCKET::in_dequeue(char *out, int size) const { return GD_read(in_buffer, out, size); }
+
+void SSL_SOCKET::send_pending() {
+    int pending = out_get_pending();
+    char *temp = (char *)malloc(pending);
+    int read = out_dequeue(temp, pending);
+    ssend_p(temp, read);
+    free(temp);
 }
 
 int SSL_SOCKET::ssend_p(char *b, int sz) const {
@@ -334,16 +467,13 @@ int SSL_SOCKET::s_ssend(char *b, int sz) {
         ss = EncryptMessage(&hCtx, 0, &sbin, 0);
         if (FAILED(ss)) return -1;
 
-
         // Send this message
-        int rval;
-        rval = ssend_p((char *) Buffers[0].pvBuffer, Buffers[0].cbBuffer);
-        if (rval != Buffers[0].cbBuffer) return rval;
-        rval = ssend_p((char *) Buffers[1].pvBuffer, Buffers[1].cbBuffer);
-        if (rval != Buffers[1].cbBuffer) return rval;
-        rval = ssend_p((char *) Buffers[2].pvBuffer, Buffers[2].cbBuffer);
-        if (rval != Buffers[2].cbBuffer) return rval;
+        for (int n = 0; n < 3; n++) {
+            int rval = out_queue((char *) Buffers[n].pvBuffer, Buffers[n].cbBuffer);
+            if (rval != Buffers[n].cbBuffer) return rval;
+        }
     }
+    send_pending();
 
     return sz;
 }
@@ -427,17 +557,17 @@ int SSL_SOCKET::ClientNegotiate() {
         if (InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED) return -1;
 
         if (!InitContext) {
-            int rval = ssend_p((char *) bufso[0].pvBuffer, bufso[0].cbBuffer);
+            out_queue((char *) bufso[0].pvBuffer, bufso[0].cbBuffer);
             FreeContextBuffer(bufso[0].pvBuffer);
-            if (rval != bufso[0].cbBuffer) return -1;
+            send_pending();
             InitContext = true;
             continue;
         }
 
         // Pass data to the remote site
-        int rval = ssend_p((char *) bufso[0].pvBuffer, bufso[0].cbBuffer);
+        out_queue((char *) bufso[0].pvBuffer, bufso[0].cbBuffer);
         FreeContextBuffer(bufso[0].pvBuffer);
-        if (rval != bufso[0].cbBuffer) return -1;
+        send_pending();
 
         if (ss == S_OK) break; // wow!!
     }
@@ -494,6 +624,8 @@ int main() {
 
     getpeername(s, (sockaddr *) &aa, &slen);
 
+    //{ u_long value = 1; ioctlsocket(s, FIONBIO, &value); }
+
     printf("OK , connected with %s:%u...\r\n\r\n", inet_ntoa(aa.sin_addr), ntohs(aa.sin_port));
     sx = new SSL_SOCKET(s);
     sx->SetDestinationName(argv[1]);
@@ -501,6 +633,7 @@ int main() {
     char *message = "GET / HTTP/1.1\r\nHost: " REQUEST_HOST "\r\nConnection: close\r\n\r\n";
     printf("%s\n", message);
     sx->s_ssend(message, strlen(message));
+    //sx->send_receive_loop();
 
     while (true) {
         char c;
@@ -511,4 +644,16 @@ int main() {
         }
         putc(c, stdout);
     }
+    /*
+    char *temp = (char *)alloca(128);
+    auto gd = GD_alloc(4);
+    for (int n = 0; n < 100; n++) {
+        GD_append(gd, "hello", 5);
+    }
+    GD_read(gd, temp, 100);
+    temp[100] = 0;
+    printf("%d\n", GD_get_pending_read(gd));
+    printf("'%s'\n", temp);
+    GD_free(gd);
+    */
 }
