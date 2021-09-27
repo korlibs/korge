@@ -259,10 +259,10 @@ private:
     SCHANNEL_CRED m_SchannelCred;
     CredHandle hCred;
     CtxtHandle hCtx;
-    TCHAR dn[1000];
+    TCHAR destinationName[1000];
     SecBufferDesc sbin;
     SecBufferDesc sbout;
-    bool InitContext;
+    bool initContext;
     GB<char> ExtraData;
     int ExtraDataSize;
     GB<char> PendingRecvData;
@@ -278,8 +278,8 @@ SSL_SOCKET::SSL_SOCKET(SOCKET x) {
     hCred.dwUpper = 0;
     hCtx.dwLower = 0;
     hCtx.dwUpper = 0;
-    memset(dn, 0, 1000 * sizeof(TCHAR));
-    InitContext = false;
+    memset(destinationName, 0, 1000 * sizeof(TCHAR));
+    initContext = false;
     mustNegotiate = true;
     ExtraDataSize = 0;
     PendingRecvDataSize = 0;
@@ -308,7 +308,7 @@ SSL_SOCKET::~SSL_SOCKET() {
 
 
 void SSL_SOCKET::SetDestinationName(TCHAR *n) {
-    _tcscpy(dn, n);
+    _tcscpy(destinationName, n);
 }
 
 int SSL_SOCKET::ClientOff() {
@@ -571,7 +571,7 @@ int SSL_SOCKET::ClientNegotiate() {
                 ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY |
                 ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM | ISC_REQ_MANUAL_CRED_VALIDATION;
 
-        if (InitContext == 0) {
+        if (initContext == 0) {
             // Initialize sbout
             SET_SSL_BUFFER(bufso[0], SECBUFFER_TOKEN, 0, 0)
             SET_SSL_BUFFERS(sbout, bufso, 1)
@@ -609,14 +609,14 @@ int SSL_SOCKET::ClientNegotiate() {
 
         ss = InitializeSecurityContext(
                 &hCred,
-                InitContext ? &hCtx : NULL,
-                dn,
+                initContext ? &hCtx : NULL,
+                destinationName,
                 dwSSPIFlags,
                 0,
                 0,//SECURITY_NATIVE_DREP,
-                InitContext ? &sbin : NULL,
+                initContext ? &sbin : NULL,
                 0,
-                InitContext ? NULL : &hCtx,
+                initContext ? NULL : &hCtx,
                 &sbout,
                 &dwSSPIOutFlags,
                 NULL
@@ -635,8 +635,8 @@ int SSL_SOCKET::ClientNegotiate() {
             return -1;
         }
 
-        if (InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
-            printf("ClientNegotiate: InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED\n");
+        if (initContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
+            printf("ClientNegotiate: initContext == 0 && ss != SEC_I_CONTINUE_NEEDED\n");
             return -1;
         }
 
@@ -646,9 +646,9 @@ int SSL_SOCKET::ClientNegotiate() {
         FreeContextBuffer(bufso[0].pvBuffer);
         send_pending();
 
-        if (!InitContext) {
-            printf("ClientNegotiate: !InitContext -> InitContext\n");
-            InitContext = true;
+        if (!initContext) {
+            printf("ClientNegotiate: !initContext -> initContext\n");
+            initContext = true;
             continue;
         }
 
@@ -679,13 +679,13 @@ int SSL_SOCKET::process() {
     SecBuffer Buffers[5] = {0};
 
     // Client negotiate
-    if (mustNegotiate || InitContext == 0) {
+    if (mustNegotiate || initContext == 0) {
         SECURITY_STATUS ss = SEC_I_CONTINUE_NEEDED;
         GB<char> t(0x11000);
         SecBuffer bufsi[2];
         SecBuffer bufso[2];
 
-        printf("NEGOTIATION START: mustNegotiate=%d, InitContext=%d\n", mustNegotiate, InitContext);
+        printf("NEGOTIATION START: mustNegotiate=%d, initContext=%d\n", mustNegotiate, initContext);
 
         // Loop using InitializeSecurityContext until success
         while (true) {
@@ -694,7 +694,7 @@ int SSL_SOCKET::process() {
 
             int pt = 0;
 
-            if (InitContext == 0) {
+            if (initContext == 0) {
                 // Initialize sbout
                 SET_SSL_BUFFER(bufso[0], SECBUFFER_TOKEN, 0, 0)
                 SET_SSL_BUFFERS(sbout, bufso, 1);
@@ -716,14 +716,14 @@ int SSL_SOCKET::process() {
 
             ss = InitializeSecurityContext(
                 &hCred, // phCredential
-                InitContext ? &hCtx : NULL, // phContext
-                dn, // pszTargetName
+                initContext ? &hCtx : NULL, // phContext
+                destinationName, // pszTargetName
                 ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY | ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM | ISC_REQ_MANUAL_CRED_VALIDATION, // fContextReq
                 0, // Reserved1
                 0, // TargetDataRep
-                InitContext ? &sbin : NULL, // pInput
+                initContext ? &sbin : NULL, // pInput
                 0, // Reserved2
-                InitContext ? NULL : &hCtx, // phNewContext
+                initContext ? NULL : &hCtx, // phNewContext
                 &sbout, // pOutput
                 &dwSSPIOutFlags, // pfContextAttr
                 NULL // ptsExpiry
@@ -749,7 +749,7 @@ int SSL_SOCKET::process() {
                 return -1;
             }
 
-            if (InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
+            if (initContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
                 printf("Negotiate: SEC_I_CONTINUE_NEEDED\n");
                 return -1;
             }
@@ -759,16 +759,16 @@ int SSL_SOCKET::process() {
             FreeContextBuffer(bufso[0].pvBuffer);
             //send_pending();
 
-            if (!InitContext) {
-                printf("Negotiate: !InitContext -> InitContext\n");
-                InitContext = true;
+            if (!initContext) {
+                printf("Negotiate: !initContext -> initContext\n");
+                initContext = true;
                 return -1;
             }
 
             if (ss == S_OK) {
                 printf("Negotiate: ss == S_OK -> mustNegotiate = false;\n");
                 mustNegotiate = false;
-                InitContext = 1;
+                initContext = 1;
                 break; // wow!!
             }
         }
@@ -811,7 +811,7 @@ int SSL_SOCKET::process() {
                 printf("Process mustNegotiate = true\n");
                 //mustNegotiate = true;
                 //mustNegotiate = true;
-                //InitContext = 0;
+                //initContext = 0;
                 return -1;
             }
 
