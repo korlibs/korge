@@ -98,7 +98,7 @@ fun Project.configureNativeIos() {
         xcodeGenFolder[".build/release/xcodegen"],
         xcodeGenFolder[".build/apple/Products/Release/xcodegen"],
     )
-    val xcodeGenGitTag = "2.21.0"
+    val xcodeGenGitTag = "2.25.0"
 
     tasks.create("installXcodeGen") { task ->
 		task.apply {
