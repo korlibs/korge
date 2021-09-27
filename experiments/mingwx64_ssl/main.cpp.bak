@@ -175,27 +175,77 @@ void GD_dump(GrowableDeque *gd) {
     printf("\n");
 }
 
+template<class T>
+class GB {
+private:
+
+    T *buffer;
+    unsigned int size;
+
+public:
+
+    GB(int s = 0) {
+        if (!s) s = 1;
+        buffer = new T[s];
+        memset(buffer, 0, s * sizeof(T));
+        size = s;
+    }
+
+    ~GB() { delete[] buffer; }
+
+    operator T *() { return buffer; }
+
+    void clear() { ZeroMemory(buffer, size * sizeof(T)); }
+
+    void Resize(unsigned int news) {
+        if (news == size) return;
+        T *newd = new T[news];
+        int newbs = news * sizeof(T);
+        ZeroMemory((void *) newd, newbs);
+        memcpy((void *) newd, buffer, std::min(news, size) * sizeof(T));
+        delete[] buffer;
+        buffer = newd;
+        size = news;
+    }
+};
+
 class SSL_SOCKET {
 public:
 
-    SSL_SOCKET();
+    SSL_SOCKET(SOCKET);
 
-    void setDestinationName(TCHAR *n);
+    void SetDestinationName(TCHAR *n);
+
+    int ClientNegotiate();
 
     ~SSL_SOCKET();
 
+    int s_ssend(char *b, int sz);
+
+    int s_recv(char *b, int sz);
+
+    int ssend_p(char *b, int sz) const;
+
+    void send_pending();
+
     int out_queue(char *b, int sz) const;
     int out_dequeue(char *b, int sz) const;
+    int out_dequeue_peek(char *b, int sz) const;
     int out_get_pending() const;
 
     int in_queue(char *b, int sz) const;
     int in_dequeue(char *b, int sz) const;
+    int in_dequeue_peek(char *b, int sz) const;
+    int in_get_pending() const;
+
+    int recv_p(char *b, int sz) const;
+
+    int ClientOff();
 
     int process();
 
     int writeToSend(char *b, int sz) const;
     int writeReceived(char *b, int sz) const;
-    void close();
 
 private:
     GrowableDeque *in_buffer;
@@ -204,6 +254,7 @@ private:
     GrowableDeque *to_write_buffer;
     GrowableDeque *received_buffer;
 
+    SOCKET X;
     HCERTSTORE hCS;
     SCHANNEL_CRED m_SchannelCred;
     CredHandle hCred;
@@ -212,12 +263,16 @@ private:
     SecBufferDesc sbin;
     SecBufferDesc sbout;
     bool InitContext;
-    bool clientSendDisconnect = false;
+    GB<char> ExtraData;
+    int ExtraDataSize;
+    GB<char> PendingRecvData;
+    int PendingRecvDataSize;
 
     bool mustNegotiate = true;
 };
 
-SSL_SOCKET::SSL_SOCKET() {
+SSL_SOCKET::SSL_SOCKET(SOCKET x) {
+    X = x;
     hCS = 0;
     hCred.dwLower = 0;
     hCred.dwUpper = 0;
@@ -226,6 +281,8 @@ SSL_SOCKET::SSL_SOCKET() {
     memset(dn, 0, 1000 * sizeof(TCHAR));
     InitContext = false;
     mustNegotiate = true;
+    ExtraDataSize = 0;
+    PendingRecvDataSize = 0;
     memset(&m_SchannelCred, 0, sizeof(m_SchannelCred));
     m_SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
     m_SchannelCred.dwFlags = SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
@@ -235,14 +292,10 @@ SSL_SOCKET::SSL_SOCKET() {
     in_buffer = GD_alloc(64);
     to_write_buffer = GD_alloc(64);
     received_buffer = GD_alloc(64);
-    clientSendDisconnect = false;
-}
-
-void SSL_SOCKET::close() {
-    clientSendDisconnect = true;
 }
 
 SSL_SOCKET::~SSL_SOCKET() {
+    ClientOff();
     if (hCtx.dwLower || hCtx.dwLower) DeleteSecurityContext(&hCtx);
     if (hCred.dwLower || hCred.dwLower) FreeCredentialHandle;
     if (hCS) CertCloseStore(hCS, 0);
@@ -254,16 +307,360 @@ SSL_SOCKET::~SSL_SOCKET() {
 }
 
 
-void SSL_SOCKET::setDestinationName(TCHAR *n) {
+void SSL_SOCKET::SetDestinationName(TCHAR *n) {
     _tcscpy(dn, n);
+}
+
+int SSL_SOCKET::ClientOff() {
+    // Client wants to disconnect
+
+    SECURITY_STATUS ss;
+    SecBuffer OutBuffers[1];
+    DWORD dwType = SCHANNEL_SHUTDOWN;
+
+    SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, sizeof(dwType), &dwType)
+    SET_SSL_BUFFERS(sbout, OutBuffers, 1)
+
+    while (true) {
+        ss = ApplyControlToken(&hCtx, &sbout);
+        if (FAILED(ss)) return -1;
+
+        DWORD dwSSPIFlags;
+        DWORD dwSSPIOutFlags;
+        dwSSPIFlags =
+                ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY | ISC_RET_EXTENDED_ERROR |
+                ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM;
+
+        SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, 0, 0)
+        SET_SSL_BUFFERS(sbout, OutBuffers, 1)
+
+        ss = InitializeSecurityContext(
+                &hCred, &hCtx, NULL, dwSSPIFlags, 0, SECURITY_NATIVE_DREP, NULL, 0, &hCtx,
+                &sbout, &dwSSPIOutFlags, 0
+        );
+        if (FAILED(ss))
+            return -1;
+
+        PBYTE pbMessage;
+        DWORD cbMessage;
+        pbMessage = (BYTE *) (OutBuffers[0].pvBuffer);
+        cbMessage = OutBuffers[0].cbBuffer;
+
+        if (pbMessage != NULL && cbMessage != 0) {
+            int rval = out_queue((char *) pbMessage, cbMessage);
+            send_pending();
+            FreeContextBuffer(pbMessage);
+            return rval;
+        }
+        break;
+    }
+    return 1;
 }
 
 int SSL_SOCKET::out_queue(char *b, int sz) const { GD_append(out_buffer, b, sz); return sz; }
 int SSL_SOCKET::out_get_pending() const { return GD_get_pending_read(out_buffer); }
+int SSL_SOCKET::out_dequeue_peek(char *out, int size) const { return GD_peek(out_buffer, 0, out, size); }
 int SSL_SOCKET::out_dequeue(char *out, int size) const { return GD_read(out_buffer, out, size); }
 
 int SSL_SOCKET::in_queue(char *b, int sz) const { GD_append(in_buffer, b, sz); return sz; }
+int SSL_SOCKET::in_get_pending() const { return GD_get_pending_read(in_buffer); }
+int SSL_SOCKET::in_dequeue_peek(char *out, int size) const { return GD_peek(in_buffer, 0, out, size); }
 int SSL_SOCKET::in_dequeue(char *out, int size) const { return GD_read(in_buffer, out, size); }
+
+void SSL_SOCKET::send_pending() {
+    int pending = out_get_pending();
+    char *temp = (char *)malloc(pending);
+    int read = out_dequeue(temp, pending);
+    ssend_p(temp, read);
+    free(temp);
+}
+
+int SSL_SOCKET::ssend_p(char *b, int sz) const {
+    // same as send, but forces reading ALL sz
+    printf("Encrypted to send: %d\n", sz);
+    //hexdumpsingleline(b, sz);
+
+    int rs = 0;
+    while (true) {
+        int rval = send(X, b + rs, sz - rs, 0);
+        if (rval == 0 || rval == SOCKET_ERROR) return rs;
+        rs += rval;
+        if (rs == sz) return rs;
+    }
+}
+
+int SSL_SOCKET::recv_p(char *b, int sz) const {
+    int readCount = recv(X, b, sz, 0);
+
+    if (readCount > 0) {
+        printf("Encrypted received[requested=%d]: read=%d\n", sz, readCount);
+        //hexdumpsingleline(b, readCount);
+    }
+
+    return readCount;
+}
+
+
+int SSL_SOCKET::s_recv(char *b, int sz) {
+    SecPkgContext_StreamSizes Sizes;
+
+    retry:
+    SECURITY_STATUS ss = QueryContextAttributes(&hCtx, SECPKG_ATTR_STREAM_SIZES, &Sizes);
+    if (FAILED(ss)) {
+        if (ss == SEC_E_INVALID_HANDLE) {
+            ClientNegotiate();
+            goto retry;
+        }
+
+        return -1;
+    }
+
+    int TotalR = 0;
+    int pI = 0;
+    SecBuffer Buffers[5] = {0};
+    SecBuffer *pDataBuffer;
+    SecBuffer *pExtraBuffer;
+    GB<char> mmsg(Sizes.cbMaximumMessage * 10);
+
+    if (PendingRecvDataSize) {
+        if (sz <= PendingRecvDataSize) {
+            memcpy(b, PendingRecvData, sz);
+            GB<char> dj(PendingRecvDataSize);
+            memcpy(dj, PendingRecvData, PendingRecvDataSize);
+            memcpy(PendingRecvData, dj + sz, PendingRecvDataSize - sz);
+            PendingRecvDataSize -= sz;
+            return sz;
+        }
+        memcpy(b, PendingRecvData, PendingRecvDataSize);
+        sz = PendingRecvDataSize;
+        PendingRecvDataSize = 0;
+        return sz;
+    }
+
+    while (true) {
+        unsigned int dwMessage = Sizes.cbMaximumMessage;
+
+        if (dwMessage > Sizes.cbMaximumMessage) dwMessage = Sizes.cbMaximumMessage;
+
+        if (ExtraDataSize) {
+            memcpy(mmsg + pI, ExtraData, ExtraDataSize);
+            pI += ExtraDataSize;
+            ExtraDataSize = 0;
+        } else {
+            int rval = recv_p(mmsg + pI, dwMessage);
+            if (rval == 0 || rval == -1) return rval;
+            pI += rval;
+        }
+
+        SET_SSL_BUFFER(Buffers[0], SECBUFFER_DATA, pI, mmsg)
+        SET_SSL_BUFFER(Buffers[1], SECBUFFER_EMPTY, 0, NULL)
+        SET_SSL_BUFFER(Buffers[2], SECBUFFER_EMPTY, 0, NULL)
+        SET_SSL_BUFFER(Buffers[3], SECBUFFER_EMPTY, 0, NULL)
+        SET_SSL_BUFFERS(sbin, Buffers, 4)
+
+        ss = DecryptMessage(&hCtx, &sbin, 0, NULL);
+        if (ss == SEC_E_INCOMPLETE_MESSAGE) continue;
+        if (ss != SEC_E_OK && ss != SEC_I_RENEGOTIATE && ss != SEC_I_CONTEXT_EXPIRED) return -1;
+
+        pDataBuffer = NULL;
+        pExtraBuffer = NULL;
+        for (int i = 0; i < 4; i++) {
+            if (pDataBuffer == NULL && Buffers[i].BufferType == SECBUFFER_DATA) pDataBuffer = &Buffers[i];
+            if (pExtraBuffer == NULL && Buffers[i].BufferType == SECBUFFER_EXTRA) pExtraBuffer = &Buffers[i];
+        }
+        if (pExtraBuffer) {
+            ExtraDataSize = pExtraBuffer->cbBuffer;
+            printf("pExtraBuffer.pI=%d, ExtraDataSize=%d\n", pI, ExtraDataSize);
+            ExtraData.Resize(ExtraDataSize + 10);
+            memcpy(ExtraData, pExtraBuffer->pvBuffer, ExtraDataSize);
+            pI = 0;
+        }
+
+        if (ss == SEC_I_RENEGOTIATE) {
+            ss = ClientNegotiate();
+            if (FAILED(ss)) return -1;
+        }
+
+
+        if (pDataBuffer == 0) break;
+
+        TotalR = pDataBuffer->cbBuffer;
+        if (TotalR <= sz) {
+            memcpy(b, pDataBuffer->pvBuffer, TotalR);
+        } else {
+            TotalR = sz;
+            memcpy(b, pDataBuffer->pvBuffer, TotalR);
+            PendingRecvDataSize = pDataBuffer->cbBuffer - TotalR;
+            PendingRecvData.Resize(PendingRecvDataSize + 100);
+            PendingRecvData.clear();
+            memcpy(PendingRecvData, (char *) pDataBuffer->pvBuffer + TotalR, PendingRecvDataSize);
+        }
+
+        break;
+    }
+
+
+    return TotalR;
+}
+
+int SSL_SOCKET::s_ssend(char *b, int sz) {
+    SecPkgContext_StreamSizes Sizes;
+
+    retry:
+    SECURITY_STATUS ss = QueryContextAttributes(&hCtx, SECPKG_ATTR_STREAM_SIZES, &Sizes);
+    if (FAILED(ss)) {
+        if (ss == SEC_E_INVALID_HANDLE) {
+            ClientNegotiate();
+            goto retry;
+        }
+
+        return -1;
+    }
+
+    SecBuffer Buffers[4];
+    int mPos = 0;
+    while (true) {
+        GB<char> mmsg(Sizes.cbMaximumMessage * 2);
+        GB<char> mhdr(Sizes.cbHeader * 2);
+        GB<char> mtrl(Sizes.cbTrailer * 2);
+
+        unsigned int dwMessage = sz - mPos;
+        if (dwMessage == 0)
+            break; // all ok!
+
+        if (dwMessage > Sizes.cbMaximumMessage) {
+            dwMessage = Sizes.cbMaximumMessage;
+        }
+        memcpy(mmsg, b + mPos, dwMessage);
+        mPos += dwMessage;
+
+        SET_SSL_BUFFER(Buffers[0], SECBUFFER_STREAM_HEADER, Sizes.cbHeader, mhdr)
+        SET_SSL_BUFFER(Buffers[1], SECBUFFER_DATA, dwMessage, mmsg)
+        SET_SSL_BUFFER(Buffers[2], SECBUFFER_STREAM_TRAILER, Sizes.cbTrailer, mtrl)
+        SET_SSL_BUFFER(Buffers[3], SECBUFFER_EMPTY, 0, 0)
+        SET_SSL_BUFFERS(sbin, Buffers, 4)
+
+        ss = EncryptMessage(&hCtx, 0, &sbin, 0);
+        if (FAILED(ss)) return -1;
+
+        // Send this message
+        for (int n = 0; n < 3; n++) {
+            int rval = out_queue((char *) Buffers[n].pvBuffer, Buffers[n].cbBuffer);
+            if (rval != Buffers[n].cbBuffer) return rval;
+        }
+    }
+    send_pending();
+
+    return sz;
+}
+
+
+int SSL_SOCKET::ClientNegotiate() {
+    SECURITY_STATUS ss = SEC_I_CONTINUE_NEEDED;
+    GB<char> t(0x11000);
+    SecBuffer bufsi[2];
+    SecBuffer bufso[1];
+    int pt = 0;
+
+    // Loop using InitializeSecurityContext until success
+    while (true) {
+        if (ss != SEC_I_CONTINUE_NEEDED && ss != SEC_E_INCOMPLETE_MESSAGE && ss != SEC_I_INCOMPLETE_CREDENTIALS)
+            break;
+
+        DWORD dwSSPIFlags =
+                ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY |
+                ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM | ISC_REQ_MANUAL_CRED_VALIDATION;
+
+        if (InitContext == 0) {
+            // Initialize sbout
+            SET_SSL_BUFFER(bufso[0], SECBUFFER_TOKEN, 0, 0)
+            SET_SSL_BUFFERS(sbout, bufso, 1)
+        } else {
+            // Get Some data from the remote site
+
+            // Add also extradata?
+            if (ExtraDataSize) {
+                printf("ClientNegotiate: ExtraDataSize\n");
+
+                memcpy(t, ExtraData, ExtraDataSize);
+                pt += ExtraDataSize;
+                ExtraDataSize = 0;
+            }
+
+            int rval = recv_p(t + pt, 0x10000);
+            printf("ClientNegotiate: recv(0x10000) -> rval=%d, pt=%d\n", rval, pt);
+            if (rval == 0 || rval == -1) {
+                printf("ClientNegotiate: missing recv data\n");
+                return rval;
+            }
+            pt += rval;
+
+            // Put this data into the buffer so InitializeSecurityContext will do
+
+            SET_SSL_BUFFER(bufsi[0], SECBUFFER_TOKEN, pt, t)
+            SET_SSL_BUFFER(bufsi[1], SECBUFFER_EMPTY, 0, 0)
+            SET_SSL_BUFFERS(sbin, bufsi, 2)
+
+            SET_SSL_BUFFER(bufso[0], SECBUFFER_TOKEN, 0, 0)
+            SET_SSL_BUFFERS(sbout, bufso, 1)
+        }
+
+        DWORD dwSSPIOutFlags = 0;
+
+        ss = InitializeSecurityContext(
+                &hCred,
+                InitContext ? &hCtx : NULL,
+                dn,
+                dwSSPIFlags,
+                0,
+                0,//SECURITY_NATIVE_DREP,
+                InitContext ? &sbin : NULL,
+                0,
+                InitContext ? NULL : &hCtx,
+                &sbout,
+                &dwSSPIOutFlags,
+                NULL
+        );
+        printf("ClientNegotiate: InitializeSecurityContext. ss=0x%08x\n", ss);
+
+        if (ss == SEC_E_INCOMPLETE_MESSAGE) {
+            printf("ClientNegotiate: ss == SEC_E_INCOMPLETE_MESSAGE\n");
+            continue; // allow more
+        }
+
+        pt = 0;
+
+        if (FAILED(ss)) {
+            printf("ClientNegotiate: FAILED(ss)\n");
+            return -1;
+        }
+
+        if (InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
+            printf("ClientNegotiate: InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED\n");
+            return -1;
+        }
+
+        // Pass data to the remote site
+        printf("Sending data: %d\n", bufso[0].cbBuffer);
+        out_queue((char *) bufso[0].pvBuffer, bufso[0].cbBuffer);
+        FreeContextBuffer(bufso[0].pvBuffer);
+        send_pending();
+
+        if (!InitContext) {
+            printf("ClientNegotiate: !InitContext -> InitContext\n");
+            InitContext = true;
+            continue;
+        }
+
+        if (ss == S_OK) {
+            printf("ClientNegotiate: ss == S_OK\n");
+            break; // wow!!
+        } else {
+            printf("ClientNegotiate: ss != S_OK : %d (0x%08X)\n", ss, ss);
+        }
+    }
+    return 0;
+}
 
 int SSL_SOCKET::writeReceived(char *b, int sz) const {
     assert(sz >= 0);
@@ -284,18 +681,16 @@ int SSL_SOCKET::process() {
     // Client negotiate
     if (mustNegotiate || InitContext == 0) {
         SECURITY_STATUS ss = SEC_I_CONTINUE_NEEDED;
-        char *t = (char *)malloc(0x11000);
+        GB<char> t(0x11000);
         SecBuffer bufsi[2];
         SecBuffer bufso[2];
-        bool failed = false;
 
         printf("NEGOTIATION START: mustNegotiate=%d, InitContext=%d\n", mustNegotiate, InitContext);
 
         // Loop using InitializeSecurityContext until success
         while (true) {
-            if (ss != SEC_I_CONTINUE_NEEDED && ss != SEC_E_INCOMPLETE_MESSAGE && ss != SEC_I_INCOMPLETE_CREDENTIALS) {
+            if (ss != SEC_I_CONTINUE_NEEDED && ss != SEC_E_INCOMPLETE_MESSAGE && ss != SEC_I_INCOMPLETE_CREDENTIALS)
                 break;
-            }
 
             int pt = 0;
 
@@ -344,22 +739,19 @@ int SSL_SOCKET::process() {
 
             if (ss == SEC_E_INCOMPLETE_MESSAGE) {
                 printf("Negotiate: ss == SEC_E_INCOMPLETE_MESSAGE\n");
-                failed = true;
-                break;
+                return -1;
             }
 
             pt = 0;
 
             if (FAILED(ss)) {
                 printf("Negotiate: FAILED(ss)\n");
-                failed = true;
-                break;
+                return -1;
             }
 
             if (InitContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
                 printf("Negotiate: SEC_I_CONTINUE_NEEDED\n");
-                failed = true;
-                break;
+                return -1;
             }
 
             // Pass data to the remote site
@@ -370,8 +762,7 @@ int SSL_SOCKET::process() {
             if (!InitContext) {
                 printf("Negotiate: !InitContext -> InitContext\n");
                 InitContext = true;
-                failed = true;
-                break;
+                return -1;
             }
 
             if (ss == S_OK) {
@@ -380,12 +771,6 @@ int SSL_SOCKET::process() {
                 InitContext = 1;
                 break; // wow!!
             }
-        }
-
-        free(t);
-
-        if (failed) {
-            return -1;
         }
     }
 
@@ -397,7 +782,7 @@ int SSL_SOCKET::process() {
 
     // Decode read pending
     {
-        char *mmsg = (char *)malloc(sizes.cbMaximumMessage);
+        GB<char> mmsg(sizes.cbMaximumMessage);
 
         while (GD_get_pending_read(received_buffer) > 0) {
             int rval = GD_read(received_buffer, mmsg, sizes.cbMaximumMessage);
@@ -427,7 +812,7 @@ int SSL_SOCKET::process() {
                 //mustNegotiate = true;
                 //mustNegotiate = true;
                 //InitContext = 0;
-                break;
+                return -1;
             }
 
             for (int i = 0; i < 4; i++) {
@@ -443,21 +828,17 @@ int SSL_SOCKET::process() {
 
             if (ss == SEC_I_RENEGOTIATE) {
                 mustNegotiate = true;
-                if (FAILED(ss)) {
-                    break;
-                }
+                if (FAILED(ss)) return -1;
             }
         }
-
-        free(mmsg);
     }
     // Encrypt and write pending
     {
-        char *data = (char *) malloc(sizes.cbMaximumMessage);
-        char *mhdr = (char *) malloc(sizes.cbHeader);
-        char *mtrl = (char *) malloc(sizes.cbTrailer);
-
         while (GD_get_pending_read(to_write_buffer) > 0) {
+            char *data = (char *) alloca(sizes.cbMaximumMessage * 2);
+            char *mhdr = (char *) alloca(sizes.cbHeader * 2);
+            char *mtrl = (char *) alloca(sizes.cbTrailer * 2);
+
             int dataSize = GD_read(to_write_buffer, data, sizes.cbMaximumMessage);
 
             SET_SSL_BUFFER(Buffers[0], SECBUFFER_STREAM_HEADER, sizes.cbHeader, mhdr)
@@ -477,57 +858,6 @@ int SSL_SOCKET::process() {
                 out_queue((char *) Buffers[n].pvBuffer, Buffers[n].cbBuffer);
             }
         }
-
-        free(mtrl);
-        free(mhdr);
-        free(data);
-    }
-    // Encrypt and write client wants to disconnect
-    if (clientSendDisconnect) {
-        clientSendDisconnect = false;
-        // Client wants to disconnect
-
-        SECURITY_STATUS ss;
-        SecBuffer OutBuffers[1];
-        DWORD dwType = SCHANNEL_SHUTDOWN;
-
-        SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, sizeof(dwType), &dwType)
-        SET_SSL_BUFFERS(sbout, OutBuffers, 1)
-
-        while (true) {
-            ss = ApplyControlToken(&hCtx, &sbout);
-            if (FAILED(ss)) {
-                return -1;
-            }
-
-            DWORD dwSSPIFlags;
-            DWORD dwSSPIOutFlags;
-            dwSSPIFlags =
-                    ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY | ISC_RET_EXTENDED_ERROR |
-                    ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM;
-
-            SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, 0, 0)
-            SET_SSL_BUFFERS(sbout, OutBuffers, 1)
-
-            ss = InitializeSecurityContext(
-                &hCred, &hCtx, NULL, dwSSPIFlags, 0, SECURITY_NATIVE_DREP, NULL, 0, &hCtx,
-                &sbout, &dwSSPIOutFlags, 0
-            );
-            if (FAILED(ss)) {
-                return -1;
-            }
-
-            PBYTE pbMessage;
-            DWORD cbMessage;
-            pbMessage = (BYTE *) (OutBuffers[0].pvBuffer);
-            cbMessage = OutBuffers[0].cbBuffer;
-
-            if (pbMessage != NULL && cbMessage != 0) {
-                out_queue((char *) pbMessage, cbMessage);
-                FreeContextBuffer(pbMessage);
-            }
-            break;
-        }
     }
 
     return 0;
@@ -537,6 +867,16 @@ int SSL_SOCKET::process() {
 //#define REQUEST_HOST "php.net"
 
 int main() {
+    //GrowableDeque *gd = GD_alloc(1);
+    //GD_prepend(gd, "hello", 5);
+    //GD_prepend(gd, "world", 5);
+    //GD_prepend(gd, "test", 4);
+    //GD_append(gd, "lol", 3);
+    //GD_prepend(gd, "LOL", 3);
+    //GD_dump(gd);
+    //return 0;
+
+    //int BUFFER_SIZE = 1024;
     int BUFFER_SIZE = 0x10000;
 
     int argc = 3;
@@ -588,68 +928,77 @@ int main() {
     //{ u_long value = 1; ioctlsocket(s, FIONBIO, &value); }
 
     printf("OK , connected with %s:%u...\r\n\r\n", inet_ntoa(aa.sin_addr), ntohs(aa.sin_port));
-    sx = new SSL_SOCKET();
+    sx = new SSL_SOCKET(s);
     sx->setDestinationName(argv[1]);
 
     char *message = "GET / HTTP/1.1\r\nHost: " REQUEST_HOST "\r\nConnection: close\r\n\r\n";
     printf("%s\n", message);
 
-    sx->writeToSend(message, strlen(message));
+    if (true) {
+    //if (false) {
+        sx->writeToSend(message, strlen(message));
 
-    int isAlive = true;
+        while (true) {
+            char *c = (char *) alloca(BUFFER_SIZE);
+            memset(c, 0, BUFFER_SIZE);
 
-    char *c = (char *) malloc(BUFFER_SIZE);
+            sx->process();
 
-    while (isAlive) {
-        memset(c, 0, BUFFER_SIZE);
-
-        //printf("STEP[0]\n");
-        sx->process();
-        //printf("STEP[1]\n");
-
-        do {
-            int toWriteCount = sx->out_dequeue(c, BUFFER_SIZE);
-            if (toWriteCount > 0) {
-                int pos = 0;
-                while (pos < toWriteCount) {
-                    int sent = send(s, c + pos, toWriteCount, 0);
-                    pos += sent;
+            do {
+                int toWriteCount = sx->out_dequeue(c, BUFFER_SIZE);
+                if (toWriteCount > 0) {
+                    sx->ssend_p(c, toWriteCount); // Send fully
+                    //send(s, c, toWriteCount, 0);
+                } else {
+                    break;
                 }
-                //send(s, c, toWriteCount, 0);
-            } else {
-                break;
-            }
-        } while (true);
+            } while (true);
 
-        //printf("STEP[2]\n");
-
-        {
-            int readCount = recv(s, c, BUFFER_SIZE, 0);
-            //printf("-->%d, errno=%d\n", readCount, errno);
-            if (readCount == 0) isAlive = false; // only for blocking sockets
-            if (readCount < 0) isAlive = false;
-            if (readCount > 0) {
-                sx->writeReceived(c, readCount);
+            {
+                int readCount = sx->recv_p(c, BUFFER_SIZE);
+                if (readCount > 0) {
+                    sx->writeReceived(c, readCount);
+                }
             }
+
+            do {
+                int readCount = sx->in_dequeue(c, BUFFER_SIZE - 1);
+                if (readCount > 0) {
+                    c[readCount] = 0;
+                    printf("####### readCount=%d\n", readCount);
+                    printf("%s\n", c);
+                } else {
+                    break;
+                }
+            } while (true);
         }
+    } else {
+        sx->s_ssend(message, strlen(message));
+        //sx->send_receive_loop();
 
-        //printf("STEP[3]\n");
-
-        do {
-            int readCount = sx->in_dequeue(c, BUFFER_SIZE - 1);
-            if (readCount > 0) {
-                c[readCount] = 0;
-                printf("####### readCount=%d\n", readCount);
-                printf("%s\n", c);
-            } else {
-                break;
+        while (true) {
+            char *c = (char *) alloca(BUFFER_SIZE);
+            int rval = sx->s_recv(c, BUFFER_SIZE - 1);
+            if (rval == 0 || rval == -1) {
+                printf("--- Disconnected !\r\n\r\n");
+                exit(0);
             }
-        } while (true);
-
-        //printf("STEP[4]\n");
+            c[rval] = 0;
+            //printf("%s", c);
+        }
     }
 
-    free(c);
 
-    return 0;
+    /*
+    char *temp = (char *)alloca(128);
+    auto gd = GD_alloc(4);
+    for (int n = 0; n < 100; n++) {
+        GD_append(gd, "hello", 5);
+    }
+    GD_read(gd, temp, 100);
+    temp[100] = 0;
+    printf("%d\n", GD_get_pending_read(gd));
+    printf("'%s'\n", temp);
+    GD_free(gd);
+    */
 }
