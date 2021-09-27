@@ -9,14 +9,15 @@
 #include <winsock2.h>
 #include <sspi.h>
 #include <schannel.h>
-#include <cstdio>
+#include <stdio.h>
 #include <commctrl.h>
-#include <cstring>
+#include <string.h>
 #include <tchar.h>
-#include <cassert>
+#include <assert.h>
 #include <ntdef.h>
-#include <cmath>
-#include <algorithm>
+#include <math.h>
+
+#define STD_max(a, b) (((a) > (b)) ? (a) : (b))
 
 #define SET_SSL_BUFFER(buffer, type, count, pv) { buffer.BufferType = type; buffer.cbBuffer = count; buffer.pvBuffer = pv; }
 #define SET_SSL_BUFFERS(sbin, bufsi, count) { sbin.ulVersion = SECBUFFER_VERSION; sbin.pBuffers = bufsi; sbin.cBuffers = count; }
@@ -43,6 +44,9 @@ typedef struct {
 //        printf("\n");
 //    }
 //}
+
+//#define debugf(...) if (ssl->debug) printf(__VA_ARGS__)
+#define debugf(...) printf(__VA_ARGS__)
 
 GrowableDeque *GD_alloc(int capacity) {
     GrowableDeque *out = (GrowableDeque *)malloc(sizeof(GrowableDeque));
@@ -73,7 +77,7 @@ void GD_ensure_append(GrowableDeque *gd, int count) {
     long long int pendingRead = GD_get_pending_read(gd);
     if (pendingRead >= gd->allocatedSize) {
         int oldSize = gd->allocatedSize;
-        int newSize = std::max(gd->allocatedSize + count, gd->allocatedSize * 3);
+        int newSize = STD_max(gd->allocatedSize + count, gd->allocatedSize * 3);
         unsigned char *oldPtr = gd->ptr;
         unsigned char *newPtr = (unsigned char *)malloc(newSize);
         memset(newPtr, 0, newSize);
@@ -185,12 +189,13 @@ typedef struct {
     TCHAR destinationName[1000];
     SecBufferDesc sbin;
     SecBufferDesc sbout;
-    bool initContext;
-    bool clientSendDisconnect = false;
-    bool mustNegotiate = true;
+    int initContext;
+    int clientSendDisconnect;
+    int mustNegotiate;
+    int debug;
 } SSL_SOCKET;
 
-SSL_SOCKET *SSL_alloc() {
+static SSL_SOCKET *SSL_alloc() {
     SSL_SOCKET *socket = (SSL_SOCKET *)malloc(sizeof(SSL_SOCKET));
     memset(socket, 0, sizeof(*socket));
 
@@ -200,8 +205,8 @@ SSL_SOCKET *SSL_alloc() {
     socket->hCtx.dwLower = 0;
     socket->hCtx.dwUpper = 0;
     memset(socket->destinationName, 0, 1000 * sizeof(TCHAR));
-    socket->initContext = false;
-    socket->mustNegotiate = true;
+    socket->initContext = 0;
+    socket->mustNegotiate = 1;
     memset(&socket->m_SchannelCred, 0, sizeof(socket->m_SchannelCred));
     socket->m_SchannelCred.dwVersion = SCHANNEL_CRED_VERSION;
     socket->m_SchannelCred.dwFlags = SCH_CRED_NO_DEFAULT_CREDS | SCH_CRED_NO_SYSTEM_MAPPER | SCH_CRED_REVOCATION_CHECK_CHAIN;
@@ -211,12 +216,12 @@ SSL_SOCKET *SSL_alloc() {
     socket->in_buffer = GD_alloc(64);
     socket->to_write_buffer = GD_alloc(64);
     socket->received_buffer = GD_alloc(64);
-    socket->clientSendDisconnect = false;
+    socket->clientSendDisconnect = 0;
 
     return socket;
 }
 
-void SSL_free(SSL_SOCKET *ssl) {
+static void SSL_free(SSL_SOCKET *ssl) {
     if (ssl->hCtx.dwLower || ssl->hCtx.dwLower) DeleteSecurityContext(&ssl->hCtx);
     if (ssl->hCred.dwLower || ssl->hCred.dwLower) FreeCredentialHandle;
     if (ssl->hCertStore) CertCloseStore(ssl->hCertStore, 0);
@@ -228,37 +233,43 @@ void SSL_free(SSL_SOCKET *ssl) {
     free(ssl);
 }
 
-void SSL_close(SSL_SOCKET *ssl) {
-    ssl->clientSendDisconnect = true;
+static void SSL_close(SSL_SOCKET *ssl) {
+    ssl->clientSendDisconnect = 1;
 }
 
-void SSL_setDestinationName(SSL_SOCKET *ssl, TCHAR *name) {
+static void SSL_setDestinationName(SSL_SOCKET *ssl, TCHAR *name) {
     _tcscpy(ssl->destinationName, name);
+}
+
+static void SSL_setDebug(SSL_SOCKET *ssl, int debug) {
+    ssl->debug = debug;
 }
 
 
 int __SSL_outEnqueue(SSL_SOCKET *ssl, char *b, int sz) { GD_append(ssl->out_buffer, b, sz); return sz; }
-int SSL_outGetPending(SSL_SOCKET *ssl) { return GD_get_pending_read(ssl->out_buffer); }
-int SSL_outDequeue(SSL_SOCKET *ssl, char *out, int size) { return GD_read(ssl->out_buffer, out, size); }
+static int SSL_outGetPending(SSL_SOCKET *ssl) { return GD_get_pending_read(ssl->out_buffer); }
+static int SSL_outDequeue(SSL_SOCKET *ssl, char *out, int size) { return GD_read(ssl->out_buffer, out, size); }
 
 int __SSL_inEnqueue(SSL_SOCKET *ssl, char *b, int sz) { GD_append(ssl->in_buffer, b, sz); return sz; }
-int SSL_inDequeue(SSL_SOCKET *ssl, char *out, int size) { return GD_read(ssl->in_buffer, out, size); }
+static int SSL_inDequeue(SSL_SOCKET *ssl, char *out, int size) { return GD_read(ssl->in_buffer, out, size); }
 
-int SSL_writeReceived(SSL_SOCKET *ssl, char *b, int sz) {
+static int SSL_writeReceived(SSL_SOCKET *ssl, char *b, int sz) {
     assert(sz >= 0);
     GD_append(ssl->received_buffer, b, sz);
     return sz;
 }
 
-int SSL_writeToSend(SSL_SOCKET *ssl, char *b, int sz) {
+static int SSL_writeToSend(SSL_SOCKET *ssl, char *b, int sz) {
     assert(sz >= 0);
     GD_append(ssl->to_write_buffer, b, sz);
     return sz;
 }
 
-int SSL_process(SSL_SOCKET *ssl) {
+static int SSL_process(SSL_SOCKET *ssl) {
     SecPkgContext_StreamSizes sizes;
     SecBuffer Buffers[5] = {0};
+
+    //debugf("C:SSL_process\n");
 
     // Client negotiate
     if (ssl->mustNegotiate || ssl->initContext == 0) {
@@ -266,12 +277,12 @@ int SSL_process(SSL_SOCKET *ssl) {
         char *t = (char *)malloc(0x11000);
         SecBuffer bufsi[2];
         SecBuffer bufso[2];
-        bool failed = false;
+        int failed = 0;
 
-        //printf("NEGOTIATION START: mustNegotiate=%d, initContext=%d\n", ssl->mustNegotiate, ssl->initContext);
+        debugf("NEGOTIATION START: mustNegotiate=%d, initContext=%d\n", ssl->mustNegotiate, ssl->initContext);
 
         // Loop using InitializeSecurityContext until success
-        while (true) {
+        while (1) {
             if (ss != SEC_I_CONTINUE_NEEDED && ss != SEC_E_INCOMPLETE_MESSAGE && ss != SEC_I_INCOMPLETE_CREDENTIALS) {
                 break;
             }
@@ -299,20 +310,20 @@ int SSL_process(SSL_SOCKET *ssl) {
             DWORD dwSSPIOutFlags = 0;
 
             ss = InitializeSecurityContext(
-                &ssl->hCred, // phCredential
-                ssl->initContext ? &ssl->hCtx : NULL, // phContext
-                ssl->destinationName, // pszTargetName
-                ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY | ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM | ISC_REQ_MANUAL_CRED_VALIDATION, // fContextReq
-                0, // Reserved1
-                0, // TargetDataRep
-                ssl->initContext ? &ssl->sbin : NULL, // pInput
-                0, // Reserved2
-                ssl->initContext ? NULL : &ssl->hCtx, // phNewContext
-                &ssl->sbout, // pOutput
-                &dwSSPIOutFlags, // pfContextAttr
-                NULL // ptsExpiry
+                    &ssl->hCred, // phCredential
+                    ssl->initContext ? &ssl->hCtx : NULL, // phContext
+                    ssl->destinationName, // pszTargetName
+                    ISC_REQ_SEQUENCE_DETECT | ISC_REQ_REPLAY_DETECT | ISC_REQ_CONFIDENTIALITY | ISC_RET_EXTENDED_ERROR | ISC_REQ_ALLOCATE_MEMORY | ISC_REQ_STREAM | ISC_REQ_MANUAL_CRED_VALIDATION, // fContextReq
+                    0, // Reserved1
+                    0, // TargetDataRep
+                    ssl->initContext ? &ssl->sbin : NULL, // pInput
+                    0, // Reserved2
+                    ssl->initContext ? NULL : &ssl->hCtx, // phNewContext
+                    &ssl->sbout, // pOutput
+                    &dwSSPIOutFlags, // pfContextAttr
+                    NULL // ptsExpiry
             );
-            //printf("Process: InitializeSecurityContext. ss=0x%08x, pt=%d\n", ss, pt);
+            debugf("Process: InitializeSecurityContext. ss=0x%08x, pt=%d\n", ss, pt);
 
             for (int n = 0; n < 2; n++) {
                 SecBuffer *buffer = &bufso[n];
@@ -322,8 +333,8 @@ int SSL_process(SSL_SOCKET *ssl) {
             }
 
             if (ss == SEC_E_INCOMPLETE_MESSAGE) {
-                //printf("Negotiate: ss == SEC_E_INCOMPLETE_MESSAGE\n");
-                failed = true;
+                debugf("Negotiate: ss == SEC_E_INCOMPLETE_MESSAGE\n");
+                failed = 1;
                 break;
             }
 
@@ -331,13 +342,13 @@ int SSL_process(SSL_SOCKET *ssl) {
 
             if (FAILED(ss)) {
                 printf("Negotiate: FAILED(ss)\n");
-                failed = true;
+                failed = 1;
                 break;
             }
 
             if (ssl->initContext == 0 && ss != SEC_I_CONTINUE_NEEDED) {
-                //printf("Negotiate: SEC_I_CONTINUE_NEEDED\n");
-                failed = true;
+                debugf("Negotiate: SEC_I_CONTINUE_NEEDED\n");
+                failed = 1;
                 break;
             }
 
@@ -347,16 +358,16 @@ int SSL_process(SSL_SOCKET *ssl) {
             //send_pending();
 
             if (!ssl->initContext) {
-                //printf("Negotiate: !initContext -> initContext\n");
-                ssl->initContext = true;
-                failed = true;
+                debugf("Negotiate: !initContext -> initContext\n");
+                ssl->initContext = 1;
+                failed = 1;
                 break;
             }
 
             if (ss == S_OK) {
-                //printf("Negotiate: ss == S_OK -> mustNegotiate = false;\n");
-                ssl->mustNegotiate = false;
-                ssl->initContext = true;
+                debugf("Negotiate: ss == S_OK -> mustNegotiate = 0;\n");
+                ssl->mustNegotiate = 0;
+                ssl->initContext = 1;
                 break; // wow!!
             }
         }
@@ -370,7 +381,7 @@ int SSL_process(SSL_SOCKET *ssl) {
 
     SECURITY_STATUS ss = QueryContextAttributes(&ssl->hCtx, SECPKG_ATTR_STREAM_SIZES, &sizes);
     if (FAILED(ss)) {
-        printf("QueryContextAttributes.failed: 0x%08x\n", ss);
+        debugf("QueryContextAttributes.failed: 0x%08x\n", ss);
         return -1;
     }
 
@@ -393,18 +404,18 @@ int SSL_process(SSL_SOCKET *ssl) {
 
             ss = DecryptMessage(&ssl->hCtx, &ssl->sbin, 0, NULL);
 
-            //printf("DecryptMessage.ss = 0x%08X, rval=%d\n", ss, rval);
+            debugf("DecryptMessage.ss = 0x%08X, rval=%d\n", ss, rval);
 
             if (ss == SEC_E_INCOMPLETE_MESSAGE) {
                 // Must feed more data
-                //printf("DecryptMessage requires more data!\n");
+                debugf("DecryptMessage requires more data!\n");
                 break;
             }
 
             if (ss != SEC_E_OK && ss != SEC_I_RENEGOTIATE && ss != SEC_I_CONTEXT_EXPIRED) {
-                //printf("Process mustNegotiate = true\n");
-                //mustNegotiate = true;
-                //mustNegotiate = true;
+                debugf("Process break\n");
+                //mustNegotiate = 1;
+                //mustNegotiate = 1;
                 //initContext = 0;
                 break;
             }
@@ -413,7 +424,7 @@ int SSL_process(SSL_SOCKET *ssl) {
                 SecBuffer *buffer = &Buffers[i];
                 if (buffer && buffer->BufferType == SECBUFFER_DATA) {
                     __SSL_inEnqueue(ssl, (char *) buffer->pvBuffer, buffer->cbBuffer);
-                    //printf("DECRYPTED OUTPUT(%d)\n", buffer->cbBuffer);
+                    debugf("DECRYPTED OUTPUT(%d)\n", buffer->cbBuffer);
                 }
                 if (buffer && buffer->BufferType == SECBUFFER_EXTRA) {
                     GD_prepend(ssl->received_buffer, (char *)buffer->pvBuffer, buffer->cbBuffer);
@@ -421,7 +432,7 @@ int SSL_process(SSL_SOCKET *ssl) {
             }
 
             if (ss == SEC_I_RENEGOTIATE) {
-                ssl->mustNegotiate = true;
+                ssl->mustNegotiate = 1;
                 if (FAILED(ss)) {
                     break;
                 }
@@ -463,7 +474,7 @@ int SSL_process(SSL_SOCKET *ssl) {
     }
     // Encrypt and write client wants to disconnect
     if (ssl->clientSendDisconnect) {
-        ssl->clientSendDisconnect = false;
+        ssl->clientSendDisconnect = 0;
         // Client wants to disconnect
 
         SECURITY_STATUS ss;
@@ -473,7 +484,7 @@ int SSL_process(SSL_SOCKET *ssl) {
         SET_SSL_BUFFER(OutBuffers[0], SECBUFFER_TOKEN, sizeof(dwType), &dwType)
         SET_SSL_BUFFERS(ssl->sbout, OutBuffers, 1)
 
-        while (true) {
+        while (1) {
             ss = ApplyControlToken(&ssl->hCtx, &ssl->sbout);
             if (FAILED(ss)) {
                 return -1;
@@ -489,8 +500,8 @@ int SSL_process(SSL_SOCKET *ssl) {
             SET_SSL_BUFFERS(ssl->sbout, OutBuffers, 1)
 
             ss = InitializeSecurityContext(
-                &ssl->hCred, &ssl->hCtx, NULL, dwSSPIFlags, 0, SECURITY_NATIVE_DREP, NULL, 0, &ssl->hCtx,
-                &ssl->sbout, &dwSSPIOutFlags, 0
+                    &ssl->hCred, &ssl->hCtx, NULL, dwSSPIFlags, 0, SECURITY_NATIVE_DREP, NULL, 0, &ssl->hCtx,
+                    &ssl->sbout, &dwSSPIOutFlags, 0
             );
             if (FAILED(ss)) {
                 return -1;
@@ -511,6 +522,7 @@ int SSL_process(SSL_SOCKET *ssl) {
 
     return 0;
 }
+
 
 #define REQUEST_HOST "www.google.es"
 //#define REQUEST_HOST "php.net"

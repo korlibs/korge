@@ -96,6 +96,7 @@ operator fun AsyncInputStreamWithLength.plus(other: AsyncInputStreamWithLength):
 
 suspend fun AsyncInputStreamWithLength.getAvailable() = this.getLength() - this.getPosition()
 suspend fun AsyncInputStreamWithLength.hasAvailable() = getAvailable() > 0
+suspend fun AsyncInputStreamWithLength.supportsAvailable() = kotlin.runCatching { hasAvailable() }.isSuccess
 
 interface AsyncRAInputStream {
 	suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int
@@ -525,22 +526,26 @@ suspend fun AsyncInputStream.readF64BE(): Double = readSmallTempExact(8) { readF
 
 suspend fun AsyncInputStream.readAll(): ByteArray {
 	return try {
-		if (this is AsyncGetPositionStream && this is AsyncGetLengthStream) {
-			val available = this.getLength() - this.getPosition()
-			this.readBytesExact(available.toInt())
-		} else if (this is AsyncStream && this.hasAvailable()) {
-			val available = this.getAvailable().toInt()
-			this.readBytesExact(available)
-		} else {
-			val out = ByteArrayBuilder()
-			val temp = ByteArray(0x1000)
-			while (true) {
-				val r = this.read(temp, 0, temp.size)
-				if (r <= 0) break
-				out.append(temp, 0, r)
-			}
-			out.toByteArray()
-		}
+        when {
+            this is AsyncGetPositionStream && this is AsyncGetLengthStream -> {
+                val available = this.getLength() - this.getPosition()
+                this.readBytesExact(available.toInt())
+            }
+            this is AsyncStream && this.hasAvailable() -> {
+                val available = this.getAvailable().toInt()
+                this.readBytesExact(available)
+            }
+            else -> {
+                val out = ByteArrayBuilder()
+                val temp = ByteArray(0x1000)
+                while (true) {
+                    val r = this.read(temp, 0, temp.size)
+                    if (r <= 0) break
+                    out.append(temp, 0, r)
+                }
+                out.toByteArray()
+            }
+        }
 	} finally {
 		this.close()
 	}

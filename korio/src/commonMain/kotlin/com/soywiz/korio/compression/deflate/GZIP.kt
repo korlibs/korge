@@ -20,9 +20,11 @@ open class GZIPBase(val checkCrc: Boolean, val deflater: () -> CompressionMethod
 	override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) {
 		val r = reader
 		r.prepareBigChunkIfRequired()
-		if (r.su8() != 31 || r.su8() != 139) error("Not a GZIP file")
+        val h0 = r.su8()
+        val h1 = r.su8()
+        if (h0 != 31 || h1 != 139) error("Not a GZIP file (h0=${h0.toByte().hex}, h1=${h1.toByte().hex})")
 		val method = r.su8()
-		if (method != 8) error("Just supported deflate in GZIP")
+		if (method != 8) error("Just supported deflate in GZIP (method=$method)")
 		val ftext = r.sreadBit()
 		val fhcrc = r.sreadBit()
 		val fextra = r.sreadBit()

@@ -82,12 +82,18 @@ val ByteArray.hex get() = Hex.encodeLower(this)
 
 val Int.hex: String get() = "0x$shex"
 val Int.shex: String
-    get() {
-        var out = ""
+    get() = buildString(8) {
         for (n in 0 until 8) {
-            val v = (this ushr ((7 - n) * 4)) and 0xF
-            out += Hex.encodeCharUpper(v)
+            val v = (this@shex ushr ((7 - n) * 4)) and 0xF
+            append(Hex.encodeCharUpper(v))
         }
-        return out
+    }
+
+
+val Byte.hex: String get() = "0x$shex"
+val Byte.shex: String
+    get() = buildString(2) {
+        append(Hex.encodeCharUpper((this@shex.toInt() ushr 4) and 0xF))
+        append(Hex.encodeCharUpper((this@shex.toInt() ushr 0) and 0xF))
     }
 
