@@ -124,7 +124,11 @@ open class FolderBasedNativeSystemFontProvider(
             }
             val newFontCacheVfsFileText = fileNamesToName.map { "${it.key}=${it.value}" }.joinToString("\n")
             if (newFontCacheVfsFileText != oldFontCacheVfsFileText) {
-                fontCacheVfsFile.writeString(newFontCacheVfsFileText)
+                try {
+                    fontCacheVfsFile.writeString(newFontCacheVfsFileText)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
         }
         if (time >= 100.milliseconds) {
