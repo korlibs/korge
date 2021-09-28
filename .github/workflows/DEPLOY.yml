@@ -21,12 +21,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - run: CALL gradlew.bat --no-daemon -DCI=true
-        shell: cmd
-      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenRepository -DCI=true
+      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenRepository
         shell: cmd
         env:
           DISABLE_JAVASCRIPT_TEST: true
+          CI: true
+          GRADLE_OPTS: -DCI=true -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=1
   publish-mac:
     runs-on: macos-latest
     steps:
