@@ -515,4 +515,18 @@ class TemplateTest : BaseTest() {
         )
         assertEquals("<a>hello</a>", templates.get("root.html").invoke(hashMapOf<Any, Any?>()))
     }
+
+    @Test
+    fun testCustomEscapeMode() = suspendTest {
+        val template = "<hello>{{ test }}</hello>"
+        assertEquals(
+            """
+                <hello>&lt;WORLD&gt;</hello>
+                <hello><WORLD></hello>
+            """.trimIndent(),
+            listOf(AutoEscapeMode.HTML, AutoEscapeMode.RAW)
+                .map { Template(template, TemplateConfig(autoEscapeMode = it))("test" to "<WORLD>") }
+                .joinToString("\n")
+        )
+    }
 }

@@ -8,6 +8,7 @@ open class TemplateConfig(
     extraFilters: List<Filter> = listOf(),
     extraFunctions: List<TeFunction> = listOf(),
     var unknownFilter: Filter = Filter("unknown") { tok.exception("Unknown filter '$name'") },
+    val autoEscapeMode: AutoEscapeMode = AutoEscapeMode.HTML,
     // Here we can convert markdown into html if required. This is available at the template level + content + named blocks
     val contentTypeProcessor: (content: String, contentType: String?) -> String = { content, _ -> content }
 ) {
@@ -54,7 +55,7 @@ open class TemplateConfig(
     var writeBlockExpressionResult: WriteBlockExpressionResultFunction = { value ->
         this.write(when (value) {
             is RawString -> contentTypeProcessor(value.str, value.contentType)
-            else -> contentTypeProcessor(Dynamic2.toString(value), null).htmlspecialchars()
+            else -> autoEscapeMode.transform(contentTypeProcessor(Dynamic2.toString(value), null))
         })
     }
 
