@@ -1,11 +1,8 @@
 package com.soywiz.kbignum
 
 import com.soywiz.kbignum.internal.*
-import com.soywiz.kbignum.internal.bitCount
-import com.soywiz.kbignum.internal.leadingZeros
 import kotlin.math.*
-import kotlin.time.ExperimentalTime
-import kotlin.time.measureTime
+import kotlin.time.*
 
 /**
  * @TODO: Use JVM BigInteger and JS BigInt
@@ -29,7 +26,7 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 		val ONE = BigInt(uint16ArrayZeroPadOf(1), 1, true)
 		val TWO = BigInt(uint16ArrayZeroPadOf(2), 1, true)
 		val TEN = BigInt(uint16ArrayZeroPadOf(10), 1, true)
-		val SMALL = BigInt(uint16ArrayZeroPadOf(0xFFFF), 1, true)
+		val SMALL = BigInt(uint16ArrayZeroPadOf(UINT16_MASK), 1, true)
 
 		operator fun invoke(data: UInt16ArrayZeroPad, signum: Int): BigInt {
 			// Trim leading zeros
@@ -79,18 +76,33 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
             else -> BigInt(str, 10)
         }
 
-		operator fun invoke(str: String, radix: Int): BigInt {
-			if (str == "0") return ZERO
-			if (str.startsWith('-')) return -invoke(str.substring(1), radix)
-			var out = ZERO
-			for (c in str) {
+        operator fun invoke(str: String, radix: Int): BigInt {
+            if (str == "0") return ZERO
+            if (str.startsWith('-')) return -invoke(str.substring(1), radix)
+            val wordsRequired = ceil((str.length * log2(radix.toDouble())) / 16.0).toInt()
+            val out = UInt16ArrayZeroPad(IntArray(wordsRequired))
+
+            var sum = 0
+            var mul = 1
+
+            for (n in 0 until str.length) {
+                val last = n == str.length - 1
+                val c = str[n]
                 val d = digit(c)
                 if (d >= radix) throw BigIntInvalidFormatException("Invalid digit '$c' for radix $radix")
-				out *= radix
-                out += d
-			}
-			return out
-		}
+
+                //UnsignedBigInt.inplaceSmallMulAdd(out, radix, d)
+                sum *= radix
+                sum += d
+                mul *= radix
+                if (last || mul * radix > 0x7FFF) {
+                    UnsignedBigInt.inplaceSmallMulAdd(out, mul, sum)
+                    sum = 0
+                    mul = 1
+                }
+            }
+            return BigInt(out, 1)
+        }
 	}
 
 	fun countBits(): Int {
@@ -186,23 +198,29 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
         return result
     }
 
-	operator fun times(other: BigInt): BigInt {
-		return when {
-			this.isZero || other.isZero -> ZERO
-			this == ONE -> other
-			other == ONE -> this
-			this == TWO -> other shl 1
-			other == TWO -> this shl 1
-			other.countBits() == 1 -> BigInt(
-				(this shl other.trailingZeros()).data,
-				if (this.signum == other.signum) +1 else -1
-			)
-			else -> BigInt(
-				UnsignedBigInt.mul(this.data, other.data),
-				if (this.signum == other.signum) +1 else -1
-			)
-		}
-	}
+
+    data class OpStats(var iterations: Int = 0)
+
+    fun mulWithStats(other: BigInt, stats: OpStats?): BigInt {
+        stats?.iterations = 0
+        return when {
+            this.isZero || other.isZero -> ZERO
+            this == ONE -> other
+            other == ONE -> this
+            this == TWO -> other shl 1
+            other == TWO -> this shl 1
+            other.countBits() == 1 -> BigInt(
+                (this shl other.trailingZeros()).data,
+                if (this.signum == other.signum) +1 else -1
+            )
+            else -> BigInt(
+                UnsignedBigInt.mul(this.data, other.data, stats),
+                if (this.signum == other.signum) +1 else -1
+            )
+        }
+    }
+
+    operator fun times(other: BigInt): BigInt = mulWithStats(other, null)
 
 	operator fun div(other: BigInt): BigInt = divRem(other).div
 	operator fun rem(other: BigInt): BigInt = divRem(other).rem
@@ -333,9 +351,19 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	operator fun unaryPlus(): BigInt = this
 	operator fun unaryMinus(): BigInt = BigInt(this.data, -signum, false)
 
+    fun mulAddSmall(mul: Int, add: Int): BigInt {
+        if ((mul and 0xFFFF) == mul && (add and 0xFFFF) == add) {
+            val temp = UInt16ArrayZeroPad(data.data.copyOf(data.size + 1))
+            UnsignedBigInt.inplaceSmallMulAdd(temp, mul, add)
+            return BigInt(temp, if (temp.isAllZero) 0 else if (signum == 0) 1 else signum)
+        }
+        val out = this * mul.bi
+        return if (add == 0) out else out + add.bi
+    }
+
 	operator fun plus(other: Int): BigInt = plus(other.bi)
 	operator fun minus(other: Int): BigInt = minus(other.bi)
-	operator fun times(other: Int): BigInt = times(other.bi)
+	operator fun times(other: Int): BigInt = mulAddSmall(other, 0)
 	operator fun times(other: Long): BigInt = times(other.bi)
 	operator fun div(other: Int): BigInt = div(other.bi)
 	operator fun rem(other: Int): BigInt = rem(other.bi)
@@ -395,8 +423,9 @@ class BigInt private constructor(val data: UInt16ArrayZeroPad, val signum: Int, 
 	fun toBigNum(): BigNum = BigNum(this, 0)
 }
 
-class UInt16ArrayZeroPad private constructor(val data: IntArray) {
-	val size get() = data.size
+class UInt16ArrayZeroPad internal constructor(val data: IntArray) {
+    val isAllZero: Boolean get() = data.all { it == 0 }
+    val size get() = data.size
 
 	constructor(size: Int) : this(IntArray(max(1, size)))
 
@@ -405,12 +434,17 @@ class UInt16ArrayZeroPad private constructor(val data: IntArray) {
         return data[index]
     }
 	operator fun set(index: Int, value: Int) {
-		if (index !in data.indices) return
-		data[index] = value and 0xFFFF
+		if (index !in data.indices) {
+            if (value != 0) error("Trying to set a value different to 0 to index $index in UInt16ArrayZeroPad")
+            return
+        }
+		data[index] = value and UINT16_MASK
 	}
 
 	fun contentEquals(other: UInt16ArrayZeroPad) = this.data.contentEquals(other.data)
 	fun copyOf(size: Int = this.size): UInt16ArrayZeroPad = UInt16ArrayZeroPad(data.copyOf(size))
+
+    override fun toString(): String = "${data.toList()}"
 }
 
 internal fun uint16ArrayZeroPadOf(vararg values: Int) =
@@ -432,44 +466,53 @@ private fun digit(c: Char): Int {
 }
 
 internal object UnsignedBigInt {
-	internal fun add(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
-		var carry = 0
+    inline fun carriedOp(out: UInt16ArrayZeroPad, signedCarry: Boolean, op: (index: Int) -> Int) {
+        var carry = 0
+        for (n in 0 until out.data.size) {
+            val product = op(n) + carry
+            val res = product and UINT16_MASK
+            out.data[n] = res
+            carry = if (signedCarry) product shr UINT16_SHIFT else product ushr UINT16_SHIFT
+        }
+        if (carry != 0) error("Overflow in carriedOp")
+    }
+
+    fun inplaceSmallMulAdd(v: UInt16ArrayZeroPad, mul: Int, add: Int) {
+        if (mul != 1) carriedOp(v, signedCarry = false) { v[it] * mul }
+        if (add != 0) carriedOp(v, signedCarry = false) { if (it == 0) v[it] + add else v[it] + 0 }
+    }
+
+	fun add(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
 		val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
-		for (i in 0 until out.size) {
-			val sum = l[i] + r[i] + carry
-			carry = if ((sum ushr 16) != 0) 1 else 0
-			out[i] = sum - (carry shl 16)
-		}
+        carriedOp(out, signedCarry = false) { l[it] + r[it] }
 		return out
 	}
 
 	// l >= 0 && r >= 0 && l >= r
-	internal fun sub(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
-		var borrow = 0
-		val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
-		for (i in 0 until out.size) {
-			val difference = l[i] - borrow - r[i]
-			out[i] = difference
-			borrow = if (difference < 0) 1 else 0
-		}
-		return out
+	fun sub(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
+        val out = UInt16ArrayZeroPad(max(l.size, r.size) + 1)
+        carriedOp(out, signedCarry = true) { l[it] - r[it] }
+        return out
 	}
 
 	// l >= 0 && r >= 0
 	// TODO optimize using the Karatsuba algorithm:
 	// TODO: - https://en.wikipedia.org/wiki/Multiplication_algorithm#Karatsuba_multiplication
-	internal fun mul(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad): UInt16ArrayZeroPad {
+	fun mul(l: UInt16ArrayZeroPad, r: UInt16ArrayZeroPad, stats: BigInt.OpStats?): UInt16ArrayZeroPad {
+        var its = 0
 		val out = UInt16ArrayZeroPad(l.size + r.size + 1)
 		for (rn in 0 until r.size) {
 			var carry = 0
 			for (ln in 0 until l.size + 1) {
 				val n = ln + rn
 				val res = out[n] + (l[ln] * r[rn]) + carry
-				out[n] = res and 0xFFFF
+				out[n] = res and UINT16_MASK
 				carry = res ushr 16
+                its++
 			}
 			if (carry != 0) throw BigIntOverflowException("carry expected to be zero at this point")
 		}
+        stats?.iterations = its
 		return out
 	}
 
@@ -498,3 +541,6 @@ internal object UnsignedBigInt {
 		return 0
 	}
 }
+
+private const val UINT16_MASK = 0xFFFF
+private const val UINT16_SHIFT = 16
