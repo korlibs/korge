@@ -1,0 +1,67 @@
+package com.soywiz.kbignum
+
+import com.soywiz.kbignum.ext.*
+
+actual val BigIntNativeFactory: BigIntConstructor = object : BigIntConstructor {
+    val supportNativeJsBigInt = js("((typeof (globalThis.BigInt)) !== 'undefined')").unsafeCast<Boolean>()
+
+    override fun create(value: Int): BigInt =
+        if (supportNativeJsBigInt) JsBigInt.create(value) else CommonBigInt.create(value)
+
+    override fun create(value: String, radix: Int): BigInt =
+        if (supportNativeJsBigInt) JsBigInt.create(value, radix) else CommonBigInt.create(value, radix)
+
+}
+
+class JsBigInt internal constructor(private val value: NativeJsBig) : BigInt, BigIntConstructor by JsBigInt {
+    companion object : BigIntConstructor {
+        override fun create(value: Int): BigInt = JsBigInt(NativeJsBigInt(value))
+        override fun create(value: String, radix: Int): BigInt {
+            if (radix == 10) {
+                validateRadix(value, radix)
+                return JsBigInt(NativeJsBigInt(value))
+            }
+            return super.create(value, radix)
+        }
+    }
+
+    val BigInt.js: dynamic get() = (this as JsBigInt).value.asDynamic()
+    val Int.js: dynamic get() = NativeJsBigInt(this)
+
+    override val signum: Int get() {
+        if (js < NativeJsBigInt(0)) return -1
+        if (js > NativeJsBigInt(0)) return +1
+        return 0
+    }
+
+    override fun unaryMinus(): BigInt = JsBigInt(-js)
+
+    override fun inv(): BigInt = JsBigInt(NativeJsInv(js))
+    override fun pow(exponent: BigInt): BigInt = JsBigInt(NativeJsPow(js, exponent.js))
+    override fun pow(exponent: Int): BigInt = pow(JsBigInt(NativeJsBigInt(exponent)))
+
+    override fun and(other: BigInt): BigInt = JsBigInt(NativeJsAnd(js, other.js))
+    override fun or(other: BigInt): BigInt = JsBigInt(NativeJsOr(js, other.js))
+    override fun xor(other: BigInt): BigInt = JsBigInt(NativeJsXor(js, other.js))
+
+    override fun shl(count: Int): BigInt = JsBigInt(NativeJsShl(js, count.js))
+    override fun shr(count: Int): BigInt = JsBigInt(NativeJsShr(js, count.js))
+
+    override fun plus(other: BigInt): BigInt = JsBigInt(this.js + other.js)
+    override fun minus(other: BigInt): BigInt = JsBigInt(this.js - other.js)
+    override fun times(other: BigInt): BigInt = JsBigInt(this.js * other.js)
+    override fun div(other: BigInt): BigInt = JsBigInt(this.js / other.js)
+    override fun rem(other: BigInt): BigInt = JsBigInt(this.js % other.js)
+
+    override fun toInt(): Int = NativeJsParseInt(value)
+    override fun toString(radix: Int): String = js.toString(radix)
+    override fun toString(): String = value.toString()
+
+    override fun compareTo(other: BigInt): Int = when {
+        this.js < other.js -> -1
+        this.js > other.js -> +1
+        else -> 0
+    }
+
+    override fun equals(other: Any?): Boolean = other is JsBigInt && this.value == other.value
+}

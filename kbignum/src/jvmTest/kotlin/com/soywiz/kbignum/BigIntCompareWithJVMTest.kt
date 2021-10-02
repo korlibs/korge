@@ -3,8 +3,8 @@ package com.soywiz.kbignum
 import java.math.*
 import kotlin.test.*
 
-class BigIntCompareWithJVMTest {
-	val items = listOf(
+abstract class AbstractBigIntCompareWithJVMTest {
+	val intItems = listOf(
 		-9999999,
 		-8888888,
 		-0x10001,
@@ -33,19 +33,30 @@ class BigIntCompareWithJVMTest {
 		+8888888,
 		+9999999
 	)
+    val stringItems = listOf<String>(
+        //"11111111111",
+        //"1234567890123456789",
+        //"9191291821821972198723892731927412419757607241902412742141904810123913021931",
+        //"121231246717581291824912849128509185124190310741841824712837131738172",
+    )
+
+    val allItems = intItems.map { it.toString() } + stringItems
+
+    data class ResultEx(val result: Result, val jvm: String, val kbignum: String)
+    data class Result(val op: String, val jvm: String, val kbignum: String)
 
 	@Test
-	fun testSub() = testBinary { jvmL, jvmR, kL, kR -> assertEquals("${jvmL - jvmR}", "${kL - kR}", "$kL - $kR") }
+	fun testSub() = testBinary { jvmL, jvmR, kL, kR -> Result("-", "${jvmL - jvmR}", "${kL - kR}") }
 
 	@Test
-	fun testAdd() = testBinary { jvmL, jvmR, kL, kR -> assertEquals("${jvmL + jvmR}", "${kL + kR}", "$kL + $kR") }
+	fun testAdd() = testBinary { jvmL, jvmR, kL, kR -> Result("+", "${jvmL + jvmR}", "${kL + kR}") }
 
 	@Test
-	fun testMul() = testBinary { jvmL, jvmR, kL, kR -> assertEquals("${jvmL * jvmR}", "${kL * kR}", "$kL * $kR") }
+	fun testMul() = testBinary { jvmL, jvmR, kL, kR -> Result("*", "${jvmL * jvmR}", "${kL * kR}") }
 
 	@Test
 	fun testDiv() =
-		testBinary { jvmL, jvmR, kL, kR -> if (!kR.isZero) assertEquals("${jvmL / jvmR}", "${kL / kR}", "$kL / $kR") }
+		testBinary { jvmL, jvmR, kL, kR -> if (kR != 0.bi) Result("/", "${jvmL / jvmR}", "${kL / kR}") else null }
 
 	@Test
 	fun testDiv2() {
@@ -57,32 +68,26 @@ class BigIntCompareWithJVMTest {
 
 	@Test
 	fun testRem() =
-		testBinary { jvmL, jvmR, kL, kR -> if (!kR.isZero) assertEquals("${jvmL % jvmR}", "${kL % kR}", "$kL % $kR") }
+		testBinary { jvmL, jvmR, kL, kR -> if (kR != 0.bi) Result("%", "${jvmL % jvmR}", "${kL % kR}") else null }
 
 	@Test
 	fun testLeftShift() =
-		testBinary { jvmL, jvmR, kL, kR -> assertEquals("${jvmL shl 1024}", "${kL shl 1024}", "$kL shl 1024") }
+		testBinary { jvmL, jvmR, kL, kR -> Result("<<", "${jvmL shl 1024}", "${kL shl 1024}") }
 
 	@Test
 	fun testLeftShift2() =
-		testBinary { jvmL, jvmR, kL, kR -> assertEquals("${jvmL shl 1030}", "${kL shl 1030}", "$kL shl 1030") }
+		testBinary { jvmL, jvmR, kL, kR -> Result("<<", "${jvmL shl 1030}", "${kL shl 1030}") }
 
 	@Test
-	fun testRightShift() = testBinary { jvmL, jvmR, kL, kR ->
-		assertEquals(
-			"${jvmL / (1 shl 16).toBigInteger()}",
-			"${kL shr 16}",
-			"$kL shr 16"
-		)
+    open fun testRightShift() = testBinary { jvmL, jvmR, kL, kR ->
+        //Result(">>", "${jvmL / (1 shl 16).toBigInteger()}", "${kL shr 16}")
+        Result(">>", "${jvmL shr 16}", "${kL shr 16}")
 	}
 
 	@Test
-	fun testRightShift2() = testBinary { jvmL, jvmR, kL, kR ->
-		assertEquals(
-			"${jvmL / (1 shl 27).toBigInteger()}",
-			"${kL shr 27}",
-			"$kL shr 27"
-		)
+	open fun testRightShift2() = testBinary { jvmL, jvmR, kL, kR ->
+        //Result(">>", "${jvmL / (1 shl 27).toBigInteger()}", "${kL shr 27}")
+        Result(">>", "${jvmL shr 27}", "${kL shr 27}")
 	}
 
 	@Test
@@ -160,13 +165,76 @@ class BigIntCompareWithJVMTest {
 		)
 	}
 
-	private fun testBinary(callback: (jvmL: BigInteger, jvmR: BigInteger, kL: BigInt, kR: BigInt) -> Unit) {
-		for (l in items) for (r in items) {
-			val jvmL = BigInteger("$l")
-			val jvmR = BigInteger("$r")
+	open fun testBinary(callback: (jvmL: BigInteger, jvmR: BigInteger, kL: BigInt, kR: BigInt) -> Result?) {
+        val results = arrayListOf<ResultEx>()
+		for (l in allItems) for (r in allItems) {
+			val jvmL = BigInteger(l)
+			val jvmR = BigInteger(r)
 			val kL = l.bi
 			val kR = r.bi
-			callback(jvmL, jvmR, kL, kR)
+            val res = callback(jvmL, jvmR, kL, kR) ?: continue
+            results += ResultEx(res, "$jvmL ${res.op} $jvmR", "$kL ${res.op} $kR")
 		}
+        assertEquals(
+            results.joinToString("\n") { "${it.jvm} = ${it.result.jvm}" },
+            results.joinToString("\n") { "${it.kbignum} = ${it.result.kbignum}" },
+        )
 	}
+
+    @Test
+    fun testMultComplexity() {
+        //val num1Str = "1".repeat(1024 * 32 * 4)
+        //val num1Str = "1".repeat(15)
+
+        //val jnum = BigInteger(num1Str)
+        //val num = num1Str.bi
+        //val stats = BigInt.OpStats()
+        //10.bi.powWithStats(1024 * 32 * 2, stats)
+        //println(stats)
+
+        BigInteger.valueOf(10).pow(1024 * 32 * 2)
+
+        //println("result: " + BigInt.pow10(1024 * 32 * 2))
+        //jnum.toString()
+        //assertEquals(jnum.toString(), num.toString())
+    }
+
+    @Test
+    fun testToString2() {
+        println(BigInteger.valueOf(12345).toString(2))
+        println(BigInteger("12345").toString(2))
+        println(BigInteger("12345").toString(4))
+        println(BigInteger("12345").toString(10))
+        println(BigInteger("12345").toString(16))
+    }
+
+    // Big Integer
+    abstract val Long.bi: BigInt
+    abstract val Int.bi: BigInt
+    abstract val String.bi: BigInt
+    abstract fun String.bi(radix: Int): BigInt
+}
+
+class BigIntCompareWithJVMTestCommon : AbstractBigIntCompareWithJVMTest() {
+    override val Long.bi: BigInt get() = CommonBigInt(this)
+    override val Int.bi: BigInt get() = CommonBigInt(this)
+    override val String.bi: BigInt get() = CommonBigInt(this)
+    override fun String.bi(radix: Int): BigInt = CommonBigInt(this, radix)
+
+    @Test
+    override fun testRightShift() = testBinary { jvmL, jvmR, kL, kR ->
+        Result(">>", "${jvmL / (1 shl 16).toBigInteger()}", "${kL shr 16}")
+    }
+
+    @Test
+    override fun testRightShift2() = testBinary { jvmL, jvmR, kL, kR ->
+        Result(">>", "${jvmL / (1 shl 27).toBigInteger()}", "${kL shr 27}")
+    }
+}
+
+class BigIntCompareWithJVMTestJVM : AbstractBigIntCompareWithJVMTest() {
+    override val Long.bi: BigInt get() = JvmBigInt.create(this)
+    override val Int.bi: BigInt get() = JvmBigInt.create(this)
+    override val String.bi: BigInt get() = JvmBigInt.create(this)
+    override fun String.bi(radix: Int): BigInt = JvmBigInt.create(this, radix)
 }

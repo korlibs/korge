@@ -9,9 +9,9 @@ class BigNum(val int: BigInt, val scale: Int) {
     }
 
     companion object {
-        val ZERO = BigNum(BigInt.ZERO, 0)
-        val ONE = BigNum(BigInt.ONE, 0)
-        val TWO = BigNum(BigInt.TWO, 0)
+        val ZERO = BigNum(BigInt(0), 0)
+        val ONE = BigNum(BigInt(1), 0)
+        val TWO = BigNum(BigInt(2), 0)
 
         operator fun invoke(str: String): BigNum {
             //val ss = if (str.contains('.')) str.trimEnd('0') else str
