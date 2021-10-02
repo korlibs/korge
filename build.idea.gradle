@@ -2,6 +2,10 @@ apply plugin: 'idea'
 
 idea {
     module {
-        excludeDirs = excludeDirs + [file(".gradle"), file("src2"), file("original"), file("original-tests"), file("old-rendering"), file("gradle"), file(".idea"), file("build"), file("@old"), file("_template")]
+        excludeDirs = excludeDirs + [
+            file(".gradle"), file("src2"), file("original"), file("original-tests"), file("old-rendering"),
+            file("gradle"), file(".idea"), file("build"), file("@old"), file("_template"),
+            file("e2e-sample"), file("experiments"),
+        ]
     }
 }

@@ -404,6 +404,10 @@ subprojects {
                     val macosIosWatchosCommon by lazy { createPairSourceSet("macosIosWatchosCommon", nativePosixApple) }
                     val iosCommon by lazy { createPairSourceSet("iosCommon", iosWatchosTvosCommon) }
 
+                    val macosCommon by lazy { createPairSourceSet("macosCommon", nativePosixApple) }
+                    val linuxCommon by lazy { createPairSourceSet("linuxCommon", nativePosixNonApple) }
+                    val mingwCommon by lazy { createPairSourceSet("wCommon", nativeDesktop) }
+
                     val nativeTargets = nativeTargets()
 
                     for (target in nativeTargets) {
@@ -416,11 +420,16 @@ subprojects {
                         }
                         if (target.isLinux) {
                             native.dependsOn(nativePosixNonApple)
+                            native.dependsOn(linuxCommon)
+                        }
+                        if (target.isWin) {
+                            native.dependsOn(mingwCommon)
                         }
                         if (target.isMacos) {
                             native.dependsOn(nativePosixApple)
                             native.dependsOn(macosIosTvosCommon)
                             native.dependsOn(macosIosWatchosCommon)
+                            native.dependsOn(macosCommon)
                         }
                     }
 
