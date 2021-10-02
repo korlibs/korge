@@ -54,13 +54,17 @@ open class JvmObjectMapper2 : ObjectMapper2() {
     override suspend fun set(instance: Any, key: Any?, value: Any?) {
         if (instance is DynamicType<*>) return instance.dynamicShape.setProp(instance, key, value)
         val prop = instance::class.classInfo.propByName[key] ?: return
-        prop.setter?.invoke(instance, value)
+        if (prop.setter != null) {
+            prop.setter?.invoke(instance, value)
+        } else {
+            prop.field?.set(instance, value)
+        }
     }
 
     override suspend fun get(instance: Any, key: Any?): Any? {
         if (instance is DynamicType<*>) return instance.dynamicShape.getProp(instance, key)
         val prop = instance::class.classInfo.propByName[key] ?: return null
-        return prop.getter?.invoke(instance)
+        return prop.getter?.invoke(instance) ?: prop.field?.get(instance)
     }
 }
 
