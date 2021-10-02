@@ -6,6 +6,8 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.fast.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
@@ -96,52 +98,60 @@ class ParticleEmitterView(
 	}
 
     private var cachedBlending = AG.Blending.NORMAL
-    private val transform = Matrix.Transform()
 
 	// @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
-        if (!textureLoaded && texture != null) {
-            textureLoaded = true
-            launchImmediately(ctx.coroutineContext) {
-                forceLoadTexture(ctx.views!!, sourceFile = texture)
+        run {
+            if (!textureLoaded && texture != null) {
+                textureLoaded = true
+                launchImmediately(ctx.coroutineContext) {
+                    forceLoadTexture(ctx.views!!, sourceFile = texture)
+                }
             }
+            lazyLoadRenderInternal(ctx, this)
         }
-        lazyLoadRenderInternal(ctx, this)
-		//ctx.flush()
 
         if (cachedBlending.srcRGB != emitter.blendFuncSource || cachedBlending.dstRGB != emitter.blendFuncDestination) {
             cachedBlending = AG.Blending(emitter.blendFuncSource, emitter.blendFuncDestination)
         }
 
-        ctx.useCtx2d { context ->
-            val texture = emitter.texture ?: return
-            val tex = ctx.getTex(texture)
-            val cx = texture.width * 0.5
-            val cy = texture.height * 0.5
-            context.keep {
-                context.blendFactors = cachedBlending
-                if (localCoords) {
-                    context.setMatrix(globalMatrix)
-                } else {
-                    context.setMatrix(ctx.views!!.stage!!.localMatrix)
-                    transform.setMatrix(globalMatrix)
-                    //context.scale(transform.scaleX, transform.scaleY)
-                    //println("---------------------- ${simulator.emitterPos}")
-                }
-                val localScale = if (localCoords) 1.0 else transform.scaleAvg
-
-                simulator.particles.fastForEach { p ->
-                    if (p.alive) {
-                        //if (p.x == 0f && p.y == 0f) println("00: ${p.index}")
-                        val scale = p.scale * localScale
-                        context.multiplyColor = p.color * this@ParticleEmitterView.colorMul
-                        context.imageScale(tex, p.x - cx * scale, p.y - cy * scale, scale.toDouble())
-                    }
+        if (fsprites == null || fsprites!!.maxSize < simulator.particles.max) {
+            fsprites = FSprites(simulator.particles.max)
+        }
+        val sprites = fsprites!!
+        val tex = emitter.texture ?: Bitmaps.white
+        fviewInfo.texs[0] = tex.bmp
+        sprites.size = 0
+        val particles = simulator.particles
+        //println("particles.max=${particles.max}")
+        simulator.particles.fastForEach { p ->
+            if (p.alive) {
+                //if (p.x == 0f && p.y == 0f) println("00: ${p.index}")
+                sprites.apply {
+                    val fsprite = FSpriteFromIndex(sprites.size++)
+                    //println("FSPRITE: ${fsprite.index}")
+                    fsprite.setTex(tex)
+                    fsprite.colorMul = p.color * this@ParticleEmitterView.colorMul
+                    fsprite.setAnchor(.5f, .5f)
+                    fsprite.xy(p.x, p.y)
+                    fsprite.scale(p.scale)
+                    fsprite.angle = p.rotation
                 }
             }
         }
-	}
+
+        FSprites.render(
+            ctx = ctx,
+            sprites = sprites,
+            info = fviewInfo,
+            smoothing = true,
+            globalMatrix = if (localCoords) globalMatrix else ctx.views!!.stage.localMatrix,
+            blending = cachedBlending
+        )
+    }
+    private var fsprites: FSprites? = null
+    private val fviewInfo = FSprites.FViewInfo(1)
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         out.setBounds(-30, -30, +30, +30)

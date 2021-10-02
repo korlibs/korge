@@ -37,7 +37,7 @@ class RenderContext constructor(
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
-) : Extra by Extra.Mixin(), BoundsProvider by bp {
+) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
 
     /** Allows to register handlers when the [flush] method is called */

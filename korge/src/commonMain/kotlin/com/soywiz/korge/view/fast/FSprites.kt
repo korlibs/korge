@@ -90,26 +90,54 @@ open class FSprites(val maxSize: Int) {
     }
 
     fun createView(tex: Bitmap) = FView(this, tex)
-    fun createView(vararg texs: Bitmap) = FView(this, texs)
+    fun createView(vararg texs: Bitmap) = FView(this, texs as Array<Bitmap>)
 
     private val texIds = ByteArray(maxSize)
     var FSprite.texId: Int get() = texIds[index].toInt() and 0xFF ; set(value) { texIds[index] = value.toByte() }
     fun FSprite.setTexIndex(id: Int) { texId = id }
 
-    class FView(val sprites: FSprites, val texs: Array<out Bitmap>) : View() {
+    class FViewInfo(val nTexs: Int) {
+        val texs: Array<Bitmap> = Array(nTexs) { Bitmaps.white.bmp }
+        val u_i_texSizeDataN: Array<FloatArray> = Array(texs.size) { FloatArray(2) }
+        val olds: Array<FloatArray?> = arrayOfNulls<FloatArray>(texs.size)
+        val program = vprograms.getOrElse(texs.size) { error("Only supported up to $MAX_SUPPORTED_TEXTURES textures") }
+    }
+
+    class FView(val sprites: FSprites, val texs: Array<Bitmap>) : View() {
         //var tex: Bitmap get() = texs[0]; set(value) { texs[0] = value }
 
         constructor(sprites: FSprites, tex: Bitmap) : this(sprites, arrayOf(tex))
         var smoothing: Boolean = true
-        private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
-        private val u_i_texSizeDataN = Array(texs.size) { FloatArray(2) }
-        private val olds = arrayOfNulls<FloatArray>(texs.size)
-
-        //val program = vprograms.getOrElse(texs.size) { createProgram(texs.size) }
-        val program = vprograms.getOrElse(texs.size) { error("Only supported up to $MAX_SUPPORTED_TEXTURES textures") }
+        private val info = FViewInfo(texs.size)
 
         // @TODO: fallback version when instanced rendering is not supported
         override fun renderInternal(ctx: RenderContext) {
+            texs.copyInto(info.texs)
+            FSprites.render(ctx, sprites, info, smoothing, globalMatrix, BlendMode.NORMAL.factors)
+        }
+    }
+
+    companion object {
+        const val MAX_SUPPORTED_TEXTURES = 4
+
+        fun render(
+            ctx: RenderContext,
+            sprites: FSprites,
+            info: FViewInfo,
+            smoothing: Boolean,
+            globalMatrix: Matrix,
+            blending: AG.Blending
+        ) {
+            if (!ctx.isInstancedSupported) {
+                println("WARNING: FSprites without instanced rendering support not implemented yet.")
+                println("         Please, if you are reading this message, let us know")
+                return
+            }
+
+            val texs = info.texs
+            val u_i_texSizeDataN = info.u_i_texSizeDataN
+            val olds = info.olds
+            val program = info.program
             ctx.flush()
             ctx.useBatcher { batch ->
                 batch.updateStandardUniforms()
@@ -135,7 +163,7 @@ open class FSprites(val maxSize: Int) {
                             instances = sprites.size,
                             uniforms = batch.uniforms,
                             //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
-                            //blending = AG.Blending.NONE
+                            blending = blending
                         )
                         sprites.unloadVertices(ctx)
 
@@ -144,12 +172,10 @@ open class FSprites(val maxSize: Int) {
                 batch.onInstanceCount(sprites.size)
             }
         }
-    }
-
-    companion object {
-        const val MAX_SUPPORTED_TEXTURES = 4
 
         //const val STRIDE = 8
+
+        private val xyData = floatArrayOf(0f, 0f, /**/ 1f, 0f, /**/ 1f, 1f, /**/ 0f, 1f)
 
         val u_i_texSizeN = Array(MAX_SUPPORTED_TEXTURES + 1) { Uniform("u_texSize$it", VarType.Float2) }
         val a_xy = Attribute("a_xy", VarType.Float2, false)
