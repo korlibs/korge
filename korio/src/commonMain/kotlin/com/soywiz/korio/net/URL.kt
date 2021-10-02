@@ -182,7 +182,7 @@ data class URL private constructor(
 					in 'a'..'z', in 'A'..'Z', in '0'..'9', '-', '_', '.', '*' -> sb.append(cc)
 					else -> {
 						sb.append('%')
-						for (n in 1 downTo 0) sb.append(Hex.DIGITS_UPPER[c.toInt().ushr(n * 4) and 0xF])
+						for (n in 1 downTo 0) sb.append(Hex.encodeCharUpper(c.toInt().ushr(n * 4) and 0xF))
 					}
 				}
 			}
