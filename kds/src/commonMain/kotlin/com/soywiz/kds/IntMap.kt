@@ -294,6 +294,12 @@ fun <T> Map<Int, T>.toIntMap(): IntMap<T> {
     return out
 }
 
+fun <T> Collection<Pair<Int, T>>.toIntMap(): IntMap<T> {
+    val out = IntMap<T>((this.size * 1.25).toInt())
+    for ((k, v) in this) out[k] = v
+    return out
+}
+
 fun <T> Iterable<T>.associateByInt(block: (index: Int, value: T) -> Int): IntMap<T> {
     var n = 0
     val out = IntMap<T>()

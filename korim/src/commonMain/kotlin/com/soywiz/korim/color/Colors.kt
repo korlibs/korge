@@ -1,5 +1,6 @@
 package com.soywiz.korim.color
 
+import com.soywiz.kds.*
 import com.soywiz.korio.lang.*
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -345,3 +346,10 @@ object Colors {
 
 	object Default : WithDefault(Colors.RED)
 }
+
+object ColorsExt {
+    val namesByColor = Colors.colorsByName.map { it.value.value to it.key }.toIntMap()
+}
+
+fun Colors.getName(color: RGBA): String? = ColorsExt.namesByColor[color.value]
+fun Colors.getNameOrHex(color: RGBA): String = ColorsExt.namesByColor[color.value] ?: color.hexString
