@@ -3,8 +3,6 @@ package com.soywiz.kbignum
 import com.soywiz.kbignum.ext.*
 
 actual val BigIntNativeFactory: BigIntConstructor = object : BigIntConstructor {
-    val supportNativeJsBigInt = js("((typeof (globalThis.BigInt)) !== 'undefined')").unsafeCast<Boolean>()
-
     override fun create(value: Int): BigInt =
         if (supportNativeJsBigInt) JsBigInt.create(value) else CommonBigInt.create(value)
 

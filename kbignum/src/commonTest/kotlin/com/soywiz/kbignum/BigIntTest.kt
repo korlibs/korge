@@ -216,6 +216,33 @@ abstract class AbstractBigIntTest {
         //assertEquals(1024, stats.iterations)
     }
 
+    @Test
+    fun testMixed() {
+        val int1 = "9191291821821972198723892731927412419757607241902412742141904810123913021931".bi
+        val int2 = "121231246717581291824912849128509185124190310741841824712837131738172".bi
+        assertEquals(
+            """
+                9191291943053218916305184556840261548266792366092723483983729522961044760103
+                9191291700590725481142600907014563291248422117712102000300080097286781283759
+                1114271766504586738871424632299032567834176034059871342978560190227960452332298253865995506036055166329263498074211029232849112689623243185850132
+                75816194
+                101819965766955686129307629109600080549778649042399450539859107464563
+            """.trimIndent(),
+            """
+                ${int1 + int2}
+                ${int1 - int2}
+                ${int1 * int2}
+                ${int1 / int2}
+                ${int1 % int2}
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testUsesNativeImplementationDoNotThrow() {
+        BigInt.usesNativeImplementation
+    }
+
     // Big Integer
     abstract val Long.bi: BigInt
     abstract val Int.bi: BigInt

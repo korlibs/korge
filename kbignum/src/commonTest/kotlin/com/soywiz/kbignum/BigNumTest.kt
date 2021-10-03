@@ -1,4 +1,4 @@
-package com.soywiz
+package com.soywiz.kbignum
 
 import com.soywiz.kbignum.BigNum
 import com.soywiz.kbignum.bi

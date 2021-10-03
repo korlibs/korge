@@ -1,8 +1,10 @@
 package com.soywiz.kbignum
 
-import kotlin.math.*
-
 interface BigInt : Comparable<BigInt>, BigIntConstructor {
+    companion object {
+        val usesNativeImplementation get() = BigInt(0) !is CommonBigInt
+    }
+
     // Checks
     val signum: Int
     val isZero get() = signum == 0

@@ -17,4 +17,6 @@ internal fun NativeJsXor(a: dynamic, b: dynamic): dynamic = js("((a) ^ (b))")
 internal fun NativeJsOr(a: dynamic, b: dynamic): dynamic = js("((a) | (b))")
 internal fun NativeJsAnd(a: dynamic, b: dynamic): dynamic = js("((a) & (b))")
 //internal fun NativeJsPow(a: dynamic, b: dynamic): dynamic = js("((a) ** (b))") // @TODO: Kotlin.JS Bug
-internal val NativeJsPow: dynamic = eval("(function(a, b) { return a ** b; })")
+internal val NativeJsPow: dynamic by lazy { eval("(function(a, b) { return a ** b; })") } // by lazy to prevent syntax errors on old browsers
+
+internal val supportNativeJsBigInt = js("(((typeof globalThis) !== 'undefined') && (typeof (globalThis.BigInt)) !== 'undefined')").unsafeCast<Boolean>()
