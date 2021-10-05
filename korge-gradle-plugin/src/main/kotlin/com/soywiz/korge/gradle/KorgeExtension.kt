@@ -318,6 +318,13 @@ class KorgeExtension(val project: Project) {
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
 
+    var addOpens = listOf(
+        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
+        "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED",
+    )
+
 	class Entrypoint(val name: String, val jvmMainClassName: String) {
 		val entryPoint = (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')
 	}
