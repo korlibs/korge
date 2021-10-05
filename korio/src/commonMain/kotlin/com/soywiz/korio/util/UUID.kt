@@ -17,8 +17,7 @@ class UUID(val data: UByteArrayInt) {
 			return data
 		}
 
-		// @TODO: Use SecureRandom from Krypto
-		fun randomUUID(random: Random = Random): UUID = UUID(fix(UByteArrayInt(16).apply {
+		fun randomUUID(random: Random = com.soywiz.krypto.SecureRandom): UUID = UUID(fix(UByteArrayInt(16).apply {
 			random.nextBytes(this.asByteArray())
 		}, version = 4, variant = 1))
 
