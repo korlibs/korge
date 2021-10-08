@@ -1009,7 +1009,7 @@ afterEvaluate {
 }
 
 if (isLinux) {
-    project.logger.info("LD folders: " + LDLibraries.ldFolders)
+    project.logger.info("LD folders: ${LDLibraries.ldFolders}")
     for (lib in listOf("libncurses.so.5", "libtinfo.so.5", "libglut.so.3", "libopenal.so.1")) {
         if (!LDLibraries.hasLibrary(lib)) {
             error("Can't find $lib. Please: sudo apt-get -y install freeglut3-dev libopenal-dev libncurses5 libtinfo5")

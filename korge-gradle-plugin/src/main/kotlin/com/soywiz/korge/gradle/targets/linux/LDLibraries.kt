@@ -1,6 +1,7 @@
 package com.soywiz.korge.gradle.targets.linux
 
 import java.io.*
+import java.nio.file.Files
 
 object LDLibraries {
     private val libFolders = LinkedHashSet<File>()
@@ -25,8 +26,12 @@ object LDLibraries {
         loadConfFiles.add(file)
         for (line in file.readLines()) {
             val tline = line.trim().substringBefore('#').takeIf { it.isNotEmpty() } ?: continue
+
             if (tline.startsWith("include ")) {
-                loadConfFile(File(tline.removePrefix("include ")))
+                val glob = tline.removePrefix("include ")
+                for (folder in Files.newDirectoryStream(File(glob).parentFile.toPath(), File(glob).name).toList().map { it.toFile() }) {
+                    loadConfFile(folder)
+                }
             } else {
                 libFolders += File(tline)
             }
