@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.kds.*
+import com.soywiz.kds.atomic.kdsIsFrozen
 import com.soywiz.kmem.*
 import com.soywiz.korim.annotation.*
 import com.soywiz.korim.color.*
@@ -47,7 +48,9 @@ abstract class Bitmap(
 
     fun clearDirtyRegion() {
         if (dirtyRegion != null) {
-            dirtyRegion = null
+            if (!kdsIsFrozen(this)) {
+                dirtyRegion = null
+            }
         }
     }
 
@@ -66,12 +69,12 @@ abstract class Bitmap(
         return ++contentVersion
     }
 
-    inline fun lock(rect: Rectangle? = null, block: () -> Unit): Int {
-        lock()
+    inline fun lock(rect: Rectangle? = null, doLock: Boolean = true, block: () -> Unit): Int {
+        if (doLock) lock()
         try {
             block()
         } finally {
-            return unlock(rect)
+            return if (doLock) unlock(rect) else 0
         }
     }
 
@@ -235,8 +238,12 @@ fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {
 	return out
 }
 
-inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, callback: Context2d.() -> Unit): T {
-    lock {
+fun Bitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): Bitmap32 {
+    return Bitmap32(width, height).context2d(doLock = false) { block() }
+}
+
+inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, doLock: Boolean = true, callback: Context2d.() -> Unit): T {
+    lock(doLock = doLock) {
         val ctx = getContext2d(antialiased)
         try {
             callback(ctx)

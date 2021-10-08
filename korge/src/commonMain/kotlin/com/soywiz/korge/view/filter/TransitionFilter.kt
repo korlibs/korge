@@ -9,6 +9,7 @@ import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap32Context2d
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.GradientPaint
@@ -32,7 +33,7 @@ class TransitionFilter(
             private val BMP_SIZE = 64
 
             private fun createTransitionBox(paint: GradientPaint): Transition {
-                return Transition(Bitmap32(BMP_SIZE, BMP_SIZE).context2d {
+                return Transition(Bitmap32Context2d(BMP_SIZE, BMP_SIZE) {
                     fill(paint.add(0.0, Colors.WHITE).add(1.0, Colors.BLACK)) {
                         rect(0, 0, BMP_SIZE, BMP_SIZE)
                     }

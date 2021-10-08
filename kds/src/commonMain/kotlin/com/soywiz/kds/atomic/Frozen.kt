@@ -1,5 +1,5 @@
 package com.soywiz.kds.atomic
 
 expect fun <T> kdsFreeze(value: T): T
-//expect val <T> T.kdsIsFrozen: Boolean
+expect fun <T> kdsIsFrozen(value: T): Boolean
 //expect fun Any.kdsEnsureNeverFrozen()

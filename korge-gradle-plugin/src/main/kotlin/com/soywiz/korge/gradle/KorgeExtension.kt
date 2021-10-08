@@ -293,6 +293,13 @@ class KorgeExtension(val project: Project) {
     var icon: File? = project.projectDir["icon.png"]
     var banner: File? = project.projectDir["banner.png"]
 
+    var javaAddOpens: List<String> = listOf(
+        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
+        "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+        "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED",
+    )
+
 	var gameCategory: GameCategory? = null
 
 	var fullscreen = true
@@ -317,13 +324,6 @@ class KorgeExtension(val project: Project) {
 	val realJvmMainClassName get() = jvmMainClassName
 
 	val extraEntryPoints = arrayListOf<Entrypoint>()
-
-    var addOpens = listOf(
-        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
-        "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED",
-    )
 
 	class Entrypoint(val name: String, val jvmMainClassName: String) {
 		val entryPoint = (jvmMainClassName.substringBeforeLast('.', "") + ".main").trimStart('.')

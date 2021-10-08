@@ -38,9 +38,7 @@ fun Project.configureJvm() {
 		dependsOn("jvmMainClasses")
 		project.afterEvaluate {
 			val beforeJava9 = System.getProperty("java.version").startsWith("1.")
-		    if (!beforeJava9) {
-                task.jvmArgs(project.korge.addOpens)
-            }
+		    if (!beforeJava9) task.jvmArgs(project.korge.javaAddOpens)
 			task.main = korge.realJvmMainClassName
 		}
 	}
