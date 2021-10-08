@@ -1,4 +1,5 @@
 import com.soywiz.korlibs.modules.*
+import com.soywiz.korlibs.util.*
 import org.gradle.kotlin.dsl.kotlin
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.File
@@ -103,6 +104,7 @@ val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
 val isMacos get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)
 val isArm get() = listOf("arm", "arm64", "aarch64").any { org.apache.tools.ant.taskdefs.condition.Os.isArch(it) }
+val isLinux get() = !isWindows && !isMacos
 
 fun guessAndroidSdkPath(): String? {
     val userHome = System.getProperty("user.home")
@@ -412,7 +414,7 @@ subprojects {
 
                     val macosCommon by lazy { createPairSourceSet("macosCommon", nativePosixApple) }
                     val linuxCommon by lazy { createPairSourceSet("linuxCommon", nativePosixNonApple) }
-                    val mingwCommon by lazy { createPairSourceSet("wCommon", nativeDesktop) }
+                    val mingwCommon by lazy { createPairSourceSet("mingwCommon", nativeDesktop) }
 
                     val nativeTargets = nativeTargets()
 
@@ -684,7 +686,7 @@ samples {
         val runJvm by creating(KorgeJavaExec::class) {
             group = "run"
             main = "MainKt"
-            if (!beforeJava9) jvmArgs(*javaAddOpens)
+            if (!beforeJava9) jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
         }
         val runJs by creating {
             group = "run"
@@ -1003,5 +1005,14 @@ subprojects {
 afterEvaluate {
     rootProject.extensions.configure<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension> {
         versions.webpackDevServer.version = "4.0.0"
+    }
+}
+
+if (isLinux) {
+    project.logger.info("LD folders: " + LDLibraries.ldFolders)
+    for (lib in listOf("libncurses.so.5", "libtinfo.so.5", "libglut.so.3", "libopenal.so.1")) {
+        if (!LDLibraries.hasLibrary(lib)) {
+            error("Can't find $lib. Please: sudo apt-get -y install freeglut3-dev libopenal-dev libncurses5 libtinfo5")
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.soywiz.korge.gradle
 
+import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.linux.*
 import com.soywiz.korge.gradle.util.*
 import groovy.lang.*
 import org.gradle.api.*
@@ -23,6 +25,15 @@ class KorgeGradleApply(val project: Project) {
 		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
 			error("Korge requires at least Gradle $expectedGradleVersion, but running on Gradle $currentGradleVersion. Please, edit gradle/wrapper/gradle-wrapper.properties")
 		}
+
+        if (isLinux) {
+            project.logger.info("LD folders: " + LDLibraries.ldFolders)
+            for (lib in listOf("libncurses.so.5", "libtinfo.so.5", "libglut.so.3", "libopenal.so.1")) {
+                if (!LDLibraries.hasLibrary(lib)) {
+                    error("Can't find $lib. Please: sudo apt-get -y install freeglut3-dev libopenal-dev libncurses5 libtinfo5")
+                }
+            }
+        }
 
         logger.info("Korge Gradle plugin: ${BuildVersions.ALL}")
 
