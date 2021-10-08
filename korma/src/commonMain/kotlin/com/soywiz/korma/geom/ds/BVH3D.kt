@@ -54,7 +54,7 @@ open class BVH3D<T>(
 
     fun remove(obj: T) = bvh.remove(obj)
 
-    fun getObjectBounds(obj: T, out: AABB3D = AABB3D()) = bvh.getObjectBounds(obj)?.toAABB3D(out)
+    fun getObjectBounds(obj: T, out: AABB3D = AABB3D()): AABB3D? = bvh.getObjectBounds(obj)?.toAABB3D(out)
 
     fun debug() {
         bvh.debug()

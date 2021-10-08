@@ -306,10 +306,10 @@ object EmptyShape : Shape {
 }
 
 data class FillShape(
-        override val path: GraphicsPath,
-        override val clip: GraphicsPath?,
-        override val paint: Paint,
-        override val transform: Matrix = Matrix()
+    override val path: GraphicsPath,
+    override val clip: GraphicsPath?,
+    override val paint: Paint,
+    override val transform: Matrix = Matrix()
 ) : StyledShape {
 	override fun drawInternal(c: Context2d) {
 		c.fill(paint)
@@ -328,17 +328,17 @@ data class FillShape(
 }
 
 data class PolylineShape(
-        override val path: GraphicsPath,
-        override val clip: GraphicsPath?,
-        override val paint: Paint,
-        override val transform: Matrix,
-        val thickness: Double,
-        val pixelHinting: Boolean,
-        val scaleMode: LineScaleMode,
-        val startCaps: LineCap,
-        val endCaps: LineCap,
-        val lineJoin: LineJoin,
-        val miterLimit: Double
+    override val path: GraphicsPath,
+    override val clip: GraphicsPath?,
+    override val paint: Paint,
+    override val transform: Matrix,
+    val thickness: Double,
+    val pixelHinting: Boolean,
+    val scaleMode: LineScaleMode,
+    val startCaps: LineCap,
+    val endCaps: LineCap,
+    val lineJoin: LineJoin,
+    val miterLimit: Double
 ) : StyledShape {
     private val tempBB = BoundsBuilder()
     private val tempRect = Rectangle()
