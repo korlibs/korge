@@ -62,6 +62,13 @@ class WString private constructor(private val codePoints: IntArray, private val 
     override fun toString(): String = string
 }
 
+inline fun WString.forEachCodePoint(block: (index: Int, codePoint: Int, error: Boolean) -> Unit): Int {
+    for (n in 0 until this.length) {
+        block(n, this[n].code, false)
+    }
+    return this.length
+}
+
 inline fun String.forEachCodePoint(block: (index: Int, codePoint: Int, error: Boolean) -> Unit): Int {
     val string = this
     var m = 0

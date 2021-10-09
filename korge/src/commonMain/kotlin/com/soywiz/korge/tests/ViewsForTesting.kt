@@ -144,6 +144,30 @@ open class ViewsForTesting(
         )
     }
 
+    suspend fun keyType(chars: WString, shift: Boolean = false, ctrl: Boolean = false) {
+        chars.forEachCodePoint { _, codePoint, _ -> keyType(WChar(codePoint), shift, ctrl) }
+    }
+    suspend fun keyType(chars: String, shift: Boolean = false, ctrl: Boolean = false) {
+        chars.forEachCodePoint { _, codePoint, _ -> keyType(WChar(codePoint), shift, ctrl) }
+    }
+
+    suspend fun keyType(char: Char, shift: Boolean = false, ctrl: Boolean = false) = keyType(WChar(char.code), shift, ctrl)
+
+    suspend fun keyType(char: WChar, shift: Boolean = false, ctrl: Boolean = false) {
+        gameWindow.dispatch(
+            KeyEvent(
+                type = KeyEvent.Type.TYPE,
+                id = 0, key = Key.NONE, keyCode = char.toInt(), shift = shift, ctrl = ctrl, alt = false, meta = false
+            )
+        )
+        simulateFrame(count = 2)
+    }
+
+    suspend fun keyDownThenUp(key: Key) {
+        keyDown(key)
+        keyUp(key)
+    }
+
     suspend fun keyDown(key: Key) {
         keyEvent(KeyEvent.Type.DOWN, key)
         simulateFrame(count = 2)
@@ -154,13 +178,13 @@ open class ViewsForTesting(
         simulateFrame(count = 2)
     }
 
-    private fun keyEvent(type: KeyEvent.Type, key: Key) {
+    private fun keyEvent(type: KeyEvent.Type, key: Key, keyCode: Int = 0) {
         gameWindow.dispatch(
             KeyEvent(
                 type = type,
                 id = 0,
                 key = key,
-                keyCode = 0,
+                keyCode = keyCode,
                 shift = false,
                 ctrl = false,
                 alt = false,
