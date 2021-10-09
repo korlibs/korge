@@ -1,9 +1,11 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
+import com.soywiz.korma.geom.*
 
 inline fun <T> Container.uiComboBox(
     width: Double = UI_DEFAULT_WIDTH,
@@ -13,32 +15,39 @@ inline fun <T> Container.uiComboBox(
     block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
 ) = UIComboBox(width, height, selectedIndex, items).addTo(this).apply(block)
 
+var Views.openedComboBox by Extra.Property<UIComboBox<*>?>() { null }
+
 open class UIComboBox<T>(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
     selectedIndex: Int = 0,
     items: List<T> = listOf(),
 ) : UIView(width, height) {
+    val onSelectionUpdate = Signal<UIComboBox<T>>()
 
-    var selectedIndex by uiObservable(selectedIndex) { updateState() }
+    var selectedIndex by uiObservable(selectedIndex) {
+        updateState()
+        onSelectionUpdate(this)
+    }
     var selectedItem: T?
         get() = items.getOrNull(selectedIndex)
         set(value) {
             selectedIndex = items.indexOf(value)
         }
     var items: List<T> by uiObservable(items) { updateItems() }
-    var itemHeight by uiObservable(32) { updateItemsSize() }
+    //var itemHeight by uiObservable(height) { updateItemsSize() }
+    val itemHeight get() = height
     var viewportHeight by uiObservable(196) { onSizeChanged() }
 
     private val itemsView = uiScrollable(width, height = 128.0)
     private val verticalList = itemsView.container.uiVerticalList(object : UIVerticalList.Provider {
         override val numItems: Int = items.size
-        override val fixedHeight: Double = itemHeight.toDouble()
+        override val fixedHeight: Double = itemHeight
         override fun getItemHeight(index: Int): Double = fixedHeight
-        override fun getItemView(index: Int): View = UIButton(text = items[index].toString()).also {
+        override fun getItemView(index: Int): View = UIButton(text = items[index].toString(), width = width, height = itemHeight).also {
             it.onClick {
-                this@UIComboBox.showItems = false
                 this@UIComboBox.selectedIndex = index
+                this@UIComboBox.close()
             }
         }
     }, width = width)
@@ -46,8 +55,6 @@ open class UIComboBox<T>(
     private val expandButton = uiButton(height, height, icon = comboBoxExpandIcon).position(width - height, 0.0)
     private val invisibleRect = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     private var showItems = false
-
-    val onSelectionUpdate = Signal<UIComboBox<T>>()
 
     init {
         updateItems()
@@ -75,20 +82,43 @@ open class UIComboBox<T>(
     }
 
     fun open() {
-        addChild(itemsView)
+        val views = stage?.views
+        if (views != null) {
+            if (views.openedComboBox != this) {
+                views.openedComboBox?.close()
+            }
+            views?.openedComboBox = this
+        }
 
-        // Prevent overlap by other controls.
-        parent?.sendChildToFront(this)
+        containerRoot.addChild(itemsView)
+
+        //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
+        itemsView.size(width, 128.0.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
+        verticalList.size(width, verticalList.height)
+
+        verticalList.invalidateList()
+
+        showItems = true
+        updateProps()
     }
 
     fun close() {
-        removeChild(itemsView)
+        val views = stage?.views
+        if (views != null) {
+            if (views.openedComboBox == this) {
+                views.openedComboBox = null
+            }
+        }
+
+        itemsView.removeFromParent()
+        showItems = false
+        updateProps()
     }
 
     private fun updateItemsSize() {
         itemsView.container.forEachChildWithIndex { index, child ->
-            child.scaledHeight = itemHeight.toDouble()
-            child.position(0, index * itemHeight)
+            child.scaledHeight = itemHeight
+            child.position(0.0, index * itemHeight)
         }
     }
 
@@ -118,7 +148,6 @@ open class UIComboBox<T>(
             val button = itemsView.container.getChildAtOrNull(i) as? UIButton ?: continue
             button.forcePressed = selectedIndex == i
         }
-        onSelectionUpdate(this)
     }
 
     override fun onSizeChanged() {
@@ -128,9 +157,9 @@ open class UIComboBox<T>(
         } else {
             close()
         }
-        //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
-        itemsView.size(width, 128.0.toDouble()).position(0.0, height)
-        verticalList.size(width, verticalList.height)
+    }
+
+    private fun updateProps() {
         selectedButton.simulatePressing(showItems)
         expandButton.simulatePressing(showItems)
         expandButton.icon = if (showItems) comboBoxShrinkIcon else comboBoxExpandIcon

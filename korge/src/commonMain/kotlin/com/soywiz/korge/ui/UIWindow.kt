@@ -180,9 +180,13 @@ class UIWindow(title: String, width: Double = 256.0, height: Double = 256.0) : U
     }
     */
 
+    var dragProcessor: (info: DraggableInfo) -> Unit = {
+        it.view.xy(it.viewNextXY)
+    }
+
     init {
         this.mouse.down { this.bringToTop() }
-        this.draggable(titleContainer)
+        this.draggable(titleContainer, autoMove = false) { dragProcessor(it) }
         onSizeChanged()
     }
 
