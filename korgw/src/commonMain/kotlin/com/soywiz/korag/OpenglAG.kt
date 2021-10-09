@@ -18,6 +18,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.math.*
 import com.soywiz.krypto.encoding.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.*
@@ -120,7 +121,7 @@ abstract class AGOpengl : AG() {
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
                 gl.bindTexture(gl.TEXTURE_2D, 0)
                 gl.bindRenderbuffer(gl.RENDERBUFFER, depth.getInt(0))
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width.nextMultipleOf(64), height.nextMultipleOf(64))
             }
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.getInt(0))
