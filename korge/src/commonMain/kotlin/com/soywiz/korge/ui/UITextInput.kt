@@ -307,7 +307,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                             if (it.key == Key.BACKSPACE) {
                                 if (cursorIndex > 0) {
                                     text = text.withoutIndex(cursorIndex - 1)
-                                    cursorIndex--
+                                    if (text.length > cursorIndex) cursorIndex--
                                 }
                             } else {
                                 if (cursorIndex < text.length) {
