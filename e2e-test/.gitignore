@@ -1,0 +1,13 @@
+/.gradle
+/.idea
+/build
+*.iml
+*.hprof
+*.log
+korge.keystore
+local.properties
+src/main/*
+.DS_Store
+/opengl32-x64.zip
+libglapi.dll
+opengl32.dll
