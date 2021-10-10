@@ -82,7 +82,7 @@ jobs:
       - name: Start gradle
         run: ./gradlew
       - name: Publishing
-        run: ./gradlew --no-daemon publishMacosX64PublicationToMavenLocal
+        run: ./gradlew --no-daemon :korge-gradle-plugin:publishJvmLocal publishMacosX64PublicationToMavenLocal
       - name: e2e test
         working-directory: e2e-test
         run: "./gradlew runJvmCheckReferences"
@@ -101,7 +101,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - run: CALL gradlew.bat --no-daemon publishMingwX64PublicationToMavenLocal
+      - run: CALL gradlew.bat --no-daemon :korge-gradle-plugin:publishJvmLocal publishMingwX64PublicationToMavenLocal
         shell: cmd
       - name: e2e test
         shell: cmd
