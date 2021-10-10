@@ -336,8 +336,8 @@ class KorgeExtension(val project: Project) {
     var esbuildVersion: String = "0.12.22"
 
     var androidMinSdk: Int = 16
-	var androidCompileSdk: Int = 28
-	var androidTargetSdk: Int = 28
+	var androidCompileSdk: Int = 29
+	var androidTargetSdk: Int = 29
 
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk
