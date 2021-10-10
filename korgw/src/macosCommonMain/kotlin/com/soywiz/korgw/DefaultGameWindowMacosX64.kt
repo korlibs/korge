@@ -487,7 +487,7 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
     }
 
     override fun close(exitCode: Int) {
-        super.close()
+        super.close(exitCode)
         window.close()
     }
 
