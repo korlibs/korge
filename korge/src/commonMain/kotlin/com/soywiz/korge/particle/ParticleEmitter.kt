@@ -23,7 +23,7 @@ class ParticleEmitter() {
 	var lifeSpan = 2.0
 	var lifespanVariance = 1.9
 	var angle: Angle = 270.0.degrees
-	var angleVariance: Angle = 2.0.degrees
+	var angleVariance: Angle = 360.0.degrees
 	var gravity = Point()
 	var radialAcceleration = 0.0
 	var tangentialAcceleration = 0.0
@@ -31,7 +31,7 @@ class ParticleEmitter() {
 	var tangentialAccelVariance = 0.0
 	var startColor = RGBAf(1f, 1f, 1f, 1f)
 	var startColorVariance = RGBAf(0f, 0f, 0f, 0f)
-	var endColor = RGBAf(1f, 1f, 1f, 1f)
+	var endColor = RGBAf(1f, 1f, 1f, 0f)
 	var endColorVariance = RGBAf(0f, 0f, 0f, 0f)
 	var maxParticles = 500
 	var startSize = 70.0
@@ -46,7 +46,7 @@ class ParticleEmitter() {
 	var minRadiusVariance = 0.0
 	var rotatePerSecond = 0.0.degrees
 	var rotatePerSecondVariance = 0.0.degrees
-    var blendFuncSource = AG.BlendFactor.ONE
+    var blendFuncSource = AG.BlendFactor.SOURCE_ALPHA
     var blendFuncDestination = AG.BlendFactor.ONE
 	var rotationStart = 0.0.degrees
 	var rotationStartVariance = 0.0.degrees

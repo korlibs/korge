@@ -9,6 +9,20 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.math.*
+import kotlin.reflect.*
+
+@KorgeExperimental
+class UIEditableNumberProps(
+    prop: UIProperty<Double>,
+    val min: Double = 0.0,
+    val max: Double = 1.0,
+    val decimals: Int = 2,
+    val clamped: Boolean = true,
+) : UIObservableProperty<Double>(prop)
+
+class UIEditableBooleanProps(
+    prop: UIProperty<Boolean>,
+) : UIObservableProperty<Boolean>(prop)
 
 @KorgeExperimental
 inline fun Container.uiEditableNumber(
@@ -16,8 +30,7 @@ inline fun Container.uiEditableNumber(
     width: Double = 64.0,
     height: Double = 18.0,
     block: @ViewDslMarker UIEditableNumber.() -> Unit = {}
-): UIEditableNumber = UIEditableNumber(value, min, max, decimals, clamped, width, height)
-    .addTo(this).also { block(it) }
+): UIEditableNumber = append(UIEditableNumber(value, min, max, decimals, clamped, width, height)).apply(block)
 
 // @TODO: lock cursor while dragging
 @KorgeExperimental
@@ -51,6 +64,8 @@ class UIEditableNumber(value: Double = 0.0, min: Double = 0.0, max: Double = 1.0
         }
 
     private var oldValue: Double = value
+
+    val isEditing get() = textInputView.visible
 
     private fun setTextInputVisible(visible: Boolean, useValue: Boolean = true) {
         textView.visible = !visible
