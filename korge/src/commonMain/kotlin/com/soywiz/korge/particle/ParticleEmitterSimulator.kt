@@ -107,7 +107,7 @@ class ParticleEmitterSimulator(
         return particle
     }
 
-    fun ParticleContainer.advance(particle: Particle, _elapsedTime: Float) {
+    fun ParticleContainer.advance(particle: Particle, _elapsedTime: Float, dx: Float = 0.0f, dy: Float = 0.0f) {
         val restTime = particle.totalTime - particle.currentTime
         val elapsedTime = if (restTime > _elapsedTime) _elapsedTime else restTime
         particle.currentTime += elapsedTime.toFloat()
@@ -151,6 +151,9 @@ class ParticleEmitterSimulator(
             }
         }
 
+        particle.x += dx
+        particle.y += dy
+
         particle.scale += particle.scaleDelta * elapsedTime
         particle.rotation += particle.rotationDelta * elapsedTime
 
@@ -160,7 +163,7 @@ class ParticleEmitterSimulator(
         particle.colorA += (particle.colorAdelta * elapsedTime)
     }
 
-    fun simulate(time: TimeSpan) {
+    fun simulate(time: TimeSpan, dx: Double = 0.0, dy: Double = 0.0) {
         if (emitting) {
             totalElapsedTime += time
             if (timeUntilStop != TimeSpan.NIL && totalElapsedTime >= timeUntilStop) emitting = false
@@ -168,7 +171,7 @@ class ParticleEmitterSimulator(
             //println("NOT EMITTING")
         }
         val timeSeconds = time.seconds.toFloat()
-        particles.fastForEach { p -> advance(p, timeSeconds) }
+        particles.fastForEach { p -> advance(p, timeSeconds, dx.toFloat(), dy.toFloat()) }
     }
 
     fun restart() {

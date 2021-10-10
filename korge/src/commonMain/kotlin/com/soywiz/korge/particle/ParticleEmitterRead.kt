@@ -69,7 +69,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
         }
     }
 
-    emitter.textureName = null
+//    emitter.textureName = null
     emitter.texture = try {
         file.parent[emitter.textureName?.takeIf { it.isNotBlank() } ?: "texture.png"].readBitmapSlice()
     } catch (e: FileNotFoundException) {
