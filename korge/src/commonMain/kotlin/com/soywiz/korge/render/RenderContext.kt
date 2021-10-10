@@ -95,19 +95,20 @@ class RenderContext constructor(
      * and later the context is restored and the [use] method is called providing as first argument the rendered [Texture].
      * This method is useful for per-frame filters. If you plan to keep the texture data, consider using the [renderToBitmap] method.
      */
-	inline fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (texture: Texture) -> Unit) {
+	@OptIn(KorgeInternal::class)
+    inline fun renderToTexture(width: Int, height: Int, render: (AG.RenderBuffer) -> Unit, use: (texture: Texture) -> Unit) {
 		flush()
 		ag.renderToTexture(width, height, render = {
 			val oldScissors = batch.scissor
 			batch.scissor = null
 			try {
-				render()
+				render(it)
 				flush()
 			} finally {
 				batch.scissor = oldScissors
 			}
-		}, use = {
-			use(Texture(it, width, height))
+		}, use = { tex, texWidth, texHeight ->
+			use(Texture(tex, texWidth, texHeight))
 			flush()
 		})
 	}

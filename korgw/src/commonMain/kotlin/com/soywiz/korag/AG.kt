@@ -11,6 +11,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.math.*
 import kotlin.coroutines.*
 import kotlinx.coroutines.*
 
@@ -791,18 +792,23 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    inline fun renderToTexture(width: Int, height: Int, render: () -> Unit, use: (tex: Texture) -> Unit) {
+    open fun fixWidthForRenderToTexture(width: Int): Int = width.nextMultipleOf(64)
+    open fun fixHeightForRenderToTexture(height: Int): Int = height.nextMultipleOf(64)
+
+    inline fun renderToTexture(width: Int, height: Int, render: (rb: RenderBuffer) -> Unit, use: (tex: Texture, texWidth: Int, texHeight: Int) -> Unit) {
+        val realWidth = fixWidthForRenderToTexture(width)
+        val realHeight = fixHeightForRenderToTexture(height)
         val rb = renderBuffers.alloc()
         frameRenderBuffers += rb
 
         try {
-            rb.setSize(0, 0, width, height, width, height)
+            rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
             setRenderBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent
-                render()
+                render(rb)
             }
 
-            use(rb.tex)
+            use(rb.tex, rb.width, rb.height)
         } finally {
             frameRenderBuffers -= rb
             renderBuffers.free(rb)
@@ -813,7 +819,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         renderToTexture(bmp.width, bmp.height, {
             render()
             readColor(bmp)
-        }, {})
+        }, { _, _, _ ->
+
+        })
     }
 
     fun setRenderBuffer(renderBuffer: BaseRenderBuffer?): BaseRenderBuffer? {

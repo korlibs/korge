@@ -121,7 +121,7 @@ abstract class AGOpengl : AG() {
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
                 gl.bindTexture(gl.TEXTURE_2D, 0)
                 gl.bindRenderbuffer(gl.RENDERBUFFER, depth.getInt(0))
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width.nextMultipleOf(64), height.nextMultipleOf(64))
+                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
             }
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.getInt(0))
@@ -130,12 +130,10 @@ abstract class AGOpengl : AG() {
         }
 
         override fun close() {
-            gl.apply {
-                deleteFramebuffers(1, framebuffer)
-                deleteRenderbuffers(1, depth)
-                framebuffer.setInt(0, 0)
-                depth.setInt(0, 0)
-            }
+            gl.deleteFramebuffers(1, framebuffer)
+            gl.deleteRenderbuffers(1, depth)
+            framebuffer.setInt(0, 0)
+            depth.setInt(0, 0)
         }
 
         override fun toString(): String = "GlRenderBuffer[$id]($width, $height)"

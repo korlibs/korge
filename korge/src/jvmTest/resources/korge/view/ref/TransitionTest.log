@@ -82,7 +82,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.uniform.Uniform(effectTextureSize) = [128.0, 128.0]
 ::draw.uniform.Uniform(u_Ratio) = [0.5, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_Mask) = TextureUnit(texture=Texture[2], linear=true)
 ::draw.uniform.Uniform(u_Reversed) = [0.0, 0.0, 0.0, 0.0]
@@ -95,8 +95,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 0, 2]
 ::draw.vertex[0]: a_Pos[100,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[700,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[700,600], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[100,600], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[250,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[250,150], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[100,150], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 disposeTemporalPerFrameStuff()
 flipInternal()
