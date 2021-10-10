@@ -55,15 +55,15 @@ jobs:
         run: chmod +x gradlew
       - name: Start gradle
         run: ./gradlew
-      - name: Testing Kotlin/Native Linux
-        run: ./gradlew --no-daemon linuxX64Test
       - name: Publishing
-        run: ./gradlew --no-daemon publishJvmLocal
+        run: ./gradlew --no-daemon publishJvmLocal publishLinuxX64PublicationToMavenLocal
       - name: e2e test
         uses: GabrielBB/xvfb-action@v1
         with:
           run: "./gradlew runJvmCheckReferences"
           working-directory: e2e-test
+      - name: Testing Kotlin/Native Linux
+        run: ./gradlew --no-daemon linuxX64Test
 
   test-native-macos:
     timeout-minutes: 120
@@ -81,13 +81,13 @@ jobs:
         run: chmod +x gradlew
       - name: Start gradle
         run: ./gradlew -DCI=true
-      - name: Testing Kotlin/Native MacosX64
-        run: ./gradlew --no-daemon macosX64Test -DCI=true
       - name: Publishing
-        run: ./gradlew --no-daemon publishJvmLocal
+        run: ./gradlew --no-daemon publishJvmLocal publishMacosX64PublicationToMavenLocal
       - name: e2e test
         working-directory: e2e-test
         run: "./gradlew runJvmCheckReferences"
+      - name: Testing Kotlin/Native MacosX64
+        run: ./gradlew --no-daemon macosX64Test -DCI=true
 
   test-native-windows:
     timeout-minutes: 120
@@ -102,11 +102,11 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - run: CALL gradlew.bat --no-daemon mingwX64Test
-        shell: cmd
-      - run: CALL gradlew.bat --no-daemon publishToMavenLocal
+      - run: CALL gradlew.bat --no-daemon publishJvmLocal publishMingwX64PublicationToMavenLocal
         shell: cmd
       - name: e2e test
         shell: cmd
         working-directory: e2e-test
         run: "CALL gradlew.bat --no-daemon runJvmCheckReferences"
+      - run: CALL gradlew.bat --no-daemon mingwX64Test
+        shell: cmd
