@@ -98,6 +98,10 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow(), DialogInterfa
         if (d == null || w == NilWin) return@run
     }
 
+    override fun close(exitCode: Int) {
+        super<EventLoopGameWindow>.close(exitCode)
+    }
+
     // https://github.com/AlexeyAB/SDL-OculusRift/blob/master/src/video/x11/SDL_x11opengl.c
     override fun doInitialize() {
         d = X.XOpenDisplay(null) ?: error("Can't open main display")

@@ -157,7 +157,8 @@ open class ViewsForTesting(
         gameWindow.dispatch(
             KeyEvent(
                 type = KeyEvent.Type.TYPE,
-                id = 0, key = Key.NONE, keyCode = char.toInt(), shift = shift, ctrl = ctrl, alt = false, meta = false
+                id = 0, key = Key.NONE, keyCode = char.toInt(), character = char.toInt().toChar(),
+                shift = shift, ctrl = ctrl, alt = false, meta = false
             )
         )
         simulateFrame(count = 2)

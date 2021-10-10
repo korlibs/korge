@@ -311,6 +311,10 @@ class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDial
     val doubleBuffered = false
     //val doubleBuffered = true
 
+    override fun close(exitCode: Int) {
+        super<EventLoopGameWindow>.close(exitCode)
+    }
+
     override fun doHandleEvents() = memScoped {
         val e = alloc<XEvent>()
         loop@ while (running) {

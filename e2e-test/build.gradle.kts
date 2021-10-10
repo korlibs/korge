@@ -74,8 +74,6 @@ tasks {
             runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
             runJvmCheckReferences.dependsOn(runTask)
         }
-
-        runJvmCheckReferences.dependsOn(runJvm)
     }
 }
 
