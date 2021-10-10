@@ -11,6 +11,7 @@ class PathInfoTest {
 			assertEquals("/test/hello", fullPathWithoutExtension)
 			assertEquals("/test/hello", fullNameWithoutCompoundExtension)
 			assertEquals("/test", folder)
+            assertEquals("/test", parent.fullPath)
 			assertEquals("hello.TxT", baseName)
 			assertEquals("hello", baseNameWithoutExtension)
 			assertEquals("TxT", extension)
@@ -25,6 +26,7 @@ class PathInfoTest {
 			assertEquals("C:\\dev\\test\\hello", fullPathWithoutExtension)
 			assertEquals("C:\\dev\\test\\hello", fullNameWithoutCompoundExtension)
 			assertEquals("C:\\dev\\test", folder)
+            assertEquals("C:\\dev\\test", parent.fullPath)
 			assertEquals("hello.TxT", baseName)
 			assertEquals("hello", baseNameWithoutExtension)
 			assertEquals("TxT", extension)
@@ -39,6 +41,7 @@ class PathInfoTest {
 			assertEquals("C:\\dev\\test\\hello", fullPathWithoutExtension)
 			assertEquals("C:\\dev\\test\\hello", fullNameWithoutCompoundExtension)
 			assertEquals("C:\\dev\\test", folder)
+            assertEquals("C:\\dev\\test", parent.fullPath)
 			assertEquals("hello", baseName)
 			assertEquals("hello", baseNameWithoutExtension)
 			assertEquals("", extension)
@@ -81,6 +84,21 @@ class PathInfoTest {
 			assertEquals("voice.wav", compoundExtensionLC)
 		}
 	}
+
+    @Test
+    fun name6() {
+        PathInfo("test").apply {
+            assertEquals("test", fullPath)
+            assertEquals("test", fullPathWithoutExtension)
+            assertEquals("test", fullNameWithoutCompoundExtension)
+            assertEquals("", folder)
+            assertEquals("", parent.fullPath)
+            assertEquals("test", baseName)
+            assertEquals("test", baseNameWithoutExtension)
+            assertEquals("", extension)
+            assertEquals("", extensionLC)
+        }
+    }
 
 	@Test
 	fun getFullComponents() {

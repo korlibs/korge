@@ -111,6 +111,13 @@ abstract class Vfs : AsyncCloseable {
     open suspend fun listFlow(path: String): Flow<VfsFile> = flow { emitAll(listSimple(path).toChannel()) }
 
 	open suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = unsupported()
+    open suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean {
+        val info = PathInfo(path)
+        if (!mkdir(path, attributes)) {
+            mkdirs(info.parent.fullPath, attributes)
+        }
+        return mkdir(path, attributes)
+    }
 	open suspend fun rmdir(path: String): Boolean = delete(path) // For compatibility
 	open suspend fun delete(path: String): Boolean = unsupported()
 	open suspend fun rename(src: String, dst: String): Boolean {

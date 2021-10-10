@@ -379,7 +379,9 @@ private class LocalVfsJvm : LocalVfsV2() {
 	}.flowOn(IOContext)
 
 	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
-		executeIo { resolveFile(path).mkdirs() }
+		executeIo { resolveFile(path).mkdir() }
+    override suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean =
+        executeIo { resolveFile(path).mkdirs() }
 
 	override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit =
 		executeIo { resolveFile(path).setLastModified(time.unixMillisLong); Unit }

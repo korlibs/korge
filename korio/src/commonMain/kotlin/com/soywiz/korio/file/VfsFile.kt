@@ -113,7 +113,10 @@ data class VfsFile(
 	suspend fun mkdir(attributes: List<Vfs.Attribute>) = vfs.mkdir(this.path, attributes)
 	suspend fun mkdir(vararg attributes: Vfs.Attribute) = mkdir(attributes.toList())
 
-	suspend fun copyToTree(
+    suspend fun mkdirs(attributes: List<Vfs.Attribute>) = vfs.mkdirs(this.path, attributes)
+    suspend fun mkdirs(vararg attributes: Vfs.Attribute) = mkdirs(attributes.toList())
+
+    suspend fun copyToTree(
 		target: VfsFile,
 		vararg attributes: Vfs.Attribute,
 		notify: suspend (Pair<VfsFile, VfsFile>) -> Unit = {}

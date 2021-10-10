@@ -33,7 +33,7 @@ val String.pathInfo get() = PathInfo(this)
 val PathInfo.fullPathNormalized: String get() = fullPath.replace('\\', '/')
 
 /**
- * /path\to/file.ext -> /path/to
+ * /path\to/file.ext -> /path\to
  */
 val PathInfo.folder: String get() = fullPath.substring(0, fullPathNormalized.lastIndexOfOrNull('/') ?: 0)
 
@@ -47,6 +47,11 @@ val PathInfo.folderWithSlash: String
  * /path\to/file.ext -> file.ext
  */
 val PathInfo.baseName: String get() = fullPathNormalized.substringAfterLast('/')
+
+/**
+ * /path\to/file.ext -> /path\to
+ */
+val PathInfo.parent: PathInfo get() = PathInfo(folder)
 
 /**
  * /path\to/file.ext -> /path\to/file
