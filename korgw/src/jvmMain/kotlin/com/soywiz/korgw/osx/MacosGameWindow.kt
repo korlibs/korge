@@ -25,6 +25,7 @@ import com.sun.jna.Callback
 import com.sun.jna.Library
 import java.nio.ByteBuffer
 import kotlin.coroutines.*
+import kotlin.system.*
 
 class MacAG(val window: Long, val checkGl: Boolean, val logGl:Boolean) : AGOpengl() {
     override val gles: Boolean = true
@@ -407,12 +408,12 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         return super.openFileDialog(filter, write, multi, currentDir)
     }
 
-    override fun close() {
-        super.close()
+    override fun close(exitCode: Int) {
+        super.close(exitCode)
         autoreleasePool.msgSend("drain")
         // @TODO: Close window gracefully?
         window.msgSend("close")
-        //exitProcess(0)
+        //exitProcess(exitCode)
     }
 
     //var running = true
@@ -518,10 +519,15 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
             true
         )
 
+        try {
+            app.msgSend("run")
+        } finally {
+            autoreleasePool.msgSend("drain")
+        }
 
-        app.msgSend("run")
-
-        autoreleasePool.msgSend("drain")
+        if (exitProcessOnExit) {
+            exitProcess(this.exitCode)
+        }
     }
 }
 

@@ -111,8 +111,7 @@ class Win32GameWindow : GameWindow() {
 
     var exiting = false
 
-    override fun close() {
-        super.close()
+    override fun close(exitCode: Int) {
         exiting = true
     }
 

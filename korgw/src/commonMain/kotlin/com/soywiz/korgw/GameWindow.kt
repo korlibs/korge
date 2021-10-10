@@ -37,7 +37,7 @@ data class FileFilter(val entries: List<Pair<String, List<String>>>) {
     fun matches(fileName: String): Boolean = entries.isEmpty() || regexps.any { it.matches(fileName) }
 }
 
-interface DialogInterface : Closeable {
+interface DialogInterface {
     suspend fun browse(url: URL): Unit = unsupported()
     suspend fun alert(message: String): Unit = unsupported()
     suspend fun confirm(message: String): Boolean = unsupported()
@@ -45,7 +45,7 @@ interface DialogInterface : Closeable {
     // @TODO: Provide current directory
     suspend fun openFileDialog(filter: FileFilter? = null, write: Boolean = false, multi: Boolean = false, currentDir: VfsFile? = null): List<VfsFile> =
         unsupported()
-    override fun close(): Unit = unsupported()
+    fun close(exitCode: Int = 0): Unit = unsupported()
 }
 
 suspend fun DialogInterface.openFileDialog(filter: String? = null, write: Boolean = false, multi: Boolean = false): List<VfsFile> {
@@ -174,7 +174,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     override fun toString(): String = "GameWindowCoroutineDispatcher"
 }
 
-open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, CoroutineContext.Element, AGWindow, Extra by Extra.Mixin() {
+open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineContext.Element, AGWindow, Extra by Extra.Mixin() {
     interface ICursor
 
     enum class Cursor : ICursor {
@@ -391,14 +391,17 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, Closeable, Cor
 
     open fun setSize(width: Int, height: Int): Unit = Unit
     // Alias for close
-    fun exit(): Unit = close()
+    fun exit(exitCode: Int = 0): Unit = close(exitCode)
 
+    var exitProcessOnExit: Boolean = true
+    var exitCode = 0; private set
     var running = true; protected set
     private var closing = false
-    override fun close() {
+    override fun close(exitCode: Int) {
         if (closing) return
         closing = true
         running = false
+        this.exitCode = exitCode
         println("GameWindow.close")
         coroutineDispatcher.close()
         coroutineDispatcher.cancelChildren()
@@ -651,35 +654,40 @@ open class EventLoopGameWindow : GameWindow() {
     override val coroutineDispatcher: GameWindowCoroutineDispatcherSetNow = GameWindowCoroutineDispatcherSetNow()
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
-        // Required here so setSize is called
-        launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
+        try {
+            // Required here so setSize is called
+            launchImmediately(getCoroutineDispatcherWithCurrentContext()) {
+                try {
+                    entry()
+                } catch (e: Throwable) {
+                    println("Error initializing application")
+                    println(e)
+                    running = false
+                }
+            }
+
+            doInitialize()
+            dispatchInitEvent()
+
+            while (running) {
+                doHandleEvents()
+                if (mustPerformRender()) {
+                    coroutineDispatcher.currentTime = PerformanceCounter.reference
+                    render(doUpdate = true)
+                }
+                // Here we can trigger a GC if we have enough time, and we can try to disable GC all the other times.
+                if (!vsync) {
+                    sleepNextFrame()
+                }
+            }
+        } finally {
             try {
-                entry()
-            } catch (e: Throwable) {
-                println("Error initializing application")
-                println(e)
-                running = false
+                dispatchStopEvent()
+                dispatchDestroyEvent()
+            } finally {
+                doDestroy()
             }
         }
-
-        doInitialize()
-        dispatchInitEvent()
-
-        while (running) {
-            doHandleEvents()
-            if (mustPerformRender()) {
-                coroutineDispatcher.currentTime = PerformanceCounter.reference
-                render(doUpdate = true)
-            }
-            // Here we can trigger a GC if we have enough time, and we can try to disable GC all the other times.
-            if (!vsync) {
-                sleepNextFrame()
-            }
-        }
-        dispatchStopEvent()
-        dispatchDestroyEvent()
-
-        doDestroy()
     }
 
     fun mustPerformRender(): Boolean = if (vsync) true else elapsedSinceLastRenderTime() >= counterTimePerFrame

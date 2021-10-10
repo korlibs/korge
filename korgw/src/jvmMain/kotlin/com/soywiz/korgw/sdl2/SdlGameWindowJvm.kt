@@ -21,6 +21,7 @@ import com.soywiz.korio.util.OS
 import com.sun.jna.Library
 import com.sun.jna.Native
 import com.sun.jna.Pointer
+import kotlin.system.*
 
 open class SDLKmlGl : NativeKgl(SDL)
 class SDLAg(window: SdlGameWindowJvm, val checkGl: Boolean, override val gl: KmlGl = SDLKmlGl().checkedIf(checkGl)) :
@@ -229,5 +230,8 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
         SDL.SDL_DestroyRenderer(r)
         SDL.SDL_DestroyWindow(w)
         SDL.SDL_Quit()
+        if (exitProcessOnExit) {
+            exitProcess(this.exitCode)
+        }
     }
 }

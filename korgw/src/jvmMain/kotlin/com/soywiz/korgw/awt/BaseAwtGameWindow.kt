@@ -22,6 +22,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
 import java.net.*
 import javax.swing.*
+import kotlin.system.*
 
 abstract class BaseAwtGameWindow : GameWindow() {
     abstract override val ag: AwtAg
@@ -665,7 +666,9 @@ abstract class BaseAwtGameWindow : GameWindow() {
         component.isVisible = false
         frameDispose()
 
-        //exitProcess(0) // Don't do this since we might continue in the e2e test
+        if (exitProcessOnExit) { // Don't do this since we might continue in the e2e test
+            exitProcess(this.exitCode)
+        }
     }
 
     override fun computeDisplayRefreshRate(): Int {

@@ -15,6 +15,7 @@ import platform.windows.*
 
 //override val ag: AG = AGNative()
 
+//@ThreadLocal
 val windowsGameWindow: WindowsGameWindow = WindowsGameWindow()
 actual fun CreateDefaultGameWindow(): GameWindow = windowsGameWindow
 
@@ -251,6 +252,7 @@ class WindowsGameWindow : EventLoopGameWindow() {
 
     override fun doDestroy() {
         //DestroyWindow(hwnd)
+
     }
 
     override fun doHandleEvents() {
@@ -533,7 +535,9 @@ fun WndProc(hWnd: HWND?, message: UINT, wParam: WPARAM, lParam: LPARAM): LRESULT
         _WM_SYSKEYUP -> windowsGameWindow.keyUpdate(wParam.toInt(), false)
         _WM_CHAR -> windowsGameWindow.keyType(wParam.toInt())
         //_WM_UNICHAR -> windowsGameWindow.keyType(wParam.toInt())
-        _WM_CLOSE -> kotlin.system.exitProcess(0)
+        _WM_CLOSE -> {
+            kotlin.system.exitProcess(windowsGameWindow.exitCode)
+        }
     }
     return DefWindowProcW(hWnd, message, wParam, lParam)
 }

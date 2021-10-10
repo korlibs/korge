@@ -379,8 +379,7 @@ open class BrowserGameWindow : GameWindow() {
 
     private var loopJob: Job? = null
 
-    override fun close() {
-        super.close()
+    override fun close(exitCode: Int) {
         launchImmediately(coroutineDispatcher) {
             loopJob?.cancelAndJoin()
             window.close()

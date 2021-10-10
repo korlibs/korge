@@ -2,14 +2,17 @@ package com.soywiz.korgw.win32
 
 import com.soywiz.kgl.*
 import com.soywiz.klogger.*
+import com.soywiz.klogger.Console
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.lang.*
 import com.sun.jna.*
 import com.sun.jna.Function
 import com.sun.jna.platform.win32.*
 import com.sun.jna.platform.win32.WinDef.*
 import com.sun.jna.ptr.*
 import java.awt.*
+import java.io.*
 import java.lang.reflect.*
 import javax.swing.*
 
@@ -52,6 +55,12 @@ interface Win32GL : INativeGL, Library {
         val funcs = LinkedHashMap<String, Function>()
         //val opengl32Lib by lazy { NativeLibrary.getInstance("opengl32") }
         val opengl32Lib = NativeLibrary.getInstance("opengl32")
+
+        init {
+            if (Environment["DEBUG_OPENGL32_LOAD"] == "true") {
+                println("opengl32Lib=$opengl32Lib, CWD=${File(".").absoluteFile}")
+            }
+        }
 
         fun loadFunction(name: String): Function? =
             OpenGL32.INSTANCE.wglGetProcAddress(name)?.let { Function.getFunction(it) }
