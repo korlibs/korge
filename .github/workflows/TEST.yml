@@ -43,6 +43,7 @@ jobs:
     #    name: JUnit Tests
     #    path: "**/test-results/**/TEST-*.xml"
     #    reporter: java-junit
+
   test-native-linux:
     timeout-minutes: 60
 
@@ -61,6 +62,12 @@ jobs:
         run: ./gradlew
       - name: Testing Kotlin/Native Linux
         run: ./gradlew --no-daemon linuxX64Test
+      - name: Publishing
+        run: ./gradlew --no-daemon publishJvmLocal
+      - name: e2e test
+        working-directory: e2e-test
+        run: "./gradlew runJvmCheckReferences"
+
   test-native-macos:
     timeout-minutes: 60
 
@@ -77,8 +84,14 @@ jobs:
         run: chmod +x gradlew
       - name: Start gradle
         run: ./gradlew -DCI=true
-      - name: Testing Kotlin/Native Linux
-        run: ./gradlew --no-daemon linuxX64Test -DCI=true
+      - name: Testing Kotlin/Native MacosX64
+        run: ./gradlew --no-daemon macosX64Test -DCI=true
+      - name: Publishing
+        run: ./gradlew --no-daemon publishJvmLocal
+      - name: e2e test
+        working-directory: e2e-test
+        run: "./gradlew runJvmCheckReferences"
+
   test-native-windows:
     timeout-minutes: 60
 
@@ -100,4 +113,3 @@ jobs:
         shell: cmd
         working-directory: e2e-test
         run: "CALL gradlew.bat --no-daemon runJvmCheckReferences"
-
