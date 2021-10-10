@@ -12,7 +12,7 @@ object CheckReferences {
     fun main(args: Array<String>) = Korio {
         val references = localCurrentDirVfs["references"]
         var notSimilarCount = 0
-        for (kind in listOf("jvm", "mingwx64")) {
+        for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64")) {
             val generatedVfs = localCurrentDirVfs["build/screenshots/$kind"]
             val exists = generatedVfs.exists()
             println("generatedVfs=$generatedVfs . exists=${exists}")

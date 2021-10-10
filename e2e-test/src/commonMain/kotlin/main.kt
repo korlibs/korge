@@ -16,7 +16,10 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
             FiltersE2ETestCase,
         )
 
-        val screenshotsVfs = localVfs(Environment["OUTPUT_DIR"] ?: ".").also { it.mkdir() }.jail()
+        println("Determining screenshotsVfs...")
+        val path = Environment["OUTPUT_DIR"] ?: "."
+        println("Determining screenshotsVfs... $path")
+        val screenshotsVfs = localVfs(path).also { it.mkdirs() }.jail()
         println("vfs: $screenshotsVfs")
 
         for (case in cases) {
@@ -29,8 +32,13 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
             }
             delayFrame()
             println("TAKING SCREENSHOT for ${case.name}")
-            screenshotsVfs["${case.name}.png"].writeBitmap(stage.renderToBitmap(views), PNG)
-            println("SCREENSHOT TAKEN")
+            try {
+                screenshotsVfs["${case.name}.png"].writeBitmap(stage.renderToBitmap(views), PNG)
+                println("SCREENSHOT TAKEN")
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                println("SCREENSHOT NOT TAKEN (error ocurred)")
+            }
         }
     } catch (e: Throwable) {
         e.printStackTrace()

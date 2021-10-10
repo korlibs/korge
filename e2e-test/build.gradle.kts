@@ -67,15 +67,14 @@ tasks {
     runJvm.environment("OUTPUT_DIR", File(buildDir, "screenshots/jvm"))
 
     afterEvaluate {
-        val runNativeMingwX64Debug = findByName("runNativeMingwX64Debug") as? Exec?
-        if (runNativeMingwX64Debug != null) {
-            runNativeMingwX64Debug.environment("OUTPUT_DIR", File(buildDir, "screenshots/mingwX64"))
+        val runJvmCheckReferences = getByName("runJvmCheckReferences") as KorgeJavaExec
+
+        for (target in listOf("mingwX64", "linuxX64", "macosX64")) {
+            val runTask = (findByName("runNative${target.capitalize()}Debug") as? Exec?) ?: continue
+            runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
+            runJvmCheckReferences.dependsOn(runTask)
         }
 
-        val runJvmCheckReferences = getByName("runJvmCheckReferences") as KorgeJavaExec
-        if (runNativeMingwX64Debug != null) {
-            runJvmCheckReferences.dependsOn(runNativeMingwX64Debug)
-        }
         runJvmCheckReferences.dependsOn(runJvm)
     }
 }

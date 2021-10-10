@@ -112,10 +112,15 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = unsupported()
     open suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean {
-        val info = PathInfo(path)
+        if (path == "") return false
+        if (stat(path).exists) return false // Already exists and it is a directory
+        //println("mkdirs: $path")
         if (!mkdir(path, attributes)) {
-            mkdirs(info.parent.fullPath, attributes)
+            val parent = PathInfo(path).parent.fullPath
+            //println("::mkdirs: $parent")
+            mkdirs(parent, attributes)
         }
+        //println("##retrying mkdir: $path")
         return mkdir(path, attributes)
     }
 	open suspend fun rmdir(path: String): Boolean = delete(path) // For compatibility
