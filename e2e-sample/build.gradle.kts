@@ -19,6 +19,8 @@ apply<KorgeGradlePlugin>()
 korge {
 	id = "com.sample.demo"
 
+    useNewMemoryModel = false
+
 // To enable all targets at once
 
 	//targetAll()
