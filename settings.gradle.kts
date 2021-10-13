@@ -9,7 +9,7 @@ pluginManagement {
         //val kotlinVersion = gradleProperties["kotlinVersion"].toString()
         val kotlinVersion: String by settings
 
-        if (kotlinVersion.contains("-M")) {
+        if (kotlinVersion.contains("-M") || kotlinVersion.contains("-RC") || kotlinVersion.contains("eap") || kotlinVersion.contains("-release")) {
             maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary")
             maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
         }

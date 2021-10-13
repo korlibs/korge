@@ -14,7 +14,7 @@ fun Project.configureRepositories() {
         google().content {
             it.excludeGroup("Kotlin/Native")
         }
-        if (kotlinVersion.contains("-M")) {
+        if (kotlinVersionIsDev) {
             maven { it.url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
             maven { it.url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         }
