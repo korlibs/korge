@@ -176,6 +176,7 @@ private fun Project.addNativeRun() {
 	//run {
 		for (target in DESKTOP_NATIVE_TARGETS) {
 			val ctarget = target.capitalize()
+            val isMingwX64 = target == "mingwX64"
 			for (kind in RELEASE_DEBUG) {
 				val ckind = kind.name.toLowerCase().capitalize()
 				val ctargetKind = "$ctarget$ckind"
@@ -186,11 +187,16 @@ private fun Project.addNativeRun() {
 
 				val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
 
-                if (target == "mingwX64") {
+                if (isMingwX64) {
                     //compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(mingwX64SelectPatchedMemoryManager)
                 }
 
 				val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
+
+                val appResFile = buildDir["app.res"]
+                val appRcFile = buildDir["app.rc"]
+                val appRcObjFile = buildDir["app.obj"]
+                val appIcoFile = buildDir["icon.ico"]
 
 				val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
 					task.dependsOn(compilation.compileKotlinTask)
@@ -199,25 +205,39 @@ private fun Project.addNativeRun() {
 					}
 					//println("executableFile.parentFile: ${executableFile.parentFile}")
 					task.into(executableFile.parentFile)
-					if (target == "mingwX64") {
+                    if (isMingwX64) {
                     //if (false) {
-						val appRcFile = buildDir["app.rc"]
-						val appRcObjFile = buildDir["app.obj"]
-						val appIcoFile = buildDir["icon.ico"]
-
-						doLast {
+  						doLast {
 							val bmp32 = project.korge.getIconBytes(32).decodeImage()
 							val bmp256 = project.korge.getIconBytes(256).decodeImage()
 
 							appIcoFile.writeBytes(ICO2.encode(listOf(bmp32, bmp256)))
-							appRcFile.writeText(WindowsRC.generate(korge))
-							project.compileWindowsRC(appRcFile, appRcObjFile)
 
 							val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
 
                             val isConsole = korge.enableConsole ?: (kind == DEBUG)
 							val subsystem = if (isConsole) "console" else "windows"
-							linkTask.binary.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem")
+
+                            run {
+                                // @TODO: https://releases.llvm.org/9.0.0/tools/lld/docs/ReleaseNotes.html#id6
+                                // @TODO: lld-link now rejects more than one resource object input files, matching link.exe. Previously, lld-link would silently ignore all but one. If you hit this: Don’t pass resource object files to the linker, instead pass res files to the linker directly. Don’t put resource files in static libraries, pass them on the command line. (r359749)
+                                //appRcFile.writeText(WindowsRC.generate(korge))
+                                //project.compileWindowsRC(appRcFile, appRcObjFile)
+                                //linkTask.binary.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,$subsystem")
+                            }
+
+                            run {
+                                // @TODO: Not working either!
+                                //appRcFile.writeText(WindowsRC.generate(korge))
+                                //val appResFile = project.compileWindowsRES(appRcFile)
+                                //linkTask.binary.linkerOpts(appResFile.absolutePath, "-Wl,--subsystem,$subsystem")
+                            }
+
+                            run {
+                                appRcFile.writeText(WindowsRC.generate(korge))
+                                project.compileWindowsRES(appRcFile)
+                                linkTask.binary.linkerOpts("-Wl,--subsystem,$subsystem")
+                            }
 						}
 						//println("compilation:$compilation")
 						//compilation.linkerOpts(appRcObjFile.absolutePath, "-Wl,--subsystem,console")
@@ -228,7 +248,13 @@ private fun Project.addNativeRun() {
 
 				afterEvaluate {
 					try {
-						compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project).dependsOn(copyTask)
+						val linkTask = compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project)
+                        linkTask.dependsOn(copyTask)
+                        if (isMingwX64) {
+                            linkTask.doLast {
+                                replaceExeWithRes(linkTask.outputFile.get(), appResFile)
+                            }
+                        }
 					} catch (e: Throwable) {
 						e.printStackTrace()
 					}

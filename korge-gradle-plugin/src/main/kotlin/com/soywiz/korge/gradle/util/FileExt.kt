@@ -10,7 +10,7 @@ fun <T> File.conditionally(ifNotExists: Boolean = true, block: File.() -> T): T?
 fun <T> File.always(block: File.() -> T): T = block()
 operator fun File.get(name: String) = File(this, name)
 
-fun File.getFirstRegexOrNull(regex: Regex) = this
+fun File.getFirstRegexOrNull(regex: Regex): File? = this
     .listFiles { dir, name -> regex.containsMatchIn(name) }
     ?.firstOrNull()
 
