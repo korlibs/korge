@@ -28,7 +28,7 @@ jobs:
           DISABLE_JAVASCRIPT_TEST: true
           GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=1
   publish-mac:
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v1
       - name: Set up JDK 1.8
@@ -40,7 +40,7 @@ jobs:
         env:
           DISABLE_JAVASCRIPT_TEST: true
   publish-ios:
-    runs-on: macos-latest
+    runs-on: macos-11
     steps:
       - uses: actions/checkout@v1
       - name: Set up JDK 1.8
