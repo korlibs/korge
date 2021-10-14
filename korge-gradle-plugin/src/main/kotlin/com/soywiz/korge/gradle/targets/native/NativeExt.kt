@@ -44,7 +44,11 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
         //project.setProperty("kotlin.native.binary.memoryModel", "experimental") // Could not set unknown property 'kotlin.native.binary.memoryModel' for root project 'e2e-sample' of type org.gradle.api.Project.
         (this as? KotlinNativeTarget?)?.apply {
             compilations.all {
-                it.kotlinOptions.freeCompilerArgs = it.kotlinOptions.freeCompilerArgs + listOf("-Xbinary=memoryModel=experimental")
+                it.kotlinOptions.freeCompilerArgs += listOf(
+                    "-Xbinary=memoryModel=experimental",
+                    // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
+                    "-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
+                )
             }
             // @TODO: Enable for Kotlin 1.6.0
             binaries.all { it.binaryOptions["memoryModel"] = "experimental" }
