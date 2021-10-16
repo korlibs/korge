@@ -46,6 +46,7 @@ fun Project.addGenResourcesTasks() = this {
 
         for (target in kotlin.targets) {
             for (compilation in target.compilations) {
+                val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
                 val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
                 compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
                 val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
@@ -57,18 +58,24 @@ fun Project.addGenResourcesTasks() = this {
                         processedResourcesFolder.mkdirs()
                         //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
+                        if (isJvm) {
+                            processedResourcesFolder["@appicon.png"].writeBytes(korge.getIconBytes())
+                            //processedResourcesFolder["@appicon-16.png"].writeBytes(korge.getIconBytes(16))
+                            //processedResourcesFolder["@appicon-32.png"].writeBytes(korge.getIconBytes(32))
+                            //processedResourcesFolder["@appicon-64.png"].writeBytes(korge.getIconBytes(64))
+                        }
+
                         executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "run") { classLoader ->
                             val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
                             listOf(classLoader, folders, processedResourcesFolder.toString(), compilation.name)
                         }
                     }
                 }
-                if (compilation.compileKotlinTask.name != "compileKotlinJvm") {
+                if (!isJvm) {
                     compilation.compileKotlinTask.dependsOn(korgeProcessedResources)
                 } else {
                     compilation.compileKotlinTask.finalizedBy(korgeProcessedResources)
                     getByName("runJvm").dependsOn(korgeProcessedResources)
-
                 }
             }
         }
