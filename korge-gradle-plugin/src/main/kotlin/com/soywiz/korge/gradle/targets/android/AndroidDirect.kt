@@ -27,29 +27,30 @@ fun Project.configureAndroidDirect() {
             sourceCompatibility = JavaVersion.VERSION_1_8
             targetCompatibility = JavaVersion.VERSION_1_8
         }
-        adbOptions {
+        installation {
             installOptions = listOf("-r")
-            timeOutInMs = (30 * 1000)
+            timeOutInMs = project.korge.androidTimeoutMs
         }
         packagingOptions {
             for (pattern in androidExcludePatterns()) {
-                this.exclude(pattern)
+                resources.excludes.add(pattern)
             }
         }
-        compileSdkVersion(project.korge.androidCompileSdk)
+        compileSdk = project.korge.androidCompileSdk
         defaultConfig {
+            val it = this
             it.multiDexEnabled = true
             it.applicationId = project.korge.id
-            it.minSdkVersion = DefaultApiVersion(project.korge.androidMinSdk)
-            it.targetSdkVersion = DefaultApiVersion(project.korge.androidTargetSdk)
-            it.versionCode = 1
-            it.versionName = "1.0"
+            it.minSdk = project.korge.androidMinSdk
+            it.targetSdk = project.korge.androidTargetSdk
+            it.versionCode = project.korge.versionCode
+            it.versionName = project.korge.version
             it.testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
             //val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
             //manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
         }
         signingConfigs {
-            it.maybeCreate("release").apply {
+            maybeCreate("release").apply {
                 storeFile = project.file(project.findProperty("RELEASE_STORE_FILE") ?: korge.androidReleaseSignStoreFile)
                 storePassword = project.findProperty("RELEASE_STORE_PASSWORD")?.toString() ?: korge.androidReleaseSignStorePassword
                 keyAlias = project.findProperty("RELEASE_KEY_ALIAS")?.toString() ?: korge.androidReleaseSignKeyAlias
@@ -57,24 +58,24 @@ fun Project.configureAndroidDirect() {
             }
         }
         buildTypes {
-            it.maybeCreate("debug").apply {
+            maybeCreate("debug").apply {
                 isMinifyEnabled = false
                 signingConfig = signingConfigs.getByName("release")
             }
-            it.maybeCreate("release").apply {
+            maybeCreate("release").apply {
                 isMinifyEnabled = true
                 proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
                 signingConfig = signingConfigs.getByName("release")
             }
         }
         sourceSets {
-            maybeCreate("main").also {
+            maybeCreate("main").apply {
                 val (resourcesSrcDirs, kotlinSrcDirs) = androidGetResourcesFolders()
                 //println("@ANDROID_DIRECT:")
                 //println(resourcesSrcDirs.joinToString("\n"))
                 //println(kotlinSrcDirs.joinToString("\n"))
-                it.assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
-                it.java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())
+                assets.srcDirs(*resourcesSrcDirs.map { it.absoluteFile }.toTypedArray())
+                java.srcDirs(*kotlinSrcDirs.map { it.absoluteFile }.toTypedArray())
             }
         }
     }

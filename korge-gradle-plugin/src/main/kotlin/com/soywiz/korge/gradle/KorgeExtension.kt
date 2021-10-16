@@ -256,6 +256,7 @@ class KorgeExtension(val project: Project) {
             verifyId(value)
             field = value
         }
+    var versionCode: Int = 1
 	var version: String = "0.0.1"
     var preferredIphoneSimulatorVersion: Int = 8
 
@@ -338,6 +339,8 @@ class KorgeExtension(val project: Project) {
     var androidMinSdk: Int = 16
 	var androidCompileSdk: Int = 29
 	var androidTargetSdk: Int = 29
+
+    var androidTimeoutMs: Int = 30 * 1000
 
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk
