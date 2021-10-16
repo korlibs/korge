@@ -16,6 +16,7 @@ import java.awt.datatransfer.*
 import java.awt.dnd.*
 import java.awt.event.*
 import java.io.*
+import javax.imageio.*
 import javax.swing.*
 
 
@@ -86,6 +87,24 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
                     super.dragExit(dte)
                 }
             }
+
+            run {
+                val awtImageURL = AwtGameWindow::class.java.getResource("/@appicon.png")
+                    ?: AwtGameWindow::class.java.getResource("@appicon.png")
+                    ?: ClassLoader.getSystemResource("@appicon.png")
+                if (awtImageURL != null) {
+                    runCatching {
+                        val awtImage = ImageIO.read(awtImageURL)
+                        kotlin.runCatching {
+                            MicroDynamic {
+                                getClass("java.awt.Taskbar").invoke("getTaskbar").invoke("setIconImage", awtImage)
+                            }
+                        }
+                        frame.iconImage = awtImage.getScaledInstance(32, 32, Image.SCALE_SMOOTH)
+                    }
+                }
+            }
+
             //val dim = getDefaultToolkit().screenSize
             //frame.setLocation(dim.width / 2 - frame.size.width / 2, dim.height / 2 - frame.size.height / 2)
 
