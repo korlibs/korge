@@ -145,7 +145,7 @@ fun Project.configureAndroidIndirect() {
 							line("apply plugin: 'com.android.application'")
 						}
 						line("apply plugin: 'kotlin-android'")
-						line("apply plugin: 'kotlin-android-extensions'")
+						//line("apply plugin: 'kotlin-android-extensions'") // This was deprecated
 
 						line("android") {
                             line("compileOptions") {
