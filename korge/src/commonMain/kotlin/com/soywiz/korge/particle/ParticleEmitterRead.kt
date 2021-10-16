@@ -69,7 +69,6 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
         }
     }
 
-//    emitter.textureName = null
     emitter.texture = try {
         file.parent[emitter.textureName?.takeIf { it.isNotBlank() } ?: "texture.png"].readBitmapSlice()
     } catch (e: FileNotFoundException) {
@@ -80,5 +79,7 @@ suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
                 .addColorStop(1.0, Colors.TRANSPARENT_WHITE)) { circle(32.0, 32.0, 30.0) }
         }.slice()
     }
+    // After we load the texture, we set textureName to null, so it is not loaded again
+    emitter.textureName = null
     return emitter
 }

@@ -72,7 +72,7 @@ class ParticleEmitterViewTest : ViewsForTesting(log = true) {
             listOf(
                 emitter.simulator.particles.toString(),
                 logAg.getLogAsString(),
-            ).joinToString("\n")
+            ).joinToString("\n") + "\n"
         )
     }
 }
