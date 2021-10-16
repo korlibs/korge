@@ -65,8 +65,9 @@ dependencies {
 
     //implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
-	//implementation("net.sf.proguard:proguard-gradle:$proguardVersion")
-    implementation("com.guardsquare:proguard-gradle:$proguardVersion")
+
+    implementation("net.sf.proguard:proguard-gradle:$proguardVersion") // @TODO: Not supporting Java 17
+    //implementation("com.guardsquare:proguard-gradle:$proguardVersion") // @TODO: This requires Java 11 but supports Java 17
 
     implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
     implementation("com.google.javascript:closure-compiler:$closureCompilerVersion")
