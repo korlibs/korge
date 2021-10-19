@@ -35,8 +35,8 @@ plugins {
     `maven-publish`
 }
 
-val headlessTests = true
-//val headlessTests = false
+//val headlessTests = true
+val headlessTests = System.getenv("CI") == "true" || System.getenv("HEADLESS_TESTS") == "true"
 val useMimalloc = true
 //val useMimalloc = false
 
