@@ -55,8 +55,7 @@ include(":korge-gradle-plugin")
 //include(":tensork")
 
 if (!inCI) {
-    include(":korge-editor")
-    include(":korge-starter-kit-rpg")
+    include(":korge-sandbox")
 }
 
 /*
