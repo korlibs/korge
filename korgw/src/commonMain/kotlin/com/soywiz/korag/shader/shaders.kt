@@ -187,7 +187,7 @@ open class Temp(id: Int, type: VarType, arrayCount: Int, precision: Precision = 
     override fun hashCode(): Int = mhashcode()
 }
 
-object Output : Variable("out", VarType.Float4) {
+object Output : Varying("out", VarType.Float4) {
 	override fun toString(): String = "Output"
     override fun equals(other: Any?): Boolean = mequals<Output>(other)
     override fun hashCode(): Int = mhashcode()
@@ -224,11 +224,11 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
         override fun equals(other: Any?): Boolean = (other is Vector) && (this.type == other.type) && (this.ops.contentEquals(other.ops))
         override fun hashCode(): Int = (type.hashCode() * 7) + (ops.contentHashCode())
     }
-    data class Swizzle(val left: Operand, val swizzle: String) : Operand(left.type)
+    data class Swizzle(val left: Operand, val swizzle: String) : Operand(left.type.withElementCount(swizzle.length))
 	data class ArrayAccess(val left: Operand, val index: Operand) : Operand(left.type)
 
-    data class Func(val name: String, val ops: List<Operand>) : Operand(VarType.Float1) {
-		constructor(name: String, vararg ops: Operand) : this(name, ops.toList())
+    data class Func(val name: String, val ops: List<Operand>, override val type: VarType = VarType.Float1) : Operand(type) {
+		constructor(name: String, vararg ops: Operand, type: VarType = VarType.Float1) : this(name, ops.toList(), type)
 	}
 
 	sealed class Stm {
@@ -329,7 +329,7 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 		fun degrees(arg: Operand) = Func("degrees", arg)
 
 		// Sampling
-		fun texture2D(a: Operand, b: Operand) = Func("texture2D", a, b)
+		fun texture2D(a: Operand, b: Operand) = Func("texture2D", a, b, type = VarType.Float4)
         fun texture(sampler: Operand, P: Operand) = Func("texture", sampler, P)
 
 		fun func(name: String, vararg args: Operand) = Func(name, *args.map { it }.toTypedArray())

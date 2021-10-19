@@ -13,6 +13,7 @@ class Edge {
 
     companion object {
         operator fun invoke(ax: Int, ay: Int, bx: Int, by: Int, wind: Int = 0) = Edge().setTo(ax, ay, bx, by, wind)
+        operator fun invoke(a: PointInt, b: PointInt, wind: Int = 0) = this(a.x, a.y, b.x, b.y, wind)
 
         fun getIntersectY(a: Edge, b: Edge): Int {
             getIntersectXY(a, b) { x, y -> return y.toInt() }
@@ -75,6 +76,8 @@ class Edge {
 
     var h: Int = 0; private set
 
+    val length: Float get() = hypot(dx.toFloat(), dy.toFloat())
+
     fun copyFrom(other: Edge) = setTo(other.ax, other.ay, other.bx, other.by, other.wind)
 
     fun setTo(ax: Int, ay: Int, bx: Int, by: Int, wind: Int) = this.apply {
@@ -118,7 +121,9 @@ class Edge {
     //fun containsYNear(y: Int, offset: Int): Boolean = y >= (ay - offset) && y < (by + offset)
     //fun containsY(y: Int): Boolean = y in ay..by
     //fun containsYNear(y: Int, offset: Int): Boolean = y >= (ay - offset) && y <= (by + offset)
-    fun intersectX(y: Int): Int = if (isCoplanarY) ax else ((y - h) * dx) / dy
+    //fun intersectX(y: Int): Int = if (isCoplanarY) ax else ((y - h) * dx) / dy
+    //fun intersectX(y: Int): Int = if (dy == 0) ax else ((y - h) * dx) / dy
+    fun intersectX(y: Int): Int = if (isCoplanarY || dy == 0) ax else ((y - h) * dx) / dy
     //fun intersectX(y: Double): Double = if (isCoplanarY) ax else ((y - h) * this.dx) / this.dy
 
     // Stroke extensions

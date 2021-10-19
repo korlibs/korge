@@ -3,6 +3,7 @@ package com.soywiz.korge
 import com.soywiz.klock.TimeProvider
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
+import com.soywiz.korag.software.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -14,8 +15,10 @@ import com.soywiz.korinject.*
 import com.soywiz.korma.geom.*
 
 object KorgeHeadless {
-    class HeadlessGameWindow(override val width: Int = 640, override val height: Int = 480) : GameWindow() {
-        override val ag: AG = DummyAG(width, height)
+    class HeadlessGameWindow(override val width: Int = 640, override val height: Int = 480, val draw: Boolean = false) : GameWindow() {
+        override val ag: AG = if (draw) AGSoftware(width, height) else DummyAG(width, height)
+        val agSoftware: AGSoftware get() = ag as AGSoftware
+        val bitmap: Bitmap32 get() = agSoftware.bitmap
     }
 
     suspend operator fun invoke(config: Korge.Config) = Korge(config.copy(gameWindow = HeadlessGameWindow()))
@@ -42,10 +45,16 @@ object KorgeHeadless {
         injector: AsyncInjector = AsyncInjector(),
         blocking:Boolean = true,
         debugAg: Boolean = false,
+        draw: Boolean = false,
         entry: suspend Stage.() -> Unit
-    ) = Korge(
-        title, width, height, virtualWidth, virtualHeight, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
-        targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args, HeadlessGameWindow(), timeProvider, injector,
-        blocking = blocking,debugAg = debugAg, entry = entry
-    )
+    ): HeadlessGameWindow {
+        val gameWindow = HeadlessGameWindow(width, height, draw = draw)
+        Korge(
+            title, width, height, virtualWidth, virtualHeight, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
+            targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args,
+            gameWindow, timeProvider, injector,
+            blocking = blocking,debugAg = debugAg, entry = entry
+        )
+        return gameWindow
+    }
 }

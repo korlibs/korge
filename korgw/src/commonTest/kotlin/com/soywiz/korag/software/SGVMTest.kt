@@ -139,10 +139,11 @@ class SGVMTest {
     }
 
     fun executeShader(callback: Program.Builder.() -> Unit): SGVM {
-        val s2vm = ShaderToSGVM().handle(VertexShader(callback))
-        println(s2vm.allocatedNames.keys)
-        println(s2vm.allocatedNames)
-        println(s2vm.currentIndex)
+        val allocator = ShaderAllocator()
+        val s2vm = ShaderToSGVM(allocator).handle(VertexShader(callback))
+        println(s2vm.allocator.allocatedNames.keys)
+        println(s2vm.allocator.allocatedNames)
+        println(s2vm.allocator.currentIndex)
         val vm = s2vm.toProgram()
         return vm.execute()
     }

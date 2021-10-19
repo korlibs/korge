@@ -164,6 +164,7 @@ class GlslGenerator constructor(
             for (it in attributes) line("$IN ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
             for (it in uniforms) line("$UNIFORM ${precToString(it.precision)}${typeToString(it.type)} ${it.name}${it.arrayDecl};")
             for (it in varyings) {
+                if (it is Output) continue
                 if (newGlSlVersion && it.name == gl_FragColor) {
                     line("layout(location=0) $OUT ${precToString(it.precision)}${typeToString(it.type)} ${it.name};")
                 } else {

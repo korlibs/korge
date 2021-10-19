@@ -925,6 +925,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             for (pair in pairs) put(pair.first, pair.second)
         }
 
+        inline fun fastForEach(block: (uniform: Uniform, value: Any) -> Unit) {
+            for (n in 0 until size) {
+                block(uniforms[n], values[n])
+            }
+        }
+
         operator fun plus(other: UniformValues): UniformValues {
             return UniformValues().put(this).put(other)
         }

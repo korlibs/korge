@@ -95,6 +95,8 @@ abstract class Bitmap(
 
 	fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgba(x, y) else Colors.TRANSPARENT_BLACK
 
+    fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgba(x.clamp(0, width - 1), y.clamp(0, height - 1))
+
 	fun getRgbaSampled(x: Double, y: Double): RGBA {
 		if (x < 0.0 || x >= width.toDouble() || y < 0.0 || y >= height.toDouble()) return Colors.TRANSPARENT_BLACK
 		val x0 = x.toIntFloor()
