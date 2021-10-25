@@ -734,8 +734,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         protected var dirty = false
 
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-            super.setSize(x, y, width, height, fullWidth, fullHeight)
-            dirty = true
+            if(this.width != width || this.height != height ||
+                this.fullWidth != fullWidth || this.fullHeight != fullHeight) {
+                super.setSize(x, y, width, height, fullWidth, fullHeight)
+                dirty = true
+            }
         }
 
         override fun set(): Unit = Unit
