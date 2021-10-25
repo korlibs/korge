@@ -10,7 +10,9 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.native.concurrent.* 
 
+@ThreadLocal
 private val logger = Logger("RenderContext2D")
 
 /**

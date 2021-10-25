@@ -10,7 +10,9 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.file.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.*
+import kotlin.native.concurrent.*
 
+@ThreadLocal
 expect val nativeImageFormatProvider: NativeImageFormatProvider
 
 data class NativeImageConfig(val premultiplied: Boolean)

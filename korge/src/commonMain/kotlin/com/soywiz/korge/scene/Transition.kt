@@ -6,6 +6,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.interpolation.*
+import kotlin.native.concurrent.*
 
 /**
  * A View that will render [prev] and [next] views using the specified [transition].
@@ -105,6 +106,7 @@ fun Transition.withEasing(easing: Easing) = object : Transition {
 }
 
 /** A [Transition] that will blend [prev] and [next] by adjusting its alphas */
+@SharedImmutable
 val AlphaTransition = Transition { ctx, prev, next, ratio ->
 	val prevAlpha = prev.alpha
 	val nextAlpha = next.alpha

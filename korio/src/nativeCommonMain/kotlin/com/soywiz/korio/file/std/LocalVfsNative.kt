@@ -24,15 +24,21 @@ import kotlin.native.concurrent.*
 import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.process.posixExec
 
+@ThreadLocal
 val tmpdir: String by lazy { Environment["TMPDIR"] ?: Environment["TEMP"] ?: Environment["TMP"] ?: "/tmp" }
-
+@ThreadLocal
 var customCwd: String? = null
+@ThreadLocal
 val nativeCwd by lazy { com.soywiz.korio.nativeCwd() }
 val cwd: String get() = customCwd ?: nativeCwd
 
+@ThreadLocal
 val cwdVfs: VfsFile by lazy { DynamicRootVfs(rootLocalVfsNative) { cwd } }
+@ThreadLocal
 actual val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
+@ThreadLocal
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
+@ThreadLocal
 actual val tempVfs: VfsFile by lazy { localVfs(tmpdir) }
 
 actual val rootLocalVfs: VfsFile get() = cwdVfs
@@ -41,11 +47,13 @@ actual val applicationDataVfs: VfsFile get() = cwdVfs
 actual val externalStorageVfs: VfsFile get() = cwdVfs
 actual val userHomeVfs: VfsFile get() = cwdVfs
 
+@ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
 val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
 actual fun localVfs(path: String, async: Boolean): VfsFile = (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
 
+@ThreadLocal
 private val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isMemoryLeakCheckerActive = false } }
 
 suspend fun <T, R> executeInIOWorker(value: T, func: (T) -> R): R {

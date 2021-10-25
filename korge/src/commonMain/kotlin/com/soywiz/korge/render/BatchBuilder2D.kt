@@ -17,7 +17,9 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import kotlin.jvm.*
 import kotlin.math.*
+import kotlin.native.concurrent.*
 
+@SharedImmutable
 private val logger = Logger("BatchBuilder2D")
 
 /**

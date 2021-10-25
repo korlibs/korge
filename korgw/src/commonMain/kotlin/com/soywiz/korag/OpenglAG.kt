@@ -997,10 +997,12 @@ abstract class AGOpengl : AG() {
 }
 
 
+@SharedImmutable
 val KmlGl.versionString by Extra.PropertyThis<KmlGl, String> {
     getString(SHADING_LANGUAGE_VERSION)
 }
 
+@SharedImmutable
 val KmlGl.versionInt by Extra.PropertyThis<KmlGl, Int> {
     versionString.replace(".", "").trim().toIntOrNull() ?: 100
 }
