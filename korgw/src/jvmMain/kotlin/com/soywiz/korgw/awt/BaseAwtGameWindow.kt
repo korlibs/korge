@@ -591,7 +591,12 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         if (OS.isMac) {
             val displayID = CoreGraphics.CGMainDisplayID()
-            val res = CoreGraphics.CVDisplayLinkCreateWithCGDisplay(displayID, displayLinkData)
+            val res = try {
+                CoreGraphics.CVDisplayLinkCreateWithCGDisplay(displayID, displayLinkData)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                -1
+            }
 
             if (res == 0) {
                 displayLinkLock = java.lang.Object()
