@@ -8,7 +8,7 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.poly2tri.*
-import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.*
 
 // @TODO: Call this mesh?
 /**
@@ -322,7 +322,7 @@ private fun IntArray.repeat(count: Int): IntArray {
 
 @PublishedApi internal const val TEXTURED_ARRAY_COMPONENTS_PER_VERTEX = 6
 @KorgeInternal
-@ThreadLocal
+@SharedImmutable
 @PublishedApi internal val TEXTURED_ARRAY_QUAD_INDICES = shortArrayOf(0, 1, 2,  3, 0, 2)
 @PublishedApi internal val TEXTURED_ARRAY_EMPTY_INT_ARRAY = IntArray(0)
 @PublishedApi internal val TEXTURED_ARRAY_EMPTY_SHORT_ARRAY = ShortArray(0)

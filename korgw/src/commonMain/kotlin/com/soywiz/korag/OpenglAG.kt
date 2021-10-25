@@ -22,6 +22,7 @@ import com.soywiz.korma.math.*
 import com.soywiz.krypto.encoding.*
 import kotlin.jvm.JvmOverloads
 import kotlin.math.*
+import kotlin.native.concurrent.*
 
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :

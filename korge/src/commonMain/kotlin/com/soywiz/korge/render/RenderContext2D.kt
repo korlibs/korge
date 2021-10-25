@@ -12,7 +12,7 @@ import com.soywiz.korma.geom.triangle.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.native.concurrent.* 
 
-@ThreadLocal
+@SharedImmutable
 private val logger = Logger("RenderContext2D")
 
 /**
