@@ -522,11 +522,15 @@ interface DisplayLinkCallback : Callback {
 
 interface CoreGraphics : Library {
     fun CGMainDisplayID(): Int
+    companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
+}
+
+interface CoreVideo : Library {
     fun CVDisplayLinkCreateWithCGDisplay(displayId: Int, ptr: Pointer?): Int
     fun CVDisplayLinkSetOutputCallback(displayLinkValue: Pointer?, callback: Callback?, userInfo: Pointer?): Int
     fun CVDisplayLinkStart(displayLinkValue: Pointer?): Int
     fun CVDisplayLinkStop(displayLinkValue: Pointer?): Int
-    companion object : CoreGraphics by NativeLoad("/System/Library/Frameworks/CoreGraphics.framework/Versions/A/CoreGraphics")
+    companion object : CoreVideo by NativeLoad("/System/Library/Frameworks/CoreVideo.framework/Versions/A/CoreVideo",)
 }
 
 fun JnaMemory(array: IntArray): Memory {

@@ -590,23 +590,22 @@ abstract class BaseAwtGameWindow : GameWindow() {
         //val events = toolkit.systemEventQueue
 
         if (OS.isMac) {
-            val displayID = CoreGraphics.CGMainDisplayID()
-            val res = try {
-                CoreGraphics.CVDisplayLinkCreateWithCGDisplay(displayID, displayLinkData)
+            try {
+                val displayID = CoreGraphics.CGMainDisplayID()
+                val res = CoreVideo.CVDisplayLinkCreateWithCGDisplay(displayID, displayLinkData)
+
+                if (res == 0) {
+                    displayLinkLock = java.lang.Object()
+                    displayLink = displayLinkData.getPointer(0L)
+                    if (CoreVideo.CVDisplayLinkSetOutputCallback(displayLink, displayLinkCallback, Pointer.NULL) == 0) {
+                        CoreVideo.CVDisplayLinkStart(displayLink)
+                    } else {
+                        displayLinkLock = null
+                        displayLink = Pointer.NULL
+                    }
+                }
             } catch (e: Throwable) {
                 e.printStackTrace()
-                -1
-            }
-
-            if (res == 0) {
-                displayLinkLock = java.lang.Object()
-                displayLink = displayLinkData.getPointer(0L)
-                if (CoreGraphics.CVDisplayLinkSetOutputCallback(displayLink, displayLinkCallback, Pointer.NULL) == 0) {
-                    CoreGraphics.CVDisplayLinkStart(displayLink)
-                } else {
-                    displayLinkLock = null
-                    displayLink = Pointer.NULL
-                }
             }
         }
 
@@ -663,7 +662,7 @@ abstract class BaseAwtGameWindow : GameWindow() {
         //timer.stop()
 
         if (OS.isMac && displayLink != Pointer.NULL) {
-            CoreGraphics.CVDisplayLinkStop(displayLink)
+            CoreVideo.CVDisplayLinkStop(displayLink)
         }
 
         dispatchDestroyEvent()
