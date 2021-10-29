@@ -14,14 +14,18 @@ class BigNum(val int: BigInt, val scale: Int) {
         val TWO = BigNum(BigInt(2), 0)
 
         operator fun invoke(str: String): BigNum {
+            val str = str.lowercase()
             //val ss = if (str.contains('.')) str.trimEnd('0') else str
-            val ss = str
+            val exponentPartStr = str.substringAfter('e', "").takeIf { it.isNotEmpty() }
+            val ss = str.substringBefore('e')
             val point = ss.indexOf('.')
-            val int = BigInt(ss.replace(".", ""))
+            val strBase = ss.replace(".", "")
+            val exponent = exponentPartStr?.toInt() ?: 0
+            val int = BigInt(strBase)
             return if (point < 0) {
-                BigNum(int, 0)
+                BigNum(int, -exponent)
             } else {
-                BigNum(int, ss.length - point - 1)
+                BigNum(int, ss.length - point - 1 - exponent)
             }
         }
     }
@@ -86,10 +90,11 @@ class BigNum(val int: BigInt, val scale: Int) {
         val isNegative = int.isNegative
         val out = "${int.abs()}"
         val pos = out.length - scale
-        return (if (isNegative) "-" else "") + if (pos <= 0) {
-            "0." + "0".repeat(-pos) + out
-        } else {
-            (out.substring(0, pos) + "." + out.substring(pos)).trimEnd('.')
+        val negativePart = if (isNegative) "-" else ""
+        return negativePart + when {
+            pos <= 0 -> "0." + "0".repeat(-pos) + out
+            pos >= out.length -> out + "0".repeat(pos - out.length)
+            else -> (out.substring(0, pos) + "." + out.substring(pos)).trimEnd('.')
         }
     }
 
