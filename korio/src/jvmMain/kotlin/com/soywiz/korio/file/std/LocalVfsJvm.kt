@@ -214,7 +214,7 @@ private class LocalVfsJvm : LocalVfsV2() {
 	val that = this
 	override val absolutePath: String = ""
 
-	private suspend inline fun <T> executeIo(crossinline callback: suspend () -> T): T = withContext(IOContext) { callback() }
+	private suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(IOContext, callback)
 	//private suspend inline fun <T> executeIo(callback: suspend () -> T): T = callback()
 
 	fun resolve(path: String) = path
