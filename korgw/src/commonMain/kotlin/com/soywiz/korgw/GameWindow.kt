@@ -1,6 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.*
+import com.soywiz.kds.lock.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.setBits
 import com.soywiz.korag.*
@@ -69,24 +70,20 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         var exception: Throwable? = null
     }
 
-    val tasks = Queue<Runnable>()
-    val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
+    @PublishedApi internal val tasks = Queue<Runnable>()
+    @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
+    val lock = Lock()
 
-    fun queue(block: () -> Unit) {
-        //println("queue: $block")
-        tasks.enqueue(Runnable { block() })
-    }
+    fun hasTasks() = tasks.isNotEmpty()
 
     fun queue(block: Runnable?) {
-        if (block != null) {
-            tasks.enqueue(block)
-        }
+        if (block == null) return
+        lock { tasks.enqueue(block) }
     }
 
-    override fun dispatch(context: CoroutineContext, block: Runnable) {
-        //println("dispatch: $block")
-        tasks.enqueue(block)
-    }
+    fun queue(block: () -> Unit) = queue(Runnable { block() })
+
+    override fun dispatch(context: CoroutineContext, block: Runnable) = queue(block) // @TODO: We are not using the context
 
     open fun now() = PerformanceCounter.reference
 
@@ -99,15 +96,15 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         continuation.invokeOnCancellation {
             task.exception = it
         }
-        timedTasks.add(task)
+        lock { timedTasks.add(task) }
     }
 
     override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
         val task = TimedTask(now() + timeMillis.toDouble().milliseconds, null, block)
-        timedTasks.add(task)
+        lock { timedTasks.add(task) }
         return object : DisposableHandle {
             override fun dispose() {
-                timedTasks.remove(task)
+                lock { timedTasks.remove(task) }
             }
         }
     }
@@ -120,8 +117,10 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             val startTime = now()
 
             timedTasksTime = measureTime {
-                while (timedTasks.isNotEmpty() && startTime >= timedTasks.head.time) {
-                    val item = timedTasks.removeHead()
+                while (true) {
+                    val item = lock {
+                        if (timedTasks.isNotEmpty() && startTime >= timedTasks.head.time) timedTasks.removeHead() else null
+                    } ?: break
                     if (item.exception != null) {
                         item.continuation?.resumeWithException(item.exception!!)
                         if (item.callback != null) {
@@ -138,8 +137,8 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                 }
             }
             tasksTime = measureTime {
-                while (tasks.isNotEmpty()) {
-                    val task = tasks.dequeue()
+                while (true) {
+                    val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
                     val time = measureTime {
                         task?.run()
                     }

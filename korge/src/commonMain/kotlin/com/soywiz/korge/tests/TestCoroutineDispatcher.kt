@@ -1,6 +1,7 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.kds.*
+import com.soywiz.kds.lock.*
 import com.soywiz.klock.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korio.lang.*
@@ -17,7 +18,8 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 		override fun toString(): String = "TimedTask(time=$time)"
 	}
 
-	val tasks = PriorityQueue<TimedTask>(Comparator { a, b -> a.time.compareTo(b.time) })
+	private val tasks = PriorityQueue<TimedTask>(Comparator { a, b -> a.time.compareTo(b.time) })
+    private val lock = Lock()
 
 	//override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> {
 	//	return object : Continuation<T> {
@@ -34,9 +36,11 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	//}
 
 	private fun scheduleAfter(time: Int, callback: suspend () -> Unit) {
-		tasks += TimedTask(this.time + time) {
-			callback()
-		}
+        lock {
+            tasks += TimedTask(this.time + time) {
+                callback()
+            }
+        }
 	}
 
 	override fun dispatch(context: CoroutineContext, block: Runnable) {
@@ -56,8 +60,8 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 		//println("doStep: currentThreadId=$currentThreadId")
 		if (exception != null) throw exception ?: error("error")
 		//println("TASKS: ${tasks.size}")
-		while (tasks.isNotEmpty()) {
-			val task = tasks.removeHead()!!
+		while (true) {
+			val task = lock { if (tasks.isNotEmpty()) tasks.removeHead() else null } ?: break
 			this.time = task.time
 			//println("RUN: $task")
 			task.callback.startCoroutine(object : Continuation<Unit> {

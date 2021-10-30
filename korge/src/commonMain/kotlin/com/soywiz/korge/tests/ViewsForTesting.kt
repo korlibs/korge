@@ -319,19 +319,19 @@ open class ViewsForTesting(
     }
 
     inner class FastGameWindowCoroutineDispatcher : GameWindowCoroutineDispatcher() {
-		val hasMore get() = timedTasks2.isNotEmpty() || tasks.isNotEmpty()
+		val hasMore get() = timedTasks2.isNotEmpty() || hasTasks()
 
 		override fun now() = time.unixMillisDouble.milliseconds
 
-        val timedTasks2 = TGenPriorityQueue<TimedTask2> { a, b -> a.time.compareTo(b.time) }
+        private val timedTasks2 = TGenPriorityQueue<TimedTask2> { a, b -> a.time.compareTo(b.time) }
 
         override fun invokeOnTimeout(timeMillis: Long, block: Runnable, context: CoroutineContext): DisposableHandle {
             //println("invokeOnTimeout: $timeMillis")
             val task = TimedTask2(time + timeMillis.toDouble().milliseconds, null, block)
-            timedTasks2.add(task)
+            lock { timedTasks2.add(task) }
             return object : DisposableHandle {
                 override fun dispose() {
-                    timedTasks2.remove(task)
+                    lock { timedTasks2.remove(task) }
                 }
             }
         }
@@ -342,7 +342,7 @@ open class ViewsForTesting(
             continuation.invokeOnCancellation {
                 task.exception = it
             }
-            timedTasks2.add(task)
+            lock { timedTasks2.add(task) }
         }
 
 		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
