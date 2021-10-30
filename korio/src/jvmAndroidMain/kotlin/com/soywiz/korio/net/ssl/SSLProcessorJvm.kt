@@ -63,14 +63,6 @@ class SSLProcessorJvm : SSLProcessor {
             //println("handshakeStatus=$handshakeStatus, encryptedS2C=${encryptedS2C.availableRead}, encryptedC2S=${encryptedC2S.availableRead}, plainS2C=${plainS2C.availableRead}, plainC2S=${plainC2S.availableRead}")
             when (handshakeStatus) {
                 null -> TODO()
-                SSLEngineResult.HandshakeStatus.NEED_WRAP -> {
-                    sync(plainC2S, encryptedC2S, wrap = true)
-                }
-                SSLEngineResult.HandshakeStatus.NEED_UNWRAP, SSLEngineResult.HandshakeStatus.NEED_UNWRAP_AGAIN -> {
-                    if (sync(encryptedS2C, plainS2C, wrap = false) == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
-                        break
-                    }
-                }
                 SSLEngineResult.HandshakeStatus.NEED_TASK -> {
                     while (true) {
                         val task = engine.delegatedTask
@@ -89,6 +81,16 @@ class SSLProcessorJvm : SSLProcessor {
                     sync(plainC2S, encryptedC2S, wrap = true)
                     sync(encryptedS2C, plainS2C, wrap = false)
                     break
+                }
+                SSLEngineResult.HandshakeStatus.NEED_WRAP -> {
+                    sync(plainC2S, encryptedC2S, wrap = true)
+                }
+                // @TODO: NEED_UNWRAP_AGAIN not available on Android
+                //SSLEngineResult.HandshakeStatus.NEED_UNWRAP, SSLEngineResult.HandshakeStatus.NEED_UNWRAP_AGAIN -> {
+                else -> {
+                    if (sync(encryptedS2C, plainS2C, wrap = false) == SSLEngineResult.Status.BUFFER_UNDERFLOW) {
+                        break
+                    }
                 }
             }
         }
