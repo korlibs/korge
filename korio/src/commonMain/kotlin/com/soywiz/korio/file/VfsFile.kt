@@ -135,9 +135,13 @@ data class VfsFile(
 
 	suspend fun ensureParents() = this.apply { parent.mkdir() }
 
+    /** Renames this file into the [dstPath] relative to the root of this [vfs] */
 	suspend fun renameTo(dstPath: String) = vfs.rename(this.path, dstPath)
 
-	suspend fun listSimple(): List<VfsFile> = vfs.listSimple(this.path)
+    /** Renames the file determined by this plus [src] to this plus [dst] */
+    suspend fun rename(src: String, dst: String) = vfs.rename("$path/$src", "$path/$dst")
+
+    suspend fun listSimple(): List<VfsFile> = vfs.listSimple(this.path)
     suspend fun list(): Flow<VfsFile> = vfs.listFlow(this.path)
 
 	suspend fun listRecursiveSimple(filter: (VfsFile) -> Boolean = { true }): List<VfsFile> = ArrayList<VfsFile>().apply {

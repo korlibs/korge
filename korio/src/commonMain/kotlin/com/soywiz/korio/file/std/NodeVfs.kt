@@ -162,8 +162,16 @@ open class NodeVfs(val caseSensitive: Boolean = true) : VfsV2() {
 		if (src == dst) return false
 		val dstInfo = PathInfo(dst)
 		val srcNode = rootNode.access(src)
+        srcNode.parent = null
+
 		val dstFolder = rootNode.access(dstInfo.folder)
-		srcNode.parent = dstFolder
+        val dstNode = dstFolder.createChild(dstInfo.baseName)
+        dstNode.data = srcNode.data
+        dstNode.stream = srcNode.stream
+        for (child in srcNode.children.values) {
+            child.parent = dstNode
+        }
+
 		events(
 			FileEvent(
 				FileEvent.Kind.RENAMED,

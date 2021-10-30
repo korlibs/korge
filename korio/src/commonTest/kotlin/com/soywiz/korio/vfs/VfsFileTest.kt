@@ -110,6 +110,49 @@ class VfsFileTest {
 		}.root
 		assertEquals(memoryVfs["test"], vfs["test"].getUnderlyingUnscapedFile().toFile())
 		assertEquals(initialized, true)
-
 	}
+
+    @Test
+    fun testRename() = suspendTest {
+        // rename is relative to the vfs file folder
+        val root = MemoryVfsMix("build/out.txt" to "HELLO")
+        suspend fun readString(path: String) = "$path:${root[path].takeIfExists()?.readString()}"
+        root["build"].rename("out.txt", "out2.txt")
+        assertEquals(
+            """
+                build/out.txt:null
+                build/out2.txt:HELLO
+                out2.txt:null
+                [NodeVfs[/build], NodeVfs[/build/out2.txt]]
+            """.trimIndent(),
+            """
+                ${readString("build/out.txt")}
+                ${readString("build/out2.txt")}
+                ${readString("out2.txt")}
+                ${root.listRecursive().toList()}
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testRenameTo() = suspendTest {
+        // renameTo is relative to the root of the vfs
+        val root = MemoryVfsMix("build/out.txt" to "HELLO")
+        suspend fun readString(path: String) = "$path:${root[path].takeIfExists()?.readString()}"
+        root["build/out.txt"].renameTo("out2.txt")
+        assertEquals(
+            """
+                build/out.txt:null
+                build/out2.txt:null
+                out2.txt:HELLO
+                [NodeVfs[/build], NodeVfs[/out2.txt]]
+            """.trimIndent(),
+            """
+                ${readString("build/out.txt")}
+                ${readString("build/out2.txt")}
+                ${readString("out2.txt")}
+                ${root.listRecursive().toList()}
+            """.trimIndent()
+        )
+    }
 }
