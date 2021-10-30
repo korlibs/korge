@@ -23,7 +23,7 @@ suspend fun RawSocketWebSocketClient(
     connect: Boolean = true,
     headers: Http.Headers = Http.Headers(),
     masked: Boolean = true,
-    init: WebSocketClient.() -> Unit,
+    init: WebSocketClient.() -> Unit = {},
 ): WebSocketClient {
     if (OS.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
     val uri = URL(url)
