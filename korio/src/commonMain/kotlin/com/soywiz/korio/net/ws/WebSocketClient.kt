@@ -47,7 +47,8 @@ expect suspend fun WebSocketClient(
 	wskey: String?,
 	debug: Boolean,
     headers: Http.Headers,
-    dummy: Boolean
+    dummy: Boolean,
+    wsInit: WebSocketClient.() -> Unit = {},
 ): WebSocketClient
 
 suspend fun WebSocketClient(
@@ -56,7 +57,8 @@ suspend fun WebSocketClient(
     origin: String? = null,
     wskey: String? = "wskey",
     debug: Boolean = false,
-    headers: Http.Headers = Http.Headers()
-): WebSocketClient = WebSocketClient(url, protocols, origin, wskey, debug, headers, true)
+    headers: Http.Headers = Http.Headers(),
+    wsInit: WebSocketClient.() -> Unit = {},
+): WebSocketClient = WebSocketClient(url, protocols, origin, wskey, debug, headers, true, wsInit)
 
 class WebSocketException(message: String) : IOException(message)

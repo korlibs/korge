@@ -13,8 +13,12 @@ actual suspend fun WebSocketClient(
 	wskey: String?,
 	debug: Boolean,
     headers: Http.Headers,
-    dummy: Boolean
-): WebSocketClient = JsWebSocketClient(url, protocols, DEBUG = debug, headers = headers).apply { init() }
+    dummy: Boolean,
+    wsInit: WebSocketClient.() -> Unit,
+): WebSocketClient = JsWebSocketClient(url, protocols, DEBUG = debug, headers = headers).apply {
+    wsInit()
+    init()
+}
 
 class JsWebSocketClient(
     url: String, protocols: List<String>?, val DEBUG: Boolean,

@@ -22,12 +22,16 @@ suspend fun RawSocketWebSocketClient(
     debug: Boolean = false,
     connect: Boolean = true,
     headers: Http.Headers = Http.Headers(),
-    masked: Boolean = true
+    masked: Boolean = true,
+    init: WebSocketClient.() -> Unit,
 ): WebSocketClient {
     if (OS.isJsBrowserOrWorker) error("RawSocketWebSocketClient is not supported on JS browser. Use WebSocketClient instead")
     val uri = URL(url)
     val secure: Boolean = uri.isSecureScheme
-    return RawSocketWebSocketClient(coroutineContext, AsyncClient.create(secure = secure), uri, protocols, debug, origin, wskey ?: "mykey", headers, masked).also { if (connect) it.internalConnect() }
+    return RawSocketWebSocketClient(coroutineContext, AsyncClient.create(secure = secure), uri, protocols, debug, origin, wskey ?: "mykey", headers, masked).also {
+        init(it)
+        if (connect) it.internalConnect()
+    }
 }
 
 class RawSocketWebSocketClient(
@@ -40,7 +44,7 @@ class RawSocketWebSocketClient(
     val key: String = "mykey",
     val headers: Http.Headers = Http.Headers(),
     val masked: Boolean = true,
-    val random: Random = Random
+    val random: Random = Random,
 ) : WebSocketClient(urlUrl.fullUrl, protocols, debug) {
     private var frameIsBinary = false
     val host = urlUrl.host ?: "127.0.0.1"

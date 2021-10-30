@@ -9,5 +9,6 @@ actual suspend fun WebSocketClient(
 	wskey: String?,
 	debug: Boolean,
     headers: Http.Headers,
-    dummy: Boolean
-): WebSocketClient = RawSocketWebSocketClient(url, protocols, origin, wskey, debug, headers = headers)
+    dummy: Boolean,
+    wsInit: WebSocketClient.() -> Unit,
+): WebSocketClient = RawSocketWebSocketClient(url, protocols, origin, wskey, debug, headers = headers, init = wsInit)
