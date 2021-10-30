@@ -109,8 +109,7 @@ class AndroidResourcesVfs(var context: Context?) : Vfs() {
 //private val IOContext by lazy { newSingleThreadContext("IO") }
 private val IOContext by lazy { Dispatchers.Unconfined }
 
-private suspend inline fun <T> executeIo(crossinline callback: suspend () -> T): T =
-	withContext(IOContext) { callback() }
+private suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(IOContext, callback)
 
 private class LocalVfsJvm : LocalVfsV2() {
 	val that = this

@@ -16,9 +16,7 @@ internal actual val asyncSocketFactory: AsyncSocketFactory by lazy {
 	}
 }
 
-@PublishedApi
-internal val socketDispatcher get() = Dispatchers.IO
-private suspend inline fun <T> doIo(crossinline block: () -> T): T = withContext(socketDispatcher) { block() }
+private suspend fun <T> doIo(block: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, block)
 
 class JvmAsyncClient(private var socket: Socket? = null, val secure: Boolean = false) : AsyncClient {
     private val readQueue = AsyncThread()
