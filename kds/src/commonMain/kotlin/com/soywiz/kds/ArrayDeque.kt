@@ -33,6 +33,14 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
         return out
     }
 
+    fun skip(count: Int): Int {
+        return ring.skip(count)
+    }
+
+    fun peek(buffer: ByteArray, offset: Int = 0, size: Int = buffer.size - offset): Int {
+        return ring.peek(buffer, offset, size)
+    }
+
     fun readByte(): Int = ring.readByte()
     fun writeByte(v: Int): Boolean = ensureWrite(1).ring.writeByte(v)
 

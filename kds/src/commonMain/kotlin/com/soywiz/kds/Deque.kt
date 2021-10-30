@@ -778,6 +778,18 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
         _size++
     }
 
+    fun addFirstAll(items: ByteArray, offset: Int = 0, size: Int = items.size - offset) {
+        for (n in 0 until size) addFirst(items[size - offset + n - 1])
+    }
+
+    fun addLastAll(items: ByteArray, offset: Int = 0, size: Int = items.size - offset) {
+        for (n in 0 until size) addLast(items[offset + n])
+    }
+
+    fun addAll(items: ByteArray, offset: Int = 0, size: Int = items.size - offset) {
+        addLastAll(items, offset, size)
+    }
+
     fun removeFirst(): Byte {
         if (_size <= 0) throw IndexOutOfBoundsException()
         return first.apply { _start = (_start + 1) umod capacity; _size-- }

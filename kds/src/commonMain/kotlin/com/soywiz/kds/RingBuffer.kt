@@ -40,14 +40,24 @@ open class ByteRingBuffer(val bits: Int) {
     }
 
     @JvmOverloads
-    fun read(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
+    fun read(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int = skip(peek(data, offset, size))
+
+    fun skip(size: Int): Int {
         val toRead = min(availableRead, size)
-        for (n in 0 until toRead) {
-            data[offset + n] = buffer[readPos]
-            readPos = (readPos + 1) and mask
-        }
+        readPos = (readPos + toRead) and mask
         availableWrite += toRead
         availableRead -= toRead
+        return toRead
+    }
+
+    fun peek(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
+        val toRead = min(availableRead, size)
+        val buffer = buffer
+        val readPos = readPos
+        val mask = mask
+        for (n in 0 until toRead) {
+            data[offset + n] = buffer[(readPos + n) and mask]
+        }
         return toRead
     }
 
