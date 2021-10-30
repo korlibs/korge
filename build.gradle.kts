@@ -155,7 +155,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mob
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
 
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
-val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
+val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 
 allprojects {
     if (project.hasBuildGradle()) {

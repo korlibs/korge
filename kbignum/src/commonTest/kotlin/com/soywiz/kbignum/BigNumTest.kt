@@ -14,7 +14,28 @@ class BigNumTest {
 		assertEquals("19", BigNum(19.bi, 0).toString())
 	}
 
-	@Test
+    @Test
+    fun testToStringE() {
+        assertEquals("0.1", "1e-1".bn.toString())
+        assertEquals("0.01", "1e-2".bn.toString())
+        assertEquals("0.0001", "1e-4".bn.toString())
+        assertEquals("1", "1e0".bn.toString())
+        assertEquals("0.01", "0.1e-1".bn.toString())
+        assertEquals("0.001", "0.1e-2".bn.toString())
+        assertEquals("0.00001", "0.1e-4".bn.toString())
+        assertEquals("0.1", "0.1e0".bn.toString())
+    }
+
+    @Test
+    fun testToStringE2() {
+        assertEquals("10", "1e+1".bn.toString())
+        assertEquals("100", "1e+2".bn.toString())
+        assertEquals("1000", "1e+3".bn.toString())
+        assertEquals("10000", "1e+4".bn.toString())
+        assertEquals("100000", "10e+4".bn.toString())
+    }
+
+    @Test
 	fun testAddSameScale() {
 		assertEquals("0.050", (BigNum(20.bi, 3) + BigNum(30.bi, 3)).toString())
 	}

@@ -10,6 +10,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.native.concurrent.SharedImmutable
 
 abstract class TextRendererActions {
     protected val glyphPath = GlyphPath()
@@ -223,6 +224,7 @@ fun CreateStringTextRenderer(
     }
 }
 
+@SharedImmutable
 val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer { text, n, c, c1, g, advance ->
     put(c)
     advance(advance)
