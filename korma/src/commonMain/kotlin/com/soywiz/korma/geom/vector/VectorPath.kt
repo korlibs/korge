@@ -23,6 +23,8 @@ open class VectorPath(
     var version: Int = 0
 
     open fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
+    override fun equals(other: Any?): Boolean = other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
+    override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
     companion object {
         private val identityMatrix = Matrix()

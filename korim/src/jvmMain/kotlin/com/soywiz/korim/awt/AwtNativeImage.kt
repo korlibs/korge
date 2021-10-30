@@ -364,12 +364,17 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty)
     }
 
+    private var oldClipState: GraphicsPath? = null
+
 	fun applyState(state: Context2d.State, fill: Boolean) {
 		val t = state.transform
 		awtTransform.setToMatrix(t)
 		//g.transform = awtTransform
         //g.transform = AffineTransform()
-		g.clip = state.clip?.toJava2dPath()
+        if (oldClipState !== state.clip && oldClipState != state.clip) {
+            oldClipState = state.clip?.clone()
+            g.clip = state.clip?.toJava2dPath()
+        }
 		if (fill) {
 			g.paint = state.fillStyle.toAwt(awtTransform)
 		} else {
