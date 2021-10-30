@@ -33,8 +33,9 @@ var customCwd: String? = null
 val nativeCwd by lazy { com.soywiz.korio.nativeCwd() }
 val cwd: String get() = customCwd ?: nativeCwd
 
-@ThreadLocal
-val cwdVfs: VfsFile by lazy { DynamicRootVfs(rootLocalVfsNative) { cwd } }
+//@ThreadLocal
+//val cwdVfs: VfsFile by lazy { DynamicRootVfs(rootLocalVfsNative) { cwd } }
+val cwdVfs: VfsFile get() = rootLocalVfsNative[cwd]
 @ThreadLocal
 actual val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
 @ThreadLocal
@@ -50,6 +51,7 @@ actual val userHomeVfs: VfsFile get() = cwdVfs
 
 @ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
+@ThreadLocal
 val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 
 actual fun localVfs(path: String, async: Boolean): VfsFile = (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
@@ -132,7 +134,9 @@ internal suspend fun fileWrite(file: CPointer<FILE>, position: Long, data: ByteA
 	}
 }
 
-class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
+expect open class LocalVfsNative(async: Boolean = true) : LocalVfsNativeBase
+
+open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 	val that get() = this
 	override val absolutePath: String get() = ""
 
@@ -263,7 +267,7 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 				while (true) {
 					val dent = readdir(dir) ?: break
 					val name = dent.pointed.d_name.toKString()
-					emit(file(name))
+					emit(file("$path/$name"))
 				}
 			} finally {
 				closedir(dir)

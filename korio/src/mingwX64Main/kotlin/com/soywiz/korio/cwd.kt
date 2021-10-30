@@ -5,12 +5,12 @@ import platform.posix.*
 
 fun getExecutablePath(): String = kotlinx.cinterop.memScoped {
 	val maxSize = 4096
-	val data = allocArray<kotlinx.cinterop.ByteVar>(maxSize + 1)
-	platform.windows.GetModuleFileNameA(null, data.reinterpret(), maxSize.convert())
+	val data = allocArray<kotlinx.cinterop.UShortVar>(maxSize + 1)
+	platform.windows.GetModuleFileNameW(null, data.reinterpret(), maxSize.convert())
 	data.toKString()
-}.replace('/', '\\')
+}.replace('\\', '/')
 
-fun getExecutableDirectory(): String = getExecutablePath().substringBeforeLast('\\')
+fun getExecutableDirectory(): String = getExecutablePath().substringBeforeLast('/')
 
 actual fun nativeCwd(): String = getExecutableDirectory()
 
