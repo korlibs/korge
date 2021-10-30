@@ -11,6 +11,7 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
 
@@ -718,17 +719,21 @@ suspend fun AsyncInputStream.readUntil(endByte: Byte, limit: Int = 0x1000, temp:
 	return out.toByteArray()
 }
 
-suspend fun AsyncInputStream.readLine(eol: Char = '\n', charset: Charset = UTF8): String {
+suspend fun AsyncInputStream.readLine(eol: Char = '\n', charset: Charset = UTF8, initialCapacity: Int = 4096): String {
 	val temp = ByteArray(1)
-	val out = ByteArrayBuilder()
+	val out = ByteArrayBuilder(initialCapacity)
 	try {
 		while (true) {
-			val c = run { readExact(temp, 0, 1); temp[0] }
+            //println("RCHAR")
+            readExact(temp, 0, 1)
+			val c = temp[0]
+            //println("CHAR: c='${c.toChar()}' (${c.toInt()})")
 			//val c = readS8().toByte()
-			if (c.toChar() == eol) break
-			out.append(c.toByte())
+			if (c == eol.toInt().toByte()) break
+			out.append(c)
 		}
 	} catch (e: EOFException) {
+        //e.printStackTrace()
 	}
 	return out.toByteArray().toString(charset)
 }
@@ -818,40 +823,61 @@ class MemoryAsyncStreamBase(var data: com.soywiz.kmem.ByteArrayBuilder) : AsyncS
 	override fun toString(): String = "MemoryAsyncStreamBase(${data.size})"
 }
 
-suspend fun asyncStreamWriter(bufferSize: Int = 32 * 1024, process: suspend (out: AsyncOutputStream) -> Unit): AsyncInputStream {
-	val deque = AsyncByteArrayDeque(bufferSize)
-    //var lastError: Throwable? = null
+/**
+ * Creates a an [AsyncInputStream] from a [process] function that writes to a [AsyncOutputStream].
+ *
+ * The [process] function is executed lazily when the data is tried to be read.
+ */
+suspend fun asyncStreamWriter(bufferSize: Int = 32 * 1024, name: String? = null, process: suspend (out: AsyncOutputStream) -> Unit): AsyncInputStream {
+	val deque = AsyncByteArrayDeque(bufferSize).also { it.name = name }
+    var lastError: Throwable? = null
 
-	val job = launchImmediately(coroutineContext) {
-		try {
-            process(object : AsyncOutputStream {
-                override suspend fun write(buffer: ByteArray, offset: Int, len: Int) = deque.write(buffer, offset, len)
-                override suspend fun write(byte: Int) = deque.write(byte)
-                override suspend fun close() = deque.close()
-            })
-        } catch (e: Throwable) {
-            //lastError = e
-            e.printStackTrace()
-		} finally {
-			deque.close()
-		}
-	}
+	var job: Job? = null
 
 	return object : AsyncInputStream {
         private fun checkException() {
-            //if (lastError != null) throw RuntimeException("Error in asyncStreamWriter", lastError!!)
+            if (lastError != null) throw RuntimeException("Error in asyncStreamWriter", lastError!!)
+        }
+
+        private val temp = ByteArray(1)
+
+        private suspend fun ensureJob() {
+            if (job != null) return
+            job = launchImmediately(coroutineContext) {
+                try {
+                    process(object : AsyncOutputStream {
+                        override suspend fun write(buffer: ByteArray, offset: Int, len: Int) = deque.write(buffer, offset, len)
+                        override suspend fun write(byte: Int) = deque.write(byte)
+                        override suspend fun close() = deque.close()
+                    })
+                } catch (e: Throwable) {
+                    lastError = e
+                    e.printStackTrace()
+                } finally {
+                    deque.close()
+                }
+            }
         }
 
 		override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int {
+            ensureJob()
+            //println("asyncStreamWriter[$deque].read($len)")
             checkException()
-            return deque.read(buffer, offset, len)
+            return deque.read(buffer, offset, len).also {
+                //println("/asyncStreamWriter[$deque].read($len) -> $it")
+            }
         }
 		override suspend fun read(): Int {
-            checkException()
-            return deque.read()
+            return if (read(temp, 0, 1) > 0) {
+                temp[0].toInt() and 0xFF
+            } else {
+                -1
+            }
         }
 		override suspend fun close() {
-            job.cancel()
+            //println("asyncStreamWriter[$deque].close")
+            job?.cancel()
+            job = null
         }
 	}
 }
