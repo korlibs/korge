@@ -35,8 +35,8 @@ suspend fun CompressionMethod.uncompress(i: AsyncInputStream, o: AsyncOutputStre
 @UseExperimental(KorioExperimentalApi::class)
 suspend fun CompressionMethod.compress(i: AsyncInputStream, o: AsyncOutputStream, context: CompressionContext = CompressionContext()): Unit = compress(BitReader.forInput(i), o, context)
 
-suspend fun CompressionMethod.uncompressStream(input: AsyncInputStream): AsyncInputStream = asyncStreamWriter { output -> uncompress(input, output) }
-suspend fun CompressionMethod.compressStream(input: AsyncInputStream, context: CompressionContext = CompressionContext()): AsyncInputStream = asyncStreamWriter { output -> compress(input, output, context) }
+suspend fun CompressionMethod.uncompressStream(input: AsyncInputStream): AsyncInputStream = asyncStreamWriter(name = "uncompress:$this") { output -> uncompress(input, output) }
+suspend fun CompressionMethod.compressStream(input: AsyncInputStream, context: CompressionContext = CompressionContext()): AsyncInputStream = asyncStreamWriter(name = "compress:$this") { output -> compress(input, output, context) }
 
 fun CompressionMethod.uncompress(i: SyncInputStream, o: SyncOutputStream) = runBlockingNoSuspensions {
 	uncompress(i.toAsyncInputStream(), o.toAsyncOutputStream())

@@ -9,14 +9,20 @@ import com.soywiz.korio.util.checksum.*
 import com.soywiz.krypto.encoding.*
 
 open class GZIP(deflater: () -> CompressionMethod) : GZIPBase(true, deflater) {
-	companion object : GZIP({ Deflate })
+	companion object : GZIP({ Deflate }) {
+        override fun toString(): String = "GZIP"
+    }
 }
 open class GZIPNoCrc(deflater: () -> CompressionMethod) : GZIPBase(false, deflater) {
-	companion object : GZIPNoCrc({ Deflate })
+	companion object : GZIPNoCrc({ Deflate }) {
+        override fun toString(): String = "GZIPNoCrc"
+    }
 }
 
 @UseExperimental(KorioExperimentalApi::class)
 open class GZIPBase(val checkCrc: Boolean, val deflater: () -> CompressionMethod) : CompressionMethod {
+    override fun toString(): String = "GZIPBase($checkCrc, ${deflater})"
+
 	override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) {
 		val r = reader
 		r.prepareBigChunkIfRequired()
