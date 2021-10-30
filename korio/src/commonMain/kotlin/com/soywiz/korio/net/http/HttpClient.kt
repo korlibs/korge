@@ -2,7 +2,7 @@ package com.soywiz.korio.net.http
 
 import com.soywiz.kds.*
 import com.soywiz.korio.async.*
-import com.soywiz.korio.compression.deflate.GZIP
+import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.compression.uncompressed
 import com.soywiz.korio.concurrent.atomic.*
 import com.soywiz.korio.lang.*
@@ -37,17 +37,16 @@ abstract class HttpClient protected constructor() {
                 headers: Http.Headers,
                 rawContent: AsyncInputStream,
             ): Response {
+                val transferEncoding = (headers["Transfer-Encoding"] ?: "").lowercase().trim()
                 val contentEncoding = (headers["Content-Encoding"] ?: "").lowercase().trim()
                 return Response(
                     status,
                     statusText,
                     headers,
                     rawContent,
-                    when (contentEncoding) {
-                        "" -> rawContent
-                        "gzip" -> rawContent.uncompressed(GZIP)
-                        else -> error("Unsupported Content-Encoding '$contentEncoding'")
-                    }
+                    rawContent
+                        .withTransferEncoding(transferEncoding)
+                        .withContentEncoding(contentEncoding),
                 )
             }
         }
@@ -185,6 +184,42 @@ abstract class HttpClient protected constructor() {
 
 		operator fun invoke() = defaultHttpFactory.createClient()
 	}
+}
+
+suspend fun AsyncInputStream.withTransferEncoding(transferEncoding: String): AsyncInputStream {
+    val input = this
+    return when (transferEncoding) {
+        "", "identity" -> input
+        "chunked" -> asyncStreamWriter(name = "chunked") { out ->
+            do {
+                //println("BEFORE CHUNK")
+                val nbytesString = input.readLine(initialCapacity = 16).trim()
+                //println("CHUNK: $nbytesString")
+                val nbytes = nbytesString.toIntOrNull(16) ?: error("Can't convert '$nbytesString' into int for chunked encoding")
+                if (nbytes > 0) {
+                    //println("READING $nbytes")
+                    val bytes = input.readBytesExact(nbytes)
+                    //println("WRITING ${bytes.size}")
+                    out.write(bytes)
+                    //println("END WRITING")
+                    //println("  END : " + )
+                    input.readLine(initialCapacity = 2)
+                }
+            } while (nbytes > 0)
+            //println("COMPLETED!")
+        }
+        else -> error("Unsupported Transfer-Encoding '$transferEncoding'")
+    }
+}
+
+suspend fun AsyncInputStream.withContentEncoding(contentEncoding: String): AsyncInputStream {
+    val input = this
+    return when (contentEncoding) {
+        "", "plain" -> input
+        "gzip" -> input.uncompressed(GZIP)
+        "deflate" -> input.uncompressed(Deflate)
+        else -> error("Unsupported Content-Encoding '$contentEncoding'")
+    }
 }
 
 open class DelayedHttpClient(val delayMs: Long, val parent: HttpClient) : HttpClient() {
