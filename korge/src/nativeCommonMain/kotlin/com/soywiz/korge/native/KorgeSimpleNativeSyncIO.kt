@@ -1,5 +1,6 @@
 package com.soywiz.korge.native
 
+import com.soywiz.korio.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
@@ -9,7 +10,7 @@ object KorgeSimpleNativeSyncIO {
     }
 
     fun writeBytes(file: String, bytes: ByteArray) {
-        val fd = fopen(file, "wb") ?: error("Can't open file '$file' for writing")
+        val fd = posixFopen(file, "wb") ?: error("Can't open file '$file' for writing")
         try {
             if (bytes.isNotEmpty()) {
                 memScoped {
@@ -24,7 +25,7 @@ object KorgeSimpleNativeSyncIO {
     }
 
     fun readBytes(file: String): ByteArray {
-        val fd = fopen(file, "rb") ?: error("Can't open file '$file' for reading")
+        val fd = posixFopen(file, "rb") ?: error("Can't open file '$file' for reading")
         try {
             fseek(fd, 0L.convert(), SEEK_END)
             val fileSize = ftell(fd)

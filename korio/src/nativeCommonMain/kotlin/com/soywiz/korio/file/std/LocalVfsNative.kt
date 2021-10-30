@@ -3,6 +3,7 @@ package com.soywiz.korio.file.std
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.klock.*
+import com.soywiz.korio.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.util.*
 import com.soywiz.korio.lang.*
@@ -64,7 +65,7 @@ suspend fun <T, R> executeInIOWorker(value: T, func: (T) -> R): R {
 internal suspend fun fileOpen(name: String, mode: String): CPointer<FILE>? {
 	data class Info(val name: String, val mode: String)
 	return executeInIOWorker(Info(name, mode)) { it ->
-		platform.posix.fopen(it.name, it.mode)
+        posixFopen(it.name, it.mode)
 	}
 }
 
@@ -155,7 +156,7 @@ class LocalVfsNative(val async: Boolean = true) : LocalVfsV2() {
 		data class Info(val path: String, val range: LongRange)
 
 		return executeInIOWorker(Info(rpath, range)) { (rpath, range) ->
-			val fd = fopen(rpath, "rb")
+			val fd = posixFopen(rpath, "rb")
 			if (fd != null) {
 				fseek(fd, 0L.convert(), SEEK_END)
 				//val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
