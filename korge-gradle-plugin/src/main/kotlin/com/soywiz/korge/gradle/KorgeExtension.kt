@@ -1,10 +1,10 @@
 package com.soywiz.korge.gradle
 
 import com.soywiz.korge.gradle.bundle.KorgeBundles
+import com.soywiz.korge.gradle.targets.*
 import com.soywiz.korge.gradle.targets.android.*
 import com.soywiz.korge.gradle.targets.desktop.*
 import com.soywiz.korge.gradle.targets.ios.*
-import com.soywiz.korge.gradle.targets.isMacos
 import com.soywiz.korge.gradle.targets.js.*
 import com.soywiz.korge.gradle.targets.jvm.*
 import com.soywiz.korge.gradle.util.*
@@ -294,12 +294,12 @@ class KorgeExtension(val project: Project) {
     var icon: File? = project.projectDir["icon.png"]
     var banner: File? = project.projectDir["banner.png"]
 
-    var javaAddOpens: List<String> = listOf(
-        "--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED",
-        "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
-        "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED",
-    )
+    var javaAddOpens: List<String> = ArrayList<String>().apply {
+        add("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
+        add("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
+        add("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
+        if (isLinux) add("--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED")
+    }
 
 	var gameCategory: GameCategory? = null
 
