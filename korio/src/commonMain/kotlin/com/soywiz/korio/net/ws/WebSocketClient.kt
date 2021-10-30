@@ -3,6 +3,7 @@ package com.soywiz.korio.net.ws
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.http.Http
+import kotlinx.coroutines.channels.*
 
 abstract class WebSocketClient protected constructor(val url: String, val protocols: List<String>?, debug: Boolean) {
 	val onOpen = Signal<Unit>()
@@ -37,7 +38,18 @@ abstract class WebSocketClient protected constructor(val url: String, val protoc
 	open suspend fun send(message: ByteArray): Unit = Unit
 }
 
+fun WebSocketClient.messageChannel(limit: Int = Channel.UNLIMITED): Channel<Any> =
+    Channel<Any>(limit).also { messages -> onAnyMessage.add { messages.trySend(it) } }
+
+fun WebSocketClient.messageChannelString(limit: Int = Channel.UNLIMITED): Channel<Any> =
+    Channel<Any>(limit).also { messages -> onStringMessage.add { messages.trySend(it) } }
+
+fun WebSocketClient.messageChannelBinary(limit: Int = Channel.UNLIMITED): Channel<Any> =
+    Channel<Any>(limit).also { messages -> onBinaryMessage.add { messages.trySend(it) } }
+
+@Deprecated("This requires the message to be sent after this function call. Use messageChannel* instead")
 suspend fun WebSocketClient.readString() = onStringMessage.waitOneBase()
+@Deprecated("This requires the message to be sent after this function call. Use messageChannel* instead")
 suspend fun WebSocketClient.readBinary() = onBinaryMessage.waitOneBase()
 
 expect suspend fun WebSocketClient(
@@ -55,10 +67,12 @@ suspend fun WebSocketClient(
     url: String,
     protocols: List<String>? = null,
     origin: String? = null,
-    wskey: String? = "wskey",
+    wskey: String? = DEFAULT_WSKEY,
     debug: Boolean = false,
     headers: Http.Headers = Http.Headers(),
     wsInit: WebSocketClient.() -> Unit = {},
 ): WebSocketClient = WebSocketClient(url, protocols, origin, wskey, debug, headers, true, wsInit)
+
+const val DEFAULT_WSKEY = "mywskey12345adfg"
 
 class WebSocketException(message: String) : IOException(message)

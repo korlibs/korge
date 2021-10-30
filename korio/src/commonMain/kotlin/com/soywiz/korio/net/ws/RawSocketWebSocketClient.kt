@@ -18,7 +18,7 @@ suspend fun RawSocketWebSocketClient(
     url: String,
     protocols: List<String>? = null,
     origin: String? = null,
-    wskey: String? = "wskey",
+    wskey: String? = DEFAULT_WSKEY,
     debug: Boolean = false,
     connect: Boolean = true,
     headers: Http.Headers = Http.Headers(),
@@ -41,7 +41,7 @@ class RawSocketWebSocketClient(
     protocols: List<String>? = null,
     debug: Boolean = false,
     val origin: String? = null,
-    val key: String = "mykey",
+    val key: String = DEFAULT_WSKEY,
     val headers: Http.Headers = Http.Headers(),
     val masked: Boolean = true,
     val random: Random = Random,
@@ -49,6 +49,10 @@ class RawSocketWebSocketClient(
     private var frameIsBinary = false
     val host = urlUrl.host ?: "127.0.0.1"
     val port = urlUrl.port
+
+    init {
+        if (key.length != 16) error("key must be 16 bytes (enforced by ws.js)")
+    }
 
     internal fun buildHeader(): String {
         val baseHeaders = Http.Headers.build {
@@ -69,7 +73,7 @@ class RawSocketWebSocketClient(
         }
         val computedHeaders = baseHeaders.withReplaceHeaders(headers)
         return (buildList<String> {
-            add("GET ${urlUrl.pathWithQuery} HTTP/1.1")
+            add("GET ${urlUrl.pathWithQuery.takeIf { it.isNotEmpty() } ?: "/"} HTTP/1.1")
             for (item in computedHeaders) {
                 add("${item.first}: ${item.second}")
             }

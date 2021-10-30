@@ -35,7 +35,7 @@ class RawRawSocketWebSocketClient {
                 "Upgrade: websocket\r\n" +
                 "Sec-WebSocket-Version: 13\r\n" +
                 "Connection: Upgrade\r\n" +
-                "Sec-WebSocket-Key: d3NrZXk=\r\n" +
+                "Sec-WebSocket-Key: bXl3c2tleTEyMzQ1YWRmZw==\r\n" +
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.81 Safari/537.36\r\n" +
                 "\r\n",
             ws.buildHeader()
@@ -56,7 +56,7 @@ class RawRawSocketWebSocketClient {
                 "Upgrade: websocket\r\n" +
                 "Sec-WebSocket-Version: 13\r\n" +
                 "Connection: Upgrade\r\n" +
-                "Sec-WebSocket-Key: d3NrZXk=\r\n" +
+                "Sec-WebSocket-Key: bXl3c2tleTEyMzQ1YWRmZw==\r\n" +
                 "user-agent: myagent!\r\n" +
                 "\r\n",
             ws.buildHeader()
