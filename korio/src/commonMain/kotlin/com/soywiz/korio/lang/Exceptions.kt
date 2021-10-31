@@ -3,6 +3,9 @@ package com.soywiz.korio.lang
 expect open class IOException(msg: String) : Exception
 expect open class EOFException(msg: String) : IOException
 expect open class FileNotFoundException(msg: String) : IOException
+open class MalformedInputException(msg: String) : Exception(msg) {
+    constructor(index: Int, msg: String = "") : this("At index=$index $msg".trim())
+}
 
 class FileAlreadyExistsException(msg: String) : IOException(msg)
 
@@ -32,6 +35,7 @@ fun unsupported(msg: String): Nothing = throw UnsupportedOperationException(msg)
 fun unsupported(): Nothing = throw UnsupportedOperationException("unsupported")
 fun invalidArgument(msg: String): Nothing = throw InvalidArgumentException(msg)
 fun unexpected(msg: String): Nothing = throw UnexpectedException(msg)
+fun malformedInput(msg: String): Nothing = throw MalformedInputException(msg)
 
 inline fun <R> runIgnoringExceptions(show: Boolean = false, action: () -> R): R? = try {
 	action()
