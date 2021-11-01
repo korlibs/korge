@@ -24,6 +24,22 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
     }
 }
 
+if (doEnableKotlinNative) {
+    kotlin {
+        for (target in nativeTargets()) {
+            target.compilations["main"].cinterops {
+                if (target.name == "linuxX64") {
+                    maybeCreate("GL")
+                }
+                if (target.name == "linuxArm32Hfp") {
+                    maybeCreate("GL_rpi")
+                }
+                //if (target.name == "linuxX64") maybeCreate("X11")
+            }
+        }
+    }
+}
+
 dependencies {
     add("commonMainApi", project(":korim"))
     add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")

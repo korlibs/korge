@@ -1,6 +1,7 @@
 package com.soywiz.korgw
 
 //import X11.*
+import GL.*
 import com.soywiz.kds.IntMap
 import com.soywiz.kgl.*
 import com.soywiz.kmem.startAddressOf
