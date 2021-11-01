@@ -19,7 +19,7 @@ object Base64 {
     }
 
     fun decodeIgnoringSpaces(str: String): ByteArray {
-        return decode(str.replace(" ", "").replace("\n", "").replace("\r", ""))
+        return decode(str.replace(" ", "").replace("\n", "").replace("\r", "").replace("\ts", ""))
     }
 
     fun decode(src: ByteArray, dst: ByteArray): Int {
