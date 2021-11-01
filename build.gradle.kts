@@ -137,8 +137,7 @@ kotlin {
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOfNotNull(mingwX64())
-        //isMacos -> listOf(macosX64(), macosArm64())
-        isMacos -> listOfNotNull(macosX64())
+        isMacos -> listOf(macosX64(), macosArm64())
         else -> listOfNotNull(
             linuxX64(),
             mingwX64(),

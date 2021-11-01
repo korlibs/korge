@@ -110,8 +110,7 @@ fun Project.configureNativeDesktop() {
 
 		for (target in when {
             isWindows -> listOfNotNull(kotlin.mingwX64())
-            //isMacos -> listOfNotNull(kotlin.macosX64(), kotlin.macosArm64())
-            isMacos -> listOfNotNull(kotlin.macosX64())
+            isMacos -> listOfNotNull(kotlin.macosX64(), kotlin.macosArm64())
             isLinux -> listOfNotNull(
                 kotlin.linuxX64(),
                 if (korge.enableLinuxArm) kotlin.linuxArm32Hfp() else null
