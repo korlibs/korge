@@ -44,12 +44,19 @@ open class BitReader constructor(
 	//private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = false)
     //private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = true)
     private val sbuffers = RingBuffer(ilog2(bigChunkSize))
+    private var sbuffersReadPos = 0.0
     private var sbuffersPos = 0.0
 	val requirePrepare get() = sbuffers.availableRead < readWithSize
 
 	suspend inline fun prepareBigChunkIfRequired() {
 		if (requirePrepare) prepareBytesUpTo(bigChunkSize)
 	}
+
+    @KorioExperimentalApi
+    fun internalPeekBytes(out: ByteArray, offset: Int = 0, size: Int = out.size - offset): ByteArray {
+        sbuffers.peek(out, offset, size)
+        return out
+    }
 
 	fun returnToBuffer(data: ByteArray, offset: Int, size: Int) {
 		sbuffers.write(data, offset, size)
@@ -96,6 +103,7 @@ open class BitReader constructor(
     //var lastReadByte = 0
 
 	private inline fun _su8(): Int {
+        sbuffersReadPos++
 	    return sbuffers.readByte()
         //val byte = sbuffers.readByte()
         //lastReadByte = byte // @TODO: Check performance of this
@@ -121,7 +129,8 @@ open class BitReader constructor(
             }
         }
         discardBits()
-        sbuffers.read(out, offset, count)
+        val readCount = sbuffers.read(out, offset, count)
+        if (readCount > 0) sbuffersReadPos += readCount
 		//for (n in 0 until count) out[offset + n] = _su8().toByte()
 	}
 
@@ -147,7 +156,9 @@ open class BitReader constructor(
 	private val temp = ByteArray(4)
 	suspend fun abytes(count: Int, out: ByteArray = ByteArray(count)) = prepareBytesUpTo(count).sbytes(count, out)
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int {
-		return prepareBytesUpTo(len).sbuffers.read(buffer, offset, len)
+		val out = prepareBytesUpTo(len).sbuffers.read(buffer, offset, len)
+        sbuffersReadPos += out
+        return out
 	}
 
 	override suspend fun close() {
@@ -169,6 +180,7 @@ open class BitReader constructor(
 			prepareBigChunkIfRequired()
 			val read = sbuffers.read(tempBA, 0, tempBA.size)
 			if (read <= 0) break
+            sbuffersReadPos += read
 			o.writeBytes(tempBA, 0, read)
 		}
 	}
@@ -183,7 +195,8 @@ open class BitReader constructor(
 	//suspend fun getAvailable(): Long = s.getAvailable()
 	//suspend fun readBytesExact(count: Int): ByteArray = abytes(count)
 
-	override suspend fun getPosition(): Long = sbuffersPos.toLong()
-	override suspend fun getLength(): Long = (s as? AsyncGetLengthStream)?.getLength() ?: error("Length not available on Stream")
+	override suspend fun getPosition(): Long = sbuffersReadPos.toLong()
+    override suspend fun hasLength(): Boolean =  (s as? AsyncGetLengthStream)?.hasLength() ?: false
+    override suspend fun getLength(): Long = (s as? AsyncGetLengthStream)?.getLength() ?: error("Length not available on Stream")
 }
 

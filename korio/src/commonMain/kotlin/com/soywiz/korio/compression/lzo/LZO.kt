@@ -9,12 +9,12 @@ import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.*
 
 // @TODO: We might want to support a raw version without headers?
-open class LZO(val includeHeader: Boolean) : CompressionMethod {
-    companion object : LZO(includeHeader = true) {
-        val MAGIC = byteArrayOf(0x89.toByte(), 0x4c, 0x5a, 0x4f, 0x00, 0x0d, 0x0a, 0x1a, 0x0a)
-    }
+open class LZO(val headerType: HeaderType = HeaderType.SHORT) : CompressionMethod {
+    companion object : LZO(headerType = HeaderType.SHORT);
 
-    data class Header(
+    enum class HeaderType { NONE, SHORT, LONG }
+
+    data class HeaderLong(
         var version: Int = 4160,
         var libVersion: Int = 8352,
         var versionNeeded: Int = 2368,
@@ -32,6 +32,10 @@ open class LZO(val includeHeader: Boolean) : CompressionMethod {
         var checksumUncompressed: Int = 0,
         var checksumCompressed: Int = 0,
     ) {
+        companion object {
+            val MAGIC = byteArrayOf(0x89.toByte(), 0x4c, 0x5a, 0x4f, 0x00, 0x0d, 0x0a, 0x1a, 0x0a)
+        }
+
         suspend fun read(s: AsyncInputStream) {
             if (s.readBytesExact(MAGIC.size).hex != MAGIC.hex) error("INVALID LZO!")
             version = s.readU16BE()
@@ -80,17 +84,31 @@ open class LZO(val includeHeader: Boolean) : CompressionMethod {
     override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) {
         reader.prepareBigChunkIfRequired()
 
-        if (!includeHeader) error("Unsupported raw (without header) uncompression for now")
+        if (headerType == HeaderType.NONE) error("Unsupported raw (without header) uncompression for now")
 
-        val header = Header().apply { read(reader) }
+        // Small header  version
+        when (reader.internalPeekBytes(ByteArray(2)).hex) {
+            // https://github.com/korlibs/korio/issues/151
+            "4c5a" -> {
+                reader.skip(2)
+                val uncompressedSize = reader.readS32LE()
+                val uncompressed = ByteArray(uncompressedSize)
+                val compressedData = reader.readAll()
+                val uncompressedWritten = LzoRawDecompressor.decompress(compressedData, 0, compressedData.size, uncompressed, 0, uncompressed.size)
+                out.writeBytes(uncompressed, 0, uncompressedWritten)
+            }
+            else -> {
+                val header = HeaderLong().apply { read(reader) }
 
-        val compressedData = reader.readBytesExact(header.compressedSize)
-        //println("$header")
+                val compressedData = reader.readBytesExact(header.compressedSize)
+                //println("$header")
 
-        val uncompressed = ByteArray(header.uncompressedSize)
-        val uncompressedWritten = LzoRawDecompressor.decompress(compressedData, 0, compressedData.size, uncompressed, 0, uncompressed.size)
+                val uncompressed = ByteArray(header.uncompressedSize)
+                val uncompressedWritten = LzoRawDecompressor.decompress(compressedData, 0, compressedData.size, uncompressed, 0, uncompressed.size)
 
-        out.writeBytes(uncompressed, 0, uncompressedWritten)
+                out.writeBytes(uncompressed, 0, uncompressedWritten)
+            }
+        }
     }
 
     @KorioExperimentalApi
@@ -99,11 +117,15 @@ open class LZO(val includeHeader: Boolean) : CompressionMethod {
         val compressedData = ByteArray(uncompressedData.size * 2)
         val compressedSize = LzoRawCompressor.compress(uncompressedData, 0, uncompressedData.size, compressedData, 0, compressedData.size)
 
-        if (includeHeader) {
-            val header = Header(compressedSize = compressedSize, uncompressedSize = uncompressedData.size)
-            header.write(o)
+        when (headerType) {
+            HeaderType.NONE -> Unit
+            HeaderType.LONG -> HeaderLong(compressedSize = compressedSize, uncompressedSize = uncompressedData.size).write(o)
+            HeaderType.SHORT -> {
+                o.writeString("LZ")
+                o.write32LE(uncompressedData.size)
+            }
         }
-        o.writeBytes(compressedData)
+        o.writeBytes(compressedData, 0, compressedSize)
     }
 }
 

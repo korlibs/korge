@@ -559,7 +559,7 @@ suspend fun AsyncInputStream.skip(count: Int) {
 	if (this is AsyncPositionLengthStream) {
 		this.setPosition(this.getPosition() + count)
 	} else {
-		val temp = ByteArray(0x1000)
+		val temp = ByteArray(min(0x1000, count))
 		var remaining = count
 		while (remaining > 0) {
 			val toRead = min(remaining, count)
