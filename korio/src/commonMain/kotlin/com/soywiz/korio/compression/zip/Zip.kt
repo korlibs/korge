@@ -29,6 +29,7 @@ class ZipFile private constructor(
     fun normalizeName(name: String) = if (caseSensitive) name.trim('/') else name.trim('/').toLowerCase()
 
     private suspend fun read() {
+        //println("ZipFile reading...")
         var endBytes = EMPTY_BYTE_ARRAY
 
         if (s.getLength() <= 8L) throw IllegalArgumentException("Zip file is too small length=${s.getLength()}")
@@ -68,6 +69,7 @@ class ZipFile private constructor(
             val ds = s.sliceWithSize(directoryOffset.toLong(), directorySize.toLong()).readAvailable().openSync()
 
             for (n in 0 until entriesInDirectory) {
+                //println("ZipFile reading... $n/$entriesInDirectory")
                 ds.apply {
                     val magic = readS32BE()
                     if (magic != 0x504B_0102) throw IllegalStateException("Not a zip file record ${magic.hex} instead of ${0x504B_0102.hex}")
