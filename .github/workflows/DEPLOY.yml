@@ -36,7 +36,7 @@ jobs:
         with:
           java-version: 1.8
       - run: ./gradlew
-      - run: ./gradlew jvmTest publishMacosX64PublicationToMavenRepository
+      - run: ./gradlew jvmTest publishMacosX64PublicationToMavenRepository publishMacosArm64PublicationToMavenRepository
         env:
           DISABLE_JAVASCRIPT_TEST: true
   publish-ios:

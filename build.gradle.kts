@@ -141,7 +141,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
         else -> listOfNotNull(
             linuxX64(),
             mingwX64(),
-            macosX64(),
+            macosX64(), macosArm64(),
             if (doEnableKotlinRaspberryPi) linuxArm32Hfp() else null
         )
     }
@@ -987,6 +987,12 @@ subprojects {
             val publishMacosX64Local by creating(Task::class) {
                 if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
                     dependsOn("publishMacosX64PublicationToMavenLocal")
+                    dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
+                }
+            }
+            val publishMacosArm64Local by creating(Task::class) {
+                if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
+                    dependsOn("publishMacosArm64PublicationToMavenLocal")
                     dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                 }
             }

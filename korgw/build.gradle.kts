@@ -15,28 +15,12 @@ val hasAndroid = project.extensions.findByName("android") != null
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOfNotNull(mingwX64())
-        isMacos -> listOfNotNull(macosX64(), iosArm64(), iosX64())
+        isMacos -> listOfNotNull(macosX64(), macosArm64(), iosArm64(), iosX64())
         else -> listOfNotNull(
             linuxX64(),
             if (doEnableKotlinRaspberryPi) linuxArm32Hfp() else null,
-            mingwX64(), macosX64()
+            mingwX64(), macosX64(), macosArm64()
         )
-    }
-}
-
-if (doEnableKotlinNative) {
-    kotlin {
-        for (target in nativeTargets()) {
-            target.compilations["main"].cinterops {
-                if (target.name == "linuxX64") {
-                    maybeCreate("GL")
-                }
-                if (target.name == "linuxArm32Hfp") {
-                    maybeCreate("GL_rpi")
-                }
-                //if (target.name == "linuxX64") maybeCreate("X11")
-            }
-        }
     }
 }
 
@@ -51,7 +35,7 @@ dependencies {
 
 afterEvaluate {
     kotlin {
-        for (targetName in listOf("linuxX64", "linuxArm32Hfp", "macosX64")) {
+        for (targetName in listOf("linuxX64", "linuxArm32Hfp", "macosX64", "macosArm64")) {
             //println("targetName=$targetName")
             val target = targets.findByName(targetName) ?: continue
             //println("target=$target")

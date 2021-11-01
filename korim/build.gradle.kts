@@ -12,11 +12,11 @@ val isMacos get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apac
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOfNotNull(mingwX64())
-        isMacos -> listOfNotNull(macosX64(), iosArm64(), iosX64())
+        isMacos -> listOfNotNull(macosX64(), macosArm64(), iosArm64(), iosX64())
         else -> listOfNotNull(
             linuxX64(),
             if (doEnableKotlinRaspberryPi) linuxArm32Hfp() else null,
-            mingwX64(), macosX64(), iosArm64(), iosX64()
+            mingwX64(), macosX64(), macosArm64(), iosArm64(), iosX64()
         )
     }
 }

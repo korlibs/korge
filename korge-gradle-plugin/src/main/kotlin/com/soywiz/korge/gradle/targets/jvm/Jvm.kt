@@ -187,6 +187,7 @@ private fun Project.addProguard() {
 			"com/sun/jna/sunos-x86/**",
 			"com/sun/jna/sunos-x86-64/**",
 			"natives/macosx64/**",
+            "natives/macosarm64/**",
             "META-INF/*.kotlin_module",
 		)
         task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
