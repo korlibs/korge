@@ -267,7 +267,9 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 				while (true) {
 					val dent = readdir(dir) ?: break
 					val name = dent.pointed.d_name.toKString()
-					emit(file("$path/$name"))
+                    if (name != "." && name != "..") {
+                        emit(file("$path/$name"))
+                    }
 				}
 			} finally {
 				closedir(dir)

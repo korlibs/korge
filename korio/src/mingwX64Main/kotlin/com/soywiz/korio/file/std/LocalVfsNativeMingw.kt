@@ -12,7 +12,9 @@ actual open class LocalVfsNative actual constructor(async: Boolean) : LocalVfsNa
                 while (true) {
                     val dent = _wreaddir(dir) ?: break
                     val name = dent.pointed.d_name.toKString()
-                    emit(file("$path/$name"))
+                    if (name != "." && name != "..") {
+                        emit(file("$path/$name"))
+                    }
                 }
             } finally {
                 _wclosedir(dir)
