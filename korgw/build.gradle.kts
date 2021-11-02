@@ -28,11 +28,8 @@ if (doEnableKotlinNative) {
     kotlin {
         for (target in nativeTargets()) {
             target.compilations["main"].cinterops {
-                if (target.name == "linuxX64") {
-                    maybeCreate("GL")
-                }
-                if (target.name == "linuxArm32Hfp") {
-                    maybeCreate("GL_rpi")
+                if (target.name == "linuxX64" || target.name == "linuxArm32Hfp") {
+                    maybeCreate("X11_embed")
                 }
                 //if (target.name == "linuxX64") maybeCreate("X11")
             }

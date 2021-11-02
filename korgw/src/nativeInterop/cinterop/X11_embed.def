@@ -1,0 +1,135 @@
+package = X11Embed
+---
+typedef int Bool;
+typedef int Status;
+#define True 1
+#define False 0
+
+# ifdef LONG64
+typedef unsigned long CARD64;
+typedef unsigned int CARD32;
+# else
+typedef unsigned long long CARD64;
+typedef unsigned long CARD32;
+# endif
+
+typedef unsigned long Time;
+
+
+typedef unsigned long XID;
+typedef XID Window;
+typedef unsigned long Atom;
+
+typedef struct {
+} Display;
+
+typedef struct {
+} Screen;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window window;
+} XAnyEvent;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window window;
+	Window root;
+	Window subwindow;
+	Time time;
+	int x, y;
+	int x_root, y_root;
+	unsigned int state;
+	unsigned int keycode;
+	Bool same_screen;
+} XKeyEvent;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window window;
+	Atom message_type;
+	int format;
+	union {
+		char b[20];
+		short s[10];
+		long l[5];
+		} data;
+} XClientMessageEvent;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window window;
+	int x, y;
+	int width, height;
+	int count;
+} XExposeEvent;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window event;
+	Window window;
+	int x, y;
+	int width, height;
+	int border_width;
+	Window above;
+	Bool override_redirect;
+} XConfigureEvent;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window window;
+	Window root;
+	Window subwindow;
+	Time time;
+	int x, y;
+	int x_root, y_root;
+	unsigned int state;
+	char is_hint;
+	Bool same_screen;
+} XMotionEvent;
+
+typedef struct {
+	int type;
+	unsigned long serial;
+	Bool send_event;
+	Display *display;
+	Window window;
+	Window root;
+	Window subwindow;
+	Time time;
+	int x, y;
+	int x_root, y_root;
+	unsigned int state;
+	unsigned int button;
+	Bool same_screen;
+} XButtonEvent;
+
+typedef union _XEvent {
+    int type;
+	XAnyEvent xany;
+    XClientMessageEvent xclient;
+	XExposeEvent xexpose;
+	XConfigureEvent xconfigure;
+	XKeyEvent xkey;
+	XMotionEvent xmotion;
+	XButtonEvent xbutton;
+	long pad[24];
+} XEvent;

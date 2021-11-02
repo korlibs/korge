@@ -1,9 +1,0 @@
-package = GL
-headers = GL/glx.h GL/gl.h GL/glut.h
-compilerOpts = -I/tmp/rpi-sysroot/usr/include -I/tmp/rpi-sysroot/usr/include/arm-linux-gnueabihf
-linkerOpts = -L/tmp/rpi-sysroot/usr/lib -L/tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -rpath /tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -rpath-link /tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -lGL -lGLU -lglut -lX11
----
-
-// gcc hello-x.c -L/usr/X11R6/lib -lX11 -o hello-x
-// sudo apt-get install libx11-dev
-// sudo apt-get install libpthread-stubs0 libpthread-stubs0-dev libx11-dev libx11-doc libxau-dev libxcb1-dev libxdmcp-dev x11proto-core-dev x11proto-input-dev x11proto-kb-dev xorg-sgml-doctools xtrans-dev

@@ -6,13 +6,21 @@ import platform.posix.dlopen
 import platform.posix.dlsym
 import platform.posix.dlclose
 
+private val DEBUG_DYNAMIC_LIB = platform.posix.getenv("DEBUG_DYNAMIC_LIB")?.toKString() == "true"
+
 actual open class DynamicLibraryBase actual constructor(val name: String) : DynamicSymbolResolver {
     val handle = dlopen(name, RTLD_LAZY)
     init {
+        if (DEBUG_DYNAMIC_LIB) println("Loaded '$name'...$handle")
         if (handle == null) println("Couldn't load '$name' library")
     }
     actual val isAvailable get() = handle != null
-    override fun getSymbol(name: String): CPointer<CFunction<*>>? = if (handle == null) null else dlsym(handle, name)?.reinterpret()
+    override fun getSymbol(name: String): CPointer<CFunction<*>>? {
+        if (DEBUG_DYNAMIC_LIB) println("Requesting ${this.name}.$name...")
+        val out: CPointer<CFunction<*>>? = if (handle == null) null else dlsym(handle, name)?.reinterpret()
+        if (DEBUG_DYNAMIC_LIB) println("Got ${this.name}.$name...$out")
+        return out
+    }
     actual fun close() {
         dlclose(handle)
     }

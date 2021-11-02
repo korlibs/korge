@@ -10,16 +10,11 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import platform.posix.*
 
-private val GL_MODULE by lazy { dlopen("libGL.so", 0) }
-
-val glXGetProcAddress by lazy {
-    //dlsym(GL_MODULE, "glXGetProcAddress")?.reinterpret2<CPointer<CFunction<(name: String) -> CPointer<out CPointed>?>>>()
-    dlsym(GL_MODULE, "glXGetProcAddress")?.reinterpret2<CPointer<CFunction<(name: CPointer<ByteVar>) -> CPointer<out CPointed>?>>>()
-        ?: error("Can't get glXGetProcAddress")
-}
+@SharedImmutable val gllib = DynamicLibrary("libGL.so")
+@SharedImmutable val glXGetProcAddress by gllib.func<(name: CPointer<ByteVar>) -> CPointer<out CPointed>?>()
 
 internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? = memScoped {
-    glXGetProcAddress(name.cstr.placeTo(this)) ?: dlsym(GL_MODULE, name)
+    glXGetProcAddress(name.cstr.placeTo(this)) ?: gllib.getSymbol(name)
 }
 
 actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {

@@ -10,8 +10,8 @@ expect open class DynamicLibraryBase(name: String) : DynamicSymbolResolver {
 }
 
 open class DynamicLibrary(name: String) : DynamicLibraryBase(name) {
-    fun <T : Function<*>> func() = DynamicFun<T>(this)
-    fun <T : Function<*>> funcNull() = DynamicFunNull<T>(this)
+    fun <T : Function<*>> func(name: String? = null) = DynamicFun<T>(this, name)
+    fun <T : Function<*>> funcNull(name: String? = null) = DynamicFunNull<T>(this, name)
 }
 
 fun interface DynamicSymbolResolver {
@@ -41,8 +41,13 @@ abstract class DynamicFunLibrary<T : Function<*>>(val library: DynamicSymbolReso
 
 open class DynamicFun<T : Function<*>>(library: DynamicSymbolResolver, name: String? = null) : DynamicFunLibrary<T>(library, name) {
     operator fun getValue(obj: Any?, property: KProperty<*>): CPointer<CFunction<T>> {
-        return _getValue(property)
-            ?: error("Can't find function '${getFuncName(property)}' in $this")
+        val out = _getValue(property)
+        if (out == null) {
+            val message = "Can't find function '${getFuncName(property)}' in $this"
+            println(message)
+            error(message)
+        }
+        return out
     }
 }
 
