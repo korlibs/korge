@@ -87,7 +87,7 @@ jobs:
       - name: Start gradle
         run: ./gradlew
       - name: Testing Kotlin/Native MacosX64
-        run: ./gradlew --no-daemon macosX64Test
+        run: ./gradlew --no-daemon macosX64Test publishMacosArm64PublicationToMavenLocal
 
   test-native-macos-e2e:
     timeout-minutes: 120
