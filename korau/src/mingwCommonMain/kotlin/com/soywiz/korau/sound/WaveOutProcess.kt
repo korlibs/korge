@@ -4,8 +4,16 @@ import com.soywiz.kds.concurrent.*
 import com.soywiz.kmem.*
 import kotlinx.cinterop.*
 import platform.windows.*
-import kotlin.math.*
 import kotlin.native.concurrent.*
+
+private object WINMM : DynamicLibrary("winmm.dll") {
+    val waveOutOpenExt by func<(phwo: LPHWAVEOUT?, uDeviceID: UINT, pwfx: LPCWAVEFORMATEX?, dwCallback: DWORD_PTR, dwInstance: DWORD_PTR, fdwOpen: DWORD) -> MMRESULT>()
+    val waveOutCloseExt by func<(hwo: HWAVEOUT?) -> MMRESULT>()
+    val waveOutResetExt by func<(hwo: HWAVEOUT?) -> MMRESULT>()
+    val waveOutPrepareHeaderExt by func<(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: UINT) -> MMRESULT>()
+    val waveOutWriteExt by func<(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: UINT) -> MMRESULT>()
+    val waveOutUnprepareHeaderExt by func<(hwo: HWAVEOUT?, pwh: LPWAVEHDR?, cbwh: UINT) -> MMRESULT>()
+}
 
 private interface WaveOutPart
 
@@ -112,7 +120,7 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
                 fun clearCompletedChunks() {
                     while (pendingChunks.isNotEmpty() && pendingChunks.first().completed) {
                         val chunk = pendingChunks.removeFirst()
-                        waveOutUnprepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                        WINMM.waveOutUnprepareHeaderExt(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
                         info.sPosition.addAndGet(chunk.data.size / nchannels)
                         chunk.dispose()
                     }
@@ -124,13 +132,13 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
                         Sleep(5.convert())
                         clearCompletedChunks()
                     }
-                    waveOutReset(hWaveOut.value)
+                    WINMM.waveOutResetExt(hWaveOut.value)
                     info.sPosition.value = 0L
                 }
 
                 fun waveClose() {
                     waveReset()
-                    waveOutClose(hWaveOut.value)
+                    WINMM.waveOutCloseExt(hWaveOut.value)
                 }
 
                 var openedFreq = 0
@@ -149,7 +157,7 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
                             //this.cbSize = 0.convert()
                         }
 
-                        waveOutOpen(hWaveOut.ptr, WAVE_MAPPER, format.ptr, 0.convert(), 0.convert(), CALLBACK_NULL)
+                        WINMM.waveOutOpenExt(hWaveOut.ptr, WAVE_MAPPER, format.ptr, 0.convert(), 0.convert(), CALLBACK_NULL.convert())
                     }
                 }
 
@@ -173,8 +181,8 @@ class WaveOutProcess(val freq: Int, val nchannels: Int) {
                                     val chunk = WaveOutChunk(it.computeData(info.volume.value, info.panning.value, info.pitch.value))
                                     //info.sLength.addAndGet(chunk.data.size / info.nchannels)
                                     pendingChunks.add(chunk)
-                                    waveOutPrepareHeader(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
-                                    waveOutWrite(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                                    WINMM.waveOutPrepareHeaderExt(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
+                                    WINMM.waveOutWriteExt(hWaveOut.value, chunk.hdr.ptr, sizeOf<WAVEHDR>().convert())
                                 }
                                 is WaveOutFlush -> {
                                     waveReset()

@@ -8,12 +8,18 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.util.redirected
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
-import platform.OpenAL.*
 import kotlin.coroutines.*
 import kotlin.math.sqrt
 
-val openalNativeSoundProvider: OpenALNativeSoundProvider by lazy { OpenALNativeSoundProvider() }
-actual val nativeSoundProvider: NativeSoundProvider get() = openalNativeSoundProvider
+val openalNativeSoundProvider: OpenALNativeSoundProvider? by lazy {
+    try {
+        OpenALNativeSoundProvider()
+    } catch (e: Throwable) {
+        e.printStackTrace()
+        null
+    }
+}
+actual val nativeSoundProvider: NativeSoundProvider get() = openalNativeSoundProvider ?: DummyNativeSoundProvider
 
 class OpenALNativeSoundProvider : NativeSoundProvider() {
     val device = alcOpenDevice(null)
@@ -290,14 +296,6 @@ class JnaSoundPropsProvider(val sourceProvider: SourceProvider) : SoundProps {
         }
 }
 
-private fun alGetSourcef(source: ALuint, param: ALenum): ALfloat =
-    memScoped { alloc<ALfloatVar>().also { alGetSourcef(source, param, it.ptr) }.value }
-
-private fun alGetSourcei(source: ALuint, param: ALenum): ALint =
-    memScoped { alloc<ALintVar>().also { alGetSourcei(source, param, it.ptr) }.value }
-
-private fun alGetSourceState(source: ALuint): ALint = alGetSourcei(source, AL_SOURCE_STATE)
-
 private fun alBufferData(buffer: ALuint, data: AudioData) {
     val samples = data.samplesInterleaved.data
     samples.usePinned { pin ->
@@ -310,20 +308,6 @@ private fun alBufferData(buffer: ALuint, data: AudioData) {
         )
     }
 }
-
-private fun alGenBuffer(): ALuint = memScoped { alloc<ALuintVar>().apply { alGenBuffers(1, this.ptr) }.value }
-private fun alDeleteBuffer(buffer: ALuint): Unit =
-    run { memScoped { alloc<ALuintVar>().apply { this.value = buffer }.apply { alDeleteBuffers(1, this.ptr) } } }
-
-private fun alDeleteSource(buffer: ALuint): Unit =
-    run { memScoped { alloc<ALuintVar>().apply { this.value = buffer }.apply { alDeleteSources(1, this.ptr) } } }
-
-
-
-private val tempF = FloatArray(1)
-private val tempI = IntArray(1)
-//private fun alGetSourcef(source: Int, param: Int): Float = tempF.apply { al?.alGetSourcef(source, param, this, 0) }[0]
-//private fun alGetSourcei(source: Int, param: Int): Int = tempI.apply { al?.alGetSourcei(source, param, this, 0) }[0]
 
 private fun alBufferData(buffer: ALuint, data: AudioSamples, freq: Int, panning: Double = 0.0, volume: Double = 1.0) {
     alBufferData(buffer, com.soywiz.korau.sound.AudioData(freq, data), panning, volume)
@@ -364,7 +348,7 @@ private fun alBufferData(buffer: ALuint, data: AudioData, panning: Double = 0.0,
 
 private fun alGenSourceBase(): ALuint = memScoped { alloc<ALuintVar>().apply { alGenSources(1, this.ptr) }.value }
 
-private fun alGenSource() = alGenSourceBase().also { source ->
+private fun alGenSource(): ALuint /* = kotlin.Int */ = alGenSourceBase().also { source ->
     alSourcef(source, AL_PITCH, 1f)
     alSourcef(source, AL_GAIN, 1f)
     alSource3f(source, AL_POSITION, 0f, 0f, 0f)

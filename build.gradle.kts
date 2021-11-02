@@ -401,7 +401,7 @@ subprojects {
 
                 if (doEnableKotlinNative) {
                     val nativeCommon by lazy { createPairSourceSet("nativeCommon", concurrent) }
-                    val nativeDesktop by lazy { createPairSourceSet("nativeDesktop", concurrent) }
+                    val nativeDesktop by lazy { createPairSourceSet("nativeDesktop", nativeCommon) }
                     val nativePosix by lazy { createPairSourceSet("nativePosix", nativeCommon) }
                     val nativePosixNonApple by lazy { createPairSourceSet("nativePosixNonApple", nativePosix) }
                     val nativePosixApple by lazy { createPairSourceSet("nativePosixApple", nativePosix) }

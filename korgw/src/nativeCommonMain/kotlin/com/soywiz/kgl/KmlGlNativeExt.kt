@@ -364,17 +364,19 @@ open class GLFuncBase<T : Function<*>>(val name: String? = null) {
     private var _set = korAtomic(false)
     private var _value = korAtomic<CPointer<CFunction<T>>?>(null)
 
+    protected fun getFuncName(property: KProperty<*>): String = name ?: property.name.removeSuffix("Ext")
+
     protected fun _getValue(property: KProperty<*>): CPointer<CFunction<T>>? {
         if (!_set.value) {
             _set.value = true
-            _value.value = glGetProcAddressT(name ?: property.name.removeSuffix("Ext"))
+            _value.value = glGetProcAddressT(getFuncName(property))
         }
         return _value.value
     }
 }
 
 class GLFunc<T : Function<*>>(name: String? = null) : GLFuncBase<T>(name) {
-    operator fun getValue(obj: Any?, property: KProperty<*>): CPointer<CFunction<T>> = _getValue(property)!!
+    operator fun getValue(obj: Any?, property: KProperty<*>): CPointer<CFunction<T>> = _getValue(property) ?: error("Can't find function '${getFuncName(property)}'")
 }
 
 class GLFuncNull<T : Function<*>>(name: String? = null) : GLFuncBase<T>(name) {

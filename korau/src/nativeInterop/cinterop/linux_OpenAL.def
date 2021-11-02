@@ -1,6 +1,0 @@
-depends = posix
-package = platform.OpenAL
-headers = AL/al.h AL/alc.h
-compilerOpts = -I/usr/include -I/usr/include/x86_64-linux-gnu/ -I../nlib/linuxX64/include
-linkerOpts = -L/usr/lib/x86_64-linux-gnu -L../nlib/linuxX64/lib/x86_64-linux-gnu -lopenal
----

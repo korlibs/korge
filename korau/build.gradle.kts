@@ -27,9 +27,6 @@ if (doEnableKotlinNative) {
     kotlin {
         for (target in nativeTargets()) {
             target.compilations["main"].cinterops {
-                if (target.name == "mingwX64") maybeCreate("win32_winmm")
-                if (target.name == "linuxX64") maybeCreate("linux_OpenAL")
-                if (target.name == "linuxArm32Hfp") maybeCreate("linux_rpi_OpenAL")
                 maybeCreate("minimp3")
                 maybeCreate("stb_vorbis")
             }

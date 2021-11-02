@@ -1,7 +1,0 @@
-depends = posix
-package = platform.OpenAL
-headers = AL/al.h AL/alc.h
-compilerOpts = -I/tmp/rpi-sysroot/usr/include -I/tmp/rpi-sysroot/usr/include/arm-linux-gnueabihf
-linkerOpts = -L/tmp/rpi-sysroot/usr/lib -L/tmp/rpi-sysroot/usr/lib/arm-linux-gnueabihf -lopenal
----
-

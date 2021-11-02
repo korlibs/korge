@@ -1,9 +1,0 @@
-depends = CoreFoundation darwin posix
-language = Objective-C
-package = platform.CoreAudio
-headers = CoreAudio/CoreAudioTypes.h
-
-headerFilter = CoreAudio/**
-
-compilerOpts = -framework CoreAudio
-linkerOpts = -framework CoreAudio
