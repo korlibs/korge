@@ -16,76 +16,76 @@ fun ShortBuffer.slice(offset: Int, size: Int): ShortBuffer { checkSliceBounds(of
 fun IntBuffer.slice(offset: Int, size: Int): IntBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
 fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
 fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-actual class MemBuffer(val buffer: ByteBuffer, val size: Int) {
+public actual class MemBuffer(val buffer: ByteBuffer, val size: Int) {
     val sbuffer = buffer.order(ByteOrder.nativeOrder()).asShortBuffer()
     val ibuffer = buffer.order(ByteOrder.nativeOrder()).asIntBuffer()
     val fbuffer = buffer.order(ByteOrder.nativeOrder()).asFloatBuffer()
     val dbuffer = buffer.order(ByteOrder.nativeOrder()).asDoubleBuffer()
 }
-actual fun MemBufferAlloc(size: Int): MemBuffer = MemBuffer(ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()), size)
-actual fun MemBufferAllocNoDirect(size: Int): MemBuffer = MemBuffer(ByteBuffer.allocate(size).order(ByteOrder.nativeOrder()), size)
-actual fun MemBufferWrap(array: ByteArray): MemBuffer = MemBuffer(ByteBuffer.wrap(array).order(ByteOrder.nativeOrder()), array.size)
-actual inline val MemBuffer.size: Int get() = this.size
+public actual fun MemBufferAlloc(size: Int): MemBuffer = MemBuffer(ByteBuffer.allocateDirect(size).order(ByteOrder.nativeOrder()), size)
+public actual fun MemBufferAllocNoDirect(size: Int): MemBuffer = MemBuffer(ByteBuffer.allocate(size).order(ByteOrder.nativeOrder()), size)
+public actual fun MemBufferWrap(array: ByteArray): MemBuffer = MemBuffer(ByteBuffer.wrap(array).order(ByteOrder.nativeOrder()), array.size)
+public actual inline val MemBuffer.size: Int get() = this.size
 
-actual fun MemBuffer._sliceInt8Buffer(offset: Int, size: Int): Int8Buffer = Int8Buffer(this, this.buffer.slice(offset, size))
-actual fun MemBuffer._sliceInt16Buffer(offset: Int, size: Int): Int16Buffer = Int16Buffer(this, this.buffer.asShortBuffer().slice(offset, size))
-actual fun MemBuffer._sliceInt32Buffer(offset: Int, size: Int): Int32Buffer = Int32Buffer(this, this.buffer.asIntBuffer().slice(offset, size))
-actual fun MemBuffer._sliceFloat32Buffer(offset: Int, size: Int): Float32Buffer = Float32Buffer(this, this.buffer.asFloatBuffer().slice(offset, size))
-actual fun MemBuffer._sliceFloat64Buffer(offset: Int, size: Int): Float64Buffer = Float64Buffer(this, this.buffer.asDoubleBuffer().slice(offset, size))
+public actual fun MemBuffer._sliceInt8Buffer(offset: Int, size: Int): Int8Buffer = Int8Buffer(this, this.buffer.slice(offset, size))
+public actual fun MemBuffer._sliceInt16Buffer(offset: Int, size: Int): Int16Buffer = Int16Buffer(this, this.buffer.asShortBuffer().slice(offset, size))
+public actual fun MemBuffer._sliceInt32Buffer(offset: Int, size: Int): Int32Buffer = Int32Buffer(this, this.buffer.asIntBuffer().slice(offset, size))
+public actual fun MemBuffer._sliceFloat32Buffer(offset: Int, size: Int): Float32Buffer = Float32Buffer(this, this.buffer.asFloatBuffer().slice(offset, size))
+public actual fun MemBuffer._sliceFloat64Buffer(offset: Int, size: Int): Float64Buffer = Float64Buffer(this, this.buffer.asDoubleBuffer().slice(offset, size))
 
-actual typealias DataBuffer = MemBuffer
-actual val DataBuffer.mem: MemBuffer get() = this
-actual fun MemBuffer.getData(): DataBuffer = this
-actual fun DataBuffer.getByte(index: Int): Byte = buffer.get(index)
-actual fun DataBuffer.setByte(index: Int, value: Byte): Unit { buffer.put(index, value) }
-actual fun DataBuffer.getShort(index: Int): Short = buffer.getShort(index)
-actual fun DataBuffer.setShort(index: Int, value: Short): Unit { buffer.putShort(index, value) }
-actual fun DataBuffer.getInt(index: Int): Int = buffer.getInt(index)
-actual fun DataBuffer.setInt(index: Int, value: Int): Unit { buffer.putInt(index, value) }
-actual fun DataBuffer.getFloat(index: Int): Float = buffer.getFloat(index)
-actual fun DataBuffer.setFloat(index: Int, value: Float): Unit { buffer.putFloat(index, value) }
-actual fun DataBuffer.getDouble(index: Int): Double = buffer.getDouble(index)
-actual fun DataBuffer.setDouble(index: Int, value: Double): Unit { buffer.putDouble(index, value) }
+public actual typealias DataBuffer = MemBuffer
+public actual val DataBuffer.mem: MemBuffer get() = this
+public actual fun MemBuffer.getData(): DataBuffer = this
+public actual fun DataBuffer.getByte(index: Int): Byte = buffer.get(index)
+public actual fun DataBuffer.setByte(index: Int, value: Byte): Unit { buffer.put(index, value) }
+public actual fun DataBuffer.getShort(index: Int): Short = buffer.getShort(index)
+public actual fun DataBuffer.setShort(index: Int, value: Short): Unit { buffer.putShort(index, value) }
+public actual fun DataBuffer.getInt(index: Int): Int = buffer.getInt(index)
+public actual fun DataBuffer.setInt(index: Int, value: Int): Unit { buffer.putInt(index, value) }
+public actual fun DataBuffer.getFloat(index: Int): Float = buffer.getFloat(index)
+public actual fun DataBuffer.setFloat(index: Int, value: Float): Unit { buffer.putFloat(index, value) }
+public actual fun DataBuffer.getDouble(index: Int): Double = buffer.getDouble(index)
+public actual fun DataBuffer.setDouble(index: Int, value: Double): Unit { buffer.putDouble(index, value) }
 
-actual class Int8Buffer(val mbuffer: MemBuffer, val jbuffer: ByteBuffer)
+public actual class Int8Buffer(val mbuffer: MemBuffer, val jbuffer: ByteBuffer)
 
-actual val Int8Buffer.mem: MemBuffer get() = mbuffer
-actual val Int8Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
-actual val Int8Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
-actual operator fun Int8Buffer.get(index: Int): Byte = jbuffer.get(offset + index)
-actual operator fun Int8Buffer.set(index: Int, value: Byte): Unit { jbuffer.put(offset + index, value) }
+public actual val Int8Buffer.mem: MemBuffer get() = mbuffer
+public actual val Int8Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
+public actual val Int8Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
+public actual operator fun Int8Buffer.get(index: Int): Byte = jbuffer.get(offset + index)
+public actual operator fun Int8Buffer.set(index: Int, value: Byte): Unit { jbuffer.put(offset + index, value) }
 
-actual class Int16Buffer(val mbuffer: MemBuffer, val jbuffer: ShortBuffer)
+public actual class Int16Buffer(val mbuffer: MemBuffer, val jbuffer: ShortBuffer)
 
-actual val Int16Buffer.mem: MemBuffer get() = mbuffer
-actual val Int16Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
-actual val Int16Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
-actual operator fun Int16Buffer.get(index: Int): Short = jbuffer.get(offset + index)
-actual operator fun Int16Buffer.set(index: Int, value: Short): Unit { jbuffer.put(offset + index, value) }
+public actual val Int16Buffer.mem: MemBuffer get() = mbuffer
+public actual val Int16Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
+public actual val Int16Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
+public actual operator fun Int16Buffer.get(index: Int): Short = jbuffer.get(offset + index)
+public actual operator fun Int16Buffer.set(index: Int, value: Short): Unit { jbuffer.put(offset + index, value) }
 
-actual class Int32Buffer(val mbuffer: MemBuffer, val jbuffer: IntBuffer)
+public actual class Int32Buffer(val mbuffer: MemBuffer, val jbuffer: IntBuffer)
 
-actual val Int32Buffer.mem: MemBuffer get() = mbuffer
-actual val Int32Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
-actual val Int32Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
-actual operator fun Int32Buffer.get(index: Int): Int = jbuffer.get(offset + index)
-actual operator fun Int32Buffer.set(index: Int, value: Int): Unit { jbuffer.put(offset + index, value) }
+public actual val Int32Buffer.mem: MemBuffer get() = mbuffer
+public actual val Int32Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
+public actual val Int32Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
+public actual operator fun Int32Buffer.get(index: Int): Int = jbuffer.get(offset + index)
+public actual operator fun Int32Buffer.set(index: Int, value: Int): Unit { jbuffer.put(offset + index, value) }
 
-actual class Float32Buffer(val mbuffer: MemBuffer, val jbuffer: FloatBuffer)
+public actual class Float32Buffer(val mbuffer: MemBuffer, val jbuffer: FloatBuffer)
 
-actual val Float32Buffer.mem: MemBuffer get() = mbuffer
-actual val Float32Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
-actual val Float32Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
-actual operator fun Float32Buffer.get(index: Int): Float = jbuffer.get(offset + index)
-actual operator fun Float32Buffer.set(index: Int, value: Float): Unit { jbuffer.put(offset + index, value) }
+public actual val Float32Buffer.mem: MemBuffer get() = mbuffer
+public actual val Float32Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
+public actual val Float32Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
+public actual operator fun Float32Buffer.get(index: Int): Float = jbuffer.get(offset + index)
+public actual operator fun Float32Buffer.set(index: Int, value: Float): Unit { jbuffer.put(offset + index, value) }
 
-actual class Float64Buffer(val mbuffer: MemBuffer, val jbuffer: DoubleBuffer)
+public actual class Float64Buffer(val mbuffer: MemBuffer, val jbuffer: DoubleBuffer)
 
-actual val Float64Buffer.mem: MemBuffer get() = mbuffer
-actual val Float64Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
-actual val Float64Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
-actual operator fun Float64Buffer.get(index: Int): Double = jbuffer.get(offset + index)
-actual operator fun Float64Buffer.set(index: Int, value: Double): Unit { jbuffer.put(offset + index, value) }
+public actual val Float64Buffer.mem: MemBuffer get() = mbuffer
+public actual val Float64Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
+public actual val Float64Buffer.size: Int get() = (jbuffer as java.nio.Buffer).limit() - offset
+public actual operator fun Float64Buffer.get(index: Int): Double = jbuffer.get(offset + index)
+public actual operator fun Float64Buffer.set(index: Int, value: Double): Unit { jbuffer.put(offset + index, value) }
 
 inline operator fun ByteBuffer.set(index: Int, value: Byte) = this.put(index, value)
 inline operator fun ShortBuffer.set(index: Int, value: Short) = this.put(index, value)
@@ -105,7 +105,7 @@ private inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, d
     }
 }
 
-actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     val srcBuf = src.buffer
     val dstBuf = dst.buffer
 
@@ -133,7 +133,7 @@ actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, s
     srcBuf.position(oldSrcPos)
     srcBuf.limit(oldSrcLimit)
 }
-actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     val dstBuf = dst.buffer
     val oldPos = dstBuf.position()
     run {
@@ -142,7 +142,7 @@ actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, s
     }
     dstBuf.position(oldPos)
 }
-actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit {
     val srcBuf = src.buffer
     val oldPos = srcBuf.position()
     run {
@@ -152,27 +152,27 @@ actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, s
     srcBuf.position(oldPos)
     //arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src[it] })
 }
-actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst.sbuffer[it] = value }, { src[it] })
 }
-actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src.sbuffer[it] })
 }
-actual fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst.ibuffer[it] = value }, { src[it] })
 }
-actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src.ibuffer[it] })
 }
-actual fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst.fbuffer[it] = value }, { src[it] })
 }
-actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src.fbuffer[it] })
 }
-actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst.dbuffer[it] = value }, { src[it] })
 }
-actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit {
     arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src.dbuffer[it] })
 }

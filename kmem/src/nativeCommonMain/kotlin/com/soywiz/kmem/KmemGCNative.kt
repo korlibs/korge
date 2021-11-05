@@ -2,7 +2,7 @@ package com.soywiz.kmem
 
 import kotlin.native.internal.*
 
-actual val KmemGC: KmemGCImpl = object : KmemGCImpl() {
+public actual val KmemGC: KmemGCImpl = object : KmemGCImpl() {
     override fun collect() = GC.collect()
     override fun collectCyclic() = GC.collect() // Available since 1.4?
     override fun suspend() = GC.suspend()

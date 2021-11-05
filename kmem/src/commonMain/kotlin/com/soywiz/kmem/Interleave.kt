@@ -1,6 +1,6 @@
 package com.soywiz.kmem
 
-fun arrayinterleave(
+public fun arrayinterleave(
     out: ByteArray, outPos: Int,
     array1: ByteArray, array1Pos: Int,
     array2: ByteArray, array2Pos: Int,
@@ -16,7 +16,7 @@ fun arrayinterleave(
     }
 }
 
-fun arrayinterleave(
+public fun arrayinterleave(
     out: ShortArray, outPos: Int,
     array1: ShortArray, array1Pos: Int,
     array2: ShortArray, array2Pos: Int,
@@ -32,7 +32,7 @@ fun arrayinterleave(
     }
 }
 
-fun arrayinterleave(
+public fun arrayinterleave(
     out: IntArray, outPos: Int,
     array1: IntArray, array1Pos: Int,
     array2: IntArray, array2Pos: Int,
@@ -49,7 +49,7 @@ fun arrayinterleave(
 }
 
 
-fun arrayinterleave(
+public fun arrayinterleave(
     out: FloatArray, outPos: Int,
     array1: FloatArray, array1Pos: Int,
     array2: FloatArray, array2Pos: Int,

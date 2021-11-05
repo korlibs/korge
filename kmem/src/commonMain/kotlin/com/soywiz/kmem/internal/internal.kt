@@ -1,7 +1,5 @@
 package com.soywiz.kmem.internal
 
-import kotlin.math.*
-
 internal inline fun <S, D> arraycopyBase(src: S, srcPos: Int, dst: D, dstPos: Int, size: Int, set: (s: Int, d: Int) -> Unit) {
     if (src === dst && dstPos > srcPos) { // overlapping
         var n = size

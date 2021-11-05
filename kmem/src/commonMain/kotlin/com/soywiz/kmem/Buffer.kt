@@ -2,64 +2,64 @@
 @file:Suppress("NOTHING_TO_INLINE", "EXTENSION_SHADOWED_BY_MEMBER", "RedundantUnitReturnType", "FunctionName")
 package com.soywiz.kmem
 
-expect class MemBuffer
-expect fun MemBufferAlloc(size: Int): MemBuffer
-expect fun MemBufferAllocNoDirect(size: Int): MemBuffer
-expect fun MemBufferWrap(array: ByteArray): MemBuffer
-expect val MemBuffer.size: Int
+public expect class MemBuffer
+public expect fun MemBufferAlloc(size: Int): MemBuffer
+public expect fun MemBufferAllocNoDirect(size: Int): MemBuffer
+public expect fun MemBufferWrap(array: ByteArray): MemBuffer
+public expect val MemBuffer.size: Int
 
-expect fun MemBuffer._sliceInt8Buffer(offset: Int, size: Int): Int8Buffer
-expect fun MemBuffer._sliceInt16Buffer(offset: Int, size: Int): Int16Buffer
-expect fun MemBuffer._sliceInt32Buffer(offset: Int, size: Int): Int32Buffer
-expect fun MemBuffer._sliceFloat32Buffer(offset: Int, size: Int): Float32Buffer
-expect fun MemBuffer._sliceFloat64Buffer(offset: Int, size: Int): Float64Buffer
+public expect fun MemBuffer._sliceInt8Buffer(offset: Int, size: Int): Int8Buffer
+public expect fun MemBuffer._sliceInt16Buffer(offset: Int, size: Int): Int16Buffer
+public expect fun MemBuffer._sliceInt32Buffer(offset: Int, size: Int): Int32Buffer
+public expect fun MemBuffer._sliceFloat32Buffer(offset: Int, size: Int): Float32Buffer
+public expect fun MemBuffer._sliceFloat64Buffer(offset: Int, size: Int): Float64Buffer
 
-fun MemBuffer.sliceInt8Buffer(offset: Int = 0, size: Int = (this.size / 1) - offset): Int8Buffer = this._sliceInt8Buffer(offset, size)
-fun MemBuffer.sliceInt16Buffer(offset: Int = 0, size: Int = (this.size / 2) - offset): Int16Buffer = this._sliceInt16Buffer(offset, size)
-fun MemBuffer.sliceInt32Buffer(offset: Int = 0, size: Int = (this.size / 4) - offset): Int32Buffer = this._sliceInt32Buffer(offset, size)
-fun MemBuffer.sliceFloat32Buffer(offset: Int = 0, size: Int = (this.size / 4) - offset): Float32Buffer = this._sliceFloat32Buffer(offset, size)
-fun MemBuffer.sliceFloat64Buffer(offset: Int = 0, size: Int = (this.size / 8) - offset): Float64Buffer = this._sliceFloat64Buffer(offset, size)
-fun MemBuffer.sliceUint8Buffer(offset: Int = 0, size: Int = (this.size / 2) - offset): Uint8Buffer = Uint8Buffer(_sliceInt8Buffer(offset, size))
-fun MemBuffer.sliceUint16Buffer(offset: Int = 0, size: Int = (this.size / 2) - offset): Uint16Buffer = Uint16Buffer(_sliceInt16Buffer(offset, size))
+public fun MemBuffer.sliceInt8Buffer(offset: Int = 0, size: Int = (this.size / 1) - offset): Int8Buffer = this._sliceInt8Buffer(offset, size)
+public fun MemBuffer.sliceInt16Buffer(offset: Int = 0, size: Int = (this.size / 2) - offset): Int16Buffer = this._sliceInt16Buffer(offset, size)
+public fun MemBuffer.sliceInt32Buffer(offset: Int = 0, size: Int = (this.size / 4) - offset): Int32Buffer = this._sliceInt32Buffer(offset, size)
+public fun MemBuffer.sliceFloat32Buffer(offset: Int = 0, size: Int = (this.size / 4) - offset): Float32Buffer = this._sliceFloat32Buffer(offset, size)
+public fun MemBuffer.sliceFloat64Buffer(offset: Int = 0, size: Int = (this.size / 8) - offset): Float64Buffer = this._sliceFloat64Buffer(offset, size)
+public fun MemBuffer.sliceUint8Buffer(offset: Int = 0, size: Int = (this.size / 2) - offset): Uint8Buffer = Uint8Buffer(_sliceInt8Buffer(offset, size))
+public fun MemBuffer.sliceUint16Buffer(offset: Int = 0, size: Int = (this.size / 2) - offset): Uint16Buffer = Uint16Buffer(_sliceInt16Buffer(offset, size))
 
-fun MemBuffer.sliceInt8BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 1) - byteOffset / 1): Int8Buffer = this._sliceInt8Buffer(byteOffset / 1, size)
-fun MemBuffer.sliceInt16BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 2) - byteOffset / 2): Int16Buffer = this._sliceInt16Buffer(byteOffset / 2, size)
-fun MemBuffer.sliceInt32BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 4) - byteOffset / 4): Int32Buffer = this._sliceInt32Buffer(byteOffset / 4, size)
-fun MemBuffer.sliceFloat32BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 4) - byteOffset / 4): Float32Buffer = this._sliceFloat32Buffer(byteOffset / 4, size)
-fun MemBuffer.sliceFloat64BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 8) - byteOffset / 8): Float64Buffer = this._sliceFloat64Buffer(byteOffset / 8, size)
-fun MemBuffer.sliceUint8BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 2) - byteOffset / 2): Uint8Buffer = Uint8Buffer(_sliceInt8Buffer(byteOffset / 2, size))
-fun MemBuffer.sliceUint16BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 2) - byteOffset / 2): Uint16Buffer = Uint16Buffer(_sliceInt16Buffer(byteOffset / 2, size))
+public fun MemBuffer.sliceInt8BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 1) - byteOffset / 1): Int8Buffer = this._sliceInt8Buffer(byteOffset / 1, size)
+public fun MemBuffer.sliceInt16BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 2) - byteOffset / 2): Int16Buffer = this._sliceInt16Buffer(byteOffset / 2, size)
+public fun MemBuffer.sliceInt32BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 4) - byteOffset / 4): Int32Buffer = this._sliceInt32Buffer(byteOffset / 4, size)
+public fun MemBuffer.sliceFloat32BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 4) - byteOffset / 4): Float32Buffer = this._sliceFloat32Buffer(byteOffset / 4, size)
+public fun MemBuffer.sliceFloat64BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 8) - byteOffset / 8): Float64Buffer = this._sliceFloat64Buffer(byteOffset / 8, size)
+public fun MemBuffer.sliceUint8BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 2) - byteOffset / 2): Uint8Buffer = Uint8Buffer(_sliceInt8Buffer(byteOffset / 2, size))
+public fun MemBuffer.sliceUint16BufferByteOffset(byteOffset: Int = 0, size: Int = (this.size / 2) - byteOffset / 2): Uint16Buffer = Uint16Buffer(_sliceInt16Buffer(byteOffset / 2, size))
 
-fun MemBuffer.asInt8Buffer(): Int8Buffer = this.sliceInt8Buffer()
-fun MemBuffer.asInt16Buffer(): Int16Buffer = this.sliceInt16Buffer()
-fun MemBuffer.asInt32Buffer(): Int32Buffer = this.sliceInt32Buffer()
-fun MemBuffer.asFloat32Buffer(): Float32Buffer = this.sliceFloat32Buffer()
-fun MemBuffer.asFloat64Buffer(): Float64Buffer = this.sliceFloat64Buffer()
+public fun MemBuffer.asInt8Buffer(): Int8Buffer = this.sliceInt8Buffer()
+public fun MemBuffer.asInt16Buffer(): Int16Buffer = this.sliceInt16Buffer()
+public fun MemBuffer.asInt32Buffer(): Int32Buffer = this.sliceInt32Buffer()
+public fun MemBuffer.asFloat32Buffer(): Float32Buffer = this.sliceFloat32Buffer()
+public fun MemBuffer.asFloat64Buffer(): Float64Buffer = this.sliceFloat64Buffer()
 
-fun NewFast32Buffer(size: Int) = NewFast32Buffer(MemBufferAllocNoDirect(size * 4))
+public fun NewFast32Buffer(size: Int): Fast32Buffer = NewFast32Buffer(MemBufferAllocNoDirect(size * 4))
 
 // @TODO: abstract/inline on ByteBuffer (JVM), but non-abstract on ByteArray (native) and a wrapper class on JS
-expect abstract class Fast32Buffer
-expect fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer
-expect val Fast32Buffer.length: Int
-expect inline fun Fast32Buffer.getF(index: Int): Float
-expect inline fun Fast32Buffer.setF(index: Int, value: Float)
-expect inline fun Fast32Buffer.getI(index: Int): Int
-expect inline fun Fast32Buffer.setI(index: Int, value: Int)
+public expect abstract class Fast32Buffer
+public expect fun NewFast32Buffer(mem: MemBuffer): Fast32Buffer
+public expect val Fast32Buffer.length: Int
+public expect inline fun Fast32Buffer.getF(index: Int): Float
+public expect inline fun Fast32Buffer.setF(index: Int, value: Float)
+public expect inline fun Fast32Buffer.getI(index: Int): Int
+public expect inline fun Fast32Buffer.setI(index: Int, value: Int)
 
-expect class DataBuffer
-expect fun MemBuffer.getData(): DataBuffer
-expect val DataBuffer.mem: MemBuffer
-expect fun DataBuffer.getByte(index: Int): Byte
-expect fun DataBuffer.setByte(index: Int, value: Byte): Unit
-expect fun DataBuffer.getShort(index: Int): Short
-expect fun DataBuffer.setShort(index: Int, value: Short): Unit
-expect fun DataBuffer.getInt(index: Int): Int
-expect fun DataBuffer.setInt(index: Int, value: Int): Unit
-expect fun DataBuffer.getFloat(index: Int): Float
-expect fun DataBuffer.setFloat(index: Int, value: Float): Unit
-expect fun DataBuffer.getDouble(index: Int): Double
-expect fun DataBuffer.setDouble(index: Int, value: Double): Unit
+public expect class DataBuffer
+public expect fun MemBuffer.getData(): DataBuffer
+public expect val DataBuffer.mem: MemBuffer
+public expect fun DataBuffer.getByte(index: Int): Byte
+public expect fun DataBuffer.setByte(index: Int, value: Byte): Unit
+public expect fun DataBuffer.getShort(index: Int): Short
+public expect fun DataBuffer.setShort(index: Int, value: Short): Unit
+public expect fun DataBuffer.getInt(index: Int): Int
+public expect fun DataBuffer.setInt(index: Int, value: Int): Unit
+public expect fun DataBuffer.getFloat(index: Int): Float
+public expect fun DataBuffer.setFloat(index: Int, value: Float): Unit
+public expect fun DataBuffer.getDouble(index: Int): Double
+public expect fun DataBuffer.setDouble(index: Int, value: Double): Unit
 
 // @TODO: imul is super slow on Kotlin/JS. Why is that? Can't use Math.imul?
 //function imul(a_local, b_local) {
@@ -67,119 +67,119 @@ expect fun DataBuffer.setDouble(index: Int, value: Double): Unit
 //    var rhs = jsBitwiseAnd(a_local, 65535) * b_local;
 //    return jsBitwiseOr(lhs + rhs, 0);
 //}
-fun DataBuffer.setAlignedByte(index: Int, value: Byte): Unit = setByte(index, value)
-fun DataBuffer.setAlignedShort(index: Int, value: Short): Unit = setShort(index shl 1, value)
-fun DataBuffer.setAlignedInt(index: Int, value: Int): Unit = setInt(index shl 2, value)
-fun DataBuffer.setAlignedFloat(index: Int, value: Float): Unit = setFloat(index shl 2, value)
+public fun DataBuffer.setAlignedByte(index: Int, value: Byte): Unit = setByte(index, value)
+public fun DataBuffer.setAlignedShort(index: Int, value: Short): Unit = setShort(index shl 1, value)
+public fun DataBuffer.setAlignedInt(index: Int, value: Int): Unit = setInt(index shl 2, value)
+public fun DataBuffer.setAlignedFloat(index: Int, value: Float): Unit = setFloat(index shl 2, value)
 
-fun DataBuffer.getAlignedByte(index: Int): Byte = getByte(index)
-fun DataBuffer.getAlignedShort(index: Int): Short = getShort(index shl 1)
-fun DataBuffer.getAlignedInt(index: Int): Int = getInt(index shl 2)
-fun DataBuffer.getAlignedFloat(index: Int): Float = getFloat(index shl 2)
+public fun DataBuffer.getAlignedByte(index: Int): Byte = getByte(index)
+public fun DataBuffer.getAlignedShort(index: Int): Short = getShort(index shl 1)
+public fun DataBuffer.getAlignedInt(index: Int): Int = getInt(index shl 2)
+public fun DataBuffer.getAlignedFloat(index: Int): Float = getFloat(index shl 2)
 
-expect class Int8Buffer
-inline fun Int8BufferAlloc(size: Int): Int8Buffer = MemBufferAlloc(size * 1).sliceInt8Buffer() // @TODO: Can't use class name directly (it fails in JS)
-expect val Int8Buffer.mem: MemBuffer
-expect val Int8Buffer.offset: Int
-expect val Int8Buffer.size: Int
-expect operator fun Int8Buffer.get(index: Int): Byte
-expect operator fun Int8Buffer.set(index: Int, value: Byte): Unit
-fun Int8Buffer.subarray(begin: Int, end: Int = this.size): Int8Buffer = this.mem.sliceInt8Buffer(this.offset + begin, end - begin)
+public expect class Int8Buffer
+public inline fun Int8BufferAlloc(size: Int): Int8Buffer = MemBufferAlloc(size * 1).sliceInt8Buffer() // @TODO: Can't use class name directly (it fails in JS)
+public expect val Int8Buffer.mem: MemBuffer
+public expect val Int8Buffer.offset: Int
+public expect val Int8Buffer.size: Int
+public expect operator fun Int8Buffer.get(index: Int): Byte
+public expect operator fun Int8Buffer.set(index: Int, value: Byte): Unit
+public fun Int8Buffer.subarray(begin: Int, end: Int = this.size): Int8Buffer = this.mem.sliceInt8Buffer(this.offset + begin, end - begin)
 
-expect class Int16Buffer
-inline fun Int16BufferAlloc(size: Int): Int16Buffer = MemBufferAlloc(size * 2).sliceInt16Buffer() // @TODO: Can't use class name directly (it fails in JS)
-expect val Int16Buffer.mem: MemBuffer
-expect val Int16Buffer.offset: Int
-expect val Int16Buffer.size: Int
-expect operator fun Int16Buffer.get(index: Int): Short
-expect operator fun Int16Buffer.set(index: Int, value: Short): Unit
-fun Int16Buffer.subarray(begin: Int, end: Int = this.size): Int16Buffer = this.mem.sliceInt16Buffer(this.offset + begin, end - begin)
+public expect class Int16Buffer
+public inline fun Int16BufferAlloc(size: Int): Int16Buffer = MemBufferAlloc(size * 2).sliceInt16Buffer() // @TODO: Can't use class name directly (it fails in JS)
+public expect val Int16Buffer.mem: MemBuffer
+public expect val Int16Buffer.offset: Int
+public expect val Int16Buffer.size: Int
+public expect operator fun Int16Buffer.get(index: Int): Short
+public expect operator fun Int16Buffer.set(index: Int, value: Short): Unit
+public fun Int16Buffer.subarray(begin: Int, end: Int = this.size): Int16Buffer = this.mem.sliceInt16Buffer(this.offset + begin, end - begin)
 
-expect class Int32Buffer
-inline fun Int32BufferAlloc(size: Int): Int32Buffer = MemBufferAlloc(size * 4).sliceInt32Buffer() // @TODO: Can't use class name directly (it fails in JS)
-expect val Int32Buffer.mem: MemBuffer
-expect val Int32Buffer.offset: Int
-expect val Int32Buffer.size: Int
-expect operator fun Int32Buffer.get(index: Int): Int
-expect operator fun Int32Buffer.set(index: Int, value: Int): Unit
-fun Int32Buffer.subarray(begin: Int, end: Int = this.size): Int32Buffer = this.mem.sliceInt32Buffer(this.offset + begin, end - begin)
+public expect class Int32Buffer
+public inline fun Int32BufferAlloc(size: Int): Int32Buffer = MemBufferAlloc(size * 4).sliceInt32Buffer() // @TODO: Can't use class name directly (it fails in JS)
+public expect val Int32Buffer.mem: MemBuffer
+public expect val Int32Buffer.offset: Int
+public expect val Int32Buffer.size: Int
+public expect operator fun Int32Buffer.get(index: Int): Int
+public expect operator fun Int32Buffer.set(index: Int, value: Int): Unit
+public fun Int32Buffer.subarray(begin: Int, end: Int = this.size): Int32Buffer = this.mem.sliceInt32Buffer(this.offset + begin, end - begin)
 
-expect class Float32Buffer
-inline fun Float32BufferAlloc(size: Int): Float32Buffer = MemBufferAlloc(size * 4).sliceFloat32Buffer() // @TODO: Can't use class name directly (it fails in JS)
-expect val Float32Buffer.mem: MemBuffer
-expect val Float32Buffer.offset: Int
-expect val Float32Buffer.size: Int
-expect operator fun Float32Buffer.get(index: Int): Float
-expect operator fun Float32Buffer.set(index: Int, value: Float): Unit
-fun Float32Buffer.subarray(begin: Int, end: Int = this.size): Float32Buffer = this.mem.sliceFloat32Buffer(this.offset + begin, end - begin)
+public expect class Float32Buffer
+public inline fun Float32BufferAlloc(size: Int): Float32Buffer = MemBufferAlloc(size * 4).sliceFloat32Buffer() // @TODO: Can't use class name directly (it fails in JS)
+public expect val Float32Buffer.mem: MemBuffer
+public expect val Float32Buffer.offset: Int
+public expect val Float32Buffer.size: Int
+public expect operator fun Float32Buffer.get(index: Int): Float
+public expect operator fun Float32Buffer.set(index: Int, value: Float): Unit
+public fun Float32Buffer.subarray(begin: Int, end: Int = this.size): Float32Buffer = this.mem.sliceFloat32Buffer(this.offset + begin, end - begin)
 
-expect class Float64Buffer
-inline fun Float64BufferAlloc(size: Int): Float64Buffer = MemBufferAlloc(size * 8).sliceFloat64Buffer() // @TODO: Can't use class name directly (it fails in JS)
-expect val Float64Buffer.mem: MemBuffer
-expect val Float64Buffer.offset: Int
-expect val Float64Buffer.size: Int
-expect operator fun Float64Buffer.get(index: Int): Double
-expect operator fun Float64Buffer.set(index: Int, value: Double): Unit
-fun Float64Buffer.subarray(begin: Int, end: Int = this.size): Float64Buffer = this.mem.sliceFloat64Buffer(this.offset + begin, end - begin)
-
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit
-/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit
+public expect class Float64Buffer
+public inline fun Float64BufferAlloc(size: Int): Float64Buffer = MemBufferAlloc(size * 8).sliceFloat64Buffer() // @TODO: Can't use class name directly (it fails in JS)
+public expect val Float64Buffer.mem: MemBuffer
+public expect val Float64Buffer.offset: Int
+public expect val Float64Buffer.size: Int
+public expect operator fun Float64Buffer.get(index: Int): Double
+public expect operator fun Float64Buffer.set(index: Int, value: Double): Unit
+public fun Float64Buffer.subarray(begin: Int, end: Int = this.size): Float64Buffer = this.mem.sliceFloat64Buffer(this.offset + begin, end - begin)
 
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit
+public expect fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit
 
-fun NewUint8Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceUint8Buffer(offset, len)
-fun NewUint16Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceUint16Buffer(offset, len)
-fun NewInt8Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceInt8Buffer(offset, len)
-fun NewInt16Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceInt16Buffer(offset, len)
-fun NewInt32Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceInt32Buffer(offset, len)
-fun NewFloat32Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceFloat32Buffer(offset, len)
-fun NewFloat64Buffer(mem: MemBuffer, offset: Int, len: Int) = mem.sliceFloat64Buffer(offset, len)
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
+/** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
+public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit
+
+public fun NewUint8Buffer(mem: MemBuffer, offset: Int, len: Int): Uint8Buffer = mem.sliceUint8Buffer(offset, len)
+public fun NewUint16Buffer(mem: MemBuffer, offset: Int, len: Int): Uint16Buffer = mem.sliceUint16Buffer(offset, len)
+public fun NewInt8Buffer(mem: MemBuffer, offset: Int, len: Int): Int8Buffer = mem.sliceInt8Buffer(offset, len)
+public fun NewInt16Buffer(mem: MemBuffer, offset: Int, len: Int): Int16Buffer = mem.sliceInt16Buffer(offset, len)
+public fun NewInt32Buffer(mem: MemBuffer, offset: Int, len: Int): Int32Buffer = mem.sliceInt32Buffer(offset, len)
+public fun NewFloat32Buffer(mem: MemBuffer, offset: Int, len: Int): Float32Buffer = mem.sliceFloat32Buffer(offset, len)
+public fun NewFloat64Buffer(mem: MemBuffer, offset: Int, len: Int): Float64Buffer = mem.sliceFloat64Buffer(offset, len)

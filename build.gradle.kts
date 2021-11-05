@@ -257,6 +257,9 @@ subprojects {
         }
 
         kotlin {
+            //explicitApi()
+            //explicitApiWarning()
+
             metadata {
                 compilations.all {
                     kotlinOptions.suppressWarnings = true

@@ -20,29 +20,29 @@ import kotlin.math.*
  */
 
 @UseExperimental(ExperimentalUnsignedTypes::class)
-inline class Float16(val rawBits: UShort) {
+public inline class Float16(public val rawBits: UShort) {
     @PublishedApi
     internal constructor(value: Double) : this(doubleToIntBits(value))
 
-    val value: Double get() = intBitsToDouble(rawBits)
+    public val value: Double get() = intBitsToDouble(rawBits)
 
-    fun toFloat() = value.toFloat()
-    fun toDouble() = value
+    public fun toFloat(): Float = value.toFloat()
+    public fun toDouble(): Double = value
 
     /** Return the internal bits representation (16-bits) as [UShort] */
-    fun toBits(): UShort = rawBits
+    public fun toBits(): UShort = rawBits
     /** Return the internal bits representation (16-bits) as [UShort] */
-    fun toRawBits(): UShort = rawBits
+    public fun toRawBits(): UShort = rawBits
 
     override fun toString(): String = toDouble().toString()
 
-    companion object {
-        const val FLOAT16_EXPONENT_BASE = 15
+    public companion object {
+        public const val FLOAT16_EXPONENT_BASE: Int = 15
 
-        fun fromBits(bits: UShort): Float16 = Float16(bits)
-        fun fromBits(bits: Int): Float16 = Float16(bits.toUShort())
+        public fun fromBits(bits: UShort): Float16 = Float16(bits)
+        public fun fromBits(bits: Int): Float16 = Float16(bits.toUShort())
 
-        fun intBitsToDouble(word: UShort): Double {
+        public fun intBitsToDouble(word: UShort): Double {
             val w = word.toInt()
             val sign = if ((w and 0x8000) != 0) -1 else 1
             val exponent = (w ushr 10) and 0x1f
@@ -62,7 +62,7 @@ inline class Float16(val rawBits: UShort) {
             }
         }
 
-        fun doubleToIntBits(value: Double): UShort {
+        public fun doubleToIntBits(value: Double): UShort {
             val dword = value.toFloat().reinterpretAsInt()
 
             return when {
@@ -104,10 +104,10 @@ inline class Float16(val rawBits: UShort) {
 }
 
 /** Converts value into [Float16] */
-fun Int.toFloat16(): Float16 = Float16(this.toDouble())
+public fun Int.toFloat16(): Float16 = Float16(this.toDouble())
 /** Converts value into [Float16] */
-fun Double.toFloat16(): Float16 = Float16(this)
+public fun Double.toFloat16(): Float16 = Float16(this)
 /** Converts value into [Float16] */
-fun Float.toFloat16(): Float16 = Float16(this.toDouble())
+public fun Float.toFloat16(): Float16 = Float16(this.toDouble())
 /** Converts value into [Float16] */
-inline fun Number.toFloat16(): Float16 = Float16(this.toDouble())
+public inline fun Number.toFloat16(): Float16 = Float16(this.toDouble())

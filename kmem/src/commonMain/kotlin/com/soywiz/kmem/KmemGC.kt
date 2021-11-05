@@ -1,28 +1,28 @@
 package com.soywiz.kmem
 
-expect val KmemGC: KmemGCImpl
+public expect val KmemGC: KmemGCImpl
 
-open class KmemGCImpl {
-    open fun collect() {
+public open class KmemGCImpl {
+    public open fun collect() {
     }
 
-    open fun collectCyclic() {
+    public open fun collectCyclic() {
     }
 
-    open fun suspend() {
+    public open fun suspend() {
     }
 
-    open fun resume() {
+    public open fun resume() {
     }
 
-    open fun stop() {
+    public open fun stop() {
     }
 
-    open fun start() {
+    public open fun start() {
     }
 
-    open var threshold: Int = 0
-    open var thresholdAllocations: Long = 0L
-    open var autotune: Boolean = true
-    open var cyclicCollectorEnabled: Boolean = true
+    public open var threshold: Int = 0
+    public open var thresholdAllocations: Long = 0L
+    public open var autotune: Boolean = true
+    public open var cyclicCollectorEnabled: Boolean = true
 }
