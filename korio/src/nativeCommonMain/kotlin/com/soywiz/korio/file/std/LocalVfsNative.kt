@@ -57,82 +57,8 @@ val rootLocalVfsNativeSync by lazy { LocalVfsNative(async = false) }
 actual fun localVfs(path: String, async: Boolean): VfsFile = (if (async) rootLocalVfsNative else rootLocalVfsNativeSync)[path]
 
 @ThreadLocal
-private val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isMemoryLeakCheckerActive = false } }
-
-suspend fun <T, R> executeInIOWorker(value: T, func: (T) -> R): R {
-    return executeInWorker(IOWorker, value, func)
-    //return executeInTempWorker(value, func)
-}
-
-internal suspend fun fileOpen(name: String, mode: String): CPointer<FILE>? {
-	data class Info(val name: String, val mode: String)
-	return executeInIOWorker(Info(name, mode)) { it ->
-        posixFopen(it.name, it.mode)
-	}
-}
-
-internal suspend fun fileClose(file: CPointer<FILE>): Unit = executeInIOWorker(file) { fd ->
-	platform.posix.fclose(fd)
-	Unit
-}
-
-internal suspend fun fileLength(file: CPointer<FILE>): Long = executeInIOWorker(file) { fd ->
-	val prev = platform.posix.ftell(fd)
-	platform.posix.fseek(fd, 0L.convert(), platform.posix.SEEK_END)
-	val end = platform.posix.ftell(fd)
-	platform.posix.fseek(fd, prev.convert(), platform.posix.SEEK_SET)
-	end.toLong()
-}
-
-internal suspend fun fileSetLength(file: String, length: Long): Unit {
-	data class Info(val file: String, val length: Long)
-
-	return executeInIOWorker(Info(file, length)) { (fd, len) ->
-		platform.posix.truncate(fd, len.convert())
-		Unit
-	}
-}
-
-internal suspend fun fileRead(file: CPointer<FILE>, position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
-	val data = fileRead(file, position, len) ?: return -1
-	arraycopy(data, 0, buffer, offset, data.size)
-	return data.size
-}
-
-internal suspend fun fileWrite(file: CPointer<FILE>, position: Long, buffer: ByteArray, offset: Int, len: Int) {
-	if (len > 0) {
-		fileWrite(file, position, buffer.copyOfRange(offset, offset + len))
-	}
-}
-
-internal suspend fun fileRead(file: CPointer<FILE>, position: Long, size: Int): ByteArray? {
-	data class Info(val file: CPointer<FILE>, val position: Long, val size: Int)
-
-	if (size < 0) return null
-	if (size == 0) return byteArrayOf()
-
-	return executeInIOWorker(Info(file, position, size)) { (fd, position, len) ->
-		val data = ByteArray(len)
-		val read = data.usePinned { pin ->
-			platform.posix.fseek(fd, position.convert(), platform.posix.SEEK_SET)
-			platform.posix.fread(pin.addressOf(0), 1, len.convert(), fd).toInt()
-		}
-		if (read < 0) null else data.copyOf(read)
-	}
-}
-
-internal suspend fun fileWrite(file: CPointer<FILE>, position: Long, data: ByteArray): Long {
-	data class Info(val file: CPointer<FILE>, val position: Long, val data: ByteArray)
-
-	if (data.isEmpty()) return 0L
-
-	return executeInIOWorker(Info(file, position, if (data.isFrozen) data else data.copyOf())) { (fd, position, data) ->
-		data.usePinned { pin ->
-			platform.posix.fseek(fd, position.convert(), platform.posix.SEEK_SET)
-			platform.posix.fwrite(pin.addressOf(0), 1.convert(), data.size.convert(), fd).toLong()
-		}.toLong()
-	}
-}
+@PublishedApi
+internal val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isMemoryLeakCheckerActive = false } }
 
 expect open class LocalVfsNative(async: Boolean = true) : LocalVfsNativeBase
 
@@ -142,14 +68,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 
 	fun resolve(path: String) = path
 
-    suspend fun <T, R> executeInIOWorker(value: T, func: (T) -> R): R {
-        if (async) {
-            return executeInWorker(IOWorker, value, func)
-        } else {
-            return func(value)
-        }
-        //return executeInTempWorker(value, func)
-    }
+    suspend inline fun <T, R> executeInIOWorker(value: T, noinline func: (T) -> R): R = if (async) executeInWorker(IOWorker, value, func) else func(value)
 
     override suspend fun exec(
 		path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler
@@ -197,44 +116,92 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 	}
 
 	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
-		val rpath = resolve(path)
-		var fd: CPointer<FILE>? = fileOpen(rpath, mode.cmode)
-		val errno = posix_errno()
-		//if (fd == null || errno != 0) {
-		if (fd == null) {
-			val errstr = strerror(errno)?.toKString()
-			throw FileNotFoundException("Can't open '$rpath' with mode '${mode.cmode}' errno=$errno, errstr=$errstr")
-		}
+        val rpath = resolve(path)
 
-		fun checkFd() {
-			if (fd == null) error("Error with file '$rpath'")
-		}
+        data class FileOpenInfo(val name: String, val mode: String)
+        val (initialFd, initialFileLength) = executeInIOWorker(FileOpenInfo(rpath, mode.cmode)) { it ->
+            val fd = posixFopen(it.name, it.mode)
+            val len = if (fd != null) {
+                fseek(fd, 0L.convert(), SEEK_END)
+                val end = ftell(fd)
+                fseek(fd, 0L.convert(), SEEK_SET)
+                end.toLong()
+            } else {
+                0L
+            }
+            Pair(fd, len)
+        }
+        val errno = posix_errno()
+        //if (initialFd == null || errno != 0) {
+        if (initialFd == null) {
+            val errstr = strerror(errno)?.toKString()
+            throw FileNotFoundException("Can't open '$rpath' with mode '${mode.cmode}' errno=$errno, errstr=$errstr")
+        }
 
 		return object : AsyncStreamBase() {
-			override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
+            var fd: CPointer<FILE>? = initialFd
+            var currentFileLength: Long = initialFileLength
+
+            fun checkFd() {
+                if (fd == null) error("Error with file '$rpath'")
+            }
+
+            internal suspend fun fileTransfer(fd: CPointer<FILE>, position: Long, buffer: ByteArray, offset: Int, len: Int, write: Boolean): Long {
+                data class Info(val fd: CPointer<FILE>, val position: Long, val buffer: CPointer<ByteVar>, val size: Int, val write: Boolean)
+                if (len <= 0) return 0L
+                if (offset + len > buffer.size) throw OutOfBoundsException(offset + len)
+                var transferredCount: Long = 0L
+                //fileWrite(fd, position, buffer.copyOfRange(offset, offset + len))
+                val time = measureTime {
+                    transferredCount = buffer.usePinned { pin ->
+                        executeInIOWorker(Info(fd, position, pin.addressOf(offset), len, write)) { (fd, position, buffer, len) ->
+                            fseek(fd, position.convert(), SEEK_SET)
+                            if (write) {
+                                //platform.posix.fwrite(buffer, 1.convert(), len.convert(), fd).toLong()
+                                fwrite(buffer, len.convert(), 1.convert(), fd).toLong() // Write it at once (len, 1)
+                                len.toLong()
+                            } else {
+                                fread(buffer, 1.convert(), len.convert(), fd).toLong() // Allow to read less values (1, len)
+                            }
+                        }
+                    }
+                }
+                //println("fileTransfer: len=$len, write=$write, transferred=$transferredCount, async=$async, time=$time")
+                return transferredCount
+            }
+
+            override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int {
 				checkFd()
-				return fileRead(fd!!, position, buffer, offset, len)
+				return fileTransfer(fd!!, position, buffer, offset, len, write = false).toInt()
 			}
 
 			override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int) {
 				checkFd()
-				return fileWrite(fd!!, position, buffer, offset, len)
+                currentFileLength = max(currentFileLength, position + len)
+				fileTransfer(fd!!, position, buffer, offset, len, write = true)
 			}
 
 			override suspend fun setLength(value: Long): Unit {
 				checkFd()
-				fileSetLength(rpath, value)
+                data class Info(val file: String, val length: Long)
+
+                executeInIOWorker(Info(rpath, value)) { (fd, len) ->
+                    truncate(fd, len.convert())
+                    Unit
+                }
+                currentFileLength = value
 			}
 
-			override suspend fun getLength(): Long {
-				checkFd()
-				return fileLength(fd!!)
-			}
+			override suspend fun getLength(): Long = currentFileLength
 			override suspend fun close() {
 				if (fd != null) {
-					fileClose(fd!!)
+                    executeInIOWorker(fd!!) { fd ->
+                        fclose(fd)
+                        Unit
+                    }
 				}
 				fd = null
+                currentFileLength = 0L
 			}
 
 			override fun toString(): String = "$that($path)"
@@ -242,7 +209,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 	}
 
 	override suspend fun setSize(path: String, size: Long): Unit {
-		platform.posix.truncate(resolve(path), size.convert())
+		truncate(resolve(path), size.convert())
 	}
 
 	override suspend fun stat(path: String): VfsStat {
