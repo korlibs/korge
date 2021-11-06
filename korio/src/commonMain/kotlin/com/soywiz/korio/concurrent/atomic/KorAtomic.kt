@@ -37,6 +37,8 @@ open class KorAtomicRef<T> internal constructor(initial: T, dummy: Boolean) : Ko
 			false
 		}
 	}
+
+    override fun toString(): String = "$value"
 }
 
 open class KorAtomicBoolean internal constructor(initial: Boolean, dummy: Boolean) : KorAtomicBase<Boolean> {
@@ -50,6 +52,8 @@ open class KorAtomicBoolean internal constructor(initial: Boolean, dummy: Boolea
 			false
 		}
 	}
+
+    override fun toString(): String = "$value"
 }
 
 open class KorAtomicInt internal constructor(initial: Int, dummy: Boolean) : KorAtomicNumber<Int> {
@@ -68,6 +72,8 @@ open class KorAtomicInt internal constructor(initial: Int, dummy: Boolean) : Kor
 		this.value += delta
 		return this.value
 	}
+
+    override fun toString(): String = "$value"
 }
 
 open class KorAtomicLong internal constructor(initial: Long, dummy: Boolean) : KorAtomicNumber<Long> {
@@ -86,6 +92,8 @@ open class KorAtomicLong internal constructor(initial: Long, dummy: Boolean) : K
 		this.value += delta
 		return this.value
 	}
+
+    override fun toString(): String = "$value"
 }
 
 fun KorAtomicInt.incrementAndGet() = addAndGet(1)
