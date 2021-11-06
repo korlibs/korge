@@ -15,13 +15,14 @@ import kotlin.collections.*
 
 suspend fun ZipVfs(
     s: AsyncStream,
-    zipFile: VfsFile? = null,
+    vfsFile: VfsFile? = null,
     caseSensitive: Boolean = true,
     closeStream: Boolean = false,
-    useNativeDecompression: Boolean = true
+    useNativeDecompression: Boolean = true,
+    fullName: String? = null
 ): VfsFile {
     //val s = zipFile.open(VfsOpenMode.READ)
-    val zipFile = ZipFile(s, caseSensitive)
+    val zipFile = ZipFile(s, caseSensitive, fullName ?: vfsFile?.fullName)
 
     class Impl : VfsV2() {
         val vfs = this
@@ -33,13 +34,16 @@ suspend fun ZipVfs(
         }
 
         override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
+            //println("[ZipVfs].open[1]")
             val entry = zipFile.files[zipFile.normalizeName(path)] ?: throw FileNotFoundException("Path: '$path'")
             if (entry.isDirectory) throw IOException("Can't open a zip directory for $mode")
             val base = entry.headerEntry.sliceStart()
+            //println("[ZipVfs].open[2]")
             @Suppress("UNUSED_VARIABLE")
             return base.run {
                 if (this.getAvailable() < 16) throw IllegalStateException("Chunk to small to be a ZIP chunk")
                 if (readS32BE() != 0x504B_0304) throw IllegalStateException("Not a zip file (readS32BE() != 0x504B_0304)")
+                //println("[ZipVfs].open[3]")
                 val version = readU16LE()
                 val flags = readU16LE()
                 val compressionType = readU16LE()
@@ -54,9 +58,12 @@ suspend fun ZipVfs(
                 val extra = readBytesExact(extraLength)
                 val compressedData = readSlice(entry.compressedSize)
 
+                //println("[ZipVfs].open[4]")
+
                 when (entry.compressionMethod) {
                     0 -> compressedData
                     else -> {
+                        //println("[ZipVfs].open[5]")
                         val method = when (entry.compressionMethod) {
                             8 -> if (useNativeDecompression) Deflate else DeflatePortable
                             else -> TODO("Not implemented zip method ${entry.compressionMethod}")

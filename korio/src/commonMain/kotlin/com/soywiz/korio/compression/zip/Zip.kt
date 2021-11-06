@@ -13,14 +13,17 @@ import kotlin.math.max
 class ZipFile private constructor(
     val dummy: Boolean,
     val s: AsyncStream,
-    val caseSensitive: Boolean = true
+    val caseSensitive: Boolean = true,
+    val name: String? = null,
 ) {
     val files = LinkedHashMap<String, ZipEntry2>()
     val filesPerFolder = LinkedHashMap<String, MutableMap<String, ZipEntry2>>()
 
+    override fun toString(): String = "ZipFile($name)"
+
     companion object {
-        suspend operator fun invoke(s: AsyncStream, caseSensitive: Boolean = true): ZipFile {
-            return ZipFile(false, s, caseSensitive).also { it.read() }
+        suspend operator fun invoke(s: AsyncStream, caseSensitive: Boolean = true, name: String? = null): ZipFile {
+            return ZipFile(false, s, caseSensitive, name).also { it.read() }
         }
 
         internal val PK_END = byteArrayOf(0x50, 0x4B, 0x05, 0x06)
@@ -29,7 +32,7 @@ class ZipFile private constructor(
     fun normalizeName(name: String) = if (caseSensitive) name.trim('/') else name.trim('/').toLowerCase()
 
     private suspend fun read() {
-        //println("ZipFile reading...")
+        //println("ZipFile reading...[0]")
         var endBytes = EMPTY_BYTE_ARRAY
 
         if (s.getLength() <= 8L) throw IllegalArgumentException("Zip file is too small length=${s.getLength()}")
@@ -47,12 +50,16 @@ class ZipFile private constructor(
             if (pk_endIndex >= 0) break
         }
 
+        //println("ZipFile reading...[1]")
+
         if (pk_endIndex < 0) throw IllegalArgumentException("Not a zip file (pk_endIndex < 0) : pk_endIndex=$pk_endIndex : ${endBytes.sliceArray(endBytes.size - 32 until endBytes.size).hex} : ${s.getLength()}")
 
         val data = endBytes.copyOfRange(pk_endIndex, endBytes.size).openSync()
 
         @Suppress("UNUSED_VARIABLE")
         data.apply {
+            //println("ZipFile reading...[2]")
+
             //println(s)
             val magic = readS32BE()
             if (magic != 0x504B_0506) throw IllegalStateException("Not a zip file ${magic.hex} instead of ${0x504B_0102.hex}")
@@ -63,6 +70,8 @@ class ZipFile private constructor(
             val directorySize = readS32LE()
             val directoryOffset = readS32LE()
             val commentLength = readU16LE()
+
+            //println("ZipFile reading...[3]")
 
             //println("Zip: $entriesInDirectory")
 
@@ -139,6 +148,8 @@ class ZipFile private constructor(
                     files[normalizedName] = entry
                 }
             }
+
+            //println("ZipFile reading...[end]")
 
             files[""] = ZipEntry2(
                 path = "",
