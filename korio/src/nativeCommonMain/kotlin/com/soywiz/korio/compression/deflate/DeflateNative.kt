@@ -1,6 +1,7 @@
 package com.soywiz.korio.compression.deflate
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import kotlinx.cinterop.*
 import platform.posix.*
 import platform.zlib.*
@@ -11,6 +12,8 @@ import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.util.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.experimental.*
+import com.soywiz.korio.lang.*
+import kotlin.assert
 import kotlin.math.*
 
 //actual fun Deflate(windowBits: Int): CompressionMethod = DeflatePortable(windowBits)
@@ -20,6 +23,9 @@ private const val CHUNK = 8 * 1024 * 1024
 
 @UseExperimental(KorioExperimentalApi::class)
 fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMethod {
+    val DEBUG_DEFLATE = Environment["DEBUG_DEFLATE"] == "true"
+    //val DEBUG_DEFLATE = true
+
 	override suspend fun uncompress(input: BitReader, output: AsyncOutputStream) {
 		memScoped {
 			val strm: z_stream = alloc()
@@ -40,56 +46,78 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
             //    }
             //}
 
+            var readTime = 0.milliseconds
+            var writeTime = 0.milliseconds
+            var inflateTime = 0.milliseconds
+            var totalTime = 0.milliseconds
+            var readCount = 0
+            var writeCount = 0
+            var inflateCount = 0
+
 			try {
-				inpArray.usePinned { _inp ->
-					outArray.usePinned { _out ->
-						val inp = _inp.addressOf(0)
-						val out = _out.addressOf(0)
-						var tempInputSize = 0
-						strm.zalloc = null
-						strm.zfree = null
-						strm.opaque = null
-						strm.avail_in = 0u
-						strm.next_in = null
-						ret = inflateInit2_(strm.ptr, -windowBits, zlibVersion()?.toKString(), sizeOf<z_stream>().toInt());
-						if (ret != Z_OK) error("Invalid inflateInit2_")
+                totalTime = measureTime {
+                    inpArray.usePinned { _inp ->
+                        outArray.usePinned { _out ->
+                            val inp = _inp.addressOf(0)
+                            val out = _out.addressOf(0)
+                            var tempInputSize = 0
+                            strm.zalloc = null
+                            strm.zfree = null
+                            strm.opaque = null
+                            strm.avail_in = 0u
+                            strm.next_in = null
+                            ret = inflateInit2_(strm.ptr, -windowBits, zlibVersion()?.toKString(), sizeOf<z_stream>().toInt());
+                            if (ret != Z_OK) error("Invalid inflateInit2_")
 
-						do {
-							//println("strm.avail_in: ${strm.avail_in}")
-							strm.avail_in = input.read(inpArray, 0, CHUNK).convert()
-							if (strm.avail_in == 0u || strm.avail_in > CHUNK.convert()) break
-							tempInputSize = strm.avail_in.convert()
-							strm.next_in = inp.reinterpret()
+                            do {
+                                //println("strm.avail_in: ${strm.avail_in}")
+                                readTime += measureTime {
+                                    strm.avail_in = input.read(inpArray, 0, CHUNK).convert()
+                                    readCount++
+                                }
+                                if (strm.avail_in == 0u || strm.avail_in > CHUNK.convert()) break
+                                tempInputSize = strm.avail_in.convert()
+                                strm.next_in = inp.reinterpret()
 
-							do {
-								strm.avail_out = CHUNK.convert()
-								strm.next_out = out.reinterpret()
-								ret = inflate(strm.ptr, Z_NO_FLUSH)
-								assert(ret != Z_STREAM_ERROR)
-								when (ret) {
-									Z_NEED_DICT -> ret = Z_DATA_ERROR
-									Z_DATA_ERROR -> error("data error")
-									Z_MEM_ERROR  -> error("mem error")
-								}
-								val have = CHUNK - strm.avail_out.toInt()
-                                //buffer.write(outArray, 0, have)
-                                //flush(false)
-								output.write(outArray, 0, have)
-							} while (strm.avail_out == 0u)
-						} while (ret != Z_STREAM_END)
+                                do {
+                                    strm.avail_out = CHUNK.convert()
+                                    strm.next_out = out.reinterpret()
+                                    inflateCount++
+                                    inflateTime += measureTime {
+                                        ret = inflate(strm.ptr, Z_NO_FLUSH)
+                                    }
+                                    assert(ret != Z_STREAM_ERROR)
+                                    when (ret) {
+                                        Z_NEED_DICT -> ret = Z_DATA_ERROR
+                                        Z_DATA_ERROR -> error("data error")
+                                        Z_MEM_ERROR  -> error("mem error")
+                                    }
+                                    val have = CHUNK - strm.avail_out.toInt()
+                                    //buffer.write(outArray, 0, have)
+                                    //flush(false)
+                                    writeTime += measureTime {
+                                        output.write(outArray, 0, have)
+                                        writeCount++
+                                    }
+                                } while (strm.avail_out == 0u)
+                            } while (ret != Z_STREAM_END)
 
-						// Return read bytes that were not consumed
-						val remaining = strm.avail_in.toInt()
-						if (remaining > 0) {
-							input.returnToBuffer(inpArray, tempInputSize - remaining, remaining)
-							//error("too much data in DeflateNative stream")
-						}
+                            // Return read bytes that were not consumed
+                            val remaining = strm.avail_in.toInt()
+                            if (remaining > 0) {
+                                input.returnToBuffer(inpArray, tempInputSize - remaining, remaining)
+                                //error("too much data in DeflateNative stream")
+                            }
 
-                        //flush(true)
-					}
-				}
+                            //flush(true)
+                        }
+                    }
+                }
 			} finally {
 				inflateEnd(strm.ptr)
+                if (DEBUG_DEFLATE) {
+                    println("DeflateNative.uncompress: inflateCount=$inflateCount, inflateTime=$inflateTime, readCount=$readCount, readTime=$readTime, writeCount=$writeCount, writeTime=$writeTime, totalTime=$totalTime, CHUNK=$CHUNK, input=$input, output=$output")
+                }
 			}
 		}
 	}
