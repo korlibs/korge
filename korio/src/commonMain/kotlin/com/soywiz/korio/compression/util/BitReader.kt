@@ -1,11 +1,13 @@
 package com.soywiz.korio.compression.util
 
 import com.soywiz.kds.*
+import com.soywiz.kds.internal.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.experimental.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import kotlin.math.*
+import com.soywiz.kmem.ilog2
 
 @KorioExperimentalApi
 open class BitReader constructor(
@@ -13,6 +15,8 @@ open class BitReader constructor(
     val bigChunkSize: Int = BIG_CHUNK_SIZE,
     val readWithSize: Int = READ_WHEN_LESS_THAN
 ) : AsyncInputStreamWithLength {
+    override fun toString(): String = "BitReader($s, bigChunkSize=$bigChunkSize, readWithSize=$readWithSize)"
+
     companion object {
         const val BIG_CHUNK_SIZE = 8 * 1024 * 1024 // 8 MB
         //const val BIG_CHUNK_SIZE = 128 * 1024
@@ -41,9 +45,7 @@ open class BitReader constructor(
 		return this
 	}
 
-	//private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = false)
-    //private val sbuffers = ByteArrayDeque(ilog2(BIG_CHUNK_SIZE), allowGrow = true)
-    private val sbuffers = RingBuffer(ilog2(bigChunkSize))
+    private val sbuffers = RingBuffer(ilog2(bigChunkSize.nextPowerOfTwo))
     private var sbuffersReadPos = 0.0
     private var sbuffersPos = 0.0
 	val requirePrepare get() = sbuffers.availableRead < readWithSize
@@ -63,15 +65,18 @@ open class BitReader constructor(
         sbuffersPos += size
 	}
 
-	private val tempBA = ByteArray(bigChunkSize)
-	suspend fun prepareBytesUpTo(expectedBytes: Int): BitReader {
+	@OptIn(KdsInternalApi::class)
+    suspend fun prepareBytesUpTo(expectedBytes: Int) {
 		while (sbuffers.availableRead < expectedBytes) {
-			val read = s.read(tempBA, 0, min(min(tempBA.size, expectedBytes), sbuffers.availableWrite))
-			if (read <= 0) break // No more data
-			sbuffers.write(tempBA, 0, read)
-            sbuffersPos += read
+            val readCount = min(expectedBytes, sbuffers.availableWriteBeforeWrap)
+            if (readCount <= 0) break
+
+            val transferred = s.read(sbuffers.internalBuffer, sbuffers.internalWritePos, readCount)
+            if (transferred <= 0) break
+            sbuffers.internalWriteSkip(transferred)
+
+            sbuffersPos += transferred
 		}
-		return this
 	}
 
     fun ensureBits(bitcount: Int) {
@@ -154,9 +159,13 @@ open class BitReader constructor(
     }
 
 	private val temp = ByteArray(4)
-	suspend fun abytes(count: Int, out: ByteArray = ByteArray(count)) = prepareBytesUpTo(count).sbytes(count, out)
+	suspend fun abytes(count: Int, out: ByteArray = ByteArray(count)): ByteArray {
+        prepareBytesUpTo(count)
+        return sbytes(count, out)
+    }
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int {
-		val out = prepareBytesUpTo(len).sbuffers.read(buffer, offset, len)
+        prepareBytesUpTo(len)
+		val out = sbuffers.read(buffer, offset, len)
         sbuffersReadPos += out
         return out
 	}
@@ -175,13 +184,15 @@ open class BitReader constructor(
 		}
 	}.toString(ASCII)
 
-	suspend fun copyTo(o: AsyncOutputStream) {
+	@Suppress("EXPERIMENTAL_API_USAGE")
+    suspend fun copyTo(o: AsyncOutputStream) {
 		while (true) {
 			prepareBigChunkIfRequired()
-			val read = sbuffers.read(tempBA, 0, tempBA.size)
+            val read = sbuffers.availableReadBeforeWrap
 			if (read <= 0) break
             sbuffersReadPos += read
-			o.writeBytes(tempBA, 0, read)
+			o.writeBytes(sbuffers.internalBuffer, sbuffers.internalReadPos, read)
+            sbuffers.internalReadSkip(read)
 		}
 	}
 
@@ -199,4 +210,3 @@ open class BitReader constructor(
     override suspend fun hasLength(): Boolean =  (s as? AsyncGetLengthStream)?.hasLength() ?: false
     override suspend fun getLength(): Long = (s as? AsyncGetLengthStream)?.getLength() ?: error("Length not available on Stream")
 }
-
