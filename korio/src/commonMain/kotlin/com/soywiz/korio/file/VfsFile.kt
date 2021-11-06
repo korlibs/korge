@@ -6,6 +6,7 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.experimental.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
@@ -13,10 +14,14 @@ import com.soywiz.korio.util.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 
+@OptIn(KorioExperimentalApi::class)
 data class VfsFile(
 	val vfs: Vfs,
 	val path: String
 ) : VfsNamed(path.pathInfo), AsyncInputOpenable, Extra by Extra.Mixin() {
+    @KorioExperimentalApi
+    var cachedStat: VfsStat? = null
+
     fun relativePathTo(relative: VfsFile): String? {
         if (relative.vfs != this.vfs) return null
         return this.pathInfo.relativePathTo(relative.pathInfo)
@@ -88,7 +93,7 @@ data class VfsFile(
 	suspend fun readString(charset: Charset = UTF8): String = read().toString(charset)
 
 	suspend fun writeString(data: String, vararg attributes: Vfs.Attribute, charset: Charset = UTF8): Unit =
-		run { write(data.toByteArray(charset), *attributes) }
+		run { write(data.toByteArray(charset), *attributes, Vfs.FileKind.STRING) }
 
 	suspend fun readChunk(offset: Long, size: Int): ByteArray = vfs.readChunk(this.path, offset, size)
 	suspend fun writeChunk(data: ByteArray, offset: Long, resize: Boolean = false): Unit =
@@ -96,7 +101,7 @@ data class VfsFile(
 
 	suspend fun readAsSyncStream(): SyncStream = read().openSync()
 
-	suspend fun stat(): VfsStat = vfs.stat(this.path)
+    suspend fun stat(): VfsStat = cachedStat ?: vfs.stat(this.path)
 	suspend fun touch(time: DateTime, atime: DateTime = time): Unit = vfs.touch(this.path, time, atime)
 	suspend fun size(): Long = vfs.stat(this.path).size
 	suspend fun exists(): Boolean = runIgnoringExceptions { vfs.stat(this.path).exists } ?: false

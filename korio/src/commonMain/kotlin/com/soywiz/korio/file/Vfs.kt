@@ -7,7 +7,6 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 import kotlin.math.*
@@ -75,7 +74,29 @@ abstract class Vfs : AsyncCloseable {
 
 	interface Attribute
 
-	inline fun <reified T> Iterable<Attribute>.get(): T? = this.firstOrNull { it is T } as T?
+    interface FileKind : Attribute {
+        val name: String
+
+        companion object {
+            val BINARY get() = Standard.BINARY
+            val STRING get() = Standard.STRING
+            val LONG get() = Standard.LONG
+            val INT get() = Standard.INT
+        }
+        enum class Standard : FileKind {
+            BINARY, STRING, LONG, INT
+        }
+    }
+
+    open fun getKind(value: Any?): FileKind = when (value) {
+        null, is ByteArray -> FileKind.BINARY
+        is String -> FileKind.STRING
+        is Int -> FileKind.INT
+        is Long -> FileKind.LONG
+        else -> FileKind.BINARY
+    }
+
+    inline fun <reified T> Iterable<Attribute>.get(): T? = this.firstOrNull { it is T } as T?
 
 	open suspend fun put(path: String, content: AsyncInputStream, attributes: List<Attribute> = listOf()): Long {
 		return open(path, VfsOpenMode.CREATE_OR_TRUNCATE).use {
@@ -126,6 +147,7 @@ abstract class Vfs : AsyncCloseable {
 	open suspend fun rmdir(path: String): Boolean = delete(path) // For compatibility
 	open suspend fun delete(path: String): Boolean = unsupported()
 	open suspend fun rename(src: String, dst: String): Boolean {
+        if (file(src).isDirectory()) error("Unsupported renaming directories in $this")
 		file(src).copyTo(file(dst))
 		delete(src)
 		return true
@@ -256,21 +278,24 @@ open class VfsProcessHandler {
 class VfsProcessException(message: String) : IOException(message)
 
 data class VfsStat(
-	val file: VfsFile,
-	val exists: Boolean,
-	val isDirectory: Boolean,
-	val size: Long,
-	val device: Long = -1L,
-	val inode: Long = -1L,
-	val mode: Int = 511,
-	val owner: String = "nobody",
-	val group: String = "nobody",
-	val createTime: DateTime = DateTime.EPOCH,
-	val modifiedTime: DateTime = createTime,
-	val lastAccessTime: DateTime = modifiedTime,
-	val extraInfo: Any? = null,
-	val id: String? = null
+    val file: VfsFile,
+    val exists: Boolean,
+    val isDirectory: Boolean,
+    val size: Long,
+    val device: Long = -1L,
+    val inode: Long = -1L,
+    val mode: Int = 511,
+    val owner: String = "nobody",
+    val group: String = "nobody",
+    val createTime: DateTime = DateTime.EPOCH,
+    val modifiedTime: DateTime = createTime,
+    val lastAccessTime: DateTime = modifiedTime,
+    val extraInfo: Any? = null,
+    val kind: Vfs.FileKind? = null,
+    val id: String? = null
 ) : Path by file {
+    val enrichedFile get() = file.copy().also { it.cachedStat = this }
+
 	fun toString(showFile: Boolean): String = "VfsStat(" + ArrayList<String>(16).also { al ->
 		if (showFile) al.add("file=$file") else al.add("file=${file.absolutePath}")
 		al.add("exists=$exists")
@@ -285,6 +310,9 @@ data class VfsStat(
 		al.add("modifiedTime=$modifiedTime")
 		al.add("lastAccessTime=$lastAccessTime")
 		al.add("extraInfo=$extraInfo")
+        if (kind != null) {
+            al.add("kind=$kind")
+        }
 		al.add("id=$id")
 	}.joinToString(", ") + ")"
 
