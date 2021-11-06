@@ -174,7 +174,9 @@ fun AsyncStreamBase.toAsyncStream(position: Long = 0L): AsyncStream = AsyncStrea
 
 class AsyncStream(val base: AsyncStreamBase, var position: Long = 0L, val queue: Boolean = false) : Extra by Extra.Mixin(), AsyncInputStream, AsyncInputStreamWithLength, AsyncOutputStream, AsyncPositionLengthStream,
 	AsyncCloseable {
-	private val readQueue = AsyncThread()
+    override fun toString(): String = "AsyncStream($base, position=$position)"
+
+    private val readQueue = AsyncThread()
 	private val writeQueue = AsyncThread()
 
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = when {
@@ -659,7 +661,8 @@ suspend inline fun AsyncInputStream.consume(autoclose: Boolean = true, temp: Byt
     }
 }
 
-suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 256 * 1024): Long {
+//suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 256 * 1024): Long {
+suspend fun AsyncInputStream.copyTo(target: AsyncOutputStream, chunkSize: Int = 8 * 1024 * 1024): Long {
 	// Optimization to reduce suspensions
 	if (this is AsyncStream && base is MemoryAsyncStreamBase) {
 		target.write(base.data.data, position.toInt(), base.ilength - position.toInt())
@@ -828,13 +831,16 @@ class MemoryAsyncStreamBase(var data: com.soywiz.kmem.ByteArrayBuilder) : AsyncS
  *
  * The [process] function is executed lazily when the data is tried to be read.
  */
-suspend fun asyncStreamWriter(bufferSize: Int = 32 * 1024, name: String? = null, process: suspend (out: AsyncOutputStream) -> Unit): AsyncInputStream {
-	val deque = AsyncByteArrayDeque(bufferSize).also { it.name = name }
-    var lastError: Throwable? = null
-
-	var job: Job? = null
-
+suspend fun asyncStreamWriter(bufferSize: Int = AsyncByteArrayDequeChunked.DEFAULT_MAX_SIZE, name: String? = null, lazy: Boolean = false, process: suspend (out: AsyncOutputStream) -> Unit): AsyncInputStream {
 	return object : AsyncInputStream {
+        val deque = when {
+            lazy -> AsyncByteArrayDeque(bufferSize).also { it.name = name }
+            else -> AsyncByteArrayDequeChunked(bufferSize).also { it.name = name }
+        }
+        var lastError: Throwable? = null
+
+        var job: Job? = null
+
         private fun checkException() {
             if (lastError != null) throw RuntimeException("Error in asyncStreamWriter", lastError!!)
         }

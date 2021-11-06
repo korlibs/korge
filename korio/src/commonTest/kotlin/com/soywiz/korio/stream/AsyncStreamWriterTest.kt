@@ -9,7 +9,7 @@ class AsyncStreamWriterTest {
 
     @Test
     fun test() = suspendTest {
-        val stream = asyncStreamWriter {
+        val stream = asyncStreamWriter(lazy = true) {
             log += "start"
             it.write(byteArrayOf(10, 11, 12))
             log += "1"
