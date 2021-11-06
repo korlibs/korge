@@ -6,8 +6,7 @@ import kotlinx.coroutines.*
 
 suspend fun <T, R> executeInWorker(worker: kotlin.native.concurrent.Worker, value: T, func: (T) -> R): R {
 	class Info(val value: T, val func: (T) -> R)
-	val info = Info(value.freeze(), func.freeze())
-	val future = worker.execute(kotlin.native.concurrent.TransferMode.UNSAFE, { info }, { it: Info -> it.func(it.value) })
+	val future = worker.execute(kotlin.native.concurrent.TransferMode.UNSAFE, { Info(value.freeze(), func.freeze()) }, { it.func(it.value) })
 	return future.await()
 }
 
