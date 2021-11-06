@@ -2,6 +2,7 @@ package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
 import kotlin.jvm.*
+import kotlin.math.*
 
 class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     private var ring = RingBuffer(initialBits)
@@ -11,17 +12,20 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     var read: Long = 0; private set
     val availableWriteWithoutAllocating get() = ring.availableWrite
     val availableRead get() = ring.availableRead
+    val bufferSize get() = ring.totalSize
 
     @JvmOverloads
     fun writeHead(buffer: ByteArray, offset: Int = 0, size: Int = buffer.size - offset): Int {
-        val out = ensureWrite(size).ring.writeHead(buffer, offset, size)
+        ensureWrite(size)
+        val out = ring.writeHead(buffer, offset, size)
         if (out > 0) written += out
         return out
     }
 
     @JvmOverloads
     fun write(buffer: ByteArray, offset: Int = 0, size: Int = buffer.size - offset): Int {
-        val out = ensureWrite(size).ring.write(buffer, offset, size)
+        ensureWrite(size)
+        val out = ring.write(buffer, offset, size)
         if (out > 0) written += out
         return out
     }
@@ -42,25 +46,21 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     }
 
     fun readByte(): Int = ring.readByte()
-    fun writeByte(v: Int): Boolean = ensureWrite(1).ring.writeByte(v)
+    fun writeByte(v: Int): Boolean {
+        ensureWrite(1)
+        return ring.writeByte(v)
+    }
 
-    private fun ensureWrite(count: Int): ByteArrayDeque {
-        if (count > ring.availableWrite) {
-            if (!allowGrow) {
-                val message = "Can't grow ByteArrayDeque. Need to write $count, but only ${ring.availableWrite} is available"
-                println("ERROR: $message")
-                error(message)
-            }
-            val minNewSize = ring.availableRead + count
-            val newBits = ilog2(minNewSize) + 2
-            val newRing = RingBuffer(newBits)
-            while (ring.availableRead > 0) {
-                val read = ring.read(tempBuffer, 0, tempBuffer.size)
-                newRing.write(tempBuffer, 0, read)
-            }
-            this.ring = newRing
+    @OptIn(KdsInternalApi::class)
+    private fun ensureWrite(count: Int) {
+        if (count <= ring.availableWrite) return
+        if (!allowGrow) {
+            val message = "Can't grow ByteArrayDeque. Need to write $count, but only ${ring.availableWrite} is available"
+            println("ERROR: $message")
+            error(message)
         }
-        return this
+        val minNewSize = ring.availableRead + count
+        this.ring = RingBuffer(ilog2(minNewSize) + 2).also { it.write(ring) }
     }
 
     fun clear() {
