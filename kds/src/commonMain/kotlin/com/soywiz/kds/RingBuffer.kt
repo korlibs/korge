@@ -6,6 +6,7 @@ import kotlin.math.*
 
 class RingBuffer(bits: Int) : ByteRingBuffer(bits)
 
+@OptIn(KdsInternalApi::class)
 open class ByteRingBuffer(val bits: Int) {
     val totalSize = 1 shl bits
     private val mask = totalSize - 1
@@ -15,6 +16,50 @@ open class ByteRingBuffer(val bits: Int) {
     var availableWrite = totalSize; private set
     var availableRead = 0; private set
 
+    @KdsInternalApi
+    val internalBuffer get() = buffer
+
+    @KdsInternalApi
+    val internalReadPos get() = readPos and mask
+
+    @KdsInternalApi
+    val internalWritePos get() = writePos and mask
+
+    @KdsInternalApi
+    fun internalWriteSkip(count: Int) {
+        if (count < 0 || count > availableWrite) error("Try to write more than available")
+        writePos += count
+        availableRead += count
+        availableWrite -= count
+    }
+
+    @KdsInternalApi
+    fun internalReadSkip(count: Int) {
+        if (count < 0 || count > availableRead) error("Try to write more than available")
+        readPos += count
+        availableRead -= count
+        availableWrite += count
+    }
+
+    val availableReadBeforeWrap: Int get() = min(availableRead, (totalSize - (readPos and mask)))
+    val availableWriteBeforeWrap: Int get() = min(availableWrite, (totalSize - (writePos and mask)))
+
+    fun write(consume: ByteRingBuffer) {
+        while (consume.availableRead > 0) {
+            val copySize = min(consume.availableReadBeforeWrap, this.availableWriteBeforeWrap)
+            arraycopy(
+                consume.internalBuffer,
+                consume.internalReadPos,
+                this.internalBuffer,
+                this.internalWritePos,
+                copySize
+            )
+            consume.internalReadSkip(copySize)
+            this.internalWriteSkip(copySize)
+        }
+    }
+
+    // @TODO: Optimize
     @JvmOverloads
     fun writeHead(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
         val toWrite = min(availableWrite, size)
@@ -29,14 +74,19 @@ open class ByteRingBuffer(val bits: Int) {
 
     @JvmOverloads
     fun write(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toWrite = min(availableWrite, size)
-        for (n in 0 until toWrite) {
-            buffer[writePos] = data[offset + n]
-            writePos = (writePos + 1) and mask
+        var remaining = min(availableWrite, size)
+        var coffset = offset
+        var totalWrite = 0
+        while (remaining > 0) {
+            val chunkSize = min(remaining, availableWriteBeforeWrap)
+            if (chunkSize <= 0) break
+            arraycopy(data, coffset, buffer, internalWritePos, chunkSize)
+            internalWriteSkip(chunkSize)
+            coffset += chunkSize
+            remaining -= chunkSize
+            totalWrite += chunkSize
         }
-        availableRead += toWrite
-        availableWrite -= toWrite
-        return toWrite
+        return totalWrite
     }
 
     @JvmOverloads
@@ -51,14 +101,28 @@ open class ByteRingBuffer(val bits: Int) {
     }
 
     fun peek(data: ByteArray, offset: Int = 0, size: Int = data.size - offset): Int {
-        val toRead = min(availableRead, size)
+        var toRead = min(availableRead, size)
+        var readCount = 0
         val buffer = buffer
-        val readPos = readPos
         val mask = mask
-        for (n in 0 until toRead) {
-            data[offset + n] = buffer[(readPos + n) and mask]
+        var coffset = offset
+        var lReadPos = readPos
+
+        while (true) {
+            val toReadChunk = min(toRead, availableReadBeforeWrap)
+            if (toReadChunk <= 0) break
+            arraycopy(buffer, lReadPos and mask, data, coffset, toReadChunk)
+            toRead -= toReadChunk
+            coffset += toReadChunk
+            lReadPos += toReadChunk
+            readCount += toReadChunk
         }
-        return toRead
+        return readCount
+    }
+
+    fun readBytes(count: Int): ByteArray {
+        val out = ByteArray(count)
+        return out.copyOf(read(out))
     }
 
     fun readByte(): Int {

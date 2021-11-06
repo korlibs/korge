@@ -2,6 +2,14 @@ package com.soywiz.kds.internal
 
 import kotlin.math.*
 
+@Retention(value = AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+public annotation class KdsInternalApi
+
+@Retention(value = AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
+public annotation class KdsExperimentalApi
+
 @PublishedApi
 internal infix fun Int.divCeil(that: Int): Int = if (this % that != 0) (this / that) + 1 else (this / that)
 
