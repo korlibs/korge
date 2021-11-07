@@ -46,6 +46,7 @@ open class WindowsRegistryBase {
 
     protected fun normalizePath(path: String) = path.trim('/').replace('/', '\\')
 
+    open val isSupported: Boolean get() = false
     open fun listSubKeys(path: String): List<String> = TODO()
     open fun listValues(path: String): Map<String, Any?> = TODO()
     open fun getValue(path: String): Any? = TODO()
