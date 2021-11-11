@@ -9,6 +9,7 @@ import kotlin.test.*
 
 class WindowsRegistryTest {
     @Test
+    @Ignore
     fun testRegistry() = suspendTest({ WindowsRegistry.isSupported }) {
         assertEquals(WindowsRegistryBase.KEY_MAP.keys.toList().sorted(), WindowsRegistryVfs.root.listNames().sorted())
 
