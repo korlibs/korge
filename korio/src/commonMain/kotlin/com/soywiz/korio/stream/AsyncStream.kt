@@ -14,6 +14,7 @@ import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.math.*
+import kotlin.native.concurrent.*
 
 //interface SmallTemp {
 //	val smallTemp: ByteArray
@@ -456,6 +457,7 @@ private suspend fun AsyncInputStream.readTempExact(len: Int, temp: ByteArray): B
 suspend fun AsyncInputStream.read(data: ByteArray): Int = read(data, 0, data.size)
 suspend fun AsyncInputStream.read(data: UByteArray): Int = read(data.asByteArray(), 0, data.size)
 
+@SharedImmutable
 val EMPTY_BYTE_ARRAY = ByteArray(0)
 
 suspend fun AsyncInputStream.readBytesUpToFirst(len: Int): ByteArray {
