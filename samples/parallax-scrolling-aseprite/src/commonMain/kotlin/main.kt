@@ -11,6 +11,7 @@ import com.soywiz.korge.view.animation.*
 import com.soywiz.korge.view.filter.TransitionFilter
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.ASE
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.fullName
@@ -81,7 +82,7 @@ class ParallaxScene : Scene() {
     override suspend fun Container.sceneInit() {
         val sw = Stopwatch().start()
         // Here the Aseprite file will be read by using the above configuration
-        parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainerFromAseFile(parallaxBackgroundConfig, atlas)
+        parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(ASE, parallaxBackgroundConfig, atlas)
         println("loaded resources in ${sw.elapsed}")
     }
 
@@ -119,7 +120,7 @@ class ParallaxScene : Scene() {
                             // Give aseprite more time to finish writing the files
                             kotlinx.coroutines.delay(100)
                             // On reloading do not save into texture atlas otherwise it will overflow at some time
-                            parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainerFromAseFile(parallaxBackgroundConfig, atlas = null)
+                            parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(ASE, parallaxBackgroundConfig, atlas = null)
                             parallaxBackground = parallaxDataView(parallaxData) {
                                 diagonal = saveDiagonal
                                 deltaX = saveDelta
