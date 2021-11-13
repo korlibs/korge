@@ -34,20 +34,21 @@ open class RepeatedImageAnimationView(
     var direction: ImageAnimation.Direction? = direction
 
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
-    val layers = mutableMapOf<String, RepeatedImageView>()
+    private val layers = fastArrayListOf<RepeatedImageView>()
+    private val layersByName = FastStringMap<RepeatedImageView>()
     private var nextFrameIn = 0.milliseconds
     private var nextFrameIndex = 0
     private var dir = +1
 
     override fun getLayer(name: String): View? {
-        return layers[name]
+        return layersByName[name]
     }
 
     override var smoothing: Boolean = true
         set(value) {
             if (field != value) {
                 field = value
-                layers.forEach { it.value.smoothing = value }
+                layers.fastForEach { it.smoothing = value }
             }
         }
 
@@ -55,7 +56,7 @@ open class RepeatedImageAnimationView(
         val frame = animation?.frames?.getCyclicOrNull(frameIndex)
         if (frame != null) {
             frame.layerData.fastForEach {
-                val image = layers[it.layer.name ?: "default"] ?: RepeatedImageView(Bitmaps.transparent)
+                val image = layers[it.layer.index]
                 image.bitmap = it.slice
                 image.xy(it.targetX, it.targetY)
             }
@@ -67,7 +68,7 @@ open class RepeatedImageAnimationView(
             }
             nextFrameIndex = (frame.index + dir) umod nframes
         } else {
-            layers.forEach { it.value.bitmap = Bitmaps.transparent }
+            layers.fastForEach { it.bitmap = Bitmaps.transparent }
         }
     }
 
@@ -88,7 +89,8 @@ open class RepeatedImageAnimationView(
         if (animation != null) {
             for (layer in animation.layers) {
                 val image = RepeatedImageView(Bitmaps.transparent, smoothing, repeatX, repeatY)
-                layers[layer.name ?: "default"] = image
+                layers.add(image)
+                layersByName[layer.name ?: "default"] = image
                 addChild(image)
             }
         }
