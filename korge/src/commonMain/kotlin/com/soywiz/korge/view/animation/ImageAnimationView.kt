@@ -5,6 +5,7 @@ import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.tiles.SingleTile
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 
@@ -17,8 +18,8 @@ inline fun Container.imageAnimationView(
 inline fun Container.repeatedImageAnimationView(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
-    block: @ViewDslMarker ImageAnimationView<RepeatedImageView>.() -> Unit = {}
-) = ImageAnimationView(animation, direction) { RepeatedImageView(Bitmaps.transparent) }.addTo(this, block)
+    block: @ViewDslMarker ImageAnimationView<SingleTile>.() -> Unit = {}
+) = ImageAnimationView(animation, direction) { SingleTile(Bitmaps.transparent) }.addTo(this, block)
 
 open class ImageAnimationView<T: SmoothedBmpSlice>(
     animation: ImageAnimation? = null,

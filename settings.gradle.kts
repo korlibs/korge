@@ -54,6 +54,7 @@ include(":korge-box2d")
 include(":korge-gradle-plugin")
 //include(":tensork")
 include(":samples:parallax-scrolling-aseprite")
+include(":samples:tiled-background")
 
 if (!inCI) {
     include(":korge-sandbox")

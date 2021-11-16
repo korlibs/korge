@@ -4,6 +4,8 @@ import com.soywiz.kds.ExtraTypeCreate
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.setExtra
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.tiles.SingleTile
+import com.soywiz.korge.view.tiles.repeat
 import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.VfsFile
@@ -125,9 +127,9 @@ class ParallaxDataView(
                     val layer = getLayer(config.name)
                     if (layer == null) {
                         error("Could not find parallax plane '${config.name}' in ImageData. Check that name of parallax plane in Aseprite matches the name in the parallax config.")
-                    } else layer as RepeatedImageView
+                    } else layer as SingleTile
                     if (isScrollingHorizontally) {
-                        layer.repeatX = true
+                        layer.repeat(repeatX = true)
                         x = parallaxPlaneMiddlePoint
                         val speedFactor = parallaxPlaneSpeedFactor[layer.y.toInt()]
                         addUpdater {
@@ -135,7 +137,7 @@ class ParallaxDataView(
                             x += ((deltaX * speedFactor) + (config.selfSpeed * speedFactor)) * it.milliseconds
                         }
                     } else {
-                        layer.repeatY = true
+                        layer.repeat(repeatY = true)
                         y = parallaxPlaneMiddlePoint
                         val speedFactor = parallaxPlaneSpeedFactor[layer.x.toInt()]
                         addUpdater {
@@ -156,9 +158,8 @@ class ParallaxDataView(
                 val layer = imageData.getLayer(conf.name)
                     ?: error("Could not find layer '${config.name}' in ImageData. Check that name of attached layer in Aseprite matches the name in the parallax config.")
 
-                layerMap[conf.name] = (layer as RepeatedImageView).apply {
-                    repeatX = isScrollingHorizontally && conf.repeat
-                    repeatY = !isScrollingHorizontally && conf.repeat
+                layerMap[conf.name] = (layer as SingleTile).apply {
+                    repeat(repeatX = isScrollingHorizontally && conf.repeat, repeatY = !isScrollingHorizontally && conf.repeat)
 
                     if (isScrollingHorizontally) {
                         // Attach the layer to the position on the parallax plane (either top or bottom border
@@ -200,9 +201,8 @@ class ParallaxDataView(
             val layer = imageData.getLayer(conf.name)
                 ?: error("Could not find layer '${conf.name}' in ImageData. Check that name of layer in Aseprite matches the name in the parallax config.")
 
-            layerMap[conf.name] = (layer as RepeatedImageView).apply {
-                repeatX = conf.repeatX
-                repeatY = conf.repeatY
+            layerMap[conf.name] = (layer as SingleTile).apply {
+                repeat(repeatX = conf.repeatX, repeatY = conf.repeatY)
 
                 if (!(conf.speedX.isNaN() && conf.speedY.isNaN() && conf.selfSpeedX.isNaN() && conf.selfSpeedY.isNaN())) {
                     // Prevent that one number is possibly NaN

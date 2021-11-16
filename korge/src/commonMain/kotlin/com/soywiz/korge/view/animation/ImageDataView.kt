@@ -11,9 +11,6 @@ import com.soywiz.korim.format.*
  *
  * The image can be repeating in X and/or Y direction. That needs to be enabled by setting
  * repeating to true. The repeating values can be set per layer as repeatX and repeatY.
- *
- * TODO add more description...
- *
  */
 inline fun Container.imageDataView(
     data: ImageData? = null,

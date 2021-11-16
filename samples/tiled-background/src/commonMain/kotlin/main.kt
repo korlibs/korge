@@ -8,7 +8,7 @@ import com.soywiz.korio.file.std.*
 
 suspend fun main() = Korge(width = 512, height = 512) {
 	val tileset = TileSet(mapOf(0 to bitmap("korge.png").toBMP32().scaleLinear(0.5, 0.5).slice()))
-	val tilemap = tileMap(Bitmap32(1, 1), repeatX = TileMap.Repeat.REPEAT, repeatY = TileMap.Repeat.REPEAT, tileset = tileset)
+	val tilemap = tileMap(Bitmap32(1, 1), repeatX = BaseTileMap.Repeat.REPEAT, repeatY = BaseTileMap.Repeat.REPEAT, tileset = tileset)
 	launchImmediately {
 		while (true) {
 			tilemap.x += 1

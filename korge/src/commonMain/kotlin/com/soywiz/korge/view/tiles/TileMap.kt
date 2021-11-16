@@ -16,113 +16,121 @@ import kotlin.math.*
 inline fun Container.tileMap(
     map: IntArray2,
     tileset: TileSet,
-    repeatX: TileMap.Repeat = TileMap.Repeat.NONE,
-    repeatY: TileMap.Repeat = repeatX,
+    repeatX: BaseTileMap.Repeat = BaseTileMap.Repeat.NONE,
+    repeatY: BaseTileMap.Repeat = repeatX,
     smoothing: Boolean = true,
     orientation: TiledMap.Orientation? = null,
     staggerAxis: TiledMap.StaggerAxis? = null,
     staggerIndex: TiledMap.StaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
-) =	TileMap(map, tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
+) = TileMap(map, tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 inline fun Container.tileMap(
     map: Bitmap32,
     tileset: TileSet,
-    repeatX: TileMap.Repeat = TileMap.Repeat.NONE,
-    repeatY: TileMap.Repeat = repeatX,
+    repeatX: BaseTileMap.Repeat = BaseTileMap.Repeat.NONE,
+    repeatY: BaseTileMap.Repeat = repeatX,
     smoothing: Boolean = true,
     orientation: TiledMap.Orientation? = null,
     staggerAxis: TiledMap.StaggerAxis? = null,
     staggerIndex: TiledMap.StaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
-) =	TileMap(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
+) = TileMap(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
 
-@OptIn(KorgeInternal::class)
-open class TileMap(
+abstract class BaseTileMap(
     val intMap: IntArray2,
-    val tileset: TileSet,
     var smoothing: Boolean = true,
-    val orientation: TiledMap.Orientation? = null,
     val staggerAxis: TiledMap.StaggerAxis? = null,
     val staggerIndex: TiledMap.StaggerIndex? = null,
-    val tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    var tileSize: Size = Size()
 ) : View() {
-    val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
-    val animationIndex = Array(tileset.textures.size) { 0 }
-    val animationElapsed = Array(tileset.textures.size) { 0.0 }
+    abstract val tilesetTextures: Array<BmpSlice?>
 
-    private var contentVersion = 0
-	constructor(
-        map: Bitmap32,
-        tileset: TileSet,
-        smoothing: Boolean = true,
-        orientation: TiledMap.Orientation? = null,
-        staggerAxis: TiledMap.StaggerAxis? = null,
-        staggerIndex: TiledMap.StaggerIndex? = null,
-        tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
-    ) : this(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize)
+    var tileWidth: Double = 0.0
+    var tileHeight: Double = 0.0
 
-	val tileWidth = tileset.width.toDouble()
-	val tileHeight = tileset.height.toDouble()
+    var repeatX = Repeat.NONE
+    var repeatY = Repeat.NONE
 
-    fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
-        //if (x < 0 || y < 0) return false // Outside bounds
-        if (x < 0 || y < 0) return true // Outside bounds
-        val tw = tileset.width
-        val th = tileset.height
-        return pixelHitTest(x / tw, y / th, x % tw, y % th, direction)
+    enum class Repeat(val get: (v: Int, max: Int) -> Int) {
+        NONE({ v, max -> v }),
+        REPEAT({ v, max -> v umod max }),
+        MIRROR({ v, max ->
+            val r = v umod max
+            if ((v / max) % 2 == 0) r else max - 1 - r
+        })
     }
 
-    fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
-        //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
-        //println(tileset.collisions.toList())
-        if (!intMap.inside(tileX, tileY)) return true
-        val tile = intMap[tileX, tileY]
-        val collision = tileset.collisions[tile] ?: return false
-        return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
-    }
-
-	enum class Repeat(val get: (v: Int, max: Int) -> Int) {
-		NONE({ v, max -> v }),
-		REPEAT({ v, max -> v umod max }),
-		MIRROR({ v, max ->
-			val r = v umod max
-			if ((v / max) % 2 == 0) r else max - 1 - r
-		})
-	}
-
-	var repeatX = Repeat.NONE
-	var repeatY = Repeat.NONE
-
-	private val t0 = Point(0, 0)
-	private val tt0 = Point(0, 0)
-	private val tt1 = Point(0, 0)
+    private val t0 = Point(0, 0)
+    private val tt0 = Point(0, 0)
+    private val tt1 = Point(0, 0)
     private val tt2 = Point(0, 0)
     private val tt3 = Point(0, 0)
 
-    // Analogous to Bitmap32.locking
-    fun lock() {
-    }
-    fun unlock() {
-        contentVersion++
-    }
-    inline fun <T> lock(block: () -> T): T {
-        lock()
-        try {
-            return block()
-        } finally {
-            unlock()
-        }
+    protected var contentVersion = 0
+    private var cachedContentVersion = 0
+
+    // @TODO: Use a TextureVertexBuffer or something
+    @KorgeInternal
+    private class Info(var tex: Bitmap, var vertices: TexturedVertexArray) {
+        var vcount = 0
+        var icount = 0
     }
 
-    private var cachedContentVersion = 0
-	private fun computeVertexIfRequired(ctx: RenderContext) {
-		if (!dirtyVertices && cachedContentVersion == contentVersion) return
+    private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
+    private val infos = arrayListOf<Info>()
+
+    companion object {
+        private val dummyTexturedVertexArray = TexturedVertexArray.EMPTY
+
+        fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
+            // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
+            indices[0] = 0 // 0/*TL*/
+            indices[1] = 1 // 1/*TR*/
+            indices[2] = 2 // 2/*BR*/
+            indices[3] = 3 // 3/*BL*/
+
+            if (rotate) {
+                indices.swap(1/*TR*/, 3/*BL*/)
+            }
+            if (flipY) {
+                indices.swap(0/*TL*/, 3/*BL*/)
+                indices.swap(1/*TR*/, 2/*BR*/)
+            }
+            if (flipX) {
+                indices.swap(0/*TL*/, 1/*TR*/)
+                indices.swap(3/*BL*/, 2/*BR*/)
+            }
+            return indices
+        }
+
+        private fun IntArray.swap(a: Int, b: Int): IntArray = this.apply {
+            val t = this[a]
+            this[a] = this[b]
+            this[b] = t
+        }
+
+        //private const val TL = 0
+        //private const val TR = 1
+        //private const val BR = 2
+        //private const val BL = 3
+    }
+
+    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, dummyTexturedVertexArray) }
+    private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
+    private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
+
+    private val indices = IntArray(4)
+    private val tempX = FloatArray(4)
+    private val tempY = FloatArray(4)
+
+    private fun computeVertexIfRequired(ctx: RenderContext) {
+        if (!dirtyVertices && cachedContentVersion == contentVersion) return
         cachedContentVersion = contentVersion
         dirtyVertices = false
         val m = globalMatrix
@@ -207,9 +215,9 @@ open class TileMap(
                         if (pass == 0 && !firstPass) continue
                         if (pass == 1 && !secondPass) continue
                     }
-                    val cell = intMap[rx, ry]
                     val odd = if (staggerAxis == TiledMap.StaggerAxis.Y) ry.isOdd else rx.isOdd
                     val staggered = if (odd) staggerIndex == TiledMap.StaggerIndex.ODD else staggerIndex == TiledMap.StaggerIndex.EVEN
+                    val cell = intMap[rx, ry]
                     val cellData = cell.extract(0, 28)
                     val flipX = cell.extract(31)
                     val flipY = cell.extract(30)
@@ -285,69 +293,16 @@ open class TileMap(
             }
         }
         renderTilesCounter.increment(count)
-	}
-
-    private val indices = IntArray(4)
-    private val tempX = FloatArray(4)
-    private val tempY = FloatArray(4)
-
-	// @TOOD: Use a TextureVertexBuffer or something
-    @KorgeInternal
-	private class Info(var tex: Bitmap, var vertices: TexturedVertexArray) {
-		var vcount = 0
-		var icount = 0
-	}
-
-	private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
-    private val infos = arrayListOf<Info>()
-    companion object {
-        private val dummyTexturedVertexArray = TexturedVertexArray.EMPTY
-
-        fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
-            // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
-            indices[0] = 0 // 0/*TL*/
-            indices[1] = 1 // 1/*TR*/
-            indices[2] = 2 // 2/*BR*/
-            indices[3] = 3 // 3/*BL*/
-
-            if (rotate) {
-                indices.swap(1/*TR*/, 3/*BL*/)
-            }
-            if (flipY) {
-                indices.swap(0/*TL*/, 3/*BL*/)
-                indices.swap(1/*TR*/, 2/*BR*/)
-            }
-            if (flipX) {
-                indices.swap(0/*TL*/, 1/*TR*/)
-                indices.swap(3/*BL*/, 2/*BR*/)
-            }
-            return indices
-        }
-
-        private fun IntArray.swap(a: Int, b: Int): IntArray = this.apply {
-            val t = this[a]
-            this[a] = this[b]
-            this[b] = t
-        }
-
-        //private const val TL = 0
-        //private const val TR = 1
-        //private const val BR = 2
-        //private const val BL = 3
     }
-    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, dummyTexturedVertexArray) }
 
-	private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
-	private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
-
-	override fun renderInternal(ctx: RenderContext) {
-		if (!visible) return
-		currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
-		if (currentVirtualRect != lastVirtualRect) {
-			dirtyVertices = true
-			lastVirtualRect.copyFrom(currentVirtualRect)
-		}
-		computeVertexIfRequired(ctx)
+    override fun renderInternal(ctx: RenderContext) {
+        if (!visible) return
+        currentVirtualRect.setBounds(ctx.virtualLeft, ctx.virtualTop, ctx.virtualRight, ctx.virtualBottom)
+        if (currentVirtualRect != lastVirtualRect) {
+            dirtyVertices = true
+            lastVirtualRect.copyFrom(currentVirtualRect)
+        }
+        computeVertexIfRequired(ctx)
 
         ctx.useBatcher { batch ->
             infos.fastForEach { buffer ->
@@ -357,11 +312,70 @@ open class TileMap(
             }
         }
 
-		//ctx.flush()
-	}
+        //ctx.flush()
+    }
+}
 
+@OptIn(KorgeInternal::class)
+open class TileMap(
+    intMap: IntArray2,
+    val tileset: TileSet,
+    smoothing: Boolean = true,
+    val orientation: TiledMap.Orientation? = null,
+    staggerAxis: TiledMap.StaggerAxis? = null,
+    staggerIndex: TiledMap.StaggerIndex? = null,
+    tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
+    override val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+    val animationIndex = Array(tileset.textures.size) { 0 }
+    val animationElapsed = Array(tileset.textures.size) { 0.0 }
+
+    constructor(
+        map: Bitmap32,
+        tileset: TileSet,
+        smoothing: Boolean = true,
+        orientation: TiledMap.Orientation? = null,
+        staggerAxis: TiledMap.StaggerAxis? = null,
+        staggerIndex: TiledMap.StaggerIndex? = null,
+        tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
+    ) : this(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize)
+
+    fun pixelHitTest(x: Int, y: Int, direction: HitTestDirection): Boolean {
+        //if (x < 0 || y < 0) return false // Outside bounds
+        if (x < 0 || y < 0) return true // Outside bounds
+        val tw = tileset.width
+        val th = tileset.height
+        return pixelHitTest(x / tw, y / th, x % tw, y % th, direction)
+    }
+
+    fun pixelHitTest(tileX: Int, tileY: Int, x: Int, y: Int, direction: HitTestDirection): Boolean {
+        //println("pixelHitTestByte: tileX=$tileX, tileY=$tileY, x=$x, y=$y")
+        //println(tileset.collisions.toList())
+        if (!intMap.inside(tileX, tileY)) return true
+        val tile = intMap[tileX, tileY]
+        val collision = tileset.collisions[tile] ?: return false
+        return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
+    }
+
+    // Analogous to Bitmap32.locking
+    fun lock() {
+    }
+    fun unlock() {
+        contentVersion++
+    }
+    inline fun <T> lock(block: () -> T): T {
+        lock()
+        try {
+            return block()
+        } finally {
+            unlock()
+        }
+    }
 
     init {
+        tileWidth = tileset.width.toDouble()
+        tileHeight = tileset.height.toDouble()
+
         addUpdater { dt ->
             tileset.infos.fastForEachWithIndex { tileIndex, info ->
                 if (info != null && info.frames.isNotEmpty()) {
@@ -381,18 +395,23 @@ open class TileMap(
         }
     }
 
-	override fun getLocalBoundsInternal(out: Rectangle) {
-		out.setTo(0, 0, tileWidth * intMap.width, tileHeight * intMap.height)
-	}
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        out.setTo(0, 0, tileWidth * intMap.width, tileHeight * intMap.height)
+    }
 
-	//override fun hitTest(x: Double, y: Double): View? {
-	//	return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
-	//}
+    //override fun hitTest(x: Double, y: Double): View? {
+    //    return if (checkGlobalBounds(x, y, 0.0, 0.0, tileWidth * intMap.width, tileHeight * intMap.height)) this else null
+    //}
 }
 
-fun <T : TileMap> T.repeat(repeatX: TileMap.Repeat, repeatY: TileMap.Repeat = repeatX): T {
-	this.repeatX = repeatX
-	this.repeatY = repeatY
+fun <T : BaseTileMap> T.repeat(repeatX: BaseTileMap.Repeat, repeatY: BaseTileMap.Repeat = repeatX): T {
+    this.repeatX = repeatX
+    this.repeatY = repeatY
     return this
 }
 
+fun <T : BaseTileMap> T.repeat(repeatX: Boolean = false, repeatY: Boolean = false): T {
+    this.repeatX = if (repeatX) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE
+    this.repeatY = if (repeatY) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE
+    return this
+}
