@@ -82,7 +82,7 @@ class ParallaxScene : Scene() {
     override suspend fun Container.sceneInit() {
         val sw = Stopwatch().start()
         // Here the Aseprite file will be read by using the above configuration
-        parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(ASE, parallaxBackgroundConfig, atlas)
+        parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(parallaxBackgroundConfig, atlas = atlas)
         println("loaded resources in ${sw.elapsed}")
     }
 
@@ -120,7 +120,7 @@ class ParallaxScene : Scene() {
                             // Give aseprite more time to finish writing the files
                             kotlinx.coroutines.delay(100)
                             // On reloading do not save into texture atlas otherwise it will overflow at some time
-                            parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(ASE, parallaxBackgroundConfig, atlas = null)
+                            parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(parallaxBackgroundConfig, atlas = null)
                             parallaxBackground = parallaxDataView(parallaxData) {
                                 diagonal = saveDiagonal
                                 deltaX = saveDelta

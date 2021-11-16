@@ -24,15 +24,15 @@ inline fun Container.repeatedImageView(
 
 open class RepeatedImageView(
     bitmap: BmpSlice,
-    var smoothing: Boolean = true,
     var repeatX: Boolean = false,
-    var repeatY: Boolean = false
-) : View() {
+    var repeatY: Boolean = false,
+    override var smoothing: Boolean = true
+) : View(), SmoothedBmpSlice {
 
     override var width = 0.0
     override var height = 0.0
 
-    var bitmap: BmpSlice = bitmap
+    override var bitmap: BmpSlice = bitmap
         set(value) {
             if (field !== value) {
                 field = value

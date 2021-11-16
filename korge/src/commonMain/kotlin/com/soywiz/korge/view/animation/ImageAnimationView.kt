@@ -11,27 +11,23 @@ import com.soywiz.korim.format.*
 inline fun Container.imageAnimationView(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,
-    block: @ViewDslMarker ImageAnimationView.() -> Unit = {}
-) = ImageAnimationView(animation, direction).addTo(this, block)
+    block: @ViewDslMarker ImageAnimationView<Image>.() -> Unit = {}
+) = ImageAnimationView(animation, direction) { Image(Bitmaps.transparent) }.addTo(this, block)
 
-abstract class AbstractImageAnimationView : Container() {
-    open var animation: ImageAnimation? = null
-    open var smoothing: Boolean = false
-    protected var running = true
-    fun play() { running = true }
-    fun stop() { running = false }
-    protected abstract fun setFirstFrame()
-    fun rewind() { setFirstFrame() }
-    abstract fun getLayer(name: String) : View?
-}
-
-open class ImageAnimationView(
+inline fun Container.repeatedImageAnimationView(
     animation: ImageAnimation? = null,
-    direction: ImageAnimation.Direction? = null
-) : AbstractImageAnimationView() {
+    direction: ImageAnimation.Direction? = null,
+    block: @ViewDslMarker ImageAnimationView<RepeatedImageView>.() -> Unit = {}
+) = ImageAnimationView(animation, direction) { RepeatedImageView(Bitmaps.transparent) }.addTo(this, block)
+
+open class ImageAnimationView<T: SmoothedBmpSlice>(
+    animation: ImageAnimation? = null,
+    direction: ImageAnimation.Direction? = null,
+    val createImage: () -> T
+) : Container() {
     private var nframes: Int = 1
 
-    override var animation: ImageAnimation? = animation
+    var animation: ImageAnimation? = animation
         set(value) {
             if (field !== value) {
                 field = value
@@ -41,23 +37,24 @@ open class ImageAnimationView(
     var direction: ImageAnimation.Direction? = direction
 
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
-    private val layers = fastArrayListOf<Image>()
-    private val layersByName = FastStringMap<Image>()
+    private val layers = fastArrayListOf<T>()
+    private val layersByName = FastStringMap<T>()
     private var nextFrameIn = 0.milliseconds
     private var nextFrameIndex = 0
     private var dir = +1
 
-    override fun getLayer(name: String): View? {
-        return layersByName[name]
+    fun getLayer(name: String): View? {
+        return layersByName[name] as View?
     }
 
-    override var smoothing: Boolean = true
+    var smoothing: Boolean = true
         set(value) {
             if (field != value) {
                 field = value
                 layers.fastForEach { it.smoothing = value }
             }
         }
+
 
     private fun setFrame(frameIndex: Int) {
         val frame = animation?.frames?.getCyclicOrNull(frameIndex)
@@ -66,7 +63,7 @@ open class ImageAnimationView(
                 val image = layers[it.layer.index]
                 image.bitmap = it.slice
                 image.smoothing = smoothing
-                image.xy(it.targetX, it.targetY)
+                (image as View).xy(it.targetX, it.targetY)
             }
             nextFrameIn = frame.duration
             dir = when (computedDirection) {
@@ -80,7 +77,7 @@ open class ImageAnimationView(
         }
     }
 
-    override fun setFirstFrame() {
+    private fun setFirstFrame() {
         if (computedDirection == ImageAnimation.Direction.REVERSE) {
             setFrame(nframes - 1)
         } else {
@@ -96,14 +93,19 @@ open class ImageAnimationView(
         val animation = this.animation
         if (animation != null) {
             for (layer in animation.layers) {
-                val image = Image(Bitmaps.transparent)
+                val image = createImage()
                 layers.add(image)
                 layersByName[layer.name ?: "default"] = image
-                addChild(image)
+                addChild(image as View)
             }
         }
         setFirstFrame()
     }
+
+    private var running = true
+    fun play() { running = true }
+    fun stop() { running = false }
+    fun rewind() { setFirstFrame() }
 
     init {
         didSetAnimation()

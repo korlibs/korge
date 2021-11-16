@@ -276,9 +276,9 @@ class ParallaxDataView(
 }
 
 suspend fun VfsFile.readParallaxDataContainer(
-    formats: ImageFormat = RegisteredImageFormats,
     config: ParallaxConfig,
-    atlas: MutableAtlas<Unit>? = null
+    format: ImageFormat = ASE,
+    atlas: MutableAtlas<Unit>? = null,
 ): ParallaxDataContainer {
     val props = ImageDecodingProps(this.baseName, extra = ExtraTypeCreate())
     return ParallaxDataContainer(
@@ -286,26 +286,26 @@ suspend fun VfsFile.readParallaxDataContainer(
         backgroundLayers = if (config.backgroundLayers != null) {
             props.setExtra("layers", config.backgroundLayers.joinToString(separator = ",") { it.name })
             props.setExtra("disableSlicing", true)
-            val out = formats.readImage(this.readAsSyncStream(), props)
+            val out = format.readImage(this.readAsSyncStream(), props)
             if (atlas != null) out.packInMutableAtlas(atlas) else out
         } else null,
         foregroundLayers = if (config.foregroundLayers != null) {
             props.setExtra("layers", config.foregroundLayers.joinToString(separator = ",") { it.name })
             props.setExtra("disableSlicing", true)
-            val out = formats.readImage(this.readAsSyncStream(), props)
+            val out = format.readImage(this.readAsSyncStream(), props)
             if (atlas != null) out.packInMutableAtlas(atlas) else out
         } else null,
         attachedLayers = if (config.parallaxPlane?.attachedLayers != null) {
             props.setExtra("layers", config.parallaxPlane.attachedLayers.joinToString(separator = ",") { it.name })
             props.setExtra("disableSlicing", true)
-            val out = formats.readImage(this.readAsSyncStream(), props)
+            val out = format.readImage(this.readAsSyncStream(), props)
             if (atlas != null) out.packInMutableAtlas(atlas) else out
         } else null,
         parallaxPlane = if (config.parallaxPlane != null) {
             props.setExtra("layers", config.parallaxPlane.name)
             props.setExtra("disableSlicing", false)
             props.setExtra("useSlicePosition", true)
-            val out = formats.readImageContainer(this.readAsSyncStream(), props)
+            val out = format.readImageContainer(this.readAsSyncStream(), props)
             if (atlas != null) out.packInMutableAtlas(atlas) else out
         } else null
     )

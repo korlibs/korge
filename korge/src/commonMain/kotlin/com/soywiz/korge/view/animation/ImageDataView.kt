@@ -1,6 +1,7 @@
 package com.soywiz.korge.view.animation
 
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.format.*
 
 /**
@@ -59,11 +60,7 @@ open class ImageDataView(
     smoothing: Boolean = true,
     repeating: Boolean = false
 ) : Container() {
-    private val animationView = if (repeating) {
-        repeatedImageAnimationView()
-    } else {
-        imageAnimationView()
-    }
+    private val animationView = if (repeating) repeatedImageAnimationView() else imageAnimationView()
 
     fun getLayer(name: String): View? {
         return animationView.getLayer(name)

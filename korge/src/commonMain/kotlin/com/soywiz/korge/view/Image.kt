@@ -106,13 +106,18 @@ open class BaseImage(
 
 }
 
+interface SmoothedBmpSlice {
+    var bitmap: BmpSlice
+    var smoothing: Boolean
+}
+
 class Image(
 	bitmap: Resourceable<out BmpSlice>,
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	smoothing: Boolean = true
-) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin() {
+) : BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing), ViewFileRef by ViewFileRef.Mixin(), SmoothedBmpSlice {
 	constructor(
 		bitmap: Bitmap,
 		anchorX: Double = 0.0,
