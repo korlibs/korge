@@ -81,7 +81,7 @@ class TiledMapTest : ViewsForTesting() {
         assertEquals(
             "0123, 0321, 3210, 1230, 1032, 3012, 2301, 2103",
             (0 until 8).joinToString(", ") {
-                TileMap.computeIndices(flipX = it.extract(2), flipY = it.extract(1), rotate = it.extract(0))
+                BaseTileMap.computeIndices(flipX = it.extract(2), flipY = it.extract(1), rotate = it.extract(0))
                     .joinToString("")
             }
         )
