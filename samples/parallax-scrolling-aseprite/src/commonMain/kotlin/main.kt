@@ -11,7 +11,6 @@ import com.soywiz.korge.view.animation.*
 import com.soywiz.korge.view.filter.TransitionFilter
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.ASE
 import com.soywiz.korio.async.launch
 import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.fullName
