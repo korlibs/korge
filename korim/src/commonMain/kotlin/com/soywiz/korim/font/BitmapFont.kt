@@ -6,6 +6,7 @@ import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.atlas.MutableAtlas
+import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -192,14 +193,18 @@ class BitmapFont(
 	}
 }
 
-suspend fun VfsFile.readBitmapFont(imageFormat: ImageFormat = RegisteredImageFormats, mipmaps: Boolean = true): BitmapFont {
+suspend fun VfsFile.readBitmapFont(
+    imageFormat: ImageFormat = RegisteredImageFormats,
+    mipmaps: Boolean = true,
+    atlas: MutableAtlasUnit? = null
+) : BitmapFont {
 	val fntFile = this
 	val content = fntFile.readString().trim()
 	val textures = hashMapOf<Int, BitmapSlice<Bitmap>>()
 
     return when {
-        content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, imageFormat, mipmaps)
-        content.startsWith("info") -> readBitmapFontTxt(content, fntFile, textures, imageFormat, mipmaps)
+        content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, imageFormat, mipmaps, atlas)
+        content.startsWith("info") -> readBitmapFontTxt(content, fntFile, textures, imageFormat, mipmaps, atlas)
         else -> TODO("Unsupported font type starting with ${content.substr(0, 16)}")
     }
 }
@@ -209,7 +214,8 @@ private suspend fun readBitmapFontTxt(
 	fntFile: VfsFile,
 	textures: HashMap<Int, BitmapSlice<Bitmap>>,
 	imageFormat: ImageFormat = RegisteredImageFormats,
-    mipmaps: Boolean = true
+    mipmaps: Boolean = true,
+    atlas: MutableAtlasUnit? = null
 ): BitmapFont {
     val kernings = arrayListOf<BitmapFont.Kerning>()
 	val glyphs = arrayListOf<BitmapFont.Glyph>()
@@ -248,7 +254,8 @@ private suspend fun readBitmapFontTxt(
                         xoffset = map["xoffset"].int,
                         yoffset = map["yoffset"].int,
                         xadvance = map["xadvance"].int,
-                        texture = texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int, "glyph-${id.toChar()}")
+                        texture = atlas?.add(texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int, "glyph-${id.toChar()}") as BmpSlice, Unit)?.slice
+                            ?: texture.sliceWithSize(map["x"].int, map["y"].int, map["width"].int, map["height"].int, "glyph-${id.toChar()}")
                     )
 				}
 			}
@@ -262,7 +269,7 @@ private suspend fun readBitmapFontTxt(
 		}
 	}
 	return BitmapFont(
-        atlas = textures.values.first().bmpBase,
+        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base ?: lineHeight,
@@ -278,7 +285,8 @@ private suspend fun readBitmapFontXml(
 	fntFile: VfsFile,
 	textures: MutableMap<Int, BitmapSlice<Bitmap>>,
     imageFormat: ImageFormat = RegisteredImageFormats,
-    mipmaps: Boolean = true
+    mipmaps: Boolean = true,
+    atlas: MutableAtlasUnit? = null
 ): BitmapFont {
 	val xml = Xml(content)
 
@@ -300,7 +308,8 @@ private suspend fun readBitmapFontXml(
         BitmapFont.Glyph(
             fontSize = fontSize,
             id = it.int("id"),
-            texture = texture.sliceWithSize(it.int("x"), it.int("y"), it.int("width"), it.int("height")),
+            texture = atlas?.add(texture.sliceWithSize(it.int("x"), it.int("y"), it.int("width"), it.int("height")) as BmpSlice, Unit)?.slice
+                ?: texture.sliceWithSize(it.int("x"), it.int("y"), it.int("width"), it.int("height")),
             xoffset = it.int("xoffset"),
             yoffset = it.int("yoffset"),
             xadvance = it.int("xadvance")
@@ -316,7 +325,7 @@ private suspend fun readBitmapFontXml(
 	}
 
 	return BitmapFont(
-        atlas = textures.values.first().bmpBase,
+        atlas = atlas?.bitmap ?: textures.values.first().bmpBase,
         fontSize = fontSize,
         lineHeight = lineHeight,
         base = base,

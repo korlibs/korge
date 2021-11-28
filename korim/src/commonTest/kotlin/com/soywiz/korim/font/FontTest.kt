@@ -1,7 +1,9 @@
 package com.soywiz.korim.font
 
+import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.showImagesAndWait
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.text.*
@@ -156,5 +158,14 @@ class FontTest {
                 ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld\ntest").round()}
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun testBitmapFonts() = suspendTest {
+        val atlas = MutableAtlasUnit(512, 512, border = 1)
+        val txtFont = resourcesVfs["reality_hyper_regular_17.fnt"].readBitmapFont(atlas = atlas)
+        val xmlFont = resourcesVfs["example-font.xml"].readBitmapFont(atlas = atlas)
+
+        //atlas.allBitmaps.showImagesAndWait()
     }
 }
