@@ -9,6 +9,7 @@ import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.text.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.vector.*
 import kotlin.test.Ignore
@@ -161,7 +162,7 @@ class FontTest {
     }
 
     @Test
-    fun testBitmapFonts() = suspendTest {
+    fun testBitmapFonts() = suspendTest({ !OS.isJsNodeJs }) {
         val atlas = MutableAtlasUnit(512, 512, border = 1)
         val txtFont = resourcesVfs["reality_hyper_regular_17.fnt"].readBitmapFont(atlas = atlas)
         val xmlFont = resourcesVfs["example-font.xml"].readBitmapFont(atlas = atlas)
