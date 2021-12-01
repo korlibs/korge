@@ -86,4 +86,10 @@ class TiledMapTest : ViewsForTesting() {
             }
         )
     }
+
+    @Test
+    fun testTileMapWithTileSetFromOutsideFolder() = suspendTestNoJs {
+        // The demo.tmx tilemap file is using a tileset from its parent folder -> ../wood_tileset_3.tsx
+        resourcesVfs["tiled/demo.tmx"].readTiledMapData()
+    }
 }

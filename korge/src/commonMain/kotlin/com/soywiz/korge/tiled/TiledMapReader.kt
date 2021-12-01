@@ -207,7 +207,7 @@ suspend fun TileSetData.toTiledSet(
 
 suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	val file = this
-	val folder = this.parent.jail()
+	val folder = this.parent
 	val tiledMap = TiledMapData()
 	val mapXml = file.readXml()
 
