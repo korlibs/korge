@@ -682,6 +682,21 @@ nonSamples {
 }
 
 samples {
+    // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
+    if (isMacos && isArm) {
+        project.tasks {
+            afterEvaluate {
+                for (kind in listOf("Debug", "Release")) {
+                    val linkExecutableMacosArm64 = project.tasks.findByName("link${kind}ExecutableMacosArm64") as org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+                    val runExecutableMacosArm64 = project.tasks.create("run${kind}ExecutableMacosArm64", Exec::class) {
+                        dependsOn(linkExecutableMacosArm64)
+                        group = "run"
+                        commandLine(linkExecutableMacosArm64.binary.outputFile)
+                    }
+                }
+            }
+        }
+    }
 
     // @TODO: Move to KorGE plugin
     project.tasks {

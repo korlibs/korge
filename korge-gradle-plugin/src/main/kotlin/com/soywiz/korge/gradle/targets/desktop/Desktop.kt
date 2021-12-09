@@ -279,12 +279,14 @@ private fun Project.addNativeRun() {
 	afterEvaluate {
 		if (isMacos) {
 			for (buildType in RELEASE_DEBUG) {
-				val ktarget = gkotlin.targets["macosX64"] // @TODO: What happens on macosArm64?
+                val nativeTargetName = if (isArm) "macosArm64" else "macosX64"
+
+				val ktarget = gkotlin.targets[nativeTargetName]
 				//(ktarget as KotlinNativeTarget).attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.native)
 				val compilation = ktarget["compilations"]["main"] as KotlinNativeCompilation
 
 				addTask<Task>(
-					"packageMacosX64App${buildType.name.capitalize()}", // @TODO: What happens on macosArm64?
+					"package${nativeTargetName.capitalize()}App${buildType.name.capitalize()}", // @TODO: What happens on macosArm64?
 					group = GROUP_KORGE_PACKAGE,
 					dependsOn = listOf(compilation.getLinkTask(NativeOutputKind.EXECUTABLE, buildType, project))
 					//dependsOn = listOf("link${buildType.name.capitalize()}ExecutableMacosX64")
@@ -292,8 +294,7 @@ private fun Project.addNativeRun() {
 
 					group = GROUP_KORGE_PACKAGE
 					doLast {
-                        // @TODO: What happens on macosArm64?
-						val compilation = gkotlin.targets["macosX64"]["compilations"]["main"] as KotlinNativeCompilation
+						val compilation = gkotlin.targets[nativeTargetName]["compilations"]["main"] as KotlinNativeCompilation
 						val executableFile = compilation.getBinary(NativeOutputKind.EXECUTABLE, buildType)
 						val appFolder = buildDir["${korge.name}-$buildType.app"].apply { mkdirs() }
 						val appFolderContents = appFolder["Contents"].apply { mkdirs() }
