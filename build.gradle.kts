@@ -43,6 +43,7 @@ val useMimalloc = true
 val kotlinVersion: String by project
 val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
 val coroutinesVersion: String by project
+val nodeVersion: String by project
 val jnaVersion: String by project
 val androidBuildGradleVersion: String by project
 val kotlinSerializationVersion: String by project
@@ -177,6 +178,10 @@ val javaAddOpens = ArrayList<String>().apply {
     add("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
     if (isLinux) add("--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED")
 }.toTypedArray()
+
+rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin> {
+    rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = nodeVersion
+}
 
 subprojects {
     val doConfigure =
@@ -940,6 +945,7 @@ package com.soywiz.korge.gradle
 object BuildVersions {
     const val GIT = "$gitVersion"
     const val KOTLIN = "$realKotlinVersion"
+    const val NODE_JS = "$nodeVersion"
     const val JNA = "$jnaVersion"
     const val COROUTINES = "$coroutinesVersion"
     const val ANDROID_BUILD = "$androidBuildGradleVersion"

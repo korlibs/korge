@@ -7,6 +7,8 @@ import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.gradle.kotlin.dsl.the
+import org.gradle.kotlin.dsl.withType
 import org.jetbrains.kotlin.gradle.plugin.*
 import java.io.*
 
@@ -14,6 +16,10 @@ private object JavaScriptClass
 
 fun Project.configureJavaScript() {
     if (gkotlin.targets.findByName("js") != null) return
+
+    rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>().configureEach {
+        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = BuildVersions.NODE_JS
+    }
 
     gkotlin.apply {
 		js(KotlinJsCompilerType.IR) {
