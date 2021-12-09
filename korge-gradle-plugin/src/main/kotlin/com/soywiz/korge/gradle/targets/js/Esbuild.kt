@@ -7,14 +7,26 @@ import org.gradle.kotlin.dsl.*
 import java.io.*
 
 fun Project.configureEsbuild() {
+    val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
+
     val wwwFolder = File(buildDir, "www")
-    val esbuildFolder = File(rootProject.buildDir, "esbuild")
+
+    val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
     val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
     val esbuildCmdUnix = File(esbuildFolder, "bin/esbuild")
     val esbuildCmdCheck = if (isWindows) File(esbuildFolder, "esbuild.cmd") else esbuildCmdUnix
     val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else esbuildCmdUnix
 
     val npmInstallEsbuild = "npmInstallEsbuild"
+
+    val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
+    val ENV_PATH by lazy {
+        val NODE_PATH = File(env.nodeExecutable).parent
+        val PATH_SEPARATOR = File.pathSeparator
+        val OLD_PATH = System.getenv("PATH")
+        "$NODE_PATH$PATH_SEPARATOR$OLD_PATH"
+    }
+
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
         rootProject.tasks.create(npmInstallEsbuild, Exec::class) { task ->
             task.dependsOn("kotlinNodeJsSetup")
@@ -22,13 +34,14 @@ fun Project.configureEsbuild() {
 
             val esbuildVersion = korge.esbuildVersion
             task.doFirst {
-                val env = org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured()
                 val npmCmd = arrayOf(
                     File(env.nodeExecutable),
                     File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
                         ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
                         ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
                 )
+
+                task.environment("PATH", ENV_PATH)
                 task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
             }
         }
@@ -80,6 +93,7 @@ fun Project.configureEsbuild() {
                 val output = File(wwwFolder, "${project.name}.js")
                 task.inputs.file(jsPath)
                 task.outputs.file(output)
+                task.environment("PATH", ENV_PATH)
                 task.commandLine(ArrayList<Any>().apply {
                     add(esbuildCmd)
                     //add("--watch",)
