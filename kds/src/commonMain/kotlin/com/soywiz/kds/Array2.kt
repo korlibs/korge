@@ -419,7 +419,7 @@ data class DoubleArray2(val width: Int, val height: Int, val data: DoubleArray) 
 
     fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 
-    operator fun contains(v: Double): Boolean = this.data.contains(v)
+    operator fun contains(v: Double): Boolean = this.data.any { it == v }
 
     inline fun each(callback: (x: Int, y: Int, v: Double) -> Unit) {
         var n = 0
@@ -567,7 +567,7 @@ data class FloatArray2(val width: Int, val height: Int, val data: FloatArray) : 
 
     fun inside(x: Int, y: Int): Boolean = x >= 0 && y >= 0 && x < width && y < height
 
-    operator fun contains(v: Float): Boolean = this.data.contains(v)
+    operator fun contains(v: Float): Boolean = this.data.any { it == v }
 
     inline fun each(callback: (x: Int, y: Int, v: Float) -> Unit) {
         var n = 0

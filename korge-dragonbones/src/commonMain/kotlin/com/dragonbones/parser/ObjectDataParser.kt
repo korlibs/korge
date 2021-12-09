@@ -2273,7 +2273,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 						val x = rawVertices[iV++]
 						val y = rawVertices[iV++]
 
-						this._intArray[iB++] = rawBones.indexOf(boneIndex)
+						this._intArray[iB++] = rawBones.indexOfFirst { it == boneIndex }
 						this._floatArray[iF++] = boneWeight
 						this._floatArray[iF++] = x
 						this._floatArray[iF++] = y
