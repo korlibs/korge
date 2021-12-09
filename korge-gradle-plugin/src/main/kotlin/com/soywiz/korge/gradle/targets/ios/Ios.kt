@@ -54,7 +54,7 @@ fun Project.configureNativeIos() {
 		}
 	}
 
-    val iosTargets = listOf(kotlin.iosX64(), kotlin.iosArm64())
+    val iosTargets = listOf(kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosSimulatorArm64())
 
 	kotlin.apply {
 		for (target in iosTargets) {

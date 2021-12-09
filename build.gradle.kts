@@ -92,7 +92,8 @@ val KotlinTarget.isMacosArm64 get() = this.name == "macosArm64"
 val KotlinTarget.isMacos get() = isMacosX64 || isMacosArm64
 val KotlinTarget.isIosArm64 get() = this.name == "iosArm64"
 val KotlinTarget.isIosX64 get() = this.name == "iosX64"
-val KotlinTarget.isIos get() = isIosArm64 || isIosX64
+val KotlinTarget.isIosSimulatorArm64 get() = this.name == "iosSimulatorArm64"
+val KotlinTarget.isIos get() = isIosArm64 || isIosX64 || isIosSimulatorArm64
 val KotlinTarget.isWatchosX86 get() = this.name == "watchosX86"
 val KotlinTarget.isWatchosArm32 get() = this.name == "watchosArm32"
 val KotlinTarget.isWatchosArm64 get() = this.name == "watchosArm64"
@@ -149,7 +150,7 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mobileTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return listOf(iosArm64(), iosX64())
+    return listOf(iosArm64(), iosX64(), iosSimulatorArm64())
 }
 
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
