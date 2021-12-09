@@ -1,6 +1,10 @@
 package com.soywiz.kds.random
 
+import kotlin.native.concurrent.ThreadLocal
 import kotlin.random.*
+
+@ThreadLocal
+private val LocalFastRandom = FastRandom(Random.Default.nextLong())
 
 // Copy of XorWowRandom from the Kotlin Standard library but optimizing some methods
 open class FastRandom private constructor(
@@ -11,8 +15,9 @@ open class FastRandom private constructor(
     private var v: Int,
     private var addend: Int
 ) : Random() {
-    companion object : FastRandom(Random.Default.nextLong()) {
-        val Default get() = FastRandom
+    companion object : Random() {
+        val Default get() = LocalFastRandom
+        override fun nextBits(bitCount: Int): Int = LocalFastRandom.nextBits(bitCount)
     }
 
     private constructor(seed1: Int, seed2: Int) :
