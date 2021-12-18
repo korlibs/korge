@@ -2,6 +2,18 @@ package com.soywiz.korim.format
 
 import com.soywiz.korim.bitmap.*
 
+/**
+ * This class is used to store the layer image from e.g. an aseprite image file.
+ *
+ * @param layer   Stores the index and the name of the layer.
+ * @param slice   This is the actual bitmap image.
+ * @param targetX X offset in pixel from the top left corner of the overall image.
+ * @param targetY Y offset in pixel from the top left corner of the overall image.
+ * Offsets are used to crop empty space around the sprite images.
+ *
+ * [...]
+ *
+ */
 open class ImageFrameLayer constructor(
     val layer: ImageLayer,
     slice: BmpSlice,

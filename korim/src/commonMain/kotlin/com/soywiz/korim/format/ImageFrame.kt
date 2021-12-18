@@ -4,6 +4,14 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korim.bitmap.*
 
+/**
+ * This class defines one frame of a sprite object like e.g. an aseprite image file.
+ * It contains info about all layer images which are used in that frame.
+ *
+ * @param index The index of the frame within the sprite (e.g. aseprite file).
+ * @param time  When this frame is used in an animation this defines the time the frame should be displayed.
+ * @param layerData This is a list of all layers which this frame contains.
+ */
 open class ImageFrame(
     val index: Int,
     val time: TimeSpan = 0.seconds,
