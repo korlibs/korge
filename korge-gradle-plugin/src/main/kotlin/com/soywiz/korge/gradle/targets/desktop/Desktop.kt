@@ -234,7 +234,7 @@ private fun Project.addNativeRun() {
 
                             run {
                                 appRcFile.writeText(WindowsRC.generate(korge))
-                                project.compileWindowsRES(appRcFile)
+                                project.compileWindowsRES(appRcFile, appResFile)
                                 linkTask.binary.linkerOpts("-Wl,--subsystem,$subsystem")
                             }
 						}

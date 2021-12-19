@@ -33,7 +33,8 @@ object WindowsToolchain {
     }
     val windres by lazy { path["windres.exe"] }
 	val strip by lazy { path["strip.exe"] }
-    val rc by lazy { msys2?.get("bin/llvm-rc.exe") ?: error("Can't find llvm-rc.exe") }
+    //val rcOrNull by lazy { msys2?.get("bin/llvm-rc.exe") }
+    //val rc by lazy { rcOrNull ?: error("Can't find llvm-rc.exe") }
 }
 
 fun Project.compileWindowsRC(rcFile: File, objFile: File, log: Boolean = true): File {
@@ -50,13 +51,27 @@ fun Project.compileWindowsRC(rcFile: File, objFile: File, log: Boolean = true): 
     return objFile
 }
 
-fun Project.compileWindowsRES(rcFile: File, log: Boolean = true): File {
+fun Project.compileWindowsRES(rcFile: File, resFile: File, log: Boolean = true): File {
+    /*
     exec {
         it.commandLine(WindowsToolchain.rc.absolutePath, rcFile.path)
         it.workingDir(rcFile.parentFile)
         it.environment("PATH", System.getenv("PATH") + ";" + listOfNotNull(WindowsToolchain.path.absolutePath, WindowsToolchain.path2?.absolutePath).joinToString(";"))
     }
     return File(rcFile.parentFile, "${rcFile.nameWithoutExtension}.res")
+     */
+    exec {
+        //rh.exe -open .\in\resources.rc -save .\out\resources.res -action compile -log NUL
+        it.workingDir = rcFile.parentFile
+        it.commandLine(
+            WindowsToolchain.resourceHackerExe.absolutePath,
+            "-open", rcFile.path,
+            "-save", resFile.path,
+            "-action", "compile",
+            //"-log", "NUL",
+        )
+    }
+    return resFile
 }
 
 fun Project.replaceExeWithRes(exe: File, res: File) {
