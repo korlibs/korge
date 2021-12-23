@@ -277,7 +277,11 @@ fun Project.configureAndroidIndirect() {
 						}
 
                         line("apply from: 'build.extra.gradle'")
-					}.toString())
+                        line("File buildAndroidIndirectGradle = new File(project.rootDir, '../../../build.android.indirect.gradle')")
+                        line("if (buildAndroidIndirectGradle.exists()) {")
+                        line("    apply from: buildAndroidIndirectGradle")
+                        line("}")
+                    }.toString())
 				}
 
 				writeAndroidManifest(outputFolder, korge, info)
