@@ -56,13 +56,14 @@ object ResourceProcessorRunner {
 	}
 
 	class ResourceProcessorContainer(val processors: List<ResourceProcessor>) {
-		val processorsByExt: Map<String, ResourceProcessor> = LinkedHashMap<String, ResourceProcessor>().also {
-			for (proc in processors) {
+		val fileProcessorsByExt: Map<String, ResourceProcessor> = LinkedHashMap<String, ResourceProcessor>().also {
+			for (proc in processors.filter { it.forFiles }) {
 				for (ext in proc.extensionLCs) {
 					it[ext] = proc
 				}
 			}
 		}
+        val folderProcessors: List<ResourceProcessor> = processors.filter { it.forFolders }
 	}
 
 	suspend fun handle(kind: String, folders: List<String>, output: String, processors: ResourceProcessorContainer) {
@@ -72,15 +73,20 @@ object ResourceProcessorRunner {
 			if (folder.exists()) {
 				for (file in folder.walkTopDown()) {
 					val ext = file.extension.toLowerCase()
-					val processor = processors.processorsByExt[ext]
-					logger.info("   - $file")
-					if (processor != null) {
+                    val processorsForEntry = when {
+                        file.isDirectory -> processors.folderProcessors
+                        else -> listOfNotNull(processors.fileProcessorsByExt[ext])
+                    }
+					logger.info("   - $file : ext=$ext, isDirectory=${file.isDirectory}, processors=${processorsForEntry.size}")
+					if (processorsForEntry.isNotEmpty()) {
 						val relativeFile = file.absoluteFile.relativeTo(folder)
-						val outputFile = File(File(output), relativeFile.path)
-						outputFile.parentFile.mkdirs()
 						//println("       - $processor - $outputRelativeFolder - $outputFile")
 						//outputFile.parentFile.mkdirs()
-						processor.process(file.absoluteFile.toVfs(), outputFile.toVfs())
+                        for (processor in processorsForEntry) {
+                            val outputFile = File(File(File(output), relativeFile.parent ?: ""), processor.getOutputFileName(relativeFile))
+                            outputFile.parentFile.mkdirs()
+                            processor.process(file.absoluteFile.toVfs(), outputFile.toVfs())
+                        }
 					}
 				}
 			}

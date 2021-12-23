@@ -1,10 +1,13 @@
 package com.soywiz.korio.file.std
 
 import com.soywiz.kds.*
+import com.soywiz.klock.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.net.http.*
+import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 
@@ -18,7 +21,10 @@ fun UrlVfsJailed(url: String, client: HttpClient = createHttpClient(), failFromS
 fun UrlVfsJailed(url: URL, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile =
 	UrlVfs(url.fullUrl, Unit, client, failFromStatus)[url.path]
 
-class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHttpClient(), val failFromStatus: Boolean = true) : Vfs() {
+class UrlVfs(
+    val url: String, val dummy: Unit, val client: HttpClient = createHttpClient(),
+    val failFromStatus: Boolean = true
+) : Vfs() {
 	override val absolutePath: String = url
 
 	fun getFullUrl(path: String): String {
@@ -154,5 +160,25 @@ class UrlVfs(val url: String, val dummy: Unit, val client: HttpClient = createHt
 		}
 	}
 
-	override fun toString(): String = "UrlVfs"
+    override suspend fun listSimple(path: String): List<VfsFile> {
+        return listSimpleStats(path).map { it.file }
+    }
+
+    suspend fun listSimpleStats(path: String): List<VfsStat> {
+        val catalogJsonString = this[path]["\$catalog.json"].readString()
+        val data = Json.parse(catalogJsonString).dyn
+
+        return data.list.map {
+            val localName = PathInfo(it["name"].str).baseName
+            createExistsStat(
+                path = "$path/$localName",
+                isDirectory = it["isDirectory"].bool,
+                size = it["size"].long,
+                createTime = DateTime.fromUnix(it["createTime"].long),
+                modifiedTime = DateTime.fromUnix(it["modifiedTime"].long),
+            )
+        }
+    }
+
+    override fun toString(): String = "UrlVfs"
 }

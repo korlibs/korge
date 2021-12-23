@@ -6,9 +6,15 @@ import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.util.AsyncOnce
 import com.soywiz.korio.util.jvmFallback
 import kotlinx.coroutines.runBlocking
+import java.io.*
 import java.util.*
 
-abstract class ResourceProcessor(vararg extensions: String) {
+abstract class ResourceProcessor @JvmOverloads constructor(
+    vararg extensions: String,
+    val forFolders: Boolean = false
+) {
+    val forFiles get() = !forFolders
+
 	abstract val version: Int
 	abstract val outputExtension: String
 
@@ -22,6 +28,10 @@ abstract class ResourceProcessor(vararg extensions: String) {
 	suspend fun requireRegeneration(file: VfsFile, outputFolder: VfsFile): Boolean {
 		return _checkAndProcess(file, outputFolder, doProcess = false)
 	}
+
+    open fun getOutputFileName(relativeFile: File): String {
+        return relativeFile.name
+    }
 
 	suspend fun process(file: VfsFile, outputFile: VfsFile): Boolean {
 		return _checkAndProcess(file, outputFile, doProcess = true)
