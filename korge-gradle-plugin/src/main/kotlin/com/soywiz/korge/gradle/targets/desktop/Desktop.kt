@@ -8,6 +8,7 @@ import com.soywiz.korge.gradle.targets.windows.*
 import com.soywiz.korge.gradle.util.*
 import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
+import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -199,6 +200,7 @@ private fun Project.addNativeRun() {
 
 				val copyTask = project.addTask<Copy>("copyResourcesToExecutable$ctargetKind") { task ->
 					task.dependsOn(compilation.compileKotlinTask)
+                    task.duplicatesStrategy = DuplicatesStrategy.INCLUDE
 					for (sourceSet in project.gkotlin.sourceSets) {
 						task.from(sourceSet.resources)
 					}

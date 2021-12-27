@@ -49,12 +49,15 @@ fun Project.addGenResourcesTasks() = this {
                 val isJvm = compilation.compileKotlinTask.name == "compileKotlinJvm"
                 val processedResourcesFolder = getCompilationKorgeProcessedResourcesFolder(compilation)
                 compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
-                val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
-                    it.group = GROUP_KORGE_RESOURCES
+                val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) { task ->
+                    task.group = GROUP_KORGE_RESOURCES
                     //dependsOn(prepareResourceProcessingClasses)
-                    it.dependsOn(jvmMainClasses)
+                    task.dependsOn(jvmMainClasses)
 
-                    it.doLast {
+                    // @TODO: Add specific files instead of all the folders?
+                    task.outputs.dirs(processedResourcesFolder)
+
+                    task.doLast {
                         processedResourcesFolder.mkdirs()
                         //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
@@ -65,8 +68,10 @@ fun Project.addGenResourcesTasks() = this {
                             //processedResourcesFolder["@appicon-64.png"].writeBytes(korge.getIconBytes(64))
                         }
 
+
+                        val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
+
                         executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "run") { classLoader ->
-                            val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
                             listOf(classLoader, folders, processedResourcesFolder.toString(), compilation.name)
                         }
                     }

@@ -16,8 +16,8 @@ class CatalogDirectoryResourceProcessor : ResourceProcessor(forFolders = true) {
     override suspend fun processInternal(inputFile: VfsFile, outputFile: VfsFile) {
         val files = inputFile.listSimple()
 
-        println("CatalogDirectoryResourceProcessor: inputFile=$inputFile, outputFile=$outputFile")
-        println("-- $files")
+        //println("CatalogDirectoryResourceProcessor: inputFile=$inputFile, outputFile=$outputFile")
+        //println("-- $files")
 
         val jsonList = files.map {
             val stat = it.stat()
@@ -30,6 +30,6 @@ class CatalogDirectoryResourceProcessor : ResourceProcessor(forFolders = true) {
             )
         }
 
-        outputFile.writeString(Json.stringify(jsonList))
+        outputFile.writeString(Json.stringify(jsonList, pretty = true))
     }
 }

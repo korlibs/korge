@@ -2,6 +2,7 @@ package com.soywiz.korge.gradle.targets.js
 
 import com.soywiz.korge.gradle.*
 import org.gradle.api.*
+import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.kotlin.dsl.*
 import java.io.*
@@ -48,7 +49,11 @@ fun Project.configureEsbuild() {
     }
 
     val browserEsbuildResources by tasks.creating(Copy::class) {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         from(project.tasks.getByName("jsProcessResources").outputs.files)
+        afterEvaluate {
+            from(project.tasks.getByName("korgeProcessedResourcesJsMain").outputs.files)
+        }
         //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
         into(wwwFolder)
     }
