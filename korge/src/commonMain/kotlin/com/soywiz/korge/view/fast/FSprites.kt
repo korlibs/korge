@@ -242,7 +242,7 @@ open class FSprites(val maxSize: Int) {
                     val localPos = t_Temp0["xy"]
 
                     SET(size, baseSize * a_scale)
-                    SET(localPos, t_TempMat2 * (a_xy - a_anchor) * size)
+                    SET(localPos, t_TempMat2 * ((a_xy - a_anchor) * size))
                     SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
                 }
             }, FragmentShader {
