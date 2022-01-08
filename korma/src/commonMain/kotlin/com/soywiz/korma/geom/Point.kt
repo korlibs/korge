@@ -116,8 +116,8 @@ data class Point(
     companion object {
         val Zero: IPoint = IPoint(0.0, 0.0)
         val One: IPoint = IPoint(1.0, 1.0)
-        val Up: IPoint = IPoint(0.0, +1.0)
-        val Down: IPoint = IPoint(0.0, -1.0)
+        val Up: IPoint = IPoint(0.0, -1.0)
+        val Down: IPoint = IPoint(0.0, +1.0)
         val Left: IPoint = IPoint(-1.0, 0.0)
         val Right: IPoint = IPoint(+1.0, 0.0)
 
