@@ -1,24 +1,27 @@
 package com.soywiz.krypto
 
-import com.soywiz.krypto.encoding.Base64Url
-import com.soywiz.krypto.encoding.fromBase64Url
-import com.soywiz.krypto.encoding.toBase64Url
+import com.soywiz.krypto.encoding.Base64
+import com.soywiz.krypto.encoding.fromBase64
+import com.soywiz.krypto.encoding.toBase64
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class Base64UrlTest {
     @Test
     fun name() {
-        assertEquals("AQID", Base64Url.encode(byteArrayOf(1, 2, 3)))
-        assertEquals("aGVsbG8", Base64Url.encode("hello".encodeToByteArray()))
-        assertEquals(byteArrayOf(1, 2, 3).toList(), Base64Url.decode("AQID").toList())
-        assertEquals("hello", Base64Url.decode("aGVsbG8").decodeToString())
+        assertEquals("AQID", Base64.encode(byteArrayOf(1, 2, 3), true))
+        assertEquals("aGVsbG8", Base64.encode("hello".encodeToByteArray(), true))
+        assertEquals(byteArrayOf(1, 2, 3).toList(), Base64.decode("AQID", true).toList())
+        assertEquals("hello", Base64.decode("aGVsbG8", true).decodeToString())
     }
 
     @Test
     fun testSeveral() {
         for (item in listOf("", "a", "aa", "aaa", "aaaa", "aaaaa", "Hello World!")) {
-            assertEquals(item, item.encodeToByteArray().toBase64Url().fromBase64Url().decodeToString())
+            assertEquals(
+                item,
+                item.encodeToByteArray().toBase64(true).fromBase64(ignoreSpaces = false, url = true).decodeToString()
+            )
         }
     }
 
@@ -32,7 +35,14 @@ class Base64UrlTest {
     fun testIssue64DecodeWithMissingPadding() {
         assertEquals(
             "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
-            Base64Url.encode(Base64Url.decode("eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ"))
+            Base64.encode(
+                Base64.decode(
+                    "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ",
+                    url = true
+                ),
+                url = true,
+                doPadding = false
+            )
         )
     }
 
@@ -40,16 +50,20 @@ class Base64UrlTest {
     fun testIssue64DecodeWithPadding() {
         assertEquals(
             "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ==",
-            Base64Url.encode(
-                Base64Url.decode("eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ=="),
-                true
+            Base64.encode(
+                Base64.decode(
+                    "eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ==",
+                    url = true
+                ),
+                url = true,
+                doPadding = true
             )
         )
     }
 }
 
 object ObjectBase64Url {
-    val globalBase64 = "aGVsbG8".fromBase64Url().decodeToString()
+    val globalBase64 = "aGVsbG8".fromBase64(ignoreSpaces = true, url = true).decodeToString()
 }
 
-val globalBase64Url = "aGVsbG8".fromBase64Url().decodeToString()
+val globalBase64Url = "aGVsbG8".fromBase64(ignoreSpaces = true, url = true).decodeToString()
