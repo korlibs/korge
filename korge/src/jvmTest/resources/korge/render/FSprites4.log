@@ -100,7 +100,7 @@ void main() {
 	temp0.y = sin(a_rangle);
 	temp2 = mat2(temp0.x, (0.0 - temp0.y), temp0.y, temp0.x);
 	temp0.zw = (temp1.xy * a_scale);
-	temp0.xy = ((temp2 * (a_xy - a_axy)) * temp0.zw);
+	temp0.xy = (temp2 * ((a_xy - a_axy) * temp0.zw));
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4((temp0.xy + vec2(a_rxy.x, a_rxy.y)), 0.0, 1.0));
 }
 
