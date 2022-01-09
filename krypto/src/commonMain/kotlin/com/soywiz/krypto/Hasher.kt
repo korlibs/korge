@@ -1,10 +1,9 @@
 package com.soywiz.krypto
 
 import com.soywiz.krypto.encoding.Base64
+import com.soywiz.krypto.encoding.Base64Url
 import com.soywiz.krypto.encoding.Hex
-import com.soywiz.krypto.internal.*
 import com.soywiz.krypto.internal.arraycopy
-
 import kotlin.math.min
 
 open class HasherFactory(val create: () -> Hasher) {
@@ -81,6 +80,7 @@ inline class Hash(val bytes: ByteArray) {
         fun fromBase64(base64: String): Hash = Hash(Base64.decodeIgnoringSpaces(base64))
     }
     val base64 get() = Base64.encode(bytes)
+    val base64Url get() = Base64Url.encode(bytes)
     val hex get() = Hex.encode(bytes)
     val hexLower get() = Hex.encodeLower(bytes)
     val hexUpper get() = Hex.encodeUpper(bytes)
