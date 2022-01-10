@@ -2,14 +2,9 @@ package com.soywiz.krypto.encoding
 
 object Base64 {
     private val TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
-    private val DECODE = IntArray(0x100).apply {
-        for (n in 0..255) this[n] = -1
-        for (n in 0 until TABLE.length) {
-            this[TABLE[n].code] = n
-        }
-    }
-    private val TABLE_URL = TABLE.toUrlEncode()
-    private val DECODE_URL = DECODE.toUrlDecode()
+    private val TABLE_URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_="
+    private val DECODE = TABLE.toDecodeArray()
+    private val DECODE_URL = TABLE_URL.toDecodeArray()
 
     /**
      * Base64 decodes [v] to a ByteArray. Set [url] to true if [v] is Base64Url encoded.
@@ -134,20 +129,9 @@ fun ByteArray.toBase64(url: Boolean = false, doPadding: Boolean = false): String
 val ByteArray.base64: String get() = Base64.encode(this)
 val ByteArray.base64Url: String get() = Base64.encode(this, true)
 
-// Values from RFC 3548 section 4
-private const val MINUS_INDEX = 62
-private const val UNDERSTRIKE_INDEX = 63
-
-private fun IntArray.toUrlDecode(): IntArray {
-    val decode = this.copyOf()
-
-    decode['-'.code] = MINUS_INDEX
-    decode['_'.code] = UNDERSTRIKE_INDEX
-
-    return decode
-}
-
-private fun String.toUrlEncode(): String {
-    return this.replace("+", "-")
-        .replace("/", "_")
+private fun String.toDecodeArray(): IntArray = IntArray(0x100).also {
+    for (n in 0..255) it[n] = -1
+    for (n in indices) {
+        it[this[n].code] = n
+    }
 }

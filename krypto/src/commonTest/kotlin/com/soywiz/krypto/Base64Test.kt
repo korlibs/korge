@@ -5,7 +5,6 @@ import com.soywiz.krypto.encoding.fromBase64
 import com.soywiz.krypto.encoding.toBase64
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class Base64Test {
     @Test
