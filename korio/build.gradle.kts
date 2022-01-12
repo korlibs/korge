@@ -22,7 +22,7 @@ kotlin {
 dependencies {
 	add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
 
-    add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${klockVersion}")
+    add("commonMainApi", "com.soywiz.korlibs.klock:klock:${klockVersion}")
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))
     add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
