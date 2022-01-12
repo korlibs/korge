@@ -3,6 +3,7 @@ description = "I/O utilities for Kotlin"
 val coroutinesVersion: String by project
 
 val enableKotlinNative: String by project
+val kryptoVersion: String by project
 val doEnableKotlinNative get() = enableKotlinNative == "true"
 
 val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
@@ -23,7 +24,7 @@ dependencies {
     add("commonMainApi", project(":klock"))
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))
-    add("commonMainApi", project(":krypto"))
+    add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
     add("commonMainApi", project(":klogger"))
 
     afterEvaluate {

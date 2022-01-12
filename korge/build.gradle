@@ -14,7 +14,6 @@ dependencies {
 	add("commonMainApi", project(":korau"))
 	add("commonMainApi", project(":korinject"))
     commonMainApi(project(":korte"))
-	add("jvmMainApi", project(":krypto"))
     //add("jvmMainApi", project(":korte"))
 
 	//add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")
