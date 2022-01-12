@@ -45,6 +45,7 @@ val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion
 val coroutinesVersion: String by project
 val nodeVersion: String by project
 val kryptoVersion: String by project
+val klockVersion: String by project
 val jnaVersion: String by project
 val androidBuildGradleVersion: String by project
 val kotlinSerializationVersion: String by project
@@ -953,7 +954,7 @@ object BuildVersions {
     const val ANDROID_BUILD = "$androidBuildGradleVersion"
     const val KOTLIN_SERIALIZATION = "$kotlinSerializationVersion"
     const val KRYPTO = "$kryptoVersion"
-    const val KLOCK = "$projectVersion"
+    const val KLOCK = "$klockVersion"
     const val KDS = "$projectVersion"
     const val KMEM = "$projectVersion"
     const val KORMA = "$projectVersion"
