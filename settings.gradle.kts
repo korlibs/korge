@@ -31,7 +31,7 @@ for (file in rootDir.listFiles()) {
 }
 */
 //include(":kbignum")
-//include(":klock")
+include(":klock")
 include(":klogger")
 include(":korinject")
 include(":kmem")
