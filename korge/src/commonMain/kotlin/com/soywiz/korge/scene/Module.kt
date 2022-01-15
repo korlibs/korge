@@ -30,6 +30,7 @@ open class Module {
 	open val mainScene: KClass<out Scene> = EmptyScene::class
 	open val clearEachFrame = true
 
+    @Deprecated("")
 	open val targetFps: Double = 0.0
 	open val scaleAnchor: Anchor = Anchor.MIDDLE_CENTER
 	open val scaleMode: ScaleMode = ScaleMode.SHOW_ALL

@@ -45,23 +45,23 @@ object Korge {
         val windowSize = module.windowSize
 
         Korge(
-            title = module.title,
-            width = windowSize.width,
-            height = windowSize.height,
-            virtualWidth = module.size.width,
-            virtualHeight = module.size.height,
-            bgcolor = module.bgcolor,
-            quality = module.quality,
+            title = config.title ?: module.title,
+            width = config.windowSize?.width ?: windowSize.width,
+            height = config.windowSize?.height ?: windowSize.height,
+            virtualWidth = config.virtualSize?.width ?: module.size.width,
+            virtualHeight = config.virtualSize?.height ?: module.size.height,
+            bgcolor = config.bgcolor ?: module.bgcolor,
+            quality = config.quality ?: module.quality,
             icon = null,
-            iconPath = module.icon,
+            iconPath = config.icon ?: module.icon,
             //iconDrawable = module.iconImage,
-            imageFormats = ImageFormats(module.imageFormats),
+            imageFormats = ImageFormats(config.imageFormats + module.imageFormats),
             targetFps = module.targetFps,
-            scaleAnchor = module.scaleAnchor,
-            scaleMode = module.scaleMode,
-            clipBorders = module.clipBorders,
+            scaleAnchor = config.scaleAnchor ?: module.scaleAnchor,
+            scaleMode = config.scaleMode ?: module.scaleMode,
+            clipBorders = config.clipBorders ?: module.clipBorders,
             debug = config.debug,
-            fullscreen = module.fullscreen,
+            fullscreen = config.fullscreen ?: module.fullscreen,
             args = config.args,
             gameWindow = config.gameWindow,
             injector = config.injector,
@@ -74,16 +74,25 @@ object Korge {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
                 val injector = config.injector
-                injector
-                    .mapInstance(Module::class, module)
-                    .mapInstance(Config::class, config)
+                injector.mapInstance(Module::class, module)
+                injector.mapInstance(Config::class, config)
+
                 config.constructedViews(views)
+
                 module.apply { injector.configure() }
-                val sc = SceneContainer(views, name = "rootSceneContainer")
-                views.stage += sc
-                sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
-                // Se we have the opportunity to execute deinitialization code at the scene level
-                views.onClose { sc.changeTo<EmptyScene>() }
+
+                when {
+                    config.main != null -> {
+                        config.main?.invoke(stage)
+                    }
+                    config.sceneClass != null -> {
+                        val sc = SceneContainer(views, name = "rootSceneContainer")
+                        views.stage += sc
+                        sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
+                        // Se we have the opportunity to execute deinitialization code at the scene level
+                        views.onClose { sc.changeTo<EmptyScene>() }
+                    }
+                }
             }
         )
     }
@@ -489,12 +498,12 @@ object Korge {
     }
 
 	data class Config(
-        val module: Module,
+        val module: Module = Module(),
         val args: Array<String> = arrayOf(),
         val imageFormats: ImageFormat = RegisteredImageFormats,
         val gameWindow: GameWindow? = null,
 		//val eventDispatcher: EventDispatcher = gameWindow ?: DummyEventDispatcher, // Removed
-        val sceneClass: KClass<out Scene> = module.mainScene,
+        val sceneClass: KClass<out Scene>? = module.mainScene,
         val sceneInjects: List<Any> = listOf(),
         val timeProvider: TimeProvider = TimeProvider,
         val injector: AsyncInjector = AsyncInjector(),
@@ -506,6 +515,16 @@ object Korge {
         val gameId: String = DEFAULT_GAME_ID,
         val settingsFolder: String? = null,
         val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+        val virtualSize: ISizeInt? = null,
+        val windowSize: ISizeInt? = null,
+        val scaleMode: ScaleMode? = null,
+        val scaleAnchor: Anchor? = null,
+        val clipBorders: Boolean? = null,
+        val title: String? = null,
+        val bgcolor: RGBA? = null,
+        val quality: GameWindow.Quality? = null,
+        val icon: String? = null,
+        val main: (suspend Stage.() -> Unit)? = null,
         val constructedViews: (Views) -> Unit = {}
 	)
 
