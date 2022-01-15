@@ -17,8 +17,9 @@ class KmlGlState(val gl: KmlGl) {
     val clearStencil = FBuffer(4)
     val stencilFrontWriteMask = FBuffer(4)
     val stencilBackWriteMask = FBuffer(4)
-    val textureBinding2D = FBuffer(4)
+    val activeTexture = FBuffer(4)
     val currentProgram = FBuffer(4)
+
     val MAX_ATTRIB by lazy { gl.getIntegerv(gl.MAX_VERTEX_ATTRIBS) }
     val vertexAttribEnabled by lazy { BooleanArray(MAX_ATTRIB) }
     val vertexAttribSize by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
@@ -26,6 +27,9 @@ class KmlGlState(val gl: KmlGl) {
     val vertexAttribNormal by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
     val vertexAttribStride by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
     val vertexAttribPointer by lazy { Array(MAX_ATTRIB) { FBuffer(8) } }
+
+    val MAX_TEX_UNITS by lazy { gl.getIntegerv(gl.MAX_TEXTURE_IMAGE_UNITS) }
+    val textureBinding2DList by lazy { Array(MAX_TEX_UNITS) { FBuffer(8) } }
 
     private val temp = FBuffer(64)
     private var arrayBufferBinding: Int = 0
@@ -40,7 +44,16 @@ class KmlGlState(val gl: KmlGl) {
         gl.getIntegerv(gl.STENCIL_CLEAR_VALUE, clearStencil)
         gl.getIntegerv(gl.STENCIL_WRITEMASK, stencilFrontWriteMask)
         gl.getIntegerv(gl.STENCIL_BACK_WRITEMASK, stencilBackWriteMask)
-        gl.getIntegerv(gl.TEXTURE_BINDING_2D, textureBinding2D)
+
+        // Textures
+        run {
+            gl.getIntegerv(gl.ACTIVE_TEXTURE, activeTexture)
+            for (n in 0 until MAX_TEX_UNITS) {
+                gl.activeTexture(gl.TEXTURE0 + n)
+                gl.getIntegerv(gl.TEXTURE_BINDING_2D, textureBinding2DList[n])
+            }
+        }
+
         gl.getIntegerv(gl.CURRENT_PROGRAM, currentProgram)
         //println("maxAttribs: $maxAttribs")
         for (n in 0 until MAX_ATTRIB) {
@@ -71,7 +84,16 @@ class KmlGlState(val gl: KmlGl) {
         gl.stencilMaskSeparate(gl.FRONT, stencilFrontWriteMask.i32[0])
         gl.stencilMaskSeparate(gl.BACK, stencilFrontWriteMask.i32[0])
         gl.clearStencil(clearStencil.i32[0])
-        gl.bindTexture(gl.TEXTURE_2D, textureBinding2D.i32[0])
+
+        // Textures
+        run {
+            for (n in 0 until MAX_TEX_UNITS) {
+                gl.activeTexture(gl.TEXTURE0 + n)
+                gl.bindTexture(gl.TEXTURE_2D, textureBinding2DList[n].i32[0])
+            }
+            gl.activeTexture(activeTexture.i32[0])
+        }
+
         gl.useProgram(currentProgram.i32[0])
         //gl.bindAttribLocation()
         for (n in 0 until MAX_ATTRIB) {
