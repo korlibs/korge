@@ -41,13 +41,13 @@ actual val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
 @ThreadLocal
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
 @ThreadLocal
-actual val tempVfs: VfsFile by lazy { localVfs(tmpdir) }
+actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
 actual val rootLocalVfs: VfsFile get() = cwdVfs
 actual val applicationVfs: VfsFile get() = cwdVfs
 actual val applicationDataVfs: VfsFile get() = cwdVfs
 actual val externalStorageVfs: VfsFile get() = cwdVfs
-actual val userHomeVfs: VfsFile get() = cwdVfs
+actual val userHomeVfs: VfsFile get() = jailedLocalVfs(Environment.expand("~"))
 
 @ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
