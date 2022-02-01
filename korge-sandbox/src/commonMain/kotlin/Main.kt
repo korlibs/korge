@@ -1,12 +1,11 @@
 import com.soywiz.kds.*
-import com.soywiz.kds.algo.*
 import com.soywiz.klock.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.tiled.*
+import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korge.view.text
@@ -52,6 +51,7 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false) {
+    mainUIImageTester()
     //mainEditor()
     //mainTrimmedAtlas()
     //mainRotateCircle()
@@ -60,7 +60,7 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), cli
     //Bunnymark().apply { bunnymarkMain() }
     //bezierSample()
     //particlesMain()
-    terminalEmulatorMain()
+    //terminalEmulatorMain()
     //mainBVH()
     //mainCircles()
     //mainVampire()
@@ -408,5 +408,48 @@ suspend fun mainCompression() {
                 DummyAsyncOutputStream
             )
         })
+    }
+}
+
+suspend fun Stage.mainUIImageTester() {
+    val korimPng = resourcesVfs["korim.png"].readBitmapSlice()
+    val bunnysPng = resourcesVfs["bunnys.png"].readBitmapSlice()
+    val vampireAse = resourcesVfs["vampire.ase"].readBitmap(ASE).slice()
+
+    val image = uiImage(300, 170, korimPng, scaleMode = ScaleMode.COVER, contentAnchor = Anchor.MIDDLE_CENTER).xy(200, 200)
+    image.bgcolor = Colors["#17334f"]
+
+    uiGridFill(100.0, 100.0, cols = 3, rows = 3) {
+        val group = UIButtonToggleableGroup()
+        for (y in 0 until 3) {
+            for (x in 0 until 3) {
+                uiButton(text = "X") {
+                    this.group(group, pressed = x == 1 && y == 1)
+                    onClick { image.contentAnchor = Anchor(x * 0.5, y * 0.5) }
+                }
+            }
+        }
+    }
+    uiVerticalStack {
+        xy(200.0, 0.0)
+        uiHorizontalStack {
+            val group = UIButtonToggleableGroup()
+            uiButton(text = "COVER").group(group, pressed = true).onClick { image.scaleMode = ScaleMode.COVER }
+            uiButton(text = "FIT").group(group).onClick { image.scaleMode = ScaleMode.FIT }
+            uiButton(text = "EXACT").group(group).onClick { image.scaleMode = ScaleMode.EXACT }
+            uiButton(text = "NO_SCALE").group(group).onClick { image.scaleMode = ScaleMode.NO_SCALE }
+        }
+        uiHorizontalStack {
+            val group = UIButtonToggleableGroup()
+            uiButton(text = "SQUARE").group(group).onClick { image.size(300, 300) }
+            uiButton(text = "HRECT").group(group, pressed = true).onClick { image.size(300, 170) }
+            uiButton(text = "VRECT").group(group).onClick { image.size(170, 300) }
+        }
+        uiHorizontalStack {
+            val group = UIButtonToggleableGroup()
+            uiButton(text = "korim.png").group(group, pressed = true).onClick { image.bitmap = korimPng }
+            uiButton(text = "bunnys.png").group(group).onClick { image.bitmap = bunnysPng }
+            uiButton(text = "vampire.ase").group(group).onClick { image.bitmap = vampireAse }
+        }
     }
 }
