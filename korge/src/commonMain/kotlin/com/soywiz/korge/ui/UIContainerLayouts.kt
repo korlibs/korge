@@ -116,3 +116,27 @@ open class UIVerticalFill(width: Double = 128.0, height: Double = 128.0) : UICon
         }
     }
 }
+
+inline fun Container.uiGridFill(
+    width: Double = 128.0,
+    height: Double = 128.0,
+    cols: Int = 3,
+    rows: Int = 3,
+    block: @ViewDslMarker UIContainer.() -> Unit = {}
+) = UIGridFill(width, height, cols, rows).addTo(this).apply(block)
+
+open class UIGridFill(width: Double = 128.0, height: Double = 128.0, cols: Int = 3, rows: Int = 3) : UIContainer(width, height) {
+    var cols: Int = cols
+    var rows: Int = rows
+
+    override fun relayout() {
+        val elementHeight = height / rows
+        val elementWidth = width / cols
+        forEachChildWithIndex { index, view ->
+            val ex = index % cols
+            val ey = index / cols
+            view.xy(ex * elementWidth, ey * elementHeight)
+            view.size(elementWidth, elementHeight)
+        }
+    }
+}
