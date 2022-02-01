@@ -42,6 +42,8 @@ class ScaleMode(
 
         val FIT get() = SHOW_ALL
 
+        val FILL get() = EXACT
+
         val EXACT = ScaleMode { c, iw, ih, cw, ch ->
             if (c == 0) cw else ch
         }
