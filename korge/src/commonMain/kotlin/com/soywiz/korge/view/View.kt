@@ -1684,8 +1684,8 @@ fun <T : View> T.addFixedUpdater(
 @Deprecated("Use addUpdater instead", ReplaceWith("addUpdater(updatable)"))
 inline fun <T : View> T.onFrame(noinline updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(updatable)
 
-fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit) {
-    object : UpdateComponentWithViews {
+fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateComponentWithViews {
+    return object : UpdateComponentWithViews {
         override val view: View get() = this@onNextFrame
         override fun update(views: Views, dt: TimeSpan) {
             removeFromView()

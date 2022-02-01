@@ -422,8 +422,13 @@ inline fun <T : View> T.onOutOnOver(
     noinline out: @EventsDslMarker (MouseEvents) -> Unit,
     noinline over: @EventsDslMarker (MouseEvents) -> Unit
 ): T {
-    onOut { events -> out(events) }
-    onOver { events -> onNextFrame { over(events) } }
+    var component: UpdateComponentWithViews? = null
+    onOut { events ->
+        component?.detach()
+        component = null
+        out(events)
+    }
+    onOver { events -> component = onNextFrame { over(events) } }
     return this
 }
 

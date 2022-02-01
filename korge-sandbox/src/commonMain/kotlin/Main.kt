@@ -51,7 +51,8 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false) {
-    mainUIImageTester()
+    mainUITreeView()
+    //mainUIImageTester()
     //mainEditor()
     //mainTrimmedAtlas()
     //mainRotateCircle()
@@ -460,5 +461,44 @@ suspend fun Stage.mainUIImageTester() {
 
 
 suspend fun Stage.mainUITreeView() {
-
+    uiTooltipContainer { tooltips ->
+        uiTreeView(UITreeViewList(listOf(
+            UITreeViewNode("hello"),
+            UITreeViewNode("world",
+                UITreeViewNode("test"),
+                UITreeViewNode("demo",
+                    UITreeViewNode("demo"),
+                    UITreeViewNode("demo"),
+                    UITreeViewNode("demo",
+                        UITreeViewNode("demo")
+                    ),
+                ),
+            ),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+            UITreeViewNode("hello"),
+        ), height = 16.0, genView = {
+            UIText("$it").tooltip(tooltips, "Tooltip for $it")
+        }))
+    }
+    
 }

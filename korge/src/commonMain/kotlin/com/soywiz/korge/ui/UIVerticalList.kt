@@ -21,7 +21,14 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
         val fixedHeight: Double?
         fun getItemY(index: Int): Double = (fixedHeight ?: 20.0) * index
         fun getItemHeight(index: Int): Double
-        fun getItemView(index: Int): View
+        fun getItemView(index: Int, vlist: UIVerticalList): View
+
+        object Dummy : Provider {
+            override val numItems: Int get() = 0
+            override val fixedHeight: Double? = null
+            override fun getItemHeight(index: Int): Double = 0.0
+            override fun getItemView(index: Int, vlist: UIVerticalList): View = DummyView()
+        }
     }
 
     private var dirty = false
@@ -92,7 +99,7 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
             for (index in fromIndex until numItems) {
                 val view = viewsByIndex.getOrPut(index) {
                     val itemHeight = provider.getItemHeight(index)
-                    provider.getItemView(index)
+                    provider.getItemView(index, this)
                         .also { addChild(it) }
                         .position(0.0, provider.getItemY(index))
                         .size(width, itemHeight.toDouble())

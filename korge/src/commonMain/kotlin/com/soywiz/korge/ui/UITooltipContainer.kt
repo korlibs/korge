@@ -32,6 +32,8 @@ class UITooltipContainer(font: Font = DefaultUIFont) : Container() {
     var tooltipBackgroundColor: RGBA ; get() = tooltip.bgcolor ; set(value) { tooltip.bgcolor = value }
     var showTime: TimeSpan = 0.4.seconds
     var appearAnimationTime: TimeSpan = 0.2.seconds
+    var tooltipOffsetX: Double = 0.0
+    var tooltipOffsetY: Double = 4.0
 
     private var visibleTimer: Closeable? = null
     private var visibleAppearTween: TweenComponent? = null
@@ -56,7 +58,7 @@ class UITooltipContainer(font: Font = DefaultUIFont) : Container() {
 
     fun setPosition(view: View) {
         val bounds = view.globalBounds
-        tooltip.setGlobalXY(bounds.left, bounds.bottom)
+        tooltip.setGlobalXY(bounds.left + tooltipOffsetX, bounds.bottom + tooltipOffsetY)
     }
 
     fun setText(text: String) {

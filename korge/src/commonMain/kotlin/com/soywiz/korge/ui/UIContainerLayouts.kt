@@ -140,3 +140,20 @@ open class UIGridFill(width: Double = 128.0, height: Double = 128.0, cols: Int =
         }
     }
 }
+
+inline fun Container.uiFillLayeredContainer(
+    width: Double = 128.0,
+    height: Double = 20.0,
+    block: @ViewDslMarker UIFillLayeredContainer.() -> Unit = {}
+) = UIFillLayeredContainer(width, height).addTo(this).apply(block)
+
+open class UIFillLayeredContainer(width: Double = 128.0, height: Double = 20.0) : UIContainer(width, height) {
+    override fun relayout() {
+        val width = this.width
+        val height = this.height
+        forEachChild {
+            it.xy(0, 0)
+            it.size(width, height)
+        }
+    }
+}

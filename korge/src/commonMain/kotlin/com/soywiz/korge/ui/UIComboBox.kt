@@ -44,7 +44,7 @@ open class UIComboBox<T>(
         override val numItems: Int = items.size
         override val fixedHeight: Double = itemHeight
         override fun getItemHeight(index: Int): Double = fixedHeight
-        override fun getItemView(index: Int): View = UIButton(text = items[index].toString(), width = width, height = itemHeight).also {
+        override fun getItemView(index: Int, vlist: UIVerticalList): View = UIButton(text = items[index].toString(), width = width, height = itemHeight).also {
             it.onClick {
                 this@UIComboBox.selectedIndex = index
                 this@UIComboBox.close()
