@@ -31,4 +31,17 @@ data class Anchor(val sx: Double, val sy: Double) : Interpolable<Anchor> {
         ratio.interpolate(this.sx, other.sx),
         ratio.interpolate(this.sy, other.sy)
     )
+
+    fun toNamedString(): String = when (this) {
+        TOP_LEFT -> "Anchor.TOP_LEFT"
+        TOP -> "Anchor.TOP"
+        TOP_RIGHT -> "Anchor.TOP_RIGHT"
+        LEFT -> "Anchor.LEFT"
+        CENTER -> "Anchor.MIDDLE_CENTER"
+        RIGHT -> "Anchor.RIGHT"
+        BOTTOM_LEFT -> "Anchor.BOTTOM_LEFT"
+        BOTTOM_CENTER -> "Anchor.BOTTOM_CENTER"
+        BOTTOM_RIGHT -> "Anchor.BOTTOM_RIGHT"
+        else -> toString()
+    }
 }

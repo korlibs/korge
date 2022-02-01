@@ -426,7 +426,7 @@ suspend fun Stage.mainUIImageTester() {
                 for (x in 0 until 3) {
                     uiButton(text = "X") {
                         val anchor = Anchor(x * 0.5, y * 0.5)
-                        tooltip(tooltips, "$anchor")
+                        tooltip(tooltips, anchor.toNamedString())
                         this.group(group, pressed = x == 1 && y == 1)
                         onClick { image.contentAnchor = anchor }
                     }
@@ -456,4 +456,9 @@ suspend fun Stage.mainUIImageTester() {
             }
         }
     }
+}
+
+
+suspend fun Stage.mainUITreeView() {
+
 }
