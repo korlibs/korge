@@ -416,6 +416,17 @@ internal inline fun <T : View?> T?.doMouseEvent(prop: KProperty1<MouseEvents, Si
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)
 annotation class EventsDslMarker
 
+// @TODO: onOut should happen before onOver (circumvented via onNextFrame)
+
+inline fun <T : View> T.onOutOnOver(
+    noinline out: @EventsDslMarker (MouseEvents) -> Unit,
+    noinline over: @EventsDslMarker (MouseEvents) -> Unit
+): T {
+    onOut { events -> out(events) }
+    onOver { events -> onNextFrame { over(events) } }
+    return this
+}
+
 inline fun <T : View?> T.onClick(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::click, handler)
 inline fun <T : View?> T.onOver(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::over, handler)
 inline fun <T : View?> T.onOut(noinline handler: @EventsDslMarker suspend (MouseEvents) -> Unit) = doMouseEvent(MouseEvents::out, handler)

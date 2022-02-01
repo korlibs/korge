@@ -3,6 +3,7 @@ package com.soywiz.korge.ui
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 
 inline fun Container.uiText(
@@ -20,8 +21,9 @@ class UIText(
     protected var bover by uiObservable(false) { updateState() }
     protected var bpressing by uiObservable(false) { updateState() }
 
-    //private val background = solidRect(width, height, buttonBackColor)
+    private val background = solidRect(width, height, Colors.TRANSPARENT_BLACK)
     private val textView = text(text)
+    var bgcolor: RGBA = Colors.TRANSPARENT_BLACK
 
     init {
         mouse {
@@ -63,6 +65,8 @@ class UIText(
     private val textBounds = Rectangle()
 
     override fun renderInternal(ctx: RenderContext) {
+        background.visible = bgcolor.a != 0
+        background.colorMul = bgcolor
         textBounds.setTo(0.0, 0.0, width, height)
         textView.setFormat(face = textFont, size = textSize.toInt(), color = textColor, align = textAlignment)
         textView.setTextBounds(textBounds)

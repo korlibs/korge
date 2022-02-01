@@ -137,9 +137,9 @@ fun BaseView?.tweenNoWait(
     easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
     callback: (Double) -> Unit = { }
-): Unit {
-    if (this == null) return
-    TweenComponent(this, vs.toList(), time, easing, callback, null, waitTime).attach()
+): TweenComponent? {
+    if (this == null) return null
+    return TweenComponent(this, vs.toList(), time, easing, callback, null, waitTime).also { it.attach() }
 }
 
 suspend fun QView.tween(

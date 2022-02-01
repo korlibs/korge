@@ -46,7 +46,7 @@ fun UpdateComponentWithViews.attach(): UpdateComponentWithViews {
     this.view.addComponent(this); return this
 }
 
-fun UpdateComponent.attach(): UpdateComponent {
+fun <T : UpdateComponent> T.attach(): T {
     this.view.addComponent(this); return this
 }
 
