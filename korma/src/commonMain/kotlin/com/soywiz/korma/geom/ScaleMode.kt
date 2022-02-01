@@ -52,7 +52,9 @@ class ScaleMode(
     }
 }
 
-fun Rectangle.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle()): Rectangle = this.size.applyScaleMode(container, mode, anchor, out)
+fun Rectangle.applyScaleMode(
+    container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle()
+): Rectangle = this.size.applyScaleMode(container, mode, anchor, out)
 
 fun Size.applyScaleMode(container: Rectangle, mode: ScaleMode, anchor: Anchor, out: Rectangle = Rectangle(), tempSize: Size = Size()): Rectangle {
     val outSize = this.applyScaleMode(container.size, mode, tempSize)
