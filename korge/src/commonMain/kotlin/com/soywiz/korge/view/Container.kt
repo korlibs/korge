@@ -50,6 +50,8 @@ open class Container : View(true) {
     @KorgeInternal
     val children: FastArrayList<View> get() = __children
 
+    fun toChildrenList() = __children.toList()
+
     override fun invalidate() {
         super.invalidate()
         fastForEachChild { child ->
