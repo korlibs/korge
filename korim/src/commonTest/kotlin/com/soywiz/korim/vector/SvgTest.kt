@@ -17,6 +17,12 @@ class SvgTest {
         //img.writeTo(localVfs("c:/temp/logo.png"), formats = PNG)
     }
 
+    @Test
+    fun testTokenizePath() {
+        val tokens = SVG.tokenizePath("m -100.123,100.456 c -1.1234,3.3e-4 -1.111,0.123").map { it.anyValue }
+        assertEquals(listOf('m', -100.123, 100.456, 'c', -1.1234, 3.3E-4, -1.111, 0.123), tokens)
+    }
+
 
 	val SAMPLE_LOGO = """
 <svg id="7fe010bd-4468-4253-af77-c0b7be09145b" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="462" height="462" viewBox="0 0 462 462">

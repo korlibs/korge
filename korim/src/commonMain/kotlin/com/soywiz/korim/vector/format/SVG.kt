@@ -700,12 +700,19 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 				skipSeparators()
 				var first = true
 				val str = readWhile {
-					if (first) {
-						first = false
-						it.isDigit() || it == '-' || it == '+'
-					} else {
-						it.isDigit() || it == '.'
-					}
+                    when {
+                        first -> {
+                            first = false
+                            it.isDigit() || it == '-' || it == '+'
+                        }
+                        it == 'e' || it == 'E' -> {
+                            first = true
+                            true
+                        }
+                        else -> {
+                            it.isDigit() || it == '.'
+                        }
+                    }
 				}
 				return if (str.isEmpty()) 0.0 else try {
 					str.toDouble()
@@ -729,9 +736,15 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 		}
 	}
 
-	interface PathToken
-	data class PathTokenNumber(val value: Double) : PathToken
-	data class PathTokenCmd(val id: Char) : PathToken
+	interface PathToken {
+        val anyValue: Any
+    }
+	data class PathTokenNumber(val value: Double) : PathToken {
+        override val anyValue: Any get() = value
+    }
+	data class PathTokenCmd(val id: Char) : PathToken {
+        override val anyValue: Any get() = id
+    }
 
 	data class SvgStyle(
 		val styles: MutableMap<String, String> = hashMapOf()
