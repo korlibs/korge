@@ -115,6 +115,13 @@ class ISO8601Test {
     }
 
     @Test
+    fun testDateTimeUtcFraction() {
+        assertEquals("2019-09-17T11:48:05.123Z", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.extended.format(1568720885123))
+        assertEquals("2019-09-17T11:48:05.023Z", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.extended.format(1568720885023))
+        assertEquals("2022-02-05T15:32:18.096Z", ISO8601.DATETIME_UTC_COMPLETE_FRACTION.extended.format(1644075138096))
+    }
+
+    @Test
     fun testIssue84() {
         val badUtc = DateTime(
             date = Date(2020, 1, 4),

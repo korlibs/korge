@@ -16,10 +16,10 @@ internal fun Int.padded(count: Int): String {
 internal fun Double.padded(intCount: Int, decCount: Int): String {
     val intPart = floor(this).toInt()
     val decPart = round((this - intPart) * 10.0.pow(decCount)).toInt()
-    return "${intPart.padded(intCount).substr(-intCount, intCount)}.${decPart.toString().padEnd(decCount, '0').substr(0, decCount)}"
+    return "${intPart.padded(intCount).substr(-intCount, intCount)}.${decPart.toString().padStart(decCount, '0').substr(-decCount)}"
 }
 
-internal fun String.substr(start: Int, length: Int): String {
+internal fun String.substr(start: Int, length: Int = this.length): String {
     val low = (if (start >= 0) start else this.length + start).clamp(0, this.length)
     val high = (if (length >= 0) low + length else this.length + length).clamp(0, this.length)
     return if (high < low) "" else this.substring(low, high)
