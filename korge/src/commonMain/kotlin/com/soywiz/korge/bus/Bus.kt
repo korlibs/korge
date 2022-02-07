@@ -1,12 +1,14 @@
 package com.soywiz.korge.bus
 
 import com.soywiz.kds.iterators.*
+import com.soywiz.korinject.AsyncDestructor
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.lang.*
 import kotlin.reflect.*
 
 class Bus(
 	private val globalBus: GlobalBus
-) : Closeable {
+) : Closeable, AsyncDestructor {
 	private val closeables = arrayListOf<Closeable>()
 
 	suspend fun send(message: Any) {
@@ -28,6 +30,10 @@ class Bus(
 			c.close()
 		}
 	}
+
+    override suspend fun deinit() {
+        close()
+    }
 }
 
 class GlobalBus {
@@ -54,4 +60,9 @@ class GlobalBus {
     inline fun <reified T : Any> register(noinline handler: suspend (T) -> Unit): Closeable {
        return register(T::class, handler)
     }
+}
+
+fun AsyncInjector.mapBus() {
+    mapSingleton { GlobalBus() }
+    mapPrototype { Bus(get()) }
 }
