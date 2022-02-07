@@ -9,22 +9,14 @@ interface AsyncObjectProvider<T> {
 }
 
 class PrototypeAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> T) : AsyncObjectProvider<T> {
-    override suspend fun get(injector: AsyncInjector): T {
-        val value = injector.created(generator(injector))
-        if (value is AsyncDestructor) injector.addDeinit(value)
-        return value
-    }
+    override suspend fun get(injector: AsyncInjector): T = injector.created(generator(injector))
     override suspend fun deinit() = Unit
     override fun toString(): String = "PrototypeAsyncObjectProvider()"
 }
 
 class FactoryAsyncObjectProvider<T>(val generator: suspend AsyncInjector.() -> AsyncFactory<T>) :
     AsyncObjectProvider<T> {
-    override suspend fun get(injector: AsyncInjector): T {
-        val value = injector.created(generator(injector).create())
-        if (value is AsyncDestructor) injector.addDeinit(value)
-        return value
-    }
+    override suspend fun get(injector: AsyncInjector): T = injector.created(generator(injector).create())
     override suspend fun deinit() = Unit
     override fun toString(): String = "FactoryAsyncObjectProvider()"
 }
@@ -177,6 +169,7 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
     suspend internal fun <T> created(instance: T): T {
         if (instance is AsyncDependency) instance.init()
         if (instance is InjectorAsyncDependency) instance.init(this)
+        if (instance is AsyncDestructor) deinitList.add(instance)
         return instance
     }
 
