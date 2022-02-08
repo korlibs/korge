@@ -62,7 +62,7 @@ open class GameWindowCoroutineDispatcherSetNow : GameWindowCoroutineDispatcher()
     override fun now() = currentTime
 }
 
-@UseExperimental(InternalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeable {
     override fun dispatchYield(context: CoroutineContext, block: Runnable): Unit = dispatch(context, block)
 

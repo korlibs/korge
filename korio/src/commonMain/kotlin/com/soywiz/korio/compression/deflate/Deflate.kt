@@ -11,7 +11,7 @@ expect fun Deflate(windowBits: Int): CompressionMethod
 
 val Deflate: CompressionMethod by lazy { Deflate(15) }
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 open class DeflatePortable(val windowBits: Int) : CompressionMethod {
 	override suspend fun compress(
 		i: BitReader,

@@ -9,7 +9,7 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.checksum.*
 import com.soywiz.krypto.encoding.*
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 open class ZLib(val deflater: (windowBits: Int) -> CompressionMethod) : CompressionMethod {
 	companion object : ZLib({ Deflate(it) })
 

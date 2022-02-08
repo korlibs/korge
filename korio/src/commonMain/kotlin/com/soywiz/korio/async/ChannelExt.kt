@@ -29,7 +29,7 @@ suspend fun <T> Iterable<T>.toChannel(): ReceiveChannel<T> = produce { for (v in
 
 suspend fun <T> Flow<T>.toChannel(): ReceiveChannel<T> = produce { this@toChannel.collect { send(it) }  }
 
-@UseExperimental(ExperimentalTypeInference::class)
+@OptIn(ExperimentalTypeInference::class)
 suspend fun <E> produce(capacity: Int = 0, @BuilderInference block: suspend ProducerScope<E>.() -> Unit): ReceiveChannel<E> =
 	CoroutineScope(coroutineContext).produce(coroutineContext, capacity, block)
 

@@ -25,7 +25,7 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
  *
  * You can add new children to this container by calling [addChild] or [addChildAt].
  */
-@UseExperimental(KorgeInternal::class)
+@OptIn(KorgeInternal::class)
 open class Container : View(true) {
     @PublishedApi
     internal val __children: FastArrayList<View> = FastArrayList()

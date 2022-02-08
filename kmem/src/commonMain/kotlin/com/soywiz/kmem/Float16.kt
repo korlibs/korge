@@ -19,7 +19,7 @@ import kotlin.math.*
  * @see https://en.wikipedia.org/wiki/Half-precision_floating-point_format
  */
 
-@UseExperimental(ExperimentalUnsignedTypes::class)
+@OptIn(ExperimentalUnsignedTypes::class)
 public inline class Float16(public val rawBits: UShort) {
     @PublishedApi
     internal constructor(value: Double) : this(doubleToIntBits(value))

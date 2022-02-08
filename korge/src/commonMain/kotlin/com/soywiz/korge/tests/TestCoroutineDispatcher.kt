@@ -8,7 +8,7 @@ import com.soywiz.korio.lang.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
-@UseExperimental(InternalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	//CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
 	CoroutineDispatcher(), ContinuationInterceptor, Delay {

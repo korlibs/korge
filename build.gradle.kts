@@ -418,6 +418,7 @@ subprojects {
                     val iosWatchosTvosCommon by lazy { createPairSourceSet("iosWatchosTvosCommon", nativePosixApple) }
                     val iosWatchosCommon by lazy { createPairSourceSet("iosWatchosCommon", nativePosixApple) }
                     val iosTvosCommon by lazy { createPairSourceSet("iosTvosCommon", nativePosixApple) }
+                    val tvosCommon by lazy { createPairSourceSet("tvosCommon", nativePosixApple) }
                     val macosIosTvosCommon by lazy { createPairSourceSet("macosIosTvosCommon", nativePosixApple) }
                     val macosIosWatchosCommon by lazy { createPairSourceSet("macosIosWatchosCommon", nativePosixApple) }
                     val iosCommon by lazy { createPairSourceSet("iosCommon", iosWatchosTvosCommon) }
@@ -474,6 +475,7 @@ subprojects {
                                 native.dependsOn(iosWatchosTvosCommon)
                                 native.dependsOn(iosTvosCommon)
                                 native.dependsOn(macosIosTvosCommon)
+                                native.dependsOn(tvosCommon)
                             }
                         }
                     }

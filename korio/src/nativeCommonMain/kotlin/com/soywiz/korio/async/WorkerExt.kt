@@ -20,7 +20,7 @@ suspend fun <T, R> executeInTempWorker(value: T, func: (T) -> R): R {
 }
 
 /*
-@UseExperimental(InternalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 suspend fun <T, R> executeInWorker(worker: kotlin.native.concurrent.Worker, value: T, func: (T) -> R): R = kotlin.coroutines.suspendCoroutine { c ->
 	class Info(val value: T, val func: (T) -> R, val c: kotlin.coroutines.Continuation<R>)
 	val info = Info(value.freeze(), func.freeze(), c)

@@ -8,7 +8,7 @@ import kotlin.coroutines.intrinsics.*
 /**
  * Allows to execute a suspendable block as long as you can ensure no suspending will happen at all..
  */
-@UseExperimental(InternalCoroutinesApi::class)
+@OptIn(InternalCoroutinesApi::class)
 fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
 	//TODO("runBlockingNoSuspensions not supported yet!")
 	var completed = false

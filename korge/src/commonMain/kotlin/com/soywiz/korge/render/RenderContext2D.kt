@@ -31,7 +31,7 @@ private val logger = Logger("RenderContext2D")
  *
  * [scissor] methods allow to specify a scissor rectangle limiting the area where the pixels will be renderer.
  */
-@UseExperimental(KorgeInternal::class)
+@OptIn(KorgeInternal::class)
 class RenderContext2D(
     @property:KorgeInternal
     val batch: BatchBuilder2D,

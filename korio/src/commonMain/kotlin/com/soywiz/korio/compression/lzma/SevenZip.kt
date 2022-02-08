@@ -9,7 +9,7 @@ import kotlin.math.*
 
 // Ported from the public domain Java version of the LZMA SDK : https://www.7-zip.org/download.html
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 object SevenZip {
 	interface ICodeProgress {
 		fun setProgress(inSize: Long, outSize: Long)

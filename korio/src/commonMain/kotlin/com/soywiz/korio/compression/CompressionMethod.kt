@@ -23,16 +23,16 @@ interface CompressionMethod {
 	): Unit = unsupported()
 
 	object Uncompressed : CompressionMethod {
-		@UseExperimental(KorioExperimentalApi::class)
+		@OptIn(KorioExperimentalApi::class)
 		override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream): Unit { reader.copyTo(out) }
-		@UseExperimental(KorioExperimentalApi::class)
+		@OptIn(KorioExperimentalApi::class)
 		override suspend fun compress(i: BitReader, o: AsyncOutputStream, context: CompressionContext): Unit { i.copyTo(o) }
 	}
 }
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 suspend fun CompressionMethod.uncompress(i: AsyncInputStream, o: AsyncOutputStream): Unit = uncompress(BitReader.forInput(i), o)
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 suspend fun CompressionMethod.compress(i: AsyncInputStream, o: AsyncOutputStream, context: CompressionContext = CompressionContext()): Unit = compress(BitReader.forInput(i), o, context)
 
 suspend fun CompressionMethod.uncompressStream(input: AsyncInputStream, bufferSize: Int = AsyncByteArrayDequeChunked.DEFAULT_MAX_SIZE): AsyncInputStream =

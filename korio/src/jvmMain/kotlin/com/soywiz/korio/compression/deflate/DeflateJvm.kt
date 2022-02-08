@@ -9,7 +9,7 @@ import java.util.zip.*
 //actual fun Deflate(windowBits: Int): CompressionMethod = DeflatePortable(windowBits)
 actual fun Deflate(windowBits: Int): CompressionMethod = DeflateNative(windowBits)
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMethod {
 	override suspend fun uncompress(i: BitReader, o: AsyncOutputStream) {
 		val tempInput = ByteArray(64 * 1024)

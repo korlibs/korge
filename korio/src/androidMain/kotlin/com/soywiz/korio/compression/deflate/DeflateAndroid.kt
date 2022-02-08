@@ -8,7 +8,7 @@ import com.soywiz.korio.stream.AsyncOutputStream
 import java.util.zip.Deflater
 import java.util.zip.Inflater
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 actual fun Deflate(windowBits: Int): CompressionMethod = object : CompressionMethod {
 	override suspend fun uncompress(i: BitReader, o: AsyncOutputStream) {
 		val tempInput = ByteArray(1024)

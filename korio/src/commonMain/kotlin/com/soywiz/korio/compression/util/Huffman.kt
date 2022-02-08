@@ -3,7 +3,7 @@ package com.soywiz.korio.compression.util
 import com.soywiz.kmem.*
 import com.soywiz.korio.experimental.*
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 internal class HuffmanTree {
 	companion object {
 		private const val INVALID_VALUE = -1

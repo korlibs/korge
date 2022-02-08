@@ -1,4 +1,4 @@
-@file:UseExperimental(KorgeInternal::class)
+@file:OptIn(KorgeInternal::class)
 
 package com.soywiz.korge.render
 

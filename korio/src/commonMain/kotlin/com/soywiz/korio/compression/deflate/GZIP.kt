@@ -19,7 +19,7 @@ open class GZIPNoCrc(deflater: () -> CompressionMethod) : GZIPBase(false, deflat
     }
 }
 
-@UseExperimental(KorioExperimentalApi::class)
+@OptIn(KorioExperimentalApi::class)
 open class GZIPBase(val checkCrc: Boolean, val deflater: () -> CompressionMethod) : CompressionMethod {
     override fun toString(): String = "GZIPBase($checkCrc, ${deflater})"
 
