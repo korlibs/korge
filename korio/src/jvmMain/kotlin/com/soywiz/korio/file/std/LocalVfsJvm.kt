@@ -9,6 +9,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
+import com.sun.nio.file.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
@@ -407,9 +408,12 @@ private class LocalVfsJvm : LocalVfsV2() {
 
         val registeredKey = fs.getPath(path).register(
 			watcher,
-			StandardWatchEventKinds.ENTRY_CREATE,
-			StandardWatchEventKinds.ENTRY_DELETE,
-			StandardWatchEventKinds.ENTRY_MODIFY
+            arrayOf(
+                StandardWatchEventKinds.ENTRY_CREATE,
+                StandardWatchEventKinds.ENTRY_DELETE,
+                StandardWatchEventKinds.ENTRY_MODIFY,
+            ),
+            SensitivityWatchEventModifier.HIGH
 		)
 
         GlobalScope.launch(Dispatchers.IO) {
