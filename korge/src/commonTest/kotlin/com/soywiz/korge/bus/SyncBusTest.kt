@@ -1,13 +1,15 @@
 package com.soywiz.korge.bus
 
-import com.soywiz.korinject.*
-import com.soywiz.korio.async.*
-import kotlin.test.*
+import com.soywiz.korge.scene.Scene
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korio.async.suspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
-class BusTest {
+class SyncBusTest {
     val out = arrayListOf<String>()
 
-    inner class Scene1(val bus: Bus) {
+    inner class Scene1(val bus: SyncBus) {
         init {
             bus.register<Int> { out += "HELLO$it" }
         }
@@ -16,12 +18,11 @@ class BusTest {
     @Test
     fun test() = suspendTest {
         val injector = AsyncInjector()
-        injector.mapInstance(coroutineContext) // This should be mapped already in the Korge { } block
-        injector.mapBus()
+        injector.mapSyncBus()
         injector.mapPrototype { Scene1(get()) }
         val injector2 = injector.child()
         val scene1 = injector2.get<Scene1>()
-        val bus = injector.get<Bus>()
+        val bus = injector.get<SyncBus>()
         bus.send(1)
         bus.send(2)
         //scene1.sceneDestroyInternal()
