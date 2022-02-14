@@ -18,7 +18,12 @@ fun Project.configureJavaScript() {
     if (gkotlin.targets.findByName("js") != null) return
 
     rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin>().configureEach {
-        rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion = BuildVersions.NODE_JS
+        try {
+            rootProject.the<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension>().nodeVersion =
+                BuildVersions.NODE_JS
+        } catch (e: Throwable) {
+            // Ignore failed because already configured
+        }
     }
 
     gkotlin.apply {
