@@ -120,3 +120,6 @@ abstract class KlockLocale {
 		override val formatTimeShort get() = format("h:mm a")
 	}
 }
+
+fun DateTime.format(format: String, locale: KlockLocale): String = DateFormat(format).withLocale(locale).format(this)
+fun DateTimeTz.format(format: String, locale: KlockLocale): String = DateFormat(format).withLocale(locale).format(this)
