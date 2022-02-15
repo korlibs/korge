@@ -4,4 +4,5 @@ dependencies {
 	add("commonMainApi", project(":korim"))
 	add("commonMainApi", project(":korau"))
 	add("jvmMainApi", "org.jcodec:jcodec:$jcodecVersion")
+    add("androidMainApi", "com.google.android.exoplayer:exoplayer:$exoPlayerVersion")
 }

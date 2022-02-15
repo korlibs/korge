@@ -11,6 +11,7 @@ internal class AndroidKorviInternal : KorviInternal() {
         //val vfs = final.vfs
         //return AndroidKorviVideoSoft(file, androidContext(), coroutineContext)
         return AndroidKorviVideoAndroidMediaPlayer(file)
+        //        return AndroidKorviVideoAndroidExoPlayer(file)
         //return KorviVideoAndroidSurfaceView(file, androidContext(), coroutineContext)
     }
 }
