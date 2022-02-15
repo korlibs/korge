@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.KmlGl
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
@@ -34,6 +35,12 @@ interface AGContainer {
     //}
 
     fun repaint(): Unit
+}
+
+@KoragExperimental
+enum class AGTarget {
+    DISPLAY,
+    OFFSCREEN
 }
 
 interface AGWindow : AGContainer {
@@ -243,6 +250,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private var tempBitmap: Bitmap? = null
         var ready: Boolean = false; private set
         val texId = lastTextureId++
+        @KoragExperimental
+        var transform: Matrix3D = Matrix3D()
 
         init {
             createdTextureCount++
@@ -713,7 +722,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    val mainRenderBuffer: BaseRenderBuffer by lazy { createMainRenderBuffer() }
+    @KoragExperimental
+    var agTarget = AGTarget.DISPLAY
+
+    val mainRenderBuffer: BaseRenderBuffer by lazy {
+        when (agTarget) {
+            AGTarget.DISPLAY -> createMainRenderBuffer()
+            AGTarget.OFFSCREEN -> createRenderBuffer()
+        }
+    }
 
     open fun createMainRenderBuffer(): BaseRenderBuffer = BaseRenderBufferImpl()
 
@@ -734,8 +751,10 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         protected var dirty = false
 
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
-            if(this.width != width || this.height != height ||
-                this.fullWidth != fullWidth || this.fullHeight != fullHeight) {
+            if (
+                this.width != width || this.height != height ||
+                this.fullWidth != fullWidth || this.fullHeight != fullHeight
+            ) {
                 super.setSize(x, y, width, height, fullWidth, fullHeight)
                 dirty = true
             }
@@ -818,6 +837,19 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
+    @KoragExperimental
+    inline fun renderToExternalRB(width: Int, height: Int, rb: BaseRenderBuffer , render: () -> Unit) {
+        try {
+            rb.setSize(0, 0, width, height, width, height)
+            setRenderBufferTemporally(rb) {
+                clear(Colors.TRANSPARENT_BLACK) // transparent
+                render()
+            }
+
+        } finally {
+        }
+    }
+
     inline fun renderToBitmap(bmp: Bitmap32, render: () -> Unit) {
         renderToTexture(bmp.width, bmp.height, {
             render()
@@ -855,7 +887,10 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }, FragmentShader {
             DefaultShaders.apply {
                 //out setTo vec4(1f, 1f, 0f, 1f)
-                out setTo texture2D(u_Tex, v_Tex["xy"])
+                //out setTo texture2D(u_Tex, v_Tex["xy"])
+                // @TODO: Do we really need u_TexTransformMatN? If so, can we do this in the Vertex Shader instead so it is cheaper?
+                // @TODO: Alternative: can we use a custom shader for this instead?
+                out setTo texture2D(u_Tex, u_TexTransformMatN[0] * vec4(v_Tex["xy"], 0f.lit, 1f.lit))
             }
         })
         val uniforms = UniformValues()
@@ -870,7 +905,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
         fun draw(tex: Texture, left: Float, top: Float, right: Float, bottom: Float) {
             //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-            uniforms[DefaultShaders.u_Tex] = TextureUnit(tex)
+            //uniforms[DefaultShaders.u_Tex] = TextureUnit(tex)
+            // @TODO: Do we really need u_TexTransformMatN?
+            uniforms[DefaultShaders.u_TexTransformMatN[0]] = tex.transform
 
             val texLeft = -1f
             val texRight = +1f
@@ -897,6 +934,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     val textureDrawer by lazy { TextureDrawer() }
     val flipRenderTexture = true
+    @KoragExperimental
+    var flipRender = false
 
     fun drawTexture(tex: Texture) {
         textureDrawer.draw(tex, -1f, +1f, +1f, -1f)

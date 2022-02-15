@@ -1,5 +1,6 @@
 package com.soywiz.korag
 
+import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.*
 
 fun ProgramWithDefault(
@@ -9,7 +10,12 @@ fun ProgramWithDefault(
 ): Program = Program(vertex, fragment, name)
 
 object DefaultShaders {
+    // from korge
+    @KoragExperimental
+    const val BB_MAX_TEXTURES = 4
 	val u_Tex = Uniform("u_Tex", VarType.TextureUnit)
+    @KoragExperimental
+    val u_TexTransformMatN = Array(BB_MAX_TEXTURES) { Uniform("u_TexTransformMat$it", VarType.Mat4) }
 
 	val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
