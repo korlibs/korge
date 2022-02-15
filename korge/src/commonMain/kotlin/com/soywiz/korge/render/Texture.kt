@@ -11,20 +11,45 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 
 /**
+ * Represents a full texture region wraping a [base] [AG.Texture] and specifying its [width] and [height]
+ */
+class TextureBase(
+    var base: AG.Texture?,
+    override var width: Int,
+    override var height: Int
+) : Closeable, ISizeInt {
+    var version = -1
+    val premultiplied get() = base?.premultiplied == true
+    override fun close(): Unit {
+        base?.close()
+        base = null
+    }
+    fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
+        base?.upload(bmp, mipmaps)
+    }
+}
+
+interface BmpCoordsWithTextureBase : BmpCoords {
+    val base: TextureBase
+}
+
+typealias TextureCoords = BmpCoordsWithT<TextureBase>
+
+/**
  * A [Texture] is a region (delimited by [left], [top], [right] and [bottom]) of a [Texture.Base].
  * A [Texture.Base] wraps a [AG.Texture] but adds [width] and [height] information.
  */
 class Texture(
-	val base: Base,
+	override val base: TextureBase,
     /** Left position of the region of the texture in pixels */
-	val left: Int = 0,
+	override val left: Int = 0,
     /** Top position of the region of the texture in pixels */
-	val top: Int = 0,
+	override val top: Int = 0,
     /** Right position of the region of the texture in pixels */
 	val right: Int = base.width,
     /** Bottom position of the region of the texture in pixels */
 	val bottom: Int = base.height
-) : Closeable, BmpCoords {
+) : Closeable, TextureCoords {
     /** Wether the texture is multiplied or not */
 	val premultiplied get() = base.premultiplied
     /** Left position of the region of the texture in pixels */
@@ -32,9 +57,9 @@ class Texture(
     /** Top position of the region of the texture in pixels */
 	val y = top
     /** Width of this texture region in pixels */
-	val width = right - left
+    override val width = right - left
     /** Height of this texture region in pixels */
-	val height = bottom - top
+    override val height = bottom - top
 
     /** Left coord of the texture region as a ratio (a value between 0 and 1) */
 	val x0: Float = (left).toFloat() / base.width.toFloat()
@@ -83,22 +108,7 @@ class Texture(
          * Creates a [Texture] from a texture [agBase] and its wanted size [width], [height].
          */
 		operator fun invoke(agBase: AG.Texture, width: Int, height: Int): Texture =
-			Texture(Base(agBase, width, height), 0, 0, width, height)
-	}
-
-    /**
-     * Represents a full texture region wraping a [base] [AG.Texture] and specifying its [width] and [height]
-     */
-	class Base(var base: AG.Texture?, var width: Int, var height: Int) : Closeable {
-        var version = -1
-		val premultiplied get() = base?.premultiplied == true
-		override fun close(): Unit {
-            base?.close()
-            base = null
-        }
-		fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
-			base?.upload(bmp, mipmaps)
-		}
+			Texture(TextureBase(agBase, width, height), 0, 0, width, height)
 	}
 
     /**

@@ -27,7 +27,7 @@ class SolidRect(width: Double, height: Double, color: RGBA = Colors.WHITE) : Rec
     override val bheight: Double get() = height
 
     // Allows to store a white bitmap in an atlas along for example a bitmap font to render in a single batch
-    var whiteBitmap: BmpSlice get() = baseBitmap; set(v) { baseBitmap = v }
+    var whiteBitmap: BitmapCoords get() = baseBitmap; set(v) { baseBitmap = v }
 
     /** The [color] of this [SolidRect]. Alias of [colorMul]. */
     var color: RGBA

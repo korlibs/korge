@@ -51,7 +51,8 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false) {
-    mainUITreeView()
+    rotatedTexture()
+    //mainUITreeView()
     //mainUIImageTester()
     //mainEditor()
     //mainTrimmedAtlas()
@@ -68,6 +69,17 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), cli
     //mainCompression()
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
+}
+
+suspend fun Stage.rotatedTexture() {
+    //val tex = resourcesVfs["korim.png"].readBitmapSlice().rotateRight()
+    //val tex = resourcesVfs["korim.png"].readBitmapSlice().flipY()
+    //val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().scale(.5f, .5f)).sliceWithSize(0, 0, 10, 10)
+    //val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().scale(.5f, .5f))
+    val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().skew(30.degrees, 0.degrees)).flipX().rotateRight()
+    println("tex=$tex")
+    println("size=${tex.width},${tex.height}")
+    image(tex)
 }
 
 suspend fun Stage.mainTrimmedAtlas() {

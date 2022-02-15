@@ -11,7 +11,7 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 
 inline fun Container.image(
-	texture: Resourceable<out BmpSlice>, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
+	texture: Resourceable<out BaseBmpSlice>, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}
 ): Image = Image(texture, anchorX, anchorY).addTo(this, callback)
 
 inline fun Container.image(
@@ -21,7 +21,7 @@ inline fun Container.image(
 //typealias Sprite = Image
 
 open class BaseImage(
-    bitmap: Resourceable<out BmpSlice>,
+    bitmap: Resourceable<out BaseBmpSlice>,
     anchorX: Double = 0.0,
     anchorY: Double = anchorX,
     hitShape: VectorPath? = null,
@@ -37,14 +37,14 @@ open class BaseImage(
 
     private var setBitmapSource: Boolean = false
 
-    var bitmap: BmpSlice
+    var bitmap: BaseBmpSlice
         get() = baseBitmap
         set(value) {
             setBitmapSource = true
             baseBitmap = value
         }
 
-    var bitmapSrc: Resourceable<out BmpSlice> = bitmap
+    var bitmapSrc: Resourceable<out BaseBmpSlice> = bitmap
         set(value) {
             setBitmapSource = false
             field = value
@@ -107,12 +107,12 @@ open class BaseImage(
 }
 
 interface SmoothedBmpSlice {
-    var bitmap: BmpSlice
+    var bitmap: BaseBmpSlice
     var smoothing: Boolean
 }
 
 class Image(
-	bitmap: Resourceable<out BmpSlice>,
+	bitmap: Resourceable<out BaseBmpSlice>,
 	anchorX: Double = 0.0,
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,

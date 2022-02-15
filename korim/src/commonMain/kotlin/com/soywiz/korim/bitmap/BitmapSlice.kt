@@ -3,6 +3,7 @@ package com.soywiz.korim.bitmap
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.resources.*
 import com.soywiz.korma.geom.*
 
@@ -20,6 +21,135 @@ interface BmpCoords {
     val bl_y: Float
 }
 
+interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpCoordsWithT<T>> {
+    override fun getOrNull(): BmpCoordsWithT<T>? = this
+    override suspend fun get(): BmpCoordsWithT<T> = this
+    val base: T
+    val left: Int get() = (tl_x * base.width).toInt()
+    val top: Int get() = (tl_y * base.height).toInt()
+    val width: Int get() = (Point.distance(tl_x, tl_y, tr_x, tr_y) * base.width).toInt()
+    val height: Int get() = (Point.distance(tl_x, tl_y, bl_x, bl_y) * base.height).toInt()
+    val frameOffsetX: Int get() = 0
+    val frameOffsetY: Int get() = 0
+    val frameWidth: Int get() = width
+    val frameHeight: Int get() = height
+    val area: Int get() = width * height
+    override fun close() = Unit
+}
+
+// @TODO: Fix & enable to support slicing transformed textures
+
+/*
+private fun transformInRange(ratio: Float, a: Float, b: Float) = (b - a) * ratio + a
+
+private fun <T : ISizeInt> BmpCoordsWithT<T>.sliceRatio(ratioLeft: Float, ratioRight: Float, ratioTop: Float, ratioBottom: Float, name: String? = null): BmpCoordsWithT<T> {
+    //println("($ratioLeft, $ratioRight), ($ratioTop, $ratioBottom)")
+    return BmpCoordsWithInstance(
+        base,
+        transformInRange(ratioLeft, tl_x, tr_x), transformInRange(ratioTop, tl_y, bl_y),
+        transformInRange(ratioRight, tl_x, tr_x), transformInRange(ratioTop, tr_y, br_y),
+
+        transformInRange(ratioRight, bl_x, br_x), transformInRange(ratioBottom, tr_y, br_y),
+        transformInRange(ratioLeft, bl_x, br_x), transformInRange(ratioBottom, tl_y, bl_y),
+    )
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String? = null): BmpCoordsWithT<T> {
+    return sliceRatio(
+        bounds.left.toFloat() / base.width,
+        bounds.right.toFloat() / base.width,
+        bounds.top.toFloat() / base.height,
+        bounds.bottom.toFloat() / base.height,
+        name
+    )
+}
+fun <T : ISizeInt> BmpCoordsWithT<T>.sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null): BmpCoordsWithT<T> = slice(createRectangleInt(0, 0, this.width, this.height, left, top, right, bottom), name)
+fun <T : ISizeInt> BmpCoordsWithT<T>.sliceWithSize(x: Int, y: Int, width: Int, height: Int, name: String? = null): BmpCoordsWithT<T> = sliceWithBounds(x, y, x + width, y + height, name)
+*/
+
+typealias BitmapCoords = BmpCoordsWithT<Bitmap>
+typealias BaseBmpSlice = BmpCoordsWithT<Bitmap>
+val BaseBmpSlice.bmpBase get() = base
+
+data class BmpCoordsWithInstance<T : ISizeInt>(
+    override val base: T,
+    override val tl_x: Float, override val tl_y: Float,
+    override val tr_x: Float, override val tr_y: Float,
+    override val br_x: Float, override val br_y: Float,
+    override val bl_x: Float, override val bl_y: Float,
+) : BmpCoordsWithT<T> {
+    constructor(base: T, coords: BmpCoords) : this(
+        base,
+        coords.tl_x, coords.tl_y,
+        coords.tr_x, coords.tr_y,
+        coords.br_x, coords.br_y,
+        coords.bl_x, coords.bl_y,
+    )
+
+    override fun close() {
+        if (base is Closeable) base.close()
+    }
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.rotateLeft(): BmpCoordsWithInstance<T> {
+    return BmpCoordsWithInstance(
+        base,
+        tr_x, tr_y,
+        br_x, br_y,
+        bl_x, bl_y,
+        tl_x, tl_y,
+    )
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.rotateRight(): BmpCoordsWithInstance<T> {
+    return BmpCoordsWithInstance(
+        base,
+        bl_x, bl_y,
+        tl_x, tl_y,
+        tr_x, tr_y,
+        br_x, br_y,
+    )
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.flipX(): BmpCoordsWithInstance<T> {
+    return BmpCoordsWithInstance(
+        base,
+        tr_x, tr_y,
+        tl_x, tl_y,
+        bl_x, bl_y,
+        br_x, br_y,
+    )
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.flipY(): BmpCoordsWithInstance<T> {
+    return BmpCoordsWithInstance(
+        base,
+        bl_x, bl_y,
+        br_x, br_y,
+        tr_x, tr_y,
+        tl_x, tl_y,
+    )
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix): BmpCoordsWithInstance<T> {
+    return BmpCoordsWithInstance(
+        base,
+        m.transformXf(tl_x, tl_y), m.transformYf(tl_x, tl_y),
+        m.transformXf(tr_x, tr_y), m.transformYf(tr_x, tr_y),
+        m.transformXf(br_x, br_y), m.transformYf(br_x, br_y),
+        m.transformXf(bl_x, bl_y), m.transformYf(bl_x, bl_y),
+    )
+}
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix3D): BmpCoordsWithInstance<T> {
+    // @TODO: This allocates
+    val v1 = m.transform(tl_x, tl_y, 0f, 1f)
+    val v2 = m.transform(tr_x, tr_y, 0f, 1f)
+    val v3 = m.transform(br_x, br_y, 0f, 1f)
+    val v4 = m.transform(bl_x, bl_y, 0f, 1f)
+    return BmpCoordsWithInstance(base, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y, v4.x, v4.y)
+}
+
 /**
  * @property virtFrame This defines a virtual frame [RectangleInt] which surrounds the bounds [RectangleInt] of the [Bitmap].
  *                     It is used in a trimmed texture atlas to specify the original size of a single texture.
@@ -32,9 +162,8 @@ abstract class BmpSlice(
     val name: String? = null,
     val rotated: Boolean = false,
     val virtFrame: RectangleInt? = null
-) : Extra, BmpCoords, Resourceable<BmpSlice> {
-    override fun getOrNull() = this
-    override suspend fun get() = this
+) : Extra, BitmapCoords {
+    override val base get() = bmpBase
     open val bmp: Bitmap = bmpBase
     val bmpWidth = bmpBase.width
     val bmpHeight = bmpBase.height
@@ -52,19 +181,18 @@ abstract class BmpSlice(
     private val p2 = points.getCyclic(offset + 2)
     private val p3 = points.getCyclic(offset + 3)
 
-    val left: Int get() = bounds.left
-    val top: Int get() = bounds.top
-    val width: Int get() = bounds.width
-    val height: Int get() = bounds.height
-    val area: Int get() = width * height
+    override val left: Int get() = bounds.left
+    override val top: Int get() = bounds.top
+    override val width: Int get() = bounds.width
+    override val height: Int get() = bounds.height
     val right get() = bounds.right
     val bottom get() = bounds.bottom
 
     val trimmed: Boolean = virtFrame != null
-    val frameOffsetX: Int = virtFrame?.x ?: 0
-    val frameOffsetY: Int = virtFrame?.y ?: 0
-    val frameWidth: Int = virtFrame?.width ?: bounds.width
-    val frameHeight : Int = virtFrame?.height ?: bounds.height
+    override val frameOffsetX: Int = virtFrame?.x ?: 0
+    override val frameOffsetY: Int = virtFrame?.y ?: 0
+    override val frameWidth: Int = virtFrame?.width ?: bounds.width
+    override val frameHeight: Int = virtFrame?.height ?: bounds.height
 
 	var parent: Any? = null
 

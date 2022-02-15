@@ -27,7 +27,7 @@ open class RectBase(
 	//abstract val width: Double
 	//abstract val height: Double
 
-    protected var baseBitmap: BmpSlice = Bitmaps.white
+    protected var baseBitmap: BaseBmpSlice = Bitmaps.white
         set(v) {
             if (field !== v) {
                 field = v

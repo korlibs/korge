@@ -5,6 +5,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SmoothedBmpSlice
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
+import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.BmpSlice
 
 inline fun Container.repeatedImageView(
@@ -20,12 +21,12 @@ open class SingleTile(
     bitmap: BmpSlice,
     smoothing: Boolean = true
 ) : BaseTileMap(IntArray2(1, 1, 0), smoothing), SmoothedBmpSlice {
-    override val tilesetTextures = Array<BmpSlice?>(1) { bitmap }
+    override val tilesetTextures = Array<BitmapCoords?>(1) { bitmap }
 
     override var width = 0.0
     override var height = 0.0
 
-    override var bitmap: BmpSlice = bitmap
+    override var bitmap: BitmapCoords = bitmap
         set(value) {
             if (field !== value) {
                 field = value

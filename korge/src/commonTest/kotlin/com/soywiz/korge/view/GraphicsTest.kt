@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korag.log.*
 import com.soywiz.korge.render.*
+import com.soywiz.korim.bitmap.bmpBase
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.*
@@ -19,7 +20,7 @@ class GraphicsTest {
 				rect(-50, -50, 100, 100)
 			}
 		}
-		val bmp = g.bitmap.bmpBase.toBMP32()
+		val bmp = g.bitmap.base.toBMP32()
 		assertEquals(Size(101, 101), bmp.size)
 		//assertEquals("#ff0000ff", bmp[0, 0].hexString)
 		//assertEquals("#ff0000ff", bmp[99, 99].hexString)
@@ -35,7 +36,7 @@ class GraphicsTest {
         }
         val rc = TestRenderContext()
         g.render(rc)
-        val bmp = g.bitmap.bmpBase.toBMP32()
+        val bmp = g.bitmap.base.toBMP32()
         // This would fail in Android
         assertTrue(bmp.width > 0)
         assertTrue(bmp.height > 0)

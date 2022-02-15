@@ -140,13 +140,14 @@ class RenderContext constructor(
      * Textures are managed (allocated and de-allocated) automatically by the engine as required.
      * The texture coords matches the region in the [BmpSlice].
      */
-	fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
+    fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
+	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.
      * It is just the whole texture/bitmap.
      */
-    fun getTex(bmp: Bitmap): Texture.Base = agBitmapTextureManager.getTextureBase(bmp)
+    fun getTex(bmp: Bitmap): TextureBase = agBitmapTextureManager.getTextureBase(bmp)
 
     inline fun <T> useBatcher(batcher: T, block: (T) -> Unit) {
         if (currentBatcher !== batcher) {
