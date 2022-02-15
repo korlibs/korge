@@ -90,6 +90,11 @@ class AndroidKorviVideoAndroidMediaPlayer private constructor(val file: VfsFile)
         player?.start()
     }
 
+    override suspend fun pause() {
+        //println("START")
+        player?.pause()
+    }
+
     override suspend fun seek(frame: Long) {
         seek(frameRate.timeSpan.hr * frame.toDouble())
     }

@@ -205,6 +205,10 @@ class VideoPlayer(private val file: VfsFile, val androidContext: Context, privat
         }
     }
 
+    fun pause() {
+        TODO()
+    }
+
     /**
      * Work loop.  We execute here until we run out of video or are told to stop.
      */

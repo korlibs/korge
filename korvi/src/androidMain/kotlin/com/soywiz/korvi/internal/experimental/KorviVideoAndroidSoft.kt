@@ -105,6 +105,15 @@ class AndroidKorviVideoSoft(val file: VfsFile, val androidContext: Context, val 
         }
     }
 
+    override suspend fun pause() {
+        thread {
+            try {
+                player.pause()
+            } finally {
+            }
+        }
+    }
+
     override suspend fun seek(frame: Long) {
         TODO()
     }

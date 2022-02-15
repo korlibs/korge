@@ -32,6 +32,7 @@ open class KorviVideo : BaseKorviSeekable {
     override suspend fun getTotalFrames(): Long? = null
     override suspend fun getDuration(): HRTimeSpan? = null
     open suspend fun play(): Unit = Unit
+    open suspend fun pause(): Unit = TODO()
     override suspend fun seek(frame: Long): Unit = Unit
     override suspend fun seek(time: HRTimeSpan): Unit = Unit
     open suspend fun stop(): Unit = Unit
