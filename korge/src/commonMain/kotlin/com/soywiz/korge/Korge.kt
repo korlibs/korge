@@ -77,9 +77,9 @@ object Korge {
                 injector.mapInstance(Module::class, module)
                 injector.mapInstance(Config::class, config)
 
-                config.constructedViews(views)
-
                 module.apply { injector.configure() }
+
+                config.constructedViews(views)
 
                 when {
                     config.main != null -> {
@@ -88,7 +88,8 @@ object Korge {
                     config.sceneClass != null -> {
                         val sc = SceneContainer(views, name = "rootSceneContainer")
                         views.stage += sc
-                        sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
+                        val scene = sc.changeTo(config.sceneClass, *config.sceneInjects.toTypedArray(), time = 0.milliseconds)
+                        config.constructedScene(scene, views)
                         // Se we have the opportunity to execute deinitialization code at the scene level
                         views.onClose { sc.changeTo<EmptyScene>() }
                     }
@@ -525,6 +526,7 @@ object Korge {
         val quality: GameWindow.Quality? = null,
         val icon: String? = null,
         val main: (suspend Stage.() -> Unit)? = null,
+        val constructedScene: Scene.(Views) -> Unit = {},
         val constructedViews: (Views) -> Unit = {}
 	)
 
