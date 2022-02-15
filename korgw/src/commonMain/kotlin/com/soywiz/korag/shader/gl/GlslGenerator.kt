@@ -33,7 +33,7 @@ class GlslGenerator constructor(
     val newGlSlVersion: Boolean = false
 
     companion object {
-        val NAME = "glsl"
+        val NAME = "GLSL"
         val DEFAULT_VERSION = 100
         val FRAGCOLOR = "fragColor"
         val GL_FRAGCOLOR = "gl_FragColor"

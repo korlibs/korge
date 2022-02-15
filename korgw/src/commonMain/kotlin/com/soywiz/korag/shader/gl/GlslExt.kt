@@ -14,12 +14,12 @@ fun Shader.toNewGlslString(config: GlslConfig): String =
 
 // @TODO: For RAW stuff, we might want to support other shader languages, other than GlSl, and let the engine select the proper string?
 @KoragExperimental
-fun VertexShader(stm: Program.Stm, glsl: String) = VertexShader(mapOf(GlslGenerator.NAME to glsl), stm)
+fun VertexShaderRawGlSl(stm: Program.Stm, glsl: String) = VertexShader(mapOf(GlslGenerator.NAME to glsl), stm)
 @KoragExperimental
-fun FragmentShader(stm: Program.Stm, glsl: String) = FragmentShader(mapOf(GlslGenerator.NAME to glsl), stm)
+fun FragmentShaderRawGlSl(stm: Program.Stm, glsl: String) = FragmentShader(mapOf(GlslGenerator.NAME to glsl), stm)
 
 @KoragExperimental
-fun VertexShader(glsl: String, stm: Program.Stm? = null) = VertexShader(mapOf(GlslGenerator.NAME to glsl), stm)
+fun VertexShaderRawGlSl(glsl: String, stm: Program.Stm? = null) = VertexShader(mapOf(GlslGenerator.NAME to glsl), stm)
 @KoragExperimental
-fun FragmentShader(glsl: String, stm: Program.Stm? = null) = FragmentShader(mapOf(GlslGenerator.NAME to glsl), stm)
+fun FragmentShaderRawGlSl(glsl: String, stm: Program.Stm? = null) = FragmentShader(mapOf(GlslGenerator.NAME to glsl), stm)
 

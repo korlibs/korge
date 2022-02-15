@@ -550,6 +550,15 @@ fun VertexShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = Ve
 @KoragExperimental
 fun FragmentShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = FragmentShader(Program.Stm.Raw(rawStrings, stm))
 
+private const val NAME_GLSL = "GLSL"
+
+@KoragExperimental
+@Deprecated("Use VertexShaderRawGlSl instead")
+fun VertexShader(stm: Program.Stm, glsl: String) = VertexShader(mapOf(NAME_GLSL to glsl), stm)
+@KoragExperimental
+@Deprecated("Use FragmentShaderRawGlSl instead")
+fun FragmentShader(stm: Program.Stm, glsl: String) = FragmentShader(mapOf(NAME_GLSL to glsl), stm)
+
 fun FragmentShader.appending(callback: Program.Builder.() -> Unit): FragmentShader {
     if (this.isRaw) {
         // @TODO: Raw shaders don't support appending
