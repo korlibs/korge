@@ -51,7 +51,7 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
                 )
             }
             // @TODO: Enable for Kotlin 1.6.0
-            binaries.all { it.binaryOptions["memoryModel"] = "experimental" }
+            //binaries.all { it.binaryOptions["memoryModel"] = "experimental" }
         }
     }
 }
