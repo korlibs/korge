@@ -31,6 +31,13 @@ class ShadersTest {
         }
 	}
 
+    @Test
+    fun testGlslGenerationRaw() {
+        val vs = VertexShader("hello")
+
+        assertEquals("hello", vs.toNewGlslString(GlslConfig()))
+    }
+
     val fs = FragmentShader {
         DefaultShaders.apply {
             out setTo vec4(1.lit, 0.lit, 0.lit, 1.lit)

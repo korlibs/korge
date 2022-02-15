@@ -33,6 +33,7 @@ class GlslGenerator constructor(
     val newGlSlVersion: Boolean = false
 
     companion object {
+        val NAME = "glsl"
         val DEFAULT_VERSION = 100
         val FRAGCOLOR = "fragColor"
         val GL_FRAGCOLOR = "gl_FragColor"
@@ -185,7 +186,7 @@ class GlslGenerator constructor(
             }
         }
         return Result(
-            this, result,
+            this, if (root is Program.Stm.Raw) root.string(NAME) else result,
             attributes = attributes.toList(),
             uniforms = uniforms.toList(),
             varyings = varyings.toList()
@@ -229,7 +230,13 @@ class GlslGenerator constructor(
 		}
 	}
 
-	override fun visit(operand: Variable): String {
+    override fun visit(stm: Program.Stm.Raw) {
+        programIndenter.apply {
+            line(stm.string(NAME))
+        }
+    }
+
+    override fun visit(operand: Variable): String {
 		super.visit(operand)
 		return when (operand) {
 			is Output -> when (kind) {

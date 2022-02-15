@@ -8,6 +8,7 @@ package com.soywiz.korag.shader
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korio.lang.*
 
 enum class VarKind(val bytesSize: Int) {
@@ -239,6 +240,10 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
             override fun hashCode(): Int = 1
         }
         data class If(val cond: Operand, val tbody: Stm, var fbody: Stm? = null) : Stm()
+        data class Raw(val strings: Map<String, String>, val other: Stm? = null) : Stm() {
+            fun stringOrNull(name: String): String? = strings[name]
+            fun string(name: String, default: String = ""): String = stringOrNull(name) ?: default
+        }
 	}
 
 	// http://mew.cx/glsl_quickref.pdf
@@ -430,6 +435,7 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 			is Stm.Set -> visit(stm)
 			is Stm.If -> visit(stm)
 			is Stm.Discard -> visit(stm)
+            is Stm.Raw -> visit(stm)
 		}
 
 		open fun visit(stms: Stm.Stms) {
@@ -450,7 +456,11 @@ class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: 
 		open fun visit(stm: Stm.Discard) {
 		}
 
-		open fun visit(operand: Operand): E = when (operand) {
+        open fun visit(stm: Stm.Raw) {
+            visit(stm.other)
+        }
+
+        open fun visit(operand: Operand): E = when (operand) {
 			is Variable -> visit(operand)
 			is Binop -> visit(operand)
 			is BoolLiteral -> visit(operand)
@@ -532,6 +542,11 @@ open class Shader(val type: ShaderType, val stm: Program.Stm) {
 
 open class VertexShader(stm: Program.Stm) : Shader(ShaderType.VERTEX, stm)
 open class FragmentShader(stm: Program.Stm) : Shader(ShaderType.FRAGMENT, stm)
+
+@KoragExperimental
+fun VertexShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = VertexShader(Program.Stm.Raw(rawStrings, stm))
+@KoragExperimental
+fun FragmentShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = FragmentShader(Program.Stm.Raw(rawStrings, stm))
 
 fun FragmentShader.appending(callback: Program.Builder.() -> Unit): FragmentShader {
 	return FragmentShader(
