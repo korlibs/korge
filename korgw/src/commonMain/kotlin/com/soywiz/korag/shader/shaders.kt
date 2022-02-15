@@ -524,6 +524,8 @@ open class Shader(val type: ShaderType, val stm: Program.Stm) {
     private val stmHashCode = stm.hashCode()
     private val cachedHashCode = (type.hashCode() * 17) + stmHashCode
 
+    val isRaw get() = stm is Program.Stm.Raw
+
 	val uniforms = LinkedHashSet<Uniform>().also { out ->
         object : Program.Visitor<Unit>(Unit) {
             override fun visit(uniform: Uniform) { out += uniform }
@@ -549,6 +551,11 @@ fun VertexShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = Ve
 fun FragmentShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = FragmentShader(Program.Stm.Raw(rawStrings, stm))
 
 fun FragmentShader.appending(callback: Program.Builder.() -> Unit): FragmentShader {
+    if (this.isRaw) {
+        // @TODO: Raw shaders don't support appending
+        return this
+    }
+
 	return FragmentShader(
         Program.Stm.Stms(
             listOf(
