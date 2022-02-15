@@ -24,7 +24,7 @@ dependencies {
     add("commonMainApi", project(":klock"))
 	add("commonMainApi", project(":kds"))
 	add("commonMainApi", project(":kmem"))
-    add("commonMainApi", "com.soywiz.korlibs.krypto:krypto:${kryptoVersion}")
+    add("commonMainApi", project(":krypto"))
     add("commonMainApi", project(":klogger"))
 
     afterEvaluate {
