@@ -1,6 +1,7 @@
 package com.soywiz.korio.resources
 
 import com.soywiz.korio.async.*
+import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.coroutines.*
@@ -14,14 +15,17 @@ interface Resourceable<T : Any> {
     suspend fun get(): T
 }
 
-class Resource<T : Any>(
+open class Resource<T : Any>(
     val resources: Resources,
     val name: String,
     val cache: ResourceCache,
     private val gen: suspend Resources.() -> T
 ) : Resourceable<T> {
     private var valueDeferred: Deferred<T>? = null
-    private var valueOrNull: T? = null
+
+    var valueOrNull: T? = null; private set
+    @KorioExperimentalApi
+    var onGen: (() -> Unit)? = null
 
     override fun getOrNull(): T? {
         getDeferred()
@@ -32,7 +36,10 @@ class Resource<T : Any>(
         if (valueDeferred == null) {
             valueDeferred = asyncImmediately(resources.coroutineContext) {
                 resources.add(this)
-                gen(resources).also { valueOrNull = it }
+                gen(resources).also {
+                    valueOrNull = it
+                    onGen?.invoke()
+                }
             }
         }
         return valueDeferred!!
@@ -60,21 +67,21 @@ interface ResourcesContainer {
 
 open class Resources(val coroutineContext: CoroutineContext, val root: VfsFile = resourcesVfs, val parent: Resources? = null) : ResourcesContainer {
     override val resources: Resources get() = this
-    internal val map = LinkedHashMap<String, Resource<*>>()
-    internal fun remove(name: String) {
+    open val map: MutableMap<String, Resource<*>> = LinkedHashMap()
+    open fun remove(name: String) {
         if (map.containsKey(name)) {
             map.remove(name)
         } else {
             parent?.remove(name)
         }
     }
-    internal fun add(resource: Resource<*>) {
+    open fun add(resource: Resource<*>) {
         if (resource.cache == ResourceCache.NONE) return
         if (parent != null && resource.cache == ResourceCache.GLOBAL) return parent?.add(resource)
         map[resource.name] = resource
     }
     @Suppress("UNCHECKED_CAST")
-    internal fun <T : Any> get(name: String, cache: ResourceCache = ResourceCache.GLOBAL): Resource<T>? {
+    open fun <T : Any> get(name: String, cache: ResourceCache = ResourceCache.GLOBAL): Resource<T>? {
         if (cache == ResourceCache.NONE) return null
         val res = (map as Map<String, Resource<T>>)[name]
         if (res != null) return res
