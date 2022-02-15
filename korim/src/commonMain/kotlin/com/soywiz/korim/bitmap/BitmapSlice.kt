@@ -24,6 +24,7 @@ interface BmpCoords {
 interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpCoordsWithT<T>> {
     override fun getOrNull(): BmpCoordsWithT<T>? = this
     override suspend fun get(): BmpCoordsWithT<T> = this
+    val name: String? get() = null
     val base: T
     val left: Int get() = (tl_x * base.width).toInt()
     val top: Int get() = (tl_y * base.height).toInt()
@@ -77,13 +78,15 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
     override val tr_x: Float, override val tr_y: Float,
     override val br_x: Float, override val br_y: Float,
     override val bl_x: Float, override val bl_y: Float,
+    override val name: String? = null
 ) : BmpCoordsWithT<T> {
-    constructor(base: T, coords: BmpCoords) : this(
+    constructor(base: T, coords: BmpCoords, name: String? = null) : this(
         base,
         coords.tl_x, coords.tl_y,
         coords.tr_x, coords.tr_y,
         coords.br_x, coords.br_y,
         coords.bl_x, coords.bl_y,
+        name
     )
 
     override fun close() {
@@ -91,55 +94,34 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
     }
 }
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.rotateLeft(): BmpCoordsWithInstance<T> {
-    return BmpCoordsWithInstance(
-        base,
-        tr_x, tr_y,
-        br_x, br_y,
-        bl_x, bl_y,
-        tl_x, tl_y,
-    )
-}
+fun <T : ISizeInt> BmpCoordsWithT<T>.copy(
+    base: T = this.base,
+    tl_x: Float = this.tl_x, tl_y: Float = this.tl_y,
+    tr_x: Float = this.tr_x, tr_y: Float = this.tr_y,
+    br_x: Float = this.br_x, br_y: Float = this.br_y,
+    bl_x: Float = this.bl_x, bl_y: Float = this.bl_y,
+    name: String? = this.name
+): BmpCoordsWithInstance<T> = BmpCoordsWithInstance(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.rotateRight(): BmpCoordsWithInstance<T> {
-    return BmpCoordsWithInstance(
-        base,
-        bl_x, bl_y,
-        tl_x, tl_y,
-        tr_x, tr_y,
-        br_x, br_y,
-    )
-}
+fun <T : ISizeInt> BmpCoordsWithT<T>.rotateLeft(): BmpCoordsWithInstance<T> =
+    copy(base, tr_x, tr_y, br_x, br_y, bl_x, bl_y, tl_x, tl_y)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.flipX(): BmpCoordsWithInstance<T> {
-    return BmpCoordsWithInstance(
-        base,
-        tr_x, tr_y,
-        tl_x, tl_y,
-        bl_x, bl_y,
-        br_x, br_y,
-    )
-}
+fun <T : ISizeInt> BmpCoordsWithT<T>.rotateRight(): BmpCoordsWithInstance<T> =
+    copy(base, bl_x, bl_y, tl_x, tl_y, tr_x, tr_y, br_x, br_y)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.flipY(): BmpCoordsWithInstance<T> {
-    return BmpCoordsWithInstance(
-        base,
-        bl_x, bl_y,
-        br_x, br_y,
-        tr_x, tr_y,
-        tl_x, tl_y,
-    )
-}
+fun <T : ISizeInt> BmpCoordsWithT<T>.flipX(): BmpCoordsWithInstance<T> =
+    copy(base, tr_x, tr_y, tl_x, tl_y, bl_x, bl_y, br_x, br_y)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix): BmpCoordsWithInstance<T> {
-    return BmpCoordsWithInstance(
-        base,
-        m.transformXf(tl_x, tl_y), m.transformYf(tl_x, tl_y),
-        m.transformXf(tr_x, tr_y), m.transformYf(tr_x, tr_y),
-        m.transformXf(br_x, br_y), m.transformYf(br_x, br_y),
-        m.transformXf(bl_x, bl_y), m.transformYf(bl_x, bl_y),
-    )
-}
+fun <T : ISizeInt> BmpCoordsWithT<T>.flipY(): BmpCoordsWithInstance<T> =
+    copy(base, bl_x, bl_y, br_x, br_y, tr_x, tr_y, tl_x, tl_y,)
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix): BmpCoordsWithInstance<T> = copy(
+    base,
+    m.transformXf(tl_x, tl_y), m.transformYf(tl_x, tl_y),
+    m.transformXf(tr_x, tr_y), m.transformYf(tr_x, tr_y),
+    m.transformXf(br_x, br_y), m.transformYf(br_x, br_y),
+    m.transformXf(bl_x, bl_y), m.transformYf(bl_x, bl_y),
+)
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix3D): BmpCoordsWithInstance<T> {
     // @TODO: This allocates
@@ -147,8 +129,10 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix3D): BmpCoordsWithInst
     val v2 = m.transform(tr_x, tr_y, 0f, 1f)
     val v3 = m.transform(br_x, br_y, 0f, 1f)
     val v4 = m.transform(bl_x, bl_y, 0f, 1f)
-    return BmpCoordsWithInstance(base, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y, v4.x, v4.y)
+    return copy(base, v1.x, v1.y, v2.x, v2.y, v3.x, v3.y, v4.x, v4.y)
 }
+
+fun <T : ISizeInt> BmpCoordsWithT<T>.named(name: String?): BmpCoordsWithInstance<T> = copy(name = name)
 
 /**
  * @property virtFrame This defines a virtual frame [RectangleInt] which surrounds the bounds [RectangleInt] of the [Bitmap].
@@ -159,7 +143,7 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix3D): BmpCoordsWithInst
 abstract class BmpSlice(
     val bmpBase: Bitmap,
     val bounds: RectangleInt,
-    val name: String? = null,
+    override val name: String? = null,
     val rotated: Boolean = false,
     val virtFrame: RectangleInt? = null
 ) : Extra, BitmapCoords {
