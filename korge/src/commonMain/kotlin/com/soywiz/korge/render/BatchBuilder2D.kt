@@ -8,6 +8,7 @@ import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
@@ -143,6 +144,9 @@ class BatchBuilder2D constructor(
 
 	private val projMat = Matrix3D()
 
+    @KorgeExperimental
+    private val texTransformMat = Matrix3D()
+
     @KorgeInternal
 	val viewMat = Matrix3D()
     @KorgeInternal
@@ -167,7 +171,9 @@ class BatchBuilder2D constructor(
 		AG.UniformValues(
 			DefaultShaders.u_ProjMat to projMat,
 			DefaultShaders.u_ViewMat to viewMat,
-            *Array(maxTextures) { u_TexN[it] to textureUnitN[it] }
+            *Array(maxTextures) { u_TexN[it] to textureUnitN[it] },
+            // @TODO: Do we need this?
+            *Array(maxTextures) { DefaultShaders.u_TexTransformMatN[it] to texTransformMat }
 		)
 	}
 
@@ -709,8 +715,9 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		fun buildTextureLookupFragment(premultiplied: Boolean, preadd: Boolean = false) = FragmentShader {
 			DefaultShaders.apply {
-                IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) {
-                    SET(out, texture2D(u_TexN[it], v_Tex["xy"]))
+                IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
+                    //SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
+                    SET(out, texture2D(u_TexN[n], (u_TexTransformMatN[n] * vec4(v_Tex["xy"], 0f.lit, 1f.lit))["xy"]))
                 }
                 //for (n in 0 until BB_MAX_TEXTURES) {
                 //    IF(v_TexIndex eq (n.toFloat()).lit) {
@@ -760,6 +767,9 @@ class BatchBuilder2D constructor(
 
     fun updateStandardUniforms() {
         if (flipRenderTexture && ag.renderingToTexture) {
+            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
+        // @TODO: Do we need this?
+        } else if (ag.flipRender) {
             projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
         } else {
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)

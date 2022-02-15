@@ -21,8 +21,32 @@ draw(vertexCount=4, instances=4, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false)
+::draw.uniform.Uniform(u_TexTransformMat0) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_TexTransformMat1) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_TexTransformMat2) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_TexTransformMat3) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
 ::draw.uniform.Uniform(u_texSize0) = [0.03125, 0.03125]
-::draw.ERROR.Unexpected:[Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.ERROR.Unexpected:[Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_TexTransformMat0), Uniform(u_TexTransformMat1), Uniform(u_TexTransformMat2), Uniform(u_TexTransformMat3)]
 ::draw.attribute[7][0]=Attribute(a_xy, type=Float2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=0)
 ::draw.attribute[4][0]=Attribute(a_rxy, type=Float2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=1)
 ::draw.attribute[4][1]=Attribute(a_scale, type=Float2, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=1)
