@@ -11,6 +11,7 @@ import platform.gdiplus.*
 import platform.windows.*
 import kotlin.native.concurrent.*
 
+@ThreadLocal
 actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
     override fun createBitmapNativeImage(bmp: Bitmap) = GdiNativeImage(bmp.toBMP32())
 

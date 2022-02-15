@@ -1,4 +1,5 @@
 package com.soywiz.korim.annotation
 
-@RequiresOptIn
+@Retention(value = AnnotationRetention.BINARY)
+@RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 annotation class KorimExperimental

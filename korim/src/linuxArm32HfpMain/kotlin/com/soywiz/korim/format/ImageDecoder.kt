@@ -7,6 +7,7 @@ import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.native.concurrent.*
 
+@ThreadLocal
 actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
     override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = wrapNative(
         //ImageIOWorker.execute(
