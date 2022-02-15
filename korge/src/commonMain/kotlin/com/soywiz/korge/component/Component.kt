@@ -6,6 +6,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.*
 import com.soywiz.korev.*
+import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.baseview.*
 import kotlin.reflect.*
 
@@ -472,6 +473,9 @@ class Components {
     ): T = getOrCreateComponent(view, eresize, clazz, gen).fastCastTo<T>()
 
     inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = findFirstComponentOfType(eupdate, T::class).fastCastTo<T?>()
+
+    @KorgeExperimental
+    inline fun <reified T : UpdateComponent> getUpdateComponents(): List<T> = eupdate.filterIsInstance<T>()
 
     fun <T : Component> findFirstComponentOfType(array: FastArrayList<T>, clazz: KClass<out T>): T? {
         array.fastForEach { if (it::class == clazz) return it }

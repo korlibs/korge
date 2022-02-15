@@ -1,6 +1,7 @@
 package com.soywiz.korge.baseview
 
 import com.soywiz.klock.*
+import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
@@ -31,6 +32,8 @@ open class BaseView {
     inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
     inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
     inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = componentsSure.getComponentUpdate<T>()
+    @KorgeExperimental
+    inline fun <reified T : UpdateComponent> getUpdateComponents(): List<T> = componentsSure.getUpdateComponents()
 
     /** Removes a specific [c] component from the view */
     fun removeComponent(c: Component) {
