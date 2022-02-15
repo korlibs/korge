@@ -243,11 +243,20 @@ class BatchBuilder2D constructor(
 		x1: Float, y1: Float,
 		x2: Float, y2: Float,
 		x3: Float, y3: Float,
-		tex: Texture,
+		tex: TextureCoords,
 		colorMul: RGBA, colorAdd: ColorAdd,
         texIndex: Int = currentTexIndex
 	) {
-        drawQuadFast(x0, y0, x1, y1, x2, y2, x3, y3, tex.x0, tex.y0, tex.x1, tex.y1, colorMul, colorAdd, texIndex)
+        ensure(6, 4)
+        addQuadIndices()
+        var vp = vertexPos
+        val vd = verticesFast32
+        vp += _addVertex(vd, vp, x0, y0, tex.tl_x, tex.tl_y, colorMul.value, colorAdd.value, texIndex)
+        vp += _addVertex(vd, vp, x1, y1, tex.tr_x, tex.tr_y, colorMul.value, colorAdd.value, texIndex)
+        vp += _addVertex(vd, vp, x2, y2, tex.br_x, tex.br_y, colorMul.value, colorAdd.value, texIndex)
+        vp += _addVertex(vd, vp, x3, y3, tex.bl_x, tex.bl_y, colorMul.value, colorAdd.value, texIndex)
+        vertexPos = vp
+        vertexCount += 4
 	}
 
     fun drawQuadFast(
@@ -396,7 +405,7 @@ class BatchBuilder2D constructor(
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
      */
-    inline fun drawVertices(array: TexturedVertexArray, tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null) {
+    inline fun drawVertices(array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null) {
         setStateFast(tex.base, smoothing, blendFactors, program)
         drawVertices(array, matrix, vcount, icount)
 	}
@@ -413,7 +422,7 @@ class BatchBuilder2D constructor(
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
-	fun setStateFast(tex: Texture.Base, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) =
+	fun setStateFast(tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) =
 		setStateFast(tex.base, smoothing, blendFactors, program)
 
     /**
@@ -503,11 +512,11 @@ class BatchBuilder2D constructor(
      * It uses the transform [m] matrix, with an optional [filtering] and [colorMul]/[colorAdd], [blendFactors] and [program]
      */
 	fun drawNinePatch(
-		tex: Texture,
-		x: Float = 0f,
-		y: Float = 0f,
-		width: Float = tex.width.toFloat(),
-		height: Float = tex.height.toFloat(),
+		tex: TextureCoords,
+		x: Float,
+		y: Float,
+		width: Float,
+		height: Float,
 		posCuts: Array<Point>,
 		texCuts: Array<Point>,
 		m: Matrix = identity,
@@ -526,9 +535,9 @@ class BatchBuilder2D constructor(
 		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
 		val p_dV = pt3.setToSub(ptt1.setToTransform(m, ptt1.setTo(x, y + height)), p_o)
 
-		val t_o = pt4.setTo(tex.x0, tex.y0)
-		val t_dU = pt5.setToSub(ptt1.setTo(tex.x1, tex.y0), t_o)
-		val t_dV = pt6.setToSub(ptt1.setTo(tex.x0, tex.y1), t_o)
+		val t_o = pt4.setTo(tex.tl_x, tex.tl_y)
+		val t_dU = pt5.setToSub(ptt1.setTo(tex.tr_x, tex.tr_y), t_o)
+		val t_dV = pt6.setToSub(ptt1.setTo(tex.bl_x, tex.bl_y), t_o)
 
 		val start = vertexCount
 
@@ -580,6 +589,20 @@ class BatchBuilder2D constructor(
 		}
 	}
 
+    fun drawQuad(
+        tex: Texture,
+        x: Float = 0f,
+        y: Float = 0f,
+        width: Float = tex.width.toFloat(),
+        height: Float = tex.height.toFloat(),
+        m: Matrix = identity,
+        filtering: Boolean = true,
+        colorMul: RGBA = Colors.WHITE,
+        colorAdd: ColorAdd = ColorAdd.NEUTRAL,
+        blendFactors: AG.Blending = BlendMode.NORMAL.factors,
+        program: Program? = null
+    ): Unit = drawQuad(tex, x, y, width, height, m, filtering, colorMul, colorAdd, blendFactors, program, Unit)
+
     /**
      * Draws a textured [tex] quad at [x], [y] and size [width]x[height].
      *
@@ -588,17 +611,18 @@ class BatchBuilder2D constructor(
      * Note: To draw solid quads, you can use [Bitmaps.white] + [AgBitmapTextureManager] as texture and the [colorMul] as quad color.
      */
 	fun drawQuad(
-		tex: Texture,
-		x: Float = 0f,
-		y: Float = 0f,
-		width: Float = tex.width.toFloat(),
-		height: Float = tex.height.toFloat(),
+		tex: TextureCoords,
+		x: Float,
+		y: Float,
+		width: Float,
+		height: Float,
 		m: Matrix = identity,
 		filtering: Boolean = true,
 		colorMul: RGBA = Colors.WHITE,
 		colorAdd: ColorAdd = ColorAdd.NEUTRAL,
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
-		program: Program? = null
+		program: Program? = null,
+        unit: Unit = Unit,
 	) {
         val x0 = x
         val x1 = (x + width)

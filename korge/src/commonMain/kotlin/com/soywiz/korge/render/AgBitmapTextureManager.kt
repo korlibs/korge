@@ -51,13 +51,13 @@ class AgBitmapTextureManager(
     //var framesBetweenGC = 360
 
 	//var Bitmap._textureBase: Texture.Base? by Extra.Property { null }
-	//var Bitmap._slices by Extra.Property { LinkedHashSet<BmpSlice>() }
-	//var BmpSlice._texture: Texture? by Extra.Property { null }
+	//var Bitmap._slices by Extra.Property { LinkedHashSet<BmpCoordsWithBitmap>() }
+	//var BmpCoordsWithBitmap._texture: Texture? by Extra.Property { null }
 
-    /** Wrapper of [Texture.Base] that contains all the [Texture] slices referenced as [BmpSlice] in our current cache */
+    /** Wrapper of [Texture.Base] that contains all the [TextureCoords] slices referenced as [BitmapCoords] in our current cache */
 	private class BitmapTextureInfo {
-        var textureBase: Texture.Base = Texture.Base(null, 0, 0)
-		val slices = FastIdentityMap<BmpSlice, Texture>()
+        var textureBase: TextureBase = TextureBase(null, 0, 0)
+		val slices = FastIdentityMap<BitmapCoords, TextureCoords>()
         fun reset() {
             textureBase.base = null
             textureBase.version = -1
@@ -76,11 +76,11 @@ class AgBitmapTextureManager(
     private var cachedBitmap2: Bitmap? = null
     private var cachedBitmapTextureInfo2: BitmapTextureInfo? = null
 
-    private var cachedBmpSlice: BmpSlice? = null
-	private var cachedBmpSliceTexture: Texture? = null
+    private var cachedBmpSlice: BitmapCoords? = null
+	private var cachedBmpSliceTexture: TextureCoords? = null
 
-    private var cachedBmpSlice2: BmpSlice? = null
-    private var cachedBmpSliceTexture2: Texture? = null
+    private var cachedBmpSlice2: BitmapCoords? = null
+    private var cachedBmpSliceTexture2: TextureCoords? = null
 
     /**
      * Obtains a temporal [BitmapTextureInfo] from a [Bitmap].
@@ -124,17 +124,24 @@ class AgBitmapTextureManager(
 	}
 
     /** Obtains a temporal [Texture.Base] from [bitmap] [Bitmap]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
-	fun getTextureBase(bitmap: Bitmap): Texture.Base = getTextureInfo(bitmap).textureBase!!
+	fun getTextureBase(bitmap: Bitmap): TextureBase = getTextureInfo(bitmap).textureBase!!
+
+    fun getTexture(slice: BmpSlice): Texture = _getTexture(slice) as Texture
+    fun getTexture(slice: BitmapCoords): TextureCoords = _getTexture(slice)
 
     /** Obtains a temporal [Texture] from [slice] [BmpSlice]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
-	fun getTexture(slice: BmpSlice): Texture {
+	private fun _getTexture(slice: BitmapCoords): TextureCoords {
 		if (cachedBmpSlice === slice) return cachedBmpSliceTexture!!
         if (cachedBmpSlice2 === slice) return cachedBmpSliceTexture2!!
 
-        val info = getTextureInfo(slice.bmpBase)
+        val info = getTextureInfo(slice.base)
 
 		val texture = info.slices.getOrPut(slice) {
-            Texture(info.textureBase!!).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
+            if (slice is BmpSlice) {
+                Texture(info.textureBase).slice(Rectangle(slice.left, slice.top, slice.width, slice.height))
+            } else {
+                BmpCoordsWithInstance(info.textureBase, slice)
+            }
         }
 
         cachedBmpSlice2 = cachedBmpSlice

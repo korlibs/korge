@@ -49,7 +49,7 @@ abstract class BaseTileMap(
     val staggerIndex: TiledMap.StaggerIndex? = null,
     var tileSize: Size = Size()
 ) : View() {
-    abstract val tilesetTextures: Array<BmpSlice?>
+    abstract val tilesetTextures: Array<BitmapCoords?>
 
     var tileWidth: Double = 0.0
     var tileHeight: Double = 0.0
@@ -244,9 +244,9 @@ abstract class BaseTileMap(
 
                     //println("CELL_DATA_TEX: $tex")
 
-                    val info = verticesPerTex.getOrPut(tex.bmpBase) {
+                    val info = verticesPerTex.getOrPut(tex.base) {
                         infosPool.alloc().also { info ->
-                            info.tex = tex.bmpBase
+                            info.tex = tex.base
                             if (info.vertices.initialVcount < allocTiles * 4) {
                                 info.vertices = TexturedVertexArray(allocTiles * 4, TexturedVertexArray.quadIndices(allocTiles))
                                 //println("ALLOC TexturedVertexArray")

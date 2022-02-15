@@ -14,12 +14,12 @@ import kotlin.math.*
 import kotlin.native.concurrent.*
 
 abstract class Bitmap(
-    val width: Int,
-    val height: Int,
+    override val width: Int,
+    override val height: Int,
     val bpp: Int,
     var premultiplied: Boolean,
     val backingArray: Any?
-) : Sizeable, Extra by Extra.Mixin() {
+) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
     //override fun getOrNull() = this
     //override suspend fun get() = this
 

@@ -40,7 +40,7 @@ class RenderContext2D(
 ) : Extra by Extra.Mixin() {
 	init { logger.trace { "RenderContext2D[0]" } }
 
-    inline fun getTexture(slice: BmpSlice): Texture = agBitmapTextureManager.getTexture(slice)
+    inline fun getTexture(slice: BmpSlice): TextureCoords = agBitmapTextureManager.getTexture(slice)
 
     @KorgeInternal
 	val mpool = Pool<Matrix> { Matrix() }

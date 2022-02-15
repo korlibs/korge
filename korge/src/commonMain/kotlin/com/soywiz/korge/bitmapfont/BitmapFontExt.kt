@@ -74,6 +74,8 @@ fun BitmapFont.drawText(
                 ctx.getTex(tex),
                 (dx + glyph.xoffset).toFloat(),
                 (dy + glyph.yoffset).toFloat(),
+                tex.width.toFloat(),
+                tex.height.toFloat(),
                 m = m2,
                 colorMul = colMul,
                 colorAdd = colAdd,

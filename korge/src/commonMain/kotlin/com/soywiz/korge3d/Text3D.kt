@@ -3,6 +3,7 @@ package com.soywiz.korge3d
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.AG
+import com.soywiz.korge.render.Texture
 import com.soywiz.korge.ui.*
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korma.geom.Matrix3D
@@ -140,7 +141,7 @@ class Text3D(
             val c2 = str.getOrElse(n + 1) { ' ' }.toInt()
             val glyph = font[c1]
             val bms = glyph.texture
-            val tex = ctx.rctx.getTex(bms)
+            val tex = ctx.rctx.getTex(bms) as Texture
             val w = tex.width //(tex.x1 - tex.x0) * font.fontSize.toFloat()
             val h = tex.height //(tex.y1-tex.y0) * font.fontSize.toFloat()
             dv1.x = (dx + glyph.xoffset).toFloat()
