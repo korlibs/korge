@@ -1029,6 +1029,12 @@ subprojects {
                     dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                 }
             }
+            val publishIosArm64Local by creating(Task::class) {
+                if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
+                    dependsOn("publishIosArm64PublicationToMavenLocal")
+                    dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
+                }
+            }
         }
         tasks.withType(Test::class.java).all {
             testLogging {
