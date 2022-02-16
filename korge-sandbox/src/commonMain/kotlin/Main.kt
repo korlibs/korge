@@ -76,7 +76,7 @@ suspend fun Stage.rotatedTexture() {
     //val tex = resourcesVfs["korim.png"].readBitmapSlice().flipY()
     //val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().scale(.5f, .5f)).sliceWithSize(0, 0, 10, 10)
     //val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().scale(.5f, .5f))
-    val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().skew(30.degrees, 0.degrees)).flipX().rotateRight()
+    val tex = resourcesVfs["korim.png"].readBitmapSlice().transformed(Matrix().skew(30.degrees, 0.degrees)).flippedX().rotatedRight()
     println("tex=$tex")
     println("size=${tex.width},${tex.height}")
     image(tex)

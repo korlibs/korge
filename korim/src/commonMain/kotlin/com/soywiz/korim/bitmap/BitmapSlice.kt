@@ -103,16 +103,16 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.copy(
     name: String? = this.name
 ): BmpCoordsWithInstance<T> = BmpCoordsWithInstance(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.rotateLeft(): BmpCoordsWithInstance<T> =
+fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedLeft(): BmpCoordsWithInstance<T> =
     copy(base, tr_x, tr_y, br_x, br_y, bl_x, bl_y, tl_x, tl_y)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.rotateRight(): BmpCoordsWithInstance<T> =
+fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedRight(): BmpCoordsWithInstance<T> =
     copy(base, bl_x, bl_y, tl_x, tl_y, tr_x, tr_y, br_x, br_y)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.flipX(): BmpCoordsWithInstance<T> =
+fun <T : ISizeInt> BmpCoordsWithT<T>.flippedX(): BmpCoordsWithInstance<T> =
     copy(base, tr_x, tr_y, tl_x, tl_y, bl_x, bl_y, br_x, br_y)
 
-fun <T : ISizeInt> BmpCoordsWithT<T>.flipY(): BmpCoordsWithInstance<T> =
+fun <T : ISizeInt> BmpCoordsWithT<T>.flippedY(): BmpCoordsWithInstance<T> =
     copy(base, bl_x, bl_y, br_x, br_y, tr_x, tr_y, tl_x, tl_y,)
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.transformed(m: Matrix): BmpCoordsWithInstance<T> = copy(
