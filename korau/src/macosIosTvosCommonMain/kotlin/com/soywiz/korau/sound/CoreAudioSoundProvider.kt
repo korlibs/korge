@@ -11,6 +11,8 @@ import platform.darwin.*
 import kotlin.coroutines.*
 
 actual val nativeSoundProvider: NativeSoundProvider get() = CORE_AUDIO_NATIVE_SOUND_PROVIDER
+
+@ThreadLocal
 val CORE_AUDIO_NATIVE_SOUND_PROVIDER: CoreAudioNativeSoundProvider by lazy { CoreAudioNativeSoundProvider() }
 
 class CoreAudioNativeSoundProvider : NativeSoundProvider() {

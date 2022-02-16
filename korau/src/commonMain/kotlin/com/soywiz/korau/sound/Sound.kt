@@ -11,8 +11,10 @@ import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.native.concurrent.ThreadLocal
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
+@ThreadLocal
 expect val nativeSoundProvider: NativeSoundProvider
 
 open class LazyNativeSoundProvider(val prepareInit: () -> Unit = {}, val gen: () -> NativeSoundProvider) : NativeSoundProvider() {

@@ -15,6 +15,7 @@ import com.soywiz.korio.stream.*
 import kotlinx.cinterop.*
 import stb_vorbis.*
 
+@kotlin.native.concurrent.ThreadLocal
 actual val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
 
 open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val maxChannels: Int = 2) {
