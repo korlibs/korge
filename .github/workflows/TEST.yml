@@ -3,6 +3,12 @@ name: TEST
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+      - '.github/**'
+      - '.idea/**'
+      - '@old/**'
+      - '_template/**'
+      - 'experiments/**'
   pull_request:
     branches: [ master ]
 
