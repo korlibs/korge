@@ -33,7 +33,7 @@ class ShadersTest {
 
     @Test
     fun testGlslGenerationRaw() {
-        val vs = VertexShader("hello")
+        val vs = VertexShaderRawGlSl("hello")
 
         assertEquals("hello", vs.toNewGlslString(GlslConfig()))
     }
