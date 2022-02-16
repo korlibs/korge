@@ -64,7 +64,9 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
     }
 
     override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage =
-		AndroidNativeImage(BitmapFactory.decodeByteArray(data, 0, data.size, BitmapFactory.Options().apply { this.inPremultiplied = premultiplied }))
+        Dispatchers.IO {
+            AndroidNativeImage(BitmapFactory.decodeByteArray(data, 0, data.size, BitmapFactory.Options().apply { this.inPremultiplied = premultiplied }))
+        }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
 		val bmp = android.graphics.Bitmap.createBitmap(width.coerceAtLeast(1), height.coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888)
