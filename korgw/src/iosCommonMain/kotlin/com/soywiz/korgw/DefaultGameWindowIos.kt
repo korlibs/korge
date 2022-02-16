@@ -32,7 +32,7 @@ class IosGameWindow : GameWindow() {
             //println("loop[1]")
         } catch (e: Throwable) {
             println("ERROR IosGameWindow.loop:")
-            println(e)
+            e.printStackTrace()
         }
     }
 
