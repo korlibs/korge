@@ -13,4 +13,19 @@ class FastByteArrayInputStreamTest {
 		assertEquals(4, v.position)
 		assertEquals(4, v.length)
 	}
+
+    @kotlin.test.Test
+    fun testSkipToAlign() {
+        val v = FastByteArrayInputStream(ByteArray(32))
+        v.skip(3)
+        assertEquals(3, v.position)
+        v.skipToAlign(4)
+        assertEquals(4, v.position)
+        v.skipToAlign(4)
+        assertEquals(4, v.position)
+        v.skip(1)
+        assertEquals(5, v.position)
+        v.skipToAlign(4)
+        assertEquals(8, v.position)
+    }
 }
