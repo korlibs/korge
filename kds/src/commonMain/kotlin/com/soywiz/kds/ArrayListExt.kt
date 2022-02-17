@@ -13,6 +13,15 @@ inline fun <T> Iterable<T>.mapInt(callback: (T) -> Int): IntArrayList = IntArray
 inline fun <T> Iterable<T>.mapFloat(callback: (T) -> Float): FloatArrayList = FloatArrayList().also { for (v in this) it.add(callback(v)) }
 inline fun <T> Iterable<T>.mapDouble(callback: (T) -> Double): DoubleArrayList = DoubleArrayList().also { for (v in this) it.add(callback(v)) }
 
+inline fun BooleanArray.mapDouble(callback: (Boolean) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun ByteArray.mapDouble(callback: (Byte) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun ShortArray.mapDouble(callback: (Short) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun CharArray.mapDouble(callback: (Char) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun IntArray.mapDouble(callback: (Int) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun FloatArray.mapDouble(callback: (Float) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun DoubleArray.mapDouble(callback: (Double) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+inline fun <T> Array<T>.mapDouble(callback: (T) -> Double): DoubleArray = DoubleArray(size).also { for (n in 0 until size) it[n] = callback(this[n]) }
+
 // FILTER
 inline fun IntArrayList.filter(callback: (Int) -> Boolean): IntArrayList = IntArrayList().also { for (v in this) if (callback(v)) it.add(v) }
 inline fun FloatArrayList.filter(callback: (Float) -> Boolean): FloatArrayList = FloatArrayList().also { for (v in this) if (callback(v)) it.add(v) }
