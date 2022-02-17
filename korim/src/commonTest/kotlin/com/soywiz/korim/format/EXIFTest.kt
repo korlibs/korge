@@ -9,6 +9,6 @@ class EXIFTest {
     @Test
     fun test() = suspendTest {
         val exif = EXIF.readExifFromJpeg(resourcesVfs["Portrait_3.jpg"])
-        assertEquals(ImageOrientation.MIRROR_VERTICAL, exif.orientation)
+        assertEquals(ImageOrientation.ROTATE_180, exif.orientation)
     }
 }
