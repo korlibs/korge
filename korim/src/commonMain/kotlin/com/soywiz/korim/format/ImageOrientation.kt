@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korma.geom.ISizeInt
@@ -47,10 +48,10 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.withImageOrientation(orientation: ImageOrie
     return result
 }
 
-suspend fun VfsFile.readBitmapSliceWithOrientation(): BitmapCoords {
+suspend fun VfsFile.readBitmapSliceWithOrientation(premultiplied: Boolean = true, name: String? = null, atlas: MutableAtlasUnit? = null): BitmapCoords {
     // @TODO: Support other formats providing orientation information in addition to EXIF?
     val result = kotlin.runCatching { EXIF.readExifFromJpeg(this) }
-    val slice = readBitmapSlice()
+    val slice = readBitmapSlice(premultiplied, name, atlas)
     return if (result.isSuccess) {
         slice.withImageOrientation(result.getOrThrow().orientation)
     } else {

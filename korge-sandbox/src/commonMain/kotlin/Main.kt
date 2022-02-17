@@ -51,10 +51,11 @@ import kotlin.random.*
 //}
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false) {
+    val atlas = MutableAtlasUnit(4096)
+    image(resourcesVfs["Portrait_3.jpg"].readBitmapSlice(atlas = atlas)).scale(0.2)
+    image(resourcesVfs["Portrait_3.jpg"].readBitmapSliceWithOrientation(atlas = atlas)).scale(0.2).xy(300, 0)
 
-    image(resourcesVfs["Portrait_3.jpg"].readBitmapSlice()).scale(0.2)
-    image(resourcesVfs["Portrait_3.jpg"].readBitmapSliceWithOrientation()).scale(0.2).xy(300, 0)
-
+    image(atlas.bitmap).scale(0.2).xy(600, 0)
 
 
     //rotatedTexture()
