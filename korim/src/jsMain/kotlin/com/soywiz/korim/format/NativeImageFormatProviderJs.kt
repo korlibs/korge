@@ -365,6 +365,16 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
+    fun doVisit(path: VectorPath) {
+        path.visitCmds(
+            moveTo = { x, y -> ctx.moveTo(x, y) },
+            lineTo = { x, y -> ctx.lineTo(x, y) },
+            quadTo = { cx, cy, ax, ay -> ctx.quadraticCurveTo(cx, cy, ax, ay) },
+            cubicTo = { cx1, cy1, cx2, cy2, ax, ay -> ctx.bezierCurveTo(cx1, cy1, cx2, cy2, ax, ay) },
+            close = { ctx.closePath() }
+        )
+    }
+
 	override fun render(state: Context2d.State, fill: Boolean) {
 		if (state.path.isEmpty()) return
 
@@ -373,15 +383,17 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         //println(" fillStyle=${ctx.fillStyle}, transform=${state.transform}")
 		keep {
 			setState(state, fill, doSetFont = false)
+
+            val clip = state.clip
+            if (clip != null) {
+                ctx.beginPath()
+                doVisit(clip)
+                ctx.clip(clip.winding.toCanvasFillRule())
+            }
+
 			ctx.beginPath()
 
-			state.path.visitCmds(
-				moveTo = { x, y -> ctx.moveTo(x, y) },
-				lineTo = { x, y -> ctx.lineTo(x, y) },
-				quadTo = { cx, cy, ax, ay -> ctx.quadraticCurveTo(cx, cy, ax, ay) },
-				cubicTo = { cx1, cy1, cx2, cy2, ax, ay -> ctx.bezierCurveTo(cx1, cy1, cx2, cy2, ax, ay) },
-				close = { ctx.closePath() }
-			)
+            doVisit(state.path)
 
             val m = state.transform
             ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
