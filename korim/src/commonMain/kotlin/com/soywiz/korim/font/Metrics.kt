@@ -110,13 +110,13 @@ data class TextMetrics(
     val width: Double get() = bounds.width
     val height: Double get() = bounds.height
 
-    val drawLeft get() = -left
-    val drawTop get() = firstLineBounds.height + firstLineBounds.top
+    val drawLeft: Double get() = -left
+    val drawTop: Double get() = firstLineBounds.height + firstLineBounds.top
 
-    val ascent get() = fontMetrics.ascent
-    val descent get() = fontMetrics.descent
-    val lineHeight get() = fontMetrics.lineHeight
-    val allLineHeight get() = lineHeight * nlines
+    val ascent: Double get() = fontMetrics.ascent
+    val descent: Double get() = fontMetrics.descent
+    val lineHeight: Double get() = fontMetrics.lineHeight
+    val allLineHeight: Double get() = lineHeight * nlines
 
     fun round(): TextMetrics {
         bounds.round()
