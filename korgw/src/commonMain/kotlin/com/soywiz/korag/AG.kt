@@ -752,7 +752,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
                 return _tex!!
             }
 
-        protected var dirty = false
+        protected var dirty = true
 
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             if (
