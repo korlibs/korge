@@ -21,7 +21,12 @@ private val RELEASE_DEBUG = listOf(NativeBuildType.RELEASE, NativeBuildType.DEBU
 
 private val Project.DESKTOP_NATIVE_TARGET get() = when {
 	isWindows -> "mingwX64"
-	isMacos -> "macosX64" // @TODO: Check if we are on ARM
+	isMacos -> {
+        when {
+            isArm -> "macosArm64"
+            else -> "macosX64"
+        }
+    } // @TODO: Check if we are on ARM
 	isLinux -> "linuxX64"
 	else -> "unknownX64"
 }
