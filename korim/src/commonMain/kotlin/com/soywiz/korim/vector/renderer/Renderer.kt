@@ -81,16 +81,10 @@ open class DummyRenderer(override val width: Int, override val height: Int) : Re
 abstract class BufferedRenderer : Renderer() {
     abstract fun flushCommands(commands: List<RenderCommand>)
 
-    data class RenderCommand(
-        val state: Context2d.State,
-        val fill: Boolean,
-        val font: Font? = null,
-        val fontSize: Double = 0.0,
-        val text: String? = null,
-        val x: Double = 0.0,
-        val y: Double = 0.0
-    )
-    protected val commands = arrayListOf<RenderCommand>()
+    data class RenderCommand(val state: Context2d.State, val fill: Boolean) {
+        val stroke: Boolean get() = !fill
+    }
+    private val commands = arrayListOf<RenderCommand>()
 
     final override fun render(state: Context2d.State, fill: Boolean) {
         commands += RenderCommand(state.clone(), fill)
@@ -102,5 +96,8 @@ abstract class BufferedRenderer : Renderer() {
     //    if (!isBuffering()) flush()
     //}
 
-    final override fun flush() = flushCommands(commands)
+    final override fun flush() {
+        flushCommands(commands)
+        commands.clear()
+    }
 }
