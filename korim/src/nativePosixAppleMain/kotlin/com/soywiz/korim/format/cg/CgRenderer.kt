@@ -65,19 +65,25 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
             8.convert(), 0.convert(), colorSpace,
             CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
         )
-        transferBitmap32CGContext(bmp, imageCtx, toBitmap = false)
-        val image = CGBitmapContextCreateImage(imageCtx)
+        try {
+            transferBitmap32CGContext(bmp, imageCtx, toBitmap = false)
+            val image = CGBitmapContextCreateImage(imageCtx)
+            try {
+                val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
 
-        val rect = CGRectMake(0.cg, 0.cg, bmp.width.cg, bmp.height.cg)
-
-        if (tiled) {
-            CGContextDrawTiledImage(ctx, rect, image)
-        } else {
-            CGContextDrawImage(ctx, rect, image)
+                if (tiled) {
+                    CGContextDrawTiledImage(ctx, rect, image)
+                } else {
+                    //println("CGContextDrawImage: $ctx, ${bmp.size}")
+                    CGContextDrawImage(ctx, rect, image)
+                }
+                //println("MACOS: imageCtx=$imageCtx, image=$image")
+            } finally {
+                CGImageRelease(image)
+            }
+        } finally {
+            CGContextRelease(imageCtx)
         }
-        //println("MACOS: imageCtx=$imageCtx, image=$image")
-        CGImageRelease(image)
-        CGContextRelease(imageCtx)
     }
 
     override fun flushCommands(commands: List<RenderCommand>) {
@@ -116,6 +122,8 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                             for (command in commands) {
                                 val state = command.state
                                 val fill = command.fill
+
+                                //println("command=$command")
 
                                 cgKeepState(ctx) {
                                     CGContextSetAllowsAntialiasing(ctx, antialiasing)
@@ -185,12 +193,16 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                 val gradient = CGGradientCreateWithColors(colorSpace, colors, locations)
                                                 val start = CGPointMake(style.x0(m).cg, style.y0(m).cg)
                                                 val end = CGPointMake(style.x1(m).cg, style.y1(m).cg)
-                                                when (style.kind) {
-                                                    GradientKind.LINEAR -> {
-                                                        CGContextDrawLinearGradient(ctx, gradient, start, end, options)
-                                                    }
-                                                    GradientKind.RADIAL -> {
-                                                        CGContextDrawRadialGradient(ctx, gradient, start, style.r0(m).cg, end, style.r1(m).cg, options)
+                                                cgKeepState(ctx) {
+                                                    CGContextConcatCTM(ctx, state.transform.toCGAffineTransform())
+                                                    CGContextConcatCTM(ctx, style.transform.toCGAffineTransform())
+                                                    when (style.kind) {
+                                                        GradientKind.LINEAR -> {
+                                                            CGContextDrawLinearGradient(ctx, gradient, start, end, options)
+                                                        }
+                                                        GradientKind.RADIAL -> {
+                                                            CGContextDrawRadialGradient(ctx, gradient, start, style.r0(m).cg, end, style.r1(m).cg, options)
+                                                        }
                                                     }
                                                 }
                                                 CGGradientRelease(gradient)
@@ -199,6 +211,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                 CGContextClip(ctx)
                                                 cgKeepState(ctx) {
                                                     CGContextConcatCTM(ctx, state.transform.toCGAffineTransform())
+                                                    CGContextConcatCTM(ctx, style.transform.toCGAffineTransform())
                                                     val fillBmp = style.bmp32
                                                     fillBmp.flipY() // @TODO: This shouldn't be required, can we do an affine transform somewhere?
                                                     cgDrawBitmap(fillBmp, ctx, colorSpace, tiled = style.repeat)
