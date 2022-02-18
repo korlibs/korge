@@ -6,7 +6,9 @@ import com.soywiz.kmem.FBuffer.Companion.sizeAligned
  * FastBuffer holding a chunk of [mem] memory
  */
 public class FBuffer private constructor(public val mem: MemBuffer, public val size: Int = mem.size) {
-	public val buffer: MemBuffer get() = mem
+    override fun toString(): String = "FBuffer(size=$size)"
+
+    public val buffer: MemBuffer get() = mem
 	public val data: DataBuffer = mem.getData()
 	public val arrayByte: Int8Buffer = mem.asInt8Buffer()
 	public val arrayShort: Int16Buffer = mem.asInt16Buffer()

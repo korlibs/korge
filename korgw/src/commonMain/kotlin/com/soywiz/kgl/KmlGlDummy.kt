@@ -11,6 +11,14 @@ import com.soywiz.korio.lang.*
 object KmlGlDummy : KmlGlDummyBase()
 
 open class KmlGlDummyBase : KmlGl() {
+    enum class Kind { PROGRAM, SHADER, BUFFER, FRAME_BUFFER, RENDER_BUFFER, TEXTURE }
+    val ids = LinkedHashMap<Kind, Int>()
+
+    fun alloc(kind: Kind): Int {
+        ids.getOrPut(kind) { 0 }
+        return ids.getOrPut(kind){ ids[kind]!! +1 }
+    }
+
     override fun activeTexture(texture: Int): Unit = Unit
     override fun attachShader(program: Int, shader: Int): Unit = Unit
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = Unit
@@ -36,8 +44,8 @@ open class KmlGlDummyBase : KmlGl() {
     override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: FBuffer): Unit = Unit
     override fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int): Unit = Unit
     override fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int): Unit = Unit
-    override fun createProgram(): Int = 0
-    override fun createShader(type: Int): Int = 0
+    override fun createProgram(): Int = alloc(Kind.PROGRAM)
+    override fun createShader(type: Int): Int = alloc(Kind.SHADER)
     override fun cullFace(mode: Int): Unit = Unit
     override fun deleteBuffers(n: Int, items: FBuffer): Unit = Unit
     override fun deleteFramebuffers(n: Int, items: FBuffer): Unit = Unit
@@ -60,11 +68,17 @@ open class KmlGlDummyBase : KmlGl() {
     override fun framebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: Int): Unit = Unit
     override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int): Unit = Unit
     override fun frontFace(mode: Int): Unit = Unit
-    override fun genBuffers(n: Int, buffers: FBuffer): Unit = Unit
+
+    private fun gen(n: Int, buffer: FBuffer, kind: Kind) {
+        for (i in 0 until n) buffer.i32[i] = alloc(kind)
+    }
+
+    override fun genBuffers(n: Int, buffers: FBuffer): Unit = gen(n, buffers, Kind.BUFFER)
     override fun generateMipmap(target: Int): Unit = Unit
-    override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = Unit
-    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = Unit
-    override fun genTextures(n: Int, textures: FBuffer): Unit = Unit
+    override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = gen(n, framebuffers, Kind.FRAME_BUFFER)
+    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = gen(n, renderbuffers, Kind.RENDER_BUFFER)
+    override fun genTextures(n: Int, textures: FBuffer): Unit = gen(n, textures, Kind.TEXTURE)
+
     override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit
     override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit
     override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit = Unit
@@ -79,7 +93,11 @@ open class KmlGlDummyBase : KmlGl() {
     override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit = Unit
     override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit = Unit
     override fun getProgramiv(program: Int, pname: Int, params: FBuffer): Unit = Unit
-    override fun getShaderiv(shader: Int, pname: Int, params: FBuffer): Unit = Unit
+    override fun getShaderiv(shader: Int, pname: Int, params: FBuffer): Unit {
+        when (pname) {
+            COMPILE_STATUS -> params.i32[0] = GTRUE
+        }
+    }
     override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit = Unit
     override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: FBuffer, precision: FBuffer): Unit = Unit
     override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer): Unit = Unit

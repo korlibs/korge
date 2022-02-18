@@ -45,16 +45,6 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         assertEquals(Rectangle(0, 0, 154, 16), TextOld("Hello World", font = font, textSize = 16.0).globalBounds)
     }
 
-    // This checks that the texture is generated with the default size (dirty=true fix)
-    @Test
-    fun testIdentityFilterFor128x128() {
-        views.stage += Image(NativeImage(AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH, AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT)).also {
-            it.filter = IdentityFilter
-        }
-        views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTestFilterIdentityDefaultRenderBufferSize.log", ag.getLogAsString())
-    }
-
     @Test
     fun testFilter() {
         views.stage += Container().apply {

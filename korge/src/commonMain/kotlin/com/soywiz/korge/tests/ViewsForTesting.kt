@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klock.milliseconds
+import com.soywiz.korag.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
@@ -48,14 +49,19 @@ open class ViewsForTesting(
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
-    val ag = object : LogAG(windowSize.width, windowSize.height) {
-        override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
-        override fun log(str: String, kind: Kind) {
-            if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
-                super.log(str, kind)
+    val ag: AG = createAg()
+
+    open fun createAg(): AG {
+        return object : LogAG(windowSize.width, windowSize.height) {
+            override val devicePixelRatio: Double get() = this@ViewsForTesting.devicePixelRatio
+            override fun log(str: String, kind: Kind) {
+                if (this@ViewsForTesting.log && filterLogDraw(str, kind)) {
+                    super.log(str, kind)
+                }
             }
         }
     }
+
 	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
         viewsLog.views.virtualWidth = virtualSize.width
         viewsLog.views.virtualHeight = virtualSize.height
