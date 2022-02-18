@@ -122,7 +122,20 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                     CGContextSetAlpha(ctx, state.globalAlpha.cg)
                                     //CGContextConcatCTM(ctx, state.transform.toCGAffineTransform()) // Points already transformed
 
+                                    // PATH
                                     visitCgContext(ctx, state.path)
+
+                                    // CLIP
+                                    val clip = state.clip
+                                    if (clip != null) {
+                                        when (clip.winding) {
+                                            Winding.EVEN_ODD -> CGContextEOClip(ctx)
+                                            else -> CGContextClip(ctx)
+                                        }
+                                        CGContextBeginPath(ctx)
+                                        visitCgContext(ctx, clip)
+                                    }
+
 
                                     if (!fill) {
                                         CGContextSetLineWidth(ctx, state.lineWidth.cg)
@@ -142,10 +155,6 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                             }
                                         )
                                         CGContextReplacePathWithStrokedPath(ctx)
-                                    }
-                                    if (state.clip != null) {
-                                        CGContextClip(ctx)
-                                        visitCgContext(ctx, state.path)
                                     }
                                     memScoped {
                                         val style = if (fill) state.fillStyle else state.strokeStyle
