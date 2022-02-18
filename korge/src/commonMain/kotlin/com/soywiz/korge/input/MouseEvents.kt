@@ -70,8 +70,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                         renderContext.useBatcher { batch ->
                             batch.drawQuad(
                                 ctx.getTex(Bitmaps.white),
-                                x = bounds.x.toFloat(),
-                                y = bounds.y.toFloat(),
+                                x = bounds.x.toInt().toFloat(),
+                                y = bounds.y.toInt().toFloat(),
                                 width = bounds.width.toFloat(),
                                 height = bounds.height.toFloat(),
                                 colorMul = RGBA(0xFF, 0, 0, 0x3F),
@@ -82,7 +82,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 lineHeight.toDouble(),
                                 mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY,
                                 x = 0,
-                                y = yy.toInt()
+                                y = yy.toInt(),
+                                filtering = false
                             )
                         }
                         yy += lineHeight
