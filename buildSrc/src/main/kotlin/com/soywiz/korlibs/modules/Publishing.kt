@@ -44,18 +44,32 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
     //val emptyJar = tasks.create<Jar>("emptyJar") {}
 
     publishing.apply {
-        if (publishUser == null || publishPassword == null) {
-            println("Publishing is not enabled. Was not able to determine either `publishUser` or `publishPassword`")
-        } else {
-            repositories {
-                maven {
-                    credentials {
-                        username = publishUser
-                        password = publishPassword
+        when {
+            customMavenUrl != null -> {
+                repositories {
+                    maven {
+                        credentials {
+                            username = project.customMavenUser
+                            password = project.customMavenPass
+                        }
+                        url = uri(project.customMavenUrl!!)
                     }
-                    url = when {
-                        version.toString().contains("-SNAPSHOT") -> uri("https://oss.sonatype.org/content/repositories/snapshots/")
-                        else -> uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                }
+            }
+            publishUser == null || publishPassword == null -> {
+                println("Publishing is not enabled. Was not able to determine either `publishUser` or `publishPassword`")
+            }
+            else -> {
+                repositories {
+                    maven {
+                        credentials {
+                            username = publishUser
+                            password = publishPassword
+                        }
+                        url = when {
+                            version.toString().contains("-SNAPSHOT") -> uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                            else -> uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+                        }
                     }
                 }
             }
