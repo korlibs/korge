@@ -638,9 +638,11 @@ class WinController : NSObject() {
     }
 }
 
+@kotlin.native.concurrent.ThreadLocal
+val doMacTrace by lazy { Environment["MAC_TRACE"] == "true" }
 
 fun macTrace(str: String) {
-    println(str)
+    if (doMacTrace) println(str)
 }
 
 val CValue<NSPoint>.x get() = this.useContents { x }
