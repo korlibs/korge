@@ -9,17 +9,17 @@ import com.soywiz.korim.bitmap.*
 import org.junit.*
 
 class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
-    override fun createAg(): AG = object : AGOpengl() {
-        override val gl: KmlGl = object : KmlGlProxyLogToString() {
-            override fun getString(name: String, params: List<Any?>, result: Any?): String? = when (name) {
-                "shaderSource" -> super.getString(name, params.dropLast(1) + listOf("..."), result)
-                else -> super.getString(name, params, result)
-            }
+    val logGl: KmlGlProxyLogToString = object : KmlGlProxyLogToString() {
+        override fun getString(name: String, params: List<Any?>, result: Any?): String? = when (name) {
+            "shaderSource" -> super.getString(name, params.dropLast(1) + listOf("..."), result)
+            else -> super.getString(name, params, result)
         }
-        override val nativeComponent: Any = Unit
     }
 
-    val logGl get() = (ag as AGOpengl).gl as KmlGlProxyLogToString
+    override fun createAg(): AG = object : AGOpengl() {
+        override val gl: KmlGl = logGl
+        override val nativeComponent: Any = Unit
+    }
 
     // This checks that the texture is generated with the default size (dirty=true fix)
     @Test

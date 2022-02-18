@@ -30,7 +30,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
 			views.stage.dumpToString()
 		)
 		views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTest1.log", ag.getLogAsString())
+        assertEqualsFileReference("korge/render/ViewsJvmTest1.log", logAg.getLogAsString())
 	}
 
 	@Test
@@ -62,7 +62,7 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
             views.stage.dumpToString()
         )
         views.render()
-        assertEqualsFileReference("korge/render/ViewsJvmTestFilter.log", ag.getLogAsString())
+        assertEqualsFileReference("korge/render/ViewsJvmTestFilter.log", logAg.getLogAsString())
     }
 
     @Test

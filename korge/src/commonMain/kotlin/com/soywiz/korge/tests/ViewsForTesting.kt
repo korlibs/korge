@@ -49,7 +49,7 @@ open class ViewsForTesting(
     }
 
 	val gameWindow = TestGameWindow(windowSize, dispatcher)
-    val ag: AG = createAg()
+    val ag: AG by lazy { createAg() }
 
     open fun createAg(): AG {
         return object : LogAG(windowSize.width, windowSize.height) {
@@ -62,10 +62,10 @@ open class ViewsForTesting(
         }
     }
 
-	val viewsLog = ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
+	val viewsLog by lazy { ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
         viewsLog.views.virtualWidth = virtualSize.width
         viewsLog.views.virtualHeight = virtualSize.height
-    }
+    } }
 	val injector get() = viewsLog.injector
     val logAgOrNull get() = ag as? LogAG?
     val logAg get() = logAgOrNull ?: error("Must call ViewsForTesting(log = true) to access logAg")
@@ -77,8 +77,8 @@ open class ViewsForTesting(
 	val mouse get() = input.mouse
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
-        logAg?.backWidth = width
-        logAg?.backHeight = height
+        logAgOrNull?.backWidth = width
+        logAgOrNull?.backHeight = height
         dummyAg?.backWidth = width
         dummyAg?.backHeight = height
         gameWindow.width = width
