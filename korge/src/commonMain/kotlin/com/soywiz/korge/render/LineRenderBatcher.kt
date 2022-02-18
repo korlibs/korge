@@ -164,8 +164,8 @@ class LineRenderBatcher(
     internal val currentMatrix: Matrix = Matrix()
 
     fun <T> drawWithGlobalMatrix(matrix: Matrix, block: () -> T): T {
-        return currentMatrix.keep {
-            currentMatrix.copyFrom(matrix)
+        return currentMatrix.keepMatrix {
+            it.copyFrom(matrix)
             block()
         }
     }

@@ -18,7 +18,7 @@ import javax.swing.*
 import javax.swing.tree.*
 import kotlin.coroutines.*
 
-val View.treeNode: ViewNode by Extra.PropertyThis<View, ViewNode> { ViewNode(this) }
+val View.treeNode: ViewNode by Extra.PropertyThis { ViewNode(this) }
 
 class ViewNode(val view: View?) : TreeNode {
     val container = view as? Container?

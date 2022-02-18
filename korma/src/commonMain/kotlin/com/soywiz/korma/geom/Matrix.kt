@@ -476,24 +476,7 @@ data class Matrix(
         Matrix().setToInterpolated(ratio, this, other)
 
     @Deprecated("Use keepMatrix instead")
-    inline fun <T> keep(callback: Matrix.() -> T): T {
-        val a = this.a
-        val b = this.b
-        val c = this.c
-        val d = this.d
-        val tx = this.tx
-        val ty = this.ty
-        try {
-            return this.callback()
-        } finally {
-            this.a = a
-            this.b = b
-            this.c = c
-            this.d = d
-            this.tx = tx
-            this.ty = ty
-        }
-    }
+    inline fun <T> keep(callback: Matrix.() -> T): T = keepMatrix(callback)
 
     inline fun <T> keepMatrix(callback: (Matrix) -> T): T {
         val a = this.a
