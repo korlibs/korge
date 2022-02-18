@@ -8,6 +8,10 @@ import com.soywiz.korge.view.filter.ComposedFilter
 import com.soywiz.korge.view.filter.Convolute3Filter
 import com.soywiz.korge.view.filter.Filter
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
+import com.soywiz.korim.font.*
+import com.soywiz.korim.text.*
+import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import kotlin.test.*
 
@@ -61,5 +65,30 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         )
         views.render()
         assertEqualsFileReference("korge/render/ViewsJvmTestFilter.log", ag.getLogAsString())
+    }
+
+    @Test
+    fun testTextBounds() = viewsTest {
+        val font = resourcesVfs["Pacifico.ttf"].readFont()
+        run {
+            val text = text("WTF is going on", 64.0)
+            assertEquals(RectangleInt(0, 0, 417, 71), text.globalBounds.toInt())
+        }
+
+        run {
+            val realTextSize = 64.0
+            //val text = "WTF is going on\nWTF is going on"
+            val text = "WTF is going on"
+            val renderer = DefaultStringTextRenderer
+            val useNativeRendering = true
+            val textResult = font.renderTextToBitmap(
+                realTextSize, text,
+                paint = Colors.WHITE, fill = true, renderer = renderer,
+                //background = Colors.RED,
+                nativeRendering = useNativeRendering,
+                drawBorder = true
+            )
+            assertEquals(Size(450, 121), textResult.bmp.size)
+        }
     }
 }
