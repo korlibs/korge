@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.*
@@ -37,10 +38,27 @@ open class FixedSizeContainer(
     }
 
     private val tempBounds = Rectangle()
+    private var renderingInternal = false
 
     @OptIn(KorgeInternal::class)
     override fun renderInternal(ctx: RenderContext) {
+        if (renderingInternal) {
+            return super.renderInternal(ctx)
+        }
         if (clip) {
+            val m = globalMatrix
+            // Has rotation
+            if (m.b != 0.0 || m.c != 0.0) {
+                // Use a renderbuffer instead
+                val old = renderingInternal
+                try {
+                    renderingInternal = true
+                    renderFiltered(ctx, IdentityFilter)
+                } finally {
+                    renderingInternal = old
+                }
+                return
+            }
             ctx.useCtx2d { c2d ->
                 val bounds = getWindowBounds(tempBounds)
                 @Suppress("DEPRECATION")
