@@ -117,4 +117,9 @@ class RectangleTest {
         assertEquals(Rectangle.fromBounds(10, 10, 90, 90), Rectangle(0, 0, 100, 100).without(Margin(10.0)))
         assertEquals(Rectangle.fromBounds(-10, -10, 110, 110), Rectangle(0, 0, 100, 100).with(Margin(10.0)))
     }
+    
+    @Test
+    fun testInt() {
+        assertEquals(RectangleInt(1, 2, 3, 4), Rectangle(1.1, 2.1, 3.1, 4.1).toInt())
+    }
 }

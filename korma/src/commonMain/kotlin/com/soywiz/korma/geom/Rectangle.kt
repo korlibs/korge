@@ -188,7 +188,7 @@ data class Rectangle(
     fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: Point = Point()): Point =
         out.setTo(left + width * anchorX, top + height * anchorY)
 
-    fun toInt() = RectangleInt(x, y, width, height)
+    fun toInt() = RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun floor(): Rectangle {
         setTo(kotlin.math.floor(x), kotlin.math.floor(y), kotlin.math.floor(width), kotlin.math.floor(height))
         return this
@@ -280,6 +280,7 @@ inline class RectangleInt(val rect: Rectangle) : IRectangleInt {
     }
 
     override fun toString(): String = "Rectangle(x=$x, y=$y, width=$width, height=$height)"
+    fun toStringBounds(): String = "Rectangle([$left,$top]-[$right,$bottom])"
 }
 
 fun RectangleInt.setTo(that: IRectangleInt) = setTo(that.x, that.y, that.width, that.height)
