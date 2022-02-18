@@ -68,7 +68,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
 
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
-            + ", =$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
+            + ", batchCount=$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
             ,
             0, 0
