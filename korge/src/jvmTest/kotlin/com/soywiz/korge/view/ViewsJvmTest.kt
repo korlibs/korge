@@ -1,12 +1,10 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.test.*
 import com.soywiz.korge.tests.*
-import com.soywiz.korge.view.filter.ColorMatrixFilter
-import com.soywiz.korge.view.filter.ComposedFilter
-import com.soywiz.korge.view.filter.Convolute3Filter
-import com.soywiz.korge.view.filter.Filter
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -45,6 +43,16 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
     fun textGetBounds2() = viewsTest {
         val font = views.debugBmpFont
         assertEquals(Rectangle(0, 0, 154, 16), TextOld("Hello World", font = font, textSize = 16.0).globalBounds)
+    }
+
+    // This checks that the texture is generated with the default size (dirty=true fix)
+    @Test
+    fun testIdentityFilterFor128x128() {
+        views.stage += Image(NativeImage(AG.RenderBufferConsts.DEFAULT_INITIAL_WIDTH, AG.RenderBufferConsts.DEFAULT_INITIAL_HEIGHT)).also {
+            it.filter = IdentityFilter
+        }
+        views.render()
+        assertEqualsFileReference("korge/render/ViewsJvmTestFilterIdentityDefaultRenderBufferSize.log", ag.getLogAsString())
     }
 
     @Test

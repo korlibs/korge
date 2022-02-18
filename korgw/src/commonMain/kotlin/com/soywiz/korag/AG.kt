@@ -14,7 +14,6 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.*
 import kotlin.coroutines.*
-import kotlinx.coroutines.*
 
 interface AGFactory {
     val supportsNativeFrame: Boolean
@@ -698,13 +697,18 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         fun scissor(scissor: RectangleInt?)
     }
 
+    object RenderBufferConsts {
+        const val DEFAULT_INITIAL_WIDTH = 128
+        const val DEFAULT_INITIAL_HEIGHT = 128
+    }
+
     open class BaseRenderBufferImpl : BaseRenderBuffer {
         override var x = 0
         override var y = 0
-        override var width = 128
-        override var height = 128
-        override var fullWidth = 128
-        override var fullHeight = 128
+        override var width = RenderBufferConsts.DEFAULT_INITIAL_WIDTH
+        override var height = RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
+        override var fullWidth = RenderBufferConsts.DEFAULT_INITIAL_WIDTH
+        override var fullHeight = RenderBufferConsts.DEFAULT_INITIAL_HEIGHT
         private val _scissor = RectangleInt()
         override var scissor: RectangleInt? = null
 
