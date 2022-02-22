@@ -73,8 +73,18 @@ data class ImageDecodingProps(
     val filename: String = "unknown",
     val width: Int? = null,
     val height: Int? = null,
+    val premultiplied: Boolean = true,
+    // Requested but not enforced
+    val requestedMaxWidth: Int? = null,
+    val requestedMaxHeight: Int? = null,
     override var extra: ExtraType = null
-) : Extra
+) : Extra {
+    companion object {
+        val DEFAULT_PREMULT = ImageDecodingProps(premultiplied = true)
+        val DEFAULT = ImageDecodingProps(premultiplied = false)
+        fun DEFAULT(premultiplied: Boolean) = if (premultiplied) DEFAULT_PREMULT else DEFAULT
+    }
+}
 
 data class ImageEncodingProps(
     val filename: String = "",

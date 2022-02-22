@@ -63,9 +63,18 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
         deferred.await()
     }
 
-    override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage =
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult =
         Dispatchers.IO {
-            AndroidNativeImage(BitmapFactory.decodeByteArray(data, 0, data.size, BitmapFactory.Options().apply { this.inPremultiplied = premultiplied }))
+            NativeImageResult(
+                AndroidNativeImage(
+                    BitmapFactory.decodeByteArray(
+                        data, 0, data.size,
+                        BitmapFactory.Options().apply {
+                            this.inPremultiplied = props.premultiplied
+                        }
+                    )
+                )
+            )
         }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {

@@ -15,18 +15,27 @@ import kotlin.native.concurrent.*
 @ThreadLocal
 expect val nativeImageFormatProvider: NativeImageFormatProvider
 
-data class NativeImageConfig(val premultiplied: Boolean)
+data class NativeImageResult(
+    val image: NativeImage,
+    val originalWidth: Int = image.width,
+    val originalHeight: Int = image.height,
+)
 
 abstract class NativeImageFormatProvider {
-	abstract suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage
-    open suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean): NativeImage = decode(vfs.file(path).readBytes())
-    suspend fun decode(file: FinalVfsFile, premultiplied: Boolean): Bitmap = decode(file.vfs, file.path, premultiplied)
-	suspend fun decode(file: VfsFile, premultiplied: Boolean): Bitmap = decode(file.getUnderlyingUnscapedFile(), premultiplied)
+    protected abstract suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult
+    protected open suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = decodeInternal(vfs.file(path).readBytes(), props)
 
-    suspend fun decode(data: ByteArray): NativeImage = decode(data, premultiplied = true)
-    suspend fun decode(vfs: Vfs, path: String): NativeImage = decode(vfs, path, premultiplied = true)
-    suspend fun decode(file: FinalVfsFile): Bitmap = decode(file, premultiplied = true)
-    suspend fun decode(file: VfsFile): Bitmap = decode(file, premultiplied = true)
+    protected fun NativeImage.result() = NativeImageResult(this)
+
+    suspend fun decode(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImage = decodeInternal(vfs, path, props).image
+    suspend fun decode(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
+    suspend fun decode(file: FinalVfsFile, props: ImageDecodingProps): Bitmap = decodeInternal(file.vfs, file.path, props).image
+    suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap = decode(file.getUnderlyingUnscapedFile(), props)
+
+    suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean = true): NativeImage = decode(vfs, path, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(data: ByteArray, premultiplied: Boolean = true): NativeImage = decode(data, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(file: FinalVfsFile, premultiplied: Boolean = true): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(file: VfsFile, premultiplied: Boolean = true): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
 
     abstract suspend fun display(bitmap: Bitmap, kind: Int): Unit
     abstract fun create(width: Int, height: Int, premultiplied: Boolean? = null): NativeImage
@@ -56,16 +65,16 @@ suspend fun SizedDrawable.showImageAndWait(kind: Int = 0) = this.render().toBMP3
 open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
     open val formats: ImageFormat get() = RegisteredImageFormats
 
-    override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = wrapNative(formats.decode(data), premultiplied)
-    override suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean): NativeImage = decode(vfs[path].readBytes(), premultiplied)
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult = wrapNative(formats.decode(data, props), props)
+
     protected open fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp)
-    protected open fun wrapNative(bmp: Bitmap, premultiplied: Boolean): BitmapNativeImage {
+    protected open fun wrapNative(bmp: Bitmap, props: ImageDecodingProps): NativeImageResult {
         val bmp32: Bitmap32 = bmp.toBMP32()
         //bmp32.premultiplyInPlace()
         //return BitmapNativeImage(bmp32)
-        return createBitmapNativeImage(if (premultiplied) bmp32.premultipliedIfRequired() else bmp32.depremultipliedIfRequired())
+        return NativeImageResult(createBitmapNativeImage(if (props.premultiplied) bmp32.premultipliedIfRequired() else bmp32.depremultipliedIfRequired()))
     }
-    protected fun Bitmap.wrapNativeExt(premultiplied: Boolean = true) = wrapNative(this, premultiplied)
+    protected fun Bitmap.wrapNativeExt(props: ImageDecodingProps = ImageDecodingProps.DEFAULT_PREMULT) = wrapNative(this, props)
 
     override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage = createBitmapNativeImage(Bitmap32(width, height, premultiplied = premultiplied ?: true))
     override fun copy(bmp: Bitmap): NativeImage = createBitmapNativeImage(bmp)

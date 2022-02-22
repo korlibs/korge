@@ -16,7 +16,8 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
     override fun createBitmapNativeImage(bmp: Bitmap) = CoreGraphicsNativeImage(bmp.toBMP32().premultipliedIfRequired())
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
 
-    override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage {
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        val premultiplied = props.premultiplied
         data class Info(val data: ByteArray, val premultiplied: Boolean)
 
         return executeInImageIOWorker { worker ->
@@ -72,6 +73,6 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
                 Bitmap32(width, height, RgbaArray(out), premultiplied = premultiplied)
                 //}.wrapNativeExt(premultiplied)
             })
-        }.wrapNativeExt(premultiplied)
+        }.wrapNativeExt(props)
     }
 }

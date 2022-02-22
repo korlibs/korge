@@ -107,26 +107,28 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
 }
 
 object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
-	override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = HtmlNativeImage(BrowserImage.decodeToCanvas(data, premultiplied))
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        return NativeImageResult(HtmlNativeImage(BrowserImage.decodeToCanvas(data, props.premultiplied)))
+    }
 
-	override suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean): NativeImage {
-		//println("HtmlNativeImageFormatProvider.decode($vfs, '$path')")
-		return when (vfs) {
-			is LocalVfs -> {
-				//println("LOCAL: HtmlNativeImageFormatProvider: $vfs, $path")
-				HtmlNativeImage(BrowserImage.loadImage(path))
-			}
-			is UrlVfs -> {
-				val jsUrl = vfs.getFullUrl(path)
-				//println("URL: HtmlNativeImageFormatProvider: $vfs, $path : $jsUrl")
-				HtmlNativeImage(BrowserImage.loadImage(jsUrl, premultiplied))
-			}
-			else -> {
-				//println("OTHER: HtmlNativeImageFormatProvider: $vfs, $path")
-				HtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), premultiplied))
-			}
-		}
-	}
+    override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
+        //println("HtmlNativeImageFormatProvider.decode($vfs, '$path')")
+        return NativeImageResult(when (vfs) {
+            is LocalVfs -> {
+                //println("LOCAL: HtmlNativeImageFormatProvider: $vfs, $path")
+                HtmlNativeImage(BrowserImage.loadImage(path))
+            }
+            is UrlVfs -> {
+                val jsUrl = vfs.getFullUrl(path)
+                //println("URL: HtmlNativeImageFormatProvider: $vfs, $path : $jsUrl")
+                HtmlNativeImage(BrowserImage.loadImage(jsUrl, props.premultiplied))
+            }
+            else -> {
+                //println("OTHER: HtmlNativeImageFormatProvider: $vfs, $path")
+                HtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props.premultiplied))
+            }
+        })
+    }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
 		return HtmlNativeImage(HtmlCanvas.createCanvas(width, height))

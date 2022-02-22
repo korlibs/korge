@@ -9,7 +9,8 @@ import kotlin.native.concurrent.*
 
 @ThreadLocal
 actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
-    override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = wrapNative(
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        val premultiplied = props.premultiplied
         //ImageIOWorker.execute(
         //            TransferMode.SAFE,
         executeInImageIOWorker { worker ->
@@ -43,7 +44,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
                 }
             )
         }
-        , premultiplied
+        , props
     )
 }
 

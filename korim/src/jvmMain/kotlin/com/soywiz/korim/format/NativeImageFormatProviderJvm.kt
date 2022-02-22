@@ -29,12 +29,14 @@ object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
 		}
 	}
 
-	override suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = AwtNativeImage(awtReadImageInWorker(data, premultiplied))
-
-	override suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean): NativeImage = when (vfs) {
-        is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), premultiplied))
-        else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), premultiplied))
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        return AwtNativeImage(awtReadImageInWorker(data, props.premultiplied)).result()
     }
+
+    override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = when (vfs) {
+        is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props.premultiplied))
+        else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), props.premultiplied))
+    }.result()
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage =
 		AwtNativeImage(BufferedImage(max(width, 1), max(height, 1), if (premultiplied == false) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_ARGB_PRE))
