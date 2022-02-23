@@ -29,8 +29,14 @@ object LDLibraries {
 
             if (tline.startsWith("include ")) {
                 val glob = tline.removePrefix("include ")
-                for (folder in Files.newDirectoryStream(File(glob).parentFile.toPath(), File(glob).name).toList().map { it.toFile() }) {
-                    loadConfFile(folder)
+                val globFolder = File(glob).parentFile
+                val globPattern = File(glob).name
+                if (globFolder.isDirectory) {
+                    for (folder in
+                        Files.newDirectoryStream(globFolder.toPath(), globPattern).toList().map { it.toFile() }
+                    ) {
+                        loadConfFile(folder)
+                    }
                 }
             } else {
                 libFolders += File(tline)
