@@ -12,3 +12,5 @@ open class ImageInfo : Extra by Extra.Mixin() {
 
 	override fun toString(): String = "ImageInfo(width=$width, height=$height, bpp=$bitsPerPixel, extra=$extra)"
 }
+
+fun ImageInfo(block: ImageInfo.() -> Unit): ImageInfo = ImageInfo().apply(block)
