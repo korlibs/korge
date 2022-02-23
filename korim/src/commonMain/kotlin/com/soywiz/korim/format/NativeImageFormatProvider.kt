@@ -2,13 +2,8 @@ package com.soywiz.korim.format
 
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.font.FontMetrics
-import com.soywiz.korim.font.GlyphMetrics
-import com.soywiz.korim.font.SystemFont
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.*
-import kotlin.jvm.JvmOverloads
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
@@ -22,10 +17,25 @@ data class NativeImageResult(
 )
 
 abstract class NativeImageFormatProvider {
+    protected open suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
+        val result = decodeInternal(data, ImageDecodingProps())
+        return ImageInfo().also {
+            it.width = result.originalWidth
+            it.height = result.originalHeight
+        }
+    }
+
     protected abstract suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult
     protected open suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = decodeInternal(vfs.file(path).readBytes(), props)
 
     protected fun NativeImage.result() = NativeImageResult(this)
+
+    suspend fun decodeHeader(data: ByteArray): ImageInfo = decodeHeaderInternal(data)
+    suspend fun decodeHeaderOrNull(data: ByteArray): ImageInfo? = try {
+        decodeHeaderInternal(data)
+    } catch (e: Throwable) {
+        null
+    }
 
     suspend fun decode(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImage = decodeInternal(vfs, path, props).image
     suspend fun decode(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
