@@ -2,7 +2,9 @@ package com.soywiz.korim.format
 
 import android.app.*
 import android.graphics.*
+import android.graphics.Matrix
 import android.graphics.Paint
+import android.os.*
 import android.text.*
 import android.view.*
 import android.widget.*
@@ -14,6 +16,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
 
@@ -63,19 +66,35 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
         deferred.await()
     }
 
-    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult =
-        Dispatchers.IO {
-            NativeImageResult(
-                AndroidNativeImage(
-                    BitmapFactory.decodeByteArray(
-                        data, 0, data.size,
-                        BitmapFactory.Options().apply {
-                            this.inPremultiplied = props.premultiplied
-                        }
-                    )
-                )
-            )
+    override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
+        val options = BitmapFactory.Options().also { it.inJustDecodeBounds = true }
+        Dispatchers.IO { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
+        return ImageInfo().also {
+            it.width = options.outWidth
+            it.height = options.outHeight
         }
+    }
+
+    override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        val info = decodeHeaderInternal(data)
+        val originalSize = SizeInt(info.width, info.height)
+
+        return NativeImageResult(
+            image = AndroidNativeImage(
+                Dispatchers.IO { BitmapFactory.decodeByteArray(
+                    data, 0, data.size,
+                    BitmapFactory.Options().also {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                            it.inPremultiplied = props.premultiplied
+                        }
+                        it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
+                    }
+                ) }
+            ),
+            originalWidth = info.width,
+            originalHeight = info.height
+        )
+    }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
 		val bmp = android.graphics.Bitmap.createBitmap(width.coerceAtLeast(1), height.coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888)
