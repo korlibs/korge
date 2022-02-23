@@ -6,7 +6,7 @@ import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.cg.toCgFloat
+import com.soywiz.korim.format.cg.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
@@ -223,7 +223,7 @@ class MyNSOpenGLView(
     override fun setMarkedText(string: Any?, selectedRange: CValue<NSRange>) = Unit//.also { println("setMarkedText: '$string', $selectedRange") }
     // @TODO: We should set the rectangle of the text input so IME places completion box at the right place
     override fun firstRectForCharacterRange(range: CValue<NSRange>): CValue<NSRect> = NSMakeRect(
-        0.0.toCgFloat(), 0.0.toCgFloat(), 0.0.toCgFloat(), 0.0.toCgFloat()
+        0.0.cg, 0.0.cg, 0.0.cg, 0.0.cg
         //(this.bounds.left + inputRect.x).toCgFloat(),
         //(this.bounds.top + inputRect.y).toCgFloat(),
         //(inputRect.width).toCgFloat(),
@@ -459,7 +459,7 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
         //)
 
         //window.setFrame(rect, true, false)
-        window.setContentSize(NSMakeSize(width.toCgFloat(), height.toCgFloat()))
+        window.setContentSize(NSMakeSize(width.cg, height.cg))
         window.center()
         //window.setFrameTopLeftPoint()
     }
