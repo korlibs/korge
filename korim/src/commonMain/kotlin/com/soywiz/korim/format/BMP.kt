@@ -10,6 +10,8 @@ object BMP : ImageFormat("bmp") {
     class BmImageInfo : ImageInfo() {
         var flipX: Boolean = false
         var flipY: Boolean = false
+        var compression: Int = 0
+        var sizeImage: Int = 0
     }
 
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): BmImageInfo? {
@@ -21,11 +23,20 @@ object BMP : ImageFormat("bmp") {
 		val offBits = s.readS32LE()
 		// INFO HEADER
 		val bsize = s.readS32LE()
-		val width = s.readS32LE()
-		val height = s.readS32LE()
-		val planes = s.readS16LE()
-		val bitcount = s.readS16LE()
+        val ss = s.readFastByteArrayInputStream(bsize - 4)
+		val width = ss.readS32LE()
+		val height = ss.readS32LE()
+		val planes = ss.readS16LE()
+		val bitcount = ss.readS16LE()
+        val compression = ss.readS32LE()
+        val sizeImage = ss.readS32LE()
+        val pixelsPerMeterX = ss.readS32LE()
+        val pixelsPerMeterY = ss.readS32LE()
+        val clrUsed = ss.readS32LE()
+        val clrImportant = ss.readS32LE()
 		return BmImageInfo().apply {
+            this.compression = compression
+            this.sizeImage = sizeImage
             this.flipX = width < 0
             this.flipY = height >= 0
 			this.width = abs(width)
@@ -37,14 +48,12 @@ object BMP : ImageFormat("bmp") {
 	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
 		val h = decodeHeader(s, props) ?: throw IllegalArgumentException("Not a BMP file")
 
-		val compression = s.readS32LE()
-		val sizeImage = s.readS32LE()
-		val pixelsPerMeterX = s.readS32LE()
-		val pixelsPerMeterY = s.readS32LE()
-		val clrUsed = s.readS32LE()
-		val clrImportant = s.readS32LE()
+        when (h.compression) {
+            0, 3 -> Unit
+            else -> error("Unsupported BMP compression ${h.compression}")
+        }
 
-		return when (h.bitsPerPixel) {
+        return when (h.bitsPerPixel) {
 			8 -> {
 				val out = Bitmap8(h.width, h.height)
 				for (n in 0 until 256) out.palette[n] = RGBA(s.readS32LE(), 0xFF)
@@ -62,7 +71,7 @@ object BMP : ImageFormat("bmp") {
 					val y = if (h.flipY) h.height - n - 1 else n
 					s.read(row)
 					format.decode(row, 0, out.data, out.index(0, y), h.width)
-					if (padding != 0) {
+					if (padding != 4) {
 						s.skip(padding)
 					}
 				}

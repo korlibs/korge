@@ -43,7 +43,17 @@ class ImageFormatsTest {
 		//showImageAndWait(bitmap)
 	}
 
-	@Test
+    @Test
+    fun bmp32() = suspendTestNoBrowser {
+        val bitmap = resourcesVfs["kotlin32.bmp"].readBitmapNoNative(imageFormats)
+        val expectedBitmap = resourcesVfs["kotlin32.png"].readBitmapNoNative(imageFormats)
+        //JailedLocalVfs("c:/temp/")["lol.png"].writeBitmap(bitmap, formats)
+        //root["kotlin8.png"].writeBitmap()
+        assertEquals("Bitmap32(190, 190)", bitmap.toString())
+        assertEquals(true, Bitmap32.matches(bitmap, expectedBitmap))
+    }
+
+    @Test
 	fun png32Encoder() = suspendTestNoBrowser {
 		val bitmap = resourcesVfs["kotlin24.png"].readBitmapNoNative(imageFormats)
 		val data = PNG.encode(bitmap)

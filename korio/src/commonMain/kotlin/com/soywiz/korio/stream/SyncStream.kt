@@ -383,6 +383,9 @@ fun SyncStream.readSlice(length: Long): SyncStream = sliceWithSize(position, len
 fun SyncStream.readStream(length: Int): SyncStream = readSlice(length.toLong())
 fun SyncStream.readStream(length: Long): SyncStream = readSlice(length)
 
+fun SyncStream.readFastByteArrayInputStream(length: Int): FastByteArrayInputStream
+    = FastByteArrayInputStream(readBytes(length))
+
 fun SyncInputStream.readStringz(charset: Charset = UTF8, zero: Byte = 0): String {
 	val buf = ByteArrayBuilder()
 	return bytesTempPool.alloc { temp ->
