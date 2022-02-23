@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.cg.*
 import com.soywiz.korio.async.*
@@ -9,16 +10,23 @@ import platform.CoreFoundation.*
 import platform.CoreGraphics.*
 import platform.Foundation.*
 import platform.ImageIO.*
+import platform.OpenGLCommon.*
+import platform.posix.*
 import kotlin.native.concurrent.*
 
 // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_context/dq_context.html#//apple_ref/doc/uid/TP30001066-CH203-BCIBHHBB
 @ThreadLocal
-actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
+actual val nativeImageFormatProvider: NativeImageFormatProvider = CGNativeImageFormatProvider
+//actual val nativeImageFormatProvider: NativeImageFormatProvider = NSNativeImageFormatProvider
+
+/*
+object NSNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     override fun createBitmapNativeImage(bmp: Bitmap) = CoreGraphicsNativeImage(bmp.toBMP32().premultipliedIfRequired())
 
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
         val premultiplied = props.premultiplied
+
         data class Info(val data: ByteArray, val premultiplied: Boolean)
         return executeInImageIOWorker { worker ->
             worker.execute(
@@ -80,3 +88,4 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
         }.wrapNativeExt(props)
     }
 }
+*/

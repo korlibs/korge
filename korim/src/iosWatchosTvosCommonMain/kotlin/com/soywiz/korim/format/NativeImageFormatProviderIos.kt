@@ -12,7 +12,11 @@ import platform.posix.*
 import kotlin.native.concurrent.*
 
 @ThreadLocal
-actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
+//actual val nativeImageFormatProvider: NativeImageFormatProvider = UIImageNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider = CGNativeImageFormatProvider
+
+/*
+object UIImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     override fun createBitmapNativeImage(bmp: Bitmap) = CoreGraphicsNativeImage(bmp.toBMP32().premultipliedIfRequired())
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
 
@@ -76,3 +80,4 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
         }.wrapNativeExt(props)
     }
 }
+*/
