@@ -66,9 +66,9 @@ object TGA : ImageFormat("tga") {
 	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
 		val info = readHeader(s)
 		val format = when (info.bitsPerPixel) {
-			24 -> RGB
-			32 -> RGBA
-			else -> TODO("Not a RGBA tga")
+			24 -> BGR
+            32 -> BGRA
+			else -> TODO("Not a RGB/RGBA tga")
 		}
 		val out = Bitmap32(info.width, info.height).writeDecoded(format, s.readBytes(info.area * info.bytes))
 		if (info.flipY) out.flipY()

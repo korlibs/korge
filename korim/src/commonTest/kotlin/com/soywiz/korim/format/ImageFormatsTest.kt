@@ -76,10 +76,22 @@ class ImageFormatsTest {
 	@Test
 	fun tga() = suspendTestNoBrowser {
 		val bitmap = resourcesVfs["kotlin.tga"].readBitmapNoNative(imageFormats)
+        val expectedBitmap = resourcesVfs["kotlin24.png"].readBitmapNoNative(imageFormats)
 		assertEquals("Bitmap32(190, 190)", bitmap.toString())
+        //bitmap.showImageAndWait()
+        assertEquals(true, Bitmap32.matches(bitmap, expectedBitmap))
 	}
 
-	@Test
+    @Test
+    fun tga32() = suspendTestNoBrowser {
+        val bitmap = resourcesVfs["kotlin32.tga"].readBitmapNoNative(imageFormats)
+        val expectedBitmap = resourcesVfs["kotlin32.png"].readBitmapNoNative(imageFormats)
+        assertEquals("Bitmap32(190, 190)", bitmap.toString())
+        //bitmap.showImageAndWait()
+        assertEquals(true, Bitmap32.matches(bitmap, expectedBitmap))
+    }
+
+    @Test
 	fun ico() = suspendTestNoBrowser {
 		val bitmaps = resourcesVfs["icon.ico"].readBitmapListNoNative(imageFormats)
 		assertEquals(
