@@ -76,8 +76,8 @@ object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
                                 CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
                             }
 
-                            val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
-                            //val colorSpace = CGColorSpaceCreateDeviceRGB()
+                            //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
+                            val colorSpace = CGColorSpaceCreateDeviceRGB()
                             try {
                                 val iwidth = CGImageGetWidth(cgImage).toInt()
                                 val iheight = CGImageGetHeight(cgImage).toInt()
