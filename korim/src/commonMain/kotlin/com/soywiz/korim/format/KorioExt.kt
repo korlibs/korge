@@ -104,15 +104,15 @@ suspend fun AsyncInputStream.readBitmap(
 suspend fun VfsFile.readBitmapInfo(formats: ImageFormat): ImageInfo? =
 	formats.decodeHeader(this.readAsSyncStream())
 
-suspend fun VfsFile.readBitmapOptimized(formats: ImageFormat = RegisteredImageFormats, premultiplied: Boolean = true): Bitmap {
-	try {
-		return nativeImageFormatProvider.decode(this, premultiplied)
-	} catch (t: Throwable) {
+suspend fun VfsFile.readBitmapOptimized(formats: ImageFormat = RegisteredImageFormats, premultiplied: Boolean = true, props: ImageDecodingProps = ImageDecodingProps()): Bitmap {
+    return try {
+        nativeImageFormatProvider.decode(this, props.copy(premultiplied = premultiplied))
+    } catch (t: Throwable) {
         if (t !is FileNotFoundException) {
             t.printStackTrace()
         }
-		return this.readBitmap(formats)
-	}
+        this.readBitmap(formats)
+    }
 }
 
 suspend fun VfsFile.readBitmap(
@@ -121,7 +121,7 @@ suspend fun VfsFile.readBitmap(
 ): Bitmap = when {
     nativeImageLoadingEnabled -> {
         try {
-            nativeImageFormatProvider.decode(this)
+            nativeImageFormatProvider.decode(this, props)
         } catch (e: Throwable) {
             if (e !is FileNotFoundException) {
                 Console.error("Couldn't read native image: $e")
