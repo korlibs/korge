@@ -5,6 +5,8 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.*
+import kotlin.math.*
 
 abstract class ImageFormatWithContainer(vararg exts: String) : ImageFormat(*exts) {
     override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer = TODO()
@@ -74,11 +76,26 @@ data class ImageDecodingProps(
     val width: Int? = null,
     val height: Int? = null,
     val premultiplied: Boolean = true,
-    // Requested but not enforced
-    val requestedMaxWidth: Int? = null,
-    val requestedMaxHeight: Int? = null,
+    // Requested but not enforced. Max width and max height
+    val requestedMaxSize: Int? = null,
     override var extra: ExtraType = null
 ) : Extra {
+
+    // https://developer.android.com/reference/android/graphics/BitmapFactory.Options#inSampleSize
+    fun getSampleSize(originalWidth: Int, originalHeight: Int): Int {
+        var sampleSize = 1
+        var width = originalWidth
+        var height = originalHeight
+        val maxWidth = max(1, requestedMaxSize ?: originalWidth)
+        val maxHeight = max(1, requestedMaxSize ?: originalHeight)
+        while (width > maxWidth || height > maxHeight) {
+            width /= 2
+            height /= 2
+            sampleSize *= 2
+        }
+        return sampleSize
+    }
+
     companion object {
         val DEFAULT_PREMULT = ImageDecodingProps(premultiplied = true)
         val DEFAULT = ImageDecodingProps(premultiplied = false)
