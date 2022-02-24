@@ -1,6 +1,6 @@
 package com.soywiz.korvi
 
-import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
 import com.soywiz.korau.sound.*
@@ -8,6 +8,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.stream.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korvi.internal.*
 import kotlinx.coroutines.Job
 import kotlin.coroutines.coroutineContext
@@ -17,10 +18,30 @@ fun KorviVideoLL(stream: AsyncStream): KorviVideoLL = korviInternal.createContai
 
 open class KorviVideo : BaseKorviSeekable {
     class Frame(
-        var data: Bitmap,
+        var coords: BitmapCoords,
         val position: HRTimeSpan,
-        val duration: HRTimeSpan
-    )
+        val duration: HRTimeSpan,
+    ) : Extra by Extra.Mixin() {
+        @Deprecated("This doesn't have into account the transformed coordinates")
+        val data get() = coords.base
+
+        companion object {
+            operator fun invoke(
+                data: BitmapCoords,
+                position: HRTimeSpan,
+                duration: HRTimeSpan,
+                transform: Matrix3D
+            ): Frame = Frame(data.transformed(transform), position, duration)
+
+            // Soft deprecation of this
+            operator fun invoke(
+                data: Bitmap,
+                position: HRTimeSpan,
+                duration: HRTimeSpan,
+                transform: Matrix3D = data.transformMat
+            ): Frame = Frame(data.slice(), position, duration, transform)
+        }
+    }
 
     val onVideoFrame = Signal<Frame>()
     val onComplete = Signal<Unit>()
