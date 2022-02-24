@@ -20,7 +20,7 @@ Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[49152])
 draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
-::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_TexTransformMat0, u_Tex1, u_TexTransformMat1, u_Tex2, u_TexTransformMat2, u_Tex3, u_TexTransformMat3])
+::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
 ::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
@@ -42,30 +42,6 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_TexTransformMat0) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_TexTransformMat1) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_TexTransformMat2) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_TexTransformMat3) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -84,7 +60,7 @@ Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[49152])
 draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
-::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_TexTransformMat0, u_Tex1, u_TexTransformMat1, u_Tex2, u_TexTransformMat2, u_Tex3, u_TexTransformMat3, u_Mask, u_Reversed, u_Ratio, u_Smooth])
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_Mask, u_Reversed, u_Ratio, u_Smooth])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=100, y=0, width=600, height=600)
 ::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
@@ -106,30 +82,6 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_TexTransformMat0) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_TexTransformMat1) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_TexTransformMat2) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_TexTransformMat3) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
 ::draw.uniform.Uniform(effectTextureSize) = [128.0, 128.0]
 ::draw.uniform.Uniform(u_Ratio) = [0.5, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_Mask) = TextureUnit(texture=Texture[2], linear=true)

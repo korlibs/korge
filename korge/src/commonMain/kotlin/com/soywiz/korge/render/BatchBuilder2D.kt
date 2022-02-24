@@ -172,8 +172,6 @@ class BatchBuilder2D constructor(
 			DefaultShaders.u_ProjMat to projMat,
 			DefaultShaders.u_ViewMat to viewMat,
             *Array(maxTextures) { u_TexN[it] to textureUnitN[it] },
-            // @TODO: Do we need this?
-            *Array(maxTextures) { DefaultShaders.u_TexTransformMatN[it] to texTransformMat }
 		)
 	}
 
@@ -740,8 +738,7 @@ class BatchBuilder2D constructor(
 		fun buildTextureLookupFragment(premultiplied: Boolean, preadd: Boolean = false) = FragmentShader {
 			DefaultShaders.apply {
                 IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-                    //SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
-                    SET(out, texture2D(u_TexN[n], (u_TexTransformMatN[n] * vec4(v_Tex["xy"], 0f.lit, 1f.lit))["xy"]))
+                    SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
                 }
                 //for (n in 0 until BB_MAX_TEXTURES) {
                 //    IF(v_TexIndex eq (n.toFloat()).lit) {

@@ -249,8 +249,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private var tempBitmap: Bitmap? = null
         var ready: Boolean = false; private set
         val texId = lastTextureId++
-        @KoragExperimental
-        var transform: Matrix3D = Matrix3D()
 
         init {
             createdTextureCount++
@@ -891,10 +889,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }, FragmentShader {
             DefaultShaders.apply {
                 //out setTo vec4(1f, 1f, 0f, 1f)
-                //out setTo texture2D(u_Tex, v_Tex["xy"])
-                // @TODO: Do we really need u_TexTransformMatN? If so, can we do this in the Vertex Shader instead so it is cheaper?
-                // @TODO: Alternative: can we use a custom shader for this instead?
-                out setTo texture2D(u_Tex, u_TexTransformMatN[0] * vec4(v_Tex["xy"], 0f.lit, 1f.lit))
+                out setTo texture2D(u_Tex, v_Tex["xy"])
             }
         })
         val uniforms = UniformValues()
@@ -910,8 +905,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         fun draw(tex: Texture, left: Float, top: Float, right: Float, bottom: Float) {
             //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
             //uniforms[DefaultShaders.u_Tex] = TextureUnit(tex)
-            // @TODO: Do we really need u_TexTransformMatN?
-            uniforms[DefaultShaders.u_TexTransformMatN[0]] = tex.transform
 
             val texLeft = -1f
             val texRight = +1f

@@ -34,6 +34,7 @@ abstract class Bitmap(
 
     /** Associated transformation matrix that can be used by other engines. Experimental. Might be defined later as an extrinsic function where required. */
     @KorimExperimental
+    @Deprecated("Not used in korge anymore. Use BmpCoords.transformed(Matrix3D) to get texture coordinates transformed")
     var transformMat: Matrix3D = Matrix3D()
 
     var dirtyRegion: Rectangle? = null
