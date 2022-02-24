@@ -29,7 +29,9 @@ import kotlin.random.*
 
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false) {
     //mainRenderText()
-    mainTextMetrics()
+    //mainTextMetrics()
+    //mainBitmapTexId()
+    mainKorviSample()
 
     /*
     val atlas = MutableAtlasUnit(4096)
