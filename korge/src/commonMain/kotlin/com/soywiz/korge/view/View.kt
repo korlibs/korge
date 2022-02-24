@@ -1694,6 +1694,12 @@ fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateCompone
     }.attach()
 }
 
+inline fun <T : View> T.filters(vararg filters: Filter): T {
+    filters.fastForEach { addFilter(it) }
+    return this
+}
+
+
 /**
  * Returns the number of ancestors of this view.
  * Views without parents return 0.
