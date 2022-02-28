@@ -59,6 +59,7 @@ open class ViewsForTesting(
                     super.log(str, kind)
                 }
             }
+            override fun toString(): String = "ViewsForTesting.LogAG"
         }
     }
 

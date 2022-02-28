@@ -968,6 +968,8 @@ abstract class AGOpengl : AG() {
             gl.texParameteri(forcedTexTarget, gl.TEXTURE_MIN_FILTER, min)
             gl.texParameteri(forcedTexTarget, gl.TEXTURE_MAG_FILTER, mag)
         }
+
+        override fun toString(): String = "AGOpengl.GlTexture($tex)"
     }
 
     override fun readColor(bitmap: Bitmap32) {

@@ -27,6 +27,8 @@ class TextureBase(
     fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
         base?.upload(bmp, mipmaps)
     }
+
+    override fun toString(): String = "TextureBase($base)"
 }
 
 interface BmpCoordsWithTextureBase : BmpCoords {

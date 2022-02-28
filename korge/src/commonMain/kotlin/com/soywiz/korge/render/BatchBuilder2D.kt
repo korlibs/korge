@@ -242,6 +242,9 @@ class BatchBuilder2D constructor(
 		colorMul: RGBA, colorAdd: ColorAdd,
         texIndex: Int = currentTexIndex
 	) {
+        //println("drawQuadFast[${ag.currentRenderBuffer}, renderingToTexture=${ag.renderingToTexture}]: ($x0,$y0)-($x2,$y2) tex=$tex")
+        //println("viewMat=$viewMat, projMat=$projMat")
+
         ensure(6, 4)
         addQuadIndices()
         var vp = vertexPos
@@ -784,10 +787,8 @@ class BatchBuilder2D constructor(
     )
 
     fun updateStandardUniforms() {
+        //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
         if (flipRenderTexture && ag.renderingToTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
-        // @TODO: Do we need this?
-        } else if (ag.flipRender) {
             projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
         } else {
             projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
@@ -818,6 +819,7 @@ class BatchBuilder2D constructor(
 			val realFactors = if (ag.renderingToTexture) factors.toRenderImageIntoFbo() else factors
 
 			//println("RENDER: $realFactors")
+            //println("DRAW: $uniforms")
 
 			ag.drawV2(
                 vertexData = vertexData,
