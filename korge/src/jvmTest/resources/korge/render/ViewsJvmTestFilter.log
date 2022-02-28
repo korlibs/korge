@@ -22,8 +22,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.015625, 0, 0, -1 ],
-  [ 0, 0.015625, 0, -1 ],
+  [ 0.03125, 0, 0, -1 ],
+  [ 0, 0.03125, 0, -1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -63,8 +63,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.015625, 0, 0, -1 ],
-  [ 0, 0.015625, 0, -1 ],
+  [ 0.03125, 0, 0, -1 ],
+  [ 0, 0.03125, 0, -1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -78,7 +78,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(effectTextureSize) = [128.0, 128.0]
+::draw.uniform.Uniform(effectTextureSize) = [64.0, 64.0]
 ::draw.uniform.Uniform(colorMatrix) = Matrix3D(
   [ 0.33, 0.59, 0.11, 0 ],
   [ 0.33, 0.59, 0.11, 0 ],
@@ -95,9 +95,9 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 0, 2]
 ::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[12,0], a_Tex[0.09375,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[12,12], a_Tex[0.09375,0.09375], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[0,12], a_Tex[0,0.09375], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[12,0], a_Tex[0.1875,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[12,12], a_Tex[0.1875,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,12], a_Tex[0,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 createTexture():2
 createRenderBuffer():3
 RenderBuffer[3].setSize(64, 64)
@@ -114,8 +114,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.015625, 0, 0, -1 ],
-  [ 0, 0.015625, 0, -1 ],
+  [ 0.03125, 0, 0, -1 ],
+  [ 0, 0.03125, 0, -1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -129,7 +129,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(effectTextureSize) = [128.0, 128.0]
+::draw.uniform.Uniform(effectTextureSize) = [64.0, 64.0]
 ::draw.uniform.Uniform(weights) = Matrix3D(
   [ -1, -1, -1, 0 ],
   [ -1, 8, -1, 0 ],
@@ -147,9 +147,9 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 0, 2]
 ::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[12,0], a_Tex[0.09375,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[12,12], a_Tex[0.09375,0.09375], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[0,12], a_Tex[0,0.09375], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[12,0], a_Tex[0.1875,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[12,12], a_Tex[0.1875,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,12], a_Tex[0,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 createTexture():3
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
@@ -162,8 +162,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.015625, 0, 0, -1 ],
-  [ 0, -0.015625, 0, 1 ],
+  [ 0.0015625, 0, 0, -1 ],
+  [ 0, -0.0027777778, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -184,8 +184,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 0, 2]
 ::draw.vertex[0]: a_Pos[-1,-1], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[12,-1], a_Tex[0.1015625,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[12,12], a_Tex[0.1015625,0.1015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[-1,12], a_Tex[0,0.1015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[12,-1], a_Tex[0.203125,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[12,12], a_Tex[0.203125,0.203125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[-1,12], a_Tex[0,0.203125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 disposeTemporalPerFrameStuff()
 flipInternal()

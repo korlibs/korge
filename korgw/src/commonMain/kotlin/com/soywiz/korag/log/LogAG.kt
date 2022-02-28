@@ -76,7 +76,10 @@ open class LogBaseAG(
 	}
 
 	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : RenderBuffer() {
-        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) = log("$this.setSize($width, $height)", LogBaseAG.Kind.RENDER_BUFFER)
+        override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+            super.setSize(x, y, width, height, fullWidth, fullHeight)
+            log("$this.setSize($width, $height)", LogBaseAG.Kind.RENDER_BUFFER)
+        }
         override fun set() = log("$this.set()", LogBaseAG.Kind.RENDER_BUFFER)
 		override fun close() = log("$this.close()", LogBaseAG.Kind.RENDER_BUFFER)
 		override fun toString(): String = "RenderBuffer[$id]"

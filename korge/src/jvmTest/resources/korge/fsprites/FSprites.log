@@ -28,8 +28,8 @@ draw(vertexCount=4, instances=10, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.015625, 0, 0, -1 ],
-  [ 0, -0.015625, 0, 1 ],
+  [ 0.0015625, 0, 0, -1 ],
+  [ 0, -0.0027777778, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
