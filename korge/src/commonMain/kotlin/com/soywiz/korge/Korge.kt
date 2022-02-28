@@ -161,8 +161,7 @@ object Korge {
             //val views = Views(gameWindow.getCoroutineDispatcherWithCurrentContext() + SupervisorJob(), ag, injector, input, timeProvider, stats, gameWindow)
             val views: Views = Views(
                 coroutineContext = coroutineContext + gameWindow.coroutineDispatcher + AsyncInjectorContext(injector) + SupervisorJob(),
-                //ag = if (debugAg) PrintAG() else ag,
-                ag = ag,
+                ag = if (debugAg) PrintAG() else ag,
                 injector = injector,
                 input = input,
                 timeProvider = timeProvider,
