@@ -1,13 +1,132 @@
 package com.soywiz.korag.log
 
 import com.soywiz.kds.*
+import com.soywiz.kgl.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.*
+
+/*
+open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agBase {
+    override val nativeComponent: Any get() = agBase
+
+    override fun contextLost() {
+        agBase.contextLost()
+        agExtra.contextLost()
+    }
+
+    override val maxTextureSize: Size get() = agBase.maxTextureSize
+    override val devicePixelRatio: Double get() = agBase.devicePixelRatio
+    override val pixelsPerInch: Double get() = agBase.pixelsPerInch
+
+    override fun beforeDoRender() {
+        agBase.beforeDoRender()
+        agExtra.beforeDoRender()
+    }
+
+    override fun offscreenRendering(callback: () -> Unit) {
+        agBase.offscreenRendering {
+            agExtra.offscreenRendering {
+                callback()
+            }
+        }
+    }
+
+    override fun repaint() {
+        agBase.repaint()
+        agExtra.repaint()
+    }
+
+    override fun resized(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+        agBase.resized(x, y, width, height, fullWidth, fullHeight)
+        agExtra.resized(x, y, width, height, fullWidth, fullHeight)
+    }
+
+    override fun dispose() {
+        agBase.dispose()
+        agExtra.dispose()
+    }
+
+    override val backWidth: Int get() = agBase.backWidth
+    override val backHeight: Int get() = agBase.backHeight
+
+    override fun createTexture(premultiplied: Boolean): Texture {
+        return super.createTexture(premultiplied)
+    }
+
+    inner class ComposedTexture : AG.Texture() {
+
+    }
+
+    override fun createTexture(targetKind: TextureTargetKind, init: Texture.(gl: KmlGl) -> Unit): Texture {
+        return ComposedTexture()
+    }
+
+    override fun createBuffer(kind: Buffer.Kind): Buffer {
+        return super.createBuffer(kind)
+    }
+
+    override fun draw(batch: Batch) {
+        agBase.draw(batch)
+        agExtra.draw(batch)
+    }
+
+    override fun disposeTemporalPerFrameStuff() {
+        super.disposeTemporalPerFrameStuff()
+    }
+
+    override fun createMainRenderBuffer(): BaseRenderBuffer {
+        return super.createMainRenderBuffer()
+    }
+
+    override fun createRenderBuffer(): RenderBuffer {
+        return super.createRenderBuffer()
+    }
+
+    override fun flipInternal() {
+        agBase.flipInternal()
+        agExtra.flipInternal()
+    }
+
+    override fun startFrame() {
+        agBase.startFrame()
+        agExtra.startFrame()
+    }
+
+    override fun clear(
+        color: RGBA,
+        depth: Float,
+        stencil: Int,
+        clearColor: Boolean,
+        clearDepth: Boolean,
+        clearStencil: Boolean
+    ) {
+        agBase.clear(color, depth, stencil, clearColor, clearDepth, clearStencil)
+        agExtra.clear(color, depth, stencil, clearColor, clearDepth, clearStencil)
+    }
+
+    override fun readColor(bitmap: Bitmap32) {
+        agBase.readColor(bitmap)
+        agExtra.readColor(bitmap)
+    }
+
+    override fun readDepth(width: Int, height: Int, out: FloatArray) {
+        agBase.readDepth(width, height, out)
+        agExtra.readDepth(width, height, out)
+    }
+
+    override fun readColorTexture(texture: Texture, width: Int, height: Int) {
+        agBase.readColorTexture(texture, width, height)
+        agExtra.readColorTexture(texture, width, height)
+    }
+}
+*/
 
 open class PrintAG(
     width: Int = 640,
