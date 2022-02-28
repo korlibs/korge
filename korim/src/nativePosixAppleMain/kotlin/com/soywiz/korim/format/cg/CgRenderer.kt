@@ -44,7 +44,8 @@ class CoreGraphicsNativeImage(bitmap: Bitmap32) : BitmapNativeImage(bitmap) {
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(CoreGraphicsRenderer(bitmap, antialiasing))
 }
 
-private inline fun <T> cgKeepState(ctx: CGContextRef?, callback: () -> T): T {
+@PublishedApi
+internal inline fun <T> cgKeepState(ctx: CGContextRef?, callback: () -> T): T {
     CGContextSaveGState(ctx)
     try {
         return callback()
