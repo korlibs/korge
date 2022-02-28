@@ -39,7 +39,7 @@ fun Project.configureJvm() {
 		project.afterEvaluate {
 			val beforeJava9 = System.getProperty("java.version").startsWith("1.")
 		    if (!beforeJava9) task.jvmArgs(project.korge.javaAddOpens)
-			task.main = korge.realJvmMainClassName
+			task.mainClass.set(korge.realJvmMainClassName)
 		}
 	}
 
@@ -48,7 +48,7 @@ fun Project.configureJvm() {
 			project.addTask<KorgeJavaExec>("runJvm${entry.name.capitalize()}", group = GROUP_KORGE) { task ->
 				group = GROUP_KORGE_RUN
 				dependsOn("jvmMainClasses")
-				task.main = entry.jvmMainClassName
+				task.mainClass.set(entry.jvmMainClassName)
 			}
 		}
 	}
@@ -169,7 +169,7 @@ open class PatchedProGuardTask : ProGuardTask() {
 private fun Project.addProguard() {
 	// packageJvmFatJar
 	val packageJvmFatJar = project.addTask<org.gradle.jvm.tasks.Jar>("packageJvmFatJar", group = GROUP_KORGE) { task ->
-		task.baseName = "${project.name}-all"
+        task.archiveBaseName.set("${project.name}-all")
 		task.group = GROUP_KORGE_PACKAGE
 		task.exclude(
 			"com/sun/jna/aix-ppc/**",
@@ -250,8 +250,8 @@ private fun Project.addProguard() {
 			task.keep("class ${project.korge.realJvmMainClassName} { *; }")
 			task.keep("class org.jcodec.** { *; }")
 
-			if (runJvm.main?.isNotBlank() == true) {
-				task.keep("""public class ${runJvm.main} { public static void main(java.lang.String[]); }""")
+			if (runJvm.mainClass.get().isNotBlank()) {
+				task.keep("""public class ${runJvm.mainClass.get()} { public static void main(java.lang.String[]); }""")
 			}
 		}
 
