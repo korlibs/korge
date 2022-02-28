@@ -1,0 +1,537 @@
+createBuffer(VERTEX):0
+createBuffer(VERTEX):1
+createBuffer(INDEX):2
+createBuffer(VERTEX):3
+RenderBuffer[0].setSize(1280, 720)
+createMainRenderBuffer():0
+RenderBuffer[0].set()
+clear(#00000000, 1.0, 0, true, true, true)
+disposeTemporalPerFrameStuff()
+flipInternal()
+RenderBuffer[0].set()
+clear(#00000000, 1.0, 0, true, true, true)
+createRenderBuffer():1
+RenderBuffer[1].setSize(512, 512)
+RenderBuffer[1].set()
+clear(#00000000, 1.0, 0, true, true, true)
+createTexture():0
+Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=512, height=512), 512, 512)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 0.5, 0, 0, 0 ],
+  [ 0, 0.5, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[1024,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[1024,1024], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,1024], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[0].set()
+createTexture():1
+createRenderBuffer():2
+RenderBuffer[2].setSize(512, 512)
+RenderBuffer[2].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.ERROR.Unexpected:[Uniform(effectTextureSize)]
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[512,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[512,512], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,512], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[0].set()
+createTexture():2
+createRenderBuffer():3
+RenderBuffer[3].setSize(512, 512)
+RenderBuffer[3].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex, effectTextureSize, colorMatrix, blendRatio])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.uniform.Uniform(colorMatrix) = Matrix3D(
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(blendRatio) = [1.0, 0.0, 0.0, 0.0]
+::draw.ERROR.Missing:[Uniform(u_Tex)]
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[512,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[512,512], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,512], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[0].set()
+createTexture():3
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=2560, height=1440)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0015625, 0, 0, -1 ],
+  [ 0, -0.0027777778, 0, 1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[1024,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[1024,1024], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,1024], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+disposeTemporalPerFrameStuff()
+flipInternal()
+RenderBuffer[0].set()
+clear(#00000000, 1.0, 0, true, true, true)
+RenderBuffer[1].setSize(512, 512)
+RenderBuffer[1].set()
+clear(#00000000, 1.0, 0, true, true, true)
+RenderBuffer[2].setSize(512, 512)
+RenderBuffer[2].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 0.5, 0, 0, 0 ],
+  [ 0, 0.5, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[1024,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[1024,1024], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,1024], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[1].set()
+RenderBuffer[3].setSize(512, 512)
+RenderBuffer[3].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 0.5, 0, 0, 0 ],
+  [ 0, 0.5, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.ERROR.Unexpected:[Uniform(effectTextureSize)]
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[512,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[512,512], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,512], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[1].set()
+createRenderBuffer():4
+RenderBuffer[4].setSize(512, 512)
+RenderBuffer[4].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex, effectTextureSize, colorMatrix, blendRatio])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 0.5, 0, 0, 0 ],
+  [ 0, 0.5, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.uniform.Uniform(colorMatrix) = Matrix3D(
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(blendRatio) = [1.0, 0.0, 0.0, 0.0]
+::draw.ERROR.Missing:[Uniform(u_Tex)]
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[512,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[512,512], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,512], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[1].set()
+createTexture():4
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=null
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 0.5, 0, 0, 0 ],
+  [ 0, 0.5, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[4], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[1024,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[1024,1024], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,1024], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+ViewsForTesting.LogAG.readBitmap(Bitmap32(512, 512))
+RenderBuffer[0].set()
+RenderBuffer[1].setSize(512, 512)
+RenderBuffer[1].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 0.5, 0, 0, 0 ],
+  [ 0, 0.5, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[1024,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[1024,1024], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,1024], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[0].set()
+RenderBuffer[2].setSize(512, 512)
+RenderBuffer[2].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.ERROR.Unexpected:[Uniform(effectTextureSize)]
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[512,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[512,512], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,512], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[0].set()
+RenderBuffer[3].setSize(512, 512)
+RenderBuffer[3].set()
+clear(#00000000, 1.0, 0, true, true, true)
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=program, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex, effectTextureSize, colorMatrix, blendRatio])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=512, height=512)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.00390625, 0, 0, -1 ],
+  [ 0, 0.00390625, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
+::draw.uniform.Uniform(colorMatrix) = Matrix3D(
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0.33, 0.59, 0.11, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(blendRatio) = [1.0, 0.0, 0.0, 0.0]
+::draw.ERROR.Missing:[Uniform(u_Tex)]
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[512,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[512,512], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,512], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+RenderBuffer[0].set()
+Buffer[0].afterSetMem(mem[393216])
+Buffer[1].afterSetMem(mem[4])
+Buffer[2].afterSetMem(mem[49152])
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.Premultiplied.Tinted, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=2560, height=1440)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0015625, 0, 0, -1 ],
+  [ 0, -0.0027777778, 0, 1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[1024,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[1024,1024], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,1024], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+disposeTemporalPerFrameStuff()
+flipInternal()
