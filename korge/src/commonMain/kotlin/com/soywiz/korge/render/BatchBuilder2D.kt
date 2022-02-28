@@ -144,9 +144,6 @@ class BatchBuilder2D constructor(
 
 	private val projMat = Matrix3D()
 
-    @KorgeExperimental
-    private val texTransformMat = Matrix3D()
-
     @KorgeInternal
 	val viewMat = Matrix3D()
     @KorgeInternal
