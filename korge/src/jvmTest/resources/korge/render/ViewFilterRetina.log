@@ -253,8 +253,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 0, 1 ],
 )
 ::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
-  [ 0.5, 0, 0, 0 ],
-  [ 0, 0.5, 0, 0 ],
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -296,8 +296,8 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 0, 1 ],
 )
 ::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
-  [ 0.5, 0, 0, 0 ],
-  [ 0, 0.5, 0, 0 ],
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )

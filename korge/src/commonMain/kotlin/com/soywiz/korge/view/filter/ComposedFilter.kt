@@ -46,13 +46,17 @@ class ComposedFilter(val filters: List<Filter>) : Filter {
 		blendMode: BlendMode,
 		level: Int
 	) {
+        //println("ComposedFilter.renderIndex: $level")
 		val filter = filters[filters.size - level - 1]
 		val newTexWidth = (texWidth + filter.border)
 		val newTexHeight = (texHeight + filter.border)
 		// @TODO: We only need two render textures
 		ctx.renderToTexture(newTexWidth, newTexHeight, {
-			filter.render(ctx, identity, texture, it.width, it.height, renderColorAdd, renderColorMul, blendMode)
+            ctx.batch.setViewMatrixTemp(identity) {
+                filter.render(ctx, identity, texture, it.width, it.height, renderColorAdd, renderColorMul, blendMode)
+            }
 		}, { newtex ->
+            //println("newtex=${newtex.width}x${newtex.height}")
 			if (level > 0) {
 				renderIndex(ctx, matrix, newtex, newtex.width, newtex.height, renderColorAdd, renderColorMul, blendMode, level - 1)
 			} else {
