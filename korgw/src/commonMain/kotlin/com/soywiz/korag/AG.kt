@@ -249,6 +249,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private var tempBitmap: Bitmap? = null
         var ready: Boolean = false; private set
         val texId = lastTextureId++
+        open val nativeTexId: Int get() = texId
 
         init {
             createdTextureCount++
@@ -281,6 +282,13 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             this.requestMipmaps = mipmaps
         }
 
+        fun uploadAndBindEnsuring(bmp: Bitmap?, mipmaps: Boolean = false): Texture =
+            upload(bmp, mipmaps).bindEnsuring()
+        fun uploadAndBindEnsuring(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): Texture =
+            upload(bmp, mipmaps).bindEnsuring()
+        fun uploadAndBindEnsuring(source: BitmapSourceBase, mipmaps: Boolean = false): Texture =
+            upload(source, mipmaps).bindEnsuring()
+
         protected open fun uploadedSource() {
         }
 
@@ -294,11 +302,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             uploaded = true
         }
 
-        fun bindEnsuring() {
+        fun bindEnsuring(): Texture {
             bind()
-            if (isFbo) return
+            if (isFbo) return this
             val source = this.source
-            if (uploaded) return
+            if (uploaded) return this
 
             if (!generating) {
                 generating = true
@@ -324,6 +332,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
                 tempBitmap = null
                 ready = true
             }
+            return this
         }
 
         open fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {

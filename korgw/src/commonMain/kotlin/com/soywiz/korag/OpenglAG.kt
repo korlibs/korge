@@ -830,6 +830,8 @@ abstract class AGOpengl : AG() {
                 return texIds.getInt(0)
             }
 
+        override val nativeTexId: Int get() = tex
+
         fun createBufferForBitmap(bmp: Bitmap?): FBuffer? = when (bmp) {
             null -> null
             is NativeImage -> unsupported("Should not call createBufferForBitmap with a NativeImage")
