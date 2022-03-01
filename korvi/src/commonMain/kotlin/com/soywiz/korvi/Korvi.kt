@@ -13,10 +13,12 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korvi.internal.*
 import kotlinx.coroutines.Job
 import kotlin.coroutines.coroutineContext
+import kotlin.native.concurrent.*
 
 /** Associated transformation matrix that can be used by other engines. Experimental. Might be defined later as an extrinsic function where required. */
 @KorimExperimental
 @Deprecated("Not used in korge anymore. Use BmpCoords.transformed(Matrix3D) to get texture coordinates transformed")
+@ThreadLocal
 var Bitmap.transformMat: Matrix3D by Extra.Property { Matrix3D() }
 
 // Simple function to be used from swift, js or java if required
