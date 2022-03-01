@@ -32,8 +32,8 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), cli
 ) {
     //mainRenderText()
     //mainTextMetrics()
-    //mainBitmapTexId()
-    mainFiltersSample()
+    mainBitmapTexId()
+    //mainFiltersSample()
     //mainKorviSample()
 
     /*
