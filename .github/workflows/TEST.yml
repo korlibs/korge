@@ -28,6 +28,8 @@ jobs:
       run: ./gradlew jvmTest
     - name: Testing Node JS
       run: ./gradlew jsNodeTest
+    - name: Try building Android
+      run: ./gradlew publishAndroidPublicationToMavenLocal
     #- name: Test Report
     #  uses: dorny/test-reporter@v1
     #  if: success() || failure()

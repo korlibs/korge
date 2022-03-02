@@ -42,7 +42,7 @@ dependencies {
     add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
     add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
     if (hasAndroid) {
-        add("androidMainApi", "com.android.support:appcompat-v7:28.0.0")
+        add("androidMainApi", "androidx.appcompat:appcompat:1.3.0")
     }
 }
 
