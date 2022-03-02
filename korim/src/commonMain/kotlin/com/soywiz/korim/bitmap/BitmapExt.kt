@@ -63,3 +63,9 @@ fun Bitmap.resized(out: Bitmap, scale: ScaleMode, anchor: Anchor): Bitmap {
 
 fun Bitmap.resized(width: Int, height: Int, scale: ScaleMode, anchor: Anchor, native: Boolean = true): Bitmap =
     resized(if (native) NativeImage(width, height) else createWithThisFormat(width, height), scale, anchor)
+
+fun Bitmap.resizedUpTo(width: Int, height: Int, native: Boolean = true): Bitmap {
+    val rect = Rectangle(0, 0, width, height)
+        .place(this.width.toDouble(), this.height.toDouble(), Anchor.TOP_LEFT, ScaleMode.FIT)
+    return resized(rect.width.toInt(), rect.height.toInt(), ScaleMode.FILL, Anchor.TOP_LEFT, native)
+}
