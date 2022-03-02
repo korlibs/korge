@@ -16,7 +16,9 @@ import com.soywiz.korim.bitmap.trace.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
@@ -30,9 +32,10 @@ import kotlin.random.*
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false
     //, debugAg = true
 ) {
+    mainVectorRendering()
     //mainRenderText()
     //mainTextMetrics()
-    mainBitmapTexId()
+    //mainBitmapTexId()
     //mainFiltersSample()
     //mainKorviSample()
 
