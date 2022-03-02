@@ -2,6 +2,7 @@ import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.util.*
 import org.gradle.kotlin.dsl.kotlin
 import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.File
 
 buildscript {
@@ -26,11 +27,8 @@ buildscript {
 }
 
 plugins {
-    val kotlinVersion: String by project
-    val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
-
 	java
-    kotlin("multiplatform") //version realKotlinVersion
+    kotlin("multiplatform")
     signing
     `maven-publish`
 }
@@ -71,43 +69,6 @@ allprojects {
 	}
 }
 
-val enableKotlinNative: String by project
-val doEnableKotlinNative get() = enableKotlinNative == "true"
-
-val enableKotlinAndroid: String by project
-val doEnableKotlinAndroid get() = enableKotlinAndroid == "true"
-
-val enableKotlinMobile:String by project
-val doEnableKotlinMobile get() = enableKotlinMobile == "true"
-
-val enableKotlinRaspberryPi: String by project
-val doEnableKotlinRaspberryPi get() = enableKotlinRaspberryPi == "true"
-
-val KotlinTarget.isLinuxX64 get() = this.name == "linuxX64"
-val KotlinTarget.isLinuxArm32Hfp get() = this.name == "linuxArm32Hfp" && doEnableKotlinRaspberryPi
-val KotlinTarget.isLinux get() = isLinuxX64 || isLinuxArm32Hfp
-val KotlinTarget.isWin get() = this.name == "mingwX64"
-val KotlinTarget.isMacosX64 get() = this.name == "macosX64"
-val KotlinTarget.isMacosArm64 get() = this.name == "macosArm64"
-val KotlinTarget.isMacos get() = isMacosX64 || isMacosArm64
-val KotlinTarget.isIosArm64 get() = this.name == "iosArm64"
-val KotlinTarget.isIosX64 get() = this.name == "iosX64"
-val KotlinTarget.isIosSimulatorArm64 get() = this.name == "iosSimulatorArm64"
-val KotlinTarget.isIos get() = isIosArm64 || isIosX64 || isIosSimulatorArm64
-val KotlinTarget.isWatchosX86 get() = this.name == "watchosX86"
-val KotlinTarget.isWatchosArm32 get() = this.name == "watchosArm32"
-val KotlinTarget.isWatchosArm64 get() = this.name == "watchosArm64"
-val KotlinTarget.isWatchos get() = isWatchosX86 || isWatchosArm32 || isWatchosArm64
-val KotlinTarget.isTvosX64 get() = this.name == "tvosX64"
-val KotlinTarget.isTvosArm64 get() = this.name == "tvosArm64"
-val KotlinTarget.isTvos get() = isTvosX64 || isTvosArm64
-val KotlinTarget.isDesktop get() = isWin || isLinux || isMacos
-
-val isWindows get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
-val isMacos get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)
-val isArm get() = listOf("arm", "arm64", "aarch64").any { org.apache.tools.ant.taskdefs.condition.Os.isArch(it) }
-val isLinux get() = !isWindows && !isMacos
-
 fun guessAndroidSdkPath(): String? {
     val userHome = System.getProperty("user.home")
     return listOfNotNull(
@@ -136,32 +97,6 @@ kotlin {
     jvm { }
 }
 
-fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return when {
-        isWindows -> listOfNotNull(mingwX64())
-        isMacos -> listOf(
-            macosX64(), macosArm64(),
-            //linuxX64(),
-            //mingwX64(),
-            //linuxArm32Hfp(),
-        )
-        else -> listOfNotNull(
-            linuxX64(),
-            mingwX64(),
-            macosX64(), macosArm64(),
-            if (doEnableKotlinRaspberryPi) linuxArm32Hfp() else null
-        )
-    }
-}
-
-fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mobileTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return listOf(
-        iosX64(), iosArm64(), iosSimulatorArm64(),
-        //iosX64(), iosArm32(), iosArm64(), iosSimulatorArm64(),
-        //watchosX86(), watchosX64(), watchosArm32(), watchosArm64(), watchosSimulatorArm64(),
-        //tvosX64(), tvosArm64(), tvosSimulatorArm64(),
-    )
-}
 
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
 
@@ -318,8 +253,8 @@ subprojects {
             }
 
             val desktopAndMobileTargets = ArrayList<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget>().apply {
-                if (doEnableKotlinNative) addAll(nativeTargets())
-                if (doEnableKotlinMobile) addAll(mobileTargets())
+                if (doEnableKotlinNative) addAll(nativeTargets(project))
+                if (doEnableKotlinMobile) addAll(mobileTargets(project))
             }.toList()
 
             for (target in desktopAndMobileTargets) {
@@ -425,7 +360,7 @@ subprojects {
                     val macos by lazy { createPairSourceSet("macos", darwin) }
                     val mingw by lazy { createPairSourceSet("mingw", native) }
 
-                    val nativeTargets = nativeTargets()
+                    val nativeTargets = nativeTargets(project)
 
                     for (target in nativeTargets) {
                         val native = createPairSourceSet(target.name)
@@ -449,7 +384,7 @@ subprojects {
                         val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
                         val ios by lazy { createPairSourceSet("ios", iosTvos) }
 
-                        for (target in mobileTargets()) {
+                        for (target in mobileTargets(project)) {
                             val native = createPairSourceSet(target.name)
                             when (target.name) {
                                 "iosX64" -> native.dependsOn(ios)
@@ -790,7 +725,7 @@ samples {
         }
 
         if (doEnableKotlinNative) {
-            for (target in nativeTargets()) {
+            for (target in nativeTargets(project)) {
                 target.apply {
                     binaries {
                         executable {
@@ -827,7 +762,7 @@ samples {
                 }
             }
 
-            val nativeDesktopTargets = nativeTargets()
+            val nativeDesktopTargets = nativeTargets(project)
             val allNativeTargets = nativeDesktopTargets
 
             //for (target in nativeDesktopTargets) {
