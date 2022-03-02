@@ -291,7 +291,6 @@ fun Project.configureAndroidIndirect() {
                         listOf(
                             "org.gradle.jvmargs=-Xmx1536m",
                             "android.useAndroidX=true",
-                            "android.enableJetifier=true",
                         ).joinToString("\n")
                     )
 				}
