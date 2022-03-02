@@ -190,10 +190,9 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                     kCGGradientDrawsBeforeStartLocation or kCGGradientDrawsAfterEndLocation
 
                                                 CGContextClip(ctx)
-                                                val m = state.transform
                                                 val gradient = CGGradientCreateWithColors(colorSpace, colors, locations)
-                                                val start = CGPointMake(style.x0(m).cg, style.y0(m).cg)
-                                                val end = CGPointMake(style.x1(m).cg, style.y1(m).cg)
+                                                val start = CGPointMake(style.x0.cg, style.y0.cg)
+                                                val end = CGPointMake(style.x1.cg, style.y1.cg)
                                                 cgKeepState(ctx) {
                                                     CGContextConcatCTM(ctx, state.transform.toCGAffineTransform())
                                                     CGContextConcatCTM(ctx, style.transform.toCGAffineTransform())
@@ -202,7 +201,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                             CGContextDrawLinearGradient(ctx, gradient, start, end, options)
                                                         }
                                                         GradientKind.RADIAL -> {
-                                                            CGContextDrawRadialGradient(ctx, gradient, start, style.r0(m).cg, end, style.r1(m).cg, options)
+                                                            CGContextDrawRadialGradient(ctx, gradient, start, style.r0.cg, end, style.r1.cg, options)
                                                         }
                                                     }
                                                 }

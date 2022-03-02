@@ -57,12 +57,18 @@ data class GradientPaint(
     val interpolationMethod: GradientInterpolationMethod = GradientInterpolationMethod.NORMAL,
     val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
 ) : TransformedPaint {
+    @Deprecated("")
     fun x0(m: Matrix) = m.transformX(x0, y0)
+    @Deprecated("")
     fun y0(m: Matrix) = m.transformY(x0, y0)
+    @Deprecated("")
     fun r0(m: Matrix) = m.transformX(r0, r0)
 
+    @Deprecated("")
     fun x1(m: Matrix) = m.transformX(x1, y1)
+    @Deprecated("")
     fun y1(m: Matrix) = m.transformY(x1, y1)
+    @Deprecated("")
     fun r1(m: Matrix) = m.transformX(r1, r1)
 
     val numberOfStops get() = stops.size
