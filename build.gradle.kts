@@ -139,7 +139,12 @@ kotlin {
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOfNotNull(mingwX64())
-        isMacos -> listOf(macosX64(), macosArm64())
+        isMacos -> listOf(
+            macosX64(), macosArm64(),
+            //linuxX64(),
+            //mingwX64(),
+            //linuxArm32Hfp(),
+        )
         else -> listOfNotNull(
             linuxX64(),
             mingwX64(),
@@ -150,7 +155,12 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mobileTargets(): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
-    return listOf(iosArm64(), iosX64(), iosSimulatorArm64())
+    return listOf(
+        iosX64(), iosArm64(), iosSimulatorArm64(),
+        //iosX64(), iosArm32(), iosArm64(), iosSimulatorArm64(),
+        //watchosX86(), watchosX64(), watchosArm32(), watchosArm64(), watchosSimulatorArm64(),
+        //tvosX64(), tvosArm64(), tvosSimulatorArm64(),
+    )
 }
 
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
@@ -407,72 +417,55 @@ subprojects {
                 }
 
                 if (doEnableKotlinNative) {
-                    val nativeCommon by lazy { createPairSourceSet("nativeCommon", concurrent) }
-                    val nativeDesktop by lazy { createPairSourceSet("nativeDesktop", nativeCommon) }
-                    val nativePosix by lazy { createPairSourceSet("nativePosix", nativeCommon) }
-                    val nativePosixNonApple by lazy { createPairSourceSet("nativePosixNonApple", nativePosix) }
-                    val nativePosixApple by lazy { createPairSourceSet("nativePosixApple", nativePosix) }
-                    val iosWatchosTvosCommon by lazy { createPairSourceSet("iosWatchosTvosCommon", nativePosixApple) }
-                    val iosWatchosCommon by lazy { createPairSourceSet("iosWatchosCommon", nativePosixApple) }
-                    val iosTvosCommon by lazy { createPairSourceSet("iosTvosCommon", nativePosixApple) }
-                    val tvosCommon by lazy { createPairSourceSet("tvosCommon", nativePosixApple) }
-                    val macosIosTvosCommon by lazy { createPairSourceSet("macosIosTvosCommon", nativePosixApple) }
-                    val macosIosWatchosCommon by lazy { createPairSourceSet("macosIosWatchosCommon", nativePosixApple) }
-                    val iosCommon by lazy { createPairSourceSet("iosCommon", iosWatchosTvosCommon) }
+                    val native by lazy { createPairSourceSet("native", concurrent) }
+                    val posix by lazy { createPairSourceSet("posix", native) }
+                    val darwin by lazy { createPairSourceSet("darwin", posix) }
 
-                    val macosCommon by lazy { createPairSourceSet("macosCommon", nativePosixApple) }
-                    val linuxCommon by lazy { createPairSourceSet("linuxCommon", nativePosixNonApple) }
-                    val mingwCommon by lazy { createPairSourceSet("mingwCommon", nativeDesktop) }
+                    val linux by lazy { createPairSourceSet("linux", posix) }
+                    val macos by lazy { createPairSourceSet("macos", darwin) }
+                    val mingw by lazy { createPairSourceSet("mingw", native) }
 
                     val nativeTargets = nativeTargets()
 
                     for (target in nativeTargets) {
-                        val native = createPairSourceSet(target.name, nativeCommon)
-                        if (target.isDesktop) {
-                            native.dependsOn(nativeDesktop)
-                        }
-                        if (target.isLinux || target.isMacos) {
-                            native.dependsOn(nativePosix)
-                        }
-                        if (target.isLinux) {
-                            native.dependsOn(nativePosixNonApple)
-                            native.dependsOn(linuxCommon)
-                        }
-                        if (target.isWin) {
-                            native.dependsOn(mingwCommon)
-                        }
-                        if (target.isMacos) {
-                            native.dependsOn(nativePosixApple)
-                            native.dependsOn(macosIosTvosCommon)
-                            native.dependsOn(macosIosWatchosCommon)
-                            native.dependsOn(macosCommon)
+                        val native = createPairSourceSet(target.name)
+                        when (target.name) {
+                            "mingwX64" -> native.dependsOn(mingw)
+                            "mingwArm64" -> native.dependsOn(mingw)
+
+                            "macosX64" -> native.dependsOn(macos)
+                            "macosArm64" -> native.dependsOn(macos)
+
+                            "linuxX64" -> native.dependsOn(linux)
+                            "linuxArm32Hfp" -> native.dependsOn(linux)
+                            "linuxArm64" -> native.dependsOn(linux)
                         }
                     }
 
                     if (doEnableKotlinMobile) {
+                        val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
+                        val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile) }
+                        val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
+                        val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
+                        val ios by lazy { createPairSourceSet("ios", iosTvos) }
+
                         for (target in mobileTargets()) {
-                            val native = createPairSourceSet(target.name, nativeCommon)
-                            if (target.isIos) {
-                                native.dependsOn(nativePosixApple)
-                                native.dependsOn(iosCommon)
-                                native.dependsOn(iosWatchosTvosCommon)
-                                native.dependsOn(iosWatchosCommon)
-                                native.dependsOn(iosTvosCommon)
-                                native.dependsOn(macosIosTvosCommon)
-                                native.dependsOn(macosIosWatchosCommon)
-                            }
-                            if (target.isWatchos) {
-                                native.dependsOn(nativePosixApple)
-                                native.dependsOn(iosWatchosCommon)
-                                native.dependsOn(iosWatchosTvosCommon)
-                                native.dependsOn(macosIosWatchosCommon)
-                            }
-                            if (target.isTvos) {
-                                native.dependsOn(nativePosixApple)
-                                native.dependsOn(iosWatchosTvosCommon)
-                                native.dependsOn(iosTvosCommon)
-                                native.dependsOn(macosIosTvosCommon)
-                                native.dependsOn(tvosCommon)
+                            val native = createPairSourceSet(target.name)
+                            when (target.name) {
+                                "iosX64" -> native.dependsOn(ios)
+                                "iosArm32" -> native.dependsOn(ios)
+                                "iosArm64" -> native.dependsOn(ios)
+                                "iosSimulatorArm64" -> native.dependsOn(ios)
+
+                                "watchosX86" -> native.dependsOn(watchos)
+                                "watchosX64" -> native.dependsOn(watchos)
+                                "watchosArm32" -> native.dependsOn(watchos)
+                                "watchosArm64" -> native.dependsOn(watchos)
+                                "watchosSimulatorArm64" -> native.dependsOn(watchos)
+
+                                "tvosX64" -> native.dependsOn(tvos)
+                                "tvosArm64" -> native.dependsOn(tvos)
+                                "tvosSimulatorArm64" -> native.dependsOn(tvos)
                             }
                         }
                     }
@@ -810,7 +803,7 @@ samples {
             val nativeDesktopFolder = File(project.buildDir, "platforms/nativeDesktop")
             //val nativeDesktopEntryPointSourceSet = kotlin.sourceSets.create("nativeDesktopEntryPoint")
             //nativeDesktopEntryPointSourceSet.kotlin.srcDir(nativeDesktopFolder)
-            sourceSets.getByName("nativeCommonMain") { kotlin.srcDir(nativeDesktopFolder) }
+            sourceSets.getByName("nativeMain") { kotlin.srcDir(nativeDesktopFolder) }
 
             val createEntryPointAdaptorNativeDesktop = tasks.create("createEntryPointAdaptorNativeDesktop") {
                 val mainEntrypointFile = File(nativeDesktopFolder, "entrypoint/main.kt")
