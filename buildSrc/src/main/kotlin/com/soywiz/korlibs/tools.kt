@@ -77,3 +77,11 @@ fun Project.kotlin(callback: KotlinMultiplatformExtension.() -> Unit) = gkotlin.
 
 // Groovy tools
 fun Node.toXmlString() = XmlUtil.serialize(this)
+
+fun Project.doOnce(uniqueName: String, block: () -> Unit) {
+    val key = "doOnce-$uniqueName"
+    if (!rootProject.extra.has(key)) {
+        rootProject.extra.set(key, true)
+        block()
+    }
+}

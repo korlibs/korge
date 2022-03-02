@@ -711,7 +711,7 @@ samples {
         val jvmMainClasses by getting
         val runJvm by creating(KorgeJavaExec::class) {
             group = "run"
-            main = "MainKt"
+            mainClass.set("MainKt")
             if (!beforeJava9) jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
         }
         val runJs by creating {
@@ -984,9 +984,24 @@ if (
     // exec { commandLine("sudo", "apt-get", "-y", "install", "libgtk-3-dev") }
 }
 
+/*
 allprojects {
     //println("GROUP: $group")
+    tasks.whenTaskAdded {
+        if ("DebugUnitTest" in name || "ReleaseUnitTest" in name) {
+            enabled = false
+            // MPP + Android unit testing is so broken we just disable it altogether,
+            // (discussion here https://kotlinlang.slack.com/archives/C3PQML5NU/p1572168720226200)
+        }
+    }
+    afterEvaluate {
+        // Remove log pollution until Android support in KMP improves.
+        project.extensions.findByType<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension>()?.let { kmpExt ->
+            kmpExt.sourceSets.removeAll { it.name == "androidAndroidTestRelease" }
+        }
+    }
 }
+*/
 
 subprojects {
     afterEvaluate {

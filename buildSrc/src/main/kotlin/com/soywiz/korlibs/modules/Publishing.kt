@@ -57,7 +57,9 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                 }
             }
             publishUser == null || publishPassword == null -> {
-                println("Publishing is not enabled. Was not able to determine either `publishUser` or `publishPassword`")
+                doOnce("publishingWarningLogged") {
+                    logger.info("Publishing is not enabled. Was not able to determine either `publishUser` or `publishPassword`")
+                }
             }
             else -> {
                 repositories {

@@ -3,6 +3,7 @@ package com.soywiz.korlibs.modules
 import org.gradle.api.*
 import org.gradle.kotlin.dsl.*
 import org.gradle.plugins.signing.*
+import com.soywiz.korlibs.*
 
 fun Project.configureSigning() {
 	plugins.apply("signing")
@@ -14,8 +15,10 @@ fun Project.configureSigning() {
 	val signingPassword = System.getenv("ORG_GRADLE_PROJECT_signingPassword") ?: project.findProperty("signing.password")?.toString()
 
 	if (signingSecretKeyRingFile == null && signingKey == null) {
-		logger.warn("WARNING! Signing not configured due to missing properties/environment variables like signing.keyId or ORG_GRADLE_PROJECT_signingKey. This is required for deploying to Maven Central. Check README for details")
-		return
+        doOnce("signingWarningLogged") {
+            logger.info("WARNING! Signing not configured due to missing properties/environment variables like signing.keyId or ORG_GRADLE_PROJECT_signingKey. This is required for deploying to Maven Central. Check README for details")
+        }
+        return
 	}
 
 	afterEvaluate {
