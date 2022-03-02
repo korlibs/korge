@@ -343,7 +343,8 @@ subprojects {
                     }
                 }
 
-                fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+                //fun createPairSourceSet(name: String, vararg dependencies: PairSourceSet, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet {
+                fun createPairSourceSet(name: String, dependency: PairSourceSet? = null, block: org.jetbrains.kotlin.gradle.plugin.KotlinSourceSet.(test: Boolean) -> Unit = { }): PairSourceSet { val dependencies = listOfNotNull(dependency)
                     //println("${project.name}: CREATED SOURCE SET: \"${name}Main\"")
                     val main = maybeCreate("${name}Main").apply { block(false) }
                     val test = maybeCreate("${name}Test").apply { block(true) }
@@ -366,14 +367,11 @@ subprojects {
                 }
 
                 val concurrent = createPairSourceSet("concurrent", common)
-                val nonNativeCommon = createPairSourceSet("nonNativeCommon", common)
-                val nonJs = createPairSourceSet("nonJs", common)
-                val nonJvm = createPairSourceSet("nonJvm", common)
-                val jvmAndroid = createPairSourceSet("jvmAndroid", common)
+                val jvmAndroid = createPairSourceSet("jvmAndroid", concurrent)
 
                 // Default source set for JVM-specific sources and dependencies:
                 // JVM-specific tests and their dependencies:
-                val jvm = createPairSourceSet("jvm", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
+                val jvm = createPairSourceSet("jvm", jvmAndroid) { test ->
                     dependencies {
                         if (test) {
                             implementation(kotlin("test-junit"))
@@ -384,7 +382,7 @@ subprojects {
                 }
 
                 if (hasAndroid) {
-                    val android = createPairSourceSet("android", concurrent, nonNativeCommon, nonJs, jvmAndroid) { test ->
+                    val android = createPairSourceSet("android", jvmAndroid) { test ->
                         dependencies {
                             if (test) {
                                 //implementation(kotlin("test"))
@@ -398,7 +396,7 @@ subprojects {
                     }
                 }
 
-                val js = createPairSourceSet("js", common, nonNativeCommon, nonJvm) { test ->
+                val js = createPairSourceSet("js", common) { test ->
                     dependencies {
                         if (test) {
                             implementation(kotlin("test-js"))
@@ -429,7 +427,7 @@ subprojects {
                     val nativeTargets = nativeTargets()
 
                     for (target in nativeTargets) {
-                        val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
+                        val native = createPairSourceSet(target.name, nativeCommon)
                         if (target.isDesktop) {
                             native.dependsOn(nativeDesktop)
                         }
@@ -453,7 +451,7 @@ subprojects {
 
                     if (doEnableKotlinMobile) {
                         for (target in mobileTargets()) {
-                            val native = createPairSourceSet(target.name, common, nativeCommon, nonJvm, nonJs)
+                            val native = createPairSourceSet(target.name, nativeCommon)
                             if (target.isIos) {
                                 native.dependsOn(nativePosixApple)
                                 native.dependsOn(iosCommon)
