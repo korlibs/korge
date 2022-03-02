@@ -110,6 +110,7 @@ fun Project.configureJavaScript() {
     }
 
     (project.tasks.getByName("jsProcessResources") as Copy).apply {
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         dependsOn(jsCreateIndexHtml)
         from(generatedIndexHtmlDir) {
             it.duplicatesStrategy = DuplicatesStrategy.EXCLUDE

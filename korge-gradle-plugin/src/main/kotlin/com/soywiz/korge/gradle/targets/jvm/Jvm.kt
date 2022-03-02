@@ -62,6 +62,9 @@ fun Project.configureJvm() {
 
 	addProguard()
 	configureJvmTest()
+
+    val jvmProcessResources = tasks.findByName("jvmProcessResources") as? Copy?
+    jvmProcessResources?.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
 }
 
 private val Project.jvmCompilation get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
