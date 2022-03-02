@@ -190,7 +190,7 @@ subprojects {
             project.hasBuildGradle()
 
     if (doConfigure) {
-        val isSample = project.path.startsWith(":samples")
+        val isSample = project.path.startsWith(":samples") || project.path.contains(":korge-sandbox")
         val hasAndroid = doEnableKotlinAndroid && hasAndroidSdk
         //val hasAndroid = !isSample && true
         val mustPublish = !isSample
