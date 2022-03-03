@@ -19,10 +19,6 @@ actual fun posixFtell(file: CValuesRef<FILE>?): ULong {
     return ftell(file).convert()
 }
 
-actual fun ioctlFionRead(sockfd: Int, ptr: CValuesRef<IntVar>) {
-    ioctl(sockfd, FIONREAD, ptr)
-}
-
 actual fun posixFclose(file: CPointer<FILE>?): Int {
     return fclose(file)
 }

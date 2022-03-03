@@ -121,9 +121,7 @@ class NativeSocket private constructor(internal val sockfd: Int, private var end
 
 	val availableBytes: Int
 		get() {
-			val bytes_available = intArrayOf(0, 0)
-            ioctlFionRead(sockfd, bytes_available.refTo(0))
-			return bytes_available[0]
+            return ioctlSocketFionRead(sockfd)
 		}
 
 	//val connected: Boolean

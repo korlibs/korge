@@ -17,3 +17,9 @@ actual fun posixRealpath(path: String): String = path
 actual fun posixMkdir(path: String, attr: Int): Int {
     return platform.posix.mkdir(path)
 }
+
+actual fun ioctlSocketFionRead(sockfd: Int): Int {
+    val v = uintArrayOf(0u)
+    ioctlsocket(sockfd.convert(), FIONREAD, v.refTo(0))
+    return v[0].toInt()
+}

@@ -22,3 +22,9 @@ actual fun posixRealpath(path: String): String = memScoped {
 actual fun posixMkdir(path: String, attr: Int): Int {
     return platform.posix.mkdir(path, attr.convert())
 }
+
+actual fun ioctlSocketFionRead(sockfd: Int): Int {
+    val v = intArrayOf(0)
+    ioctl(sockfd.convert(), FIONREAD, v.refTo(0))
+    return v[0]
+}
