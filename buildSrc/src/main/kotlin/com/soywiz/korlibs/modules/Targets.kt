@@ -33,6 +33,7 @@ val KotlinTarget.isTvosX64: Boolean get() = this.name == "tvosX64"
 val KotlinTarget.isTvosArm64: Boolean get() = this.name == "tvosArm64"
 val KotlinTarget.isTvos: Boolean get() = isTvosX64 || isTvosArm64
 val KotlinTarget.isDesktop: Boolean get() = isWin || isLinux || isMacos
+val KotlinTarget.isPosix: Boolean get() = this is KotlinNativeTarget && !this.isWin
 
 val isWindows: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
 val isMacos: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)

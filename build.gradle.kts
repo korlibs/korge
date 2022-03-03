@@ -398,17 +398,19 @@ subprojects {
                         }
                     }
 
-                    run {
-                        val nativeInteropMainFolder = file("src/nativeInteropMain/kotlin")
+                    for (baseName in listOf("nativeInteropMain", "posixInteropMain")) {
+                        val nativeInteropMainFolder = file("src/$baseName/kotlin")
                         if (nativeInteropMainFolder.isDirectory) {
                             val currentNativeTarget = currentPlatformNativeTarget(project)
                             // @TODO: Copy instead of use the same source folder
                             for (target in allNativeTargets(project)) {
+                                if (baseName.contains("Posix") && !target.isPosix) continue
+
                                 val sourceSet = this@sourceSets.maybeCreate("${target.name}Main")
                                 val folder = when {
                                     target == currentNativeTarget -> nativeInteropMainFolder
                                     else -> {
-                                        file("build/nativeInteropMainCopy${target.name}").also { outFolder ->
+                                        file("build/${baseName}Copy${target.name}").also { outFolder ->
                                             outFolder.mkdirs()
                                             copy {
                                                 from(nativeInteropMainFolder)
@@ -421,7 +423,6 @@ subprojects {
                             }
                         }
                     }
-
 
                     // Copy test resources
                     afterEvaluate {
