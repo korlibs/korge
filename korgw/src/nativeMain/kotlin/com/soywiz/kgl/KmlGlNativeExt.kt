@@ -395,10 +395,14 @@ internal fun <T : CPointer<*>> glGetProcAddressT(name: String): T {
 
 internal fun <T : CPointer<*>> CPointer<*>.reinterpret2(): T = this.toLong().toCPointer<IntVar>() as T
 
-internal fun strlen(str: CPointer<ByteVar>): Int {
+internal fun strlen(str: CPointer<ByteVar>?): Int {
+    if (str == null) return 0
     var n = 0
     while (str[n++].toInt() != 0) Unit
     return n - 1
+}
+internal fun strlen(str: String): Int {
+    return str.length
 }
 
 fun Boolean.toBool(): Boolean = this

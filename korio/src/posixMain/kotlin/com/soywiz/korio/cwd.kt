@@ -15,6 +15,6 @@ fun realpath(path: String): String = memScoped {
 
 fun readlink(path: String): String? = memScoped {
 	val addr = allocArray<ByteVar>(PATH_MAX)
-	val finalSize = readlink(path, addr, PATH_MAX).toInt()
+	val finalSize = readlink(path, addr, PATH_MAX.convert()).toInt()
 	if (finalSize < 0) null else addr.toKString()
 }

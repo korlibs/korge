@@ -47,6 +47,7 @@ val isWindows: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFami
 val isMacos: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)
 val isArm: Boolean get() = listOf("arm", "arm64", "aarch64").any { org.apache.tools.ant.taskdefs.condition.Os.isArch(it) }
 val isLinux: Boolean get() = !isWindows && !isMacos
+val inCI: Boolean get() = System.getProperty("CI") == "true"
 
 val Project.hasAndroid get() = extensions.findByName("android") != null
 
@@ -61,12 +62,16 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.cur
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
         isWindows -> listOfNotNull(mingwX64())
-        isMacos -> listOf(
+        isMacos -> listOfNotNull(
             macosX64(), macosArm64(),
-            //linuxX64(),
-            //mingwX64(),
-            //linuxArm32Hfp(),
-        )
+        ) + (when {
+            inCI -> emptyList()
+            else -> listOfNotNull(
+                linuxX64(),
+                mingwX64(),
+                if (project.doEnableKotlinRaspberryPi) linuxArm32Hfp() else null,
+            )
+        })
         else -> listOfNotNull(
             linuxX64(),
             mingwX64(),

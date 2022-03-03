@@ -1,6 +1,7 @@
 package com.soywiz.korge.native
 
 import com.soywiz.korio.*
+import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import platform.posix.*
 
@@ -15,35 +16,35 @@ object KorgeSimpleNativeSyncIO {
             if (bytes.isNotEmpty()) {
                 memScoped {
                     bytes.usePinned { pin ->
-                        fwrite(pin.addressOf(0), 1.convert(), bytes.size.convert(), fd)
+                        posixFwrite(pin.addressOf(0), 1.convert(), bytes.size.convert(), fd)
                     }
                 }
             }
         } finally {
-            fclose(fd)
+            posixFclose(fd)
         }
     }
 
     fun readBytes(file: String): ByteArray {
         val fd = posixFopen(file, "rb") ?: error("Can't open file '$file' for reading")
         try {
-            fseek(fd, 0L.convert(), SEEK_END)
-            val fileSize = ftell(fd)
-            fseek(fd, 0L.convert(), SEEK_SET)
+            posixFseek(fd, 0L.convert(), SEEK_END)
+            val fileSize = posixFtell(fd)
+            posixFseek(fd, 0L.convert(), SEEK_SET)
 
             val out = ByteArray(fileSize.toInt())
             if (out.isNotEmpty()) {
                 memScoped {
                     out.usePinned { pin ->
                         @Suppress("UNUSED_VARIABLE")
-                        val readCount = fread(pin.addressOf(0), 1.convert(), out.size.convert(), fd)
+                        val readCount = posixFread(pin.addressOf(0), 1.convert(), out.size.convert(), fd)
                         //println("readCount: $readCount, out.size=${out.size}, fileSize=$fileSize")
                     }
                 }
             }
             return out
         } finally {
-            fclose(fd)
+            posixFclose(fd)
         }
     }
 }

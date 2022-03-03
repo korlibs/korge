@@ -118,8 +118,8 @@ actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
         memScoped {
             val lengths = allocArray<IntVar>(1)
             val strings = allocArray<CPointerVar<ByteVar>>(1)
-            lengths[0] = strlen(string).convert()
             strings[0] = string.cstr.placeTo(this)
+            lengths[0] = strlen(strings[0]).convert()
             glShaderSource(shader.convert(), 1.convert(), strings.reinterpret(), lengths.reinterpret())
         }
     } } }

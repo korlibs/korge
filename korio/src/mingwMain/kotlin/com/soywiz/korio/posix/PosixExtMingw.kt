@@ -1,4 +1,4 @@
-package com.soywiz.korio
+package com.soywiz.korio.posix
 
 import kotlinx.cinterop.*
 import platform.posix.*

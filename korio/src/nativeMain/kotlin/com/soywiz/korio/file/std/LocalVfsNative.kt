@@ -109,7 +109,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 
 				//println("finalRead=$finalRead")
 
-				fclose(fd)
+				posixFclose(fd)
 				if (finalRead != totalRead) byteArray.copyOf(finalRead) else byteArray
 			} else {
 				null
@@ -188,7 +188,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
                 data class Info(val file: String, val length: Long)
 
                 executeInIOWorker(Info(rpath, value)) { (fd, len) ->
-                    truncate(fd, len.convert())
+                    posixTruncate(fd, len.convert())
                     Unit
                 }
                 currentFileLength = value
@@ -198,7 +198,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 			override suspend fun close() {
 				if (fd != null) {
                     executeInIOWorker(fd!!) { fd ->
-                        fclose(fd)
+                        posixFclose(fd)
                         Unit
                     }
 				}
@@ -211,21 +211,16 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 	}
 
 	override suspend fun setSize(path: String, size: Long): Unit {
-		truncate(resolve(path), size.convert())
+		posixTruncate(resolve(path), size.convert())
 	}
 
 	override suspend fun stat(path: String): VfsStat {
 		val rpath = resolve(path)
-		return memScoped {
-			val s = alloc<stat>()
-			if (platform.posix.stat(rpath, s.ptr) == 0) {
-				val size: Long = s.st_size.toLong()
-				val isDirectory = (s.st_mode.toInt() and S_IFDIR) != 0
-				createExistsStat(rpath, isDirectory, size)
-			} else {
-				createNonExistsStat(rpath)
-			}
-		}
+        val statInfo = posixStat(rpath)
+        return when {
+            statInfo != null -> createExistsStat(rpath, statInfo.isDirectory, statInfo.size)
+            else -> createNonExistsStat(rpath)
+        }
 	}
 
 	override suspend fun listFlow(path: String) = flow {
