@@ -39,7 +39,7 @@ val isMacos: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily
 val isArm: Boolean get() = listOf("arm", "arm64", "aarch64").any { org.apache.tools.ant.taskdefs.condition.Os.isArch(it) }
 val isLinux: Boolean get() = !isWindows && !isMacos
 
-val Project.hasAndroid get() = rootProject.extensions.findByName("android") != null
+val Project.hasAndroid get() = extensions.findByName("android") != null
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.currentPlatformNativeTarget(project: Project): org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget {
     return when {

@@ -21,7 +21,6 @@ import com.soywiz.kds.toIntMap
 import com.soywiz.korio.file.VfsFile
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import androidx.core.app.ActivityCompat.startActivityForResult
 import com.soywiz.klock.*
 import kotlin.coroutines.*
 
@@ -146,7 +145,7 @@ abstract class KorgwActivity : Activity()
                 deferred.completeExceptionally(CancellationException())
             }
         }
-        startActivityForResult(this, intent, requestCode, options)
+        this.startActivityForResult(intent, requestCode, options)
         return deferred.await()
     }
 
