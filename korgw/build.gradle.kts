@@ -21,7 +21,6 @@ dependencies {
     add("commonMainApi", project(":korim"))
     add("jvmMainApi", "net.java.dev.jna:jna:$jnaVersion")
     add("jvmMainApi", "net.java.dev.jna:jna-platform:$jnaVersion")
-    //if (hasAndroid) add("androidMainApi", "androidx.appcompat:appcompat:1.3.0")
 }
 
 afterEvaluate {

@@ -1,15 +1,11 @@
 package com.soywiz.korge.service.vibration
 
-import android.annotation.SuppressLint
-import android.os.VibrationEffect
-import android.os.Vibrator
-import androidx.core.content.ContextCompat.getSystemService
-import com.soywiz.klock.TimeSpan
-import com.soywiz.korge.android.androidActivity
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.view.Views
-import kotlin.math.abs
-import kotlin.math.min
+import android.annotation.*
+import android.os.*
+import com.soywiz.klock.*
+import com.soywiz.korge.android.*
+import com.soywiz.korge.view.*
+import kotlin.math.*
 
 actual class NativeVibration actual constructor(views: Views) {
 
@@ -17,7 +13,11 @@ actual class NativeVibration actual constructor(views: Views) {
         private const val NO_REPEAT = -1
     }
 
-    private val vibrator = getSystemService(views.androidActivity, Vibrator::class.java)
+    private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= 23) {
+        views.androidActivity.getSystemService(Vibrator::class.java)
+    } else {
+        null
+    }
 
     /**
      * @param timings list of alternating ON-OFF durations in milliseconds. Staring with ON.
@@ -27,12 +27,14 @@ actual class NativeVibration actual constructor(views: Views) {
     @SuppressLint("MissingPermission")
     actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double>) {
         val onOffTimings = (listOf(TimeSpan.NIL) + timings).map { it.millisecondsLong }.toLongArray()
-        if (amplitudes.size != onOffTimings.size) {
-            vibrator?.vibrate(VibrationEffect.createWaveform(onOffTimings, NO_REPEAT))
-        } else {
-            vibrator?.vibrate(
-                VibrationEffect.createWaveform(onOffTimings, amplitudes.map {it.toAndroidAmplitude()}.toIntArray(), NO_REPEAT)
-            )
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (amplitudes.size != onOffTimings.size) {
+                vibrator?.vibrate(VibrationEffect.createWaveform(onOffTimings, NO_REPEAT))
+            } else {
+                vibrator?.vibrate(
+                    VibrationEffect.createWaveform(onOffTimings, amplitudes.map {it.toAndroidAmplitude()}.toIntArray(), NO_REPEAT)
+                )
+            }
         }
     }
 
@@ -43,7 +45,9 @@ actual class NativeVibration actual constructor(views: Views) {
     @ExperimentalUnsignedTypes
     @SuppressLint("MissingPermission")
     actual fun vibrate(time: TimeSpan, amplitude: Double) {
-        vibrator?.vibrate(VibrationEffect.createOneShot(time.millisecondsLong, amplitude.toAndroidAmplitude()))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vibrator?.vibrate(VibrationEffect.createOneShot(time.millisecondsLong, amplitude.toAndroidAmplitude()))
+        }
     }
 
     /**
@@ -53,5 +57,4 @@ actual class NativeVibration actual constructor(views: Views) {
         val amplitude = 255 * abs(this)
         return min(amplitude, 255.0).toInt()
     }
-
 }
