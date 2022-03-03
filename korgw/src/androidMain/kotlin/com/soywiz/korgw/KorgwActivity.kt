@@ -1,28 +1,16 @@
 package com.soywiz.korgw
 
-import android.app.Activity
+import android.app.*
 import android.content.*
-import android.opengl.GLSurfaceView
-import android.os.Bundle
-import android.util.Log
-import android.view.MotionEvent
-import android.view.View
+import android.os.*
+import android.util.*
+import android.view.*
 import android.view.KeyEvent
-import com.soywiz.kds.Pool
+import com.soywiz.kds.*
 import com.soywiz.kgl.*
-import com.soywiz.korag.AGOpengl
+import com.soywiz.korag.*
 import com.soywiz.korev.*
-import com.soywiz.korio.Korio
-import android.content.DialogInterface
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
-import com.soywiz.korio.android.withAndroidContext
-import com.soywiz.kds.toIntMap
-import com.soywiz.korio.file.VfsFile
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CompletableDeferred
-import androidx.core.app.ActivityCompat.startActivityForResult
-import com.soywiz.klock.*
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 abstract class KorgwActivity : Activity()
@@ -146,7 +134,7 @@ abstract class KorgwActivity : Activity()
                 deferred.completeExceptionally(CancellationException())
             }
         }
-        startActivityForResult(this, intent, requestCode, options)
+        this.startActivityForResult(intent, requestCode, options)
         return deferred.await()
     }
 

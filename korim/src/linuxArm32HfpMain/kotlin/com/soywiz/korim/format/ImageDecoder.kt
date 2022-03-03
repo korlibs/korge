@@ -13,7 +13,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
         val premultiplied = props.premultiplied
         //ImageIOWorker.execute(
         //            TransferMode.SAFE,
-        executeInImageIOWorker { worker ->
+        return executeInImageIOWorker { worker ->
             worker.execute(
                 TransferMode.SAFE,
                 { if (data.isFrozen) data else data.copyOf().freeze() },
@@ -43,8 +43,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
                     } ?: throw IOException("Failed to decode image using stbi_load_from_memory")
                 }
             )
-        }
-        , props
-    )
+        }.wrapNativeExt(props)
+    }
 }
 

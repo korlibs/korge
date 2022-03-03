@@ -8,10 +8,8 @@ import android.text.*
 import android.view.*
 import android.view.inputmethod.*
 import android.widget.*
-import androidx.core.content.ContextCompat.startActivity
 import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.android.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.net.*
@@ -105,7 +103,8 @@ class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
     }
 
     override suspend fun browse(url: URL) {
-        startActivity(activity, Intent(Intent.ACTION_VIEW, Uri.parse(url.toString())), null)
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url.toString()))
+        activity.startActivity(intent, null)
     }
 
     override suspend fun alert(message: String) {
