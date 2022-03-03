@@ -6,6 +6,6 @@ import platform.CoreGraphics.*
 expect inline fun Double.toCgFloat(): CGFloat
 expect inline fun Float.toCgFloat(): CGFloat
 
-inline val Int.cg get() = this.toDouble().toCgFloat()
-inline val Float.cg get() = this.toCgFloat()
-inline val Double.cg get() = this.toCgFloat()
+inline val Int.cg: CGFloat get() = this.toDouble().toCgFloat()
+inline val Float.cg: CGFloat get() = this.toCgFloat()
+inline val Double.cg: CGFloat get() = this.toCgFloat()

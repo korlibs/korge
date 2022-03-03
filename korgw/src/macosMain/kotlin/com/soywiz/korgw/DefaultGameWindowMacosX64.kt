@@ -666,3 +666,6 @@ val NSEvent.shift get() = (modifierFlags and NSShiftKeyMask) != 0uL
 val NSEvent.ctrl get() = (modifierFlags and NSControlKeyMask) != 0uL
 val NSEvent.alt get() = (modifierFlags and NSAlternateKeyMask) != 0uL
 val NSEvent.meta get() = (modifierFlags and NSCommandKeyMask) != 0uL
+
+inline val Int.cg: CGFloat get() = this.toDouble()
+inline val Double.cg: CGFloat get() = this.toDouble()
