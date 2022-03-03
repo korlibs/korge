@@ -320,6 +320,7 @@ inline fun <T : View> T.registerBodyWithFixture(
     body.fixture {
         this.shape = shape ?:
             when {
+                view is Circle -> CircleShape(view.radius / world.customScale)
                 view is Ellipse && view.isCircle -> CircleShape(view.radiusX / world.customScale)
                 else -> BoxShape(getLocalBounds() / world.customScale)
             }
