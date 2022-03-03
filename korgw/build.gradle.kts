@@ -9,7 +9,7 @@ if (doEnableKotlinNative) {
         for (target in nativeTargets(project)) {
             if (target.name == "linuxX64" || target.name == "linuxArm32Hfp") {
                 target.compilations["main"].cinterops {
-                    maybeCreate("X11_embed")
+                    maybeCreate("X11Embed")
                 }
                 //if (target.name == "linuxX64") maybeCreate("X11")
             }

@@ -16,7 +16,8 @@ import kotlinx.cinterop.*
 import stb_vorbis.*
 
 @kotlin.native.concurrent.ThreadLocal
-val knNativeAudioFormats: List<AudioFormat> by lazy { listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat) }
+actual val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
+//val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
 
 open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val maxChannels: Int = 2) {
     val scope = Arena()

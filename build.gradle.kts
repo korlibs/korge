@@ -364,43 +364,60 @@ subprojects {
 
                     for (target in nativeTargets) {
                         val native = createPairSourceSet(target.name)
-                        when (target.name) {
-                            "mingwX64" -> native.dependsOn(mingw)
-                            "mingwArm64" -> native.dependsOn(mingw)
-
-                            "macosX64" -> native.dependsOn(macos)
-                            "macosArm64" -> native.dependsOn(macos)
-
-                            "linuxX64" -> native.dependsOn(linux)
-                            "linuxArm32Hfp" -> native.dependsOn(linux)
-                            "linuxArm64" -> native.dependsOn(linux)
+                        when {
+                            target.isWin -> native.dependsOn(mingw)
+                            target.isMacos -> native.dependsOn(macos)
+                            target.isLinux -> native.dependsOn(linux)
                         }
                     }
 
-                    if (doEnableKotlinMobile) {
-                        val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
-                        val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile) }
-                        val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
-                        val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
-                        val ios by lazy { createPairSourceSet("ios", iosTvos) }
+                    val darwinMobile by lazy { createPairSourceSet("darwinMobile", darwin) }
+                    val iosTvos by lazy { createPairSourceSet("iosTvos", darwinMobile) }
+                    val watchos by lazy { createPairSourceSet("watchos", darwinMobile) }
+                    val tvos by lazy { createPairSourceSet("tvos", iosTvos) }
+                    val ios by lazy { createPairSourceSet("ios", iosTvos) }
 
-                        for (target in mobileTargets(project)) {
-                            val native = createPairSourceSet(target.name)
-                            when (target.name) {
-                                "iosX64" -> native.dependsOn(ios)
-                                "iosArm32" -> native.dependsOn(ios)
-                                "iosArm64" -> native.dependsOn(ios)
-                                "iosSimulatorArm64" -> native.dependsOn(ios)
+                    for (target in mobileTargets(project)) {
+                        val native = createPairSourceSet(target.name)
+                        target.isIos
+                        when (target.name) {
+                            "iosX64" -> native.dependsOn(ios)
+                            "iosArm32" -> native.dependsOn(ios)
+                            "iosArm64" -> native.dependsOn(ios)
+                            "iosSimulatorArm64" -> native.dependsOn(ios)
 
-                                "watchosX86" -> native.dependsOn(watchos)
-                                "watchosX64" -> native.dependsOn(watchos)
-                                "watchosArm32" -> native.dependsOn(watchos)
-                                "watchosArm64" -> native.dependsOn(watchos)
-                                "watchosSimulatorArm64" -> native.dependsOn(watchos)
+                            "watchosX86" -> native.dependsOn(watchos)
+                            "watchosX64" -> native.dependsOn(watchos)
+                            "watchosArm32" -> native.dependsOn(watchos)
+                            "watchosArm64" -> native.dependsOn(watchos)
+                            "watchosSimulatorArm64" -> native.dependsOn(watchos)
 
-                                "tvosX64" -> native.dependsOn(tvos)
-                                "tvosArm64" -> native.dependsOn(tvos)
-                                "tvosSimulatorArm64" -> native.dependsOn(tvos)
+                            "tvosX64" -> native.dependsOn(tvos)
+                            "tvosArm64" -> native.dependsOn(tvos)
+                            "tvosSimulatorArm64" -> native.dependsOn(tvos)
+                        }
+                    }
+
+                    run {
+                        val nativeInteropMainFolder = file("src/nativeInteropMain/kotlin")
+                        if (nativeInteropMainFolder.isDirectory) {
+                            val currentNativeTarget = currentPlatformNativeTarget(project)
+                            // @TODO: Copy instead of use the same source folder
+                            for (target in allNativeTargets(project)) {
+                                val sourceSet = this@sourceSets.maybeCreate("${target.name}Main")
+                                val folder = when {
+                                    target == currentNativeTarget -> nativeInteropMainFolder
+                                    else -> {
+                                        file("build/nativeInteropMainCopy${target.name}").also { outFolder ->
+                                            outFolder.mkdirs()
+                                            copy {
+                                                from(nativeInteropMainFolder)
+                                                into(outFolder)
+                                            }
+                                        }
+                                    }
+                                }
+                                sourceSet.kotlin.srcDir(folder)
                             }
                         }
                     }
@@ -560,31 +577,6 @@ nonSamples {
                         appendNode("scm").apply {
                             appendNode("url").setValue(project.property("project.scm.url"))
                         }
-
-                        // Workaround for kotlin-native cinterops without gradle metadata
-                        //if (korlibs.cinterops.isNotEmpty()) {
-                        //    val dependenciesList = (this.get("dependencies") as NodeList)
-                        //    if (dependenciesList.isNotEmpty()) {
-                        //        (dependenciesList.first() as Node).apply {
-                        //            for (cinterop in korlibs.cinterops.filter { it.targets.contains(publication.name) }) {
-                        //                appendNode("dependency").apply {
-                        //                    appendNode("groupId").setValue("${project.group}")
-                        //                    appendNode("artifactId").setValue("${project.name}-${publication.name.toLowerCase()}")
-                        //                    appendNode("version").setValue("${project.version}")
-                        //                    appendNode("type").setValue("klib")
-                        //                    appendNode("classifier").setValue("cinterop-${cinterop.name}")
-                        //                    appendNode("scope").setValue("compile")
-                        //                    appendNode("exclusions").apply {
-                        //                        appendNode("exclusion").apply {
-                        //                            appendNode("artifactId").setValue("*")
-                        //                            appendNode("groupId").setValue("*")
-                        //                        }
-                        //                    }
-                        //                }
-                        //            }
-                        //        }
-                        //    }
-                        //}
 
                         // Changes runtime -> compile in Android's AAR publications
                         if (publication.pom.packaging == "aar") {

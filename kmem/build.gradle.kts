@@ -17,11 +17,3 @@ project.ext.props = [
 dependencies {
     //add("androidMainApi", "com.implimentz:unsafe:0.0.6")
 }
-
-kotlin {
-    for (target in allNativeTargets(project) ) {
-        target.compilations["main"].cinterops {
-            maybeCreate("fastmem")
-        }
-    }
-}

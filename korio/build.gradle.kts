@@ -25,7 +25,7 @@ if (doEnableKotlinNative) {
         for (target in nativeTargets(project)) {
             if (target.isWin) {
                 target.compilations["main"].cinterops {
-                    maybeCreate("win32_ssl_socket")
+                    maybeCreate("win32ssl")
                 }
             }
         }

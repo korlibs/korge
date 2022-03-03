@@ -16,14 +16,15 @@ val KotlinTarget.isLinuxX64: Boolean get() = this.name == "linuxX64"
 val KotlinTarget.isLinuxArm64: Boolean get() = this.name == "linuxArm64"
 val KotlinTarget.isLinuxArm32Hfp: Boolean get() = this.name == "linuxArm32Hfp" && project.doEnableKotlinRaspberryPi
 val KotlinTarget.isLinux: Boolean get() = isLinuxX64 || isLinuxArm32Hfp || isLinuxArm64
-val KotlinTarget.isWin: Boolean get() = this.name == "mingwX64"
+val KotlinTarget.isWin: Boolean get() = this.name == "mingwX64" || this.name == "mingwArm64"
 val KotlinTarget.isMacosX64: Boolean get() = this.name == "macosX64"
 val KotlinTarget.isMacosArm64: Boolean get() = this.name == "macosArm64"
 val KotlinTarget.isMacos: Boolean get() = isMacosX64 || isMacosArm64
+val KotlinTarget.isIosArm32: Boolean get() = this.name == "iosArm32"
 val KotlinTarget.isIosArm64: Boolean get() = this.name == "iosArm64"
 val KotlinTarget.isIosX64: Boolean get() = this.name == "iosX64"
 val KotlinTarget.isIosSimulatorArm64: Boolean get() = this.name == "iosSimulatorArm64"
-val KotlinTarget.isIos: Boolean get() = isIosArm64 || isIosX64 || isIosSimulatorArm64
+val KotlinTarget.isIos: Boolean get() = isIosArm32 || isIosArm64 || isIosX64 || isIosSimulatorArm64
 val KotlinTarget.isWatchosX86: Boolean get() = this.name == "watchosX86"
 val KotlinTarget.isWatchosArm32: Boolean get() = this.name == "watchosArm32"
 val KotlinTarget.isWatchosArm64: Boolean get() = this.name == "watchosArm64"
@@ -39,6 +40,14 @@ val isArm: Boolean get() = listOf("arm", "arm64", "aarch64").any { org.apache.to
 val isLinux: Boolean get() = !isWindows && !isMacos
 
 val Project.hasAndroid get() = rootProject.extensions.findByName("android") != null
+
+fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.currentPlatformNativeTarget(project: Project): org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget {
+    return when {
+        isWindows -> mingwX64()
+        isMacos -> if (isArm) macosArm64() else macosX64()
+        else -> linuxX64()
+    }
+}
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
@@ -59,6 +68,8 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nat
 }
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.mobileTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
+    if (!project.doEnableKotlinMobile) return listOf()
+
     val out = arrayListOf<KotlinNativeTarget>()
     out.addAll(listOf(iosX64(), iosArm32(), iosArm64(), iosSimulatorArm64()))
     if (project.doEnableKotlinMobileWatchos) {
