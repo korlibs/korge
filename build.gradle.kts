@@ -386,7 +386,12 @@ subprojects {
                         }
                     }
 
-                    for (baseName in listOf("nativeInteropMain", "posixInteropMain", "darwinInteropMain")) {
+                    for (baseName in listOf(
+                        "nativeInteropMain",
+                        "posixInteropMain",
+                        "darwinInteropMain",
+                        "linuxInteropMain",
+                    )) {
                         val nativeInteropMainFolder = file("src/$baseName/kotlin")
                         if (nativeInteropMainFolder.isDirectory) {
                             val currentNativeTarget = currentPlatformNativeTarget(project)
@@ -394,6 +399,7 @@ subprojects {
                             for (target in allNativeTargets(project)) {
                                 if (baseName.contains("posix", ignoreCase = true) && !target.isPosix) continue
                                 if (baseName.contains("darwin", ignoreCase = true) && !target.isApple) continue
+                                if (baseName.contains("linux", ignoreCase = true) && !target.isLinux) continue
 
                                 val sourceSet = this@sourceSets.maybeCreate("${target.name}Main")
                                 val folder = when {
