@@ -1,4 +1,5 @@
 package com.soywiz.korio.net
+import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.posix.*
@@ -121,7 +122,7 @@ class NativeSocket private constructor(internal val sockfd: Int, private var end
 	val availableBytes: Int
 		get() {
 			val bytes_available = intArrayOf(0, 0)
-			ioctl(sockfd, FIONREAD, bytes_available.refTo(0))
+            ioctlFionRead(sockfd, bytes_available.refTo(0))
 			return bytes_available[0]
 		}
 

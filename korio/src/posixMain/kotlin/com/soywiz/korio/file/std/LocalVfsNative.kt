@@ -23,6 +23,8 @@ import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.native.concurrent.*
 import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.posix.*
+import com.soywiz.korio.posix.posixFread
 import com.soywiz.korio.process.posixExec
 
 @ThreadLocal
@@ -81,9 +83,9 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 		return executeInIOWorker(Info(rpath, range)) { (rpath, range) ->
 			val fd = posixFopen(rpath, "rb")
 			if (fd != null) {
-				fseek(fd, 0L.convert(), SEEK_END)
+				posixFseek(fd, 0L.convert(), SEEK_END)
 				//val length = ftell(fd).toLong() // @TODO: Kotlin native bug?
-				val length: Long = ftell(fd).convert()
+				val length: Long = posixFtell(fd).convert()
 
 				val start = min(range.start, length)
 				val end = min(range.endInclusive, length - 1) + 1
@@ -98,8 +100,8 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 				val byteArray = ByteArray(totalRead)
 				val finalRead = if (byteArray.isNotEmpty()) {
 					byteArray.usePinned { pin ->
-						fseek(fd, start.convert(), SEEK_SET)
-						fread(pin.addressOf(0), 1.convert(), totalRead.convert(), fd).toInt()
+                        posixFseek(fd, start.convert(), SEEK_SET)
+						posixFread(pin.addressOf(0), 1.convert(), totalRead.convert(), fd).toInt()
 					}
 				} else {
 					0
@@ -122,9 +124,9 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
         val (initialFd, initialFileLength) = executeInIOWorker(FileOpenInfo(rpath, mode.cmode)) { it ->
             val fd = posixFopen(it.name, it.mode)
             val len = if (fd != null) {
-                fseek(fd, 0L.convert(), SEEK_END)
-                val end = ftell(fd)
-                fseek(fd, 0L.convert(), SEEK_SET)
+                posixFseek(fd, 0L.convert(), SEEK_END)
+                val end = posixFtell(fd)
+                posixFseek(fd, 0L.convert(), SEEK_SET)
                 end.toLong()
             } else {
                 0L
@@ -155,13 +157,13 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
                 val time = measureTime {
                     transferredCount = buffer.usePinned { pin ->
                         executeInIOWorker(Info(fd, position, pin.addressOf(offset), len, write)) { (fd, position, buffer, len) ->
-                            fseek(fd, position.convert(), SEEK_SET)
+                            posixFseek(fd, position.convert(), SEEK_SET)
                             if (write) {
                                 //platform.posix.fwrite(buffer, 1.convert(), len.convert(), fd).toLong()
-                                fwrite(buffer, len.convert(), 1.convert(), fd).toLong() // Write it at once (len, 1)
+                                posixFwrite(buffer, len.convert(), 1.convert(), fd).toLong() // Write it at once (len, 1)
                                 len.toLong()
                             } else {
-                                fread(buffer, 1.convert(), len.convert(), fd).toLong() // Allow to read less values (1, len)
+                                posixFread(buffer, 1.convert(), len.convert(), fd).toLong() // Allow to read less values (1, len)
                             }
                         }
                     }

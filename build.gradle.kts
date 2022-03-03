@@ -379,32 +379,21 @@ subprojects {
 
                     for (target in mobileTargets(project)) {
                         val native = createPairSourceSet(target.name)
-                        target.isIos
-                        when (target.name) {
-                            "iosX64" -> native.dependsOn(ios)
-                            "iosArm32" -> native.dependsOn(ios)
-                            "iosArm64" -> native.dependsOn(ios)
-                            "iosSimulatorArm64" -> native.dependsOn(ios)
-
-                            "watchosX86" -> native.dependsOn(watchos)
-                            "watchosX64" -> native.dependsOn(watchos)
-                            "watchosArm32" -> native.dependsOn(watchos)
-                            "watchosArm64" -> native.dependsOn(watchos)
-                            "watchosSimulatorArm64" -> native.dependsOn(watchos)
-
-                            "tvosX64" -> native.dependsOn(tvos)
-                            "tvosArm64" -> native.dependsOn(tvos)
-                            "tvosSimulatorArm64" -> native.dependsOn(tvos)
+                        when {
+                            target.isIos -> native.dependsOn(ios)
+                            target.isWatchos -> native.dependsOn(watchos)
+                            target.isTvos -> native.dependsOn(tvos)
                         }
                     }
 
-                    for (baseName in listOf("nativeInteropMain", "posixInteropMain")) {
+                    for (baseName in listOf("nativeInteropMain", "posixInteropMain", "darwinInteropMain")) {
                         val nativeInteropMainFolder = file("src/$baseName/kotlin")
                         if (nativeInteropMainFolder.isDirectory) {
                             val currentNativeTarget = currentPlatformNativeTarget(project)
                             // @TODO: Copy instead of use the same source folder
                             for (target in allNativeTargets(project)) {
-                                if (baseName.contains("Posix") && !target.isPosix) continue
+                                if (baseName.contains("posix", ignoreCase = true) && !target.isPosix) continue
+                                if (baseName.contains("darwin", ignoreCase = true) && !target.isApple) continue
 
                                 val sourceSet = this@sourceSets.maybeCreate("${target.name}Main")
                                 val folder = when {
@@ -412,7 +401,7 @@ subprojects {
                                     else -> {
                                         file("build/${baseName}Copy${target.name}").also { outFolder ->
                                             outFolder.mkdirs()
-                                            copy {
+                                            sync {
                                                 from(nativeInteropMainFolder)
                                                 into(outFolder)
                                             }

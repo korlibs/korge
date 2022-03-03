@@ -12,6 +12,13 @@ val Project.doEnableKotlinMobileTvos: Boolean get() = rootProject.findProperty("
 val Project.doEnableKotlinMobileWatchos: Boolean get() = rootProject.findProperty("enableKotlinMobileWatchos") == "true"
 val Project.doEnableKotlinRaspberryPi: Boolean get() = rootProject.findProperty("enableKotlinRaspberryPi") == "true"
 
+val KotlinTarget.isX64: Boolean get() = this.name.endsWith("X64")
+val KotlinTarget.isX86: Boolean get() = this.name.endsWith("X86")
+val KotlinTarget.isArm32: Boolean get() = this.name.endsWith("Arm32")
+val KotlinTarget.isArm64: Boolean get() = this.name.endsWith("Arm64") || !this.name.endsWith("SimulatorArm64")
+val KotlinTarget.isArm32Hfp: Boolean get() = this.name.endsWith("Arm32Hfp")
+val KotlinTarget.isSimulatorArm64: Boolean get() = this.name.endsWith("SimulatorArm64")
+
 val KotlinTarget.isLinuxX64: Boolean get() = this.name == "linuxX64"
 val KotlinTarget.isLinuxArm64: Boolean get() = this.name == "linuxArm64"
 val KotlinTarget.isLinuxArm32Hfp: Boolean get() = this.name == "linuxArm32Hfp" && project.doEnableKotlinRaspberryPi
@@ -34,6 +41,7 @@ val KotlinTarget.isTvosArm64: Boolean get() = this.name == "tvosArm64"
 val KotlinTarget.isTvos: Boolean get() = isTvosX64 || isTvosArm64
 val KotlinTarget.isDesktop: Boolean get() = isWin || isLinux || isMacos
 val KotlinTarget.isPosix: Boolean get() = this is KotlinNativeTarget && !this.isWin
+val KotlinTarget.isApple: Boolean get() = isMacos || isIos || isWatchos || isTvos
 
 val isWindows: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
 val isMacos: Boolean get() = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_MAC)

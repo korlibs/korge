@@ -178,7 +178,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                             }
                                             is GradientPaint -> {
                                                 val nelements = style.colors.size
-                                                val colors = CFArrayCreateMutable(null, nelements.toLong(), null)
+                                                val colors = CFArrayCreateMutable(null, nelements.convert(), null)
                                                 val locations = allocArray<CGFloatVar>(nelements)
                                                 for (n in 0 until nelements) {
                                                     val color = RGBA(style.colors[n])
