@@ -3,10 +3,6 @@
 @file:Suppress("NOTHING_TO_INLINE", "EXTENSION_SHADOWED_BY_MEMBER", "RedundantUnitReturnType", "FunctionName", "USELESS_CAST")
 package com.soywiz.kmem
 
-import kotlinx.cinterop.*
-import platform.posix.*
-import com.soywiz.kmem.internal.*
-
 public actual class MemBuffer(public val data: ByteArray)
 public actual fun MemBufferAlloc(size: Int): MemBuffer = MemBuffer(ByteArray(size))
 public actual fun MemBufferAllocNoDirect(size: Int): MemBuffer = MemBuffer(ByteArray(size))
