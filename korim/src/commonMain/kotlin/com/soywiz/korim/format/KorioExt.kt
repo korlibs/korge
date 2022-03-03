@@ -71,6 +71,12 @@ suspend fun VfsFile.readBitmapInfo(
 ): ImageInfo? =
 	formats.decodeHeader(this.readAsSyncStream(), props)
 
+suspend fun VfsFile.readImageInfo(formats: ImageFormat = RegisteredImageFormats, props: ImageDecodingProps = ImageDecodingProps()): ImageInfo? =
+    openUse(VfsOpenMode.READ) {
+        formats.decodeHeaderSuspend(this, props)
+    }
+
+
 suspend fun VfsFile.readImageData(formats: ImageFormat = RegisteredImageFormats, props: ImageDecodingProps = ImageDecodingProps(), atlas: MutableAtlas<Unit>? = null): ImageData =
     readImageDataContainer(formats, props, atlas).default
 

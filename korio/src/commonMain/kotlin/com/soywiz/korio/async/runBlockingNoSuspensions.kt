@@ -5,6 +5,12 @@ import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.coroutines.intrinsics.*
 
+fun <T> runBlockingNoSuspensionsNullable(callback: suspend () -> T): T {
+    return runBlockingNoSuspensions {
+        Result.success(callback())
+    }.getOrThrow()
+}
+
 /**
  * Allows to execute a suspendable block as long as you can ensure no suspending will happen at all..
  */
@@ -16,8 +22,8 @@ fun <T : Any> runBlockingNoSuspensions(callback: suspend () -> T): T {
 	var resultEx: Throwable? = null
 	var suspendCount = 0
 
-	callback.startCoroutineUndispatched(object : Continuation<T?> { override val context: CoroutineContext = object :
-			AbstractCoroutineContextElement(ContinuationInterceptor), ContinuationInterceptor, Delay {
+	callback.startCoroutineUndispatched(object : Continuation<T?> {
+        override val context: CoroutineContext = object : AbstractCoroutineContextElement(ContinuationInterceptor), ContinuationInterceptor, Delay {
 			override val key: CoroutineContext.Key<*> = ContinuationInterceptor.Key
 			override fun <T> interceptContinuation(continuation: Continuation<T>): Continuation<T> = continuation.also { suspendCount++ }
 			override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) = continuation.resume(Unit)

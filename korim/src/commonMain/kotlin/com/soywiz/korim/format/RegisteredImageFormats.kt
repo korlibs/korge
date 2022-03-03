@@ -33,6 +33,7 @@ object RegisteredImageFormats : ImageFormat() {
 
     override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData = formats.readImage(s, props)
     override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) = formats.writeImage(image, s, props)
+    override suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps): ImageInfo? = formats.decodeHeaderSuspend(s, props)
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? = formats.decodeHeader(s, props)
     override fun toString(): String = "RegisteredImageFormats($formats)"
 }

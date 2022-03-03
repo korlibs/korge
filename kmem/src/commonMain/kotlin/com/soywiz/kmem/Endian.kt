@@ -3,6 +3,9 @@ package com.soywiz.kmem
 public enum class Endian {
     LITTLE_ENDIAN, BIG_ENDIAN;
 
+    val isLittle get() = this == LITTLE_ENDIAN
+    val isBig get() = this == BIG_ENDIAN
+
     public companion object {
         public val NATIVE: Endian = MemBufferAlloc(4).run {
             asInt32Buffer()[0] = 1

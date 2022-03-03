@@ -529,6 +529,16 @@ suspend fun AsyncInputStream.readS64BE(): Long = readSmallTempExact(8) { readS64
 suspend fun AsyncInputStream.readF32BE(): Float = readSmallTempExact(4) { readF32BE(0) }
 suspend fun AsyncInputStream.readF64BE(): Double = readSmallTempExact(8) { readF64BE(0) }
 
+suspend fun AsyncInputStream.readU16(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readU16LE() else readU16BE()
+suspend fun AsyncInputStream.readU24(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readU24LE() else readU24BE()
+suspend fun AsyncInputStream.readU32(endian: Endian): Long = if (endian == Endian.LITTLE_ENDIAN) readU32LE() else readU32BE()
+suspend fun AsyncInputStream.readS16(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readS16LE() else readS16BE()
+suspend fun AsyncInputStream.readS24(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readS24LE() else readS24BE()
+suspend fun AsyncInputStream.readS32(endian: Endian): Int = if (endian == Endian.LITTLE_ENDIAN) readS32LE() else readS32BE()
+suspend fun AsyncInputStream.readS64(endian: Endian): Long = if (endian == Endian.LITTLE_ENDIAN) readS64LE() else readS64BE()
+suspend fun AsyncInputStream.readF32(endian: Endian): Float = if (endian == Endian.LITTLE_ENDIAN) readF32LE() else readF32BE()
+suspend fun AsyncInputStream.readF64(endian: Endian): Double = if (endian == Endian.LITTLE_ENDIAN) readF64LE() else readF64BE()
+
 suspend fun AsyncInputStream.readAll(): ByteArray {
 	return try {
         when {
@@ -586,6 +596,13 @@ suspend fun AsyncInputStream.readFloatArrayLE(count: Int): FloatArray = readByte
 suspend fun AsyncInputStream.readFloatArrayBE(count: Int): FloatArray = readBytesExact(count * 4).readFloatArrayBE(0, count)
 suspend fun AsyncInputStream.readDoubleArrayLE(count: Int): DoubleArray = readBytesExact(count * 8).readDoubleArrayLE(0, count)
 suspend fun AsyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(count * 8).readDoubleArrayBE(0, count)
+
+suspend fun AsyncInputStream.readShortArray(count: Int, endian: Endian): ShortArray = if (endian.isLittle) readShortArrayLE(count) else readShortArrayBE(count)
+suspend fun AsyncInputStream.readCharArray(count: Int, endian: Endian): CharArray = if (endian.isLittle) readCharArrayLE(count) else readCharArrayBE(count)
+suspend fun AsyncInputStream.readIntArray(count: Int, endian: Endian): IntArray = if (endian.isLittle) readIntArrayLE(count) else readIntArrayBE(count)
+suspend fun AsyncInputStream.readLongArray(count: Int, endian: Endian): LongArray = if (endian.isLittle) readLongArrayLE(count) else readLongArrayBE(count)
+suspend fun AsyncInputStream.readFloatArray(count: Int, endian: Endian): FloatArray = if (endian.isLittle) readFloatArrayLE(count) else readFloatArrayBE(count)
+suspend fun AsyncInputStream.readDoubleArray(count: Int, endian: Endian): DoubleArray = if (endian.isLittle) readDoubleArrayLE(count) else readDoubleArrayBE(count)
 
 suspend fun AsyncOutputStream.writeTempBytes(size: Int, block: ByteArray.() -> Unit): Unit {
     if (size <= BYTES_TEMP_SIZE) {

@@ -10,7 +10,7 @@ open class ImageInfo : Extra by Extra.Mixin() {
 
 	val size: Size get() = Size(width, height)
 
-	override fun toString(): String = "ImageInfo(width=$width, height=$height, bpp=$bitsPerPixel, extra=$extra)"
+	override fun toString(): String = "ImageInfo(width=$width, height=$height, bpp=$bitsPerPixel, extra=${extra?.toMap()})"
 }
 
 fun ImageInfo(block: ImageInfo.() -> Unit): ImageInfo = ImageInfo().apply(block)

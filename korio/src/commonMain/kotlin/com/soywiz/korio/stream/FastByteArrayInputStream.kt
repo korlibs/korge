@@ -179,3 +179,4 @@ class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: In
 
 fun ByteArray.openFastStream(offset: Int = 0) = FastByteArrayInputStream(this, offset)
 fun FastByteArrayInputStream.toSyncStream() = ReadonlySyncStreamBase(ba, start, end - start).open()
+fun FastByteArrayInputStream.toAsyncStream() = toSyncStream().toAsync()

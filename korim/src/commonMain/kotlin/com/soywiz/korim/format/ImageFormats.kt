@@ -14,7 +14,16 @@ class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
 
 	val formats: Set<ImageFormat> = formats.flatMap { if (it is ImageFormats) it.formats.toList() else listOf(it) }.toSet()
 
-	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
+    override suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps): ImageInfo? {
+        for (format in formats) return try {
+            format.decodeHeaderSuspend(s.sliceStart(), props) ?: continue
+        } catch (e: Throwable) {
+            continue
+        }
+        return null
+    }
+
+    override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
 		for (format in formats) return try {
 			format.decodeHeader(s.sliceStart(), props) ?: continue
 		} catch (e: Throwable) {

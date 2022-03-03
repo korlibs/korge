@@ -2,6 +2,7 @@ package com.soywiz.korim.format
 
 import com.soywiz.kds.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
@@ -13,6 +14,13 @@ abstract class ImageFormatWithContainer(vararg exts: String) : ImageFormat(*exts
     final override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData = readImageContainer(s, props).imageDatas.first()
 }
 
+abstract class ImageFormatSuspend(vararg exts: String) : ImageFormat(*exts) {
+    override suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps): ImageInfo? = TODO()
+
+    final override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? =
+        runBlockingNoSuspensionsNullable { decodeHeaderSuspend(s.sliceHere().toAsync(), props) }
+}
+
 abstract class ImageFormat(vararg exts: String) {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
     open fun readImageContainer(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps()): ImageDataContainer = ImageDataContainer(listOf(readImage(s, props)))
@@ -22,6 +30,10 @@ abstract class ImageFormat(vararg exts: String) {
 		s: SyncStream,
 		props: ImageEncodingProps = ImageEncodingProps("unknown")
 	): Unit = throw UnsupportedOperationException()
+
+    open suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps = ImageDecodingProps()): ImageInfo? {
+        return decodeHeader(s.toSyncOrNull() ?: s.readAll().openSync())
+    }
 
 	open fun decodeHeader(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps()): ImageInfo? =
 		runIgnoringExceptions(show = true) {

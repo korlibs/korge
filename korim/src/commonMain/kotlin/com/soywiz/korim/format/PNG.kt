@@ -4,6 +4,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.internal.*
+import com.soywiz.korio.async.*
 
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
@@ -40,12 +41,12 @@ object PNG : ImageFormat("png") {
 		InterlacedPass(0, 0, 1, 1, 1, 1)
 	)
 
-	enum class Colorspace(val id: Int) {
-		GRAYSCALE(0),
-		RGB(2),
-		INDEXED(3),
-		GRAYSCALE_ALPHA(4),
-		RGBA(6);
+	enum class Colorspace(val id: Int, val nchannels: Int) {
+		GRAYSCALE(0, 1),
+		RGB(2, 3),
+		INDEXED(3, 1),
+		GRAYSCALE_ALPHA(4, 2),
+		RGBA(6, 4);
 
 		companion object {
 			val BY_ID = values().associateBy { it.id }
@@ -72,12 +73,9 @@ object PNG : ImageFormat("png") {
 	}
 
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? = try {
-		val header = readCommon(s, readHeader = true) as Header
-		ImageInfo().apply {
-			this.width = header.width
-			this.height = header.height
-			this.bitsPerPixel = header.bitsPerChannel
-		}
+        val info = ImageInfo()
+		val header = readCommon(s, readHeader = true, info = info) as Header
+        info
 	} catch (t: Throwable) {
 		null
 	}
@@ -181,7 +179,7 @@ object PNG : ImageFormat("png") {
 		}
 	}
 
-	private fun readCommon(s: SyncStream, readHeader: Boolean): Any? {
+	private fun readCommon(s: SyncStream, readHeader: Boolean, info: ImageInfo = ImageInfo()): Any? {
 		val magic = s.readS32BE()
 		if (magic != MAGIC1) throw IllegalArgumentException("Invalid PNG file magic: ${magic.hex}!=${MAGIC1.hex}")
 		s.readS32BE() // magic continuation
@@ -193,6 +191,7 @@ object PNG : ImageFormat("png") {
 		var paletteCount = 0
 
 		fun SyncStream.readChunk(): Boolean {
+            if (eof) return false
 			val length = readS32BE()
 			val type = readStringz(4)
 			val data = readStream(length.toLong())
@@ -210,7 +209,11 @@ object PNG : ImageFormat("png") {
 							compressionmethod = readU8(),
 							filtermethod = readU8(),
 							interlacemethod = readU8()
-						)
+						).also {
+                            info.width = it.width
+                            info.height = it.height
+                            info.bitsPerPixel = it.bitsPerChannel * it.colorspace.nchannels
+                        }
 					}
 				}
 				"PLTE" -> {
@@ -222,8 +225,14 @@ object PNG : ImageFormat("png") {
 					data.read(aPalette.asByteArray(), 0, data.length.toInt())
 				}
 				"IDAT" -> {
+                    if (readHeader) {
+                        return false
+                    }
 					pngdata.append(data.readAll())
 				}
+                "eXIf" -> {
+                    runBlockingNoSuspensions { EXIF.readExifBase(data.readAll().openAsync(), info) }
+                }
 				"IEND" -> {
                     return false
 				}
@@ -232,9 +241,8 @@ object PNG : ImageFormat("png") {
             return true
 		}
 
-		while (!s.eof && s.readChunk()) {
-			if (readHeader && pheader != null) return pheader
-		}
+		while (!s.eof && s.readChunk()) Unit
+        if (readHeader) return pheader
 
 		val header = pheader ?: throw IllegalArgumentException("PNG without header!")
 		val width = header.width

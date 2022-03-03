@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.kds.*
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.VfsFile
@@ -53,8 +54,12 @@ suspend fun VfsFile.readBitmapSliceWithOrientation(premultiplied: Boolean = true
     val result = kotlin.runCatching { EXIF.readExifFromJpeg(this) }
     val slice = readBitmapSlice(premultiplied, name, atlas)
     return if (result.isSuccess) {
-        slice.withImageOrientation(result.getOrThrow().orientation)
+        slice.withImageOrientation(result.getOrThrow().orientationSure)
     } else {
         slice
     }
 }
+
+var ImageInfo.orientation: ImageOrientation? by Extra.Property { null }
+val ImageInfo.orientationSure: ImageOrientation get() = orientation ?: ImageOrientation.ORIGINAL
+
