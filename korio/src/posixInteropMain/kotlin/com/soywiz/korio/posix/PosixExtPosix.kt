@@ -6,3 +6,19 @@ import platform.posix.*
 actual fun posixFopen(filename: String, mode: String): CPointer<FILE>? {
     return fopen(filename, mode)
 }
+
+actual fun posixReadlink(path: String): String? = memScoped {
+    val addr = allocArray<ByteVar>(PATH_MAX)
+    val finalSize = readlink(path, addr, PATH_MAX.convert()).toInt()
+    if (finalSize < 0) null else addr.toKString()
+}
+
+actual fun posixRealpath(path: String): String = memScoped {
+    val temp = allocArray<ByteVar>(PATH_MAX)
+    realpath(path, temp)
+    temp.toKString()
+}
+
+actual fun posixMkdir(path: String, attr: Int): Int {
+    return platform.posix.mkdir(path, attr.convert())
+}

@@ -9,3 +9,11 @@ actual fun posixFopen(filename: String, mode: String): CPointer<FILE>? {
         platform.posix._wfopen(filename.wcstr, mode.wcstr)
     }
 }
+
+actual fun posixReadlink(path: String): String? = null
+
+actual fun posixRealpath(path: String): String = path
+
+actual fun posixMkdir(path: String, attr: Int): Int {
+    return platform.posix.mkdir(path)
+}

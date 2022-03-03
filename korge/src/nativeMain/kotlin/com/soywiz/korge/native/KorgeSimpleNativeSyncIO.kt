@@ -7,7 +7,7 @@ import platform.posix.*
 
 object KorgeSimpleNativeSyncIO {
     fun mkdirs(file: String) {
-        com.soywiz.korio.doMkdir(file, "0777".toInt(8))
+        posixMkdir(file, "0777".toInt(8))
     }
 
     fun writeBytes(file: String, bytes: ByteArray) {

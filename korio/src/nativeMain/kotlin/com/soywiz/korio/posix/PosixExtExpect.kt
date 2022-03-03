@@ -14,3 +14,6 @@ expect fun posixFopen(filename: String, mode: String): CPointer<FILE>?
 expect fun posixFclose(file: CPointer<FILE>?): Int
 expect fun posixTruncate(file: String, size: Long): Int
 expect fun posixStat(rpath: String): PosixStatInfo?
+expect fun posixReadlink(path: String): String?
+expect fun posixRealpath(path: String): String
+expect fun posixMkdir(path: String, attr: Int): Int

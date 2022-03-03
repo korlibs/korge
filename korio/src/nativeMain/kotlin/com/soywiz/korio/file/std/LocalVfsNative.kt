@@ -241,7 +241,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 		}
 	}
 
-	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = com.soywiz.korio.doMkdir(resolve(path), "0777".toInt(8).convert()) == 0
+	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = posixMkdir(resolve(path), "0777".toInt(8).convert()) == 0
 
 	override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit {
 		// @TODO:
