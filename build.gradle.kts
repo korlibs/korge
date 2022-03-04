@@ -964,6 +964,15 @@ subprojects {
                     dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                 }
             }
+            val publishMobileLocal by creating(Task::class) {
+                if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
+                    dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
+                    dependsOn("publishJvmPublicationToMavenLocal")
+                    dependsOn("publishAndroidPublicationToMavenLocal")
+                    dependsOn("publishIosArm64PublicationToMavenLocal")
+                }
+                //dependsOn("publishMacosArm64PublicationToMavenLocal")
+            }
         }
         tasks.withType(Test::class.java).all {
             testLogging {
