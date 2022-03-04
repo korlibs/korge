@@ -231,13 +231,13 @@ open class ViewsForTesting(
 		return true
 	}
 
-	// @TODO: Run a faster eventLoop where timers happen much faster
     fun viewsTest(
         timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT,
         frameTime: TimeSpan = this.frameTime,
+        cond: () -> Boolean = { OS.isJvm && !OS.isAndroid },
         //devicePixelRatio: Double = defaultDevicePixelRatio,
         block: suspend Stage.() -> Unit
-    ) = suspendTest(timeout = timeout, cond = { OS.isJvm && !OS.isAndroid }) {
+    ): Unit = suspendTest(timeout = timeout, cond = cond) {
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
@@ -264,15 +264,19 @@ open class ViewsForTesting(
 			}
 		})
 
+        //println("[a0]")
 		withTimeout(timeout ?: TimeSpan.NIL) {
+            //println("[a1]")
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()
 				dispatcher.executePending(1.seconds)
 			}
 
+            //println("[a2]")
 			if (completedException != null) throw completedException!!
 		}
+        //println("[a3]")
 	}
 
     @Suppress("UNCHECKED_CAST")
