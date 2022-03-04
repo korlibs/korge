@@ -90,6 +90,7 @@ data class ImageDecodingProps(
     val premultiplied: Boolean = true,
     // Requested but not enforced. Max width and max height
     val requestedMaxSize: Int? = null,
+    val debug: Boolean = false,
     override var extra: ExtraType = null
 ) : Extra {
 

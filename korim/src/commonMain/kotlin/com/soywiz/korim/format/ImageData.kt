@@ -44,6 +44,8 @@ open class ImageData constructor(
 
 data class ImageDataWithAtlas(val image: ImageData, val atlas: AtlasPacker.Result<ImageFrameLayer>)
 
+var ImageData.info: ImageInfo? by Extra.Property { null }
+
 //fun ImageData.packInAtlas(): ImageDataWithAtlas {
 //    val frameLayers = frames.flatMap { it.layerData }.filter { it.includeInAtlas }
 //    val atlasResult = AtlasPacker.pack(frameLayers.map { it to it.slice })

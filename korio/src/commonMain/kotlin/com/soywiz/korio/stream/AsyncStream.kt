@@ -704,11 +704,12 @@ suspend fun AsyncStream.writeToAlign(alignment: Int, value: Int = 0) {
 	writeBytes(data)
 }
 
-suspend fun AsyncStream.skip(count: Int): AsyncStream {
+fun AsyncStream.skip(count: Int): AsyncStream {
     position += count
     return this
 }
-suspend fun AsyncStream.skipToAlign(alignment: Int) { position = position.nextAlignedTo(alignment.toLong()) }
+fun AsyncStream.skipToAlign(alignment: Int) { position = position.nextAlignedTo(alignment.toLong()) }
+fun AsyncStream.skipToAlign(alignment: Int, offset: Int) { position = (position + offset).nextAlignedTo(alignment.toLong()) - offset }
 suspend fun AsyncStream.truncate() = setLength(position)
 
 suspend fun AsyncOutputStream.writeCharArrayLE(array: CharArray) = writeTempBytes(array.size * 2) { writeArrayLE(0, array) }
