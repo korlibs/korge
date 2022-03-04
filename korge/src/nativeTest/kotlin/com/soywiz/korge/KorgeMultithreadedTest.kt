@@ -13,6 +13,7 @@ import kotlin.test.*
 
 class KorgeMultithreadedTest {
     @Test
+    @Ignore
     fun test() {
         val worker = Worker.start()
         val result = try {
