@@ -2,9 +2,9 @@ name: "TEST SNAPSHOT"
 
 on:
   #push:
-  #  branches: [ master ]
+  #  branches: [ main ]
   #pull_request:
-  #  branches: [ master ]
+  #  branches: [ main ]
   schedule:
     # https://crontab.guru/#0_0_*_*_4
     # “At 00:00 on Thursday.”
