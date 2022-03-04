@@ -36,4 +36,12 @@ class BitmapSliceTest {
             """.trimIndent()
         )
     }
+
+    @Test
+    fun testRotate() {
+        val bmp = Bitmap32(128, 64).slice()
+        val bmp2 = bmp.rotatedRight()
+        assertEquals("128x64", bmp.sizeString)
+        assertEquals("64x128", bmp2.sizeString)
+    }
 }

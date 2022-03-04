@@ -24,18 +24,21 @@ interface BmpCoords {
 interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpCoordsWithT<T>> {
     override fun getOrNull(): BmpCoordsWithT<T>? = this
     override suspend fun get(): BmpCoordsWithT<T> = this
+    val baseWidth: Int get() = base.width
+    val baseHeight: Int get() = base.height
     val name: String? get() = null
     val base: T
-    val left: Int get() = (tl_x * base.width).toInt()
-    val top: Int get() = (tl_y * base.height).toInt()
-    val width: Int get() = (Point.distance(tl_x, tl_y, tr_x, tr_y) * base.width).toInt()
-    val height: Int get() = (Point.distance(tl_x, tl_y, bl_x, bl_y) * base.height).toInt()
+    val left: Int get() = (tl_x * baseWidth).toInt()
+    val top: Int get() = (tl_y * baseHeight).toInt()
+    val width: Int get() = (Point.distance(tl_x * baseWidth, tl_y * baseHeight, tr_x * baseWidth, tr_y * baseHeight)).toInt()
+    val height: Int get() = (Point.distance(tl_x * baseWidth, tl_y * baseHeight, bl_x * baseWidth, bl_y * baseHeight)).toInt()
     val frameOffsetX: Int get() = 0
     val frameOffsetY: Int get() = 0
     val frameWidth: Int get() = width
     val frameHeight: Int get() = height
     val area: Int get() = width * height
     override fun close() = Unit
+    val sizeString: String get() = "${width}x${height}"
 }
 
 // @TODO: Fix & enable to support slicing transformed textures
