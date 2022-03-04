@@ -33,7 +33,6 @@ import com.esotericsoftware.spine.Animation.*
 import com.esotericsoftware.spine.BoneData.*
 import com.esotericsoftware.spine.PathConstraintData.*
 import com.esotericsoftware.spine.attachments.*
-import com.esotericsoftware.spine.internal.*
 import com.esotericsoftware.spine.utils.*
 import com.esotericsoftware.spine.utils.SpineUtils.arraycopy
 import com.soywiz.kds.*

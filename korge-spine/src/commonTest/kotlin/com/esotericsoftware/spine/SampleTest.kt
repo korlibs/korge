@@ -44,4 +44,13 @@ class SampleTest {
         }
         //println(log)
     }
+
+    @Test
+    fun testDukeJson() = suspendTest({ !OS.isJs && !OS.isAndroid }) {
+        val atlas = resourcesVfs["duke/3.8/Duke.atlas"].readAtlas()
+        val skeletonData = resourcesVfs["duke/3.8/Duke.json"].readSkeletonJson(atlas, 0.6f)
+        val skeleton = Skeleton(skeletonData)
+        val stateData = AnimationStateData(skeletonData)
+        val state = AnimationState(stateData)
+    }
 }

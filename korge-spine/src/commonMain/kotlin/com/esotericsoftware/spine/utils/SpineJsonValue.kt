@@ -108,6 +108,7 @@ internal class SpineJsonValue {
             is Number -> SpineJsonValue(value.toDouble(), value.toString())
             is List<*> -> SpineJsonValue(ValueType.ARRAY, value.map { fromPrimitiveTree(it) })
             is Map<*, *> -> SpineJsonValue(ValueType.OBJECT, value.map { fromPrimitiveTree(it.value, it.key as String) })
+            is DoubleArrayList -> SpineJsonValue(ValueType.ARRAY, value.map { fromPrimitiveTree(it) })
             else -> TODO()
         }.also {
             it.name = name
