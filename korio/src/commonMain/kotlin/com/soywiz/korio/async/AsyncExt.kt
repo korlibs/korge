@@ -1,10 +1,12 @@
 package com.soywiz.korio.async
 
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
+import kotlin.native.concurrent.*
 
 suspend fun <T> CoroutineContext.launchUnscopedAndWait(block: suspend () -> T): T {
     val deferred = CompletableDeferred<T>()
@@ -60,13 +62,19 @@ fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_T
 fun suspendTestNoBrowser(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !OS.isJsBrowser }, callback = callback)
 fun suspendTestNoJs(callback: suspend CoroutineScope.() -> Unit) = suspendTest({ !OS.isJs }, callback = callback)
 
+@ThreadLocal
+val DEBUG_ASYNC_LAUNCH_ERRORS by lazy { Environment["DEBUG_ASYNC_LAUNCH_ERRORS"] == "true" }
+
 private fun CoroutineScope._launch(start: CoroutineStart, callback: suspend () -> Unit): Job = launch(coroutineContext, start = start) {
 	try {
 		callback()
 	} catch (e: CancellationException) {
 		throw e
 	} catch (e: Throwable) {
-		e.printStackTrace()
+        if (DEBUG_ASYNC_LAUNCH_ERRORS) {
+            Console.error("CoroutineScope._launch.catch:")
+            e.printStackTrace()
+        }
 		throw e
 	}
 }
@@ -77,7 +85,10 @@ private fun <T> CoroutineScope._async(start: CoroutineStart, callback: suspend (
 	} catch (e: CancellationException) {
 		throw e
 	} catch (e: Throwable) {
-		e.printStackTrace()
+        if (DEBUG_ASYNC_LAUNCH_ERRORS) {
+            Console.error("CoroutineScope._async.catch:")
+            e.printStackTrace()
+        }
 		throw e
 	}
 }

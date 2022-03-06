@@ -1,7 +1,6 @@
 package com.soywiz.korio.async
 
 import com.soywiz.korio.concurrent.lock.*
-import com.soywiz.korio.concurrent.lock.Lock
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -14,6 +13,7 @@ class AsyncQueue {
 	//constructor() : AsyncQueue(CoroutineContext())
 
 	val thread = AsyncThread()
+    //val thread = AsyncThread2()
 
 	//companion object {
 	//	suspend operator fun invoke() = AsyncQueue(getCoroutineContext())
@@ -22,7 +22,14 @@ class AsyncQueue {
 	suspend operator fun invoke(func: suspend () -> Unit): AsyncQueue = invoke(coroutineContext, func)
 
 	operator fun invoke(context: CoroutineContext, func: suspend () -> Unit): AsyncQueue {
-		thread.sync(context) { func() }
+		thread.sync(context) {
+            //try {
+                func()
+            //} catch (e: Throwable) {
+            //    Console.error("AsyncQueue.invoke.catch")
+            //    e.printStackTrace()
+            //}
+        }
 		return this
 	}
 
@@ -71,12 +78,7 @@ class AsyncThread() : AsyncInvokable {
 
 	override suspend operator fun <T> invoke(func: suspend () -> T): T {
 		val task = sync(coroutineContext, func)
-		try {
-			val res = task.await()
-			return res
-		} catch (e: Throwable) {
-			throw e
-		}
+		return task.await()
 	}
 
 	suspend fun <T> sync(func: suspend () -> T): Deferred<T> = sync(coroutineContext, func)
@@ -89,7 +91,6 @@ class AsyncThread() : AsyncInvokable {
 		}
 		lastPromise = promise
 		return promise
-
 	}
 }
 
@@ -117,12 +118,7 @@ class AsyncThread2 : AsyncInvokable {
 
 	override suspend operator fun <T> invoke(func: suspend () -> T): T {
 		val task = invoke(coroutineContext, func)
-		try {
-			val res = task.await()
-			return res
-		} catch (e: Throwable) {
-			throw e
-		}
+        return task.await()
 	}
 
 	private operator fun <T> invoke(context: CoroutineContext, func: suspend () -> T): Deferred<T> = lock {
