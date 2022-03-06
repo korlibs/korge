@@ -1,5 +1,6 @@
 package com.soywiz.korio.net
 
+import com.soywiz.klogger.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.concurrent.atomic.*
 import com.soywiz.korio.lang.*
@@ -87,9 +88,23 @@ interface AsyncServer: AsyncCloseable {
 	suspend fun listen(handler: suspend (AsyncClient) -> Unit): Closeable {
 		val job = async(coroutineContext) {
             while (true) {
-                val client = accept()
-                launchImmediately(coroutineContext) {
-                    handler(client)
+                try {
+                    val client = accept()
+                    launchImmediately(coroutineContext) {
+                        supervisorScope {
+                            try {
+                                handler(client)
+                            } catch (e: IOException) {
+                                // DO Nothing
+                            } catch (e: Throwable) {
+                                Console.error("Failed in AsyncServer.listen.handler")
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                } catch (e: Throwable) {
+                    Console.error("Failed in AsyncServer.listen.accept")
+                    e.printStackTrace()
                 }
             }
 		}
