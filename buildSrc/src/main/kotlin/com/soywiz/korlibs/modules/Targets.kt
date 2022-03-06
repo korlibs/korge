@@ -61,7 +61,12 @@ fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.cur
 
 fun org.jetbrains.kotlin.gradle.dsl.KotlinTargetContainerWithPresetFunctions.nativeTargets(project: Project): List<org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget> {
     return when {
-        isWindows -> listOfNotNull(mingwX64())
+        isWindows -> listOfNotNull(mingwX64()) + (when {
+            inCI -> emptyList()
+            else -> listOfNotNull(
+                linuxX64(),
+            )
+        })
         isMacos -> listOfNotNull(
             macosX64(), macosArm64(),
         ) + (when {
