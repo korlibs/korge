@@ -33,7 +33,9 @@ open class HttpServer protected constructor() : AsyncCloseable {
 		headers: Http.Headers,
 		val scope: CoroutineScope
 	) : BaseRequest(uri, headers) {
-		abstract fun reject()
+        open val address: AsyncAddress get() = AsyncAddress("0.0.0.0", 0)
+
+        abstract fun reject()
 		open fun accept(headers: Http.Headers) = Unit
 
 		abstract fun close()
@@ -215,7 +217,10 @@ open class HttpServer protected constructor() : AsyncCloseable {
 		}
 	}
 
-	protected open suspend fun websocketHandlerInternal(handler: suspend (WsRequest) -> Unit) {
+    protected open suspend fun errorHandlerInternal(handler: suspend (Throwable) -> Unit) {
+    }
+
+    protected open suspend fun websocketHandlerInternal(handler: suspend (WsRequest) -> Unit) {
 	}
 
 	protected open suspend fun httpHandlerInternal(handler: suspend (Request) -> Unit) {
@@ -232,13 +237,19 @@ open class HttpServer protected constructor() : AsyncCloseable {
 		deferred.await()
 	}
 
-	open val actualPort: Int = 0
+	open val actualPort: Int get() = 0
+    open val actualHost: String get() = "127.0.0.1"
     //val onListening = Signal<Int>()
 
 	protected open suspend fun closeInternal() {
 	}
 
-	suspend fun websocketHandler(handler: suspend (WsRequest) -> Unit): HttpServer {
+    suspend fun errorHandler(handler: suspend (Throwable) -> Unit): HttpServer {
+        errorHandlerInternal(handler)
+        return this
+    }
+
+    suspend fun websocketHandler(handler: suspend (WsRequest) -> Unit): HttpServer {
 		websocketHandlerInternal(handler)
 		return this
 	}

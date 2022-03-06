@@ -18,7 +18,13 @@ internal actual val asyncSocketFactory: AsyncSocketFactory by lazy {
             //if (secure) return JvmAsyncClient(secure = secure)
             return JvmNioAsyncClient().let { if (secure) AsyncClientSSLProcessor(it) else it }
         }
-		override suspend fun createServer(port: Int, host: String, backlog: Int, secure: Boolean): AsyncServer = JvmAsyncServer(port, host, backlog, secure = secure).apply { init() }
+		override suspend fun createServer(port: Int, host: String, backlog: Int, secure: Boolean): AsyncServer =
+            // @TODO: Make JvmAsyncServerSocketChannel support secure SSL sockets
+            if (secure) {
+                JvmAsyncServer(port, host, backlog, secure = secure).apply { init() }
+            } else {
+                JvmAsyncServerSocketChannel(port, host, backlog).apply { init() }
+            }
 	}
 }
 
@@ -48,6 +54,8 @@ class JvmNioAsyncClient(private var client: AsynchronousSocketChannel? = null) :
         block(it.getCompletionHandler())
     }
 
+    override val address: AsyncAddress get() = client?.remoteAddress.toAsyncAddress()
+
     override suspend fun connect(host: String, port: Int): Unit {
         val client = doIo { AsynchronousSocketChannel.open() }
         this.client = client
@@ -75,9 +83,9 @@ class JvmAsyncClient(private var socket: Socket? = null, val secure: Boolean = f
     //private val readQueue = queue
     //private val writeQueue = queue
 
-    private val connectionQueue = AsyncThread()
-    private val readQueue = AsyncThread()
-    private val writeQueue = AsyncThread()
+    private val connectionQueue = AsyncThread2()
+    private val readQueue = AsyncThread2()
+    private val writeQueue = AsyncThread2()
 
     private var socketIs: InputStream? = null
     private var socketOs: OutputStream? = null
@@ -90,6 +98,8 @@ class JvmAsyncClient(private var socket: Socket? = null, val secure: Boolean = f
         socketIs = socket?.getInputStream()
         socketOs = socket?.getOutputStream()
     }
+
+    override val address: AsyncAddress get() = socket?.remoteSocketAddress.toAsyncAddress()
 
     override suspend fun connect(host: String, port: Int): Unit {
         connectionQueue {

@@ -206,4 +206,5 @@ interface Http {
 	}
 
 	data class RedirectException(val code: Int = 307, val redirectUri: String) : Http.HttpException(code, HttpStatusMessage(code))
+    class InvalidRequestException(message: String) : IllegalStateException(message)
 }

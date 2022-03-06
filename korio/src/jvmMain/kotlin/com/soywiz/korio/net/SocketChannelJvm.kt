@@ -1,13 +1,11 @@
 package com.soywiz.korio.net
 
-import com.soywiz.korio.async.AsyncThread
-import com.soywiz.korio.async.EventLoopExecutorService
-import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.*
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.IOException
-import java.net.InetSocketAddress
+import java.net.*
 import java.nio.ByteBuffer
 import java.nio.channels.AsynchronousChannelGroup
 import java.nio.channels.AsynchronousServerSocketChannel
@@ -16,7 +14,6 @@ import java.nio.channels.CompletionHandler
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-
 
 class JvmAsyncServerSocketChannel(override val requestPort: Int, override val host: String, override val backlog: Int = -1) :
     AsyncServer {
@@ -52,15 +49,17 @@ class JvmAsyncServerSocketChannel(override val requestPort: Int, override val ho
     override suspend fun close() {
         try {
             ssc.close()
-        }catch (e: Throwable) {
+        } catch (e: Throwable) {
             e.printStackTrace()
         }
     }
 }
 
 class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocketChannel? = null) : AsyncClient {
-    private val readQueue = AsyncThread()
-    private val writeQueue = AsyncThread()
+    private val readQueue = AsyncThread2()
+    private val writeQueue = AsyncThread2()
+
+    override val address: AsyncAddress get() = sc?.remoteAddress?.toAsyncAddress() ?: super.address
 
     //suspend override fun connect(host: String, port: Int): Unit = suspendCoroutineEL { c ->
     override suspend fun connect(host: String, port: Int): Unit = suspendCancellableCoroutine { c ->
@@ -85,12 +84,18 @@ class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocket
 
     //suspend private fun _read(buffer: ByteArray, offset: Int, len: Int): Int = suspendCoroutineEL { c ->
     private suspend fun _read(buffer: ByteArray, offset: Int, len: Int): Int = suspendCancellableCoroutine { c ->
-        if (sc == null) throw IOException("Not connected")
-        val bb = ByteBuffer.wrap(buffer, offset, len)
-        sc!!.read(bb, this, object : CompletionHandler<Int, AsyncClient> {
-            override fun completed(result: Int, attachment: AsyncClient): Unit = c.resume(result)
-            override fun failed(exc: Throwable, attachment: AsyncClient): Unit = c.resumeWithException(exc)
-        })
+        if (sc == null) {
+            c.resumeWithException(IOException("Not connected"))
+        }
+        try {
+            val bb = ByteBuffer.wrap(buffer, offset, len)
+            sc!!.read(bb, this, object : CompletionHandler<Int, AsyncClient> {
+                override fun completed(result: Int, attachment: AsyncClient): Unit = c.resume(result)
+                override fun failed(exc: Throwable, attachment: AsyncClient): Unit = c.resumeWithException(exc)
+            })
+        } catch (e: Throwable) {
+            c.resumeWithException(e)
+        }
     }
 
     private suspend fun _write(buffer: ByteArray, offset: Int, len: Int): Unit {
@@ -106,21 +111,25 @@ class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocket
 
     private suspend fun _writeBufferPartial(bb: ByteBuffer): Int = suspendCancellableCoroutine { c ->
         if (sc == null) {
-            throw IOException("Not connected")
+            c.resumeWithException(IOException("Not connected"))
         }
-        AsyncClient.Stats.writeCountStart.incrementAndGet()
-        sc!!.write(bb, this, object : CompletionHandler<Int, AsyncClient> {
-            override fun completed(result: Int, attachment: AsyncClient) {
-                AsyncClient.Stats.writeCountEnd.incrementAndGet()
-                c.resume(result)
-            }
+        try {
+            AsyncClient.Stats.writeCountStart.incrementAndGet()
+            sc!!.write(bb, this, object : CompletionHandler<Int, AsyncClient> {
+                override fun completed(result: Int, attachment: AsyncClient) {
+                    AsyncClient.Stats.writeCountEnd.incrementAndGet()
+                    c.resume(result)
+                }
 
-            override fun failed(exc: Throwable, attachment: AsyncClient) {
-                //println("write failed")
-                AsyncClient.Stats.writeCountError.incrementAndGet()
-                c.resumeWithException(exc)
-            }
-        })
+                override fun failed(exc: Throwable, attachment: AsyncClient) {
+                    //println("write failed")
+                    AsyncClient.Stats.writeCountError.incrementAndGet()
+                    c.resumeWithException(exc)
+                }
+            })
+        } catch (e: Throwable) {
+            c.resumeWithException(e)
+        }
     }
 
     override suspend fun close() {

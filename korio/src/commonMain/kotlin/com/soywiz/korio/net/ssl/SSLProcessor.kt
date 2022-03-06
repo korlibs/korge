@@ -49,6 +49,8 @@ fun SSLProcessor.getAllEncryptedClientData(): List<ByteArray> {
 }
 
 class AsyncClientSSLProcessor(val client: AsyncClient, val processor: SSLProcessor = DefaultSSLProcessor()) : AsyncClient {
+    override val address: AsyncAddress get() = client.address
+
     override suspend fun connect(host: String, port: Int) {
         processor.setEndPoint(host, port)
         client.connect(host, port)

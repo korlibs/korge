@@ -15,10 +15,12 @@ import win32ssl.*
 
 class NativeSocket private constructor(
     internal val sockfd: SOCKET,
-    private var endpoint: Endpoint,
+    endpoint: Endpoint,
     val secure: Boolean,
     val debug: Boolean
 ) {
+    var endpoint: Endpoint = endpoint; private set
+
 	companion object {
         const val DEBUG_SOCKET = false
 
@@ -67,6 +69,7 @@ class NativeSocket private constructor(
 
 	data class Endpoint(val ip: IP, val port: Int) {
 		override fun toString(): String = "$ip:$port"
+        fun toAsyncAddress(): AsyncAddress = AsyncAddress(ip.str, port)
 	}
 
 	class IP(val data: UByteArray) {
@@ -462,7 +465,9 @@ internal actual val asyncSocketFactory: AsyncSocketFactory = NativeAsyncSocketFa
 
 object NativeAsyncSocketFactory : AsyncSocketFactory() {
 	class NativeAsyncClient(val socket: NativeSocket) : AsyncClient {
-		override suspend fun connect(host: String, port: Int) { socket.connect(host, port) }
+        override val address: AsyncAddress get() = socket.endpoint.toAsyncAddress()
+
+        override suspend fun connect(host: String, port: Int) { socket.connect(host, port) }
 		override val connected: Boolean get() = socket.connected
 		override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = socket.suspendRecvUpTo(buffer, offset, len)
 		override suspend fun write(buffer: ByteArray, offset: Int, len: Int) = socket.suspendSend(buffer, offset, len)

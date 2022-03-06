@@ -1,10 +1,13 @@
 package com.soywiz.korio.net
+import com.soywiz.korio.dynamic.KDynamic.Companion.str
 import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import platform.posix.*
 
-class NativeSocket private constructor(internal val sockfd: Int, private var endpoint: Endpoint) {
+class NativeSocket private constructor(internal val sockfd: Int, endpoint: Endpoint) {
+    var endpoint: Endpoint = endpoint; private set
+
 	companion object {
 		init {
 			init_sockets()
@@ -18,6 +21,7 @@ class NativeSocket private constructor(internal val sockfd: Int, private var end
 
 	data class Endpoint(val ip: IP, val port: Int) {
 		override fun toString(): String = "$ip:$port"
+        fun toAsyncAddress(): AsyncAddress = AsyncAddress(ip.str, port)
 	}
 
 	class IP(val data: UByteArray) {
@@ -268,6 +272,8 @@ internal actual val asyncSocketFactory: AsyncSocketFactory = NativeAsyncSocketFa
 
 object NativeAsyncSocketFactory : AsyncSocketFactory() {
 	class NativeAsyncClient(val socket: NativeSocket) : AsyncClient {
+        override val address: AsyncAddress get() = socket.endpoint.toAsyncAddress()
+
 		override suspend fun connect(host: String, port: Int) {
 			socket.connect(host, port)
 		}

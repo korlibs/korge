@@ -439,6 +439,10 @@ private class HttpSeverNodeJs : HttpServer() {
         }
     }
 
+    override suspend fun errorHandlerInternal(handler: suspend (Throwable) -> Unit) {
+        super.errorHandlerInternal(handler)
+    }
+
     override suspend fun websocketHandlerInternal(handler: suspend (WsRequest) -> Unit) {
         super.websocketHandlerInternal(handler)
     }
@@ -504,6 +508,12 @@ private class HttpSeverNodeJs : HttpServer() {
         get() {
             //com.soywiz.korio.lang.Console.log(server)
             return jsEnsureInt(server.address().port)
+        }
+
+    override val actualHost: String
+        get() {
+            //com.soywiz.korio.lang.Console.log(server)
+            return jsEnsureString(server.address().address)
         }
 
     override suspend fun closeInternal() = suspendCoroutine<Unit> { c ->
