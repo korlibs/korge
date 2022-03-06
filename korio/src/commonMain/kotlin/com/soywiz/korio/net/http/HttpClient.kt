@@ -421,8 +421,13 @@ fun setDefaultHttpFactory(factory: HttpFactory) {
 
 fun HttpFactory.createClientEndpoint(endpoint: String) = createClient().endpoint(endpoint)
 
-fun createHttpClient() = defaultHttpFactory.createClient()
-fun createHttpServer() = defaultHttpFactory.createServer()
-fun createHttpClientEndpoint(endpoint: String) = createHttpClient().endpoint(endpoint)
+fun createHttpClient(): HttpClient = defaultHttpFactory.createClient()
+fun createHttpServer(): HttpServer = defaultHttpFactory.createServer()
+fun createHttpClientEndpoint(endpoint: String): HttpClientEndpoint = createHttpClient().endpoint(endpoint)
+
+inline fun createHttpClient(block: HttpClient.() -> Unit): HttpClient = createHttpClient().apply(block)
+inline fun createHttpServer(block: HttpServer.() -> Unit): HttpServer = createHttpServer().apply(block)
+inline fun createHttpClientEndpoint(endpoint: String, block: HttpClientEndpoint.() -> Unit): HttpClientEndpoint = createHttpClientEndpoint(endpoint).apply(block)
+
 
 fun httpError(code: Int, msg: String): Nothing = throw Http.HttpException(code, msg)
