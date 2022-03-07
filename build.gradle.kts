@@ -992,6 +992,7 @@ subprojects {
                         dependsOn("publishJvmPublicationToMavenRepository")
                         dependsOn("publishAndroidPublicationToMavenRepository")
                         dependsOn("publishIosArm64PublicationToMavenRepository")
+                        dependsOn("publishIosX64PublicationToMavenRepository")
                     }
                 }
             }
