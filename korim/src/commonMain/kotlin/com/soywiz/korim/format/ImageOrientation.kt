@@ -5,6 +5,7 @@ import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korma.geom.ISizeInt
+import kotlin.native.concurrent.*
 
 data class ImageOrientation(
     val rotation: Rotation = Rotation.R0,
@@ -60,6 +61,7 @@ suspend fun VfsFile.readBitmapSliceWithOrientation(premultiplied: Boolean = true
     }
 }
 
+@ThreadLocal
 var ImageInfo.orientation: ImageOrientation? by Extra.Property { null }
 val ImageInfo?.orientationSure: ImageOrientation get() = this?.orientation ?: ImageOrientation.ORIGINAL
 
