@@ -1,8 +1,6 @@
 import com.soywiz.korlibs.modules.*
 import com.soywiz.korlibs.util.*
 import org.gradle.kotlin.dsl.kotlin
-import org.jetbrains.kotlin.gradle.plugin.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.File
 
 buildscript {
@@ -921,6 +919,7 @@ subprojects {
     afterEvaluate {
         tasks {
             val publishKotlinMultiplatformPublicationToMavenLocal = "publishKotlinMultiplatformPublicationToMavenLocal"
+            val publishKotlinMultiplatformPublicationToMavenRepository = "publishKotlinMultiplatformPublicationToMavenRepository"
 
             val publishJvmLocal by creating(Task::class) {
                 if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
@@ -971,7 +970,30 @@ subprojects {
                     dependsOn("publishAndroidPublicationToMavenLocal")
                     dependsOn("publishIosArm64PublicationToMavenLocal")
                 }
-                //dependsOn("publishMacosArm64PublicationToMavenLocal")
+            }
+
+            val customMavenUser = rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_USER")?.toString()
+            val customMavenPass = rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_PASS")?.toString()
+            val customMavenUrl = rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_URL")?.toString()
+            val customPublishEnabled = forcedVersion != null
+                && !customMavenUser.isNullOrBlank()
+                && !customMavenPass.isNullOrBlank()
+                && !customMavenUrl.isNullOrBlank()
+
+            val publishMobileRepo by creating(Task::class) {
+                doFirst {
+                    if (!customPublishEnabled) {
+                        error("To use publishMobileRepo, must set `FORCED_VERSION=...` environment variable, and in ~/.gradle/gradle.properties : KORLIBS_CUSTOM_MAVEN_USER, KORLIBS_CUSTOM_MAVEN_PASS & KORLIBS_CUSTOM_MAVEN_URL")
+                    }
+                }
+                if (customPublishEnabled) {
+                    if (findByName(publishKotlinMultiplatformPublicationToMavenRepository) != null) {
+                        dependsOn(publishKotlinMultiplatformPublicationToMavenRepository)
+                        dependsOn("publishJvmPublicationToMavenRepository")
+                        dependsOn("publishAndroidPublicationToMavenRepository")
+                        dependsOn("publishIosArm64PublicationToMavenRepository")
+                    }
+                }
             }
         }
         tasks.withType(Test::class.java).all {
