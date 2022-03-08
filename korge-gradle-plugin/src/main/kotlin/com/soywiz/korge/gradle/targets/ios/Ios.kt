@@ -22,17 +22,16 @@ fun Project.configureNativeIos() {
                     val DOLLAR = "\$"
 					writeText("""
                         import ${korge.realEntryPoint}
-                        import platform.Foundation.*
                         
                         object RootGameMain {
                             fun preRunMain() {
-                                //println("RootGameMain.preRunMain")
-                                val path = NSBundle.mainBundle.resourcePath
-                                //println("RootGameMain.runMain: path=${DOLLAR}path")
+                                // println("RootGameMain.preRunMain")
+                                val path = platform.Foundation.NSBundle.mainBundle.resourcePath
+                                // println("RootGameMain.runMain: path=${DOLLAR}path")
                                 if (path != null) {
                                     val rpath = "${DOLLAR}path/include/app/resources"
-                                    //println("RootGameMain.runMain: rpath=${DOLLAR}rpath")
-                                    NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
+                                    // println("RootGameMain.runMain: rpath=${DOLLAR}rpath")
+                                    platform.Foundation.NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
                                     MyIosGameWindow2.setCustomCwd(rpath)
                                 }                        
                             }
@@ -45,7 +44,7 @@ fun Project.configureNativeIos() {
                         }
                         
                         object MyIosGameWindow2 {
-                            fun setCustomCwd(cwd: String?) = run { com.soywiz.korio.file.std.customCwd = cwd }
+                            fun setCustomCwd(cwd: String?) { com.soywiz.korio.file.std.customCwd = cwd }
                             val gameWindow get() = com.soywiz.korgw.MyIosGameWindow
                         }
 					""".trimIndent())
