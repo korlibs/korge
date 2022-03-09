@@ -964,11 +964,17 @@ subprojects {
                 }
             }
             val publishMobileLocal by creating(Task::class) {
+                run {
+                    val taskName = "publishJvmPublicationToMavenLocal"
+                    if (findByName(taskName) != null) {
+                        dependsOn(taskName)
+                    }
+                }
                 if (findByName(publishKotlinMultiplatformPublicationToMavenLocal) != null) {
                     dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
-                    dependsOn("publishJvmPublicationToMavenLocal")
                     dependsOn("publishAndroidPublicationToMavenLocal")
                     dependsOn("publishIosArm64PublicationToMavenLocal")
+                    dependsOn("publishIosX64PublicationToMavenRepository")
                 }
             }
 
@@ -987,9 +993,14 @@ subprojects {
                     }
                 }
                 if (customPublishEnabled) {
+                    run {
+                        val taskName = "publishJvmPublicationToMavenRepository"
+                        if (findByName(taskName) != null) {
+                            dependsOn(taskName)
+                        }
+                    }
                     if (findByName(publishKotlinMultiplatformPublicationToMavenRepository) != null) {
                         dependsOn(publishKotlinMultiplatformPublicationToMavenRepository)
-                        dependsOn("publishJvmPublicationToMavenRepository")
                         dependsOn("publishAndroidPublicationToMavenRepository")
                         dependsOn("publishIosArm64PublicationToMavenRepository")
                         dependsOn("publishIosX64PublicationToMavenRepository")
