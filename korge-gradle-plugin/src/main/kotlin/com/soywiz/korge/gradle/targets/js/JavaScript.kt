@@ -58,68 +58,84 @@ fun Project.configureJavaScript() {
 
     val generatedIndexHtmlDir = File(project.buildDir, "processedResources-www")
 
-    val jsCreateIndexHtml = project.tasks.create("jsCreateIndexHtml", Task::class.java).apply {
-        doLast {
-            val targetDir = generatedIndexHtmlDir
-            generatedIndexHtmlDir.mkdirs()
-            logger.info("jsCreateIndexHtml.targetDir: $targetDir")
+    afterEvaluate {
+        val jsCreateIndexHtml = project.tasks.create("jsCreateIndexHtml", JsCreateIndexTask::class.java).also { task ->
             val jsMainCompilation = kotlin.js().compilations["main"]!!
-            //val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
-            // @TODO: How to get the actual .js file generated/served?
-            val jsFile = File("${project.name}.js").name
-            val resourcesFolders = jsMainCompilation.allKotlinSourceSets
+            val resourcesFolders: List<File> = jsMainCompilation.allKotlinSourceSets
                 .flatMap { it.resources.srcDirs } + listOf(File(rootProject.rootDir, "_template"))
-            //println("jsFile: $jsFile")
-            //println("resourcesFolders: $resourcesFolders")
-            fun readTextFile(name: String): String {
-                for (folder in resourcesFolders) {
-                    val file = File(folder, name)?.takeIf { it.exists() } ?: continue
-                    return file.readText()
-                }
-                return JavaScriptClass::class.java.classLoader.getResourceAsStream(name)?.readBytes()?.toString(Charsets.UTF_8)
-                    ?: error("We cannot find suitable '$name'")
+            task.resourcesFolders = resourcesFolders
+            task.targetDir = generatedIndexHtmlDir
+        }
+        (project.tasks.getByName("jsProcessResources") as Copy).apply {
+            duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+            dependsOn(jsCreateIndexHtml)
+            from(generatedIndexHtmlDir) {
+                it.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
             }
+            //println(this.outputs.files.toList())
 
-            val indexTemplateHtml = readTextFile("index.v2.template.html")
-            val customCss = readTextFile("custom-styles.template.css")
-            val customHtmlHead = readTextFile("custom-html-head.template.html")
-            val customHtmlBody = readTextFile("custom-html-body.template.html")
-
-            //println(File(targetDir, "index.html"))
-
-            try {
-                File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(16, 32).map {
-                    project.korge.getIconBytes(it).decodeImage()
-                }))
-            } catch (e: Throwable) {
-                e.printStackTrace()
-            }
-
-            File(targetDir, "index.html").writeText(
-                groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
-                    mapOf(
-                        "OUTPUT" to jsFile,
-                        "TITLE" to (korge.title ?: korge.name),
-                        "CUSTOM_CSS" to customCss,
-                        "CUSTOM_HTML_HEAD" to customHtmlHead,
-                        "CUSTOM_HTML_BODY" to customHtmlBody
-                    )
-                ).toString()
-            )
         }
     }
 
-    (project.tasks.getByName("jsProcessResources") as Copy).apply {
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        dependsOn(jsCreateIndexHtml)
-        from(generatedIndexHtmlDir) {
-            it.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-        }
-        //println(this.outputs.files.toList())
-
-    }
     configureEsbuild()
     configureWebpackFixes()
     configureJavascriptRun()
     configureClosureCompiler()
+}
+
+abstract class JsCreateIndexTask : DefaultTask() {
+    @get:InputFiles lateinit var resourcesFolders: List<File>
+    //@get:OutputDirectory lateinit var targetDir: File
+    @Internal lateinit var targetDir: File
+    private val projectName: String = project.name
+    private val korgeTitle: String? = project.korge.title
+    private val korgeName: String? = project.korge.name
+
+    private val iconProvider: KorgeIconProvider = KorgeIconProvider(project)
+
+    @TaskAction
+    fun run() {
+        targetDir.mkdirs()
+        logger.info("jsCreateIndexHtml.targetDir: $targetDir")
+        //val jsFile = File(jsMainCompilation.kotlinOptions.outputFile ?: "dummy.js").name
+        // @TODO: How to get the actual .js file generated/served?
+        val jsFile = File("${projectName}.js").name
+        //println("jsFile: $jsFile")
+        //println("resourcesFolders: $resourcesFolders")
+        fun readTextFile(name: String): String {
+            for (folder in resourcesFolders) {
+                val file = File(folder, name)?.takeIf { it.exists() } ?: continue
+                return file.readText()
+            }
+            return JavaScriptClass::class.java.classLoader.getResourceAsStream(name)?.readBytes()?.toString(Charsets.UTF_8)
+                ?: error("We cannot find suitable '$name'")
+        }
+
+        val indexTemplateHtml = readTextFile("index.v2.template.html")
+        val customCss = readTextFile("custom-styles.template.css")
+        val customHtmlHead = readTextFile("custom-html-head.template.html")
+        val customHtmlBody = readTextFile("custom-html-body.template.html")
+
+        //println(File(targetDir, "index.html"))
+
+        try {
+            File(targetDir, "favicon.ico").writeBytes(ICO2.encode(listOf(16, 32).map {
+                iconProvider.getIconBytes(it).decodeImage()
+            }))
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+
+        File(targetDir, "index.html").writeText(
+            groovy.text.SimpleTemplateEngine().createTemplate(indexTemplateHtml).make(
+                mapOf(
+                    "OUTPUT" to jsFile,
+                    "TITLE" to (korgeTitle ?: korgeName ?: "KorGE"),
+                    "CUSTOM_CSS" to customCss,
+                    "CUSTOM_HTML_HEAD" to customHtmlHead,
+                    "CUSTOM_HTML_BODY" to customHtmlBody
+                )
+            ).toString()
+        )
+    }
 }

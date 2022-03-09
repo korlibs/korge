@@ -1,10 +1,10 @@
 package com.soywiz.korge.gradle.targets
 
-val GROUP_KORGE = "korge"
-val GROUP_KORGE_RESOURCES = "korge-resources"
-val GROUP_KORGE_RUN = "run"
-val GROUP_KORGE_ADB = "adb"
-val GROUP_KORGE_LIST = "list"
-val GROUP_KORGE_PACKAGE = "package"
-val GROUP_KORGE_INSTALL = "install"
+const val GROUP_KORGE: String = "korge"
+const val GROUP_KORGE_RESOURCES: String = "korge-resources"
+const val GROUP_KORGE_RUN: String = "run"
+const val GROUP_KORGE_ADB: String = "adb"
+const val GROUP_KORGE_LIST: String = "list"
+const val GROUP_KORGE_PACKAGE: String = "package"
+const val GROUP_KORGE_INSTALL: String = "install"
 

@@ -15,7 +15,8 @@ import java.io.*
 
 class KorgeGradleApply(val project: Project) {
 	fun apply(includeIndirectAndroid: Boolean = true) = project {
-		System.setProperty("java.awt.headless", "true")
+        // @TODO: Doing this disables the ability to use configuration cache
+		//System.setProperty("java.awt.headless", "true")
 
 		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
         //val expectedGradleVersion = SemVer("6.8.1")
