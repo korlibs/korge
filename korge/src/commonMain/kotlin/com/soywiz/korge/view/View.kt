@@ -834,13 +834,22 @@ abstract class View internal constructor(
         renderFiltered(ctx, filter!!)
     }
 
+    /** Usually a value between [0.0, 1.0] */
+    var filterScale: Double = 1.0
+
     fun renderFiltered(ctx: RenderContext, filter: Filter) {
         val bounds = getLocalBoundsOptimizedAnchored()
 
         val borderEffect = filter.border
         ctx.matrixPool.alloc { tempMat2d ->
-            val texWidth = bounds.width.toInt() + borderEffect * 2
-            val texHeight = bounds.height.toInt() + borderEffect * 2
+            val tryFilterScale = filterScale
+            val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
+            val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
+
+            val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width)
+
+            val texWidth = texWidthNoBorder + borderEffect * 2
+            val texHeight = texHeightNoBorder + borderEffect * 2
 
             val addx = -bounds.x + borderEffect
             val addy = -bounds.y + borderEffect
@@ -868,6 +877,7 @@ abstract class View internal constructor(
                 tempMat2d.copyFrom(globalMatrixInv)
                 //tempMat2d.copyFrom(globalMatrix)
                 tempMat2d.translate(addx, addy)
+                tempMat2d.scale(realFilterScale)
                 //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
                 //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
                 @Suppress("DEPRECATION")
@@ -877,6 +887,7 @@ abstract class View internal constructor(
             }) { texture ->
                 tempMat2d.copyFrom(globalMatrix)
                 tempMat2d.pretranslate(-addx, -addy)
+                tempMat2d.prescale(1.0 / realFilterScale)
                 filter.render(
                     ctx,
                     tempMat2d,
@@ -1446,6 +1457,7 @@ abstract class View internal constructor(
 
         if (filter != null) {
             container.uiCollapsibleSection("Filter") {
+                uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
                 filter!!.buildDebugComponent(views, this)
             }
         }
@@ -1692,6 +1704,11 @@ fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateCompone
             updatable(this@onNextFrame, views)
         }
     }.attach()
+}
+
+inline fun <T : View> T.filterScale(scale: Double): T {
+    filterScale = scale
+    return this
 }
 
 inline fun <T : View> T.filters(vararg filters: Filter): T {
