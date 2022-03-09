@@ -15,3 +15,4 @@ local.*.properties
 out.txt
 err.txt
 /korim/demo.png
+*.hprof
