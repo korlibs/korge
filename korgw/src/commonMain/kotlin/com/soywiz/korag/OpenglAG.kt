@@ -25,6 +25,8 @@ import kotlin.jvm.JvmOverloads
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
+open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
+
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
         RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
@@ -687,10 +689,12 @@ abstract class AGOpengl : AG() {
         //gl.disable(gl.SCISSOR_TEST)
         if (clearColor) {
             bits = bits or gl.COLOR_BUFFER_BIT
+            gl.colorMask(true, true, true, true)
             gl.clearColor(color.rf, color.gf, color.bf, color.af)
         }
         if (clearDepth) {
             bits = bits or gl.DEPTH_BUFFER_BIT
+            gl.depthMask(true)
             gl.clearDepthf(depth)
         }
         if (clearStencil) {
