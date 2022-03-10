@@ -3,6 +3,7 @@ package com.soywiz.korio.net.http
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.net.ws.WsCloseInfo
@@ -135,6 +136,10 @@ open class HttpServer protected constructor() : AsyncCloseable {
 			addHeader(key, value)
 		}
 
+        protected open val _output: AsyncOutputStream by lazy { object : AsyncOutputStream {
+            override suspend fun write(buffer: ByteArray, offset: Int, len: Int) = _write(buffer, offset, len)
+            override suspend fun close() = _end()
+        } }
 		protected abstract suspend fun _handler(handler: (ByteArray) -> Unit)
 		protected abstract suspend fun _endHandler(handler: () -> Unit)
 		protected abstract suspend fun _sendHeader(code: Int, message: String, headers: Http.Headers)
@@ -196,10 +201,23 @@ open class HttpServer protected constructor() : AsyncCloseable {
 			for (finalizer in finalizers) finalizer()
 		}
 
-		suspend fun end(data: ByteArray) {
-			replaceHeader(Http.Headers.ContentLength, "${data.size}")
+        suspend fun end(file: VfsFile) {
+            file.openUse { end(this) }
+        }
+
+        suspend fun end(stream: AsyncInputStream) {
+            if (stream is AsyncGetLengthStream) {
+                replaceHeader(Http.Headers.ContentLength, "${stream.getLength()}")
+                flushHeaders()
+            }
+            stream.copyTo(_output)
+            end()
+        }
+
+		suspend fun end(data: ByteArray, offset: Int = 0, size: Int = data.size - offset) {
+			replaceHeader(Http.Headers.ContentLength, "$size")
 			flushHeaders()
-			_write(data, 0, data.size)
+			_write(data, offset, size)
 			end()
 		}
 
