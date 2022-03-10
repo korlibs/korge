@@ -35,6 +35,13 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 
 	val rgb: Int get() = value and 0xFFFFFF
 
+    fun readFloat(out: FloatArray, index: Int = 0) {
+        out[index + 0] = rf
+        out[index + 1] = gf
+        out[index + 2] = bf
+        out[index + 3] = af
+    }
+
 	fun withR(v: Int) = RGBA((value and (0xFF shl 0).inv()) or ((v and 0xFF) shl 0))
 	fun withG(v: Int) = RGBA((value and (0xFF shl 8).inv()) or ((v and 0xFF) shl 8))
 	fun withB(v: Int) = RGBA((value and (0xFF shl 16).inv()) or ((v and 0xFF) shl 16))
@@ -104,6 +111,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     operator fun times(other: RGBA): RGBA = RGBA.multiply(this, other)
 
     companion object : ColorFormat32() {
+        fun float(array: FloatArray, index: Int = 0): RGBA = float(array[index + 0], array[index + 1], array[index + 2], array[index + 3])
         fun float(r: Float, g: Float, b: Float, a: Float): RGBA = unclamped(f2i(r), f2i(g), f2i(b), f2i(a))
         inline fun float(r: Number, g: Number, b: Number, a: Number = 1f): RGBA = float(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
         fun unclamped(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntUnchecked(r, g, b, a))

@@ -423,12 +423,18 @@ abstract class View internal constructor(
         }
 
     /**
+     * Deprecated, since color generation was not consistent between targets,
+     * and added an extra overhead that might not be needed for all the games.
+     *
      * Additive part of the color transform.
      * This Int is a packed version of R,G,B,A one-component byte values determining additive color transform.
      * @NOTE: If you don't have this value computed, you can use [ColorTransform.aR] aB, aG and aA to control the
      * per component values. You should call the [View.invalidate] method after that.
      */
+    @Deprecated("Use ColorMatrixFilter instead")
     var colorAdd: ColorAdd
+        //get() = ColorAdd.NEUTRAL
+        //set(_) = Unit
         get() = _colorTransform.colorAdd;
         set(v) {
             if (v != _colorTransform.colorAdd) {

@@ -18,7 +18,7 @@ object CheckReferences {
             println("generatedVfs=$generatedVfs . exists=${exists}")
 
             data class Result(val similarPixelPerfect: Boolean, val equals: Boolean, val psnr: Double) {
-                val similar get() = psnr >= 40.0
+                val similar get() = psnr >= 38.0
             }
 
             if (exists) {

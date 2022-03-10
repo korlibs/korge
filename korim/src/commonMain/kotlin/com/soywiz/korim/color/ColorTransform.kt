@@ -37,22 +37,27 @@ data class ColorTransform(
     override fun interpolateWith(ratio: Double, other: ColorTransform): ColorTransform =
         ColorTransform().setToInterpolated(ratio, this, other)
 
-    private var dirty = true
+    private var dirtyColorMul = true
+    private var dirtyColorAdd = true
 
     private var _colorMul: RGBA = Colors.WHITE
     private var _colorAdd: ColorAdd = ColorAdd(0)
 
-    private fun computeColors() {
-        if (dirty) {
-            dirty = false
-            _colorMul = RGBA.float(_mR.toFloat(), _mG.toFloat(), _mB.toFloat(), _mA.toFloat())
-            _colorAdd = ColorAdd(_aR, _aG, _aB, _aA)
-        }
+    private fun computeColorMul() {
+        if (!dirtyColorMul) return
+        dirtyColorMul = false
+        _colorMul = RGBA.float(_mR.toFloat(), _mG.toFloat(), _mB.toFloat(), _mA.toFloat())
+    }
+
+    private fun computeColorAdd() {
+        if (!dirtyColorAdd) return
+        dirtyColorAdd = false
+        _colorAdd = ColorAdd(_aR, _aG, _aB, _aA)
     }
 
     var colorMul: RGBA
         get() {
-            computeColors()
+            computeColorMul()
             return _colorMul
         }
         set(v) {
@@ -65,14 +70,14 @@ data class ColorTransform(
                 _mG = mG
                 _mB = mB
                 _mA = mA
-                dirty = true
+                dirtyColorMul = true
             }
         }
 
     var colorAdd: ColorAdd
         get() {
             //println("%08X".format(computeColors()._colorAdd))
-            computeColors()
+            computeColorAdd()
             return _colorAdd
         }
         set(v) {
@@ -85,24 +90,24 @@ data class ColorTransform(
                 _aG = aG
                 _aB = aB
                 _aA = aA
-                dirty = true
+                dirtyColorAdd = true
             }
         }
 
-    var mR: Double get() = _mR; set(v) { _mR = v; dirty = true }
-    var mG: Double get() = _mG; set(v) { _mG = v; dirty = true }
-    var mB: Double get() = _mB; set(v) { _mB = v; dirty = true }
-    var mA: Double get() = _mA; set(v) { _mA = v; dirty = true }
+    var mR: Double get() = _mR; set(v) { _mR = v; dirtyColorMul = true }
+    var mG: Double get() = _mG; set(v) { _mG = v; dirtyColorMul = true }
+    var mB: Double get() = _mB; set(v) { _mB = v; dirtyColorMul = true }
+    var mA: Double get() = _mA; set(v) { _mA = v; dirtyColorMul = true }
 
-    var mRf: Float get() = _mR.toFloat(); set(v) { _mR = v.toDouble(); dirty = true }
-    var mGf: Float get() = _mG.toFloat(); set(v) { _mG = v.toDouble(); dirty = true }
-    var mBf: Float get() = _mB.toFloat(); set(v) { _mB = v.toDouble(); dirty = true }
-    var mAf: Float get() = _mA.toFloat(); set(v) { _mA = v.toDouble(); dirty = true }
+    var mRf: Float get() = _mR.toFloat(); set(v) { _mR = v.toDouble(); dirtyColorMul = true }
+    var mGf: Float get() = _mG.toFloat(); set(v) { _mG = v.toDouble(); dirtyColorMul = true }
+    var mBf: Float get() = _mB.toFloat(); set(v) { _mB = v.toDouble(); dirtyColorMul = true }
+    var mAf: Float get() = _mA.toFloat(); set(v) { _mA = v.toDouble(); dirtyColorMul = true }
 
-    var aR: Int get() = _aR; set(v) { _aR = v; dirty = true }
-    var aG: Int get() = _aG; set(v) { _aG = v; dirty = true }
-    var aB: Int get() = _aB; set(v) { _aB = v; dirty = true }
-    var aA: Int get() = _aA; set(v) { _aA = v; dirty = true }
+    var aR: Int get() = _aR; set(v) { _aR = v; dirtyColorAdd = true }
+    var aG: Int get() = _aG; set(v) { _aG = v; dirtyColorAdd = true }
+    var aB: Int get() = _aB; set(v) { _aB = v; dirtyColorAdd = true }
+    var aA: Int get() = _aA; set(v) { _aA = v; dirtyColorAdd = true }
 
     var alphaMultiplier: Double
         get() = mA
@@ -162,7 +167,7 @@ data class ColorTransform(
         this._mG = mG
         this._mB = mB
         this._mA = mA
-        dirty = true
+        dirtyColorMul = true
 
         return this
     }
@@ -177,7 +182,7 @@ data class ColorTransform(
         this._aG = aG
         this._aB = aB
         this._aA = aA
-        dirty = true
+        dirtyColorAdd = true
 
         return this
     }
@@ -191,19 +196,7 @@ data class ColorTransform(
         aG: Int = 0,
         aB: Int = 0,
         aA: Int = 0
-    ): ColorTransform {
-        this._mR = mR
-        this._mG = mG
-        this._mB = mB
-        this._mA = mA
-        this._aR = aR
-        this._aG = aG
-        this._aB = aB
-        this._aA = aA
-        dirty = true
-
-        return this
-    }
+    ): ColorTransform = setMultiplyTo(mR, mG, mB, mA).setAddTo(aR, aG, aB, aA)
 
     fun copyFrom(t: ColorTransform): ColorTransform {
         this._mR = t._mR
@@ -216,7 +209,8 @@ data class ColorTransform(
         this._aB = t._aB
         this._aA = t._aA
 
-        this.dirty = t.dirty
+        this.dirtyColorMul = t.dirtyColorMul
+        this.dirtyColorAdd = t.dirtyColorAdd
         this._colorAdd = t._colorAdd
         this._colorMul = t._colorMul
 
@@ -262,12 +256,32 @@ data class ColorTransform(
 
 inline class ColorAdd(val value: Int) {
     // Alias
-    val rgba get() = value
+    val rgba: Int get() = value
 
-    val r get() = ColorAdd_unpackComponent((value ushr 0) and 0xFF)
-    val g get() = ColorAdd_unpackComponent((value ushr 8) and 0xFF)
-    val b get() = ColorAdd_unpackComponent((value ushr 16) and 0xFF)
-    val a get() = ColorAdd_unpackComponent((value ushr 24) and 0xFF)
+    /** [-255, +255] */
+    val r: Int get() = ColorAdd_unpackComponent((value ushr 0) and 0xFF)
+    /** [-255, +255] */
+    val g: Int get() = ColorAdd_unpackComponent((value ushr 8) and 0xFF)
+    /** [-255, +255] */
+    val b: Int get() = ColorAdd_unpackComponent((value ushr 16) and 0xFF)
+    /** [-255, +255] */
+    val a: Int get() = ColorAdd_unpackComponent((value ushr 24) and 0xFF)
+
+    /** [-1f, +1f] */
+    val rf: Float get() = r.toFloat() / 0xFF
+    /** [-1f, +1f] */
+    val gf: Float get() = g.toFloat() / 0xFF
+    /** [-1f, +1f] */
+    val bf: Float get() = b.toFloat() / 0xFF
+    /** [-1f, +1f] */
+    val af: Float get() = a.toFloat() / 0xFF
+
+    fun readFloat(out: FloatArray, index: Int = 0) {
+        out[index + 0] = rf
+        out[index + 1] = gf
+        out[index + 2] = bf
+        out[index + 3] = af
+    }
 
     fun withR(r: Int) = ColorAdd(r, g, b, a)
     fun withG(g: Int) = ColorAdd(r, g, b, a)
@@ -280,7 +294,19 @@ inline class ColorAdd(val value: Int) {
 
     companion object {
         inline val NEUTRAL get() = ColorAdd_NEUTRAL
-        inline operator fun invoke(r: Int, g: Int, b: Int, a: Int) = ColorAdd(ColorAdd_pack(r, g, b, a))
+        inline operator fun invoke(r: Int, g: Int, b: Int, a: Int): ColorAdd = ColorAdd(ColorAdd_pack(r, g, b, a))
+        fun fromFloat(array: FloatArray, index: Int = 0): ColorAdd = fromFloat(
+            array[index + 0],
+            array[index + 1],
+            array[index + 2],
+            array[index + 3],
+        )
+        fun fromFloat(rf: Float, gf: Float, bf: Float, af: Float): ColorAdd = ColorAdd(
+            (rf * 255).toInt(),
+            (gf * 255).toInt(),
+            (bf * 255).toInt(),
+            (af * 255).toInt(),
+        )
     }
 }
 
@@ -291,7 +317,7 @@ inline class ColorAdd(val value: Int) {
 
 fun RGBA.toColorAdd() = ColorAdd(r, g, b, a)
 
-inline fun ColorTransform(multiply: RGBA, add: ColorAdd = ColorAdd(0, 0, 0, 0)) =
+inline fun ColorTransform(multiply: RGBA = Colors.WHITE, add: ColorAdd = ColorAdd(0, 0, 0, 0)) =
     ColorTransform(multiply.rf, multiply.gf, multiply.bf, multiply.af, add.r, add.g, add.b, add.a)
 
 @Suppress("NOTHING_TO_INLINE")

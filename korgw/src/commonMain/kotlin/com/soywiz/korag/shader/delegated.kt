@@ -43,6 +43,22 @@ class IntDelegatedUniform(val uniform: Uniform, val values: FloatArray, val inde
 	}
 }
 
+class Vector4DelegatedUniform(val uniform: Uniform, val values: FloatArray, val index: Int) {
+    init {
+        for (n in 0 until 4) values[index + n] = 0f
+    }
+
+    operator fun getValue(obj: Any, prop: KProperty<*>): Vector3D = Vector3D(values[0], values[1], values[2], values[3])
+
+    operator fun setValue(obj: Any, prop: KProperty<*>, value: Vector3D) {
+        values[0] = value.x
+        values[1] = value.y
+        values[2] = value.z
+        values[3] = value.w
+    }
+}
+
+
 class BoolDelegatedUniform(val uniform: Uniform, val values: FloatArray, val index: Int, val onSet: (Boolean) -> Unit, default: Boolean) {
 	init {
 		values[index] = default.toInt().toFloat()
@@ -60,6 +76,11 @@ class UniformFloatStorage(val uniforms: AG.UniformValues, val uniform: Uniform, 
 	init {
 		uniforms[uniform] = array
 	}
+
+    var x: Float ; get() = array[0] ; set(value) { array[0] = value }
+    var y: Float ; get() = array[1] ; set(value) { array[1] = value }
+    var z: Float ; get() = array[2] ; set(value) { array[2] = value }
+    var w: Float ; get() = array[3] ; set(value) { array[3] = value }
 
 	fun doubleDelegate(index: Int, default: Double = 0.0, onSet: (Double) -> Unit = {}) =
         DoubleDelegatedUniform(uniform, array, index, onSet, default)
@@ -88,6 +109,10 @@ class UniformFloatStorage(val uniforms: AG.UniformValues, val uniform: Uniform, 
 	fun boolDelegateY(default: Boolean = false, onSet: (Boolean) -> Unit = {}) = boolDelegate(1, default, onSet)
 	fun boolDelegateZ(default: Boolean = false, onSet: (Boolean) -> Unit = {}) = boolDelegate(2, default, onSet)
 	fun boolDelegateW(default: Boolean = false, onSet: (Boolean) -> Unit = {}) = boolDelegate(3, default, onSet)
+
+    fun vector4Delegate(index: Int = 0) =
+        Vector4DelegatedUniform(uniform, array, index)
+
 }
 
 class UniformValueStorage<T : Any>(val uniforms: AG.UniformValues, val uniform: Uniform, val value: T) {

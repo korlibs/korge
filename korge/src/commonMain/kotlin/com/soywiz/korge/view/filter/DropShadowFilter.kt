@@ -46,7 +46,7 @@ open class DropshadowFilter(
                     colorAdd = ColorAdd(+255, +255, +255, 0),
                     colorMul = shadowColor,
                     blendFactors = blendMode.factors,
-                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, preadd = true)
+                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, add = BatchBuilder2D.AddType.PRE_ADD)
                 )
 
                 batch.drawQuad(
@@ -56,7 +56,7 @@ open class DropshadowFilter(
                     colorAdd = renderColorAdd,
                     colorMul = renderColorMul,
                     blendFactors = blendMode.factors,
-                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied)
+                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, add = BatchBuilder2D.AddType.NO_ADD)
                 )
             }
         })

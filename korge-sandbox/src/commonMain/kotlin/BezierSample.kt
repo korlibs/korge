@@ -1,6 +1,7 @@
 import com.soywiz.korge.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
@@ -62,8 +63,8 @@ fun Container.createPointController(point: Point, color: Paint, onMove: () -> Un
         text.text = "(${anchorView.x.toInt()}, ${anchorView.y.toInt()})"
     }
     circle.mouse {
-        onOver { circle.colorAdd = ColorAdd(+64, +64, +64, 0) }
-        onOut { circle.colorAdd = ColorAdd(0, 0, 0, 0) }
+        onOver { circle.filter = ColorTransformFilter(ColorTransform(add = ColorAdd(+64, +64, +64, 0))) }
+        onOut { circle.filter = ColorTransformFilter(ColorTransform(add = ColorAdd(0, 0, 0, 0))) }
     }
     updateText()
     anchorView.draggable(circle) {
