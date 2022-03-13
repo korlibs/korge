@@ -238,17 +238,17 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     //TODO: would it better if this was an interface ?
     open inner class Texture : Closeable {
-        var isFbo = false
-        open val premultiplied = true
-        var requestMipmaps = false
-        var mipmaps = false; protected set
+        var isFbo: Boolean = false
+        open val premultiplied: Boolean = true
+        var requestMipmaps: Boolean = false
+        var mipmaps: Boolean = false; protected set
         var source: BitmapSourceBase = SyncBitmapSource.NIL
         private var uploaded: Boolean = false
         private var generating: Boolean = false
         private var generated: Boolean = false
         private var tempBitmap: Bitmap? = null
         var ready: Boolean = false; private set
-        val texId = lastTextureId++
+        val texId: Int = lastTextureId++
         open val nativeTexId: Int get() = texId
 
         init {
@@ -275,11 +275,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             return upload(bmp?.extract(), mipmaps)
         }
 
-        fun upload(source: BitmapSourceBase, mipmaps: Boolean = false): Texture = this.apply {
+        fun upload(source: BitmapSourceBase, mipmaps: Boolean = false): Texture {
             this.source = source
             uploadedSource()
             invalidate()
             this.requestMipmaps = mipmaps
+            return this
         }
 
         fun uploadAndBindEnsuring(bmp: Bitmap?, mipmaps: Boolean = false): Texture =
@@ -298,8 +299,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         open fun unbind() {
         }
 
-        fun manualUpload() = this.apply {
+        fun manualUpload(): Texture {
             uploaded = true
+            return this
         }
 
         fun bindEnsuring(): Texture {
