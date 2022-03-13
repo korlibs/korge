@@ -19,10 +19,17 @@ import kotlinx.browser.*
 import org.w3c.dom.*
 import org.w3c.dom.TouchEvent
 import org.w3c.files.*
+import kotlin.coroutines.*
 
 private external val navigator: dynamic
 
-open class BrowserGameWindow : GameWindow() {
+open class JsGameWindow : GameWindow() {
+    override fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
+        error("GameWindow.unsafeRunBlocking not implemented on JS")
+    }
+}
+
+open class BrowserGameWindow : JsGameWindow() {
     override val ag: AGWebgl = AGWebgl(AGConfig())
     val canvas get() = ag.canvas
 
@@ -513,7 +520,7 @@ private external interface JsGamepadEvent {
     val gamepad: JsGamePad
 }
 
-class NodeJsGameWindow : GameWindow()
+class NodeJsGameWindow : JsGameWindow()
 
 actual fun CreateDefaultGameWindow(): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserGameWindow()
 

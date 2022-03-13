@@ -5,6 +5,7 @@ import com.soywiz.kds.lock.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.setBits
 import com.soywiz.korag.*
+import com.soywiz.korag.annotation.*
 import com.soywiz.korag.log.*
 import com.soywiz.korev.*
 import com.soywiz.korgw.internal.*
@@ -111,6 +112,31 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     var timedTasksTime = 0.milliseconds
     var tasksTime = 0.milliseconds
+
+    /** On JS this cannot work, because it requires the real event loop to be reached */
+    @KoragExperimental
+    open fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
+        var completed = false
+        var finalException: Throwable? = null
+        var finalResult: T? = null
+
+        block.startCoroutine(object : Continuation<T> {
+            override val context: CoroutineContext get() = coroutineContext
+            override fun resumeWith(result: Result<T>) {
+                finalResult = result.getOrNull()
+                finalException = result.exceptionOrNull()
+                completed = true
+            }
+        })
+        while (!completed) {
+            executePending(16.milliseconds)
+            blockingSleep(1.milliseconds)
+        }
+        if (finalException != null) {
+            throw finalException!!
+        }
+        return finalResult as T
+    }
 
     fun executePending(availableTime: TimeSpan) {
         try {
@@ -299,6 +325,17 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineConte
     protected val dropFileEvent = DropFileEvent()
     protected val gamePadUpdateEvent = GamePadUpdateEvent()
     protected val gamePadConnectionEvent = GamePadConnectionEvent()
+
+    @KoragExperimental
+    suspend fun <T> runBlockingNoJs(block: suspend () -> T): T {
+        return runBlockingNoJs(coroutineContext, block)
+    }
+
+    /** On JS this cannot work, because it requires the real event loop to be reached */
+    @KoragExperimental
+    open fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
+        return coroutineDispatcher.runBlockingNoJs(coroutineContext, block)
+    }
 
     fun onRenderEvent(block: (RenderEvent) -> Unit) {
         addEventListener<RenderEvent>(block)

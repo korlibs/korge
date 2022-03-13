@@ -1,13 +1,12 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.*
-import com.soywiz.korge.scene.*
 import com.soywiz.korge.test.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
+import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
@@ -88,5 +87,13 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
             )
             assertEquals(Size(450, 121), textResult.bmp.size)
         }
+    }
+
+    @Test
+    fun testRunBlockingNoJs() = viewsTest {
+        val bitmap = runBlockingNoJs {
+            resourcesVfs["texture.png"].readBitmap()
+        }
+        assertEquals(Size(64, 64), bitmap.size)
     }
 }
