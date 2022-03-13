@@ -75,4 +75,68 @@ class ViewTest {
             """.trimIndent()
         )
     }
+
+    @Test
+    fun scaleWhileMaintainingAspect_byWidthAndHeight_scalesToWidthToFit() {
+        val rect = SolidRect(80.0, 60.0)
+
+        rect.scaleWhileMaintainingAspect(ScalingOption.ByWidthAndHeight(
+            160.0, 100000.0
+        ))
+
+        assertEquals(rect.scaledWidth, 160.0)
+        assertEquals(rect.scaledHeight, 120.0)
+    }
+
+    @Test
+    fun scaleWhileMaintainingAspect_byWidthAndHeight_scalesToHeightToFit() {
+        val rect = SolidRect(80.0, 60.0)
+
+        rect.scaleWhileMaintainingAspect(ScalingOption.ByWidthAndHeight(
+            1000000.0, 120.0
+        ))
+
+        assertEquals(rect.scaledWidth, 160.0)
+        assertEquals(rect.scaledHeight, 120.0)
+    }
+
+    @Test
+    fun scaleWhileMaintainingAspect_byWidth_scalesUpCorrectly() {
+        val rect = SolidRect(80.0, 60.0)
+
+        rect.scaleWhileMaintainingAspect(ScalingOption.ByWidth(240.0))
+
+        assertEquals(rect.scaledWidth, 240.0)
+        assertEquals(rect.scaledHeight, 180.0)
+    }
+
+    @Test
+    fun scaleWhileMaintainingAspect_byWidth_scalesDownCorrectly() {
+        val rect = SolidRect(80.0, 60.0)
+
+        rect.scaleWhileMaintainingAspect(ScalingOption.ByWidth(40.0))
+
+        assertEquals(rect.scaledWidth, 40.0)
+        assertEquals(rect.scaledHeight, 30.0)
+    }
+
+    @Test
+    fun scaleWhileMaintainingAspect_byHeight_scalesUpCorrectly() {
+        val rect = SolidRect(80.0, 60.0)
+
+        rect.scaleWhileMaintainingAspect(ScalingOption.ByHeight(240.0))
+
+        assertEquals(rect.scaledWidth, 320.0)
+        assertEquals(rect.scaledHeight, 240.0)
+    }
+
+    @Test
+    fun scaleWhileMaintainingAspect_byHeight_scalesDownCorrectly() {
+        val rect = SolidRect(80.0, 60.0)
+
+        rect.scaleWhileMaintainingAspect(ScalingOption.ByHeight(15.0))
+
+        assertEquals(rect.scaledWidth, 20.0)
+        assertEquals(rect.scaledHeight, 15.0)
+    }
 }

@@ -2207,6 +2207,35 @@ fun View?.isDescendantOf(other: View, include: Boolean = true): Boolean {
     return current == other
 }
 
+sealed class ScalingOption {
+    // Scales the view to fit within the provided `width` and `height`.
+    data class ByWidthAndHeight(val width: Double, val height: Double) : ScalingOption()
+    // Scale the view's width to match the provided `width`.
+    data class ByWidth(val width: Double) : ScalingOption()
+    // Scale the view's height to match the provided `height`.
+    data class ByHeight(val height: Double) : ScalingOption()
+}
+
+// Scales `this` view by the provided `scalingOption` while maintaining the aspect ratio.
+fun <T : View> T.scaleWhileMaintainingAspect(scalingOption: ScalingOption): T {
+    val scaleValue = when (scalingOption) {
+        is ScalingOption.ByHeight -> {
+            scalingOption.height / this.scaledHeight
+        }
+        is ScalingOption.ByWidth -> {
+            scalingOption.width / this.scaledWidth
+        }
+        is ScalingOption.ByWidthAndHeight -> {
+            val scaledByWidth = scalingOption.width / this.scaledWidth
+            val scaledByHeight = scalingOption.height / this.scaledHeight
+            kotlin.math.min(scaledByHeight, scaledByWidth)
+        }
+    }
+    this.scaledHeight = this.scaledHeight * scaleValue
+    this.scaledWidth = this.scaledWidth * scaleValue
+    return this
+}
+
 /*
 fun <T : BaseView> T.addMouseComponent(block: (view: T, views: Views, event: MouseEvent) -> Unit): MouseComponent {
     return addComponent(object : MouseComponent {
