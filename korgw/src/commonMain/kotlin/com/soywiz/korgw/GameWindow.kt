@@ -130,6 +130,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         })
         while (!completed) {
             executePending(16.milliseconds)
+            if (completed) break
             blockingSleep(1.milliseconds)
         }
         if (finalException != null) {
