@@ -63,7 +63,7 @@ abstract class KlockLocale {
     }
     */
 
-	open val h12Marker get() = listOf("AM", "OM")
+	open val h12Marker: List<String> get() = listOf("am", "pm")
 
 	// This might be required for some languages like chinese?
 	open fun intToString(value: Int) = "$value"
