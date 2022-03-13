@@ -38,10 +38,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -80,10 +80,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.ERROR.Unexpected:[Uniform(effectTextureSize)]
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
@@ -124,10 +124,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.uniform.Uniform(colorMatrix) = Matrix3D(
   [ 0.33, 0.59, 0.11, 0 ],
@@ -172,10 +172,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -218,10 +218,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -258,10 +258,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.ERROR.Unexpected:[Uniform(effectTextureSize)]
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
@@ -301,10 +301,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.uniform.Uniform(colorMatrix) = Matrix3D(
   [ 0.33, 0.59, 0.11, 0 ],
@@ -349,10 +349,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[4], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[4], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -390,10 +390,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -430,10 +430,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.ERROR.Unexpected:[Uniform(effectTextureSize)]
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
@@ -472,10 +472,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.uniform.Uniform(colorMatrix) = Matrix3D(
   [ 0.33, 0.59, 0.11, 0 ],
@@ -519,10 +519,10 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)

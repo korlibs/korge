@@ -363,11 +363,13 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     data class TextureUnit(
         var texture: AG.Texture? = null,
-        var linear: Boolean = true
+        var linear: Boolean = true,
+        var trilinear: Boolean? = null,
     ) {
-        fun set(texture: AG.Texture?, linear: Boolean) {
+        fun set(texture: AG.Texture?, linear: Boolean, trilinear: Boolean? = null) {
             this.texture = texture
             this.linear = linear
+            this.trilinear = trilinear
         }
     }
 

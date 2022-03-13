@@ -17,10 +17,10 @@ draw(vertexCount=4, instances=4, indices=null, type=TRIANGLE_FAN, offset=0)
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=Texture[0], linear=true)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=Texture[0], linear=true)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=Texture[0], linear=true)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
 ::draw.uniform.Uniform(u_texSize0) = [0.03125, 0.03125]
 ::draw.uniform.Uniform(u_texSize1) = [0.03125, 0.03125]
 ::draw.uniform.Uniform(u_texSize2) = [0.03125, 0.03125]

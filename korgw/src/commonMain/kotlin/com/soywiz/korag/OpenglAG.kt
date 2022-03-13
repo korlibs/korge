@@ -344,7 +344,7 @@ abstract class AGOpengl : AG() {
                     if (uniformType == VarType.TextureUnit) {
                         val tex = (unit.texture.fastCastTo<GlTexture?>())
                         tex?.bindEnsuring()
-                        tex?.setFilter(unit.linear)
+                        tex?.setFilter(unit.linear, unit.trilinear ?: unit.linear)
                     } else {
                         val tex = unit.texture.fastCastTo<TextureGeneric>()
                         tex.initialiseIfNeeded()
@@ -953,9 +953,18 @@ abstract class AGOpengl : AG() {
             }
         }
 
-        fun setFilter(linear: Boolean) {
+        fun setFilter(linear: Boolean, trilinear: Boolean = linear) {
             val minFilter = if (this.mipmaps) {
-                if (linear) gl.LINEAR_MIPMAP_NEAREST else gl.NEAREST_MIPMAP_NEAREST
+                when {
+                    linear -> when {
+                        trilinear -> gl.LINEAR_MIPMAP_LINEAR
+                        else -> gl.LINEAR_MIPMAP_NEAREST
+                    }
+                    else -> when {
+                        trilinear -> gl.NEAREST_MIPMAP_LINEAR
+                        else -> gl.NEAREST_MIPMAP_NEAREST
+                    }
+                }
             } else {
                 if (linear) gl.LINEAR else gl.NEAREST
             }
