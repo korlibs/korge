@@ -63,9 +63,18 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     open val maxTextureSize = Size(2048, 2048)
 
     open val devicePixelRatio: Double = 1.0
-    open val pixelsPerInch: Double get() = 96.0
+    open val pixelsPerLogicalInchRatio: Double = 1.0
+    open val pixelsPerInch: Double = defaultPixelsPerInch
+    // Use this in the debug handler, while allowing people to access raw devicePixelRatio without the noise of window scaling
+    // I really dont know if "/" or "*" or right but in my mathematical mind "pixelsPerLogicalInchRatio" must increase and not decrease the scale
+    // maybe it is pixelsPerLogicalInchRatio / devicePixelRatio ?
+    open val computedPixelRatio: Double get() = devicePixelRatio * pixelsPerLogicalInchRatio
 
     open fun beforeDoRender() {
+    }
+
+    companion object {
+        const val defaultPixelsPerInch : Double = 96.0
     }
 
     inline fun doRender(block: () -> Unit) {

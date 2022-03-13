@@ -64,7 +64,7 @@ open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { i
 
 	override val nativeComponent: Any = canvas
 	val tDevicePixelRatio get() = window.devicePixelRatio.toDouble()
-	override var devicePixelRatio = 1.0; get() = when {
+	override val devicePixelRatio get() = when {
 		tDevicePixelRatio <= 0.0 -> 1.0
 		tDevicePixelRatio.isNaN() -> 1.0
 		tDevicePixelRatio.isInfinite() -> 1.0

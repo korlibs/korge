@@ -7,6 +7,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
 import kotlin.coroutines.*
@@ -46,6 +47,8 @@ class RenderContext constructor(
     val views: Views? = bp as? Views?
 
     var debugAnnotateView: View? = null
+    var debugExtraFontScale : Double = 1.0
+    var debugExtraFontColor : RGBA = Colors.WHITE
 
     var stencilIndex: Int = 0
 

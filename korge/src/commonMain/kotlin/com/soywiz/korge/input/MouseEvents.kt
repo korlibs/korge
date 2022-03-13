@@ -15,6 +15,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.scene.*
 import com.soywiz.korgw.*
 import com.soywiz.korio.lang.*
+import kotlin.math.max
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.*
 
@@ -59,8 +60,13 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         fun installDebugExtensionOnce(views: Views) {
             views.mouseDebugHandlerOnce {
                 views.debugHandlers += { ctx ->
-                    val scale = ctx.ag.devicePixelRatio
+                    val scale = ctx.ag.computedPixelRatio * ctx.debugExtraFontScale
                     //val scale = 2.0
+
+                    val space = max(1 * scale, 2.0)
+                    //println(scale)
+
+
 
                     var yy = 60.toDouble() * scale
                     val lineHeight = 8.toDouble() * scale
@@ -70,8 +76,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                         renderContext.useBatcher { batch ->
                             batch.drawQuad(
                                 ctx.getTex(Bitmaps.white),
-                                x = bounds.x.toInt().toFloat(),
-                                y = bounds.y.toInt().toFloat(),
+                                x = bounds.x.toFloat(),
+                                y = bounds.y.toFloat(),
                                 width = bounds.width.toFloat(),
                                 height = bounds.height.toFloat(),
                                 colorMul = RGBA(0xFF, 0, 0, 0x3F),
@@ -79,14 +85,16 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             )
                             renderContext.drawText(
                                 debugBmpFont,
-                                lineHeight.toDouble(),
-                                mouseHit.toString() + " : " + views.nativeMouseX + "," + views.nativeMouseY,
+                                lineHeight,
+                                "$mouseHit : ${views.nativeMouseX},${views.nativeMouseY}",
                                 x = 0,
                                 y = yy.toInt(),
-                                filtering = false
+                                filtering = false,
+                                colMul = ctx.debugExtraFontColor
                             )
                         }
                         yy += lineHeight
+                        yy += space
                     }
 
                     val mouseHitResultUsed = input.mouseHitResultUsed
@@ -104,9 +112,18 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                             )
                             var vview = mouseHitResultUsed
                             while (vview != null) {
-                                renderContext.drawText(debugBmpFont, lineHeight.toDouble(), vview.toString(), x = 0, y = yy.toInt())
-                                vview = vview?.parent
+                                renderContext.drawText(
+                                    debugBmpFont,
+                                    lineHeight,
+                                    vview.toString(),
+                                    x = 0,
+                                    y = yy.toInt(),
+                                    filtering = false,
+                                    colMul = ctx.debugExtraFontColor
+                                )
+                                vview = vview.parent
                                 yy += lineHeight
+                                yy += space
                             }
                         }
                     }

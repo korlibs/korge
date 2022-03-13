@@ -39,6 +39,8 @@ object KorgeHeadless {
         clipBorders: Boolean = true,
         bgcolor: RGBA? = Colors.BLACK,
         debug: Boolean = false,
+        debugFontExtraScale: Double = 1.0,
+        debugFontColor: RGBA = Colors.WHITE,
         fullscreen: Boolean? = null,
         args: Array<String> = arrayOf(),
         timeProvider: TimeProvider = TimeProvider,
@@ -51,8 +53,8 @@ object KorgeHeadless {
         val gameWindow = HeadlessGameWindow(width, height, draw = draw)
         Korge(
             title, width, height, virtualWidth, virtualHeight, icon, iconPath, /*iconDrawable,*/ imageFormats, quality,
-            targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, fullscreen, args,
-            gameWindow, timeProvider, injector,
+            targetFps, scaleAnchor, scaleMode, clipBorders, bgcolor, debug, debugFontExtraScale, debugFontColor,
+            fullscreen, args, gameWindow, timeProvider, injector,
             blocking = blocking,debugAg = debugAg, entry = entry
         )
         return gameWindow
