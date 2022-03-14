@@ -28,6 +28,9 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
 ) : Container() {
     private var nframes: Int = 1
 
+    var onPlayFinished: (() -> Unit)? = null
+    var onDestroyLayer: ((T) -> Unit)? = null
+
     var animation: ImageAnimation? = animation
         set(value) {
             if (field !== value) {
@@ -36,6 +39,12 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
             }
         }
     var direction: ImageAnimation.Direction? = direction
+        set(value) {
+            if (field !== value) {
+                field = value
+                setFirstFrame()
+            }
+        }
 
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
     private val layers = fastArrayListOf<T>()
@@ -58,7 +67,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
 
 
     private fun setFrame(frameIndex: Int) {
-        val frame = animation?.frames?.getCyclicOrNull(frameIndex)
+        val frame = if (animation?.frames?.isNotEmpty() == true) animation?.frames?.getCyclicOrNull(frameIndex) else null
         if (frame != null) {
             frame.layerData.fastForEach {
                 val image = layers[it.layer.index]
@@ -70,6 +79,8 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                 ImageAnimation.Direction.FORWARD -> +1
                 ImageAnimation.Direction.REVERSE -> -1
                 ImageAnimation.Direction.PING_PONG -> if (frameIndex + dir !in 0 until nframes) -dir else dir
+                ImageAnimation.Direction.ONCE_FORWARD -> if (frameIndex < nframes - 1) +1 else 0
+                ImageAnimation.Direction.ONCE_REVERSE -> if (frameIndex == 0) 0 else -1
             }
             nextFrameIndex = (frameIndex + dir) umod nframes
         } else {
@@ -78,7 +89,7 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     }
 
     private fun setFirstFrame() {
-        if (computedDirection == ImageAnimation.Direction.REVERSE) {
+        if (computedDirection == ImageAnimation.Direction.REVERSE || computedDirection == ImageAnimation.Direction.ONCE_REVERSE) {
             setFrame(nframes - 1)
         } else {
             setFrame(0)
@@ -87,6 +98,8 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
 
     private fun didSetAnimation() {
         nframes = animation?.frames?.size ?: 1
+        // Before clearing layers let parent possibly recycle layer objects (e.g. return to pool, etc.)
+        for (layer in layers) { onDestroyLayer?.invoke(layer) }
         layers.clear()
         removeChildren()
         dir = +1
@@ -116,6 +129,11 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                 nextFrameIn -= it
                 if (nextFrameIn <= 0.0.milliseconds) {
                     setFrame(nextFrameIndex)
+                    // Check if animation should be played only once
+                    if (dir == 0) {
+                        running = false
+                        onPlayFinished?.invoke()
+                    }
                 }
             }
         }

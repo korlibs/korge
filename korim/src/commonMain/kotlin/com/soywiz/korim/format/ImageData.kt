@@ -21,7 +21,7 @@ open class ImageData constructor(
             animations: List<ImageAnimation> = fastArrayListOf(),
             name: String? = null,
         ): ImageData =
-            ImageData(animations.first().frames, loopCount = loopCount, layers = layers, animations = animations, name = name)
+            ImageData(frames = fastArrayListOf(), loopCount = loopCount, layers = layers, animations = animations, name = name)
     }
 
     val defaultAnimation = ImageAnimation(frames, ImageAnimation.Direction.FORWARD, "default")
