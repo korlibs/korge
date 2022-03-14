@@ -54,11 +54,13 @@ if (System.getenv("DISABLED_EXTRA_KORGE_LIBS") != "true") {
     include(":korge-swf")
     include(":korge-box2d")
     include(":korge-gradle-plugin")
+    include(":korge-fleks")
 }
 
 //include(":tensork")
 //include(":samples:parallax-scrolling-aseprite")
 //include(":samples:tiled-background")
+include(":samples:fleks-ecs")
 
 if (!inCI) {
     include(":korge-sandbox")

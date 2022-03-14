@@ -421,6 +421,10 @@ class KorgeExtension(val project: Project) {
         dependencyMulti("com.soywiz.korlibs.korge2:korge-spine:${BuildVersions.KORGE}", registerPlugin = false)
     }
 
+    fun supportFleks() {
+        dependencyMulti("com.soywiz.korlibs.korge2:korge-fleks:${BuildVersions.KORGE}", registerPlugin = false)
+    }
+
     fun supportBox2d() {
         // https://awesome.korge.org/
         //bundle("https://github.com/korlibs/korge-bundles.git::korge-box2d::7439e5c7de7442f2cd33a1944846d44aea31af0a##9fd9d54abd8abc4736fd3439f0904141d9b6a26e9e2f1e1f8e2ed10c51f490fd")
