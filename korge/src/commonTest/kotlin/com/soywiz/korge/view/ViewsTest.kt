@@ -1,6 +1,9 @@
 package com.soywiz.korge.view
 
 import com.soywiz.klock.*
+import com.soywiz.korev.*
+import com.soywiz.korge.baseview.*
+import com.soywiz.korge.component.*
 import com.soywiz.korge.component.docking.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.internal.*
@@ -9,6 +12,7 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
@@ -389,5 +393,52 @@ class ViewsTest : ViewsForTesting() {
         container3.alpha = 0.10
         container1.alpha = 1.0
         assertEquals(0.10, container3.renderColorMul.ad, 0.03)
+    }
+
+    @Test
+    fun testDoubleDispatch() = viewsTest {
+        class MyEvent : Event()
+        class MyOtherEvent : Event()
+
+        fun BaseView.addEventComponent(block: (Event) -> Unit) {
+            addComponent(object : EventComponent {
+                override fun onEvent(event: Event) = block(event)
+                override val view: BaseView get() = this@addEventComponent
+            })
+        }
+
+        val log = arrayListOf<String>()
+
+        container {
+            this.addEventComponent {
+                log.add("Container:${it::class.portableSimpleName}")
+            }
+            solidRect(100, 100) {
+                this.addEventComponent {
+                    log.add("SolidRect1:${it::class.portableSimpleName}")
+                    if (it is MyEvent) {
+                        addChildAt(SolidRect(200, 200).apply {
+                            this.addEventComponent {
+                                log.add("SolidRect2:${it::class.portableSimpleName}")
+                            }
+                        }, 0)
+                        views.dispatch(MyOtherEvent())
+                    }
+                }
+            }
+        }
+
+        views.dispatch(MyEvent())
+
+        assertEquals(
+            """
+                SolidRect1:MyEvent
+                SolidRect1:MyOtherEvent
+                SolidRect2:MyOtherEvent
+                Container:MyOtherEvent
+                Container:MyEvent
+            """.trimIndent(),
+            log.joinToString("\n")
+        )
     }
 }

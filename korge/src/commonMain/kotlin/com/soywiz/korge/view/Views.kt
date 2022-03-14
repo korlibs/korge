@@ -218,7 +218,8 @@ class Views constructor(
 
 	var lastTime = timeProvider.now()
 
-    private val tempViews: FastArrayList<View> = FastArrayList()
+    private val tempViewsPool = Pool { FastArrayList<View>() }
+    //private val tempViews = FastArrayList<View>()
 	private val virtualSize = SizeInt()
 	private val actualSize = SizeInt()
 	private val targetSize = SizeInt()
@@ -284,31 +285,34 @@ class Views constructor(
 	@Suppress("EXPERIMENTAL_API_USAGE")
     override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
-		try {
-			this.stage.dispatch(clazz, event)
-            val stagedViews = getAllDescendantViews(stage, tempViews, true)
-			when (e) {
-				is MouseEvent -> stagedViews.fastEvents(e, { it.mouse }) { it.onMouseEvent(views, e) }
-                is TouchEvent -> stagedViews.fastEvents(e, { it.touch }) { it.onTouchEvent(views, e) }
-				is ReshapeEvent -> stagedViews.fastEvents(e, { it.resize }) { it.resized(views, e.width, e.height) }
-				is KeyEvent -> {
-                    input.triggerOldKeyEvent(e)
-                    input.keys.triggerKeyEvent(e)
-                    if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
-                        debugViews = !debugViews
-                        gameWindow.debug = debugViews
+        tempViewsPool.alloc { tempViews ->
+        //run {
+            try {
+                this.stage.dispatch(clazz, event)
+                val stagedViews = getAllDescendantViews(stage, tempViews, true)
+                when (e) {
+                    is MouseEvent -> stagedViews.fastEvents(e, { it.mouse }) { it.onMouseEvent(views, e) }
+                    is TouchEvent -> stagedViews.fastEvents(e, { it.touch }) { it.onTouchEvent(views, e) }
+                    is ReshapeEvent -> stagedViews.fastEvents(e, { it.resize }) { it.resized(views, e.width, e.height) }
+                    is KeyEvent -> {
+                        input.triggerOldKeyEvent(e)
+                        input.keys.triggerKeyEvent(e)
+                        if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
+                            debugViews = !debugViews
+                            gameWindow.debug = debugViews
+                        }
+                        stagedViews.fastEvents(e, { it.key }) { it.apply { views.onKeyEvent(e) } }
                     }
-                    stagedViews.fastEvents(e, { it.key }) { it.apply { views.onKeyEvent(e) } }
+                    is GamePadConnectionEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
+                    is GamePadUpdateEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
+                    //is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+                    //is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
+                    else -> stagedViews.fastEvents(e, { it.event }) { it.apply { it.onEvent(e) } }
                 }
-				is GamePadConnectionEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
-				is GamePadUpdateEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
-				//is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-				//is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-                else -> stagedViews.fastEvents(e, { it.event }) { it.apply { it.onEvent(e) } }
-			}
-		} catch (e: PreventDefaultException) {
-			//println("PreventDefaultException.Reason: ${e.reason}")
-		}
+            } catch (e: PreventDefaultException) {
+                //println("PreventDefaultException.Reason: ${e.reason}")
+            }
+        }
 	}
 
 	fun render() {
@@ -354,7 +358,10 @@ class Views constructor(
 		//println(this)
 		//println("Update: $dtMs")
 		input.startFrame(elapsed)
-		stage.updateSingleViewWithViewsAll(this, elapsed, tempViews)
+        tempViewsPool.alloc { tempViews ->
+        //run {
+            stage.updateSingleViewWithViewsAll(this, elapsed, tempViews)
+        }
 		input.endFrame(elapsed)
 	}
 
