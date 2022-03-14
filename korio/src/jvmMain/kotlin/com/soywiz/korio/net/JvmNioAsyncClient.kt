@@ -1,60 +1,64 @@
 package com.soywiz.korio.net
 
 import com.soywiz.korio.async.*
-import com.soywiz.korio.concurrent.atomic.incrementAndGet
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.suspendCancellableCoroutine
-import java.io.IOException
+import com.soywiz.korio.concurrent.atomic.*
+import java.io.*
 import java.net.*
-import java.nio.ByteBuffer
-import java.nio.channels.AsynchronousChannelGroup
-import java.nio.channels.AsynchronousServerSocketChannel
-import java.nio.channels.AsynchronousSocketChannel
-import java.nio.channels.CompletionHandler
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
+import java.nio.*
+import java.nio.channels.*
+import java.util.concurrent.*
 
-class JvmAsyncServerSocketChannel(override val requestPort: Int, override val host: String, override val backlog: Int = -1) :
-    AsyncServer {
-    val ssc = AsynchronousServerSocketChannel.open()
+class JvmNioAsyncClient(private var client: AsynchronousSocketChannel? = null) : AsyncClient {
+    private val readQueue = AsyncThread2()
+    private val writeQueue = AsyncThread2()
 
-    suspend fun init(): Unit {
-        ssc.bind(InetSocketAddress(host, requestPort), backlog)
-        for (n in 0 until 100) {
-            if (ssc.isOpen) break
-            delay(50)
-        }
+    override val address: AsyncAddress get() = client?.remoteAddress.toAsyncAddress()
+
+    override suspend fun connect(host: String, port: Int) {
+        client?.close()
+        val client = doIo { AsynchronousSocketChannel.open(
+            //AsynchronousChannelGroup.withThreadPool(EventLoopExecutorService(coroutineContext))
+        ) }
+        this.client = client
+        nioSuspendCompletion<Void> { client.connect(InetSocketAddress(host, port), Unit, it) }
     }
 
-    override val port: Int get() = (ssc.localAddress as? InetSocketAddress)?.port ?: -1
+    override val connected: Boolean get() = client?.isOpen ?: false
 
-    override suspend fun accept(): AsyncClient = suspendCoroutine { c ->
-        val ctx = c.context
+    private val clientSure: AsynchronousSocketChannel get() = client ?: throw IOException("Not connected")
 
-        ssc.accept(Unit, object : CompletionHandler<AsynchronousSocketChannel, Unit> {
-            override fun completed(result: AsynchronousSocketChannel, attachment: Unit) {
-                launchImmediately(ctx) {
-                    c.resume(JvmAsyncClientAsynchronousSocketChannel(result))
-                }
+    override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = readQueue {
+        nioSuspendCompletion<Int> {
+            clientSure.read(ByteBuffer.wrap(buffer, offset, len), 0L, TimeUnit.MILLISECONDS, Unit, it)
+        }.toInt()
+    }
+
+    override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit = writeQueue {
+        val b = ByteBuffer.wrap(buffer, offset, len)
+        while (b.hasRemaining()) writePartial(b)
+    }
+
+    private suspend fun writePartial(buffer: ByteBuffer): Int {
+        AsyncClient.Stats.writeCountStart.incrementAndGet()
+        try {
+            return nioSuspendCompletion<Int> {
+                clientSure.write(buffer, 0L, TimeUnit.MILLISECONDS, Unit, it)
+            }.also {
+                AsyncClient.Stats.writeCountEnd.incrementAndGet()
             }
-
-            override fun failed(exc: Throwable, attachment: Unit) {
-                exc.printStackTrace()
-                c.resumeWithException(exc)
-            }
-        })
+        } catch (e: Throwable) {
+            AsyncClient.Stats.writeCountError.incrementAndGet()
+            throw e
+        }
     }
 
     override suspend fun close() {
-        try {
-            ssc.close()
-        } catch (e: Throwable) {
-            e.printStackTrace()
-        }
+        client?.close()
+        client = null
     }
 }
 
+/*
 class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocketChannel? = null) : AsyncClient {
     private val readQueue = AsyncThread2()
     private val writeQueue = AsyncThread2()
@@ -137,3 +141,4 @@ class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocket
         sc = null
     }
 }
+*/

@@ -193,6 +193,7 @@ internal class HttpPortableServer(val factory: AsyncSocketFactory) : HttpServer(
         } catch (e: Throwable) {
             // Do nothing
             errorHandler(e)
+            if (e is CancellationException) throw e
         }
     }
 
@@ -348,69 +349,93 @@ internal class HttpPortableServer(val factory: AsyncSocketFactory) : HttpServer(
 
                 var receivedPong = false
 
-                val pingJob = launchImmediately {
-                    while (true) {
-                        receivedPong = false
-                        send(WsFrame(byteArrayOf(1, 2, 3), WsOpcode.Ping, masked = false))
-                        delay(10.seconds)
-                        if (!receivedPong) {
-                            throw CancellationException("Disconnecting client because of timeout")
+                val pingJob = asyncImmediately {
+                    try {
+                        while (true) {
+                            receivedPong = false
+                            //Console.error("PING")
+                            send(WsFrame(byteArrayOf(1, 2, 3), WsOpcode.Ping, masked = false))
+                            delay(10.seconds)
+                            if (!receivedPong) {
+                                throw WsCloseException(WsCloseInfo.GoingAway.copy(reason = "Disconnecting client because of timeout"))
+                            }
                         }
+                    } finally {
+                        //Console.error("PING COMPLETED")
                     }
                 }
 
-                val readPacketJob = launchImmediately {
-                    while (true) {
-                        val frame = WsFrame.readWsFrameOrNull(client) ?: break
-                        //println("frame: $frame")
-                        if (!frame.isFinal) {
-                            val reason = "Unsupported non-final websocket frames"
-                            onCloseSignal(WsCloseInfo.MessageTooBig.copy(reason = reason))
-                            error(reason)
-                        }
-                        when (frame.type) {
-                            WsOpcode.Continuation -> {
-                                val reason = "Unsupported websocket frame CONTINUATION"
-                                onCloseSignal(WsCloseInfo.MessageTooBig.copy(reason = reason))
-                                error(reason)
-                            }
-                            WsOpcode.Text -> onStringMessageSignal(frame.data.toString(Charsets.UTF8))
-                            WsOpcode.Binary -> onByteArrayMessageSignal(frame.data)
-                            WsOpcode.Pong -> receivedPong = true
-                            WsOpcode.Close -> {
-                                val reason = "Normal close"
-                                onCloseSignal(
-                                    WsCloseInfo.fromBytes(frame.data).copy(reason = reason)
+                val readPacketJob = asyncImmediately {
+                    try {
+                        while (true) {
+                            //Console.error("READ FRAME")
+                            val frame = WsFrame.readWsFrameOrNull(client) ?: break
+                            //Console.error("READ FRAME:$frame")
+                            //println("frame: $frame")
+                            if (!frame.isFinal) {
+                                throw WsCloseException(
+                                    WsCloseInfo.MessageTooBig.copy(reason = "Unsupported non-final websocket frames")
                                 )
-                                throw CancellationException(reason)
                             }
-                            else -> {
-                                val message = "Invalid frame ${frame.type}"
-                                onCloseSignal(WsCloseInfo.InvalidFramePayloadData)
-                                error(message)
+                            when (frame.type) {
+                                WsOpcode.Continuation -> {
+                                    throw WsCloseException(
+                                        WsCloseInfo.MessageTooBig.copy(reason = "Unsupported websocket frame CONTINUATION")
+                                    )
+                                }
+                                WsOpcode.Text -> onStringMessageSignal(frame.data.toString(Charsets.UTF8))
+                                WsOpcode.Binary -> onByteArrayMessageSignal(frame.data)
+                                WsOpcode.Pong -> receivedPong = true
+                                WsOpcode.Close -> {
+                                    throw WsCloseException(
+                                        WsCloseInfo.fromBytes(frame.data).copy(reason = "Normal close")
+                                    )
+                                }
+                                else -> {
+                                    throw WsCloseException(
+                                        WsCloseInfo.InvalidFramePayloadData.copy(reason = "Invalid frame ${frame.type}")
+                                    )
+                                }
                             }
                         }
+                        throw WsCloseException(WsCloseInfo.AbnormalClosure)
+                    } finally {
+                        //Console.error("READ PACKET COMPLETED")
                     }
-                    val reason = "Dirty close"
-                    onCloseSignal(WsCloseInfo.AbnormalClosure.copy(reason = reason))
-                    throw CancellationException(reason)
                 }
 
                 //listOf(handlerJob, pingJob, readPacketJob).joinAll()
-                listOf(pingJob, readPacketJob).joinAll()
+                //Console.error("handleWebsocket.beforeJobs")
+                try {
+                    listOf(pingJob, readPacketJob).awaitAll()
+                } finally {
+                    pingJob.cancel()
+                    readPacketJob.cancel()
+                }
+                //Console.error("handleWebsocket.afterJobs")
             }
-        } catch (e: CancellationException) {
-            //println("COMPLETED!")
-            //e.printStackTrace()
-        } catch (e: IOException) {
-            onCloseSignal(WsCloseInfo.GoingAway)
         } catch (e: Throwable) {
-            onCloseSignal(WsCloseInfo.AbnormalClosure)
+            //Console.error("handleWebsocket.catch: ${e::class}, ${e.message}")
 
-            Console.error("HttpPortable.server.catch")
-            e.printStackTrace()
+            val info: WsCloseInfo = when (e) {
+                is WsCloseException -> e.close
+                is CancellationException, is IOException -> WsCloseInfo.GoingAway
+                else -> WsCloseInfo.AbnormalClosure
+            }
+            onCloseSignal(info)
+
+            if (e !is CancellationException) {
+                e.printStackTraceWithExtraMessage("HttpPortable.server.catch")
+            }
+
+            // Rethrow
+            if (e is CancellationException) throw e
+        } finally {
+            //Console.error("handleWebsocket.finally")
         }
     }
+
+    class WsCloseException(val close: WsCloseInfo) : CancellationException(close.reason)
 
     override suspend fun closeInternal() {
         onClose()

@@ -1,5 +1,14 @@
 package com.soywiz.klogger
 
+import kotlin.native.concurrent.*
+
+@ThreadLocal
+@PublishedApi
+internal var baseConsoleHook: ((
+    kind: BaseConsole.Kind, msg: Array<out Any?>,
+    logInternal: (kind: BaseConsole.Kind, msg: Array<out Any?>) -> Unit,
+) -> Unit)? = null
+
 open class BaseConsole() : AnsiEscape {
     enum class Kind(val level: Int, val color: AnsiEscape.Color?) {
         ERROR(0, AnsiEscape.Color.RED),
@@ -10,7 +19,46 @@ open class BaseConsole() : AnsiEscape {
         LOG(5, null),
     }
 
-    open fun log(kind: Kind, vararg msg: Any?) {
+    data class LogEntry(val kind: Kind, val msg: List<Any?>) {
+        override fun toString(): String = msg.joinToString(", ")
+    }
+
+    inline fun capture(
+        block: () -> Unit
+    ): List<LogEntry> = arrayListOf<LogEntry>().also { out ->
+        hook(hook = { kind, msg, _ ->
+            out += LogEntry(kind, msg.toList())
+        }) {
+            block()
+        }
+    }
+
+    inline fun <T> hook(
+        noinline hook: (
+            kind: BaseConsole.Kind, msg: Array<out Any?>,
+            logInternal: (kind: BaseConsole.Kind, msg: Array<out Any?>) -> Unit,
+        ) -> Unit,
+        block: () -> T
+    ): T {
+        val old = baseConsoleHook
+        try {
+            baseConsoleHook = hook
+            return block()
+        } finally {
+            baseConsoleHook = old
+        }
+    }
+
+    fun log(kind: Kind, vararg msg: Any?) {
+        val hook = baseConsoleHook
+        if (hook != null) {
+            hook(kind, msg, ::logInternal)
+        } else {
+            logInternal(kind, *msg)
+        }
+    }
+
+    protected open fun logInternal(kind: Kind, vararg msg: Any?) {
         println(logToString(kind, *msg))
     }
 

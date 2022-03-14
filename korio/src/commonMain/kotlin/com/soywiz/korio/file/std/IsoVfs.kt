@@ -5,6 +5,7 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 
 suspend fun IsoVfs(file: VfsFile): VfsFile =
@@ -38,8 +39,9 @@ class IsoVfs(val iso: ISO.IsoFile, val closeStream: Boolean) : VfsV2() {
 		)
 
 	override suspend fun stat(path: String): VfsStat = try {
-		getVfsStat(isoFile.get(path))
+		getVfsStat(isoFile[path])
 	} catch (e: Throwable) {
+        if (e is CancellationException) throw e
 		createNonExistsStat(path)
 	}
 

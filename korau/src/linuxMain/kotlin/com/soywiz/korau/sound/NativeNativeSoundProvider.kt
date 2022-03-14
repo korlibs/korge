@@ -254,6 +254,8 @@ class OpenALNativeSoundNoStream(
                     startTime = 0.seconds
                     while (channel.playing) delay(1L)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Throwable) {
                 e.printStackTrace()
             } finally {

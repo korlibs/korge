@@ -479,7 +479,8 @@ object NativeAsyncSocketFactory : AsyncSocketFactory() {
 		override val host: String get() = socket.getLocalEndpoint().ip.str
 		override val port: Int get() = socket.getLocalEndpoint().port
 		override suspend fun accept(): AsyncClient = NativeAsyncClient(socket.accept())
-	}
+        override suspend fun close() = socket.close()
+    }
 
 	override suspend fun createClient(secure: Boolean): AsyncClient {
         return NativeAsyncClient(NativeSocket(secure))

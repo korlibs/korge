@@ -9,6 +9,7 @@ import com.soywiz.korau.sound.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
+import kotlin.coroutines.cancellation.*
 
 open class AudioFormat(vararg exts: String) {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
@@ -81,6 +82,8 @@ class AudioFormats : AudioFormat() {
 		for (format in formats) {
 			try {
 				return format.tryReadInfo(data.duplicate(), props) ?: continue
+            } catch (e: CancellationException) {
+                throw e
 			} catch (e: Throwable) {
 				e.printStackTrace()
 			}

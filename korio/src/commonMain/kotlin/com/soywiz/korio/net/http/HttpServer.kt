@@ -154,7 +154,7 @@ open class HttpServer protected constructor() : AsyncCloseable {
 			_endHandler(handler)
 		}
 
-		suspend fun readRawBody(maxSize: Int = 0x1000): ByteArray = suspendCoroutine { c ->
+		suspend fun readRawBody(maxSize: Int = 0x1000): ByteArray = suspendCancellableCoroutine { c ->
 			val out = ByteArrayBuilder()
 			launchImmediately(c.context) {
 				handler {
@@ -168,6 +168,9 @@ open class HttpServer protected constructor() : AsyncCloseable {
 					c.resume(out.toByteArray())
 				}
 			}
+            c.invokeOnCancellation {
+                //c.cancel()
+            }
 		}
 
 		fun setStatus(code: Int, message: String = HttpStatusMessage(code)) {

@@ -19,6 +19,7 @@ import com.soywiz.korge.debug.*
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korio.file.std.*
+import kotlin.coroutines.cancellation.*
 import kotlin.reflect.*
 
 enum class AnchorKind { SCALING, ROTATING }
@@ -288,6 +289,7 @@ suspend fun ktreeEditorKorge(
             try {
                 load(fileToEdit.file)
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 e.printStackTrace()
             }
         }

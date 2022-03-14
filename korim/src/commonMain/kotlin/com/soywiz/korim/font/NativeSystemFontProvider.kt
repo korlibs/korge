@@ -8,6 +8,7 @@ import com.soywiz.korio.concurrent.atomic.KorAtomicRef
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
+import kotlinx.coroutines.*
 import kotlin.native.concurrent.SharedImmutable
 
 expect val nativeSystemFontProvider: NativeSystemFontProvider
@@ -95,6 +96,7 @@ open class FolderBasedNativeSystemFontProvider(
             val oldFontCacheVfsFileText = try {
                 fontCacheVfsFile.readString()
             } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 ""
             }
             for (line in oldFontCacheVfsFileText.split("\n")) {
@@ -127,6 +129,7 @@ open class FolderBasedNativeSystemFontProvider(
                 try {
                     fontCacheVfsFile.writeString(newFontCacheVfsFileText)
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     e.printStackTrace()
                 }
             }

@@ -36,6 +36,8 @@ internal class DeferredPromise<T>(
             try {
                 result = onFulfilled?.invoke(deferred.await())
             } catch (e: Throwable) {
+                // @TODO: Is this the expected behaviour here?
+                if (e is CancellationException) throw e
                 result = onRejected?.invoke(e)
             }
             if (result != null) {
@@ -70,6 +72,7 @@ fun <T> Promise<T>.toDeferred(): Deferred<T> {
     return out
 }
 
-suspend fun <T> Promise<T>.await(): T = suspendCoroutine { c ->
+suspend fun <T> Promise<T>.await(): T = suspendCancellableCoroutine { c ->
     this.then({ c.resume(it) }, { c.resumeWithException(it) })
+    //c.invokeOnCancellation { c.cancel() }
 }

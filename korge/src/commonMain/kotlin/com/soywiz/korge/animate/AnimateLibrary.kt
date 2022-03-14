@@ -19,6 +19,7 @@ import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
+import kotlinx.coroutines.*
 import kotlin.collections.set
 import kotlin.coroutines.*
 
@@ -47,6 +48,7 @@ class AnSymbolSound(id: Int, name: String?, private var inputSound: Sound?, val 
 			inputSound = try {
 				nativeSoundProvider.createSound(dataBytes ?: byteArrayOf())
 			} catch (e: Throwable) {
+                if (e is CancellationException) throw e
 				nativeSoundProvider.createSound(AudioData.DUMMY)
 			}
 		}

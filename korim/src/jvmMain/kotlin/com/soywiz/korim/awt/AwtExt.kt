@@ -119,7 +119,7 @@ val BufferedImage.premultiplied: Boolean get() = this.isAlphaPremultiplied
 fun BufferedImage.toBMP32(): Bitmap32 = AwtNativeImage(this).toBMP32()
 
 fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): BufferedImage {
-	return ImageIO.read(s)?.clone(type = type) ?: error("Can't read image")
+	return ImageIO.read(s)?.clone(type = type) ?: error("Can't read image using AWT")
 	//return ImageIO.createImageInputStream(s).use { i ->
 	//	// Get the reader
 	//	val readers = ImageIO.getImageReaders(i)

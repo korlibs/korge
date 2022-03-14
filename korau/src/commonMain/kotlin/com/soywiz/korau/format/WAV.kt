@@ -10,6 +10,7 @@ import com.soywiz.korio.annotations.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
+import kotlin.coroutines.cancellation.*
 
 @Keep
 open class WAV : AudioFormat("wav") {
@@ -20,6 +21,8 @@ open class WAV : AudioFormat("wav") {
 
 	override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? = try {
 		parse(data) { }
+    } catch (e: CancellationException) {
+        throw e
 	} catch (e: Throwable) {
         //println("DATA: data.size=${data.size()}")
 		//e.printStackTrace()

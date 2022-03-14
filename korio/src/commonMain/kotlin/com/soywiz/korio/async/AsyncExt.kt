@@ -82,9 +82,8 @@ private fun CoroutineScope._launch(start: CoroutineStart, callback: suspend () -
 private fun <T> CoroutineScope._async(start: CoroutineStart, callback: suspend () -> T): Deferred<T> = async(coroutineContext, start = start) {
 	try {
 		callback()
-	} catch (e: CancellationException) {
-		throw e
 	} catch (e: Throwable) {
+        if (e is CancellationException) throw e
         if (DEBUG_ASYNC_LAUNCH_ERRORS) {
             Console.error("CoroutineScope._async.catch:")
             e.printStackTrace()

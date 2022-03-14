@@ -8,6 +8,7 @@ import com.soywiz.korio.util.jvmFallback
 import kotlinx.coroutines.runBlocking
 import java.io.*
 import java.util.*
+import kotlin.coroutines.cancellation.*
 
 abstract class ResourceProcessor @JvmOverloads constructor(
     vararg extensions: String,
@@ -51,6 +52,7 @@ abstract class ResourceProcessor @JvmOverloads constructor(
 			try {
 				processInternal(inputFile, outputFileReal)
 			} catch (e: Throwable) {
+                if (e is CancellationException) throw e
 				e.printStackTrace()
 			} finally {
 				metaInfo.writeMeta(metaFile)

@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.klogger.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
@@ -32,9 +33,17 @@ class ImageFormatsNativeTest {
 
     @Test
     fun svg() = suspendTest {
-        val bi = resourcesVfs["logo.svg"].readBitmapInfo(formats)!!
-        assertEquals(Size(60, 60), bi.size)
-        val bitmap = resourcesVfs["logo.svg"].readBitmap(formats = formats)
+        val logs = Console.capture {
+            val bi = resourcesVfs["logo.svg"].readBitmapInfo(formats)!!
+            assertEquals(Size(60, 60), bi.size)
+            val bitmap = resourcesVfs["logo.svg"].readBitmap(formats = formats)
+        }
+        assertEquals(
+            """
+                Couldn't read native image (fallback to non-native decoders): java.lang.IllegalStateException: Can't read image using AWT
+            """.trimIndent(),
+            logs.joinToString("\n")
+        )
         //showImageAndWait(bitmap)
         //File("c:/temp/logosvg.png").toVfs().writeBitmap(bitmap.toBMP32())
     }

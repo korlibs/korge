@@ -1,10 +1,12 @@
 package com.soywiz.korio.vfs
 
+import com.soywiz.klock.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlin.test.*
 
@@ -153,6 +155,41 @@ class VfsFileTest {
                 ${readString("out2.txt")}
                 ${root.listRecursive().toList()}
             """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testStatCancellation() = suspendTest {
+        val deferred0 = CompletableDeferred<Unit>()
+        val myvfs = object : Vfs() {
+            override suspend fun stat(path: String): VfsStat {
+                deferred0.complete(Unit)
+                delay(1000.seconds)
+                TODO()
+            }
+        }
+
+        val deferred = CompletableDeferred<Unit>()
+        val log = arrayListOf<String>()
+        val job = launchImmediately {
+            try {
+                val stat = myvfs.root["hello.txt"].stat()
+                log.add("$stat")
+            } catch (e: Throwable) {
+                log.add(e::class.portableSimpleName)
+            } finally {
+                deferred.complete(Unit)
+            }
+        }
+        deferred0.await()
+        delay(10.milliseconds)
+        job.cancel()
+        deferred.await()
+        assertEquals(
+            """
+                JobCancellationException
+            """.trimIndent(),
+            log.joinToString("\n")
         )
     }
 }

@@ -3,6 +3,7 @@ package com.soywiz.korte
 import com.soywiz.korte.dynamic.*
 import com.soywiz.korte.internal.*
 import com.soywiz.korte.util.*
+import kotlin.coroutines.cancellation.*
 
 interface ExprNode : DynamicContext {
     suspend fun eval(context: Template.EvalContext): Any?
@@ -49,10 +50,12 @@ interface ExprNode : DynamicContext {
             val key = name.eval(context)
             return try {
                 return Dynamic2.accessAny(obj, key, context.mapper)
-            } catch (t: Throwable) {
+            } catch (e: Throwable) {
+                if (e is CancellationException) throw e
                 try {
                     Dynamic2.callAny(obj, "invoke", listOf(key), mapper = context.mapper)
-                } catch (t: Throwable) {
+                } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     null
                 }
             }

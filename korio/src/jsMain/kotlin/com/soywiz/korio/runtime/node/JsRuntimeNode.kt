@@ -17,8 +17,7 @@ import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.net.http.HttpServer
 import com.soywiz.korio.runtime.JsRuntime
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
@@ -101,7 +100,7 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
     override var connected: Boolean = false; private set
     private val task = AsyncQueue().withContext(coroutineContext)
 
-    override suspend fun connect(host: String, port: Int): Unit = suspendCoroutine { c ->
+    override suspend fun connect(host: String, port: Int): Unit = suspendCancellableCoroutine { c ->
         connection = net.createConnection(port, host) {
             connected = true
             connection?.pause()
@@ -112,6 +111,10 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
                 }
             }
             c.resume(Unit)
+        }
+        c.invokeOnCancellation {
+            connection.destroy()
+            //c.cancel()
         }
         Unit
     }
@@ -125,9 +128,12 @@ private class NodeJsAsyncClient(val coroutineContext: CoroutineContext) : AsyncC
         }
     }
 
-    override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit = suspendCoroutine { c ->
+    override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit = suspendCancellableCoroutine { c ->
         connection?.write(buffer.toNodeJsBuffer(offset, len)) {
             c.resume(Unit)
+        }
+        c.invokeOnCancellation {
+            //c.cancel()
         }
         Unit
     }
@@ -204,34 +210,46 @@ private class NodeJsLocalVfs : LocalVfs() {
         return exitCodeDeferred.await()
     }
 
-    override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = suspendCoroutine { c ->
+    override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = suspendCancellableCoroutine { c ->
         nodeFS.mkdir(getFullPath(path), "777".toInt(8)) { err ->
             c.resume((err == null))
             Unit
         }
+        c.invokeOnCancellation {
+            //c.cancel()
+        }
         Unit
     }
 
-    override suspend fun rename(src: String, dst: String): Boolean = suspendCoroutine { c ->
+    override suspend fun rename(src: String, dst: String): Boolean = suspendCancellableCoroutine { c ->
         nodeFS.rename(getFullPath(src), getFullPath(dst)) { err ->
             c.resume((err == null))
             Unit
         }
-        Unit
-    }
-
-    override suspend fun delete(path: String): Boolean = suspendCoroutine { c ->
-        nodeFS.unlink(getFullPath(path)) { err ->
-            c.resume((err == null))
-            Unit
+        c.invokeOnCancellation {
+            //c.cancel()
         }
         Unit
     }
 
-    override suspend fun rmdir(path: String): Boolean = suspendCoroutine { c ->
+    override suspend fun delete(path: String): Boolean = suspendCancellableCoroutine { c ->
+        nodeFS.unlink(getFullPath(path)) { err ->
+            c.resume((err == null))
+            Unit
+        }
+        c.invokeOnCancellation {
+            //c.cancel()
+        }
+        Unit
+    }
+
+    override suspend fun rmdir(path: String): Boolean = suspendCancellableCoroutine { c ->
         nodeFS.rmdir(getFullPath(path)) { err ->
             c.resume((err == null))
             Unit
+        }
+        c.invokeOnCancellation {
+            //c.cancel()
         }
         Unit
     }
@@ -254,7 +272,7 @@ private class NodeJsLocalVfs : LocalVfs() {
 
     suspend fun _open(path: String, cmode: String): AsyncStream {
         val file = this.file(path)
-        return suspendCoroutine { cc ->
+        return suspendCancellableCoroutine { cc ->
             nodeFS.open(getFullPath(path), cmode) { err: Error?, fd: NodeFD? ->
                 //println("OPENED path=$path, cmode=$cmode, err=$err, fd=$fd")
                 if (err != null || fd == null) {
@@ -263,6 +281,9 @@ private class NodeJsLocalVfs : LocalVfs() {
                     cc.resume(NodeFDStream(file, fd).toAsyncStream())
                 }
                 Unit
+            }
+            cc.invokeOnCancellation {
+                //cc.cancel()
             }
             Unit
         }
@@ -276,7 +297,7 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
         if (fd == null) error("File $file already closed")
     }
 
-    override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int = suspendCoroutine { c ->
+    override suspend fun read(position: Long, buffer: ByteArray, offset: Int, len: Int): Int = suspendCancellableCoroutine { c ->
         checkFd()
         nodeFS.read(fd, buffer.toNodeJsBuffer(), offset, len, position.toDouble()) { err, bytesRead, buf ->
             if (err != null) {
@@ -287,10 +308,13 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
             }
             Unit
         }
+        c.invokeOnCancellation {
+            //c.cancel()
+        }
         Unit
     }
 
-    override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int): Unit = suspendCoroutine { c ->
+    override suspend fun write(position: Long, buffer: ByteArray, offset: Int, len: Int): Unit = suspendCancellableCoroutine { c ->
         checkFd()
         nodeFS.write(fd, buffer.toNodeJsBuffer(), offset, len, position.toDouble()) { err, bytesWritten, buffer ->
             if (err != null) {
@@ -300,10 +324,13 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
             }
             Unit
         }
+        c.invokeOnCancellation {
+            //c.cancel()
+        }
         Unit
     }
 
-    override suspend fun setLength(value: Long): Unit = suspendCoroutine { c ->
+    override suspend fun setLength(value: Long): Unit = suspendCancellableCoroutine { c ->
         checkFd()
         nodeFS.ftruncate(fd, value.toDouble()) { err ->
             if (err != null) {
@@ -313,10 +340,13 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
             }
             Unit
         }
+        c.invokeOnCancellation {
+            //c.cancel()
+        }
         Unit
     }
 
-    override suspend fun getLength(): Long = suspendCoroutine { c ->
+    override suspend fun getLength(): Long = suspendCancellableCoroutine { c ->
         checkFd()
         nodeFS.fstat(fd) { err, stats ->
             if (err != null) {
@@ -327,6 +357,9 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
             }
             Unit
         }
+        c.invokeOnCancellation {
+            //c.cancel()
+        }
         Unit
     }
 
@@ -336,7 +369,7 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
         //if (closed) error("File already closed")
         //closed = true
         if (fd != null) {
-            return suspendCoroutine { c ->
+            return suspendCancellableCoroutine { c ->
                 nodeFS.close(fd) { err ->
                     fd = null
                     if (err != null) {
@@ -346,6 +379,9 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
                         c.resume(Unit)
                     }
                     Unit
+                }
+                c.invokeOnCancellation {
+                    //c.cancel()
                 }
                 Unit
             }
@@ -480,16 +516,22 @@ private class HttpSeverNodeJs : HttpServer() {
                     }
                 }
 
-                override suspend fun _write(data: ByteArray, offset: Int, size: Int): Unit = suspendCoroutine { c ->
+                override suspend fun _write(data: ByteArray, offset: Int, size: Int): Unit = suspendCancellableCoroutine { c ->
                     res.write(data.toNodeJsBuffer(offset, size)) {
                         c.resume(Unit)
+                    }
+                    c.invokeOnCancellation {
+                        //c.cancel()
                     }
                     Unit
                 }
 
-                override suspend fun _end(): Unit = suspendCoroutine { c ->
+                override suspend fun _end(): Unit = suspendCancellableCoroutine { c ->
                     res.end {
                         c.resume(Unit)
+                    }
+                    c.invokeOnCancellation {
+                        //c.cancel()
                     }
                     Unit
                 }

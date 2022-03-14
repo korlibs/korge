@@ -19,6 +19,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import kotlinx.coroutines.*
 import kotlin.jvm.*
 import kotlin.reflect.*
 
@@ -240,6 +241,7 @@ open class KTreeSerializer(val views: Views) : KTreeSerializerHolder, Extra by E
                 try {
                     view.forceLoadSourceFile(views, currentVfs, sourceFile)
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     e.printStackTrace()
                 }
             }
@@ -423,6 +425,7 @@ class TextSerializer : KTreeSerializerExt<Text>("Text", Text::class, { Text("Tex
                 try {
                     view.forceLoadFontSource(currentVfs, view.fontSource)
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     e.printStackTrace()
                 }
             }

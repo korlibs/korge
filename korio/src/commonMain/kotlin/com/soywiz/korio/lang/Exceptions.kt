@@ -1,5 +1,7 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.klogger.*
+
 expect open class IOException(msg: String) : Exception
 expect open class EOFException(msg: String) : IOException
 expect open class FileNotFoundException(msg: String) : IOException
@@ -44,10 +46,13 @@ inline fun <R> runIgnoringExceptions(show: Boolean = false, action: () -> R): R?
 	null
 }
 
-expect fun Throwable.printStackTrace()
+fun Throwable.printStackTraceWithExtraMessage(msg: String) {
+    Console.error(msg)
+    Console.error(stackTraceToString())
+}
 
 fun printStackTrace(msg: String = "printStackTrace") {
-	Exception(msg).printStackTrace()
+    Console.error(Exception(msg).stackTraceToString())
 }
 
 expect fun enterDebugger(): Unit

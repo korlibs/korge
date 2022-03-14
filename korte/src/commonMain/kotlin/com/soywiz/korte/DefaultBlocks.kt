@@ -1,6 +1,7 @@
 package com.soywiz.korte
 
 import com.soywiz.korte.internal.*
+import kotlin.coroutines.cancellation.*
 
 var TemplateConfig.debugPrintln by extraProperty({ extra }) { { v: Any? -> println(v) } }
 
@@ -121,6 +122,7 @@ object DefaultBlocks {
                 val includeTemplate = try {
                     context.templates.getInclude(fileName)
                 } catch (e: Throwable) {
+                    if (e is CancellationException) throw e
                     korteException("Can't include template ($tagContent): ${e.message}", filePos)
                 }
                 Template.TemplateEvalContext(includeTemplate).eval(context)

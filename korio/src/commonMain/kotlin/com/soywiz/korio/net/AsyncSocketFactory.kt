@@ -76,7 +76,7 @@ class FakeAsyncClient(
 
 data class AsyncAddress(val address: String = "0.0.0.0", val port: Int = 0)
 
-interface AsyncServer: AsyncCloseable {
+interface AsyncServer : AsyncCloseable {
 	val requestPort: Int
 	val host: String
 	val backlog: Int
@@ -92,29 +92,43 @@ interface AsyncServer: AsyncCloseable {
 	suspend fun accept(): AsyncClient
 
 	suspend fun listen(handler: suspend (AsyncClient) -> Unit): Closeable {
-		val job = async(coroutineContext) {
-            while (true) {
-                try {
-                    val client = accept()
-                    launchImmediately(coroutineContext) {
-                        supervisorScope {
-                            try {
-                                handler(client)
-                            } catch (e: IOException) {
-                                // DO Nothing
-                            } catch (e: Throwable) {
-                                Console.error("Failed in AsyncServer.listen.handler")
-                                e.printStackTrace()
+		val job = launchImmediately(coroutineContext) {
+            try {
+                while (true) {
+                    try {
+                        //Console.error("AsyncServer.listen.accept[0]: $this")
+                        val client = accept()
+                        //Console.error("AsyncServer.listen.accept[1]")
+                        launchImmediately(coroutineContext) {
+                            supervisorScope {
+                                try {
+                                    handler(client)
+                                } catch (e: Throwable) {
+                                    kotlin.runCatching { client.close() }
+                                    if (e !is IOException && e !is CancellationException) {
+                                        e.printStackTraceWithExtraMessage("Failed in AsyncServer.listen.handler")
+                                    }
+                                }
                             }
                         }
+                    } catch (e: Throwable) {
+                        //Console.error("AsyncServer.listen.inner.catch: ${e::class}")
+                        if (e is CancellationException || e is IOException) throw e
+                        e.printStackTraceWithExtraMessage("Failed in AsyncServer.listen.accept")
                     }
-                } catch (e: Throwable) {
-                    Console.error("Failed in AsyncServer.listen.accept")
-                    e.printStackTrace()
                 }
+            } catch (e: Throwable) {
+                //if (e is CancellationException) Console.error("AsyncServer.listen.cancel")
+                // close socket?
+                runCatching { close() }
+            } finally {
+                //Console.error("AsyncServer.listen.finally")
             }
 		}
-		return Closeable { job.cancel() }
+		return Closeable {
+            //Console.error("AsyncServer.listen: Closing server...")
+            job.cancel()
+        }
 	}
 
     suspend fun listenFlow(): Flow<AsyncClient> = flow { while (true) emit(accept()) }

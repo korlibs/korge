@@ -1,5 +1,6 @@
 package com.soywiz.korinject
 
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.reflect.*
 
@@ -146,6 +147,7 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
         try {
             return rresult
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             throw RuntimeException("Couldn't get instance of type $clazz synchronously", e)
         }
     }

@@ -12,7 +12,7 @@ import kotlin.test.assertEquals
 
 class WebSocketServerTest {
     @Test
-    @Ignore // @TODO: Somehow this runs forever / until timeout?
+    //@Ignore // @TODO: Somehow this runs forever / until timeout?
     fun test() = suspendTest {
         val server = createHttpServer()
         val log = arrayListOf<String>()
@@ -40,11 +40,13 @@ class WebSocketServerTest {
         client.send("HELLO WORLD!")
         client.close()
 
-        println("[1]")
+        //Console.error("[1]")
         onCloseReceived.waitOne()
-        println("[2]")
+        //Console.error("[2]")
 
         server.close()
+
+        //Console.error("[3]")
 
         //println("log.joinToString(\",\")=${log.joinToString(",")}")
 
@@ -52,6 +54,8 @@ class WebSocketServerTest {
             "server:HELLO WORLD!,server:WsCloseInfo(code=1000, reason=Normal close)",
             log.joinToString(",")
         )
+
+        //Console.error("[4]")
 
         //cancel()
     }

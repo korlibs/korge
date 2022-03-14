@@ -10,7 +10,7 @@ import com.soywiz.korio.net.http.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
 import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.Job
+import kotlinx.coroutines.*
 import kotlin.coroutines.*
 import kotlin.random.*
 
@@ -152,8 +152,10 @@ class RawSocketWebSocketClient(
         } catch (e: Throwable) {
             //e.printStackTrace()
             onError(e)
+            if (e is CancellationException) throw e
+        } finally {
+            onClose(close)
         }
-        onClose(close)
     }
 
     private var lastPong: DateTime? = null

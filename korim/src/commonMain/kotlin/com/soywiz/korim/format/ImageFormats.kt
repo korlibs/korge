@@ -8,6 +8,7 @@ import com.soywiz.korio.lang.ASCII
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.encoding.*
 import com.soywiz.krypto.encoding.*
+import kotlinx.coroutines.*
 
 class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     constructor(vararg formats: ImageFormat) : this(formats.toList())
@@ -18,6 +19,7 @@ class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
         for (format in formats) return try {
             format.decodeHeaderSuspend(s.sliceStart(), props) ?: continue
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             continue
         }
         return null
@@ -27,6 +29,7 @@ class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
 		for (format in formats) return try {
 			format.decodeHeader(s.sliceStart(), props) ?: continue
 		} catch (e: Throwable) {
+            if (e is CancellationException) throw e
 			continue
 		}
 		return null

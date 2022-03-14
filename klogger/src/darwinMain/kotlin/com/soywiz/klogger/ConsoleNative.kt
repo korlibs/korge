@@ -3,7 +3,7 @@ package com.soywiz.klogger
 import platform.Foundation.NSLog
 
 actual object Console : BaseConsole() {
-    override fun log(kind: Kind, vararg msg: Any?) {
+    override fun logInternal(kind: Kind, vararg msg: Any?) {
         NSLog("%s", logToString(kind, *msg))
     }
 }

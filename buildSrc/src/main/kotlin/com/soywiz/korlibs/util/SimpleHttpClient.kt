@@ -5,6 +5,7 @@ import com.google.gson.JsonParser
 import groovy.json.*
 import java.net.*
 import java.util.*
+import kotlin.coroutines.cancellation.*
 
 open class SimpleHttpClient(
 	val user: String? = null,
@@ -33,7 +34,13 @@ open class SimpleHttpClient(
 		if (postRC < 400) {
 			return JsonParser.parseString(post.inputStream.reader(Charsets.UTF_8).readText())
 		} else {
-			val errorString = try { post.errorStream?.reader(Charsets.UTF_8)?.readText() } catch (e: Throwable) { null }
+			val errorString = try {
+                post.errorStream?.reader(Charsets.UTF_8)?.readText()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Throwable) {
+                null
+            }
 			throw SimpleHttpException(postRC, postMessage, url, errorString)
 		}
 	}

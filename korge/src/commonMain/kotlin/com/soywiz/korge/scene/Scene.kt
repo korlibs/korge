@@ -130,6 +130,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
         try {
             coroutineContext.cancel() // cancelAndJoin was being used when hanged on native?
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             e.printStackTrace()
         }
     }

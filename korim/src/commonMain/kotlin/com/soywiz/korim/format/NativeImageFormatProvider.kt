@@ -4,6 +4,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.*
+import kotlinx.coroutines.*
 import kotlin.math.*
 import kotlin.native.concurrent.*
 
@@ -34,6 +35,7 @@ abstract class NativeImageFormatProvider {
     suspend fun decodeHeaderOrNull(data: ByteArray): ImageInfo? = try {
         decodeHeaderInternal(data)
     } catch (e: Throwable) {
+        if (e is CancellationException) throw e
         null
     }
 

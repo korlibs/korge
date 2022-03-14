@@ -32,6 +32,7 @@ class ResourcesVfsTest {
         )
     }
 
+    /*
     @Test
     @Ignore // @TODO: Seems to fail on macOS CI
     fun watch() = suspendTest({ OS.isJvm }) {
@@ -50,4 +51,5 @@ class ResourcesVfsTest {
         println("watcher end")
         assertEquals("MODIFIED(JailVfs(ResourcesVfs[])[/tresfolder/a.txt])", log)
     }
+    */
 }

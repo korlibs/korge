@@ -16,6 +16,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
+import kotlinx.coroutines.*
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.set
@@ -139,6 +140,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
         try {
             processAs3Actions()
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             e.printStackTrace()
         }
 		generateActualTimelines()
@@ -442,6 +444,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				try {
 					tag.export(bb, ratio)
 				} catch (e: Throwable) {
+                    if (e is CancellationException) throw e
 					e.printStackTrace()
 				}
 				val bounds = bb.bb.getBounds()
@@ -451,7 +454,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					{
 						try {
 							tag.export(it, ratio)
-						} catch (e: Throwable) {
+                        } catch (e: Throwable) {
+                            if (e is CancellationException) throw e
 							e.printStackTrace()
 						}
 					},

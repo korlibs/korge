@@ -5,6 +5,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
+import kotlin.coroutines.cancellation.*
 
 @Keep
 open class OGG : OggBase() {
@@ -14,6 +15,8 @@ open class OGG : OggBase() {
 open class OggBase : AudioFormat("ogg") {
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? = try {
         parse(data)
+    } catch (e: CancellationException) {
+        throw e
     } catch (e: Throwable) {
         //e.printStackTrace()
         null

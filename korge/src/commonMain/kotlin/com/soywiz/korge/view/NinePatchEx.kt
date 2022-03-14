@@ -7,6 +7,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.file.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import kotlinx.coroutines.*
 
 inline fun Container.ninePatch(
 	ninePatch: NinePatchBmpSlice?, width: Double = ninePatch?.dwidth ?: 16.0, height: Double = ninePatch?.dheight ?: 16.0,
@@ -100,6 +101,7 @@ class NinePatchEx(
         ninePatch = try {
             currentVfs["$sourceFile"].readNinePatch()
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             NinePatchBitmap32(Bitmap32(62, 62))
         }
     }

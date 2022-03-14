@@ -8,6 +8,7 @@ import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
+import kotlinx.coroutines.*
 
 suspend fun ImageFormat.decode(s: VfsFile, props: ImageDecodingProps = ImageDecodingProps()) =
 	this.read(s.readAsSyncStream(), props.copy(filename = s.baseName))
@@ -25,8 +26,9 @@ suspend fun decodeImageBytes(bytes: ByteArray): NativeImage {
 	for (nip in nativeImageFormatProviders) {
 		try {
 			return nip.decode(bytes)
-		} catch (t: Throwable) {
-            exceptions += t
+		} catch (e: Throwable) {
+            if (e is CancellationException) throw e
+            exceptions += e
 		}
 	}
     for (v in nativeImageFormatProviders) println(v)
@@ -43,8 +45,9 @@ suspend fun decodeImageFile(file: VfsFile): NativeImage {
 	for (nip in nativeImageFormatProviders) {
 		try {
 			return nip.decode(file.vfs, file.path)
-		} catch (t: Throwable) {
-            exceptions += t
+		} catch (e: Throwable) {
+            if (e is CancellationException) throw e
+            exceptions += e
 		}
 	}
     for (v in nativeImageFormatProviders) println(v)
@@ -101,7 +104,8 @@ suspend fun AsyncInputStream.readBitmap(
 	val bytes = this.readAll()
 	return try {
 		if (nativeImageLoadingEnabled) decodeImageBytes(bytes) else formats.decode(bytes, props)
-	} catch (t: Throwable) {
+	} catch (e: Throwable) {
+        if (e is CancellationException) throw e
 		formats.decode(bytes, props)
 	}
 }
@@ -114,10 +118,9 @@ suspend fun VfsFile.readBitmapOptimized(formats: ImageFormat = RegisteredImageFo
     val rprops = if (premultiplied != null) props.copy(premultiplied = premultiplied) else props
     return try {
         nativeImageFormatProvider.decode(this, rprops)
-    } catch (t: Throwable) {
-        if (t !is FileNotFoundException) {
-            t.printStackTrace()
-        }
+    } catch (e: Throwable) {
+        if (e is CancellationException) throw e
+        if (e !is FileNotFoundException) e.printStackTrace()
         this.readBitmap(formats, rprops)
     }
 }
@@ -130,10 +133,9 @@ suspend fun VfsFile.readBitmap(
         try {
             nativeImageFormatProvider.decode(this, props)
         } catch (e: Throwable) {
-            if (e !is FileNotFoundException) {
-                Console.error("Couldn't read native image: $e")
-                e.printStackTrace()
-            }
+            if (e is CancellationException) throw e
+            if (e is FileNotFoundException) throw e
+            Console.error("Couldn't read native image (fallback to non-native decoders): $e")
             formats.decode(this.read(), props.copy(filename = this.baseName))
         }
     }

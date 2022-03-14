@@ -176,6 +176,7 @@ class SceneContainer(
                 //println("...")
             }
         } catch (e: Throwable) {
+            if (e is CancellationException) throw e
             //println("WOOOPS!")
             e.printStackTrace()
         }

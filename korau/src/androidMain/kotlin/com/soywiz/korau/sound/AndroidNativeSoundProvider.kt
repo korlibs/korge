@@ -13,6 +13,7 @@ import com.soywiz.korau.format.mp3.*
 import com.soywiz.korio.android.*
 import com.soywiz.korio.async.*
 import kotlin.coroutines.*
+import kotlin.coroutines.cancellation.*
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy { AndroidNativeSoundProvider() }
 
@@ -127,6 +128,8 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                     //println("[KORAU] Completed $id")
                     try {
                         at.stop()
+                    } catch (e: CancellationException) {
+                        throw e
                     } catch (e: Throwable) {
                         e.printStackTrace()
                     }

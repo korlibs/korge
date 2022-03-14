@@ -19,6 +19,7 @@ class KorteDeferred<T> {
 	fun completeExceptionally(t: Throwable) = completeWith(Result.failure(t))
 	fun complete(value: T) = completeWith(Result.success(value))
 
+    // @TODO: Cancellable?
 	suspend fun await(): T = suspendCoroutine { c ->
 		lock {
 			continuations += c

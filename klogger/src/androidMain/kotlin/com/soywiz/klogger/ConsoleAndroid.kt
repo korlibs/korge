@@ -3,7 +3,7 @@ package com.soywiz.klogger
 import android.util.Log
 
 actual object Console : BaseConsole() {
-    override fun log(kind: Kind, vararg msg: Any?) {
+    override fun logInternal(kind: Kind, vararg msg: Any?) {
         val tag = "Klogger"
         val str = logToString(kind, *msg)
         when (kind) {
