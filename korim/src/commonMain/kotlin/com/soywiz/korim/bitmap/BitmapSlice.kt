@@ -82,6 +82,24 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
     override val br_x: Float, override val br_y: Float,
     override val bl_x: Float, override val bl_y: Float,
     override val name: String? = null
+) : BmpCoordsWithInstanceBase<T>(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name) {
+    constructor(base: T, coords: BmpCoords, name: String? = null) : this(
+        base,
+        coords.tl_x, coords.tl_y,
+        coords.tr_x, coords.tr_y,
+        coords.br_x, coords.br_y,
+        coords.bl_x, coords.bl_y,
+        name
+    )
+}
+
+open class BmpCoordsWithInstanceBase<T : ISizeInt>(
+    override val base: T,
+    override val tl_x: Float, override val tl_y: Float,
+    override val tr_x: Float, override val tr_y: Float,
+    override val br_x: Float, override val br_y: Float,
+    override val bl_x: Float, override val bl_y: Float,
+    override val name: String? = null
 ) : BmpCoordsWithT<T> {
     constructor(base: T, coords: BmpCoords, name: String? = null) : this(
         base,
@@ -91,11 +109,34 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
         coords.bl_x, coords.bl_y,
         name
     )
+    constructor(base: BmpCoordsWithT<T>, name: String? = null) : this(base.base, base, name ?: base.name)
 
     override fun close() {
-        if (base is Closeable) base.close()
+        (base as? Closeable)?.close()
     }
 }
+
+open class UntransformedSizeBmpCoordsWithInstance<T : ISizeInt>(
+    val baseCoords: BmpCoordsWithT<T>
+) : BmpCoordsWithInstanceBase<T>(baseCoords) {
+    override val width: Int get() = baseCoords.baseWidth
+    override val height: Int get() = baseCoords.baseHeight
+
+    override fun toString(): String =
+        "UntransformedSizeBmpCoordsWithInstance(width=$width, height=$height, baseCoords=$baseCoords)"
+}
+
+// @TODO: This was failing because frameWidth, and frameHeight was being delegated to the original instance
+
+//open class UntransformedSizeBmpCoordsWithInstance<T : ISizeInt>(
+//    val baseCoords: BmpCoordsWithT<T>
+//) : BmpCoordsWithT<T> by baseCoords {
+//    override val width: Int get() = baseCoords.baseWidth
+//    override val height: Int get() = baseCoords.baseHeight
+//
+//    override fun toString(): String =
+//        "UntransformedSizeBmpCoordsWithInstance(width=$width, height=$height, baseCoords=$baseCoords)"
+//}
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.copy(
     base: T = this.base,
