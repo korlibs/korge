@@ -974,7 +974,7 @@ subprojects {
                     dependsOn(publishKotlinMultiplatformPublicationToMavenLocal)
                     dependsOn("publishAndroidPublicationToMavenLocal")
                     dependsOn("publishIosArm64PublicationToMavenLocal")
-                    dependsOn("publishIosX64PublicationToMavenRepository")
+                    dependsOn("publishIosX64PublicationToMavenLocal")
                 }
             }
 
