@@ -73,7 +73,10 @@ fun guessAndroidSdkPath(): String? {
         System.getenv("ANDROID_HOME"),
         "$userHome/AppData/Local/Android/sdk",
         "$userHome/Library/Android/sdk",
-        "$userHome/Android/Sdk"
+        "$userHome/Android/Sdk",
+        "$userHome/AndroidSDK",  // location of sdkmanager on linux
+        "/usr/lib/android-sdk",  // location on debian based linux (sudo apt install android-sdk)
+        "/Library/Android/sdk"   // some other flavor of linux
     ).firstOrNull { File(it).exists() }
 }
 
