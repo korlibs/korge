@@ -169,6 +169,7 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
 
     interface Invokable {
         fun invoke(name: String, args: Array<out Any?>): Any?
+        fun invokeOrThrow(name: String, args: Array<out Any?>): Any? = invoke(name, args)
     }
 
     interface SuspendInvokable {
@@ -179,6 +180,12 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
         null -> null.dyn
         is Invokable -> value.invoke(name, args).dyn
         else -> dynApi.invoke(value, name, args).dyn
+    }
+
+    fun dynamicInvokeOrThrow(name: String, vararg args: Any?): Dyn = when (value) {
+        null -> error("Can't invoke '$name' on null")
+        is Invokable -> value.invokeOrThrow(name, args).dyn
+        else -> dynApi.invokeOrThrow(value, name, args).dyn
     }
 
     suspend fun suspendDynamicInvoke(name: String, vararg args: Any?): Dyn = when (value) {

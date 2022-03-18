@@ -86,9 +86,28 @@ internal actual object DynamicInternal : DynApi {
     }
 
     override fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any? {
-        if (instance == null) return null
+        return invokeBase(instance, key, args, doThrow = false)
+    }
+
+    override fun invokeOrThrow(instance: Any?, key: String, args: Array<out Any?>): Any? {
+        return invokeBase(instance, key, args, doThrow = true)
+    }
+
+    fun invokeBase(instance: Any?, key: String, args: Array<out Any?>, doThrow: Boolean): Any? {
+        if (instance == null) {
+            if (doThrow) error("Can't invoke '$key' on null")
+            return null
+        }
         val method = tryGetMethod(if (instance is Class<*>) instance else instance.javaClass, key, args)
-        return method?.invoke(if (instance is Class<*>) null else instance, *args)
+        if (method == null) {
+            if (doThrow) error("Can't find method '$key' on ${instance::class}")
+            return null
+        }
+        return try {
+            method.invoke(if (instance is Class<*>) null else instance, *args)
+        } catch (e: InvocationTargetException) {
+            throw e.targetException ?: e
+        }
     }
 }
 

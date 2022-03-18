@@ -187,21 +187,17 @@ subprojects {
         afterEvaluate {
             val jvmTest = tasks.findByName("jvmTest")
             if (jvmTest is org.jetbrains.kotlin.gradle.targets.jvm.tasks.KotlinJvmTest) {
-                val jvmTestFix = tasks.create("jvmTestFix", Test::class)
-                jvmTestFix.group = "verification"
-                //jvmTestFix.group = jvmTest.group
-                jvmTestFix.environment("UPDATE_TEST_REF", "true")
-                jvmTestFix.testClassesDirs = jvmTest.testClassesDirs
-                jvmTestFix.classpath = jvmTest.classpath
-                jvmTestFix.bootstrapClasspath = jvmTest.bootstrapClasspath
-                if (!beforeJava9) {
-                    jvmTest.jvmArgs(*javaAddOpens)
-                    jvmTestFix.jvmArgs(*javaAddOpens)
+                val jvmTestFix = tasks.create("jvmTestFix", Test::class) {
+                    group = "verification"
+                    environment("UPDATE_TEST_REF", "true")
+                    testClassesDirs = jvmTest.testClassesDirs
+                    classpath = jvmTest.classpath
+                    bootstrapClasspath = jvmTest.bootstrapClasspath
+                    if (!beforeJava9) jvmArgs(*javaAddOpens)
+                    if (headlessTests) systemProperty("java.awt.headless", "true")
                 }
-                if (headlessTests) {
-                    jvmTest.systemProperty("java.awt.headless", "true")
-                    jvmTestFix.systemProperty("java.awt.headless", "true")
-                }
+                if (!beforeJava9) jvmTest.jvmArgs(*javaAddOpens)
+                if (headlessTests) jvmTest.systemProperty("java.awt.headless", "true")
             }
         }
 

@@ -8,6 +8,7 @@ interface DynApi {
     fun get(instance: Any?, key: String): Any?
     fun set(instance: Any?, key: String, value: Any?)
     fun invoke(instance: Any?, key: String, args: Array<out Any?>): Any?
+    fun invokeOrThrow(instance: Any?, key: String, args: Array<out Any?>): Any? = invoke(instance, key, args)
 
     suspend fun suspendGet(instance: Any?, key: String): Any? = get(instance, key)
     suspend fun suspendSet(instance: Any?, key: String, value: Any?): Unit = set(instance, key, value)
