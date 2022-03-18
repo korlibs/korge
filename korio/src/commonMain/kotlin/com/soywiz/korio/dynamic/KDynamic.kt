@@ -3,9 +3,12 @@ package com.soywiz.korio.dynamic
 @Suppress("DEPRECATION")
 @Deprecated("Use Dyn instead")
 open class KDynamic {
-	companion object : KDynamic() {
-		inline operator fun <T> invoke(callback: KDynamic.() -> T): T = callback(KDynamic)
-		inline operator fun <T, R> invoke(value: T, callback: KDynamic.(T) -> R): R = callback(KDynamic, value)
+    companion object {
+        @PublishedApi
+        internal val KDynamicInstance = KDynamic()
+
+		inline operator fun <T> invoke(callback: KDynamic.() -> T): T = callback(KDynamicInstance)
+		inline operator fun <T, R> invoke(value: T, callback: KDynamic.(T) -> R): R = callback(KDynamicInstance, value)
 	}
 
 	val global get() = Dyn.global.value

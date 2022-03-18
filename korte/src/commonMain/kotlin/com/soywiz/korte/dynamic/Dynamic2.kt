@@ -13,7 +13,7 @@ import kotlin.reflect.*
 //	fun dynamicSet(obj: Any?, name: String, value: Any?): Unit
 //}
 
-object Dynamic2 : DynamicContext {
+object Dynamic2 {
     fun binop(l: Any?, r: Any?, op: String): Any? = when (op) {
         "+" -> {
             when (l) {
@@ -159,7 +159,7 @@ object Dynamic2 : DynamicContext {
         is Map<*, *> -> instance[key]
         is Iterable<*> -> instance.toList()[toInt(key)]
         else -> {
-            val keyStr = key.toDynamicString()
+            val keyStr = DynamicContext { key.toDynamicString() }
             when {
                 mapper.hasProperty(instance, keyStr) -> {
                     //println("Access dynamic property : $keyStr")
@@ -183,18 +183,20 @@ object Dynamic2 : DynamicContext {
         is MutableMap<*, *> -> (instance as MutableMap<Any?, Any?>).set(key, value)
         is MutableList<*> -> (instance as MutableList<Any?>)[toInt(key)] = value
         else -> {
-            when {
-                mapper.hasProperty(instance, key.toDynamicString()) -> mapper.set(instance, key, value)
-                mapper.hasMethod(instance, key.toDynamicString()) -> {
-                    mapper.invokeAsync(
-                        instance::class as KClass<Any>,
-                        instance as Any?,
-                        key.toDynamicString(),
-                        listOf(value)
-                    )
-                    Unit
+            DynamicContext {
+                when {
+                    mapper.hasProperty(instance, key.toDynamicString()) -> mapper.set(instance, key, value)
+                    mapper.hasMethod(instance, key.toDynamicString()) -> {
+                        mapper.invokeAsync(
+                            instance::class as KClass<Any>,
+                            instance as Any?,
+                            key.toDynamicString(),
+                            listOf(value)
+                        )
+                        Unit
+                    }
+                    else -> Unit
                 }
-                else -> Unit
             }
         }
     }
@@ -205,13 +207,19 @@ object Dynamic2 : DynamicContext {
     suspend fun callAny(any: Any?, methodName: Any?, args: List<Any?>, mapper: ObjectMapper2): Any? = when (any) {
         null -> null
         any is Dynamic2Callable -> (any as Dynamic2Callable).dynamic2Call(methodName, args)
-        else -> mapper.invokeAsync(any::class as KClass<Any>, any, methodName.toDynamicString(), args)
+        else -> mapper.invokeAsync(any::class as KClass<Any>, any, DynamicContext { methodName.toDynamicString() }, args)
     }
 
     //fun dynamicCast(any: Any?, target: KClass<*>): Any? = TODO()
 }
 
 interface DynamicContext {
+    companion object {
+        @PublishedApi internal val Instance = object : DynamicContext { }
+
+        inline operator fun <T> invoke(callback: DynamicContext.() -> T): T = callback(Instance)
+    }
+
     operator fun Number.compareTo(other: Number): Int = this.toDouble().compareTo(other.toDouble())
 
     fun combineTypes(a: Any?, b: Any?): Any? {
@@ -260,8 +268,6 @@ interface DynamicContext {
 //suspend internal fun Any?.dynamicCastTo(target: KClass<*>) = Dynamic2.dynamicCast(this, target)
 
 }
-
-inline fun <T> DynamicContext(callback: DynamicContext.() -> T): T = callback(Dynamic2)
 
 interface Dynamic2Gettable {
     suspend fun dynamic2Get(key: Any?): Any?

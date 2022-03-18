@@ -2,13 +2,9 @@ package com.soywiz.korim.format
 
 import com.soywiz.kds.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.dynamic.KDynamic.Companion.toInt
 import com.soywiz.korio.experimental.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
 
 // AVIF & HEIC metadata extractor
 object AVIFInfo : ISOBMFF("avif")

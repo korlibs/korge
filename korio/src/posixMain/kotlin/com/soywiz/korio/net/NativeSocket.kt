@@ -1,5 +1,4 @@
 package com.soywiz.korio.net
-import com.soywiz.korio.dynamic.KDynamic.Companion.str
 import com.soywiz.korio.posix.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
