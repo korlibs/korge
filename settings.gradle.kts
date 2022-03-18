@@ -17,7 +17,12 @@ pluginManagement {
 	}
 }
 
-val inCI = System.getProperty("CI") == "true"
+fun isPropertyTrue(name: String): Boolean =
+    System.getenv(name) == "true" || System.getProperty(name) == "true"
+
+val inCI = isPropertyTrue("CI")
+val includeKorlibsSamples = isPropertyTrue("INCLUDE_KORLIBS_SAMPLES")
+val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
 /*
 for (file in rootDir.listFiles()) {
@@ -46,7 +51,11 @@ include(":korgw")
 include(":korvi")
 include(":korge")
 
-if (System.getenv("DISABLED_EXTRA_KORGE_LIBS") != "true") {
+if (!inCI) {
+    include(":korge-sandbox")
+}
+
+if (!disabledExtraKorgeLibs) {
     include(":luak")
     include(":kbox2d")
     include(":korge-dragonbones")
@@ -55,37 +64,24 @@ if (System.getenv("DISABLED_EXTRA_KORGE_LIBS") != "true") {
     include(":korge-box2d")
     include(":korge-gradle-plugin")
     include(":korge-fleks")
-}
 
-//include(":tensork")
-//include(":samples:parallax-scrolling-aseprite")
-//include(":samples:tiled-background")
-include(":samples:fleks-ecs")
+    //include(":samples:parallax-scrolling-aseprite")
+    //include(":samples:tiled-background")
+    //include(":samples:fleks-ecs")
 
-if (!inCI) {
-    include(":korge-sandbox")
-}
+    // This is required because having tons of gradle modules is super slow
+    val skipKorgeSamples = !includeKorlibsSamples
 
-/*
-for (sample in (File(rootProject.projectDir, "samples").takeIf { it.isDirectory }?.listFiles() ?: arrayOf())) {
-    if (File(sample, "build.gradle.kts").exists() || File(sample, "build.gradle").exists()) {
-        include(":samples:${sample.name}")
-    }
-}
-*/
-
-//val skipKorgeSamples = System.getenv("SKIP_KORGE_SAMPLES") == "true"
-val skipKorgeSamples = true
-
-if (!skipKorgeSamples && !inCI) {
-    fileTree(File(rootProject.projectDir, "samples")) {
-        include("**" + "/build.gradle.kts")
-        include("**" + "/build.gradle")
-        exclude("**" + "/build/**")
-    }.forEach {
-        val sample = moduleName(it.parentFile)
-        include(":$sample")
-        //project(":$sample").projectDir = File(relativePath(it.parent))
+    if (!skipKorgeSamples && !inCI) {
+        fileTree(File(rootProject.projectDir, "samples")) {
+            include("**" + "/build.gradle.kts")
+            include("**" + "/build.gradle")
+            exclude("**" + "/build/**")
+        }.forEach {
+            val sample = moduleName(it.parentFile)
+            include(":$sample")
+            //project(":$sample").projectDir = File(relativePath(it.parent))
+        }
     }
 }
 
