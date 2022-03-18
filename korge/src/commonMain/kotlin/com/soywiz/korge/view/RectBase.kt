@@ -1,5 +1,7 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
@@ -50,7 +52,7 @@ open class RectBase(
 	val sRight get() = sLeft + bwidth
 	val sBottom get() = sTop + bheight
 
-    private val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
+    protected val vertices = TexturedVertexArray(4, TexturedVertexArray.QUAD_INDICES)
 
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
@@ -60,13 +62,31 @@ open class RectBase(
             computeVertices()
         }
         //println("$name: ${vertices.str(0)}, ${vertices.str(1)}, ${vertices.str(2)}, ${vertices.str(3)}")
-        ctx.useBatcher { batch ->
-            batch.drawVertices(vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors)
-        }
+        drawVertices(ctx)
         //super.renderInternal(ctx)
 	}
 
-    open protected fun computeVertices() {
+    var program: Program? = null
+    private var _programUniforms: AG.UniformValues? = null
+    var programUniforms: AG.UniformValues
+        set(value) { _programUniforms = value }
+        get()  {
+            if (_programUniforms == null) _programUniforms = AG.UniformValues()
+            return _programUniforms!!
+        }
+
+    protected open fun drawVertices(ctx: RenderContext) {
+        ctx.useBatcher { batch ->
+            batch.setTemporalUniforms(_programUniforms) {
+                batch.drawVertices(
+                    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors,
+                    program = program
+                )
+            }
+        }
+    }
+
+    protected open fun computeVertices() {
         vertices.quad(0, sLeft, sTop, bwidth, bheight, globalMatrix, baseBitmap, renderColorMul, renderColorAdd)
     }
 

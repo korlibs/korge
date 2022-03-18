@@ -11,39 +11,39 @@ fun ProgramWithDefault(
 
 object DefaultShaders {
     // from korge
-	val u_Tex = Uniform("u_Tex", VarType.TextureUnit)
+	val u_Tex: Uniform = Uniform("u_Tex", VarType.TextureUnit)
 
-	val u_ProjMat = Uniform("u_ProjMat", VarType.Mat4)
-	val u_ViewMat = Uniform("u_ViewMat", VarType.Mat4)
-	val a_Pos = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH)
-	val a_Tex = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM)
-	val a_Col = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW)
-	val v_Tex = Varying("v_Tex", VarType.Float2, precision = Precision.MEDIUM)
-	val v_Col = Varying("v_Col", VarType.Byte4)
+	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
+	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
+	val a_Pos: Attribute = Attribute("a_Pos", VarType.Float2, normalized = false, precision = Precision.HIGH)
+	val a_Tex: Attribute = Attribute("a_Tex", VarType.Float2, normalized = false, precision = Precision.MEDIUM)
+	val a_Col: Attribute = Attribute("a_Col", VarType.Byte4, normalized = true, precision = Precision.LOW)
+	val v_Tex: Varying = Varying("v_Tex", VarType.Float2, precision = Precision.MEDIUM)
+	val v_Col: Varying = Varying("v_Col", VarType.Byte4)
 
-	val t_Temp0 = Temp(0, VarType.Float4)
-	val t_Temp1 = Temp(1, VarType.Float4)
-    val t_TempMat2 = Temp(2, VarType.Mat2)
+	val t_Temp0: Temp = Temp(0, VarType.Float4)
+	val t_Temp1: Temp = Temp(1, VarType.Float4)
+    val t_TempMat2: Temp = Temp(2, VarType.Mat2)
 
-	val textureUnit = AG.TextureUnit()
+	val textureUnit: AG.TextureUnit = AG.TextureUnit()
 
-	val LAYOUT_DEFAULT = VertexLayout(a_Pos, a_Tex, a_Col)
+	val LAYOUT_DEFAULT: VertexLayout = VertexLayout(a_Pos, a_Tex, a_Col)
 
-	val VERTEX_DEFAULT = VertexShader {
+	val VERTEX_DEFAULT: VertexShader = VertexShader {
 		SET(v_Tex, a_Tex)
 		SET(v_Col, a_Col)
 		SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit))
 	}
 
-	val FRAGMENT_DEBUG = FragmentShader {
+	val FRAGMENT_DEBUG: FragmentShader = FragmentShader {
 		out set vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit)
 	}
 
-	val FRAGMENT_SOLID_COLOR = FragmentShader {
+	val FRAGMENT_SOLID_COLOR: FragmentShader = FragmentShader {
 		out set v_Col
 	}
 
-	val PROGRAM_TINTED_TEXTURE = Program(
+	val PROGRAM_TINTED_TEXTURE: Program = Program(
 		vertex = VERTEX_DEFAULT,
 		fragment = FragmentShader {
 			//t_Temp1 set texture2D(u_Tex, v_Tex["xy"])
@@ -55,7 +55,7 @@ object DefaultShaders {
 		name = "PROGRAM_TINTED_TEXTURE"
 	)
 
-	val PROGRAM_TINTED_TEXTURE_PREMULT = Program(
+	val PROGRAM_TINTED_TEXTURE_PREMULT: Program = Program(
 		vertex = VERTEX_DEFAULT,
 		fragment = FragmentShader {
 			//t_Temp1 set texture2D(u_Tex, v_Tex["xy"])
@@ -69,15 +69,15 @@ object DefaultShaders {
 		name = "PROGRAM_TINTED_TEXTURE"
 	)
 
-	val PROGRAM_SOLID_COLOR = Program(
+	val PROGRAM_SOLID_COLOR: Program = Program(
 		vertex = VERTEX_DEFAULT,
 		fragment = FRAGMENT_SOLID_COLOR,
 		name = "PROGRAM_SOLID_COLOR"
 	)
 
-	val LAYOUT_DEBUG = VertexLayout(a_Pos)
+	val LAYOUT_DEBUG: VertexLayout = VertexLayout(a_Pos)
 
-	val PROGRAM_DEBUG = Program(
+	val PROGRAM_DEBUG: Program = Program(
 		vertex = VertexShader {
 			SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
 		},
@@ -87,7 +87,7 @@ object DefaultShaders {
 		name = "PROGRAM_DEBUG"
 	)
 
-	val PROGRAM_DEBUG_WITH_PROJ = Program(
+	val PROGRAM_DEBUG_WITH_PROJ: Program = Program(
 		vertex = VertexShader {
 			SET(out, u_ProjMat * vec4(a_Pos, 0f.lit, 1f.lit))
 		},
@@ -97,7 +97,7 @@ object DefaultShaders {
 		name = "PROGRAM_DEBUG_WITH_PROJ"
 	)
 
-	val PROGRAM_DEFAULT by lazy { PROGRAM_TINTED_TEXTURE_PREMULT }
+	val PROGRAM_DEFAULT: Program get() = PROGRAM_TINTED_TEXTURE_PREMULT
 
-	inline operator fun invoke(callback: DefaultShaders.() -> Unit) = this.apply(callback)
+	inline operator fun invoke(callback: DefaultShaders.() -> Unit): DefaultShaders = this.apply(callback)
 }

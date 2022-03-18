@@ -12,4 +12,3 @@ suspend fun Stage.mainMipmaps() {
         tween(image::scale[0.2], time = 1.seconds)
     }
 }
-

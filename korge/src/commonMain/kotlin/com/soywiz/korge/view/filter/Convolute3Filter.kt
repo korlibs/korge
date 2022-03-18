@@ -59,7 +59,7 @@ class Convolute3Filter(
         )
 
         private val FRAGMENT_SHADER = FragmentShader {
-            DefaultShaders {
+            DefaultShaders.apply {
                 out setTo vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit)
 
                 for (y in 0 until 3) {

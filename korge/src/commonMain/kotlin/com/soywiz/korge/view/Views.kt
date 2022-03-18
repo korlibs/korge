@@ -6,6 +6,7 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korev.*
 import com.soywiz.korge.*
 import com.soywiz.korge.annotations.*
@@ -481,6 +482,9 @@ class Views constructor(
 
     var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
+
+fun Views.getDefaultProgram(premultiplied: Boolean = true): Program =
+    renderContext.batch.getDefaultProgram(premultiplied)
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)

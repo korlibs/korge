@@ -321,8 +321,8 @@ open class LogBaseAG(
                     }
                 }
             }
-            log("::draw.shader.vertex=${GlslGenerator(ShaderType.VERTEX).generate(program.vertex.stm)}", Kind.SHADER)
-            log("::draw.shader.fragment=${GlslGenerator(ShaderType.FRAGMENT).generate(program.fragment.stm)}", Kind.SHADER)
+            log("::draw.shader.vertex=${GlslGenerator(ShaderType.VERTEX).generate(program.vertex)}", Kind.SHADER)
+            log("::draw.shader.fragment=${GlslGenerator(ShaderType.FRAGMENT).generate(program.fragment)}", Kind.SHADER)
         } catch (e: Throwable) {
             log("LogBaseAG.draw.ERROR: ${e.message}", Kind.DRAW)
             e.printStackTrace()

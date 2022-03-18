@@ -17,8 +17,8 @@ open class Shaders3D {
 		return programCache.getOrPut("program_L${nlights}_W${nweights}_M${meshMaterial?.kind}_T${hasTexture}") {
 			StandardShader3D(nlights, nweights, meshMaterial, hasTexture).program.apply {
 				if (printShaders) {
-					println(GlslGenerator(kind = ShaderType.VERTEX).generate(this.vertex.stm))
-					println(GlslGenerator(kind = ShaderType.FRAGMENT).generate(this.fragment.stm))
+					println(GlslGenerator(kind = ShaderType.VERTEX).generate(this.vertex))
+					println(GlslGenerator(kind = ShaderType.FRAGMENT).generate(this.fragment))
 				}
 			}
 		}

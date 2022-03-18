@@ -7,7 +7,7 @@ fun Shader.toNewGlslStringResult(gles: Boolean = true, version: Int = GlslGenera
     toNewGlslStringResult(GlslConfig(gles = gles, version = version, compatibility = compatibility, android = android))
 
 fun Shader.toNewGlslStringResult(config: GlslConfig): GlslGenerator.Result =
-    GlslGenerator(this.type, config).generateResult(this.stm)
+    GlslGenerator(this.type, config).generateResult(this)
 
 fun Shader.toNewGlslString(config: GlslConfig): String =
     toNewGlslStringResult(config).result

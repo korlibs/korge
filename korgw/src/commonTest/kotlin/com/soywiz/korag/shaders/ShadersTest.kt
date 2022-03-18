@@ -66,6 +66,68 @@ class ShadersTest {
         }
     }
 
+    @Test
+    fun testGlslFragmentGenerationNewCustomFunc() {
+        assertEqualsShader(FragmentShader {
+            DefaultShaders.apply {
+                // This is discarded
+                FUNC("demo", Float1, "x" to Float1, "y" to Float1) {
+                    RETURN(ARG("x", Float1) + ARG("y", Float1) * 2.lit)
+                }
+                // Latest function with this name is used
+                val demo = FUNC("demo", Float1, "x" to Float1, "y" to Float1) {
+                    val x = ARG("x", Float1)
+                    val y = ARG("y", Float1)
+                    RETURN(x + y + 2.lit)
+                }
+
+                out setTo vec4(1.lit, 0.lit, 0.lit, demo(0.lit, 1.lit))
+            }
+        }, version = 330) {
+            line("float demo(float x, float y)") {
+                line("return ((x + y) + 2);")
+            }
+            line("void main()") {
+                line("gl_FragColor = vec4(1, 0, 0, demo(0, 1));")
+            }
+            //+"layout(location = 0) out vec4 fragColor;"
+            //"void main()" {
+            //    +"fragColor = vec4(1, 0, 0, 1);"
+            //}
+        }
+    }
+
+    @Test
+    fun testGlslFragmentGenerationNewCustomFuncUpdated() {
+        val fragment = FragmentShader {
+            // This is discarded
+            val demo = FUNC("demo", Float1, "x" to Float1, "y" to Float1) {
+                RETURN(ARG("x", Float1) + ARG("y", Float1) * 2.lit)
+            }
+            out setTo vec4(1.lit, 0.lit, 0.lit, demo(0.lit, 1.lit))
+        }.appending {
+            // Latest function with this name is used
+            FUNC("demo", Float1, "x" to Float1, "y" to Float1) {
+                val x = ARG("x", Float1)
+                val y = ARG("y", Float1)
+                RETURN(x + y + 2.lit)
+            }
+        }
+
+        assertEqualsShader(fragment, version = 330) {
+            line("float demo(float x, float y)") {
+                line("return ((x + y) + 2);")
+            }
+            line("void main()") {
+                line("gl_FragColor = vec4(1, 0, 0, demo(0, 1));")
+            }
+            //+"layout(location = 0) out vec4 fragColor;"
+            //"void main()" {
+            //    +"fragColor = vec4(1, 0, 0, 1);"
+            //}
+        }
+    }
+
     fun assertEqualsShader(shader: Shader, version: Int = GlslGenerator.DEFAULT_VERSION, gles: Boolean = false, block: Indenter.() -> Unit) {
         assertEquals(
             Indenter {

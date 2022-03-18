@@ -1,5 +1,7 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.*
+import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.bitmap.*
@@ -103,7 +105,6 @@ open class BaseImage(
     override fun createInstance(): View = BaseImage(bitmap, anchorX, anchorY, hitShape, smoothing)
 
     override fun toString(): String = super.toString() + ":bitmap=$bitmap"
-
 }
 
 interface SmoothedBmpSlice {

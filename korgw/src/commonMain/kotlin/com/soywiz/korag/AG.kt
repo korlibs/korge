@@ -372,7 +372,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    data class TextureUnit(
+    data class TextureUnit constructor(
         var texture: AG.Texture? = null,
         var linear: Boolean = true,
         var trilinear: Boolean? = null,
@@ -979,6 +979,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         val values = _values as List<Any>
 
         val size get() = _uniforms.size
+
+        fun isEmpty(): Boolean = size == 0
+        fun isNotEmpty(): Boolean = size != 0
 
         constructor(vararg pairs: Pair<Uniform, Any>) : this() {
             for (pair in pairs) put(pair.first, pair.second)

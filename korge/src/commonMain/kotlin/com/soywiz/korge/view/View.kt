@@ -861,6 +861,7 @@ abstract class View internal constructor(
             val addy = -bounds.y + borderEffect
 
             //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
+            //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")
 
             /*
             run {

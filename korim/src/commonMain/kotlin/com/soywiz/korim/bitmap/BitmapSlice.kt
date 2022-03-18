@@ -1,7 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.*
+import com.soywiz.kmem.clamp
 import com.soywiz.korim.color.*
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.resources.*

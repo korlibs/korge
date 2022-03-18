@@ -1,5 +1,6 @@
 package com.soywiz.korim.bitmap
 
+import com.soywiz.korma.geom.*
 import kotlin.test.*
 
 class BitmapSliceTest {

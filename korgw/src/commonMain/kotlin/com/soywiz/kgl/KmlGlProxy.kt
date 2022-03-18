@@ -1492,6 +1492,7 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy) : KmlGlProxy(parent) {
     val log = arrayListOf<String>()
 
+    fun clearLog(): Unit { log.clear() }
     fun getLogAsString(): String = log.joinToString("\n")
 
     open fun getString(name: String, params: List<Any?>, result: Any?): String? {
