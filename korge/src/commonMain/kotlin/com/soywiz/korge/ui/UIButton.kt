@@ -12,6 +12,15 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 
 inline fun Container.uiButton(
+    label: String,
+    icon: BmpSlice? = null,
+    width: Double = UI_DEFAULT_WIDTH,
+    height: Double = UI_DEFAULT_HEIGHT,
+    block: @ViewDslMarker UIButton.() -> Unit = {}
+): UIButton = UIButton(width, height, label, icon).addTo(this).apply(block)
+
+@Deprecated("Use uiButton instead")
+inline fun Container.uiButton(
     width: Double = UI_DEFAULT_WIDTH,
     height: Double = UI_DEFAULT_HEIGHT,
     text: String = "",
@@ -156,4 +165,9 @@ open class UIButton(
         }
         super.buildDebugComponent(views, container)
     }
+}
+
+fun <T : UIButton> T.clicked(block: (T) -> Unit): T {
+    onClick { block(this) }
+    return this
 }
