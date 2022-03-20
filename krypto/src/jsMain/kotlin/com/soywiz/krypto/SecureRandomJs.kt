@@ -16,8 +16,14 @@ private fun require_node(name: String): dynamic = eval("(${REQ}uire('$name'))")
 
 actual fun fillRandomBytes(array: ByteArray) {
     if (isNodeJs) {
+        // https://nodejs.org/api/crypto.html#cryptorandomfillsyncbuffer-offset-size
         require_node("crypto").randomFillSync(Uint8Array(array.unsafeCast<Int8Array>().buffer))
     } else {
+        // https://developer.mozilla.org/en-US/docs/Web/API/Crypto/getRandomValues
         _global.crypto.getRandomValues(array)
     }
+}
+
+actual fun seedExtraRandomBytes(array: ByteArray) {
+    // No implementation for this?
 }

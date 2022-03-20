@@ -12,11 +12,14 @@ private val BCryptGenRandomDynamic by lazy {
 }
 
 actual fun fillRandomBytes(array: ByteArray) {
-    memScoped {
-        val temp1 = allocArray<ByteVar>(array.size)
-        val ptr = temp1.getPointer(this)
+    if (array.size == 0) return
+
+    array.usePinned { pin ->
+        val ptr = pin.addressOf(0)
         val status = BCryptGenRandomDynamic(null, ptr.reinterpret(), array.size.convert(), 2.convert())
-        //println("status = $status")
-        for (n in 0 until array.size) array[n] = ptr[n]
     }
+}
+
+actual fun seedExtraRandomBytes(array: ByteArray) {
+    // No implementation for this?
 }
