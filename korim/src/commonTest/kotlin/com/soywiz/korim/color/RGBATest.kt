@@ -52,6 +52,12 @@ class RGBATest {
         assertEquals(Colors.YELLOW, Colors.RED.withG(0xFF))
         assertEquals(Colors.TRANSPARENT_BLACK, Colors.BLACK.withA(0))
         assertEquals(Colors.TRANSPARENT_WHITE, Colors.WHITE.withA(0))
+
+        assertEquals(Colors.RED, Colors.BLACK.withR(300))
+        assertEquals(Colors.FUCHSIA, Colors.RED.withB(300))
+        assertEquals(Colors.YELLOW, Colors.RED.withG(300))
+        assertEquals(Colors.TRANSPARENT_BLACK, Colors.BLACK.withA(-100))
+        assertEquals(Colors.TRANSPARENT_WHITE, Colors.WHITE.withA(-100))
     }
 
 	val colors = intArrayOf(RGBA.pack(0xFF, 0xFF, 0xFF, 0x7F), RGBA.pack(0x7F, 0x6F, 0x33, 0x90))
