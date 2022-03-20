@@ -32,6 +32,9 @@ class NativeSocket private constructor(internal val sockfd: Int, endpoint: Endpo
 				v3.toUByte()
 			)
 		)
+        constructor(v0: UByte, v1: UByte, v2: UByte, v3: UByte) : this(ubyteArrayOf(v0, v1, v2, v3))
+        constructor(ptr: CPointer<UByteVar>) : this(ptr[0], ptr[1], ptr[2], ptr[3])
+        constructor(ptr: CPointer<ByteVar>) : this(ptr.reinterpret<UByteVar>())
 
 		val v0 get() = data[0]
 		val v1 get() = data[1]

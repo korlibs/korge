@@ -2,6 +2,7 @@ package com.soywiz.korio.async
 
 import com.soywiz.klock.*
 
+// @TODO: Use select when waiting for sockets, and integrate it in the eventloop?
 suspend fun <T> kotlin.native.concurrent.Future<T>.await(): T {
 	var n = 0
     var delayCount = 0
