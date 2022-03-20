@@ -7,6 +7,7 @@ import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
@@ -139,9 +140,29 @@ class LineRenderBatcher(
         }
     }
 
+    var blendMode: BlendMode = BlendMode.NORMAL
+
+    inline fun <T> blending(blending: BlendMode, block: () -> T): T {
+        val doUpdate = this.blendMode !== blending
+        val old = this.blendMode
+        try {
+            if (doUpdate) {
+                ctx.flush()
+                this.blendMode = blending
+            }
+            return block()
+        } finally {
+            if (doUpdate) {
+                ctx.flush()
+            }
+            this.blendMode = old
+        }
+    }
+
     /** Actually flushes all the pending lines. Shouldn't be called manually. You should call the [draw] method instead. */
     @KorgeInternal
     fun flush() {
+        //println("BLENDING=$blending")
         if (vertexCount > 0) {
             beforeFlush(this)
             vertexBuffer.upload(vertices, 0, vertexPos * 4)
@@ -153,7 +174,8 @@ class LineRenderBatcher(
                 type = AG.DrawType.LINES,
                 vertexLayout = LAYOUT,
                 vertexCount = vertexCount,
-                uniforms = uniforms
+                uniforms = uniforms,
+                blending = blendMode.factors
             )
         }
         vertexCount = 0

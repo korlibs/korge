@@ -804,10 +804,12 @@ abstract class View internal constructor(
         //ctx.flush()
         val local = getLocalBoundsOptimizedAnchored()
         ctx.useLineBatcher { lines ->
-            lines.drawVector(Colors.RED) {
-                rect(windowBounds)
+            lines.blending(BlendMode.INVERT) {
+                lines.drawVector(Colors.RED) {
+                    rect(windowBounds)
+                }
             }
-            lines.drawVector(Colors.WHITE) {
+            lines.drawVector(Colors.RED) {
                 moveTo(localToGlobal(Point(local.left, local.top)))
                 lineTo(localToGlobal(Point(local.right, local.top)))
                 lineTo(localToGlobal(Point(local.right, local.bottom)))
