@@ -1,5 +1,6 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
@@ -95,8 +96,11 @@ class Convolute3Filter(
     /** Whether or not kernel must be applied to the alpha component */
     var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
 
-    override val border: Int get() = dist.toInt()
     override val fragment = FRAGMENT_SHADER
+
+    override fun computeBorder(out: MutableMarginInt) {
+        out.setTo(dist.toIntCeil())
+    }
 
     var namedKernel: String
         get() = NAMED_KERNELS.entries.firstOrNull { it.value == weights }?.key ?: NAMED_KERNELS.keys.first()

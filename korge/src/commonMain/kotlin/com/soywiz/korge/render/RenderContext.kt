@@ -76,6 +76,11 @@ class RenderContext constructor(
     /** Pool of [Point] objects that could be used temporarily by renders */
     val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { Point() }
 
+    val tempMargin: MutableMarginInt = MutableMarginInt()
+    val tempMatrix: Matrix = Matrix()
+
+    val identityMatrix = Matrix()
+
     /**
      * Allows to toggle whether stencil-based masks are enabled or not.
      */

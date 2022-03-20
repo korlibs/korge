@@ -2,10 +2,7 @@ import com.soywiz.klock.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 
@@ -51,7 +48,7 @@ object FiltersE2ETestCase : E2ETestCase() {
         val bitmap = resourcesVfs["korge.png"].readBitmap().toBMP32().premultiplied()
         println("PREPARING VIEWS...")
         image(bitmap).scale(.5).position(0, 0).addFilter(WaveFilter(time = 0.5.seconds))
-        image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(initialRadius = 6.0))
+        image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(radius = 6.0))
         //image(bitmap).scale(.5).position(256, 0).addFilter(BlurFilter(initialRadius = 4.0))
         image(bitmap).scale(.5).position(512, 0).addFilter(TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, smooth = true, ratio = 0.5))
         image(bitmap).scale(.5).position(0, 256).addFilter(PageFilter(hratio = 0.5, hamplitude1 = 20.0))

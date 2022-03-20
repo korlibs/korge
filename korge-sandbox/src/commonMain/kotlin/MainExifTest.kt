@@ -12,7 +12,7 @@ suspend fun Stage.mainExifTest() {
     val info = file.readBitmapInfo()
     image(file.readBitmapSliceWithOrientation())
         .scale(0.2)
-        .filters(BlurFilter())
+        .filters(OldBlurFilter())
     //println(info)
 }
 

@@ -116,6 +116,62 @@ open class BmpCoordsWithInstanceBase<T : ISizeInt>(
     }
 }
 
+open class MutableBmpCoordsWithInstanceBase<T : ISizeInt>(
+    override var base: T,
+    override var tl_x: Float, override var tl_y: Float,
+    override var tr_x: Float, override var tr_y: Float,
+    override var br_x: Float, override var br_y: Float,
+    override var bl_x: Float, override var bl_y: Float,
+    override var name: String? = null
+) : BmpCoordsWithT<T> {
+    constructor(base: T, coords: BmpCoords, name: String? = null) : this(
+        base,
+        coords.tl_x, coords.tl_y,
+        coords.tr_x, coords.tr_y,
+        coords.br_x, coords.br_y,
+        coords.bl_x, coords.bl_y,
+        name
+    )
+    constructor(base: BmpCoordsWithT<T>, name: String? = null) : this(base.base, base, name ?: base.name)
+
+    fun setTo(
+        tl_x: Float, tl_y: Float,
+        tr_x: Float, tr_y: Float,
+        br_x: Float, br_y: Float,
+        bl_x: Float, bl_y: Float,
+    ) {
+        this.tl_x = tl_x
+        this.tl_y = tl_y
+        this.tr_x = tr_x
+        this.tr_y = tr_y
+        this.br_x = br_x
+        this.br_y = br_y
+        this.bl_x = bl_x
+        this.bl_y = bl_y
+    }
+
+    fun setTo(coords: BmpCoords) {
+        setTo(
+            coords.tl_x, coords.tl_y, coords.tr_x, coords.tr_y,
+            coords.br_x, coords.br_y, coords.bl_x, coords.bl_y,
+        )
+    }
+
+    fun setTo(base: T, coords: BmpCoords, name: String? = null) {
+        this.base = base
+        setTo(coords)
+        this.name = name
+    }
+
+    override fun close() {
+        (base as? Closeable)?.close()
+    }
+
+    fun setBasicCoords(x0: Float, y0: Float, x1: Float, y1: Float) {
+        setTo(x0, y0, x1, y0, x1, y1, x0, y1)
+    }
+}
+
 open class UntransformedSizeBmpCoordsWithInstance<T : ISizeInt>(
     val baseCoords: BmpCoordsWithT<T>
 ) : BmpCoordsWithInstanceBase<T>(baseCoords) {

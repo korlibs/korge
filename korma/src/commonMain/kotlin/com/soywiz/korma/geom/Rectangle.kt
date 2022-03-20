@@ -3,7 +3,6 @@ package com.soywiz.korma.geom
 import com.soywiz.korma.internal.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korma.math.isAlmostEquals
-import com.soywiz.korma.math.isAlmostZero
 import kotlin.math.*
 
 interface IRectangle {

@@ -15,10 +15,8 @@ suspend fun Stage.mainFilterScale() {
         //.filters(BlurFilter())
         //.filters(WaveFilter())
 
-    val combo = uiComboBox(items = listOf(0.0, 0.01, 0.05, 0.075, 0.125, 0.25, 0.44, 0.5, 0.75, 0.95, 0.99, 1.0)).xy(400, 100)
-    combo.onSelectionUpdate {
-        image.filterScale = it.selectedItem ?: 1.0
-    }
+    val combo = uiSlider(value = 1.0, max = 1.0, step = 0.01).xy(400, 100).changed { image.filterScale = it  }
+    //val combo = uiComboBox(items = listOf(0.0, 0.01, 0.05, 0.075, 0.125, 0.25, 0.44, 0.5, 0.75, 0.95, 0.99, 1.0)).xy(400, 100).onSelectionUpdate { image.filterScale = it.selectedItem ?: 1.0 }
 
     // This reproduces a bug (black right and bottom border) at least on macOS with M1
     image.filterScale = 0.99

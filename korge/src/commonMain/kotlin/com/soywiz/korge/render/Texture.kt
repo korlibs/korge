@@ -55,13 +55,13 @@ class Texture(
     /** Wether the texture is multiplied or not */
 	val premultiplied get() = base.premultiplied
     /** Left position of the region of the texture in pixels */
-	val x = left
+	val x: Int get() = left
     /** Top position of the region of the texture in pixels */
-	val y = top
+	val y: Int get() = top
     /** Width of this texture region in pixels */
-    override val width = right - left
+    override val width: Int get() = right - left
     /** Height of this texture region in pixels */
-    override val height = bottom - top
+    override val height: Int get() = bottom - top
 
     /** Left coord of the texture region as a ratio (a value between 0 and 1) */
 	val x0: Float = (left).toFloat() / base.width.toFloat()
@@ -105,6 +105,14 @@ class Texture(
 		return Texture(base, tleft, ttop, tright, tbottom)
 	}
 
+    fun sliceBoundsUnclamped(left: Int, top: Int, right: Int, bottom: Int): Texture {
+        val tleft = (this.x + left)
+        val tright = (this.x + right)
+        val ttop = (this.y + top)
+        val tbottom = (this.y + bottom)
+        return Texture(base, tleft, ttop, tright, tbottom)
+    }
+
 	companion object {
         /**
          * Creates a [Texture] from a texture [agBase] and its wanted size [width], [height].
@@ -126,6 +134,9 @@ class Texture(
 	override fun close() = base.close()
 
     override fun toString(): String = "Texture($base, (x=$x, y=$y, width=$width, height=$height))"
+
+    fun xcoord(x: Int): Float = (this.x + x).toFloat() / base.width.toFloat()
+    fun ycoord(y: Int): Float = (this.y + y).toFloat() / base.height.toFloat()
 }
 
 //suspend fun VfsFile.readTexture(ag: AG, imageFormats: ImageFormats, mipmaps: Boolean = true): Texture {

@@ -9,6 +9,7 @@ import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.view.Views
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.UiContainer
 import kotlin.math.PI
 import kotlin.math.absoluteValue
@@ -36,16 +37,16 @@ class FlagFilter(
         val u_Time = Uniform("time", VarType.Float1)
 
         private val FRAGMENT_SHADER = FragmentShader {
-            apply {
-                val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
-                val offsetY = sin((x01 * u_crestCount - u_Time * u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
-                out setTo tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY))
-            }
+            //val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
+            val x01 = createTemp(Float1)
+            SET(x01, v_Tex01.x)
+            val offsetY = sin((x01 * u_crestCount - u_Time * u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
+            SET(out, tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY)))
         }
     }
 
     /** Maximum amplitude of the wave on the Y axis */
-    var amplitude by uniforms.storageFor(u_amplitude).doubleDelegateX(amplitude)
+    var amplitude by scaledUniforms.storageFor(u_amplitude).doubleDelegateX(amplitude)
 
     /** Number of wave crests in the X axis */
     var crestCount by uniforms.storageFor(u_crestCount).doubleDelegateX(crestCount)
@@ -63,8 +64,11 @@ class FlagFilter(
             timeSeconds = value.seconds
         }
 
-    override val border: Int get() = amplitude.absoluteValue.toIntCeil()
     override val fragment = FRAGMENT_SHADER
+
+    override fun computeBorder(out: MutableMarginInt) {
+        out.setTo(amplitude.absoluteValue.toIntCeil())
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::amplitude)

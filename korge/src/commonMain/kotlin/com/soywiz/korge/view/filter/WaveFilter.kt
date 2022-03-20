@@ -4,9 +4,8 @@ import com.soywiz.klock.*
 import com.soywiz.korag.DefaultShaders.t_Temp0
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlin.math.*
 
@@ -36,15 +35,17 @@ class WaveFilter(
             apply {
                 val tmpx = t_Temp0.x
                 val tmpy = t_Temp0.y
-                tmpx setTo sin(PI.lit * ((fragmentCoords01.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x))
-                tmpy setTo sin(PI.lit * ((fragmentCoords01.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y))
-                out setTo tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y))
+                val tmpxy = t_Temp0["zw"]
+                SET(tmpxy, v_Tex01)
+                SET(tmpx, sin(PI.lit * ((tmpxy.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x)))
+                SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
+                SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
                 //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
             }
         }
 	}
 
-	private val amplitude = uniforms.storageFor(u_Amplitude)
+	private val amplitude = scaledUniforms.storageFor(u_Amplitude)
 	private val crestCount = uniforms.storageFor(u_crestCount)
 	private val cyclesPerSecond = uniforms.storageFor(u_cyclesPerSecond)
 
@@ -71,8 +72,11 @@ class WaveFilter(
         get() = timeSeconds.seconds
         set(value) { timeSeconds = value.seconds }
 
-	override val border: Int get() = max(amplitudeX.absoluteValue, amplitudeY.absoluteValue)
     override val fragment = FRAGMENT_SHADER
+
+    override fun computeBorder(out: MutableMarginInt) {
+        out.setTo(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::amplitudeX)

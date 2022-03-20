@@ -1,54 +1,25 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
-import kotlin.math.*
 
-class BlurFilter(initialRadius: Double = 4.0) : Filter {
-    private val gaussianBlurs = mutableListOf<Convolute3Filter>()
-    private val composedFilters = arrayListOf<Convolute3Filter>()
-    private val composed = ComposedFilter(composedFilters)
-    var radius: Double = initialRadius
-        set(value) { field = value.clamp(0.0, 32.0) }
-    //override val border: Int get() = composed.border
-    override val border: Int get() = (radius * 3).toInt()
-    val nsteps get() = radius.toIntCeil()
-
-    override fun render(
-        ctx: RenderContext,
-        matrix: Matrix,
-        texture: Texture,
-        texWidth: Int,
-        texHeight: Int,
-        renderColorAdd: ColorAdd,
-        renderColorMul: RGBA,
-        blendMode: BlendMode
-    ) {
-        val nsteps = this.nsteps
-        // Cache values
-        while (gaussianBlurs.size < nsteps) {
-            gaussianBlurs.add(Convolute3Filter(Matrix3D(Convolute3Filter.KERNEL_GAUSSIAN_BLUR), gaussianBlurs.size.toDouble(), applyAlpha = true))
-        }
-
-        //println("border: $border")
-
-        composedFilters.clear()
-        val scale = radius != ceil(radius)
-
-        for (n in 0 until nsteps) {
-            val isLast = n == nsteps - 1
-            val blur = gaussianBlurs[n]
-            composedFilters.add(blur)
-            val ratio = if (scale && isLast) 1.0 - (ceil(radius) - radius) else 1.0
-            blur.weights.setToInterpolated(Convolute3Filter.KERNEL_IDENTITY, Convolute3Filter.KERNEL_GAUSSIAN_BLUR, ratio)
-        }
-        composed.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
+class BlurFilter(radius: Double) : ComposedFilter() {
+    companion object {
+        @Deprecated("", ReplaceWith("BlurFilter(radius = initialRadius)"))
+        operator fun invoke(initialRadius: Double = 4.0, dummy: Unit = Unit): BlurFilter = BlurFilter(radius = initialRadius)
     }
+    private val horizontal = DirectionalBlurFilter(angle = 0.degrees, radius).also { filters.add(it) }
+    private val vertical = DirectionalBlurFilter(angle = 90.degrees, radius).also { filters.add(it) }
+    var radius: Double = radius
+        set(value) {
+            field = value
+            horizontal.radius = radius
+            vertical.radius = radius
+        }
+
+    override val isIdentity: Boolean get() = radius == 0.0
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::radius)

@@ -56,22 +56,24 @@ class TransitionFilter(
         private val u_Smooth = Uniform("u_Smooth", VarType.Float1)
         private val u_Ratio = Uniform("u_Ratio", VarType.Float1)
         private val u_Mask = Uniform("u_Mask", VarType.TextureUnit)
+
         private val FRAGMENT_SHADER = Filter.DEFAULT_FRAGMENT.appending {
-            t_Temp1.x setTo texture2D(u_Mask, v_Tex["xy"]).r
+            val alpha = t_Temp1.x
+            SET(alpha, texture2D(u_Mask, v_Tex01).r)
             IF(u_Reversed eq 1f.lit) {
-                t_Temp1.x setTo 1f.lit - t_Temp1.x
+                SET(t_Temp1.x, 1f.lit - t_Temp1.x)
             }
-            t_Temp1.x setTo clamp(t_Temp1.x + ((u_Ratio * 2f.lit) - 1f.lit), 0f.lit, 1f.lit)
+            SET(alpha, clamp(alpha + ((u_Ratio * 2f.lit) - 1f.lit), 0f.lit, 1f.lit))
             IF(u_Smooth ne 1f.lit) {
                 IF(t_Temp1.x ge 1f.lit) {
-                    t_Temp1.x setTo 1f.lit
+                    SET(t_Temp1.x, 1f.lit)
                 } ELSE {
-                    t_Temp1.x setTo 0f.lit
+                    SET(t_Temp1.x, 0f.lit)
                 }
             }
-            out setTo (out * t_Temp1.x)
-            //out setTo texture2D(u_Mask, v_Tex["xy"])
-            //out setTo vec4(1.lit, 1.lit, 1.lit, 1.lit)
+            SET(out, (out * alpha))
+            //SET(out, texture2D(u_Mask, v_Tex01))
+            //SET(out, vec4(1.lit, 0.lit, 1.lit, 1.lit))
         }
     }
 
@@ -88,7 +90,7 @@ class TransitionFilter(
     var smooth by uniforms.storageFor(u_Smooth).boolDelegateX(smooth)
     var ratio by s_ratio.doubleDelegateX(ratio)
 
-    override fun updateUniforms(ctx: RenderContext) {
+    override fun updateUniforms(ctx: RenderContext, filterScale: Double) {
         textureUnit.texture = ctx.getTex(transition.bmp).base
     }
 

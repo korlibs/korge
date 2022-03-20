@@ -21,7 +21,8 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
         texHeight: Int,
         renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
-        blendMode: BlendMode
+        blendMode: BlendMode,
+        filterScale: Double,
     ) {
         ctx.useBatcher { batch ->
             batch.drawQuad(

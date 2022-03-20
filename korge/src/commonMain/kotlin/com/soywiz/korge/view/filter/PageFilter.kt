@@ -1,10 +1,11 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.internal.*
 import com.soywiz.korge.view.*
+import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlin.math.*
 
@@ -29,27 +30,29 @@ class PageFilter(
 
         private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.lit * 0.5.lit))
         private val FRAGMENT_SHADER = FragmentShader {
+            val x01 = DefaultShaders.t_Temp0["zw"]
+            SET(x01, v_Tex01)
             for (n in 0..1) {
-                val vr = fragmentCoords01[n]
+                val vr = x01[n]
                 val offset = u_Offset[n]
                 val amplitudes = if (n == 0) u_HAmplitude else u_VAmplitude
                 val tmp = DefaultShaders.t_Temp0[n]
                 IF(vr lt offset) {
-                    val ratio = (vr - 0.0.lit) / offset
-                    tmp setTo mix(amplitudes[0], amplitudes[1], sin01(ratio))
+                    val ratio = ((vr - 0.0.lit) / offset)
+                    SET(tmp, mix(amplitudes[0], amplitudes[1], sin01(ratio)))
                 } ELSE {
-                    val ratio = (vr - offset) / (1.0.lit - offset)
-                    tmp setTo mix(amplitudes[2], amplitudes[1], sin01(1.0.lit + ratio))
+                    val ratio = 1.0.lit + ((vr - offset) / (1.0.lit - offset))
+                    SET(tmp, mix(amplitudes[2], amplitudes[1], sin01(ratio)))
                 }
             }
 
-            out setTo tex(fragmentCoords + DefaultShaders.t_Temp0["yx"])
+            SET(out, tex(fragmentCoords + DefaultShaders.t_Temp0["yx"]))
         }
     }
 
     private val offset = uniforms.storageFor(u_Offset)
-    private val hamplitude = uniforms.storageFor(u_HAmplitude)
-    private val vamplitude = uniforms.storageFor(u_VAmplitude)
+    private val hamplitude = scaledUniforms.storageFor(u_HAmplitude)
+    private val vamplitude = scaledUniforms.storageFor(u_VAmplitude)
 
     var hratio by offset.doubleDelegateX(default = hratio)
     var hamplitude0 by hamplitude.doubleDelegate(0, default = hamplitude0)
@@ -61,8 +64,11 @@ class PageFilter(
     var vamplitude1 by vamplitude.doubleDelegate(1, default = vamplitude1)
     var vamplitude2 by vamplitude.doubleDelegate(2, default = vamplitude2)
 
-    override val border: Int get() = max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toInt()
     override val fragment = FRAGMENT_SHADER
+
+    override fun computeBorder(out: MutableMarginInt) {
+        out.setTo(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::hratio)

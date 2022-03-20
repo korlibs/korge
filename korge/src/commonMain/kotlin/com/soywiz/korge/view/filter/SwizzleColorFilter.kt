@@ -43,8 +43,9 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : Filter {
         texHeight: Int,
         renderColorAdd: ColorAdd,
         renderColorMul: RGBA,
-        blendMode: BlendMode
-    ) = proxy.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode)
+        blendMode: BlendMode,
+        filterScale: Double,
+    ) = proxy.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::swizzle)

@@ -3,7 +3,6 @@ package com.soywiz.korge.view.filter
 import com.soywiz.kds.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korui.*
 
 var Views.registerFilterSerialization: Boolean by Extra.Property { false }

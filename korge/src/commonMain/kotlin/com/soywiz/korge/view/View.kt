@@ -5,6 +5,7 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.*
 import com.soywiz.korev.*
 import com.soywiz.korge.baseview.*
 import com.soywiz.korge.component.*
@@ -844,11 +845,13 @@ abstract class View internal constructor(
 
     /** Usually a value between [0.0, 1.0] */
     var filterScale: Double = 1.0
+        set(value) {
+            field = value.clamp(0.03125, 1.5)
+        }
 
     fun renderFiltered(ctx: RenderContext, filter: Filter) {
         val bounds = getLocalBoundsOptimizedAnchored()
 
-        val borderEffect = filter.border
         ctx.matrixPool.alloc { tempMat2d ->
             val tryFilterScale = filterScale
             val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
@@ -856,31 +859,14 @@ abstract class View internal constructor(
 
             val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width)
 
-            val texWidth = texWidthNoBorder + borderEffect * 2
-            val texHeight = texHeightNoBorder + borderEffect * 2
+            val texWidth = texWidthNoBorder
+            val texHeight = texHeightNoBorder
 
-            val addx = -bounds.x + borderEffect
-            val addy = -bounds.y + borderEffect
+            val addx = -bounds.x
+            val addy = -bounds.y
 
             //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
             //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")
-
-            /*
-            run {
-                val bmp = ctx.renderToBitmap(texWidth, texHeight) {
-                    tempMat2d.copyFrom(globalMatrixInv)
-                    tempMat2d.translate(addx, addy)
-                    //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-                    //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-                    ctx.batch.setViewMatrixTemp(tempMat2d) {
-                        renderInternal(ctx)
-                    }
-                }
-                com.soywiz.korio.async.launchImmediately(ctx.coroutineContext) {
-                    bmp.writeTo("/tmp/bitmap.png".uniVfs, PNG)
-                }
-            }
-            */
 
             ctx.renderToTexture(texWidth, texHeight, render = {
                 tempMat2d.copyFrom(globalMatrixInv)
@@ -891,9 +877,11 @@ abstract class View internal constructor(
                 //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
                 @Suppress("DEPRECATION")
                 ctx.batch.setViewMatrixTemp(tempMat2d) {
+                    // @TODO: Set blendMode to normal, colorMul to WHITE, colorAdd to NEUTRAL
                     renderInternal(ctx)
                 }
             }) { texture ->
+                //println("texWidthHeight=$texWidth,$texHeight")
                 tempMat2d.copyFrom(globalMatrix)
                 tempMat2d.pretranslate(-addx, -addy)
                 tempMat2d.prescale(1.0 / realFilterScale)
@@ -905,7 +893,8 @@ abstract class View internal constructor(
                     texHeight,
                     renderColorAdd,
                     renderColorMul,
-                    blendMode
+                    blendMode,
+                    realFilterScale
                 )
             }
         }
