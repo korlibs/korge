@@ -213,6 +213,14 @@ class GlslBodyGenerator(
         programIndenter.line("discard;")
     }
 
+    override fun visit(stm: Program.Stm.Break) {
+        programIndenter.line("break;")
+    }
+
+    override fun visit(stm: Program.Stm.Continue) {
+        programIndenter.line("continue;")
+    }
+
     override fun visit(stm: Program.Stm.Return) {
         programIndenter.line("return ${visit(stm.result)};")
     }
@@ -220,6 +228,7 @@ class GlslBodyGenerator(
     override fun visit(operand: Program.Vector): String =
         typeToString(operand.type) + "(" + operand.ops.joinToString(", ") { visit(it) } + ")"
 
+    override fun visit(operand: Program.Unop): String = "(" + operand.op + "("  + visit(operand.right) + ")" + ")"
     override fun visit(operand: Program.Binop): String = "(" + visit(operand.left) + " " + operand.op + " " + visit(operand.right) + ")"
     override fun visit(func: Program.BaseFunc): String = func.name + "(" + func.ops.joinToString(", ") { visit(it) } + ")"
     override fun visit(ternary: Program.Ternary): String = "((${visit(ternary.cond)}) ? (${visit(ternary.otrue)}) : (${visit(ternary.ofalse)}))"
@@ -233,6 +242,18 @@ class GlslBodyGenerator(
                 line("else") {
                     visit(stm.fbody!!)
                 }
+            }
+        }
+    }
+
+    override fun visit(stm: Program.Stm.ForSimple) {
+        programIndenter.apply {
+            val varType = typeToString(stm.loopVar.type)
+            val loopVar = visit(stm.loopVar)
+            val min = visit(stm.min)
+            val maxExclusive = visit(stm.maxExclusive)
+            line("for ($varType $loopVar = ($min); $loopVar < ($maxExclusive); $loopVar++)") {
+                visit(stm.body)
             }
         }
     }

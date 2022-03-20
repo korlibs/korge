@@ -170,7 +170,7 @@ open class Operand(open val type: VarType) {
 
 enum class Precision { DEFAULT, LOW, MEDIUM, HIGH }
 
-abstract class Variable(val name: String, type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) : Operand(type) {
+sealed class Variable(val name: String, type: VarType, val arrayCount: Int, val precision: Precision = Precision.DEFAULT) : Operand(type) {
     constructor(name: String, type: VarType, precision: Precision = Precision.DEFAULT) : this(name, type, 1, precision)
     val indexNames = Array(arrayCount) { "$name[$it]" }
     var id: Int = 0
@@ -295,6 +295,15 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		"Program(name=$name, attributes=${attributes.map { it.name }}, uniforms=${uniforms.map { it.name }})"
 
     data class Ternary(val cond: Operand, val otrue: Operand, val ofalse: Operand) : Operand(otrue.type)
+    data class Unop(val op: String, val right: Operand) : Operand(right.type) {
+        fun toBinop(): Binop {
+            val left = when (right.type.kind) {
+                VarKind.TINT -> IntLiteral(0)
+                else -> FloatLiteral(0f)
+            }
+            return Binop(left, op, right)
+        }
+    }
     data class Binop(val left: Operand, val op: String, val right: Operand) : Operand(left.type)
     data class IntLiteral(val value: Int) : Operand(VarType.Int1)
     data class FloatLiteral(val value: Float) : Operand(VarType.Float1)
@@ -325,26 +334,164 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		data class Stms(val stms: List<Stm>) : Stm()
         data class Set(val to: Operand, val from: Operand) : Stm()
         data class Return(val result: Operand) : Stm()
-        class Discard : Stm() {
-            override fun equals(other: Any?): Boolean = other is Discard
-            override fun hashCode(): Int = 1
+        object Break : Stm() {
+            override fun toString(): String = "Break"
+        }
+        object Continue : Stm() {
+            override fun toString(): String = "Continue"
+        }
+        object Discard : Stm() {
+            override fun toString(): String = "Discard"
         }
         data class If(val cond: Operand, val tbody: Stm, var fbody: Stm? = null) : Stm()
+        data class ForSimple(val loopVar: Variable, val min: Operand, val maxExclusive: Operand, val body: Stm) : Stm()
         data class Raw(val strings: Map<String, String>, val other: Stm? = null) : Stm() {
             fun stringOrNull(name: String): String? = strings[name]
             fun string(name: String, default: String = ""): String = stringOrNull(name) ?: default
         }
 	}
 
+    class BuilderContext {
+        val outputFuncs: ArrayList<FuncDecl> = arrayListOf()
+        var tempLastId = 3
+    }
+
+    interface ExpressionBuilder {
+        companion object {
+            @PublishedApi internal val INSTANCE = object : ExpressionBuilder {}
+            inline operator fun <T> invoke(block: ExpressionBuilder.() -> T): T = block(INSTANCE)
+        }
+
+        //infix fun Operand.set(to: Operand) = Stm.Set(this, to)
+        val out: Output get() = Output
+        //fun out(to: Operand) = Stm.Set(if (type == ShaderType.VERTEX) out_Position else out_FragColor, to)
+
+        fun sin(arg: Operand): Operand = Func("sin", arg)
+        fun cos(arg: Operand): Operand = Func("cos", arg)
+        fun tan(arg: Operand): Operand = Func("tan", arg)
+
+        fun asin(arg: Operand): Operand = Func("asin", arg)
+        fun acos(arg: Operand): Operand = Func("acos", arg)
+        fun atan(arg: Operand): Operand = Func("atan", arg)
+
+        fun radians(arg: Operand): Operand = Func("radians", arg)
+        fun degrees(arg: Operand): Operand = Func("degrees", arg)
+
+        // Sampling
+        fun texture2D(sampler: Operand, coord: Operand): Operand = Func("texture2D", sampler, coord, type = VarType.Float4)
+        fun texture(sampler: Operand, P: Operand): Operand = Func("texture", sampler, P)
+
+        fun func(name: String, vararg args: Operand): Operand = Func(name, *args.map { it }.toTypedArray())
+
+        fun TERNARY(cond: Operand, otrue: Operand, ofalse: Operand): Operand = Ternary(cond, otrue, ofalse)
+
+        // CAST
+        fun int(v: Operand): Operand = Func("int", v)
+        fun float(v: Operand): Operand = Func("float", v)
+
+        fun pow(b: Operand, e: Operand): Operand = Func("pow", b, e)
+        fun exp(v: Operand): Operand = Func("exp", v)
+        fun exp2(v: Operand): Operand = Func("exp2", v)
+        fun log(v: Operand): Operand = Func("log", v)
+        fun log2(v: Operand): Operand = Func("log2", v)
+        fun sqrt(v: Operand): Operand = Func("sqrt", v)
+        fun inversesqrt(v: Operand): Operand = Func("inversesqrt", v)
+
+        fun abs(v: Operand): Operand = Func("abs", v)
+        fun sign(v: Operand): Operand = Func("sign", v)
+        fun ceil(v: Operand): Operand = Func("ceil", v)
+        fun floor(v: Operand): Operand = Func("floor", v)
+
+        /** The fractional part of v. This is calculated as v - floor(v). */
+        fun fract(v: Operand): Operand = Func("fract", v)
+
+        fun clamp(v: Operand, min: Operand, max: Operand): Operand =
+            Func("clamp", v, min, max)
+        fun min(a: Operand, b: Operand): Operand = Func("min", a, b)
+        fun max(a: Operand, b: Operand): Operand = Func("max", a, b)
+        fun mod(a: Operand, b: Operand): Operand = Func("mod", a, b)
+
+        //@JvmName("modInfix") infix fun Operand.mod(that: Operand): Operand = mod(this, that)
+
+        fun mix(a: Operand, b: Operand, step: Operand): Operand =
+            Func("mix", a, b, step)
+        fun step(a: Operand, b: Operand): Operand = Func("step", a, b)
+        fun smoothstep(a: Operand, b: Operand, c: Operand): Operand =
+            Func("smoothstep", a, b, c)
+
+        fun length(a: Operand): Operand = Func("length", a)
+        fun distance(a: Operand, b: Operand): Operand = Func("distance", a, b)
+        fun dot(a: Operand, b: Operand): Operand = Func("dot", a, b)
+        fun cross(a: Operand, b: Operand): Operand = Func("cross", a, b)
+        fun normalize(a: Operand): Operand = Func("normalize", a)
+        fun faceforward(a: Operand, b: Operand, c: Operand): Operand =
+            Func("faceforward", a, b, c)
+        fun reflect(a: Operand, b: Operand): Operand = Func("reflect", a, b)
+        fun refract(a: Operand, b: Operand, c: Operand): Operand =
+            Func("refract", a, b, c)
+
+        val Int.lit: IntLiteral get() = IntLiteral(this)
+        val Double.lit: FloatLiteral get() = FloatLiteral(this.toFloat())
+        val Float.lit: FloatLiteral get() = FloatLiteral(this)
+        val Boolean.lit: BoolLiteral get() = BoolLiteral(this)
+        //val Number.lit: Operand get() = this // @TODO: With Kotlin.JS you cannot differentiate Int, Float, Double with 'is'. Since it generates typeof $receiver === 'number' for all of them
+        fun lit(type: VarType, vararg ops: Operand): Operand = Vector(type, ops)
+        fun vec1(vararg ops: Operand): Operand = Vector(VarType.Float1, ops)
+        fun vec2(vararg ops: Operand): Operand = Vector(VarType.Float2, ops)
+        fun vec3(vararg ops: Operand): Operand = Vector(VarType.Float3, ops)
+        fun vec4(vararg ops: Operand): Operand = Vector(VarType.Float4, ops)
+        fun mat2(vararg ops: Operand): Operand = Vector(VarType.Mat2, ops)
+        fun mat3(vararg ops: Operand): Operand = Vector(VarType.Mat3, ops)
+        fun mat4(vararg ops: Operand): Operand = Vector(VarType.Mat4, ops)
+
+        //fun Operand.swizzle(swizzle: String): Operand = Swizzle(this, swizzle)
+        operator fun Operand.get(index: Int): Operand {
+            return when {
+                this.type.isMatrix -> ArrayAccess(this, index.lit)
+                else -> when (index) {
+                    0 -> this.x
+                    1 -> this.y
+                    2 -> this.z
+                    3 -> this.w
+                    else -> error("Invalid index $index")
+                }
+            }
+        }
+        operator fun Operand.get(swizzle: String): Operand = Swizzle(this, swizzle)
+        val Operand.x: Operand get() = this["x"]
+        val Operand.y: Operand get() = this["y"]
+        val Operand.z: Operand get() = this["z"]
+        val Operand.w: Operand get() = this["w"]
+
+        val Operand.r: Operand get() = this["x"]
+        val Operand.g: Operand get() = this["y"]
+        val Operand.b: Operand get() = this["z"]
+        val Operand.a: Operand get() = this["w"]
+
+        operator fun Operand.unaryMinus(): Operand = Unop("-", this)
+
+        operator fun Operand.minus(that: Operand): Operand = Binop(this, "-", that)
+        operator fun Operand.plus(that: Operand): Operand = Binop(this, "+", that)
+        operator fun Operand.times(that: Operand): Operand = Binop(this, "*", that)
+        operator fun Operand.div(that: Operand): Operand = Binop(this, "/", that)
+        operator fun Operand.rem(that: Operand): Operand = Binop(this, "%", that)
+
+        infix fun Operand.eq(that: Operand): Operand = Binop(this, "==", that)
+        infix fun Operand.ne(that: Operand): Operand = Binop(this, "!=", that)
+        infix fun Operand.lt(that: Operand): Operand = Binop(this, "<", that)
+        infix fun Operand.le(that: Operand): Operand = Binop(this, "<=", that)
+        infix fun Operand.gt(that: Operand): Operand = Binop(this, ">", that)
+        infix fun Operand.ge(that: Operand): Operand = Binop(this, ">=", that)
+    }
+
 	// http://mew.cx/glsl_quickref.pdf
 	open class Builder(
-        @PublishedApi
-        internal val outputFuncs: ArrayList<FuncDecl> = arrayListOf()
-    ) : VarTypeAccessor {
+        private val context: BuilderContext = BuilderContext()
+    ) : VarTypeAccessor, ExpressionBuilder {
         @PublishedApi
         internal val outputStms: ArrayList<Stm> = arrayListOf<Stm>()
 
-        constructor(parent: Builder) : this(parent.outputFuncs)
+        constructor(parent: Builder) : this(parent.context)
 
         // Drop ShaderType since it is not used
         @Deprecated("")
@@ -354,7 +501,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         fun createChildBuilder(): Builder = Builder(this)
         fun createChildFuncBuilder(): FuncBuilder = FuncBuilder(this)
         fun _build(): Stm = Stm.Stms(outputStms.toList())
-        fun _funcs(): List<FuncDecl> = outputFuncs.toList()
+        fun _funcs(): List<FuncDecl> = context.outputFuncs.toList()
         fun _buildFuncs(): Pair<Stm, List<FuncDecl>> = _build() to _funcs()
 
 		//inner class BuildIf(val stmIf: Stm.If) {
@@ -383,7 +530,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 
         fun FUNC(name: String, rettype: VarType, vararg args: Pair<String, VarType>, block: FuncBuilder.() -> Unit): FuncRef {
             val decl = FuncDecl(name, rettype, args.toList(), createChildFuncBuilder().apply(block)._build())
-            outputFuncs.add(decl)
+            context.outputFuncs.add(decl)
             return decl.ref
         }
 
@@ -402,6 +549,31 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 			outputStms += stmIf
 			return stmIf
 		}
+
+        // WHEN NOT A CONSTANT, REQUIRES WEBGL 2.0 and OPENGL ES 3.0
+        @KoragExperimental
+        inline fun FOR_0_UNTIL(len: Operand, callback: Builder.(Operand) -> Unit): Stm.ForSimple {
+            val temp = createTemp(VarType.Int1)
+            val body = createChildBuilder().apply { callback(temp) }
+            val stmFor = Stm.ForSimple(temp, 0.lit, len, body._build())
+            outputStms += stmFor
+            return stmFor
+        }
+
+        // This construct is compatible with WebGL 1
+        inline fun FOR_0_UNTIL_FIXED(len: Int, callback: Builder.(Operand) -> Unit): Stm.ForSimple {
+            return FOR_0_UNTIL(len.lit, callback)
+        }
+
+        // This construct is compatible with WebGL 1
+        inline fun FOR_0_UNTIL_FIXED_BREAK(len: Operand, maxLen: Int = 1024, callback: Builder.(Operand) -> Unit): Stm.ForSimple {
+            return FOR_0_UNTIL_FIXED(maxLen) { x ->
+                IF(x ge len) {
+                    BREAK()
+                }
+                callback(x)
+            }
+        }
 
         fun IF_ELSE_BINARY_LOOKUP(ref: Operand, min: Int, max: Int, block: Builder.(Int) -> Unit) {
             if (min >= max) {
@@ -437,137 +609,23 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             } else {
                 outputStms.add(shader.stm)
             }
-            outputFuncs.addAll(shader.funcs)
+            context.outputFuncs.addAll(shader.funcs)
         }
 		fun SET(target: Operand, expr: Operand) { outputStms += Stm.Set(target, expr) }
-		fun DISCARD() { outputStms += Stm.Discard() }
+		fun DISCARD() { outputStms += Stm.Discard }
+        fun BREAK() { outputStms += Stm.Break }
+        fun CONTINUE() { outputStms += Stm.Continue }
 
-		private var tempLastId = 3
-        fun createTemp(type: VarType, arrayCount: Int) = Temp(tempLastId++, type, arrayCount)
-		fun createTemp(type: VarType) = Temp(tempLastId++, type, 1)
+        fun createTemp(type: VarType, arrayCount: Int) = Temp(context.tempLastId++, type, arrayCount)
+		fun createTemp(type: VarType) = Temp(context.tempLastId++, type, 1)
 
-		infix fun Operand.set(from: Operand) { outputStms += Stm.Set(this, from) }
-		infix fun Operand.setTo(from: Operand) { outputStms += Stm.Set(this, from) }
+        @Deprecated("", ReplaceWith("SET(this, from)"))
+		infix fun Operand.set(from: Operand) { SET(this, from) }
+        @Deprecated("", ReplaceWith("SET(this, from)"))
+		infix fun Operand.setTo(from: Operand) { SET(this, from) }
 
-		fun Operand.assign(from: Operand) { outputStms += Stm.Set(this, from) }
-
-		//infix fun Operand.set(to: Operand) = Stm.Set(this, to)
-		val out: Output = Output
-		//fun out(to: Operand) = Stm.Set(if (type == ShaderType.VERTEX) out_Position else out_FragColor, to)
-
-		fun sin(arg: Operand) = Func("sin", arg)
-		fun cos(arg: Operand) = Func("cos", arg)
-		fun tan(arg: Operand) = Func("tan", arg)
-
-		fun asin(arg: Operand) = Func("asin", arg)
-		fun acos(arg: Operand) = Func("acos", arg)
-		fun atan(arg: Operand) = Func("atan", arg)
-
-		fun radians(arg: Operand) = Func("radians", arg)
-		fun degrees(arg: Operand) = Func("degrees", arg)
-
-		// Sampling
-		fun texture2D(a: Operand, b: Operand) = Func("texture2D", a, b, type = VarType.Float4)
-        fun texture(sampler: Operand, P: Operand) = Func("texture", sampler, P)
-
-		fun func(name: String, vararg args: Operand): Func = Func(name, *args.map { it }.toTypedArray())
-
-        fun TERNARY(cond: Operand, otrue: Operand, ofalse: Operand): Operand = Ternary(cond, otrue, ofalse)
-
-		fun pow(b: Operand, e: Operand): Func = Func("pow", b, e)
-		fun exp(v: Operand) = Func("exp", v)
-		fun exp2(v: Operand) = Func("exp2", v)
-		fun log(v: Operand) = Func("log", v)
-		fun log2(v: Operand) = Func("log2", v)
-		fun sqrt(v: Operand) = Func("sqrt", v)
-		fun inversesqrt(v: Operand) = Func("inversesqrt", v)
-
-		fun abs(v: Operand) = Func("abs", v)
-		fun sign(v: Operand) = Func("sign", v)
-		fun ceil(v: Operand) = Func("ceil", v)
-		fun floor(v: Operand) = Func("floor", v)
-
-        /** The fractional part of v. This is calculated as v - floor(v). */
-		fun fract(v: Operand): Func = Func("fract", v)
-
-		fun clamp(v: Operand, min: Operand, max: Operand) =
-            Func("clamp", v, min, max)
-		fun min(a: Operand, b: Operand) = Func("min", a, b)
-		fun max(a: Operand, b: Operand) = Func("max", a, b)
-		fun mod(a: Operand, b: Operand) = Func("mod", a, b)
-
-        @JvmName("modInfix")
-        infix fun Operand.mod(that: Operand) = mod(this, that)
-
-        fun mix(a: Operand, b: Operand, step: Operand) =
-            Func("mix", a, b, step)
-		fun step(a: Operand, b: Operand) = Func("step", a, b)
-		fun smoothstep(a: Operand, b: Operand, c: Operand) =
-            Func("smoothstep", a, b, c)
-
-		fun length(a: Operand) = Func("length", a)
-		fun distance(a: Operand, b: Operand) = Func("distance", a, b)
-		fun dot(a: Operand, b: Operand) = Func("dot", a, b)
-		fun cross(a: Operand, b: Operand) = Func("cross", a, b)
-		fun normalize(a: Operand) = Func("normalize", a)
-		fun faceforward(a: Operand, b: Operand, c: Operand) =
-            Func("faceforward", a, b, c)
-		fun reflect(a: Operand, b: Operand) = Func("reflect", a, b)
-		fun refract(a: Operand, b: Operand, c: Operand) =
-            Func("refract", a, b, c)
-
-		val Int.lit: IntLiteral get() = IntLiteral(this)
-		val Double.lit: FloatLiteral get() = FloatLiteral(this.toFloat())
-		val Float.lit: FloatLiteral get() = FloatLiteral(this)
-		val Boolean.lit: BoolLiteral get() = BoolLiteral(this)
-        //val Number.lit: Operand get() = this // @TODO: With Kotlin.JS you cannot differentiate Int, Float, Double with 'is'. Since it generates typeof $receiver === 'number' for all of them
-		fun lit(type: VarType, vararg ops: Operand): Operand = Vector(type, ops)
-		fun vec1(vararg ops: Operand): Operand = Vector(VarType.Float1, ops)
-		fun vec2(vararg ops: Operand): Operand = Vector(VarType.Float2, ops)
-		fun vec3(vararg ops: Operand): Operand = Vector(VarType.Float3, ops)
-		fun vec4(vararg ops: Operand): Operand = Vector(VarType.Float4, ops)
-        fun mat2(vararg ops: Operand): Operand = Vector(VarType.Mat2, ops)
-        fun mat3(vararg ops: Operand): Operand = Vector(VarType.Mat3, ops)
-        fun mat4(vararg ops: Operand): Operand = Vector(VarType.Mat4, ops)
-
-		//fun Operand.swizzle(swizzle: String): Operand = Swizzle(this, swizzle)
-		operator fun Operand.get(index: Int): Operand {
-			return when {
-				this.type.isMatrix -> ArrayAccess(this, index.lit)
-				else -> when (index) {
-					0 -> this.x
-					1 -> this.y
-					2 -> this.z
-					3 -> this.w
-					else -> error("Invalid index $index")
-				}
-			}
-		}
-		operator fun Operand.get(swizzle: String) = Swizzle(this, swizzle)
-		val Operand.x get() = this["x"]
-		val Operand.y get() = this["y"]
-		val Operand.z get() = this["z"]
-		val Operand.w get() = this["w"]
-
-		val Operand.r get() = this["x"]
-		val Operand.g get() = this["y"]
-		val Operand.b get() = this["z"]
-		val Operand.a get() = this["w"]
-
-		operator fun Operand.unaryMinus() = 0.0.lit - this
-
-		operator fun Operand.minus(that: Operand) = Binop(this, "-", that)
-		operator fun Operand.plus(that: Operand) = Binop(this, "+", that)
-		operator fun Operand.times(that: Operand) = Binop(this, "*", that)
-		operator fun Operand.div(that: Operand) = Binop(this, "/", that)
-		operator fun Operand.rem(that: Operand) = Binop(this, "%", that)
-
-		infix fun Operand.eq(that: Operand) = Binop(this, "==", that)
-		infix fun Operand.ne(that: Operand) = Binop(this, "!=", that)
-		infix fun Operand.lt(that: Operand) = Binop(this, "<", that)
-		infix fun Operand.le(that: Operand) = Binop(this, "<=", that)
-		infix fun Operand.gt(that: Operand) = Binop(this, ">", that)
-		infix fun Operand.ge(that: Operand) = Binop(this, ">=", that)
+        @Deprecated("", ReplaceWith("SET(this, from)"))
+		fun Operand.assign(from: Operand) { SET(this, from) }
 	}
 
 	open class Visitor<E>(val default: E) {
@@ -580,7 +638,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 			is Stm.Stms -> visit(stm)
 			is Stm.Set -> visit(stm)
 			is Stm.If -> visit(stm)
+            is Stm.ForSimple -> visit(stm)
 			is Stm.Discard -> visit(stm)
+            is Stm.Continue -> visit(stm)
+            is Stm.Break -> visit(stm)
             is Stm.Raw -> visit(stm)
             is Stm.Return -> visit(stm)
         }
@@ -595,13 +656,25 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
             visit(stm.fbody)
 		}
 
-		open fun visit(stm: Stm.Set) {
+        open fun visit(stm: Stm.ForSimple) {
+            visit(stm.loopVar)
+            visit(stm.min)
+            visit(stm.body)
+        }
+
+        open fun visit(stm: Stm.Set) {
 			visit(stm.from)
 			visit(stm.to)
 		}
 
 		open fun visit(stm: Stm.Discard) {
 		}
+
+        open fun visit(stm: Stm.Break) {
+        }
+
+        open fun visit(stm: Stm.Continue) {
+        }
 
         open fun visit(stm: Stm.Raw) {
             visit(stm.other)
@@ -613,6 +686,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 
         open fun visit(operand: Operand): E = when (operand) {
 			is Variable -> visit(operand)
+            is Unop -> visit(operand)
 			is Binop -> visit(operand)
             is Ternary -> visit(operand)
 			is BoolLiteral -> visit(operand)
@@ -649,8 +723,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 			is Output -> visit(operand)
 			is Temp -> visit(operand)
             is Arg -> visit(operand)
-			else -> invalidOp("Don't know how to visit basename $operand")
-		}
+        }
 
 		open fun visit(temp: Temp): E = default
         open fun visit(arg: Arg): E = default
@@ -658,6 +731,10 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		open fun visit(varying: Varying): E = default
 		open fun visit(uniform: Uniform): E = default
 		open fun visit(output: Output): E = default
+        open fun visit(operand: Unop): E {
+            visit(operand.right)
+            return default
+        }
 		open fun visit(operand: Binop): E {
 			visit(operand.left)
 			visit(operand.right)

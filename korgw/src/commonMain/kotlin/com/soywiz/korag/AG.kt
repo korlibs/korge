@@ -844,6 +844,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     open fun fixWidthForRenderToTexture(width: Int): Int = width.nextMultipleOf(64)
     open fun fixHeightForRenderToTexture(height: Int): Int = height.nextMultipleOf(64)
 
+    //open fun fixWidthForRenderToTexture(width: Int): Int = width
+    //open fun fixHeightForRenderToTexture(height: Int): Int = height
+
     @KoragExperimental
     fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int): RenderBuffer {
         val realWidth = fixWidthForRenderToTexture(width)
@@ -1001,6 +1004,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             _uniforms.clear()
             _values.clear()
         }
+
+        operator fun contains(uniform: Uniform): Boolean = _uniforms.contains(uniform)
 
         operator fun get(uniform: Uniform): Any? {
             for (n in 0 until _uniforms.size) {

@@ -193,6 +193,9 @@ class ShaderToSGVM(allocator: ShaderAllocator) {
                 Assert.eq(dest.type.elementCount, 1)
                 program.flit(dest.index, op.value)
             }
+            is Program.Unop -> {
+                handle(op.toBinop(), dest)
+            }
             is Program.Binop -> {
                 val left = op.left
                 val right = op.right
