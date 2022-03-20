@@ -267,9 +267,9 @@ suspend fun NativeSocket.accept(): NativeSocket {
 	}
 }
 
-internal actual val asyncSocketFactory: AsyncSocketFactory = NativeAsyncSocketFactory
+object NativeAsyncSocketFactory : BaseNativeAsyncSocketFactory()
 
-object NativeAsyncSocketFactory : AsyncSocketFactory() {
+open class BaseNativeAsyncSocketFactory : AsyncSocketFactory() {
 	class NativeAsyncClient(val socket: NativeSocket) : AsyncClient {
         override val address: AsyncAddress get() = socket.endpoint.toAsyncAddress()
 

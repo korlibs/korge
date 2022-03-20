@@ -1,6 +1,7 @@
 package com.soywiz.korio.net.http
 
 import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.fromBase64
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -25,4 +26,6 @@ class HttpClientTest {
         val response = client.request(Http.Method.GET, "https://raw.githubusercontent.com/korlibs/korio/master/README.md")
         assertEquals("hello", response.readAllString())
     }
+
+    //@Test fun testRealRequest() = suspendTest { println(httpFactory.createClient().readString("https://google.es/")) }
 }

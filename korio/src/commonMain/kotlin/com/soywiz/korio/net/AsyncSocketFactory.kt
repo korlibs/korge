@@ -1,12 +1,10 @@
 package com.soywiz.korio.net
 
-import com.soywiz.klogger.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.concurrent.atomic.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
 import kotlinx.coroutines.flow.*
 import kotlin.coroutines.*
 
