@@ -600,7 +600,7 @@ class BatchBuilder2D constructor(
 	}
 
     fun drawQuad(
-        tex: Texture,
+        tex: TextureCoords,
         x: Float = 0f,
         y: Float = 0f,
         width: Float = tex.width.toFloat(),
@@ -704,12 +704,10 @@ class BatchBuilder2D constructor(
             .insert(premultiplied, 0)
             .insert(add.index, 1, 2)
 
-        private val _PROGRAMS: Array<Program?> = arrayOfNulls(64)
-
         private fun getOrCreateStandardProgram(premultiplied: Boolean, preaddType: AddType): Program {
             val index = getShaderProgramIndex(premultiplied, preaddType)
-            if (_PROGRAMS[index] == null) _PROGRAMS[index] = _createProgramUncached(premultiplied, preaddType)
-            return _PROGRAMS[index]!!
+            if (BATCH_BUILDER2D_PROGRAMS[index] == null) BATCH_BUILDER2D_PROGRAMS[index] = _createProgramUncached(premultiplied, preaddType)
+            return BATCH_BUILDER2D_PROGRAMS[index]!!
         }
 
         private fun _createProgramUncached(premultiplied: Boolean, addType: AddType): Program {
@@ -784,10 +782,10 @@ class BatchBuilder2D constructor(
                         SET(out, out["rgba"] * v_ColMul["rgba"])
                     }
                     AddType.POST_ADD -> {
-                        SET(out, (clamp(out["rgba"] + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit), 0f.lit, 1f.lit) * v_ColMul["rgba"]))
+                        SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
                     }
                     AddType.PRE_ADD -> {
-                        SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
+                        SET(out, (clamp(out["rgba"] + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit), 0f.lit, 1f.lit) * v_ColMul["rgba"]))
                     }
                 }
 
@@ -956,6 +954,8 @@ class BatchBuilder2D constructor(
 	}
 }
 
+@ThreadLocal
+private val BATCH_BUILDER2D_PROGRAMS: Array<Program?> = arrayOfNulls(64)
 
 internal val BB_MAX_TEXTURES = when (OS.rawName) {
     "linuxArm32Hfp",
