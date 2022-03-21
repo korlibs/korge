@@ -16,17 +16,19 @@ import proguard.gradle.*
 fun Project.configureJvm() {
     if (gkotlin.targets.findByName("jvm") != null) return
 
-    val jvmPreset = (gkotlin.presets.getAt("jvm") as KotlinJvmTargetPreset)
-	val jvmTarget = jvmPreset.createTarget("jvm")
+    val jvmTarget = gkotlin.jvm()
 	gkotlin.targets.add(jvmTarget)
-	//jvmTarget.attributes.attribute(KotlinPlatformType.attribute, KotlinPlatformType.jvm)
 
     project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna:$jnaVersion")
     project.korge.addDependency("jvmMainImplementation", "net.java.dev.jna:jna-platform:$jnaVersion")
 	project.korge.addDependency("jvmMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-	project.korge.addDependency("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test")
-	project.korge.addDependency("jvmTestImplementation", "org.jetbrains.kotlin:kotlin-test-junit")
 
+    gkotlin.jvm {
+        testRuns["test"].executionTask.configure {
+            it.useJUnit()
+            //it.useJUnitPlatform()
+        }
+    }
 	project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class.java).all {
         it.kotlinOptions {
             this.jvmTarget = korge.jvmTarget
@@ -119,6 +121,15 @@ private fun Project.configureJvmTest() {
 	val jvmTest = (tasks.findByName("jvmTest") as Test)
     jvmTest.classpath += project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation))
 	jvmTest.jvmArgs = (jvmTest.jvmArgs ?: listOf()) + listOf("-Djava.awt.headless=true")
+
+    val jvmTestFix = tasks.create("jvmTestFix", Test::class.java) {
+        it.group = "verification"
+        it.environment("UPDATE_TEST_REF", "true")
+        it.testClassesDirs = jvmTest.testClassesDirs
+        it.classpath = jvmTest.classpath
+        it.bootstrapClasspath = jvmTest.bootstrapClasspath
+        it.systemProperty("java.awt.headless", "true")
+    }
 }
 
 open class PatchedProGuardTask : ProGuardTask() {

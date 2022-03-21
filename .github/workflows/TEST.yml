@@ -108,7 +108,7 @@ jobs:
         run: ./gradlew --no-daemon publishJvmLocal publishMacosX64PublicationToMavenLocal
       - name: e2e test
         working-directory: e2e-test
-        run: "./gradlew runJvmCheckReferences"
+        run: "./gradlew jvmTest runJvmCheckReferences"
 
   test-native-windows:
     timeout-minutes: 120
@@ -143,4 +143,4 @@ jobs:
       - name: e2e test
         shell: cmd
         working-directory: e2e-test
-        run: "CALL gradlew.bat --no-daemon runJvmCheckReferences"
+        run: "CALL gradlew.bat --no-daemon jvmTest runJvmCheckReferences"
