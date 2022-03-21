@@ -623,7 +623,9 @@ samples {
         val runJvm by creating(KorgeJavaExec::class) {
             group = "run"
             mainClass.set("MainKt")
-            if (!beforeJava9) jvmArgs("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
+            if (!beforeJava9) {
+                javaAddOpens.forEach { jvmArgs(it) }
+            }
         }
         val runJs by creating {
             group = "run"
