@@ -84,12 +84,13 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [512.0, 512.0]
 ::draw.uniform.Uniform(u_MaxTexCoords) = [1.0, 1.0]
+::draw.uniform.Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
 ::draw.uniform.Uniform(u_Ratio) = [0.5, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_Mask) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
 ::draw.uniform.Uniform(u_Reversed) = [0.0, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_Smooth) = [1.0, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_filterScale) = 1.0
-::draw.ERROR.Unexpected:[Uniform(effectTextureSize), Uniform(u_filterScale)]
+::draw.ERROR.Unexpected:[Uniform(effectTextureSize), Uniform(u_StdTexDerivates), Uniform(u_filterScale)]
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)

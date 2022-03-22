@@ -326,7 +326,7 @@ abstract class AGOpengl : AG() {
             val uniformName = uniform.name
             val uniformType = uniform.type
             val value = uniforms.values[n]
-            val location = gl.getUniformLocation(glProgram.id, uniformName)
+            val location = glProgram.getUniformLocation(uniformName)
             val declArrayCount = uniform.arrayCount
             val stride = uniform.type.elementCount
 
@@ -577,12 +577,13 @@ abstract class AGOpengl : AG() {
         var vertexShaderId: Int = 0
 
         val cachedAttribLocations = FastStringMap<Int>()
+        val cachedUniformLocations = FastStringMap<Int>()
 
-        fun getAttribLocation(name: String): Int {
-            return cachedAttribLocations.getOrPut(name) {
-                gl.getAttribLocation(id, name)
-            }
-        }
+        fun getAttribLocation(name: String): Int =
+            cachedAttribLocations.getOrPut(name) { gl.getAttribLocation(id, name) }
+
+        fun getUniformLocation(name: String): Int =
+            cachedUniformLocations.getOrPut(name) { gl.getUniformLocation(id, name) }
 
         private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 

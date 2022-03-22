@@ -74,7 +74,7 @@ class WaveFilter(
 
     override val fragment = FRAGMENT_SHADER
 
-    override fun computeBorder(out: MutableMarginInt) {
+    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(amplitudeY.absoluteValue, amplitudeX.absoluteValue)
     }
 

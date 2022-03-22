@@ -122,4 +122,11 @@ class RectangleTest {
     fun testInt() {
         assertEquals(RectangleInt(1, 2, 3, 4), Rectangle(1.1, 2.1, 3.1, 4.1).toInt())
     }
+
+    @Test
+    fun testExpand() {
+        assertEquals(Rectangle.fromBounds(-10, -15, 120, 125), Rectangle.fromBounds(0, 0, 100, 100).expand(10, 15, 20, 25))
+        assertEquals(Rectangle.fromBounds(-10, -15, 120, 125), Rectangle.fromBounds(0, 0, 100, 100).expand(Margin(left = 10.0, top = 15.0, right = 20.0, bottom = 25.0)))
+        assertEquals(Rectangle.fromBounds(-10, -15, 120, 125), Rectangle.fromBounds(0, 0, 100, 100).expand(MarginInt(left = 10, top = 15, right = 20, bottom = 25)))
+    }
 }

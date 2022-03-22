@@ -22,14 +22,17 @@ suspend fun Stage.mainBlur() {
     val blur0a = DirectionalBlurFilter(angle = 0.degrees, radius = initialBlur)
     val blur0b = DirectionalBlurFilter(angle = 90.degrees, radius = initialBlur)
     val blur0c = DirectionalBlurFilter(angle = 45.degrees, radius = initialBlur)
+    val blur0d = DirectionalBlurFilter(angle = 45.degrees, radius = initialBlur, expandBorder = false)
     val blur1 = BlurFilter(initialBlur)
     //val blur1 = DirectionalBlurFilter(angle = 0.degrees, radius = 32.0)
     //val blur1 = DirectionalBlurFilter(angle = 90.degrees, radius = 32.0)
-    val blur2 = OldBlurFilter(initialBlur)
+    //val blur2 = OldBlurFilter(initialBlur)
+    val blur2 = BlurFilter(initialBlur)
 
     val image0b = image(bitmap).xy(700, 100).filters(blur0b)
     val image0a = image(bitmap).xy(700, 400).filters(blur0a)
     val image0c = image(bitmap).xy(900, 100).filters(blur0c)
+    val image0d = image(bitmap).xy(1100, 100).filters(blur0d)
 
     val image1 = image(bitmap)
         .xy(100, 100)
@@ -110,7 +113,7 @@ suspend fun Stage.mainBlur() {
         }
         uiHorizontalFill {
             uiText("Blend").apply { textColor = Colors.BLACK }
-            uiSlider(value = 0.5, min = 0.0, max = 1.0, step = 0.1).changed {
+            uiSlider(value = 0.5, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
                 colorMatrixFilter.blendRatio = it
                 pageFilter.hamplitude0 = it
                 transitionFilter.ratio = it
@@ -133,10 +136,12 @@ suspend fun Stage.mainBlur() {
         blur0a.radius = blur1.radius
         blur0b.radius = blur1.radius
         blur0c.radius = blur1.radius
+        blur0d.radius = blur1.radius
 
         image0a.filterScale = filterScale
         image0b.filterScale = filterScale
         image0c.filterScale = filterScale
+        image0d.filterScale = filterScale
         image1.filterScale = filterScale
         rotatedBitmap.filterScale = filterScale
         image2.filterScale = filterScale

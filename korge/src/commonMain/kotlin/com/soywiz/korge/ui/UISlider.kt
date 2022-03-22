@@ -13,22 +13,32 @@ inline fun Container.uiSlider(
     min: Number = UISlider.DEFAULT_MIN,
     max: Number = UISlider.DEFAULT_MAX,
     step: Number = UISlider.DEFAULT_STEP,
+    decimalPlaces: Int = UISlider.decimalPlacesFromStep(step.toDouble()),
     width: Double = UISlider.DEFAULT_WIDTH,
     height: Double = UISlider.DEFAULT_HEIGHT,
     block: @ViewDslMarker UISlider.() -> Unit = {}
-): UISlider = UISlider(value, min, max, step, width, height).addTo(this).apply(block)
+): UISlider = UISlider(value, min, max, step, decimalPlaces, width, height).addTo(this).apply(block)
 
 class UISlider(
     value: Number = DEFAULT_VALUE, min: Number = DEFAULT_MIN, max: Number = DEFAULT_MAX, step: Number = DEFAULT_STEP,
+    decimalPlaces: Int = DEFAULT_DECIMAL_PLACES,
     width: Double = DEFAULT_WIDTH, height: Double = DEFAULT_HEIGHT
 ) : UIView(width, height) {
     companion object {
         const val DEFAULT_VALUE = 0
         const val DEFAULT_MIN = 0
         const val DEFAULT_MAX = 100
-        const val DEFAULT_STEP = 1
+        const val DEFAULT_STEP = 1.0
+        const val DEFAULT_DECIMAL_PLACES = 1
         const val DEFAULT_WIDTH = 128.0
         const val DEFAULT_HEIGHT = 16.0
+        const val NO_STEP = 0.0
+
+        fun decimalPlacesFromStep(step: Double): Int = when {
+            step >= 1.0 -> 0
+            step > 0.01 -> 1
+            else -> 2
+        }
     }
 
     val bg = solidRect(width, height, RGBA(32, 32, 32))
@@ -72,6 +82,12 @@ class UISlider(
             }
         }
 
+    var decimalPlaces: Int = decimalPlaces
+        set(value) {
+            field = value
+            valueChanged()
+        }
+
     private val maxXPos: Double get() = (bg.width - button.width)
 
     //val clampedValue: Int get() = value.clamp(min, max)
@@ -88,7 +104,8 @@ class UISlider(
     }
 
     private fun valueChanged() {
-        text.text = "${value.toStringDecimal(1, skipTrailingZeros = true)}"
+        //text.text = value.toStringDecimal(decimalPlaces = decimalPlaces, skipTrailingZeros = true)
+        text.text = value.toStringDecimal(decimalPlaces = decimalPlaces, skipTrailingZeros = false)
     }
 
     init {

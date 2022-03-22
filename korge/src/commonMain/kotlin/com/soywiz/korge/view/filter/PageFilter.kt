@@ -66,7 +66,7 @@ class PageFilter(
 
     override val fragment = FRAGMENT_SHADER
 
-    override fun computeBorder(out: MutableMarginInt) {
+    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())
     }
 

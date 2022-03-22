@@ -202,6 +202,19 @@ data class Rectangle(
     }
 }
 
+fun Rectangle.expand(left: Double, top: Double, right: Double, bottom: Double): Rectangle {
+    this.left -= left
+    this.top -= top
+    this.width += left + right
+    this.height += top + bottom
+    return this
+}
+
+fun Rectangle.expand(left: Int, top: Int, right: Int, bottom: Int): Rectangle = expand(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
+
+fun Rectangle.expand(margin: Margin): Rectangle = expand(margin.left, margin.top, margin.right, margin.bottom)
+fun Rectangle.expand(margin: MarginInt): Rectangle = expand(margin.left, margin.top, margin.right, margin.bottom)
+
 @Deprecated("Use non-mixed Int or Double variants for now")
 inline fun Rectangle.setTo(x: Number, y: Number, width: Number, height: Number) =
     this.setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())

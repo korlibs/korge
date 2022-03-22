@@ -98,7 +98,7 @@ class Convolute3Filter(
 
     override val fragment = FRAGMENT_SHADER
 
-    override fun computeBorder(out: MutableMarginInt) {
+    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(dist.toIntCeil())
     }
 

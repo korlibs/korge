@@ -133,11 +133,8 @@ bufferData([34962, 4, FBuffer(size=4), 35044])
 bindBuffer([34962, 0])
 enableVertexAttribArray([0])
 vertexAttribPointer([0, 1, 5121, false, 1, 0])
-getUniformLocation([0, u_ProjMat]) = 0
 uniformMatrix4fv([0, 1, false, FBuffer(size=65536)])
-getUniformLocation([0, u_ViewMat]) = 0
 uniformMatrix4fv([0, 1, false, FBuffer(size=65536)])
-getUniformLocation([0, u_Tex0]) = 0
 activeTexture([33984])
 bindTexture([3553, 0])
 texParameteri([3553, 10242, 33071])
@@ -145,13 +142,10 @@ texParameteri([3553, 10243, 33071])
 texParameteri([3553, 10241, 9729])
 texParameteri([3553, 10240, 9729])
 uniform1i([0, 0])
-getUniformLocation([0, u_Tex1]) = 0
 activeTexture([33985])
 uniform1i([0, 1])
-getUniformLocation([0, u_Tex2]) = 0
 activeTexture([33986])
 uniform1i([0, 2])
-getUniformLocation([0, u_Tex3]) = 0
 activeTexture([33987])
 uniform1i([0, 3])
 enable([3042])

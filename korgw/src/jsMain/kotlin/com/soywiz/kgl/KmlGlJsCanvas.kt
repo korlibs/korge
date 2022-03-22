@@ -111,7 +111,12 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
     override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit { val info = gl.getActiveUniform(program.get(), index)!!; size.arrayInt[0] = info.size; type.arrayInt[0] = info.type; name.putAsciiString(info.name); length.arrayInt[0] = info.size + 1 }
     override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit { val ashaders = gl.getAttachedShaders(program.get())!!; count.arrayInt[0] = ashaders.size; for (n in 0 until min(maxCount, ashaders.size)) shaders.arrayInt[n] = ashaders[n].asDynamic().id.unsafeCast<Int>() }
     override fun getAttribLocation(program: Int, name: String): Int = gl.getAttribLocation(program.get(), name)
-    override fun getUniformLocation(program: Int, name: String): Int { val prg = program.get<WebGLProgram>().asDynamic(); if (prg.uniforms === undefined) prg.uniforms = js("({})"); if (prg.uniforms[name] === undefined) prg.uniforms[name] = gl.getUniformLocation(prg, name).alloc(); return prg.uniforms[name].unsafeCast<Int>() }
+    override fun getUniformLocation(program: Int, name: String): Int {
+        val prg = program.get<WebGLProgram>().asDynamic()
+        if (prg.uniforms === undefined) prg.uniforms = js("({})")
+        if (prg.uniforms[name] === undefined) prg.uniforms[name] = gl.getUniformLocation(prg, name).alloc()
+        return prg.uniforms[name].unsafeCast<Int>()
+    }
     override fun getBooleanv(pname: Int, data: FBuffer): Unit { data.arrayInt[0] = gl.getParameter(pname).unsafeCast<Int>() }
     override fun getBufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit { params.arrayInt[0] = gl.getBufferParameter(target, pname).unsafeCast<Int>() }
     override fun getError(): Int = gl.getError()

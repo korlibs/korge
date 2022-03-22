@@ -80,6 +80,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [64.0, 64.0]
 ::draw.uniform.Uniform(u_MaxTexCoords) = [0.15625, 0.15625]
+::draw.uniform.Uniform(u_StdTexDerivates) = [0.015625, 0.015625]
 ::draw.uniform.Uniform(colorMatrix) = Matrix3D(
   [ 0.33, 0.59, 0.11, 0 ],
   [ 0.33, 0.59, 0.11, 0 ],
@@ -89,7 +90,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(blendRatio) = [1.0, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_filterScale) = 1.0
 ::draw.ERROR.Missing:[Uniform(u_Tex)]
-::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_MaxTexCoords), Uniform(u_filterScale)]
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_MaxTexCoords), Uniform(u_StdTexDerivates), Uniform(u_filterScale)]
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
@@ -133,6 +134,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 ::draw.uniform.Uniform(effectTextureSize) = [64.0, 64.0]
 ::draw.uniform.Uniform(u_MaxTexCoords) = [0.1875, 0.1875]
+::draw.uniform.Uniform(u_StdTexDerivates) = [0.015625, 0.015625]
 ::draw.uniform.Uniform(weights) = Matrix3D(
   [ -1, -1, -1, 0 ],
   [ -1, 8, -1, 0 ],
@@ -143,7 +145,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.uniform.Uniform(apply_alpha) = [0.0, 0.0, 0.0, 0.0]
 ::draw.uniform.Uniform(u_filterScale) = 1.0
 ::draw.ERROR.Missing:[Uniform(u_Tex)]
-::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_MaxTexCoords), Uniform(u_filterScale)]
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_MaxTexCoords), Uniform(u_StdTexDerivates), Uniform(u_filterScale)]
 ::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
 ::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)

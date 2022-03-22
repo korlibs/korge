@@ -13,7 +13,7 @@ import com.soywiz.korui.*
 import kotlin.math.*
 
 // https://en.wikipedia.org/wiki/Gaussian_blur
-class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4.0) : ShaderFilter() {
+class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4.0, var expandBorder: Boolean = true) : ShaderFilter() {
     companion object {
         private val u_radius = Uniform("u_radius", VarType.Float1)
         private val u_constant1 = Uniform("u_constant1", VarType.Float1)
@@ -24,18 +24,22 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
             val loopLen = createTemp(Int1)
             val gaussianResult = createTemp(Float1)
             IF (u_radius lt 1f.lit) {
-                SET(out, tex(fragmentCoords))
+                SET(out, texture2D(DefaultShaders.u_Tex, fragmentCoords01))
             } ELSE {
             //run {
                 SET(out, vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit))
                 SET(loopLen, int(ceil(u_radius)))
-                FOR_0_UNTIL_FIXED_BREAK(loopLen, maxLen = 1024) { x ->
+                //FOR_0_UNTIL_FIXED_BREAK(loopLen / 2.lit, maxLen = 256) { x ->
+                FOR_0_UNTIL_FIXED_BREAK(loopLen, maxLen = 256) { x ->
                     val xfloat = createTemp(Float1)
                     SET(xfloat, float(x))
                     SET(gaussianResult, u_constant1 * exp((-xfloat * xfloat) * u_constant2))
-                    SET(out, out + (tex(fragmentCoords + (u_direction * xfloat)) * gaussianResult))
+                    val addTemp = createTemp(Float2)
+                    SET(addTemp, (u_direction * xfloat) * u_StdTexDerivates)
+                    //SET(addTemp, (u_direction * xfloat) * u_StdTexDerivates * 2f.lit + (u_StdTexDerivates * .5f.lit))
+                    SET(out, out + (texture2D(DefaultShaders.u_Tex, fragmentCoords01 + addTemp) * gaussianResult))
                     IF(x ne 0.lit) {
-                        SET(out, out + (tex(fragmentCoords - (u_direction * xfloat)) * gaussianResult))
+                        SET(out, out + (texture2D(DefaultShaders.u_Tex, fragmentCoords01 - addTemp) * gaussianResult))
                     }
                 }
             }
@@ -51,11 +55,15 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
     //private val rradius: Double get() = (radius * ln(radius).coerceAtLeast(1.0)).coerceAtLeast(0.0)
     private val rradius: Double get() = (radius * qfactor)
 
-    override fun computeBorder(out: MutableMarginInt) {
+    // @TODO: Here we cannot do this, but we should be able to do this trick: https://www.rastergrid.com/blog/2010/09/efficient-gaussian-blur-with-linear-sampling/
+    //override val recommendedFilterScale: Double get() = if (rradius <= 2.0) 1.0 else 1.0 / log2(rradius.coerceAtLeast(1.0))
+
+    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
+        if (!expandBorder) return out.setTo(0)
         val radius = this.rradius
         out.setTo(
-            (angle.sine.absoluteValue * radius).toIntCeil(),
-            (angle.cosine.absoluteValue * radius).toIntCeil(),
+            (angle.sine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texWidth),
+            (angle.cosine.absoluteValue * radius).toIntCeil(),//.coerceAtMost(texHeight),
         )
     }
 
@@ -77,6 +85,7 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
             scaleSum += if (n != 0) gauss * 2 else gauss
         }
 
+        //println("RADIUS: $radius")
         uniforms[u_radius] = radius
         uniforms[u_constant1] = constant1 * (1.0 / scaleSum)
         uniforms[u_constant2] = constant2

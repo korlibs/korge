@@ -44,7 +44,9 @@ interface Filter : KorgeDebugNode {
     @Deprecated("")
     val border: Int get() = 0
 
-    fun computeBorder(out: MutableMarginInt) {
+    val recommendedFilterScale: Double get() = 1.0
+
+    fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(border)
     }
 
@@ -68,8 +70,8 @@ interface Filter : KorgeDebugNode {
     }
 }
 
-fun Filter.getBorder(out: MutableMarginInt = MutableMarginInt()): MarginInt {
-    computeBorder(out)
+fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MutableMarginInt = MutableMarginInt()): MarginInt {
+    computeBorder(out, texWidth, texHeight)
     return out
 }
 
@@ -83,7 +85,7 @@ fun Filter.renderToTextureWithBorder(
     block: (texture: Texture, matrix: Matrix) -> Unit,
 ) {
     val filter = this
-    val margin = filter.getBorder(ctx.tempMargin)
+    val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
 
     val borderLeft = (margin.left * filterScale).toIntCeil()
     val borderTop = (margin.top * filterScale).toIntCeil()
@@ -108,4 +110,8 @@ fun Filter.renderToTextureWithBorder(
             block(newtex, matrix2)
         }
     }
+}
+
+fun Filter.expandBorderRectangle(out: Rectangle, temp: MutableMarginInt = MutableMarginInt()) {
+    out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp))
 }

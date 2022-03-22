@@ -95,49 +95,52 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
                 )
             }
 
-            debugLineRenderContext.color(Colors.WHITE) {
-                val ratio = longWindow.size.toDouble() / longWindow.capacity.toDouble()
-                val totalOverlayLines = (overlayLines * ratio).toInt().coerceAtLeast(1)
-                if (longWindow.size > 0) {
-                    var previousX = 0f
-                    var previousY = 0f
-                    //val minFps = longWindow.minFps
-                    //val maxFps = longWindow.maxFps
-                    val minFps = 0.0
-                    val maxFps = 150.0
-                    for (n in 0 until totalOverlayLines) {
-                        // Compute fps sample
-                        val fps = run {
-                            val p0 = n.convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
-                            val p1 = (n + 1).convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
-                            var plen = 0
-                            var timeSum = 0.milliseconds
-                            for (m in p0 until p1.coerceAtMost(longWindow.size)) {
-                                timeSum += longWindow[m]
-                                plen++
+            for (index in 0 until 2) {
+                val color = if (index == 0) Colors.WHITE else Colors.BLACK
+                debugLineRenderContext.color(color) {
+                    val ratio = longWindow.size.toDouble() / longWindow.capacity.toDouble()
+                    val totalOverlayLines = (overlayLines * ratio).toInt().coerceAtLeast(1)
+                    if (longWindow.size > 0) {
+                        var previousX = 0f
+                        var previousY = 0f
+                        //val minFps = longWindow.minFps
+                        //val maxFps = longWindow.maxFps
+                        val minFps = 0.0
+                        val maxFps = 150.0
+                        for (n in 0 until totalOverlayLines) {
+                            // Compute fps sample
+                            val fps = run {
+                                val p0 = n.convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
+                                val p1 = (n + 1).convertRange(0, totalOverlayLines, 0, longWindow.size.coerceAtLeast(1))
+                                var plen = 0
+                                var timeSum = 0.milliseconds
+                                for (m in p0 until p1.coerceAtMost(longWindow.size)) {
+                                    timeSum += longWindow[m]
+                                    plen++
+                                }
+                                if (plen == 0) {
+                                    timeSum += longWindow[p0]
+                                    plen++
+                                }
+                                val time = (timeSum / plen.toDouble())
+                                val fps = time.toFrequency().hertz
+                                //print("$fps[$p0,$p1]{$minFps,$maxFps},")
+                                fps
                             }
-                            if (plen == 0) {
-                                timeSum += longWindow[p0]
-                                plen++
+                            val scaledFreq = fps.convertRange(
+                                minFps, maxFps,
+                                overlayHeightGap, overlayHeight
+                            )
+                            val y = (graphTop + overlayHeight - scaledFreq).toFloat()
+                            val x = graphLeft + (n.toFloat() * overlayWidth / overlayLines.toFloat())
+                            if (n > 0) {
+                                debugLineRenderContext.line(previousX, previousY + index, x, y + index)
                             }
-                            val time = (timeSum / plen.toDouble())
-                            val fps = time.toFrequency().hertz
-                            //print("$fps[$p0,$p1]{$minFps,$maxFps},")
-                            fps
+                            previousY = y
+                            previousX = x
                         }
-                        val scaledFreq = fps.convertRange(
-                            minFps, maxFps,
-                            overlayHeightGap, overlayHeight
-                        )
-                        val y = (graphTop + overlayHeight - scaledFreq).toFloat()
-                        val x = graphLeft + (n.toFloat() * overlayWidth / overlayLines.toFloat())
-                        if (n > 0) {
-                            debugLineRenderContext.line(previousX, previousY, x, y)
-                        }
-                        previousY = y
-                        previousX = x
+                        //println()
                     }
-                    //println()
                 }
             }
         }

@@ -850,10 +850,11 @@ abstract class View internal constructor(
         }
 
     fun renderFiltered(ctx: RenderContext, filter: Filter) {
-        val bounds = getLocalBoundsOptimizedAnchored()
+        val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
 
         ctx.matrixPool.alloc { tempMat2d ->
-            val tryFilterScale = filterScale
+            val tryFilterScale = kotlin.math.min(filterScale, filter.recommendedFilterScale).clamp(0.03125, 1.0)
+            //println("tryFilterScale=$tryFilterScale")
             val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
             val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
 
@@ -1338,12 +1339,12 @@ abstract class View internal constructor(
     private val boundsTemp = Matrix()
     private val bb = BoundsBuilder()
 
-    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false): Rectangle {
-        return getBounds(target, out, false, inclusive)
+    fun getBoundsNoAnchoring(target: View? = this, out: Rectangle = Rectangle(), inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
+        return getBounds(target, out, false, inclusive, includeFilters)
     }
 
-    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true): Rectangle {
-        getLocalBounds(out, doAnchoring)
+    protected fun _getBounds(concat: Matrix?, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle {
+        getLocalBounds(out, doAnchoring, includeFilters)
 
         if (concat != null && !concat.isIdentity()) {
             val p1x = out.left
@@ -1369,29 +1370,34 @@ abstract class View internal constructor(
         return out
     }
 
-    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false): Rectangle {
-        return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring)
+    fun getBounds(target: View? = this, out: Rectangle = Rectangle(), doAnchoring: Boolean = true, inclusive: Boolean = false, includeFilters: Boolean = true): Rectangle {
+        return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
     }
 
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
-    fun getLocalBoundsOptimized(): Rectangle = getLocalBounds(_localBounds)
+    fun getLocalBoundsOptimized(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, includeFilters = includeFilters)
 
-    fun getLocalBoundsOptimizedAnchored(): Rectangle = getLocalBounds(_localBounds, doAnchoring = true)
+    fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true) = getLocalBounds(Rectangle(), doAnchoring)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true) = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
+
+    private val tempMutableMargin: MutableMarginInt = MutableMarginInt()
 
     /**
      * Get local bounds of the view. Allows to specify [out] [Rectangle] if you want to reuse an object.
      */
-    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true): Rectangle {
+    fun getLocalBounds(out: Rectangle, doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle {
         getLocalBoundsInternal(out)
         val it = out
         if (!doAnchoring) {
             it.x += anchorDispX
             it.y += anchorDispY
+        }
+        if (includeFilters) {
+            filter?.expandBorderRectangle(out, tempMutableMargin)
         }
         return it
     }

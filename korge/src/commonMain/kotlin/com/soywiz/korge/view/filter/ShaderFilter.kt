@@ -24,6 +24,7 @@ abstract class ShaderFilter : Filter {
         //val u_Time = Uniform("time", VarType.Float1)
         val u_TextureSize = Uniform("effectTextureSize", VarType.Float2)
         val u_MaxTexCoords = Uniform("u_MaxTexCoords", VarType.Float2)
+        val u_StdTexDerivates = Uniform("u_StdTexDerivates", VarType.Float2)
         val u_filterScale = Uniform("u_filterScale", VarType.Float1)
 
         val Program.ExpressionBuilder.v_Tex01: Operand get() = (DefaultShaders.v_Tex["xy"] / u_MaxTexCoords)
@@ -56,6 +57,7 @@ abstract class ShaderFilter : Filter {
 
     private val textureSizeHolder = FloatArray(2)
     private val textureMaxTexCoords = FloatArray(2)
+    private val textureStdTexDerivates = FloatArray(2)
 
     val scaledUniforms = AG.UniformValues()
 
@@ -63,9 +65,10 @@ abstract class ShaderFilter : Filter {
         //Filter.u_Time to timeHolder,
         u_TextureSize to textureSizeHolder,
         u_MaxTexCoords to textureMaxTexCoords,
+        u_StdTexDerivates to textureStdTexDerivates,
     )
 
-    override fun computeBorder(out: MutableMarginInt) {
+    override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(0)
     }
 
@@ -117,7 +120,7 @@ abstract class ShaderFilter : Filter {
     ) {
         if (isIdentity) return IdentityFilter.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
 
-        val _margin = getBorder(ctx.tempMargin)
+        val _margin = getBorder(texWidth, texHeight, ctx.tempMargin)
         val marginLeft = (_margin.left * filterScale).toIntCeil()
         val marginRight = (_margin.right * filterScale).toIntCeil()
         val marginTop = (_margin.top * filterScale).toIntCeil()
@@ -136,6 +139,8 @@ abstract class ShaderFilter : Filter {
         // @TODO: Precompute vertices
         textureSizeHolder[0] = texture.base.width.toFloat()
         textureSizeHolder[1] = texture.base.height.toFloat()
+        textureStdTexDerivates[0] = 1f / texture.base.width.toFloat()
+        textureStdTexDerivates[1] = 1f / texture.base.height.toFloat()
         textureMaxTexCoords[0] = texWidth.toFloat() / texture.base.width.toFloat()
         textureMaxTexCoords[1] = texHeight.toFloat() / texture.base.height.toFloat()
         _updateUniforms(ctx, filterScale)
