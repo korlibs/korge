@@ -31,7 +31,7 @@ fun View.unsafeRenderToBitmapSync(ctx: RenderContext): Bitmap32 {
     return Bitmap32(bounds.width.toInt(), bounds.height.toInt()).also { bmp ->
         //val ctx = RenderContext(views.ag, coroutineContext = views.coroutineContext)
         //views.ag.renderToBitmap(bmp) {
-        ctx.renderToBitmap(bmp) {
+        ctx.renderToBitmap(bmp, hasStencil = true) {
             ctx.useBatcher { batch ->
                 batch.setViewMatrixTemp(view.globalMatrixInv) {
                     view.render(ctx)

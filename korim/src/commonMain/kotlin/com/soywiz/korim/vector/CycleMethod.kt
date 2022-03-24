@@ -9,9 +9,9 @@ enum class CycleMethod {
 
     fun apply(ratio: Double, clamp: Boolean = false): Double = when (this) {
         NO_CYCLE -> if (clamp) ratio.clamp01() else ratio
-        REPEAT -> ratio % 1
+        REPEAT -> ratio umod 1.0
         REFLECT -> {
-            val part = ratio % 2
+            val part = ratio umod 2.0
             if (part > 1.0) 2.0 - part else part
         }
     }

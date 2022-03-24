@@ -99,6 +99,10 @@ val javaAddOpens = ArrayList<String>().apply {
     add("--add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
     add("--add-opens=java.desktop/java.awt=ALL-UNNAMED")
     add("--add-opens=java.desktop/sun.awt=ALL-UNNAMED")
+    if (isMacos) {
+        add("--add-opens=java.desktop/sun.lwawt.macosx=ALL-UNNAMED")
+        add("--add-opens=java.desktop/sun.lwawt=ALL-UNNAMED")
+    }
     if (isLinux) add("--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED")
 }.toTypedArray()
 

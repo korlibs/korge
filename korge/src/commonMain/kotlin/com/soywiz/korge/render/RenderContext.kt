@@ -57,6 +57,10 @@ class RenderContext constructor(
     @KorgeInternal
     val batch = BatchBuilder2D(this, batchMaxQuads)
 
+    val dynamicVertexBufferPool = Pool { ag.createVertexBuffer() }
+    val dynamicVertexDataPool = Pool { ag.createVertexData() }
+    val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
+
     @OptIn(KorgeInternal::class)
     inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)
 
@@ -107,7 +111,12 @@ class RenderContext constructor(
      * This method is useful for per-frame filters. If you plan to keep the texture data, consider using the [renderToBitmap] method.
      */
 	@OptIn(KorgeInternal::class)
-    inline fun renderToTexture(width: Int, height: Int, render: (AG.RenderBuffer) -> Unit, use: (texture: Texture) -> Unit) {
+    inline fun renderToTexture(
+        width: Int, height: Int,
+        render: (AG.RenderBuffer) -> Unit = {},
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        use: (texture: Texture) -> Unit
+    ) {
 		flush()
 		ag.renderToTexture(width, height, render = {
 			val oldScissors = batch.scissor
@@ -120,7 +129,7 @@ class RenderContext constructor(
                     batch.scissor = oldScissors
                 }
             }
-		}, use = { tex, texWidth, texHeight ->
+		}, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { tex, texWidth, texHeight ->
             use(Texture(tex, texWidth, texHeight).slice(0, 0, width, height))
 			flush()
 		})
@@ -129,17 +138,29 @@ class RenderContext constructor(
     /**
      * Sets the render buffer temporarily to [bmp] [Bitmap32] and calls the [callback] render method that should perform all the renderings inside.
      */
-	inline fun renderToBitmap(bmp: Bitmap32, callback: () -> Unit): Bitmap32 {
+	inline fun renderToBitmap(
+        bmp: Bitmap32,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        callback: () -> Unit
+    ): Bitmap32 {
 		flush()
-		ag.renderToBitmap(bmp) {
+		ag.renderToBitmap(bmp, hasDepth, hasStencil, msamples) {
 			callback()
 			flush()
 		}
 		return bmp
 	}
 
-    inline fun renderToBitmap(width: Int, height: Int, callback: () -> Unit): Bitmap32 =
-        renderToBitmap(Bitmap32(width, height), callback)
+    inline fun renderToBitmap(
+        width: Int, height: Int,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        callback: () -> Unit
+    ): Bitmap32 =
+        renderToBitmap(
+            Bitmap32(width, height),
+            hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples,
+            callback = callback
+        )
 
     /**
      * Finishes the drawing and flips the screen. Called by the KorGe engine at the end of the frame.

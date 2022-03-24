@@ -120,12 +120,34 @@ abstract class AGOpengl : AG() {
                 gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
                 gl.bindTexture(gl.TEXTURE_2D, 0)
                 gl.bindRenderbuffer(gl.RENDERBUFFER, depth.getInt(0))
-                gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height)
+                val internalFormat = when {
+                    hasStencil && hasDepth -> gl.DEPTH_STENCIL
+                    hasStencil -> gl.STENCIL_INDEX8
+                    hasDepth -> gl.DEPTH_COMPONENT
+                    else -> 0
+                }
+                if (internalFormat != 0) {
+                    if (nsamples != 1) {
+                        //gl.renderbufferStorageMultisample(gl.RENDERBUFFER, nsamples, internalFormat, width, height)
+                        gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height)
+                    } else {
+                        gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height)
+                    }
+                }
+                //gl.renderbufferStorageMultisample()
             }
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.getInt(0))
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ftex.tex, 0)
-            gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, depth.getInt(0))
+            val internalFormat = when {
+                hasStencil && hasDepth -> gl.DEPTH_STENCIL_ATTACHMENT
+                hasStencil -> gl.STENCIL_ATTACHMENT
+                hasDepth -> gl.DEPTH_ATTACHMENT
+                else -> 0
+            }
+            if (internalFormat != 0) {
+                gl.framebufferRenderbuffer(gl.FRAMEBUFFER, internalFormat, gl.RENDERBUFFER, depth.getInt(0))
+            }
         }
 
         override fun close() {
@@ -563,11 +585,11 @@ abstract class AGOpengl : AG() {
             IndexType.UINT -> gl.UNSIGNED_INT
         }
 
-    private val programs = HashMap<Program, HashMap<ProgramConfig, GlProgram>>()
+    private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, GlProgram>>()
 
     @JvmOverloads
     fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT): GlProgram {
-        return programs.getOrPut(program) { HashMap() }.getOrPut(config) { GlProgram(gl, program, config) }
+        return programs.getOrPut(program) { FastIdentityMap() }.getOrPut(config) { GlProgram(gl, program, config) }
     }
 
     inner class GlProgram(val gl: KmlGl, val program: Program, val programConfig: ProgramConfig) : Closeable {
@@ -680,11 +702,12 @@ abstract class AGOpengl : AG() {
         stencil: Int,
         clearColor: Boolean,
         clearDepth: Boolean,
-        clearStencil: Boolean
+        clearStencil: Boolean,
+        scissor: AG.Scissor?,
     ) {
         //println("CLEAR: $color, $depth")
         var bits = 0
-        applyScissorState(null)
+        applyScissorState(scissor)
         //gl.disable(gl.SCISSOR_TEST)
         if (clearColor) {
             bits = bits or gl.COLOR_BUFFER_BIT
@@ -1006,6 +1029,20 @@ abstract class AGOpengl : AG() {
             buffer.getAlignedArrayFloat32(0, out, 0, area)
         }
     }
+
+    override fun readStencil(bitmap: Bitmap8) {
+        fbuffer(bitmap.area * 1) { buffer ->
+            gl.readPixels(
+                0, 0, bitmap.width, bitmap.height,
+                gl.STENCIL_INDEX, gl.UNSIGNED_BYTE, buffer
+            )
+            buffer.getArrayInt8(0, bitmap.data, 0, bitmap.area)
+            //println("readColor.HASH:" + bitmap.computeHash())
+        }
+    }
+
+
+
 
     override fun readColorTexture(texture: Texture, width: Int, height: Int) {
         gl.apply {

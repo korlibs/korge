@@ -85,6 +85,7 @@ class BatchBuilder2D constructor(
 
     var vertexCount: Int
         get() = _vertexCount
+        //set(value) { _vertexCount = value }
         internal set(value) { _vertexCount = value }
 
     @PublishedApi internal var vertexPos = 0
@@ -880,6 +881,16 @@ class BatchBuilder2D constructor(
         //resetCachedState()
 	}
 
+    fun simulateBatchStats(vertexCount: Int) {
+        val oldVertexCount = this.vertexCount
+        this.vertexCount = vertexCount
+        try {
+            beforeFlush(this)
+        } finally {
+            this.vertexCount = oldVertexCount
+        }
+    }
+
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
@@ -932,25 +943,27 @@ class BatchBuilder2D constructor(
     }
 
     @PublishedApi
-	internal val tempOldUniforms = AG.UniformValues()
+	internal val tempOldUniformsList: Pool<AG.UniformValues> = Pool { AG.UniformValues() }
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
 	inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: () -> Unit) {
-        if (uniforms != null && uniforms.isNotEmpty()) {
-            flush()
-            tempOldUniforms.setTo(this.uniforms)
-            this.uniforms.put(uniforms)
-        }
-		try {
-			callback()
-		} finally {
+        tempOldUniformsList { tempOldUniforms ->
             if (uniforms != null && uniforms.isNotEmpty()) {
                 flush()
-                this.uniforms.setTo(tempOldUniforms)
+                tempOldUniforms.setTo(this.uniforms)
+                this.uniforms.put(uniforms)
             }
-		}
+            try {
+                callback()
+            } finally {
+                if (uniforms != null && uniforms.isNotEmpty()) {
+                    flush()
+                    this.uniforms.setTo(tempOldUniforms)
+                }
+            }
+        }
 	}
 }
 

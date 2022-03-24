@@ -7,7 +7,8 @@ import com.soywiz.korim.vector.renderer.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
-inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape = ShapeBuilder(width, height).apply(builder).buildShape()
+inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape =
+    ShapeBuilder(width, height).apply(builder).buildShape()
 
 open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), Drawable {
     override val rendererWidth: Int = width ?: 256
@@ -86,7 +87,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         state.clone()
         shapes.clear()
     }
-    fun buildShape(): Shape = CompoundShape(shapes.toList())
+    fun buildShape(): Shape = if (shapes.size == 1) shapes.first() else CompoundShape(shapes.toList())
 
     override fun draw(c: Context2d) {
         c.draw(buildShape())

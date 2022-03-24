@@ -2,6 +2,7 @@ package com.soywiz.korgw.platform
 
 import com.soywiz.korag.*
 import com.soywiz.korgw.awt.*
+import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.win32.Win32OpenglContext
 import com.soywiz.korgw.x11.X
 import com.soywiz.korgw.x11.X11OpenglContext
@@ -22,7 +23,7 @@ import javax.swing.*
 interface BaseOpenglContext : Disposable {
     val isCore: Boolean get() = false
     val scaleFactor: Double get() = 1.0
-    class ContextInfo(
+    data class ContextInfo(
         val scissors: RectangleInt? = null,
         val viewport: RectangleInt? = null
     ) {
@@ -77,81 +78,11 @@ object DummyOpenglContext : BaseOpenglContext {
     }
 }
 
-private inline fun <T : Any> privilegedAction(crossinline block: () -> T): T {
-    var result: T? = null
-    AccessController.doPrivileged(PrivilegedAction {
-        result = block()
-    })
-    return result!!
-}
-
 fun glContextFromComponent(c: Component): BaseOpenglContext {
     return when {
         OS.isMac -> {
             try {
-                val utils = privilegedAction { Class.forName("sun.java2d.opengl.OGLUtilities") }
-                //println(utils.declaredMethods.map { it.name })
-                val invokeWithOGLContextCurrentMethod = privilegedAction {
-                    utils.getDeclaredMethod("invokeWithOGLContextCurrent", Graphics::class.java, Runnable::class.java).also { it.isAccessible = true }
-                }
-                val isQueueFlusherThread = privilegedAction {
-                    utils.getDeclaredMethod("isQueueFlusherThread").also { it.isAccessible = true }
-                }
-                val getOGLViewport = privilegedAction {
-                    utils.getDeclaredMethod("getOGLViewport", Graphics::class.java, Integer.TYPE, Integer.TYPE).also { it.isAccessible = true }
-                }
-                val getOGLScissorBox = privilegedAction {
-                    utils.getDeclaredMethod("getOGLScissorBox", Graphics::class.java).also { it.isAccessible = true }
-                }
-                val getOGLSurfaceIdentifier = privilegedAction {
-                    utils.getDeclaredMethod("getOGLSurfaceIdentifier", Graphics::class.java).also { it.isAccessible = true }
-                }
-                val getOGLSurfaceType = privilegedAction {
-                    utils.getDeclaredMethod("getOGLSurfaceType", Graphics::class.java).also { it.isAccessible = true }
-                }
-
-                val info = BaseOpenglContext.ContextInfo(
-                    RectangleInt(), RectangleInt()
-                )
-
-                //var timeSinceLast = 0L
-                object : BaseOpenglContext {
-                    override val scaleFactor: Double get() = getDisplayScalingFactor(c)
-
-                    override fun useContext(g: Graphics, ag: AG, action: (Graphics, BaseOpenglContext.ContextInfo) -> Unit) {
-                        invokeWithOGLContextCurrentMethod.invoke(null, g, Runnable {
-                            //if (!(isQueueFlusherThread.invoke(null) as Boolean)) error("Can't render on another thread")
-                            try {
-                                val factor = getDisplayScalingFactor(c)
-                                //val window = SwingUtilities.getWindowAncestor(c)
-                                val viewport = getOGLViewport.invoke(null, g, (c.width * factor).toInt(), (c.height * factor).toInt()) as java.awt.Rectangle
-                                //val viewport = getOGLViewport.invoke(null, g, window.width.toInt(), window.height.toInt()) as java.awt.Rectangle
-                                val scissorBox = getOGLScissorBox(null, g) as? java.awt.Rectangle?
-                                //println("scissorBox: $scissorBox")
-                                //println("viewport: $viewport")
-                                //info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                                if (scissorBox != null) {
-                                    info.scissors?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                                    //info.viewport?.setTo(viewport.x, viewport.y, viewport.width, viewport.height)
-                                    info.viewport?.setTo(scissorBox.x, scissorBox.y, scissorBox.width, scissorBox.height)
-                                } else {
-                                    System.err.println("ERROR !! scissorBox = $scissorBox, viewport = $viewport")
-                                }
-                                //info.viewport?.setTo(scissorBox.x, scissorBox.y)
-                                //println("viewport: $viewport, $scissorBox")
-                                //println(g.clipBounds)
-                                action(g, info)
-
-                            } catch (e: Throwable) {
-                                e.printStackTrace()
-                            }
-                        })
-                    }
-
-                    override fun makeCurrent() = Unit
-                    override fun releaseCurrent() = Unit
-                    override fun swapBuffers() = Unit
-                }
+                MacAWTOpenglContext(c)
             } catch (e: Throwable) {
                 e.printStackTrace()
                 System.err.println("Might require run the JVM with --add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")

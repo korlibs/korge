@@ -243,6 +243,14 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
 
     override val isInstancedSupported: Boolean get() = (webglVersion >= 2) || (instancedArrays != null)
 
+    override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
+        if (webglVersion >= 2) {
+            gl.asDynamic().renderbufferStorageMultisample(target, samples, internalformat, width, height)
+        } else {
+            TODO()
+        }
+    }
+
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) {
         if (webglVersion >= 2) {
             gl.asDynamic().drawArraysInstanced(mode, first, count, instancecount)

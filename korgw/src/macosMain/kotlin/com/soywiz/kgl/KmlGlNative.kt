@@ -174,4 +174,5 @@ actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int) = glDrawArraysInstancedARB(mode.convert(), first, count, instancecount)
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int) = glDrawElementsInstancedARB(mode.convert(), count, type.convert(), indices.toLong().toCPointer<IntVar>(), instancecount)
     override fun vertexAttribDivisor(index: Int, divisor: Int) = glVertexAttribDivisorARB(index.convert(), divisor.convert())
+    override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) = glRenderbufferStorageMultisample(target.convert(), samples, internalformat.convert(), width, height)
 }

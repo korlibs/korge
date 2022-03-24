@@ -9,6 +9,21 @@ fun ProgramWithDefault(
 	name: String = "program"
 ): Program = Program(vertex, fragment, name)
 
+interface IDefaultShaders {
+    val u_Tex: Uniform get() = DefaultShaders.u_Tex
+    val u_ProjMat: Uniform get() = DefaultShaders.u_ProjMat
+    val u_ViewMat: Uniform get() = DefaultShaders.u_ViewMat
+    val a_Pos: Attribute get() = DefaultShaders.a_Pos
+    val a_Tex: Attribute get() = DefaultShaders.a_Tex
+    val a_Col: Attribute get() = DefaultShaders.a_Col
+    val v_Tex: Varying get() = DefaultShaders.v_Tex
+    val v_Col: Varying get() = DefaultShaders.v_Col
+    val t_Temp0: Temp get() = DefaultShaders.t_Temp0
+    val t_Temp1: Temp get() = DefaultShaders.t_Temp1
+    val t_TempMat2: Temp get() = DefaultShaders.t_TempMat2
+    val textureUnit: AG.TextureUnit get() = DefaultShaders.textureUnit
+}
+
 object DefaultShaders {
     // from korge
 	val u_Tex: Uniform = Uniform("u_Tex", VarType.TextureUnit)
@@ -101,3 +116,11 @@ object DefaultShaders {
 
 	inline operator fun invoke(callback: DefaultShaders.() -> Unit): DefaultShaders = this.apply(callback)
 }
+
+class ProgramBuilderDefault : Program.Builder(), IDefaultShaders
+
+inline fun VertexShaderDefault(callback: ProgramBuilderDefault.() -> Unit): VertexShader =
+    VertexShader(ProgramBuilderDefault().also(callback)._buildFuncs())
+
+inline fun FragmentShaderDefault(callback: ProgramBuilderDefault.() -> Unit): FragmentShader =
+    FragmentShader(ProgramBuilderDefault().also(callback)._buildFuncs())

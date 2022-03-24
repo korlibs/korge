@@ -1,8 +1,11 @@
+@file:Suppress("unused")
+
 package com.soywiz.korgw.platform
 
-import com.soywiz.kmem.FBuffer
-import com.soywiz.korim.bitmap.NativeImage
-import com.sun.jna.NativeLong
+import com.soywiz.korio.lang.*
+import com.soywiz.korio.time.*
+import com.soywiz.korio.util.*
+import com.sun.jna.*
 import java.nio.ByteBuffer
 import java.nio.FloatBuffer
 import java.nio.IntBuffer
@@ -33,6 +36,201 @@ typealias IntSize = NativeLong
 typealias VoidPtr = ByteBuffer
 typealias IntPtr = IntBuffer
 typealias FloatPtr = FloatBuffer
+
+object DirectGL : INativeGL {
+    external override fun glActiveTexture(texture: GLenum)
+    external override fun glAttachShader(program: GLuint, shader: GLuint)
+    external override fun glBindAttribLocation(program: GLuint, index: GLuint, name: String)
+    external override fun glBindBuffer(target: GLenum, buffer: GLuint)
+    external override fun glBindFramebuffer(target: GLenum, framebuffer: GLuint)
+    external override fun glBindRenderbuffer(target: GLenum, renderbuffer: GLuint)
+    external override fun glBindTexture(target: GLenum, texture: GLuint)
+    external override fun glBlendColor(red: GLfloat, green: GLfloat, blue: GLfloat, alpha: GLfloat)
+    external override fun glBlendEquation(mode: GLenum)
+    external override fun glBlendEquationSeparate(modeRGB: GLenum, modeAlpha: GLenum)
+    external override fun glBlendFunc(sfactor: GLenum, dfactor: GLenum)
+    external override fun glBlendFuncSeparate(sfactorRGB: GLenum, dfactorRGB: GLenum, sfactorAlpha: GLenum, dfactorAlpha: GLenum)
+    external override fun glBufferData(target: GLenum, size: GLsizeiptr, data: VoidPtr, usage: GLenum)
+    external override fun glBufferSubData(target: GLenum, offset: GLintptr, size: GLsizeiptr, data: VoidPtr)
+    external override fun glCheckFramebufferStatus(target: GLenum): GLenum
+    external override fun glClear(mask: GLbitfield)
+    external override fun glClearColor(red: GLfloat, green: GLfloat, blue: GLfloat, alpha: GLfloat)
+    external override fun glClearDepth(d: GLdouble)
+    external override fun glClearStencil(s: GLint)
+    external override fun glColorMask(red: GLboolean, green: GLboolean, blue: GLboolean, alpha: GLboolean)
+    external override fun glCompileShader(shader: GLuint)
+    external override fun glCompressedTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei, border: GLint, imageSize: GLsizei, data: VoidPtr)
+    external override fun glCompressedTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, imageSize: GLsizei, data: VoidPtr)
+    external override fun glCopyTexImage2D(target: GLenum, level: GLint, internalformat: GLenum, x: GLint, y: GLint, width: GLsizei, height: GLsizei, border: GLint)
+    external override fun glCopyTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, x: GLint, y: GLint, width: GLsizei, height: GLsizei)
+    external override fun glCreateProgram(): GLuint
+    external override fun glCreateShader(type: GLenum): GLuint
+    external override fun glCullFace(mode: GLenum)
+    external override fun glDeleteBuffers(n: GLsizei, items: IntPtr)
+    external override fun glDeleteFramebuffers(n: GLsizei, items: IntPtr)
+    external override fun glDeleteProgram(program: GLuint)
+    external override fun glDeleteRenderbuffers(n: GLsizei, items: IntPtr)
+    external override fun glDeleteShader(shader: GLuint)
+    external override fun glDeleteTextures(n: GLsizei, items: IntPtr)
+    external override fun glDepthFunc(func: GLenum)
+    external override fun glDepthMask(flag: GLboolean)
+    external override fun glDepthRange(n: GLdouble, f: GLdouble)
+    external override fun glDetachShader(program: GLuint, shader: GLuint)
+    external override fun glDisable(cap: GLenum)
+    external override fun glDisableVertexAttribArray(index: GLuint)
+    external override fun glDrawArrays(mode: GLenum, first: GLint, count: GLsizei)
+    external override fun glDrawElements(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize)
+    external override fun glEnable(cap: GLenum)
+    external override fun glEnableVertexAttribArray(index: GLuint)
+    external override fun glFinish()
+    external override fun glFlush()
+    external override fun glFramebufferRenderbuffer(target: GLenum, attachment: GLenum, renderbuffertarget: GLenum, renderbuffer: GLuint)
+    external override fun glFramebufferTexture2D(target: GLenum, attachment: GLenum, textarget: GLenum, texture: GLuint, level: GLint)
+    external override fun glFrontFace(mode: GLenum)
+    external override fun glGenBuffers(n: GLsizei, buffers: IntPtr)
+    external override fun glGenerateMipmap(target: GLenum)
+    external override fun glGenFramebuffers(n: GLsizei, framebuffers: IntPtr)
+    external override fun glGenRenderbuffers(n: GLsizei, renderbuffers: IntPtr)
+    external override fun glGenTextures(n: GLsizei, textures: IntPtr)
+    external override fun glGetActiveAttrib(program: GLuint, index: GLuint, bufSize: GLsizei, length: IntPtr, size: IntPtr, type: IntPtr, name: VoidPtr)
+    external override fun glGetActiveUniform(program: GLuint, index: GLuint, bufSize: GLsizei, length: IntPtr, size: IntPtr, type: IntPtr, name: VoidPtr)
+    external override fun glGetAttachedShaders(program: GLuint, maxCount: GLsizei, count: IntPtr, shaders: IntPtr)
+    external override fun glGetAttribLocation(program: GLuint, name: String): Int
+    external override fun glGetUniformLocation(program: GLuint, name: String): Int
+    external override fun glGetBooleanv(pname: GLenum, data: VoidPtr)
+    external override fun glGetBufferParameteriv(target: GLenum, pname: GLenum, params: IntPtr)
+    external override fun glGetError(): GLenum
+    external override fun glGetFloatv(pname: GLenum, data: FloatPtr)
+    external override fun glGetFramebufferAttachmentParameteriv(target: GLenum, attachment: GLenum, pname: GLenum, params: IntPtr)
+    external override fun glGetIntegerv(pname: GLenum, data: IntPtr)
+    external override fun glGetProgramInfoLog(program: GLuint, bufSize: GLsizei, length: IntPtr, infoLog: VoidPtr)
+    external override fun glGetRenderbufferParameteriv(target: GLenum, pname: GLenum, params: IntPtr)
+    external override fun glGetProgramiv(program: GLuint, pname: GLenum, params: IntPtr)
+    external override fun glGetShaderiv(shader: GLuint, pname: GLenum, params: IntPtr)
+    external override fun glGetShaderInfoLog(shader: GLuint, bufSize: GLsizei, length: IntPtr, infoLog: VoidPtr)
+    external override fun glGetShaderPrecisionFormat(shadertype: GLenum, precisiontype: GLenum, range: IntPtr, precision: IntPtr)
+    external override fun glGetShaderSource(shader: GLuint, bufSize: GLsizei, length: IntPtr, source: VoidPtr)
+    external override fun glGetString(name: GLenum): String?
+    external override fun glGetStringi(name: GLenum, i: GLuint): String?
+    external override fun glGetTexParameterfv(target: GLenum, pname: GLenum, params: FloatPtr)
+    external override fun glGetTexParameteriv(target: GLenum, pname: GLenum, params: IntPtr)
+    external override fun glGetUniformfv(program: GLuint, location: GLint, params: FloatPtr)
+    external override fun glGetUniformiv(program: GLuint, location: GLint, params: IntPtr)
+    external override fun glGetVertexAttribfv(index: GLuint, pname: GLenum, params: FloatPtr)
+    external override fun glGetVertexAttribiv(index: GLuint, pname: GLenum, params: IntPtr)
+    external override fun glHint(target: GLenum, mode: GLenum)
+    external override fun glIsBuffer(buffer: GLuint): GLboolean
+    external override fun glIsEnabled(cap: GLenum): GLboolean
+    external override fun glIsFramebuffer(framebuffer: GLuint): GLboolean
+    external override fun glIsProgram(program: GLuint): GLboolean
+    external override fun glIsRenderbuffer(renderbuffer: GLuint): GLboolean
+    external override fun glIsShader(shader: GLuint): GLboolean
+    external override fun glIsTexture(texture: GLuint): GLboolean
+    external override fun glLineWidth(width: GLfloat)
+    external override fun glLinkProgram(program: GLuint)
+    external override fun glPixelStorei(pname: GLenum, param: GLint)
+    external override fun glPolygonOffset(factor: GLfloat, units: GLfloat)
+    external override fun glReadPixels(x: GLint, y: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, pixels: VoidPtr)
+    external override fun glReleaseShaderCompiler()
+    external override fun glRenderbufferStorage(target: GLenum, internalformat: GLenum, width: GLsizei, height: GLsizei)
+    external override fun glSampleCoverage(value: GLfloat, invert: GLboolean)
+    external override fun glScissor(x: GLint, y: GLint, width: GLsizei, height: GLsizei)
+    external override fun glShaderBinary(count: GLsizei, shaders: IntPtr, binaryformat: GLenum, binary: VoidPtr, length: GLsizei)
+    external fun glShaderSource(shader: GLuint, count: GLsizei, strings: Pointer, length: IntArray?)
+    override fun glShaderSource(shader: GLuint, count: GLsizei, string: Array<String>, length: IntArray?) {
+        val ptrs = Memory((Native.POINTER_SIZE * string.size).toLong())
+        for (n in 0 until string.size) {
+            val bytes = string[n].toByteArray(UTF8)
+            val mem = Memory(bytes.size.toLong())
+            mem.write(0L, bytes, 0, bytes.size)
+            ptrs.setPointer((Native.POINTER_SIZE * n).toLong(), mem)
+        }
+        glShaderSource(shader, count, ptrs, length)
+        ptrs.clear()
+    }
+
+    //@JvmStatic external fun glShaderSource(shader: GLuint, count: GLsizei, string: Array<String>, length: IntArray?)
+    external override fun glStencilFunc(func: GLenum, ref: GLint, mask: GLuint)
+    external override fun glStencilFuncSeparate(face: GLenum, func: GLenum, ref: GLint, mask: GLuint)
+    external override fun glStencilMask(mask: GLuint)
+    external override fun glStencilMaskSeparate(face: GLenum, mask: GLuint)
+    external override fun glStencilOp(fail: GLenum, zfail: GLenum, zpass: GLenum)
+    external override fun glStencilOpSeparate(face: GLenum, sfail: GLenum, dpfail: GLenum, dppass: GLenum)
+    external override fun glTexImage2D(target: GLenum, level: GLint, internalformat: GLint, width: GLsizei, height: GLsizei, border: GLint, format: GLenum, type: GLenum, pixels: VoidPtr?)
+    external override fun glTexParameterf(target: GLenum, pname: GLenum, param: GLfloat)
+    external override fun glTexParameterfv(target: GLenum, pname: GLenum, params: FloatPtr)
+    external override fun glTexParameteri(target: GLenum, pname: GLenum, param: GLint)
+    external override fun glTexParameteriv(target: GLenum, pname: GLenum, params: IntPtr)
+    external override fun glTexSubImage2D(target: GLenum, level: GLint, xoffset: GLint, yoffset: GLint, width: GLsizei, height: GLsizei, format: GLenum, type: GLenum, pixels: VoidPtr)
+    external override fun glUniform1f(location: GLint, v0: GLfloat)
+    external override fun glUniform1fv(location: GLint, count: GLsizei, value: FloatPtr)
+    external override fun glUniform1i(location: GLint, v0: GLint)
+    external override fun glUniform1iv(location: GLint, count: GLsizei, value: IntPtr)
+    external override fun glUniform2f(location: GLint, v0: GLfloat, v1: GLfloat)
+    external override fun glUniform2fv(location: GLint, count: GLsizei, value: FloatPtr)
+    external override fun glUniform2i(location: GLint, v0: GLint, v1: GLint)
+    external override fun glUniform2iv(location: GLint, count: GLsizei, value: IntPtr)
+    external override fun glUniform3f(location: GLint, v0: GLfloat, v1: GLfloat, v2: GLfloat)
+    external override fun glUniform3fv(location: GLint, count: GLsizei, value: FloatPtr)
+    external override fun glUniform3i(location: GLint, v0: GLint, v1: GLint, v2: GLint)
+    external override fun glUniform3iv(location: GLint, count: GLsizei, value: IntPtr)
+    external override fun glUniform4f(location: GLint, v0: GLfloat, v1: GLfloat, v2: GLfloat, v3: GLfloat)
+    external override fun glUniform4fv(location: GLint, count: GLsizei, value: FloatPtr)
+    external override fun glUniform4i(location: GLint, v0: GLint, v1: GLint, v2: GLint, v3: GLint)
+    external override fun glUniform4iv(location: GLint, count: GLsizei, value: IntPtr)
+    external override fun glUniformMatrix2fv(location: GLint, count: GLsizei, transpose: GLboolean, value: FloatPtr)
+    external override fun glUniformMatrix3fv(location: GLint, count: GLsizei, transpose: GLboolean, value: FloatPtr)
+    external override fun glUniformMatrix4fv(location: GLint, count: GLsizei, transpose: GLboolean, value: FloatPtr)
+    external override fun glUseProgram(program: GLuint)
+    external override fun glValidateProgram(program: GLuint)
+    external override fun glVertexAttrib1f(index: GLuint, x: GLfloat)
+    external override fun glVertexAttrib1fv(index: GLuint, v: FloatPtr)
+    external override fun glVertexAttrib2f(index: GLuint, x: GLfloat, y: GLfloat)
+    external override fun glVertexAttrib2fv(index: GLuint, v: FloatPtr)
+    external override fun glVertexAttrib3f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat)
+    external override fun glVertexAttrib3fv(index: GLuint, v: FloatPtr)
+    external override fun glVertexAttrib4f(index: GLuint, x: GLfloat, y: GLfloat, z: GLfloat, w: GLfloat)
+    external override fun glVertexAttrib4fv(index: GLuint, v: FloatPtr)
+    external override fun glVertexAttribPointer(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, pointer: IntSize)
+    external override fun glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei)
+    external override fun glDrawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instancecount: GLsizei)
+    external override fun glDrawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize, instancecount: GLsizei)
+    external override fun glVertexAttribDivisor(index: GLuint, divisor: GLuint)
+    external override fun glRenderbufferStorageMultisample(target: GLenum, samples: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei)
+
+    internal var loaded = false
+
+    init {
+        try {
+            if (nativeOpenGLLibraryPath == null) error("Can't get OpenGL library")
+            traceTime("OpenGL Native.register") {
+                // @TODO: Can we provide a custom loader? like a dysym, to use the glGetProcAddress? If so, we will be able to use this on Windows too
+                Native.register(DirectGL::class.java, NativeLibrary.getInstance(nativeOpenGLLibraryPath, mutableMapOf<String, Any?>()))
+            }
+            loaded = true
+        } catch (e: Throwable) {
+            com.soywiz.klogger.Console.error("Failed to initialize OpenAL: arch=$arch, OS.rawName=${OS.rawName}, nativeOpenGLLibraryPath=$nativeOpenGLLibraryPath, message=${e.message}")
+            //e.printStackTrace()
+        }
+    }
+}
+
+private val arch by lazy { System.getProperty("os.arch").toLowerCase() }
+
+val nativeOpenGLLibraryPath: String? by lazy {
+    Environment["OPENGL_LIB_PATH"]?.let { path ->
+        return@lazy path
+    }
+    when {
+        OS.isMac -> "OpenGL"
+        OS.isLinux -> "libGL"
+        OS.isWindows -> "opengl32"
+        else -> {
+            println("  - Unknown/Unsupported OS")
+            null
+        }
+    }
+}
 
 interface INativeGL {
     fun glActiveTexture(texture: GLenum)
@@ -115,7 +313,7 @@ interface INativeGL {
     fun glGetUniformiv(program: GLuint, location: GLint, params: IntPtr)
     fun glGetVertexAttribfv(index: GLuint, pname: GLenum, params: FloatPtr)
     fun glGetVertexAttribiv(index: GLuint, pname: GLenum, params: IntPtr)
-    fun glGetVertexAttribPointerv(index: GLuint, pname: GLenum, pointer: FBuffer)
+    //fun glGetVertexAttribPointerv(index: GLuint, pname: GLenum, pointer: FBuffer)
     fun glHint(target: GLenum, mode: GLenum)
     fun glIsBuffer(buffer: GLuint): GLboolean
     fun glIsEnabled(cap: GLenum): GLboolean
@@ -142,7 +340,7 @@ interface INativeGL {
     fun glStencilOp(fail: GLenum, zfail: GLenum, zpass: GLenum)
     fun glStencilOpSeparate(face: GLenum, sfail: GLenum, dpfail: GLenum, dppass: GLenum)
     fun glTexImage2D(target: GLenum, level: GLint, internalformat: GLint, width: GLsizei, height: GLsizei, border: GLint, format: GLenum, type: GLenum, pixels: VoidPtr?)
-    fun glTexImage2D(target: GLenum, level: GLint, internalformat: GLint, format: GLsizei, type: GLsizei, data: NativeImage)
+    //fun glTexImage2D(target: GLenum, level: GLint, internalformat: GLint, format: GLsizei, type: GLsizei, data: NativeImage)
     fun glTexParameterf(target: GLenum, pname: GLenum, param: GLfloat)
     fun glTexParameterfv(target: GLenum, pname: GLenum, params: FloatPtr)
     fun glTexParameteri(target: GLenum, pname: GLenum, param: GLint)
@@ -180,9 +378,10 @@ interface INativeGL {
     fun glVertexAttribPointer(index: GLuint, size: GLint, type: GLenum, normalized: GLboolean, stride: GLsizei, pointer: IntSize)
     fun glViewport(x: GLint, y: GLint, width: GLsizei, height: GLsizei)
 
-    fun glDrawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instancecount: GLsizei)
+    fun glDrawArraysInstanced(mode: GLenum, first: GLint, count: GLsizei, instancecount: GLsizei): Unit
     fun glDrawElementsInstanced(mode: GLenum, count: GLsizei, type: GLenum, indices: IntSize, instancecount: GLsizei)
     fun glVertexAttribDivisor(index: GLuint, divisor: GLuint)
+    fun glRenderbufferStorageMultisample(target: GLenum, samples: GLint, internalformat: GLenum, width: GLsizei, height: GLsizei)
 
     companion object {
         const val DEPTH_BUFFER_BIT: Int = 0x0100
@@ -488,378 +687,3 @@ interface INativeGL {
         const val INVALID_FRAMEBUFFER_OPERATION: Int = 0x0506 // 1286
     }
 }
-
-/*
-    fun glActiveTexture(texture: Int)
-    fun glAttachShader(program: Int, shader: Int)
-    fun glBindAttribLocation(program: Int, index: Int, name: String)
-    fun glBindBuffer(target: Int, buffer: Int)
-    fun glBindFramebuffer(target: Int, framebuffer: Int)
-    fun glBindRenderbuffer(target: Int, renderbuffer: Int)
-    fun glBindTexture(target: Int, texture: Int)
-    fun glBlendColor(red: Float, green: Float, blue: Float, alpha: Float)
-    fun glBlendEquation(mode: Int)
-    fun glBlendEquationSeparate(modeRGB: Int, modeAlpha: Int)
-    fun glBlendFunc(sfactor: Int, dfactor: Int)
-    fun glBlendFuncSeparate(sfactorRGB: Int, dfactorRGB: Int, sfactorAlpha: Int, dfactorAlpha: Int)
-    fun glBufferData(target: Int, size: IntSize, data: VoidPtr, usage: Int)
-    fun glBufferSubData(target: Int, offset: IntSize, size: IntSize, data: VoidPtr)
-    fun glCheckFramebufferStatus(target: Int): Int
-    fun glClear(mask: Int)
-    fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float)
-    fun glClearDepth(d: Double)
-    fun glClearStencil(s: Int)
-    fun glColorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean)
-    fun glCompileShader(shader: Int)
-    fun glCompressedTexImage2D(
-        target: Int,
-        level: Int,
-        internalformat: Int,
-        width: Int,
-        height: Int,
-        border: Int,
-        imageSize: Int,
-        data: VoidPtr
-    )
-
-    fun glCompressedTexSubImage2D(
-        target: Int,
-        level: Int,
-        xoffset: Int,
-        yoffset: Int,
-        width: Int,
-        height: Int,
-        format: Int,
-        imageSize: Int,
-        data: VoidPtr
-    )
-
-    fun glCopyTexImage2D(
-        target: Int,
-        level: Int,
-        internalformat: Int,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int,
-        border: Int
-    )
-
-    fun glCopyTexSubImage2D(
-        target: Int,
-        level: Int,
-        xoffset: Int,
-        yoffset: Int,
-        x: Int,
-        y: Int,
-        width: Int,
-        height: Int
-    )
-
-    fun glCreateProgram(): Int
-    fun glCreateShader(type: Int): Int
-    fun glCullFace(mode: Int)
-    fun glDeleteBuffers(n: Int, items: IntPtr)
-    fun glDeleteFramebuffers(n: Int, items: IntPtr)
-    fun glDeleteProgram(program: Int)
-    fun glDeleteRenderbuffers(n: Int, items: IntPtr)
-    fun glDeleteShader(shader: Int)
-    fun glDeleteTextures(n: Int, items: IntPtr)
-    fun glDepthFunc(func: Int)
-    fun glDepthMask(flag: Boolean)
-    fun glDepthRange(n: Double, f: Double)
-    fun glDetachShader(program: Int, shader: Int)
-    fun glDisable(cap: Int)
-    fun glDisableVertexAttribArray(index: Int)
-    fun glDrawArrays(mode: Int, first: Int, count: Int)
-    fun glDrawElements(mode: Int, count: Int, type: Int, indices: IntSize)
-    fun glEnable(cap: Int)
-    fun glEnableVertexAttribArray(index: Int)
-    fun glFinish()
-    fun glFlush()
-    fun glFramebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: Int)
-    fun glFramebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int)
-    fun glFrontFace(mode: Int)
-    fun glGenBuffers(n: Int, buffers: IntPtr)
-    fun glGenerateMipmap(target: Int)
-    fun glGenFramebuffers(n: Int, framebuffers: IntPtr)
-    fun glGenRenderbuffers(n: Int, renderbuffers: IntPtr)
-    fun glGenTextures(n: Int, textures: IntPtr)
-    fun glGetActiveAttrib(
-        program: Int,
-        index: Int,
-        bufSize: Int,
-        length: IntPtr,
-        size: IntPtr,
-        type: IntPtr,
-        name: VoidPtr
-    )
-
-    fun glGetActiveUniform(
-        program: Int,
-        index: Int,
-        bufSize: Int,
-        length: IntPtr,
-        size: IntPtr,
-        type: IntPtr,
-        name: VoidPtr
-    )
-
-    fun glGetAttachedShaders(program: Int, maxCount: Int, count: IntPtr, shaders: IntPtr)
-    fun glGetAttribLocation(program: Int, name: String): Int
-    fun glGetUniformLocation(program: Int, name: String): Int
-    fun glGetBooleanv(pname: Int, data: VoidPtr)
-    fun glGetBufferParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glGetError(): Int
-    fun glGetFloatv(pname: Int, data: FloatPtr)
-    fun glGetFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: IntPtr)
-    fun glGetIntegerv(pname: Int, data: IntPtr)
-    fun glGetProgramInfoLog(program: Int, bufSize: Int, length: IntPtr, infoLog: VoidPtr)
-    fun glGetRenderbufferParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glGetProgramiv(program: Int, pname: Int, params: IntPtr)
-    fun glGetShaderiv(shader: Int, pname: Int, params: IntPtr)
-    fun glGetShaderInfoLog(shader: Int, bufSize: Int, length: IntPtr, infoLog: VoidPtr)
-    fun glGetShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: IntPtr, precision: IntPtr)
-    fun glGetShaderSource(shader: Int, bufSize: Int, length: IntPtr, source: VoidPtr)
-    fun glGetString(name: Int): String
-    fun glGetTexParameterfv(target: Int, pname: Int, params: FloatPtr)
-    fun glGetTexParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glGetUniformfv(program: Int, location: Int, params: FloatPtr)
-    fun glGetUniformiv(program: Int, location: Int, params: IntPtr)
-    fun glGetVertexAttribfv(index: Int, pname: Int, params: FloatPtr)
-    fun glGetVertexAttribiv(index: Int, pname: Int, params: IntPtr)
-    fun glGetVertexAttribPointerv(index: Int, pname: Int, pointer: FBuffer)
-    fun glHint(target: Int, mode: Int)
-    fun glIsBuffer(buffer: Int): Boolean
-    fun glIsEnabled(cap: Int): Boolean
-    fun glIsFramebuffer(framebuffer: Int): Boolean
-    fun glIsProgram(program: Int): Boolean
-    fun glIsRenderbuffer(renderbuffer: Int): Boolean
-    fun glIsShader(shader: Int): Boolean
-    fun glIsTexture(texture: Int): Boolean
-    fun glLineWidth(width: Float)
-    fun glLinkProgram(program: Int)
-    fun glPixelStorei(pname: Int, param: Int)
-    fun glPolygonOffset(factor: Float, units: Float)
-    fun glReadPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: VoidPtr)
-    fun glReleaseShaderCompiler()
-    fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
-    fun glSampleCoverage(value: Float, invert: Boolean)
-    fun glScissor(x: Int, y: Int, width: Int, height: Int)
-    fun glShaderBinary(count: Int, shaders: IntPtr, binaryformat: Int, binary: VoidPtr, length: Int)
-    fun glShaderSource(shader: Int, count: IntSize, string: Array<String>, length: IntArray?)
-    fun glStencilFunc(func: Int, ref: Int, mask: Int)
-    fun glStencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int)
-    fun glStencilMask(mask: Int)
-    fun glStencilMaskSeparate(face: Int, mask: Int)
-    fun glStencilOp(fail: Int, zfail: Int, zpass: Int)
-    fun glStencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int)
-    fun glTexImage2D(
-        target: Int,
-        level: Int,
-        internalformat: Int,
-        width: Int,
-        height: Int,
-        border: Int,
-        format: Int,
-        type: Int,
-        pixels: VoidPtr?
-    )
-
-    fun glTexImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage)
-    fun glTexParameterf(target: Int, pname: Int, param: Float)
-    fun glTexParameterfv(target: Int, pname: Int, params: FloatPtr)
-    fun glTexParameteri(target: Int, pname: Int, param: Int)
-    fun glTexParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glTexSubImage2D(
-        target: Int,
-        level: Int,
-        xoffset: Int,
-        yoffset: Int,
-        width: Int,
-        height: Int,
-        format: Int,
-        type: Int,
-        pixels: VoidPtr
-    )
-
-    fun glUniform1f(location: Int, v0: Float)
-    fun glUniform1fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform1i(location: Int, v0: Int)
-    fun glUniform1iv(location: Int, count: Int, value: IntPtr)
-    fun glUniform2f(location: Int, v0: Float, v1: Float)
-    fun glUniform2fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform2i(location: Int, v0: Int, v1: Int)
-    fun glUniform2iv(location: Int, count: Int, value: IntPtr)
-    fun glUniform3f(location: Int, v0: Float, v1: Float, v2: Float)
-    fun glUniform3fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform3i(location: Int, v0: Int, v1: Int, v2: Int)
-    fun glUniform3iv(location: Int, count: Int, value: IntPtr)
-    fun glUniform4f(location: Int, v0: Float, v1: Float, v2: Float, v3: Float)
-    fun glUniform4fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform4i(location: Int, v0: Int, v1: Int, v2: Int, v3: Int)
-    fun glUniform4iv(location: Int, count: Int, value: IntPtr)
-    fun glUniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: FloatPtr)
-    fun glUniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: FloatPtr)
-    fun glUniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: FloatPtr)
-    fun glUseProgram(program: Int)
-    fun glValidateProgram(program: Int)
-    fun glVertexAttrib1f(index: Int, x: Float)
-    fun glVertexAttrib1fv(index: Int, v: FloatPtr)
-    fun glVertexAttrib2f(index: Int, x: Float, y: Float)
-    fun glVertexAttrib2fv(index: Int, v: FloatPtr)
-    fun glVertexAttrib3f(index: Int, x: Float, y: Float, z: Float)
-    fun glVertexAttrib3fv(index: Int, v: FloatPtr)
-    fun glVertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float)
-    fun glVertexAttrib4fv(index: Int, v: FloatPtr)
-    fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: IntSize)
-    fun glViewport(x: Int, y: Int, width: Int, height: Int)
- */
-
-/*
-
-    fun glActiveTexture(texture: Int)
-    fun glAttachShader(program: Int, shader: Int)
-    fun glBindAttribLocation(program: Int, index: Int, name: String)
-    fun glBindBuffer(target: Int, buffer: Int)
-    fun glBindFramebuffer(target: Int, framebuffer: Int)
-    fun glBindRenderbuffer(target: Int, renderbuffer: Int)
-    fun glBindTexture(target: Int, texture: Int)
-    fun glBlendColor(red: Float, green: Float, blue: Float, alpha: Float)
-    fun glBlendEquation(mode: Int)
-    fun glBlendEquationSeparate(modeRGB: Int, modeAlpha: Int)
-    fun glBlendFunc(sfactor: Int, dfactor: Int)
-    fun glBlendFuncSeparate(sfactorRGB: Int, dfactorRGB: Int, sfactorAlpha: Int, dfactorAlpha: Int)
-    fun glBufferData(target: Int, size: IntSize, data: VoidPtr, usage: Int)
-    fun glBufferSubData(target: Int, offset: IntSize, size: IntSize, data: VoidPtr)
-    fun glCheckFramebufferStatus(target: Int): Int
-    fun glClear(mask: Int)
-    fun glClearColor(red: Float, green: Float, blue: Float, alpha: Float)
-    fun glClearDepth(d: Double)
-    fun glClearStencil(s: Int)
-    fun glColorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean)
-    fun glCompileShader(shader: Int)
-    fun glCompressedTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, imageSize: Int, data: VoidPtr)
-    fun glCompressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: VoidPtr)
-    fun glCopyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int)
-    fun glCopyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int)
-    fun glCreateProgram(): Int
-    fun glCreateShader(type: Int): Int
-    fun glCullFace(mode: Int)
-    fun glDeleteBuffers(n: Int, items: IntPtr)
-    fun glDeleteFramebuffers(n: Int, items: IntPtr)
-    fun glDeleteProgram(program: Int)
-    fun glDeleteRenderbuffers(n: Int, items: IntPtr)
-    fun glDeleteShader(shader: Int)
-    fun glDeleteTextures(n: Int, items: IntPtr)
-    fun glDepthFunc(func: Int)
-    fun glDepthMask(flag: Boolean)
-    fun glDepthRange(n: Double, f: Double)
-    fun glDetachShader(program: Int, shader: Int)
-    fun glDisable(cap: Int)
-    fun glDisableVertexAttribArray(index: Int)
-    fun glDrawArrays(mode: Int, first: Int, count: Int)
-    fun glDrawElements(mode: Int, count: Int, type: Int, indices: IntSize)
-    fun glEnable(cap: Int)
-    fun glEnableVertexAttribArray(index: Int)
-    fun glFinish()
-    fun glFlush()
-    fun glFramebufferRenderbuffer(target: Int, attachment: Int, renderbuffertarget: Int, renderbuffer: Int)
-    fun glFramebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int)
-    fun glFrontFace(mode: Int)
-    fun glGenBuffers(n: Int, buffers: IntPtr)
-    fun glGenerateMipmap(target: Int)
-    fun glGenFramebuffers(n: Int, framebuffers: IntPtr)
-    fun glGenRenderbuffers(n: Int, renderbuffers: IntPtr)
-    fun glGenTextures(n: Int, textures: IntPtr)
-    fun glGetActiveAttrib(program: Int, index: Int, bufSize: Int, length: IntPtr, size: IntPtr, type: IntPtr, name: VoidPtr)
-    fun glGetActiveUniform(program: Int, index: Int, bufSize: Int, length: IntPtr, size: IntPtr, type: IntPtr, name: VoidPtr)
-    fun glGetAttachedShaders(program: Int, maxCount: Int, count: IntPtr, shaders: IntPtr)
-    fun glGetAttribLocation(program: Int, name: String): Int
-    fun glGetUniformLocation(program: Int, name: String): Int
-    fun glGetBooleanv(pname: Int, data: VoidPtr)
-    fun glGetBufferParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glGetError(): Int
-    fun glGetFloatv(pname: Int, data: FloatPtr)
-    fun glGetFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: IntPtr)
-    fun glGetIntegerv(pname: Int, data: IntPtr)
-    fun glGetProgramInfoLog(program: Int, bufSize: Int, length: IntPtr, infoLog: VoidPtr)
-    fun glGetRenderbufferParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glGetProgramiv(program: Int, pname: Int, params: IntPtr)
-    fun glGetShaderiv(shader: Int, pname: Int, params: IntPtr)
-    fun glGetShaderInfoLog(shader: Int, bufSize: Int, length: IntPtr, infoLog: VoidPtr)
-    fun glGetShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: IntPtr, precision: IntPtr)
-    fun glGetShaderSource(shader: Int, bufSize: Int, length: IntPtr, source: VoidPtr)
-    fun glGetString(name: Int): String?
-    fun glGetTexParameterfv(target: Int, pname: Int, params: FloatPtr)
-    fun glGetTexParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glGetUniformfv(program: Int, location: Int, params: FloatPtr)
-    fun glGetUniformiv(program: Int, location: Int, params: IntPtr)
-    fun glGetVertexAttribfv(index: Int, pname: Int, params: FloatPtr)
-    fun glGetVertexAttribiv(index: Int, pname: Int, params: IntPtr)
-    fun glGetVertexAttribPointerv(index: Int, pname: Int, pointer: FBuffer)
-    fun glHint(target: Int, mode: Int)
-    fun glIsBuffer(buffer: Int): Boolean
-    fun glIsEnabled(cap: Int): Boolean
-    fun glIsFramebuffer(framebuffer: Int): Boolean
-    fun glIsProgram(program: Int): Boolean
-    fun glIsRenderbuffer(renderbuffer: Int): Boolean
-    fun glIsShader(shader: Int): Boolean
-    fun glIsTexture(texture: Int): Boolean
-    fun glLineWidth(width: Float)
-    fun glLinkProgram(program: Int)
-    fun glPixelStorei(pname: Int, param: Int)
-    fun glPolygonOffset(factor: Float, units: Float)
-    fun glReadPixels(x: Int, y: Int, width: Int, height: Int, format: Int, type: Int, pixels: VoidPtr)
-    fun glReleaseShaderCompiler()
-    fun glRenderbufferStorage(target: Int, internalformat: Int, width: Int, height: Int)
-    fun glSampleCoverage(value: Float, invert: Boolean)
-    fun glScissor(x: Int, y: Int, width: Int, height: Int)
-    fun glShaderBinary(count: Int, shaders: IntPtr, binaryformat: Int, binary: VoidPtr, length: Int)
-    fun glShaderSource(shader: Int, count: IntSize, string: Array<String>, length: IntArray?)
-    fun glStencilFunc(func: Int, ref: Int, mask: Int)
-    fun glStencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int)
-    fun glStencilMask(mask: Int)
-    fun glStencilMaskSeparate(face: Int, mask: Int)
-    fun glStencilOp(fail: Int, zfail: Int, zpass: Int)
-    fun glStencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int)
-    fun glTexImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: VoidPtr?)
-    fun glTexImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage)
-    fun glTexParameterf(target: Int, pname: Int, param: Float)
-    fun glTexParameterfv(target: Int, pname: Int, params: FloatPtr)
-    fun glTexParameteri(target: Int, pname: Int, param: Int)
-    fun glTexParameteriv(target: Int, pname: Int, params: IntPtr)
-    fun glTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, type: Int, pixels: VoidPtr)
-    fun glUniform1f(location: Int, v0: Float)
-    fun glUniform1fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform1i(location: Int, v0: Int)
-    fun glUniform1iv(location: Int, count: Int, value: IntPtr)
-    fun glUniform2f(location: Int, v0: Float, v1: Float)
-    fun glUniform2fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform2i(location: Int, v0: Int, v1: Int)
-    fun glUniform2iv(location: Int, count: Int, value: IntPtr)
-    fun glUniform3f(location: Int, v0: Float, v1: Float, v2: Float)
-    fun glUniform3fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform3i(location: Int, v0: Int, v1: Int, v2: Int)
-    fun glUniform3iv(location: Int, count: Int, value: IntPtr)
-    fun glUniform4f(location: Int, v0: Float, v1: Float, v2: Float, v3: Float)
-    fun glUniform4fv(location: Int, count: Int, value: FloatPtr)
-    fun glUniform4i(location: Int, v0: Int, v1: Int, v2: Int, v3: Int)
-    fun glUniform4iv(location: Int, count: Int, value: IntPtr)
-    fun glUniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: FloatPtr)
-    fun glUniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: FloatPtr)
-    fun glUniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: FloatPtr)
-    fun glUseProgram(program: Int)
-    fun glValidateProgram(program: Int)
-    fun glVertexAttrib1f(index: Int, x: Float)
-    fun glVertexAttrib1fv(index: Int, v: FloatPtr)
-    fun glVertexAttrib2f(index: Int, x: Float, y: Float)
-    fun glVertexAttrib2fv(index: Int, v: FloatPtr)
-    fun glVertexAttrib3f(index: Int, x: Float, y: Float, z: Float)
-    fun glVertexAttrib3fv(index: Int, v: FloatPtr)
-    fun glVertexAttrib4f(index: Int, x: Float, y: Float, z: Float, w: Float)
-    fun glVertexAttrib4fv(index: Int, v: FloatPtr)
-    fun glVertexAttribPointer(index: Int, size: Int, type: Int, normalized: Boolean, stride: Int, pointer: IntSize)
-    fun glViewport(x: Int, y: Int, width: Int, height: Int)
-
- */

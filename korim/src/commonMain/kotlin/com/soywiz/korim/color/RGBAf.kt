@@ -19,6 +19,20 @@ class RGBAf(
 
     private var dirty = true
 
+    fun readFrom(out: FloatArray, index: Int = 0) {
+        r = out[index + 0]
+        g = out[index + 1]
+        b = out[index + 2]
+        a = out[index + 3]
+    }
+
+    fun writeTo(out: FloatArray, index: Int = 0) {
+        out[index + 0] = r
+        out[index + 1] = g
+        out[index + 2] = b
+        out[index + 3] = a
+    }
+
     var r: Float; get() = _r; set(v) { _r = v; makeDirty() }
     var g: Float; get() = _g; set(v) { _g = v; makeDirty() }
     var b: Float; get() = _b; set(v) { _b = v; makeDirty() }
@@ -93,3 +107,10 @@ class RGBAf(
 }
 
 inline fun RGBAf(r: Number, g: Number, b: Number, a: Number) = RGBAf(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
+
+fun RGBA.writeFloat(out: FloatArray, index: Int = 0) {
+    out[index + 0] = rf
+    out[index + 1] = gf
+    out[index + 2] = bf
+    out[index + 3] = af
+}

@@ -10,9 +10,7 @@ import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korgw.*
-import com.soywiz.korgw.platform.BaseOpenglContext
-import com.soywiz.korgw.platform.INativeGL
-import com.soywiz.korgw.platform.NativeKgl
+import com.soywiz.korgw.platform.*
 import com.soywiz.korgw.platform.NativeLoad
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.PNG
@@ -21,8 +19,7 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.Once
-import com.sun.jna.Callback
-import com.sun.jna.Library
+import com.sun.jna.*
 import java.nio.ByteBuffer
 import kotlin.coroutines.*
 import kotlin.system.*
@@ -35,7 +32,9 @@ class MacAG(val window: Long, val checkGl: Boolean, val logGl:Boolean) : AGOpeng
     override val nativeComponent: Any = window
 }
 
-open class MacKmlGL : NativeKgl(MacGL)
+//open class MacKmlGL : NativeKgl(MacGL)
+open class MacKmlGL : NativeKgl(DirectGL)
+
 
 interface MacGL : INativeGL, Library {
     fun CGLSetParameter(vararg args: Any?)
@@ -177,14 +176,9 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         val buttonNumber = sender.msgSend("buttonNumber")
         val clickCount = sender.msgSend("clickCount")
 
-        val rect = MyNSRect()
-        contentView.msgSend_stret(rect, "frame")
-
-        val rect2 = MyNSRect()
-        window.msgSend_stret(rect2, "frame")
-
-        val rect3 = MyNSRect()
-        window.msgSend_stret(rect3, "contentRectForFrameRect:", rect2)
+        val rect = contentView.msgSendNSRect("frame")
+        val rect2 = window.msgSendNSRect("frame")
+        val rect3 = window.msgSendNSRect("contentRectForFrameRect:", rect2)
 
         glCtx?.setParameters()
 

@@ -137,9 +137,6 @@ abstract class BaseAwtGameWindow : GameWindow() {
 
         ensureContext()
 
-        //GL.glClearColor(1f, 0f, 0f, 1f)
-        //GL.glClear(GL.GL_COLOR_BUFFER_BIT)
-
         ctx?.useContext(g, ag, paintInContextDelegate)
         //Toolkit.getDefaultToolkit().sync();
     }

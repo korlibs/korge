@@ -32,8 +32,9 @@ import kotlin.random.*
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false
     //, debugAg = true
 ) {
+    mainGpuVectorRendering()
     //mainFiltersRenderToBitmap()
-    mainBlur()
+    //mainBlur()
     //mainCustomSolidRectShader()
     //mainMipmaps()
     //mainColorTransformFilter()

@@ -16,7 +16,7 @@ annotation class NativeName(val name: String) {
 
 typealias NSRectPtr = Pointer
 
-inline fun <reified T : Library> NativeLoad(name: String) = Native.load(name, T::class.java, NativeName.OPTIONS) as T
+inline fun <reified T : Library> NativeLoad(name: String): T = Native.load(name, T::class.java, NativeName.OPTIONS) as T
 
 internal interface GL : Library {
     fun glViewport(x: Int, y: Int, width: Int, height: Int)
@@ -49,7 +49,11 @@ interface ObjectiveC : Library {
     fun objc_msgSendCGFloat(vararg args: Any?): CGFloat
     @NativeName("objc_msgSend")
     fun objc_msgSendNSPoint(vararg args: Any?): NSPointRes
+    @NativeName("objc_msgSend")
+    fun objc_msgSendNSRect(vararg args: Any?): NSRectRes
+    @NativeName("objc_msgSend_stret")
     fun objc_msgSend_stret(structPtr: Any?, vararg args: Any?): Unit
+
     /*
     fun objc_msgSend(a: Long, b: Long): Long
     fun objc_msgSend(a: Long, b: Long, c: Long): Long
@@ -81,7 +85,7 @@ interface ObjectiveC : Library {
     fun property_getAttributes(prop: ID): String
 
     companion object : ObjectiveC by NativeLoad("objc") {
-        val NATIVE = NativeLibrary.getInstance("objc")
+        //val NATIVE = NativeLibrary.getInstance("objc")
     }
 }
 
@@ -141,17 +145,60 @@ fun Foundation.NSLog(msg: String) = NSLog(NSString(msg))
 
 //typealias NSPointRes = Long
 typealias NSPointRes = MyNativeNSPoint.ByValue
+typealias NSRectRes = MyNativeNSRect.ByValue
+
+private val isArm64 = System.getProperty("os.arch") == "aarch64"
 
 fun sel(name: String) = ObjectiveC.sel_registerName(name)
 fun Long.msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 fun Long.msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
 fun Long.msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(this, sel(sel), *args)
 fun Long.msgSendNSPoint(sel: String, vararg args: Any?): NSPointRes = ObjectiveC.objc_msgSendNSPoint(this, sel(sel), *args)
-fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?): Unit = ObjectiveC.objc_msgSend_stret(output, this, sel(sel), *args)
+fun Long.msgSendNSRect(sel: String, vararg args: Any?): NSRectRes {
+    if (isArm64) {
+        return ObjectiveC.objc_msgSendNSRect(this, sel(sel), *args)
+    } else {
+        val rect = MyNSRect()
+        val out = NSRectRes()
+        this.msgSend_stret(rect, sel, *args)
+        out.x = rect.x
+        out.y = rect.y
+        out.width = rect.width
+        out.height = rect.height
+        return out
+    }
+}
+fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?): Unit {
+    if (isArm64) error("Not available on arm64")
+    ObjectiveC.objc_msgSend_stret(output, this, sel(sel), *args)
+}
+
+/*
+open class NSRECT : Structure {
+    var x: Double = 0.0
+    var y: Double = 0.0
+    var width: Double = 0.0
+    var height: Double = 0.0
+
+    constructor() : super() {}
+    constructor(peer: Pointer?) : super(peer) {}
+
+    override fun getFieldOrder() = listOf("x", "y", "width", "height")
+
+    class ByReference : NSRECT(), Structure.ByReference
+    class ByValue : NSRECT(), Structure.ByValue
+}
+ */
+
 operator fun Long.invoke(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 
 open class NSObject(val id: Long) : IntegerType(8, id, false), NativeMapped {
     fun msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(id, sel(sel), *args)
+    fun msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(id, sel(sel), *args)
+    fun msgSendCGFloat(sel: String, vararg args: Any?): CGFloat = ObjectiveC.objc_msgSendCGFloat(id, sel(sel), *args)
+    fun msgSendNSPoint(sel: String, vararg args: Any?): NSPointRes = ObjectiveC.objc_msgSendNSPoint(id, sel(sel), *args)
+    fun msgSend_stret(sel: String, vararg args: Any?): Unit = ObjectiveC.objc_msgSend_stret(id, sel(sel), *args)
+
     fun alloc(): Long = msgSend("alloc")
 
     companion object : NSClass("NSObject") {

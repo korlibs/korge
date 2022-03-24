@@ -6,7 +6,7 @@ import com.soywiz.korim.awt.AwtNativeImage
 import com.soywiz.korim.bitmap.NativeImage
 import com.sun.jna.NativeLong
 
-open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
+open class NativeKgl(private val gl: INativeGL) : KmlGlWithExtensions() {
     override fun activeTexture(texture: Int): Unit = gl.glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = gl.glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = gl.glBindAttribLocation(program, index, name)
@@ -105,6 +105,7 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun sampleCoverage(value: Float, invert: Boolean): Unit = gl.glSampleCoverage(value, invert.toByte())
     override fun scissor(x: Int, y: Int, width: Int, height: Int): Unit = gl.glScissor(x, y, width, height)
     override fun shaderBinary(count: Int, shaders: FBuffer, binaryformat: Int, binary: FBuffer, length: Int): Unit = gl.glShaderBinary(count, shaders.nioIntBuffer, binaryformat, binary.nioBuffer, length)
+    //override fun shaderSource(shader: Int, string: String): Unit = gl.glShaderSource(shader, 1, arrayOf(string), intArrayOf(string.length))
     override fun shaderSource(shader: Int, string: String): Unit = gl.glShaderSource(shader, 1, arrayOf(string), intArrayOf(string.length))
     override fun stencilFunc(func: Int, ref: Int, mask: Int): Unit = gl.glStencilFunc(func, ref, mask)
     override fun stencilFuncSeparate(face: Int, func: Int, ref: Int, mask: Int): Unit = gl.glStencilFuncSeparate(face, func, ref, mask)
@@ -135,9 +136,9 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun uniform4fv(location: Int, count: Int, value: FBuffer): Unit = gl.glUniform4fv(location, count, value.nioFloatBuffer)
     override fun uniform4i(location: Int, v0: Int, v1: Int, v2: Int, v3: Int): Unit = gl.glUniform4i(location, v0, v1, v2, v3)
     override fun uniform4iv(location: Int, count: Int, value: FBuffer): Unit = gl.glUniform4iv(location, count, value.nioIntBuffer)
-    override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: FBuffer): Unit = gl.glUniformMatrix2fv(location, count, transpose.toByte(), value.nioFloatBuffer)
-    override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: FBuffer): Unit = gl.glUniformMatrix3fv(location, count, transpose.toByte(), value.nioFloatBuffer)
-    override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: FBuffer): Unit = gl.glUniformMatrix4fv(location, count, transpose.toByte(), value.nioFloatBuffer)
+    override fun uniformMatrix2fv(location: Int, count: Int, transpose: Boolean, value: FBuffer): Unit = gl.glUniformMatrix2fv(location, count, transpose.toByte(), value.nioFloatBuffer.slice(0, 4 * count))
+    override fun uniformMatrix3fv(location: Int, count: Int, transpose: Boolean, value: FBuffer): Unit = gl.glUniformMatrix3fv(location, count, transpose.toByte(), value.nioFloatBuffer.slice(0, 9 * count))
+    override fun uniformMatrix4fv(location: Int, count: Int, transpose: Boolean, value: FBuffer): Unit = gl.glUniformMatrix4fv(location, count, transpose.toByte(), value.nioFloatBuffer.slice(0, 16 * count))
     override fun useProgram(program: Int): Unit = gl.glUseProgram(program)
     override fun validateProgram(program: Int): Unit = gl.glValidateProgram(program)
     override fun vertexAttrib1f(index: Int, x: Float): Unit = gl.glVertexAttrib1f(index, x)
@@ -157,6 +158,10 @@ open class NativeKgl(val gl: INativeGL) : KmlGlWithExtensions() {
     override fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = gl.glDrawArraysInstanced(mode, first, count, instancecount)
     override fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = gl.glDrawElementsInstanced(mode, count, type, NativeLong(indices.toLong()), instancecount)
     override fun vertexAttribDivisor(index: Int, divisor: Int): Unit = gl.glVertexAttribDivisor(index, divisor)
+    override fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int) {
+        gl.glRenderbufferStorageMultisample(target, samples, internalformat, width, height)
+    }
 }
+
 
 private const val GL_NUM_EXTENSIONS = 0x821D

@@ -4,8 +4,7 @@ import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.clamp
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import kotlin.apply
@@ -87,7 +86,37 @@ data class GradientPaint(
         fun fromGradientBox(kind: GradientKind, width: Double, height: Double, rotation: Angle, tx: Double, ty: Double): GradientPaint {
             return identity(kind).copy(transform = gradientBoxMatrix(width, height, rotation, tx, ty))
         }
+
+        fun fillColors(out: RgbaPremultipliedArray, stops: DoubleArrayList, colors: IntArrayList) {
+            val numberOfStops = stops.size
+            val NCOLORS = out.size
+            fun stopN(n: Int): Int = (stops[n] * NCOLORS).toInt()
+
+            when (numberOfStops) {
+                0, 1 -> {
+                    val color = if (numberOfStops == 0) Colors.FUCHSIA else RGBA(colors.first())
+                    val pcolor = color.premultiplied
+                    for (n in 0 until NCOLORS) out[n] = pcolor
+                }
+                else -> {
+                    for (n in 0 until stopN(0)) out[n] = RGBA(colors.first()).premultiplied
+                    for (n in 0 until numberOfStops - 1) {
+                        val stop0 = stopN(n + 0)
+                        val stop1 = stopN(n + 1)
+                        val color0 = RGBA(colors.getAt(n + 0))
+                        val color1 = RGBA(colors.getAt(n + 1))
+                        for (s in stop0 until stop1) {
+                            val ratio = (s - stop0).toDouble() / (stop1 - stop0).toDouble()
+                            out[s] = RGBA.interpolate(color0, color1, ratio).premultiplied
+                        }
+                    }
+                    for (n in stopN(numberOfStops - 1) until NCOLORS) out.ints[n] = colors.last()
+                }
+            }
+        }
     }
+
+    fun fillColors(out: RgbaPremultipliedArray): Unit = fillColors(out, stops, colors)
 
     fun addColorStop(stop: Double, color: RGBA): GradientPaint = add(stop, color)
     inline fun addColorStop(stop: Number, color: RGBA): GradientPaint = add(stop.toDouble(), color)

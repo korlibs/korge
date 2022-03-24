@@ -1,24 +1,27 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.korev.*
-import com.soywiz.korgw.internal.MicroDynamic
+import com.soywiz.korgw.internal.*
+import com.soywiz.korgw.internal.MicroDynamic.invoke
+import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.platform.*
-import com.soywiz.korim.awt.toAwt
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.*
+import com.soywiz.korim.awt.*
+import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Rectangle
+import sun.awt.*
+import sun.lwawt.*
+import sun.lwawt.macosx.*
 import java.awt.*
-import java.awt.Toolkit.getDefaultToolkit
 import java.awt.datatransfer.*
 import java.awt.dnd.*
 import java.awt.event.*
+import java.awt.peer.*
 import java.io.*
 import javax.imageio.*
 import javax.swing.*
-
 
 class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
     override val ag: AwtAg = AwtAg(this, checkGl, logGl)
@@ -40,7 +43,18 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
 
     override fun ensureContext() {
         if (ctx == null) {
-            ctx = glContextFromComponent(frame)
+            if (OS.isMac) {
+                try {
+                    //ctx = ProxiedMacAWTOpenglContext(frame)
+                    ctx = glContextFromComponent(frame)
+
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                    ctx = glContextFromComponent(frame)
+                }
+            } else {
+                ctx = glContextFromComponent(frame)
+            }
         }
     }
 

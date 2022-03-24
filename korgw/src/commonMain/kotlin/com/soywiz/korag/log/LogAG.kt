@@ -163,8 +163,11 @@ open class LogBaseAG(
 		stencil: Int,
 		clearColor: Boolean,
 		clearDepth: Boolean,
-		clearStencil: Boolean
-	) = log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
+		clearStencil: Boolean,
+        scissor: AG.Scissor?,
+	) {
+        log("clear($color, $depth, $stencil, $clearColor, $clearDepth, $clearStencil)", Kind.CLEAR)
+    }
 
 	override var backWidth: Int = width; set(value) { field = value; log("backWidth = $value", Kind.METRICS) }
 	override var backHeight: Int = height; set(value) { field = value; log("backHeight = $value", Kind.METRICS) }

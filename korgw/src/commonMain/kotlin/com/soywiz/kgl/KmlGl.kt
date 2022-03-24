@@ -298,6 +298,7 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     val RGB5_A1: Int = 0x8057
     val RGB565: Int = 0x8D62
     val DEPTH_COMPONENT16: Int = 0x81A5
+    val STENCIL_INDEX: Int = 0x1901
     val STENCIL_INDEX8: Int = 0x8D48
     val RENDERBUFFER_WIDTH: Int = 0x8D42
     val RENDERBUFFER_HEIGHT: Int = 0x8D43
@@ -314,6 +315,8 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     val FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE: Int = 0x8CD3
     val COLOR_ATTACHMENT0: Int = 0x8CE0
     val DEPTH_ATTACHMENT: Int = 0x8D00
+    val DEPTH_STENCIL_ATTACHMENT = 0x821A
+    val DEPTH_STENCIL         = 0x84F9
     val STENCIL_ATTACHMENT: Int = 0x8D20
     val NONE: Int = 0x0000
     val FRAMEBUFFER_COMPLETE: Int = 0x8CD5

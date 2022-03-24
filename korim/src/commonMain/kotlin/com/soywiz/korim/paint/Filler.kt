@@ -51,8 +51,8 @@ class BitmapFiller : BaseFiller() {
         fill.transform.inverted(this.fillTrans)
         compTrans.apply {
             identity()
-            multiply(this, stateTrans)
-            multiply(this, fillTrans)
+            premultiply(fillTrans)
+            premultiply(stateTrans)
         }
     }
 
@@ -86,41 +86,31 @@ class BitmapFiller : BaseFiller() {
 }
 
 class GradientFiller : BaseFiller() {
-    private val NCOLORS = 256
+    companion object {
+        const val NCOLORS = 256
+    }
     private val colors = RgbaPremultipliedArray(NCOLORS)
     private lateinit var fill: GradientPaint
-    private val stateInv: Matrix = Matrix()
-
-    private fun stopN(n: Int): Int = (fill.stops[n] * NCOLORS).toInt()
+    private val stateTrans = Matrix()
+    private val fillTrans = Matrix()
+    private val compTrans = Matrix()
 
     fun set(fill: GradientPaint, state: Context2d.State) = this.apply {
         this.fill = fill
-        state.transform.inverted(this.stateInv)
-
-        when (fill.numberOfStops) {
-            0, 1 -> {
-                val color = if (fill.numberOfStops == 0) Colors.FUCHSIA else RGBA(fill.colors.first())
-                val pcolor = color.premultiplied
-                for (n in 0 until NCOLORS) colors[n] = pcolor
-            }
-            else -> {
-                for (n in 0 until stopN(0)) colors[n] = RGBA(fill.colors.first()).premultiplied
-                for (n in 0 until fill.numberOfStops - 1) {
-                    val stop0 = stopN(n + 0)
-                    val stop1 = stopN(n + 1)
-                    val color0 = RGBA(fill.colors.getAt(n + 0))
-                    val color1 = RGBA(fill.colors.getAt(n + 1))
-                    for (s in stop0 until stop1) {
-                        val ratio = (s - stop0).toDouble() / (stop1 - stop0).toDouble()
-                        colors[s] = RGBA.interpolate(color0, color1, ratio).premultiplied
-                    }
-                }
-                for (n in stopN(fill.numberOfStops - 1) until NCOLORS) colors.ints[n] = fill.colors.last()
-            }
+        state.transform.inverted(this.stateTrans)
+        fill.transform.inverted(this.fillTrans)
+        compTrans.apply {
+            identity()
+            premultiply(fillTrans)
+            premultiply(stateTrans)
         }
+
+        fill.fillColors(colors)
+        //println("colors=$colors")
     }
 
     private fun color(ratio: Double): RGBAPremultiplied {
+        //println("ratio=$ratio")
         return colors[(ratio.clamp01() * (NCOLORS - 1)).toInt()]
     }
 
@@ -128,6 +118,6 @@ class GradientFiller : BaseFiller() {
     // @TODO: This doesn't seems to work proprely
     override fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int) {
         //for (n in x0..x1) data[n] = color(mat.transformX(n.toDouble(), y.toDouble()).clamp01())
-        for (n in x0..x1) data[offset + n] = color(fill.getRatioAt(n.toDouble(), y.toDouble(), stateInv))
+        for (n in x0..x1) data[offset + n] = color(fill.getRatioAt(n.toDouble(), y.toDouble(), compTrans))
     }
 }

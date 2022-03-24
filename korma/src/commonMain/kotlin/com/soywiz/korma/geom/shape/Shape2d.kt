@@ -368,6 +368,9 @@ fun VectorPath.getPoints2(out: PointArrayList = PointArrayList()): PointArrayLis
 inline fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
+inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
+inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
+
 inline fun approximateCurve(
     curveSteps: Int,
     crossinline compute: (ratio: Double, get: (x: Double, y: Double) -> Unit) -> Unit,

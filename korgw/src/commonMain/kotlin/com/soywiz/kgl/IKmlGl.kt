@@ -160,5 +160,6 @@ interface IKmlGl {
     fun drawArraysInstanced(mode: Int, first: Int, count: Int, instancecount: Int): Unit = unsupported("Not supported instanced drawing")
     fun drawElementsInstanced(mode: Int, count: Int, type: Int, indices: Int, instancecount: Int): Unit = unsupported("Not supported instanced drawing")
     fun vertexAttribDivisor(index: Int, divisor: Int): Unit = unsupported()
+    fun renderbufferStorageMultisample(target: Int, samples: Int, internalformat: Int, width: Int, height: Int): Unit = unsupported("Not supported MSAA")
 }
 

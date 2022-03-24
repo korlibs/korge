@@ -48,6 +48,7 @@ interface AGWindow : AGContainer {
 interface AGFeatures {
     val graphicExtensions: Set<String> get() = emptySet()
     val isInstancedSupported: Boolean get() = false
+    val isStorageMultisampleSupported: Boolean get() = false
     val isFloatTextureSupported: Boolean get() = false
 }
 
@@ -150,11 +151,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
         fun copyFrom(that: Scissor): Scissor = setTo(that.x, that.y, that.width, that.height)
 
-        fun setTo(x: Double, y: Double, width: Double, height: Double): Scissor = this.apply {
+        fun setTo(x: Double, y: Double, width: Double, height: Double): Scissor {
             this.x = x
             this.y = y
             this.width = width
             this.height = height
+            return this
         }
 
         fun setTo(x: Int, y: Int, width: Int, height: Int): Scissor =
@@ -582,6 +584,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     //open val supportInstancedDrawing: Boolean get() = false
 
+    @Deprecated("Use draw(Batch) or drawV2() instead")
     fun draw(
         vertices: Buffer,
         program: Program,
@@ -762,6 +765,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         open val id: Int = -1
         private var cachedTexVersion = -1
         private var _tex: Texture? = null
+        protected var nsamples: Int = 1
+        protected var hasDepth: Boolean = true
+        protected var hasStencil: Boolean = true
 
         val tex: AG.Texture
             get() {
@@ -781,6 +787,21 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
                 this.fullWidth != fullWidth || this.fullHeight != fullHeight
             ) {
                 super.setSize(x, y, width, height, fullWidth, fullHeight)
+                dirty = true
+            }
+        }
+
+        fun setSamples(samples: Int) {
+            if (this.nsamples != samples) {
+                nsamples = samples
+                dirty = true
+            }
+        }
+
+        fun setExtra(hasDepth: Boolean = true, hasStencil: Boolean = true) {
+            if (this.hasDepth != hasDepth || this.hasStencil != hasStencil) {
+                this.hasDepth = hasDepth
+                this.hasStencil = hasStencil
                 dirty = true
             }
         }
@@ -811,13 +832,20 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         stencil: Int = 0,
         clearColor: Boolean = true,
         clearDepth: Boolean = true,
-        clearStencil: Boolean = true
+        clearStencil: Boolean = true,
+        scissor: AG.Scissor? = null
     ) = Unit
+
+    fun clearStencil(stencil: Int = 0, scissor: AG.Scissor? = null) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
+    fun clearDepth(depth: Float = 1f, scissor: AG.Scissor? = null) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
+    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AG.Scissor? = null) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
     //@PublishedApi
     @KoragExperimental
     var currentRenderBuffer: BaseRenderBuffer? = null
         private set
+
+    val currentRenderBufferOrMain: BaseRenderBuffer get() = currentRenderBuffer ?: mainRenderBuffer
 
     val renderingToTexture get() = currentRenderBuffer !== mainRenderBuffer && currentRenderBuffer !== null
 
@@ -848,12 +876,14 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
 
     @KoragExperimental
-    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int): RenderBuffer {
+    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1): RenderBuffer {
         val realWidth = fixWidthForRenderToTexture(width)
         val realHeight = fixHeightForRenderToTexture(height)
         val rb = renderBuffers.alloc()
         frameRenderBuffers += rb
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)
+        rb.setExtra(hasDepth = hasDepth, hasStencil = hasStencil)
+        rb.setSamples(msamples)
         //println("unsafeAllocateFrameRenderBuffer($width, $height), real($realWidth, $realHeight), $rb")
         return rb
     }
@@ -865,8 +895,13 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     }
 
     @OptIn(KoragExperimental::class)
-    inline fun renderToTexture(width: Int, height: Int, render: (rb: RenderBuffer) -> Unit, use: (tex: Texture, texWidth: Int, texHeight: Int) -> Unit) {
-        val rb = unsafeAllocateFrameRenderBuffer(width, height)
+    inline fun renderToTexture(
+        width: Int, height: Int,
+        render: (rb: RenderBuffer) -> Unit,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        use: (tex: Texture, texWidth: Int, texHeight: Int) -> Unit
+    ) {
+        val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth, hasStencil, msamples)
         try {
             setRenderBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent
@@ -878,12 +913,16 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    inline fun renderToBitmap(bmp: Bitmap32, render: () -> Unit) {
+    inline fun renderToBitmap(
+        bmp: Bitmap32,
+        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        render: () -> Unit
+    ) {
         renderToTexture(bmp.width, bmp.height, render = {
             render()
             //println("renderToBitmap.readColor: $currentRenderBuffer")
             readColor(bmp)
-        }, { _, _, _ -> })
+        }, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { _, _, _ -> })
     }
 
     fun setRenderBuffer(renderBuffer: BaseRenderBuffer?): BaseRenderBuffer? {
@@ -896,6 +935,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     open fun readColor(bitmap: Bitmap32): Unit = TODO()
     open fun readDepth(width: Int, height: Int, out: FloatArray): Unit = TODO()
+    open fun readStencil(bitmap: Bitmap8): Unit = TODO()
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: Texture, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
     fun readColor() = Bitmap32(backWidth, backHeight).apply { readColor(this) }
@@ -907,14 +947,14 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
         val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
         val program = Program(VertexShader {
-            DefaultShaders.apply {
-                v_Tex setTo a_Tex
-                out setTo vec4(a_Pos, 0f.lit, 1f.lit)
+            DefaultShaders {
+                SET(v_Tex, a_Tex)
+                SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
             }
         }, FragmentShader {
-            DefaultShaders.apply {
+            DefaultShaders {
                 //out setTo vec4(1f, 1f, 0f, 1f)
-                out setTo texture2D(u_Tex, v_Tex["xy"])
+                SET(out, texture2D(u_Tex, v_Tex["xy"]))
             }
         })
         val uniforms = UniformValues()

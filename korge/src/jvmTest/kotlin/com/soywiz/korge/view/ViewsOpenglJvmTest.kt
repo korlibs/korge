@@ -2,10 +2,12 @@ package com.soywiz.korge.view
 
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
+import com.soywiz.korge.render.*
 import com.soywiz.korge.test.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.*
 import org.junit.*
 
 class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
@@ -29,6 +31,34 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
         }
         views.render()
         assertEqualsFileReference("korge/render/ViewsJvmTestOpenglFilterIdentityDefaultRenderBufferSize.log", logGl.getLogAsString())
+    }
+
+    @Test
+    fun testRenderToTextureWithStencil() {
+        views.stage += object : View() {
+            override fun renderInternal(ctx: RenderContext) {
+                ctx.renderToTexture(100, 100, render = {
+                   ctx.useCtx2d { ctx2d ->
+                       ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.RED)
+                   }
+                }, hasStencil = true) { tex ->
+                    ctx.useBatcher { batcher ->
+                        batcher.drawQuad(tex)
+                    }
+                }
+                ctx.renderToTexture(100, 100, render = {
+                    ctx.useCtx2d { ctx2d ->
+                        ctx2d.rect(0.0, 0.0, 100.0, 100.0, Colors.BLUE)
+                    }
+                }, hasDepth = true, hasStencil = true) { tex ->
+                    ctx.useBatcher { batcher ->
+                        batcher.drawQuad(tex, 100f, 0f)
+                    }
+                }
+            }
+        }
+        views.render()
+        assertEqualsFileReference("korge/render/ViewsJvmTestOpenglRenderToTextureWithStencil.log", logGl.getLogAsString())
     }
 
 }
