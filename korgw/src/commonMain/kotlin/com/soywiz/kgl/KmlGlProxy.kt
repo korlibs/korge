@@ -1524,7 +1524,7 @@ class LogKmlGlProxy(parent: KmlGl = KmlGlDummy, var logBefore: Boolean = false, 
         if (logAfter) println("after: $name ($params) = $result")
 	}
 }
-class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
+open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
     init {
         //println("CheckErrorsKmlGlProxy")
     }

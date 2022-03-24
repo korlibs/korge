@@ -55,21 +55,25 @@ class KmlGlState(val gl: KmlGl) {
         }
 
         gl.getIntegerv(gl.CURRENT_PROGRAM, currentProgram)
-        //println("maxAttribs: $maxAttribs")
-        for (n in 0 until MAX_ATTRIB) {
-            //println(gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED))
-            vertexAttribEnabled[n] = gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED) != 0
-            if (vertexAttribEnabled[n]) {
-                //println("$n: ${vertexAttribEnabled[n]}")
-                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_SIZE, vertexAttribSize[n])
-                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_TYPE, vertexAttribType[n])
-                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_NORMALIZED, vertexAttribNormal[n])
-                gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_STRIDE, vertexAttribStride[n])
-                gl.getVertexAttribPointerv(n, gl.VERTEX_ATTRIB_ARRAY_POINTER, vertexAttribPointer[n])
+        //if (currentProgram.getAlignedInt32(0) > 0) {
+        run {
+            //println("maxAttribs: $maxAttribs")
+            for (n in 0 until MAX_ATTRIB) {
+                //println(gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED))
+                vertexAttribEnabled[n] = gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_ENABLED) != 0
+                if (vertexAttribEnabled[n]) {
+                    //println("$n: ${vertexAttribEnabled[n]}")
+                    gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_SIZE, vertexAttribSize[n])
+                    gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_TYPE, vertexAttribType[n])
+                    gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_NORMALIZED, vertexAttribNormal[n])
+                    gl.getVertexAttribiv(n, gl.VERTEX_ATTRIB_ARRAY_STRIDE, vertexAttribStride[n])
+                    gl.getVertexAttribPointerv(n, gl.VERTEX_ATTRIB_ARRAY_POINTER, vertexAttribPointer[n])
+                }
             }
+            arrayBufferBinding = gl.getIntegerv(gl.ARRAY_BUFFER_BINDING)
+            elementArrayBufferBinding = gl.getIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING)
         }
-        arrayBufferBinding = gl.getIntegerv(gl.ARRAY_BUFFER_BINDING)
-        elementArrayBufferBinding = gl.getIntegerv(gl.ELEMENT_ARRAY_BUFFER_BINDING)
+        gl.getError() // Clears the error
     }
 
     fun saveEnable() { for (n in enabledList.indices) enabledArray[n] = gl.isEnabled(enabledList[n]) }
@@ -96,22 +100,26 @@ class KmlGlState(val gl: KmlGl) {
 
         gl.useProgram(currentProgram.i32[0])
         //gl.bindAttribLocation()
-        for (n in 0 until MAX_ATTRIB) {
-            gl.enableDisableVertexAttribArray(n, vertexAttribEnabled[n])
-            if (vertexAttribEnabled[n]) {
-                val ptr = vertexAttribPointer[n].getAlignedInt64(0)
-                gl.vertexAttribPointer(
-                    n,
-                    vertexAttribSize[n].i32[0],
-                    vertexAttribType[n].i32[0],
-                    vertexAttribNormal[n].i32[0] != 0,
-                    vertexAttribStride[n].i32[0],
-                    ptr
-                )
+        //if (currentProgram.getAlignedInt32(0) > 0) {
+        run {
+            for (n in 0 until MAX_ATTRIB) {
+                gl.enableDisableVertexAttribArray(n, vertexAttribEnabled[n])
+                if (vertexAttribEnabled[n]) {
+                    val ptr = vertexAttribPointer[n].getAlignedInt64(0)
+                    gl.vertexAttribPointer(
+                        n,
+                        vertexAttribSize[n].i32[0],
+                        vertexAttribType[n].i32[0],
+                        vertexAttribNormal[n].i32[0] != 0,
+                        vertexAttribStride[n].i32[0],
+                        ptr
+                    )
+                }
             }
         }
         gl.bindBuffer(gl.ARRAY_BUFFER, arrayBufferBinding)
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementArrayBufferBinding)
+        gl.getError() // Clears the error
 
         /*
         gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())

@@ -16,6 +16,7 @@ import java.io.*
 import java.lang.reflect.*
 import javax.swing.*
 
+//open class Win32KmlGl : CheckErrorsKmlGlProxy(NativeKgl(Win32GL)) {
 open class Win32KmlGl : NativeKgl(Win32GL) {
     companion object : Win32KmlGl()
 
@@ -26,6 +27,7 @@ open class Win32KmlGl : NativeKgl(Win32GL) {
         if (vertexArrayCachedVersion != contextVersion) {
             vertexArrayCachedVersion = contextVersion
             val out = intArrayOf(-1)
+            //checkError("before glGenVertexArrays")
             Win32GL.glGenVertexArrays(1, out)
             checkError("glGenVertexArrays")
             vertexArray = out[0]
@@ -288,11 +290,12 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
 
         Win32KmlGl.apply {
             Console.trace("GL_VERSION: ${getString(VERSION)}, GL_VENDOR: ${getString(VENDOR)}")
-            Console.trace(
-                "GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, " +
-                    "GL_BLUE_BITS: ${getIntegerv(BLUE_BITS)}, GL_ALPHA_BITS: ${getIntegerv(ALPHA_BITS)}, " +
-                    "GL_DEPTH_BITS: ${getIntegerv(DEPTH_BITS)}, GL_STENCIL_BITS: ${getIntegerv(STENCIL_BITS)}"
-            )
+            // Only available on GL_ES?
+            //Console.trace(
+            //    "GL_RED_BITS: ${getIntegerv(RED_BITS)}, GL_GREEN_BITS: ${getIntegerv(GREEN_BITS)}, " +
+            //        "GL_BLUE_BITS: ${getIntegerv(BLUE_BITS)}, GL_ALPHA_BITS: ${getIntegerv(ALPHA_BITS)}, " +
+            //        "GL_DEPTH_BITS: ${getIntegerv(DEPTH_BITS)}, GL_STENCIL_BITS: ${getIntegerv(STENCIL_BITS)}"
+            //)
             //println()
         }
 

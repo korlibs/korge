@@ -2,6 +2,7 @@ package com.soywiz.kgl
 
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.krypto.encoding.*
 
 class KmlGlException(message: String) : RuntimeException(message)
 
@@ -62,6 +63,6 @@ fun KmlGl.getErrorString(error: Int = getError()): String {
 fun KmlGl.checkError(message: String) {
     val error = getError()
     if (error != NO_ERROR) {
-        Console.error("glGetError after $message")
+        Console.error("glGetError after $message with error $error (${error.hex})")
     }
 }

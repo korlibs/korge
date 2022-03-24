@@ -148,7 +148,18 @@ abstract class BaseAwtGameWindow : GameWindow() {
     val state: KmlGlState by lazy { ag.createGlState() }
 
     fun paintInContext(g: Graphics, info: BaseOpenglContext.ContextInfo) {
-        state.keep {
+        // We only have to keep the state on mac, in linux and windows, the context/state is not shared
+        if (OS.isMac) {
+            state.keep {
+                paintInContextInternal(g, info)
+            }
+        } else {
+            paintInContextInternal(g, info)
+        }
+    }
+
+    fun paintInContextInternal(g: Graphics, info: BaseOpenglContext.ContextInfo) {
+        run {
             //run {
             ctx?.swapInterval(1)
 
