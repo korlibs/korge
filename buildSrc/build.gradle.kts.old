@@ -5,17 +5,9 @@ plugins {
     publishing
     `maven-publish`
     signing
-    //kotlin("multiplatform")
-    //kotlin("gradle-plugin")
 }
 
 val gradleProperties = Properties().also { it.load(File(rootDir, "../gradle.properties").readText().reader()) }
-
-//Properties().also { it.load() }
-
-//val kotlinVersion = "1.5.31"
-//val kotlinVersion = "1.6.0"
-//val androidToolsBuildGradleVersion = "4.2.0"
 
 val kotlinVersion = gradleProperties["kotlinVersion"].toString()
 val androidBuildGradleVersion = when {
@@ -28,7 +20,6 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
     implementation("com.google.code.gson:gson:2.8.6")
 }
-
 
 repositories {
     mavenLocal()

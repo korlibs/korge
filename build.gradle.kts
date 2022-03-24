@@ -67,30 +67,6 @@ allprojects {
 	}
 }
 
-fun guessAndroidSdkPath(): String? {
-    val userHome = System.getProperty("user.home")
-    return listOfNotNull(
-        System.getenv("ANDROID_HOME"),
-        "$userHome/AppData/Local/Android/sdk",
-        "$userHome/Library/Android/sdk",
-        "$userHome/Android/Sdk",
-        "$userHome/AndroidSDK",  // location of sdkmanager on linux
-        "/usr/lib/android-sdk",  // location on debian based linux (sudo apt install android-sdk)
-        "/Library/Android/sdk"   // some other flavor of linux
-    ).firstOrNull { File(it).exists() }
-}
-
-fun hasAndroidSdk(): Boolean {
-    val env = System.getenv("ANDROID_SDK_ROOT")
-    if (env != null) return true
-    val localPropsFile = File(rootProject.rootDir, "local.properties")
-    if (!localPropsFile.exists()) {
-        val sdkPath = guessAndroidSdkPath() ?: return false
-        localPropsFile.writeText("sdk.dir=${sdkPath.replace("\\", "/")}")
-    }
-    return true
-}
-
 val hasAndroidSdk by lazy { hasAndroidSdk() }
 
 // Required by RC
@@ -600,6 +576,8 @@ nonSamples {
     */
 }
 
+internal var _webServer: DecoratedHttpServer? = null
+
 samples {
     // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
     if (isMacos && isArm) {
@@ -627,9 +605,130 @@ samples {
                 javaAddOpens.forEach { jvmArgs(it) }
             }
         }
-        val runJs by creating {
+
+        // esbuild
+        run {
+            fun runServer(blocking: Boolean) {
+                if (_webServer == null) {
+                    val address = "0.0.0.0"
+                    val port = 8080
+                    val server = staticHttpServer(File(project.buildDir, "www"), address = address, port = port)
+                    _webServer = server
+                    try {
+                        val openAddress = when (address) {
+                            "0.0.0.0" -> "127.0.0.1"
+                            else -> address
+                        }
+                        openBrowser("http://$openAddress:${server.port}/index.html")
+                        if (blocking) {
+                            while (true) {
+                                Thread.sleep(1000L)
+                            }
+                        }
+                    } finally {
+                        if (blocking) {
+                            println("Stopping web server...")
+                            server.server.stop(0)
+                            _webServer = null
+                        }
+                    }
+                }
+                _webServer?.updateVersion?.incrementAndGet()
+            }
+
+            val userGradleFolder = File(System.getProperty("user.home"), ".gradle")
+
+            val esbuildVersion = "0.12.22"
+            val wwwFolder = File(buildDir, "www")
+
+            val esbuildFolder = File(if (userGradleFolder.isDirectory) userGradleFolder else rootProject.buildDir, "esbuild")
+            val isWindows = org.apache.tools.ant.taskdefs.condition.Os.isFamily(org.apache.tools.ant.taskdefs.condition.Os.FAMILY_WINDOWS)
+            val esbuildCmdUnix = File(esbuildFolder, "bin/esbuild")
+            val esbuildCmdCheck = if (isWindows) File(esbuildFolder, "esbuild.cmd") else esbuildCmdUnix
+            val esbuildCmd = if (isWindows) File(esbuildFolder, "node_modules/esbuild/esbuild.exe") else esbuildCmdUnix
+
+            val npmInstallEsbuild = "npmInstallEsbuild"
+
+            val env by lazy { org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootPlugin.apply(project.rootProject).requireConfigured() }
+            val ENV_PATH by lazy {
+                val NODE_PATH = File(env.nodeExecutable).parent
+                val PATH_SEPARATOR = File.pathSeparator
+                val OLD_PATH = System.getenv("PATH")
+                "$NODE_PATH$PATH_SEPARATOR$OLD_PATH"
+            }
+
+            if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
+                rootProject.tasks.create(npmInstallEsbuild, Exec::class) {
+                    val task = this
+                    task.dependsOn("kotlinNodeJsSetup")
+                    task.onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
+
+                    val esbuildVersion = esbuildVersion
+                    task.doFirst {
+                        val npmCmd = arrayOf(
+                            File(env.nodeExecutable),
+                            File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                                ?: File(env.nodeDir, "node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
+                                ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
+                        )
+
+                        task.environment("PATH", ENV_PATH)
+                        task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
+                    }
+                }
+            }
+
+            afterEvaluate {
+                val browserEsbuildResources by tasks.creating(Copy::class) {
+                    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+                    from(project.tasks.getByName("jsProcessResources").outputs.files)
+                    afterEvaluate {
+                        from(project.tasks.getByName("korgeProcessedResourcesJsMain").outputs.files)
+                    }
+                    //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
+                    into(wwwFolder)
+                }
+                val compileDevelopmentExecutableKotlinJs = "compileDevelopmentExecutableKotlinJs"
+                val runJs by creating(Exec::class) {
+                    val task = this
+                    group = "run"
+                    //dependsOn("jsBrowserDevelopmentRun")
+                    dependsOn(browserEsbuildResources)
+                    dependsOn("::$npmInstallEsbuild")
+                    dependsOn(compileDevelopmentExecutableKotlinJs)
+                    //task.dependsOn(browserPrepareEsbuild)
+
+                    val jsPath = project.tasks.getByName(compileDevelopmentExecutableKotlinJs).outputs.files.first {
+                        it.extension.toLowerCase() == "js"
+                    }
+
+                    val output = File(wwwFolder, "${project.name}.js")
+                    task.inputs.file(jsPath)
+                    task.outputs.file(output)
+                    //task.environment("PATH", ENV_PATH)
+                    task.commandLine(ArrayList<Any>().apply {
+                        add(esbuildCmd)
+                        //add("--watch",)
+                        add("--bundle")
+                        add("--minify")
+                        add("--sourcemap=external")
+                        add(jsPath)
+                        add("--outfile=$output")
+                        // @TODO: Close this command on CTRL+C
+                        //if (run) add("--servedir=$wwwFolder")
+                    })
+
+                    task.doLast {
+                        runServer(!project.gradle.startParameter.isContinuous)
+                    }
+                }
+            }
+        }
+
+        val runJsWebpack by creating {
             group = "run"
-            dependsOn("jsBrowserDevelopmentRun")
+            //dependsOn("jsBrowserDevelopmentRun")
+            dependsOn("jsBrowserProductionRun")
         }
         fun Task.dependsOnNativeTask(kind: String) {
             when {

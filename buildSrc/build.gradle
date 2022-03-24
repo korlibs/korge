@@ -1,0 +1,33 @@
+plugins {
+    id "org.gradle.kotlin.kotlin-dsl" version "2.1.7"
+    id "publishing"
+    id "maven-publish"
+    id "signing"
+}
+
+def gradleProperties = new Properties()
+gradleProperties.load(new StringReader(new File(rootDir, "../gradle.properties").text))
+
+def kotlinVersion = gradleProperties["kotlinVersion"].toString()
+def androidBuildGradleVersion
+if (System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")) {
+    androidBuildGradleVersion = "4.2.0"
+} else {
+    androidBuildGradleVersion = gradleProperties["androidBuildGradleVersion"].toString()
+}
+
+dependencies {
+    implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    implementation("com.google.code.gson:gson:2.8.6")
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    google()
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions.suppressWarnings = true
+}
