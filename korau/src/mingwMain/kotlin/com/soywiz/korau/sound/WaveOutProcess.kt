@@ -6,7 +6,7 @@ import kotlinx.cinterop.*
 import platform.windows.*
 import kotlin.native.concurrent.*
 
-private object WINMM : DynamicLibrary("winmm.dll") {
+internal object WINMM : DynamicLibrary("winmm.dll") {
     val waveOutOpenExt by func<(phwo: LPHWAVEOUT?, uDeviceID: UINT, pwfx: LPCWAVEFORMATEX?, dwCallback: DWORD_PTR, dwInstance: DWORD_PTR, fdwOpen: DWORD) -> MMRESULT>()
     val waveOutCloseExt by func<(hwo: HWAVEOUT?) -> MMRESULT>()
     val waveOutResetExt by func<(hwo: HWAVEOUT?) -> MMRESULT>()
