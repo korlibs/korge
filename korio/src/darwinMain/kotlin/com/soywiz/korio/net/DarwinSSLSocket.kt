@@ -108,7 +108,13 @@ class DarwinSSLSocket {
         worker.requestTermination()
     }
 
-    val connected: Boolean get() = ioctlSocketFionRead(sockfd) >= 0
+    val connected: Boolean get() {
+        if (sockfd < 0 || ctx == null) return false
+        return when (SSLGetSessionState(ctx)) {
+            SSLSessionState.kSSLClosed, SSLSessionState.kSSLAborted -> false
+            else -> ioctlSocketFionRead(sockfd) >= 0
+        }
+    }
 
     suspend fun write(data: ByteArray, offset: Int = 0, size: Int = data.size - offset) {
         SSLWrite(ctx, data, offset, size)
@@ -146,7 +152,7 @@ class DarwinSSLSocket {
         private fun swapBytes(v: UShort): UShort =
             (((v.toInt() and 0xFF) shl 8) or ((v.toInt() ushr 8) and 0xFF)).toUShort()
 
-        private suspend fun SSLEnsure(ctx: SSLContextRef?) {
+        private suspend fun SSLEnsure(ctx: SSLContextRef?): Boolean {
             while (true) {
                 val state = SSLGetSessionState(ctx)
                 //println("state=$state")
@@ -161,14 +167,13 @@ class DarwinSSLSocket {
                         //SSLHandshake(ctx)
                         kotlinx.coroutines.delay(1L)
                     }
-                    SSLSessionState.kSSLClosed -> error("closed")
-                    SSLSessionState.kSSLAborted -> error("aborted")
+                    SSLSessionState.kSSLClosed -> return false
+                    SSLSessionState.kSSLAborted -> return false
                     SSLSessionState.kSSLConnected -> break
                 }
-
             }
+            return true
             //println("state=${SSLGetSessionState(ctx)}")
-
         }
 
         private suspend fun SSLRead(
@@ -178,7 +183,7 @@ class DarwinSSLSocket {
             size: Int = data.size - offset
         ): Int {
             if (data.isEmpty() || size == 0) return 0
-            SSLEnsure(ctx)
+            if (!SSLEnsure(ctx)) return -1
 
             memScoped {
                 val processed = alloc<size_tVar>()
@@ -188,21 +193,27 @@ class DarwinSSLSocket {
                         SSLRead(ctx, dataPin.addressOf(offset), size.convert(), processed.ptr)
                     }
 
-                    if (result == errSSLWouldBlock) {
-                        kotlinx.coroutines.delay(1L)
-                        continue
+                    when (result) {
+                        0 -> {
+                            return processed.value.toInt()
+                        }
+                        errSSLWouldBlock -> {
+                            kotlinx.coroutines.delay(1L)
+                            continue
+                        }
+                        errSSLClosedGraceful -> {
+                            return 0
+                        }
+                        else -> {
+                            error("SSLRead: ${SecCopyErrorMessageString(result, null)?.toKString()}")
+                        }
                     }
 
                     //val resultString = SecCopyErrorMessageString(result, null)?.toKString()
 
                     //println("SSLRead.result=$result, resultString=$resultString")
                     //println("SSLRead.processed=${processed.value}")
-
-                    if (result != 0) error("SSLRead: ${SecCopyErrorMessageString(result, null)?.toKString()}")
-
-                    return processed.value.toInt()
                 }
-
             }
 
             TODO()
@@ -215,7 +226,7 @@ class DarwinSSLSocket {
             size: Int = data.size - offset
         ) {
             if (data.isEmpty() || size == 0) return
-            SSLEnsure(ctx)
+            if (!SSLEnsure(ctx)) return
 
             memScoped {
                 val processed = alloc<size_tVar>()
