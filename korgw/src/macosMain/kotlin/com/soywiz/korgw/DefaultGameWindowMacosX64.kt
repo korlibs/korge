@@ -19,7 +19,8 @@ import platform.CoreGraphics.*
 import platform.CoreVideo.*
 import platform.Foundation.*
 import platform.darwin.*
-import kotlin.native.concurrent.AtomicInt
+import kotlin.native.SharedImmutable
+import kotlin.native.concurrent.*
 
 private fun ByteArray.toNsData(): NSData {
     val array = this
@@ -29,8 +30,6 @@ private fun ByteArray.toNsData(): NSData {
         }
     }
 }
-
-val frameRequestNumber = AtomicInt(0)
 
 class MyNSWindow(contentRect: kotlinx.cinterop.CValue<platform.Foundation.NSRect /* = platform.CoreGraphics.CGRect */>, styleMask: platform.AppKit.NSWindowStyleMask /* = kotlin.ULong */, backing: platform.AppKit.NSBackingStoreType /* = kotlin.ULong */, defer: kotlin.Boolean) : NSWindow(
     contentRect, styleMask, backing, defer
@@ -240,7 +239,7 @@ class MyNSOpenGLView(
     override fun validAttributesForMarkedText(): List<*>? = null//.also { println("validAttributesForMarkedText") }
 }
 
-class MyDefaultGameWindow : GameWindow(), DoRenderizable {
+class MyDefaultGameWindow : GameWindow() {
     val gameWindow = this
     val gameWindowStableRef = StableRef.create(gameWindow)
     val app = NSApplication.sharedApplication()
@@ -362,11 +361,6 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
     @Suppress("RemoveRedundantCallsOfConversionMethods")
     internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
     internal var lastBackingScaleFactor = 0.0
-
-    override fun doRenderRequest() {
-        //dispatch_async(dispatch_get_main_queue(), ::doRender)
-        frameRequestNumber.increment()
-    }
 
     fun doRender() {
         //println("doRender[0]")
@@ -555,16 +549,11 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
 
                     doRender()
                     val useDisplayLink = Environment["MACOS_USE_DISPLAY_LINK"] != "false"
-                    when {
-                        useDisplayLink -> {
-                            createDisplayLink()
-                            timer = NSTimer.scheduledTimerWithTimeInterval(1.0 / 480.0, true, ::timerDisplayLink)
-                        }
-                        else -> {
-                            timer = NSTimer.scheduledTimerWithTimeInterval(1.0 / 60.0, true, ::timer)
-                        }
+                    if (useDisplayLink && createDisplayLink()) {
+                        //timer = NSTimer.scheduledTimerWithTimeInterval(1.0 / 480.0, true, ::timerDisplayLink)
+                    } else {
+                        timer = NSTimer.scheduledTimerWithTimeInterval(1.0 / 60.0, true, ::timer)
                     }
-
                 } catch (e: Throwable) {
                     e.printStackTrace()
                     window.close()
@@ -574,7 +563,7 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
             val arena = Arena()
             val displayLink = arena.alloc<CVDisplayLinkRefVar>()
 
-            fun createDisplayLink() {
+            fun createDisplayLink(): Boolean {
                 //println("createDisplayLink[1]")
                 val displayID = CGMainDisplayID()
                 val error = CVDisplayLinkCreateWithCGDisplay(displayID, displayLink.ptr)
@@ -585,20 +574,12 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
                     CVDisplayLinkSetOutputCallback(displayLink.value, staticCFunction(::displayCallback), gameWindowStableRef.asCPointer())
                     CVDisplayLinkStart(displayLink.value)
                     //println("createDisplayLink[4]")
+                    return true
+                } else {
+                    return false
                 }
                 //println("createDisplayLink[5]")
             }
-
-            var displayedFrame = -1
-            fun timerDisplayLink(timer: NSTimer?) {
-                val frameRequest = frameRequestNumber.value
-                if (displayedFrame != frameRequest) {
-                    displayedFrame = frameRequest
-                    doRender()
-                }
-            }
-
-            // public typealias CVDisplayLinkOutputCallback = CPointer<CFunction<(CVDisplayLinkRef?, CPointer<CVTimeStamp>?, CPointer<CVTimeStamp>?, CVOptionFlags, CPointer<CVOptionFlagsVar>?, COpaquePointer?) -> platform.CoreVideo.CVReturn>>
 
             private fun timer(timer: NSTimer?) {
                 //println("TIMER")
@@ -618,24 +599,31 @@ class MyDefaultGameWindow : GameWindow(), DoRenderizable {
 
 actual fun CreateDefaultGameWindow(): GameWindow = MyDefaultGameWindow()
 
-interface DoRenderizable {
-    fun doRenderRequest()
+private val atomicDisplayLinkContext = AtomicReference<COpaquePointer?>(null)
+
+@SharedImmutable
+val doDisplayCallbackRender: () -> Unit = {
+    val gameWindow = atomicDisplayLinkContext.value?.asStableRef<MyDefaultGameWindow>()
+    gameWindow?.get()?.doRender()
 }
 
-fun displayCallback(displayLink: CVDisplayLinkRef?, inNow: CPointer<CVTimeStamp>?, inOutputTime: CPointer<CVTimeStamp>?, flagsIn: CVOptionFlags, flagsOut: CPointer<CVOptionFlagsVar>?, displayLinkContext: COpaquePointer?): CVReturn {
+@Suppress("UNUSED_PARAMETER")
+fun displayCallback(
+    displayLink: CVDisplayLinkRef?,
+    inNow: CPointer<CVTimeStamp>?,
+    inOutputTime: CPointer<CVTimeStamp>?,
+    flagsIn: CVOptionFlags,
+    flagsOut: CPointer<CVOptionFlagsVar>?,
+    displayLinkContext: COpaquePointer?
+): CVReturn {
     initRuntimeIfNeeded()
-    frameRequestNumber.increment()
-    /*
-    //frameRequestNumber.increment()
-    //val doRenderizable = displayLinkContext!!.asStableRef<DoRenderizable>().get()
-    autoreleasepool {
-        val doRenderizable = displayLinkContext!!.asStableRef<DoRenderizable>().get()
-        doRenderizable.doRenderRequest()
-        //println("displayCallback[0]")
-        //doRenderizable.doRenderRequest()
-        //println("displayCallback[1]")
-    }
-     */
+    atomicDisplayLinkContext.value = displayLinkContext
+    // Wait for this in the case we take more time than the frame time to not collapse this
+    NSOperationQueue.mainQueue.addOperations(
+        listOf(NSBlockOperation().also { it.addExecutionBlock(doDisplayCallbackRender) }),
+        waitUntilFinished = true
+    )
+    //NSOperationQueue.mainQueue.addOperationWithBlock(doDisplayCallbackRender)
     return kCVReturnSuccess
 }
 

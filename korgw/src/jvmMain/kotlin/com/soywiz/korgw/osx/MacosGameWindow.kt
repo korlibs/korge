@@ -115,7 +115,9 @@ class MacosGLContext(var contentView: Long, val window: Long, val quality: GameW
     }
 }
 
-internal val isOSXMainThread get() = OS.isMac && (NSClass("NSThread").msgSend("isMainThread") != 0L)
+val NSThreadClass = NSClass("NSThread")
+
+internal val isOSXMainThread get() = OS.isMac && (NSThreadClass.msgSend("isMainThread") != 0L)
 
 private val _initializeMacOnce = Once()
 fun initializeMacOnce() = _initializeMacOnce {
