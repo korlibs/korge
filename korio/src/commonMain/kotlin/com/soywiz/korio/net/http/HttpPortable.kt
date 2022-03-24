@@ -38,6 +38,8 @@ internal class HttpPortableClient(val factory: AsyncSocketFactory) : HttpClient(
         //println("HTTP CLIENT: host=${url.host}, port=${url.port}, secure=$secure")
         val client = factory.createClient(url.host!!, url.port, secure)
 
+        //println("[1]")
+
         val rheaders = combineHeadersForHost(headers, url.host)
         val rheaders2 = if (content != null)
             rheaders.withReplaceHeaders(
@@ -47,7 +49,13 @@ internal class HttpPortableClient(val factory: AsyncSocketFactory) : HttpClient(
             )
         else
             rheaders
+
+        //println("[2]")
+
         client.writeString(computeHeader(method, url, rheaders2))
+
+        //println("[3]")
+
         content?.copyTo(client)
 
         //println("SENT RESPONSE")

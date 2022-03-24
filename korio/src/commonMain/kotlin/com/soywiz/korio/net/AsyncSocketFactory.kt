@@ -15,7 +15,8 @@ abstract class AsyncSocketFactory {
 
 internal expect val asyncSocketFactory: AsyncSocketFactory
 
-suspend fun AsyncSocketFactory.createClient(host: String, port: Int, secure: Boolean = false): AsyncClient = createClient(secure).apply { connect(host, port) }
+suspend fun AsyncSocketFactory.createClient(host: String, port: Int, secure: Boolean = false): AsyncClient =
+    createClient(secure).apply { connect(host, port) }
 
 suspend fun createTcpClient(secure: Boolean = false): AsyncClient = asyncSocketFactory.createClient(secure)
 suspend fun createTcpServer(port: Int = AsyncServer.ANY_PORT, host: String = "127.0.0.1", backlog: Int = 511, secure: Boolean = false): AsyncServer = asyncSocketFactory.createServer(port, host, backlog, secure)

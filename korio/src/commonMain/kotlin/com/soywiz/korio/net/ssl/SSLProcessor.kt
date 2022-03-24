@@ -8,6 +8,8 @@ expect fun DefaultSSLProcessor(): SSLProcessor
 interface SSLProcessor {
     val isAlive: Boolean
     val needInput: Boolean
+    val needSync: Boolean
+    val status: Any?
 
     fun setEndPoint(host: String, port: Int)
 
@@ -52,14 +54,32 @@ class AsyncClientSSLProcessor(val client: AsyncClient, val processor: SSLProcess
     override val address: AsyncAddress get() = client.address
 
     override suspend fun connect(host: String, port: Int) {
+        //println("[1]")
         processor.setEndPoint(host, port)
         client.connect(host, port)
+        //println("[2]")
         //println("HANDSHAKE!")
         while (processor.needInput) {
+            //println("[3] ${processor.needInput} ${processor.status}")
             //println("DO SYNC")
-            sync()
-            if (processor.needInput) readData()
+
+            //println("[3b] ${processor.needInput} ${processor.status}")
+            var syncTimes = 0
+            while (processor.needSync) {
+                sync()
+                syncTimes++
+                if (syncTimes > 16) break
+            }
+            //println("[4] ${processor.needInput} ${processor.status}")
+            if (processor.needInput) {
+                //println("[4a] ${processor.needInput} ${processor.status}")
+                readDataAndSync()
+                //println("[4b] ${processor.needInput} ${processor.status}")
+                //println("[4c] ${processor.needInput} ${processor.status}")
+            }
+            //println("[5] ${processor.needInput} ${processor.status}")
         }
+        //println("[6]")
         //println("/HANDSHAKE!")
     }
 
@@ -71,6 +91,12 @@ class AsyncClientSSLProcessor(val client: AsyncClient, val processor: SSLProcess
 
     override val connected: Boolean get() = client.connected
     private val temp = ByteArray(32 * 1024)
+
+    private suspend fun readDataAndSync(): Int {
+        return readData().also {
+            sync()
+        }
+    }
 
     private suspend fun readData(): Int {
         //println("READ SOCKET DATA")

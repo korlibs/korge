@@ -29,7 +29,9 @@ class SSLProcessorJvm : SSLProcessor {
     private val plainC2S = ByteArrayDeque()
 
     override fun addEncryptedServerData(data: ByteArray, offset: Int, size: Int) {
-        encryptedS2C.write(data, offset, size)
+        synchronized(encryptedS2C) {
+            encryptedS2C.write(data, offset, size)
+        }
     }
     override fun addDecryptedClientData(data: ByteArray, offset: Int, size: Int) {
         plainC2S.write(data, offset, size)
@@ -56,6 +58,14 @@ class SSLProcessorJvm : SSLProcessor {
         //println("needInput.engine.handshakeStatus=${engine.handshakeStatus}")
         return status != SSLEngineResult.HandshakeStatus.FINISHED && status != SSLEngineResult.HandshakeStatus.NOT_HANDSHAKING
     }
+
+    override val needSync: Boolean get() {
+        val status = engine.handshakeStatus
+        //println("needInput.engine.handshakeStatus=${engine.handshakeStatus}")
+        return status == SSLEngineResult.HandshakeStatus.NEED_WRAP
+    }
+
+    override val status: Any? get() = engine.handshakeStatus
 
     private fun sync() {
         while (true) {
