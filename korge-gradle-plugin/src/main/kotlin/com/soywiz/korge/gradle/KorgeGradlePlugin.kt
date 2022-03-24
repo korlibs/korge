@@ -29,7 +29,7 @@ class KorgeGradleApply(val project: Project) {
 
         if (isLinux) {
             project.logger.info("LD folders: ${LDLibraries.ldFolders}")
-            for (lib in listOf("libglut.so.3", "libopenal.so.1")) {
+            for (lib in listOf("libGL.so.1", "libopenal.so.1")) {
                 if (!LDLibraries.hasLibrary(lib)) {
                     System.err.println("Can't find $lib. Please: sudo apt-get -y install freeglut3 libopenal1")
                 }
