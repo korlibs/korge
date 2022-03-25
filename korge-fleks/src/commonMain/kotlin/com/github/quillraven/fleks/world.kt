@@ -52,26 +52,34 @@ class WorldConfiguration {
     /**
      * Adds the specified [dependency] under the given [type] which can then be injected to any [IntervalSystem] or [ComponentListener].
      *
+     * @param type is the name of the dependency which is used to access it in systems and listeners. This is especially useful if two or more
+     *             dependency objects of the same type shall be injected.
+     * @param dependency object which shall be injected to systems and listeners of the Fleks ECS.
+     * @param used this will set the injected dependency to [used] internally. Default is false. If set to true then Fleks will not
+     *             complain if the dependency is not used by any system or listener on their creation time.
      * @throws [FleksInjectableAlreadyAddedException] if the dependency was already added before.
      */
-    fun <T : Any> inject(type: String, dependency: T) {
+    fun <T : Any> inject(type: String, dependency: T, used: Boolean = false) {
         if (type in injectables) {
             throw FleksInjectableAlreadyAddedException(type)
         }
 
-        injectables[type] = Injectable(dependency)
+        injectables[type] = Injectable(dependency, used)
     }
 
     /**
      * Adds the specified dependency which can then be injected to any [IntervalSystem] or [ComponentListener].
      * Refer to [inject]: the type is the simpleName of the class of the [dependency].
      *
+     * @param dependency object which shall be injected to systems and listeners of the Fleks ECS.
+     * @param used this will set the injected dependency to [used] internally. Default is false. If set to true then Fleks will not
+     *             complain if the dependency is not used by any system or listener on their creation time.
      * @throws [FleksInjectableAlreadyAddedException] if the dependency was already added before.
      * @throws [FleksInjectableTypeHasNoName] if the dependency type has no T::class.simpleName.
      */
-    inline fun <reified T : Any> inject(dependency: T) {
+    inline fun <reified T : Any> inject(dependency: T, used: Boolean = false) {
         val type = T::class.simpleName ?: throw FleksInjectableTypeHasNoName(T::class)
-        inject(type, dependency)
+        inject(type, dependency, used)
     }
 
     /**

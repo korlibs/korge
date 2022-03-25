@@ -149,13 +149,13 @@ abstract class IteratingSystem(
 ) : IntervalSystem(interval, enabled) {
     /**
      * Returns the [family][Family] of this system.
-     * This reference gets updated by the [SystemService] when the system gets created via reflection.
+     * This reference gets updated by the [SystemService] when the system gets created via the SystemFactory.
      */
     internal lateinit var family: Family
 
     /**
      * Returns the [entityService][EntityService] of this system.
-     * This reference gets updated by the [SystemService] when the system gets created via reflection.
+     * This reference gets updated by the [SystemService] when the system gets created via the SystemFactory.
      */
     @PublishedApi
     internal lateinit var entityService: EntityService

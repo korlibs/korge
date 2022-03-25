@@ -15,7 +15,7 @@ fun World.createExplosionArtefact(position: Position, destruct: Destruct) {
                 y += (-destruct.explosionParticleRange..destruct.explosionParticleRange).random()
             }
             // make sure that all spawned objects are above 200 - this is hardcoded for now since we only have some basic collision detection at y > 200
-            // otherwise they will be destroyed immediately and false appear at position 0x0
+            // otherwise the explosion artefacts will be destroyed immediately and appear at position 0x0 for one frame
             if (y > 200.0) { y = 199.0 }
             xAcceleration = position.xAcceleration + random(destruct.explosionParticleAcceleration)
             yAcceleration = -position.yAcceleration + random(destruct.explosionParticleAcceleration)
