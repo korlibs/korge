@@ -18,10 +18,10 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     override fun transformed(m: Matrix): Paint = this
     val color: RGBA get() = this
 
-    val r: Int get() = (value ushr 0) and 0xFF
-	val g: Int get() = (value ushr 8) and 0xFF
-	val b: Int get() = (value ushr 16) and 0xFF
-	val a: Int get() = (value ushr 24) and 0xFF
+    val r: Int get() = value.extract8(RED_OFFSET)
+	val g: Int get() = value.extract8(GREEN_OFFSET)
+	val b: Int get() = value.extract8(BLUE_OFFSET)
+	val a: Int get() = value.extract8(ALPHA_OFFSET)
 
 	val rf: Float get() = r.toFloat() / 255f
 	val gf: Float get() = g.toFloat() / 255f
@@ -42,21 +42,27 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         out[index + 3] = af
     }
 
-	fun withR(v: Int) = RGBA((value and (0xFF shl 0).inv()) or (v.clamp0_255() shl 0))
-	fun withG(v: Int) = RGBA((value and (0xFF shl 8).inv()) or (v.clamp0_255() shl 8))
-	fun withB(v: Int) = RGBA((value and (0xFF shl 16).inv()) or (v.clamp0_255() shl 16))
-	fun withA(v: Int) = RGBA((value and (0xFF shl 24).inv()) or (v.clamp0_255() shl 24))
-	fun withRGB(rgb: Int) = RGBA(rgb, a)
+	fun withR(v: Int): RGBA = RGBA((value and (0xFF shl 0).inv()) or (v.clamp0_255() shl RED_OFFSET))
+	fun withG(v: Int): RGBA = RGBA((value and (0xFF shl 8).inv()) or (v.clamp0_255() shl GREEN_OFFSET))
+	fun withB(v: Int): RGBA = RGBA((value and (0xFF shl 16).inv()) or (v.clamp0_255() shl BLUE_OFFSET))
+	fun withA(v: Int): RGBA = RGBA((value and (0xFF shl 24).inv()) or (v.clamp0_255() shl ALPHA_OFFSET))
+    //fun withRGB(r: Int, g: Int, b: Int) = withR(r).withG(g).withB(b)
+    fun withRGB(r: Int, g: Int, b: Int): RGBA =
+        RGBA((value and 0x00FFFFFF.inv()) or (r.clamp0_255() shl RED_OFFSET) or (g.clamp0_255() shl GREEN_OFFSET) or (b.clamp0_255() shl BLUE_OFFSET))
+	fun withRGB(rgb: Int): RGBA = RGBA(rgb, a)
 
-    fun withRd(v: Double) = withR(d2i(v))
-    fun withGd(v: Double) = withG(d2i(v))
-    fun withBd(v: Double) = withB(d2i(v))
-    fun withAd(v: Double) = withA(d2i(v))
+    fun withRGBUnclamped(r: Int, g: Int, b: Int): RGBA =
+        RGBA((value and 0x00FFFFFF.inv()) or ((r and 0xFF) shl RED_OFFSET) or ((g and 0xFF) shl GREEN_OFFSET) or ((b and 0xFF) shl BLUE_OFFSET))
 
-    fun withRf(v: Float) = withR(f2i(v))
-    fun withGf(v: Float) = withG(f2i(v))
-    fun withBf(v: Float) = withB(f2i(v))
-    fun withAf(v: Float) = withA(f2i(v))
+    fun withRd(v: Double): RGBA = withR(d2i(v))
+    fun withGd(v: Double): RGBA = withG(d2i(v))
+    fun withBd(v: Double): RGBA = withB(d2i(v))
+    fun withAd(v: Double): RGBA = withA(d2i(v))
+
+    fun withRf(v: Float): RGBA = withR(f2i(v))
+    fun withGf(v: Float): RGBA = withG(f2i(v))
+    fun withBf(v: Float): RGBA = withB(f2i(v))
+    fun withAf(v: Float): RGBA = withA(f2i(v))
 
     fun getComponent(c: Int): Int = when (c) {
         0 -> r
@@ -111,6 +117,11 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     operator fun times(other: RGBA): RGBA = RGBA.multiply(this, other)
 
     companion object : ColorFormat32() {
+        internal const val RED_OFFSET = 0
+        internal const val GREEN_OFFSET = 8
+        internal const val BLUE_OFFSET = 16
+        internal const val ALPHA_OFFSET = 24
+
         fun float(array: FloatArray, index: Int = 0): RGBA = float(array[index + 0], array[index + 1], array[index + 2], array[index + 3])
         fun float(r: Float, g: Float, b: Float, a: Float): RGBA = unclamped(f2i(r), f2i(g), f2i(b), f2i(a))
         inline fun float(r: Number, g: Number, b: Number, a: Number = 1f): RGBA = float(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
@@ -124,6 +135,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 		override fun getB(v: Int): Int = RGBA(v).b
 		override fun getA(v: Int): Int = RGBA(v).a
 		override fun pack(r: Int, g: Int, b: Int, a: Int): Int = RGBA(r, g, b, a).value
+        fun packUnsafe(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(r or (g shl 8) or (b shl 16) or (a shl 24))
 
 		//fun mutliplyByAlpha(v: Int, alpha: Double): Int = com.soywiz.korim.color.RGBA.pack(RGBA(v).r, RGBA(v).g, RGBA(v).b, (RGBA(v).a * alpha).toInt())
 		//fun depremultiply(v: RGBA): RGBA = v.asPremultiplied().depremultiplied

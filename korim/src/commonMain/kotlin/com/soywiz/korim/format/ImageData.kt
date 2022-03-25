@@ -15,6 +15,8 @@ open class ImageData constructor(
     val name: String? = null,
 ) : Extra by Extra.Mixin() {
     companion object {
+        operator fun invoke(simple: Bitmap): ImageData = ImageData(listOf(ImageFrame(simple)))
+
         operator fun invoke(
             loopCount: Int = 0,
             layers: List<ImageLayer> = fastArrayListOf(),

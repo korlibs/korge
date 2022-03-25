@@ -435,7 +435,8 @@ fun SyncOutputStream.writeStringz(str: String, len: Int, charset: Charset = UTF8
 
 fun SyncInputStream.readBytes(len: Int): ByteArray {
 	val bytes = ByteArray(len)
-	return bytes.copyOf(read(bytes, 0, len))
+    val out = read(bytes, 0, len)
+	return if (out != len) bytes.copyOf(out) else bytes
 }
 
 fun SyncOutputStream.writeBytes(data: ByteArray): Unit = write(data, 0, data.size)

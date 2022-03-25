@@ -95,15 +95,27 @@ public fun Long.mask(): Long = (1L shl this.toInt()) - 1L
 /** Extracts [count] bits at [offset] from [this] [Int] */
 public fun Int.extract(offset: Int, count: Int): Int = (this ushr offset) and count.mask()
 /** Extracts a bits at [offset] from [this] [Int] (returning a [Boolean]) */
-public fun Int.extract(offset: Int): Boolean = ((this ushr offset) and 1) != 0
+inline fun Int.extract(offset: Int): Boolean = extract1(offset) != 0
 /** Extracts a bits at [offset] from [this] [Int] (returning a [Boolean]) */
-public fun Int.extractBool(offset: Int): Boolean = this.extract(offset)
+inline fun Int.extractBool(offset: Int): Boolean = extract1(offset) != 0
+/** Extracts 1 bit at [offset] from [this] [Int] */
+inline fun Int.extract1(offset: Int): Int = (this ushr offset) and 0b1
+/** Extracts 2 bits at [offset] from [this] [Int] */
+inline fun Int.extract2(offset: Int): Int = (this ushr offset) and 0b11
+/** Extracts 3 bits at [offset] from [this] [Int] */
+inline fun Int.extract3(offset: Int): Int = (this ushr offset) and 0b111
 /** Extracts 4 bits at [offset] from [this] [Int] */
-public fun Int.extract4(offset: Int): Int = (this ushr offset) and 0xF
+inline fun Int.extract4(offset: Int): Int = (this ushr offset) and 0b1111
+/** Extracts 5 bits at [offset] from [this] [Int] */
+inline fun Int.extract5(offset: Int): Int = (this ushr offset) and 0b11111
+/** Extracts 6 bits at [offset] from [this] [Int] */
+inline fun Int.extract6(offset: Int): Int = (this ushr offset) and 0b111111
+/** Extracts 7 bits at [offset] from [this] [Int] */
+inline fun Int.extract7(offset: Int): Int = (this ushr offset) and 0b1111111
 /** Extracts 8 bits at [offset] from [this] [Int] */
-public fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
+inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
 /** Extracts 16 bits at [offset] from [this] [Int] */
-public fun Int.extract16(offset: Int): Int = (this ushr offset) and 0xFFFF
+inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0xFFFF
 
 /** Extracts [count] bits at [offset] from [this] [Int] sign-extending its result */
 public fun Int.extractSigned(offset: Int, count: Int): Int = ((this ushr offset) and count.mask()).signExtend(count)
