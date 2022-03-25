@@ -25,11 +25,13 @@ import kotlin.coroutines.*
 import kotlin.js.*
 import kotlin.math.*
 
-actual val nativeImageFormatProvider: NativeImageFormatProvider = if (OS.isJsNodeJs) NodeJsNativeImageFormatProvider else HtmlNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider = when {
+    OS.isJsNodeJs -> NodeJsNativeImageFormatProvider
+    else -> HtmlNativeImageFormatProvider
+}
 
 object NodeJsNativeImageFormatProvider : BaseNativeImageFormatProvider() {
-    //override val formats: ImageFormat by lazy { RegisteredImageFormats.also { it.register(PNG) } }
-    override val formats: ImageFormat = RegisteredImageFormats
+    override val formats: ImageFormat get() = RegisteredImageFormats
 }
 
 private val tempB = ArrayBuffer(4)

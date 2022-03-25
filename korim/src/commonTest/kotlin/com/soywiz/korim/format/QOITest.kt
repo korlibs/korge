@@ -11,6 +11,8 @@ class QOITest {
 
     @Test
     fun qoiTest() = suspendTestNoBrowser {
+        RegisteredImageFormats.register(PNG) // Required for readBitmapOptimized
+
         repeat(4) { resourcesVfs["testcard_rgba.png"].readBitmapOptimized() }
         repeat(4) { resourcesVfs["testcard_rgba.png"].readBitmapNoNative(formats) }
         repeat(4) { resourcesVfs["testcard_rgba.qoi"].readBitmapNoNative(formats) }
