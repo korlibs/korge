@@ -411,7 +411,9 @@ object ASE : ImageFormatWithContainer("ase") {
             }
             if (layerData.isNotEmpty()) {
                 ImageFrame(frame.index, frame.time.milliseconds, layerData)
-            } else null
+            } else {
+                ImageFrame(frame.index)
+            }
         }
 
         val animations = image.tags.map {

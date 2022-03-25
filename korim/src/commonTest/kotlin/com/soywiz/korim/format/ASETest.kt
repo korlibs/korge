@@ -57,6 +57,16 @@ class ASETest {
         assertEquals(48, sliceExample4.imageDatasByName["coin"]!!.frames[0].targetX, "X position of coin set to slice X position")
         assertEquals(80, sliceExample4.imageDatasByName["coin"]!!.frames[0].targetY, "Y position of coin set to slice Y position")
 
+        // complex example (empty cells within frames of an ase file with animations tags)
+        val props3 = ImageDecodingProps(extra = ExtraTypeCreate())
+        props3.setExtra("layers", "shield")
+        val complexLayersAndTags = resourcesVfs["space_ship.ase"].readImageDataContainer(ASE, props = props3, atlas = atlas)
+        assertEquals(17, complexLayersAndTags.default.frames.size, "ImageFrame array not correctly created")
+        assertEquals(1, complexLayersAndTags.default.frames[0].width, "First frame is not an empty image (width and height == 1)")
+        assertEquals(61, complexLayersAndTags.default.frames[5].width, "First frame of animation tag \"shield_loop\" is not a valid image (width == 61)")
+        assertEquals(62, complexLayersAndTags.default.frames[10].width, "Last frame of animation tag \"shield_loop\" is not a valid image (width == 62)")
+        assertEquals(6, complexLayersAndTags.default.animationsByName["shield_loop"]?.frames?.size ?: 0, "Animation \"shield_loop\" was not found in ase file.")
+
         //println(sliceExample)
         //atlas.allBitmaps.showImagesAndWait()
     }
