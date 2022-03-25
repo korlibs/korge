@@ -99,4 +99,10 @@ class SortedMapTest {
             assertEquals(null, map.nearestHigh(30))
         }
     }
+
+    @Test
+    fun testSortedMapOf() {
+        val sortedValues = sortedMapOf(2 to "two", 3 to "three", 1 to "one").values.toList()
+        assertEquals(listOf("one", "two", "three"), sortedValues)
+    }
 }
