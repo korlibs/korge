@@ -269,6 +269,7 @@ class KorgeExtension(val project: Project) {
 
 	var copyright: String = "Copyright (c) ${Year.now().getValue()} Unknown"
 
+    var sourceMaps: Boolean = false
 	var supressWarnings: Boolean = false
 
     /**

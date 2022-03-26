@@ -41,7 +41,7 @@ fun Project.configureJavaScript() {
 
 			compilations.all {
 				it.kotlinOptions.apply {
-					sourceMap = true
+					sourceMap = korge.sourceMaps
 					//metaInfo = true
 					//moduleKind = "umd"
 					suppressWarnings = korge.supressWarnings
