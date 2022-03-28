@@ -103,6 +103,7 @@ tasks.create("createAndroidManifest") {
                         android:icon="@drawable/app_icon"
                         android:label="unnamed"
                         android:logo="@drawable/app_icon"
+                        android:screenOrientation="landscape"
                     >
                         <intent-filter>
                             <action android:name="android.intent.action.MAIN"/>

@@ -91,33 +91,28 @@ class GradientFiller : BaseFiller() {
     }
     private val colors = RgbaPremultipliedArray(NCOLORS)
     private lateinit var fill: GradientPaint
-    private val stateTrans = Matrix()
-    private val fillTrans = Matrix()
-    private val compTrans = Matrix()
+    private val stateTransformInv = Matrix()
 
-    fun set(fill: GradientPaint, state: Context2d.State) = this.apply {
-        this.fill = fill
-        state.transform.inverted(this.stateTrans)
-        fill.transform.inverted(this.fillTrans)
-        compTrans.apply {
-            identity()
-            premultiply(fillTrans)
-            premultiply(stateTrans)
-        }
-
+    fun set(fill: GradientPaint, state: Context2d.State): GradientFiller {
         fill.fillColors(colors)
-        //println("colors=$colors")
+        this.fill = fill
+        //println("state.transform=${state.transform}")
+        this.stateTransformInv.copyFromInverted(state.transform)
+        return this
     }
 
-    private fun color(ratio: Double): RGBAPremultiplied {
-        //println("ratio=$ratio")
-        return colors[(ratio.clamp01() * (NCOLORS - 1)).toInt()]
+    private fun color(ratio: Double): RGBAPremultiplied = colors[(ratio.clamp01() * (NCOLORS - 1)).toInt()]
+
+    fun getRatio(x: Double, y: Double): Double {
+        return fill.getRatioAt(x, y, stateTransformInv)
+    }
+    fun getColor(x: Double, y: Double): RGBAPremultiplied {
+        return color(getRatio(x, y))
     }
 
     // @TODO: Radial gradient
-    // @TODO: This doesn't seems to work proprely
+    // @TODO: This doesn't seems to work properly
     override fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int) {
-        //for (n in x0..x1) data[n] = color(mat.transformX(n.toDouble(), y.toDouble()).clamp01())
-        for (n in x0..x1) data[offset + n] = color(fill.getRatioAt(n.toDouble(), y.toDouble(), compTrans))
+        for (n in x0..x1) data[offset + n] = getColor(n.toDouble(), y.toDouble())
     }
 }

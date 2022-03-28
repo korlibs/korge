@@ -348,11 +348,15 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 		}
 	}
 
+    fun CanvasTransform.transform(m: Matrix) {
+        transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
+    }
+
 	private fun transformPaint(paint: Paint) {
 		if (paint is TransformedPaint) {
-			val m = paint.transform
+            //ctx.transform(paint.transform.inverted())
+            ctx.transform(paint.transform)
             //println("Transformed paint: $m")
-			ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
 		}
 	}
 
@@ -399,8 +403,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 
             doVisit(state.path)
 
-            val m = state.transform
-            ctx.transform(m.a, m.b, m.c, m.d, m.tx, m.ty)
+            ctx.transform(state.transform)
 			if (fill) {
 				transformPaint(state.fillStyle)
                 //println("       - Gadient: ${}")
@@ -408,7 +411,6 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 				//println("fill: $s")
 			} else {
 				transformPaint(state.strokeStyle)
-
 				ctx.stroke()
 				//println("stroke: $s")
 			}

@@ -1,6 +1,7 @@
 package com.soywiz.korim.vector
 
 import com.soywiz.kds.intArrayListOf
+import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.*
 import com.soywiz.korim.internal.*
@@ -10,6 +11,7 @@ import com.soywiz.korim.vector.rasterizer.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.collections.fill
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -72,6 +74,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 rasterizer.quality = if (antialiasing) 4 else 1
                 //rasterizer.quality = if (antialiasing) 2 else 1
                 scanlineWriter.filler = filler
+                scanlineWriter.globalAlpha = state.globalAlpha
                 scanlineWriter.reset()
                 rasterizer.rasterizeFill(bounds, winding = fillPath.winding) { x0, x1, y ->
                     scanlineWriter.select(x0, x1, y)
@@ -175,6 +178,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
         val color = RgbaPremultipliedArray(size)
         val segments = SegmentHandler()
         var subRowCount = 0
+        var globalAlpha = 1.0
         fun reset() {
             segments.forEachFast { xmin, xmax ->
                 alpha.fill(0f, xmin, xmax + 1)
@@ -225,7 +229,8 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
 
         fun flush() {
             if (ny !in 0 until bmp.height) return
-            val scale = 1f / subRowCount
+            val galpha = globalAlpha.clamp01().toFloat()
+            val scale = (1f / subRowCount) * galpha
             segments.forEachFast { xmin, xmax ->
                 val x = xmin
                 val count = xmax - xmin + 1
@@ -234,6 +239,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 scale(color, xmin, alpha, xmin, count)
                 val index = bmp.index(0, ny) + x
                 if (bmp.premultiplied) com.soywiz.kmem.arraycopy(bmp.dataPremult.ints, index, origin.ints, x, count) else premultiply(bmp.data, index, origin, x, count)
+                //for (n in xmin..xmax) color[n] = color[n].scaled(galpha)
                 compositeMode.blend(origin, x, color, x, count)
                 if (bmp.premultiplied) com.soywiz.kmem.arraycopy(origin.ints, x, bmp.dataPremult.ints, index, count) else depremultiply(origin, x, bmp.data, index, count)
             }

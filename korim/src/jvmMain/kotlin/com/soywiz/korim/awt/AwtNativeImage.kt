@@ -228,29 +228,14 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         }
 	}
 
-	fun convertColor(c: RGBA): java.awt.Color = java.awt.Color(c.r, c.g, c.b, c.a)
-
-	fun CycleMethod.toAwt() = when (this) {
-        CycleMethod.NO_CYCLE -> MultipleGradientPaint.CycleMethod.NO_CYCLE
-        CycleMethod.REPEAT -> MultipleGradientPaint.CycleMethod.REPEAT
-        CycleMethod.REFLECT -> MultipleGradientPaint.CycleMethod.REFLECT
-	}
-
-	fun Paint.toAwt(transform: AffineTransform): java.awt.Paint = try {
-		this.toAwtUnsafe(transform)
-	} catch (e: Throwable) {
+    fun Paint.toAwt(transform: AffineTransform): java.awt.Paint = try {
+        this.toAwtUnsafe(transform)
+    } catch (e: Throwable) {
         warningProcessor?.invoke("Paint.toAwt: $e")
-		Color.PINK
-	}
+        Color.PINK
+    }
 
-	//fun Paint.toAwt(transform: AffineTransform): java.awt.Paint = this.toAwtUnsafe(transform)
-
-	fun Matrix.toAwt() = AffineTransform(this.a, this.b, this.c, this.d, this.tx, this.ty)
-
-	fun GradientInterpolationMethod.toAwt() = when (this) {
-        GradientInterpolationMethod.LINEAR -> MultipleGradientPaint.ColorSpaceType.LINEAR_RGB
-        GradientInterpolationMethod.NORMAL -> MultipleGradientPaint.ColorSpaceType.SRGB
-	}
+    private val USE_ACCURATE_RADIAL_PAINT = true
 
 	fun Paint.toAwtUnsafe(transform: AffineTransform): java.awt.Paint = when (this) {
         is ColorPaint -> convertColor(this.color)
@@ -258,6 +243,19 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
             val t1 = AffineTransform()
             t1.concatenate(transform)
             t1.concatenate(this.transform.toAwt())
+
+            /*
+            val mat = Matrix()
+            mat.postconcat(transform.toMatrix())
+            mat.postconcat(this.transform)
+
+            println("-------------")
+            println("transform=${transform.toMatrix()}")
+            println("this.transform=${this.transform}")
+            println("t1=${t1.toMatrix()}")
+            println("mat=$mat")
+            */
+
             //println("Transformed paint: ${this.transform} --- $transform")
             //t1.preConcatenate(this.transform.toAwt())
             //t1.preConcatenate(transform)
@@ -292,22 +290,29 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                         GradientKind.RADIAL -> {
                             val valid = (pairs.size >= 2)
                             if (valid) {
-                                java.awt.RadialGradientPaint(
-                                    Point2D.Double(this.x0, this.y0),
-                                    this.r1.toFloat(),
-                                    Point2D.Double(this.x1, this.y1),
-                                    stops,
-                                    colors,
-                                    this.cycle.toAwt(),
-                                    this.interpolationMethod.toAwt(),
-                                    t1
-                                )
+                                if (USE_ACCURATE_RADIAL_PAINT) {
+                                    AwtKorimGradientPaint(
+                                        this,
+                                        t1
+                                    )
+                                } else {
+                                    java.awt.RadialGradientPaint(
+                                        Point2D.Double(this.x1, this.y1),
+                                        this.r1.toFloat(),
+                                        Point2D.Double(this.x0, this.y0),
+                                        stops,
+                                        colors,
+                                        this.cycle.toAwt(),
+                                        this.interpolationMethod.toAwt(),
+                                        t1
+                                    )
+                                }
                             } else {
                                 defaultColor
                             }
                         }
                         else -> {
-                            defaultColor
+                            AwtKorimGradientPaint(this, t1)
                         }
                     }
 
@@ -360,10 +365,6 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		}
 	}
 
-    fun AffineTransform.setToMatrix(t: Matrix) {
-        setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty)
-    }
-
     private var oldClipState: GraphicsPath? = null
 
 	fun applyState(state: Context2d.State, fill: Boolean) {
@@ -408,4 +409,66 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 			}
 		}
 	}
+}
+
+class AwtKorimGradientPaint(
+    val paint: GradientPaint,
+    val transform: AffineTransform
+) : java.awt.Paint {
+    val filler = GradientFiller().set(paint, Context2d.State(transform = transform.toMatrix()))
+
+    override fun getTransparency(): Int = Transparency.TRANSLUCENT
+
+    override fun createContext(
+        cm: ColorModel?,
+        deviceBounds: Rectangle?,
+        userBounds: Rectangle2D?,
+        xform: AffineTransform?,
+        hints: RenderingHints?
+    ): PaintContext {
+        val colorModel = cm ?: ColorModel.getRGBdefault()
+
+        return object : PaintContext {
+            override fun dispose() = Unit
+            override fun getColorModel(): ColorModel = colorModel
+            override fun getRaster(x: Int, y: Int, w: Int, h: Int): Raster {
+                val raster = colorModel.createCompatibleWritableRaster(w, h)
+                val out = IntArray(w * h * 4)
+                var n = 0
+                for (py in 0 until h) {
+                    for (px in 0 until w) {
+                        val col = filler.getColor((x + px).toDouble(), (y + py).toDouble()).depremultiplied
+                        out[n++] = col.r
+                        out[n++] = col.g
+                        out[n++] = col.b
+                        out[n++] = col.a
+                    }
+                }
+                raster.setPixels(0, 0, w, h, out)
+                return raster
+            }
+        }
+    }
+}
+
+fun AffineTransform.setToMatrix(t: Matrix) {
+    setTransform(t.a, t.b, t.c, t.d, t.tx, t.ty)
+}
+
+fun Matrix.toAwt() = AffineTransform(a, b, c, d, tx, ty)
+fun AffineTransform.toMatrix() = Matrix(scaleX, shearY, shearX, scaleY, translateX, translateY)
+
+fun convertColor(c: RGBA): java.awt.Color = java.awt.Color(c.r, c.g, c.b, c.a)
+
+fun CycleMethod.toAwt() = when (this) {
+    CycleMethod.NO_CYCLE -> MultipleGradientPaint.CycleMethod.NO_CYCLE
+    CycleMethod.REPEAT -> MultipleGradientPaint.CycleMethod.REPEAT
+    CycleMethod.REFLECT -> MultipleGradientPaint.CycleMethod.REFLECT
+}
+
+//fun Paint.toAwt(transform: AffineTransform): java.awt.Paint = this.toAwtUnsafe(transform)
+
+fun GradientInterpolationMethod.toAwt() = when (this) {
+    GradientInterpolationMethod.LINEAR -> MultipleGradientPaint.ColorSpaceType.LINEAR_RGB
+    GradientInterpolationMethod.NORMAL -> MultipleGradientPaint.ColorSpaceType.SRGB
 }

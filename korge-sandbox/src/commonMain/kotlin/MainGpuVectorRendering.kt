@@ -1,4 +1,5 @@
 import com.soywiz.kds.*
+import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
@@ -23,58 +24,113 @@ suspend fun Stage.mainGpuVectorRendering() {
     Console.log("[1]")
     val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
     Console.log("[2]")
-    val tigerSvg = resourcesVfs["Ghostscript_Tiger.svg"].readSVG()
+    val tigerSvg = measureTime({ resourcesVfs["Ghostscript_Tiger.svg"].readSVG() }) {
+        println("Elapsed $it")
+    }
     Console.log("[3]")
     //AudioData(44100, AudioSamples(1, 1024)).toSound().play()
 
+    val PAINT_TIGER = true
+    val PAINT_SHAPES = true
+    val PAINT_BITMAP = true
+    val PAINT_TEXT = true
+    val PAINT_LINEAR_GRADIENT = true
+    val PAINT_RADIAL_GRADIENT = true
+
     fun Context2d.buildGraphics() {
-        keep {
-            draw(tigerSvg)
-            translate(100, 200)
-            fill(Colors.BLUE) {
-                rect(-10, -10, 120, 120)
-                rectHole(40, 40, 80, 80)
+        if (PAINT_TIGER) {
+            keep {
+                scale(0.5)
+                draw(tigerSvg)
             }
-            fill(Colors.YELLOW) {
-                this.circle(100, 100, 40)
-                //rect(-100, -100, 500, 500)
-                //rectHole(40, 40, 320, 320)
-            }
-            fill(Colors.RED) {
-                regularPolygon(6, 30.0, x = 100.0, y = 100.0)
-                //rect(-100, -100, 500, 500)
-                //rectHole(40, 40, 320, 320)
+        }
+        if (PAINT_SHAPES) {
+            keep {
+                translate(100, 200)
+                fill(Colors.BLUE) {
+                    rect(-10, -10, 120, 120)
+                    rectHole(40, 40, 80, 80)
+                }
+                fill(Colors.YELLOW) {
+                    this.circle(100, 100, 40)
+                    //rect(-100, -100, 500, 500)
+                    //rectHole(40, 40, 320, 320)
+                }
+                fill(Colors.RED) {
+                    regularPolygon(6, 30.0, x = 100.0, y = 100.0)
+                    //rect(-100, -100, 500, 500)
+                    //rectHole(40, 40, 320, 320)
+                }
             }
         }
         keep {
             translate(100, 20)
             scale(2.0)
-            globalAlpha = 0.75
-            fillStyle = BitmapPaint(
-                korgeBitmap,
-                Matrix().translate(50, 50).scale(0.125),
-                cycleX = CycleMethod.REPEAT,
-                cycleY = CycleMethod.REPEAT
-            )
-            fillRect(0.0, 0.0, 100.0, 100.0)
-            fillStyle =
-                createLinearGradient(0.0, 0.0, 200.0, 200.0, transform = Matrix().scale(0.5).pretranslate(130, 30))
-                    .addColorStop(0.0, Colors.RED)
-                    .addColorStop(1.0, Colors.BLUE)
-            fillRect(100.0, 0.0, 100.0, 100.0)
+            if (PAINT_BITMAP) {
+                globalAlpha = 0.75
+                fillStyle = BitmapPaint(
+                    korgeBitmap,
+                    Matrix().translate(50, 50).scale(0.125),
+                    cycleX = CycleMethod.REPEAT,
+                    cycleY = CycleMethod.REPEAT
+                )
+                fillRect(0.0, 0.0, 100.0, 100.0)
+            }
+
+            if (PAINT_LINEAR_GRADIENT) {
+                globalAlpha = 0.9
+                fillStyle =
+                    //createLinearGradient(150.0, 0.0, 200.0, 50.0)
+                    createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0))
+                        //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
+                        .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
+                fillRect(100.0, 0.0, 100.0, 100.0)
+            }
+            if (PAINT_RADIAL_GRADIENT) {
+                globalAlpha = 0.9
+                fillStyle =
+                    //createLinearGradient(150.0, 0.0, 200.0, 50.0)
+                    createRadialGradient(150,150,30, 130,180,70)
+                    //createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0))
+                        //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
+                        .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
+                fillRect(100.0, 100.0, 100.0, 100.0)
+            }
         }
-        keep {
-            font = DefaultTtfFont
-            fontSize = 16.0
-            fillStyle = Colors.WHITE
-            alignment = TextAlignment.TOP_LEFT
-            fillText("HELLO WORLD", 0.0, 16.0)
+        if (PAINT_TEXT) {
+            keep {
+                font = DefaultTtfFont
+                fontSize = 16.0
+                fillStyle = Colors.WHITE
+                alignment = TextAlignment.TOP_LEFT
+                fillText("HELLO WORLD", 0.0, 16.0)
+            }
         }
     }
 
-    gpuShapeView { buildGraphics() }.xy(0, 0)//.rotation(45.degrees)
-    image(NativeImage(512, 512).context2d { buildGraphics() }).xy(700, 0)
-    image(Bitmap32(512, 512).context2d { buildGraphics() }).xy(700, 370)
+    buildShape { buildGraphics() }
+
+    measureTime({
+        buildShape { buildGraphics() }
+    }) {
+        println("BUILD SHAPE: $it")
+    }
+
+    measureTime({
+        gpuShapeView { buildGraphics() }.xy(0, 0)//.rotation(45.degrees)
+    }) {
+        println("GPU SHAPE: $it")
+    }
+    measureTime({
+        image(NativeImage(512, 512).context2d { buildGraphics() }).xy(550, 0)
+    }) {
+        println("CONTEXT2D NATIVE: $it")
+    }
+    measureTime({
+        image(Bitmap32(512, 512).context2d { buildGraphics() }).xy(550, 370)
+    }) {
+        println("CONTEXT2D BITMAP: $it")
+    }
 }
 
 inline fun Container.gpuShapeView(buildContext2d: Context2d.() -> Unit) =
@@ -153,7 +209,9 @@ class GpuShapeView(shape: Shape) : View() {
             is PolylineShape -> {
                 //println("TODO: PolylineShape not implemented. Convert into fills")
             }
-            is TextShape -> renderShape(ctx, shape.primitiveShapes)
+            is TextShape -> {
+                renderShape(ctx, shape.primitiveShapes)
+            }
             else -> TODO("shape=$shape")
         }
     }
@@ -171,7 +229,9 @@ class GpuShapeView(shape: Shape) : View() {
         }
 
         val bb = BoundsBuilder()
+        val bb2 = BoundsBuilder()
         bb.reset()
+        bb2.reset()
 
         val data = FloatArray(points.size * 2 + 4)
         for (n in 0 until points.size + 1) {
@@ -182,6 +242,7 @@ class GpuShapeView(shape: Shape) : View() {
             data[(n + 1) * 2 + 0] = tx
             data[(n + 1) * 2 + 1] = ty
             bb.add(tx, ty)
+            bb2.add(x, y)
         }
         data[0] = ((bb.xmax + bb.xmin) / 2).toFloat()
         data[1] = ((bb.ymax + bb.ymin) / 2).toFloat()
@@ -191,6 +252,7 @@ class GpuShapeView(shape: Shape) : View() {
         }
 
         val bounds = bb.getBounds()
+        val bounds2 = bb2.getBounds()
 
         ctx.dynamicVertexBufferPool { vertices ->
             vertices.upload(data)
@@ -228,7 +290,7 @@ class GpuShapeView(shape: Shape) : View() {
                 scissor = scissor,
             )
         }
-        renderFill(ctx, shape.paint, shape.transform, bounds)
+        renderFill(ctx, shape.paint, shape.transform, bounds, bounds2)
     }
 
     private val colorUniforms = AG.UniformValues()
@@ -238,7 +300,7 @@ class GpuShapeView(shape: Shape) : View() {
 
     private val colorF = FloatArray(4)
 
-    private fun renderFill(ctx: RenderContext, paint: Paint, transform: Matrix, bounds: Rectangle) {
+    private fun renderFill(ctx: RenderContext, paint: Paint, transform: Matrix, bounds: Rectangle, localBounds: Rectangle) {
         if (paint is NonePaint) return
 
         ctx.dynamicVertexBufferPool { vertices ->
@@ -248,12 +310,17 @@ class GpuShapeView(shape: Shape) : View() {
             val y0 = bounds.top.toFloat()
             val x1 = bounds.right.toFloat()
             val y1 = bounds.bottom.toFloat()
-            val w = x1 - x0
-            val h = y1 - y0
-            data[n++] = x0; data[n++] = y0; data[n++] = 0f; data[n++] = 0f
-            data[n++] = x1; data[n++] = y0; data[n++] = w; data[n++] = 0f
-            data[n++] = x1; data[n++] = y1; data[n++] = w; data[n++] = h
-            data[n++] = x0; data[n++] = y1; data[n++] = 0f; data[n++] = h
+
+            val lx0 = localBounds.left.toFloat()
+            val ly0 = localBounds.top.toFloat()
+            val lx1 = localBounds.right.toFloat()
+            val ly1 = localBounds.bottom.toFloat()
+            data[n++] = x0; data[n++] = y0; data[n++] = lx0; data[n++] = ly0
+            data[n++] = x1; data[n++] = y0; data[n++] = lx1; data[n++] = ly0
+            data[n++] = x1; data[n++] = y1; data[n++] = lx1; data[n++] = ly1
+            data[n++] = x0; data[n++] = y1; data[n++] = lx0; data[n++] = ly1
+
+            //println("[($lx0,$ly0)-($lx1,$ly1)]")
 
             vertices.upload(data)
             ctx.useBatcher { batch ->
@@ -272,6 +339,7 @@ class GpuShapeView(shape: Shape) : View() {
                         bitmapUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(paint.bitmap).base)
                         val mat = (paint.transform * transform)
                         mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
+                        //println("mat=$mat")
                         bitmapUniforms[u_Transform] = mat.toMatrix3D()
                         program = PROGRAM_BITMAP
                         uniforms = bitmapUniforms
@@ -279,7 +347,7 @@ class GpuShapeView(shape: Shape) : View() {
                     is GradientPaint -> {
                         paint.fillColors(gradientBitmap.dataPremult)
                         gradientUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(gradientBitmap).base)
-                        val mat = paint.transform * transform * paint.gradientMatrixInv
+                        val mat = transform.inverted() * paint.gradientMatrix
                         gradientUniforms[u_Transform] = mat.toMatrix3D()
                         program = PROGRAM_LINEAR_GRADIENT
                         uniforms = gradientUniforms

@@ -426,8 +426,8 @@ class TextShape(
         buildShape {
             this.transform(this@TextShape.transform)
             this.clip(this@TextShape.clip)
-            if (fill != null) font?.drawText(this, fontSize, text, fill, x, y, fill = true)
-            if (stroke != null) font?.drawText(this, fontSize, text, stroke, x, y, fill = false)
+            if (this@TextShape.fill != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.fill, this@TextShape.x, this@TextShape.y, fill = true)
+            if (this@TextShape.stroke != null) this@TextShape.font?.drawText(this, this@TextShape.fontSize, this@TextShape.text, this@TextShape.stroke, this@TextShape.x, this@TextShape.y, fill = false)
         }
     }
 

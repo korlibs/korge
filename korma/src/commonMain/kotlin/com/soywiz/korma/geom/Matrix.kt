@@ -89,6 +89,15 @@ data class Matrix(
     fun setTo(a: Float, b: Float, c: Float, d: Float, tx: Float, ty: Float): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
     fun setTo(a: Int, b: Int, c: Int, d: Int, tx: Int, ty: Int): Matrix = setTo(a.toDouble(), b.toDouble(), c.toDouble(), d.toDouble(), tx.toDouble(), ty.toDouble())
 
+    fun copyTo(that: Matrix = Matrix()): Matrix {
+        that.copyFrom(this)
+        return that
+    }
+
+    fun copyFromInverted(that: Matrix): Matrix {
+        return invert(that)
+    }
+
     fun copyFrom(that: Matrix?): Matrix {
         if (that != null) {
             setTo(that.a, that.b, that.c, that.d, that.tx, that.ty)
@@ -220,6 +229,8 @@ data class Matrix(
     }
 
     fun concat(value: Matrix): Matrix = this.multiply(this, value)
+    fun preconcat(value: Matrix): Matrix = this.multiply(this, value)
+    fun postconcat(value: Matrix): Matrix = this.multiply(value, this)
 
     fun inverted(out: Matrix = Matrix()) = out.invert(this)
 
