@@ -38,7 +38,7 @@ open class Shaders3D {
 		//val MAX_BONE_MATS = 16
 		val MAX_BONE_MATS = 64
 		val u_BoneMats = Uniform("u_BoneMats", VarType.Mat4, arrayCount = MAX_BONE_MATS)
-		val u_TexUnit = Uniform("u_TexUnit", VarType.TextureUnit)
+		val u_TexUnit = Uniform("u_TexUnit", VarType.Sampler2D)
 		val a_pos = Attribute("a_Pos", VarType.Float3, normalized = false, precision = Precision.HIGH)
 		val a_norm = Attribute("a_Norm", VarType.Float3, normalized = false, precision = Precision.HIGH)
 		val a_tex = Attribute("a_TexCoords", VarType.Float2, normalized = false, precision = Precision.MEDIUM)
@@ -87,7 +87,7 @@ open class Shaders3D {
 	class MaterialLightUniform(val kind: String) {
 		//val mat = Material3D
 		val u_color = Uniform("u_${kind}_color", VarType.Float4)
-		val u_texUnit = Uniform("u_${kind}_texUnit", VarType.TextureUnit)
+		val u_texUnit = Uniform("u_${kind}_texUnit", VarType.Sampler2D)
 	}
 }
 

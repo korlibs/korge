@@ -294,7 +294,7 @@ abstract class AGOpengl : AG() {
             val uniformType = uniform.type
             val value = uniforms.values[n]
             when (uniformType) {
-                VarType.TextureUnit -> {
+                VarType.Sampler2D -> {
                     val unit = value.fastCastTo<TextureUnit>()
                     val tex = (unit.texture.fastCastTo<GlTexture?>())
                     if (tex != null) {
@@ -355,10 +355,10 @@ abstract class AGOpengl : AG() {
             //println("uniform: $uniform, arrayCount=$arrayCount, stride=$stride")
 
             when (uniformType) {
-                VarType.TextureUnit, VarType.SamplerCube -> {
+                VarType.Sampler2D, VarType.SamplerCube -> {
                     val unit = value.fastCastTo<TextureUnit>()
                     gl.activeTexture(gl.TEXTURE0 + textureUnit)
-                    if (uniformType == VarType.TextureUnit) {
+                    if (uniformType == VarType.Sampler2D) {
                         val tex = (unit.texture.fastCastTo<GlTexture?>())
                         tex?.bindEnsuring()
                         tex?.setWrap()

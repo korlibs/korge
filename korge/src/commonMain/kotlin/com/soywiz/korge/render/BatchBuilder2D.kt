@@ -677,7 +677,7 @@ class BatchBuilder2D constructor(
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
 
-        val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.TextureUnit) }
+        val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
         //val u_Tex0 = DefaultShaders.u_Tex
         //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
 
@@ -738,7 +738,7 @@ class BatchBuilder2D constructor(
 		init { logger.trace { "BatchBuilder2D.Companion[4]" } }
 
         @KorgeInternal
-        fun getTextureLookupProgram(premultiplied: Boolean, add: AddType = AddType.POST_ADD) = getOrCreateStandardProgram(premultiplied, add)
+        fun getTextureLookupProgram(premultiplied: Boolean, add: AddType = AddType.POST_ADD): Program = getOrCreateStandardProgram(premultiplied, add)
 
 		//val PROGRAM_NORMAL = Program(
 		//	vertex = VERTEX,
@@ -755,7 +755,7 @@ class BatchBuilder2D constructor(
          * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
          */
         @KorgeInternal
-		private fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType) = FragmentShader {
+		internal fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType) = FragmentShader {
 			DefaultShaders.apply {
                 // THIS CAN BE OVERRIDED. Check `testGlslFragmentGenerationNewCustomFuncUpdated` for an example
                 val stexture2D = FUNC("stexture2D", Float4, "sampler" to Sampler2D, "coord" to Float2) {

@@ -317,9 +317,8 @@ interface BaseGlslGenerator {
         VarType.Mat2 -> "mat2"
         VarType.Mat3 -> "mat3"
         VarType.Mat4 -> "mat4"
-        VarType.TextureUnit -> if (config.programConfig.externalTextureSampler) "samplerExternalOES" else "sampler2D"
         VarType.Sampler1D -> "sampler1D"
-        VarType.Sampler2D -> "sampler2D"
+        VarType.Sampler2D -> if (config.programConfig.externalTextureSampler) "samplerExternalOES" else "sampler2D"
         VarType.Sampler3D -> "sampler3D"
         VarType.SamplerCube -> "samplerCube"
         else -> {

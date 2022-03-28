@@ -55,7 +55,7 @@ class TransitionFilter(
         private val u_Reversed = Uniform("u_Reversed", VarType.Float1)
         private val u_Smooth = Uniform("u_Smooth", VarType.Float1)
         private val u_Ratio = Uniform("u_Ratio", VarType.Float1)
-        private val u_Mask = Uniform("u_Mask", VarType.TextureUnit)
+        private val u_Mask = Uniform("u_Mask", VarType.Sampler2D)
 
         private val FRAGMENT_SHADER = Filter.DEFAULT_FRAGMENT.appending {
             val alpha = t_Temp1.x

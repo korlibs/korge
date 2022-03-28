@@ -26,7 +26,7 @@ interface IDefaultShaders {
 
 object DefaultShaders {
     // from korge
-	val u_Tex: Uniform = Uniform("u_Tex", VarType.TextureUnit)
+	val u_Tex: Uniform = Uniform("u_Tex", VarType.Sampler2D)
 
 	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)
