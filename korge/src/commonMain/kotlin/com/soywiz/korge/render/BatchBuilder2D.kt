@@ -757,15 +757,18 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		internal fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType) = FragmentShader {
 			DefaultShaders.apply {
+                // @TODO: Due to some android device shader compiler bugs, can't use samplerExternalOES as a parameter of a custom function
+                // @TODO: So disabled this functionality, and keep fract() as the standard
+                // @TODO: https://stackoverflow.com/questions/40662936/compile-time-failure-when-reading-texels-from-samplerexternaloes
                 // THIS CAN BE OVERRIDED. Check `testGlslFragmentGenerationNewCustomFuncUpdated` for an example
-                val stexture2D = FUNC("stexture2D", Float4, "sampler" to Sampler2D, "coord" to Float2) {
-                    val sampler = ARG("sampler", Sampler2D)
-                    val coord = ARG("coord", Float2)
-                    RETURN(texture2D(sampler, fract(coord)))
-                }
+                //val stexture2D = FUNC("stexture2D", Float4, "sampler" to Sampler2D, "coord" to Float2) {
+                //    val sampler = ARG("sampler", Sampler2D)
+                //    val coord = ARG("coord", Float2)
+                //    RETURN(texture2D(sampler, fract(coord)))
+                //}
 
                 IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-                    SET(out, stexture2D(u_TexN[n], v_Tex["xy"]))
+                    SET(out, texture2D(u_TexN[n], fract(v_Tex["xy"])))
                 }
                 //for (n in 0 until BB_MAX_TEXTURES) {
                 //    IF(v_TexIndex eq (n.toFloat()).lit) {
