@@ -18,24 +18,21 @@ varying lowp float v_TexIndex;
 varying mediump vec2 v_Tex;
 varying vec4 v_Col;
 varying vec4 v_Col2;
-vec4 stexture2D(samplerExternalOES sampler, vec2 coord) {
-	return texture2D(sampler, fract(coord));
-}
 void main() {
 	if ((v_TexIndex <= 1.0)) {
 		if ((v_TexIndex == 0.0)) {
-			gl_FragColor = stexture2D(u_Tex0, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex0, fract(v_Tex.xy));
 		}
 		else {
-			gl_FragColor = stexture2D(u_Tex1, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex1, fract(v_Tex.xy));
 		}
 	}
 	else {
 		if ((v_TexIndex == 2.0)) {
-			gl_FragColor = stexture2D(u_Tex2, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex2, fract(v_Tex.xy));
 		}
 		else {
-			gl_FragColor = stexture2D(u_Tex3, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex3, fract(v_Tex.xy));
 		}
 	}
 	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
