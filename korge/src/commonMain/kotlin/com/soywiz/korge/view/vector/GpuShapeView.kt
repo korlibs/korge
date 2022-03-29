@@ -217,6 +217,7 @@ class GpuShapeView(shape: Shape) : View() {
                             identity()
                             preconcat(paint.transform)
                             preconcat(stateTransform)
+                            preconcat(localMatrix)
                             invert()
                             scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
                         }
@@ -235,6 +236,7 @@ class GpuShapeView(shape: Shape) : View() {
                             identity()
                             preconcat(paint.transform)
                             preconcat(stateTransform)
+                            preconcat(localMatrix)
                         })
                         //val mat = stateTransform * paint.gradientMatrix
                         val mat = when (paint.kind) {

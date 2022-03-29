@@ -120,7 +120,10 @@ suspend fun Stage.mainGpuVectorRendering() {
     }
 
     measureTime({
-        gpuShapeView { buildGraphics("GPU") }.xy(0, 0)//.rotation(45.degrees)
+        gpuShapeView { buildGraphics("GPU") }
+            .xy(40, 0)
+            .scale(1.1)
+            .rotation(15.degrees)
     }) {
         println("GPU SHAPE: $it")
     }
