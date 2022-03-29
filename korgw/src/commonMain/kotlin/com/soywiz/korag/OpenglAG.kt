@@ -100,6 +100,7 @@ abstract class AGOpengl : AG() {
         val depth = FBuffer(4)
         val framebuffer = FBuffer(4)
 
+        // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
         override fun set() {
             setViewport(this)
             //val width = this.width.nextPowerOfTwo

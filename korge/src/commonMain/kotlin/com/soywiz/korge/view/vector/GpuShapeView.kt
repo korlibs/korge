@@ -2,6 +2,7 @@ package com.soywiz.korge.view.vector
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
@@ -9,8 +10,6 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.BlendMode.NORMAL
-import com.soywiz.korge.view.scale
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
@@ -70,15 +69,14 @@ class GpuShapeView(shape: Shape) : View() {
             EmptyShape -> Unit
             is FillShape -> renderShape(ctx, shape)
             is CompoundShape -> for (v in shape.components) renderShape(ctx, v)
-            is PolylineShape -> {
-                //println("TODO: PolylineShape not implemented. Convert into fills")
-            }
-            is TextShape -> {
-                renderShape(ctx, shape.primitiveShapes)
-            }
+            // @TODO: Will be faster to draw this differently, since we probably won't need stencil buffer at all here
+            is PolylineShape -> renderShape(ctx, shape.fillShape)
+            is TextShape -> renderShape(ctx, shape.primitiveShapes)
             else -> TODO("shape=$shape")
         }
     }
+
+    private var notifyAboutEvenOdd = false
 
     private fun renderShape(ctx: RenderContext, shape: FillShape) {
         val path = shape.path
@@ -113,7 +111,10 @@ class GpuShapeView(shape: Shape) : View() {
         data[1] = ((bb.ymax + bb.ymin) / 2).toFloat()
 
         if (shape.path.winding != Winding.EVEN_ODD) {
-            error("Currently only supported EVEN_ODD winding")
+            if (!notifyAboutEvenOdd) {
+                notifyAboutEvenOdd = true
+                Console.error("ERROR: Currently only supported EVEN_ODD winding, but used ${shape.path.winding}")
+            }
         }
 
         val bounds = bb.getBounds()
