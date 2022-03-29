@@ -91,11 +91,9 @@ class AgBitmapTextureManager(
      * You shouldn't call this method directly. Use [getTexture] or [getTextureBase] instead.
      */
 	private fun getTextureInfo(bitmap: Bitmap): BitmapTextureInfo {
-		if (cachedBitmap === bitmap) return cachedBitmapTextureInfo!!
-        if (cachedBitmap2 === bitmap) return cachedBitmapTextureInfo2!!
+		if (cachedBitmap === bitmap && cachedBitmapTextureInfo!!.textureBase.version == bitmap.contentVersion) return cachedBitmapTextureInfo!!
+        if (cachedBitmap2 === bitmap && cachedBitmapTextureInfo2!!.textureBase.version == bitmap.contentVersion) return cachedBitmapTextureInfo2!!
         referencedBitmapsSinceGC.add(bitmap)
-
-		if (cachedBitmap == bitmap) return cachedBitmapTextureInfo!!
 
 		val textureInfo = bitmapsToTextureBase.getOrPut(bitmap) {
             textureInfoPool.alloc().also {

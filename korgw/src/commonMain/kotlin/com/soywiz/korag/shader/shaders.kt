@@ -372,7 +372,11 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 
         fun asin(arg: Operand): Operand = Func("asin", arg)
         fun acos(arg: Operand): Operand = Func("acos", arg)
-        fun atan(arg: Operand): Operand = Func("atan", arg)
+        fun atan(y_over_x: Operand): Operand = Func("atan", y_over_x)
+        fun atan(y: Operand, x: Operand): Operand = Func("atan", y, x)
+
+        // @TODO: https://en.wikipedia.org/wiki/Atan2#Definition_and_computation (IF chain)
+        //fun atan2(a: Operand, b: Operand): Operand = atan(a / b) * 2f.lit
 
         fun radians(arg: Operand): Operand = Func("radians", arg)
         fun degrees(arg: Operand): Operand = Func("degrees", arg)

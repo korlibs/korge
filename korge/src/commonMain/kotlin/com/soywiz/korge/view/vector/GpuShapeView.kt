@@ -17,6 +17,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
+import kotlin.math.*
 
 
 @KorgeExperimental
@@ -232,7 +233,10 @@ class GpuShapeView(shape: Shape) : View() {
                         uniforms = bitmapUniforms
                     }
                     is GradientPaint -> {
-                        paint.fillColors(gradientBitmap.dataPremult)
+                        gradientBitmap.lock {
+                            paint.fillColors(gradientBitmap.dataPremult)
+                        }
+
                         val npaint = paint.copy(transform = Matrix().apply {
                             identity()
                             preconcat(paint.transform)
@@ -241,15 +245,16 @@ class GpuShapeView(shape: Shape) : View() {
                         })
                         //val mat = stateTransform * paint.gradientMatrix
                         val mat = when (paint.kind) {
-                            GradientKind.RADIAL -> npaint.transform.inverted()
-                            else -> npaint.gradientMatrix
+                            GradientKind.LINEAR -> npaint.gradientMatrix
+                            else -> npaint.transform.inverted()
                         }
                         gradientUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(gradientBitmap).base)
-                        gradientUniforms[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
+                        gradientUniforms[u_Transform] = mat.toMatrix3D()
                         gradientUniforms[u_Gradientp0] = floatArrayOf(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
                         gradientUniforms[u_Gradientp1] = floatArrayOf(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
                         program = when (paint.kind) {
                             GradientKind.RADIAL -> PROGRAM_RADIAL_GRADIENT
+                            GradientKind.SWEEP -> PROGRAM_SWEEP_GRADIENT
                             else -> PROGRAM_LINEAR_GRADIENT
                         }
                         uniforms = gradientUniforms
@@ -363,6 +368,26 @@ class GpuShapeView(shape: Shape) : View() {
 
                 SET(ratio, 1f.lit - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale)
                 SET(out, texture2D(u_Tex, vec2(ratio, 0f.lit)))
+                UPDATE_GLOBAL_ALPHA()
+            },
+        )
+        val PROGRAM_SWEEP_GRADIENT = Program(
+            vertex = VERTEX_FILL,
+            fragment = FragmentShaderDefault {
+                val rpoint = createTemp(VarType.Float2)
+                SET(rpoint["xy"], (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"])
+                val x = rpoint.x
+                val y = rpoint.y
+                val ratio = t_Temp0.x
+                val angle = t_Temp0.y
+                val x0 = u_Gradientp0.x
+                val y0 = u_Gradientp0.y
+                val PI2 = (PI * 2).toFloat().lit
+
+                SET(angle, atan(y - y0, x - x0))
+                IF(angle lt 0f.lit) { SET(angle, angle + PI2) }
+                SET(ratio, angle / PI2)
+                SET(out, texture2D(u_Tex, fract(vec2(ratio, 0f.lit))))
                 UPDATE_GLOBAL_ALPHA()
             },
         )

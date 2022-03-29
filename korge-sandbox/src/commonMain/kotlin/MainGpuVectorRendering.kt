@@ -25,7 +25,7 @@ import com.soywiz.korma.geom.vector.*
 @OptIn(KorgeExperimental::class)
 suspend fun Stage.mainGpuVectorRendering() {
     Console.log("[1]")
-    val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
+    val korgeBitmap = resourcesVfs["korge.png"].readBitmap()//.mipmaps()
     Console.log("[2]")
     val tigerSvg = measureTime({ resourcesVfs["Ghostscript_Tiger.svg"].readSVG() }) {
         println("Elapsed $it")
@@ -92,12 +92,16 @@ suspend fun Stage.mainGpuVectorRendering() {
             if (PAINT_RADIAL_GRADIENT) {
                 globalAlpha = 0.9
                 fillStyle =
-                    //createLinearGradient(150.0, 0.0, 200.0, 50.0)
                     createRadialGradient(150,150,30, 130,180,70)
-                    //createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0))
-                        //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                         .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
                 fillRect(100.0, 100.0, 100.0, 100.0)
+            }
+            if (PAINT_RADIAL_GRADIENT) {
+                globalAlpha = 0.9
+                fillStyle =
+                    createSweepGradient(175, 100)
+                        .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.PURPLE).addColorStop(1.0, Colors.YELLOW)
+                fillRect(150.0, 75.0, 50.0, 50.0)
             }
         }
         if (PAINT_TEXT) {
