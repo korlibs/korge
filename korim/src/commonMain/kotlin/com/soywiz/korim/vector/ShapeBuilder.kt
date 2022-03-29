@@ -23,15 +23,15 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
             shapes += FillShape(
                 path = state.path.clone(),
                 clip = state.clip?.clone(),
-                paint = state.fillStyle.transformed(state.transform),
-                transform = state.transform.clone()
+                paint = state.fillStyle.clone(),
+                transform = state.transform.clone(),
+                globalAlpha = state.globalAlpha,
             )
         } else {
             shapes += PolylineShape(
                 path = state.path.clone(),
                 clip = state.clip?.clone(),
-                paint = state.strokeStyle.transformed(state.transform),
-                //transform = Matrix(),
+                paint = state.strokeStyle.clone(),
                 transform = state.transform.clone(),
                 thickness = state.lineWidth,
                 pixelHinting = true,
@@ -39,10 +39,10 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 startCaps = state.startLineCap,
                 endCaps = state.endLineCap,
                 lineJoin = state.lineJoin,
-                miterLimit = state.miterLimit
+                miterLimit = state.miterLimit,
+                globalAlpha = state.globalAlpha,
             )
         }
-        super.rendererRender(state, fill)
     }
 
     override fun rendererRenderSystemText(state: State, font: Font?, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean) {

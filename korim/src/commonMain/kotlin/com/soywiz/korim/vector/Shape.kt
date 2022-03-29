@@ -138,6 +138,7 @@ interface StyledShape : Shape {
 	val clip: GraphicsPath?
 	val paint: Paint
 	val transform: Matrix
+    val globalAlpha: Double
 
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean): Unit {
         path?.let { path ->
@@ -310,7 +311,8 @@ data class FillShape(
     override val path: GraphicsPath,
     override val clip: GraphicsPath?,
     override val paint: Paint,
-    override val transform: Matrix = Matrix()
+    override val transform: Matrix = Matrix(),
+    override val globalAlpha: Double = 1.0,
 ) : StyledShape {
 	override fun drawInternal(c: Context2d) {
 		c.fill(paint)
@@ -339,8 +341,9 @@ data class PolylineShape(
     val startCaps: LineCap,
     val endCaps: LineCap,
     val lineJoin: LineJoin,
-    val miterLimit: Double
-) : StyledShape {
+    val miterLimit: Double,
+    override val globalAlpha: Double = 1.0,
+    ) : StyledShape {
     private val tempBB = BoundsBuilder()
     private val tempRect = Rectangle()
 
@@ -407,7 +410,8 @@ class TextShape(
     val stroke: Paint?,
     val halign: HorizontalAlign = HorizontalAlign.LEFT,
     val valign: VerticalAlign = VerticalAlign.TOP,
-    override val transform: Matrix = Matrix()
+    override val transform: Matrix = Matrix(),
+    override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     override val paint: Paint get() = fill ?: stroke ?: NonePaint
 

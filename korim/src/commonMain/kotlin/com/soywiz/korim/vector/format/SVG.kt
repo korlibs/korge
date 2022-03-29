@@ -160,9 +160,9 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             is GradientPaint -> {
                 val m = Matrix()
                 m.scale(bounds.width, bounds.height)
-                val out = res.applyMatrix(m)
-                //println(out)
-                out
+                res.applyMatrix(m).also {
+                    //println(it)
+                }
             }
             else -> {
                 res

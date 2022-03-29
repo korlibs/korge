@@ -11,11 +11,11 @@ import kotlin.apply
 import kotlin.math.*
 
 interface Paint {
-    fun transformed(m: Matrix): Paint
+    fun clone(): Paint
 }
 
 object NonePaint : Paint {
-    override fun transformed(m: Matrix) = this
+    override fun clone(): Paint = this
 }
 
 typealias ColorPaint = RGBA
@@ -165,9 +165,6 @@ data class GradientPaint(
             GradientKind.RADIAL -> {
                 val x = transformInv.transformX(px, py)
                 val y = transformInv.transformY(px, py)
-                //val x = px
-                //val y = py
-                //1.0 - (-r1 * (r0 - r1) + (x0 - x1) * (x1 - x) + (y0 - y1) * (y1 - y) - sqrt(r1.pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - 2 * r0 * r1 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0.pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) / ((r0 - r1).pow2 - (x0 - x1).pow2 - (y0 - y1).pow2)
                 1.0 - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale
             }
             else -> {
@@ -188,23 +185,9 @@ data class GradientPaint(
         //return getRatioAt(x, y)
     }
 
-    fun applyMatrix(m: Matrix): GradientPaint = GradientPaint(
-        kind,
-        m.transformX(x0, y0),
-        m.transformY(x0, y0),
-        r0 * m.transformX(1.0, 0.0),
-        m.transformX(x1, y1),
-        m.transformY(x1, y1),
-        r1 * m.transformX(1.0, 0.0),
-        DoubleArrayList(stops),
-        IntArrayList(colors),
-        cycle,
-        Matrix(),
-        interpolationMethod,
-        units
-    )
+    fun applyMatrix(m: Matrix): GradientPaint = copy(transform = transform * m)
 
-    override fun transformed(m: Matrix) = applyMatrix(m)
+    override fun clone(): Paint = copy(transform = transform.clone())
 
     override fun toString(): String = when (kind) {
         GradientKind.LINEAR -> "LinearGradient($x0, $y0, $x1, $y1, $stops, $colors)"
@@ -223,7 +206,7 @@ inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y
 @Deprecated("Only available on Android or Bitmap32")
 inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix()) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform)
 
-class BitmapPaint(
+data class BitmapPaint(
     val bitmap: Bitmap,
     override val transform: Matrix,
     val cycleX: CycleMethod = CycleMethod.NO_CYCLE,
@@ -235,7 +218,7 @@ class BitmapPaint(
     val repeat: Boolean get() = repeatX || repeatY
 
     val bmp32 = bitmap.toBMP32()
-    override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(m, this.transform))
+    override fun clone(): Paint = copy(transform = transform.clone())
 
     //override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(this.transform, m))
     override fun toString(): String = "BitmapPaint($bitmap, cycle=($cycleX, $cycleY), smooth=$smooth, transform=$transform)"

@@ -37,7 +37,7 @@ suspend fun Stage.mainGpuVectorRendering() {
     val PAINT_LINEAR_GRADIENT = true
     val PAINT_RADIAL_GRADIENT = true
 
-    fun Context2d.buildGraphics() {
+    fun Context2d.buildGraphics(kind: String) {
         if (PAINT_TIGER) {
             keep {
                 scale(0.5)
@@ -103,31 +103,31 @@ suspend fun Stage.mainGpuVectorRendering() {
                 fontSize = 16.0
                 fillStyle = Colors.WHITE
                 alignment = TextAlignment.TOP_LEFT
-                fillText("HELLO WORLD", 0.0, 16.0)
+                fillText("HELLO WORLD ($kind)", 0.0, 16.0)
             }
         }
     }
 
-    buildShape { buildGraphics() }
+    buildShape { buildGraphics("only shape") }
 
     measureTime({
-        buildShape { buildGraphics() }
+        buildShape { buildGraphics("only shape") }
     }) {
         println("BUILD SHAPE: $it")
     }
 
     measureTime({
-        gpuShapeView { buildGraphics() }.xy(0, 0)//.rotation(45.degrees)
+        gpuShapeView { buildGraphics("GPU") }.xy(0, 0)//.rotation(45.degrees)
     }) {
         println("GPU SHAPE: $it")
     }
     measureTime({
-        image(NativeImage(512, 512).context2d { buildGraphics() }).xy(550, 0)
+        image(NativeImage(512, 512).context2d { buildGraphics("NATIVE") }).xy(550, 0)
     }) {
         println("CONTEXT2D NATIVE: $it")
     }
     measureTime({
-        image(Bitmap32(512, 512).context2d { buildGraphics() }).xy(550, 370)
+        image(Bitmap32(512, 512).context2d { buildGraphics("KOTLIN") }).xy(550, 370)
     }) {
         println("CONTEXT2D BITMAP: $it")
     }
@@ -150,34 +150,84 @@ class GpuShapeView(shape: Shape) : View() {
 
     companion object {
         val u_Color = Uniform("u_Color", VarType.Float4)
+        val u_GlobalAlpha = Uniform("u_GlobalAlpha", VarType.Float1)
         val u_Transform = Uniform("u_Transform", VarType.Mat4)
+        val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
+        val u_Gradientp1 = Uniform("u_Gradientp1", VarType.Float3)
         val LAYOUT = VertexLayout(DefaultShaders.a_Pos)
         val LAYOUT_FILL = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
         val VERTEX_FILL = VertexShaderDefault {
-            SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit))
+            SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
+            //SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
             SET(v_Tex, DefaultShaders.a_Tex)
         }
         val PROGRAM_STENCIL = Program(
-            vertex = VertexShaderDefault { SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit)) },
+            vertex = VertexShaderDefault { SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit)) },
             fragment = FragmentShaderDefault { SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit)) },
         )
+
+        fun Program.Builder.UPDATE_GLOBAL_ALPHA() {
+            SET(out.a, out.a * u_GlobalAlpha)
+        }
+        val Operand.pow2: Operand get() = Program.ExpressionBuilder { pow(this@pow2, 2f.lit) }
+
+
         val PROGRAM_COLOR = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
                 SET(out, u_Color)
+                UPDATE_GLOBAL_ALPHA()
             },
         )
         val PROGRAM_BITMAP = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
                 // @TODO: we should convert 0..1 to texture slice coordinates
-                SET(out, texture2D(u_Tex, fract(vec2((vec4(v_Tex, 0f.lit, 1f.lit) * u_Transform)["xy"]))))
+                SET(out, texture2D(u_Tex, fract(vec2((u_Transform * vec4(v_Tex, 0f.lit, 1f.lit))["xy"]))))
+                UPDATE_GLOBAL_ALPHA()
+                //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
             },
         )
         val PROGRAM_LINEAR_GRADIENT = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
-                SET(out, texture2D(u_Tex, (vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit) * u_Transform)["xy"]))
+                SET(out, texture2D(u_Tex, (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"]))
+                UPDATE_GLOBAL_ALPHA()
+            },
+        )
+        val PROGRAM_RADIAL_GRADIENT = Program(
+            vertex = VERTEX_FILL,
+            fragment = FragmentShaderDefault {
+                val rpoint = createTemp(VarType.Float2)
+                SET(rpoint["xy"], (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"])
+                val x = rpoint.x
+                val y = rpoint.y
+                val x0 = u_Gradientp0.x
+                val y0 = u_Gradientp0.y
+                val r0 = u_Gradientp0.z
+                val x1 = u_Gradientp1.x
+                val y1 = u_Gradientp1.y
+                val r1 = u_Gradientp1.z
+                val ratio = t_Temp0.x
+                val r0r1_2 = t_Temp0.y
+                val r0pow2 = t_Temp0.z
+                val r1pow2 = t_Temp0.w
+                val y0_y1 = t_Temp1.x
+                val x0_x1 = t_Temp1.y
+                val r0_r1 = t_Temp1.z
+                val radial_scale = t_Temp1.w
+
+                SET(r0r1_2, 2f.lit * r0 * r1)
+                SET(r0pow2, r0.pow2)
+                SET(r1pow2, r1.pow2)
+                SET(x0_x1, x0 - x1)
+                SET(y0_y1, y0 - y1)
+                SET(r0_r1, r0 - r1)
+                SET(radial_scale, 1f.lit / ((r0 - r1).pow2 - (x0 - x1).pow2 - (y0 - y1).pow2))
+
+                SET(ratio, 1f.lit - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale)
+                SET(out, texture2D(u_Tex, vec2(ratio, 0f.lit)))
+                UPDATE_GLOBAL_ALPHA()
             },
         )
     }
@@ -189,16 +239,24 @@ class GpuShapeView(shape: Shape) : View() {
 
     var msaaSamples: Int = 4
 
+    var bufferWidth = 1000
+    var bufferHeight = 1000
+
     override fun renderInternal(ctx: RenderContext) {
         ctx.flush()
         val currentRenderBuffer = ctx.ag.currentRenderBufferOrMain
-        ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
-            renderShape(ctx, shape)
-        }, hasStencil = true, msamples = msaaSamples) { texture ->
-            ctx.useBatcher {
-                it.drawQuad(texture, x = 0f, y = 0f)
+        //ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
+        bufferWidth = currentRenderBuffer.width ; bufferHeight = currentRenderBuffer.height
+        val time = measureTime {
+            ctx.renderToTexture(bufferWidth, bufferHeight, {
+                renderShape(ctx, shape)
+            }, hasStencil = true, msamples = msaaSamples) { texture ->
+                ctx.useBatcher {
+                    it.drawQuad(texture, x = 0f, y = 0f)
+                }
             }
         }
+        //println("GPU RENDER IN: $time")
     }
 
     private fun renderShape(ctx: RenderContext, shape: Shape) {
@@ -219,6 +277,10 @@ class GpuShapeView(shape: Shape) : View() {
     private fun renderShape(ctx: RenderContext, shape: FillShape) {
         val path = shape.path
         val m = globalMatrix
+        //val m = localMatrix
+        //val stage = stage!!
+        //val stageMatrix = stage.localMatrix
+        //println("stage=$stage, globalMatrix=$stageMatrix")
 
         val points = pointCache.getOrPut(path) {
             val points = PointArrayList()
@@ -229,9 +291,7 @@ class GpuShapeView(shape: Shape) : View() {
         }
 
         val bb = BoundsBuilder()
-        val bb2 = BoundsBuilder()
         bb.reset()
-        bb2.reset()
 
         val data = FloatArray(points.size * 2 + 4)
         for (n in 0 until points.size + 1) {
@@ -242,7 +302,6 @@ class GpuShapeView(shape: Shape) : View() {
             data[(n + 1) * 2 + 0] = tx
             data[(n + 1) * 2 + 1] = ty
             bb.add(tx, ty)
-            bb2.add(x, y)
         }
         data[0] = ((bb.xmax + bb.xmin) / 2).toFloat()
         data[1] = ((bb.ymax + bb.ymin) / 2).toFloat()
@@ -252,19 +311,15 @@ class GpuShapeView(shape: Shape) : View() {
         }
 
         val bounds = bb.getBounds()
-        val bounds2 = bb2.getBounds()
+
+        val scissor: AG.Scissor? = AG.Scissor().setTo(Rectangle.fromBounds(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toIntCeil(), bounds.bottom.toIntCeil()))
+        //val scissor: AG.Scissor? = null
 
         ctx.dynamicVertexBufferPool { vertices ->
             vertices.upload(data)
             ctx.batch.updateStandardUniforms()
 
             ctx.batch.simulateBatchStats(points.size + 2)
-
-            val scissor: AG.Scissor? = AG.Scissor().setTo(
-                //bounds
-                Rectangle.fromBounds(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toIntCeil(), bounds.bottom.toIntCeil())
-            )
-            //val scissor: AG.Scissor? = null
 
             ctx.ag.clearStencil(0, scissor = scissor)
             //ctx.ag.clearStencil(0, scissor = null)
@@ -290,7 +345,7 @@ class GpuShapeView(shape: Shape) : View() {
                 scissor = scissor,
             )
         }
-        renderFill(ctx, shape.paint, shape.transform, bounds, bounds2)
+        renderFill(ctx, shape.paint, shape.transform, scissor, shape.globalAlpha)
     }
 
     private val colorUniforms = AG.UniformValues()
@@ -300,21 +355,34 @@ class GpuShapeView(shape: Shape) : View() {
 
     private val colorF = FloatArray(4)
 
-    private fun renderFill(ctx: RenderContext, paint: Paint, transform: Matrix, bounds: Rectangle, localBounds: Rectangle) {
+    private fun renderFill(
+        ctx: RenderContext,
+        paint: Paint,
+        stateTransform: Matrix,
+        scissor: AG.Scissor?,
+        globalAlpha: Double,
+    ) {
         if (paint is NonePaint) return
 
         ctx.dynamicVertexBufferPool { vertices ->
             val data = FloatArray(4 * 4)
             var n = 0
-            val x0 = bounds.left.toFloat()
-            val y0 = bounds.top.toFloat()
-            val x1 = bounds.right.toFloat()
-            val y1 = bounds.bottom.toFloat()
 
-            val lx0 = localBounds.left.toFloat()
-            val ly0 = localBounds.top.toFloat()
-            val lx1 = localBounds.right.toFloat()
-            val ly1 = localBounds.bottom.toFloat()
+            val x0 = 0f
+            val y0 = 0f
+            val x1 = bufferWidth.toFloat()
+            val y1 = bufferHeight.toFloat()
+
+            val vm = Matrix()
+            vm.copyFrom(stage!!.globalMatrixInv)
+
+            val l0 = vm.transform(0f, 0f)
+            val l1 = vm.transform(bufferWidth.toFloat(), bufferHeight.toFloat())
+            val lx0 = l0.xf
+            val ly0 = l0.yf
+            val lx1 = l1.xf
+            val ly1 = l1.yf
+
             data[n++] = x0; data[n++] = y0; data[n++] = lx0; data[n++] = ly0
             data[n++] = x1; data[n++] = y0; data[n++] = lx1; data[n++] = ly0
             data[n++] = x1; data[n++] = y1; data[n++] = lx1; data[n++] = ly1
@@ -328,6 +396,9 @@ class GpuShapeView(shape: Shape) : View() {
                 var uniforms: AG.UniformValues = colorUniforms
                 var program: Program = PROGRAM_COLOR
                 when (paint) {
+                    is NonePaint -> {
+                        return
+                    }
                     is ColorPaint -> {
                         val color = paint
                         color.writeFloat(colorF)
@@ -336,28 +407,52 @@ class GpuShapeView(shape: Shape) : View() {
                         uniforms = colorUniforms
                     }
                     is BitmapPaint -> {
-                        bitmapUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(paint.bitmap).base)
-                        val mat = (paint.transform * transform)
-                        mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
+                        val mat = Matrix().apply {
+                            identity()
+                            preconcat(paint.transform)
+                            preconcat(stateTransform)
+                            invert()
+                            scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
+                        }
+
+                        //val mat = (paint.transform * stateTransform)
+                        //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
                         //println("mat=$mat")
-                        bitmapUniforms[u_Transform] = mat.toMatrix3D()
+                        bitmapUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(paint.bitmap).base)
+                        bitmapUniforms[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
                         program = PROGRAM_BITMAP
                         uniforms = bitmapUniforms
                     }
                     is GradientPaint -> {
                         paint.fillColors(gradientBitmap.dataPremult)
+                        val npaint = paint.copy(transform = Matrix().apply {
+                            identity()
+                            preconcat(paint.transform)
+                            preconcat(stateTransform)
+                        })
+                        //val mat = stateTransform * paint.gradientMatrix
+                        val mat = when (paint.kind) {
+                            GradientKind.RADIAL -> npaint.transform.inverted()
+                            else -> npaint.gradientMatrix
+                        }
                         gradientUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(gradientBitmap).base)
-                        val mat = transform.inverted() * paint.gradientMatrix
-                        gradientUniforms[u_Transform] = mat.toMatrix3D()
-                        program = PROGRAM_LINEAR_GRADIENT
+                        gradientUniforms[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
+                        gradientUniforms[u_Gradientp0] = floatArrayOf(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
+                        gradientUniforms[u_Gradientp1] = floatArrayOf(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
+                        program = when (paint.kind) {
+                            GradientKind.RADIAL -> PROGRAM_RADIAL_GRADIENT
+                            else -> PROGRAM_LINEAR_GRADIENT
+                        }
                         uniforms = gradientUniforms
                     }
                     else -> {
                         TODO("paint=$paint")
                     }
                 }
+                uniforms[u_GlobalAlpha] = globalAlpha.toFloat()
                 batch.setTemporalUniforms(uniforms) {
                     ctx.batch.simulateBatchStats(4)
+                    //println("ctx.batch.uniforms=${ctx.batch.uniforms}")
                     ctx.ag.draw(
                         vertices = vertices,
                         program = program,
@@ -372,6 +467,7 @@ class GpuShapeView(shape: Shape) : View() {
                         ),
                         blending = BlendMode.NORMAL.factors,
                         colorMask = AG.ColorMaskState(true, true, true, true),
+                        scissor = scissor,
                     )
                 }
             }

@@ -37,8 +37,6 @@ class BitmapFiller : BaseFiller() {
     private var texture: Bitmap32 = Bitmaps.transparent.bmp
     private var transform: Matrix = Matrix()
     private var linear: Boolean = true
-    private val stateTrans = Matrix()
-    private val fillTrans = Matrix()
     private val compTrans = Matrix()
 
     fun set(fill: BitmapPaint, state: Context2d.State) = this.apply {
@@ -47,12 +45,11 @@ class BitmapFiller : BaseFiller() {
         this.texture = fill.bmp32
         this.transform = fill.transform
         this.linear = fill.smooth
-        state.transform.inverted(this.stateTrans)
-        fill.transform.inverted(this.fillTrans)
         compTrans.apply {
             identity()
-            premultiply(fillTrans)
-            premultiply(stateTrans)
+            premultiply(state.transform)
+            premultiply(fill.transform)
+            invert()
         }
     }
 
@@ -91,20 +88,25 @@ class GradientFiller : BaseFiller() {
     }
     private val colors = RgbaPremultipliedArray(NCOLORS)
     private lateinit var fill: GradientPaint
-    private val stateTransformInv = Matrix()
+    //private val stateTransformInv = Matrix()
 
     fun set(fill: GradientPaint, state: Context2d.State): GradientFiller {
         fill.fillColors(colors)
-        this.fill = fill
+        this.fill = fill.copy(transform = Matrix().apply {
+            identity()
+            preconcat(fill.transform)
+            preconcat(state.transform)
+        })
         //println("state.transform=${state.transform}")
-        this.stateTransformInv.copyFromInverted(state.transform)
+        //this.stateTransformInv.copyFromInverted(state.transform)
         return this
     }
 
     private fun color(ratio: Double): RGBAPremultiplied = colors[(ratio.clamp01() * (NCOLORS - 1)).toInt()]
 
     fun getRatio(x: Double, y: Double): Double {
-        return fill.getRatioAt(x, y, stateTransformInv)
+        //return fill.getRatioAt(x, y, stateTransformInv)
+        return fill.getRatioAt(x, y)
     }
     fun getColor(x: Double, y: Double): RGBAPremultiplied {
         return color(getRatio(x, y))

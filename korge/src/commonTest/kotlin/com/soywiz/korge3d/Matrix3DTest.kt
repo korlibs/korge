@@ -114,4 +114,11 @@ class Matrix3DTest {
     fun round(x: Float, digits: Int) = (round(x * 10.0.pow(digits)) / 10.0.pow(digits)).toFloat()
     fun round(x: Double, digits: Int) = round(x * 10.0.pow(digits)) / 10.0.pow(digits)
 
+    @Test
+    fun testConvert() {
+        val mat = Matrix().translate(100, 20).scale(2, 2)
+        assertEquals(Point(240, 60), mat.transform(Point(20, 10)))
+        val m3d = mat.toMatrix3D()
+        assertEquals(Vector3D(240, 60, 0, 1), m3d.transform(Vector3D(20, 10, 0, 1)))
+    }
 }
