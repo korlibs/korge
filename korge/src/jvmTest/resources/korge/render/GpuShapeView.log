@@ -2,7 +2,7 @@ draw(vertexCount=12, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=460, y=860, width=520, height=520)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -22,7 +22,7 @@ draw(vertexCount=12, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 ::draw.vertex[0]: a_Pos[720,1120]
 ::draw.vertex[1]: a_Pos[460,860]
@@ -73,7 +73,7 @@ draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Color, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=460, y=860, width=520, height=520)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=1, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -144,8 +144,8 @@ void main() {
 draw(vertexCount=276, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
-::draw.scissor=Scissor(x=740, y=1140, width=320, height=320)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.scissor=Scissor(x=740.0449829101562, y=1140.044921875, width=319.95501708984375, height=319.91015625)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -165,7 +165,7 @@ draw(vertexCount=276, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275]
 ::draw.vertex[0]: a_Pos[900.02246,1300]
 ::draw.vertex[1]: a_Pos[1060,1300]
@@ -479,8 +479,8 @@ void main() {
 draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Color, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
-::draw.scissor=Scissor(x=740, y=1140, width=320, height=320)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.scissor=Scissor(x=740.0449829101562, y=1140.044921875, width=319.95501708984375, height=319.91015625)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=1, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -551,8 +551,8 @@ void main() {
 draw(vertexCount=9, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
-::draw.scissor=Scissor(x=796, y=1180, width=208, height=240)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.scissor=Scissor(x=796.0769653320312, y=1180, width=207.8460693359375, height=240)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -572,7 +572,7 @@ draw(vertexCount=9, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8]
 ::draw.vertex[0]: a_Pos[900,1300]
 ::draw.vertex[1]: a_Pos[900,1180]
@@ -619,8 +619,8 @@ void main() {
 draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Color, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
-::draw.scissor=Scissor(x=796, y=1180, width=208, height=240)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.scissor=Scissor(x=796.0769653320312, y=1180, width=207.8460693359375, height=240)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=1, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -692,7 +692,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=500, y=180, width=800, height=800)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -712,7 +712,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6]
 ::draw.vertex[0]: a_Pos[900,580]
 ::draw.vertex[1]: a_Pos[500,180]
@@ -758,7 +758,7 @@ draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Tex, u_Transform, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=500, y=180, width=800, height=800)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=1, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -838,7 +838,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=1300, y=180, width=800, height=800)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -858,7 +858,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6]
 ::draw.vertex[0]: a_Pos[1700,580]
 ::draw.vertex[1]: a_Pos[1300,180]
@@ -900,11 +900,767 @@ void main() {
 	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 }
 
+draw(vertexCount=697, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1300, y=180, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=2)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674, 675, 676, 677, 678, 679, 680, 681, 682, 683, 684, 685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696]
+::draw.vertex[0]: a_Pos[1300,580]
+::draw.vertex[1]: a_Pos[500,180]
+::draw.vertex[2]: a_Pos[1300,180]
+::draw.vertex[3]: a_Pos[1300,980]
+::draw.vertex[4]: a_Pos[500,980]
+::draw.vertex[5]: a_Pos[500,180]
+::draw.vertex[6]: a_Pos[2100,580]
+::draw.vertex[7]: a_Pos[2099.982,576.17334]
+::draw.vertex[8]: a_Pos[2099.9285,572.3552]
+::draw.vertex[9]: a_Pos[2099.839,568.5458]
+::draw.vertex[10]: a_Pos[2099.7144,564.74524]
+::draw.vertex[11]: a_Pos[2099.5547,560.95374]
+::draw.vertex[12]: a_Pos[2099.3594,557.1714]
+::draw.vertex[13]: a_Pos[2099.1294,553.39844]
+::draw.vertex[14]: a_Pos[2098.8647,549.6349]
+::draw.vertex[15]: a_Pos[2098.5654,545.88104]
+::draw.vertex[16]: a_Pos[2098.2314,542.137]
+::draw.vertex[17]: a_Pos[2097.8633,538.40295]
+::draw.vertex[18]: a_Pos[2097.461,534.6791]
+::draw.vertex[19]: a_Pos[2097.0244,530.96545]
+::draw.vertex[20]: a_Pos[2096.5542,527.2622]
+::draw.vertex[21]: a_Pos[2096.0503,523.5697]
+::draw.vertex[22]: a_Pos[2095.5132,519.8879]
+::draw.vertex[23]: a_Pos[2094.9424,516.21704]
+::draw.vertex[24]: a_Pos[2094.3384,512.55725]
+::draw.vertex[25]: a_Pos[2093.7017,508.90872]
+::draw.vertex[26]: a_Pos[2093.0317,505.2716]
+::draw.vertex[27]: a_Pos[2092.329,501.64606]
+::draw.vertex[28]: a_Pos[2091.594,498.03226]
+::draw.vertex[29]: a_Pos[2090.8264,494.4303]
+::draw.vertex[30]: a_Pos[2090.0266,490.84042]
+::draw.vertex[31]: a_Pos[2089.1948,487.26273]
+::draw.vertex[32]: a_Pos[2088.331,483.6974]
+::draw.vertex[33]: a_Pos[2087.4355,480.1446]
+::draw.vertex[34]: a_Pos[2086.5083,476.60446]
+::draw.vertex[35]: a_Pos[2085.5498,473.07718]
+::draw.vertex[36]: a_Pos[2084.5598,469.56287]
+::draw.vertex[37]: a_Pos[2083.5386,466.06174]
+::draw.vertex[38]: a_Pos[2082.4868,462.5739]
+::draw.vertex[39]: a_Pos[2081.4038,459.09958]
+::draw.vertex[40]: a_Pos[2080.2905,455.6389]
+::draw.vertex[41]: a_Pos[2079.1465,452.19196]
+::draw.vertex[42]: a_Pos[2077.9722,448.759]
+::draw.vertex[43]: a_Pos[2076.7676,445.34015]
+::draw.vertex[44]: a_Pos[2075.5332,441.93558]
+::draw.vertex[45]: a_Pos[2074.269,438.5454]
+::draw.vertex[46]: a_Pos[2072.9749,435.16986]
+::draw.vertex[47]: a_Pos[2071.6514,431.80905]
+::draw.vertex[48]: a_Pos[2070.2983,428.46313]
+::draw.vertex[49]: a_Pos[2068.916,425.1323]
+::draw.vertex[50]: a_Pos[2067.505,421.81668]
+::draw.vertex[51]: a_Pos[2066.0647,418.51645]
+::draw.vertex[52]: a_Pos[2064.5957,415.23175]
+::draw.vertex[53]: a_Pos[2063.0981,411.96277]
+::draw.vertex[54]: a_Pos[2061.5723,408.70963]
+::draw.vertex[55]: a_Pos[2060.018,405.47253]
+::draw.vertex[56]: a_Pos[2058.436,402.2516]
+::draw.vertex[57]: a_Pos[2056.8257,399.047]
+::draw.vertex[58]: a_Pos[2055.1875,395.85892]
+::draw.vertex[59]: a_Pos[2053.522,392.68747]
+::draw.vertex[60]: a_Pos[2051.8289,389.53284]
+::draw.vertex[61]: a_Pos[2050.1084,386.3952]
+::draw.vertex[62]: a_Pos[2048.3608,383.2747]
+::draw.vertex[63]: a_Pos[2046.5863,380.17148]
+::draw.vertex[64]: a_Pos[2044.7848,377.0857]
+::draw.vertex[65]: a_Pos[2042.9567,374.01755]
+::draw.vertex[66]: a_Pos[2041.102,370.96716]
+::draw.vertex[67]: a_Pos[2039.2211,367.9347]
+::draw.vertex[68]: a_Pos[2037.314,364.92032]
+::draw.vertex[69]: a_Pos[2035.3807,361.9242]
+::draw.vertex[70]: a_Pos[2033.4216,358.94647]
+::draw.vertex[71]: a_Pos[2031.4368,355.9873]
+::draw.vertex[72]: a_Pos[2029.4264,353.04688]
+::draw.vertex[73]: a_Pos[2027.3906,350.12537]
+::draw.vertex[74]: a_Pos[2025.3296,347.22284]
+::draw.vertex[75]: a_Pos[2023.2434,344.33954]
+::draw.vertex[76]: a_Pos[2021.1323,341.4756]
+::draw.vertex[77]: a_Pos[2018.9966,338.63116]
+::draw.vertex[78]: a_Pos[2016.836,335.80643]
+::draw.vertex[79]: a_Pos[2014.6512,333.00153]
+::draw.vertex[80]: a_Pos[2012.442,330.2166]
+::draw.vertex[81]: a_Pos[2010.2087,327.45184]
+::draw.vertex[82]: a_Pos[2007.9515,324.7074]
+::draw.vertex[83]: a_Pos[2005.6704,321.98346]
+::draw.vertex[84]: a_Pos[2003.3656,319.2801]
+::draw.vertex[85]: a_Pos[2001.0374,316.59756]
+::draw.vertex[86]: a_Pos[1998.6858,313.93597]
+::draw.vertex[87]: a_Pos[1996.311,311.29547]
+::draw.vertex[88]: a_Pos[1993.9133,308.67627]
+::draw.vertex[89]: a_Pos[1991.4927,306.0785]
+::draw.vertex[90]: a_Pos[1989.0493,303.5023]
+::draw.vertex[91]: a_Pos[1986.5835,300.94785]
+::draw.vertex[92]: a_Pos[1984.0952,298.41528]
+::draw.vertex[93]: a_Pos[1981.5847,295.90482]
+::draw.vertex[94]: a_Pos[1979.0521,293.41656]
+::draw.vertex[95]: a_Pos[1976.4977,290.95068]
+::draw.vertex[96]: a_Pos[1973.9215,288.50732]
+::draw.vertex[97]: a_Pos[1971.3237,286.08673]
+::draw.vertex[98]: a_Pos[1968.7045,283.68893]
+::draw.vertex[99]: a_Pos[1966.0641,281.31418]
+::draw.vertex[100]: a_Pos[1963.4025,278.9626]
+::draw.vertex[101]: a_Pos[1960.7198,276.63434]
+::draw.vertex[102]: a_Pos[1958.0166,274.3296]
+::draw.vertex[103]: a_Pos[1955.2926,272.04852]
+::draw.vertex[104]: a_Pos[1952.5481,269.79126]
+::draw.vertex[105]: a_Pos[1949.7834,267.55792]
+::draw.vertex[106]: a_Pos[1946.9985,265.34875]
+::draw.vertex[107]: a_Pos[1944.1936,263.16388]
+::draw.vertex[108]: a_Pos[1941.3688,261.00345]
+::draw.vertex[109]: a_Pos[1938.5244,258.8676]
+::draw.vertex[110]: a_Pos[1935.6605,256.7566]
+::draw.vertex[111]: a_Pos[1932.7771,254.67046]
+::draw.vertex[112]: a_Pos[1929.8746,252.6094]
+::draw.vertex[113]: a_Pos[1926.9531,250.57361]
+::draw.vertex[114]: a_Pos[1924.0127,248.56322]
+::draw.vertex[115]: a_Pos[1921.0535,246.5784]
+::draw.vertex[116]: a_Pos[1918.0758,244.6193]
+::draw.vertex[117]: a_Pos[1915.0797,242.68607]
+::draw.vertex[118]: a_Pos[1912.0653,240.77888]
+::draw.vertex[119]: a_Pos[1909.0328,238.8979]
+::draw.vertex[120]: a_Pos[1905.9824,237.04327]
+::draw.vertex[121]: a_Pos[1902.9143,235.21518]
+::draw.vertex[122]: a_Pos[1899.8285,233.41374]
+::draw.vertex[123]: a_Pos[1896.7253,231.63914]
+::draw.vertex[124]: a_Pos[1893.6047,229.89156]
+::draw.vertex[125]: a_Pos[1890.4672,228.17111]
+::draw.vertex[126]: a_Pos[1887.3125,226.47798]
+::draw.vertex[127]: a_Pos[1884.1411,224.81232]
+::draw.vertex[128]: a_Pos[1880.953,223.17429]
+::draw.vertex[129]: a_Pos[1877.7484,221.56406]
+::draw.vertex[130]: a_Pos[1874.5275,219.98178]
+::draw.vertex[131]: a_Pos[1871.2904,218.42758]
+::draw.vertex[132]: a_Pos[1868.0372,216.90167]
+::draw.vertex[133]: a_Pos[1864.7683,215.4042]
+::draw.vertex[134]: a_Pos[1861.4835,213.9353]
+::draw.vertex[135]: a_Pos[1858.1833,212.49515]
+::draw.vertex[136]: a_Pos[1854.8677,211.0839]
+::draw.vertex[137]: a_Pos[1851.5369,209.70169]
+::draw.vertex[138]: a_Pos[1848.1909,208.34872]
+::draw.vertex[139]: a_Pos[1844.8302,207.02515]
+::draw.vertex[140]: a_Pos[1841.4546,205.73111]
+::draw.vertex[141]: a_Pos[1838.0645,204.46677]
+::draw.vertex[142]: a_Pos[1834.6599,203.23227]
+::draw.vertex[143]: a_Pos[1831.241,202.0278]
+::draw.vertex[144]: a_Pos[1827.808,200.8535]
+::draw.vertex[145]: a_Pos[1824.3611,199.70953]
+::draw.vertex[146]: a_Pos[1820.9004,198.59607]
+::draw.vertex[147]: a_Pos[1817.426,197.51326]
+::draw.vertex[148]: a_Pos[1813.9382,196.46126]
+::draw.vertex[149]: a_Pos[1810.4371,195.44023]
+::draw.vertex[150]: a_Pos[1806.9229,194.45033]
+::draw.vertex[151]: a_Pos[1803.3955,193.49173]
+::draw.vertex[152]: a_Pos[1799.8555,192.56456]
+::draw.vertex[153]: a_Pos[1796.3026,191.669]
+::draw.vertex[154]: a_Pos[1792.7373,190.80522]
+::draw.vertex[155]: a_Pos[1789.1595,189.97336]
+::draw.vertex[156]: a_Pos[1785.5697,189.17358]
+::draw.vertex[157]: a_Pos[1781.9678,188.40607]
+::draw.vertex[158]: a_Pos[1778.3539,187.67093]
+::draw.vertex[159]: a_Pos[1774.7284,186.96835]
+::draw.vertex[160]: a_Pos[1771.0913,186.29852]
+::draw.vertex[161]: a_Pos[1767.4427,185.66156]
+::draw.vertex[162]: a_Pos[1763.783,185.05762]
+::draw.vertex[163]: a_Pos[1760.112,184.48691]
+::draw.vertex[164]: a_Pos[1756.4303,183.94952]
+::draw.vertex[165]: a_Pos[1752.7378,183.44568]
+::draw.vertex[166]: a_Pos[1749.0345,182.9755]
+::draw.vertex[167]: a_Pos[1745.3209,182.53915]
+::draw.vertex[168]: a_Pos[1741.597,182.1368]
+::draw.vertex[169]: a_Pos[1737.863,181.7686]
+::draw.vertex[170]: a_Pos[1734.119,181.43472]
+::draw.vertex[171]: a_Pos[1730.3651,181.1353]
+::draw.vertex[172]: a_Pos[1726.6016,180.87051]
+::draw.vertex[173]: a_Pos[1722.8286,180.6405]
+::draw.vertex[174]: a_Pos[1719.0463,180.44547]
+::draw.vertex[175]: a_Pos[1715.2548,180.28552]
+::draw.vertex[176]: a_Pos[1711.4542,180.16084]
+::draw.vertex[177]: a_Pos[1707.6448,180.0716]
+::draw.vertex[178]: a_Pos[1703.8267,180.01791]
+::draw.vertex[179]: a_Pos[1696.1733,180.01791]
+::draw.vertex[180]: a_Pos[1692.3552,180.0716]
+::draw.vertex[181]: a_Pos[1688.5458,180.16084]
+::draw.vertex[182]: a_Pos[1684.7452,180.28552]
+::draw.vertex[183]: a_Pos[1680.9537,180.44547]
+::draw.vertex[184]: a_Pos[1677.1714,180.6405]
+::draw.vertex[185]: a_Pos[1673.3984,180.87051]
+::draw.vertex[186]: a_Pos[1669.6349,181.1353]
+::draw.vertex[187]: a_Pos[1665.881,181.43472]
+::draw.vertex[188]: a_Pos[1662.137,181.7686]
+::draw.vertex[189]: a_Pos[1658.403,182.1368]
+::draw.vertex[190]: a_Pos[1654.6791,182.53915]
+::draw.vertex[191]: a_Pos[1650.9655,182.9755]
+::draw.vertex[192]: a_Pos[1647.2622,183.44568]
+::draw.vertex[193]: a_Pos[1643.5697,183.94952]
+::draw.vertex[194]: a_Pos[1639.888,184.48691]
+::draw.vertex[195]: a_Pos[1636.217,185.05762]
+::draw.vertex[196]: a_Pos[1632.5573,185.66156]
+::draw.vertex[197]: a_Pos[1628.9087,186.29852]
+::draw.vertex[198]: a_Pos[1625.2716,186.96835]
+::draw.vertex[199]: a_Pos[1621.6461,187.67093]
+::draw.vertex[200]: a_Pos[1618.0322,188.40607]
+::draw.vertex[201]: a_Pos[1614.4303,189.17358]
+::draw.vertex[202]: a_Pos[1610.8405,189.97336]
+::draw.vertex[203]: a_Pos[1607.2627,190.80522]
+::draw.vertex[204]: a_Pos[1603.6974,191.669]
+::draw.vertex[205]: a_Pos[1600.1445,192.56456]
+::draw.vertex[206]: a_Pos[1596.6045,193.49173]
+::draw.vertex[207]: a_Pos[1593.0771,194.45033]
+::draw.vertex[208]: a_Pos[1589.5629,195.44023]
+::draw.vertex[209]: a_Pos[1586.0618,196.46126]
+::draw.vertex[210]: a_Pos[1582.574,197.51326]
+::draw.vertex[211]: a_Pos[1579.0996,198.59607]
+::draw.vertex[212]: a_Pos[1575.6389,199.70953]
+::draw.vertex[213]: a_Pos[1572.192,200.8535]
+::draw.vertex[214]: a_Pos[1568.759,202.0278]
+::draw.vertex[215]: a_Pos[1565.3401,203.23227]
+::draw.vertex[216]: a_Pos[1561.9355,204.46677]
+::draw.vertex[217]: a_Pos[1558.5454,205.73111]
+::draw.vertex[218]: a_Pos[1555.1698,207.02515]
+::draw.vertex[219]: a_Pos[1551.8091,208.34872]
+::draw.vertex[220]: a_Pos[1548.4631,209.70169]
+::draw.vertex[221]: a_Pos[1545.1323,211.0839]
+::draw.vertex[222]: a_Pos[1541.8167,212.49515]
+::draw.vertex[223]: a_Pos[1538.5165,213.9353]
+::draw.vertex[224]: a_Pos[1535.2317,215.4042]
+::draw.vertex[225]: a_Pos[1531.9628,216.90167]
+::draw.vertex[226]: a_Pos[1528.7096,218.42758]
+::draw.vertex[227]: a_Pos[1525.4725,219.98178]
+::draw.vertex[228]: a_Pos[1522.2516,221.56406]
+::draw.vertex[229]: a_Pos[1519.047,223.17429]
+::draw.vertex[230]: a_Pos[1515.8589,224.81232]
+::draw.vertex[231]: a_Pos[1512.6875,226.47798]
+::draw.vertex[232]: a_Pos[1509.5328,228.17111]
+::draw.vertex[233]: a_Pos[1506.3953,229.89156]
+::draw.vertex[234]: a_Pos[1503.2747,231.63914]
+::draw.vertex[235]: a_Pos[1500.1715,233.41374]
+::draw.vertex[236]: a_Pos[1497.0857,235.21518]
+::draw.vertex[237]: a_Pos[1494.0176,237.04327]
+::draw.vertex[238]: a_Pos[1490.9672,238.8979]
+::draw.vertex[239]: a_Pos[1487.9347,240.77888]
+::draw.vertex[240]: a_Pos[1484.9203,242.68607]
+::draw.vertex[241]: a_Pos[1481.9242,244.6193]
+::draw.vertex[242]: a_Pos[1478.9465,246.5784]
+::draw.vertex[243]: a_Pos[1475.9873,248.56322]
+::draw.vertex[244]: a_Pos[1473.0469,250.57361]
+::draw.vertex[245]: a_Pos[1470.1254,252.6094]
+::draw.vertex[246]: a_Pos[1467.2229,254.67046]
+::draw.vertex[247]: a_Pos[1464.3395,256.7566]
+::draw.vertex[248]: a_Pos[1461.4756,258.8676]
+::draw.vertex[249]: a_Pos[1458.6312,261.00345]
+::draw.vertex[250]: a_Pos[1455.8064,263.16388]
+::draw.vertex[251]: a_Pos[1453.0015,265.34875]
+::draw.vertex[252]: a_Pos[1450.2166,267.55792]
+::draw.vertex[253]: a_Pos[1447.4519,269.79126]
+::draw.vertex[254]: a_Pos[1444.7074,272.04852]
+::draw.vertex[255]: a_Pos[1441.9834,274.3296]
+::draw.vertex[256]: a_Pos[1439.2802,276.63434]
+::draw.vertex[257]: a_Pos[1436.5975,278.9626]
+::draw.vertex[258]: a_Pos[1433.9359,281.31418]
+::draw.vertex[259]: a_Pos[1431.2955,283.68893]
+::draw.vertex[260]: a_Pos[1428.6763,286.08673]
+::draw.vertex[261]: a_Pos[1426.0785,288.50732]
+::draw.vertex[262]: a_Pos[1423.5023,290.95068]
+::draw.vertex[263]: a_Pos[1420.9479,293.41656]
+::draw.vertex[264]: a_Pos[1418.4153,295.90482]
+::draw.vertex[265]: a_Pos[1415.9048,298.41528]
+::draw.vertex[266]: a_Pos[1413.4165,300.94785]
+::draw.vertex[267]: a_Pos[1410.9507,303.5023]
+::draw.vertex[268]: a_Pos[1408.5073,306.0785]
+::draw.vertex[269]: a_Pos[1406.0867,308.67627]
+::draw.vertex[270]: a_Pos[1403.689,311.29547]
+::draw.vertex[271]: a_Pos[1401.3142,313.93597]
+::draw.vertex[272]: a_Pos[1398.9626,316.59756]
+::draw.vertex[273]: a_Pos[1396.6344,319.2801]
+::draw.vertex[274]: a_Pos[1394.3296,321.98346]
+::draw.vertex[275]: a_Pos[1392.0485,324.7074]
+::draw.vertex[276]: a_Pos[1389.7913,327.45184]
+::draw.vertex[277]: a_Pos[1387.558,330.2166]
+::draw.vertex[278]: a_Pos[1385.3488,333.00153]
+::draw.vertex[279]: a_Pos[1383.164,335.80643]
+::draw.vertex[280]: a_Pos[1381.0034,338.63116]
+::draw.vertex[281]: a_Pos[1378.8677,341.4756]
+::draw.vertex[282]: a_Pos[1376.7566,344.33954]
+::draw.vertex[283]: a_Pos[1374.6704,347.22284]
+::draw.vertex[284]: a_Pos[1372.6094,350.12537]
+::draw.vertex[285]: a_Pos[1370.5736,353.04688]
+::draw.vertex[286]: a_Pos[1368.5632,355.9873]
+::draw.vertex[287]: a_Pos[1366.5784,358.94647]
+::draw.vertex[288]: a_Pos[1364.6193,361.9242]
+::draw.vertex[289]: a_Pos[1362.686,364.92032]
+::draw.vertex[290]: a_Pos[1360.7789,367.9347]
+::draw.vertex[291]: a_Pos[1358.898,370.96716]
+::draw.vertex[292]: a_Pos[1357.0433,374.01755]
+::draw.vertex[293]: a_Pos[1355.2152,377.0857]
+::draw.vertex[294]: a_Pos[1353.4137,380.17148]
+::draw.vertex[295]: a_Pos[1351.6392,383.2747]
+::draw.vertex[296]: a_Pos[1349.8916,386.3952]
+::draw.vertex[297]: a_Pos[1348.1711,389.53284]
+::draw.vertex[298]: a_Pos[1346.478,392.68747]
+::draw.vertex[299]: a_Pos[1344.8124,395.85892]
+::draw.vertex[300]: a_Pos[1343.1743,399.047]
+::draw.vertex[301]: a_Pos[1341.5641,402.2516]
+::draw.vertex[302]: a_Pos[1339.9818,405.47253]
+::draw.vertex[303]: a_Pos[1338.4276,408.70963]
+::draw.vertex[304]: a_Pos[1336.9017,411.96277]
+::draw.vertex[305]: a_Pos[1335.4042,415.23175]
+::draw.vertex[306]: a_Pos[1333.9353,418.51645]
+::draw.vertex[307]: a_Pos[1332.4951,421.81668]
+::draw.vertex[308]: a_Pos[1331.0839,425.1323]
+::draw.vertex[309]: a_Pos[1329.7017,428.46313]
+::draw.vertex[310]: a_Pos[1328.3488,431.80905]
+::draw.vertex[311]: a_Pos[1327.0251,435.16986]
+::draw.vertex[312]: a_Pos[1325.7311,438.5454]
+::draw.vertex[313]: a_Pos[1324.4668,441.93558]
+::draw.vertex[314]: a_Pos[1323.2323,445.34015]
+::draw.vertex[315]: a_Pos[1322.0278,448.759]
+::draw.vertex[316]: a_Pos[1320.8535,452.19196]
+::draw.vertex[317]: a_Pos[1319.7096,455.6389]
+::draw.vertex[318]: a_Pos[1318.5961,459.09958]
+::draw.vertex[319]: a_Pos[1317.5133,462.5739]
+::draw.vertex[320]: a_Pos[1316.4613,466.06174]
+::draw.vertex[321]: a_Pos[1315.4402,469.56287]
+::draw.vertex[322]: a_Pos[1314.4503,473.07718]
+::draw.vertex[323]: a_Pos[1313.4917,476.60446]
+::draw.vertex[324]: a_Pos[1312.5646,480.1446]
+::draw.vertex[325]: a_Pos[1311.6691,483.6974]
+::draw.vertex[326]: a_Pos[1310.8052,487.26273]
+::draw.vertex[327]: a_Pos[1309.9734,490.84042]
+::draw.vertex[328]: a_Pos[1309.1736,494.4303]
+::draw.vertex[329]: a_Pos[1308.406,498.03226]
+::draw.vertex[330]: a_Pos[1307.6709,501.64606]
+::draw.vertex[331]: a_Pos[1306.9684,505.2716]
+::draw.vertex[332]: a_Pos[1306.2985,508.90872]
+::draw.vertex[333]: a_Pos[1305.6615,512.55725]
+::draw.vertex[334]: a_Pos[1305.0576,516.21704]
+::draw.vertex[335]: a_Pos[1304.4869,519.8879]
+::draw.vertex[336]: a_Pos[1303.9496,523.5697]
+::draw.vertex[337]: a_Pos[1303.4457,527.2622]
+::draw.vertex[338]: a_Pos[1302.9755,530.96545]
+::draw.vertex[339]: a_Pos[1302.5392,534.6791]
+::draw.vertex[340]: a_Pos[1302.1368,538.40295]
+::draw.vertex[341]: a_Pos[1301.7686,542.137]
+::draw.vertex[342]: a_Pos[1301.4347,545.88104]
+::draw.vertex[343]: a_Pos[1301.1353,549.6349]
+::draw.vertex[344]: a_Pos[1300.8705,553.39844]
+::draw.vertex[345]: a_Pos[1300.6405,557.1714]
+::draw.vertex[346]: a_Pos[1300.4454,560.95374]
+::draw.vertex[347]: a_Pos[1300.2855,564.74524]
+::draw.vertex[348]: a_Pos[1300.1609,568.5458]
+::draw.vertex[349]: a_Pos[1300.0715,572.3552]
+::draw.vertex[350]: a_Pos[1300.018,576.17334]
+::draw.vertex[351]: a_Pos[1300.018,583.82666]
+::draw.vertex[352]: a_Pos[1300.0715,587.6448]
+::draw.vertex[353]: a_Pos[1300.1609,591.4542]
+::draw.vertex[354]: a_Pos[1300.2855,595.25476]
+::draw.vertex[355]: a_Pos[1300.4454,599.04626]
+::draw.vertex[356]: a_Pos[1300.6405,602.8286]
+::draw.vertex[357]: a_Pos[1300.8705,606.60156]
+::draw.vertex[358]: a_Pos[1301.1353,610.3651]
+::draw.vertex[359]: a_Pos[1301.4347,614.11896]
+::draw.vertex[360]: a_Pos[1301.7686,617.863]
+::draw.vertex[361]: a_Pos[1302.1368,621.59705]
+::draw.vertex[362]: a_Pos[1302.5392,625.321]
+::draw.vertex[363]: a_Pos[1302.9755,629.0346]
+::draw.vertex[364]: a_Pos[1303.4457,632.7378]
+::draw.vertex[365]: a_Pos[1303.9496,636.4303]
+::draw.vertex[366]: a_Pos[1304.4869,640.1121]
+::draw.vertex[367]: a_Pos[1305.0576,643.78296]
+::draw.vertex[368]: a_Pos[1305.6615,647.44275]
+::draw.vertex[369]: a_Pos[1306.2985,651.09125]
+::draw.vertex[370]: a_Pos[1306.9684,654.7284]
+::draw.vertex[371]: a_Pos[1307.6709,658.35394]
+::draw.vertex[372]: a_Pos[1308.406,661.9678]
+::draw.vertex[373]: a_Pos[1309.1736,665.5697]
+::draw.vertex[374]: a_Pos[1309.9734,669.1596]
+::draw.vertex[375]: a_Pos[1310.8052,672.73724]
+::draw.vertex[376]: a_Pos[1311.6691,676.3026]
+::draw.vertex[377]: a_Pos[1312.5646,679.8554]
+::draw.vertex[378]: a_Pos[1313.4917,683.39557]
+::draw.vertex[379]: a_Pos[1314.4503,686.92285]
+::draw.vertex[380]: a_Pos[1315.4402,690.43713]
+::draw.vertex[381]: a_Pos[1316.4613,693.93823]
+::draw.vertex[382]: a_Pos[1317.5133,697.4261]
+::draw.vertex[383]: a_Pos[1318.5961,700.9004]
+::draw.vertex[384]: a_Pos[1319.7096,704.36115]
+::draw.vertex[385]: a_Pos[1320.8535,707.80804]
+::draw.vertex[386]: a_Pos[1322.0278,711.241]
+::draw.vertex[387]: a_Pos[1323.2323,714.65985]
+::draw.vertex[388]: a_Pos[1324.4668,718.06445]
+::draw.vertex[389]: a_Pos[1325.7311,721.4546]
+::draw.vertex[390]: a_Pos[1327.0251,724.83014]
+::draw.vertex[391]: a_Pos[1328.3488,728.191]
+::draw.vertex[392]: a_Pos[1329.7017,731.53687]
+::draw.vertex[393]: a_Pos[1331.0839,734.86774]
+::draw.vertex[394]: a_Pos[1332.4951,738.18335]
+::draw.vertex[395]: a_Pos[1333.9353,741.4836]
+::draw.vertex[396]: a_Pos[1335.4042,744.76825]
+::draw.vertex[397]: a_Pos[1336.9017,748.03723]
+::draw.vertex[398]: a_Pos[1338.4276,751.29034]
+::draw.vertex[399]: a_Pos[1339.9818,754.52747]
+::draw.vertex[400]: a_Pos[1341.5641,757.7484]
+::draw.vertex[401]: a_Pos[1343.1743,760.953]
+::draw.vertex[402]: a_Pos[1344.8124,764.1411]
+::draw.vertex[403]: a_Pos[1346.478,767.3125]
+::draw.vertex[404]: a_Pos[1348.1711,770.46716]
+::draw.vertex[405]: a_Pos[1349.8916,773.6048]
+::draw.vertex[406]: a_Pos[1351.6392,776.7253]
+::draw.vertex[407]: a_Pos[1353.4137,779.82855]
+::draw.vertex[408]: a_Pos[1355.2152,782.9143]
+::draw.vertex[409]: a_Pos[1357.0433,785.9825]
+::draw.vertex[410]: a_Pos[1358.898,789.03284]
+::draw.vertex[411]: a_Pos[1360.7789,792.0653]
+::draw.vertex[412]: a_Pos[1362.686,795.07965]
+::draw.vertex[413]: a_Pos[1364.6193,798.0758]
+::draw.vertex[414]: a_Pos[1366.5784,801.0535]
+::draw.vertex[415]: a_Pos[1368.5632,804.0127]
+::draw.vertex[416]: a_Pos[1370.5736,806.9531]
+::draw.vertex[417]: a_Pos[1372.6094,809.87463]
+::draw.vertex[418]: a_Pos[1374.6704,812.77716]
+::draw.vertex[419]: a_Pos[1376.7566,815.66046]
+::draw.vertex[420]: a_Pos[1378.8677,818.5244]
+::draw.vertex[421]: a_Pos[1381.0034,821.36884]
+::draw.vertex[422]: a_Pos[1383.164,824.1936]
+::draw.vertex[423]: a_Pos[1385.3488,826.9985]
+::draw.vertex[424]: a_Pos[1387.558,829.7834]
+::draw.vertex[425]: a_Pos[1389.7913,832.54816]
+::draw.vertex[426]: a_Pos[1392.0485,835.2926]
+::draw.vertex[427]: a_Pos[1394.3296,838.01654]
+::draw.vertex[428]: a_Pos[1396.6344,840.7199]
+::draw.vertex[429]: a_Pos[1398.9626,843.4024]
+::draw.vertex[430]: a_Pos[1401.3142,846.064]
+::draw.vertex[431]: a_Pos[1403.689,848.7045]
+::draw.vertex[432]: a_Pos[1406.0867,851.3237]
+::draw.vertex[433]: a_Pos[1408.5073,853.9215]
+::draw.vertex[434]: a_Pos[1410.9507,856.4977]
+::draw.vertex[435]: a_Pos[1413.4165,859.0522]
+::draw.vertex[436]: a_Pos[1415.9048,861.5847]
+::draw.vertex[437]: a_Pos[1418.4153,864.0952]
+::draw.vertex[438]: a_Pos[1420.9479,866.58344]
+::draw.vertex[439]: a_Pos[1423.5023,869.0493]
+::draw.vertex[440]: a_Pos[1426.0785,871.4927]
+::draw.vertex[441]: a_Pos[1428.6763,873.91327]
+::draw.vertex[442]: a_Pos[1431.2955,876.3111]
+::draw.vertex[443]: a_Pos[1433.9359,878.68585]
+::draw.vertex[444]: a_Pos[1436.5975,881.0374]
+::draw.vertex[445]: a_Pos[1439.2802,883.36566]
+::draw.vertex[446]: a_Pos[1441.9834,885.6704]
+::draw.vertex[447]: a_Pos[1444.7074,887.9515]
+::draw.vertex[448]: a_Pos[1447.4519,890.20874]
+::draw.vertex[449]: a_Pos[1450.2166,892.4421]
+::draw.vertex[450]: a_Pos[1453.0015,894.65125]
+::draw.vertex[451]: a_Pos[1455.8064,896.8361]
+::draw.vertex[452]: a_Pos[1458.6312,898.9965]
+::draw.vertex[453]: a_Pos[1461.4756,901.1324]
+::draw.vertex[454]: a_Pos[1464.3395,903.2434]
+::draw.vertex[455]: a_Pos[1467.2229,905.3295]
+::draw.vertex[456]: a_Pos[1470.1254,907.39056]
+::draw.vertex[457]: a_Pos[1473.0469,909.4264]
+::draw.vertex[458]: a_Pos[1475.9873,911.43677]
+::draw.vertex[459]: a_Pos[1478.9465,913.42163]
+::draw.vertex[460]: a_Pos[1481.9242,915.38074]
+::draw.vertex[461]: a_Pos[1484.9203,917.3139]
+::draw.vertex[462]: a_Pos[1487.9347,919.2211]
+::draw.vertex[463]: a_Pos[1490.9672,921.1021]
+::draw.vertex[464]: a_Pos[1494.0176,922.9567]
+::draw.vertex[465]: a_Pos[1497.0857,924.78485]
+::draw.vertex[466]: a_Pos[1500.1715,926.58624]
+::draw.vertex[467]: a_Pos[1503.2747,928.36084]
+::draw.vertex[468]: a_Pos[1506.3953,930.10846]
+::draw.vertex[469]: a_Pos[1509.5328,931.8289]
+::draw.vertex[470]: a_Pos[1512.6875,933.52203]
+::draw.vertex[471]: a_Pos[1515.8589,935.1877]
+::draw.vertex[472]: a_Pos[1519.047,936.8257]
+::draw.vertex[473]: a_Pos[1522.2516,938.4359]
+::draw.vertex[474]: a_Pos[1525.4725,940.01825]
+::draw.vertex[475]: a_Pos[1528.7096,941.5724]
+::draw.vertex[476]: a_Pos[1531.9628,943.0983]
+::draw.vertex[477]: a_Pos[1535.2317,944.5958]
+::draw.vertex[478]: a_Pos[1538.5165,946.0647]
+::draw.vertex[479]: a_Pos[1541.8167,947.5049]
+::draw.vertex[480]: a_Pos[1545.1323,948.91614]
+::draw.vertex[481]: a_Pos[1548.4631,950.2983]
+::draw.vertex[482]: a_Pos[1551.8091,951.65125]
+::draw.vertex[483]: a_Pos[1555.1698,952.97485]
+::draw.vertex[484]: a_Pos[1558.5454,954.2689]
+::draw.vertex[485]: a_Pos[1561.9355,955.53326]
+::draw.vertex[486]: a_Pos[1565.3401,956.76776]
+::draw.vertex[487]: a_Pos[1568.759,957.9722]
+::draw.vertex[488]: a_Pos[1572.192,959.1465]
+::draw.vertex[489]: a_Pos[1575.6389,960.29047]
+::draw.vertex[490]: a_Pos[1579.0996,961.40393]
+::draw.vertex[491]: a_Pos[1582.574,962.48676]
+::draw.vertex[492]: a_Pos[1586.0618,963.53876]
+::draw.vertex[493]: a_Pos[1589.5629,964.55975]
+::draw.vertex[494]: a_Pos[1593.0771,965.5497]
+::draw.vertex[495]: a_Pos[1596.6045,966.5083]
+::draw.vertex[496]: a_Pos[1600.1445,967.4354]
+::draw.vertex[497]: a_Pos[1603.6974,968.331]
+::draw.vertex[498]: a_Pos[1607.2627,969.19476]
+::draw.vertex[499]: a_Pos[1610.8405,970.0266]
+::draw.vertex[500]: a_Pos[1614.4303,970.8264]
+::draw.vertex[501]: a_Pos[1618.0322,971.59393]
+::draw.vertex[502]: a_Pos[1621.6461,972.3291]
+::draw.vertex[503]: a_Pos[1625.2716,973.0316]
+::draw.vertex[504]: a_Pos[1628.9087,973.7015]
+::draw.vertex[505]: a_Pos[1632.5573,974.33844]
+::draw.vertex[506]: a_Pos[1636.217,974.9424]
+::draw.vertex[507]: a_Pos[1639.888,975.5131]
+::draw.vertex[508]: a_Pos[1643.5697,976.0505]
+::draw.vertex[509]: a_Pos[1647.2622,976.5543]
+::draw.vertex[510]: a_Pos[1650.9655,977.02454]
+::draw.vertex[511]: a_Pos[1654.6791,977.4609]
+::draw.vertex[512]: a_Pos[1658.403,977.8632]
+::draw.vertex[513]: a_Pos[1662.137,978.2314]
+::draw.vertex[514]: a_Pos[1665.881,978.5653]
+::draw.vertex[515]: a_Pos[1669.6349,978.8647]
+::draw.vertex[516]: a_Pos[1673.3984,979.1295]
+::draw.vertex[517]: a_Pos[1677.1714,979.3595]
+::draw.vertex[518]: a_Pos[1680.9537,979.55457]
+::draw.vertex[519]: a_Pos[1684.7452,979.7145]
+::draw.vertex[520]: a_Pos[1688.5458,979.8392]
+::draw.vertex[521]: a_Pos[1692.3552,979.9284]
+::draw.vertex[522]: a_Pos[1696.1733,979.98206]
+::draw.vertex[523]: a_Pos[1703.8267,979.98206]
+::draw.vertex[524]: a_Pos[1707.6448,979.9284]
+::draw.vertex[525]: a_Pos[1711.4542,979.8392]
+::draw.vertex[526]: a_Pos[1715.2548,979.7145]
+::draw.vertex[527]: a_Pos[1719.0463,979.55457]
+::draw.vertex[528]: a_Pos[1722.8286,979.3595]
+::draw.vertex[529]: a_Pos[1726.6016,979.1295]
+::draw.vertex[530]: a_Pos[1730.3651,978.8647]
+::draw.vertex[531]: a_Pos[1734.119,978.5653]
+::draw.vertex[532]: a_Pos[1737.863,978.2314]
+::draw.vertex[533]: a_Pos[1741.597,977.8632]
+::draw.vertex[534]: a_Pos[1745.3209,977.4609]
+::draw.vertex[535]: a_Pos[1749.0345,977.02454]
+::draw.vertex[536]: a_Pos[1752.7378,976.5543]
+::draw.vertex[537]: a_Pos[1756.4303,976.0505]
+::draw.vertex[538]: a_Pos[1760.112,975.5131]
+::draw.vertex[539]: a_Pos[1763.783,974.9424]
+::draw.vertex[540]: a_Pos[1767.4427,974.33844]
+::draw.vertex[541]: a_Pos[1771.0913,973.7015]
+::draw.vertex[542]: a_Pos[1774.7284,973.0316]
+::draw.vertex[543]: a_Pos[1778.3539,972.3291]
+::draw.vertex[544]: a_Pos[1781.9678,971.59393]
+::draw.vertex[545]: a_Pos[1785.5697,970.8264]
+::draw.vertex[546]: a_Pos[1789.1595,970.0266]
+::draw.vertex[547]: a_Pos[1792.7373,969.19476]
+::draw.vertex[548]: a_Pos[1796.3026,968.331]
+::draw.vertex[549]: a_Pos[1799.8555,967.4354]
+::draw.vertex[550]: a_Pos[1803.3955,966.5083]
+::draw.vertex[551]: a_Pos[1806.9229,965.5497]
+::draw.vertex[552]: a_Pos[1810.4371,964.55975]
+::draw.vertex[553]: a_Pos[1813.9382,963.53876]
+::draw.vertex[554]: a_Pos[1817.426,962.48676]
+::draw.vertex[555]: a_Pos[1820.9004,961.40393]
+::draw.vertex[556]: a_Pos[1824.3611,960.29047]
+::draw.vertex[557]: a_Pos[1827.808,959.1465]
+::draw.vertex[558]: a_Pos[1831.241,957.9722]
+::draw.vertex[559]: a_Pos[1834.6599,956.76776]
+::draw.vertex[560]: a_Pos[1838.0645,955.53326]
+::draw.vertex[561]: a_Pos[1841.4546,954.2689]
+::draw.vertex[562]: a_Pos[1844.8302,952.97485]
+::draw.vertex[563]: a_Pos[1848.1909,951.65125]
+::draw.vertex[564]: a_Pos[1851.5369,950.2983]
+::draw.vertex[565]: a_Pos[1854.8677,948.91614]
+::draw.vertex[566]: a_Pos[1858.1833,947.5049]
+::draw.vertex[567]: a_Pos[1861.4835,946.0647]
+::draw.vertex[568]: a_Pos[1864.7683,944.5958]
+::draw.vertex[569]: a_Pos[1868.0372,943.0983]
+::draw.vertex[570]: a_Pos[1871.2904,941.5724]
+::draw.vertex[571]: a_Pos[1874.5275,940.01825]
+::draw.vertex[572]: a_Pos[1877.7484,938.4359]
+::draw.vertex[573]: a_Pos[1880.953,936.8257]
+::draw.vertex[574]: a_Pos[1884.1411,935.1877]
+::draw.vertex[575]: a_Pos[1887.3125,933.52203]
+::draw.vertex[576]: a_Pos[1890.4672,931.8289]
+::draw.vertex[577]: a_Pos[1893.6047,930.10846]
+::draw.vertex[578]: a_Pos[1896.7253,928.36084]
+::draw.vertex[579]: a_Pos[1899.8285,926.58624]
+::draw.vertex[580]: a_Pos[1902.9143,924.78485]
+::draw.vertex[581]: a_Pos[1905.9824,922.9567]
+::draw.vertex[582]: a_Pos[1909.0328,921.1021]
+::draw.vertex[583]: a_Pos[1912.0653,919.2211]
+::draw.vertex[584]: a_Pos[1915.0797,917.3139]
+::draw.vertex[585]: a_Pos[1918.0758,915.38074]
+::draw.vertex[586]: a_Pos[1921.0535,913.42163]
+::draw.vertex[587]: a_Pos[1924.0127,911.43677]
+::draw.vertex[588]: a_Pos[1926.9531,909.4264]
+::draw.vertex[589]: a_Pos[1929.8746,907.39056]
+::draw.vertex[590]: a_Pos[1932.7771,905.3295]
+::draw.vertex[591]: a_Pos[1935.6605,903.2434]
+::draw.vertex[592]: a_Pos[1938.5244,901.1324]
+::draw.vertex[593]: a_Pos[1941.3688,898.9965]
+::draw.vertex[594]: a_Pos[1944.1936,896.8361]
+::draw.vertex[595]: a_Pos[1946.9985,894.65125]
+::draw.vertex[596]: a_Pos[1949.7834,892.4421]
+::draw.vertex[597]: a_Pos[1952.5481,890.20874]
+::draw.vertex[598]: a_Pos[1955.2926,887.9515]
+::draw.vertex[599]: a_Pos[1958.0166,885.6704]
+::draw.vertex[600]: a_Pos[1960.7198,883.36566]
+::draw.vertex[601]: a_Pos[1963.4025,881.0374]
+::draw.vertex[602]: a_Pos[1966.0641,878.68585]
+::draw.vertex[603]: a_Pos[1968.7045,876.3111]
+::draw.vertex[604]: a_Pos[1971.3237,873.91327]
+::draw.vertex[605]: a_Pos[1973.9215,871.4927]
+::draw.vertex[606]: a_Pos[1976.4977,869.0493]
+::draw.vertex[607]: a_Pos[1979.0521,866.58344]
+::draw.vertex[608]: a_Pos[1981.5847,864.0952]
+::draw.vertex[609]: a_Pos[1984.0952,861.5847]
+::draw.vertex[610]: a_Pos[1986.5835,859.0522]
+::draw.vertex[611]: a_Pos[1989.0493,856.4977]
+::draw.vertex[612]: a_Pos[1991.4927,853.9215]
+::draw.vertex[613]: a_Pos[1993.9133,851.3237]
+::draw.vertex[614]: a_Pos[1996.311,848.7045]
+::draw.vertex[615]: a_Pos[1998.6858,846.064]
+::draw.vertex[616]: a_Pos[2001.0374,843.4024]
+::draw.vertex[617]: a_Pos[2003.3656,840.7199]
+::draw.vertex[618]: a_Pos[2005.6704,838.01654]
+::draw.vertex[619]: a_Pos[2007.9515,835.2926]
+::draw.vertex[620]: a_Pos[2010.2087,832.54816]
+::draw.vertex[621]: a_Pos[2012.442,829.7834]
+::draw.vertex[622]: a_Pos[2014.6512,826.9985]
+::draw.vertex[623]: a_Pos[2016.836,824.1936]
+::draw.vertex[624]: a_Pos[2018.9966,821.36884]
+::draw.vertex[625]: a_Pos[2021.1323,818.5244]
+::draw.vertex[626]: a_Pos[2023.2434,815.66046]
+::draw.vertex[627]: a_Pos[2025.3296,812.77716]
+::draw.vertex[628]: a_Pos[2027.3906,809.87463]
+::draw.vertex[629]: a_Pos[2029.4264,806.9531]
+::draw.vertex[630]: a_Pos[2031.4368,804.0127]
+::draw.vertex[631]: a_Pos[2033.4216,801.0535]
+::draw.vertex[632]: a_Pos[2035.3807,798.0758]
+::draw.vertex[633]: a_Pos[2037.314,795.07965]
+::draw.vertex[634]: a_Pos[2039.2211,792.0653]
+::draw.vertex[635]: a_Pos[2041.102,789.03284]
+::draw.vertex[636]: a_Pos[2042.9567,785.9825]
+::draw.vertex[637]: a_Pos[2044.7848,782.9143]
+::draw.vertex[638]: a_Pos[2046.5863,779.82855]
+::draw.vertex[639]: a_Pos[2048.3608,776.7253]
+::draw.vertex[640]: a_Pos[2050.1084,773.6048]
+::draw.vertex[641]: a_Pos[2051.8289,770.46716]
+::draw.vertex[642]: a_Pos[2053.522,767.3125]
+::draw.vertex[643]: a_Pos[2055.1875,764.1411]
+::draw.vertex[644]: a_Pos[2056.8257,760.953]
+::draw.vertex[645]: a_Pos[2058.436,757.7484]
+::draw.vertex[646]: a_Pos[2060.018,754.52747]
+::draw.vertex[647]: a_Pos[2061.5723,751.29034]
+::draw.vertex[648]: a_Pos[2063.0981,748.03723]
+::draw.vertex[649]: a_Pos[2064.5957,744.76825]
+::draw.vertex[650]: a_Pos[2066.0647,741.4836]
+::draw.vertex[651]: a_Pos[2067.505,738.18335]
+::draw.vertex[652]: a_Pos[2068.916,734.86774]
+::draw.vertex[653]: a_Pos[2070.2983,731.53687]
+::draw.vertex[654]: a_Pos[2071.6514,728.191]
+::draw.vertex[655]: a_Pos[2072.9749,724.83014]
+::draw.vertex[656]: a_Pos[2074.269,721.4546]
+::draw.vertex[657]: a_Pos[2075.5332,718.06445]
+::draw.vertex[658]: a_Pos[2076.7676,714.65985]
+::draw.vertex[659]: a_Pos[2077.9722,711.241]
+::draw.vertex[660]: a_Pos[2079.1465,707.80804]
+::draw.vertex[661]: a_Pos[2080.2905,704.36115]
+::draw.vertex[662]: a_Pos[2081.4038,700.9004]
+::draw.vertex[663]: a_Pos[2082.4868,697.4261]
+::draw.vertex[664]: a_Pos[2083.5386,693.93823]
+::draw.vertex[665]: a_Pos[2084.5598,690.43713]
+::draw.vertex[666]: a_Pos[2085.5498,686.92285]
+::draw.vertex[667]: a_Pos[2086.5083,683.39557]
+::draw.vertex[668]: a_Pos[2087.4355,679.8554]
+::draw.vertex[669]: a_Pos[2088.331,676.3026]
+::draw.vertex[670]: a_Pos[2089.1948,672.73724]
+::draw.vertex[671]: a_Pos[2090.0266,669.1596]
+::draw.vertex[672]: a_Pos[2090.8264,665.5697]
+::draw.vertex[673]: a_Pos[2091.594,661.9678]
+::draw.vertex[674]: a_Pos[2092.329,658.35394]
+::draw.vertex[675]: a_Pos[2093.0317,654.7284]
+::draw.vertex[676]: a_Pos[2093.7017,651.09125]
+::draw.vertex[677]: a_Pos[2094.3384,647.44275]
+::draw.vertex[678]: a_Pos[2094.9424,643.78296]
+::draw.vertex[679]: a_Pos[2095.5132,640.1121]
+::draw.vertex[680]: a_Pos[2096.0503,636.4303]
+::draw.vertex[681]: a_Pos[2096.5542,632.7378]
+::draw.vertex[682]: a_Pos[2097.0244,629.0346]
+::draw.vertex[683]: a_Pos[2097.461,625.321]
+::draw.vertex[684]: a_Pos[2097.8633,621.59705]
+::draw.vertex[685]: a_Pos[2098.2314,617.863]
+::draw.vertex[686]: a_Pos[2098.5654,614.11896]
+::draw.vertex[687]: a_Pos[2098.8647,610.3651]
+::draw.vertex[688]: a_Pos[2099.1294,606.60156]
+::draw.vertex[689]: a_Pos[2099.3594,602.8286]
+::draw.vertex[690]: a_Pos[2099.5547,599.04626]
+::draw.vertex[691]: a_Pos[2099.7144,595.25476]
+::draw.vertex[692]: a_Pos[2099.839,591.4542]
+::draw.vertex[693]: a_Pos[2099.9285,587.6448]
+::draw.vertex[694]: a_Pos[2099.982,583.82666]
+::draw.vertex[695]: a_Pos[2100,580]
+::draw.vertex[696]: a_Pos[500,180]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
 draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Tex, u_Transform, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=1300, y=180, width=800, height=800)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=3, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -986,7 +1742,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=1300, y=980, width=800, height=800)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -1006,7 +1762,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6]
 ::draw.vertex[0]: a_Pos[1700,1380]
 ::draw.vertex[1]: a_Pos[1300,980]
@@ -1052,7 +1808,7 @@ draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Transform, u_Gradientp0, u_Gradientp1, u_Tex, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=1300, y=980, width=800, height=800)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=1, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -1148,7 +1904,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=1700, y=780, width=400, height=400)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=1)
 ::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
@@ -1168,7 +1924,7 @@ draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
 ::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[5][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
 ::draw.indices=[0, 1, 2, 3, 4, 5, 6]
 ::draw.vertex[0]: a_Pos[1900,980]
 ::draw.vertex[1]: a_Pos[1700,780]
@@ -1214,7 +1970,7 @@ draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
 ::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Transform, u_Gradientp0, u_Tex, u_GlobalAlpha])
 ::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
 ::draw.scissor=Scissor(x=1700, y=780, width=400, height=400)
-::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=1, readMask=255, writeMask=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(

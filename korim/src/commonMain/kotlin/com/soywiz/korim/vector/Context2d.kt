@@ -396,8 +396,22 @@ open class Context2d constructor(
             state.clip!!.clear()
             state.clip!!.winding = winding
             state.clip!!.write(path)
+            if (path === state.path) {
+                path.clear()
+            }
         } else {
             state.clip = null
+        }
+    }
+
+    fun clip(buildClipShape: () -> Unit, useClipShape: () -> Unit) {
+        val oldClip = state.clip
+        try {
+            buildClipShape()
+            clip()
+            useClipShape()
+        } finally {
+            state.clip = oldClip
         }
     }
 

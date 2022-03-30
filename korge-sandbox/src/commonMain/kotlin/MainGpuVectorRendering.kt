@@ -87,7 +87,11 @@ suspend fun Stage.mainGpuVectorRendering() {
                     createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0))
                         //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
                         .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
-                fillRect(100.0, 0.0, 100.0, 100.0)
+                clip({
+                    circle(150, 50, 50)
+                }, {
+                    fillRect(100.0, 0.0, 100.0, 100.0)
+                })
             }
             if (PAINT_RADIAL_GRADIENT) {
                 globalAlpha = 0.9

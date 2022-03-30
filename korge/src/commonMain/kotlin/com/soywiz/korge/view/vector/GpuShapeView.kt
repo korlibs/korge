@@ -79,15 +79,10 @@ class GpuShapeView(shape: Shape) : View() {
 
     private var notifyAboutEvenOdd = false
 
-    private fun renderShape(ctx: RenderContext, shape: FillShape) {
-        val path = shape.path
-        val m = globalMatrix
-        //val m = localMatrix
-        //val stage = stage!!
-        //val stageMatrix = stage.localMatrix
-        //println("stage=$stage, globalMatrix=$stageMatrix")
+    class PointsResult(val bounds: Rectangle, val data: FloatArray, val vertexCount: Int)
 
-        val points = pointCache.getOrPut(path) {
+    private fun getPointsForPath(path: VectorPath, m: Matrix): PointsResult {
+        val points: PointArrayList = pointCache.getOrPut(path) {
             val points = PointArrayList()
             path.emitPoints2 { x, y, move ->
                 points.add(x, y)
@@ -110,6 +105,15 @@ class GpuShapeView(shape: Shape) : View() {
         }
         data[0] = ((bb.xmax + bb.xmin) / 2).toFloat()
         data[1] = ((bb.ymax + bb.ymin) / 2).toFloat()
+        val bounds = bb.getBounds()
+        return PointsResult(bounds, data, points.size + 2)
+    }
+
+    private fun renderShape(ctx: RenderContext, shape: FillShape) {
+        //val m = localMatrix
+        //val stage = stage!!
+        //val stageMatrix = stage.localMatrix
+        //println("stage=$stage, globalMatrix=$stageMatrix")
 
         if (shape.path.winding != Winding.EVEN_ODD) {
             if (!notifyAboutEvenOdd) {
@@ -118,42 +122,65 @@ class GpuShapeView(shape: Shape) : View() {
             }
         }
 
-        val bounds = bb.getBounds()
+        val pathData = getPointsForPath(shape.path, globalMatrix)
+        val pathBounds = pathData.bounds
 
-        val scissor: AG.Scissor? = AG.Scissor().setTo(Rectangle.fromBounds(bounds.left.toInt(), bounds.top.toInt(), bounds.right.toIntCeil(), bounds.bottom.toIntCeil()))
+        val clipData = shape.clip?.let { getPointsForPath(it, globalMatrix) }
+        val clipBounds = clipData?.bounds
+
+        val scissorBounds: Rectangle = when {
+            clipBounds != null -> Rectangle().also { it.setToIntersection(pathBounds, clipBounds) }
+            else -> pathBounds
+        }
+
+        // @TODO: Scissor should be the intersection between the path bounds and the clipping bounds
+
+        val scissor: AG.Scissor? = AG.Scissor().setTo(scissorBounds)
         //val scissor: AG.Scissor? = null
 
+        ctx.ag.clearStencil(0, scissor = scissor)
+
+        var stencilEqualsValue = 0b00000001
         ctx.dynamicVertexBufferPool { vertices ->
-            vertices.upload(data)
+            writeStencil(ctx, pathData, scissor, AG.StencilState(
+                enabled = true,
+                compareMode = AG.CompareMode.ALWAYS,
+                writeMask = 0b00000001,
+                actionOnBothPass = AG.StencilOp.INVERT,
+            ))
+        }
+        if (clipData != null) {
+            writeStencil(ctx, clipData, scissor, AG.StencilState(
+                enabled = true,
+                compareMode = AG.CompareMode.ALWAYS,
+                writeMask = 0b00000010,
+                actionOnBothPass = AG.StencilOp.INVERT,
+            ))
+            stencilEqualsValue = 0b00000011
+        }
+
+        renderFill(ctx, shape.paint, shape.transform, scissor, shape.globalAlpha, stencilEqualsValue = stencilEqualsValue)
+    }
+
+    private fun writeStencil(ctx: RenderContext, points: PointsResult, scissor: AG.Scissor?, stencil: AG.StencilState) {
+        ctx.dynamicVertexBufferPool { vertices ->
+            vertices.upload(points.data)
             ctx.batch.updateStandardUniforms()
-
-            ctx.batch.simulateBatchStats(points.size + 2)
-
-            ctx.ag.clearStencil(0, scissor = scissor)
+            ctx.batch.simulateBatchStats(points.vertexCount)
             //ctx.ag.clearStencil(0, scissor = null)
             ctx.ag.draw(
                 vertices = vertices,
                 program = PROGRAM_STENCIL,
                 type = AG.DrawType.TRIANGLE_FAN,
                 vertexLayout = LAYOUT,
-                vertexCount = points.size + 2,
+                vertexCount = points.vertexCount,
                 uniforms = ctx.batch.uniforms,
-                stencil = AG.StencilState(
-                    enabled = true,
-                    readMask = 0xFF,
-                    compareMode = AG.CompareMode.ALWAYS,
-                    referenceValue = 0xFF,
-                    writeMask = 0xFF,
-                    actionOnDepthFail = AG.StencilOp.KEEP,
-                    actionOnDepthPassStencilFail = AG.StencilOp.KEEP,
-                    actionOnBothPass = AG.StencilOp.INVERT,
-                ),
+                stencil = stencil,
                 blending = BlendMode.NONE.factors,
                 colorMask = AG.ColorMaskState(false, false, false, false),
                 scissor = scissor,
             )
         }
-        renderFill(ctx, shape.paint, shape.transform, scissor, shape.globalAlpha)
     }
 
     private val colorUniforms = AG.UniformValues()
@@ -169,6 +196,7 @@ class GpuShapeView(shape: Shape) : View() {
         stateTransform: Matrix,
         scissor: AG.Scissor?,
         globalAlpha: Double,
+        stencilEqualsValue: Int,
     ) {
         if (paint is NonePaint) return
 
@@ -276,7 +304,8 @@ class GpuShapeView(shape: Shape) : View() {
                         uniforms = ctx.batch.uniforms,
                         stencil = AG.StencilState(
                             enabled = true,
-                            compareMode = AG.CompareMode.NOT_EQUAL,
+                            compareMode = AG.CompareMode.EQUAL,
+                            referenceValue = stencilEqualsValue,
                             writeMask = 0,
                         ),
                         blending = BlendMode.NORMAL.factors,
