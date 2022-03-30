@@ -107,10 +107,22 @@ public infix fun Double.umod(other: Double): Double {
     val rm = this % other
     val remainder = if (rm == -0.0) 0.0 else rm
     return when {
-        remainder < 0 -> remainder + other
+        remainder < 0.0 -> remainder + other
         else -> remainder
     }
 }
+
+public infix fun Float.umod(other: Float): Float {
+    val rm = this % other
+    val remainder = if (rm == -0f) 0f else rm
+    return when {
+        remainder < 0f -> remainder + other
+        else -> remainder
+    }
+}
+
+public inline fun fract(value: Float): Float = value - value.toInt()
+public inline fun fract(value: Double): Double = value - value.toInt()
 
 
 ////////////////////

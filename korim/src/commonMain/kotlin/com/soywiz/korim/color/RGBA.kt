@@ -9,7 +9,6 @@ import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.paint.*
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.krypto.encoding.*
@@ -151,11 +150,19 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 
         }
 		fun mixRgb(c1: RGBA, c2: RGBA, factor: Double): RGBA = mixRgbFactor256(c1, c2, (factor * 256).toInt())
+        fun mixRgba(c1: RGBA, c2: RGBA, factor: Double): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
 
-        fun mixRgba(c1: RGBA, c2: RGBA, factor: Double): RGBA =
-            RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
+        fun mixRgb(c1: RGBA, c2: RGBA, factor: Float): RGBA = mixRgbFactor256(c1, c2, (factor * 256).toInt())
+        fun mixRgba(c1: RGBA, c2: RGBA, factor: Float): RGBA = RGBA(mixRgb(c1, c2, factor).rgb, blendComponent(c1.a, c2.a, factor))
+
+        fun mixRgba4(c00: RGBA, c10: RGBA, c01: RGBA, c11: RGBA, factorX: Float, factorY: Float): RGBA {
+            val c1 = mixRgba(c00, c10, factorX)
+            val c2 = mixRgba(c01, c11, factorX)
+            return mixRgba(c1, c2, factorY)
+        }
 
         private fun blendComponent(c1: Int, c2: Int, factor: Double): Int = (c1 * (1.0 - factor) + c2 * factor).toInt() and 0xFF
+        private fun blendComponent(c1: Int, c2: Int, factor: Float): Int = (c1 * (1.0 - factor) + c2 * factor).toInt() and 0xFF
 
         fun mix(dst: RGBA, src: RGBA): RGBA {
             val srcA = src.a
@@ -345,7 +352,10 @@ fun mix(dst: RgbaArray, dstX: Int, src: RgbaPremultipliedArray, srcX: Int, count
 // @TODO: Critical performance use SIMD if possible
 fun mix(dst: RgbaPremultipliedArray, dstX: Int, src: RgbaPremultipliedArray, srcX: Int, count: Int) = mix(dst, dstX, dst, dstX, src, srcX, count)
 fun mix(tgt: RgbaPremultipliedArray, tgtX: Int, dst: RgbaPremultipliedArray, dstX: Int, src: RgbaPremultipliedArray, srcX: Int, count: Int) {
-    for (n in 0 until count) tgt[tgtX + n] = RGBAPremultiplied.blendAlpha(dst[dstX + n], src[srcX + n])
+    for (n in 0 until count) {
+        val srcC = src[srcX + n]
+        tgt[tgtX + n] = if (srcC.a == 0xFF) srcC else RGBAPremultiplied.blendAlpha(dst[dstX + n], srcC)
+    }
 }
 
 fun premultiply(src: RgbaArray, srcN: Int, dst: RgbaPremultipliedArray, dstN: Int, count: Int) {

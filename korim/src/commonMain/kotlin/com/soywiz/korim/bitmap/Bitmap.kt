@@ -97,21 +97,24 @@ abstract class Bitmap(
 
     fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgba(x.clamp(0, width - 1), y.clamp(0, height - 1))
 
-	fun getRgbaSampled(x: Double, y: Double): RGBA {
-		if (x < 0.0 || x >= width.toDouble() || y < 0.0 || y >= height.toDouble()) return Colors.TRANSPARENT_BLACK
+    @Deprecated("Use float version")
+    fun getRgbaSampled(x: Double, y: Double): RGBA = getRgbaSampled(x.toFloat(), y.toFloat())
+
+	fun getRgbaSampled(x: Float, y: Float): RGBA {
 		val x0 = x.toIntFloor()
+        val y0 = y.toIntFloor()
+        if (x0 < 0 || y0 < 0 || x0 >= width || y0 > height) return Colors.TRANSPARENT_BLACK
 		val x1 = x.toIntCeil()
-		val y0 = y.toIntFloor()
 		val y1 = y.toIntCeil()
-		val xratio = x % 1
-		val yratio = y % 1
-		val c00 = getRgbaClamped(x0, y0)
-		val c10 = if (inBounds(x1, y0)) getRgbaClamped(x1, y0) else c00
-		val c01 = if (inBounds(x1, y1)) getRgbaClamped(x0, y1) else c00
-		val c11 = if (inBounds(x1, y1)) getRgbaClamped(x1, y1) else c01
-		val c1 = RGBA.mixRgba(c00, c10, xratio)
-		val c2 = RGBA.mixRgba(c01, c11, xratio)
-		return RGBA.mixRgba(c1, c2, yratio)
+        val x1Inside = x1 < width - 1
+        val y1Inside = y1 < height - 1
+        val xratio = fract(x)
+		val yratio = fract(y)
+		val c00 = getRgba(x0, y0)
+		val c10 = if (x1Inside) getRgba(x1, y0) else c00
+		val c01 = if (y1Inside) getRgba(x0, y1) else c00
+		val c11 = if (x1Inside && y1Inside) getRgba(x1, y1) else c01
+		return RGBA.mixRgba4(c00, c10, c01, c11, xratio, yratio)
 	}
 
     fun getRgbaSampled(x: Double, y: Double, count: Int, row: RgbaArray) {

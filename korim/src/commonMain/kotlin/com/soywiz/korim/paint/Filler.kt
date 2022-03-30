@@ -53,8 +53,8 @@ class BitmapFiller : BaseFiller() {
         }
     }
 
-    fun lookupLinear(x: Double, y: Double): RGBA = texture.getRgbaSampled(x, y)
-    fun lookupNearest(x: Double, y: Double): RGBA = texture[x.toInt(), y.toInt()]
+    fun lookupLinear(x: Float, y: Float): RGBA = texture.getRgbaSampled(x, y)
+    fun lookupNearest(x: Float, y: Float): RGBA = texture[x.toInt(), y.toInt()]
 
     override fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int) {
         /*
@@ -72,10 +72,19 @@ class BitmapFiller : BaseFiller() {
             data[n] = color.premultiplied
         }
         */
+        val mat = compTrans
+        val texWidth = texture.width.toFloat()
+        val texHeight = texture.height.toFloat()
+        val iTexWidth = 1f / texWidth
+        val iTexHeight = 1f / texHeight
+        val yFloat = y.toFloat()
+        val cycleX = this.cycleX
+        val cycleY = this.cycleY
         for (n in x0..x1) {
-            val tx = cycleX.apply(compTrans.transformX(n.toDouble(), y.toDouble()), texture.width.toDouble())
-            val ty = cycleY.apply(compTrans.transformY(n.toDouble(), y.toDouble()), texture.height.toDouble())
+            val tx = cycleX.apply(mat.transformXf(n.toFloat(), yFloat) * iTexWidth) * texWidth
+            val ty = cycleY.apply(mat.transformYf(n.toFloat(), yFloat) * iTexHeight) * texHeight
             val color = if (linear) lookupLinear(tx, ty) else lookupNearest(tx, ty)
+            //val color = lookupNearest(tx, ty)
             //println("($tx, $ty)")
             data[offset + n] = color.premultiplied
         }

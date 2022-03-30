@@ -461,7 +461,7 @@ fun AffineTransform.toMatrix() = Matrix(scaleX, shearY, shearX, scaleY, translat
 fun convertColor(c: RGBA): java.awt.Color = java.awt.Color(c.r, c.g, c.b, c.a)
 
 fun CycleMethod.toAwt() = when (this) {
-    CycleMethod.NO_CYCLE -> MultipleGradientPaint.CycleMethod.NO_CYCLE
+    CycleMethod.NO_CYCLE, CycleMethod.NO_CYCLE_CLAMP -> MultipleGradientPaint.CycleMethod.NO_CYCLE
     CycleMethod.REPEAT -> MultipleGradientPaint.CycleMethod.REPEAT
     CycleMethod.REFLECT -> MultipleGradientPaint.CycleMethod.REFLECT
 }

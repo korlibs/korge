@@ -120,7 +120,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
             val bmpHeight = bmp?.height ?: 0
             val tx = (x * (bmpWidth - 1))
             val ty = (y * (bmpHeight - 1))
-            val colorA = if (bmp != null) bmp.getRgbaSampled(tx.toDouble(), ty.toDouble()) else Colors.FUCHSIA
+            val colorA = if (bmp != null) bmp.getRgbaSampled(tx.toFloat(), ty.toFloat()) else Colors.FUCHSIA
             //val colorA = if (bmp != null) bmp.getRgbaClampedBorder(tx.toInt(), ty.toInt()) else Colors.FUCHSIA
             val color = RGBA.mixRgba(colorA, Colors.FUCHSIA, 0.4)
             //val color = colorA
