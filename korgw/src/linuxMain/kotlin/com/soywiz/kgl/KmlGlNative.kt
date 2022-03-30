@@ -15,7 +15,7 @@ typealias KeySym = Int
 typealias CString = CPointer<ByteVar>
 typealias CDisplayPointer = CPointer<Display>?
 
-internal object GLLib : DynamicLibrary("libGL.so") {
+internal object GLLib : DynamicLibrary("libGLX.so.0") {
     val glXGetProcAddress by func<(name: CPointer<ByteVar>) -> CPointer<out CPointed>?>()
     val glXChooseVisual by func<(d: CDisplayPointer, scr: Int, ptr: CPointer<IntVar>?) -> CPointer<XVisualInfo>?>()
     val glXGetCurrentDisplay by func<() -> CDisplayPointer>()
