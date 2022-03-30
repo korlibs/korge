@@ -1406,5 +1406,5 @@ void main() {
 	}
 }
 
-Rectangle(x=250, y=170, width=2000, height=1600)
-Rectangle(x=100, y=60, width=1000, height=800)
+Rectangle(x=50, y=50, width=1000, height=840)
+Rectangle(x=0, y=0, width=500, height=420)

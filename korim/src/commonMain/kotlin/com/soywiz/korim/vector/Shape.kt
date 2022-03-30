@@ -142,7 +142,8 @@ interface StyledShape : Shape {
 
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean): Unit {
         path?.let { path ->
-            bb.add(path, transform)
+            // path is already transformed, so using `transform` is not required
+            bb.add(path)
         }
 	}
 
