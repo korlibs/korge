@@ -17,3 +17,5 @@ open class GraphicsPath(
 	override fun clone() = GraphicsPath(IntArrayList(commands), DoubleArrayList(data), winding)
     override fun toString(): String = "GraphicsPath(\"${this.toSvgPathString()}\")"
 }
+
+fun VectorPath.toGraphicsPath() = GraphicsPath(commands, data, winding)

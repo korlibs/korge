@@ -161,6 +161,9 @@ open class VectorPath(
     }
 
     override fun moveTo(x: Double, y: Double) {
+        if (commands.isNotEmpty() && commands.last() == Command.MOVE_TO) {
+            if (lastX == x && lastY == y) return
+        }
         commands.add(Command.MOVE_TO)
         data.add(x, y)
         lastXY(x, y)

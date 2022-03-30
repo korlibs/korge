@@ -23,6 +23,20 @@ class SvgTest {
         assertEquals(listOf('m', -100.123, 100.456, 'c', -1.1234, 3.3E-4, -1.111, 0.123), tokens)
     }
 
+    @Test
+    fun testShapeCoords() {
+        val svg = SVG("""
+            <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+            <svg id="svg2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 900" version="1.1">
+                <g transform="matrix(2,0,0,2,0,0)">
+                    <rect x="0" y="0" width="100" height="100" fill="#fff" />
+                </g>
+            </svg>
+        """.trimIndent())
+        val svgShape = svg.toShape().toSvgInstance().toShape()
+        val svgShape2 = svgShape.toSvgInstance().toShape()
+        assertEquals(svgShape, svgShape2)
+    }
 
 	val SAMPLE_LOGO = """
 <svg id="7fe010bd-4468-4253-af77-c0b7be09145b" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="462" height="462" viewBox="0 0 462 462">

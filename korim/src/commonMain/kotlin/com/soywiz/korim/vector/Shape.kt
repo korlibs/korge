@@ -7,6 +7,7 @@ import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.VerticalAlign
+import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korio.util.toStringDecimal
@@ -126,6 +127,7 @@ fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuil
     return out
 }
 
+fun Shape.toSvgInstance(scale: Double = 1.0): SVG = SVG(toSvg(scale))
 fun Shape.toSvg(scale: Double = 1.0): Xml = SvgBuilder(this.getBounds(), scale).apply { buildSvg(this) }.toXml()
 fun Drawable.toShape(width: Int, height: Int): Shape = buildShape(width, height) { draw(this@toShape) }
 fun Drawable.toSvg(width: Int, height: Int, scale: Double = 1.0): Xml = toShape(width, height).toSvg(scale)
@@ -134,11 +136,20 @@ fun SizedDrawable.toShape(): Shape = toShape(width, height)
 fun SizedDrawable.toSvg(scale: Double = 1.0): Xml = toSvg(width, height, scale)
 
 interface StyledShape : Shape {
+    /**
+     * Path with transform already applied
+     *
+     * @TODO: Probably it shouldn't have the transform applied
+     */
 	val path: GraphicsPath? get() = null
 	val clip: GraphicsPath?
 	val paint: Paint
 	val transform: Matrix
     val globalAlpha: Double
+
+    fun getUntransformedPath(): GraphicsPath? {
+        return path?.clone()?.applyTransform(transform.inverted())?.toGraphicsPath()
+    }
 
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean): Unit {
         path?.let { path ->
@@ -150,8 +161,7 @@ interface StyledShape : Shape {
 	override fun buildSvg(svg: SvgBuilder) {
 		svg.nodes += Xml.Tag(
 			"path", mapOf(
-				//"d" to path.toSvgPathString(svg.scale, svg.tx, svg.ty)
-				"d" to (path?.toSvgPathString() ?: ""),
+				"d" to (getUntransformedPath()?.toSvgPathString() ?: ""),
                 "transform" to transform.toSvg()
             ) + getSvgXmlAttributes(svg), listOf()
 		)
@@ -167,7 +177,7 @@ interface StyledShape : Shape {
 
 	override fun draw(c: Context2d) {
 		c.keepTransform {
-			c.transform(transform)
+			//c.transform(transform) // Already applied to the path
 			c.beginPath()
 			path?.draw(c)
 			if (clip != null) {
