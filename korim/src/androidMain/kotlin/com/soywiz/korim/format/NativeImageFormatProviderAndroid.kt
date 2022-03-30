@@ -204,7 +204,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 
     fun CycleMethod.toTileMode() = when (this) {
-        CycleMethod.NO_CYCLE -> Shader.TileMode.CLAMP
+        CycleMethod.NO_CYCLE, CycleMethod.NO_CYCLE_CLAMP -> Shader.TileMode.CLAMP
         CycleMethod.REFLECT -> Shader.TileMode.MIRROR
         CycleMethod.REPEAT -> Shader.TileMode.REPEAT
     }

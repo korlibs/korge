@@ -157,7 +157,8 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                                     GdipCreateBitmapFromScan0(bmp.width, bmp.height, 4 * bmp.width, if (bmp.premultiplied) PixelFormat32bppARGB else PixelFormat32bppPARGB, ptr.reinterpret(), pbitmap)
                                 }
                                 val wrapMode = when {
-                                    style.cycleX == CycleMethod.NO_CYCLE && style.cycleY == CycleMethod.NO_CYCLE -> WrapModeClamp
+                                    style.cycleX == CycleMethod.NO_CYCLE_CLAMP && style.cycleY == CycleMethod.NO_CYCLE_CLAMP -> WrapModeClamp
+                                    style.cycleX == CycleMethod.NO_CYCLE && style.cycleY == CycleMethod.NO_CYCLE -> WrapModeTile
                                     style.cycleX == CycleMethod.REFLECT && style.cycleY == CycleMethod.REPEAT -> WrapModeTileFlipX
                                     style.cycleX == CycleMethod.REPEAT && style.cycleY == CycleMethod.REFLECT -> WrapModeTileFlipY
                                     style.cycleX == CycleMethod.REFLECT && style.cycleY == CycleMethod.REFLECT -> WrapModeTileFlipXY
