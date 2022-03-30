@@ -121,8 +121,8 @@ public infix fun Float.umod(other: Float): Float {
     }
 }
 
-public inline fun fract(value: Float): Float = value - value.toInt()
-public inline fun fract(value: Double): Double = value - value.toInt()
+public inline fun fract(value: Float): Float = value - value.toIntFloor()
+public inline fun fract(value: Double): Double = value - value.toIntFloor()
 
 
 ////////////////////
