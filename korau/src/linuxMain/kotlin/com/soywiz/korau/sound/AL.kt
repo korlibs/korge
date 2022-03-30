@@ -25,7 +25,7 @@ typealias CFloatArray = CArrayPointer<FloatVar>?
 typealias CDoubleArray = CArrayPointer<DoubleVar>?
 
 @Suppress("unused")
-internal object AL : DynamicLibrary("libopenal.so") {
+internal object AL : DynamicLibrary("libopenal.so.1") {
     val alDopplerFactor by func<(value: Float) -> Unit>()
     val alDopplerVelocity by func<(value: Float) -> Unit>()
     val alSpeedOfSound by func<(value: Float) -> Unit>()
