@@ -1,0 +1,1410 @@
+draw(vertexCount=12, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=460, y=860, width=520, height=520)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+::draw.vertex[0]: a_Pos[720,1120]
+::draw.vertex[1]: a_Pos[460,860]
+::draw.vertex[2]: a_Pos[940,860]
+::draw.vertex[3]: a_Pos[940,1340]
+::draw.vertex[4]: a_Pos[460,1340]
+::draw.vertex[5]: a_Pos[460,860]
+::draw.vertex[6]: a_Pos[660,1060]
+::draw.vertex[7]: a_Pos[660,1380]
+::draw.vertex[8]: a_Pos[980,1380]
+::draw.vertex[9]: a_Pos[980,1060]
+::draw.vertex[10]: a_Pos[660,1060]
+::draw.vertex[11]: a_Pos[460,860]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Color, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=460, y=860, width=520, height=520)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Color) = [0.0, 0.0, 1.0, 1.0]
+::draw.uniform.Uniform(u_GlobalAlpha) = 1.0
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform vec4 u_Color;
+uniform float u_GlobalAlpha;
+void main() {
+	gl_FragColor = u_Color;
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=276, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=740, y=1140, width=320, height=320)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275]
+::draw.vertex[0]: a_Pos[900.02246,1300]
+::draw.vertex[1]: a_Pos[1060,1300]
+::draw.vertex[2]: a_Pos[1059.9551,1296.1687]
+::draw.vertex[3]: a_Pos[1059.8208,1292.3595]
+::draw.vertex[4]: a_Pos[1059.5983,1288.5735]
+::draw.vertex[5]: a_Pos[1059.2886,1284.8114]
+::draw.vertex[6]: a_Pos[1058.8925,1281.0746]
+::draw.vertex[7]: a_Pos[1058.4111,1277.3638]
+::draw.vertex[8]: a_Pos[1057.8455,1273.68]
+::draw.vertex[9]: a_Pos[1057.1968,1270.0244]
+::draw.vertex[10]: a_Pos[1056.4656,1266.398]
+::draw.vertex[11]: a_Pos[1055.6533,1262.8016]
+::draw.vertex[12]: a_Pos[1054.7607,1259.2363]
+::draw.vertex[13]: a_Pos[1053.7888,1255.7031]
+::draw.vertex[14]: a_Pos[1052.7388,1252.2031]
+::draw.vertex[15]: a_Pos[1051.6116,1248.7372]
+::draw.vertex[16]: a_Pos[1050.408,1245.3064]
+::draw.vertex[17]: a_Pos[1049.1292,1241.9117]
+::draw.vertex[18]: a_Pos[1047.7761,1238.5542]
+::draw.vertex[19]: a_Pos[1046.3499,1235.2349]
+::draw.vertex[20]: a_Pos[1044.8514,1231.9546]
+::draw.vertex[21]: a_Pos[1043.2817,1228.7145]
+::draw.vertex[22]: a_Pos[1041.6418,1225.5155]
+::draw.vertex[23]: a_Pos[1039.9326,1222.3586]
+::draw.vertex[24]: a_Pos[1038.1553,1219.245]
+::draw.vertex[25]: a_Pos[1036.3108,1216.1754]
+::draw.vertex[26]: a_Pos[1034.3999,1213.151]
+::draw.vertex[27]: a_Pos[1032.4241,1210.1727]
+::draw.vertex[28]: a_Pos[1030.3838,1207.2417]
+::draw.vertex[29]: a_Pos[1028.2804,1204.3588]
+::draw.vertex[30]: a_Pos[1026.1147,1201.525]
+::draw.vertex[31]: a_Pos[1023.88806,1198.7415]
+::draw.vertex[32]: a_Pos[1021.6011,1196.009]
+::draw.vertex[33]: a_Pos[1019.2549,1193.3287]
+::draw.vertex[34]: a_Pos[1016.8505,1190.7017]
+::draw.vertex[35]: a_Pos[1014.389,1188.1288]
+::draw.vertex[36]: a_Pos[1011.8713,1185.611]
+::draw.vertex[37]: a_Pos[1009.29834,1183.1494]
+::draw.vertex[38]: a_Pos[1006.67126,1180.7451]
+::draw.vertex[39]: a_Pos[1003.991,1178.3989]
+::draw.vertex[40]: a_Pos[1001.2586,1176.1119]
+::draw.vertex[41]: a_Pos[998.47504,1173.8851]
+::draw.vertex[42]: a_Pos[995.64124,1171.7196]
+::draw.vertex[43]: a_Pos[992.7583,1169.6162]
+::draw.vertex[44]: a_Pos[989.8273,1167.576]
+::draw.vertex[45]: a_Pos[986.849,1165.6]
+::draw.vertex[46]: a_Pos[983.8246,1163.6892]
+::draw.vertex[47]: a_Pos[980.75507,1161.8447]
+::draw.vertex[48]: a_Pos[977.64136,1160.0674]
+::draw.vertex[49]: a_Pos[974.48456,1158.3582]
+::draw.vertex[50]: a_Pos[971.2855,1156.7183]
+::draw.vertex[51]: a_Pos[968.0454,1155.1486]
+::draw.vertex[52]: a_Pos[964.76514,1153.6501]
+::draw.vertex[53]: a_Pos[961.44574,1152.2239]
+::draw.vertex[54]: a_Pos[958.08826,1150.8708]
+::draw.vertex[55]: a_Pos[954.69354,1149.592]
+::draw.vertex[56]: a_Pos[951.26276,1148.3885]
+::draw.vertex[57]: a_Pos[947.7969,1147.2612]
+::draw.vertex[58]: a_Pos[944.2968,1146.211]
+::draw.vertex[59]: a_Pos[940.7637,1145.2393]
+::draw.vertex[60]: a_Pos[937.1984,1144.3467]
+::draw.vertex[61]: a_Pos[933.60205,1143.5344]
+::draw.vertex[62]: a_Pos[929.9755,1142.8032]
+::draw.vertex[63]: a_Pos[926.31995,1142.1544]
+::draw.vertex[64]: a_Pos[922.6362,1141.5889]
+::draw.vertex[65]: a_Pos[918.9255,1141.1075]
+::draw.vertex[66]: a_Pos[915.18854,1140.7115]
+::draw.vertex[67]: a_Pos[911.4266,1140.4017]
+::draw.vertex[68]: a_Pos[907.64044,1140.1792]
+::draw.vertex[69]: a_Pos[903.8313,1140.0449]
+::draw.vertex[70]: a_Pos[896.1687,1140.0449]
+::draw.vertex[71]: a_Pos[892.35956,1140.1792]
+::draw.vertex[72]: a_Pos[888.5734,1140.4017]
+::draw.vertex[73]: a_Pos[884.81146,1140.7115]
+::draw.vertex[74]: a_Pos[881.0745,1141.1075]
+::draw.vertex[75]: a_Pos[877.3638,1141.5889]
+::draw.vertex[76]: a_Pos[873.68005,1142.1544]
+::draw.vertex[77]: a_Pos[870.0245,1142.8032]
+::draw.vertex[78]: a_Pos[866.39795,1143.5344]
+::draw.vertex[79]: a_Pos[862.8016,1144.3467]
+::draw.vertex[80]: a_Pos[859.2363,1145.2393]
+::draw.vertex[81]: a_Pos[855.7032,1146.211]
+::draw.vertex[82]: a_Pos[852.2031,1147.2612]
+::draw.vertex[83]: a_Pos[848.73724,1148.3885]
+::draw.vertex[84]: a_Pos[845.30646,1149.592]
+::draw.vertex[85]: a_Pos[841.91174,1150.8708]
+::draw.vertex[86]: a_Pos[838.55426,1152.2239]
+::draw.vertex[87]: a_Pos[835.23486,1153.6501]
+::draw.vertex[88]: a_Pos[831.9546,1155.1486]
+::draw.vertex[89]: a_Pos[828.7145,1156.7183]
+::draw.vertex[90]: a_Pos[825.51544,1158.3582]
+::draw.vertex[91]: a_Pos[822.35864,1160.0674]
+::draw.vertex[92]: a_Pos[819.24493,1161.8447]
+::draw.vertex[93]: a_Pos[816.1754,1163.6892]
+::draw.vertex[94]: a_Pos[813.151,1165.6]
+::draw.vertex[95]: a_Pos[810.1727,1167.576]
+::draw.vertex[96]: a_Pos[807.2417,1169.6162]
+::draw.vertex[97]: a_Pos[804.35876,1171.7196]
+::draw.vertex[98]: a_Pos[801.52496,1173.8851]
+::draw.vertex[99]: a_Pos[798.7414,1176.1119]
+::draw.vertex[100]: a_Pos[796.009,1178.3989]
+::draw.vertex[101]: a_Pos[793.32874,1180.7451]
+::draw.vertex[102]: a_Pos[790.70166,1183.1494]
+::draw.vertex[103]: a_Pos[788.1287,1185.611]
+::draw.vertex[104]: a_Pos[785.611,1188.1288]
+::draw.vertex[105]: a_Pos[783.1495,1190.7017]
+::draw.vertex[106]: a_Pos[780.7451,1193.3287]
+::draw.vertex[107]: a_Pos[778.3989,1196.009]
+::draw.vertex[108]: a_Pos[776.11194,1198.7415]
+::draw.vertex[109]: a_Pos[773.8852,1201.525]
+::draw.vertex[110]: a_Pos[771.7196,1204.3588]
+::draw.vertex[111]: a_Pos[769.6162,1207.2417]
+::draw.vertex[112]: a_Pos[767.576,1210.1727]
+::draw.vertex[113]: a_Pos[765.60004,1213.151]
+::draw.vertex[114]: a_Pos[763.6893,1216.1754]
+::draw.vertex[115]: a_Pos[761.84467,1219.245]
+::draw.vertex[116]: a_Pos[760.0673,1222.3586]
+::draw.vertex[117]: a_Pos[758.3582,1225.5155]
+::draw.vertex[118]: a_Pos[756.71826,1228.7145]
+::draw.vertex[119]: a_Pos[755.14856,1231.9546]
+::draw.vertex[120]: a_Pos[753.6501,1235.2349]
+::draw.vertex[121]: a_Pos[752.2239,1238.5542]
+::draw.vertex[122]: a_Pos[750.87085,1241.9117]
+::draw.vertex[123]: a_Pos[749.59204,1245.3064]
+::draw.vertex[124]: a_Pos[748.3885,1248.7372]
+::draw.vertex[125]: a_Pos[747.26117,1252.2031]
+::draw.vertex[126]: a_Pos[746.2111,1255.7031]
+::draw.vertex[127]: a_Pos[745.23926,1259.2363]
+::draw.vertex[128]: a_Pos[744.3467,1262.8016]
+::draw.vertex[129]: a_Pos[743.53436,1266.398]
+::draw.vertex[130]: a_Pos[742.8033,1270.0244]
+::draw.vertex[131]: a_Pos[742.1545,1273.68]
+::draw.vertex[132]: a_Pos[741.58887,1277.3638]
+::draw.vertex[133]: a_Pos[741.10754,1281.0746]
+::draw.vertex[134]: a_Pos[740.7115,1284.8114]
+::draw.vertex[135]: a_Pos[740.40173,1288.5735]
+::draw.vertex[136]: a_Pos[740.1792,1292.3595]
+::draw.vertex[137]: a_Pos[740.045,1296.1687]
+::draw.vertex[138]: a_Pos[740.045,1303.8313]
+::draw.vertex[139]: a_Pos[740.1792,1307.6405]
+::draw.vertex[140]: a_Pos[740.40173,1311.4265]
+::draw.vertex[141]: a_Pos[740.7115,1315.1886]
+::draw.vertex[142]: a_Pos[741.10754,1318.9254]
+::draw.vertex[143]: a_Pos[741.58887,1322.6362]
+::draw.vertex[144]: a_Pos[742.1545,1326.32]
+::draw.vertex[145]: a_Pos[742.8033,1329.9756]
+::draw.vertex[146]: a_Pos[743.53436,1333.602]
+::draw.vertex[147]: a_Pos[744.3467,1337.1984]
+::draw.vertex[148]: a_Pos[745.23926,1340.7637]
+::draw.vertex[149]: a_Pos[746.2111,1344.2969]
+::draw.vertex[150]: a_Pos[747.26117,1347.7969]
+::draw.vertex[151]: a_Pos[748.3885,1351.2628]
+::draw.vertex[152]: a_Pos[749.59204,1354.6936]
+::draw.vertex[153]: a_Pos[750.87085,1358.0883]
+::draw.vertex[154]: a_Pos[752.2239,1361.4458]
+::draw.vertex[155]: a_Pos[753.6501,1364.7651]
+::draw.vertex[156]: a_Pos[755.14856,1368.0454]
+::draw.vertex[157]: a_Pos[756.71826,1371.2855]
+::draw.vertex[158]: a_Pos[758.3582,1374.4845]
+::draw.vertex[159]: a_Pos[760.0673,1377.6414]
+::draw.vertex[160]: a_Pos[761.84467,1380.755]
+::draw.vertex[161]: a_Pos[763.6893,1383.8246]
+::draw.vertex[162]: a_Pos[765.60004,1386.849]
+::draw.vertex[163]: a_Pos[767.576,1389.8273]
+::draw.vertex[164]: a_Pos[769.6162,1392.7583]
+::draw.vertex[165]: a_Pos[771.7196,1395.6412]
+::draw.vertex[166]: a_Pos[773.8852,1398.475]
+::draw.vertex[167]: a_Pos[776.11194,1401.2585]
+::draw.vertex[168]: a_Pos[778.3989,1403.991]
+::draw.vertex[169]: a_Pos[780.7451,1406.6713]
+::draw.vertex[170]: a_Pos[783.1495,1409.2983]
+::draw.vertex[171]: a_Pos[785.611,1411.8712]
+::draw.vertex[172]: a_Pos[788.1287,1414.389]
+::draw.vertex[173]: a_Pos[790.70166,1416.8506]
+::draw.vertex[174]: a_Pos[793.32874,1419.2549]
+::draw.vertex[175]: a_Pos[796.009,1421.6011]
+::draw.vertex[176]: a_Pos[798.7414,1423.8881]
+::draw.vertex[177]: a_Pos[801.52496,1426.1149]
+::draw.vertex[178]: a_Pos[804.35876,1428.2804]
+::draw.vertex[179]: a_Pos[807.2417,1430.3838]
+::draw.vertex[180]: a_Pos[810.1727,1432.424]
+::draw.vertex[181]: a_Pos[813.151,1434.4]
+::draw.vertex[182]: a_Pos[816.1754,1436.3108]
+::draw.vertex[183]: a_Pos[819.24493,1438.1553]
+::draw.vertex[184]: a_Pos[822.35864,1439.9326]
+::draw.vertex[185]: a_Pos[825.51544,1441.6418]
+::draw.vertex[186]: a_Pos[828.7145,1443.2817]
+::draw.vertex[187]: a_Pos[831.9546,1444.8514]
+::draw.vertex[188]: a_Pos[835.23486,1446.3499]
+::draw.vertex[189]: a_Pos[838.55426,1447.7761]
+::draw.vertex[190]: a_Pos[841.91174,1449.1292]
+::draw.vertex[191]: a_Pos[845.30646,1450.408]
+::draw.vertex[192]: a_Pos[848.73724,1451.6115]
+::draw.vertex[193]: a_Pos[852.2031,1452.7388]
+::draw.vertex[194]: a_Pos[855.7032,1453.789]
+::draw.vertex[195]: a_Pos[859.2363,1454.7607]
+::draw.vertex[196]: a_Pos[862.8016,1455.6533]
+::draw.vertex[197]: a_Pos[866.39795,1456.4656]
+::draw.vertex[198]: a_Pos[870.0245,1457.1968]
+::draw.vertex[199]: a_Pos[873.68005,1457.8456]
+::draw.vertex[200]: a_Pos[877.3638,1458.4111]
+::draw.vertex[201]: a_Pos[881.0745,1458.8925]
+::draw.vertex[202]: a_Pos[884.81146,1459.2885]
+::draw.vertex[203]: a_Pos[888.5734,1459.5983]
+::draw.vertex[204]: a_Pos[892.35956,1459.8208]
+::draw.vertex[205]: a_Pos[896.1687,1459.9551]
+::draw.vertex[206]: a_Pos[903.8313,1459.9551]
+::draw.vertex[207]: a_Pos[907.64044,1459.8208]
+::draw.vertex[208]: a_Pos[911.4266,1459.5983]
+::draw.vertex[209]: a_Pos[915.18854,1459.2885]
+::draw.vertex[210]: a_Pos[918.9255,1458.8925]
+::draw.vertex[211]: a_Pos[922.6362,1458.4111]
+::draw.vertex[212]: a_Pos[926.31995,1457.8456]
+::draw.vertex[213]: a_Pos[929.9755,1457.1968]
+::draw.vertex[214]: a_Pos[933.60205,1456.4656]
+::draw.vertex[215]: a_Pos[937.1984,1455.6533]
+::draw.vertex[216]: a_Pos[940.7637,1454.7607]
+::draw.vertex[217]: a_Pos[944.2968,1453.789]
+::draw.vertex[218]: a_Pos[947.7969,1452.7388]
+::draw.vertex[219]: a_Pos[951.26276,1451.6115]
+::draw.vertex[220]: a_Pos[954.69354,1450.408]
+::draw.vertex[221]: a_Pos[958.08826,1449.1292]
+::draw.vertex[222]: a_Pos[961.44574,1447.7761]
+::draw.vertex[223]: a_Pos[964.76514,1446.3499]
+::draw.vertex[224]: a_Pos[968.0454,1444.8514]
+::draw.vertex[225]: a_Pos[971.2855,1443.2817]
+::draw.vertex[226]: a_Pos[974.48456,1441.6418]
+::draw.vertex[227]: a_Pos[977.64136,1439.9326]
+::draw.vertex[228]: a_Pos[980.75507,1438.1553]
+::draw.vertex[229]: a_Pos[983.8246,1436.3108]
+::draw.vertex[230]: a_Pos[986.849,1434.4]
+::draw.vertex[231]: a_Pos[989.8273,1432.424]
+::draw.vertex[232]: a_Pos[992.7583,1430.3838]
+::draw.vertex[233]: a_Pos[995.64124,1428.2804]
+::draw.vertex[234]: a_Pos[998.47504,1426.1149]
+::draw.vertex[235]: a_Pos[1001.2586,1423.8881]
+::draw.vertex[236]: a_Pos[1003.991,1421.6011]
+::draw.vertex[237]: a_Pos[1006.67126,1419.2549]
+::draw.vertex[238]: a_Pos[1009.29834,1416.8506]
+::draw.vertex[239]: a_Pos[1011.8713,1414.389]
+::draw.vertex[240]: a_Pos[1014.389,1411.8712]
+::draw.vertex[241]: a_Pos[1016.8505,1409.2983]
+::draw.vertex[242]: a_Pos[1019.2549,1406.6713]
+::draw.vertex[243]: a_Pos[1021.6011,1403.991]
+::draw.vertex[244]: a_Pos[1023.88806,1401.2585]
+::draw.vertex[245]: a_Pos[1026.1147,1398.475]
+::draw.vertex[246]: a_Pos[1028.2804,1395.6412]
+::draw.vertex[247]: a_Pos[1030.3838,1392.7583]
+::draw.vertex[248]: a_Pos[1032.4241,1389.8273]
+::draw.vertex[249]: a_Pos[1034.3999,1386.849]
+::draw.vertex[250]: a_Pos[1036.3108,1383.8246]
+::draw.vertex[251]: a_Pos[1038.1553,1380.755]
+::draw.vertex[252]: a_Pos[1039.9326,1377.6414]
+::draw.vertex[253]: a_Pos[1041.6418,1374.4845]
+::draw.vertex[254]: a_Pos[1043.2817,1371.2855]
+::draw.vertex[255]: a_Pos[1044.8514,1368.0454]
+::draw.vertex[256]: a_Pos[1046.3499,1364.7651]
+::draw.vertex[257]: a_Pos[1047.7761,1361.4458]
+::draw.vertex[258]: a_Pos[1049.1292,1358.0883]
+::draw.vertex[259]: a_Pos[1050.408,1354.6936]
+::draw.vertex[260]: a_Pos[1051.6116,1351.2628]
+::draw.vertex[261]: a_Pos[1052.7388,1347.7969]
+::draw.vertex[262]: a_Pos[1053.7888,1344.2969]
+::draw.vertex[263]: a_Pos[1054.7607,1340.7637]
+::draw.vertex[264]: a_Pos[1055.6533,1337.1984]
+::draw.vertex[265]: a_Pos[1056.4656,1333.602]
+::draw.vertex[266]: a_Pos[1057.1968,1329.9756]
+::draw.vertex[267]: a_Pos[1057.8455,1326.32]
+::draw.vertex[268]: a_Pos[1058.4111,1322.6362]
+::draw.vertex[269]: a_Pos[1058.8925,1318.9254]
+::draw.vertex[270]: a_Pos[1059.2886,1315.1886]
+::draw.vertex[271]: a_Pos[1059.5983,1311.4265]
+::draw.vertex[272]: a_Pos[1059.8208,1307.6405]
+::draw.vertex[273]: a_Pos[1059.9551,1303.8313]
+::draw.vertex[274]: a_Pos[1060,1300]
+::draw.vertex[275]: a_Pos[1060,1300]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Color, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=740, y=1140, width=320, height=320)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Color) = [1.0, 1.0, 0.0, 1.0]
+::draw.uniform.Uniform(u_GlobalAlpha) = 1.0
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform vec4 u_Color;
+uniform float u_GlobalAlpha;
+void main() {
+	gl_FragColor = u_Color;
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=9, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=796, y=1180, width=208, height=240)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6, 7, 8]
+::draw.vertex[0]: a_Pos[900,1300]
+::draw.vertex[1]: a_Pos[900,1180]
+::draw.vertex[2]: a_Pos[1003.92303,1240]
+::draw.vertex[3]: a_Pos[1003.92303,1360]
+::draw.vertex[4]: a_Pos[900,1420]
+::draw.vertex[5]: a_Pos[796.07697,1360]
+::draw.vertex[6]: a_Pos[796.07697,1240]
+::draw.vertex[7]: a_Pos[900,1180]
+::draw.vertex[8]: a_Pos[900,1180]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Color, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=796, y=1180, width=208, height=240)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Color) = [1.0, 0.0, 0.0, 1.0]
+::draw.uniform.Uniform(u_GlobalAlpha) = 1.0
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform vec4 u_Color;
+uniform float u_GlobalAlpha;
+void main() {
+	gl_FragColor = u_Color;
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=500, y=180, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6]
+::draw.vertex[0]: a_Pos[900,580]
+::draw.vertex[1]: a_Pos[500,180]
+::draw.vertex[2]: a_Pos[1300,180]
+::draw.vertex[3]: a_Pos[1300,980]
+::draw.vertex[4]: a_Pos[500,980]
+::draw.vertex[5]: a_Pos[500,180]
+::draw.vertex[6]: a_Pos[500,180]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Tex, u_Transform, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=500, y=180, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Transform) = Matrix3D(
+  [ 0.00390625, 0, 0, -1.0742188 ],
+  [ 0, 0.00390625, 0, -0.44921875 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_GlobalAlpha) = 0.75
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform sampler2D u_Tex;
+uniform mat4 u_Transform;
+uniform float u_GlobalAlpha;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_FragColor = texture2D(u_Tex, fract(vec2((u_Transform * vec4(v_Tex, 0.0, 1.0)).xy)));
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1300, y=180, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6]
+::draw.vertex[0]: a_Pos[1700,580]
+::draw.vertex[1]: a_Pos[1300,180]
+::draw.vertex[2]: a_Pos[2100,180]
+::draw.vertex[3]: a_Pos[2100,980]
+::draw.vertex[4]: a_Pos[1300,980]
+::draw.vertex[5]: a_Pos[1300,180]
+::draw.vertex[6]: a_Pos[1300,180]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Tex, u_Transform, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1300, y=180, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Transform) = Matrix3D(
+  [ 0.0025, 0.0025, 0, -2.35 ],
+  [ -0.0025, 0.0025, 0, 1.9 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Gradientp0) = [0.0, 0.0, 0.0]
+::draw.uniform.Uniform(u_Gradientp1) = [100.0, 100.0, 0.0]
+::draw.uniform.Uniform(u_GlobalAlpha) = 0.9
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_Gradientp0), Uniform(u_Gradientp1)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform sampler2D u_Tex;
+uniform mat4 u_Transform;
+uniform float u_GlobalAlpha;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_FragColor = texture2D(u_Tex, (u_Transform * vec4(v_Tex.x, v_Tex.y, 0.0, 1.0)).xy);
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1300, y=980, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6]
+::draw.vertex[0]: a_Pos[1700,1380]
+::draw.vertex[1]: a_Pos[1300,980]
+::draw.vertex[2]: a_Pos[2100,980]
+::draw.vertex[3]: a_Pos[2100,1780]
+::draw.vertex[4]: a_Pos[1300,1780]
+::draw.vertex[5]: a_Pos[1300,980]
+::draw.vertex[6]: a_Pos[1300,980]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Transform, u_Gradientp0, u_Gradientp1, u_Tex, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1300, y=980, width=800, height=800)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Transform) = Matrix3D(
+  [ 0.25, 0, 0, -62.5 ],
+  [ 0, 0.25, 0, -22.5 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Gradientp0) = [150.0, 150.0, 30.0]
+::draw.uniform.Uniform(u_Gradientp1) = [130.0, 180.0, 70.0]
+::draw.uniform.Uniform(u_GlobalAlpha) = 0.9
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform mat4 u_Transform;
+uniform vec3 u_Gradientp0;
+uniform vec3 u_Gradientp1;
+uniform sampler2D u_Tex;
+uniform float u_GlobalAlpha;
+varying mediump vec2 v_Tex;
+void main() {
+	vec2 temp3;
+	vec4 temp0;
+	vec4 temp1;
+	temp3.xy = (u_Transform * vec4(v_Tex.x, v_Tex.y, 0.0, 1.0)).xy;
+	temp0.y = ((2.0 * u_Gradientp0.z) * u_Gradientp1.z);
+	temp0.z = pow(u_Gradientp0.z, 2.0);
+	temp0.w = pow(u_Gradientp1.z, 2.0);
+	temp1.y = (u_Gradientp0.x - u_Gradientp1.x);
+	temp1.x = (u_Gradientp0.y - u_Gradientp1.y);
+	temp1.z = (u_Gradientp0.z - u_Gradientp1.z);
+	temp1.w = (1.0 / ((pow((u_Gradientp0.z - u_Gradientp1.z), 2.0) - pow((u_Gradientp0.x - u_Gradientp1.x), 2.0)) - pow((u_Gradientp0.y - u_Gradientp1.y), 2.0)));
+	temp0.x = (1.0 - ((((((-(u_Gradientp1.z)) * temp1.z) + (temp1.y * (u_Gradientp1.x - temp3.x))) + (temp1.x * (u_Gradientp1.y - temp3.y))) - sqrt(((((temp0.w * (pow((u_Gradientp0.x - temp3.x), 2.0) + pow((u_Gradientp0.y - temp3.y), 2.0))) - (temp0.y * (((u_Gradientp0.x - temp3.x) * (u_Gradientp1.x - temp3.x)) + ((u_Gradientp0.y - temp3.y) * (u_Gradientp1.y - temp3.y))))) + (temp0.z * (pow((u_Gradientp1.x - temp3.x), 2.0) + pow((u_Gradientp1.y - temp3.y), 2.0)))) - pow(((((((u_Gradientp1.x * u_Gradientp0.y) - (temp3.x * u_Gradientp0.y)) - (u_Gradientp0.x * u_Gradientp1.y)) + (temp3.x * u_Gradientp1.y)) + (u_Gradientp0.x * temp3.y)) - (u_Gradientp1.x * temp3.y)), 2.0)))) * temp1.w));
+	gl_FragColor = texture2D(u_Tex, vec2(temp0.x, 0.0));
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=7, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos], uniforms=[u_ProjMat, u_ViewMat])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1700, y=780, width=400, height=400)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=INVERT, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=255, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=ONE, dstRGB=ZERO, srcA=ONE, dstA=ZERO, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=false, green=false, blue=false, alpha=false)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.indices=[0, 1, 2, 3, 4, 5, 6]
+::draw.vertex[0]: a_Pos[1900,980]
+::draw.vertex[1]: a_Pos[1700,780]
+::draw.vertex[2]: a_Pos[2100,780]
+::draw.vertex[3]: a_Pos[2100,1180]
+::draw.vertex[4]: a_Pos[1700,1180]
+::draw.vertex[5]: a_Pos[1700,780]
+::draw.vertex[6]: a_Pos[1700,780]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+draw(vertexCount=4, instances=1, indices=null, type=TRIANGLE_FAN, offset=0)
+::draw.program=Program(name=program, attributes=[a_Pos, a_Tex], uniforms=[u_ProjMat, u_ViewMat, u_Transform, u_Gradientp0, u_Tex, u_GlobalAlpha])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=1700, y=780, width=400, height=400)
+::draw.stencil=StencilState(enabled=true, triangleFace=FRONT_AND_BACK, compareMode=NOT_EQUAL, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=0)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.0078125, 0, 0, -1 ],
+  [ 0, 0.0078125, 0, -1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+::draw.uniform.Uniform(u_Tex) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Transform) = Matrix3D(
+  [ 0.25, 0, 0, -62.5 ],
+  [ 0, 0.25, 0, -22.5 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Gradientp0) = [175.0, 100.0, 0.0]
+::draw.uniform.Uniform(u_Gradientp1) = [0.0, 0.0, 0.0]
+::draw.uniform.Uniform(u_GlobalAlpha) = 0.9
+::draw.ERROR.Unexpected:[Uniform(u_Tex0), Uniform(u_Tex1), Uniform(u_Tex2), Uniform(u_Tex3), Uniform(u_Gradientp1)]
+::draw.attribute[4][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[4][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.indices=[0, 1, 2, 3]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[100,0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[100,100]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,100]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute highp vec2 a_Pos;
+attribute mediump vec2 a_Tex;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform mat4 u_Transform;
+uniform vec3 u_Gradientp0;
+uniform sampler2D u_Tex;
+uniform float u_GlobalAlpha;
+varying mediump vec2 v_Tex;
+void main() {
+	vec2 temp3;
+	vec4 temp0;
+	temp3.xy = (u_Transform * vec4(v_Tex.x, v_Tex.y, 0.0, 1.0)).xy;
+	temp0.y = atan((temp3.y - u_Gradientp0.y), (temp3.x - u_Gradientp0.x));
+	if ((temp0.y < 0.0)) {
+		temp0.y = (temp0.y + 6.2831855);
+	}
+	temp0.x = (temp0.y / 6.2831855);
+	gl_FragColor = texture2D(u_Tex, fract(vec2(temp0.x, 0.0)));
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+}
+
+draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
+::draw.program=Program(name=BatchBuilder2D.Premultiplied.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
+::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
+::draw.scissor=Scissor(x=0, y=0, width=200, height=200)
+::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
+::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
+::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
+::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+  [ 0.01, 0, 0, -1 ],
+  [ 0, -0.01, 0, 1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
+::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
+::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
+::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
+::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
+::draw.indices=[0, 1, 2, 3, 0, 2]
+::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[0.78125,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[0.78125,0.78125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,0.78125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.shader.vertex=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+attribute mediump vec2 a_Tex;
+attribute lowp float a_TexIndex;
+attribute lowp vec4 a_Col;
+attribute vec4 a_Col2;
+attribute highp vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying mediump vec2 v_Tex;
+varying lowp float v_TexIndex;
+varying vec4 v_Col;
+varying vec4 v_Col2;
+void main() {
+	v_Tex = a_Tex;
+	v_TexIndex = a_TexIndex;
+	v_Col = a_Col;
+	v_Col2 = a_Col2;
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+
+::draw.shader.fragment=#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform sampler2D u_Tex0;
+uniform sampler2D u_Tex1;
+uniform sampler2D u_Tex2;
+uniform sampler2D u_Tex3;
+varying lowp float v_TexIndex;
+varying mediump vec2 v_Tex;
+varying vec4 v_Col;
+void main() {
+	if ((v_TexIndex <= 1.0)) {
+		if ((v_TexIndex == 0.0)) {
+			gl_FragColor = texture2D(u_Tex0, fract(v_Tex.xy));
+		}
+		else {
+			gl_FragColor = texture2D(u_Tex1, fract(v_Tex.xy));
+		}
+	}
+	else {
+		if ((v_TexIndex == 2.0)) {
+			gl_FragColor = texture2D(u_Tex2, fract(v_Tex.xy));
+		}
+		else {
+			gl_FragColor = texture2D(u_Tex3, fract(v_Tex.xy));
+		}
+	}
+	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	gl_FragColor = (gl_FragColor.rgba * v_Col.rgba);
+	if ((gl_FragColor.a <= 0.0)) {
+		discard;
+	}
+}
+
+Rectangle(x=250, y=170, width=2000, height=1600)
+Rectangle(x=100, y=60, width=1000, height=800)

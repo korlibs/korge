@@ -1,15 +1,19 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.log.LogBaseAG
+import com.soywiz.korge.annotations.*
 import com.soywiz.korge.test.assertEqualsFileReference
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.view.fast.*
+import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.RectangleInt
-import com.soywiz.korma.geom.SizeInt
-import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.*
+import com.soywiz.korim.vector.*
+import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.*
 import kotlin.test.Test
 
 class ReferenceGraphicsTest : ViewsForTesting(
@@ -20,7 +24,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
     override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW || kind == LogBaseAG.Kind.SHADER
 
     @Test
-    fun test() = viewsTest {
+    fun testGraphics() = viewsTest {
         graphics {
             fill(Colors.RED) {
                 rect(-60, -60, 70, 70)
@@ -96,4 +100,78 @@ class ReferenceGraphicsTest : ViewsForTesting(
         )
     }
 
+    @Test
+    @OptIn(KorgeExperimental::class)
+    fun testGpuShapeView() = viewsTest {
+        val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
+        val view = gpuShapeView {
+            keep {
+                translate(100, 200)
+                fill(Colors.BLUE) {
+                    rect(-10, -10, 120, 120)
+                    rectHole(40, 40, 80, 80)
+                }
+                fill(Colors.YELLOW) {
+                    this.circle(100, 100, 40)
+                    //rect(-100, -100, 500, 500)
+                    //rectHole(40, 40, 320, 320)
+                }
+                fill(Colors.RED) {
+                    regularPolygon(6, 30.0, x = 100.0, y = 100.0)
+                    //rect(-100, -100, 500, 500)
+                    //rectHole(40, 40, 320, 320)
+                }
+            }
+            keep {
+                translate(100, 20)
+                scale(2.0)
+                run {
+                    globalAlpha = 0.75
+                    fillStyle = BitmapPaint(
+                        korgeBitmap,
+                        Matrix().translate(50, 50).scale(0.125),
+                        cycleX = CycleMethod.REPEAT,
+                        cycleY = CycleMethod.REPEAT
+                    )
+                    fillRect(0.0, 0.0, 100.0, 100.0)
+                }
+
+                run {
+                    globalAlpha = 0.9
+                    fillStyle =
+                        //createLinearGradient(150.0, 0.0, 200.0, 50.0)
+                        createLinearGradient(0.0, 0.0, 100.0, 100.0, transform = Matrix().scale(0.5).pretranslate(300, 0))
+                            //.addColorStop(0.0, Colors.BLACK).addColorStop(1.0, Colors.WHITE)
+                            .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
+                    fillRect(100.0, 0.0, 100.0, 100.0)
+                }
+                run {
+                    globalAlpha = 0.9
+                    fillStyle =
+                        createRadialGradient(150,150,30, 130,180,70)
+                            .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.GREEN).addColorStop(1.0, Colors.BLUE)
+                    fillRect(100.0, 100.0, 100.0, 100.0)
+                }
+                run {
+                    globalAlpha = 0.9
+                    fillStyle =
+                        createSweepGradient(175, 100)
+                            .addColorStop(0.0, Colors.RED).addColorStop(0.5, Colors.PURPLE).addColorStop(1.0, Colors.YELLOW)
+                    fillRect(150.0, 75.0, 50.0, 50.0)
+                }
+            }
+        }
+            .xy(50, 50)
+            .scale(2, 2)
+
+        delayFrame()
+        assertEqualsFileReference(
+            "korge/render/GpuShapeView.log",
+            listOf(
+                logAg.getLogAsString(),
+                view.getGlobalBounds().toString(),
+                view.getLocalBounds().toString()
+            ).joinToString("\n")
+        )
+    }
 }
