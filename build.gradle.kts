@@ -12,8 +12,9 @@ buildscript {
         mavenCentral()
         google()
         maven { url = uri("https://plugins.gradle.org/m2/") }
-        if (kotlinVersion.contains("-M") || kotlinVersion.contains("-RC") || kotlinVersion.contains("eap") || kotlinVersion.contains("-release")) {
+        if (kotlinVersion.contains("eap") || kotlinVersion.contains("-")) {
             maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary")
+            maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev")
             maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven")
         }
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
@@ -59,8 +60,9 @@ allprojects {
 		mavenCentral().content { excludeGroup("Kotlin/Native") }
         google().content { excludeGroup("Kotlin/Native") }
 		maven { url = uri("https://plugins.gradle.org/m2/") }.content { excludeGroup("Kotlin/Native") }
-        if (kotlinVersion.contains("-M") || kotlinVersion.contains("-RC") || kotlinVersion.contains("eap") || kotlinVersion.contains("-release")) {
+        if (kotlinVersion.contains("eap") || kotlinVersion.contains("-")) {
             maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary").content { excludeGroup("Kotlin/Native") }
+            maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev").content { excludeGroup("Kotlin/Native") }
             maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven").content { excludeGroup("Kotlin/Native") }
         }
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.content { excludeGroup("Kotlin/Native") }
