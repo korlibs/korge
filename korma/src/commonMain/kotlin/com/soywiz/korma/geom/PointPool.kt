@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.kds.*
 import com.soywiz.korma.internal.*
 
 typealias PointScope = PointPool
@@ -12,7 +13,7 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     //@PublishedApi internal val points = Array(capacity) { com.soywiz.korma.geom.Point() }
     //@PublishedApi internal fun alloc(): Point = points[offset++]
 
-    @PublishedApi internal val points = arrayListOf<Point>()
+    @PublishedApi internal val points = FastArrayList<Point>()
     @PublishedApi internal fun alloc(): Point {
         return if (offset < points.size) {
             points[offset++]

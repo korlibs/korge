@@ -716,8 +716,8 @@ samples {
                         add(esbuildCmd)
                         //add("--watch",)
                         add("--bundle")
-                        add("--minify")
-                        add("--sourcemap=external")
+                        //add("--minify")
+                        //add("--sourcemap=external")
                         add(jsPath)
                         add("--outfile=$output")
                         // @TODO: Close this command on CTRL+C

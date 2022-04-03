@@ -78,7 +78,7 @@ class GpuShapeView(shape: Shape) : View() {
         }
     }
 
-    private val pointsScope = PointPool(64)
+    private val pointsScope = PointPool(128)
 
     fun FloatArrayList.add(p: IPoint) {
         add(p.x.toFloat())
