@@ -502,7 +502,7 @@ abstract class AGOpengl : AG() {
 
         gl.depthMask(renderState.depthMask)
         gl.depthRangef(renderState.depthNear, renderState.depthFar)
-        gl.lineWidth(renderState.lineWidth)
+        //gl.lineWidth(renderState.lineWidth) // In WebGL this doesn't have effect, so let's ignore it: https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
 
         if (renderState.depthFunc != CompareMode.ALWAYS) {
             gl.enable(gl.DEPTH_TEST)

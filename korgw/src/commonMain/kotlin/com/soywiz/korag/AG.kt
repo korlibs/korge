@@ -551,6 +551,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         var depthMask: Boolean = true,
         var depthNear: Float = 0f,
         var depthFar: Float = 1f,
+        @Deprecated("This is not used anymore, since it is not available on WebGL")
         var lineWidth: Float = 1f,
         var frontFace: FrontFace = FrontFace.BOTH
     )
