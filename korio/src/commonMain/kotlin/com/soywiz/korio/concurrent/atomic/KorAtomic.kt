@@ -96,8 +96,14 @@ open class KorAtomicLong internal constructor(initial: Long, dummy: Boolean) : K
     override fun toString(): String = "$value"
 }
 
+fun KorAtomicInt.getAndAdd(delta: Int): Int = addAndGet(delta) - delta
+fun KorAtomicLong.getAndAdd(delta: Long): Long = addAndGet(delta) - delta
+
 fun KorAtomicInt.incrementAndGet() = addAndGet(1)
 fun KorAtomicLong.incrementAndGet() = addAndGet(1)
+
+fun KorAtomicInt.getAndIncrement() = getAndAdd(1)
+fun KorAtomicLong.getAndIncrement() = getAndAdd(1)
 
 
 inline operator fun <T> KorAtomicRef<T>.getValue(obj: Any, prop: KProperty<Any?>): T = this.value
