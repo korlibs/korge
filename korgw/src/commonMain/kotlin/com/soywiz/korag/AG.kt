@@ -485,6 +485,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     open fun createTexture(premultiplied: Boolean): Texture = Texture()
 
+    // @TODO: Remove this. We shouldn't reference KmlGl in AG, since this might have different implementations
     open fun createTexture(targetKind: TextureTargetKind, init:Texture.(gl:KmlGl)->Unit): Texture = Texture()
 
     open fun createBuffer(kind: Buffer.Kind) = Buffer(kind)
