@@ -118,7 +118,10 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
     enum class BlendEquation {
-        ADD, SUBTRACT, REVERSE_SUBTRACT
+        ADD, SUBTRACT, REVERSE_SUBTRACT;
+        companion object {
+            val VALUES = values()
+        }
     }
 
     enum class BlendFactor {
@@ -132,6 +135,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         SOURCE_ALPHA,
         SOURCE_COLOR,
         ZERO;
+        companion object {
+            val VALUES = values()
+        }
     }
 
     data class Scissor(
@@ -523,14 +529,23 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         KEEP,
         SET,
         ZERO;
+        companion object {
+            val VALUES = values()
+        }
     }
 
     enum class TriangleFace {
         FRONT, BACK, FRONT_AND_BACK, NONE;
+        companion object {
+            val VALUES = values()
+        }
     }
 
     enum class CompareMode {
         ALWAYS, EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, NEVER, NOT_EQUAL;
+        companion object {
+            val VALUES = values()
+        }
     }
 
     data class ColorMaskState(
@@ -543,7 +558,10 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     }
 
     enum class FrontFace {
-        BOTH, CW, CCW
+        BOTH, CW, CCW;
+        companion object {
+            val VALUES = values()
+        }
     }
 
     data class RenderState(
