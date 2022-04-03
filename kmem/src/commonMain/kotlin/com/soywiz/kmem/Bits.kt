@@ -147,10 +147,39 @@ public fun Int.insert(value: Int, offset: Int, count: Int): Int {
     return clearValue or ((value and mask) shl offset)
 }
 
-/** Replaces [this] bits from [offset] to [offset]+8 with [value] and returns the result of doing such replacement */
-public fun Int.insert8(value: Int, offset: Int): Int = insert(value, offset, 8)
+public fun Int.insert24(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFFFF)
+public fun Int.insert16(value: Int, offset: Int): Int = insertMask(value, offset, 0xFFFF)
+public fun Int.insert8(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111111)
+public fun Int.insert7(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111111)
+public fun Int.insert6(value: Int, offset: Int): Int = insertMask(value, offset, 0b111111)
+public fun Int.insert5(value: Int, offset: Int): Int = insertMask(value, offset, 0b11111)
+public fun Int.insert4(value: Int, offset: Int): Int = insertMask(value, offset, 0b1111)
+public fun Int.insert3(value: Int, offset: Int): Int = insertMask(value, offset, 0b111)
+public fun Int.insert2(value: Int, offset: Int): Int = insertMask(value, offset, 0b11)
+public fun Int.insert1(value: Int, offset: Int): Int = insertMask(value, offset, 0b1)
+
+/** Fast Insert: do not clear bits, assume affecting bits are 0 */
+public fun Int.finsert(value: Int, offset: Int): Int = this or (value shl offset)
+public fun Int.finsert24(value: Int, offset: Int): Int = this or ((value and 0xFFFFFF) shl offset)
+public fun Int.finsert16(value: Int, offset: Int): Int = this or ((value and 0xFFFF) shl offset)
+public fun Int.finsert8(value: Int, offset: Int): Int = this or ((value and 0xFF) shl offset)
+public fun Int.finsert7(value: Int, offset: Int): Int = this or ((value and 0b1111111) shl offset)
+public fun Int.finsert6(value: Int, offset: Int): Int = this or ((value and 0b111111) shl offset)
+public fun Int.finsert5(value: Int, offset: Int): Int = this or ((value and 0b11111) shl offset)
+public fun Int.finsert4(value: Int, offset: Int): Int = this or ((value and 0b1111) shl offset)
+public fun Int.finsert3(value: Int, offset: Int): Int = this or ((value and 0b111) shl offset)
+public fun Int.finsert2(value: Int, offset: Int): Int = this or ((value and 0b11) shl offset)
+public fun Int.finsert1(value: Int, offset: Int): Int = this or ((value and 0b1) shl offset)
+public fun Int.finsert(value: Boolean, offset: Int): Int = finsert(value.toInt(), offset)
+
+inline fun Int.insertMask(value: Int, offset: Int, mask: Int): Int {
+    return (this and (mask shl offset).inv()) or ((value and mask) shl offset)
+}
 /** Replaces 1 bit at [offset] with [value] and returns the result of doing such replacement */
-public fun Int.insert(value: Boolean, offset: Int): Int = this.insert(if (value) 1 else 0, offset, 1)
+public fun Int.insert(value: Boolean, offset: Int): Int {
+    val ivalue = if (value) 1 else 0
+    return (this and (1 shl offset).inv()) or (ivalue shl offset)
+}
 
 public fun Int.insertScaled(value: Int, offset: Int, count: Int, scale: Int): Int = insert((value * count.mask()) / scale, offset, count)
 public fun Int.insertScaledFF(value: Int, offset: Int, count: Int): Int = if (count == 0) this else this.insertScaled(value, offset, count, 0xFF)
