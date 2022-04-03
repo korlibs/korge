@@ -79,7 +79,7 @@ android {
 
 def mainDir = project.buildDir
 
-tasks.create("createAndroidManifest") {
+def createAndroidManifest =tasks.create("createAndroidManifest") {
     doFirst {
         mainDir.mkdirs()
         new File(mainDir, "AndroidManifest.xml").text = """
@@ -200,4 +200,7 @@ afterEvaluate {
         dependsOn ordered("createAndroidManifest", "installRelease")
         finalizedBy "onlyRunAndroid"
     }
+
+    tasks.findByName("generateDebugBuildConfig")
+        ?.dependsOn(createAndroidManifest)
 }
