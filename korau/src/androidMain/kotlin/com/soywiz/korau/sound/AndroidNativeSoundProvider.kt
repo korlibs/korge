@@ -27,7 +27,10 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
     override val audioFormats: AudioFormats = AudioFormats(MP3Decoder) + defaultAudioFormats
 
     private var audioManager: AudioManager? = null
-    val audioSessionId by lazy { audioManager!!.generateAudioSessionId() }
+    val audioSessionId: Int by lazy {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)
+            audioManager!!.generateAudioSessionId() else -1
+    }
     //val audioSessionId get() = audioManager!!.generateAudioSessionId()
 
     private val threadPool = Pool { id ->
