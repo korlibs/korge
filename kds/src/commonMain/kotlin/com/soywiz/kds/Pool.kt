@@ -3,13 +3,26 @@ package com.soywiz.kds
 import com.soywiz.kds.iterators.*
 import com.soywiz.kds.lock.*
 
+open class ConcurrentPool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
+    : Pool<T>(reset, preallocate, gen) {
+    private val lock = Lock()
+
+    override fun alloc(): T {
+        return lock { super.alloc() }
+    }
+
+    override fun free(element: T) {
+        lock { super.free(element) }
+    }
+}
+
 /**
  * Structure containing a set of reusable objects.
  *
  * The method [alloc] retrieves from the pool or allocates a new object,
  * while the [free] method pushes back one element to the pool and resets it to reuse it.
  */
-class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T) {
+open class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T) {
     companion object {
         fun <T : Poolable> fromPoolable(preallocate: Int = 0, gen: (Int) -> T): Pool<T> =
             Pool(reset = { it.reset() }, preallocate = preallocate, gen = gen)
@@ -28,7 +41,7 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
         for (n in 0 until preallocate) items.push(gen(lastId++))
     }
 
-    fun alloc(): T {
+    open fun alloc(): T {
         return if (items.isNotEmpty()) items.pop() else gen(lastId++)
     }
 
@@ -36,7 +49,7 @@ class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private
         fun reset()
     }
 
-    fun free(element: T) {
+    open fun free(element: T) {
         reset(element)
         items.push(element)
     }
