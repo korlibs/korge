@@ -4,6 +4,12 @@ import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.*
 
+val supportKotlinNative: Boolean get() {
+    // Linux and Windows ARM hosts doesn't have K/N toolchains
+    if ((isLinux || isWindows) && isArm) return false
+    return false
+}
+
 val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
 val isMacos get() = Os.isFamily(Os.FAMILY_MAC)
 val isLinux get() = Os.isFamily(Os.FAMILY_UNIX) && !isMacos

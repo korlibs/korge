@@ -146,7 +146,9 @@ class KorgeExtension(val project: Project) {
      */
     fun targetDesktop() {
         target("desktop") {
-            project.configureNativeDesktop()
+            if (supportKotlinNative) {
+                project.configureNativeDesktop()
+            }
         }
     }
 
@@ -185,7 +187,7 @@ class KorgeExtension(val project: Project) {
      */
     fun targetIos() {
         target("ios") {
-            if (isMacos) {
+            if (isMacos && supportKotlinNative) {
                 project.configureNativeIos()
             }
         }

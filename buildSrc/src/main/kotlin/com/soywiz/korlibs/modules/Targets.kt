@@ -5,12 +5,18 @@ import org.gradle.kotlin.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-val Project.doEnableKotlinNative: Boolean get() = rootProject.findProperty("enableKotlinNative") == "true"
+val Project.supportKotlinNative: Boolean get() {
+    // Linux and Windows ARM hosts doesn't have K/N toolchains
+    if ((isLinux || isWindows) && isArm) return false
+    return false
+}
+
+val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative && rootProject.findProperty("enableKotlinNative") == "true"
 val Project.doEnableKotlinAndroid: Boolean get() = rootProject.findProperty("enableKotlinAndroid") == "true"
-val Project.doEnableKotlinMobile: Boolean get() = rootProject.findProperty("enableKotlinMobile") == "true"
-val Project.doEnableKotlinMobileTvos: Boolean get() = rootProject.findProperty("enableKotlinMobileTvos") == "true"
-val Project.doEnableKotlinMobileWatchos: Boolean get() = rootProject.findProperty("enableKotlinMobileWatchos") == "true"
-val Project.doEnableKotlinRaspberryPi: Boolean get() = rootProject.findProperty("enableKotlinRaspberryPi") == "true"
+val Project.doEnableKotlinMobile: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinMobile") == "true"
+val Project.doEnableKotlinMobileTvos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileTvos") == "true"
+val Project.doEnableKotlinMobileWatchos: Boolean get() = doEnableKotlinMobile && rootProject.findProperty("enableKotlinMobileWatchos") == "true"
+val Project.doEnableKotlinRaspberryPi: Boolean get() = doEnableKotlinNative && rootProject.findProperty("enableKotlinRaspberryPi") == "true"
 
 val KotlinTarget.isX64: Boolean get() = this.name.endsWith("X64")
 val KotlinTarget.isX86: Boolean get() = this.name.endsWith("X86")
