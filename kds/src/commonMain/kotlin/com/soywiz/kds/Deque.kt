@@ -17,7 +17,8 @@ typealias CircularList<TGen> = TGenDeque<TGen>
 open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
     private var _start: Int = 0
     private var _size: Int = 0
-    private var data: Array<TGen> = arrayOfNulls<Any>(initialCapacity) as Array<TGen>
+    private var _data: Array<Any?> = arrayOfNulls(initialCapacity)
+    private var data: Array<TGen> = _data as Array<TGen>
     private val capacity: Int get() = data.size
 
     constructor() : this(initialCapacity = 16)
@@ -30,8 +31,10 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
         if (size + count > capacity) {
             val i = this.data
             val istart = this._start
-            val o = arrayOfNulls<Any>(this.data.size * 2) as Array<TGen>
+            val _o = arrayOfNulls<Any>(this.data.size * 2)
+            val o = _o as Array<TGen>
             copyCyclic(i, istart, o, this._size)
+            this._data = _o
             this.data = o
             this._start = 0
         }
@@ -66,18 +69,29 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
 
     fun addLast(item: TGen) {
         resizeIfRequiredFor(1)
-        data[(_start + size) umod capacity] = item
+        data[(_start + _size) % capacity] = item
         _size++
+    }
+
+    private fun nullify(index: Int) {
+        _data[index] = null // Prevent leaks
     }
 
     fun removeFirst(): TGen {
         if (_size <= 0) throw IndexOutOfBoundsException()
-        return first.apply { _start = (_start + 1) umod capacity; _size-- }
+        val out = first
+        nullify(_start)
+        _start = (_start + 1) % capacity;
+        _size--
+        return out
     }
 
     fun removeLast(): TGen {
         if (_size <= 0) throw IndexOutOfBoundsException()
-        return last.apply { _size-- }
+        val out = last
+        nullify(internalIndex(size - 1))
+        _size--
+        return out
     }
 
     fun removeAt(index: Int): TGen {
@@ -112,16 +126,17 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
 
     private fun _removeRetainAll(elements: Collection<TGen>, retain: Boolean): Boolean {
         val eset = elements.toSet()
-        val temp = this.data.copyOf()
+        val _temp = this._data.copyOf()
         var tsize = 0
         val osize = size
         for (n in 0 until size) {
             val c = this[n]
             if ((c in eset) == retain) {
-                temp[tsize++] = c
+                _temp[tsize++] = c
             }
         }
-        this.data = temp
+        this._data = _temp
+        this.data = _temp as Array<TGen>
         this._start = 0
         this._size = tsize
         return tsize != osize
@@ -231,7 +246,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
         _start = (_start - items.size) umod capacity
         _size += items.size
         var pos = _start
-        for (it in items) data[pos++ umod capacity] = it
+        for (it in items) data[pos++ % capacity] = it
     }
 
     fun addFirst(item: Int) {
@@ -243,18 +258,23 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
 
     fun addLast(item: Int) {
         resizeIfRequiredFor(1)
-        data[(_start + size) umod capacity] = item
+        data[(_start + size) % capacity] = item
         _size++
     }
 
     fun removeFirst(): Int {
         if (_size <= 0) throw IndexOutOfBoundsException()
-        return first.apply { _start = (_start + 1) umod capacity; _size-- }
+        val out = first
+        _start = (_start + 1) % capacity
+        _size--
+        return out
     }
 
     fun removeLast(): Int {
         if (_size <= 0) throw IndexOutOfBoundsException()
-        return last.apply { _size-- }
+        val out = last
+        _size--
+        return out
     }
 
     fun removeAt(index: Int): Int {
@@ -266,7 +286,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
         val old = this[index]
         if (index < size / 2) {
             for (n in index downTo 1) this[n] = this[n - 1]
-            _start = (_start + 1) umod capacity
+            _start = (_start + 1) % capacity
         } else {
             for (n in index until size - 1) this[n] = this[n + 1]
         }
