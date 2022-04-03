@@ -2,7 +2,7 @@
  * Allows to enqueue GPU commands that will be processed by a different thread eventually.
  */
 @file:Suppress("OPT_IN_IS_NOT_ENABLED")
-@file:OptIn(Incomplete::class)
+@file:OptIn(com.soywiz.korio.annotations.KorIncomplete::class)
 
 package com.soywiz.korag
 
@@ -20,8 +20,8 @@ typealias AGTriangleFace = AG.TriangleFace
 typealias AGCompareMode = AG.CompareMode
 typealias AGFrontFace = AG.FrontFace
 
-@Incomplete
-@Internal
+@KorIncomplete
+@KorInternal
 interface AGQueueProcessor {
     fun enable(kind: AGEnable)
     fun disable(kind: AGEnable)
@@ -32,7 +32,7 @@ interface AGQueueProcessor {
     fun depthFunction(depthTest: AGCompareMode)
 }
 
-@Incomplete
+@KorIncomplete
 enum class AGEnable {
     BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
     companion object {
@@ -40,7 +40,7 @@ enum class AGEnable {
     }
 }
 
-@Incomplete
+@KorIncomplete
 class AGGlobalState {
     internal val programIndices = ConcurrentPool { it }
     internal val textureIndices = ConcurrentPool { it }
@@ -60,7 +60,7 @@ class AGGlobalState {
     fun createList(): AGList = AGList(this)
 }
 
-@Incomplete
+@KorIncomplete
 class AGList(val globalState: AGGlobalState) {
     internal val completed = CompletableDeferred<Unit>()
     private val _lock = Lock()
@@ -75,7 +75,7 @@ class AGList(val globalState: AGGlobalState) {
     private fun add(v0: Int, v1: Int, v2: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2) } }
     private fun read(): Int = _lock { _data.removeFirst() }
 
-    @Internal
+    @KorInternal
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
         for (n in 0 until maxCount) {
             // @TODO: Wait for more data
@@ -234,14 +234,14 @@ class AGList(val globalState: AGGlobalState) {
     }
 }
 
-@Incomplete fun AGList.enableBlend(): Unit = enable(AGEnable.BLEND)
-@Incomplete fun AGList.enableCullFace(): Unit = enable(AGEnable.CULL_FACE)
-@Incomplete fun AGList.enableDepth(): Unit = enable(AGEnable.DEPTH)
-@Incomplete fun AGList.enableScissor(): Unit = enable(AGEnable.SCISSOR)
-@Incomplete fun AGList.enableStencil(): Unit = enable(AGEnable.STENCIL)
-@Incomplete fun AGList.disableBlend(): Unit = disable(AGEnable.BLEND)
-@Incomplete fun AGList.disableCullFace(): Unit = disable(AGEnable.CULL_FACE)
-@Incomplete fun AGList.disableDepth(): Unit = disable(AGEnable.DEPTH)
-@Incomplete fun AGList.disableScissor(): Unit = disable(AGEnable.SCISSOR)
-@Incomplete fun AGList.disableStencil(): Unit = disable(AGEnable.STENCIL)
+@KorIncomplete fun AGList.enableBlend(): Unit = enable(AGEnable.BLEND)
+@KorIncomplete fun AGList.enableCullFace(): Unit = enable(AGEnable.CULL_FACE)
+@KorIncomplete fun AGList.enableDepth(): Unit = enable(AGEnable.DEPTH)
+@KorIncomplete fun AGList.enableScissor(): Unit = enable(AGEnable.SCISSOR)
+@KorIncomplete fun AGList.enableStencil(): Unit = enable(AGEnable.STENCIL)
+@KorIncomplete fun AGList.disableBlend(): Unit = disable(AGEnable.BLEND)
+@KorIncomplete fun AGList.disableCullFace(): Unit = disable(AGEnable.CULL_FACE)
+@KorIncomplete fun AGList.disableDepth(): Unit = disable(AGEnable.DEPTH)
+@KorIncomplete fun AGList.disableScissor(): Unit = disable(AGEnable.SCISSOR)
+@KorIncomplete fun AGList.disableStencil(): Unit = disable(AGEnable.STENCIL)
 
