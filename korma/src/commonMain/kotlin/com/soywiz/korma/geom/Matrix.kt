@@ -287,10 +287,12 @@ data class Matrix(
     fun transformY(px: Float, py: Float): Double = this.d * py + this.b * px + this.ty
     fun transformY(px: Int, py: Int): Double = this.d * py + this.b * px + this.ty
 
+    fun transformXf(p: IPoint): Float = transformX(p.x, p.y).toFloat()
     fun transformXf(px: Double, py: Double): Float = transformX(px, py).toFloat()
     fun transformXf(px: Float, py: Float): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
     fun transformXf(px: Int, py: Int): Float = transformX(px.toDouble(), py.toDouble()).toFloat()
 
+    fun transformYf(p: IPoint): Float = transformY(p.x, p.y).toFloat()
     fun transformYf(px: Double, py: Double): Float = transformY(px, py).toFloat()
     fun transformYf(px: Float, py: Float): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()

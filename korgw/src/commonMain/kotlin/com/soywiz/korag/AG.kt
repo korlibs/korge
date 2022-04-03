@@ -809,7 +809,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         override fun set(): Unit = Unit
         fun readBitmap(bmp: Bitmap32) = this@AG.readColor(bmp)
         fun readDepth(width: Int, height: Int, out: FloatArray): Unit = this@AG.readDepth(width, height, out)
-        override fun close() = Unit
+        override fun close(): Unit {
+            cachedTexVersion = -1
+            _tex?.close()
+            _tex = null
+        }
     }
 
     open fun createRenderBuffer() = RenderBuffer()

@@ -307,14 +307,14 @@ interface Bezier {
         }
 
         fun cubicCalc(
-            p0: Point, p1: Point, p2: Point, p3: Point,
+            p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint,
             t: Double, target: Point = Point()
-        ): Point = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+        ): IPoint = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
 
         fun quadCalc(
-            p0: Point, p1: Point, p2: Point,
+            p0: IPoint, p1: IPoint, p2: IPoint,
             t: Double, target: Point = Point()
-        ): Point = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
+        ): IPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
     }
 }

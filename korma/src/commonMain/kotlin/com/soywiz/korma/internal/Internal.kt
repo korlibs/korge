@@ -6,6 +6,14 @@ import kotlin.math.*
 internal val Float.niceStr: String get() = if (almostEquals(this.toLong().toFloat(), this)) "${this.toLong()}" else "$this"
 internal val Double.niceStr: String get() = if (almostEquals(this.toLong().toDouble(), this)) "${this.toLong()}" else "$this"
 
+@PublishedApi internal infix fun Int.umod(other: Int): Int {
+    val remainder = this % other
+    return when {
+        remainder < 0 -> remainder + other
+        else -> remainder
+    }
+}
+
 @PublishedApi internal infix fun Double.umod(other: Double): Double {
     val remainder = this % other
     return when {

@@ -329,6 +329,8 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
     val MAX_RENDERBUFFER_SIZE: Int = 0x84E8
     val INVALID_FRAMEBUFFER_OPERATION: Int = 0x0506 // 1286
 
+    val TEXTURE_2D_MULTISAMPLE: Int = 0x9100
+
     open fun init() = Unit
     open fun handleContextLost() = Unit
     override fun startFrame(): Unit = Unit

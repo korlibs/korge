@@ -110,7 +110,7 @@ open class Graphics @JvmOverloads constructor(
 	private var startCap: LineCap = LineCap.BUTT
 	private var endCap: LineCap = LineCap.BUTT
 	private var lineJoin: LineJoin = LineJoin.MITER
-	private var miterLimit: Double = 4.0
+	private var miterLimit: Double = 10.0
 
     init {
         hitTestUsingShapes = true

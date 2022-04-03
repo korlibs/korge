@@ -131,13 +131,13 @@ fun Angle.inBetween(min: Angle, max: Angle, inclusive: Boolean): Boolean {
     }
 }
 
-val Double.degrees get() = Angle.fromDegrees(this)
-val Double.radians get() = Angle.fromRadians(this)
-val Int.degrees get() = Angle.fromDegrees(this)
-val Int.radians get() = Angle.fromRadians(this)
-val Float.degrees get() = Angle.fromDegrees(this)
-val Float.radians get() = Angle.fromRadians(this)
+val Double.degrees: Angle get() = Angle.fromDegrees(this)
+val Double.radians: Angle get() = Angle.fromRadians(this)
+val Int.degrees: Angle get() = Angle.fromDegrees(this)
+val Int.radians: Angle get() = Angle.fromRadians(this)
+val Float.degrees: Angle get() = Angle.fromDegrees(this)
+val Float.radians: Angle get() = Angle.fromRadians(this)
 
-val Angle.normalized get() = Angle(radians umod MAX_RADIANS)
+val Angle.normalized: Angle get() = Angle(radians umod MAX_RADIANS)
 
 fun Double.interpolate(l: Angle, r: Angle): Angle = this.interpolate(l.radians, r.radians).radians

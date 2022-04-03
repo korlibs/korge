@@ -3,7 +3,6 @@ package com.soywiz.korge.view.vector
 import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
-import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korge.annotations.*
@@ -15,6 +14,8 @@ import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Line
+import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.*
 import kotlin.math.*
@@ -52,7 +53,7 @@ class GpuShapeView(shape: Shape) : View() {
         ctx.flush()
         val currentRenderBuffer = ctx.ag.currentRenderBufferOrMain
         //ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
-        bufferWidth = currentRenderBuffer.width ; bufferHeight = currentRenderBuffer.height
+        bufferWidth = currentRenderBuffer.width; bufferHeight = currentRenderBuffer.height
         val time = measureTime {
             ctx.renderToTexture(bufferWidth, bufferHeight, {
                 renderShape(ctx, shape)
@@ -68,12 +69,309 @@ class GpuShapeView(shape: Shape) : View() {
     private fun renderShape(ctx: RenderContext, shape: Shape) {
         when (shape) {
             EmptyShape -> Unit
-            is FillShape -> renderShape(ctx, shape)
             is CompoundShape -> for (v in shape.components) renderShape(ctx, v)
-            // @TODO: Will be faster to draw this differently, since we probably won't need stencil buffer at all here
-            is PolylineShape -> renderShape(ctx, shape.fillShape)
             is TextShape -> renderShape(ctx, shape.primitiveShapes)
+            is FillShape -> renderShape(ctx, shape)
+            is PolylineShape -> renderStroke(ctx, shape.transform, shape.path, shape.paint, shape.globalAlpha, shape.thickness, shape.scaleMode, shape.startCaps, shape.endCaps, shape.lineJoin, shape.miterLimit)
+            //is PolylineShape -> renderShape(ctx, shape.fillShape)
             else -> TODO("shape=$shape")
+        }
+    }
+
+    private val pointsScope = PointPool(64)
+
+    fun FloatArrayList.add(p: IPoint) {
+        add(p.x.toFloat())
+        add(p.y.toFloat())
+    }
+
+    fun FloatArrayList.add(p: IPoint, m: Matrix) {
+        add(m.transformXf(p))
+        add(m.transformYf(p))
+    }
+
+    fun FloatArrayList.add(a: IPoint, b: IPoint) {
+        add(a)
+        add(b)
+    }
+
+    class RenderStrokePoints(
+        val points: FloatArrayList = FloatArrayList(),
+        val distValues: FloatArrayList = FloatArrayList(),
+    ) {
+        val pointCount: Int get() = points.size / 2
+
+        fun clear() {
+            points.clear()
+            distValues.clear()
+        }
+
+        fun add(p: IPoint, lineWidth: Float) {
+            points.add(p.x.toFloat())
+            points.add(p.y.toFloat())
+            distValues.add(lineWidth)
+        }
+
+        fun add(p1: IPoint, p2: IPoint, lineWidth: Float) {
+            add(p1, -lineWidth)
+            add(p2, +lineWidth)
+        }
+
+        fun addCubicOrLine(
+            scope: PointPool, fix: IPoint,
+            p0: IPoint, p0s: IPoint, p1s: IPoint, p1: IPoint,
+            lineWidth: Double,
+            reverse: Boolean = false,
+            start: Boolean = true,
+        ) {
+            val NPOINTS = 15
+            scope.apply {
+                for (i in 0..NPOINTS) {
+                    val ratio = i.toDouble() / NPOINTS.toDouble()
+                    val pos = when {
+                        start -> Bezier.cubicCalc(p0, p0s, p1s, p1, ratio, MPoint())
+                        else -> Bezier.cubicCalc(p1, p1s, p0s, p0, ratio, MPoint())
+                    }
+                    when {
+                        reverse -> add(fix, pos, lineWidth.toFloat())
+                        else -> add(pos, fix, lineWidth.toFloat())
+                    }
+                }
+            }
+        }
+    }
+
+    private fun renderStroke(
+        ctx: RenderContext,
+        stateTransform: Matrix,
+        strokePath: VectorPath,
+        paint: Paint,
+        globalAlpha: Double,
+        lineWidth: Double,
+        scaleMode: LineScaleMode,
+        startCap: LineCap,
+        endCap: LineCap,
+        join: LineJoin,
+        miterLimit: Double,
+        forceClosed: Boolean? = null,
+        scissor: AG.Scissor? = null,
+        stencil: AG.StencilState = AG.StencilState(),
+    ) {
+        val points = RenderStrokePoints()
+
+        val m = globalMatrix
+        val mt = m.toTransform()
+        val st2 = stateTransform.clone()
+        st2.premultiply(stage!!.globalMatrix)
+
+        val scaleWidth = scaleMode.anyScale
+        val lineWidth = if (scaleWidth) lineWidth * mt.scaleAvg else lineWidth
+
+        //val lineWidth = 0.2
+        //val lineWidth = 20.0
+        val fLineWidth = max((lineWidth).toFloat(), 1.5f)
+        class SegmentInfo {
+            lateinit var s: IPoint // start
+            lateinit var e: IPoint // end
+            lateinit var line: Line
+            var angleSE: Angle = 0.degrees
+            var angleSE0: Angle = 0.degrees
+            var angleSE1: Angle = 0.degrees
+            lateinit var s0: IPoint
+            lateinit var s1: IPoint
+            lateinit var e0: IPoint
+            lateinit var e1: IPoint
+            lateinit var e0s: IPoint
+            lateinit var e1s: IPoint
+            lateinit var s0s: IPoint
+            lateinit var s1s: IPoint
+
+            fun p(index: Int) = if (index == 0) s else e
+            fun p0(index: Int) = if (index == 0) s0 else e0
+            fun p1(index: Int) = if (index == 0) s1 else e1
+
+            fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool): Unit {
+                this.s = s
+                this.e = e
+                scope.apply {
+                    line = Line(s, e)
+                    angleSE = Angle.between(s, e)
+                    angleSE0 = angleSE - 90.degrees
+                    angleSE1 = angleSE + 90.degrees
+                    s0 = Point(s, angleSE0, length = lineWidth)
+                    s1 = Point(s, angleSE1, length = lineWidth)
+                    e0 = Point(e, angleSE0, length = lineWidth)
+                    e1 = Point(e, angleSE1, length = lineWidth)
+
+                    s0s = Point(s0, angleSE + 180.degrees, length = lineWidth)
+                    s1s = Point(s1, angleSE + 180.degrees, length = lineWidth)
+
+                    e0s = Point(e0, angleSE, length = lineWidth)
+                    e1s = Point(e1, angleSE, length = lineWidth)
+                }
+            }
+        }
+
+        val ab = SegmentInfo()
+        val bc = SegmentInfo()
+
+        val pathList = strokePath.toPathList(m, emitClosePoint = false)
+        //println(pathList.size)
+        for (ppath in pathList) {
+            points.clear()
+            val loop = forceClosed ?: ppath.closed
+            //println("Points: " + ppath.toList())
+            val end = if (loop) ppath.size + 1 else ppath.size
+            //val end = if (loop) ppath.size else ppath.size
+            for (n in 0 until end) pointsScope {
+                val isFirst = n == 0
+                val isLast = n == ppath.size - 1
+                val isFirstOrLast = isFirst || isLast
+                val a = ppath.getCyclic(n - 1)
+                val b = ppath.getCyclic(n) // Current point
+                val c = ppath.getCyclic(n + 1)
+                val orientation = Point.orientation(a, b, c).sign.toInt()
+                //val angle = Angle.between(b - a, c - a)
+                //println("angle = $angle")
+
+                ab.setTo(a, b, lineWidth, this)
+                bc.setTo(b, c, lineWidth, this)
+
+                when {
+                    // Start/End caps
+                    !loop && isFirstOrLast -> {
+                        val start = n == 0
+
+                        val cap = if (start) startCap else endCap
+                        val index = if (start) 0 else 1
+                        val segment = if (start) bc else ab
+                        val p1 = segment.p1(index)
+                        val p0 = segment.p0(index)
+                        val iangle = if (start) segment.angleSE - 180.degrees else segment.angleSE
+
+                        when (cap) {
+                            LineCap.BUTT -> points.add(p1, p0, fLineWidth)
+                            LineCap.SQUARE -> {
+                                val p1s = Point(p1, iangle, lineWidth)
+                                val p0s = Point(p0, iangle, lineWidth)
+                                points.add(p1s, p0s, fLineWidth)
+                            }
+                            LineCap.ROUND -> {
+                                val p1s = Point(p1, iangle, lineWidth * 1.5)
+                                val p0s = Point(p0, iangle, lineWidth * 1.5)
+                                points.addCubicOrLine(this, p0, p0, p0s, p1s, p1, lineWidth, reverse = false, start = start)
+                            }
+                        }
+                    }
+                    // Joins
+                    else -> {
+                        val m0 = Line.getIntersectXY(ab.s0, ab.e0, bc.s0, bc.e0, MPoint()) // Outer (CW)
+                        val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, MPoint()) // Inner (CW)
+                        val e1 = m1 ?: ab.e1
+                        val e0 = m0 ?: ab.e0
+
+                        if (loop && isFirst) {
+                            if (orientation >= 0.0) {
+                                points.add(bc.s1, e0, fLineWidth)
+                            } else {
+                                points.add(e1, bc.s0, fLineWidth)
+                            }
+                        } else {
+                            val round = !isFirst && join == LineJoin.ROUND
+                            val dorientation = when {
+                                (join == LineJoin.MITER && e1.distanceTo(b) <= (miterLimit * lineWidth)) -> 0
+                                else -> orientation
+                            }
+                            //println("orientation=$orientation")
+                            when (dorientation) {
+                                // Turn right
+                                -1 -> {
+                                    val fp = m1 ?: ab.e1
+                                    //points.addCubicOrLine(this, true, fp, p0, p0, p1, p1, lineWidth, cubic = false)
+                                    if (round) {
+                                        points.addCubicOrLine(
+                                            this, fp,
+                                            ab.e0, ab.e0s, bc.s0s, bc.s0,
+                                            lineWidth, reverse = true
+                                        )
+                                    } else {
+                                        points.add(fp, ab.e0, fLineWidth)
+                                        points.add(fp, bc.s0, fLineWidth)
+                                    }
+                                }
+                                // Miter
+                                0 -> points.add(e1, e0, fLineWidth)
+                                // Turn left
+                                1 -> {
+                                    val fp = m0 ?: ab.e0
+                                    if (round) {
+                                        points.addCubicOrLine(
+                                            this, fp,
+                                            ab.e1, ab.e1s, bc.s1s, bc.s1,
+                                            lineWidth, reverse = false
+                                        )
+                                    } else {
+                                        points.add(ab.e1, fp, fLineWidth)
+                                        points.add(bc.s1, fp, fLineWidth)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            drawTriangleStrip(ctx, globalAlpha, paint, points.points, points.distValues, points.pointCount, lineWidth.toFloat(), st2, scissor, stencil)
+        }
+
+        //println("vertexCount=$vertexCount")
+    }
+
+    private fun drawTriangleStrip(
+        ctx: RenderContext,
+        globalAlpha: Double,
+        paint: Paint,
+        points: FloatArrayList,
+        distValues: FloatArrayList,
+        vertexCount: Int,
+        lineWidth: Float,
+        stateTransform: Matrix,
+        scissor: AG.Scissor? = null,
+        stencil: AG.StencilState = AG.StencilState(),
+    ) {
+        val info = paintToShaderInfo(
+            ctx,
+            stateTransform = stateTransform,
+            paint = paint,
+            globalAlpha = globalAlpha,
+            lineWidth = lineWidth.toDouble(),
+            out = tempPaintShader
+        ) ?: return
+
+        ctx.dynamicVertexBufferPool.allocMultiple(3) { (vertices, textures, dists) ->
+            vertices.upload(points.data)
+            textures.upload(points.data)
+            dists.upload(distValues.data)
+            ctx.useBatcher { batcher ->
+                batcher.updateStandardUniforms()
+                batcher.simulateBatchStats(vertexCount)
+
+                batcher.setTemporalUniforms(info.uniforms) {
+                    //ctx.ag.clearStencil(0, scissor = null)
+                    ctx.ag.drawV2(
+                        vertexData = fastArrayListOf(
+                            AG.VertexData(vertices, LAYOUT),
+                            AG.VertexData(textures, LAYOUT_TEX),
+                            AG.VertexData(dists, LAYOUT_DIST),
+                        ),
+                        program = info.program,
+                        type = AG.DrawType.TRIANGLE_STRIP,
+                        vertexCount = vertexCount,
+                        uniforms = batcher.uniforms,
+                        scissor = scissor,
+                        stencil = stencil,
+                    )
+                }
+            }
         }
     }
 
@@ -142,24 +440,59 @@ class GpuShapeView(shape: Shape) : View() {
 
         var stencilEqualsValue = 0b00000001
         ctx.dynamicVertexBufferPool { vertices ->
-            writeStencil(ctx, pathData, scissor, AG.StencilState(
-                enabled = true,
-                compareMode = AG.CompareMode.ALWAYS,
-                writeMask = 0b00000001,
-                actionOnBothPass = AG.StencilOp.INVERT,
-            ))
+            writeStencil(
+                ctx, pathData, scissor, AG.StencilState(
+                    enabled = true,
+                    compareMode = AG.CompareMode.ALWAYS,
+                    writeMask = 0b00000001,
+                    actionOnBothPass = AG.StencilOp.INVERT,
+                )
+            )
         }
         if (clipData != null) {
-            writeStencil(ctx, clipData, scissor, AG.StencilState(
-                enabled = true,
-                compareMode = AG.CompareMode.ALWAYS,
-                writeMask = 0b00000010,
-                actionOnBothPass = AG.StencilOp.INVERT,
-            ))
+            writeStencil(
+                ctx, clipData, scissor, AG.StencilState(
+                    enabled = true,
+                    compareMode = AG.CompareMode.ALWAYS,
+                    writeMask = 0b00000010,
+                    actionOnBothPass = AG.StencilOp.INVERT,
+                )
+            )
             stencilEqualsValue = 0b00000011
         }
 
-        renderFill(ctx, shape.paint, shape.transform, scissor, shape.globalAlpha, stencilEqualsValue = stencilEqualsValue)
+        // Antialias
+        renderStroke(
+            ctx = ctx,
+            //transform = shape.transform,
+            stateTransform = Matrix(),
+            strokePath = shape.path,
+            paint = shape.paint,
+            globalAlpha = shape.globalAlpha,
+            lineWidth = 1.0,
+            scaleMode = LineScaleMode.NONE,
+            startCap = LineCap.BUTT,
+            endCap = LineCap.BUTT,
+            join = LineJoin.MITER,
+            miterLimit = 0.5,
+            forceClosed = true,
+            scissor = scissor,
+            stencil = AG.StencilState(
+                enabled = true,
+                compareMode = AG.CompareMode.NOT_EQUAL,
+                referenceValue = stencilEqualsValue,
+                writeMask = 0,
+            )
+        )
+
+        renderFill(
+            ctx,
+            shape.paint,
+            shape.transform,
+            scissor,
+            shape.globalAlpha,
+            stencilEqualsValue = stencilEqualsValue
+        )
     }
 
     private fun writeStencil(ctx: RenderContext, points: PointsResult, scissor: AG.Scissor?, stencil: AG.StencilState) {
@@ -189,6 +522,7 @@ class GpuShapeView(shape: Shape) : View() {
     private val gradientBitmap = Bitmap32(256, 1)
 
     private val colorF = FloatArray(4)
+    private val tempPaintShader = PaintShader()
 
     private fun renderFill(
         ctx: RenderContext,
@@ -198,7 +532,14 @@ class GpuShapeView(shape: Shape) : View() {
         globalAlpha: Double,
         stencilEqualsValue: Int,
     ) {
-        if (paint is NonePaint) return
+        val info = paintToShaderInfo(
+            ctx,
+            stateTransform,
+            paint,
+            globalAlpha,
+            lineWidth = 10000000.0,
+            out = tempPaintShader
+        ) ?: return
 
         ctx.dynamicVertexBufferPool { vertices ->
             val data = FloatArray(4 * 4)
@@ -229,68 +570,10 @@ class GpuShapeView(shape: Shape) : View() {
             vertices.upload(data)
             ctx.useBatcher { batch ->
                 batch.updateStandardUniforms()
-                var uniforms: AG.UniformValues = colorUniforms
-                var program: Program = PROGRAM_COLOR
-                when (paint) {
-                    is NonePaint -> {
-                        return
-                    }
-                    is ColorPaint -> {
-                        val color = paint
-                        color.writeFloat(colorF)
-                        colorUniforms[u_Color] = colorF
-                        program = PROGRAM_COLOR
-                        uniforms = colorUniforms
-                    }
-                    is BitmapPaint -> {
-                        val mat = Matrix().apply {
-                            identity()
-                            preconcat(paint.transform)
-                            preconcat(stateTransform)
-                            preconcat(localMatrix)
-                            invert()
-                            scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
-                        }
 
-                        //val mat = (paint.transform * stateTransform)
-                        //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
-                        //println("mat=$mat")
-                        bitmapUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(paint.bitmap).base)
-                        bitmapUniforms[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
-                        program = PROGRAM_BITMAP
-                        uniforms = bitmapUniforms
-                    }
-                    is GradientPaint -> {
-                        gradientBitmap.lock {
-                            paint.fillColors(gradientBitmap.dataPremult)
-                        }
+                val program = info.program
+                val uniforms = info.uniforms
 
-                        val npaint = paint.copy(transform = Matrix().apply {
-                            identity()
-                            preconcat(paint.transform)
-                            preconcat(stateTransform)
-                            preconcat(localMatrix)
-                        })
-                        //val mat = stateTransform * paint.gradientMatrix
-                        val mat = when (paint.kind) {
-                            GradientKind.LINEAR -> npaint.gradientMatrix
-                            else -> npaint.transform.inverted()
-                        }
-                        gradientUniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(gradientBitmap).base)
-                        gradientUniforms[u_Transform] = mat.toMatrix3D()
-                        gradientUniforms[u_Gradientp0] = floatArrayOf(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
-                        gradientUniforms[u_Gradientp1] = floatArrayOf(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
-                        program = when (paint.kind) {
-                            GradientKind.RADIAL -> PROGRAM_RADIAL_GRADIENT
-                            GradientKind.SWEEP -> PROGRAM_SWEEP_GRADIENT
-                            else -> PROGRAM_LINEAR_GRADIENT
-                        }
-                        uniforms = gradientUniforms
-                    }
-                    else -> {
-                        TODO("paint=$paint")
-                    }
-                }
                 uniforms[u_GlobalAlpha] = globalAlpha.toFloat()
                 batch.setTemporalUniforms(uniforms) {
                     ctx.batch.simulateBatchStats(4)
@@ -318,33 +601,143 @@ class GpuShapeView(shape: Shape) : View() {
     }
 
 
+    fun paintToShaderInfo(
+        ctx: RenderContext,
+        stateTransform: Matrix,
+        paint: Paint,
+        globalAlpha: Double,
+        lineWidth: Double,
+        out: PaintShader = PaintShader()
+    ): PaintShader? = when (paint) {
+        is NonePaint -> {
+            null
+        }
+        is ColorPaint -> {
+            val color = paint
+            color.writeFloat(colorF)
+            out.setTo(colorUniforms.also { uniforms ->
+                uniforms[u_Color] = colorF
+                uniforms[u_GlobalAlpha] = globalAlpha.toFloat()
+                uniforms[u_LineWidth] = lineWidth.toFloat()
+            }, PROGRAM_COLOR)
+        }
+        is BitmapPaint -> {
+            val mat = Matrix().apply {
+                identity()
+                preconcat(paint.transform)
+                preconcat(stateTransform)
+                preconcat(localMatrix)
+                invert()
+                scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
+            }
+
+            //val mat = (paint.transform * stateTransform)
+            //mat.scale(1.0 / paint.bitmap.width, 1.0 / paint.bitmap.height)
+            //println("mat=$mat")
+            out.setTo(bitmapUniforms.also { uniforms ->
+                uniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(paint.bitmap).base)
+                uniforms[u_Transform] = mat.toMatrix3D() // @TODO: Why is this transposed???
+                uniforms[u_GlobalAlpha] = globalAlpha.toFloat()
+                uniforms[u_LineWidth] = lineWidth.toFloat()
+            }, PROGRAM_BITMAP)
+        }
+        is GradientPaint -> {
+            gradientBitmap.lock {
+                paint.fillColors(gradientBitmap.dataPremult)
+            }
+
+            val npaint = paint.copy(transform = Matrix().apply {
+                identity()
+                preconcat(paint.transform)
+                preconcat(stateTransform)
+                preconcat(localMatrix)
+            })
+            //val mat = stateTransform * paint.gradientMatrix
+            val mat = when (paint.kind) {
+                GradientKind.LINEAR -> npaint.gradientMatrix
+                else -> npaint.transform.inverted()
+            }
+            out.setTo(
+                gradientUniforms.also { uniforms ->
+                    uniforms[DefaultShaders.u_Tex] = AG.TextureUnit(ctx.getTex(gradientBitmap).base)
+                    uniforms[u_Transform] = mat.toMatrix3D()
+                    uniforms[u_Gradientp0] = floatArrayOf(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat())
+                    uniforms[u_Gradientp1] = floatArrayOf(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat())
+                    uniforms[u_GlobalAlpha] = globalAlpha.toFloat()
+                    uniforms[u_LineWidth] = lineWidth.toFloat()
+                }, when (paint.kind) {
+                    GradientKind.RADIAL -> PROGRAM_RADIAL_GRADIENT
+                    GradientKind.SWEEP -> PROGRAM_SWEEP_GRADIENT
+                    else -> PROGRAM_LINEAR_GRADIENT
+                }
+            )
+        }
+        else -> {
+            TODO("paint=$paint")
+        }
+    }
+
+    data class PaintShader(
+        var uniforms: AG.UniformValues = AG.UniformValues(),
+        var program: Program = DefaultShaders.PROGRAM_DEFAULT
+    ) {
+        fun setTo(uniforms: AG.UniformValues, program: Program): PaintShader {
+            this.uniforms = uniforms
+            this.program = program
+            return this
+        }
+    }
+
     companion object {
+        val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
         val u_Color = Uniform("u_Color", VarType.Float4)
         val u_GlobalAlpha = Uniform("u_GlobalAlpha", VarType.Float1)
         val u_Transform = Uniform("u_Transform", VarType.Mat4)
         val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
         val u_Gradientp1 = Uniform("u_Gradientp1", VarType.Float3)
+        val a_Dist: Attribute = Attribute("a_Dist", VarType.Float1, normalized = false, precision = Precision.MEDIUM)
+        val v_Dist: Varying = Varying("v_Dist", VarType.Float1, precision = Precision.MEDIUM)
         val LAYOUT = VertexLayout(DefaultShaders.a_Pos)
+        val LAYOUT_TEX = VertexLayout(DefaultShaders.a_Tex)
+        val LAYOUT_DIST = VertexLayout(a_Dist)
         val LAYOUT_FILL = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
+
+        val LW = (u_LineWidth)
+        val LW1 = Program.ExpressionBuilder { (LW - 1f.lit) }
+
         val VERTEX_FILL = VertexShaderDefault {
             SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
             //SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
             SET(v_Tex, DefaultShaders.a_Tex)
+            SET(v_Dist, a_Dist)
         }
         val PROGRAM_STENCIL = Program(
             vertex = VertexShaderDefault { SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit)) },
             fragment = FragmentShaderDefault { SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit)) },
         )
 
+        fun Program.Builder.PREFIX() {
+            IF(abs(v_Dist) ge LW) {
+                DISCARD()
+            }
+        }
+
         fun Program.Builder.UPDATE_GLOBAL_ALPHA() {
             SET(out.a, out.a * u_GlobalAlpha)
+            IF(abs(v_Dist) ge LW1) {
+                //run {
+                val aaAlpha = 1f.lit - (abs(v_Dist) - LW1)
+                SET(out["a"], out["a"] * aaAlpha)
+                //SET(out["a"], out["a"] * clamp(aaAlpha, 0f.lit, 1f.lit))
+            }
         }
-        val Operand.pow2: Operand get() = Program.ExpressionBuilder { pow(this@pow2, 2f.lit) }
 
+        val Operand.pow2: Operand get() = Program.ExpressionBuilder { pow(this@pow2, 2f.lit) }
 
         val PROGRAM_COLOR = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
+                PREFIX()
                 SET(out, u_Color)
                 UPDATE_GLOBAL_ALPHA()
             },
@@ -352,6 +745,7 @@ class GpuShapeView(shape: Shape) : View() {
         val PROGRAM_BITMAP = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
+                PREFIX()
                 // @TODO: we should convert 0..1 to texture slice coordinates
                 SET(out, texture2D(u_Tex, fract(vec2((u_Transform * vec4(v_Tex, 0f.lit, 1f.lit))["xy"]))))
                 UPDATE_GLOBAL_ALPHA()
@@ -361,6 +755,7 @@ class GpuShapeView(shape: Shape) : View() {
         val PROGRAM_LINEAR_GRADIENT = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
+                PREFIX()
                 SET(out, texture2D(u_Tex, (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"]))
                 UPDATE_GLOBAL_ALPHA()
             },
@@ -368,6 +763,7 @@ class GpuShapeView(shape: Shape) : View() {
         val PROGRAM_RADIAL_GRADIENT = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
+                PREFIX()
                 val rpoint = createTemp(VarType.Float2)
                 SET(rpoint["xy"], (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"])
                 val x = rpoint.x
@@ -395,7 +791,10 @@ class GpuShapeView(shape: Shape) : View() {
                 SET(r0_r1, r0 - r1)
                 SET(radial_scale, 1f.lit / ((r0 - r1).pow2 - (x0 - x1).pow2 - (y0 - y1).pow2))
 
-                SET(ratio, 1f.lit - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale)
+                SET(
+                    ratio,
+                    1f.lit - (-r1 * r0_r1 + x0_x1 * (x1 - x) + y0_y1 * (y1 - y) - sqrt(r1pow2 * ((x0 - x).pow2 + (y0 - y).pow2) - r0r1_2 * ((x0 - x) * (x1 - x) + (y0 - y) * (y1 - y)) + r0pow2 * ((x1 - x).pow2 + (y1 - y).pow2) - (x1 * y0 - x * y0 - x0 * y1 + x * y1 + x0 * y - x1 * y).pow2)) * radial_scale
+                )
                 SET(out, texture2D(u_Tex, vec2(ratio, 0f.lit)))
                 UPDATE_GLOBAL_ALPHA()
             },
@@ -403,6 +802,7 @@ class GpuShapeView(shape: Shape) : View() {
         val PROGRAM_SWEEP_GRADIENT = Program(
             vertex = VERTEX_FILL,
             fragment = FragmentShaderDefault {
+                PREFIX()
                 val rpoint = createTemp(VarType.Float2)
                 SET(rpoint["xy"], (u_Transform * vec4(v_Tex.x, v_Tex.y, 0f.lit, 1f.lit))["xy"])
                 val x = rpoint.x

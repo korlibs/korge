@@ -3,6 +3,7 @@ package com.soywiz.korma.geom.shape
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.ops.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.internal.*
 import kotlin.test.*
 
 class Shape2dTest {
@@ -98,5 +99,40 @@ class Shape2dTest {
     fun testIntersects() {
         assertEquals(false, Shape2d.Circle(0, 0, 20).intersectsWith(Shape2d.Circle(40, 0, 20)))
         assertEquals(true, Shape2d.Circle(0, 0, 20).intersectsWith(Shape2d.Circle(38, 0, 20)))
+    }
+
+    @Test
+    fun testToPaths() {
+        val points = buildVectorPath {
+            moveTo(100, 100)
+            lineTo(400, 400)
+            lineTo(200, 500)
+            lineTo(500, 500)
+            lineTo(200, 700)
+            close()
+
+            moveTo(800, 600)
+            lineTo(900, 600)
+            lineTo(900, 400)
+            close()
+
+            moveTo(800, 100)
+            lineTo(800, 110)
+
+            moveTo(750, 100)
+            lineTo(750, 110)
+        }.toPathList()
+
+        assertEquals("""
+            closed : (100,100),(400,400),(200,500),(500,500),(200,700)
+            closed : (800,600),(900,600),(900,400)
+            opened : (800,100),(800,110)
+            opened : (750,100),(750,110)
+        """.trimIndent(),
+            points.joinToString("\n") {
+                val kind = if (it.closed) "closed" else "opened"
+                "$kind : " + it.toPoints().joinToString(",") { "(${it.x.niceStr},${it.y.niceStr})" }
+            }
+        )
     }
 }

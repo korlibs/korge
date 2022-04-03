@@ -151,7 +151,7 @@ interface StyledShape : Shape {
         return path?.clone()?.applyTransform(transform.inverted())?.toGraphicsPath()
     }
 
-	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean): Unit {
+	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
         path?.let { path ->
             // path is already transformed, so using `transform` is not required
             bb.add(path)
@@ -167,7 +167,7 @@ interface StyledShape : Shape {
 		)
 	}
 
-    override fun getPath(path: GraphicsPath) = path.also {
+    override fun getPath(path: GraphicsPath): GraphicsPath = path.also {
         this.path?.let { path.write(it) }
     }
 
@@ -359,9 +359,10 @@ data class PolylineShape(
     private val tempRect = Rectangle()
 
     val fillShape: FillShape by lazy {
-        val out = GraphicsPath(winding = Winding.NON_ZERO)
-        StrokeToFill().strokeFill(path, thickness, lineJoin, startCaps, endCaps, miterLimit, out)
-        FillShape(out, clip, paint, transform, globalAlpha)
+        FillShape(
+            path.strokeToFill(thickness, lineJoin, startCaps, endCaps, miterLimit).toGraphicsPath(),
+            clip, paint, transform, globalAlpha
+        )
     }
 
     override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {

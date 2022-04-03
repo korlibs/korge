@@ -115,11 +115,22 @@ abstract class AGOpengl : AG() {
                     gl.genFramebuffers(1, framebuffer)
                 }
 
-                gl.bindTexture(gl.TEXTURE_2D, ftex.tex)
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
-                gl.bindTexture(gl.TEXTURE_2D, 0)
+                //val doMsaa = nsamples != 1
+                val doMsaa = false
+                val texTarget = when {
+                    doMsaa -> gl.TEXTURE_2D_MULTISAMPLE
+                    else -> gl.TEXTURE_2D
+                }
+
+                gl.bindTexture(texTarget, ftex.tex)
+                gl.texParameteri(texTarget, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+                gl.texParameteri(texTarget, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
+                if (doMsaa) {
+                    gl.texImage2DMultisample(texTarget, nsamples, gl.RGBA, width, height, false)
+                } else {
+                    gl.texImage2D(texTarget, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null)
+                }
+                gl.bindTexture(texTarget, 0)
                 gl.bindRenderbuffer(gl.RENDERBUFFER, depth.getInt(0))
                 val internalFormat = when {
                     hasStencil && hasDepth -> gl.DEPTH_STENCIL
@@ -128,9 +139,9 @@ abstract class AGOpengl : AG() {
                     else -> 0
                 }
                 if (internalFormat != 0) {
-                    if (nsamples != 1) {
-                        //gl.renderbufferStorageMultisample(gl.RENDERBUFFER, nsamples, internalFormat, width, height)
-                        gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height)
+                    if (doMsaa) {
+                        gl.renderbufferStorageMultisample(gl.RENDERBUFFER, nsamples, internalFormat, width, height)
+                        //gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height)
                     } else {
                         gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height)
                     }
@@ -152,6 +163,7 @@ abstract class AGOpengl : AG() {
         }
 
         override fun close() {
+            super.close()
             gl.deleteFramebuffers(1, framebuffer)
             gl.deleteRenderbuffers(1, depth)
             framebuffer.setInt(0, 0)

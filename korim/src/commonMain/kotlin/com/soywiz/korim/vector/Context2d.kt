@@ -105,7 +105,7 @@ open class Context2d constructor(
         var startLineCap: LineCap = LineCap.BUTT,
         var endLineCap: LineCap = LineCap.BUTT,
         var lineJoin: LineJoin = LineJoin.MITER,
-        var miterLimit: Double = 4.0,
+        var miterLimit: Double = 10.0,
         var strokeStyle: Paint = DefaultPaint,
         var fillStyle: Paint = DefaultPaint,
         var fontRegistry: FontRegistry? = null,
@@ -148,6 +148,7 @@ open class Context2d constructor(
 	var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) { state.lineScaleMode = value }
 	var lineWidth: Double ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
 	var lineCap: LineCap ; get() = state.lineCap ; set(value) { state.lineCap = value }
+    var miterLimit: Double ; get() = state.miterLimit ; set(value) { state.miterLimit = value }
     var startLineCap: LineCap ; get() = state.startLineCap ; set(value) { state.startLineCap = value }
     var endLineCap: LineCap ; get() = state.endLineCap ; set(value) { state.endLineCap = value }
     var lineJoin: LineJoin ; get() = state.lineJoin ; set(value) { state.lineJoin = value }
@@ -239,6 +240,7 @@ open class Context2d constructor(
 		}
 	}
 
+    // @TODO: preallocate states and use it as a pool, and mutate the ones there
 	fun save() { stack.push(state.clone()) }
 	fun restore() { state = stack.pop() }
 
@@ -367,17 +369,28 @@ open class Context2d constructor(
         fill(paint)
     }
 
-    inline fun stroke(paint: Paint, lineWidth: Double = this.lineWidth, lineCap: LineCap = this.lineCap, lineJoin: LineJoin = this.lineJoin, begin: Boolean = true, callback: () -> Unit) {
+    inline fun stroke(
+        paint: Paint,
+        lineWidth: Double = this.lineWidth,
+        lineCap: LineCap = this.lineCap,
+        lineJoin: LineJoin = this.lineJoin,
+        miterLimit: Double = this.miterLimit,
+        begin: Boolean = true,
+        callback: () -> Unit
+    ) {
         if (begin) beginPath()
 		callback()
-        this.lineWidth = lineWidth
-        this.lineCap = lineCap
-        this.lineJoin = lineJoin
-		stroke(paint)
+        keep {
+            this.lineWidth = lineWidth
+            this.lineCap = lineCap
+            this.lineJoin = lineJoin
+            this.miterLimit = miterLimit
+            stroke(paint)
+        }
 	}
 
     inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit) {
-        stroke(paint, info.thickness, info.startCap, info.lineJoin, begin, callback)
+        stroke(paint, info.thickness, info.startCap, info.lineJoin, info.miterLimit, begin, callback)
     }
 
     inline fun fillStroke(fill: Paint, stroke: Paint, callback: () -> Unit) {

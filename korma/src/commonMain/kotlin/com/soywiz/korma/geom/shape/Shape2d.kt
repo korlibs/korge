@@ -272,17 +272,24 @@ inline fun VectorPath.emitPoints(flush: (close: Boolean) -> Unit, emit: (x: Doub
     var ly = 0.0
     flush(false)
     this.visitCmds(
-        moveTo = { x, y -> emit(x, y).also { lx = x }.also { ly = y } },
-        lineTo = { x, y -> emit(x, y).also { lx = x }.also { ly = y } },
+        moveTo = { x, y ->
+            flush(false)
+            emit(x, y)
+            lx = x; ly = y
+        },
+        lineTo = { x, y ->
+            emit(x, y)
+            lx = x; ly = y
+        },
         quadTo = { x0, y0, x1, y1 ->
             val dt = 1.0 / curveSteps
             for (n in 1 until curveSteps) Bezier.quadCalc(lx, ly, x0, y0, x1, y1, n * dt, emit)
-            run { lx = x1 }.also { ly = y1 }
+            lx = x1 ; ly = y1
         },
         cubicTo = { x0, y0, x1, y1, x2, y2 ->
             val dt = 1.0 / curveSteps
             for (n in 1 until curveSteps) Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, n * dt, emit)
-            run { lx = x2 }.also { ly = y2 }
+            lx = x2 ; ly = y2
 
         },
         close = { flush(true) }
@@ -333,22 +340,28 @@ inline fun VectorPath.emitPoints2(
         moveTo = { x, y ->
             ix = x
             iy = y
-            emit(x, y, true).also { lx = x }.also { ly = y }
+            emit(x, y, true)
+            lx = x
+            ly = y
         },
         lineTo = { x, y ->
-            emit(x, y, false).also { lx = x }.also { ly = y }
+            emit(x, y, false)
+            lx = x
+            ly = y
             joint(false)
         },
         quadTo = { x0, y0, x1, y1 ->
             val sum = Point.distance(lx, ly, x0, y0) + Point.distance(x0, y0, x1, y1)
             approximateCurve(sum.toInt(), { ratio, get -> Bezier.quadCalc(lx, ly, x0, y0, x1, y1, ratio) { x, y -> get(x, y) } }) { x, y -> emit(x, y, false) }
-            run { lx = x1 }.also { ly = y1 }
+            lx = x1
+            ly = y1
             joint(false)
         },
         cubicTo = { x0, y0, x1, y1, x2, y2 ->
             val sum = Point.distance(lx, ly, x0, y0) + Point.distance(x0, y0, x1, y1) + Point.distance(x1, y1, x2, y2)
             approximateCurve(sum.toInt(), { ratio, get -> Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, ratio) { x, y -> get(x, y) }}) { x, y -> emit(x, y, false) }
-            run { lx = x2 }.also { ly = y2 }
+            lx = x2
+            ly = y2
             joint(false)
         },
         close = {
@@ -450,10 +463,23 @@ fun VectorPath.toShape2dOld(closed: Boolean = true): Shape2d {
     }
 }
 
-fun VectorPath.toPathList(): List<IPointArrayList> {
-    val paths = arrayListOf<IPointArrayList>()
+@Deprecated("", ReplaceWith("toPathPointList(m, emitClosePoint)"))
+fun VectorPath.toPathList(m: Matrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> =
+    toPathPointList(m, emitClosePoint)
+
+fun VectorPath.toPathPointList(m: Matrix? = null, emitClosePoint: Boolean = false): List<IPointArrayList> {
+    val paths = arrayListOf<PointArrayList>()
     var path = PointArrayList()
-    emitPoints({
+    var firstX = 0.0
+    var firstY = 0.0
+    var first = true
+    emitPoints({ close ->
+        if (close) {
+            if (emitClosePoint) {
+                path.add(firstX, firstY)
+            }
+            path.closed = true
+        }
         if (path.isNotEmpty()) {
             //if (path.getX(0) == path.getX(path.size - 1) && path.getY(0) == path.getY(path.size - 1)) path.removeAt(path.size - 1)
             //println("POINTS:" + path.size)
@@ -461,8 +487,18 @@ fun VectorPath.toPathList(): List<IPointArrayList> {
             paths += path
             path = PointArrayList()
         }
+        first = true
     }, { x, y ->
-        path.add(x, y)
+        if (first) {
+            first = false
+            firstX = x
+            firstY = y
+        }
+        if (m != null) {
+            path.add(m.transformX(x, y), m.transformY(x, y))
+        } else {
+            path.add(x, y)
+        }
     })
     return paths
 }
