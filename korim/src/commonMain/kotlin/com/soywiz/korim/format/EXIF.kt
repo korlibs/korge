@@ -19,14 +19,17 @@ object EXIF {
         val jpegHeader = s.readU16BE()
         if (jpegHeader != 0xFFD8) error("Not a JPEG file ${jpegHeader.hex}")
         while (!s.eof()) {
+            val sectionPos = s.position
             val sectionType = s.readU16BE()
             val sectionSize = s.readU16BE()
             //Console.error("sectionType=${sectionType.hex}, sectionSize=${sectionSize.hex}")
             if ((sectionType and 0xFF00) != 0xFF00) error("Probably an invalid JPEG file? ${sectionType.hex}")
             val ss = s.readStream(sectionSize - 2)
+            //println("SECTION[${sectionPos.toInt().hex}][$sectionSize]: ${sectionType.hex}")
             when (sectionType) {
                 0xFFE1 -> { // APP1
-                    readExif(ss.readAllAsFastStream(), info, debug)
+                    val fs = ss.readAllAsFastStream()
+                    readExif(fs, info, debug)
                 }
                 0xFFC0 -> { // SOF0
                     val precision = ss.readU8()
@@ -48,7 +51,11 @@ object EXIF {
     }
 
     suspend fun readExif(s: AsyncStream, info: ImageInfo = ImageInfo(), debug: Boolean = false): ImageInfo {
-        if (s.readString(4, Charsets.LATIN1) != "Exif") error("Not an Exif section")
+        val header = s.readString(4, Charsets.LATIN1)
+        if (header != "Exif") {
+            //error("Not an Exif section, it was '$header'")
+            return info
+        }
         s.skip(2)
         return readExifBase(s, info, debug)
     }
