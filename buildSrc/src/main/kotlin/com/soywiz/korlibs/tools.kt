@@ -1,9 +1,9 @@
 @file:Suppress("UNCHECKED_CAST")
 package com.soywiz.korlibs
 
-import groovy.util.Node
+import groovy.util.*
 import groovy.xml.XmlUtil
-import org.apache.tools.ant.taskdefs.condition.Os
+import org.apache.tools.ant.taskdefs.condition.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.dsl.*
 import org.gradle.api.tasks.*
@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
-import java.net.URL
+import java.net.*
 
 class MultiOutputStream(val outs: List<OutputStream>) : OutputStream() {
     override fun write(b: Int) { for (out in outs) out.write(b) }
@@ -84,4 +84,10 @@ fun Project.doOnce(uniqueName: String, block: () -> Unit) {
         rootProject.extra.set(key, true)
         block()
     }
+}
+
+fun currentJavaVersion(): Int {
+    val versionElements = System.getProperty("java.version").split("\\.".toRegex()).toTypedArray() + arrayOf("-1", "-1")
+    val discard = versionElements[0].toInt()
+    return if (discard == 1) versionElements[1].toInt() else discard
 }

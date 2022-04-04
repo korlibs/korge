@@ -75,6 +75,8 @@ val hasAndroidSdk by lazy { hasAndroidSdk() }
 
 // Required by RC
 kotlin {
+    // Forced Java8 toolchain
+    //jvmToolchain { (this as JavaToolchainSpec).languageVersion.set(JavaLanguageVersion.of("8")) }
     jvm { }
 }
 
@@ -1019,6 +1021,8 @@ allprojects {
 }
 */
 
+val currentJavaVersion = com.soywiz.korlibs.currentJavaVersion()
+
 subprojects {
     afterEvaluate {
         tasks {
@@ -1068,6 +1072,11 @@ subprojects {
                 }
             }
             val publishMobileLocal by creating(Task::class) {
+                doFirst {
+                    if (currentJavaVersion != 8) {
+                        error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
+                    }
+                }
                 run {
                     val taskName = "publishJvmPublicationToMavenLocal"
                     if (findByName(taskName) != null) {
@@ -1092,6 +1101,9 @@ subprojects {
 
             val publishMobileRepo by creating(Task::class) {
                 doFirst {
+                    if (currentJavaVersion != 8) {
+                        error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
+                    }
                     if (!customPublishEnabled) {
                         error("To use publishMobileRepo, must set `FORCED_VERSION=...` environment variable, and in ~/.gradle/gradle.properties : KORLIBS_CUSTOM_MAVEN_USER, KORLIBS_CUSTOM_MAVEN_PASS & KORLIBS_CUSTOM_MAVEN_URL")
                     }
@@ -1137,3 +1149,5 @@ if (isLinux) {
         }
     }
 }
+
+//println("currentJavaVersion=${com.soywiz.korlibs.currentJavaVersion()}")
