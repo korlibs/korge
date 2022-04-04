@@ -1,7 +1,7 @@
 package com.soywiz.korau.sound
 
 import kotlinx.cinterop.*
-import platform.AVFoundation.*
+import platform.AVFAudio.*
 import platform.Foundation.*
 
 fun appleInitAudio() {
