@@ -1,7 +1,6 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
-import com.soywiz.kgl.KmlGl
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
@@ -220,6 +219,19 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         val height: Int
     }
 
+    class SyncBitmapSourceList(
+        override val rgba: Boolean,
+        override val width: Int,
+        override val height: Int,
+        val gen: () -> List<Bitmap>?
+    ) : BitmapSourceBase {
+        companion object {
+            val NIL = SyncBitmapSourceList(true, 0, 0) { null }
+        }
+
+        override fun toString(): String = "SyncBitmapSourceList(rgba=$rgba, width=$width, height=$height)"
+    }
+
     class SyncBitmapSource(
         override val rgba: Boolean,
         override val width: Int,
@@ -251,7 +263,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     enum class TextureKind { RGBA, LUMINANCE }
 
-    enum class TextureTargetKind { TEXTURE_2D, TEXTURE_3D, TEXTURE_CUBE_MAP } //TODO: there are other possible values
+    //TODO: there are other possible values
+    enum class TextureTargetKind { TEXTURE_2D, TEXTURE_3D, TEXTURE_CUBE_MAP }
 
     //TODO: would it better if this was an interface ?
     open inner class Texture : Closeable {
@@ -263,7 +276,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private var uploaded: Boolean = false
         private var generating: Boolean = false
         private var generated: Boolean = false
-        private var tempBitmap: Bitmap? = null
+        private var tempBitmaps: List<Bitmap?>? = null
         var ready: Boolean = false; private set
         val texId: Int = lastTextureId++
         open val nativeTexId: Int get() = texId
@@ -276,6 +289,10 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             uploaded = false
             generating = false
             generated = false
+        }
+
+        fun upload(list: List<Bitmap>, width: Int, height: Int): Texture {
+            return upload(SyncBitmapSourceList(rgba = true, width = width, height = height) { list })
         }
 
         fun upload(bmp: Bitmap?, mipmaps: Boolean = false): Texture {
@@ -330,13 +347,17 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             if (!generating) {
                 generating = true
                 when (source) {
+                    is SyncBitmapSourceList -> {
+                        tempBitmaps = source.gen()
+                        generated = true
+                    }
                     is SyncBitmapSource -> {
-                        tempBitmap = source.gen()
+                        tempBitmaps = listOf(source.gen())
                         generated = true
                     }
                     is AsyncBitmapSource -> {
                         launchImmediately(source.coroutineContext) {
-                            tempBitmap = source.gen()
+                            tempBitmaps = listOf(source.gen())
                             generated = true
                         }
                     }
@@ -347,16 +368,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
                 uploaded = true
                 generating = false
                 generated = false
-                actualSyncUpload(source, tempBitmap, requestMipmaps)
-                tempBitmap = null
+                actualSyncUpload(source, tempBitmaps, requestMipmaps)
+                tempBitmaps = null
                 ready = true
             }
             return this
         }
 
-        open fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {
+        open fun actualSyncUpload(source: BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
         }
-
 
         init {
             //Console.log("CREATED TEXTURE: $texId")
@@ -368,7 +388,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             if (!alreadyClosed) {
                 alreadyClosed = true
                 source = SyncBitmapSource.NIL
-                tempBitmap = null
+                tempBitmaps = null
                 deletedTextureCount++
                 //Console.log("CLOSED TEXTURE: $texId")
                 //printTexStats()
@@ -489,10 +509,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): Texture =
         createTexture(premultiplied).upload(bmp, mipmaps)
 
-    open fun createTexture(premultiplied: Boolean): Texture = Texture()
-
-    // @TODO: Remove this. We shouldn't reference KmlGl in AG, since this might have different implementations
-    open fun createTexture(targetKind: TextureTargetKind, init:Texture.(gl:KmlGl)->Unit): Texture = Texture()
+    open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture = Texture()
 
     open fun createBuffer(kind: Buffer.Kind) = Buffer(kind)
     fun createIndexBuffer() = createBuffer(Buffer.Kind.INDEX)

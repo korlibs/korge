@@ -41,8 +41,8 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
             currentTexture = null
         }
 
-        override fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {
-            bitmap = bmp ?: bitmap
+        override fun actualSyncUpload(source: BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
+            bitmap = bmps?.firstOrNull() ?: bitmap
         }
 
         override fun close() {
@@ -71,11 +71,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     override fun createMainRenderBuffer(): BaseRenderBuffer = SoftwareRenderBuffer()
     override fun createRenderBuffer(): RenderBuffer = SoftwareRenderBuffer()
 
-    override fun createTexture(premultiplied: Boolean): Texture = SoftwareTexture(premultiplied)
-    // @TODO: This method shouldn't exist exposing KmlGl
-    override fun createTexture(targetKind: TextureTargetKind, init: Texture.(gl: KmlGl) -> Unit): Texture {
-        TODO("createTexture")
-    }
+    override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture = SoftwareTexture(premultiplied)
 
     fun readIndices(batch: Batch): IntArray {
         val indices = batch.indices as? SoftwareBuffer ?: return IntArray(batch.vertexCount) { it }

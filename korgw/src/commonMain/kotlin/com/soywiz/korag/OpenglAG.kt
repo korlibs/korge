@@ -371,16 +371,12 @@ abstract class AGOpengl : AG() {
                 VarType.Sampler2D, VarType.SamplerCube -> {
                     val unit = value.fastCastTo<TextureUnit>()
                     gl.activeTexture(gl.TEXTURE0 + textureUnit)
-                    if (uniformType == VarType.Sampler2D) {
-                        val tex = (unit.texture.fastCastTo<GlTexture?>())
-                        tex?.bindEnsuring()
-                        tex?.setWrap()
-                        tex?.setFilter(unit.linear, unit.trilinear ?: unit.linear)
-                    } else {
-                        val tex = unit.texture.fastCastTo<TextureGeneric>()
-                        tex.initialiseIfNeeded()
-                        tex.bindEnsuring()
-                    }
+
+                    val tex = (unit.texture.fastCastTo<GlTexture?>())
+                    tex?.bindEnsuring()
+                    tex?.setWrap()
+                    tex?.setFilter(unit.linear, unit.trilinear ?: unit.linear)
+
                     gl.uniform1i(location, textureUnit)
                     //val texBinding = gl.getIntegerv(gl.TEXTURE_BINDING_2D)
                     //println("OpenglAG.draw: textureUnit=$textureUnit, textureBinding=$texBinding, instances=$instances, vertexCount=$vertexCount")
@@ -740,64 +736,8 @@ abstract class AGOpengl : AG() {
         gl.clear(bits)
     }
 
-    override fun createTexture(premultiplied: Boolean): Texture = GlTexture(this.gl, premultiplied)
-
-    override fun createTexture(targetKind: TextureTargetKind, init: Texture.(gl: KmlGl) -> Unit): Texture {
-        val tex = TextureGeneric(targetKind, init)
-        return tex
-    }
-
-    inner class TextureGeneric(val targetKind: TextureTargetKind, val init: Texture.(gl: KmlGl) -> Unit) : Texture() {
-
-        private var initialised: Boolean = false
-
-        val texRef: Int by lazy {
-            val texIds = FBuffer(4)
-            gl.genTextures(1, texIds)
-            texIds.getInt(0)
-        }
-
-        fun initialiseIfNeeded() {
-            if (!initialised) {
-                this.texRef
-                this.init(gl)
-                this.initialised = true
-            }
-        }
-
-        override fun bind() {
-            gl.bindTexture(targetKind.glTarget, this.texRef)
-        }
-
-        override fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {
-            this.mipmaps = false
-
-            val bytesPerPixel = if (source.rgba) 4 else 1
-            val type = if (source.rgba) {
-                //if (source is NativeImage) gl.BGRA else gl.RGBA
-                gl.RGBA
-            } else {
-                gl.LUMINANCE
-            }
-
-            val bmp = when (bmp) {
-                is BitmapVector -> bmp.nativeImage
-                else -> bmp
-            }
-
-            when (bmp) {
-                is NativeImage -> {
-                    prepareUploadNativeTexture(bmp)
-                    if (bmp.area != 0) {
-                        init.invoke(this, gl)
-                    }
-                }
-                else -> {
-                }
-            }
-        }
-
-    }
+    override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
+        GlTexture(this.gl, premultiplied, targetKind)
 
     inner class GlBuffer(kind: Buffer.Kind) : Buffer(kind) {
         var cachedVersion = -1
@@ -850,13 +790,14 @@ abstract class AGOpengl : AG() {
 
     inner class GlTexture(
         val gl: KmlGl,
-        override val premultiplied: Boolean
+        override val premultiplied: Boolean,
+        val targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D
     ) : Texture() {
         var cachedVersion = -1
         val texIds = FBuffer(4)
 
         var forcedTexId: Int = -1
-        var forcedTexTarget: Int = gl.TEXTURE_2D
+        var forcedTexTarget: Int = targetKind.glTarget
 
         val tex: Int
             get() {
@@ -882,60 +823,71 @@ abstract class AGOpengl : AG() {
             }
         }
 
-        override fun actualSyncUpload(source: BitmapSourceBase, bmp: Bitmap?, requestMipmaps: Boolean) {
+        override fun actualSyncUpload(source: BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
             this.mipmaps = false
 
             val bytesPerPixel = if (source.rgba) 4 else 1
-            val type = if (source.rgba) {
-                //if (source is NativeImage) gl.BGRA else gl.RGBA
-                gl.RGBA
-            } else {
-                gl.LUMINANCE
-            }
-            val isFloat = bmp is FloatBitmap32
-
-            val bmp = when (bmp) {
-                is BitmapVector -> bmp.nativeImage
-                else -> bmp
+            val type = when {
+                source.rgba -> gl.RGBA //if (source is NativeImage) gl.BGRA else gl.RGBA
+                else -> gl.LUMINANCE
             }
 
-            when (bmp) {
-                is ForcedTexId -> {
-                    this.forcedTexId = bmp.forcedTexId
-                    if (bmp is ForcedTexTarget) this.forcedTexTarget = bmp.forcedTexTarget
-                    return
-                }
-                is NativeImage -> {
-                    if (bmp.forcedTexId != -1) {
-                        this.forcedTexId = bmp.forcedTexId
-                        if (bmp.forcedTexTarget != -1) this.forcedTexTarget = bmp.forcedTexTarget
-                        gl.bindTexture(forcedTexTarget, forcedTexId) // @TODO: Check. Why do we need to bind it now?
-                        return
+            //this.bind() // Already bound
+
+            if (bmps != null) {
+                for ((index, rbmp) in bmps.withIndex()) {
+                    val bmp = when (rbmp) {
+                        is BitmapVector -> rbmp.nativeImage
+                        else -> rbmp
                     }
-                    prepareUploadNativeTexture(bmp)
-                    if (bmp.area != 0) {
-                        prepareTexImage2D()
-                        gl.texImage2D(forcedTexTarget, 0, type, type, gl.UNSIGNED_BYTE, bmp)
+                    val isFloat = bmp is FloatBitmap32
+
+                    when {
+                        bmp is ForcedTexId -> {
+                            this.forcedTexId = bmp.forcedTexId
+                            if (bmp is ForcedTexTarget) this.forcedTexTarget = bmp.forcedTexTarget
+                            return
+                        }
+                        bmp is NativeImage && bmp.forcedTexId != -1 -> {
+                            this.forcedTexId = bmp.forcedTexId
+                            if (bmp.forcedTexTarget != -1) this.forcedTexTarget = bmp.forcedTexTarget
+                            gl.bindTexture(forcedTexTarget, forcedTexId) // @TODO: Check. Why do we need to bind it now?
+                            return
+                        }
                     }
-                }
-                else -> {
-                    val buffer = createBufferForBitmap(bmp)
-                    if (buffer != null && source.width != 0 && source.height != 0 && buffer.size != 0) {
-                        prepareTexImage2D()
-                        val internalFormat = when {
-                            isFloat && (webgl2 || !webgl) -> GL_RGBA32F
-                            else -> type
+
+                    val texTarget = when (forcedTexTarget) {
+                        gl.TEXTURE_CUBE_MAP -> gl.TEXTURE_CUBE_MAP_POSITIVE_X + index
+                        else -> forcedTexTarget
+                    }
+
+                    if (bmp is NativeImage) {
+                        prepareUploadNativeTexture(bmp)
+                        if (bmp.area != 0) {
+                            prepareTexImage2D()
+                            gl.texImage2D(texTarget, 0, type, type, gl.UNSIGNED_BYTE, bmp)
                         }
-                        val format = type
-                        val texType = when {
-                            isFloat -> gl.FLOAT
-                            else -> gl.UNSIGNED_BYTE
+                    } else {
+                        val buffer = createBufferForBitmap(bmp)
+                        if (buffer != null && source.width != 0 && source.height != 0 && buffer.size != 0) {
+                            prepareTexImage2D()
+                            val internalFormat = when {
+                                isFloat && (webgl2 || !webgl) -> GL_RGBA32F
+                                else -> type
+                            }
+                            val format = type
+                            val texType = when {
+                                isFloat -> gl.FLOAT
+                                else -> gl.UNSIGNED_BYTE
+                            }
+                            //println("actualSyncUpload: webgl=$webgl, internalFormat=${internalFormat.hex}, format=${format.hex}, textype=${texType.hex}")
+                            gl.texImage2D(texTarget, 0, internalFormat, source.width, source.height, 0, format, texType, buffer)
                         }
-                        //println("actualSyncUpload: webgl=$webgl, internalFormat=${internalFormat.hex}, format=${format.hex}, textype=${texType.hex}")
-                        gl.texImage2D(forcedTexTarget, 0, internalFormat, source.width, source.height, 0, format, texType, buffer)
                     }
                     //println(buffer)
                 }
+            } else {
+                gl.texImage2D(forcedTexTarget, 0, type, source.width, source.height, 0, type, gl.UNSIGNED_BYTE, null)
             }
 
             if (requestMipmaps && source.width.isPowerOfTwo && source.height.isPowerOfTwo) {
@@ -1011,6 +963,9 @@ abstract class AGOpengl : AG() {
         fun setWrap() {
             gl.texParameteri(forcedTexTarget, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
             gl.texParameteri(forcedTexTarget, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+            if (forcedTexTarget == gl.TEXTURE_CUBE_MAP || forcedTexTarget == gl.TEXTURE_3D) {
+                gl.texParameteri(forcedTexTarget, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
+            }
         }
 
         private fun setMinMag(min: Int, mag: Int) {

@@ -19,8 +19,10 @@ interface CubeMap {
     val front: NativeImage
 
     fun faces(): List<NativeImage> = listOf(right, left, top, bottom, back, front)
-
 }
+
+val CubeMap.width: Int get() = right.width
+val CubeMap.height: Int get() = right.height
 
 suspend fun cubeMapFromResourceDirectory(directory: String, ext: String): CubeMap {
     return resourcesVfs[directory].readCubeMap(ext)
@@ -159,19 +161,9 @@ class SkyBox(
 
         if (init) {
             val faces = cubemap.faces()
-            val texCubeMap = ag.createTexture(AG.TextureTargetKind.TEXTURE_CUBE_MAP) { gl ->
-                gl.bindTexture(gl.TEXTURE_CUBE_MAP, (this as AGOpengl.TextureGeneric).texRef)
-                for (i in 0..5) {
-                    val face = faces[i]
-                    val tgt = gl.TEXTURE_CUBE_MAP_POSITIVE_X + i
-                    gl.texImage2D(tgt, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, face)
-                }
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-                gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE)
-            }
+            val texCubeMap = ag.createTexture(premultiplied = false, targetKind = AG.TextureTargetKind.TEXTURE_CUBE_MAP)
+            texCubeMap.upload(faces.toList(), cubemap.width, cubemap.height)
+
             cubeMapTexUnit.texture = texCubeMap
             init = false
         }

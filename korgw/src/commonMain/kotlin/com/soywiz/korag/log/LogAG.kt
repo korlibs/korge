@@ -56,8 +56,8 @@ open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agB
     override val backWidth: Int get() = agBase.backWidth
     override val backHeight: Int get() = agBase.backHeight
 
-    override fun createTexture(premultiplied: Boolean): Texture {
-        return super.createTexture(premultiplied)
+    override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture {
+        return super.createTexture(premultiplied, targetKind)
     }
 
     inner class ComposedTexture : AG.Texture() {
@@ -216,7 +216,7 @@ open class LogBaseAG(
 	private var bufferId = 0
 	private var renderBufferId = 0
 
-	override fun createTexture(premultiplied: Boolean): Texture =
+	override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
 	override fun createBuffer(kind: Buffer.Kind): Buffer =
