@@ -18,7 +18,7 @@ abstract class HttpClient protected constructor() {
 		method: Http.Method,
 		url: String,
 		headers: Http.Headers = Http.Headers(),
-		content: AsyncStream? = null
+		content: AsyncInputStreamWithLength? = null
 	): Response
 
 	data class Response(
@@ -95,16 +95,28 @@ abstract class HttpClient protected constructor() {
 		val maxRedirects: Int = 10,
 		val referer: String? = null,
 		val simulateBrowser: Boolean = false
-	)
+	) {
+        companion object {
+            val DEFAULT = RequestConfig()
+        }
+    }
 
 	private fun mergeUrls(base: String, append: String): String = URL.resolve(base, append)
 
-	suspend fun request(
+    suspend fun post(url: String, data: HttpBodyContent, headers: Http.Headers = Http.Headers(), config: RequestConfig = RequestConfig.DEFAULT): Response {
+        return this.request(Http.Method.POST, url, headers + Http.Headers("Content-Type" to data.contentType), data.createAsyncStream(), config)
+    }
+
+    suspend fun request(method: Http.Method, url: String, data: HttpBodyContent, headers: Http.Headers = Http.Headers(), config: RequestConfig = RequestConfig.DEFAULT): Response {
+        return this.request(method, url, headers + Http.Headers("Content-Type" to data.contentType), data.createAsyncStream(), config)
+    }
+
+    suspend fun request(
 		method: Http.Method,
 		url: String,
 		headers: Http.Headers = Http.Headers(),
-		content: AsyncStream? = null,
-		config: RequestConfig = RequestConfig()
+		content: AsyncInputStreamWithLength? = null,
+		config: RequestConfig = RequestConfig.DEFAULT
 	): Response {
 		//println("HttpClient.request: $method:$url")
 		val contentLength = content?.getLength() ?: 0L
@@ -229,7 +241,7 @@ open class DelayedHttpClient(val delayMs: Long, val parent: HttpClient) : HttpCl
 		method: Http.Method,
 		url: String,
 		headers: Http.Headers,
-		content: AsyncStream?
+		content: AsyncInputStreamWithLength?
 	): Response = queue {
 		println("Waiting $delayMs milliseconds for $url...")
 		delay(delayMs)
@@ -243,23 +255,24 @@ class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
 	val log = arrayListOf<String>()
     private val defaultContent = "LogHttpClient.response".toByteArray(UTF8).openAsync()
 	var defaultResponse =
-		HttpClient.Response(200, "OK", Http.Headers(), defaultContent, defaultContent)
+		Response(200, "OK", Http.Headers(), defaultContent, defaultContent)
 	private val rules = LinkedHashMap<Rule, ArrayList<ResponseBuilder>>()
 
 	override suspend fun requestInternal(
 		method: Http.Method,
 		url: String,
 		headers: Http.Headers,
-		content: AsyncStream?
+		content: AsyncInputStreamWithLength?
 	): Response {
-		val contentString = content?.sliceStart()?.readAll()?.toString(UTF8)
+        val readContent = content?.readAll()
+		val contentString = readContent?.toString(UTF8)
 		val requestNumber = log.size
 		log += "$method, $url, $headers, $contentString"
-		if (redirect != null) return redirect.request(method, url, headers, content)
-		val readedContent = content?.readAll()
-		val matchedRules = rules.entries.reversed().filter { it.key.matches(method, url, headers, readedContent) }
+		if (redirect != null) return redirect.request(method, url, headers, readContent?.openAsync())
+		val matchedRules = rules.entries.reversed().filter { it.key.matches(method, url, headers, readContent) }
 		val rule = matchedRules.firstOrNull()
-		return rule?.value?.getCyclic(requestNumber)?.buildResponse() ?: defaultResponse
+		return rule?.value?.getCyclic(requestNumber)?.buildResponse(method, url, headers, readContent)
+            ?: defaultResponse
 	}
 
 	class ResponseBuilder {
@@ -295,12 +308,40 @@ class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
 		fun notFound(content: String = "404 - Not Found") = response(content, code = 404)
 		fun internalServerError(content: String = "500 - Internal Server Error") = response(content, code = 500)
 
-		internal suspend fun buildResponse() = HttpClient.Response(
-            responseCode,
-            HttpStatusMessage(responseCode),
-            responseHeaders,
-            responseContent.openAsync()
-        )
+        private var customHandler: (suspend (
+            method: Http.Method,
+            url: String,
+            headers: Http.Headers,
+            content: ByteArray?
+        ) -> Response)? = null
+
+        fun handler(
+            callback: suspend (
+                method: Http.Method,
+                url: String,
+                headers: Http.Headers,
+                content: ByteArray?
+            ) -> Response
+        ) {
+            this.customHandler = callback
+        }
+
+		internal suspend fun buildResponse(
+            method: Http.Method,
+            url: String,
+            headers: Http.Headers,
+            readContent: ByteArray?
+        ): Response {
+            if (customHandler != null) {
+                return customHandler!!(method, url, headers, readContent)
+            }
+            return Response(
+                responseCode,
+                HttpStatusMessage(responseCode),
+                responseHeaders,
+                responseContent.openAsync()
+            )
+        }
 	}
 
 	data class Rule(

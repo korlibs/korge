@@ -3,6 +3,8 @@ package com.soywiz.korio.net
 import com.soywiz.kds.iterators.*
 import com.soywiz.korio.lang.*
 
+typealias FormUrlEncoded = QueryString
+
 object QueryString {
 	fun decode(str: CharSequence): Map<String, List<String>> {
 		val out = linkedMapOf<String, ArrayList<String>>()
@@ -25,4 +27,8 @@ object QueryString {
 		}
 		return parts.joinToString("&")
 	}
+
+    fun encode(items: List<Pair<String, String>>): String {
+        return encode(*items.toTypedArray())
+    }
 }

@@ -31,7 +31,7 @@ internal class HttpPortableClient(val factory: AsyncSocketFactory) : HttpClient(
         method: Http.Method,
         url: String,
         headers: Http.Headers,
-        content: AsyncStream?
+        content: AsyncInputStreamWithLength?
     ): Response = withContext(coroutineContext) {
         val url = URL(url)
         val secure = url.scheme == "https"

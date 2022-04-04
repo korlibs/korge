@@ -34,7 +34,7 @@ class HttpClientJvm : HttpClient() {
 		method: Http.Method,
 		url: String,
 		headers: Http.Headers,
-		content: AsyncStream?
+		content: AsyncInputStreamWithLength?
 	): Response {
 		val result = executeInWorkerJVM {
 			val requestId = lastRequestId++
@@ -64,8 +64,8 @@ class HttpClientJvm : HttpClient() {
 			if (content != null) {
 				con.doOutput = true
 
-				val ccontent = content.sliceStart()
-				val len = ccontent.getAvailable()
+				//val ccontent = content.sliceStart()
+				val len = content.getAvailable()
 				var left = len
 				val temp = ByteArray(1024)
 				//println("HEADER:content-length, $len")
@@ -85,13 +85,14 @@ class HttpClientJvm : HttpClient() {
 
 				val os = con.outputStream
 				while (left > 0) {
-					val read = ccontent.read(temp, 0, min(temp.size, left.toUintClamp()))
+					val read = content.read(temp, 0, min(temp.size, left.toUintClamp()))
 					if (read <= 0) invalidOp("Problem reading")
 					left -= read
 					os.write(temp, 0, read)
 				}
 				os.flush()
 				os.close()
+                content.close()
 			} else {
 				con.connect()
 			}

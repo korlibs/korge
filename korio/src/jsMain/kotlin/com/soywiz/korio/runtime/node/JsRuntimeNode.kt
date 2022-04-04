@@ -396,7 +396,7 @@ private class HttpClientNodeJs : HttpClient() {
         method: Http.Method,
         url: String,
         headers: Http.Headers,
-        content: AsyncStream?
+        content: AsyncInputStreamWithLength?
     ): Response {
         val deferred = CompletableDeferred<Response>(Job())
         //println(url)
@@ -459,6 +459,7 @@ private class HttpClientNodeJs : HttpClient() {
         } else {
             r.end()
         }
+        content?.close()
 
         return deferred.await()
     }

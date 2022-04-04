@@ -9,9 +9,7 @@ import com.soywiz.korio.net.QueryString
 import com.soywiz.korio.net.http.Http
 import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.runtime.JsRuntime
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.openAsync
-import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.*
 import kotlinx.browser.document
 import kotlinx.browser.window
 import kotlinx.coroutines.CompletableDeferred
@@ -65,7 +63,7 @@ class HttpClientBrowserJs : HttpClient() {
         method: Http.Method,
         url: String,
         headers: Http.Headers,
-        content: AsyncStream?
+        content: AsyncInputStreamWithLength?
     ): Response {
         val deferred = CompletableDeferred<Response>(Job())
         val xhr = XMLHttpRequest()
@@ -113,6 +111,7 @@ class HttpClientBrowserJs : HttpClient() {
         } else {
             xhr.send()
         }
+        content?.close()
         return deferred.await()
     }
 

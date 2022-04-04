@@ -53,8 +53,11 @@ class MimeType(val mime: String, val exts: List<String>) : Vfs.Attribute {
 			)
 		}
 
-		fun getByExtension(ext: String, default: MimeType = APPLICATION_OCTET_STREAM): MimeType =
-			MimeType_byExtensions[ext.toLowerCase()] ?: default
+        fun getByExtensionOrNull(ext: String): MimeType? =
+            MimeType_byExtensions[ext.toLowerCase()]
+
+        fun getByExtension(ext: String, default: MimeType = APPLICATION_OCTET_STREAM): MimeType =
+            getByExtensionOrNull(ext) ?: default
 	}
 }
 
