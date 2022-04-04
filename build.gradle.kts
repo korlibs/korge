@@ -28,6 +28,8 @@ buildscript {
 plugins {
 	java
     kotlin("multiplatform")
+    id("org.jetbrains.kotlinx.kover") version "0.5.0" apply false
+    id("org.jetbrains.dokka") version "1.6.10" apply false
     signing
     `maven-publish`
 }
@@ -138,24 +140,20 @@ subprojects {
             }
         }
 
-        // @TODO: When Kotlin/Native is enabled:
-        // @TODO: Cannot change dependencies of dependency configuration ':kbignum:iosArm64MainImplementationDependenciesMetadata' after task dependencies have been resolved
-        if (!doEnableKotlinNative && !doEnableKotlinMobile) {
-            if (!isSample) {
-                apply(plugin = "org.jetbrains.dokka")
+        if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
+            apply(plugin = "org.jetbrains.dokka")
 
-                tasks {
-                    val dokkaCopy by creating(Task::class) {
-                        dependsOn("dokkaHtml")
-                        doLast {
-                            val ffrom = File(project.buildDir, "dokka/html")
-                            val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
-                            copy {
-                                from(ffrom)
-                                into(finto)
-                            }
-                            File(finto, "index.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
+            tasks {
+                val dokkaCopy by creating(Task::class) {
+                    dependsOn("dokkaHtml")
+                    doLast {
+                        val ffrom = File(project.buildDir, "dokka/html")
+                        val finto = File(project.rootProject.projectDir, "build/dokka-all/${project.name}")
+                        copy {
+                            from(ffrom)
+                            into(finto)
                         }
+                        File(finto, "index.html").writeText("<meta http-equiv=\"refresh\" content=\"0; url=${project.name}\">\n")
                     }
                 }
             }
@@ -586,7 +584,7 @@ internal var _webServer: DecoratedHttpServer? = null
 
 samples {
     // @TODO: Patch, because runDebugReleaseExecutableMacosArm64 is not created!
-    if (isMacos && isArm) {
+    if (isMacos && isArm && doEnableKotlinNative) {
         project.tasks {
             afterEvaluate {
                 for (kind in listOf("Debug", "Release")) {

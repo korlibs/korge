@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 val Project.supportKotlinNative: Boolean get() {
     // Linux and Windows ARM hosts doesn't have K/N toolchains
     if ((isLinux || isWindows) && isArm) return false
-    return false
+    return true
 }
 
 val Project.doEnableKotlinNative: Boolean get() = supportKotlinNative && rootProject.findProperty("enableKotlinNative") == "true"
