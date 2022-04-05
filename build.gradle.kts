@@ -1073,9 +1073,7 @@ subprojects {
             }
             val publishMobileLocal by creating(Task::class) {
                 doFirst {
-                    if (currentJavaVersion != 8) {
-                        error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
-                    }
+                    //if (currentJavaVersion != 8) error("To use publishMobileRepo, must be used Java8, but used Java$currentJavaVersion")
                 }
                 run {
                     val taskName = "publishJvmPublicationToMavenLocal"

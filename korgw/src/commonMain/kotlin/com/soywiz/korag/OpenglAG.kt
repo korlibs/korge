@@ -16,6 +16,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.lang.*
+import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.*
 import kotlin.jvm.JvmOverloads
@@ -36,9 +37,9 @@ abstract class AGOpengl : AG() {
     override val isInstancedSupported: Boolean get() = gl.isInstancedSupported
 
     open val glSlVersion: Int? = null
-    open val gles: Boolean = false
-    open val linux: Boolean = false
-    open val android: Boolean = false
+    open val gles: Boolean get() = false
+    open val linux: Boolean get() = false
+    open val android: Boolean = OS.isAndroid
     open val webgl: Boolean get() = false
     open val webgl2: Boolean get() = false
 
@@ -103,6 +104,12 @@ abstract class AGOpengl : AG() {
         // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
         override fun set() {
             setViewport(this)
+
+            val hasStencilAndDepth: Boolean = when {
+                android -> hasStencil || hasDepth // stencil8 causes strange bug artifacts in Android (at least in one of my devices)
+                else -> hasStencil && hasDepth
+            }
+
             //val width = this.width.nextPowerOfTwo
             //val height = this.height.nextPowerOfTwo
             if (dirty) {
@@ -133,8 +140,8 @@ abstract class AGOpengl : AG() {
                 gl.bindTexture(texTarget, 0)
                 gl.bindRenderbuffer(gl.RENDERBUFFER, depth.getInt(0))
                 val internalFormat = when {
-                    hasStencil && hasDepth -> gl.DEPTH_STENCIL
-                    hasStencil -> gl.STENCIL_INDEX8
+                    hasStencilAndDepth -> gl.DEPTH_STENCIL
+                    hasStencil -> gl.STENCIL_INDEX8 // On android this is buggy somehow?
                     hasDepth -> gl.DEPTH_COMPONENT
                     else -> 0
                 }
@@ -146,13 +153,14 @@ abstract class AGOpengl : AG() {
                         gl.renderbufferStorage(gl.RENDERBUFFER, internalFormat, width, height)
                     }
                 }
+                gl.bindRenderbuffer(gl.RENDERBUFFER, 0)
                 //gl.renderbufferStorageMultisample()
             }
 
             gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer.getInt(0))
             gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, ftex.tex, 0)
             val internalFormat = when {
-                hasStencil && hasDepth -> gl.DEPTH_STENCIL_ATTACHMENT
+                hasStencilAndDepth -> gl.DEPTH_STENCIL_ATTACHMENT
                 hasStencil -> gl.STENCIL_ATTACHMENT
                 hasDepth -> gl.DEPTH_ATTACHMENT
                 else -> 0
@@ -160,6 +168,9 @@ abstract class AGOpengl : AG() {
             if (internalFormat != 0) {
                 gl.framebufferRenderbuffer(gl.FRAMEBUFFER, internalFormat, gl.RENDERBUFFER, depth.getInt(0))
             }
+            //val status = gl.checkFramebufferStatus(gl.FRAMEBUFFER);
+            //if (status != gl.FRAMEBUFFER_COMPLETE) error("Error getting framebuffer")
+            //gl.bindFramebuffer(gl.FRAMEBUFFER, 0)
         }
 
         override fun close() {

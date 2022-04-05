@@ -33,6 +33,8 @@ inline fun Container.gpuShapeView(shape: Shape, antialiased: Boolean = true, cal
 class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
     private val pointCache = FastIdentityMap<VectorPath, PointArrayList>()
 
+    var applyScissor: Boolean = true
+
     var antialiased: Boolean = antialiased
         set(value) {
             field = value
@@ -53,26 +55,50 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         shape.getBounds(out, bb)
     }
 
-    var msaaSamples: Int = 4
-
     var bufferWidth = 1000
     var bufferHeight = 1000
 
+    val Shape.requireStencil: Boolean get() {
+        return when (this) {
+            EmptyShape -> false
+            is CompoundShape -> this.components.any { it.requireStencil }
+            is TextShape -> this.primitiveShapes.requireStencil
+            is FillShape -> {
+                // @TODO: Check if the shape is convex. If it is context we might not need the stencil
+                true
+            }
+            is PolylineShape -> {
+                false
+            }
+            else -> true // UNKNOWN
+        }
+    }
+
     override fun renderInternal(ctx: RenderContext) {
         ctx.flush()
-        val currentRenderBuffer = ctx.ag.currentRenderBufferOrMain
-        //ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
-        bufferWidth = currentRenderBuffer.width; bufferHeight = currentRenderBuffer.height
+
+        val doRequireTexture = shape.requireStencil
+
         val time = measureTime {
-            ctx.renderToTexture(bufferWidth, bufferHeight, {
-                renderShape(ctx, shape)
-            }, hasStencil = true, msamples = msaaSamples) { texture ->
-                ctx.useBatcher {
-                    it.drawQuad(texture, x = 0f, y = 0f)
+            if (doRequireTexture) {
+                val currentRenderBuffer = ctx.ag.currentRenderBufferOrMain
+                //ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
+                bufferWidth = currentRenderBuffer.width
+                bufferHeight = currentRenderBuffer.height
+                ctx.renderToTexture(bufferWidth, bufferHeight, {
+                    renderShape(ctx, shape)
+                    ctx.ag.clearStencil()
+                }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
+                    ctx.ag.clearStencil()
+                    ctx.useBatcher {
+                        it.drawQuad(texture, x = 0f, y = 0f)
+                    }
                 }
+            } else {
+                renderShape(ctx, shape)
             }
         }
-        //println("GPU RENDER IN: $time")
+        //println("GPU RENDER IN: $time, doRequireTexture=$doRequireTexture")
     }
 
     private fun renderShape(ctx: RenderContext, shape: Shape) {
@@ -81,28 +107,13 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
             is CompoundShape -> for (v in shape.components) renderShape(ctx, v)
             is TextShape -> renderShape(ctx, shape.primitiveShapes)
             is FillShape -> renderShape(ctx, shape)
-            is PolylineShape -> renderStroke(ctx, shape.transform, shape.path, shape.paint, shape.globalAlpha, shape.thickness, shape.scaleMode, shape.startCaps, shape.endCaps, shape.lineJoin, shape.miterLimit)
+            is PolylineShape -> renderStroke(ctx, shape.transform, shape.path, shape.paint, shape.globalAlpha, shape.thickness, shape.scaleMode, shape.startCaps, shape.endCaps, shape.lineJoin, shape.miterLimit, scissor = if (applyScissor) ctx.batch.scissor else null)
             //is PolylineShape -> renderShape(ctx, shape.fillShape)
             else -> TODO("shape=$shape")
         }
     }
 
     private val pointsScope = PointPool(128)
-
-    fun FloatArrayList.add(p: IPoint) {
-        add(p.x.toFloat())
-        add(p.y.toFloat())
-    }
-
-    fun FloatArrayList.add(p: IPoint, m: Matrix) {
-        add(m.transformXf(p))
-        add(m.transformYf(p))
-    }
-
-    fun FloatArrayList.add(a: IPoint, b: IPoint) {
-        add(a)
-        add(b)
-    }
 
     class RenderStrokePoints(
         val points: FloatArrayList = FloatArrayList(),
@@ -465,7 +476,8 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
 
         // @TODO: Scissor should be the intersection between the path bounds and the clipping bounds
 
-        val scissor: AG.Scissor? = AG.Scissor().setTo(scissorBounds)
+        val rscissor: AG.Scissor = AG.Scissor().setTo(scissorBounds)
+        val scissor = if (applyScissor) AG.Scissor.combine(ctx.batch.scissor, rscissor) else rscissor
         //val scissor: AG.Scissor? = null
 
         ctx.ag.clearStencil(0, scissor = scissor)

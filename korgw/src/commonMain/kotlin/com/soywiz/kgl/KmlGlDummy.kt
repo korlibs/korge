@@ -15,7 +15,7 @@ open class KmlGlDummyBase : KmlGl() {
     val ids = LinkedHashMap<Kind, Int>()
 
     fun alloc(kind: Kind): Int {
-        ids.getOrPut(kind) { 0 }
+        ids.getOrPut(kind) { 1 }
         return ids.getOrPut(kind){ ids[kind]!! +1 }
     }
 
