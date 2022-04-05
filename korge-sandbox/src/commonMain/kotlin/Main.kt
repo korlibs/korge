@@ -32,8 +32,8 @@ import kotlin.random.*
 suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false
     //, debugAg = true
 ) {
-    mainSkybox()
-    //mainGpuVectorRendering()
+    //mainSkybox()
+    mainGpuVectorRendering()
     //mainFiltersRenderToBitmap()
     //mainBlur()
     //mainCustomSolidRectShader()

@@ -22,22 +22,31 @@ import kotlin.math.*
 
 
 @KorgeExperimental
-inline fun Container.gpuShapeView(buildContext2d: Context2d.() -> Unit) =
-    GpuShapeView(buildShape { buildContext2d() }).addTo(this)
+inline fun Container.gpuShapeView(build: ShapeBuilder.() -> Unit, antialiased: Boolean = true, callback: @ViewDslMarker GpuShapeView.() -> Unit = {}) =
+    GpuShapeView(buildShape { build() }, antialiased).addTo(this, callback)
 
 @KorgeExperimental
-inline fun Container.gpuShapeView(shape: Shape, callback: @ViewDslMarker GpuShapeView.() -> Unit = {}) =
-    GpuShapeView(shape).addTo(this, callback)
+inline fun Container.gpuShapeView(shape: Shape, antialiased: Boolean = true, callback: @ViewDslMarker GpuShapeView.() -> Unit = {}) =
+    GpuShapeView(shape, antialiased).addTo(this, callback)
 
 @KorgeExperimental
-class GpuShapeView(shape: Shape) : View() {
+class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
     private val pointCache = FastIdentityMap<VectorPath, PointArrayList>()
 
+    var antialiased: Boolean = antialiased
+        set(value) {
+            field = value
+            invalidateShape()
+        }
     var shape: Shape = shape
         set(value) {
             field = value
-            pointCache.clear()
+            invalidateShape()
         }
+
+    private fun invalidateShape() {
+        pointCache.clear()
+    }
 
     private val bb = BoundsBuilder()
     override fun getLocalBoundsInternal(out: Rectangle) {
@@ -99,9 +108,13 @@ class GpuShapeView(shape: Shape) : View() {
         val points: FloatArrayList = FloatArrayList(),
         val distValues: FloatArrayList = FloatArrayList(),
     ) {
+        var antialiased = true
         val pointCount: Int get() = points.size / 2
 
+        override fun toString(): String = "RenderStrokePoints(points=$points, dists=$distValues)"
+
         fun clear() {
+            //println("------------")
             points.clear()
             distValues.clear()
         }
@@ -109,12 +122,13 @@ class GpuShapeView(shape: Shape) : View() {
         fun add(p: IPoint, lineWidth: Float) {
             points.add(p.x.toFloat())
             points.add(p.y.toFloat())
-            distValues.add(lineWidth)
+            distValues.add(if (antialiased) lineWidth else 0f)
         }
 
         fun add(p1: IPoint, p2: IPoint, lineWidth: Float) {
             add(p1, -lineWidth)
             add(p2, +lineWidth)
+            //println("ADD: $p1, $p2")
         }
 
         fun addCubicOrLine(
@@ -141,6 +155,52 @@ class GpuShapeView(shape: Shape) : View() {
         }
     }
 
+    class SegmentInfo {
+        lateinit var s: IPoint // start
+        lateinit var e: IPoint // end
+        lateinit var line: Line
+        var angleSE: Angle = 0.degrees
+        var angleSE0: Angle = 0.degrees
+        var angleSE1: Angle = 0.degrees
+        lateinit var s0: IPoint
+        lateinit var s1: IPoint
+        lateinit var e0: IPoint
+        lateinit var e1: IPoint
+        lateinit var e0s: IPoint
+        lateinit var e1s: IPoint
+        lateinit var s0s: IPoint
+        lateinit var s1s: IPoint
+
+        fun p(index: Int) = if (index == 0) s else e
+        fun p0(index: Int) = if (index == 0) s0 else e0
+        fun p1(index: Int) = if (index == 0) s1 else e1
+
+        fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool): Unit {
+            this.s = s
+            this.e = e
+            scope.apply {
+                line = Line(s, e)
+                angleSE = Angle.between(s, e)
+                angleSE0 = angleSE - 90.degrees
+                angleSE1 = angleSE + 90.degrees
+                s0 = Point(s, angleSE0, length = lineWidth)
+                s1 = Point(s, angleSE1, length = lineWidth)
+                e0 = Point(e, angleSE0, length = lineWidth)
+                e1 = Point(e, angleSE1, length = lineWidth)
+
+                s0s = Point(s0, angleSE + 180.degrees, length = lineWidth)
+                s1s = Point(s1, angleSE + 180.degrees, length = lineWidth)
+
+                e0s = Point(e0, angleSE, length = lineWidth)
+                e1s = Point(e1, angleSE, length = lineWidth)
+            }
+        }
+    }
+
+    private val points = RenderStrokePoints()
+    private val ab = SegmentInfo()
+    private val bc = SegmentInfo()
+
     private fun renderStroke(
         ctx: RenderContext,
         stateTransform: Matrix,
@@ -157,65 +217,27 @@ class GpuShapeView(shape: Shape) : View() {
         scissor: AG.Scissor? = null,
         stencil: AG.StencilState = AG.StencilState(),
     ) {
-        val points = RenderStrokePoints()
+        points.antialiased = this.antialiased
 
+        //val m0 = root.globalMatrix
+        //val mt0 = m0.toTransform()
         val m = globalMatrix
         val mt = m.toTransform()
         val st2 = stateTransform.clone()
         st2.premultiply(stage!!.globalMatrix)
 
         val scaleWidth = scaleMode.anyScale
-        val lineWidth = if (scaleWidth) lineWidth * mt.scaleAvg else lineWidth
+        //val lineScale = mt0.scaleAvg.absoluteValue / mt.scaleAvg.absoluteValue
+        val lineScale = mt.scaleAvg.absoluteValue
+        //println("lineScale=$lineScale")
+        val flineWidth = if (scaleWidth) lineWidth * lineScale else lineWidth
+        val lineWidth = if (antialiased) (flineWidth * 0.5) + 0.25 else flineWidth * 0.5
 
         //val lineWidth = 0.2
         //val lineWidth = 20.0
         val fLineWidth = max((lineWidth).toFloat(), 1.5f)
-        class SegmentInfo {
-            lateinit var s: IPoint // start
-            lateinit var e: IPoint // end
-            lateinit var line: Line
-            var angleSE: Angle = 0.degrees
-            var angleSE0: Angle = 0.degrees
-            var angleSE1: Angle = 0.degrees
-            lateinit var s0: IPoint
-            lateinit var s1: IPoint
-            lateinit var e0: IPoint
-            lateinit var e1: IPoint
-            lateinit var e0s: IPoint
-            lateinit var e1s: IPoint
-            lateinit var s0s: IPoint
-            lateinit var s1s: IPoint
 
-            fun p(index: Int) = if (index == 0) s else e
-            fun p0(index: Int) = if (index == 0) s0 else e0
-            fun p1(index: Int) = if (index == 0) s1 else e1
-
-            fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool): Unit {
-                this.s = s
-                this.e = e
-                scope.apply {
-                    line = Line(s, e)
-                    angleSE = Angle.between(s, e)
-                    angleSE0 = angleSE - 90.degrees
-                    angleSE1 = angleSE + 90.degrees
-                    s0 = Point(s, angleSE0, length = lineWidth)
-                    s1 = Point(s, angleSE1, length = lineWidth)
-                    e0 = Point(e, angleSE0, length = lineWidth)
-                    e1 = Point(e, angleSE1, length = lineWidth)
-
-                    s0s = Point(s0, angleSE + 180.degrees, length = lineWidth)
-                    s1s = Point(s1, angleSE + 180.degrees, length = lineWidth)
-
-                    e0s = Point(e0, angleSE, length = lineWidth)
-                    e1s = Point(e1, angleSE, length = lineWidth)
-                }
-            }
-        }
-
-        val ab = SegmentInfo()
-        val bc = SegmentInfo()
-
-        val pathList = strokePath.toPathList(m, emitClosePoint = false)
+        val pathList = strokePath.toPathPointList(m, emitClosePoint = false)
         //println(pathList.size)
         for (ppath in pathList) {
             points.clear()
@@ -223,6 +245,7 @@ class GpuShapeView(shape: Shape) : View() {
             //println("Points: " + ppath.toList())
             val end = if (loop) ppath.size + 1 else ppath.size
             //val end = if (loop) ppath.size else ppath.size
+
             for (n in 0 until end) pointsScope {
                 val isFirst = n == 0
                 val isLast = n == ppath.size - 1
@@ -269,20 +292,21 @@ class GpuShapeView(shape: Shape) : View() {
                         val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, MPoint()) // Inner (CW)
                         val e1 = m1 ?: ab.e1
                         val e0 = m0 ?: ab.e0
+                        val round = join == LineJoin.ROUND
+                        val dorientation = when {
+                            (join == LineJoin.MITER && e1.distanceTo(b) <= (miterLimit * lineWidth)) -> 0
+                            else -> orientation
+                        }
 
                         if (loop && isFirst) {
-                            if (orientation >= 0.0) {
-                                points.add(bc.s1, e0, fLineWidth)
-                            } else {
-                                points.add(e1, bc.s0, fLineWidth)
+                            //println("forientation=$forientation")
+                            when (dorientation) {
+                                -1 -> points.add(e1, bc.s0, fLineWidth)
+                                0 -> points.add(e1, e0, fLineWidth)
+                                +1 -> points.add(bc.s1, e0, fLineWidth)
                             }
                         } else {
-                            val round = !isFirst && join == LineJoin.ROUND
-                            val dorientation = when {
-                                (join == LineJoin.MITER && e1.distanceTo(b) <= (miterLimit * lineWidth)) -> 0
-                                else -> orientation
-                            }
-                            //println("orientation=$orientation")
+                            //println("dorientation=$dorientation")
                             when (dorientation) {
                                 // Turn right
                                 -1 -> {
@@ -320,11 +344,19 @@ class GpuShapeView(shape: Shape) : View() {
                     }
                 }
             }
+            //run {
+            //    val pointsString = "$points"
+            //    if (lastPointsString != pointsString) {
+            //        lastPointsString = pointsString
+            //        println("pointsString=$pointsString")
+            //    }
+            //}
             drawTriangleStrip(ctx, globalAlpha, paint, points.points, points.distValues, points.pointCount, lineWidth.toFloat(), st2, scissor, stencil)
         }
 
         //println("vertexCount=$vertexCount")
     }
+    //private var lastPointsString = ""
 
     private fun drawTriangleStrip(
         ctx: RenderContext,
@@ -462,28 +494,30 @@ class GpuShapeView(shape: Shape) : View() {
         }
 
         // Antialias
-        renderStroke(
-            ctx = ctx,
-            //transform = shape.transform,
-            stateTransform = Matrix(),
-            strokePath = shape.path,
-            paint = shape.paint,
-            globalAlpha = shape.globalAlpha,
-            lineWidth = 1.0,
-            scaleMode = LineScaleMode.NONE,
-            startCap = LineCap.BUTT,
-            endCap = LineCap.BUTT,
-            join = LineJoin.MITER,
-            miterLimit = 0.5,
-            forceClosed = true,
-            scissor = scissor,
-            stencil = AG.StencilState(
-                enabled = true,
-                compareMode = AG.CompareMode.NOT_EQUAL,
-                referenceValue = stencilEqualsValue,
-                writeMask = 0,
+        if (antialiased) {
+            renderStroke(
+                ctx = ctx,
+                //transform = shape.transform,
+                stateTransform = Matrix(),
+                strokePath = shape.path,
+                paint = shape.paint,
+                globalAlpha = shape.globalAlpha,
+                lineWidth = 2.0,
+                scaleMode = LineScaleMode.NONE,
+                startCap = LineCap.BUTT,
+                endCap = LineCap.BUTT,
+                join = LineJoin.MITER,
+                miterLimit = 0.5,
+                forceClosed = true,
+                scissor = scissor,
+                stencil = AG.StencilState(
+                    enabled = true,
+                    compareMode = AG.CompareMode.NOT_EQUAL,
+                    referenceValue = stencilEqualsValue,
+                    writeMask = 0,
+                )
             )
-        )
+        }
 
         renderFill(
             ctx,

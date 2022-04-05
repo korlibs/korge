@@ -104,7 +104,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
     @OptIn(KorgeExperimental::class)
     fun testGpuShapeView() = viewsTest {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
-        val view = gpuShapeView {
+        val view = gpuShapeView({
             keep {
                 translate(100, 200)
                 fill(Colors.BLUE) {
@@ -164,9 +164,11 @@ class ReferenceGraphicsTest : ViewsForTesting(
                     fillRect(150.0, 75.0, 50.0, 50.0)
                 }
             }
+        }) {
+            xy(50, 50)
+            scale(2, 2)
+            rotation = 180.degrees
         }
-            .xy(50, 50)
-            .scale(2, 2)
 
         delayFrame()
         assertEqualsFileReference(

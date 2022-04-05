@@ -62,10 +62,10 @@ class PointPool(val capacity: Int = 16, preallocate: Boolean = false) {
     operator fun IPointArrayList.get(index: Int): Point = MPoint().setTo(this.getX(index), this.getY(index))
     fun IPointArrayList.getCyclic(index: Int): Point = this[index umod size]
 
-    inline operator fun invoke(callback: PointPool.() -> Unit) {
+    inline operator fun <T> invoke(callback: PointPool.() -> T): T {
         val oldOffset = offset
         try {
-            callback()
+            return callback()
         } finally {
             offset = oldOffset
         }

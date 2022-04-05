@@ -1,6 +1,8 @@
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
+import com.soywiz.korev.*
 import com.soywiz.korge.annotations.*
+import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
@@ -18,7 +20,46 @@ import com.soywiz.korma.geom.vector.*
 
 @OptIn(KorgeExperimental::class)
 suspend fun Stage.mainGpuVectorRendering() {
-    gpuShapeView {
+    container {
+        xy(300, 300)
+        val shape = gpuShapeView({
+            //val lineWidth = 6.12123231 * 2
+            val lineWidth = 12.0
+            val width = 300.0
+            val height = 300.0
+            //rotation = 180.degrees
+            this.stroke(Colors.WHITE.withAd(0.5), lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
+                this.rect(
+                    lineWidth / 2, lineWidth / 2,
+                    width,
+                    height
+                )
+            }
+        }) {
+            xy(-150, -150)
+            keys {
+                down(Key.N0) { antialiased = !antialiased }
+                down(Key.A) { antialiased = !antialiased }
+            }
+        }
+        keys {
+            downFrame(Key.N1) { rotation = 15.degrees * 0 }
+            downFrame(Key.N2) { rotation = 15.degrees * 1 }
+            downFrame(Key.N3) { rotation = 15.degrees * 2 }
+            downFrame(Key.N4) { rotation = 15.degrees * 3 }
+            downFrame(Key.N5) { rotation = 15.degrees * 4 }
+            downFrame(Key.N6) { rotation = 15.degrees * 5 }
+            downFrame(Key.N7) { rotation = 15.degrees * 6 }
+            downFrame(Key.N8) { rotation = 15.degrees * 7 }
+            downFrame(Key.N9) { rotation = 180.degrees }
+            downFrame(Key.LEFT) { rotation -= 1.degrees }
+            downFrame(Key.RIGHT) { rotation += 1.degrees }
+        }
+    }
+
+    return
+
+    gpuShapeView({
         //val paint = createLinearGradient(200, 200, 400, 400).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))
         val paint = Colors.WHITE.withAd(0.7)
         //stroke(paint, lineWidth = 10.0, lineCap = LineCap.BUTT, lineJoin = LineJoin.ROUND) {
@@ -51,12 +92,19 @@ suspend fun Stage.mainGpuVectorRendering() {
             moveTo(750, 100)
             lineTo(750, 110)
         }
+    }) {
+        keys {
+            down(Key.N0) { antialiased = !antialiased }
+            down(Key.A) { antialiased = !antialiased }
+        }
     }
 
     circle(6.0, Colors.RED).anchor(Anchor.CENTER).xy(100, 100)
         //.xy(40, 0)
         //.scale(1.1)
         //.rotation(15.degrees)
+    //return
+
     //return
 
     Console.log("[1]")
@@ -172,10 +220,15 @@ suspend fun Stage.mainGpuVectorRendering() {
     }
 
     measureTime({
-        gpuShapeView { buildGraphics("GPU") }
-            .xy(40, 0)
-            .scale(1.1)
-            .rotation(15.degrees)
+        gpuShapeView({ buildGraphics("GPU") }) {
+            xy(40, 0)
+            scale(1.1)
+            rotation(15.degrees)
+            keys {
+                down(Key.N0) { antialiased = !antialiased }
+                down(Key.A) { antialiased = !antialiased }
+            }
+        }
     }) {
         println("GPU SHAPE: $it")
     }
