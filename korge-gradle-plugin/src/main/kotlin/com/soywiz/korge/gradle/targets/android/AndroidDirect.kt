@@ -32,7 +32,7 @@ fun Project.configureAndroidDirect() {
             timeOutInMs = project.korge.androidTimeoutMs
         }
         packagingOptions {
-            for (pattern in androidExcludePatterns()) {
+            for (pattern in project.korge.androidExcludePatterns) {
                 resources.excludes.add(pattern)
             }
         }

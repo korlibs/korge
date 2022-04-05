@@ -349,6 +349,22 @@ class KorgeExtension(val project: Project) {
 
     var androidTimeoutMs: Int = 30 * 1000
 
+    var androidExcludePatterns: List<String> = listOf(
+        "META-INF/DEPENDENCIES",
+        "META-INF/LICENSE",
+        "META-INF/LICENSE.txt",
+        "META-INF/license.txt",
+        "META-INF/NOTICE",
+        "META-INF/NOTICE.txt",
+        "META-INF/notice.txt",
+        "META-INF/LGPL*",
+        "META-INF/AL2.0",
+        "META-INF/*.kotlin_module",
+        "**/*.kotlin_metadata",
+        "**/*.kotlin_builtins",
+        "**/androidsupportmultidexversion.txt",
+    )
+
 	fun androidSdk(compileSdk: Int, minSdk: Int, targetSdk: Int) {
 		androidMinSdk = minSdk
 		androidCompileSdk = compileSdk

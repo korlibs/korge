@@ -165,7 +165,7 @@ fun Project.configureAndroidIndirect() {
                                 line("freeCompilerArgs += \"-Xmulti-platform\"")
                             }
                             line("packagingOptions") {
-                                for (pattern in androidExcludePatterns()) {
+                                for (pattern in korge.androidExcludePatterns) {
                                     line("exclude '$pattern'")
                                 }
                             }

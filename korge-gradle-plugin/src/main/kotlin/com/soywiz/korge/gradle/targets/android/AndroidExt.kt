@@ -221,18 +221,3 @@ fun isKorlibsDependency(cleanFullName: String): Boolean {
     if (cleanFullName.startsWith("org.jogamp")) return false
     return true
 }
-
-fun androidExcludePatterns(): List<String> = listOf(
-    "META-INF/DEPENDENCIES",
-    "META-INF/LICENSE",
-    "META-INF/LICENSE.txt",
-    "META-INF/license.txt",
-    "META-INF/NOTICE",
-    "META-INF/NOTICE.txt",
-    "META-INF/notice.txt",
-    "META-INF/LGPL*",
-    "META-INF/AL2.0",
-    "META-INF/*.kotlin_module",
-    "**/*.kotlin_metadata",
-    "**/*.kotlin_builtins",
-)
