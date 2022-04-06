@@ -1,12 +1,13 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.kgl.*
+import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
 import com.sun.jna.*
 import java.awt.*
 import java.io.*
 
-open class GLCanvas constructor(checkGl: Boolean = true, logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), Closeable {
+open class GLCanvas constructor(checkGl: Boolean = true, logGl: Boolean = false, cacheGl: Boolean = false) : Canvas(), GameWindowConfig, Closeable {
     val ag: AwtAg = AwtAg(this, checkGl, logGl, cacheGl)
     private var ctxComponentId: Long = -1L
     var ctx: BaseOpenglContext? = null
@@ -48,7 +49,7 @@ open class GLCanvas constructor(checkGl: Boolean = true, logGl: Boolean = false,
         if (ctx == null) {
             println("--------------------------------------")
             //ctxComponentId = componentId
-            ctx = glContextFromComponent(this)
+            ctx = glContextFromComponent(this, this)
             ag.contextLost()
         }
         //println("--------------")
@@ -77,4 +78,6 @@ open class GLCanvas constructor(checkGl: Boolean = true, logGl: Boolean = false,
         gl.info.current = isCurrent
         defaultRenderer(gl, g)
     }
+
+    override var quality: GameWindow.Quality = GameWindow.Quality.AUTOMATIC
 }

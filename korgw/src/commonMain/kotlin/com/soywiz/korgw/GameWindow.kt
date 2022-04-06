@@ -200,8 +200,13 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     override fun toString(): String = "GameWindowCoroutineDispatcher"
 }
 
-open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineContext.Element, AGWindow, Extra by Extra.Mixin() {
+interface GameWindowConfig {
+    val quality: GameWindow.Quality
+}
+
+open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineContext.Element, AGWindow, GameWindowConfig, Extra by Extra.Mixin() {
     interface ICursor
+
 
     enum class Cursor : ICursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
@@ -383,7 +388,7 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineConte
     open var fullscreen: Boolean = false
     open var visible: Boolean = false
     open var bgcolor: RGBA = Colors.BLACK
-    open var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
+    override var quality: Quality get() = Quality.AUTOMATIC; set(value) = Unit
 
     val onDebugEnabled = Signal<Unit>()
     val onDebugChanged = Signal<Boolean>()

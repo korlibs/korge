@@ -5,6 +5,7 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.vector.*
+import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
@@ -54,6 +55,7 @@ suspend fun Stage.mainGpuVectorRendering() {
             downFrame(Key.N9) { rotation = 180.degrees }
             downFrame(Key.LEFT) { rotation -= 1.degrees }
             downFrame(Key.RIGHT) { rotation += 1.degrees }
+            up(Key.Q) { gameWindow.quality = if (gameWindow.quality == GameWindow.Quality.PERFORMANCE) GameWindow.Quality.QUALITY else GameWindow.Quality.PERFORMANCE }
         }
     }
 

@@ -40,14 +40,14 @@ class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
             if (OS.isMac) {
                 try {
                     //ctx = ProxiedMacAWTOpenglContext(frame)
-                    ctx = glContextFromComponent(frame)
+                    ctx = glContextFromComponent(frame, this)
 
                 } catch (e: Throwable) {
                     e.printStackTrace()
-                    ctx = glContextFromComponent(frame)
+                    ctx = glContextFromComponent(frame, this)
                 }
             } else {
-                ctx = glContextFromComponent(frame)
+                ctx = glContextFromComponent(frame, this)
             }
         }
     }

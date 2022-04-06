@@ -1,24 +1,18 @@
 package com.soywiz.korgw.platform
 
 import com.soywiz.korag.*
-import com.soywiz.korgw.awt.*
+import com.soywiz.korgw.*
 import com.soywiz.korgw.osx.*
 import com.soywiz.korgw.win32.Win32OpenglContext
 import com.soywiz.korgw.x11.X
 import com.soywiz.korgw.x11.X11OpenglContext
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.OS
-import com.soywiz.korma.awt.*
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.Rectangle
 import com.sun.jna.Native
 import com.sun.jna.platform.unix.X11
-import com.sun.jna.platform.win32.WinDef
-import sun.awt.*
 import java.awt.*
 import java.lang.reflect.Method
-import java.security.*
-import javax.swing.*
 
 interface BaseOpenglContext : Disposable {
     val isCore: Boolean get() = false
@@ -78,28 +72,28 @@ object DummyOpenglContext : BaseOpenglContext {
     }
 }
 
-fun glContextFromComponent(c: Component): BaseOpenglContext {
+fun glContextFromComponent(c: Component, gwconfig: GameWindowConfig): BaseOpenglContext {
     return when {
         OS.isMac -> {
             try {
-                MacAWTOpenglContext(c)
+                MacAWTOpenglContext(gwconfig = gwconfig, c)
             } catch (e: Throwable) {
                 e.printStackTrace()
                 System.err.println("Might require run the JVM with --add-opens=java.desktop/sun.java2d.opengl=ALL-UNNAMED")
                 DummyOpenglContext
             }
         }
-        OS.isWindows -> Win32OpenglContext(c, doubleBuffered = true).init()
+        OS.isWindows -> Win32OpenglContext(c, gwconfig, doubleBuffered = true).init()
         else -> {
             try {
                 val display = X.XOpenDisplay(null)
                 val screen = X.XDefaultScreen(display)
                 if (c is Frame) {
                     val contentWindow = c.awtGetPeer().reflective().dynamicInvoke("getContentWindow") as Long
-                    X11OpenglContext(display, X11.Drawable(contentWindow), screen, doubleBuffered = true)
+                    X11OpenglContext(gwconfig, display, X11.Drawable(contentWindow), screen, doubleBuffered = true)
                 } else {
                     val componentId = Native.getComponentID(c)
-                    X11OpenglContext(display, X11.Drawable(componentId), screen, doubleBuffered = true)
+                    X11OpenglContext(gwconfig, display, X11.Drawable(componentId), screen, doubleBuffered = true)
                 }
             } catch (e: Throwable) {
                 e.printStackTrace()

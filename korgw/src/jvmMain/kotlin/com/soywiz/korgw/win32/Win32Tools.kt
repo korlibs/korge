@@ -3,6 +3,7 @@ package com.soywiz.korgw.win32
 import com.soywiz.kgl.*
 import com.soywiz.klogger.*
 import com.soywiz.klogger.Console
+import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
@@ -210,7 +211,7 @@ private fun Bitmap32.scaled(width: Int, height: Int): Bitmap32 {
 }
 
 // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_(WGL)
-class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
+class Win32OpenglContext(val gwconfig: GameWindowConfig, val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleBuffered: Boolean = false, val component: Component? = null) : BaseOpenglContext {
 
     //val pfd = WinGDI.PIXELFORMATDESCRIPTOR.ByReference().also { pfd ->
     //    pfd.nSize = pfd.size().toShort()
@@ -316,9 +317,17 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
         return Win32.wglGetCurrentContext()
     }
 
+    val GL_MULTISAMPLE = 0x809D
+
     override fun makeCurrent() {
         //println("makeCurrent")
         makeCurrent(hDC, hRC)
+        when (gwconfig.quality) {
+            GameWindow.Quality.QUALITY -> Win32GL.glEnable(GL_MULTISAMPLE)
+            GameWindow.Quality.PERFORMANCE,
+            GameWindow.Quality.AUTOMATIC -> Win32GL.glDisable(GL_MULTISAMPLE)
+        }
+
     }
 
     override fun releaseCurrent() {
@@ -376,14 +385,14 @@ class Win32OpenglContext(val hWnd: WinDef.HWND, val hDC: WinDef.HDC, val doubleB
     }
 
     companion object {
-        operator fun invoke(c: Component, doubleBuffered: Boolean = false): Win32OpenglContext {
+        operator fun invoke(c: Component, gwconfig: GameWindowConfig, doubleBuffered: Boolean = false): Win32OpenglContext {
             val hWnd = WinDef.HWND(Native.getComponentPointer(c))
-            return Win32OpenglContext(hWnd, doubleBuffered, c).init()
+            return Win32OpenglContext(hWnd, gwconfig, doubleBuffered, c).init()
         }
 
-        operator fun invoke(hWnd: WinDef.HWND, doubleBuffered: Boolean = false, c: Component? = null): Win32OpenglContext {
+        operator fun invoke(hWnd: WinDef.HWND, gwconfig: GameWindowConfig, doubleBuffered: Boolean = false, c: Component? = null): Win32OpenglContext {
             val hDC = Win32.GetDC(hWnd)
-            return Win32OpenglContext(hWnd, hDC, doubleBuffered, c).init()
+            return Win32OpenglContext(gwconfig, hWnd, hDC, doubleBuffered, c).init()
         }
 
         const val WGL_DRAW_TO_WINDOW_ARB            = 0x2001

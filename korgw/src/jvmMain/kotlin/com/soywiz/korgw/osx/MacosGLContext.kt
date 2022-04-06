@@ -6,10 +6,8 @@ import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korma.geom.*
-import com.sun.jna.*
 import java.awt.*
 import java.security.*
-import java.util.*
 import javax.swing.SwingUtilities
 
 class MacosGLContext(
@@ -151,7 +149,7 @@ class MacosGLContext(
     }
 }
 
-class MacAWTOpenglContext(val c: Component, var other: MacosGLContext? =  null) : BaseOpenglContext {
+class MacAWTOpenglContext(val gwconfig: GameWindowConfig, val c: Component, var other: MacosGLContext? = null) : BaseOpenglContext {
     companion object {
         private inline fun <T : Any> privilegedAction(crossinline block: () -> T): T {
             var result: T? = null
@@ -229,11 +227,11 @@ class MacAWTOpenglContext(val c: Component, var other: MacosGLContext? =  null) 
     override fun swapBuffers() = Unit
 }
 
-class ProxiedMacAWTOpenglContext(val c: Component) : BaseOpenglContext {
+class ProxiedMacAWTOpenglContext(val c: Component, val gwconfig: GameWindowConfig) : BaseOpenglContext {
     override fun makeCurrent() {
     }
 
-    val cctx = MacAWTOpenglContext(c)
+    val cctx = MacAWTOpenglContext(gwconfig = gwconfig, c)
 
     override fun useContext(g: Graphics, ag: AG, action: (Graphics, BaseOpenglContext.ContextInfo) -> Unit) {
         val gl = (ag as AGOpengl).gl
