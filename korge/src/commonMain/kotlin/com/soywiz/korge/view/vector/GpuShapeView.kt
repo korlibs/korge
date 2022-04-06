@@ -58,6 +58,10 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
     var bufferWidth = 1000
     var bufferHeight = 1000
 
+    inline fun updateShape(block: ShapeBuilder.() -> Unit) {
+        this.shape = buildShape { block() }
+    }
+
     val Shape.requireStencil: Boolean get() {
         return when (this) {
             EmptyShape -> false
