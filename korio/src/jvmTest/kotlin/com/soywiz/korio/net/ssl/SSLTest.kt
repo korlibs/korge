@@ -6,12 +6,13 @@ import kotlin.test.*
 
 class SSLTest {
     @Test
-    @Ignore
-    fun test() = suspendTest {
+    //@Ignore
+    fun testDownloadHttpsFile() = suspendTest {
         val client = createHttpClient()
-        val content = client.requestAsString(Http.Method.GET, "https://google.es/")
-        //val content = client.requestAsString(Http.Method.GET, "http://google.es/")
-        println(content.headers)
-        println(content.content)
+        val result = client.requestAsString(Http.Method.GET, "https://docs.korge.org/ssltest.txt")
+        //println(result.headers)
+        //println(result.content)
+
+        assertEquals("file used for SSL tests\n", result.content)
     }
 }
