@@ -583,6 +583,13 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         //val enabled = !red || !green || !blue || !alpha
     }
 
+    enum class CullFace {
+        BOTH, FRONT, BACK;
+        companion object {
+            val VALUES = values()
+        }
+    }
+
     enum class FrontFace {
         BOTH, CW, CCW;
         companion object {

@@ -19,17 +19,24 @@ typealias AGStencilOp = AG.StencilOp
 typealias AGTriangleFace = AG.TriangleFace
 typealias AGCompareMode = AG.CompareMode
 typealias AGFrontFace = AG.FrontFace
+typealias AGCullFace = AG.CullFace
 
 @KorIncomplete
 @KorInternal
 interface AGQueueProcessor {
-    fun enable(kind: AGEnable)
-    fun disable(kind: AGEnable)
+    fun enableDisable(kind: AGEnable, enable: Boolean)
     fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean)
     fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation)
-    fun blendFunction(rgb: AGBlendFactor, a: AGBlendFactor = rgb)
-    fun cullFace(frontFace: AGFrontFace)
+    fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor = srcRgb, dstA: AGBlendFactor = dstRgb)
+    fun cullFace(face: AGCullFace)
     fun depthFunction(depthTest: AGCompareMode)
+}
+
+@KorInternal
+inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
+    with(list) {
+        processBlocking(maxCount)
+    }
 }
 
 @KorIncomplete
@@ -77,7 +84,9 @@ class AGList(val globalState: AGGlobalState) {
 
     @KorInternal
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
-        for (n in 0 until maxCount) {
+        var pending = maxCount
+        while (true) {
+            if (pending-- == 0) break
             // @TODO: Wait for more data
             if (_data.size < 1) break
             val data = read()
@@ -90,8 +99,8 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_DEPTH_FUNCTION -> {
                     depthFunction(AGCompareMode.VALUES[data.extract4(0)])
                 }
-                CMD_ENABLE -> enable(AGEnable.VALUES[data.extract4(0)])
-                CMD_DISABLE -> disable(AGEnable.VALUES[data.extract4(0)])
+                CMD_ENABLE -> enableDisable(AGEnable.VALUES[data.extract4(0)], enable = true)
+                CMD_DISABLE -> enableDisable(AGEnable.VALUES[data.extract4(0)], enable = false)
                 CMD_COLOR_MASK -> colorMask(data.extract(0), data.extract(1), data.extract(2), data.extract(3))
                 CMD_BLEND_EQ -> blendEquation(
                     AGBlendEquation.VALUES[data.extract4(0)],
