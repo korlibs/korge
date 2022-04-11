@@ -498,14 +498,22 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         LINES,
         TRIANGLES,
         TRIANGLE_STRIP,
-        TRIANGLE_FAN,
+        TRIANGLE_FAN;
+
+        companion object {
+            val VALUES = values()
+        }
     }
 
     enum class IndexType {
         UBYTE, USHORT,
         // https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/drawElements
         @Deprecated("UINT is not always supported on webgl")
-        UINT
+        UINT;
+
+        companion object {
+            val VALUES = values()
+        }
     }
 
     val dummyTexture by lazy { createTexture() }
@@ -590,9 +598,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
+    // Default: CCW
     enum class FrontFace {
-        BOTH, CW, CCW;
+        BOTH, // @TODO: This is incorrect
+        CCW, CW;
         companion object {
+            val DEFAULT: FrontFace get() = CCW
             val VALUES = values()
         }
     }

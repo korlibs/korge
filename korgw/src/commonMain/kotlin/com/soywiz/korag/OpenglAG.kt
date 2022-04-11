@@ -15,6 +15,7 @@ import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
+import com.soywiz.korio.annotations.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
@@ -25,6 +26,7 @@ import kotlin.native.concurrent.*
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
 
+@OptIn(KorIncomplete::class, KorInternal::class)
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
         RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
@@ -186,53 +188,6 @@ abstract class AGOpengl : AG() {
 
     override fun createRenderBuffer(): RenderBuffer = GlRenderBuffer()
 
-    private fun BlendEquation.toGl() = when (this) {
-        BlendEquation.ADD -> gl.FUNC_ADD
-        BlendEquation.SUBTRACT -> gl.FUNC_SUBTRACT
-        BlendEquation.REVERSE_SUBTRACT -> gl.FUNC_REVERSE_SUBTRACT
-    }
-
-    private fun BlendFactor.toGl() = when (this) {
-        BlendFactor.DESTINATION_ALPHA -> gl.DST_ALPHA
-        BlendFactor.DESTINATION_COLOR -> gl.DST_COLOR
-        BlendFactor.ONE -> gl.ONE
-        BlendFactor.ONE_MINUS_DESTINATION_ALPHA -> gl.ONE_MINUS_DST_ALPHA
-        BlendFactor.ONE_MINUS_DESTINATION_COLOR -> gl.ONE_MINUS_DST_COLOR
-        BlendFactor.ONE_MINUS_SOURCE_ALPHA -> gl.ONE_MINUS_SRC_ALPHA
-        BlendFactor.ONE_MINUS_SOURCE_COLOR -> gl.ONE_MINUS_SRC_COLOR
-        BlendFactor.SOURCE_ALPHA -> gl.SRC_ALPHA
-        BlendFactor.SOURCE_COLOR -> gl.SRC_COLOR
-        BlendFactor.ZERO -> gl.ZERO
-    }
-
-    fun TriangleFace.toGl() = when (this) {
-        TriangleFace.FRONT -> gl.FRONT
-        TriangleFace.BACK -> gl.BACK
-        TriangleFace.FRONT_AND_BACK -> gl.FRONT_AND_BACK
-        TriangleFace.NONE -> gl.FRONT
-    }
-
-    fun CompareMode.toGl() = when (this) {
-        CompareMode.ALWAYS -> gl.ALWAYS
-        CompareMode.EQUAL -> gl.EQUAL
-        CompareMode.GREATER -> gl.GREATER
-        CompareMode.GREATER_EQUAL -> gl.GEQUAL
-        CompareMode.LESS -> gl.LESS
-        CompareMode.LESS_EQUAL -> gl.LEQUAL
-        CompareMode.NEVER -> gl.NEVER
-        CompareMode.NOT_EQUAL -> gl.NOTEQUAL
-    }
-
-    fun StencilOp.toGl() = when (this) {
-        StencilOp.DECREMENT_SATURATE -> gl.DECR
-        StencilOp.DECREMENT_WRAP -> gl.DECR_WRAP
-        StencilOp.INCREMENT_SATURATE -> gl.INCR
-        StencilOp.INCREMENT_WRAP -> gl.INCR_WRAP
-        StencilOp.INVERT -> gl.INVERT
-        StencilOp.KEEP -> gl.KEEP
-        StencilOp.SET -> gl.REPLACE
-        StencilOp.ZERO -> gl.ZERO
-    }
 
     private val TEMP_MAX_MATRICES = 1024
     val tempBuffer1 = FBuffer(4)
@@ -292,7 +247,13 @@ abstract class AGOpengl : AG() {
         }
     }
 
+    private val globalState = AGGlobalState()
+    private val glProcessor = AGQueueProcessorOpenGL(KmlGlDummy)
+    private val glList = globalState.createList()
+
     override fun draw(batch: Batch) {
+        glProcessor.gl = gl
+
         val instances = batch.instances
         val program = batch.program
         val type = batch.type
@@ -353,7 +314,7 @@ abstract class AGOpengl : AG() {
                 if (!att.active) continue
                 val off = vattrspos[n]
                 val loc = glProgram.getAttribLocation(att.name)
-                val glElementType = att.type.glElementType
+                val glElementType = att.type.toGl(gl)
                 val elementCount = att.type.elementCount
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
@@ -490,22 +451,20 @@ abstract class AGOpengl : AG() {
         }
 
         if (blending.enabled) {
-            gl.enable(gl.BLEND)
-            gl.blendEquationSeparate(blending.eqRGB.toGl(), blending.eqA.toGl())
-            gl.blendFuncSeparate(
-                blending.srcRGB.toGl(), blending.dstRGB.toGl(),
-                blending.srcA.toGl(), blending.dstA.toGl()
-            )
+            glList.enable(AGEnable.BLEND)
+            glList.blendEquation(blending.eqRGB, blending.eqA)
+            glList.blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
         } else {
-            gl.disable(gl.BLEND)
+            glList.disable(AGEnable.BLEND)
         }
 
         if (renderState.frontFace == FrontFace.BOTH) {
-            gl.disable(gl.CULL_FACE)
+            glList.disable(AGEnable.CULL_FACE)
         } else {
-            gl.enable(gl.CULL_FACE)
-            gl.frontFace(if (renderState.frontFace == FrontFace.CW) gl.CW else gl.CCW)
+            glList.enable(AGEnable.CULL_FACE)
+            glList.frontFace(renderState.frontFace)
         }
+        glProcessor.processBlockingAll(glList)
 
         gl.depthMask(renderState.depthMask)
         gl.depthRangef(renderState.depthNear, renderState.depthFar)
@@ -513,7 +472,7 @@ abstract class AGOpengl : AG() {
 
         if (renderState.depthFunc != CompareMode.ALWAYS) {
             gl.enable(gl.DEPTH_TEST)
-            gl.depthFunc(renderState.depthFunc.toGl())
+            gl.depthFunc(renderState.depthFunc.toGl(gl))
         } else {
             gl.disable(gl.DEPTH_TEST)
         }
@@ -522,11 +481,11 @@ abstract class AGOpengl : AG() {
 
         if (stencil.enabled) {
             gl.enable(gl.STENCIL_TEST)
-            gl.stencilFunc(stencil.compareMode.toGl(), stencil.referenceValue, stencil.readMask)
+            gl.stencilFunc(stencil.compareMode.toGl(gl), stencil.referenceValue, stencil.readMask)
             gl.stencilOp(
-                stencil.actionOnDepthFail.toGl(),
-                stencil.actionOnDepthPassStencilFail.toGl(),
-                stencil.actionOnBothPass.toGl()
+                stencil.actionOnDepthFail.toGl(gl),
+                stencil.actionOnDepthPassStencilFail.toGl(gl),
+                stencil.actionOnBothPass.toGl(gl)
             )
             gl.stencilMask(stencil.writeMask)
         } else {
@@ -538,19 +497,8 @@ abstract class AGOpengl : AG() {
         //gl.getIntegerv(gl.VIEWPORT, viewport)
         //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-        if (indices != null) {
-            if (instances != 1) {
-                gl.drawElementsInstanced(type.glDrawMode, vertexCount, indexType.glIndexType, offset, instances)
-            } else {
-                gl.drawElements(type.glDrawMode, vertexCount, indexType.glIndexType, offset)
-            }
-        } else {
-            if (instances != 1) {
-                gl.drawArraysInstanced(type.glDrawMode, offset, vertexCount, instances)
-            } else {
-                gl.drawArrays(type.glDrawMode, offset, vertexCount)
-            }
-        }
+        glList.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null)
+        glProcessor.processBlockingAll(glList)
 
         //glSetActiveTexture(gl.TEXTURE0)
 
@@ -569,41 +517,6 @@ abstract class AGOpengl : AG() {
             }
         }
     }
-
-    val TextureTargetKind.glTarget: Int
-        get() = when (this) {
-            TextureTargetKind.TEXTURE_2D -> gl.TEXTURE_2D
-            TextureTargetKind.TEXTURE_3D -> gl.TEXTURE_3D
-            TextureTargetKind.TEXTURE_CUBE_MAP -> gl.TEXTURE_CUBE_MAP
-        }
-
-    val DrawType.glDrawMode: Int
-        get() = when (this) {
-            DrawType.POINTS -> gl.POINTS
-            DrawType.LINE_STRIP -> gl.LINE_STRIP
-            DrawType.LINE_LOOP -> gl.LINE_LOOP
-            DrawType.LINES -> gl.LINES
-            DrawType.TRIANGLE_STRIP -> gl.TRIANGLE_STRIP
-            DrawType.TRIANGLE_FAN -> gl.TRIANGLE_FAN
-            DrawType.TRIANGLES -> gl.TRIANGLES
-        }
-
-    val VarType.glElementType: Int
-        get() = when (this.kind) {
-            VarKind.TBYTE -> gl.BYTE
-            VarKind.TUNSIGNED_BYTE -> gl.UNSIGNED_BYTE
-            VarKind.TSHORT -> gl.SHORT
-            VarKind.TUNSIGNED_SHORT -> gl.UNSIGNED_SHORT
-            VarKind.TINT -> gl.UNSIGNED_INT
-            VarKind.TFLOAT -> gl.FLOAT
-        }
-
-    val IndexType.glIndexType: Int
-        get() = when (this) {
-            IndexType.UBYTE -> gl.UNSIGNED_BYTE
-            IndexType.USHORT -> gl.UNSIGNED_SHORT
-            IndexType.UINT -> gl.UNSIGNED_INT
-        }
 
     private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, GlProgram>>()
 
@@ -629,70 +542,23 @@ abstract class AGOpengl : AG() {
 
         private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
-        private inline fun createShaderCompat(type: Int, gen: (compat: Boolean) -> String): Int {
-            return try {
-                createShader(type, gen(true))
-            } catch (e: ShaderException) {
-                createShader(type, gen(false))
-            }
-        }
-
         private fun ensure() {
             if (cachedVersion != contextVersion) {
                 val time = measureTime {
-                    val oldCachedVersion = cachedVersion
                     cachedVersion = contextVersion
-                    id = gl.createProgram()
-
-                    if (GlslGenerator.DEBUG_GLSL) {
-                        Console.warn("OpenglAG: Creating program ${program.name} with id $id because contextVersion: $oldCachedVersion != $contextVersion")
-                    }
-
-                    //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")
-
-                    val guessedGlSlVersion = glSlVersion ?: gl.versionInt
-                    val usedGlSlVersion = GlslGenerator.FORCE_GLSL_VERSION?.toIntOrNull()
-                        ?: when (guessedGlSlVersion) {
-                            460 -> 460
-                            in 300..450 -> 100
-                            else -> guessedGlSlVersion
-                        }
-
-                    if (GlslGenerator.DEBUG_GLSL) {
-                        Console.trace("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
-                    }
-
-                    fragmentShaderId = createShaderCompat(gl.FRAGMENT_SHADER) { compatibility ->
-                        program.fragment.toNewGlslString(GlslConfig(gles = gles, version = usedGlSlVersion, compatibility = compatibility, android = android, programConfig = programConfig))
-                    }
-                    vertexShaderId = createShaderCompat(gl.VERTEX_SHADER) { compatibility ->
-                        program.vertex.toNewGlslString(GlslConfig(gles = gles, version = usedGlSlVersion, compatibility = compatibility, android = android, programConfig = programConfig))
-                    }
-                    gl.attachShader(id, fragmentShaderId)
-                    gl.attachShader(id, vertexShaderId)
-                    gl.linkProgram(id)
-                    tempBuffer1.setInt(0, 0)
-                    gl.getProgramiv(id, gl.LINK_STATUS, tempBuffer1)
+                    val program = GLShaderCompiler.programCreate(
+                        gl, GlslConfig(gles = gles, android = android, programConfig = programConfig),
+                        program,
+                        glSlVersion
+                    )
+                    id = program.programId
+                    fragmentShaderId = program.fragmentId
+                    vertexShaderId = program.vertexId
                 }
                 if (GlslGenerator.DEBUG_GLSL) {
                     Console.info("OpenglAG: Created program ${program.name} with id $id in time=$time")
                 }
             }
-        }
-
-        private fun createShader(type: Int, str: String): Int {
-            val shaderId = gl.createShader(type)
-
-            gl.shaderSource(shaderId, str)
-            gl.compileShader(shaderId)
-
-            val out = gl.getShaderiv(shaderId, gl.COMPILE_STATUS)
-            val errorInt = gl.getError()
-            if (out != gl.GTRUE) {
-                val error = gl.getShaderInfoLog(shaderId)
-                throw ShaderException(str, error, errorInt, gl)
-            }
-            return shaderId
         }
 
         fun use() {
@@ -808,7 +674,7 @@ abstract class AGOpengl : AG() {
         val texIds = FBuffer(4)
 
         var forcedTexId: Int = -1
-        var forcedTexTarget: Int = targetKind.glTarget
+        var forcedTexTarget: Int = targetKind.toGl(gl)
 
         val tex: Int
             get() {

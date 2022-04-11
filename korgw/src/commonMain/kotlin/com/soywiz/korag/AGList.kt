@@ -20,16 +20,24 @@ typealias AGTriangleFace = AG.TriangleFace
 typealias AGCompareMode = AG.CompareMode
 typealias AGFrontFace = AG.FrontFace
 typealias AGCullFace = AG.CullFace
+typealias AGDrawType = AG.DrawType
+typealias AGIndexType = AG.IndexType
 
 @KorIncomplete
 @KorInternal
 interface AGQueueProcessor {
+    fun finish()
     fun enableDisable(kind: AGEnable, enable: Boolean)
     fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean)
     fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation)
     fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor = srcRgb, dstA: AGBlendFactor = dstRgb)
     fun cullFace(face: AGCullFace)
+    fun frontFace(face: AGFrontFace)
     fun depthFunction(depthTest: AGCompareMode)
+    fun programCreate(programId: Int, program: Program)
+    fun programDelete(programId: Int)
+    fun programUse(programId: Int)
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null)
 }
 
 @KorInternal
@@ -39,7 +47,9 @@ inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
     }
 }
 
-@KorIncomplete
+@KorInternal
+inline fun AGQueueProcessor.processBlockingAll(list: AGList) = processBlocking(list, -1)
+
 enum class AGEnable {
     BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
     companion object {
@@ -71,20 +81,23 @@ class AGGlobalState {
 class AGList(val globalState: AGGlobalState) {
     internal val completed = CompletableDeferred<Unit>()
     private val _lock = Lock()
-    private val _data = IntDeque()
-    private val _extra = Deque<Any?>()
+    private val _data = IntDeque(128)
+    private val _extra = Deque<Any?>(16)
     private var dataX: Int = 0
     private var dataY: Int = 0
+    private var dataZ: Int = 0
 
     private fun addExtra(value: Any?) { _lock { _extra.add(value) } }
     private fun add(value: Int) { _lock { _data.add(value) } }
     private fun add(v0: Int, v1: Int) { _lock { _data.add(v0); _data.add(v1) } }
     private fun add(v0: Int, v1: Int, v2: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2) } }
+    private fun add(v0: Int, v1: Int, v2: Int, v3: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2); _data.add(v3) } }
     private fun read(): Int = _lock { _data.removeFirst() }
 
     @KorInternal
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
         var pending = maxCount
+        val processor = this@processBlocking
         while (true) {
             if (pending-- == 0) break
             // @TODO: Wait for more data
@@ -93,28 +106,38 @@ class AGList(val globalState: AGGlobalState) {
             val cmd = data.extract8(24)
             when (cmd) {
                 CMD_FINISH -> {
+                    processor.finish()
                     completed.complete(Unit)
                     return true
                 }
-                CMD_DEPTH_FUNCTION -> {
-                    depthFunction(AGCompareMode.VALUES[data.extract4(0)])
-                }
-                CMD_ENABLE -> enableDisable(AGEnable.VALUES[data.extract4(0)], enable = true)
-                CMD_DISABLE -> enableDisable(AGEnable.VALUES[data.extract4(0)], enable = false)
-                CMD_COLOR_MASK -> colorMask(data.extract(0), data.extract(1), data.extract(2), data.extract(3))
-                CMD_BLEND_EQ -> blendEquation(
-                    AGBlendEquation.VALUES[data.extract4(0)],
-                    AGBlendEquation.VALUES[data.extract4(4)]
+                CMD_DEPTH_FUNCTION -> processor.depthFunction(AGCompareMode.VALUES[data.extract4(0)])
+                CMD_ENABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = true)
+                CMD_DISABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = false)
+                CMD_COLOR_MASK -> processor.colorMask(data.extract(0), data.extract(1), data.extract(2), data.extract(3))
+                CMD_BLEND_EQ -> processor.blendEquation(
+                    AGBlendEquation.VALUES[data.extract4(0)], AGBlendEquation.VALUES[data.extract4(4)]
                 )
-                CMD_BLEND_FUNC -> blendFunction(
+                CMD_BLEND_FUNC -> processor.blendFunction(
                     AGBlendFactor.VALUES[data.extract4(0)],
-                    AGBlendFactor.VALUES[data.extract4(4)]
+                    AGBlendFactor.VALUES[data.extract4(4)],
+                    AGBlendFactor.VALUES[data.extract4(8)],
+                    AGBlendFactor.VALUES[data.extract4(12)],
                 )
-                CMD_CULL_FACE -> cullFace(
-                    AGFrontFace.VALUES[data.extract4(0)]
+                CMD_CULL_FACE -> processor.cullFace(AGCullFace.VALUES[data.extract4(0)])
+                CMD_FRONT_FACE -> processor.frontFace(AGFrontFace.VALUES[data.extract4(0)])
+                CMD_DATA_X -> dataX = data.extract24(0)
+                CMD_DATA_Y -> dataY = data.extract24(0)
+                CMD_DATA_Z -> dataZ = data.extract24(0)
+                // Programs
+                CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), _extra.removeFirst().fastCastTo())
+                CMD_PROGRAM_DELETE -> processor.programDelete(data.extract16(0))
+                CMD_PROGRAM_USE -> processor.programUse(data.extract16(0))
+                // Draw
+                CMD_DRAW -> processor.draw(
+                    AGDrawType.VALUES[data.extract4(0)],
+                    dataX, dataY, dataZ,
+                    AGIndexType.VALUES.getOrNull(data.extract4(4)),
                 )
-                CMD_DATA_X -> dataX = data and 0xFFFFFF
-                CMD_DATA_Y -> dataY = data and 0xFFFFFF
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -132,12 +155,21 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_BLEND_EQ).finsert4(rgb.ordinal, 0).finsert4(a.ordinal, 4))
     }
 
-    fun blendFunction(rgb: AGBlendFactor, a: AGBlendFactor = rgb) {
-        add(CMD(CMD_BLEND_FUNC).finsert4(rgb.ordinal, 0).finsert4(a.ordinal, 4))
+    fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor = srcRgb, dstA: AGBlendFactor = dstRgb) {
+        add(CMD(CMD_BLEND_FUNC)
+            .finsert4(srcRgb.ordinal, 0)
+            .finsert4(dstRgb.ordinal, 4)
+            .finsert4(srcA.ordinal, 8)
+            .finsert4(dstA.ordinal, 12)
+        )
     }
 
-    fun cullFace(frontFace: AGFrontFace) {
-        add(CMD(CMD_CULL_FACE).finsert4(frontFace.ordinal, 0))
+    fun cullFace(face: AGCullFace) {
+        add(CMD(CMD_CULL_FACE).finsert4(face.ordinal, 0))
+    }
+
+    fun frontFace(face: AGFrontFace) {
+        add(CMD(CMD_FRONT_FACE).finsert4(face.ordinal, 0))
     }
 
     fun finish() {
@@ -205,6 +237,19 @@ class AGList(val globalState: AGGlobalState) {
         TODO()
     }
 
+    ////////////////////////////////////////
+    // DRAW
+    ////////////////////////////////////////
+
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null) {
+        add(
+            CMD(CMD_DATA_X).finsert24(vertexCount, 0),
+            CMD(CMD_DATA_Y).finsert24(offset, 0),
+            CMD(CMD_DATA_Z).finsert24(instances, 0),
+            CMD(CMD_DRAW).finsert4(type.ordinal, 0).finsert4(indexType?.ordinal ?: 0xF, 4),
+        )
+    }
+
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
@@ -218,9 +263,12 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_BLEND_EQ = 0x04
         private const val CMD_BLEND_FUNC = 0x05
         private const val CMD_CULL_FACE = 0x06
-        private const val CMD_DEPTH_FUNCTION = 0x07
-        private const val CMD_DATA_X = 0x08
-        private const val CMD_DATA_Y = 0x09
+        private const val CMD_FRONT_FACE = 0x07
+        private const val CMD_DEPTH_FUNCTION = 0x08
+        // int Data
+        private const val CMD_DATA_X = 0x10
+        private const val CMD_DATA_Y = 0x11
+        private const val CMD_DATA_Z = 0x12
         // Programs
         private const val CMD_PROGRAM_CREATE = 0x30
         private const val CMD_PROGRAM_DELETE = 0x31
@@ -240,6 +288,8 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_RENDERBUFFER_SET = 0x72
         private const val CMD_RENDERBUFFER_USE = 0x73
         private const val CMD_RENDERBUFFER_READ_PIXELS = 0x74
+        // Draw
+        private const val CMD_DRAW = 0x80
     }
 }
 

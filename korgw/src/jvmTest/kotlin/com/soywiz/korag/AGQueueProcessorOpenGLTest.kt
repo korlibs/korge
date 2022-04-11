@@ -14,7 +14,11 @@ class AGQueueProcessorOpenGLTest {
         val global = AGGlobalState()
         val list = global.createList()
         list.enable(AGEnable.BLEND)
+        val program = list.createProgram(DefaultShaders.PROGRAM_DEBUG)
+        list.useProgram(program)
+        list.deleteProgram(program)
         list.disable(AGEnable.BLEND)
+        list.finish()
         processor.processBlocking(list, -1)
         assertEqualsJvmFileReference("com/soywiz/korag/AGQueueProcessorOpenGLTest.ref", gl.getLogAsString())
     }

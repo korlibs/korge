@@ -116,6 +116,8 @@ inline fun Int.extract7(offset: Int): Int = (this ushr offset) and 0b1111111
 inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
 /** Extracts 16 bits at [offset] from [this] [Int] */
 inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0xFFFF
+/** Extracts 24 bits at [offset] from [this] [Int] */
+inline fun Int.extract24(offset: Int): Int = (this ushr offset) and 0xFFFFFF
 
 /** Extracts [count] bits at [offset] from [this] [Int] sign-extending its result */
 public fun Int.extractSigned(offset: Int, count: Int): Int = ((this ushr offset) and count.mask()).signExtend(count)
