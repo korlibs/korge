@@ -4,6 +4,7 @@ package com.soywiz.korio.file
 
 import com.soywiz.klock.*
 import com.soywiz.korio.async.*
+import com.soywiz.korio.experimental.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
@@ -31,14 +32,17 @@ abstract class Vfs : AsyncCloseable {
 	fun createExistsStat(
 		path: String, isDirectory: Boolean, size: Long, device: Long = -1, inode: Long = -1, mode: Int = 511,
 		owner: String = "nobody", group: String = "nobody", createTime: DateTime = DateTime.EPOCH, modifiedTime: DateTime = DateTime.EPOCH,
-		lastAccessTime: DateTime = modifiedTime, extraInfo: Any? = null, id: String? = null
+		lastAccessTime: DateTime = modifiedTime, extraInfo: Any? = null, id: String? = null,
+        cache: Boolean = false
 	) = VfsStat(
 		file = file(path), exists = true, isDirectory = isDirectory, size = size, device = device, inode = inode,
 		mode = mode, owner = owner, group = group, createTime = createTime, modifiedTime = modifiedTime,
 		lastAccessTime = lastAccessTime, extraInfo = extraInfo, id = id
-	)
+	).also {
+        if (cache) it.file.cachedStat = it
+    }
 
-	fun createNonExistsStat(path: String, extraInfo: Any? = null) = VfsStat(
+	fun createNonExistsStat(path: String, extraInfo: Any? = null, cache: Boolean = false) = VfsStat(
 		file = file(path), exists = false, isDirectory = false, size = 0L,
 		device = -1L, inode = -1L, mode = 511, owner = "nobody", group = "nobody",
 		createTime = DateTime.EPOCH, modifiedTime = DateTime.EPOCH, lastAccessTime = DateTime.EPOCH, extraInfo = extraInfo
@@ -277,6 +281,7 @@ open class VfsProcessHandler {
 
 class VfsProcessException(message: String) : IOException(message)
 
+@OptIn(KorioExperimentalApi::class)
 data class VfsStat(
     val file: VfsFile,
     val exists: Boolean,
@@ -294,7 +299,11 @@ data class VfsStat(
     val kind: Vfs.FileKind? = null,
     val id: String? = null
 ) : Path by file {
-    val enrichedFile get() = file.copy().also { it.cachedStat = this }
+    val enrichedFile: VfsFile get() = file.copy().also { it.cachedStat = this }
+
+    //@Deprecated("Use file instead")
+    //val enrichedFile: VfsFile get() = file
+    //init { file.cachedStat = this }
 
 	fun toString(showFile: Boolean): String = "VfsStat(" + ArrayList<String>(16).also { al ->
 		if (showFile) al.add("file=$file") else al.add("file=${file.absolutePath}")

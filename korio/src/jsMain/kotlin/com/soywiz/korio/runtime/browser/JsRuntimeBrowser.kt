@@ -2,9 +2,7 @@ package com.soywiz.korio.runtime.browser
 
 import com.soywiz.korio.file.SimpleStorage
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.file.std.MapLikeStorageVfs
-import com.soywiz.korio.file.std.MemoryVfs
-import com.soywiz.korio.file.std.UrlVfs
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.net.QueryString
 import com.soywiz.korio.net.http.Http
 import com.soywiz.korio.net.http.HttpClient
@@ -44,7 +42,7 @@ object JsRuntimeBrowser : JsRuntime() {
 
     override fun langs(): List<String> = window.navigator.languages.asList()
     override fun openVfs(path: String): VfsFile {
-        return UrlVfs(currentDir())[path].also {
+        return UrlVfs(currentDir())[path].withCatalogJail().root.also {
             println("BROWSER openVfs: currentDir=${currentDir()}, path=$path, urlVfs=$it")
         }
     }
