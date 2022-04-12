@@ -7,6 +7,7 @@ import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.annotations.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
@@ -51,6 +52,7 @@ interface AGFeatures {
     val isFloatTextureSupported: Boolean get() = false
 }
 
+@OptIn(KorIncomplete::class)
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     var contextVersion = 0
     abstract val nativeComponent: Any
@@ -1070,6 +1072,21 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     }
 
     private val drawTempTexture: Texture by lazy { createTexture() }
+
+    private val _globalState = AGGlobalState()
+    @PublishedApi internal val _list = _globalState.createList()
+
+    @KoragExperimental
+    inline fun commands(block: (AGList) -> Unit) {
+        block(_list)
+        _executeList(_list)
+    }
+
+    @PublishedApi
+    internal fun _executeList(list: AGList) = executeList(list)
+
+    protected open fun executeList(list: AGList) {
+    }
 
     fun drawBitmap(bmp: Bitmap) {
         drawTempTexture.upload(bmp, mipmaps = false)

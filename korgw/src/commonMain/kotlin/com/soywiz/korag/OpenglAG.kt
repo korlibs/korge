@@ -6,6 +6,7 @@ import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.annotation.*
 import com.soywiz.korag.internal.setFloats
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
@@ -23,7 +24,7 @@ import kotlin.native.concurrent.*
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
 
-@OptIn(KorIncomplete::class, KorInternal::class)
+@OptIn(KorIncomplete::class, KorInternal::class, KoragExperimental::class)
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
         RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
@@ -244,9 +245,11 @@ abstract class AGOpengl : AG() {
         }
     }
 
-    private val globalState = AGGlobalState()
     private val glProcessor = AGQueueProcessorOpenGL(KmlGlDummy)
-    private val glList = globalState.createList()
+
+    protected override fun executeList(list: AGList) {
+        glProcessor.processBlockingAll(list)
+    }
 
     override fun draw(batch: Batch) {
         glProcessor.gl = gl
@@ -447,29 +450,28 @@ abstract class AGOpengl : AG() {
             }
         }
 
-        glList.enableDisable(AGEnable.BLEND, blending.enabled) {
-            glList.blendEquation(blending.eqRGB, blending.eqA)
-            glList.blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
+        commands { list ->
+            list.enableDisable(AGEnable.BLEND, blending.enabled) {
+                list.blendEquation(blending.eqRGB, blending.eqA)
+                list.blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
+            }
+
+            list.enableDisable(AGEnable.CULL_FACE, renderState.frontFace != FrontFace.BOTH) {
+                list.frontFace(renderState.frontFace)
+            }
+
+            list.depthMask(renderState.depthMask)
+            list.depthRange(renderState.depthNear, renderState.depthFar)
+
+            list.enableDisable(AGEnable.DEPTH, renderState.depthFunc != CompareMode.ALWAYS) {
+                list.depthFunction(renderState.depthFunc)
+            }
+
+            list.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
+
+            //list.enableDisable(AGEnable.STENCIL, stencil.enabled) {
+            //}
         }
-
-        glList.enableDisable(AGEnable.CULL_FACE, renderState.frontFace != FrontFace.BOTH) {
-            glList.frontFace(renderState.frontFace)
-        }
-
-        glProcessor.processBlockingAll(glList)
-
-        gl.depthMask(renderState.depthMask)
-        gl.depthRangef(renderState.depthNear, renderState.depthFar)
-        //gl.lineWidth(renderState.lineWidth) // In WebGL this doesn't have effect, so let's ignore it: https://developer.mozilla.org/en-US/docs/Web/API/WebGLRenderingContext/lineWidth
-
-        if (renderState.depthFunc != CompareMode.ALWAYS) {
-            gl.enable(gl.DEPTH_TEST)
-            gl.depthFunc(renderState.depthFunc.toGl())
-        } else {
-            gl.disable(gl.DEPTH_TEST)
-        }
-
-        gl.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
 
         if (stencil.enabled) {
             gl.enable(gl.STENCIL_TEST)
@@ -489,8 +491,9 @@ abstract class AGOpengl : AG() {
         //gl.getIntegerv(gl.VIEWPORT, viewport)
         //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-        glList.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null)
-        glProcessor.processBlockingAll(glList)
+        commands { list ->
+            list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null)
+        }
 
         //glSetActiveTexture(gl.TEXTURE0)
 

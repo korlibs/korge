@@ -39,6 +39,8 @@ interface AGQueueProcessor {
     fun programUse(programId: Int)
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null)
     fun uniformsSet(layout: UniformLayout, data: FBuffer)
+    fun depthMask(depth: Boolean)
+    fun depthRange(near: Float, far: Float)
 }
 
 @KorInternal
@@ -81,8 +83,9 @@ class AGGlobalState {
 @KorIncomplete
 class AGList(val globalState: AGGlobalState) {
     internal val completed = CompletableDeferred<Unit>()
-    private val _lock = Lock()
+    private val _lock = Lock() // @TODO: This is slow!
     private val _data = IntDeque(128)
+    private val _float = FloatDeque(16)
     private val _extra = Deque<Any?>(16)
     private var dataX: Int = 0
     private var dataY: Int = 0
@@ -90,6 +93,10 @@ class AGList(val globalState: AGGlobalState) {
 
     private fun addExtra(v0: Any?) { _lock { _extra.add(v0) } }
     private fun addExtra(v0: Any?, v1: Any?) { _lock { _extra.add(v0); _extra.add(v1) } }
+
+    private fun addFloat(v0: Float) { _lock { _float.add(v0) } }
+    private fun addFloat(v0: Float, v1: Float) { _lock { _float.add(v0); _float.add(v1) } }
+
     private fun add(v0: Int) { _lock { _data.add(v0) } }
     private fun add(v0: Int, v1: Int) { _lock { _data.add(v0); _data.add(v1) } }
     private fun add(v0: Int, v1: Int, v2: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2) } }
@@ -145,6 +152,8 @@ class AGList(val globalState: AGGlobalState) {
                     _extra.removeFirst().fastCastTo(),
                     _extra.removeFirst().fastCastTo()
                 )
+                CMD_DEPTH_MASK -> processor.depthMask(data.extract(0))
+                CMD_DEPTH_RANGE -> processor.depthRange(_float.removeFirst(), _float.removeFirst())
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -165,6 +174,15 @@ class AGList(val globalState: AGGlobalState) {
 
     fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) {
         add(CMD(CMD_COLOR_MASK).finsert(red, 0).finsert(green, 1).finsert(blue, 2).finsert(alpha, 3))
+    }
+
+    fun depthMask(depth: Boolean) {
+        add(CMD(CMD_DEPTH_MASK).finsert(depth, 0))
+    }
+
+    fun depthRange(near: Float, far: Float) {
+        addFloat(near, far)
+        add(CMD(CMD_DEPTH_RANGE))
     }
 
     fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation = rgb) {
@@ -279,6 +297,8 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_CULL_FACE = 0x06
         private const val CMD_FRONT_FACE = 0x07
         private const val CMD_DEPTH_FUNCTION = 0x08
+        private const val CMD_DEPTH_MASK = 0x09
+        private const val CMD_DEPTH_RANGE = 0x0A
         // int Data
         private const val CMD_DATA_X = 0x10
         private const val CMD_DATA_Y = 0x11

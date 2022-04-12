@@ -97,4 +97,12 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
         }
         TODO()
     }
+
+    override fun depthMask(depth: Boolean) {
+        gl.depthMask(depth)
+    }
+
+    override fun depthRange(near: Float, far: Float) {
+        gl.depthRangef(near, far)
+    }
 }
