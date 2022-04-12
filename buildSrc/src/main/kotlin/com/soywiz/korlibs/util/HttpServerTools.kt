@@ -136,8 +136,21 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
 			)
 		}
 
-		sendHeaders(headers)
-		sendResponseHeaders(if (partial) 206 else code ?: 200, length)
+        val bodyLength = when {
+            this.requestMethod.equals("head", ignoreCase = true) -> {
+                responseHeaders.add("Content-Length", "$length")
+                -1
+            }
+            else -> {
+                length
+            }
+        }
+
+        for (header in headers) {
+            responseHeaders.add(header.first, header.second)
+        }
+
+        sendResponseHeaders(if (partial) 206 else code ?: 200, bodyLength)
 
 		// Send body if not HEAD
 		if (!this.requestMethod.equals("HEAD", ignoreCase = true)) {
@@ -153,18 +166,14 @@ fun HttpExchange.respond(content: RangedContent, headers: List<Pair<String, Stri
 	}
 }
 
-fun HttpExchange.sendHeaders(headers: List<Pair<String, String>>) {
-	for (header in headers) {
-		responseHeaders.add(header.first, header.second)
-	}
-}
-
 fun File.miniMimeType() = when (this.extension.toLowerCase()) {
 	"htm", "html" -> "text/html"
 	"css" -> "text/css"
 	"txt" -> "text/plain"
 	"png" -> "image/png"
 	"jpg", "jpeg" -> "image/jpeg"
+    "svg" -> "image/svg+xml"
+    "mp3" -> "audio/mpeg"
 	else -> if (this.exists()) Files.probeContentType(this.toPath()) ?: "application/octet-stream" else "text/plain"
 }
 
