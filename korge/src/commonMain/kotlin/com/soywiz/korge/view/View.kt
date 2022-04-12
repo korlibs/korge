@@ -847,7 +847,7 @@ abstract class View internal constructor(
     /** Usually a value between [0.0, 1.0] */
     var filterScale: Double = 1.0
         set(value) {
-            field = value.clamp(0.03125, 1.5)
+            field = Filter.discretizeFilterScale(value)
         }
 
     fun renderFiltered(ctx: RenderContext, filter: Filter) {
@@ -856,12 +856,12 @@ abstract class View internal constructor(
         if (bounds.width <= 0.0 || bounds.height <= 0.0) return
 
         ctx.matrixPool.alloc { tempMat2d ->
-            val tryFilterScale = kotlin.math.min(filterScale, filter.recommendedFilterScale).clamp(0.03125, 1.0)
+            val tryFilterScale = Filter.discretizeFilterScale(kotlin.math.min(filterScale, filter.recommendedFilterScale))
             //println("tryFilterScale=$tryFilterScale")
             val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
             val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
 
-            val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width)
+            val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width).clamp(0.03125, 1.0)
 
             val texWidth = texWidthNoBorder
             val texHeight = texHeightNoBorder

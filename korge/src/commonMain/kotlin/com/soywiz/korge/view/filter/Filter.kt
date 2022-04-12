@@ -9,6 +9,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
+import kotlin.math.*
 
 /**
  * Interface for [View] filters.
@@ -31,6 +32,12 @@ interface Filter : KorgeDebugNode {
         val Program.Builder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
         val Program.Builder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
         fun Program.Builder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
+
+        private val VALID_FILTER_SCALES = doubleArrayOf(0.03125, 0.0625, 0.125, 0.25, 0.5, 0.75, 1.0)
+        fun discretizeFilterScale(scale: Double): Double {
+            //return scale.clamp(0.03125, 1.5)
+            return VALID_FILTER_SCALES.minByOrNull { (scale - it).absoluteValue }!!
+        }
     }
 
     val allFilters: List<Filter> get() = listOf(this)
