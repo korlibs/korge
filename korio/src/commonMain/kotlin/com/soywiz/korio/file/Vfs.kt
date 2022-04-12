@@ -328,6 +328,12 @@ data class VfsStat(
 	override fun toString(): String = toString(showFile = true)
 }
 
+class VfsCachedStatContext(val stat: VfsStat?) : CoroutineContext.Element {
+    companion object : CoroutineContext.Key<VfsCachedStatContext>
+
+    override val key get() = VfsCachedStatContext
+}
+
 //val VfsStat.createLocalDate: LocalDateTime get() = LocalDateTime.ofEpochSecond(createTime / 1000L, ((createTime % 1_000L) * 1_000_000L).toInt(), ZoneOffset.UTC)
 //val VfsStat.modifiedLocalDate: LocalDateTime get() = LocalDateTime.ofEpochSecond(modifiedTime / 1000L, ((modifiedTime % 1_000L) * 1_000_000L).toInt(), ZoneOffset.UTC)
 //val VfsStat.lastAccessLocalDate: LocalDateTime get() = LocalDateTime.ofEpochSecond(lastAccessTime / 1000L, ((lastAccessTime % 1_000L) * 1_000_000L).toInt(), ZoneOffset.UTC)

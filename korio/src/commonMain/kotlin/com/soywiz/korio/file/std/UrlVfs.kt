@@ -10,6 +10,7 @@ import com.soywiz.korio.net.http.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
+import kotlin.coroutines.*
 
 fun UrlVfs(url: String, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile =
     UrlVfs(URL(url), client, failFromStatus)
@@ -25,7 +26,7 @@ fun UrlVfsJailed(url: URL, client: HttpClient = createHttpClient(), failFromStat
 
 class UrlVfs(
     val url: String, val dummy: Unit, val client: HttpClient = createHttpClient(),
-    val failFromStatus: Boolean = true
+    val failFromStatus: Boolean = true,
 ) : Vfs() {
 	override val absolutePath: String = url
 
@@ -52,7 +53,7 @@ class UrlVfs(
 				return client.readBytes(fullUrl).openAsync()
 			}
 
-			val stat = stat(path)
+			val stat = coroutineContext[VfsCachedStatContext]?.stat ?: stat(path)
 			val response = stat.extraInfo as? HttpClient.Response
 
 			if (!stat.exists) {
