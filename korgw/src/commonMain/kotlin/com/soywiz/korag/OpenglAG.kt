@@ -7,10 +7,7 @@ import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.internal.setFloats
-import com.soywiz.korag.shader.Program
-import com.soywiz.korag.shader.ProgramConfig
-import com.soywiz.korag.shader.VarKind
-import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.RGBA
@@ -450,20 +447,15 @@ abstract class AGOpengl : AG() {
             }
         }
 
-        if (blending.enabled) {
-            glList.enable(AGEnable.BLEND)
+        glList.enableDisable(AGEnable.BLEND, blending.enabled) {
             glList.blendEquation(blending.eqRGB, blending.eqA)
             glList.blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
-        } else {
-            glList.disable(AGEnable.BLEND)
         }
 
-        if (renderState.frontFace == FrontFace.BOTH) {
-            glList.disable(AGEnable.CULL_FACE)
-        } else {
-            glList.enable(AGEnable.CULL_FACE)
+        glList.enableDisable(AGEnable.CULL_FACE, renderState.frontFace != FrontFace.BOTH) {
             glList.frontFace(renderState.frontFace)
         }
+
         glProcessor.processBlockingAll(glList)
 
         gl.depthMask(renderState.depthMask)
@@ -527,43 +519,32 @@ abstract class AGOpengl : AG() {
 
     inner class GlProgram(val gl: KmlGl, val program: Program, val programConfig: ProgramConfig) : Closeable {
         var cachedVersion = -1
-        var id: Int = 0
-        var fragmentShaderId: Int = 0
-        var vertexShaderId: Int = 0
+        var programInfo: GLProgramInfo? = null
 
-        val cachedAttribLocations = FastStringMap<Int>()
-        val cachedUniformLocations = FastStringMap<Int>()
+        val id: Int get() = programInfo?.programId ?: 0
 
-        fun getAttribLocation(name: String): Int =
-            cachedAttribLocations.getOrPut(name) { gl.getAttribLocation(id, name) }
-
-        fun getUniformLocation(name: String): Int =
-            cachedUniformLocations.getOrPut(name) { gl.getUniformLocation(id, name) }
-
-        private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
+        fun getAttribLocation(name: String): Int = programInfo?.getAttribLocation(gl, name) ?: 0
+        fun getUniformLocation(name: String): Int = programInfo?.getUniformLocation(gl, name) ?: 0
 
         private fun ensure() {
             if (cachedVersion != contextVersion) {
                 val time = measureTime {
                     cachedVersion = contextVersion
-                    val program = GLShaderCompiler.programCreate(
+                    programInfo = GLShaderCompiler.programCreate(
                         gl, GlslConfig(gles = gles, android = android, programConfig = programConfig),
                         program,
                         glSlVersion
                     )
-                    id = program.programId
-                    fragmentShaderId = program.fragmentId
-                    vertexShaderId = program.vertexId
                 }
                 if (GlslGenerator.DEBUG_GLSL) {
-                    Console.info("OpenglAG: Created program ${program.name} with id $id in time=$time")
+                    Console.info("OpenglAG: Created program ${program.name} with id ${programInfo?.programId} in time=$time")
                 }
             }
         }
 
         fun use() {
             ensure()
-            gl.useProgram(id)
+            programInfo?.use(gl)
         }
 
         fun unuse() {
@@ -572,9 +553,8 @@ abstract class AGOpengl : AG() {
         }
 
         override fun close() {
-            gl.deleteShader(fragmentShaderId)
-            gl.deleteShader(vertexShaderId)
-            gl.deleteProgram(id)
+            programInfo?.delete(gl)
+            programInfo = null
         }
     }
 

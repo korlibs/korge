@@ -1,5 +1,6 @@
 package com.soywiz.korag
 
+import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
@@ -7,6 +8,15 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 
 data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int) {
+    val cachedAttribLocations = FastStringMap<Int>()
+    val cachedUniformLocations = FastStringMap<Int>()
+
+    fun getAttribLocation(gl: KmlGl, name: String): Int =
+        cachedAttribLocations.getOrPut(name) { gl.getAttribLocation(programId, name) }
+
+    fun getUniformLocation(gl: KmlGl, name: String): Int =
+        cachedUniformLocations.getOrPut(name) { gl.getUniformLocation(programId, name) }
+
     fun use(gl: KmlGl) {
         gl.useProgram(programId)
     }
@@ -23,6 +33,8 @@ data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: 
 
 object GLShaderCompiler {
     private val tempBuffer1 = FBuffer(4)
+
+    private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
     // @TODO: Prevent leaks if we throw exceptions, we should free resources
     fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, glSlVersion: Int? = null): GLProgramInfo {

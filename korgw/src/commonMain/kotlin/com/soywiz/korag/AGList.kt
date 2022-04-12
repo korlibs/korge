@@ -38,6 +38,7 @@ interface AGQueueProcessor {
     fun programDelete(programId: Int)
     fun programUse(programId: Int)
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null)
+    fun uniformsSet(layout: UniformLayout, data: FBuffer)
 }
 
 @KorInternal
@@ -87,8 +88,9 @@ class AGList(val globalState: AGGlobalState) {
     private var dataY: Int = 0
     private var dataZ: Int = 0
 
-    private fun addExtra(value: Any?) { _lock { _extra.add(value) } }
-    private fun add(value: Int) { _lock { _data.add(value) } }
+    private fun addExtra(v0: Any?) { _lock { _extra.add(v0) } }
+    private fun addExtra(v0: Any?, v1: Any?) { _lock { _extra.add(v0); _extra.add(v1) } }
+    private fun add(v0: Int) { _lock { _data.add(v0) } }
     private fun add(v0: Int, v1: Int) { _lock { _data.add(v0); _data.add(v1) } }
     private fun add(v0: Int, v1: Int, v2: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2) } }
     private fun add(v0: Int, v1: Int, v2: Int, v3: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2); _data.add(v3) } }
@@ -138,6 +140,11 @@ class AGList(val globalState: AGGlobalState) {
                     dataX, dataY, dataZ,
                     AGIndexType.VALUES.getOrNull(data.extract4(4)),
                 )
+                // Uniforms
+                CMD_UNIFORMS_SET -> processor.uniformsSet(
+                    _extra.removeFirst().fastCastTo(),
+                    _extra.removeFirst().fastCastTo()
+                )
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -146,6 +153,15 @@ class AGList(val globalState: AGGlobalState) {
 
     fun enable(kind: AGEnable): Unit = add(CMD(CMD_ENABLE).finsert4(kind.ordinal, 0))
     fun disable(kind: AGEnable): Unit = add(CMD(CMD_DISABLE).finsert4(kind.ordinal, 0))
+
+    inline fun enableDisable(kind: AGEnable, enable: Boolean, block: () -> Unit = {}): Unit {
+        if (enable) {
+            enable(kind)
+            block()
+        } else {
+            disable(kind)
+        }
+    }
 
     fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) {
         add(CMD(CMD_COLOR_MASK).finsert(red, 0).finsert(green, 1).finsert(blue, 2).finsert(alpha, 3))
@@ -157,10 +173,8 @@ class AGList(val globalState: AGGlobalState) {
 
     fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor = srcRgb, dstA: AGBlendFactor = dstRgb) {
         add(CMD(CMD_BLEND_FUNC)
-            .finsert4(srcRgb.ordinal, 0)
-            .finsert4(dstRgb.ordinal, 4)
-            .finsert4(srcA.ordinal, 8)
-            .finsert4(dstA.ordinal, 12)
+            .finsert4(srcRgb.ordinal, 0).finsert4(dstRgb.ordinal, 4)
+            .finsert4(srcA.ordinal, 8).finsert4(dstA.ordinal, 12)
         )
     }
 
@@ -232,9 +246,9 @@ class AGList(val globalState: AGGlobalState) {
     // UNIFORMS
     ////////////////////////////////////////
 
-    fun updateUniform(uniform: Uniform, value: Any?) {
-        addExtra(value)
-        TODO()
+    fun uniformsSet(layout: UniformLayout, data: FBuffer) {
+        addExtra(layout, data)
+        add(CMD(CMD_UNIFORMS_SET))
     }
 
     ////////////////////////////////////////
@@ -279,7 +293,7 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_TEXTURE_UPDATE = 0x42
         private const val CMD_TEXTURE_BIND = 0x43
         // Uniform
-        private const val CMD_UNIFORM_SET = 0x50
+        private const val CMD_UNIFORMS_SET = 0x50
         // Attributes
         private const val CMD_ATTRIBUTE_SET = 0x60
         // Render Buffer

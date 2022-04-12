@@ -252,6 +252,39 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         //val lineWidth = 20.0
         val fLineWidth = max((lineWidth).toFloat(), 1.5f)
 
+        // @TODO: Curve points aren't joints and shouldn't require extra computations! Let's handle paths manually
+
+        /*
+        var startX = 0.0
+        var startY = 0.0
+        var lastX = 0.0
+        var lastY = 0.0
+
+        strokePath.visitCmds(
+            moveTo = { x, y ->
+                startX = x
+                startY = y
+                lastX = x
+                lastY = y
+            },
+            lineTo = { x, y ->
+                lastX = x
+                lastY = y
+            },
+            quadTo = { x1, y1, x2, y2 ->
+                lastX = x2
+                lastY = y2
+            },
+            cubicTo = { x1, y1, x2, y2, x3, y3 ->
+                lastX = x3
+                lastY = y3
+            },
+            close = {
+
+            }
+        )
+        */
+
         val pathList = strokePath.toPathPointList(m, emitClosePoint = false)
         //println(pathList.size)
         for (ppath in pathList) {

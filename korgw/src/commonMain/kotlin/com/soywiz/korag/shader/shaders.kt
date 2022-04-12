@@ -829,7 +829,10 @@ inline fun FragmentShader(callback: Program.Builder.() -> Unit): FragmentShader 
 	return FragmentShader(builder._buildFuncs())
 }
 
-class VertexLayout(attr: List<Attribute>, private val layoutSize: Int?) {
+typealias UniformLayout = ProgramLayout
+typealias VertexLayout = ProgramLayout
+
+class ProgramLayout(attr: List<Attribute>, private val layoutSize: Int?) {
 	private val myattr = attr
 	val attributes = attr
 	constructor(attributes: List<Attribute>) : this(attributes, null)

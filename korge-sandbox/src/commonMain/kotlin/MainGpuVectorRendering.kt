@@ -59,7 +59,7 @@ suspend fun Stage.mainGpuVectorRendering() {
         }
     }
 
-    return
+    //return
 
     gpuShapeView({
         //val paint = createLinearGradient(200, 200, 400, 400).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))

@@ -1,7 +1,9 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
+import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.annotations.*
@@ -46,18 +48,25 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
     ///////////////////////////////////////
 
     private val programs = IntMap<GLProgramInfo>()
+    private var currentProgram: GLProgramInfo? = null
 
     override fun programCreate(programId: Int, program: Program) {
         programs[programId] = GLShaderCompiler.programCreate(gl, config, program)
     }
 
     override fun programDelete(programId: Int) {
-        programs[programId]?.delete(gl)
+        val program = programs[programId]
+        program?.delete(gl)
         programs.remove(programId)
+        if (currentProgram === program) {
+            currentProgram = null
+        }
     }
 
     override fun programUse(programId: Int) {
-        programs[programId]?.use(gl)
+        val program = programs[programId]
+        program?.use(gl)
+        currentProgram = program
     }
 
     ///////////////////////////////////////
@@ -77,5 +86,15 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
                 gl.drawArrays(type.toGl(), offset, vertexCount)
             }
         }
+    }
+
+    ///////////////////////////////////////
+    // UNIFORMS
+    ///////////////////////////////////////
+    override fun uniformsSet(layout: UniformLayout, data: FBuffer) {
+        layout.attributes.fastForEach {
+            //currentProgram
+        }
+        TODO()
     }
 }
