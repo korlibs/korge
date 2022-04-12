@@ -251,7 +251,10 @@ open class DelayedHttpClient(val delayMs: Long, val parent: HttpClient) : HttpCl
 
 fun HttpClient.delayed(ms: Long) = DelayedHttpClient(ms, this)
 
-class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
+inline fun FakeHttpClient(redirect: HttpClient? = null, block: FakeHttpClient.() -> Unit = {}): FakeHttpClient =
+    FakeHttpClient(redirect).apply(block)
+
+open class FakeHttpClient(val redirect: HttpClient? = null) : HttpClient() {
 	val log = arrayListOf<String>()
     private val defaultContent = "LogHttpClient.response".toByteArray(UTF8).openAsync()
 	var defaultResponse =

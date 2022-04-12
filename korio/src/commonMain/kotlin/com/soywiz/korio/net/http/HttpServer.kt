@@ -7,7 +7,6 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.net.*
 import com.soywiz.korio.net.ws.WsCloseInfo
-import com.soywiz.korio.net.ws.WsFrame
 import com.soywiz.korio.stream.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.*
@@ -208,6 +207,10 @@ open class HttpServer protected constructor() : AsyncCloseable {
             file.openUse { end(this) }
         }
 
+        suspend fun end(file: VfsFile, range: LongRange) {
+            file.openUse { end(this.slice(range)) }
+        }
+
         suspend fun end(stream: AsyncInputStream) {
             if (stream is AsyncGetLengthStream) {
                 replaceHeader(Http.Headers.ContentLength, "${stream.getLength()}")
@@ -296,7 +299,7 @@ open class HttpServer protected constructor() : AsyncCloseable {
 	}
 }
 
-class FakeRequest(
+class FakeHttpServerRequest(
 	method: Http.Method,
 	uri: String,
 	headers: Http.Headers = Http.Headers(),
