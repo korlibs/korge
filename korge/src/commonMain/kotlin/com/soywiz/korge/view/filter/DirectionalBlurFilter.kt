@@ -80,9 +80,11 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
         val constant2 = 1.0 / (2.0 * sigma * sigma)
 
         var scaleSum = 0.0
-        for (n in 0 until radius.toIntCeil()) {
-            val gauss = gaussian(n.toDouble(), constant1, constant2)
-            scaleSum += if (n != 0) gauss * 2 else gauss
+        if (radius.isFinite()) {
+            for (n in 0 until radius.toIntCeil()) {
+                val gauss = gaussian(n.toDouble(), constant1, constant2)
+                scaleSum += if (n != 0) gauss * 2 else gauss
+            }
         }
 
         //println("RADIUS: $radius")

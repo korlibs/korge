@@ -5,6 +5,7 @@ import com.soywiz.korge.annotations.*
 import com.soywiz.korge.test.assertEqualsFileReference
 import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.view.fast.*
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.Colors
@@ -177,6 +178,22 @@ class ReferenceGraphicsTest : ViewsForTesting(
                 logAg.getLogAsString(),
                 view.getGlobalBounds().toString(),
                 view.getLocalBounds().toString()
+            ).joinToString("\n")
+        )
+    }
+
+    @Test
+    fun testBlurFilterInEmptyContainer() = viewsTest {
+        val view = container {
+            filter = BlurFilter(4.0)
+        }
+        delayFrame()
+        assertEqualsFileReference(
+            "korge/render/BlurFilterEmptyContainer.log",
+            listOf(
+                logAg.getLogAsString(),
+                view.getGlobalBounds().toString(),
+                view.getLocalBoundsOptimized().toString()
             ).joinToString("\n")
         )
     }

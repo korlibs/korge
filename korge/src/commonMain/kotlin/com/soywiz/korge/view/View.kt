@@ -24,6 +24,7 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.interpolation.*
 import com.soywiz.korui.*
 import com.soywiz.krypto.encoding.*
+import kotlin.math.*
 
 /**
  * KorGE includes a DOM-based tree of views that makes a chain of affine transforms starting with the [Stage], that is the root node.
@@ -851,6 +852,8 @@ abstract class View internal constructor(
 
     fun renderFiltered(ctx: RenderContext, filter: Filter) {
         val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
+
+        if (bounds.width <= 0.0 || bounds.height <= 0.0) return
 
         ctx.matrixPool.alloc { tempMat2d ->
             val tryFilterScale = kotlin.math.min(filterScale, filter.recommendedFilterScale).clamp(0.03125, 1.0)
