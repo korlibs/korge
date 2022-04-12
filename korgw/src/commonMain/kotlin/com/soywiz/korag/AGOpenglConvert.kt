@@ -1,103 +1,103 @@
 package com.soywiz.korag
 
-import com.soywiz.kgl.*
+import com.soywiz.kgl.KmlGl
 import com.soywiz.korag.shader.*
 
-fun AGCullFace.toGl(gl: KmlGl): Int = when (this) {
-    AGCullFace.BOTH -> gl.FRONT_AND_BACK
-    AGCullFace.FRONT -> gl.FRONT
-    AGCullFace.BACK -> gl.BACK
+fun AGCullFace.toGl(): Int = when (this) {
+    AGCullFace.BOTH -> KmlGl.FRONT_AND_BACK
+    AGCullFace.FRONT -> KmlGl.FRONT
+    AGCullFace.BACK -> KmlGl.BACK
 }
 
-fun AGFrontFace.toGl(gl: KmlGl): Int = when (this) {
-    AGFrontFace.BOTH -> gl.CCW // @TODO: Invalid
-    AGFrontFace.CW -> gl.CW
-    AGFrontFace.CCW -> gl.CCW // Default
+fun AGFrontFace.toGl(): Int = when (this) {
+    AGFrontFace.BOTH -> KmlGl.CCW // @TODO: Invalid
+    AGFrontFace.CW -> KmlGl.CW
+    AGFrontFace.CCW -> KmlGl.CCW // Default
 }
 
-fun AGCompareMode.toGl(gl: KmlGl): Int = when (this) {
-    AGCompareMode.ALWAYS -> gl.ALWAYS
-    AGCompareMode.EQUAL -> gl.EQUAL
-    AGCompareMode.GREATER -> gl.GREATER
-    AGCompareMode.GREATER_EQUAL -> gl.GEQUAL
-    AGCompareMode.LESS -> gl.LESS
-    AGCompareMode.LESS_EQUAL -> gl.LEQUAL
-    AGCompareMode.NEVER -> gl.NEVER
-    AGCompareMode.NOT_EQUAL -> gl.NOTEQUAL
+fun AGCompareMode.toGl(): Int = when (this) {
+    AGCompareMode.ALWAYS -> KmlGl.ALWAYS
+    AGCompareMode.EQUAL -> KmlGl.EQUAL
+    AGCompareMode.GREATER -> KmlGl.GREATER
+    AGCompareMode.GREATER_EQUAL -> KmlGl.GEQUAL
+    AGCompareMode.LESS -> KmlGl.LESS
+    AGCompareMode.LESS_EQUAL -> KmlGl.LEQUAL
+    AGCompareMode.NEVER -> KmlGl.NEVER
+    AGCompareMode.NOT_EQUAL -> KmlGl.NOTEQUAL
 }
 
-fun AGDrawType.toGl(gl: KmlGl): Int = when (this) {
-    AGDrawType.POINTS -> gl.POINTS
-    AGDrawType.LINE_STRIP -> gl.LINE_STRIP
-    AGDrawType.LINE_LOOP -> gl.LINE_LOOP
-    AGDrawType.LINES -> gl.LINES
-    AGDrawType.TRIANGLE_STRIP -> gl.TRIANGLE_STRIP
-    AGDrawType.TRIANGLE_FAN -> gl.TRIANGLE_FAN
-    AGDrawType.TRIANGLES -> gl.TRIANGLES
+fun AGDrawType.toGl(): Int = when (this) {
+    AGDrawType.POINTS -> KmlGl.POINTS
+    AGDrawType.LINE_STRIP -> KmlGl.LINE_STRIP
+    AGDrawType.LINE_LOOP -> KmlGl.LINE_LOOP
+    AGDrawType.LINES -> KmlGl.LINES
+    AGDrawType.TRIANGLE_STRIP -> KmlGl.TRIANGLE_STRIP
+    AGDrawType.TRIANGLE_FAN -> KmlGl.TRIANGLE_FAN
+    AGDrawType.TRIANGLES -> KmlGl.TRIANGLES
 }
 
-fun AGIndexType.toGl(gl: KmlGl): Int = when (this) {
-    AGIndexType.UBYTE -> gl.UNSIGNED_BYTE
-    AGIndexType.USHORT -> gl.UNSIGNED_SHORT
-    AGIndexType.UINT -> gl.UNSIGNED_INT
+fun AGIndexType.toGl(): Int = when (this) {
+    AGIndexType.UBYTE -> KmlGl.UNSIGNED_BYTE
+    AGIndexType.USHORT -> KmlGl.UNSIGNED_SHORT
+    AGIndexType.UINT -> KmlGl.UNSIGNED_INT
 }
 
-fun AGEnable.toGl(gl: KmlGl): Int = when (this) {
-    AGEnable.BLEND -> gl.BLEND
-    AGEnable.CULL_FACE -> gl.CULL_FACE
-    AGEnable.DEPTH -> gl.DEPTH_TEST
-    AGEnable.SCISSOR -> gl.SCISSOR_TEST
-    AGEnable.STENCIL -> gl.STENCIL_TEST
+fun AGEnable.toGl(): Int = when (this) {
+    AGEnable.BLEND -> KmlGl.BLEND
+    AGEnable.CULL_FACE -> KmlGl.CULL_FACE
+    AGEnable.DEPTH -> KmlGl.DEPTH_TEST
+    AGEnable.SCISSOR -> KmlGl.SCISSOR_TEST
+    AGEnable.STENCIL -> KmlGl.STENCIL_TEST
 }
 
-fun AGBlendEquation.toGl(gl: KmlGl): Int = when (this) {
-    AGBlendEquation.ADD -> gl.FUNC_ADD
-    AGBlendEquation.SUBTRACT -> gl.FUNC_SUBTRACT
-    AGBlendEquation.REVERSE_SUBTRACT -> gl.FUNC_REVERSE_SUBTRACT
+fun AGBlendEquation.toGl(): Int = when (this) {
+    AGBlendEquation.ADD -> KmlGl.FUNC_ADD
+    AGBlendEquation.SUBTRACT -> KmlGl.FUNC_SUBTRACT
+    AGBlendEquation.REVERSE_SUBTRACT -> KmlGl.FUNC_REVERSE_SUBTRACT
 }
 
-fun AGBlendFactor.toGl(gl: KmlGl): Int = when (this) {
-    AGBlendFactor.DESTINATION_ALPHA -> gl.DST_ALPHA
-    AGBlendFactor.DESTINATION_COLOR -> gl.DST_COLOR
-    AGBlendFactor.ONE -> gl.ONE
-    AGBlendFactor.ONE_MINUS_DESTINATION_ALPHA -> gl.ONE_MINUS_DST_ALPHA
-    AGBlendFactor.ONE_MINUS_DESTINATION_COLOR -> gl.ONE_MINUS_DST_COLOR
-    AGBlendFactor.ONE_MINUS_SOURCE_ALPHA -> gl.ONE_MINUS_SRC_ALPHA
-    AGBlendFactor.ONE_MINUS_SOURCE_COLOR -> gl.ONE_MINUS_SRC_COLOR
-    AGBlendFactor.SOURCE_ALPHA -> gl.SRC_ALPHA
-    AGBlendFactor.SOURCE_COLOR -> gl.SRC_COLOR
-    AGBlendFactor.ZERO -> gl.ZERO
+fun AGBlendFactor.toGl(): Int = when (this) {
+    AGBlendFactor.DESTINATION_ALPHA -> KmlGl.DST_ALPHA
+    AGBlendFactor.DESTINATION_COLOR -> KmlGl.DST_COLOR
+    AGBlendFactor.ONE -> KmlGl.ONE
+    AGBlendFactor.ONE_MINUS_DESTINATION_ALPHA -> KmlGl.ONE_MINUS_DST_ALPHA
+    AGBlendFactor.ONE_MINUS_DESTINATION_COLOR -> KmlGl.ONE_MINUS_DST_COLOR
+    AGBlendFactor.ONE_MINUS_SOURCE_ALPHA -> KmlGl.ONE_MINUS_SRC_ALPHA
+    AGBlendFactor.ONE_MINUS_SOURCE_COLOR -> KmlGl.ONE_MINUS_SRC_COLOR
+    AGBlendFactor.SOURCE_ALPHA -> KmlGl.SRC_ALPHA
+    AGBlendFactor.SOURCE_COLOR -> KmlGl.SRC_COLOR
+    AGBlendFactor.ZERO -> KmlGl.ZERO
 }
 
-fun AGTriangleFace.toGl(gl: KmlGl) = when (this) {
-    AGTriangleFace.FRONT -> gl.FRONT
-    AGTriangleFace.BACK -> gl.BACK
-    AGTriangleFace.FRONT_AND_BACK -> gl.FRONT_AND_BACK
-    AGTriangleFace.NONE -> gl.FRONT
+fun AGTriangleFace.toGl() = when (this) {
+    AGTriangleFace.FRONT -> KmlGl.FRONT
+    AGTriangleFace.BACK -> KmlGl.BACK
+    AGTriangleFace.FRONT_AND_BACK -> KmlGl.FRONT_AND_BACK
+    AGTriangleFace.NONE -> KmlGl.FRONT
 }
 
-fun AGStencilOp.toGl(gl: KmlGl) = when (this) {
-    AGStencilOp.DECREMENT_SATURATE -> gl.DECR
-    AGStencilOp.DECREMENT_WRAP -> gl.DECR_WRAP
-    AGStencilOp.INCREMENT_SATURATE -> gl.INCR
-    AGStencilOp.INCREMENT_WRAP -> gl.INCR_WRAP
-    AGStencilOp.INVERT -> gl.INVERT
-    AGStencilOp.KEEP -> gl.KEEP
-    AGStencilOp.SET -> gl.REPLACE
-    AGStencilOp.ZERO -> gl.ZERO
+fun AGStencilOp.toGl() = when (this) {
+    AGStencilOp.DECREMENT_SATURATE -> KmlGl.DECR
+    AGStencilOp.DECREMENT_WRAP -> KmlGl.DECR_WRAP
+    AGStencilOp.INCREMENT_SATURATE -> KmlGl.INCR
+    AGStencilOp.INCREMENT_WRAP -> KmlGl.INCR_WRAP
+    AGStencilOp.INVERT -> KmlGl.INVERT
+    AGStencilOp.KEEP -> KmlGl.KEEP
+    AGStencilOp.SET -> KmlGl.REPLACE
+    AGStencilOp.ZERO -> KmlGl.ZERO
 }
 
-fun AG.TextureTargetKind.toGl(gl: KmlGl): Int = when (this) {
-    AG.TextureTargetKind.TEXTURE_2D -> gl.TEXTURE_2D
-    AG.TextureTargetKind.TEXTURE_3D -> gl.TEXTURE_3D
-    AG.TextureTargetKind.TEXTURE_CUBE_MAP -> gl.TEXTURE_CUBE_MAP
+fun AG.TextureTargetKind.toGl(): Int = when (this) {
+    AG.TextureTargetKind.TEXTURE_2D -> KmlGl.TEXTURE_2D
+    AG.TextureTargetKind.TEXTURE_3D -> KmlGl.TEXTURE_3D
+    AG.TextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP
 }
 
-fun VarType.toGl(gl: KmlGl): Int = when (this.kind) {
-    VarKind.TBYTE -> gl.BYTE
-    VarKind.TUNSIGNED_BYTE -> gl.UNSIGNED_BYTE
-    VarKind.TSHORT -> gl.SHORT
-    VarKind.TUNSIGNED_SHORT -> gl.UNSIGNED_SHORT
-    VarKind.TINT -> gl.UNSIGNED_INT
-    VarKind.TFLOAT -> gl.FLOAT
+fun VarType.toGl(): Int = when (this.kind) {
+    VarKind.TBYTE -> KmlGl.BYTE
+    VarKind.TUNSIGNED_BYTE -> KmlGl.UNSIGNED_BYTE
+    VarKind.TSHORT -> KmlGl.SHORT
+    VarKind.TUNSIGNED_SHORT -> KmlGl.UNSIGNED_SHORT
+    VarKind.TINT -> KmlGl.UNSIGNED_INT
+    VarKind.TFLOAT -> KmlGl.FLOAT
 }

@@ -14,7 +14,7 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
     }
 
     override fun enableDisable(kind: AGEnable, enable: Boolean) {
-        gl.enableDisable(kind.toGl(gl), enable)
+        gl.enableDisable(kind.toGl(), enable)
     }
 
     override fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) {
@@ -22,23 +22,23 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
     }
 
     override fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation) {
-        gl.blendEquationSeparate(rgb.toGl(gl), a.toGl(gl))
+        gl.blendEquationSeparate(rgb.toGl(), a.toGl())
     }
 
     override fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor, dstA: AGBlendFactor) {
-        gl.blendFuncSeparate(srcRgb.toGl(gl), dstRgb.toGl(gl), srcA.toGl(gl), dstA.toGl(gl))
+        gl.blendFuncSeparate(srcRgb.toGl(), dstRgb.toGl(), srcA.toGl(), dstA.toGl())
     }
 
     override fun cullFace(face: AGCullFace) {
-        gl.cullFace(face.toGl(gl))
+        gl.cullFace(face.toGl())
     }
 
     override fun frontFace(face: AGFrontFace) {
-        gl.frontFace(face.toGl(gl))
+        gl.frontFace(face.toGl())
     }
 
     override fun depthFunction(depthTest: AGCompareMode) {
-        gl.depthFunc(depthTest.toGl(gl))
+        gl.depthFunc(depthTest.toGl())
     }
 
     ///////////////////////////////////////
@@ -66,15 +66,15 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
     override fun draw(type: AGDrawType, vertexCount: Int, offset: Int, instances: Int, indexType: AGIndexType?) {
         if (indexType != null) {
             if (instances != 1) {
-                gl.drawElementsInstanced(type.toGl(gl), vertexCount, indexType.toGl(gl), offset, instances)
+                gl.drawElementsInstanced(type.toGl(), vertexCount, indexType.toGl(), offset, instances)
             } else {
-                gl.drawElements(type.toGl(gl), vertexCount, indexType.toGl(gl), offset)
+                gl.drawElements(type.toGl(), vertexCount, indexType.toGl(), offset)
             }
         } else {
             if (instances != 1) {
-                gl.drawArraysInstanced(type.toGl(gl), offset, vertexCount, instances)
+                gl.drawArraysInstanced(type.toGl(), offset, vertexCount, instances)
             } else {
-                gl.drawArrays(type.toGl(gl), offset, vertexCount)
+                gl.drawArrays(type.toGl(), offset, vertexCount)
             }
         }
     }

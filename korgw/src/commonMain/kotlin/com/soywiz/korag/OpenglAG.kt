@@ -314,7 +314,7 @@ abstract class AGOpengl : AG() {
                 if (!att.active) continue
                 val off = vattrspos[n]
                 val loc = glProgram.getAttribLocation(att.name)
-                val glElementType = att.type.toGl(gl)
+                val glElementType = att.type.toGl()
                 val elementCount = att.type.elementCount
                 if (loc >= 0) {
                     gl.enableVertexAttribArray(loc)
@@ -472,7 +472,7 @@ abstract class AGOpengl : AG() {
 
         if (renderState.depthFunc != CompareMode.ALWAYS) {
             gl.enable(gl.DEPTH_TEST)
-            gl.depthFunc(renderState.depthFunc.toGl(gl))
+            gl.depthFunc(renderState.depthFunc.toGl())
         } else {
             gl.disable(gl.DEPTH_TEST)
         }
@@ -481,11 +481,11 @@ abstract class AGOpengl : AG() {
 
         if (stencil.enabled) {
             gl.enable(gl.STENCIL_TEST)
-            gl.stencilFunc(stencil.compareMode.toGl(gl), stencil.referenceValue, stencil.readMask)
+            gl.stencilFunc(stencil.compareMode.toGl(), stencil.referenceValue, stencil.readMask)
             gl.stencilOp(
-                stencil.actionOnDepthFail.toGl(gl),
-                stencil.actionOnDepthPassStencilFail.toGl(gl),
-                stencil.actionOnBothPass.toGl(gl)
+                stencil.actionOnDepthFail.toGl(),
+                stencil.actionOnDepthPassStencilFail.toGl(),
+                stencil.actionOnBothPass.toGl()
             )
             gl.stencilMask(stencil.writeMask)
         } else {
@@ -674,7 +674,7 @@ abstract class AGOpengl : AG() {
         val texIds = FBuffer(4)
 
         var forcedTexId: Int = -1
-        var forcedTexTarget: Int = targetKind.toGl(gl)
+        var forcedTexTarget: Int = targetKind.toGl()
 
         val tex: Int
             get() {
