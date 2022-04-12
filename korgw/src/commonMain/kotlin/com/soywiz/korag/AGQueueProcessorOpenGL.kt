@@ -105,4 +105,18 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
     override fun depthRange(near: Float, far: Float) {
         gl.depthRangef(near, far)
     }
+
+    override fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int) {
+        gl.stencilFunc(compareMode.toGl(), referenceValue, readMask)
+    }
+
+    // @TODO: Separate
+    override fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp) {
+        gl.stencilOp(actionOnDepthFail.toGl(), actionOnDepthPassStencilFail.toGl(), actionOnBothPass.toGl())
+    }
+
+    // @TODO: Separate
+    override fun stencilMask(writeMask: Int) {
+        gl.stencilMask(writeMask)
+    }
 }

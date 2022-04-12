@@ -9,6 +9,7 @@ package com.soywiz.korag
 import com.soywiz.kds.*
 import com.soywiz.kds.lock.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.annotation.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korio.annotations.*
 import kotlinx.coroutines.*
@@ -41,6 +42,9 @@ interface AGQueueProcessor {
     fun uniformsSet(layout: UniformLayout, data: FBuffer)
     fun depthMask(depth: Boolean)
     fun depthRange(near: Float, far: Float)
+    fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int)
+    fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp)
+    fun stencilMask(writeMask: Int)
 }
 
 @KorInternal
@@ -85,11 +89,9 @@ class AGList(val globalState: AGGlobalState) {
     internal val completed = CompletableDeferred<Unit>()
     private val _lock = Lock() // @TODO: This is slow!
     private val _data = IntDeque(128)
+    private val _ints = IntDeque(16)
     private val _float = FloatDeque(16)
     private val _extra = Deque<Any?>(16)
-    private var dataX: Int = 0
-    private var dataY: Int = 0
-    private var dataZ: Int = 0
 
     private fun addExtra(v0: Any?) { _lock { _extra.add(v0) } }
     private fun addExtra(v0: Any?, v1: Any?) { _lock { _extra.add(v0); _extra.add(v1) } }
@@ -97,10 +99,14 @@ class AGList(val globalState: AGGlobalState) {
     private fun addFloat(v0: Float) { _lock { _float.add(v0) } }
     private fun addFloat(v0: Float, v1: Float) { _lock { _float.add(v0); _float.add(v1) } }
 
+    private fun addInt(v0: Int) { _lock { _ints.add(v0) } }
+    private fun addInt(v0: Int, v1: Int) { _lock { _ints.add(v0); _ints.add(v1) } }
+    private fun addInt(v0: Int, v1: Int, v2: Int) { _lock { _ints.add(v0); _ints.add(v1); _ints.add(v2) } }
+
     private fun add(v0: Int) { _lock { _data.add(v0) } }
-    private fun add(v0: Int, v1: Int) { _lock { _data.add(v0); _data.add(v1) } }
-    private fun add(v0: Int, v1: Int, v2: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2) } }
-    private fun add(v0: Int, v1: Int, v2: Int, v3: Int) { _lock { _data.add(v0); _data.add(v1); _data.add(v2); _data.add(v3) } }
+    private fun <T> readExtra(): T = _lock { _extra.removeFirst() }.fastCastTo()
+    private fun readFloat(): Float = _lock { _float.removeFirst() }
+    private fun readInt(): Int = _lock { _ints.removeFirst() }
     private fun read(): Int = _lock { _data.removeFirst() }
 
     @KorInternal
@@ -134,9 +140,6 @@ class AGList(val globalState: AGGlobalState) {
                 )
                 CMD_CULL_FACE -> processor.cullFace(AGCullFace.VALUES[data.extract4(0)])
                 CMD_FRONT_FACE -> processor.frontFace(AGFrontFace.VALUES[data.extract4(0)])
-                CMD_DATA_X -> dataX = data.extract24(0)
-                CMD_DATA_Y -> dataY = data.extract24(0)
-                CMD_DATA_Z -> dataZ = data.extract24(0)
                 // Programs
                 CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), _extra.removeFirst().fastCastTo())
                 CMD_PROGRAM_DELETE -> processor.programDelete(data.extract16(0))
@@ -144,16 +147,25 @@ class AGList(val globalState: AGGlobalState) {
                 // Draw
                 CMD_DRAW -> processor.draw(
                     AGDrawType.VALUES[data.extract4(0)],
-                    dataX, dataY, dataZ,
+                    readInt(), readInt(), readInt(),
                     AGIndexType.VALUES.getOrNull(data.extract4(4)),
                 )
                 // Uniforms
-                CMD_UNIFORMS_SET -> processor.uniformsSet(
-                    _extra.removeFirst().fastCastTo(),
-                    _extra.removeFirst().fastCastTo()
-                )
+                CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra(), readExtra())
                 CMD_DEPTH_MASK -> processor.depthMask(data.extract(0))
-                CMD_DEPTH_RANGE -> processor.depthRange(_float.removeFirst(), _float.removeFirst())
+                CMD_DEPTH_RANGE -> processor.depthRange(readFloat(), readFloat())
+                CMD_SYNC -> readExtra<CompletableDeferred<Unit>>().complete(Unit)
+                CMD_STENCIL_FUNC -> processor.stencilFunction(
+                    AGCompareMode.VALUES[data.extract4(0)],
+                    data.extract8(8),
+                    data.extract8(16),
+                )
+                CMD_STENCIL_OP -> processor.stencilOperation(
+                    AG.StencilOp.VALUES[data.extract4(0)],
+                    AG.StencilOp.VALUES[data.extract4(4)],
+                    AG.StencilOp.VALUES[data.extract4(8)],
+                )
+                CMD_STENCIL_MASK -> processor.stencilMask(data.extract8(0))
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -162,6 +174,19 @@ class AGList(val globalState: AGGlobalState) {
 
     fun enable(kind: AGEnable): Unit = add(CMD(CMD_ENABLE).finsert4(kind.ordinal, 0))
     fun disable(kind: AGEnable): Unit = add(CMD(CMD_DISABLE).finsert4(kind.ordinal, 0))
+
+    fun sync(deferred: CompletableDeferred<Unit>) {
+        addExtra(deferred)
+        add(CMD(CMD_SYNC))
+    }
+
+    @KoragExperimental
+    suspend fun sync() {
+        // @TODO: Will only work if we are processing stuff in another thread
+        val deferred = CompletableDeferred<Unit>()
+        sync(deferred)
+        deferred.await()
+    }
 
     inline fun enableDisable(kind: AGEnable, enable: Boolean, block: () -> Unit = {}): Unit {
         if (enable) {
@@ -249,11 +274,8 @@ class AGList(val globalState: AGGlobalState) {
 
     fun updateTexture(textureId: Int, data: Any?, width: Int, height: Int) {
         addExtra(data)
-        add(
-            CMD(CMD_DATA_X).finsert24(width, 0),
-            CMD(CMD_DATA_Y).finsert24(height, 0),
-            CMD(CMD_TEXTURE_UPDATE).finsert16(textureId, 0)
-        )
+        addInt(width, height)
+        add(CMD(CMD_TEXTURE_UPDATE).finsert16(textureId, 0))
     }
 
     fun bindTexture(textureId: Int) {
@@ -274,18 +296,28 @@ class AGList(val globalState: AGGlobalState) {
     ////////////////////////////////////////
 
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null) {
-        add(
-            CMD(CMD_DATA_X).finsert24(vertexCount, 0),
-            CMD(CMD_DATA_Y).finsert24(offset, 0),
-            CMD(CMD_DATA_Z).finsert24(instances, 0),
-            CMD(CMD_DRAW).finsert4(type.ordinal, 0).finsert4(indexType?.ordinal ?: 0xF, 4),
-        )
+        addInt(vertexCount, offset, instances)
+        add(CMD(CMD_DRAW).finsert4(type.ordinal, 0).finsert4(indexType?.ordinal ?: 0xF, 4))
+    }
+
+    fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int) {
+        add(CMD(CMD_STENCIL_FUNC).finsert4(compareMode.ordinal, 0).finsert8(referenceValue, 8).finsert8(readMask, 16))
+    }
+
+    fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp) {
+        add(CMD(CMD_STENCIL_OP).finsert4(actionOnDepthFail.ordinal, 0).finsert4(actionOnDepthPassStencilFail.ordinal, 4).finsert8(actionOnBothPass.ordinal, 8))
+    }
+
+    fun stencilMask(writeMask: Int) {
+        add(CMD(CMD_STENCIL_MASK).finsert8(writeMask, 0))
     }
 
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
         // Special
+        private const val CMD_DRAW = 0xFD
+        private const val CMD_SYNC = 0xFE
         private const val CMD_FINISH = 0xFF
         // General
         private const val CMD_NOOP = 0x00
@@ -299,10 +331,6 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_DEPTH_FUNCTION = 0x08
         private const val CMD_DEPTH_MASK = 0x09
         private const val CMD_DEPTH_RANGE = 0x0A
-        // int Data
-        private const val CMD_DATA_X = 0x10
-        private const val CMD_DATA_Y = 0x11
-        private const val CMD_DATA_Z = 0x12
         // Programs
         private const val CMD_PROGRAM_CREATE = 0x30
         private const val CMD_PROGRAM_DELETE = 0x31
@@ -322,8 +350,10 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_RENDERBUFFER_SET = 0x72
         private const val CMD_RENDERBUFFER_USE = 0x73
         private const val CMD_RENDERBUFFER_READ_PIXELS = 0x74
-        // Draw
-        private const val CMD_DRAW = 0x80
+        // Stencil
+        private const val CMD_STENCIL_FUNC = 0x80
+        private const val CMD_STENCIL_OP = 0x81
+        private const val CMD_STENCIL_MASK = 0x82
     }
 }
 

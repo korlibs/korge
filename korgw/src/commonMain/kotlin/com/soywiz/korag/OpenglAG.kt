@@ -469,29 +469,24 @@ abstract class AGOpengl : AG() {
 
             list.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
 
-            //list.enableDisable(AGEnable.STENCIL, stencil.enabled) {
-            //}
-        }
+            if (stencil.enabled) {
+                list.enable(AGEnable.STENCIL)
+                list.stencilFunction(stencil.compareMode, stencil.referenceValue, stencil.readMask)
+                list.stencilOperation(
+                    stencil.actionOnDepthFail,
+                    stencil.actionOnDepthPassStencilFail,
+                    stencil.actionOnBothPass
+                )
+                list.stencilMask(stencil.writeMask)
+            } else {
+                list.disable(AGEnable.STENCIL)
+                list.stencilMask(0)
+            }
 
-        if (stencil.enabled) {
-            gl.enable(gl.STENCIL_TEST)
-            gl.stencilFunc(stencil.compareMode.toGl(), stencil.referenceValue, stencil.readMask)
-            gl.stencilOp(
-                stencil.actionOnDepthFail.toGl(),
-                stencil.actionOnDepthPassStencilFail.toGl(),
-                stencil.actionOnBothPass.toGl()
-            )
-            gl.stencilMask(stencil.writeMask)
-        } else {
-            gl.disable(gl.STENCIL_TEST)
-            gl.stencilMask(0)
-        }
+            //val viewport = FBuffer(4 * 4)
+            //gl.getIntegerv(gl.VIEWPORT, viewport)
+            //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-        //val viewport = FBuffer(4 * 4)
-        //gl.getIntegerv(gl.VIEWPORT, viewport)
-        //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
-
-        commands { list ->
             list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null)
         }
 
