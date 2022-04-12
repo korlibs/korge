@@ -6,6 +6,7 @@ import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
+import kotlin.native.concurrent.*
 
 data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int) {
     val cachedAttribLocations = FastStringMap<Int>()
@@ -31,8 +32,11 @@ data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: 
     }
 }
 
+@ThreadLocal
+private val GLShaderCompiler_tempBuffer1 = FBuffer(4)
+
 object GLShaderCompiler {
-    private val tempBuffer1 = FBuffer(4)
+    private inline val tempBuffer1 get() = GLShaderCompiler_tempBuffer1
 
     private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
