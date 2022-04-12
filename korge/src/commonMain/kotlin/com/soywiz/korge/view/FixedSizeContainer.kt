@@ -47,8 +47,10 @@ open class FixedSizeContainer(
         }
         if (clip) {
             val m = globalMatrix
-            // Has rotation
-            if (m.b != 0.0 || m.c != 0.0) {
+            val hasRotation = m.b != 0.0 || m.c != 0.0
+            //val hasNegativeScale = m.a < 0.0 || m.d < 0.0
+            //if (hasRotation || hasNegativeScale) {
+            if (hasRotation) {
                 // Use a renderbuffer instead
                 val old = renderingInternal
                 try {
@@ -63,6 +65,8 @@ open class FixedSizeContainer(
                 val bounds = getWindowBounds(tempBounds)
                 @Suppress("DEPRECATION")
                 bounds.applyTransform(ctx.batch.viewMat2D) // @TODO: Should viewMat2D be in the context instead?
+                bounds.normalize() // If width or height are negative, because scale was negative
+
                 //println("FIXED_CLIP: bounds=$bounds")
                 val rect = c2d.batch.scissor?.rect
                 var intersects = true

@@ -200,6 +200,17 @@ data class Rectangle(
         setTo(kotlin.math.ceil(x), kotlin.math.ceil(y), kotlin.math.ceil(width), kotlin.math.ceil(height))
         return this
     }
+
+    fun normalize() {
+        if (width < 0.0) {
+            x += width
+            width = -width
+        }
+        if (height < 0.0) {
+            y += height
+            height = -height
+        }
+    }
 }
 
 fun Rectangle.expand(left: Double, top: Double, right: Double, bottom: Double): Rectangle {
