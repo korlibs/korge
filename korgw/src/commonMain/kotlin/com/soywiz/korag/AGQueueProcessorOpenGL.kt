@@ -119,4 +119,28 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
     override fun stencilMask(writeMask: Int) {
         gl.stencilMask(writeMask)
     }
+
+    override fun scissor(x: Int, y: Int, width: Int, height: Int) {
+        gl.scissor(x, y, width, height)
+    }
+
+    override fun clear(color: Boolean, depth: Boolean, stencil: Boolean) {
+        var mask = 0
+        if (color) mask = mask or KmlGl.COLOR_BUFFER_BIT
+        if (depth) mask = mask or KmlGl.DEPTH_BUFFER_BIT
+        if (stencil) mask = mask or KmlGl.STENCIL_BUFFER_BIT
+        gl.clear(mask)
+    }
+
+    override fun clearColor(red: Float, green: Float, blue: Float, alpha: Float) {
+        gl.clearColor(red, green, blue, alpha)
+    }
+
+    override fun clearDepth(depth: Float) {
+        gl.clearDepthf(depth)
+    }
+
+    override fun clearStencil(stencil: Int) {
+        gl.clearStencil(stencil)
+    }
 }

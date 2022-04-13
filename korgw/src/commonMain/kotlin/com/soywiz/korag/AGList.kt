@@ -45,6 +45,11 @@ interface AGQueueProcessor {
     fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int)
     fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp)
     fun stencilMask(writeMask: Int)
+    fun scissor(x: Int, y: Int, width: Int, height: Int)
+    fun clear(color: Boolean, depth: Boolean, stencil: Boolean)
+    fun clearColor(red: Float, green: Float, blue: Float, alpha: Float)
+    fun clearDepth(depth: Float)
+    fun clearStencil(stencil: Int)
 }
 
 @KorInternal
@@ -98,10 +103,13 @@ class AGList(val globalState: AGGlobalState) {
 
     private fun addFloat(v0: Float) { _lock { _float.add(v0) } }
     private fun addFloat(v0: Float, v1: Float) { _lock { _float.add(v0); _float.add(v1) } }
+    private fun addFloat(v0: Float, v1: Float, v2: Float) { _lock { _float.add(v0); _float.add(v1); _float.add(v2) } }
+    private fun addFloat(v0: Float, v1: Float, v2: Float, v3: Float) { _lock { _float.add(v0); _float.add(v1); _float.add(v2); _float.add(v3) } }
 
     private fun addInt(v0: Int) { _lock { _ints.add(v0) } }
     private fun addInt(v0: Int, v1: Int) { _lock { _ints.add(v0); _ints.add(v1) } }
     private fun addInt(v0: Int, v1: Int, v2: Int) { _lock { _ints.add(v0); _ints.add(v1); _ints.add(v2) } }
+    private fun addInt(v0: Int, v1: Int, v2: Int, v3: Int) { _lock { _ints.add(v0); _ints.add(v1); _ints.add(v2); _ints.add(v3) } }
 
     private fun add(v0: Int) { _lock { _data.add(v0) } }
     private fun <T> readExtra(): T = _lock { _extra.removeFirst() }.fastCastTo()
@@ -165,7 +173,13 @@ class AGList(val globalState: AGGlobalState) {
                     AG.StencilOp.VALUES[data.extract4(4)],
                     AG.StencilOp.VALUES[data.extract4(8)],
                 )
-                CMD_STENCIL_MASK -> processor.stencilMask(data.extract8(0))
+                //CMD_STENCIL_MASK -> processor.stencilMask(data.extract8(0))
+                CMD_STENCIL_MASK -> processor.stencilMask(readInt())
+                CMD_SCISSOR -> processor.scissor(readInt(), readInt(), readInt(), readInt())
+                CMD_CLEAR -> processor.clear(data.extract(0), data.extract(1), data.extract(2))
+                CMD_CLEAR_COLOR -> processor.clearColor(readFloat(), readFloat(), readFloat(), readFloat())
+                CMD_CLEAR_DEPTH -> processor.clearDepth(readFloat())
+                CMD_CLEAR_STENCIL -> processor.clearStencil(readInt())
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -205,6 +219,25 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_DEPTH_MASK).finsert(depth, 0))
     }
 
+    fun clearColor(red: Float, green: Float, blue: Float, alpha: Float) {
+        addFloat(red, green, blue, alpha)
+        add(CMD(CMD_CLEAR_COLOR))
+    }
+
+    fun clearDepth(depth: Float) {
+        addFloat(depth)
+        add(CMD(CMD_CLEAR_DEPTH))
+    }
+
+    fun clearStencil(stencil: Int) {
+        addInt(stencil)
+        add(CMD(CMD_CLEAR_STENCIL))
+    }
+
+    fun clear(color: Boolean, depth: Boolean, stencil: Boolean) {
+        add(CMD(CMD_CLEAR).finsert(color, 0).finsert(depth, 1).finsert(stencil, 2))
+    }
+
     fun depthRange(near: Float, far: Float) {
         addFloat(near, far)
         add(CMD(CMD_DEPTH_RANGE))
@@ -227,6 +260,11 @@ class AGList(val globalState: AGGlobalState) {
 
     fun frontFace(face: AGFrontFace) {
         add(CMD(CMD_FRONT_FACE).finsert4(face.ordinal, 0))
+    }
+
+    fun scissor(x: Int, y: Int, width: Int, height: Int) {
+        addInt(x, y, width, height)
+        add(CMD(CMD_SCISSOR))
     }
 
     fun finish() {
@@ -309,7 +347,9 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun stencilMask(writeMask: Int) {
-        add(CMD(CMD_STENCIL_MASK).finsert8(writeMask, 0))
+        addInt(writeMask)
+        add(CMD(CMD_STENCIL_MASK))
+        //add(CMD(CMD_STENCIL_MASK).finsert8(writeMask, 0))
     }
 
     companion object {
@@ -331,6 +371,13 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_DEPTH_FUNCTION = 0x08
         private const val CMD_DEPTH_MASK = 0x09
         private const val CMD_DEPTH_RANGE = 0x0A
+        private const val CMD_SCISSOR = 0x0B
+        // Clear
+        private const val CMD_CLEAR = 0x10
+        private const val CMD_CLEAR_COLOR = 0x11
+        private const val CMD_CLEAR_DEPTH = 0x12
+        private const val CMD_CLEAR_STENCIL = 0x13
+
         // Programs
         private const val CMD_PROGRAM_CREATE = 0x30
         private const val CMD_PROGRAM_DELETE = 0x31
