@@ -198,52 +198,6 @@ abstract class AGOpengl : AG() {
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
-    private val finalScissorBL = Rectangle()
-    private val tempRect = Rectangle()
-
-    fun applyScissorState(list: AGList, scissor: Scissor? = null) {
-        //println("applyScissorState")
-        if (this.currentRenderBuffer == null) {
-            //println("this.currentRenderBuffer == null")
-        }
-        val currentRenderBuffer = this.currentRenderBuffer ?: return
-        if (currentRenderBuffer === mainRenderBuffer) {
-            var realScissors: Rectangle? = finalScissorBL
-            realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-            if (scissor != null) {
-                tempRect.setTo(
-                    currentRenderBuffer.x + scissor.x,
-                    ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
-                    (scissor.width),
-                    scissor.height
-                )
-                realScissors = realScissors?.intersection(tempRect, realScissors)
-            }
-
-            //println("currentRenderBuffer: $currentRenderBuffer")
-
-            val renderBufferScissor = currentRenderBuffer.scissor
-            if (renderBufferScissor != null) {
-                realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
-            }
-
-            //println("[MAIN_BUFFER] realScissors: $realScissors")
-
-            list.enable(AGEnable.SCISSOR)
-            if (realScissors != null) {
-                list.scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
-            } else {
-                list.scissor(0, 0, 0, 0)
-            }
-        } else {
-            //println("[RENDER_TARGET] scissor: $scissor")
-
-            list.enableDisable(AGEnable.SCISSOR, scissor != null) {
-                list.scissor(scissor!!.x.toIntRound(), scissor.y.toIntRound(), scissor.width.toIntRound(), scissor.height.toIntRound())
-            }
-        }
-    }
-
     private val glProcessor = AGQueueProcessorOpenGL(KmlGlDummy)
 
     override fun executeList(list: AGList) {
@@ -553,39 +507,6 @@ abstract class AGOpengl : AG() {
         override fun close() {
             programInfo?.delete(gl)
             programInfo = null
-        }
-    }
-
-    // @TODO: Kotlin inline bug
-    //Back-end (JVM) Internal error: wrong code generated
-    //org.jetbrains.kotlin.codegen.CompilationException Back-end (JVM) Internal error: Couldn't transform method node:
-    //clear (IFIZZZ)V:
-    override fun clear(
-        color: RGBA,
-        depth: Float,
-        stencil: Int,
-        clearColor: Boolean,
-        clearDepth: Boolean,
-        clearStencil: Boolean,
-        scissor: Scissor?,
-    ) {
-        commands { list ->
-            //println("CLEAR: $color, $depth")
-            applyScissorState(list, scissor)
-            //gl.disable(KmlGl.SCISSOR_TEST)
-            if (clearColor) {
-                list.colorMask(true, true, true, true)
-                list.clearColor(color.rf, color.gf, color.bf, color.af)
-            }
-            if (clearDepth) {
-                list.depthMask(true)
-                list.clearDepth(depth)
-            }
-            if (clearStencil) {
-                list.stencilMask(-1)
-                list.clearStencil(stencil)
-            }
-            list.clear(clearColor, clearDepth, clearStencil)
         }
     }
 

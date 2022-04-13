@@ -903,12 +903,79 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         clearColor: Boolean = true,
         clearDepth: Boolean = true,
         clearStencil: Boolean = true,
-        scissor: AG.Scissor? = null
-    ) = Unit
+        scissor: Scissor? = null
+    ) {
+        commands { list ->
+            //println("CLEAR: $color, $depth")
+            applyScissorState(list, scissor)
+            //gl.disable(KmlGl.SCISSOR_TEST)
+            if (clearColor) {
+                list.colorMask(true, true, true, true)
+                list.clearColor(color.rf, color.gf, color.bf, color.af)
+            }
+            if (clearDepth) {
+                list.depthMask(true)
+                list.clearDepth(depth)
+            }
+            if (clearStencil) {
+                list.stencilMask(-1)
+                list.clearStencil(stencil)
+            }
+            list.clear(clearColor, clearDepth, clearStencil)
+        }
+    }
 
-    fun clearStencil(stencil: Int = 0, scissor: AG.Scissor? = null) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
-    fun clearDepth(depth: Float = 1f, scissor: AG.Scissor? = null) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
-    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: AG.Scissor? = null) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
+
+    private val finalScissorBL = Rectangle()
+    private val tempRect = Rectangle()
+
+    protected fun applyScissorState(list: AGList, scissor: Scissor? = null) {
+        //println("applyScissorState")
+        if (this.currentRenderBuffer == null) {
+            //println("this.currentRenderBuffer == null")
+        }
+        val currentRenderBuffer = this.currentRenderBuffer ?: return
+        if (currentRenderBuffer === mainRenderBuffer) {
+            var realScissors: Rectangle? = finalScissorBL
+            realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
+            if (scissor != null) {
+                tempRect.setTo(
+                    currentRenderBuffer.x + scissor.x,
+                    ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
+                    (scissor.width),
+                    scissor.height
+                )
+                realScissors = realScissors?.intersection(tempRect, realScissors)
+            }
+
+            //println("currentRenderBuffer: $currentRenderBuffer")
+
+            val renderBufferScissor = currentRenderBuffer.scissor
+            if (renderBufferScissor != null) {
+                realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
+            }
+
+            //println("[MAIN_BUFFER] realScissors: $realScissors")
+
+            list.enable(AGEnable.SCISSOR)
+            if (realScissors != null) {
+                list.scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
+            } else {
+                list.scissor(0, 0, 0, 0)
+            }
+        } else {
+            //println("[RENDER_TARGET] scissor: $scissor")
+
+            list.enableDisable(AGEnable.SCISSOR, scissor != null) {
+                list.scissor(scissor!!.x.toIntRound(), scissor.y.toIntRound(), scissor.width.toIntRound(), scissor.height.toIntRound())
+            }
+        }
+    }
+
+
+    fun clearStencil(stencil: Int = 0, scissor: Scissor? = null) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
+    fun clearDepth(depth: Float = 1f, scissor: Scissor? = null) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
+    fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: Scissor? = null) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
     //@PublishedApi
     @KoragExperimental
