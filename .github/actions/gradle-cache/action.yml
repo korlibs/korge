@@ -1,0 +1,22 @@
+name: "Caches gradle & Kotlin/Native artifacts"
+description: "Caches gradle & Kotlin/Native artifacts"
+inputs: {}
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          ~/.konan
+        key: ${{ runner.os }}-gradle-${{ hashFiles('gradle.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+    - uses: webiny/action-post-run@2.0.1
+      id: gradle-cache-cleanup
+      with:
+        run: |
+          rm -rf ~/.gradle/caches/modules-2/modules-2.lock
+          rm -rf ~/.gradle/caches/modules-2/gc.properties
+          rm -rf ~/.konan/cache
