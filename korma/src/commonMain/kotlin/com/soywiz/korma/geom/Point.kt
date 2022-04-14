@@ -172,7 +172,8 @@ data class Point(
         fun distanceSquared(a: Point, b: Point): Double = distanceSquared(a.x, a.y, b.x, b.y)
         fun distanceSquared(a: IPointInt, b: IPointInt): Int = distanceSquared(a.x, a.y, b.x, b.y)
 
-        fun dot(a: IPoint, b: IPoint): Double = (a.x * b.x) + (a.y * b.y)
+        fun dot(aX: Double, aY: Double, bX: Double, bY: Double): Double = (aX * bX) + (aY * bY)
+        fun dot(a: IPoint, b: IPoint): Double = dot(a.x, a.y, b.x, b.y)
         fun isCollinear(xa: Double, ya: Double, x: Double, y: Double, xb: Double, yb: Double): Boolean {
             return (((x - xa) / (y - ya)) - ((xa - xb) / (ya - yb))).absoluteValue.isAlmostZero()
         }

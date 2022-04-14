@@ -2,7 +2,12 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.math.*
 
-open class Line(val a: Point, val b: Point) {
+interface ILine {
+    val a: IPoint
+    val b: IPoint
+}
+
+open class Line(override val a: Point, override val b: Point) : ILine {
     private val temp = Point()
 
     fun round(): Line {
@@ -139,3 +144,37 @@ open class LineIntersection(
     override fun toString(): String = "LineIntersection($line, intersection=$intersection)"
 }
 
+// @TODO: Should we create a common interface make projectedPoint part of it? (for eample to project other kind of shapes)
+// https://math.stackexchange.com/questions/62633/orthogonal-projection-of-a-point-onto-a-line
+// http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
+fun ILine.projectedPoint(point: IPoint, out: Point = Point()): Point {
+    // return this.getIntersectionPoint(Line(point, Point.fromPolar(point, this.angle + 90.degrees)))!!
+
+    val v1 = this.a
+    val v2 = this.b
+    val p = point
+
+    // get dot product of e1, e2
+    val e1x = v2.x - v1.x
+    val e1y = v2.y - v1.y
+    val e2x = p.x - v1.x
+    val e2y = p.y - v1.y
+    val valDp = Point.dot(e1x, e1y, e2x, e2y)
+    // get length of vectors
+
+    val lenLineE1 = kotlin.math.hypot(e1x, e1y)
+    val lenLineE2 = kotlin.math.hypot(e2x, e2y)
+
+    // What happens if lenLineE1 or lenLineE2 are zero?, it would be a division by zero.
+    // Does that mean that the point is on the line, and we should use it?
+    if (lenLineE1 == 0.0 || lenLineE2 == 0.0) {
+        return out.copyFrom(p)
+    }
+
+    val cos = valDp / (lenLineE1 * lenLineE2)
+
+    // length of v1P'
+    val projLenOfLine = cos * lenLineE2
+
+    return out.setTo((v1.x + (projLenOfLine * e1x) / lenLineE1), (v1.y + (projLenOfLine * e1y) / lenLineE1))
+}

@@ -181,7 +181,8 @@ abstract class Shape2d {
             operator fun invoke(x: Int, y: Int, radiusX: Int, radiusY: Int, angle: Angle = Angle.ZERO, totalPoints: Int = 32) = Ellipse(x.toDouble(), y.toDouble(), radiusX.toDouble(), radiusY.toDouble(), angle, totalPoints)
         }
     }
-    data class Circle(val x: Double, val y: Double, val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints) {
+    data class Circle(val x: Double, val y: Double, override val radius: Double, val totalPoints: Int = 32) : BaseEllipse(x, y, radius, radius, Angle.ZERO, totalPoints), ICircle {
+        override val center: IPoint = IPoint(x, y)
         companion object {
             operator fun invoke(x: Float, y: Float, radius: Float, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)
             operator fun invoke(x: Int, y: Int, radius: Int, totalPoints: Int = 32) = Circle(x.toDouble(), y.toDouble(), radius.toDouble(), totalPoints)

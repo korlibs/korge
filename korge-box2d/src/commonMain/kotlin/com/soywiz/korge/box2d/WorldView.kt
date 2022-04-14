@@ -7,6 +7,7 @@ import com.soywiz.klock.seconds
 import com.soywiz.korge.component.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Circle
 import com.soywiz.korge.view.ktree.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*

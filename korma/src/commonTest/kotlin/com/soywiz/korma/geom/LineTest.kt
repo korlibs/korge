@@ -16,4 +16,16 @@ class LineTest {
         assertEquals(222.95459151111274, line2.angle.degrees, absoluteTolerance = tolerance)
         assertEquals(Point(260.0, 158.0), line1.getSegmentIntersectionPoint(line2)?.round())
     }
+
+    @Test
+    fun testProjectedPoint() {
+        assertEquals(Point(0, 50), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(50, 50)))
+        assertEquals(Point(50, 50), Line(Point(0, 0), Point(100, 100)).projectedPoint(Point(100, 0)))
+
+        // On line
+        assertEquals(Point(0, 0), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(0, 0)))
+        assertEquals(Point(0, 50), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(0, 50)))
+        assertEquals(Point(0, 100), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(0, 100)))
+        assertEquals(Point(0, 150), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(0, 150)))
+    }
 }
