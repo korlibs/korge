@@ -4,10 +4,10 @@ import com.soywiz.klock.*
 import com.soywiz.kmem.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
+import com.soywiz.korio.file.std.*
 import kotlinx.cinterop.*
 import platform.posix.*
 import kotlin.collections.*
-import kotlin.text.*
 import kotlin.*
 
 actual suspend fun posixExec(
@@ -48,6 +48,15 @@ fun sopen(vararg cmds: String, cwd: String, envs: Map<String, String> = mapOf())
     if (socketpair(AF_UNIX, SOCK_STREAM, 0, fds) < 0) {
         return null to 0L
     }
+    val rcmd = ShellArgs.buildShellExecCommandLineArrayForExecl(cmds.toList())
+    //val rcmd = listOf("/bin/sh", "-c", "\"'echo' 'hello world'\"")
+    //val rcmd = listOf("/bin/sh", "-c", "'echo' 'hello world'")
+
+    //println("rcmd=$rcmd")
+    val command = rcmd.first()
+    //val args = rcmd.drop(1)
+    val args = rcmd
+    //println("rcmd=$rcmd")
     val pid = fork()
     when (pid) {
         -1 -> {
@@ -63,8 +72,13 @@ fun sopen(vararg cmds: String, cwd: String, envs: Map<String, String> = mapOf())
             close(fds[1])
             chdir(cwd)
             for ((k ,v) in envs) putenv("$k=$v".cstr)
-            execl("/bin/sh", "sh", "-c", cmds.joinToString(" ") { "'" + it.replace("'", "\\'") + "'" }, null)
-            _exit(127);
+            memScoped {
+                val vargs = allocArray<CPointerVar<ByteVar>>(args.size + 1)
+                for (n in args.indices) vargs[n] = args[n].cstr.getPointer(this)
+                vargs[args.size] = null
+                execv(command, vargs)
+                _exit(127);
+            }
         }
     }
     //printf("GO!\n");

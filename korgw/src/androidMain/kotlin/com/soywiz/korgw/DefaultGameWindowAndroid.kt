@@ -26,7 +26,7 @@ abstract class BaseAndroidGameWindow() : GameWindow() {
     var coroutineContext: CoroutineContext? = null
 
     val inputMethodManager get() = androidContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-
+    override val dialogInterface = DialogInterfaceAndroid { androidContext }
     override var isSoftKeyboardVisible: Boolean = false
 
     override fun showSoftKeyboard(force: Boolean) {
@@ -102,64 +102,6 @@ class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
     override fun setSize(width: Int, height: Int) {
     }
 
-    override suspend fun browse(url: URL) {
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url.toString()))
-        activity.startActivity(intent, null)
-    }
-
-    override suspend fun alert(message: String) {
-        alertConfirm("Information", message, "Accept", null)
-    }
-
-    override suspend fun confirm(message: String): Boolean {
-        return alertConfirm("Confirm", message, "Yes", "no") == DialogInterface.BUTTON_POSITIVE
-    }
-
-    suspend fun alertConfirm(title: String, message: String, yes: String?, no: String?): Int {
-        val deferred = CompletableDeferred<Int>()
-        val listener = DialogInterface.OnClickListener { dialog, which ->
-            deferred.complete(which)
-        }
-        val dialog = AlertDialog.Builder(activity)
-            .setIcon(android.R.drawable.ic_dialog_alert)
-            .setTitle(title)
-            .setMessage(message)
-            .setCancelable(false)
-        if (yes != null) {
-            dialog.setPositiveButton(yes, listener)
-        }
-        if (no != null) {
-            dialog.setNegativeButton(no, listener)
-        }
-        dialog.show()
-        return deferred.await()
-    }
-
-    override suspend fun prompt(message: String, default: String): String {
-        val deferred = CompletableDeferred<String>()
-        val builder = AlertDialog.Builder(activity)
-        builder.setTitle(message)
-        val input = EditText(androidContext)
-        input.inputType = InputType.TYPE_CLASS_TEXT // InputType.TYPE_TEXT_VARIATION_PASSWORD
-        input.setText(default)
-        builder.setView(input)
-        builder.setCancelable(false)
-        builder.setPositiveButton("OK") { dialog, which ->
-            deferred.complete(input.text.toString())
-        }
-        builder.setNegativeButton("Cancel") { dialog, which ->
-            dialog.cancel()
-            deferred.completeExceptionally(CancellationException())
-        }
-        builder.show()
-        return deferred.await()
-    }
-
-    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
-        val result = activity.startActivityWithResult(Intent.createChooser(Intent().setType("*/*").setAction(Intent.ACTION_GET_CONTENT), "Select a file"))
-        val uri = result?.data ?: throw CancellationException()
-        return listOf(File(uri.toString()).toVfs())
-    }
 
     override suspend fun loop(entry: suspend GameWindow.() -> Unit) {
         this.coroutineContext = kotlin.coroutines.coroutineContext
@@ -168,7 +110,15 @@ class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
     }
 }
 
-class AndroidGameWindowNoActivity(override val width: Int, override val height: Int, override val ag: AG, override val androidContext: Context, val getView: () -> View) : BaseAndroidGameWindow() {
+class AndroidGameWindowNoActivity(
+    override val width: Int,
+    override val height: Int,
+    override val ag: AG,
+    override val androidContext: Context,
+    val getView: () -> View
+) : BaseAndroidGameWindow() {
+    override val dialogInterface = DialogInterfaceAndroid { androidContext }
+
     override val androidView: View get() = getView()
     override var title: String = "Korge"
 

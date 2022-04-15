@@ -244,6 +244,7 @@ class MyDefaultGameWindow : GameWindow() {
     val gameWindowStableRef = StableRef.create(gameWindow)
     val app = NSApplication.sharedApplication()
     val controller = WinController()
+    override val dialogInterface: DialogInterfaceMacos = DialogInterfaceMacos { this }
 
     val windowStyle = NSWindowStyleMaskTitled or NSWindowStyleMaskMiniaturizable or
         NSWindowStyleMaskClosable or NSWindowStyleMaskResizable
@@ -300,7 +301,7 @@ class MyDefaultGameWindow : GameWindow() {
 
     private var responder: NSResponder
 
-    private val window: NSWindow = MyNSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false).apply {
+    internal val window: NSWindow = MyNSWindow(windowRect, windowStyle, NSBackingStoreBuffered, false).apply {
         setIsVisible(false)
         title = windowConfigTitle
         opaque = true
@@ -458,38 +459,7 @@ class MyDefaultGameWindow : GameWindow() {
         //window.setFrameTopLeftPoint()
     }
 
-    // @TODO: https://developer.apple.com/documentation/appkit/nsworkspace/1533463-openurl
-    override suspend fun browse(url: URL) {
-        super.browse(url)
-    }
-
-    override suspend fun alert(message: String) {
-        super.alert(message)
-    }
-
-    override suspend fun confirm(message: String): Boolean {
-        return super.confirm(message)
-    }
-
-    override suspend fun prompt(message: String, default: String): String {
-        return super.prompt(message, default)
-    }
-
-    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
-        val openDlg: NSOpenPanel = NSOpenPanel().apply {
-            setCanChooseFiles(true)
-            setAllowsMultipleSelection(false)
-            setCanChooseDirectories(false)
-        }
-        if (openDlg.runModalForDirectory(null, null).toInt() == NSOKButton.toInt()) {
-            return openDlg.filenames().filterIsInstance<String>().map { localVfs(it) }
-        } else {
-            throw CancelException()
-        }
-    }
-
     override fun close(exitCode: Int) {
-        super.close(exitCode)
         window.close()
     }
 

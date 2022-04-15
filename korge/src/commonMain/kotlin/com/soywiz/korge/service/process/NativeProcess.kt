@@ -7,5 +7,5 @@ import com.soywiz.korio.net.*
 class NativeProcess(views: Views) : NativeProcessBase(views) {
 }
 
-open class NativeProcessBase(val views: Views) : DialogInterface by views.gameWindow {
+open class NativeProcessBase(val views: Views) : DialogInterfaceProvider by views.gameWindow {
 }

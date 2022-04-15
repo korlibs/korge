@@ -22,7 +22,9 @@ class X11Ag(val window: X11GameWindow, val checkGl: Boolean, override val gl: Km
     override val nativeComponent: Any = window
 }
 
-class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow(), DialogInterface by ZenityDialogs() {
+class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
+    override val dialogInterface: DialogInterface = ZenityDialogs()
+
     override val ag: X11Ag by lazy { X11Ag(this, checkGl) }
     override var width: Int = 200; private set
     override var height: Int = 200; private set

@@ -36,6 +36,8 @@ abstract class BaseAwtGameWindow : GameWindow() {
     abstract val contentComponent: Component
     private var lastFactor = 0.0
 
+    override val dialogInterface: DialogInterface = DialogInterfaceAwt { component }
+
     private var _window: Window? = null
     val window: Window? get() {
         if (_window == null) {
@@ -302,50 +304,6 @@ abstract class BaseAwtGameWindow : GameWindow() {
             component.background = value.toAwt()
         }
     override var quality: Quality = Quality.AUTOMATIC
-
-    override suspend fun browse(url: URL) {
-        if (Desktop.isDesktopSupported() && Desktop.getDesktop().isSupported(Desktop.Action.BROWSE)) {
-            Desktop.getDesktop().browse(URI(url.toString()));
-        }
-    }
-
-    suspend inline fun <T> invokeLater(crossinline block: () -> T): T {
-        val deferred = CompletableDeferred<T>()
-        EventQueue.invokeLater {
-            deferred.complete(block())
-        }
-        return deferred.await()
-    }
-
-    override suspend fun alert(message: String) {
-        invokeLater { JOptionPane.showMessageDialog(component, message, "Message", JOptionPane.WARNING_MESSAGE) }
-    }
-
-    override suspend fun confirm(message: String): Boolean {
-        return invokeLater { JOptionPane.showConfirmDialog(component, message, "Confirm", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION }
-    }
-
-    override suspend fun prompt(message: String, default: String): String {
-        return invokeLater { JOptionPane.showInputDialog(component, message, "Input", JOptionPane.PLAIN_MESSAGE, null, null, default).toString() }
-    }
-
-    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
-        //val chooser = JFileChooser()
-        return invokeLater {
-            val mode = if (write) FileDialog.SAVE else FileDialog.LOAD
-            val chooser = FileDialog(this.component.getContainerFrame(), "Select file", mode)
-            if (currentDir != null) {
-                chooser.directory = currentDir.absolutePath
-            }
-            chooser.setFilenameFilter { dir, name -> filter == null || filter.matches(name) }
-            chooser.setLocationRelativeTo(null)
-            //chooser.fileFilter = filter // @TODO: Filters
-            chooser.isMultipleMode = multi
-            //chooser.isMultiSelectionEnabled = multi
-            chooser.isVisible = true
-            chooser.files.map { localVfs(it) }
-        }
-    }
 
     fun dispatchReshapeEvent() {
         val factor = frameScaleFactor

@@ -6,7 +6,7 @@ import com.soywiz.korio.async.AsyncQueue
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.withContext
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.LocalVfs
+import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.FileAlreadyExistsException
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.lang.IOException
@@ -193,7 +193,10 @@ private class NodeJsLocalVfs : LocalVfs() {
     }
 
     override suspend fun exec(path: String, cmdAndArgs: List<String>, env: Map<String, String>, handler: VfsProcessHandler): Int {
-        val process = require_node("child_process").spawn(cmdAndArgs.first(), cmdAndArgs.drop(1).toTypedArray(), jsObject(
+        // @TODO: This fails on windows with characters like '&'
+        val realCmdAndArgs = ShellArgs.buildShellExecCommandLineArrayForNodeSpawn(cmdAndArgs)
+
+        val process = require_node("child_process").spawn(realCmdAndArgs.first(), realCmdAndArgs.drop(1).toTypedArray(), jsObject(
             "cwd" to path,
             "env" to env.toJsObject(),
             "encoding" to "buffer",

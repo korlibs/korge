@@ -29,10 +29,12 @@ open class JsGameWindow : GameWindow() {
     }
 }
 
+
 open class BrowserGameWindow : JsGameWindow() {
+
     override val ag: AGWebgl = AGWebgl(AGConfig())
     val canvas get() = ag.canvas
-
+    override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
     private var isTouchDeviceCache: Boolean? = null
     fun is_touch_device(): Boolean {
         if (isTouchDeviceCache == null) {
@@ -339,55 +341,10 @@ open class BrowserGameWindow : JsGameWindow() {
         // Do nothing!
     }
 
-    override suspend fun browse(url: URL) {
-        document.open(url.fullUrl)
-    }
-
-    override suspend fun alert(message: String) {
-        window.alert(message)
-    }
-
-    override suspend fun confirm(message: String): Boolean {
-        return window.confirm(message)
-    }
-
-    override suspend fun prompt(message: String, default: String): String {
-        return window.prompt(message, default) ?: throw CancellationException("cancelled")
-    }
-
-    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
-        val deferred = CompletableDeferred<List<VfsFile>>()
-        val input = document.createElement("input").unsafeCast<HTMLInputElement>()
-        input.style.position = "absolute"
-        input.style.top = "0px"
-        input.style.left = "0px"
-        input.style.visibility = "hidden"
-        input.type = "file"
-        input.multiple = multi
-        input.onchange = {
-            val files = input.files
-            //document.body?.removeChild(input)
-            if (files != null) {
-                deferred.complete((0 until files.length).map { files[it]?.toVfs() }.filterNotNull())
-            } else {
-                deferred.complete(listOf())
-            }
-        }
-        input.oncancel = {
-            //document.body?.removeChild(input)
-        }
-        document.body?.appendChild(input)
-        input.click()
-        window.setTimeout({
-            document.body?.removeChild(input)
-        }, 100)
-        return deferred.await()
-    }
-
-    private var loopJob: Job? = null
+    internal var loopJob: Job? = null
 
     override fun close(exitCode: Int) {
-        launchImmediately(coroutineDispatcher) {
+        MainScope().launchImmediately {
             loopJob?.cancelAndJoin()
             window.close()
         }

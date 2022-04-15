@@ -228,7 +228,7 @@ private class LocalVfsJvm : LocalVfsV2() {
 		env: Map<String, String>,
 		handler: VfsProcessHandler
 	): Int = executeIo {
-		val actualCmd = if (OS.isWindows) listOf("cmd", "/c") + cmdAndArgs else cmdAndArgs
+		val actualCmd = ShellArgs.buildShellExecCommandLineArrayForProcessBuilder(cmdAndArgs)
 		val pb = ProcessBuilder(actualCmd)
 		pb.environment().putAll(LinkedHashMap())
 		pb.directory(resolveFile(path))

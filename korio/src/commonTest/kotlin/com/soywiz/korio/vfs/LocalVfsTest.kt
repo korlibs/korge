@@ -32,10 +32,13 @@ class LocalVfsTest {
 
 	@Test
 	fun execTest() = suspendTestNoBrowser {
+        //val str = ">hello< '1^&) \" $ \\ \n \r \t \$test (|&,; 2" // @TODO: Couldn't get line breaks working on windows
+        //val str = ">hello< '1^&) \" $ \\ \$test %test% (|&,; 2" // @TODO: Fails on windows/nodejs
+        val str = "hello world"
+        //val str = "1"
 		when {
 			OS.isJsBrowserOrWorker -> Unit // Skip
-			OS.isNative -> Unit // Skip
-			else -> assertEquals("1", temp.execToString(listOf("echo", "1")).trim())
+			else -> assertEquals(str, temp.execToString(listOf("echo", str)).trim())
 		}
 	}
 

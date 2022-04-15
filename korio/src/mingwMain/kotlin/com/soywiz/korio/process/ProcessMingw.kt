@@ -4,8 +4,10 @@ import com.soywiz.kds.concurrent.*
 import com.soywiz.klock.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.VfsProcessHandler
+import com.soywiz.korio.file.std.*
 import kotlinx.cinterop.*
 import platform.posix.*
+import platform.windows.*
 import kotlin.native.concurrent.*
 
 actual suspend fun posixExec(
@@ -18,12 +20,11 @@ actual suspend fun posixExec(
         val result: ConcurrentDeque<Int>,
     )
 
-    println("@WARNING: this exec implementation is not scaping, not setting env variables, or the current path")
+    println("@WARNING: this exec implementation is not escaping, not setting env variables, or the current path, and not reading stderr")
 
-    // @TODO: escape stuff
     // @TODO: place environment variables like ENV=value ENV2=value2 cd path; command
     // @TODO: does it work on windows? only posix?
-    val commandLine = cmdAndArgs.joinToString(" ")
+    val commandLine = ShellArgs.buildShellExecCommandLineForPopen(cmdAndArgs)
 
     //println("[MAIN] BEFORE WORKER: commandLine=$commandLine")
 

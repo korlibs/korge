@@ -15,8 +15,6 @@ import com.soywiz.korgw.platform.NativeLoad
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.PNG
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.net.URL
 import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.Once
 import com.sun.jna.*
@@ -66,6 +64,8 @@ fun initializeMacOnce() = _initializeMacOnce {
 }
 
 class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
+    override val dialogInterface: DialogInterface = DialogInterfaceJvmCocoa { this }
+
     init {
         initializeMacOnce()
     }
@@ -164,10 +164,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
 
     fun windowDidResize() {
         //println("windowDidResize:")
-        val frect = MyNSRect()
-        window.msgSend_stret(frect, "frame")
-
-        val rect = frect
+        val rect = window.msgSendNSRect("frame")
 
         val factor = backingScaleFactor
 
@@ -312,31 +309,9 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
         window.msgSend("setContentSize:", MyNativeNSPoint.ByValue(width, height))
         this.width = width
         this.height = height
-
-    }
-
-    override suspend fun browse(url: URL) {
-        super.browse(url)
-    }
-
-    override suspend fun alert(message: String) {
-        super.alert(message)
-    }
-
-    override suspend fun confirm(message: String): Boolean {
-        return super.confirm(message)
-    }
-
-    override suspend fun prompt(message: String, default: String): String {
-        return super.prompt(message, default)
-    }
-
-    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
-        return super.openFileDialog(filter, write, multi, currentDir)
     }
 
     override fun close(exitCode: Int) {
-        super.close(exitCode)
         autoreleasePool.msgSend("drain")
         // @TODO: Close window gracefully?
         window.msgSend("close")

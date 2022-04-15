@@ -32,32 +32,6 @@ expect fun CreateDefaultGameWindow(): GameWindow
 /**
  * @example FileFilter("All files" to listOf("*.*"), "Image files" to listOf("*.png", "*.jpg", "*.jpeg", "*.gif"))
  */
-data class FileFilter(val entries: List<Pair<String, List<String>>>) {
-    private val regexps = entries.flatMap { it.second }.map { Regex.fromGlob(it) }
-
-    constructor(vararg entries: Pair<String, List<String>>) : this(entries.toList())
-    fun matches(fileName: String): Boolean = entries.isEmpty() || regexps.any { it.matches(fileName) }
-}
-
-interface DialogInterface {
-    suspend fun browse(url: URL): Unit = unsupported()
-    suspend fun alert(message: String): Unit = unsupported()
-    suspend fun confirm(message: String): Boolean = unsupported()
-    suspend fun prompt(message: String, default: String = ""): String = unsupported()
-    // @TODO: Provide current directory
-    suspend fun openFileDialog(filter: FileFilter? = null, write: Boolean = false, multi: Boolean = false, currentDir: VfsFile? = null): List<VfsFile> =
-        unsupported()
-    fun close(exitCode: Int = 0): Unit = unsupported()
-}
-
-suspend fun DialogInterface.openFileDialog(filter: String? = null, write: Boolean = false, multi: Boolean = false): List<VfsFile> {
-    return openFileDialog(null, write, multi)
-}
-
-suspend fun DialogInterface.alertError(e: Throwable) {
-    alert(e.stackTraceToString().lines().take(16).joinToString("\n"))
-}
-
 open class GameWindowCoroutineDispatcherSetNow : GameWindowCoroutineDispatcher() {
     var currentTime: TimeSpan = PerformanceCounter.reference
     override fun now() = currentTime
@@ -204,9 +178,17 @@ interface GameWindowConfig {
     val quality: GameWindow.Quality
 }
 
-open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineContext.Element, AGWindow, GameWindowConfig, Extra by Extra.Mixin() {
+open class GameWindow :
+    EventDispatcher.Mixin(),
+    DialogInterfaceProvider,
+    CoroutineContext.Element,
+    AGWindow,
+    GameWindowConfig,
+    Extra by Extra.Mixin()
+{
     interface ICursor
 
+    override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
 
     enum class Cursor : ICursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,
@@ -439,7 +421,8 @@ open class GameWindow : EventDispatcher.Mixin(), DialogInterface, CoroutineConte
     var exitCode = 0; private set
     var running = true; protected set
     private var closing = false
-    override fun close(exitCode: Int) {
+
+    open fun close(exitCode: Int = 0) {
         if (closing) return
         closing = true
         running = false
@@ -775,47 +758,6 @@ open class EventLoopGameWindow : GameWindow() {
     protected open fun doSwapBuffers() = Unit
     protected open fun doInitialize() = Unit
     protected open fun doDestroy() = Unit
-}
-
-open class ZenityDialogs : DialogInterface {
-    open suspend fun exec(vararg args: String): String = localCurrentDirVfs.execToString(args.toList())
-    override suspend fun browse(url: URL): Unit { exec("xdg-open", url.toString()) }
-    override suspend fun alert(message: String): Unit { exec("zenity", "--warning", "--text=$message") }
-    override suspend fun confirm(message: String): Boolean =
-        try {
-            exec("zenity", "--question", "--text=$message")
-            true
-        } catch (e: Throwable) {
-            false
-        }
-
-    override suspend fun prompt(message: String, default: String): String = try {
-        exec(
-            "zenity",
-            "--question",
-            "--text=$message",
-            "--entry-text=$default"
-        )
-    } catch (e: Throwable) {
-        e.printStackTrace()
-        ""
-    }
-
-    override suspend fun openFileDialog(filter: FileFilter?, write: Boolean, multi: Boolean, currentDir: VfsFile?): List<VfsFile> {
-        return exec(*com.soywiz.korio.util.buildList<String> {
-            add("zenity")
-            add("--file-selection")
-            if (multi) add("--multiple")
-            if (write) add("--save")
-            if (filter != null) {
-                //add("--file-filter=$filter")
-            }
-        }.toTypedArray())
-            .split("\n")
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
-            .map { localVfs(it.trim()) }
-    }
 }
 
 fun GameWindow.mainLoop(entry: suspend GameWindow.() -> Unit) = Korio { loop(entry) }

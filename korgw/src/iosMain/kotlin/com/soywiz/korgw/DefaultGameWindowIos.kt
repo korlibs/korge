@@ -12,6 +12,8 @@ import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 
 class IosGameWindow : GameWindow() {
+    override val dialogInterface = DialogInterfaceIos()
+
     override val ag: AG = object : AGNative(gles = true) {
         override val gl: com.soywiz.kgl.KmlGl = com.soywiz.kgl.CheckErrorsKmlGlProxy(com.soywiz.kgl.KmlGlNative())
     }

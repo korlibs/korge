@@ -60,7 +60,7 @@ class Views constructor(
     EventDispatcher by EventDispatcher.Mixin(),
     CoroutineScope, ViewsContainer,
 	BoundsProvider,
-    DialogInterface by gameWindow,
+    DialogInterfaceProvider by gameWindow,
     Closeable,
     ResourcesContainer
 {

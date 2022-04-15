@@ -119,7 +119,9 @@ class X11OpenglContext(val d: CPointer<Display>?, val w: Window, val doubleBuffe
 }
 
 @OptIn(ExperimentalUnsignedTypes::class)
-class X11GameWindow : EventLoopGameWindow(), DialogInterface by NativeZenityDialogs() {
+class X11GameWindow : EventLoopGameWindow() {
+    override val dialogInterface = ZenityDialogs
+
     //init { println("X11GameWindow") }
     override val ag: X11Ag by lazy { X11Ag(this) }
     override var width: Int = 200; private set
