@@ -53,12 +53,12 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
     implementation("org.jetbrains.kotlin:kotlin-serialization")
 
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
 
     implementation(libs.proguard.gradle)
 
-    implementation("com.android.tools.build:gradle:$androidBuildGradleVersion")
-    implementation("com.google.javascript:closure-compiler:$closureCompilerVersion")
+    implementation("com.android.tools.build:gradle:${libs.versions.android.build.gradle.get()}")
+    implementation(libs.closure.compiler)
 
 	implementation(gradleApi())
 	implementation(localGroovy())
