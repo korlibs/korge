@@ -25,10 +25,13 @@ open class KorgeNativeUiFactory : NativeUiFactory {
     override fun createToggleButton() = KorgeToggleButton(this, UITextButton())
     override fun createCheckBox() = KorgeCheckBox(this, UICheckBox())
     override fun <T> createComboBox() = KorgeComboBox(this, UIComboBox<T>())
-    override fun createLabel() = KorgeLabel(this, UIText("").also { it.textAlignment = TextAlignment.MIDDLE_LEFT })
+    override fun createLabel() =
+        KorgeLabel(this, UIText("").also { it.textAlignment = TextAlignment.MIDDLE_LEFT })
+
     override fun createTextField() = KorgeTextField(this, UIText(""))
 
-    open class KorgeComponent(override val factory: KorgeNativeUiFactory, val view: View) : NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
+    open class KorgeComponent(override val factory: KorgeNativeUiFactory, val view: View) :
+        NativeUiFactory.NativeComponent, Extra by Extra.Mixin() {
         init {
             view.koruiComponent = this
         }
@@ -48,7 +51,9 @@ open class KorgeNativeUiFactory : NativeUiFactory {
 
         override var visible: Boolean
             get() = view.visible
-            set(value) { view.visible = value }
+            set(value) {
+                view.visible = value
+            }
 
         override fun onMouseEvent(handler: (MouseEvent) -> Unit): Disposable {
             var startedHere = false
@@ -82,7 +87,8 @@ open class KorgeNativeUiFactory : NativeUiFactory {
         }
     }
 
-    open class KorgeButton(override val factory: KorgeNativeUiFactory, val button: UITextButton) : KorgeComponent(factory, button), NativeUiFactory.NativeButton {
+    open class KorgeButton(override val factory: KorgeNativeUiFactory, val button: UITextButton) :
+        KorgeComponent(factory, button), NativeUiFactory.NativeButton {
         override var text: String
             get() = button.text
             set(value) {
@@ -90,7 +96,10 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             }
     }
 
-    open class KorgeToggleButton(override val factory: KorgeNativeUiFactory, val button: UITextButton) : KorgeComponent(factory, button), NativeUiFactory.NativeToggleButton {
+    open class KorgeToggleButton(
+        override val factory: KorgeNativeUiFactory,
+        val button: UITextButton
+    ) : KorgeComponent(factory, button), NativeUiFactory.NativeToggleButton {
         override var text: String
             get() = button.text
             set(value) {
@@ -104,7 +113,8 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             }
     }
 
-    open class KorgeLabel(override val factory: KorgeNativeUiFactory, val uiText: UIText) : KorgeComponent(factory, uiText), NativeUiFactory.NativeLabel {
+    open class KorgeLabel(override val factory: KorgeNativeUiFactory, val uiText: UIText) :
+        KorgeComponent(factory, uiText), NativeUiFactory.NativeLabel {
         override var text: String
             get() = uiText.text
             set(value) {
@@ -112,7 +122,8 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             }
     }
 
-    open class KorgeTextField(override val factory: KorgeNativeUiFactory, val uiText: UIText) : KorgeComponent(factory, uiText), NativeUiFactory.NativeTextField {
+    open class KorgeTextField(override val factory: KorgeNativeUiFactory, val uiText: UIText) :
+        KorgeComponent(factory, uiText), NativeUiFactory.NativeTextField {
         override var text: String
             get() = uiText.text
             set(value) {
@@ -120,7 +131,8 @@ open class KorgeNativeUiFactory : NativeUiFactory {
             }
     }
 
-    open class KorgeCheckBox(override val factory: KorgeNativeUiFactory, val checkBox: UICheckBox) : KorgeComponent(factory, checkBox), NativeUiFactory.NativeCheckBox {
+    open class KorgeCheckBox(override val factory: KorgeNativeUiFactory, val checkBox: UICheckBox) :
+        KorgeComponent(factory, checkBox), NativeUiFactory.NativeCheckBox {
         override var text: String
             get() = checkBox.text
             set(value) {
@@ -138,7 +150,10 @@ open class KorgeNativeUiFactory : NativeUiFactory {
         }
     }
 
-    open class KorgeComboBox<T>(override val factory: KorgeNativeUiFactory, val comboBox: UIComboBox<T>) : KorgeComponent(factory, comboBox), NativeUiFactory.NativeComboBox<T> {
+    open class KorgeComboBox<T>(
+        override val factory: KorgeNativeUiFactory,
+        val comboBox: UIComboBox<T>
+    ) : KorgeComponent(factory, comboBox), NativeUiFactory.NativeComboBox<T> {
         override var items: List<T>
             get() = comboBox.items
             set(value) {
@@ -159,25 +174,42 @@ open class KorgeNativeUiFactory : NativeUiFactory {
         }
     }
 
-    open class KorgeContainer(override val factory: KorgeNativeUiFactory, val container: Container) : KorgeComponent(factory, container), NativeUiFactory.NativeContainer {
+    open class KorgeContainer(
+        override val factory: KorgeNativeUiFactory,
+        val container: Container
+    ) : KorgeComponent(factory, container), NativeUiFactory.NativeContainer {
         override val numChildren: Int get() = container.numChildren
 
         override var backgroundColor: RGBA?
             get() = super.backgroundColor
             set(value) {}
 
-        override fun getChildAt(index: Int): NativeUiFactory.NativeComponent = container.getChildAt(index).koruiComponent!!
-        override fun insertChildAt(index: Int, child: NativeUiFactory.NativeComponent) = container.addChildAt((child as KorgeComponent).view, index)
-        override fun removeChild(child: NativeUiFactory.NativeComponent) = container.removeChild((child as KorgeComponent).view)
-        override fun removeChildAt(index: Int) = container.removeChild(container.getChildAt(index))
+        override fun getChildAt(index: Int): NativeUiFactory.NativeComponent =
+            container.getChildAt(index).koruiComponent!!
+
+        override fun insertChildAt(index: Int, child: NativeUiFactory.NativeComponent) =
+            container.addChildAt((child as KorgeComponent).view, index)
+
+        override fun removeChild(child: NativeUiFactory.NativeComponent) {
+            container.removeChild((child as KorgeComponent).view)
+        }
+
+        override fun removeChildAt(index: Int) {
+            container.removeChild(container.getChildAt(index))
+        }
     }
 
-    open class KorgeWindow(override val factory: KorgeNativeUiFactory, val window: Container) : KorgeContainer(factory, window), NativeUiFactory.NativeWindow {
+    open class KorgeWindow(override val factory: KorgeNativeUiFactory, val window: Container) :
+        KorgeContainer(factory, window), NativeUiFactory.NativeWindow {
     }
 }
 
 
-fun Container.korui(width: Number = this.width, height: Number = this.height, block: UiContainer.() -> Unit): View {
+fun Container.korui(
+    width: Number = this.width,
+    height: Number = this.height,
+    block: UiContainer.() -> Unit
+): View {
     val app = UiApplication(KorgeNativeUiFactory())
     return (app.window(width.toInt(), height.toInt()) {
         block()
