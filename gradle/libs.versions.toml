@@ -2,7 +2,14 @@
 jna = "5.11.0"
 jcodec = "0.2.5"
 proguard-gradle = "6.2.2" # 7.2.0-beta2
+kotlin = "1.6.20"
 kotlinx-coroutines = "1.6.1"
+kotlinx-serialization = "1.3.2"
+node = "16.9.1"
+android-build-gradle = "7.0.3"
+gson = "2.8.6"
+gradle-publish-plugin = "0.14.0"
+closure-compiler = "v20210808"
 
 [libraries]
 jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
@@ -11,6 +18,10 @@ jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
 proguard-gradle = { module = "net.sf.proguard:proguard-gradle", version.ref = "proguard-gradle" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+android-build-gradle = { module = "com.android.tools.build:gradle", version.ref = "android-build-gradle" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+gradle-publish-plugin = { module = "com.gradle.publish:plugin-publish-plugin", version.ref = "gradle-publish-plugin" }
+closure-compiler = { module = "com.google.javascript:closure-compiler", version.ref = "closure-compiler" }
 
 [bundles]
 jna = ["jna-core", "jna-platform"]

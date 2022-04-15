@@ -4,9 +4,15 @@ import org.gradle.kotlin.dsl.kotlin
 import java.io.File
 
 buildscript {
-    val kotlinVersion: String by project
-    val androidBuildGradleVersion: String by project
-    val gradlePublishPluginVersion: String by project
+    val kotlinVersion: String = libs.versions.kotlin.get()
+
+    val androidBuildGradleVersion =
+        if (System.getProperty("java.version").startsWith("1.8") || System.getProperty("java.version").startsWith("9")) {
+            "4.2.0"
+        } else {
+            libs.versions.android.build.gradle.get()
+        }
+
     repositories {
         mavenLocal()
         mavenCentral()
@@ -20,7 +26,7 @@ buildscript {
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
     }
     dependencies {
-        classpath("com.gradle.publish:plugin-publish-plugin:$gradlePublishPluginVersion")
+        classpath(libs.gradle.publish.plugin)
         classpath("com.android.tools.build:gradle:$androidBuildGradleVersion")
     }
 }
@@ -39,11 +45,10 @@ val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
 val useMimalloc = true
 //val useMimalloc = false
 
-val kotlinVersion: String by project
+val kotlinVersion: String = libs.versions.kotlin.get()
 val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
-val nodeVersion: String by project
-val androidBuildGradleVersion: String by project
-val kotlinSerializationVersion: String by project
+val nodeVersion: String = libs.versions.node.get()
+val androidBuildGradleVersion: String = libs.versions.android.build.gradle.get()
 
 //println(KotlinVersion.CURRENT)
 
@@ -966,7 +971,7 @@ object BuildVersions {
     const val JNA = "${libs.versions.jna.get()}"
     const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
     const val ANDROID_BUILD = "$androidBuildGradleVersion"
-    const val KOTLIN_SERIALIZATION = "$kotlinSerializationVersion"
+    const val KOTLIN_SERIALIZATION = "${libs.versions.kotlinx.serialization.get()}"
     const val KRYPTO = "$projectVersion"
     const val KLOCK = "$projectVersion"
     const val KDS = "$projectVersion"
