@@ -21,7 +21,7 @@ runs:
           rm -rf ~/.gradle/caches/modules-2/gc.properties
           rm -rf ~/.konan/cache
     - uses: webiny/action-post-run@2.0.1
-      id: gradle-cache-cleanup
+      id: gradle-daemon-stop
       with:
         run: |
           ./gradlew --stop
