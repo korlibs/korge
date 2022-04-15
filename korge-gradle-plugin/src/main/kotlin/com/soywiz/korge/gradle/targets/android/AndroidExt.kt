@@ -102,15 +102,15 @@ fun Project.installAndroidRun(dependsOnList: List<String>, direct: Boolean) {
 
             val installAndroidTaskName = "installAndroid$suffixDevice$suffixDebug"
             val installAndroidTask = when {
-                direct -> tasks.create(installAndroidTaskName, Task::class.java) { task ->
+                direct -> tasks.create(installAndroidTaskName, Task::class.java) {
                     //task.dependsOn("install$suffixDevice$suffixDebug")
-                    task.dependsOn("install$suffixDebug")
+                    dependsOn("install$suffixDebug")
                 }
-                else -> tasks.create(installAndroidTaskName, GradleBuild::class.java) { task ->
-                    task.buildFile = File(buildDir, "platforms/android/build.gradle")
+                else -> tasks.create(installAndroidTaskName, GradleBuild::class.java) {
+                    buildFile = File(buildDir, "platforms/android/build.gradle")
                     //task.version = "4.10.1"
                     //task.tasks = listOf("install$suffixDevice$suffixDebug")
-                    task.tasks = listOf("install$suffixDebug")
+                    tasks = listOf("install$suffixDebug")
                 }
             }
             if (emulator == true) {

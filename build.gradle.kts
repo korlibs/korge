@@ -41,9 +41,7 @@ val useMimalloc = true
 
 val kotlinVersion: String by project
 val realKotlinVersion = (System.getenv("FORCED_KOTLIN_VERSION") ?: kotlinVersion)
-val coroutinesVersion: String by project
 val nodeVersion: String by project
-val jnaVersion: String by project
 val androidBuildGradleVersion: String by project
 val kotlinSerializationVersion: String by project
 
@@ -665,12 +663,11 @@ samples {
 
             if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
                 rootProject.tasks.create(npmInstallEsbuild, Exec::class) {
-                    val task = this
-                    task.dependsOn("kotlinNodeJsSetup")
-                    task.onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
+                    dependsOn("kotlinNodeJsSetup")
+                    onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
 
                     val esbuildVersion = esbuildVersion
-                    task.doFirst {
+                    doFirst {
                         val npmCmd = arrayOf(
                             File(env.nodeExecutable),
                             File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
@@ -678,8 +675,8 @@ samples {
                                 ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
                         )
 
-                        task.environment("PATH", ENV_PATH)
-                        task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
+                        environment("PATH", ENV_PATH)
+                        commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
                     }
                 }
             }
@@ -696,7 +693,6 @@ samples {
                 }
                 val compileDevelopmentExecutableKotlinJs = "compileDevelopmentExecutableKotlinJs"
                 val runJs by creating(Exec::class) {
-                    val task = this
                     group = "run"
                     //dependsOn("jsBrowserDevelopmentRun")
                     dependsOn(browserEsbuildResources)
@@ -709,10 +705,10 @@ samples {
                     }
 
                     val output = File(wwwFolder, "${project.name}.js")
-                    task.inputs.file(jsPath)
-                    task.outputs.file(output)
+                    inputs.file(jsPath)
+                    outputs.file(output)
                     //task.environment("PATH", ENV_PATH)
-                    task.commandLine(ArrayList<Any>().apply {
+                    commandLine(ArrayList<Any>().apply {
                         add(esbuildCmd)
                         //add("--watch",)
                         add("--bundle")
@@ -724,7 +720,7 @@ samples {
                         //if (run) add("--servedir=$wwwFolder")
                     })
 
-                    task.doLast {
+                    doLast {
                         runServer(!project.gradle.startParameter.isContinuous)
                     }
                 }
@@ -967,8 +963,8 @@ object BuildVersions {
     const val GIT = "$gitVersion"
     const val KOTLIN = "$realKotlinVersion"
     const val NODE_JS = "$nodeVersion"
-    const val JNA = "$jnaVersion"
-    const val COROUTINES = "$coroutinesVersion"
+    const val JNA = "${libs.versions.jna.get()}"
+    const val COROUTINES = "${libs.versions.kotlinx.coroutines.get()}"
     const val ANDROID_BUILD = "$androidBuildGradleVersion"
     const val KOTLIN_SERIALIZATION = "$kotlinSerializationVersion"
     const val KRYPTO = "$projectVersion"

@@ -47,24 +47,22 @@ private val Project.cnativeTarget get() = DESKTOP_NATIVE_TARGET.capitalize()
 
 val Project.nativeDesktopBootstrapFile get() = File(buildDir, "platforms/native-desktop/bootstrap.kt")
 
-val Project.prepareKotlinNativeBootstrap: Task get() = tasks.createOnce("prepareKotlinNativeBootstrap") { task ->
-    task.apply {
-        val output = nativeDesktopBootstrapFile
-        outputs.file(output)
-        doLast {
-            output.parentFile.mkdirs()
+val Project.prepareKotlinNativeBootstrap: Task get() = tasks.createOnce("prepareKotlinNativeBootstrap") {
+    val output = nativeDesktopBootstrapFile
+    outputs.file(output)
+    doLast {
+        output.parentFile.mkdirs()
 
-            val text = Indenter {
-                //line("package korge.bootstrap")
-                line("import ${korge.realEntryPoint}")
-                line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
-                line("object RootGameMain") {
-                    line("fun runMain() = runMain(arrayOf())")
-                    line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.realEntryPoint}() }")
-                }
+        val text = Indenter {
+            //line("package korge.bootstrap")
+            line("import ${korge.realEntryPoint}")
+            line("fun main(args: Array<String>): Unit = RootGameMain.runMain(args)")
+            line("object RootGameMain") {
+                line("fun runMain() = runMain(arrayOf())")
+                line("@Suppress(\"UNUSED_PARAMETER\") fun runMain(args: Array<String>): Unit = com.soywiz.korio.Korio { ${korge.realEntryPoint}() }")
             }
-            if (!output.exists() || output.readText() != text) output.writeText(text)
         }
+        if (!output.exists() || output.readText() != text) output.writeText(text)
     }
 }
 
@@ -267,10 +265,10 @@ private fun Project.addNativeRun() {
 				}
 
 				//addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("linkMain${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
-				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("link${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task ->
+				addTask<Exec>("runNative$ctargetKind", dependsOn = listOf("link${ckind}Executable$ctarget", copyTask), group = GROUP_KORGE) { task: Exec ->
 					task.group = GROUP_KORGE_RUN
 					task.executable = executableFile.absolutePath
-					task.args = listOf<String>()
+					task.args()
 				}
 			}
 			addTask<Task>("runNative$ctarget", dependsOn = listOf("runNative${ctarget}Release"), group = GROUP_KORGE) { task ->
@@ -311,7 +309,8 @@ private fun Project.addNativeRun() {
                             val resourcesFolder = appFolderContents["Resources"].apply { mkdirs() }
                             appFolderContents["Info.plist"].writeText(InfoPlistBuilder.build(korge))
                             resourcesFolder["${korge.exeBaseName}.icns"].writeBytes(IcnsBuilder.build(korge.getIconBytes()))
-                            copy { copy ->
+                            copy {
+                                val copy = this
                                 copy.duplicatesStrategy = DuplicatesStrategy.INCLUDE
                                 for (sourceSet in project.gkotlin.sourceSets) {
                                     copy.from(sourceSet.resources)

@@ -29,14 +29,14 @@ class VfsFileTest {
     fun testLocalRead() = suspendTest({ OS.isJvm }) {
         val processedFileNames = arrayListOf<String>()
         println("************************************")
-        localCurrentDirVfs.list().filter { it.baseName == "build.gradle.kts" }.collect {
+        localCurrentDirVfs.list().filter { it.baseName == "build.gradle" }.collect {
             if (it.isFile()) {
                 println("$it: ${it.readAll().size}")
                 processedFileNames += it.baseName
             }
         }
         println("************************************")
-        assertEquals(listOf("build.gradle.kts"), processedFileNames)
+        assertEquals(listOf("build.gradle"), processedFileNames)
     }
 
 	@Test

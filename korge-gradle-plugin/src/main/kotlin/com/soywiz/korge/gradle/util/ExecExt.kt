@@ -11,8 +11,8 @@ fun Project.debugExecSpec(exec: ExecSpec) {
 
 fun Project.execLogger(action: (ExecSpec) -> Unit): ExecResult {
 	return exec {
-		action(it)
-		debugExecSpec(it)
+		action(this)
+		debugExecSpec(this)
 	}
 }
 
@@ -26,10 +26,10 @@ fun ExecSpec.commandLineCompat(vararg args: String): ExecSpec {
 fun Project.execOutput(vararg cmds: String, log: Boolean = true): String {
 	val stdout = ByteArrayOutputStream()
 	exec {
-		it.commandLineCompat(*cmds)
-		it.standardOutput = stdout
+		commandLineCompat(*cmds)
+		standardOutput = stdout
 		if (log) {
-			debugExecSpec(it)
+			debugExecSpec(this)
 		}
 	}
 	return stdout.toString("UTF-8")

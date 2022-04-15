@@ -1,8 +1,4 @@
-import com.soywiz.korge.gradle.*
-
 buildscript {
-	val korgePluginVersion: String by project
-
 	repositories {
 		mavenLocal()
 		mavenCentral()
@@ -14,7 +10,7 @@ buildscript {
 	}
 }
 
-apply<KorgeGradlePlugin>()
+apply plugin: "com.soywiz.korge"
 
 korge {
 	id = "com.sample.demo"

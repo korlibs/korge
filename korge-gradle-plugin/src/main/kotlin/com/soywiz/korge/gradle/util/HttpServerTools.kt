@@ -181,11 +181,11 @@ fun Project.openBrowser(url: String) {
     exec {
         when {
             isWindows -> {
-                it.commandLine("cmd", "/c", "explorer.exe $url")
-                it.isIgnoreExitValue = true
+                commandLine("cmd", "/c", "explorer.exe $url")
+                isIgnoreExitValue = true
             }
-            isLinux -> it.commandLine("xdg-open", url)
-            else -> it.commandLine("open", url)
+            isLinux -> commandLine("xdg-open", url)
+            else -> commandLine("open", url)
         }
     }
 }

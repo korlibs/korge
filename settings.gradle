@@ -1,13 +1,7 @@
-rootProject.name = "korlibs-next"
-
 pluginManagement {
 	repositories {
 		mavenCentral()
 		gradlePluginPortal()
-
-        //val gradleProperties = java.util.Properties().also { it.load(File(rootDir, "gradle.properties").readText().reader()) }
-        //val kotlinVersion = gradleProperties["kotlinVersion"].toString()
-        val kotlinVersion: String by settings
 
         if (kotlinVersion.contains("-M") || kotlinVersion.contains("-RC") || kotlinVersion.contains("eap") || kotlinVersion.contains("-release")) {
             maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary")
@@ -17,25 +11,16 @@ pluginManagement {
 	}
 }
 
-fun isPropertyTrue(name: String): Boolean =
-    System.getenv(name) == "true" || System.getProperty(name) == "true"
+rootProject.name = "korlibs-next"
 
-val inCI = isPropertyTrue("CI")
-val includeKorlibsSamples = isPropertyTrue("INCLUDE_KORLIBS_SAMPLES")
-val disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
-
-/*
-for (file in rootDir.listFiles()) {
-	if (file.name == "build" || file.name == "buildSrc" || file.name.startsWith(".")) continue
-	if (
-			setOf("build.gradle", "build.gradle.kts").map { File(file, it) }.any { it.exists() } &&
-			setOf("settings.gradle", "settings.gradle.kts").map { File(file, it) }.all { !it.exists() }
-	) {
-		include(":${file.name}")
-	}
+boolean isPropertyTrue(String name) {
+    return System.getenv(name) == "true" || System.getProperty(name) == "true"
 }
-*/
-//include(":kbignum")
+
+boolean inCI = isPropertyTrue("CI")
+boolean includeKorlibsSamples = isPropertyTrue("INCLUDE_KORLIBS_SAMPLES")
+boolean disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
+
 include(":klock")
 include(":klogger")
 include(":korinject")
@@ -70,26 +55,21 @@ if (!disabledExtraKorgeLibs) {
     //include(":samples:fleks-ecs")
 
     // This is required because having tons of gradle modules is super slow
-    val skipKorgeSamples = !includeKorlibsSamples
+    boolean skipKorgeSamples = !includeKorlibsSamples
 
     if (!skipKorgeSamples && !inCI) {
-        fileTree(File(rootProject.projectDir, "samples")) {
+        fileTree(new File(rootProject.projectDir, "samples")) {
             include("**" + "/build.gradle.kts")
             include("**" + "/build.gradle")
             exclude("**" + "/build/**")
         }.forEach {
-            val sample = moduleName(it.parentFile)
+            String sample = moduleName(it.parentFile)
             include(":$sample")
             //project(":$sample").projectDir = File(relativePath(it.parent))
         }
     }
 }
 
-fun moduleName(f: File): String {
-    return if (f.parentFile == rootDir) {
-        f.name
-    } else {
-        val p = moduleName(f.parentFile)
-        "${p}:${f.name}"
-    }
+String moduleName(File f) {
+    return (f.parentFile == rootDir) ? f.name : "${moduleName(f.parentFile)}:${f.name}"
 }

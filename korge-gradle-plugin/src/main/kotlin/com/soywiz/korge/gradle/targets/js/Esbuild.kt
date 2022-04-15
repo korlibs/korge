@@ -29,12 +29,12 @@ fun Project.configureEsbuild() {
     }
 
     if (rootProject.tasks.findByName(npmInstallEsbuild) == null) {
-        rootProject.tasks.create(npmInstallEsbuild, Exec::class) { task ->
-            task.dependsOn("kotlinNodeJsSetup")
-            task.onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
+        rootProject.tasks.create(npmInstallEsbuild, Exec::class) {
+            dependsOn("kotlinNodeJsSetup")
+            onlyIf { !esbuildCmdCheck.exists() && !esbuildCmd.exists() }
 
             val esbuildVersion = korge.esbuildVersion
-            task.doFirst {
+            doFirst {
                 val npmCmd = arrayOf(
                     File(env.nodeExecutable),
                     File(env.nodeDir, "lib/node_modules/npm/bin/npm-cli.js").takeIf { it.exists() }
@@ -42,8 +42,8 @@ fun Project.configureEsbuild() {
                         ?: error("Can't find npm-cli.js in ${env.nodeDir} standard folders")
                 )
 
-                task.environment("PATH", ENV_PATH)
-                task.commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
+                environment("PATH", ENV_PATH)
+                commandLine(*npmCmd, "-g", "install", "esbuild@$esbuildVersion", "--prefix", esbuildFolder, "--scripts-prepend-node-path", "true")
             }
         }
     }
@@ -87,19 +87,19 @@ fun Project.configureEsbuild() {
 
             // browserDebugEsbuild
             // browserReleaseEsbuild
-            tasks.create("browser${debugPrefix}Esbuild${runSuffix}", Exec::class) { task ->
-                task.group = "kotlin browser"
-                task.dependsOn(browserPrepareEsbuild)
+            tasks.create("browser${debugPrefix}Esbuild${runSuffix}", Exec::class) {
+                group = "kotlin browser"
+                dependsOn(browserPrepareEsbuild)
 
                 val jsPath = tasks.getByName("compile${productionInfix}ExecutableKotlinJs").outputs.files.first {
                     it.extension.toLowerCase() == "js"
                 }
 
                 val output = File(wwwFolder, "${project.name}.js")
-                task.inputs.file(jsPath)
-                task.outputs.file(output)
-                task.environment("PATH", ENV_PATH)
-                task.commandLine(ArrayList<Any>().apply {
+                inputs.file(jsPath)
+                outputs.file(output)
+                environment("PATH", ENV_PATH)
+                commandLine(ArrayList<Any>().apply {
                     add(esbuildCmd)
                     //add("--watch",)
                     add("--bundle")

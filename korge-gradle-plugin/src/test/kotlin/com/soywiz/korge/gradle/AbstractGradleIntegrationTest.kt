@@ -111,7 +111,7 @@ class TestableProject : Project by ProjectBuilder.builder().build() {
         defineExecResult(*commandLine, result = TestableExecResult(stdout, stderr, exitCode))
     }
 
-    override fun exec(closure: Closure<*>): ExecResult = exec { closure.call(it) }
+    override fun exec(closure: Closure<*>): ExecResult = exec { closure.call(this) }
     override fun exec(action: Action<in ExecSpec>): ExecResult {
         val spec = TestableExecSpec()
         action.execute(spec)

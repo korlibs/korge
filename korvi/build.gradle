@@ -3,5 +3,5 @@ description = "Portable Audio library for Kotlin"
 dependencies {
 	add("commonMainApi", project(":korim"))
 	add("commonMainApi", project(":korau"))
-	add("jvmMainApi", "org.jcodec:jcodec:$jcodecVersion")
+	add("jvmMainApi", libs.jcodec.core)
 }

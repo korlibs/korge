@@ -1,0 +1,9 @@
+description = "Portable Audio library for Kotlin"
+
+com.soywiz.korlibs.NativeTools.configureAllCInterop(project, "minimp3")
+com.soywiz.korlibs.NativeTools.configureAllCInterop(project, "stb_vorbis")
+
+dependencies {
+    add("commonMainApi", project(":korio"))
+    add("jvmMainApi", libs.bundles.jna)
+}

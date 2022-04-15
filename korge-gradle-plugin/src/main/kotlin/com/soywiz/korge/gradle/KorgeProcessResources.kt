@@ -31,16 +31,16 @@ fun Project.addGenResourcesTasks(): Project {
     val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
     tasks.create("listKorgeTargets", Task::class.java) {
-        it.group = GROUP_KORGE_LIST
-        it.doLast {
+        group = GROUP_KORGE_LIST
+        doLast {
             println("gkotlin.targets: ${gkotlin.targets.names}")
         }
     }
 
     tasks.create("listKorgePlugins", Task::class.java) {
-        it.group = GROUP_KORGE_LIST
-        it.dependsOn("jvmMainClasses")
-        it.doLast {
+        group = GROUP_KORGE_LIST
+        dependsOn("jvmMainClasses")
+        doLast {
             //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
             executeInPlugin(runJvm.korgeClassPath, "com.soywiz.korge.resources.ResourceProcessorRunner", "printPlugins") { listOf(it) }

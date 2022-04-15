@@ -38,14 +38,13 @@ fun Project.configureAndroidDirect() {
         }
         compileSdk = project.korge.androidCompileSdk
         defaultConfig {
-            val it = this
-            it.multiDexEnabled = true
-            it.applicationId = project.korge.id
-            it.minSdk = project.korge.androidMinSdk
-            it.targetSdk = project.korge.androidTargetSdk
-            it.versionCode = project.korge.versionCode
-            it.versionName = project.korge.version
-            it.testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
+            multiDexEnabled = true
+            applicationId = project.korge.id
+            minSdk = project.korge.androidMinSdk
+            targetSdk = project.korge.androidTargetSdk
+            versionCode = project.korge.versionCode
+            versionName = project.korge.version
+            testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
             //val manifestPlaceholdersStr = korge.configs.map { it.key + ":" + it.value.quoted }.joinToString(", ")
             //manifestPlaceholders = if (manifestPlaceholdersStr.isEmpty()) "[:]" else "[$manifestPlaceholdersStr]" }
         }
@@ -91,13 +90,13 @@ fun Project.configureAndroidDirect() {
             val resolvedArtifacts = LinkedHashMap<String, String>()
 
             project.configurations.all {
-                it.resolutionStrategy.eachDependency {
-                    val cleanFullName = "${it.requested.group}:${it.requested.name}".removeSuffix("-js").removeSuffix("-jvm")
+                resolutionStrategy.eachDependency {
+                    val cleanFullName = "${requested.group}:${requested.name}".removeSuffix("-js").removeSuffix("-jvm")
                     //println("RESOLVE ARTIFACT: ${it.requested}")
                     //if (cleanFullName.startsWith("org.jetbrains.intellij.deps:trove4j")) return@eachDependency
                     //if (cleanFullName.startsWith("org.jetbrains:annotations")) return@eachDependency
                     if (isKorlibsDependency(cleanFullName)) {
-                        resolvedArtifacts[cleanFullName] = it.requested.version.toString()
+                        resolvedArtifacts[cleanFullName] = requested.version.toString()
                     }
                 }
             }

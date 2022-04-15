@@ -6,25 +6,25 @@ import java.io.*
 
 
 fun Project.configureClosureCompiler() {
-    val jsBrowserEsbuildClosureCompiler = tasks.create("jsBrowserEsbuildClosureCompiler") { task ->
+    val jsBrowserEsbuildClosureCompiler = tasks.create("jsBrowserEsbuildClosureCompiler") {
         val browserReleaseEsbuild = tasks.getByName("browserReleaseEsbuild")
         val jsFile = browserReleaseEsbuild.outputs.files.first()
         val jsMinFile = File(jsFile.parentFile, jsFile.nameWithoutExtension + ".min.js")
-        task.group = "kotlin browser"
-        task.dependsOn(browserReleaseEsbuild)
-        task.inputs.file(jsFile)
+        group = "kotlin browser"
+        dependsOn(browserReleaseEsbuild)
+        inputs.file(jsFile)
         //task.outputs.file(jsMinFile)
-        task.outputs.file(jsFile)
-        task.doFirst {
+        outputs.file(jsFile)
+        doFirst {
             compileJs(jsFile, jsFile)
             //compileJs(jsFile, jsMinFile)
             //jsFile.writeText(compileJs(jsFile.readText()) ?: error("Can't compile JS file due to an error"))
         }
     }
 
-    tasks.create("packageJsClosureCompiler") { task ->
-        task.dependsOn("jsBrowserEsbuildClosureCompiler")
-        task.group = "package"
+    tasks.create("packageJsClosureCompiler") {
+        dependsOn("jsBrowserEsbuildClosureCompiler")
+        group = "package"
     }
 }
 

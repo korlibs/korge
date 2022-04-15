@@ -1,0 +1,4 @@
+description = "Memory utilities for Kotlin"
+
+dependencies {
+}

@@ -1,0 +1,19 @@
+[versions]
+jna = "5.11.0"
+jcodec = "0.2.5"
+proguard-gradle = "6.2.2" # 7.2.0-beta2
+kotlinx-coroutines = "1.6.1"
+
+[libraries]
+jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+jna-platform = { module = "net.java.dev.jna:jna-platform", version.ref = "jna" }
+jcodec-core = { module = "org.jcodec:jcodec", version.ref = "jcodec" }
+proguard-gradle = { module = "net.sf.proguard:proguard-gradle", version.ref = "proguard-gradle" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "kotlinx-coroutines" }
+
+[bundles]
+jna = ["jna-core", "jna-platform"]
+
+#[plugins]
+#jmh = { id = "me.champeau.jmh", version = "0.6.5" }

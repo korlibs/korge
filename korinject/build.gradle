@@ -1,0 +1,5 @@
+description = "Asynchronous Injector for Kotlin"
+
+dependencies {
+	add("commonMainApi", libs.kotlinx.coroutines.core)
+}
