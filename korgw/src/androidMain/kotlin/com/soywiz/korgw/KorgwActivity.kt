@@ -13,9 +13,15 @@ import com.soywiz.korev.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
-abstract class KorgwActivity : Activity()
-    //, DialogInterface.OnKeyListener
+abstract class KorgwActivity(
+    private val activityWithResult: ActivityWithResult.Mixin = ActivityWithResult.Mixin()
+) : Activity(), ActivityWithResult by activityWithResult
+//, DialogInterface.OnKeyListener
 {
+    init {
+        activityWithResult.activity = this
+    }
+
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
     var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
@@ -112,39 +118,9 @@ abstract class KorgwActivity : Activity()
         //gameWindow?.close() // Do not close, since it will be automatically closed by the destroy event
     }
 
-    data class ResultHandler(val request: Int) {
-        var handler: (result: Int, data: Intent?) -> Unit = { result, data -> }
-    }
-
-    val resultHandlers = Pool { ResultHandler(it) }
-    val handlers = LinkedHashMap<Int, ResultHandler>()
-
-    fun registerActivityResult(handler: (result: Int, data: Intent?) -> Unit): Int {
-        return resultHandlers.alloc().also {
-            it.handler = handler
-        }.request
-    }
-
-    suspend fun startActivityWithResult(intent: Intent, options: Bundle? = null): Intent? {
-        val deferred = CompletableDeferred<Intent?>()
-        val requestCode = registerActivityResult { result, data ->
-            if (result == Activity.RESULT_OK) {
-                deferred.complete(data)
-            } else {
-                deferred.completeExceptionally(CancellationException())
-            }
-        }
-        this.startActivityForResult(intent, requestCode, options)
-        return deferred.await()
-    }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        val handler = handlers.remove(requestCode)
-        if (handler != null) {
-            val callback = handler.handler
-            resultHandlers.free(handler)
-            callback(resultCode, data)
-        } else {
+        if (!activityWithResult.tryHandleActivityResult(requestCode, resultCode, data)) {
             super.onActivityResult(requestCode, resultCode, data)
         }
     }
@@ -156,11 +132,11 @@ abstract class KorgwActivity : Activity()
             if (defaultUiVisibility == -1)
                 defaultUiVisibility = systemUiVisibility
             val flags = (View.SYSTEM_UI_FLAG_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
+                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                or View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY)
             systemUiVisibility = flags
             setOnSystemUiVisibilityChangeListener { visibility ->
                 if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
@@ -523,4 +499,3 @@ abstract class KorgwActivity : Activity()
         return super.onKeyShortcut(keyCode, event)
     }
 }
-
