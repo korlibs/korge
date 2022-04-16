@@ -1,10 +1,12 @@
 package com.soywiz.korge.baseview
 
-import com.soywiz.klock.*
+import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.view.*
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import kotlin.collections.set
 
 open class BaseView {
     @KorgeInternal
@@ -145,5 +147,17 @@ open class BaseView {
         for (pair in values) addProp(pair.key, pair.value)
     }
     // endregion
+
+    // Returns the typed property associated with the provided key.
+    // Crashes if the key is not found or if failed to cast to type.
+    inline fun <reified T : Any> getProp(key: String): T {
+        return getPropOrNull(key)!!
+    }
+
+    // Returns the typed property associated with the provided key or null if it doesn't exist
+    // Crashes if failed to cast to type.
+    inline fun <reified T : Any> getPropOrNull(key: String): T? {
+        return props[key] as T?
+    }
 
 }
