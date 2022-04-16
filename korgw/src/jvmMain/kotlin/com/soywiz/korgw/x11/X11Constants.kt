@@ -1,9 +1,9 @@
 package com.soywiz.korgw.x11
 
 import com.soywiz.kds.IntMap
+import com.soywiz.kmem.dyn.*
 import com.soywiz.korev.Key
 import com.soywiz.korgw.platform.INativeGL
-import com.soywiz.korgw.platform.KStructure
 import com.soywiz.korgw.platform.NativeKgl
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11

@@ -5,5 +5,4 @@ com.soywiz.korlibs.NativeTools.configureExtraSourceSets(project)
 
 dependencies {
     add("commonMainApi", project(":korim"))
-    add("jvmMainApi", libs.bundles.jna)
 }

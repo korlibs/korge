@@ -1,9 +1,8 @@
 package com.soywiz.korgw.osx
 
-import com.soywiz.korgw.platform.KStructure
-import com.sun.jna.Pointer
+import com.soywiz.kmem.dyn.*
 
-class MyNSRect(pointer: Pointer? = null) : KStructure(pointer) {
+class MyNSRect(pointer: KPointer? = null) : KStructure(pointer) {
     var x by nativeFloat()
     var y by nativeFloat()
     var width by nativeFloat()

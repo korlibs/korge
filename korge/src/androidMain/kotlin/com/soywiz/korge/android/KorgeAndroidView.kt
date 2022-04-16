@@ -94,7 +94,7 @@ class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
                             }
                         }
                     } finally {
-                        println("${javaClass::getName} completed!")
+                        println("${javaClass.name} completed!")
                     }
                 }
             }
