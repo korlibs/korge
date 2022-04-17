@@ -1,4 +1,6 @@
-package com.soywiz.korag
+package com.soywiz.korag.gl
+
+import com.soywiz.korag.*
 
 expect object AGOpenglFactory {
 	fun create(nativeComponent: Any?): AGFactory

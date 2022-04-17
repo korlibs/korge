@@ -8,9 +8,8 @@ import android.view.*
 import android.view.KeyEvent
 import com.soywiz.kds.*
 import com.soywiz.kgl.*
-import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
-import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
 abstract class KorgwActivity(

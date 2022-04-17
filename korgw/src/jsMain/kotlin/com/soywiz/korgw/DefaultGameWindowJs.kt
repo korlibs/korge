@@ -1,24 +1,21 @@
 package com.soywiz.korgw
 
-import com.soywiz.kds.iterators.*
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korev.Touch
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.net.*
 import com.soywiz.korio.util.*
-import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 import org.w3c.dom.events.*
 import org.w3c.dom.events.MouseEvent
 import kotlinx.browser.*
 import org.w3c.dom.*
 import org.w3c.dom.TouchEvent
-import org.w3c.files.*
 import kotlin.coroutines.*
 
 private external val navigator: dynamic

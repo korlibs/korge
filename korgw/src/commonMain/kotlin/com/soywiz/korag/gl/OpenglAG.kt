@@ -1,4 +1,4 @@
-package com.soywiz.korag
+package com.soywiz.korag.gl
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
@@ -6,12 +6,12 @@ import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
 import com.soywiz.korag.internal.setFloats
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.lang.*
@@ -259,7 +259,7 @@ abstract class AGOpengl : AG() {
             val vattrs = vertexLayout.attributes
             val vattrspos = vertexLayout.attributePositions
 
-            if (vertices.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
+            if (vertices.kind != Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
 
             vertices.bind(gl)
             val totalSize = vertexLayout.totalSize
@@ -513,10 +513,10 @@ abstract class AGOpengl : AG() {
     override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
         GlTexture(this.gl, premultiplied, targetKind)
 
-    inner class GlBuffer(kind: Buffer.Kind) : Buffer(kind) {
+    inner class GlBuffer(kind: Kind) : Buffer(kind) {
         var cachedVersion = -1
         private var id = -1
-        val glKind = if (kind == Buffer.Kind.INDEX) KmlGl.ELEMENT_ARRAY_BUFFER else KmlGl.ARRAY_BUFFER
+        val glKind = if (kind == Kind.INDEX) KmlGl.ELEMENT_ARRAY_BUFFER else KmlGl.ARRAY_BUFFER
 
         override fun afterSetMem() {
         }

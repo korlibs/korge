@@ -1,23 +1,15 @@
 package com.soywiz.korge.android
 
-import android.annotation.SuppressLint
 import android.content.Context
-import android.opengl.GLSurfaceView
-import android.view.MotionEvent
 import android.widget.RelativeLayout
-import com.soywiz.kds.Pool
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlAndroid
-import com.soywiz.klock.*
-import com.soywiz.korag.AGOpengl
+import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.RenderEvent
-import com.soywiz.korev.TouchEvent
-import com.soywiz.korev.dispatch
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Module
 import com.soywiz.korgw.AndroidGameWindowNoActivity
-import com.soywiz.korgw.TouchEventHandler
 import com.soywiz.korio.Korio
 import com.soywiz.korio.android.withAndroidContext
 import com.soywiz.korio.file.std.cleanUpResourcesVfs
@@ -25,8 +17,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import javax.microedition.khronos.egl.EGLConfig
-import javax.microedition.khronos.opengles.GL10
 
 class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
     var mGLView: com.soywiz.korgw.KorgwSurfaceView? = null

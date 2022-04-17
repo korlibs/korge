@@ -1,4 +1,4 @@
-package com.soywiz.korag
+package com.soywiz.korag.gl
 
 import com.soywiz.kds.*
 import com.soywiz.kgl.*

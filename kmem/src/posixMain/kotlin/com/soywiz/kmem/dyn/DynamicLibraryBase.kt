@@ -1,12 +1,9 @@
-package com.soywiz.kmem
+package com.soywiz.kmem.dyn
 
 import kotlinx.cinterop.*
-import platform.posix.RTLD_LAZY
-import platform.posix.dlopen
-import platform.posix.dlsym
-import platform.posix.dlclose
+import platform.posix.*
 
-private val DEBUG_DYNAMIC_LIB = platform.posix.getenv("DEBUG_DYNAMIC_LIB")?.toKString() == "true"
+internal val DEBUG_DYNAMIC_LIB = platform.posix.getenv("DEBUG_DYNAMIC_LIB")?.toKString() == "true"
 
 public actual open class DynamicLibraryBase actual constructor(val name: String) : DynamicSymbolResolver {
     val handle = dlopen(name, RTLD_LAZY)
@@ -15,9 +12,9 @@ public actual open class DynamicLibraryBase actual constructor(val name: String)
         if (handle == null) println("Couldn't load '$name' library")
     }
     public actual val isAvailable get() = handle != null
-    override fun getSymbol(name: String): CPointer<CFunction<*>>? {
+    override fun getSymbol(name: String): KPointer? {
         if (DEBUG_DYNAMIC_LIB) println("Requesting ${this.name}.$name...")
-        val out: CPointer<CFunction<*>>? = if (handle == null) null else dlsym(handle, name)?.reinterpret()
+        val out = if (handle == null) null else dlsym(handle, name)?.rawValue
         if (DEBUG_DYNAMIC_LIB) println("Got ${this.name}.$name...$out")
         return out
     }

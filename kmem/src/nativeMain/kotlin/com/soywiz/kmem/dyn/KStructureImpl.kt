@@ -14,7 +14,7 @@ actual typealias KPointer = kotlin.native.internal.NativePtr
 actual abstract class KStructureBase {
     actual abstract val pointer: KPointer?
 }
-actual fun KPointerCreate(address: Long): KPointer = 0L.toCPointer<ByteVar>().rawValue
+actual fun KPointerCreate(address: Long): KPointer = address.toCPointer<ByteVar>().rawValue
 actual val KPointer.address: Long get() = this.toLong()
 
 private inline fun <T : CPointed> KPointer.offset(offset: Int) = interpretCPointer<T>(this + offset.toLong())!!

@@ -2,6 +2,7 @@ package com.soywiz.korgw.osx
 
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korgw.*
 import com.soywiz.korgw.platform.*
 import com.soywiz.korio.dynamic.*

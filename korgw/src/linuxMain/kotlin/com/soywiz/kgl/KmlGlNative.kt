@@ -5,7 +5,7 @@
 package com.soywiz.kgl
 
 import X11Embed.*
-import com.soywiz.kmem.*
+import com.soywiz.kmem.dyn.*
 import kotlinx.cinterop.*
 
 typealias XVisualInfo = ULongVar // Only used as pointer
@@ -26,7 +26,7 @@ internal object GLLib : DynamicLibrary("libGLX.so.0") {
 }
 
 internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? = memScoped {
-    GLLib.glXGetProcAddress(name.cstr.placeTo(this)) ?: GLLib.getSymbol(name)
+    GLLib.glXGetProcAddress(name.cstr.placeTo(this)) ?: GLLib.getSymbol(name)?.let { interpretCPointer(it) }
 }
 
 actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {

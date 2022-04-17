@@ -8,11 +8,6 @@ import com.soywiz.korio.util.Once
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
-actual object AGOpenglFactory {
-    actual fun create(nativeComponent: Any?): AGFactory = AGFactoryAndroid
-    actual val isTouchDevice: Boolean = true
-}
-
 object AGFactoryAndroid : AGFactory {
     override val supportsNativeFrame: Boolean = false
 

@@ -1,6 +1,7 @@
 package com.soywiz.korag
 
 import com.soywiz.kgl.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.test.*
 import kotlin.test.*

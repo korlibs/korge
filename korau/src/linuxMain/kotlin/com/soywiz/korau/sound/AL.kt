@@ -2,13 +2,8 @@
 package com.soywiz.korau.sound
 
 import kotlinx.cinterop.*
-import platform.posix.RTLD_LAZY
-import platform.posix.dlopen
-import platform.posix.dlsym
-import kotlin.native.concurrent.AtomicInt
-import kotlin.native.concurrent.AtomicReference
-import kotlin.reflect.KProperty
 import com.soywiz.kmem.*
+import com.soywiz.kmem.dyn.*
 
 //typealias ALuintVar = UIntVar
 typealias ALuint = Int

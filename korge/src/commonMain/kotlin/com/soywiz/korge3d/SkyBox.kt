@@ -1,9 +1,7 @@
 package com.soywiz.korge3d
 
 import com.soywiz.korag.AG
-import com.soywiz.korag.AGOpengl
 import com.soywiz.korag.shader.*
-import com.soywiz.korge3d.internal.toFBuffer
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.format.readNativeImage
 import com.soywiz.korio.file.*

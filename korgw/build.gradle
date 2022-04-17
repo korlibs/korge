@@ -1,7 +1,6 @@
 description = "Portable UI with accelerated graphics support for Kotlin"
 
 com.soywiz.korlibs.NativeTools.configureCInteropLinux(project, "X11Embed")
-com.soywiz.korlibs.NativeTools.configureExtraSourceSets(project)
 
 dependencies {
     add("commonMainApi", project(":korim"))

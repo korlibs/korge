@@ -3,10 +3,9 @@ package com.soywiz.korgw
 import com.soywiz.kgl.toInt
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
+import com.soywiz.korag.gl.AGOpenglFactory
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.net.*
 import com.soywiz.korma.geom.*
 import kotlinx.cinterop.*
 import platform.opengl32.*

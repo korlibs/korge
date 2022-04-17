@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.test.*
 import com.soywiz.korge.tests.*

@@ -1,12 +1,11 @@
-package com.soywiz.korag
+package com.soywiz.korag.gl
 
 import com.soywiz.kgl.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.util.*
 import org.w3c.dom.*
 import kotlinx.browser.*
-import org.khronos.webgl.WebGLRenderingContext as GL
 
 object AGFactoryWebgl : AGFactory {
 	override val supportsNativeFrame: Boolean = true

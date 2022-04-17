@@ -1,7 +1,6 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.korau.format.*
-import com.soywiz.korio.async.*
 import kotlinx.cinterop.*
 //import mystdio.*
 import platform.AudioToolbox.*

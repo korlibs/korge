@@ -1,8 +1,7 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.kgl.*
-import com.soywiz.korag.AG
-import com.soywiz.korag.AGOpengl
+import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korgw.osx.MacKmlGL
 import com.soywiz.korgw.win32.Win32KmlGl
 import com.soywiz.korgw.x11.X11KmlGl

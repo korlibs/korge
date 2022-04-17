@@ -2,6 +2,7 @@ package com.soywiz.korau.sound
 
 import com.soywiz.kds.concurrent.*
 import com.soywiz.kmem.*
+import com.soywiz.kmem.dyn.*
 import kotlinx.cinterop.*
 import platform.windows.*
 import kotlin.native.concurrent.*

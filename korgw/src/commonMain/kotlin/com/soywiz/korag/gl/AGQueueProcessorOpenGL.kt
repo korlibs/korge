@@ -1,9 +1,10 @@
-package com.soywiz.korag
+package com.soywiz.korag.gl
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kgl.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.annotations.*

@@ -4,15 +4,10 @@ import com.soywiz.kds.*
 import com.soywiz.korio.stream.*
 import kotlinx.cinterop.*
 import com.soywiz.korau.format.*
-import com.soywiz.korio.stream.*
-import kotlinx.cinterop.*
 import minimp3.*
 import com.soywiz.klock.*
-import com.soywiz.korau.format.*
 import com.soywiz.korau.internal.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.cinterop.*
 import stb_vorbis.*
 
 @kotlin.native.concurrent.ThreadLocal
@@ -225,7 +220,7 @@ object NativeOggVorbisDecoderFormat : AudioFormat("ogg") {
                 samplesDataPtr: CPointer<ShortVar>,
                 frameDataPtr: CPointer<ByteVar>,
                 frameSize: Int,
-                out: NativeAudioDecoder.DecodeInfo
+                out: DecodeInfo
             ) {
                 memScoped {
                     if (vorbis == null) {

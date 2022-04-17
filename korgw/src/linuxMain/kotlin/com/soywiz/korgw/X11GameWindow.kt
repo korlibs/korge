@@ -2,10 +2,10 @@ package com.soywiz.korgw
 
 import X11Embed.*
 import com.soywiz.kgl.*
-import com.soywiz.kmem.DynamicLibrary
+import com.soywiz.kmem.dyn.*
 import com.soywiz.kmem.startAddressOf
 import com.soywiz.kmem.write32LE
-import com.soywiz.korag.AGOpengl
+import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent

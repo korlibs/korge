@@ -6,7 +6,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.nanoseconds
 import com.soywiz.kmem.*
-import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korma.geom.*

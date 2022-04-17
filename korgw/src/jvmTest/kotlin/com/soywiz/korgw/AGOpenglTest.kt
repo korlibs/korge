@@ -1,7 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.kgl.*
-import com.soywiz.korag.*
+import com.soywiz.korag.gl.*
 import kotlin.test.*
 
 class AGOpenglTest {
