@@ -252,32 +252,11 @@ abstract class AGOpengl : AG() {
         (indices as? GlBuffer?)?.bind(gl)
         glProgram.use()
 
-        batch.vertexData.fastForEach { entry ->
-            val vertices = entry.buffer as GlBuffer
-            val vertexLayout = entry.layout
-
-            val vattrs = vertexLayout.attributes
-            val vattrspos = vertexLayout.attributePositions
-
-            if (vertices.kind != Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
-
-            vertices.bind(gl)
-            val totalSize = vertexLayout.totalSize
-            for (n in 0 until vattrspos.size) {
-                val att = vattrs[n]
-                if (!att.active) continue
-                val off = vattrspos[n]
-                val loc = glProgram.getAttribLocation(att.name)
-                val glElementType = att.type.toGl()
-                val elementCount = att.type.elementCount
-                if (loc >= 0) {
-                    gl.enableVertexAttribArray(loc)
-                    gl.vertexAttribPointer(loc, elementCount, glElementType, att.normalized, totalSize, off.toLong())
-                    if (att.divisor != 0) {
-                        gl.vertexAttribDivisor(loc, att.divisor)
-                    }
-                }
-            }
+        val vaoId: Int
+        commands { list ->
+            vaoId = list.vaoCreate()
+            list.vaoSet(vaoId, VertexArrayObject(batch.vertexData))
+            list.vaoUse(vaoId, glProgram.programInfo)
         }
 
         var textureUnit = 0
@@ -442,23 +421,9 @@ abstract class AGOpengl : AG() {
             //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
             list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null)
-        }
 
-        //glSetActiveTexture(KmlGl.TEXTURE0)
-
-        batch.vertexData.fastForEach { entry ->
-            val vattrs = entry.layout.attributes
-            vattrs.fastForEach { att ->
-                if (att.active) {
-                    val loc = glProgram.getAttribLocation(att.name).toInt()
-                    if (loc >= 0) {
-                        if (att.divisor != 0) {
-                            gl.vertexAttribDivisor(loc, 0)
-                        }
-                        gl.disableVertexAttribArray(loc)
-                    }
-                }
-            }
+            list.vaoUse(0, glProgram.programInfo)
+            list.vaoDelete(vaoId)
         }
     }
 

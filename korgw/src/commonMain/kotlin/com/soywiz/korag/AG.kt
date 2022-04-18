@@ -13,7 +13,9 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.math.*
+import kotlin.contracts.*
 import kotlin.coroutines.*
+import kotlin.jvm.*
 
 interface AGFactory {
     val supportsNativeFrame: Boolean
@@ -717,6 +719,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         batch.instances = instances
     })
 
+    /** List<VertexData> -> VAO */
+    @JvmInline
+    value class VertexArrayObject(
+        val list: FastArrayList<VertexData>
+    )
+
     data class VertexData(
         var buffer: Buffer = Buffer(Buffer.Kind.VERTEX),
         var layout: VertexLayout = VertexLayout()
@@ -1143,8 +1151,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     private val _globalState = AGGlobalState()
     @PublishedApi internal val _list = _globalState.createList()
 
+    @OptIn(ExperimentalContracts::class)
     @KoragExperimental
     inline fun commands(block: (AGList) -> Unit) {
+        contract {
+            callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
+        }
         block(_list)
         _executeList(_list)
     }

@@ -188,7 +188,8 @@ open class Attribute(
 	val offset: Int? = null,
 	val active: Boolean = true,
     precision: Precision = Precision.DEFAULT,
-    val divisor: Int = 0
+    val divisor: Int = 0,
+    val fixedLocation: Int? = null
 ) : Variable(name, type, precision) {
 	constructor(name: String, type: VarType, normalized: Boolean, precision: Precision = Precision.DEFAULT) : this(name, type, normalized, null, true, precision)
 

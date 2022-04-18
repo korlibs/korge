@@ -8,6 +8,7 @@ import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korio.annotations.*
+import com.soywiz.korio.lang.*
 
 @OptIn(KorIncomplete::class, KorInternal::class)
 class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig()) : AGQueueProcessor {
@@ -143,5 +144,78 @@ class AGQueueProcessorOpenGL(var gl: KmlGl, var config: GlslConfig = GlslConfig(
 
     override fun clearStencil(stencil: Int) {
         gl.clearStencil(stencil)
+    }
+
+    val vaos = arrayListOf<AG.VertexArrayObject?>()
+    //val vaos = IntMap<AG.VertexArrayObject?>()
+    var lastUsedVao: AG.VertexArrayObject? = null
+
+    private fun ensureVaoIndex(index: Int): Int {
+        while (vaos.size <= index) vaos.add(null)
+        return index
+    }
+
+    override fun vaoCreate(id: Int) {
+    }
+
+    override fun vaoDelete(id: Int) {
+        if (id < vaos.size) vaos[id] = null
+    }
+
+    override fun vaoSet(id: Int, vao: AG.VertexArrayObject) {
+        vaos[ensureVaoIndex(id)] = vao
+    }
+
+    override fun vaoUse(id: Int, program: GLProgramInfo?) {
+        val prevVao = lastUsedVao
+        val vao = vaos.getOrNull(id)
+        val cprogram = program ?: currentProgram
+        lastUsedVao = vao
+        if (vao == null) {
+            val rvao = prevVao
+            rvao?.list?.fastForEach { entry ->
+                val vattrs = entry.layout.attributes
+                vattrs.fastForEach { att ->
+                    if (att.active) {
+                        val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
+                        if (loc >= 0) {
+                            if (att.divisor != 0) {
+                                gl.vertexAttribDivisor(loc, 0)
+                            }
+                            gl.disableVertexAttribArray(loc)
+                        }
+                    }
+                }
+            }
+        } else {
+            val rvao = vao
+            rvao.list.fastForEach { entry ->
+                val vertices = entry.buffer as AGOpengl.GlBuffer
+                val vertexLayout = entry.layout
+
+                val vattrs = vertexLayout.attributes
+                val vattrspos = vertexLayout.attributePositions
+
+                if (vertices.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
+
+                vertices.bind(gl)
+                val totalSize = vertexLayout.totalSize
+                for (n in 0 until vattrspos.size) {
+                    val att = vattrs[n]
+                    if (!att.active) continue
+                    val off = vattrspos[n]
+                    val loc = att.fixedLocation ?: cprogram?.getAttribLocation(gl, att.name) ?: 0
+                    val glElementType = att.type.toGl()
+                    val elementCount = att.type.elementCount
+                    if (loc >= 0) {
+                        gl.enableVertexAttribArray(loc)
+                        gl.vertexAttribPointer(loc, elementCount, glElementType, att.normalized, totalSize, off.toLong())
+                        if (att.divisor != 0) {
+                            gl.vertexAttribDivisor(loc, att.divisor)
+                        }
+                    }
+                }
+            }
+        }
     }
 }

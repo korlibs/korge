@@ -10,6 +10,7 @@ import com.soywiz.kds.*
 import com.soywiz.kds.lock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.*
+import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korio.annotations.*
 import kotlinx.coroutines.*
@@ -50,6 +51,10 @@ interface AGQueueProcessor {
     fun clearColor(red: Float, green: Float, blue: Float, alpha: Float)
     fun clearDepth(depth: Float)
     fun clearStencil(stencil: Int)
+    fun vaoCreate(id: Int)
+    fun vaoDelete(id: Int)
+    fun vaoSet(id: Int, vao: AG.VertexArrayObject)
+    fun vaoUse(id: Int, program: GLProgramInfo?)
 }
 
 @KorInternal
@@ -71,8 +76,9 @@ enum class AGEnable {
 
 @KorIncomplete
 class AGGlobalState {
-    internal val programIndices = ConcurrentPool { it }
-    internal val textureIndices = ConcurrentPool { it }
+    internal val vaoIndices = ConcurrentPool { it + 1 }
+    internal val programIndices = ConcurrentPool { it + 1 }
+    internal val textureIndices = ConcurrentPool { it + 1 }
     //var programIndex = KorAtomicInt(0)
     private val lock = Lock()
     private val lists = Deque<AGList>()
@@ -180,6 +186,11 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CLEAR_COLOR -> processor.clearColor(readFloat(), readFloat(), readFloat(), readFloat())
                 CMD_CLEAR_DEPTH -> processor.clearDepth(readFloat())
                 CMD_CLEAR_STENCIL -> processor.clearStencil(readInt())
+                // VAO
+                CMD_VAO_CREATE -> processor.vaoCreate(data.extract16(0))
+                CMD_VAO_DELETE -> processor.vaoDelete(data.extract16(0))
+                CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AG.VertexArrayObject(readExtra()))
+                CMD_VAO_USE -> processor.vaoUse(data.extract16(0), readExtra())
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -352,6 +363,30 @@ class AGList(val globalState: AGGlobalState) {
         //add(CMD(CMD_STENCIL_MASK).finsert8(writeMask, 0))
     }
 
+    ////////////////////////////////////////
+    // VAO: Vertex Array Object
+    ////////////////////////////////////////
+    fun vaoCreate(): Int {
+        val id = globalState.vaoIndices.alloc()
+        add(CMD(CMD_VAO_CREATE).finsert16(id, 0))
+        return id
+    }
+
+    fun vaoDelete(id: Int) {
+        globalState.vaoIndices.free(id)
+        add(CMD(CMD_VAO_DELETE).finsert16(id, 0))
+    }
+
+    fun vaoSet(id: Int, vao: AG.VertexArrayObject) {
+        addExtra(vao.list)
+        add(CMD(CMD_VAO_SET).finsert16(id, 0))
+    }
+
+    fun vaoUse(id: Int, program: GLProgramInfo? = null) {
+        addExtra(program)
+        add(CMD(CMD_VAO_USE).finsert16(id, 0))
+    }
+
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
@@ -401,6 +436,11 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_STENCIL_FUNC = 0x80
         private const val CMD_STENCIL_OP = 0x81
         private const val CMD_STENCIL_MASK = 0x82
+        // VAO
+        private const val CMD_VAO_CREATE = 0x90
+        private const val CMD_VAO_DELETE = 0x91
+        private const val CMD_VAO_SET = 0x92
+        private const val CMD_VAO_USE = 0x93
     }
 }
 
