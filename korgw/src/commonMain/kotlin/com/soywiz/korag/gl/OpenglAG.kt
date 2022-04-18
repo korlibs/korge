@@ -15,7 +15,7 @@ import kotlin.native.concurrent.*
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
 
-@OptIn(KorIncomplete::class, KorInternal::class, KoragExperimental::class)
+@OptIn(KorIncomplete::class, KorInternal::class)
 abstract class AGOpengl : AG() {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
         RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
@@ -40,8 +40,6 @@ abstract class AGOpengl : AG() {
     }
 
     //val queue = Deque<(gl: GL) -> Unit>()
-
-    override fun createBuffer(kind: Buffer.Kind): Buffer = GlBuffer(kind)
 
     open fun setSwapInterval(value: Int) {
         //gl.swapInterval = 0
@@ -180,58 +178,12 @@ abstract class AGOpengl : AG() {
     private var glProcessor: AGQueueProcessorOpenGL? = null
 
     override fun executeList(list: AGList) {
-        if (glProcessor == null) glProcessor = AGQueueProcessorOpenGL(gl)
+        if (glProcessor == null) glProcessor = AGQueueProcessorOpenGL(gl, _globalState)
         glProcessor?.processBlockingAll(list)
     }
 
     override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
         GlTexture(this.gl, premultiplied, targetKind)
-
-    inner class GlBuffer(kind: Kind) : Buffer(kind) {
-        var cachedVersion = -1
-        private var id = -1
-        val glKind = if (kind == Kind.INDEX) KmlGl.ELEMENT_ARRAY_BUFFER else KmlGl.ARRAY_BUFFER
-
-        override fun afterSetMem() {
-        }
-
-        override fun close() {
-            fbuffer(4) { buffer ->
-                buffer.setInt(0, this.id)
-                gl.deleteBuffers(1, buffer)
-            }
-            id = -1
-        }
-
-        fun getGlId(gl: KmlGl): Int {
-            if (cachedVersion != contextVersion) {
-                cachedVersion = contextVersion
-                dirty = true
-                id = -1
-            }
-            if (id < 0) {
-                id = fbuffer(4) {
-                    gl.genBuffers(1, it)
-                    it.getInt(0)
-                }
-            }
-            if (dirty) {
-                _bind(gl, id)
-                if (mem != null) {
-                    gl.bufferData(glKind, memLength, mem!!, KmlGl.STATIC_DRAW)
-                }
-            }
-            return id
-        }
-
-        fun _bind(gl: KmlGl, id: Int) {
-            gl.bindBuffer(glKind, id)
-        }
-
-        fun bind(gl: KmlGl) {
-            _bind(gl, getGlId(gl))
-        }
-    }
 
     open fun prepareUploadNativeTexture(bmp: NativeImage) {
     }

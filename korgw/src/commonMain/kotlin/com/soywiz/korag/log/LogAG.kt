@@ -188,12 +188,12 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, kind: Kind) : Buffer(kind) {
+	inner class LogBuffer(val id: Int, kind: Kind, list: AGList) : Buffer(kind, list) {
 		val logmem: FBuffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
 		override fun afterSetMem() = log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
-		override fun close() = log("$this.close()", LogBaseAG.Kind.BUFFER)
+		override fun close(list: AGList) = log("$this.close()", LogBaseAG.Kind.BUFFER)
 		override fun toString(): String = "Buffer[$id]"
 	}
 
@@ -220,7 +220,7 @@ open class LogBaseAG(
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
 	override fun createBuffer(kind: Buffer.Kind): Buffer =
-		LogBuffer(bufferId++, kind).apply { log("createBuffer($kind):$id", Kind.BUFFER) }
+        commandsNoWait { LogBuffer(bufferId++, kind, _list).apply { log("createBuffer($kind):$id", Kind.BUFFER) } }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
         val layout = data.layout

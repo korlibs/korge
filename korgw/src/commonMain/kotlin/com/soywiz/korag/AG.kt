@@ -60,7 +60,6 @@ interface AGFeatures {
 
 @OptIn(KorIncomplete::class)
 abstract class AG : AGFeatures, Extra by Extra.Mixin() {
-    var contextVersion = 0
     abstract val nativeComponent: Any
 
     open fun contextLost() {
@@ -429,13 +428,13 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    open class Buffer(val kind: Kind) : Closeable {
+    open class Buffer constructor(val kind: AGBufferKind, val list: AGList) {
         enum class Kind { INDEX, VERTEX }
 
         var dirty = false
-        protected var mem: FBuffer? = null
-        protected var memOffset: Int = 0
-        protected var memLength: Int = 0
+        internal var mem: FBuffer? = null
+        internal var memOffset: Int = 0
+        internal var memLength: Int = 0
 
         open fun afterSetMem() {
         }
@@ -491,12 +490,18 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             return this
         }
 
-        override fun close() {
+        internal var agId: Int = list.bufferCreate()
+
+        open fun close(list: AGList) {
             mem = null
             memOffset = 0
             memLength = 0
             dirty = true
+
+            list.bufferDelete(this.agId)
+            agId = 0
         }
+
     }
 
     enum class DrawType {
@@ -541,9 +546,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture = Texture()
 
-    open fun createBuffer(kind: Buffer.Kind) = Buffer(kind)
-    fun createIndexBuffer() = createBuffer(Buffer.Kind.INDEX)
-    fun createVertexBuffer() = createBuffer(Buffer.Kind.VERTEX)
+    open fun createBuffer(kind: AGBufferKind): Buffer = commandsNoWait { Buffer(kind, it) }
+    fun createIndexBuffer() = createBuffer(AGBufferKind.INDEX)
+    fun createVertexBuffer() = createBuffer(AGBufferKind.VERTEX)
 
     fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AG.VertexData(createVertexBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
 
@@ -734,13 +739,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         val list: FastArrayList<VertexData>
     )
 
-    data class VertexData(
-        var buffer: Buffer = Buffer(Buffer.Kind.VERTEX),
+    data class VertexData constructor(
+        var _buffer: Buffer?,
         var layout: VertexLayout = VertexLayout()
-    )
+    ) {
+        val buffer: Buffer get() = _buffer!!
+    }
 
     data class Batch constructor(
-        var vertexData: FastArrayList<VertexData> = fastArrayListOf(VertexData()),
+        var vertexData: FastArrayList<VertexData> = fastArrayListOf(VertexData(null)),
         var program: Program = DefaultShaders.PROGRAM_DEBUG,
         var type: DrawType = DrawType.TRIANGLES,
         var vertexCount: Int = 0,
@@ -758,7 +765,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         private val singleVertexData = FastArrayList<VertexData>()
 
         private fun ensureSingleVertexData() {
-            if (singleVertexData.isEmpty()) singleVertexData.add(VertexData())
+            if (singleVertexData.isEmpty()) singleVertexData.add(VertexData(null))
             vertexData = singleVertexData
         }
 
@@ -767,7 +774,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             get() = (singleVertexData.firstOrNull() ?: vertexData.first()).buffer
             set(value) {
                 ensureSingleVertexData()
-                singleVertexData[0].buffer = value
+                singleVertexData[0]._buffer = value
             }
         @Deprecated("Use vertexData instead")
         var vertexLayout: VertexLayout
@@ -798,7 +805,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
-        if (indices != null && indices.kind != Buffer.Kind.INDEX) invalidOp("Not a IndexBuffer")
+        if (indices != null && indices.kind != AGBufferKind.INDEX) invalidOp("Not a IndexBuffer")
 
         commandsNoWait { list ->
             applyScissorState(list, scissor)
@@ -1201,7 +1208,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     inner class TextureDrawer {
         val VERTEX_COUNT = 4
-        val vertices = createBuffer(AG.Buffer.Kind.VERTEX)
+        val vertices = createBuffer(AGBufferKind.VERTEX)
         val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
         val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
         val program = Program(VertexShader {
@@ -1305,7 +1312,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     private val drawTempTexture: Texture by lazy { createTexture() }
 
-    private val _globalState = AGGlobalState()
+    protected val _globalState = AGGlobalState()
+    var contextVersion: Int by _globalState::contextVersion
     @PublishedApi internal val _list = _globalState.createList()
 
     val multithreadedRendering: Boolean get() = false
@@ -1313,9 +1321,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     @OptIn(ExperimentalContracts::class)
     @KoragExperimental
     @Deprecated("Use commandsNoWait instead")
-    inline fun commands(block: (AGList) -> Unit) {
+    inline fun <T> commands(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        commandsNoWait(block)
+        return commandsNoWait(block)
     }
 
     /**
@@ -1323,14 +1331,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
      */
     @OptIn(ExperimentalContracts::class)
     @KoragExperimental
-    inline fun commandsSync(block: (AGList) -> Unit) {
+    inline fun <T> commandsSync(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        block(_list)
+        val result = block(_list)
         if (multithreadedRendering) {
             runBlockingNoJs { _list.sync() }
         } else {
             _executeList(_list)
         }
+        return result
     }
 
     /**
@@ -1338,10 +1347,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
      */
     @OptIn(ExperimentalContracts::class)
     @KoragExperimental
-    inline fun commandsNoWait(block: (AGList) -> Unit) {
+    inline fun <T> commandsNoWait(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        block(_list)
+        val result = block(_list)
         if (!multithreadedRendering) _executeList(_list)
+        return result
     }
 
     /**
@@ -1349,14 +1359,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
      */
     @OptIn(ExperimentalContracts::class)
     @KoragExperimental
-    suspend inline fun commandsSuspend(block: (AGList) -> Unit) {
+    suspend inline fun <T> commandsSuspend(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
-        block(_list)
+        val result = block(_list)
         if (!multithreadedRendering) {
             _executeList(_list)
         } else {
             _list.sync()
         }
+        return result
     }
 
     @PublishedApi

@@ -14,7 +14,7 @@ import com.soywiz.korma.geom.*
 import kotlin.math.*
 
 @OptIn(KorIncomplete::class, KorInternal::class)
-class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
+class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AGQueueProcessor {
     val config: GlslConfig = GlslConfig(
         gles = gl.gles,
         android = gl.android,
@@ -86,6 +86,49 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
         currentProgram = program
     }
 
+    // BUFFERS
+    class BufferInfo(val id: Int) {
+        var glId = 0
+        var cachedVersion = -1
+    }
+
+    private val buffers = IntMap<BufferInfo>()
+
+    override fun bufferCreate(id: Int) {
+        val bufferInfo = buffers.getOrPut(id) { BufferInfo(id) }
+    }
+
+    override fun bufferDelete(id: Int) {
+        val bufferInfo = buffers[id]
+        if (bufferInfo != null) {
+            tempBuffer1.setInt(0, bufferInfo.glId)
+            gl.deleteBuffers(1, tempBuffer1)
+        }
+        buffers.remove(id)
+    }
+
+    private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind = buffer.kind) {
+        val bufferInfo = buffers[buffer.agId] ?: return
+        if (bufferInfo.cachedVersion != globalState.contextVersion) {
+            bufferInfo.cachedVersion = globalState.contextVersion
+            buffer.dirty = true
+            bufferInfo.glId = 0
+        }
+        if (bufferInfo.glId <= 0) {
+            gl.genBuffers(1, tempBuffer1)
+            bufferInfo.glId = tempBuffer1.getInt(0)
+        }
+
+        gl.bindBuffer(target.toGl(), bufferInfo.glId)
+
+        if (buffer.dirty) {
+            val mem = buffer.mem
+            if (mem != null) {
+                gl.bufferData(target.toGl(), buffer.memLength, mem, KmlGl.STATIC_DRAW)
+            }
+        }
+    }
+
     ///////////////////////////////////////
     // DRAW
     ///////////////////////////////////////
@@ -97,7 +140,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
         indexType: AGIndexType?,
         indices: AG.Buffer?
     ) {
-        (indices as? AGOpengl.GlBuffer?)?.bind(gl)
+        indices?.let { bindBuffer(it, AGBufferKind.INDEX) }
 
         if (indexType != null) {
             if (instances != 1) {
@@ -219,15 +262,15 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
         } else {
             val rvao = vao
             rvao.list.fastForEach { entry ->
-                val vertices = entry.buffer as AGOpengl.GlBuffer
+                val vertices = entry.buffer
                 val vertexLayout = entry.layout
 
                 val vattrs = vertexLayout.attributes
                 val vattrspos = vertexLayout.attributePositions
 
-                if (vertices.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
+                if (vertices?.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
 
-                vertices.bind(gl)
+                bindBuffer(vertices, AGBufferKind.VERTEX)
                 val totalSize = vertexLayout.totalSize
                 for (n in 0 until vattrspos.size) {
                     val att = vattrs[n]

@@ -24,6 +24,7 @@ typealias AGFrontFace = AG.FrontFace
 typealias AGCullFace = AG.CullFace
 typealias AGDrawType = AG.DrawType
 typealias AGIndexType = AG.IndexType
+typealias AGBufferKind = AG.Buffer.Kind
 
 @KorIncomplete
 @KorInternal
@@ -62,6 +63,8 @@ interface AGQueueProcessor {
     fun uboSet(id: Int, ubo: AG.UniformValues)
     fun uboUse(id: Int)
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
+    fun bufferCreate(id: Int)
+    fun bufferDelete(id: Int)
 }
 
 @KorInternal
@@ -83,8 +86,10 @@ enum class AGEnable {
 
 @KorIncomplete
 class AGGlobalState {
+    internal var contextVersion = 0
     internal val vaoIndices = ConcurrentPool { it + 1 }
     internal val uboIndices = ConcurrentPool { it + 1 }
+    internal val bufferIndices = ConcurrentPool { it + 1 }
     internal val programIndices = ConcurrentPool { it + 1 }
     internal val textureIndices = ConcurrentPool { it + 1 }
     //var programIndex = KorAtomicInt(0)
@@ -103,8 +108,9 @@ class AGGlobalState {
     fun createList(): AGList = AGList(this)
 }
 
-@KorIncomplete
 class AGList(val globalState: AGGlobalState) {
+    var contextVersion: Int by globalState::contextVersion
+
     internal val completed = CompletableDeferred<Unit>()
     private val _lock = Lock() // @TODO: This is slow!
     private val _data = IntDeque(128)
@@ -210,6 +216,9 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_UBO_DELETE -> processor.uboDelete(data.extract16(0))
                 CMD_UBO_SET -> processor.uboSet(data.extract16(0), readExtra())
                 CMD_UBO_USE -> processor.uboUse(data.extract16(0))
+                // BUFFER
+                CMD_BUFFER_CREATE -> processor.bufferCreate(data.extract16(0))
+                CMD_BUFFER_DELETE -> processor.bufferDelete(data.extract16(0))
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -442,6 +451,17 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_READ_PIXELS).finsert4(kind.ordinal, 0))
     }
 
+    // BUFFERS
+    fun bufferCreate(): Int {
+        val id = globalState.bufferIndices.alloc()
+        add(CMD(CMD_BUFFER_CREATE).finsert16(id, 0))
+        return id
+    }
+
+    fun bufferDelete(id: Int) {
+        add(CMD(CMD_BUFFER_DELETE).finsert16(id, 0))
+    }
+
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
@@ -504,6 +524,13 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_UBO_DELETE = 0xA1
         private const val CMD_UBO_SET = 0xA2
         private const val CMD_UBO_USE = 0xA3
+        // BUFFERS
+        private const val CMD_BUFFER_CREATE = 0xB0
+        private const val CMD_BUFFER_DELETE = 0xB1
+        private const val CMD_BUFFER_SET = 0xB2
+        private const val CMD_BUFFER_USE = 0xB3
+
+
     }
 }
 

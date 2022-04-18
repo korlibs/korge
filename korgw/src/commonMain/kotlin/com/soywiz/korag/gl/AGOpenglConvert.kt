@@ -102,3 +102,8 @@ fun VarType.toGl(): Int = when (this.kind) {
     VarKind.TINT -> KmlGl.UNSIGNED_INT
     VarKind.TFLOAT -> KmlGl.FLOAT
 }
+
+fun AG.Buffer.Kind.toGl(): Int = when (this) {
+    AG.Buffer.Kind.INDEX -> KmlGl.ELEMENT_ARRAY_BUFFER
+    AG.Buffer.Kind.VERTEX -> KmlGl.ARRAY_BUFFER
+}
