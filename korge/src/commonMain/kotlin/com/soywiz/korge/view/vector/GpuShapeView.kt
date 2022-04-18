@@ -1,6 +1,7 @@
 package com.soywiz.korge.view.vector
 
 import com.soywiz.kds.*
+import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korag.*
@@ -48,6 +49,7 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
 
     private fun invalidateShape() {
         pointCache.clear()
+        strokeCache.clear()
     }
 
     private val bb = BoundsBuilder()
@@ -216,6 +218,26 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
     private val ab = SegmentInfo()
     private val bc = SegmentInfo()
 
+    data class StrokeRenderCacheKey(
+        val lineWidth: Double,
+        val path: VectorPath,
+        // @TODO: we shouldn't require this matrix. We should be able to compute everything without the matrix, and apply it at the shader level
+        val matrix: Matrix
+    )
+
+    class StrokeRenderData(
+        val entries: List<Entry>,
+        //val lineWidth: Float,
+    ) {
+        class Entry(
+            val points: FloatArray,
+            val distValues: FloatArray,
+            val pointCount: Int,
+        )
+    }
+
+    private val strokeCache = FastIdentityMap<StrokeRenderCacheKey, StrokeRenderData>()
+
     private fun renderStroke(
         ctx: RenderContext,
         stateTransform: Matrix,
@@ -285,123 +307,132 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         )
         */
 
-        val pathList = strokePath.toPathPointList(m, emitClosePoint = false)
-        //println(pathList.size)
-        for (ppath in pathList) {
-            points.clear()
-            val loop = forceClosed ?: ppath.closed
-            //println("Points: " + ppath.toList())
-            val end = if (loop) ppath.size + 1 else ppath.size
-            //val end = if (loop) ppath.size else ppath.size
+        val cacheKey = StrokeRenderCacheKey(lineWidth, strokePath, m)
 
-            for (n in 0 until end) pointsScope {
-                val isFirst = n == 0
-                val isLast = n == ppath.size - 1
-                val isFirstOrLast = isFirst || isLast
-                val a = ppath.getCyclic(n - 1)
-                val b = ppath.getCyclic(n) // Current point
-                val c = ppath.getCyclic(n + 1)
-                val orientation = Point.orientation(a, b, c).sign.toInt()
-                //val angle = Angle.between(b - a, c - a)
-                //println("angle = $angle")
+        val data = strokeCache.getOrPut(cacheKey) {
+            val pathList = strokePath.toPathPointList(m, emitClosePoint = false)
+            val entries = arrayListOf<StrokeRenderData.Entry>()
+            //println(pathList.size)
+            for (ppath in pathList) {
+                points.clear()
+                val loop = forceClosed ?: ppath.closed
+                //println("Points: " + ppath.toList())
+                val end = if (loop) ppath.size + 1 else ppath.size
+                //val end = if (loop) ppath.size else ppath.size
 
-                ab.setTo(a, b, lineWidth, this)
-                bc.setTo(b, c, lineWidth, this)
+                for (n in 0 until end) pointsScope {
+                    val isFirst = n == 0
+                    val isLast = n == ppath.size - 1
+                    val isFirstOrLast = isFirst || isLast
+                    val a = ppath.getCyclic(n - 1)
+                    val b = ppath.getCyclic(n) // Current point
+                    val c = ppath.getCyclic(n + 1)
+                    val orientation = Point.orientation(a, b, c).sign.toInt()
+                    //val angle = Angle.between(b - a, c - a)
+                    //println("angle = $angle")
 
-                when {
-                    // Start/End caps
-                    !loop && isFirstOrLast -> {
-                        val start = n == 0
+                    ab.setTo(a, b, lineWidth, this)
+                    bc.setTo(b, c, lineWidth, this)
 
-                        val cap = if (start) startCap else endCap
-                        val index = if (start) 0 else 1
-                        val segment = if (start) bc else ab
-                        val p1 = segment.p1(index)
-                        val p0 = segment.p0(index)
-                        val iangle = if (start) segment.angleSE - 180.degrees else segment.angleSE
+                    when {
+                        // Start/End caps
+                        !loop && isFirstOrLast -> {
+                            val start = n == 0
 
-                        when (cap) {
-                            LineCap.BUTT -> points.add(p1, p0, fLineWidth)
-                            LineCap.SQUARE -> {
-                                val p1s = Point(p1, iangle, lineWidth)
-                                val p0s = Point(p0, iangle, lineWidth)
-                                points.add(p1s, p0s, fLineWidth)
-                            }
-                            LineCap.ROUND -> {
-                                val p1s = Point(p1, iangle, lineWidth * 1.5)
-                                val p0s = Point(p0, iangle, lineWidth * 1.5)
-                                points.addCubicOrLine(this, p0, p0, p0s, p1s, p1, lineWidth, reverse = false, start = start)
-                            }
-                        }
-                    }
-                    // Joins
-                    else -> {
-                        val m0 = Line.getIntersectXY(ab.s0, ab.e0, bc.s0, bc.e0, MPoint()) // Outer (CW)
-                        val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, MPoint()) // Inner (CW)
-                        val e1 = m1 ?: ab.e1
-                        val e0 = m0 ?: ab.e0
-                        val round = join == LineJoin.ROUND
-                        val dorientation = when {
-                            (join == LineJoin.MITER && e1.distanceTo(b) <= (miterLimit * lineWidth)) -> 0
-                            else -> orientation
-                        }
+                            val cap = if (start) startCap else endCap
+                            val index = if (start) 0 else 1
+                            val segment = if (start) bc else ab
+                            val p1 = segment.p1(index)
+                            val p0 = segment.p0(index)
+                            val iangle = if (start) segment.angleSE - 180.degrees else segment.angleSE
 
-                        if (loop && isFirst) {
-                            //println("forientation=$forientation")
-                            when (dorientation) {
-                                -1 -> points.add(e1, bc.s0, fLineWidth)
-                                0 -> points.add(e1, e0, fLineWidth)
-                                +1 -> points.add(bc.s1, e0, fLineWidth)
-                            }
-                        } else {
-                            //println("dorientation=$dorientation")
-                            when (dorientation) {
-                                // Turn right
-                                -1 -> {
-                                    val fp = m1 ?: ab.e1
-                                    //points.addCubicOrLine(this, true, fp, p0, p0, p1, p1, lineWidth, cubic = false)
-                                    if (round) {
-                                        points.addCubicOrLine(
-                                            this, fp,
-                                            ab.e0, ab.e0s, bc.s0s, bc.s0,
-                                            lineWidth, reverse = true
-                                        )
-                                    } else {
-                                        points.add(fp, ab.e0, fLineWidth)
-                                        points.add(fp, bc.s0, fLineWidth)
-                                    }
+                            when (cap) {
+                                LineCap.BUTT -> points.add(p1, p0, fLineWidth)
+                                LineCap.SQUARE -> {
+                                    val p1s = Point(p1, iangle, lineWidth)
+                                    val p0s = Point(p0, iangle, lineWidth)
+                                    points.add(p1s, p0s, fLineWidth)
                                 }
-                                // Miter
-                                0 -> points.add(e1, e0, fLineWidth)
-                                // Turn left
-                                1 -> {
-                                    val fp = m0 ?: ab.e0
-                                    if (round) {
-                                        points.addCubicOrLine(
-                                            this, fp,
-                                            ab.e1, ab.e1s, bc.s1s, bc.s1,
-                                            lineWidth, reverse = false
-                                        )
-                                    } else {
-                                        points.add(ab.e1, fp, fLineWidth)
-                                        points.add(bc.s1, fp, fLineWidth)
+                                LineCap.ROUND -> {
+                                    val p1s = Point(p1, iangle, lineWidth * 1.5)
+                                    val p0s = Point(p0, iangle, lineWidth * 1.5)
+                                    points.addCubicOrLine(this, p0, p0, p0s, p1s, p1, lineWidth, reverse = false, start = start)
+                                }
+                            }
+                        }
+                        // Joins
+                        else -> {
+                            val m0 = Line.getIntersectXY(ab.s0, ab.e0, bc.s0, bc.e0, MPoint()) // Outer (CW)
+                            val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, MPoint()) // Inner (CW)
+                            val e1 = m1 ?: ab.e1
+                            val e0 = m0 ?: ab.e0
+                            val round = join == LineJoin.ROUND
+                            val dorientation = when {
+                                (join == LineJoin.MITER && e1.distanceTo(b) <= (miterLimit * lineWidth)) -> 0
+                                else -> orientation
+                            }
+
+                            if (loop && isFirst) {
+                                //println("forientation=$forientation")
+                                when (dorientation) {
+                                    -1 -> points.add(e1, bc.s0, fLineWidth)
+                                    0 -> points.add(e1, e0, fLineWidth)
+                                    +1 -> points.add(bc.s1, e0, fLineWidth)
+                                }
+                            } else {
+                                //println("dorientation=$dorientation")
+                                when (dorientation) {
+                                    // Turn right
+                                    -1 -> {
+                                        val fp = m1 ?: ab.e1
+                                        //points.addCubicOrLine(this, true, fp, p0, p0, p1, p1, lineWidth, cubic = false)
+                                        if (round) {
+                                            points.addCubicOrLine(
+                                                this, fp,
+                                                ab.e0, ab.e0s, bc.s0s, bc.s0,
+                                                lineWidth, reverse = true
+                                            )
+                                        } else {
+                                            points.add(fp, ab.e0, fLineWidth)
+                                            points.add(fp, bc.s0, fLineWidth)
+                                        }
+                                    }
+                                    // Miter
+                                    0 -> points.add(e1, e0, fLineWidth)
+                                    // Turn left
+                                    1 -> {
+                                        val fp = m0 ?: ab.e0
+                                        if (round) {
+                                            points.addCubicOrLine(
+                                                this, fp,
+                                                ab.e1, ab.e1s, bc.s1s, bc.s1,
+                                                lineWidth, reverse = false
+                                            )
+                                        } else {
+                                            points.add(ab.e1, fp, fLineWidth)
+                                            points.add(bc.s1, fp, fLineWidth)
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
+                //run {
+                //    val pointsString = "$points"
+                //    if (lastPointsString != pointsString) {
+                //        lastPointsString = pointsString
+                //        println("pointsString=$pointsString")
+                //    }
+                //}
+                entries.add(StrokeRenderData.Entry(points.points.toFloatArray(), points.distValues.toFloatArray(), points.pointCount))
             }
-            //run {
-            //    val pointsString = "$points"
-            //    if (lastPointsString != pointsString) {
-            //        lastPointsString = pointsString
-            //        println("pointsString=$pointsString")
-            //    }
-            //}
-            drawTriangleStrip(ctx, globalAlpha, paint, points.points, points.distValues, points.pointCount, lineWidth.toFloat(), st2, scissor, stencil)
+            StrokeRenderData(entries)
         }
 
+        data.entries.fastForEach { points ->
+            drawTriangleStrip(ctx, globalAlpha, paint, points.points, points.distValues, points.pointCount, lineWidth.toFloat(), st2, scissor, stencil)
+        }
         //println("vertexCount=$vertexCount")
     }
     //private var lastPointsString = ""
@@ -410,8 +441,8 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         ctx: RenderContext,
         globalAlpha: Double,
         paint: Paint,
-        points: FloatArrayList,
-        distValues: FloatArrayList,
+        points: FloatArray,
+        distValues: FloatArray,
         vertexCount: Int,
         lineWidth: Float,
         stateTransform: Matrix,
@@ -428,9 +459,9 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         ) ?: return
 
         ctx.dynamicVertexBufferPool.allocMultiple(3) { (vertices, textures, dists) ->
-            vertices.upload(points.data)
-            textures.upload(points.data)
-            dists.upload(distValues.data)
+            vertices.upload(points)
+            textures.upload(points)
+            dists.upload(distValues)
             ctx.useBatcher { batcher ->
                 batcher.updateStandardUniforms()
                 batcher.simulateBatchStats(vertexCount)
