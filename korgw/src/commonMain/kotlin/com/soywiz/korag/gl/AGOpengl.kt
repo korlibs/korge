@@ -5,7 +5,6 @@ import com.soywiz.kgl.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.annotation.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.*
