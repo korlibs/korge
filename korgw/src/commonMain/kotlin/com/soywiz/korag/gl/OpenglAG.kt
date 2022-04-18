@@ -462,9 +462,6 @@ abstract class AGOpengl : AG() {
         }
     }
 
-
-
-
     override fun readColorTexture(texture: Texture, width: Int, height: Int) {
         gl.apply {
             texture.bind()

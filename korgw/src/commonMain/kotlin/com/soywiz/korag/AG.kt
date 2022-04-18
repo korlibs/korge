@@ -1262,7 +1262,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
                     cachedVersion = contextVersion
                 }
                 if (GlslGenerator.DEBUG_GLSL) {
-                    Console.info("OpenglAG: Created program ${program.name} with id ${programId} in time=$time")
+                    Console.info("AG: Created program ${program.name} with id ${programId} in time=$time")
                 }
             }
         }
