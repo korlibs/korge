@@ -2,20 +2,15 @@ package com.soywiz.korag.gl
 
 import com.soywiz.kds.*
 import com.soywiz.kgl.*
-import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.annotation.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.*
-import kotlin.jvm.JvmOverloads
 import kotlin.native.concurrent.*
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
@@ -430,36 +425,15 @@ abstract class AGOpengl : AG() {
     }
 
     override fun readColor(bitmap: Bitmap32) {
-        fbuffer(bitmap.area * 4) { buffer ->
-            gl.readPixels(
-                0, 0, bitmap.width, bitmap.height,
-                KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer
-            )
-            buffer.getAlignedArrayInt32(0, bitmap.data.ints, 0, bitmap.area)
-            //println("readColor.HASH:" + bitmap.computeHash())
-        }
+        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
     }
 
     override fun readDepth(width: Int, height: Int, out: FloatArray) {
-        val area = width * height
-        fbuffer(area * 4) { buffer ->
-            gl.readPixels(
-                0, 0, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT,
-                buffer
-            )
-            buffer.getAlignedArrayFloat32(0, out, 0, area)
-        }
+        commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }
     }
 
     override fun readStencil(bitmap: Bitmap8) {
-        fbuffer(bitmap.area * 1) { buffer ->
-            gl.readPixels(
-                0, 0, bitmap.width, bitmap.height,
-                KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer
-            )
-            buffer.getArrayInt8(0, bitmap.data, 0, bitmap.area)
-            //println("readColor.HASH:" + bitmap.computeHash())
-        }
+        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, ReadKind.STENCIL) }
     }
 
     override fun readColorTexture(texture: Texture, width: Int, height: Int) {

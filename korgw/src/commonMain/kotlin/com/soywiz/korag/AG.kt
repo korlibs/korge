@@ -524,6 +524,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
+    enum class ReadKind(val size: Int) {
+        COLOR(4), DEPTH(4), STENCIL(1);
+        companion object { val VALUES = values() }
+    }
+
     val dummyTexture by lazy { createTexture() }
 
     fun createTexture(): Texture = createTexture(premultiplied = true)
@@ -795,7 +800,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         //finalScissor.setTo(0, 0, backWidth, backHeight)
         if (indices != null && indices.kind != Buffer.Kind.INDEX) invalidOp("Not a IndexBuffer")
 
-        commands { list ->
+        commandsNoWait { list ->
             applyScissorState(list, scissor)
 
             getProgram(program, config = when {
@@ -1015,7 +1020,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         clearStencil: Boolean = true,
         scissor: Scissor? = null
     ) {
-        commands { list ->
+        commandsNoWait { list ->
             //println("CLEAR: $color, $depth")
             applyScissorState(list, scissor)
             //gl.disable(KmlGl.SCISSOR_TEST)
@@ -1297,14 +1302,55 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     private val _globalState = AGGlobalState()
     @PublishedApi internal val _list = _globalState.createList()
 
+    val multithreadedRendering: Boolean get() = false
+
     @OptIn(ExperimentalContracts::class)
     @KoragExperimental
+    @Deprecated("Use commandsNoWait instead")
     inline fun commands(block: (AGList) -> Unit) {
-        contract {
-            callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE)
-        }
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        commandsNoWait(block)
+    }
+
+    /**
+     * Queues commands, and wait for them to be executed synchronously
+     */
+    @OptIn(ExperimentalContracts::class)
+    @KoragExperimental
+    inline fun commandsSync(block: (AGList) -> Unit) {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         block(_list)
-        _executeList(_list)
+        if (multithreadedRendering) {
+            runBlockingNoJs { _list.sync() }
+        } else {
+            _executeList(_list)
+        }
+    }
+
+    /**
+     * Queues commands without waiting
+     */
+    @OptIn(ExperimentalContracts::class)
+    @KoragExperimental
+    inline fun commandsNoWait(block: (AGList) -> Unit) {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        block(_list)
+        if (!multithreadedRendering) _executeList(_list)
+    }
+
+    /**
+     * Queues commands and suspend until they are executed
+     */
+    @OptIn(ExperimentalContracts::class)
+    @KoragExperimental
+    suspend inline fun commandsSuspend(block: (AGList) -> Unit) {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        block(_list)
+        if (!multithreadedRendering) {
+            _executeList(_list)
+        } else {
+            _list.sync()
+        }
     }
 
     @PublishedApi

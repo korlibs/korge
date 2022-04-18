@@ -61,6 +61,7 @@ interface AGQueueProcessor {
     fun uboDelete(id: Int)
     fun uboSet(id: Int, ubo: AG.UniformValues)
     fun uboUse(id: Int)
+    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
 }
 
 @KorInternal
@@ -171,6 +172,11 @@ class AGList(val globalState: AGGlobalState) {
                     readInt(), readInt(), readInt(),
                     AGIndexType.VALUES.getOrNull(data.extract4(4)),
                     readExtra()
+                )
+                CMD_READ_PIXELS -> processor.readPixels(
+                    readInt(), readInt(), readInt(), readInt(),
+                    readExtra(),
+                    AG.ReadKind.VALUES[data.extract4(0)]
                 )
                 // Uniforms
                 CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra(), readExtra())
@@ -430,10 +436,18 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_UBO_USE).finsert16(id, 0))
     }
 
+    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind) {
+        addInt(x, y, width, height)
+        addExtra(data)
+        add(CMD(CMD_READ_PIXELS).finsert4(kind.ordinal, 0))
+    }
+
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
         // Special
+
+        private const val CMD_READ_PIXELS = 0xFC
         private const val CMD_DRAW = 0xFD
         private const val CMD_SYNC = 0xFE
         private const val CMD_FINISH = 0xFF

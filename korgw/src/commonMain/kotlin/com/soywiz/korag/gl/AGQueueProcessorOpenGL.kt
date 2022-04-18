@@ -89,7 +89,14 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
     ///////////////////////////////////////
     // DRAW
     ///////////////////////////////////////
-    override fun draw(type: AGDrawType, vertexCount: Int, offset: Int, instances: Int, indexType: AGIndexType?, indices: AG.Buffer?) {
+    override fun draw(
+        type: AGDrawType,
+        vertexCount: Int,
+        offset: Int,
+        instances: Int,
+        indexType: AGIndexType?,
+        indices: AG.Buffer?
+    ) {
         (indices as? AGOpengl.GlBuffer?)?.bind(gl)
 
         if (indexType != null) {
@@ -130,7 +137,11 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
     }
 
     // @TODO: Separate
-    override fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp) {
+    override fun stencilOperation(
+        actionOnDepthFail: AG.StencilOp,
+        actionOnDepthPassStencilFail: AG.StencilOp,
+        actionOnBothPass: AG.StencilOp
+    ) {
         gl.stencilOp(actionOnDepthFail.toGl(), actionOnDepthPassStencilFail.toGl(), actionOnBothPass.toGl())
     }
 
@@ -164,6 +175,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
     }
 
     val vaos = arrayListOf<AG.VertexArrayObject?>()
+
     //val vaos = IntMap<AG.VertexArrayObject?>()
     var lastUsedVao: AG.VertexArrayObject? = null
 
@@ -226,7 +238,14 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
                     val elementCount = att.type.elementCount
                     if (loc >= 0) {
                         gl.enableVertexAttribArray(loc)
-                        gl.vertexAttribPointer(loc, elementCount, glElementType, att.normalized, totalSize, off.toLong())
+                        gl.vertexAttribPointer(
+                            loc,
+                            elementCount,
+                            glElementType,
+                            att.normalized,
+                            totalSize,
+                            off.toLong()
+                        )
                         if (att.divisor != 0) {
                             gl.vertexAttribDivisor(loc, att.divisor)
                         }
@@ -399,6 +418,30 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
                 }
                 else -> invalidOp("Don't know how to set uniform ${uniform.type}")
             }
+        }
+    }
+
+    override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind) {
+        val bytesPerPixel = when (data) {
+            is IntArray -> 4
+            is FloatArray -> 4
+            is ByteArray -> 1
+            else -> TODO()
+        }
+        val area = width * height
+        fbuffer(area * bytesPerPixel) { buffer ->
+            when (kind) {
+                AG.ReadKind.COLOR -> gl.readPixels(x, y, width, height, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, buffer)
+                AG.ReadKind.DEPTH -> gl.readPixels(x, y, width, height, KmlGl.DEPTH_COMPONENT, KmlGl.FLOAT, buffer)
+                AG.ReadKind.STENCIL -> gl.readPixels(x, y, width, height, KmlGl.STENCIL_INDEX, KmlGl.UNSIGNED_BYTE, buffer)
+            }
+            when (data) {
+                is IntArray -> buffer.getAlignedArrayInt32(0, data, 0, area)
+                is FloatArray -> buffer.getAlignedArrayFloat32(0, data, 0, area)
+                is ByteArray -> buffer.getArrayInt8(0, data, 0, area)
+                else -> TODO()
+            }
+            //println("readColor.HASH:" + bitmap.computeHash())
         }
     }
 }
