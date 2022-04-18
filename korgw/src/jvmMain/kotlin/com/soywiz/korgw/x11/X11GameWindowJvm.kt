@@ -17,8 +17,6 @@ import com.sun.jna.platform.unix.X11.*
 
 //class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
 class X11Ag(val window: X11GameWindow, val checkGl: Boolean, override val gl: KmlGl = X11KmlGl().checkedIf(checkGl)) : AGOpengl() {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
     override val nativeComponent: Any = window
 }
 

@@ -12,6 +12,10 @@ import com.soywiz.korim.format.AndroidNativeImage
 import java.nio.ByteBuffer
 
 class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
+    override val gles: Boolean = true
+    override val linux: Boolean = true
+    override val android: Boolean = true
+
     override fun activeTexture(texture: Int): Unit = glActiveTexture(texture)
     override fun attachShader(program: Int, shader: Int): Unit = glAttachShader(program, shader)
     override fun bindAttribLocation(program: Int, index: Int, name: String): Unit = glBindAttribLocation(program, index, name)

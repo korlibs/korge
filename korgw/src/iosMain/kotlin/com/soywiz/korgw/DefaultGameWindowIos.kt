@@ -6,8 +6,8 @@ import com.soywiz.korag.gl.*
 class IosGameWindow : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
-    override val ag: AG = object : AGNative(gles = true) {
-        override val gl: com.soywiz.kgl.KmlGl = com.soywiz.kgl.CheckErrorsKmlGlProxy(com.soywiz.kgl.KmlGlNative())
+    override val ag: AG = object : AGNative() {
+        override val gl: com.soywiz.kgl.KmlGl = com.soywiz.kgl.CheckErrorsKmlGlProxy(com.soywiz.kgl.KmlGlNative(gles = true))
     }
 
     //override var fps: Int get() = 60; set(value) = Unit

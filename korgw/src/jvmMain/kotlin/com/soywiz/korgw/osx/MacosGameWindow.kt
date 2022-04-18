@@ -23,7 +23,6 @@ import kotlin.coroutines.*
 import kotlin.system.*
 
 class MacAG(val window: Long, val checkGl: Boolean, val logGl:Boolean) : AGOpengl() {
-    override val gles: Boolean = true
     //override val glSlVersion = 140
     //override val glSlVersion = 100
     override val gl: KmlGl = MacKmlGL().checkedIf(checkGl).logIf(logGl)

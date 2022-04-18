@@ -53,9 +53,6 @@ open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { i
     val baseGl = KmlGlJsCanvas(canvas, glOpts)
     override val gl = glDecorator(baseGl)
 
-    override val webgl: Boolean get() = true
-    override val webgl2: Boolean get() = baseGl.webglVersion >= 2
-
     init {
 		(window.asDynamic()).ag = this
 		//(window.asDynamic()).gl = gl

@@ -6,8 +6,15 @@ package com.soywiz.kgl
 
 import com.soywiz.kds.*
 import com.soywiz.korag.*
+import com.soywiz.korio.util.*
 
 abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
+    open val gles: Boolean get() = false
+    open val linux: Boolean get() = false
+    open val android: Boolean get() = OS.isAndroid
+    open val webgl: Boolean get() = false
+    open val webgl2: Boolean get() = false
+
     open val root: KmlGl get() = this
     open var info: ContextInfo = ContextInfo()
 

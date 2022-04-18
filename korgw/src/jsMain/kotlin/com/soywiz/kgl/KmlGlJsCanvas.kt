@@ -38,6 +38,10 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             }
             error("Can't get webgl context")
         }
+
+    override val webgl: Boolean get() = true
+    override val webgl2: Boolean get() = webglVersion >= 2
+
     private val items = arrayOfNulls<Any>(8 * 1024)
     private val freeList = (1 until items.size).reversed().toMutableList()
     private fun <T> T.alloc(): Int {

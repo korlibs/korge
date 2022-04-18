@@ -1,7 +1,3 @@
-genBuffers([1, FBuffer(size=4)])
-bindBuffer([34963, 1])
-bufferData([34963, 12, FBuffer(size=49152), 35044])
-bindBuffer([34963, 1])
 createProgram([]) = 1
 getString([35724]) = 
 createShader([35632]) = 1
@@ -125,6 +121,10 @@ disable([2929])
 colorMask([true, true, true, true])
 disable([2960])
 stencilMask([0])
+genBuffers([1, FBuffer(size=4)])
+bindBuffer([34963, 1])
+bufferData([34963, 12, FBuffer(size=49152), 35044])
+bindBuffer([34963, 1])
 drawElements([4, 6, 5123, 0])
 disableVertexAttribArray([0])
 disableVertexAttribArray([0])

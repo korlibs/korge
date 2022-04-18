@@ -12,8 +12,6 @@ import com.soywiz.korgw.sdl2.*
 private val sdl by lazy { SDL() }
 
 class SDLAg(window: SdlGameWindowNative, override val gl: KmlGl = KmlGlNative()) : AGOpengl() {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
     override val nativeComponent: Any = window
 }
 

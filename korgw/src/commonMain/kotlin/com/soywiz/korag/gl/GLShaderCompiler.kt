@@ -4,6 +4,7 @@ import com.soywiz.kds.*
 import com.soywiz.kgl.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import kotlin.native.concurrent.*

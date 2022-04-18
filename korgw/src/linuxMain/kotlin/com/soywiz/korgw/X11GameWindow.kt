@@ -58,8 +58,6 @@ private val swapIntervalEXT by GLFuncNull<(CPointer<Display>?, GLXDrawable, Int)
 
 //class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
 class X11Ag(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
-    override val gles: Boolean = true
-    override val linux: Boolean = true
     override val nativeComponent: Any = window
 }
 

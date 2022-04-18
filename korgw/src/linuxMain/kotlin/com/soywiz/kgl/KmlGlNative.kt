@@ -30,4 +30,6 @@ internal actual fun glGetProcAddressAnyOrNull(name: String): COpaquePointer? = m
 }
 
 actual class KmlGlNative actual constructor() : NativeBaseKmlGl() {
+    override val gles: Boolean = true
+    override val linux: Boolean = true
 }

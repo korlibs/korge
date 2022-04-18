@@ -1,10 +1,14 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
+import com.soywiz.kgl.*
+import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
+import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.annotations.*
@@ -772,6 +776,104 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     private val batch = Batch()
 
     open fun draw(batch: Batch) {
+        val instances = batch.instances
+        val program = batch.program
+        val type = batch.type
+        val vertexCount = batch.vertexCount
+        val indices = batch.indices
+        val indexType = batch.indexType
+        val offset = batch.offset
+        val blending = batch.blending
+        val uniforms = batch.uniforms
+        val stencil = batch.stencil
+        val colorMask = batch.colorMask
+        val renderState = batch.renderState
+        val scissor = batch.scissor
+
+        //println("SCISSOR: $scissor")
+
+        //finalScissor.setTo(0, 0, backWidth, backHeight)
+        if (indices != null && indices.kind != Buffer.Kind.INDEX) invalidOp("Not a IndexBuffer")
+
+        commands { list ->
+            applyScissorState(list, scissor)
+
+            getProgram(program, config = when {
+                uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
+                else -> ProgramConfig.DEFAULT
+            }).use(list)
+
+            val vaoId = list.vaoCreate()
+            list.vaoSet(vaoId, VertexArrayObject(batch.vertexData))
+            list.vaoUse(vaoId)
+
+            val uboId = list.uboCreate()
+            list.uboSet(uboId, uniforms)
+            list.uboUse(uboId)
+
+            list.enableDisable(AGEnable.BLEND, blending.enabled) {
+                list.blendEquation(blending.eqRGB, blending.eqA)
+                list.blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
+            }
+
+            list.enableDisable(AGEnable.CULL_FACE, renderState.frontFace != FrontFace.BOTH) {
+                list.frontFace(renderState.frontFace)
+            }
+
+            list.depthMask(renderState.depthMask)
+            list.depthRange(renderState.depthNear, renderState.depthFar)
+
+            list.enableDisable(AGEnable.DEPTH, renderState.depthFunc != CompareMode.ALWAYS) {
+                list.depthFunction(renderState.depthFunc)
+            }
+
+            list.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
+
+            if (stencil.enabled) {
+                list.enable(AGEnable.STENCIL)
+                list.stencilFunction(stencil.compareMode, stencil.referenceValue, stencil.readMask)
+                list.stencilOperation(
+                    stencil.actionOnDepthFail,
+                    stencil.actionOnDepthPassStencilFail,
+                    stencil.actionOnBothPass
+                )
+                list.stencilMask(stencil.writeMask)
+            } else {
+                list.disable(AGEnable.STENCIL)
+                list.stencilMask(0)
+            }
+
+            //val viewport = FBuffer(4 * 4)
+            //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
+            //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
+
+            list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null, indices)
+
+            //list.uboUse(0)
+            list.uboDelete(uboId)
+
+            list.vaoUse(0)
+            list.vaoDelete(vaoId)
+        }
+    }
+
+    fun UniformValues.useExternalSampler(): Boolean {
+        var useExternalSampler = false
+        this.fastForEach { uniform, value ->
+            val uniformType = uniform.type
+            when (uniformType) {
+                VarType.Sampler2D -> {
+                    val unit = value.fastCastTo<TextureUnit>()
+                    val tex = (unit.texture.fastCastTo<AGOpengl.GlTexture?>())
+                    if (tex != null) {
+                        if (tex.forcedTexTarget != KmlGl.TEXTURE_2D && tex.forcedTexTarget != -1) {
+                            useExternalSampler = true
+                        }
+                    }
+                }
+            }
+        }
+        return useExternalSampler
     }
 
     open fun disposeTemporalPerFrameStuff() = Unit
@@ -1138,6 +1240,50 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             )
         }
     }
+
+    //////////////
+
+
+    private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
+
+    @JvmOverloads
+    fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT): AgProgram {
+        return programs.getOrPut(program) { FastIdentityMap() }.getOrPut(config) { AgProgram(program, config) }
+    }
+
+    inner class AgProgram(val program: Program, val programConfig: ProgramConfig) {
+        var cachedVersion = -1
+        var programId = 0
+
+        fun ensure(list: AGList) {
+            if (cachedVersion != contextVersion) {
+                val time = measureTime {
+                    programId = list.createProgram(program, programConfig)
+                    cachedVersion = contextVersion
+                }
+                if (GlslGenerator.DEBUG_GLSL) {
+                    Console.info("OpenglAG: Created program ${program.name} with id ${programId} in time=$time")
+                }
+            }
+        }
+
+        fun use(list: AGList) {
+            ensure(list)
+            list.useProgram(programId)
+        }
+
+        fun unuse(list: AGList) {
+            ensure(list)
+            list.useProgram(0)
+        }
+
+        fun close(list: AGList) {
+            if (programId != 0) list.deleteProgram(programId)
+            programId = 0
+        }
+    }
+
+    //////////////
 
     val textureDrawer by lazy { TextureDrawer() }
     val flipRenderTexture = true

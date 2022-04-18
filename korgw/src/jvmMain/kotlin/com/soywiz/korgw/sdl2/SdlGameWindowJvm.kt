@@ -23,11 +23,12 @@ import com.sun.jna.Native
 import com.sun.jna.Pointer
 import kotlin.system.*
 
-open class SDLKmlGl : NativeKgl(SDL)
-class SDLAg(window: SdlGameWindowJvm, val checkGl: Boolean, override val gl: KmlGl = SDLKmlGl().checkedIf(checkGl)) :
-    AGOpengl() {
+open class SDLKmlGl : NativeKgl(SDL) {
     override val gles: Boolean = true
     override val linux: Boolean = true
+}
+class SDLAg(window: SdlGameWindowJvm, val checkGl: Boolean, override val gl: KmlGl = SDLKmlGl().checkedIf(checkGl)) :
+    AGOpengl() {
     override val nativeComponent: Any = window
 }
 

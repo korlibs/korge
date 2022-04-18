@@ -654,4 +654,7 @@ internal interface GL : INativeGL, Library {
 
 //internal object X11KmlGl : NativeKgl(X)
 
-open class X11KmlGl : NativeKgl(X)
+open class X11KmlGl : NativeKgl(X) {
+    override val gles: Boolean = true
+    override val linux: Boolean = true
+}

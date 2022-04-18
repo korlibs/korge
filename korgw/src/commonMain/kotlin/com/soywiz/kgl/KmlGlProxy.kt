@@ -1037,6 +1037,8 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     }
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
+    override val webgl: Boolean get() = parent.webgl
+    override val webgl2: Boolean get() = parent.webgl2
     override val root: KmlGl get() = parent.root
 
     override val graphicExtensions: Set<String> get() = parent.graphicExtensions

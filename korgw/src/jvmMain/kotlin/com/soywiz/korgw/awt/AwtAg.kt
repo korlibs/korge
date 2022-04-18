@@ -11,8 +11,6 @@ import java.awt.GraphicsEnvironment
 import java.awt.Toolkit
 
 class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, logGl: Boolean, val cacheGl: Boolean = false) : AGOpengl() {
-    override val gles: Boolean = true
-    override val linux: Boolean = OS.isLinux
     private var baseLazyGl: KmlGl? = null
     private var baseLazyGlWithLog: LogKmlGlProxy? = null
     private var lazyGl: KmlGlFastProxy? = null

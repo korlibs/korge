@@ -36,10 +36,11 @@ interface AGQueueProcessor {
     fun cullFace(face: AGCullFace)
     fun frontFace(face: AGFrontFace)
     fun depthFunction(depthTest: AGCompareMode)
-    fun programCreate(programId: Int, program: Program)
+    fun programCreate(programId: Int, program: Program, programConfig: ProgramConfig?)
     fun programDelete(programId: Int)
     fun programUse(programId: Int)
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null)
+    fun programUseExt(program: GLProgramInfo?)
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null)
     fun uniformsSet(layout: UniformLayout, data: FBuffer)
     fun depthMask(depth: Boolean)
     fun depthRange(near: Float, far: Float)
@@ -51,10 +52,16 @@ interface AGQueueProcessor {
     fun clearColor(red: Float, green: Float, blue: Float, alpha: Float)
     fun clearDepth(depth: Float)
     fun clearStencil(stencil: Int)
+    // VAO
     fun vaoCreate(id: Int)
     fun vaoDelete(id: Int)
     fun vaoSet(id: Int, vao: AG.VertexArrayObject)
     fun vaoUse(id: Int, program: GLProgramInfo?)
+    // UBO
+    fun uboCreate(id: Int)
+    fun uboDelete(id: Int)
+    fun uboSet(id: Int, ubo: AG.UniformValues)
+    fun uboUse(id: Int, program: GLProgramInfo?)
 }
 
 @KorInternal
@@ -65,7 +72,7 @@ inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
 }
 
 @KorInternal
-inline fun AGQueueProcessor.processBlockingAll(list: AGList) = processBlocking(list, -1)
+inline fun AGQueueProcessor.processBlockingAll(list: AGList): Unit = processBlocking(list, -1)
 
 enum class AGEnable {
     BLEND, CULL_FACE, DEPTH, SCISSOR, STENCIL;
@@ -77,6 +84,7 @@ enum class AGEnable {
 @KorIncomplete
 class AGGlobalState {
     internal val vaoIndices = ConcurrentPool { it + 1 }
+    internal val uboIndices = ConcurrentPool { it + 1 }
     internal val programIndices = ConcurrentPool { it + 1 }
     internal val textureIndices = ConcurrentPool { it + 1 }
     //var programIndex = KorAtomicInt(0)
@@ -155,14 +163,16 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CULL_FACE -> processor.cullFace(AGCullFace.VALUES[data.extract4(0)])
                 CMD_FRONT_FACE -> processor.frontFace(AGFrontFace.VALUES[data.extract4(0)])
                 // Programs
-                CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), _extra.removeFirst().fastCastTo())
+                CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), readExtra(), readExtra())
                 CMD_PROGRAM_DELETE -> processor.programDelete(data.extract16(0))
                 CMD_PROGRAM_USE -> processor.programUse(data.extract16(0))
+                CMD_PROGRAM_USE_EXT -> processor.programUseExt(readExtra())
                 // Draw
                 CMD_DRAW -> processor.draw(
                     AGDrawType.VALUES[data.extract4(0)],
                     readInt(), readInt(), readInt(),
                     AGIndexType.VALUES.getOrNull(data.extract4(4)),
+                    readExtra()
                 )
                 // Uniforms
                 CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra(), readExtra())
@@ -191,6 +201,11 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_VAO_DELETE -> processor.vaoDelete(data.extract16(0))
                 CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AG.VertexArrayObject(readExtra()))
                 CMD_VAO_USE -> processor.vaoUse(data.extract16(0), readExtra())
+                // UBO
+                CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
+                CMD_UBO_DELETE -> processor.uboDelete(data.extract16(0))
+                CMD_UBO_SET -> processor.uboSet(data.extract16(0), readExtra())
+                CMD_UBO_USE -> processor.uboUse(data.extract16(0), readExtra())
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -290,9 +305,10 @@ class AGList(val globalState: AGGlobalState) {
     // PROGRAMS
     ////////////////////////////////////////
 
-    fun createProgram(program: Program): Int {
+    fun createProgram(program: Program, programConfig: ProgramConfig? = null): Int {
         val programId = globalState.programIndices.alloc()
         addExtra(program)
+        addExtra(programConfig)
         add(CMD(CMD_PROGRAM_CREATE).finsert16(programId, 0))
         return programId
     }
@@ -304,6 +320,12 @@ class AGList(val globalState: AGGlobalState) {
 
     fun useProgram(programId: Int) {
         add(CMD(CMD_PROGRAM_USE).finsert16(programId, 0))
+    }
+
+    // @TODO: Remove this when we use the rest of the functions
+    fun useProgramInfo(program: GLProgramInfo? = null) {
+        addExtra(program)
+        add(CMD(CMD_PROGRAM_USE_EXT))
     }
 
     ////////////////////////////////////////
@@ -344,8 +366,9 @@ class AGList(val globalState: AGGlobalState) {
     // DRAW
     ////////////////////////////////////////
 
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null) {
+    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null) {
         addInt(vertexCount, offset, instances)
+        addExtra(indices)
         add(CMD(CMD_DRAW).finsert4(type.ordinal, 0).finsert4(indexType?.ordinal ?: 0xF, 4))
     }
 
@@ -387,6 +410,36 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_VAO_USE).finsert16(id, 0))
     }
 
+    ////////////////////////////////////////
+    // UBO: Uniform Buffer Object
+    ////////////////////////////////////////
+    fun uboCreate(): Int {
+        val id = globalState.uboIndices.alloc()
+        add(CMD(CMD_UBO_CREATE).finsert16(id, 0))
+        return id
+    }
+
+    fun uboDelete(id: Int) {
+        globalState.uboIndices.free(id)
+        add(CMD(CMD_UBO_DELETE).finsert16(id, 0))
+    }
+
+    fun uboSet(id: Int, ubo: AG.UniformValues) {
+        addExtra(ubo)
+        add(CMD(CMD_UBO_SET).finsert16(id, 0))
+    }
+
+    // @TODO: If we have a layout we can have the objects already arranged
+    @KorIncomplete
+    fun uboSet(id: Int, data: FBuffer, layout: UniformLayout) {
+        TODO()
+    }
+
+    fun uboUse(id: Int, program: GLProgramInfo? = null) {
+        addExtra(program)
+        add(CMD(CMD_UBO_USE).finsert16(id, 0))
+    }
+
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
@@ -417,6 +470,7 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_PROGRAM_CREATE = 0x30
         private const val CMD_PROGRAM_DELETE = 0x31
         private const val CMD_PROGRAM_USE = 0x32
+        private const val CMD_PROGRAM_USE_EXT = 0x33
         // Textures
         private const val CMD_TEXTURE_CREATE = 0x40
         private const val CMD_TEXTURE_DELETE = 0x41
@@ -436,11 +490,16 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_STENCIL_FUNC = 0x80
         private const val CMD_STENCIL_OP = 0x81
         private const val CMD_STENCIL_MASK = 0x82
-        // VAO
+        // VAO - Vertex Array Object
         private const val CMD_VAO_CREATE = 0x90
         private const val CMD_VAO_DELETE = 0x91
         private const val CMD_VAO_SET = 0x92
         private const val CMD_VAO_USE = 0x93
+        // UBO - Uniform Buffer Object
+        private const val CMD_UBO_CREATE = 0xA0
+        private const val CMD_UBO_DELETE = 0xA1
+        private const val CMD_UBO_SET = 0xA2
+        private const val CMD_UBO_USE = 0xA3
     }
 }
 
