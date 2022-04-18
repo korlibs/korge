@@ -439,49 +439,30 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         open fun afterSetMem() {
         }
 
-        fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): Buffer {
-            mem = FBuffer(length)
-            mem!!.setAlignedArrayInt8(0, data, offset, length)
-            memOffset = 0
-            memLength = length
-            dirty = true
-            afterSetMem()
-            return this
-        }
-
-        fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): Buffer {
-            mem = FBuffer(length * 4)
-            mem!!.setAlignedArrayFloat32(0, data, offset, length)
-            memOffset = 0
-            memLength = length * 4
-            dirty = true
-            afterSetMem()
-            return this
-        }
-
-        fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): Buffer {
-            mem = FBuffer(length * 4)
-            mem!!.setAlignedArrayInt32(0, data, offset, length)
-            memOffset = 0
-            memLength = length * 4
-            dirty = true
-            afterSetMem()
-            return this
-        }
-
-        fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): Buffer {
-            if (mem == null || mem!!.size < length * 2) {
-                mem = FBuffer(length * 2)
+        private fun allocateMem(size: Int): FBuffer {
+            if (mem == null || mem!!.size < size) {
+                mem = FBuffer(size.nextPowerOfTwo)
             }
-            mem!!.setAlignedArrayInt16(0, data, offset, length)
-            memOffset = 0
-            memLength = length * 2
-            dirty = true
-            afterSetMem()
-            return this
+            return mem!!
+            //return FBuffer(size)
         }
 
-        fun upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer {
+        fun upload(data: ByteArray, offset: Int = 0, length: Int = data.size): Buffer =
+            _upload(allocateMem(length).also { it.setAlignedArrayInt8(0, data, offset, length) }, 0, length)
+
+        fun upload(data: FloatArray, offset: Int = 0, length: Int = data.size): Buffer =
+            _upload(allocateMem(length * 4).also { it.setAlignedArrayFloat32(0, data, offset, length) }, 0, length * 4)
+
+        fun upload(data: IntArray, offset: Int = 0, length: Int = data.size): Buffer =
+            _upload(allocateMem(length * 4).also { it.setAlignedArrayInt32(0, data, offset, length) }, 0, length * 4)
+
+        fun upload(data: ShortArray, offset: Int = 0, length: Int = data.size): Buffer =
+            _upload(allocateMem(length * 2).also { it.setAlignedArrayInt16(0, data, offset, length) }, 0, length * 2)
+
+        fun upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer =
+            _upload(data, offset, length)
+
+        private fun _upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer {
             mem = data
             memOffset = offset
             memLength = length

@@ -17,7 +17,7 @@ Buffer[4].afterSetMem(mem[2048])
 createBuffer(VERTEX):5
 Buffer[5].afterSetMem(mem[256])
 createBuffer(VERTEX):6
-Buffer[6].afterSetMem(mem[10])
+Buffer[6].afterSetMem(mem[16])
 createBuffer(VERTEX):7
 Buffer[7].afterSetMem(mem[32])
 draw(vertexCount=4, instances=10, indices=null, type=TRIANGLE_FAN, offset=0)
