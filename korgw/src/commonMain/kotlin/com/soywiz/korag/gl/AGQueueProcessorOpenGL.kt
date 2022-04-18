@@ -421,6 +421,36 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
         }
     }
 
+
+    fun AGOpengl.GlTexture.setFilter(linear: Boolean, trilinear: Boolean = linear) {
+        val minFilter = if (this.mipmaps) {
+            when {
+                linear -> when {
+                    trilinear -> KmlGl.LINEAR_MIPMAP_LINEAR
+                    else -> KmlGl.LINEAR_MIPMAP_NEAREST
+                }
+                else -> when {
+                    trilinear -> KmlGl.NEAREST_MIPMAP_LINEAR
+                    else -> KmlGl.NEAREST_MIPMAP_NEAREST
+                }
+            }
+        } else {
+            if (linear) KmlGl.LINEAR else KmlGl.NEAREST
+        }
+        val magFilter = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
+
+        gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_MIN_FILTER, minFilter)
+        gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_MAG_FILTER, magFilter)
+    }
+
+    fun AGOpengl.GlTexture.setWrap() {
+        gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_WRAP_S, KmlGl.CLAMP_TO_EDGE)
+        gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_WRAP_T, KmlGl.CLAMP_TO_EDGE)
+        if (forcedTexTarget == KmlGl.TEXTURE_CUBE_MAP || forcedTexTarget == KmlGl.TEXTURE_3D) {
+            gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_WRAP_R, KmlGl.CLAMP_TO_EDGE)
+        }
+    }
+
     override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind) {
         val bytesPerPixel = when (data) {
             is IntArray -> 4

@@ -388,39 +388,6 @@ abstract class AGOpengl : AG() {
             }
         }
 
-        fun setFilter(linear: Boolean, trilinear: Boolean = linear) {
-            val minFilter = if (this.mipmaps) {
-                when {
-                    linear -> when {
-                        trilinear -> KmlGl.LINEAR_MIPMAP_LINEAR
-                        else -> KmlGl.LINEAR_MIPMAP_NEAREST
-                    }
-                    else -> when {
-                        trilinear -> KmlGl.NEAREST_MIPMAP_LINEAR
-                        else -> KmlGl.NEAREST_MIPMAP_NEAREST
-                    }
-                }
-            } else {
-                if (linear) KmlGl.LINEAR else KmlGl.NEAREST
-            }
-            val magFilter = if (linear) KmlGl.LINEAR else KmlGl.NEAREST
-
-            setMinMag(minFilter, magFilter)
-        }
-
-        fun setWrap() {
-            gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_WRAP_S, KmlGl.CLAMP_TO_EDGE)
-            gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_WRAP_T, KmlGl.CLAMP_TO_EDGE)
-            if (forcedTexTarget == KmlGl.TEXTURE_CUBE_MAP || forcedTexTarget == KmlGl.TEXTURE_3D) {
-                gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_WRAP_R, KmlGl.CLAMP_TO_EDGE)
-            }
-        }
-
-        private fun setMinMag(min: Int, mag: Int) {
-            gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_MIN_FILTER, min)
-            gl.texParameteri(forcedTexTarget, KmlGl.TEXTURE_MAG_FILTER, mag)
-        }
-
         override fun toString(): String = "AGOpengl.GlTexture($tex)"
     }
 
@@ -437,11 +404,9 @@ abstract class AGOpengl : AG() {
     }
 
     override fun readColorTexture(texture: Texture, width: Int, height: Int) {
-        gl.apply {
-            texture.bind()
-            copyTexImage2D(TEXTURE_2D, 0, RGBA, 0, 0, width, height, 0)
-            texture.unbind()
-        }
+        texture.bind()
+        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0)
+        texture.unbind()
     }
 }
 
