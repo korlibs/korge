@@ -1185,9 +1185,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         return old
     }
 
-    open fun readColor(bitmap: Bitmap32): Unit = TODO()
-    open fun readDepth(width: Int, height: Int, out: FloatArray): Unit = TODO()
-    open fun readStencil(bitmap: Bitmap8): Unit = TODO()
+    open fun readColor(bitmap: Bitmap32): Unit {
+        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
+    }
+    open fun readDepth(width: Int, height: Int, out: FloatArray): Unit {
+        commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }
+    }
+    open fun readStencil(bitmap: Bitmap8): Unit {
+        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, ReadKind.STENCIL) }
+    }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
     open fun readColorTexture(texture: Texture, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
     fun readColor() = Bitmap32(backWidth, backHeight).apply { readColor(this) }

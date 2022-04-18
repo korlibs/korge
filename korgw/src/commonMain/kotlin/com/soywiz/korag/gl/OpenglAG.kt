@@ -391,18 +391,6 @@ abstract class AGOpengl : AG() {
         override fun toString(): String = "AGOpengl.GlTexture($tex)"
     }
 
-    override fun readColor(bitmap: Bitmap32) {
-        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
-    }
-
-    override fun readDepth(width: Int, height: Int, out: FloatArray) {
-        commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }
-    }
-
-    override fun readStencil(bitmap: Bitmap8) {
-        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, ReadKind.STENCIL) }
-    }
-
     override fun readColorTexture(texture: Texture, width: Int, height: Int) {
         texture.bind()
         gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0)
