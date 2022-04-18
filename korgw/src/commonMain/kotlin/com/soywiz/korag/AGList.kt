@@ -39,7 +39,6 @@ interface AGQueueProcessor {
     fun programCreate(programId: Int, program: Program, programConfig: ProgramConfig?)
     fun programDelete(programId: Int)
     fun programUse(programId: Int)
-    fun programUseExt(program: GLProgramInfo?)
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null)
     fun uniformsSet(layout: UniformLayout, data: FBuffer)
     fun depthMask(depth: Boolean)
@@ -56,12 +55,12 @@ interface AGQueueProcessor {
     fun vaoCreate(id: Int)
     fun vaoDelete(id: Int)
     fun vaoSet(id: Int, vao: AG.VertexArrayObject)
-    fun vaoUse(id: Int, program: GLProgramInfo?)
+    fun vaoUse(id: Int)
     // UBO
     fun uboCreate(id: Int)
     fun uboDelete(id: Int)
     fun uboSet(id: Int, ubo: AG.UniformValues)
-    fun uboUse(id: Int, program: GLProgramInfo?)
+    fun uboUse(id: Int)
 }
 
 @KorInternal
@@ -166,7 +165,6 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), readExtra(), readExtra())
                 CMD_PROGRAM_DELETE -> processor.programDelete(data.extract16(0))
                 CMD_PROGRAM_USE -> processor.programUse(data.extract16(0))
-                CMD_PROGRAM_USE_EXT -> processor.programUseExt(readExtra())
                 // Draw
                 CMD_DRAW -> processor.draw(
                     AGDrawType.VALUES[data.extract4(0)],
@@ -200,12 +198,12 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_VAO_CREATE -> processor.vaoCreate(data.extract16(0))
                 CMD_VAO_DELETE -> processor.vaoDelete(data.extract16(0))
                 CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AG.VertexArrayObject(readExtra()))
-                CMD_VAO_USE -> processor.vaoUse(data.extract16(0), readExtra())
+                CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
                 // UBO
                 CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
                 CMD_UBO_DELETE -> processor.uboDelete(data.extract16(0))
                 CMD_UBO_SET -> processor.uboSet(data.extract16(0), readExtra())
-                CMD_UBO_USE -> processor.uboUse(data.extract16(0), readExtra())
+                CMD_UBO_USE -> processor.uboUse(data.extract16(0))
                 else -> TODO("Unknown AG command $cmd")
             }
         }
@@ -322,12 +320,6 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_PROGRAM_USE).finsert16(programId, 0))
     }
 
-    // @TODO: Remove this when we use the rest of the functions
-    fun useProgramInfo(program: GLProgramInfo? = null) {
-        addExtra(program)
-        add(CMD(CMD_PROGRAM_USE_EXT))
-    }
-
     ////////////////////////////////////////
     // TEXTURES
     ////////////////////////////////////////
@@ -405,8 +397,7 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_VAO_SET).finsert16(id, 0))
     }
 
-    fun vaoUse(id: Int, program: GLProgramInfo? = null) {
-        addExtra(program)
+    fun vaoUse(id: Int) {
         add(CMD(CMD_VAO_USE).finsert16(id, 0))
     }
 
@@ -435,8 +426,7 @@ class AGList(val globalState: AGGlobalState) {
         TODO()
     }
 
-    fun uboUse(id: Int, program: GLProgramInfo? = null) {
-        addExtra(program)
+    fun uboUse(id: Int) {
         add(CMD(CMD_UBO_USE).finsert16(id, 0))
     }
 

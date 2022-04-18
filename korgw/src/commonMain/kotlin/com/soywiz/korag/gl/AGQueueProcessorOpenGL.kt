@@ -81,7 +81,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
         programUseExt(programs[programId])
     }
 
-    override fun programUseExt(program: GLProgramInfo?) {
+    private fun programUseExt(program: GLProgramInfo?) {
         program?.use(gl)
         currentProgram = program
     }
@@ -183,10 +183,10 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
         vaos[ensureVaoIndex(id)] = vao
     }
 
-    override fun vaoUse(id: Int, program: GLProgramInfo?) {
+    override fun vaoUse(id: Int) {
         val prevVao = lastUsedVao
         val vao = vaos.getOrNull(id)
-        val cprogram = program ?: currentProgram
+        val cprogram = currentProgram
         lastUsedVao = vao
         if (vao == null) {
             val rvao = prevVao
@@ -267,9 +267,9 @@ class AGQueueProcessorOpenGL(val gl: KmlGl) : AGQueueProcessor {
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
-    override fun uboUse(id: Int, program: GLProgramInfo?) {
+    override fun uboUse(id: Int) {
         val uniforms = ubos[id] ?: return
-        val glProgram = program ?: currentProgram ?: return
+        val glProgram = currentProgram ?: return
 
         var textureUnit = 0
         //for ((uniform, value) in uniforms) {
