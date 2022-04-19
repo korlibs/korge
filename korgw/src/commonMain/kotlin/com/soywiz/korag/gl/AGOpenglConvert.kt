@@ -92,6 +92,21 @@ fun AG.TextureTargetKind.toGl(): Int = when (this) {
     AG.TextureTargetKind.TEXTURE_2D -> KmlGl.TEXTURE_2D
     AG.TextureTargetKind.TEXTURE_3D -> KmlGl.TEXTURE_3D
     AG.TextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP
+    AG.TextureTargetKind.EXTERNAL_TEXTURE -> KmlGl.TEXTURE_EXTERNAL_OES
+}
+
+fun AG.TextureTargetKind.Companion.fromGl(value: Int): AG.TextureTargetKind = when (value) {
+    KmlGl.TEXTURE_2D -> AG.TextureTargetKind.TEXTURE_2D
+    KmlGl.TEXTURE_3D -> AG.TextureTargetKind.TEXTURE_3D
+    KmlGl.TEXTURE_CUBE_MAP -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    KmlGl.TEXTURE_EXTERNAL_OES -> AG.TextureTargetKind.EXTERNAL_TEXTURE
+    KmlGl.TEXTURE_CUBE_MAP_POSITIVE_X -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    KmlGl.TEXTURE_CUBE_MAP_NEGATIVE_X -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    KmlGl.TEXTURE_CUBE_MAP_POSITIVE_Y -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    KmlGl.TEXTURE_CUBE_MAP_NEGATIVE_Y -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    KmlGl.TEXTURE_CUBE_MAP_POSITIVE_Z -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    KmlGl.TEXTURE_CUBE_MAP_NEGATIVE_Z -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+    else -> TODO("Unknown TextureTargetKind: $value")
 }
 
 fun VarType.toGl(): Int = when (this.kind) {

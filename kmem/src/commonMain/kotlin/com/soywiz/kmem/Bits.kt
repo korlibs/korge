@@ -114,6 +114,8 @@ inline fun Int.extract6(offset: Int): Int = (this ushr offset) and 0b111111
 inline fun Int.extract7(offset: Int): Int = (this ushr offset) and 0b1111111
 /** Extracts 8 bits at [offset] from [this] [Int] */
 inline fun Int.extract8(offset: Int): Int = (this ushr offset) and 0xFF
+/** Extracts 12 bits at [offset] from [this] [Int] */
+inline fun Int.extract12(offset: Int): Int = (this ushr offset) and 0xFFF
 /** Extracts 16 bits at [offset] from [this] [Int] */
 inline fun Int.extract16(offset: Int): Int = (this ushr offset) and 0xFFFF
 /** Extracts 24 bits at [offset] from [this] [Int] */
@@ -164,6 +166,7 @@ public fun Int.insert1(value: Int, offset: Int): Int = insertMask(value, offset,
 public fun Int.finsert(value: Int, offset: Int): Int = this or (value shl offset)
 public fun Int.finsert24(value: Int, offset: Int): Int = this or ((value and 0xFFFFFF) shl offset)
 public fun Int.finsert16(value: Int, offset: Int): Int = this or ((value and 0xFFFF) shl offset)
+public fun Int.finsert12(value: Int, offset: Int): Int = this or ((value and 0xFFF) shl offset)
 public fun Int.finsert8(value: Int, offset: Int): Int = this or ((value and 0xFF) shl offset)
 public fun Int.finsert7(value: Int, offset: Int): Int = this or ((value and 0b1111111) shl offset)
 public fun Int.finsert6(value: Int, offset: Int): Int = this or ((value and 0b111111) shl offset)

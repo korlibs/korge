@@ -10,9 +10,10 @@ import com.soywiz.kds.*
 import com.soywiz.kds.lock.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.*
-import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
+import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.annotations.*
+import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 
 typealias AGBlendEquation = AG.BlendEquation
@@ -65,6 +66,21 @@ interface AGQueueProcessor {
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
     fun bufferCreate(id: Int)
     fun bufferDelete(id: Int)
+    // TEXTURES
+    fun textureCreate(textureId: Int)
+    fun textureDelete(textureId: Int)
+    fun textureUpdate(
+        textureId: Int,
+        target: AG.TextureTargetKind,
+        index: Int,
+        bmp: Bitmap?,
+        source: AG.BitmapSourceBase,
+        doMipmaps: Boolean,
+        premultiplied: Boolean
+    )
+
+    fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int)
+    fun textureBindEnsuring(tex: AG.Texture)
 }
 
 @KorInternal
@@ -219,7 +235,16 @@ class AGList(val globalState: AGGlobalState) {
                 // BUFFER
                 CMD_BUFFER_CREATE -> processor.bufferCreate(data.extract16(0))
                 CMD_BUFFER_DELETE -> processor.bufferDelete(data.extract16(0))
-                else -> TODO("Unknown AG command $cmd")
+                // TEXTURES
+                CMD_TEXTURE_CREATE -> processor.textureCreate(data.extract16(0))
+                CMD_TEXTURE_DELETE -> processor.textureDelete(data.extract16(0))
+                CMD_TEXTURE_BIND -> processor.textureBind(data.extract16(0), AG.TextureTargetKind.VALUES[data.extract4(16)], readInt())
+                CMD_TEXTURE_BIND_ENSURING -> processor.textureBindEnsuring(readExtra())
+                CMD_TEXTURE_UPDATE -> processor.textureUpdate(
+                    textureId = data.extract16(0), target = AG.TextureTargetKind.VALUES[data.extract4(16)], index = readInt(),
+                    bmp = readExtra(), source = readExtra(), doMipmaps = data.extract(20), premultiplied = data.extract(21)
+                )
+                else -> TODO("Unknown AG command ${cmd.hex}")
             }
         }
         return false
@@ -350,14 +375,20 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_TEXTURE_DELETE).finsert16(textureId, 0))
     }
 
-    fun updateTexture(textureId: Int, data: Any?, width: Int, height: Int) {
-        addExtra(data)
-        addInt(width, height)
-        add(CMD(CMD_TEXTURE_UPDATE).finsert16(textureId, 0))
+    fun updateTexture(textureId: Int, target: AG.TextureTargetKind, index: Int, data: Any?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+        addExtra(data, source)
+        addInt(index)
+        add(CMD(CMD_TEXTURE_UPDATE).finsert16(textureId, 0).finsert4(target.ordinal, 16).finsert(doMipmaps, 20).finsert(premultiplied, 21))
     }
 
-    fun bindTexture(textureId: Int) {
-        add(CMD(CMD_TEXTURE_BIND).finsert16(textureId, 0))
+    fun bindTexture(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int = -1) {
+        addInt(implForcedTexId)
+        add(CMD(CMD_TEXTURE_BIND).finsert16(textureId, 0).finsert4(target.ordinal, 16))
+    }
+
+    fun bindTextureEnsuring(texture: AG.Texture) {
+        addExtra(texture)
+        add(CMD(CMD_TEXTURE_BIND_ENSURING))
     }
 
     ////////////////////////////////////////
@@ -500,6 +531,7 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_TEXTURE_DELETE = 0x41
         private const val CMD_TEXTURE_UPDATE = 0x42
         private const val CMD_TEXTURE_BIND = 0x43
+        private const val CMD_TEXTURE_BIND_ENSURING = 0x44
         // Uniform
         private const val CMD_UNIFORMS_SET = 0x50
         // Attributes

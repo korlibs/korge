@@ -1,5 +1,5 @@
 package com.soywiz.korag
 
 interface ForcedTexTarget {
-    val forcedTexTarget: Int
+    val forcedTexTarget: AG.TextureTargetKind
 }

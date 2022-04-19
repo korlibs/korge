@@ -26,6 +26,7 @@ clearDepthf([1.0])
 stencilMask([-1])
 clearStencil([0])
 clear([17664])
+genTextures([1, FBuffer(size=4)])
 enable([3089])
 scissor([0, 0, 128, 128])
 createProgram([]) = 1
@@ -72,7 +73,6 @@ getUniformLocation([1, u_ViewMat]) = 0
 uniformMatrix4fv([0, 1, false, FBuffer(size=65536)])
 getUniformLocation([1, u_Tex0]) = 0
 activeTexture([33984])
-genTextures([1, FBuffer(size=4)])
 bindTexture([3553, 1])
 texImage2D([3553, 0, 6408, 6408, 5121, AwtNativeImage(128, 128)])
 texParameteri([3553, 10242, 33071])

@@ -28,11 +28,6 @@ val korgwCanvasQuery: String? by lazy { window.asDynamic().korgwCanvasQuery.unsa
 val isCanvasCreatedAndHandled get() = korgwCanvasQuery == null
 
 open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { it }) : AGOpengl(), AGContainer {
-    companion object {
-		//var UNPACK_PREMULTIPLY_ALPHA_WEBGL = document.createElement('canvas').getContext('webgl').UNPACK_PREMULTIPLY_ALPHA_WEBGL
-		const val UNPACK_PREMULTIPLY_ALPHA_WEBGL = 37441
-	}
-
 	override val ag: AG = this
 
     open fun getCanvas(): HTMLCanvasElement {
@@ -98,9 +93,5 @@ open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { i
 	override fun dispose() {
 		// https://www.khronos.org/webgl/wiki/HandlingContextLost
 		// https://gist.github.com/mattdesl/9995467
-	}
-
-	override fun prepareUploadNativeTexture(bmp: NativeImage) {
-		gl.pixelStorei(UNPACK_PREMULTIPLY_ALPHA_WEBGL, bmp.premultiplied.toInt())
 	}
 }

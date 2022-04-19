@@ -1,3 +1,4 @@
+genTextures([1, FBuffer(size=4)])
 createProgram([]) = 1
 getString([35724]) = 
 createShader([35632]) = 1
@@ -90,10 +91,8 @@ getUniformLocation([1, u_ViewMat]) = 0
 uniformMatrix4fv([0, 1, false, FBuffer(size=65536)])
 getUniformLocation([1, u_Tex0]) = 0
 activeTexture([33984])
-genTextures([1, FBuffer(size=4)])
 bindTexture([3553, 1])
 texImage2D([3553, 0, 6408, 6408, 5121, AwtNativeImage(64, 64)])
-bindTexture([3553, 1])
 generateMipmap([3553])
 texParameteri([3553, 10242, 33071])
 texParameteri([3553, 10243, 33071])

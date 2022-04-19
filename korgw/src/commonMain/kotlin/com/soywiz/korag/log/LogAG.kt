@@ -176,7 +176,7 @@ open class LogBaseAG(
 
 	override fun dispose() = log("dispose()", Kind.DISPOSE)
 
-	inner class LogTexture(val id: Int, override val premultiplied: Boolean) : Texture() {
+	inner class LogTexture(val id: Int, premultiplied: Boolean) : Texture(premultiplied) {
 		override fun uploadedSource() {
 			log("$this.uploadedBitmap($source, ${source.width}, ${source.height})", Kind.TEXTURE_UPLOAD)
 		}

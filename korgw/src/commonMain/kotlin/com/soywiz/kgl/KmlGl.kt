@@ -641,6 +641,23 @@ abstract class KmlGl : Extra by Extra.Mixin(), IKmlGl, AGFeatures {
         const val MAX_RENDERBUFFER_SIZE: Int = 0x84E8
         const val INVALID_FRAMEBUFFER_OPERATION: Int = 0x0506 // 1286
         const val TEXTURE_2D_MULTISAMPLE: Int = 0x9100
+
+        // EXTRA
+        const val RGBA32F = 0x8814
+
+        // https://download.blender.org/source/chest/blender_1.72_tree/glut-win/glut_bitmap.c
+        //const val UNPACK_ALIGNMENT = 0x0CF5
+        const val UNPACK_LSB_FIRST = 0x0CF1
+        const val UNPACK_ROW_LENGTH = 0x0CF2
+        const val UNPACK_SKIP_PIXELS = 0x0CF4
+        const val UNPACK_SKIP_ROWS = 0x0CF3
+        const val UNPACK_SWAP_BYTES = 0x0CF0
+
+        // WEBGL
+        const val UNPACK_PREMULTIPLY_ALPHA_WEBGL = 37441
+
+        // ANDROID
+        const val TEXTURE_EXTERNAL_OES           = 0x8D65
     }
 
     open fun init() = Unit

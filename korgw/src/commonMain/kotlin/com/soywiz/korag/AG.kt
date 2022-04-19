@@ -1,7 +1,6 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
-import com.soywiz.kgl.*
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
@@ -11,6 +10,7 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
+import com.soywiz.korim.vector.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
@@ -52,10 +52,11 @@ interface AGWindow : AGContainer {
 }
 
 interface AGFeatures {
+    val parentFeatures: AGFeatures? get() = null
     val graphicExtensions: Set<String> get() = emptySet()
-    val isInstancedSupported: Boolean get() = false
-    val isStorageMultisampleSupported: Boolean get() = false
-    val isFloatTextureSupported: Boolean get() = false
+    val isInstancedSupported: Boolean get() = parentFeatures?.isInstancedSupported ?: false
+    val isStorageMultisampleSupported: Boolean get() = parentFeatures?.isStorageMultisampleSupported ?: false
+    val isFloatTextureSupported: Boolean get() = parentFeatures?.isFloatTextureSupported ?: false
 }
 
 @OptIn(KorIncomplete::class)
@@ -280,22 +281,51 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     enum class TextureKind { RGBA, LUMINANCE }
 
     //TODO: there are other possible values
-    enum class TextureTargetKind { TEXTURE_2D, TEXTURE_3D, TEXTURE_CUBE_MAP }
+    enum class TextureTargetKind(val dims: Int) {
+        TEXTURE_2D(2), TEXTURE_3D(3), TEXTURE_CUBE_MAP(3), EXTERNAL_TEXTURE(2);
+        companion object {
+            val VALUES = values()
+        }
+    }
 
-    //TODO: would it better if this was an interface ?
-    open inner class Texture : Closeable {
+    // @TODO: Move most of this to AGQueueProcessorOpenGL, avoid cyclic dependency and simplify
+    open inner class Texture constructor(
+        open val premultiplied: Boolean,
+        val targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D
+    ) : Closeable {
         var isFbo: Boolean = false
-        open val premultiplied: Boolean = true
         var requestMipmaps: Boolean = false
-        var mipmaps: Boolean = false; protected set
+        var mipmaps: Boolean = false; internal set
         var source: BitmapSourceBase = SyncBitmapSource.NIL
-        private var uploaded: Boolean = false
-        private var generating: Boolean = false
-        private var generated: Boolean = false
-        private var tempBitmaps: List<Bitmap?>? = null
-        var ready: Boolean = false; private set
-        val texId: Int = lastTextureId++
-        open val nativeTexId: Int get() = texId
+        internal var uploaded: Boolean = false
+        internal var generating: Boolean = false
+        internal var generated: Boolean = false
+        internal var tempBitmaps: List<Bitmap?>? = null
+        var ready: Boolean = false; internal set
+
+        var cachedVersion = contextVersion
+        var texId = commandsNoWait { it.createTexture() }
+
+        var implForcedTexId: Int = -1
+        var implForcedTexTarget: AG.TextureTargetKind = targetKind
+
+        private fun ensureTexId() {
+            if (implForcedTexId >= 0) return
+            if (cachedVersion != contextVersion) {
+                cachedVersion = contextVersion
+                invalidate()
+                texId = commandsNoWait { it.createTexture() }
+            }
+        }
+
+        val tex: Int
+            get() {
+                if (implForcedTexId >= 0) return implForcedTexId
+                ensureTexId()
+                return texId
+            }
+
+        open val nativeTexId: Int get() = tex
 
         init {
             createdTextureCount++
@@ -333,6 +363,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             return this
         }
 
+        protected open fun uploadedSource() {
+        }
+
         fun uploadAndBindEnsuring(bmp: Bitmap?, mipmaps: Boolean = false): Texture =
             upload(bmp, mipmaps).bindEnsuring()
         fun uploadAndBindEnsuring(bmp: BitmapSlice<Bitmap>?, mipmaps: Boolean = false): Texture =
@@ -340,67 +373,15 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         fun uploadAndBindEnsuring(source: BitmapSourceBase, mipmaps: Boolean = false): Texture =
             upload(source, mipmaps).bindEnsuring()
 
-        protected open fun uploadedSource() {
+        fun doMipmaps(source: BitmapSourceBase, requestMipmaps: Boolean): Boolean {
+            return requestMipmaps && source.width.isPowerOfTwo && source.height.isPowerOfTwo
         }
 
-        open fun bind() {
-        }
+        open fun bind(): Unit = commandsNoWait { it.bindTexture(tex, implForcedTexTarget, implForcedTexId) }
+        open fun unbind(): Unit = commandsNoWait { it.bindTexture(0, implForcedTexTarget) }
 
-        open fun unbind() {
-        }
-
-        fun manualUpload(): Texture {
-            uploaded = true
-            return this
-        }
-
-        fun bindEnsuring(): Texture {
-            bind()
-            if (isFbo) return this
-            val source = this.source
-            if (uploaded) return this
-
-            if (!generating) {
-                generating = true
-                when (source) {
-                    is SyncBitmapSourceList -> {
-                        tempBitmaps = source.gen()
-                        generated = true
-                    }
-                    is SyncBitmapSource -> {
-                        tempBitmaps = listOf(source.gen())
-                        generated = true
-                    }
-                    is AsyncBitmapSource -> {
-                        launchImmediately(source.coroutineContext) {
-                            tempBitmaps = listOf(source.gen())
-                            generated = true
-                        }
-                    }
-                }
-            }
-
-            if (generated) {
-                uploaded = true
-                generating = false
-                generated = false
-                actualSyncUpload(source, tempBitmaps, requestMipmaps)
-                tempBitmaps = null
-                ready = true
-            }
-            return this
-        }
-
-        open fun actualSyncUpload(source: BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
-        }
-
-        init {
-            //Console.log("CREATED TEXTURE: $texId")
-            //printTexStats()
-        }
-
-        private var alreadyClosed = false
-        override fun close() {
+        private var closed = false
+        override fun close(): Unit {
             if (!alreadyClosed) {
                 alreadyClosed = true
                 source = SyncBitmapSource.NIL
@@ -409,7 +390,43 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
                 //Console.log("CLOSED TEXTURE: $texId")
                 //printTexStats()
             }
+
+            if (!closed) {
+                closed = true
+                if (cachedVersion == contextVersion) {
+                    if (tex != 0) {
+                        commandsNoWait { it.deleteTexture(tex) }
+                        texId = 0
+                    }
+                } else {
+                    //println("YAY! NO DELETE texture because in new context and would remove the wrong texture: ${texIds[0]}")
+                }
+            }
         }
+
+        override fun toString(): String = "AGOpengl.GlTexture($tex)"
+        fun manualUpload(): Texture {
+            uploaded = true
+            return this
+        }
+
+        fun bindEnsuring(): Texture {
+            ensureTexId()
+            commandsNoWait { it.bindTextureEnsuring(this) }
+            return this
+        }
+
+        open fun actualSyncUpload(source: BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
+            //this.bind() // Already bound
+            this.mipmaps = doMipmaps(source, requestMipmaps)
+        }
+
+        init {
+            //Console.log("CREATED TEXTURE: $texId")
+            //printTexStats()
+        }
+
+        private var alreadyClosed = false
 
         private fun printTexStats() {
             //Console.log("create=$createdCount, delete=$deletedCount, alive=${createdCount - deletedCount}")
@@ -525,7 +542,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false, premultiplied: Boolean = true): Texture =
         createTexture(premultiplied).upload(bmp, mipmaps)
 
-    open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture = Texture()
+    open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture =
+        Texture(premultiplied, targetKind)
 
     open fun createBuffer(kind: AGBufferKind): Buffer = commandsNoWait { Buffer(kind, it) }
     fun createIndexBuffer() = createBuffer(AGBufferKind.INDEX)
@@ -857,9 +875,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             when (uniformType) {
                 VarType.Sampler2D -> {
                     val unit = value.fastCastTo<TextureUnit>()
-                    val tex = (unit.texture.fastCastTo<AGOpengl.GlTexture?>())
+                    val tex = (unit.texture.fastCastTo<Texture?>())
                     if (tex != null) {
-                        if (tex.forcedTexTarget != KmlGl.TEXTURE_2D && tex.forcedTexTarget != -1) {
+                        if (tex.implForcedTexTarget != AG.TextureTargetKind.TEXTURE_2D) {
                             useExternalSampler = true
                         }
                     }
@@ -1300,7 +1318,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     val multithreadedRendering: Boolean get() = false
 
     @OptIn(ExperimentalContracts::class)
-    @KoragExperimental
     @Deprecated("Use commandsNoWait instead")
     inline fun <T> commands(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
@@ -1311,7 +1328,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
      * Queues commands, and wait for them to be executed synchronously
      */
     @OptIn(ExperimentalContracts::class)
-    @KoragExperimental
     inline fun <T> commandsSync(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         val result = block(_list)
@@ -1327,7 +1343,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
      * Queues commands without waiting
      */
     @OptIn(ExperimentalContracts::class)
-    @KoragExperimental
     inline fun <T> commandsNoWait(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         val result = block(_list)
@@ -1339,7 +1354,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
      * Queues commands and suspend until they are executed
      */
     @OptIn(ExperimentalContracts::class)
-    @KoragExperimental
     suspend inline fun <T> commandsSuspend(block: (AGList) -> T): T {
         contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
         val result = block(_list)

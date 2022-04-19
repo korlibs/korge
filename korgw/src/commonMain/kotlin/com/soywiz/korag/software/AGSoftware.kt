@@ -27,7 +27,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     var renderBuffer: SoftwareRenderBuffer? = null
     var currentTexture: SoftwareTexture? = null
 
-    inner class SoftwareTexture(override val premultiplied: Boolean) : AG.Texture() {
+    inner class SoftwareTexture(premultiplied: Boolean) : AG.Texture(premultiplied) {
         var bitmap: Bitmap = Bitmaps.transparent.bmp
 
         override fun uploadedSource() {
