@@ -553,6 +553,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         gl.bindTexture(target.toGl(), glId)
     }
 
+    // @TODO: Handle context loss and restoring here
     fun textureBind(tex: AG.Texture) {
         textureBind(tex.texId, tex.implForcedTexTarget, tex.implForcedTexId)
     }

@@ -466,7 +466,8 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_UBO_SET).finsert16(id, 0))
     }
 
-    // @TODO: If we have a layout we can have the objects already arranged
+    // @TODO: If we have a layout we can have the objects already arranged.
+    // @TODO: We have to put only integers and floats here, so textures should use the textureId for example
     @KorIncomplete
     fun uboSet(id: Int, data: FBuffer, layout: UniformLayout) {
         TODO()
