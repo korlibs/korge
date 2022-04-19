@@ -49,7 +49,7 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
 
     private fun invalidateShape() {
         pointCache.clear()
-        strokeCache.clear()
+        //strokeCache.clear()
     }
 
     private val bb = BoundsBuilder()
@@ -218,12 +218,12 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
     private val ab = SegmentInfo()
     private val bc = SegmentInfo()
 
-    data class StrokeRenderCacheKey(
-        val lineWidth: Double,
-        val path: VectorPath,
-        // @TODO: we shouldn't require this matrix. We should be able to compute everything without the matrix, and apply it at the shader level
-        val matrix: Matrix
-    )
+    //data class StrokeRenderCacheKey(
+    //    val lineWidth: Double,
+    //    val path: VectorPath,
+    //    // @TODO: we shouldn't require this matrix. We should be able to compute everything without the matrix, and apply it at the shader level
+    //    val matrix: Matrix
+    //)
 
     class StrokeRenderData(
         val entries: List<Entry>,
@@ -236,7 +236,7 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         )
     }
 
-    private val strokeCache = FastIdentityMap<StrokeRenderCacheKey, StrokeRenderData>()
+    //private val strokeCache = HashMap<StrokeRenderCacheKey, StrokeRenderData>()
 
     private fun renderStroke(
         ctx: RenderContext,
@@ -307,9 +307,10 @@ class GpuShapeView(shape: Shape, antialiased: Boolean = true) : View() {
         )
         */
 
-        val cacheKey = StrokeRenderCacheKey(lineWidth, strokePath, m)
+        //val cacheKey = StrokeRenderCacheKey(lineWidth, strokePath, m)
 
-        val data = strokeCache.getOrPut(cacheKey) {
+        //val data = strokeCache.getOrPut(cacheKey) {
+        val data = run {
             val pathList = strokePath.toPathPointList(m, emitClosePoint = false)
             val entries = arrayListOf<StrokeRenderData.Entry>()
             //println(pathList.size)
