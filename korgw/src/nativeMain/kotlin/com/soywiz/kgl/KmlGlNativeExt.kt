@@ -417,8 +417,6 @@ fun ULong.toBool(): Boolean = this != 0uL
 fun CPointer<UByteVar>.toKString(): String = this.reinterpret<ByteVar>().toKString()
 //inline fun <reified R : Any> Boolean.convert(): R = (if (this) 1 else 0).convert() // @TODO: Doesn't work
 
-fun Boolean.toInt(): Int = if (this) 1 else 0
-
 fun Int.convertSize(): Long = this.toLong() // For 64-bit
 fun Float.convertFloat(): Double = this.toDouble() // For 64-bit
 
