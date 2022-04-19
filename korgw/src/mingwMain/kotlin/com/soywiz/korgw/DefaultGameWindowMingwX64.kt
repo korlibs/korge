@@ -1,6 +1,5 @@
 package com.soywiz.korgw
 
-import com.soywiz.kgl.toInt
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.AGOpenglFactory
