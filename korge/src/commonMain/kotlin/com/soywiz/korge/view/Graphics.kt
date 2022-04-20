@@ -67,7 +67,6 @@ open class Graphics @JvmOverloads constructor(
                 }
             }
 
-            //println("AAAAAAAAAAAAAAAA")
             return tempVectorPaths
         }
 
@@ -81,8 +80,6 @@ open class Graphics @JvmOverloads constructor(
                 hitShape2dVersion = shapeVersion
                 customHitShape2d = hitShapes!!.toShape2d()
             }
-
-            //println("AAAAAAAAAAAAAAAA")
             return customHitShape2d!!
         }
 
