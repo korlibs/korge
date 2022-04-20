@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 val supportKotlinNative: Boolean get() {
     // Linux and Windows ARM hosts doesn't have K/N toolchains
     if ((isLinux || isWindows) && isArm) return false
-    return false
+    return true
 }
 
 val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
