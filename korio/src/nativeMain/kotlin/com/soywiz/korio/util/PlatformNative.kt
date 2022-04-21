@@ -4,3 +4,4 @@ import com.soywiz.korio.*
 
 internal actual val rawPlatformName: String = "native"
 internal actual val rawOsName: String = "$nativeOsfamilyName$nativeArchName"
+internal actual val rawIsDebug: Boolean = Platform.isDebugBinary

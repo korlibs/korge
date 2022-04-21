@@ -7,6 +7,7 @@ import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.color.*
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.math.*
 
 @OptIn(KorgeInternal::class)
@@ -69,6 +70,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
             + ", batchCount=$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
+            + ", ${if (OS.isDebug) "(debug)" else "(release)"}"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
             ,
             0, 0

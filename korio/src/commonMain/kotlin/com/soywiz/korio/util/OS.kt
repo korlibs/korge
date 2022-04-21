@@ -2,13 +2,15 @@ package com.soywiz.korio.util
 
 internal expect val rawPlatformName: String
 internal expect val rawOsName: String
+internal expect val rawIsDebug: Boolean
 
+// @TODO: Rename this to platform
 object OS {
 	val rawName get() = rawOsName
-	val rawNameLC by lazy { rawName.toLowerCase() }
+	val rawNameLC by lazy { rawName.lowercase() }
 
 	val platformName get() = rawPlatformName
-	val platformNameLC by lazy { platformName.toLowerCase() }
+	val platformNameLC by lazy { platformName.lowercase() }
 
 	val isWindows by lazy { rawNameLC.contains("win") }
 	val isUnix get() = !isWindows
@@ -32,4 +34,7 @@ object OS {
 	val isJsBrowser get() = platformNameLC == "web.js"
 	val isJsWorker get() = platformNameLC == "worker.js"
 	val isJsBrowserOrWorker get() = isJsBrowser || isJsWorker
+
+    val isDebug: Boolean get() = rawIsDebug
+    val isRelease: Boolean get() = !rawIsDebug
 }
