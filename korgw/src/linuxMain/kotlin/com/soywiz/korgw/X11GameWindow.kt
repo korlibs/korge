@@ -176,7 +176,7 @@ class X11GameWindow : EventLoopGameWindow() {
             memScoped {
                 val property = X11.XInternAtom(d, cstr("_NET_WM_ICON"), 0)
                 val bmp = value.toBMP32()
-                val VSIZE = Platform.cpuArchitecture.bitness / 8
+                val VSIZE = Platform.arch.bits / 8
                 val bytes = ByteArray((bmp.area + 2) * VSIZE)
                 bytes.write32LE(0, bmp.width)
                 bytes.write32LE(VSIZE, bmp.height)
