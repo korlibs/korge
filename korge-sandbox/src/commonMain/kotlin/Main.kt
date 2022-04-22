@@ -29,8 +29,9 @@ import com.soywiz.korma.random.*
 import kotlinx.coroutines.*
 import kotlin.random.*
 
-suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false
-    //, debugAg = true
+suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false,
+    debug = true,
+    //debugAg = true,
 ) {
     //mainSkybox()
     mainGpuVectorRendering()

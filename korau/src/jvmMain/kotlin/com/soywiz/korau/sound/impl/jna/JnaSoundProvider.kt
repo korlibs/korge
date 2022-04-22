@@ -54,7 +54,7 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         AL.alListenerfv(AL.AL_ORIENTATION, floatArrayOf(0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f))
         checkAlErrors("alListenerfv", 0)
 
-        Runtime.getRuntime().addShutdownHook(Thread {
+        java.lang.Runtime.getRuntime().addShutdownHook(Thread {
             unmakeCurrent()
             AL.alcDestroyContext(context)
             AL.alcCloseDevice(device)

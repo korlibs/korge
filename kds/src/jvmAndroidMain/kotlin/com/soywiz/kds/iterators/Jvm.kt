@@ -5,7 +5,7 @@ import java.util.concurrent.*
 import kotlin.math.*
 
 //actual val CONCURRENCY_COUNT: Int = max(1, Runtime.getRuntime().availableProcessors() / 2)
-actual val CONCURRENCY_COUNT: Int = max(1, Runtime.getRuntime().availableProcessors())
+actual val CONCURRENCY_COUNT: Int = max(1, java.lang.Runtime.getRuntime().availableProcessors())
 
 @PublishedApi
 internal val exec = Executors.newFixedThreadPool(CONCURRENCY_COUNT)

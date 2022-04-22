@@ -1,5 +1,7 @@
 package com.soywiz.kmem
 
+import com.soywiz.kmem.internal.currentIsLittleEndian
+
 public enum class Endian {
     LITTLE_ENDIAN, BIG_ENDIAN;
 
@@ -7,9 +9,9 @@ public enum class Endian {
     val isBig get() = this == BIG_ENDIAN
 
     public companion object {
-        public val NATIVE: Endian = MemBufferAlloc(4).run {
-            asInt32Buffer()[0] = 1
-            if (asInt8Buffer()[0].toInt() == 1) LITTLE_ENDIAN else BIG_ENDIAN
-        }
+        val isLittleEndian: Boolean get() = currentIsLittleEndian
+        val isBigEndian: Boolean get() = !currentIsLittleEndian
+
+        public val NATIVE: Endian = if (currentIsLittleEndian) LITTLE_ENDIAN else BIG_ENDIAN
     }
 }

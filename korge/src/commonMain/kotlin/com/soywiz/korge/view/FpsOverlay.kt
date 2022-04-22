@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.kds.*
 import com.soywiz.klock.*
+import com.soywiz.kmem.Platform
 import com.soywiz.kmem.convertRange
 import com.soywiz.korge.bitmapfont.*
 import com.soywiz.korge.internal.*
@@ -70,7 +71,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         drawTextWithShadow("FPS: " +
             "${shortWindow.avgFps.roundDecimalPlaces(1)}"
             + ", batchCount=$batchCount, vertexCount=$vertexCount, instanceCount=$instanceCount"
-            + ", ${if (OS.isDebug) "(debug)" else "(release)"}"
+            + ", (${Platform.rawPlatformName})"
             //+ ", range: [${mediumWindow.minFps.roundDecimalPlaces(1)}-${mediumWindow.maxFps.roundDecimalPlaces(1)}]"
             ,
             0, 0

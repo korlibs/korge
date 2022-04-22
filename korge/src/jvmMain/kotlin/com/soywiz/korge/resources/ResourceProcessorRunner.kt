@@ -35,7 +35,7 @@ object ResourceProcessorRunner {
 	@JvmStatic
 	fun run(classLoader: ClassLoader, foldersMain: List<String>, outputMain: String, kind: String) {
 		logger.info("ResourceProcessorRunner:")
-		logger.info("Free memory: ${Runtime.getRuntime().freeMemory()}")
+		logger.info("Free memory: ${java.lang.Runtime.getRuntime().freeMemory()}")
 		logger.info("Resource Processors:")
 		val processors = ResourceProcessorContainer(ServiceLoader.load(ResourceProcessor::class.java, classLoader).toList())
 		for (processor in processors.processors) {
