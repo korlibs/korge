@@ -1,7 +1,10 @@
 package com.soywiz.korge.service.vibration
 
+import com.soywiz.kds.extraPropertyThis
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.view.Views
+
+val Views.vibration by extraPropertyThis { NativeVibration(this) }
 
 /**
  * Support for device vibrations. Currently only works in Browser and Android target.
@@ -14,7 +17,6 @@ expect class NativeVibration constructor(views: Views) {
      * @param amplitudes list of intensities of the vibration. A `0.2` results in 20% vibration power.
      *        Only supported on Android target. Ignored if the size is not equal with the timings.
      */
-    @ExperimentalUnsignedTypes
     fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double> = emptyArray())
 
     /**
@@ -22,6 +24,5 @@ expect class NativeVibration constructor(views: Views) {
      * @param amplitude percentage intensity of the vibration. A `0.2` results in 20% vibration power.
      *        Only supported on Android target.
      */
-    @ExperimentalUnsignedTypes
     fun vibrate(time: TimeSpan, amplitude: Double = 1.0)
 }

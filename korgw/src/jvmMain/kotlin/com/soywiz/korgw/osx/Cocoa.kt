@@ -32,12 +32,15 @@ internal interface GL : Library {
     }
 }
 
+// https://developer.apple.com/documentation/objectivec/objective-c_runtime
 interface ObjectiveC : Library {
     fun objc_getClass(name: String): Long
     fun objc_getProtocol(name: String): Long
 
     fun class_addProtocol(a: Long, b: Long): Long
     fun class_copyMethodList(clazz: Long, items: IntArray): Pointer
+
+    fun protocol_copyMethodDescriptionList(proto: Long, isRequiredMethod: Boolean, isInstanceMethod: Boolean, outCount: IntArray): Pointer
 
     fun objc_registerClassPair(cls: Long)
     fun objc_lookUpClass(name: String): Long
@@ -149,6 +152,10 @@ typealias NSRectRes = MyNativeNSRect.ByValue
 
 private val isArm64 = System.getProperty("os.arch") == "aarch64"
 
+// @TODO: Move Long to ObjcRef to not pollute Long scope
+inline class ObjcRef(val id: Long) {
+}
+
 fun sel(name: String) = ObjectiveC.sel_registerName(name)
 fun Long.msgSend(sel: String, vararg args: Any?): Long = ObjectiveC.objc_msgSend(this, sel(sel), *args)
 fun Long.msgSendInt(sel: String, vararg args: Any?): Int = ObjectiveC.objc_msgSendInt(this, sel(sel), *args)
@@ -243,6 +250,10 @@ open class NSClass(val name: String) : NSObject(ObjectiveC.objc_getClass(name)) 
     val OBJ_CLASS = id
 }
 
+open class ObjcProtocol(val name: String) : NSObject(ObjectiveC.objc_getProtocol(name)) {
+    val OBJ_PROTOCOL = id
+}
+
 fun NSClass.listClassMethods(): List<String> = ObjC_listMethods(ObjectiveC.object_getClass(this.id))
 fun NSClass.listInstanceMethods(): List<String> = ObjC_listMethods(this.id)
 
@@ -255,6 +266,26 @@ fun ObjC_listMethods(clazz: Long): List<String> {
         val ptr = items2.getNativeLong((Native.LONG_SIZE * n).toLong())
         val mname = ObjectiveC.method_getName(ptr.toLong())
         val selName = ObjectiveC.sel_getName(mname)
+        out.add(selName)
+    }
+    return out
+}
+
+fun ObjcProtocol.listMethods(): List<String> = ObjC_listProtocolMethods(this.id)
+
+fun ObjC_listProtocolMethods(protocol: Long): List<String> {
+    val nitemsPtr = IntArray(1)
+    val items2 = ObjectiveC.protocol_copyMethodDescriptionList(protocol, true, true, nitemsPtr)
+    val nitems = nitemsPtr[0]
+    val out = ArrayList<String>(nitems)
+    //println("nitems=$nitems")
+    for (n in 0 until nitems) {
+        val namePtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 0).toLong())
+        val typesPtr = items2.getNativeLong((Native.LONG_SIZE * n * 2 + 1).toLong())
+        val selName = ObjectiveC.sel_getName(namePtr.toLong())
+        //val typesStr = Pointer(typesPtr.toLong()).getString(0L)
+        //println("$selName: $typesStr")
+        //val selName = ObjectiveC.sel_getName(mname)
         out.add(selName)
     }
     return out

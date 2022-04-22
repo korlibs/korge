@@ -34,7 +34,8 @@ suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), cli
     //debugAg = true,
 ) {
     //mainSkybox()
-    mainGpuVectorRendering()
+    mainHaptic()
+    //mainGpuVectorRendering()
     //mainFiltersRenderToBitmap()
     //mainBlur()
     //mainCustomSolidRectShader()

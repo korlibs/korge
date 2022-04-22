@@ -67,6 +67,7 @@ fun Extra.setExtra(name: String, value: Any?): Unit {
 }
 
 inline fun <T> extraProperty(name: String? = null, noinline default: () -> T) = Extra.Property(name, default)
+inline fun <T2 : Extra, T> extraPropertyThis(name: String? = null, noinline default: T2.() -> T) = Extra.PropertyThis(name, default)
 
 class Computed<K : Computed.WithParent<K>, T>(val prop: KProperty1<K, T?>, val default: () -> T) {
     interface WithParent<T> {
