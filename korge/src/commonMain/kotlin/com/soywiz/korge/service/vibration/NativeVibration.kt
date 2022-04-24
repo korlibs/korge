@@ -3,7 +3,9 @@ package com.soywiz.korge.service.vibration
 import com.soywiz.kds.extraPropertyThis
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.view.Views
+import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
 val Views.vibration by extraPropertyThis { NativeVibration(this) }
 
 /**

@@ -4,7 +4,9 @@ import com.soywiz.kds.extraPropertyThis
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.service.vibration.vibration
 import com.soywiz.korge.view.Views
+import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
 val Views.hapticFeedback by extraPropertyThis { CreateHapticFeedback(this) }
 
 expect fun CreateHapticFeedback(views: Views): HapticFeedback
