@@ -4,6 +4,7 @@ import com.soywiz.kmem.Arch
 import com.soywiz.kmem.Os
 import com.soywiz.kmem.Runtime
 
+@SharedImmutable
 internal actual val currentOs: Os = when (Platform.osFamily) {
     OsFamily.UNKNOWN -> Os.UNKNOWN
     OsFamily.MACOSX -> Os.MACOSX
@@ -15,8 +16,11 @@ internal actual val currentOs: Os = when (Platform.osFamily) {
     OsFamily.TVOS -> Os.TVOS
     OsFamily.WATCHOS -> Os.WATCHOS
 }
+
+@SharedImmutable
 internal actual val currentRuntime: Runtime = Runtime.NATIVE
 
+@SharedImmutable
 internal actual val currentArch: Arch = when (Platform.cpuArchitecture) {
     CpuArchitecture.UNKNOWN -> Arch.UNKNOWN
     CpuArchitecture.ARM32 -> Arch.ARM32
@@ -31,5 +35,7 @@ internal actual val currentArch: Arch = when (Platform.cpuArchitecture) {
 internal actual val currentIsDebug: Boolean get() = Platform.isDebugBinary
 internal actual val currentIsLittleEndian: Boolean get() = Platform.isLittleEndian
 
+@SharedImmutable
 internal actual val currentRawPlatformName: String = "native-$currentOs-$currentArch-$currentBuildVariant"
+@SharedImmutable
 internal actual val currentRawOsName: String = "$currentOs"
