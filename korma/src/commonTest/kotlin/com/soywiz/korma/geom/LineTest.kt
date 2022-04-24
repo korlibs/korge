@@ -28,4 +28,11 @@ class LineTest {
         assertEquals(Point(0, 100), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(0, 100)))
         assertEquals(Point(0, 150), Line(Point(0, 0), Point(0, 100)).projectedPoint(Point(0, 150)))
     }
+
+    @Test
+    fun testLineData() {
+        val gen = { Line(Point(0, 0), Point(100, 100)) }
+        assertEquals(gen(), gen())
+        assertEquals(gen().hashCode(), gen().hashCode())
+    }
 }

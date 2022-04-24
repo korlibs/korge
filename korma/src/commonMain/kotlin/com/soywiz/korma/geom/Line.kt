@@ -7,7 +7,7 @@ interface ILine {
     val b: IPoint
 }
 
-open class Line(override val a: Point, override val b: Point) : ILine {
+data class Line(override val a: Point, override val b: Point) : ILine {
     private val temp = Point()
 
     fun round(): Line {
@@ -129,7 +129,7 @@ open class Line(override val a: Point, override val b: Point) : ILine {
     }
 }
 
-open class LineIntersection(
+data class LineIntersection(
     val line: Line = Line(),
     val intersection: Point = Point()
 ) {
