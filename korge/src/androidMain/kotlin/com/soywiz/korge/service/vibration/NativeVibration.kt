@@ -13,10 +13,9 @@ actual class NativeVibration actual constructor(views: Views) {
         private const val NO_REPEAT = -1
     }
 
-    private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= 23) {
-        views.androidActivity.getSystemService(Vibrator::class.java)
-    } else {
-        null
+    private val vibrator: Vibrator? = when {
+        Build.VERSION.SDK_INT >= 23 -> views.androidContext.getSystemService(Vibrator::class.java)
+        else -> null
     }
 
     /**
@@ -26,15 +25,23 @@ actual class NativeVibration actual constructor(views: Views) {
     @ExperimentalUnsignedTypes
     @SuppressLint("MissingPermission")
     actual fun vibratePattern(timings: Array<TimeSpan>, amplitudes: Array<Double>) {
-        val onOffTimings = (listOf(TimeSpan.NIL) + timings).map { it.millisecondsLong }.toLongArray()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            if (amplitudes.size != onOffTimings.size) {
-                vibrator?.vibrate(VibrationEffect.createWaveform(onOffTimings, NO_REPEAT))
-            } else {
-                vibrator?.vibrate(
-                    VibrationEffect.createWaveform(onOffTimings, amplitudes.map {it.toAndroidAmplitude()}.toIntArray(), NO_REPEAT)
-                )
+        try {
+            val onOffTimings = (listOf(TimeSpan.NIL) + timings).map { it.millisecondsLong }.toLongArray()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (amplitudes.size != onOffTimings.size) {
+                    vibrator?.vibrate(VibrationEffect.createWaveform(onOffTimings, NO_REPEAT))
+                } else {
+                    vibrator?.vibrate(
+                        VibrationEffect.createWaveform(
+                            onOffTimings,
+                            amplitudes.map { it.toAndroidAmplitude() }.toIntArray(),
+                            NO_REPEAT
+                        )
+                    )
+                }
             }
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
     }
 
@@ -45,8 +52,12 @@ actual class NativeVibration actual constructor(views: Views) {
     @ExperimentalUnsignedTypes
     @SuppressLint("MissingPermission")
     actual fun vibrate(time: TimeSpan, amplitude: Double) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            vibrator?.vibrate(VibrationEffect.createOneShot(time.millisecondsLong, amplitude.toAndroidAmplitude()))
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                vibrator?.vibrate(VibrationEffect.createOneShot(time.millisecondsLong, amplitude.toAndroidAmplitude()))
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
         }
     }
 
