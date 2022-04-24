@@ -1127,8 +1127,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    open fun fixWidthForRenderToTexture(width: Int): Int = width.nextMultipleOf(64)
-    open fun fixHeightForRenderToTexture(height: Int): Int = height.nextMultipleOf(64)
+    // iOS seems to require power of two textures for the render target, and we need it to be at least 64-pixels wide/long
+    open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
+    open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
+
+    //open fun fixWidthForRenderToTexture(width: Int): Int = width.nextMultipleOf(64)
+    //open fun fixHeightForRenderToTexture(height: Int): Int = height.nextMultipleOf(64)
 
     //open fun fixWidthForRenderToTexture(width: Int): Int = width
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
