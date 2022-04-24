@@ -4,9 +4,13 @@ import com.soywiz.korag.AG
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.format.readNativeImage
+import com.soywiz.korio.async.async
+import com.soywiz.korio.async.asyncImmediately
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.*
+import kotlinx.coroutines.coroutineScope
+import kotlin.coroutines.coroutineContext
 
 interface CubeMap {
     val right: NativeImage
@@ -27,13 +31,19 @@ suspend fun cubeMapFromResourceDirectory(directory: String, ext: String): CubeMa
 }
 
 suspend fun VfsFile.readCubeMap(ext: String): CubeMap {
-    val rightImage = this["right.$ext"].readNativeImage()
-    val leftImage = this["left.$ext"].readNativeImage()
-    val topImage = this["top.$ext"].readNativeImage()
-    val bottomImage = this["bottom.$ext"].readNativeImage()
-    val backImage = this["back.$ext"].readNativeImage()
-    val frontImage = this["front.$ext"].readNativeImage()
-    return CubeMapSimple(rightImage, leftImage, topImage, bottomImage, backImage, frontImage)
+    val file = this
+    return coroutineScope {
+        val rightImage = async { file["right.$ext"].readNativeImage() }
+        val leftImage = async { file["left.$ext"].readNativeImage() }
+        val topImage = async { file["top.$ext"].readNativeImage() }
+        val bottomImage = async { file["bottom.$ext"].readNativeImage() }
+        val backImage = async { file["back.$ext"].readNativeImage() }
+        val frontImage = async { file["front.$ext"].readNativeImage() }
+        CubeMapSimple(
+            rightImage.await(), leftImage.await(), topImage.await(),
+            bottomImage.await(), backImage.await(), frontImage.await()
+        )
+    }
 }
 
 class CubeMapSimple(
