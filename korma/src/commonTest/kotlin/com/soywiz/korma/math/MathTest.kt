@@ -144,4 +144,15 @@ class MathTest {
         assertEquals(9, 10.prevMultipleOf(3))
         assertEquals(10L, 11L.prevMultipleOf(5L))
     }
+
+    @Test
+    fun testClosestMultipleOf() {
+        assertEquals(0, 4.closestMultipleOf(10))
+        assertEquals(10, 9.closestMultipleOf(10))
+        assertEquals(10, 11.closestMultipleOf(10))
+        assertEquals(10, 14.closestMultipleOf(10))
+        assertEquals(20, 16.closestMultipleOf(10))
+        assertEquals(20, 19.closestMultipleOf(10))
+        assertEquals(20, 21.closestMultipleOf(10))
+    }
 }
