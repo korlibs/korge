@@ -13,11 +13,11 @@ class TextRendererTest {
         DefaultStringTextRenderer.invoke(actions, "42:10", 92.0, font)
         assertEquals(
             """
-                Entry('glyph-4', 5, 2, 45, 70, 0)
-                Entry('glyph-2', 57, 1, 47, 74, 0)
-                Entry('glyph-:', 115, 31, 38, 11, 0)
-                Entry('glyph-1', 198, 3, 14, 69, 0)
-                Entry('glyph-0', 219, 1, 47, 74, 0)
+                Entry('glyph-4', 5, 2, 45, 70)
+                Entry('glyph-2', 57, 1, 47, 74)
+                Entry('glyph-:', 115, 31, 38, 11)
+                Entry('glyph-1', 198, 3, 14, 69)
+                Entry('glyph-0', 219, 1, 47, 74)
             """.trimIndent(),
             actions.readAll().joinToString("\n")
         )

@@ -235,28 +235,41 @@ data class Matrix(
     fun inverted(out: Matrix = Matrix()) = out.invert(this)
 
     fun setTransform(
+        transform: Transform,
+        pivotX: Double = 0.0,
+        pivotY: Double = 0.0,
+    ): Matrix {
+        return setTransform(
+            transform.x, transform.y,
+            transform.scaleX, transform.scaleY,
+            transform.rotation, transform.skewX, transform.skewY,
+            pivotX, pivotY
+        )
+    }
+
+    fun setTransform(
         x: Double,
         y: Double,
         scaleX: Double,
         scaleY: Double,
         rotation: Angle,
         skewX: Angle,
-        skewY: Angle
+        skewY: Angle,
+        pivotX: Double = 0.0,
+        pivotY: Double = 0.0,
     ): Matrix {
-        if (skewX == 0.0.radians && skewY == 0.0.radians) {
-            if (rotation == 0.radians) {
-                this.setTo(scaleX, 0.0, 0.0, scaleY, x, y)
-            } else {
-                val cos = cos(rotation)
-                val sin = sin(rotation)
-                this.setTo(cos * scaleX, sin * scaleY, -sin * scaleX, cos * scaleY, x, y)
-            }
+        // +0.0 drops the negative -0.0
+        this.a = cos(rotation + skewY) * scaleX + 0.0
+        this.b = sin(rotation + skewY) * scaleX + 0.0
+        this.c = -sin(rotation - skewX) * scaleY + 0.0
+        this.d = cos(rotation - skewX) * scaleY + 0.0
+
+        if (pivotX == 0.0 && pivotY == 0.0) {
+            this.tx = x
+            this.ty = y
         } else {
-            this.identity()
-            scale(scaleX, scaleY)
-            skew(skewX, skewY)
-            rotate(rotation)
-            translate(x, y)
+            this.tx = x - ((pivotX * this.a) + (pivotY * this.c))
+            this.ty = y - ((pivotX * this.b) + (pivotY * this.d))
         }
         return this
     }
@@ -361,6 +374,10 @@ data class Matrix(
         value[offset + 3].toFloat(), value[offset + 4].toFloat(), value[offset + 5].toFloat()
     )
 
+    fun decompose(out: Transform = Transform()): Transform {
+        return out.setMatrix(this)
+    }
+
     data class Transform(
         override var x: Double = 0.0, override var y: Double = 0.0,
         var scaleX: Double = 1.0, var scaleY: Double = 1.0,
@@ -376,7 +393,12 @@ data class Matrix(
             get() = y.toFloat()
             set(value) { y = value.toDouble() }
 
-        val scaleAvg get() = (scaleX + scaleY) * 0.5
+        var scaleAvg: Double
+            get() = (scaleX + scaleY) * 0.5
+            set(value) {
+                scaleX = value
+                scaleY = value
+            }
 
         override fun interpolateWith(ratio: Double, other: Transform): Transform = Transform().setToInterpolated(ratio, this, other)
 
@@ -400,34 +422,41 @@ data class Matrix(
             rotation = 0.0.radians
         }
 
-        fun setMatrixNoReturn(matrix: Matrix) {
-            val PI_4 = PI / 4.0
-            this.x = matrix.tx
-            this.y = matrix.ty
+        fun setMatrixNoReturn(matrix: Matrix, pivotX: Double = 0.0, pivotY: Double = 0.0) {
+            val a = matrix.a
+            val b = matrix.b
+            val c = matrix.c
+            val d = matrix.d
 
-            this.skewX = atan(-matrix.c / matrix.d).radians
-            this.skewY = atan(matrix.b / matrix.a).radians
+            val skewX = -atan2(-c, d)
+            val skewY = atan2(b, a)
 
-            // Faster isNaN
-            if (this.skewX != this.skewX) this.skewX = 0.0.radians
-            if (this.skewY != this.skewY) this.skewY = 0.0.radians
+            val delta = abs(skewX + skewY)
 
-            this.scaleY =
-                if (this.skewX > -PI_4.radians && this.skewX < PI_4.radians) matrix.d / cos(this.skewX) else -matrix.c / sin(this.skewX)
-            this.scaleX =
-                if (this.skewY > -PI_4.radians && this.skewY < PI_4.radians) matrix.a / cos(this.skewY) else matrix.b / sin(this.skewY)
-
-            if (abs(this.skewX - this.skewY).radians < 0.0001) {
-                this.rotation = this.skewX
+            if (delta < 0.00001 || abs((PI * 2) - delta) < 0.00001) {
+                this.rotation = skewY.radians
                 this.skewX = 0.0.radians
                 this.skewY = 0.0.radians
             } else {
                 this.rotation = 0.radians
+                this.skewX = skewX.radians
+                this.skewY = skewY.radians
+            }
+
+            this.scaleX = hypot(a, b)
+            this.scaleY = hypot(c, d)
+
+            if (pivotX == 0.0 && pivotY == 0.0) {
+                this.x = matrix.tx
+                this.y = matrix.ty
+            } else {
+                this.x = matrix.tx + ((pivotX * a) + (pivotY * c));
+                this.y = matrix.ty + ((pivotX * b) + (pivotY * d));
             }
         }
 
-        fun setMatrix(matrix: Matrix): Transform {
-            setMatrixNoReturn(matrix)
+        fun setMatrix(matrix: Matrix, pivotX: Double = 0.0, pivotY: Double = 0.0): Transform {
+            setMatrixNoReturn(matrix, pivotX, pivotY)
             return this
         }
 

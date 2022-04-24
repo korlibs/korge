@@ -112,4 +112,16 @@ class MatrixTest {
         assertNotSame(mt, mt.clone())
         assertEquals(mt, mt.clone())
     }
+
+    @Test
+    fun transform3() {
+        val m = Matrix()
+        val t = Matrix.Transform()
+        val t2 = Matrix.Transform()
+        t.rotation = -(91.degrees)
+        t.scaleAvg = 1.3
+        t.toMatrix(m)
+        t2.setMatrix(m)
+        assertEquals(t2, t)
+    }
 }

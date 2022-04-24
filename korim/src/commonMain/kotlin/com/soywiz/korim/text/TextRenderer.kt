@@ -129,9 +129,9 @@ class Text2TextRendererActions : TextRendererActions() {
         override fun toString(): String = buildString {
             append("Entry(")
             append("'${tex.name}', ${x.toInt()}, ${y.toInt()}, ${tex.width}, ${tex.height}")
-            if (sx != 1.0) append(", ${sx.niceStr}")
-            if (sy != 1.0) append(", ${sy.niceStr}")
-            if (rot != 0.radians) append(", ${rot.degrees.niceStr}")
+            if (sx != 1.0) append(", sx=${sx.niceStr}")
+            if (sy != 1.0) append(", sy=${sy.niceStr}")
+            if (rot != 0.radians) append(", rot=${rot.degrees.niceStr}")
             append(")")
         }
     }
