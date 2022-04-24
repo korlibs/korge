@@ -2,21 +2,29 @@ package com.soywiz.kgl
 
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.krypto.encoding.*
+import kotlin.native.concurrent.ThreadLocal
 
 class KmlGlException(message: String) : RuntimeException(message)
 
+@ThreadLocal
+private val tempFBuffer = FBuffer(4 * 4)
+
 fun KmlGl.getShaderiv(shader: Int, type: Int): Int =
-	fbuffer(4) { getShaderiv(shader, type, it); it.getInt(0) }
+    tempFBuffer.let { getShaderiv(shader, type, it); it.getInt(0) }
 
 fun KmlGl.getProgramiv(program: Int, type: Int): Int =
-	fbuffer(4) { getProgramiv(program, type, it); it.getInt(0) }
+    tempFBuffer.let { getProgramiv(program, type, it); it.getInt(0) }
 
-fun KmlGl.getBooleanv(pname: Int): Boolean = fbuffer(4) { getBooleanv(pname, it); it[0] != 0 }
-fun KmlGl.getFloatv(pname: Int): Float = fbuffer(4) { getFloatv(pname, it); it.getFloat(0) }
-fun KmlGl.getIntegerv(pname: Int): Int = fbuffer(4) { getIntegerv(pname, it); it.getInt(0) }
-fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = fbuffer(4) { getVertexAttribiv(index, pname, it); it.getInt(0) }
-
+fun KmlGl.getBooleanv(pname: Int): Boolean = tempFBuffer.let { getBooleanv(pname, it); it[0] != 0 }
+fun KmlGl.getFloatv(pname: Int): Float = tempFBuffer.let { getFloatv(pname, it); it.getFloat(0) }
+fun KmlGl.getIntegerv(pname: Int): Int = tempFBuffer.let { getIntegerv(pname, it); it.getInt(0) }
+fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempFBuffer.let { getVertexAttribiv(index, pname, it); it.getInt(0) }
+fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempFBuffer.let {
+    getFloatv(pname, it)
+    out.setTo(it.getFloat(0), it.getFloat(1), it.getFloat(2), it.getFloat(3))
+}
 
 private inline fun KmlGl.getInfoLog(
 	obj: Int,

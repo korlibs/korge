@@ -36,12 +36,12 @@ getString([35724]) =
 createShader([35632]) = 1
 shaderSource([1, ...])
 compileShader([1])
-getShaderiv([1, 35713, FBuffer(size=4)])
+getShaderiv([1, 35713, FBuffer(size=16)])
 getError([]) = 0
 createShader([35633]) = 1
 shaderSource([1, ...])
 compileShader([1])
-getShaderiv([1, 35713, FBuffer(size=4)])
+getShaderiv([1, 35713, FBuffer(size=16)])
 getError([]) = 0
 attachShader([1, 1])
 attachShader([1, 1])
@@ -114,12 +114,12 @@ createProgram([]) = 1
 createShader([35632]) = 1
 shaderSource([1, ...])
 compileShader([1])
-getShaderiv([1, 35713, FBuffer(size=4)])
+getShaderiv([1, 35713, FBuffer(size=16)])
 getError([]) = 0
 createShader([35633]) = 1
 shaderSource([1, ...])
 compileShader([1])
-getShaderiv([1, 35713, FBuffer(size=4)])
+getShaderiv([1, 35713, FBuffer(size=16)])
 getError([]) = 0
 attachShader([1, 1])
 attachShader([1, 1])
