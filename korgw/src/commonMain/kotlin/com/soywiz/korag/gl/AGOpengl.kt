@@ -155,6 +155,9 @@ abstract class AGOpengl : AG() {
             }
             if (internalFormat != 0) {
                 gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, depth.getInt(0))
+            } else {
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+                gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
             }
             //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER);
             //if (status != KmlGl.FRAMEBUFFER_COMPLETE) error("Error getting framebuffer")

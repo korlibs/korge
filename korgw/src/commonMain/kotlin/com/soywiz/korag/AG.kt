@@ -1127,20 +1127,22 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    // iOS seems to require power of two textures for the render target, and we need it to be at least 64-pixels wide/long
-    open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
-    open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
+    //var adjustFrameRenderBufferSize = false
+    var adjustFrameRenderBufferSize = true
 
-    //open fun fixWidthForRenderToTexture(width: Int): Int = width.nextMultipleOf(64)
-    //open fun fixHeightForRenderToTexture(height: Int): Int = height.nextMultipleOf(64)
+    //open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
+    //open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
+
+    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameRenderBufferSize) width.nextMultipleOf(64) else 64
+    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameRenderBufferSize) height.nextMultipleOf(64) else 64
 
     //open fun fixWidthForRenderToTexture(width: Int): Int = width
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
 
     @KoragExperimental
     fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1): RenderBuffer {
-        val realWidth = fixWidthForRenderToTexture(width)
-        val realHeight = fixHeightForRenderToTexture(height)
+        val realWidth = fixWidthForRenderToTexture(kotlin.math.max(width, 64))
+        val realHeight = fixHeightForRenderToTexture(kotlin.math.max(height, 64))
         val rb = renderBuffers.alloc()
         frameRenderBuffers += rb
         rb.setSize(0, 0, realWidth, realHeight, realWidth, realHeight)

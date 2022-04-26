@@ -52,7 +52,7 @@ disposeTemporalPerFrameStuff()
 flipInternal()
 ---------
 createRenderBuffer():1
-RenderBuffer[1].setSize(256, 128)
+RenderBuffer[1].setSize(192, 128)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 Buffer[0].afterSetMem(mem[393216])
@@ -66,7 +66,7 @@ draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
 ::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
 ::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
 ::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.0078125, 0, 0, -1 ],
+  [ 0.010416667, 0, 0, -1 ],
   [ 0, 0.015625, 0, -1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
