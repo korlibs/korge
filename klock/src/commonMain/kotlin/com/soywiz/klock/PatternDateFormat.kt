@@ -85,7 +85,7 @@ data class PatternDateFormat @JvmOverloads constructor(
             "mm" -> """(\d{2})"""
             "s" -> """(\d{1,2})"""
             "ss" -> """(\d{2})"""
-            "S" -> """(\d{1,6})"""
+            "S" -> """(\d{1,9})"""
             "SS" -> """(\d{2})"""
             "SSS" -> """(\d{3})"""
             "SSSS" -> """(\d{4})"""
