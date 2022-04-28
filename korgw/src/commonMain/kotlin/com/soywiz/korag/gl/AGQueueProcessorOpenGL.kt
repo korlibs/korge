@@ -104,8 +104,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     override fun bufferDelete(id: Int) {
         val bufferInfo = buffers[id]
         if (bufferInfo != null) {
-            tempBuffer1.setInt(0, bufferInfo.glId)
-            gl.deleteBuffers(1, tempBuffer1)
+            gl.deleteBuffer(bufferInfo.glId)
         }
         buffers.remove(id)
     }
@@ -118,8 +117,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
             bufferInfo.glId = 0
         }
         if (bufferInfo.glId <= 0) {
-            gl.genBuffers(1, tempBuffer1)
-            bufferInfo.glId = tempBuffer1.getInt(0)
+            bufferInfo.glId = gl.genBuffer()
         }
 
         gl.bindBuffer(target.toGl(), bufferInfo.glId)
@@ -323,7 +321,6 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     }
 
     private val TEMP_MAX_MATRICES = 1024
-    val tempBuffer1 = FBuffer(4)
     val tempBuffer = FBuffer(4 * 16 * TEMP_MAX_MATRICES)
     val tempBufferM2 = FBuffer.allocUnaligned(4 * 2 * 2)
     val tempBufferM3 = FBuffer.allocUnaligned(4 * 3 * 3)
@@ -531,8 +528,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     override fun textureCreate(textureId: Int) {
         val texInfo = TextureInfo(textureId)
-        gl.genTextures(1, tempBuffer1)
-        texInfo.glId = tempBuffer1.getInt(0)
+        texInfo.glId = gl.genTexture()
         textures[textureId] = texInfo
     }
 
@@ -540,8 +536,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         val info = textures[textureId]
         if (info != null) {
             if (info.glId > 0) {
-                tempBuffer1.setInt(0, info.glId)
-                gl.deleteTextures(1, tempBuffer1)
+                gl.deleteTexture(info.glId)
                 info.glId = 0
             }
         }

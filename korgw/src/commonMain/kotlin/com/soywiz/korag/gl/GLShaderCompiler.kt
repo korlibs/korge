@@ -33,12 +33,7 @@ internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fra
     }
 }
 
-@ThreadLocal
-private val GLShaderCompiler_tempBuffer1 = FBuffer(4)
-
 internal object GLShaderCompiler {
-    private inline val tempBuffer1 get() = GLShaderCompiler_tempBuffer1
-
     private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
     // @TODO: Prevent leaks if we throw exceptions, we should free resources
@@ -68,8 +63,7 @@ internal object GLShaderCompiler {
         gl.attachShader(id, fragmentShaderId)
         gl.attachShader(id, vertexShaderId)
         gl.linkProgram(id)
-        tempBuffer1.setInt(0, 0)
-        gl.getProgramiv(id, gl.LINK_STATUS, tempBuffer1)
+        val linkStatus = gl.getProgramiv(id, gl.LINK_STATUS)
         return GLProgramInfo(id, vertexShaderId, fragmentShaderId)
     }
 

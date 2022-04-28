@@ -81,8 +81,8 @@ abstract class AGOpengl : AG() {
 
         val ftex get() = tex
 
-        val depth = FBuffer(4)
-        val framebuffer = FBuffer(4)
+        var depth = 0
+        var framebuffer = 0
 
         // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
         override fun set() {
@@ -104,8 +104,8 @@ abstract class AGOpengl : AG() {
 
                 if (cachedVersion != contextVersion) {
                     cachedVersion = contextVersion
-                    gl.genRenderbuffers(1, depth)
-                    gl.genFramebuffers(1, framebuffer)
+                    depth = gl.genRenderbuffer()
+                    framebuffer = gl.genFramebuffer()
                 }
 
                 //val doMsaa = nsamples != 1
@@ -126,7 +126,7 @@ abstract class AGOpengl : AG() {
                     gl.texImage2D(texTarget, 0, KmlGl.RGBA, width, height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
                 }
                 gl.bindTexture(texTarget, 0)
-                gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depth.getInt(0))
+                gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depth)
                 val internalFormat = when {
                     hasStencilAndDepth -> KmlGl.DEPTH_STENCIL
                     hasStencil -> KmlGl.STENCIL_INDEX8 // On android this is buggy somehow?
@@ -145,7 +145,7 @@ abstract class AGOpengl : AG() {
                 //gl.renderbufferStorageMultisample()
             }
 
-            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer.getInt(0))
+            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer)
             gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, glProcessorSync.textures[ftex.tex]!!.glId, 0)
             val internalFormat = when {
                 hasStencilAndDepth -> KmlGl.DEPTH_STENCIL_ATTACHMENT
@@ -154,7 +154,7 @@ abstract class AGOpengl : AG() {
                 else -> 0
             }
             if (internalFormat != 0) {
-                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, depth.getInt(0))
+                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, depth)
             } else {
                 gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
                 gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
@@ -167,10 +167,10 @@ abstract class AGOpengl : AG() {
         override fun close() {
             super.close()
             commandsSync {  }
-            gl.deleteFramebuffers(1, framebuffer)
-            gl.deleteRenderbuffers(1, depth)
-            framebuffer.setInt(0, 0)
-            depth.setInt(0, 0)
+            gl.deleteFramebuffer(framebuffer)
+            gl.deleteRenderbuffer(depth)
+            framebuffer = 0
+            depth = 0
         }
 
         override fun toString(): String = "GlRenderBuffer[$id]($width, $height)"
