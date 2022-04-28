@@ -76,11 +76,15 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     // PROGRAMS
     ///////////////////////////////////////
 
-    private val programs = IntMap<GLProgramInfo>()
+    internal class ProgramInfo(val id: Int) {
+        internal var glProgramInfo: GLProgramInfo? = null
+    }
+
+    private val programs = FastResources { ProgramInfo(it) }
     private var currentProgram: GLProgramInfo? = null
 
     override fun programCreate(programId: Int, program: Program, config: ProgramConfig?) {
-        programs[programId] = GLShaderCompiler.programCreate(
+        programs.getOrCreate(programId).glProgramInfo = GLShaderCompiler.programCreate(
             gl,
             this.config.copy(programConfig = config ?: this.config.programConfig),
             program
@@ -88,16 +92,16 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     }
 
     override fun programDelete(programId: Int) {
-        val program = programs[programId]
-        program?.delete(gl)
-        programs.remove(programId)
-        if (currentProgram === program) {
+        val program = programs.tryGetAndDelete(programId) ?: return
+        program.glProgramInfo?.delete(gl)
+        if (currentProgram === program.glProgramInfo) {
             currentProgram = null
         }
+        program.glProgramInfo = null
     }
 
     override fun programUse(programId: Int) {
-        programUseExt(programs[programId])
+        programUseExt(programs[programId]?.glProgramInfo)
     }
 
     private fun programUseExt(program: GLProgramInfo?) {

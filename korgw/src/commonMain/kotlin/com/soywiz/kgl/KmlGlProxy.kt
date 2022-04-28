@@ -7,7 +7,7 @@ package com.soywiz.kgl
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.lang.printStackTrace
+import com.soywiz.korio.lang.*
 
 open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     fun Int32Buffer.toRealString(): String = buildString {
@@ -20,12 +20,14 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
     }
 
     open fun serializeParams(name: String, params: List<Any?>): String {
-        val rparams = when {
-            name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv" ->
-                params.map { if (it is FBuffer) it.arrayInt.toRealString() else it }
-            else -> params
+        val bufferIsInt = name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv"
+        return params.joinToString(", ") {
+            when {
+                bufferIsInt && it is FBuffer -> it.arrayInt.toRealString()
+                it is String -> it.quoted
+                else -> "$it"
+            }
         }
-        return "$rparams"
     }
 
 	open fun before(name: String, params: List<Any?>): Unit = Unit
@@ -1524,7 +1526,7 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 	}
 }
 
-open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy) : KmlGlProxy(parent) {
+open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy()) : KmlGlProxy(parent) {
     val log = arrayListOf<String>()
 
     fun clearLog(): Unit { log.clear() }
@@ -1540,7 +1542,7 @@ open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy) : KmlGlProxy(parent
         if (res != null) log.add(res)
     }
 }
-class LogKmlGlProxy(parent: KmlGl = KmlGlDummy, var logBefore: Boolean = false, var logAfter: Boolean = true) : KmlGlProxy(parent) {
+class LogKmlGlProxy(parent: KmlGl = KmlGlDummy(), var logBefore: Boolean = false, var logAfter: Boolean = true) : KmlGlProxy(parent) {
 	override fun before(name: String, params: List<Any?>): Unit {
         if (logBefore) println("before: $name (${serializeParams(name, params)})")
 	}

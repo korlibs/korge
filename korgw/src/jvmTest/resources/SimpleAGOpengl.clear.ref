@@ -1,0 +1,7 @@
+colorMask(true, true, true, true)
+clearColor(0.0, 0.0, 0.0, 0.0)
+depthMask(true)
+clearDepthf(1.0)
+stencilMask(-1)
+clearStencil(0)
+clear(17664)

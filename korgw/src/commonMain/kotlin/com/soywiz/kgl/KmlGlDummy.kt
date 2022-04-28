@@ -7,19 +7,19 @@ package com.soywiz.kgl
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 
-object KmlGlDummy : KmlGlDummyBase()
+class KmlGlDummy : KmlGlDummyBase()
 
 open class KmlGlDummyBase : KmlGl() {
-    class Allocator {
-        var id = 1
-        fun alloc(): Int = id++
+    class Allocator(val base: Int = 0) {
+        var id = base
+        fun alloc(): Int = ++id
     }
-    val programIds = Allocator()
-    val shaderIds = Allocator()
-    val bufferIds = Allocator()
-    val frameBufferIds = Allocator()
-    val renderBufferids = Allocator()
-    val textureIds = Allocator()
+    val programIds = Allocator(1000)
+    val shaderIds = Allocator(2000)
+    val bufferIds = Allocator(3000)
+    val frameBufferIds = Allocator(4000)
+    val renderBufferids = Allocator(5000)
+    val textureIds = Allocator(6000)
 
     override fun activeTexture(texture: Int): Unit = Unit
     override fun attachShader(program: Int, shader: Int): Unit = Unit
