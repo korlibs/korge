@@ -2,12 +2,19 @@ enable(3042)
 createProgram() = 1001
 getString(35724) = 
 createShader(35632) = 2001
-shaderSource(2001, "void main() {\n\tgl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);\n}\n")
+shaderSource(2001, """void main() {
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+""")
 compileShader(2001)
 getShaderiv(2001, 35713, [1])
 getError() = 0
 createShader(35633) = 2002
-shaderSource(2002, "attribute vec2 a_Pos;\nvoid main() {\n\tgl_Position = vec4(a_Pos, 0.0, 1.0);\n}\n")
+shaderSource(2002, """attribute vec2 a_Pos;
+void main() {
+	gl_Position = vec4(a_Pos, 0.0, 1.0);
+}
+""")
 compileShader(2002)
 getShaderiv(2002, 35713, [1])
 getError() = 0

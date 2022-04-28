@@ -9,7 +9,7 @@ suspend fun Stage.mainHaptic() {
     views.hapticFeedback
     uiButton("hello") {
         clicked {
-            //views.hapticFeedback.emit(HapticFeedback.Kind.ALIGNMENT)
+            views.hapticFeedback.emit(HapticFeedback.Kind.ALIGNMENT)
         }
     }
 }

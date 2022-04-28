@@ -24,7 +24,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         return params.joinToString(", ") {
             when {
                 bufferIsInt && it is FBuffer -> it.arrayInt.toRealString()
-                it is String -> it.quoted
+                it is String -> if (it.contains("\n")) "\"\"\"$it\"\"\"" else it.quoted
                 else -> "$it"
             }
         }

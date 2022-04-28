@@ -2,12 +2,60 @@ genTextures(1, [6001])
 createProgram() = 1001
 getString(35724) = 
 createShader(35632) = 2001
-shaderSource(2001, "uniform sampler2D u_Tex0;\nuniform sampler2D u_Tex1;\nuniform sampler2D u_Tex2;\nuniform sampler2D u_Tex3;\nvarying float v_TexIndex;\nvarying vec2 v_Tex;\nvarying vec4 v_Col;\nvoid main() {\n\tif ((v_TexIndex <= 1.0)) {\n\t\tif ((v_TexIndex == 0.0)) {\n\t\t\tgl_FragColor = texture2D(u_Tex0, fract(v_Tex.xy));\n\t\t}\n\t\telse {\n\t\t\tgl_FragColor = texture2D(u_Tex1, fract(v_Tex.xy));\n\t\t}\n\t}\n\telse {\n\t\tif ((v_TexIndex == 2.0)) {\n\t\t\tgl_FragColor = texture2D(u_Tex2, fract(v_Tex.xy));\n\t\t}\n\t\telse {\n\t\t\tgl_FragColor = texture2D(u_Tex3, fract(v_Tex.xy));\n\t\t}\n\t}\n\tgl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);\n\tgl_FragColor = (gl_FragColor.rgba * v_Col.rgba);\n\tif ((gl_FragColor.a <= 0.0)) {\n\t\tdiscard;\n\t}\n}\n")
+shaderSource(2001, """uniform sampler2D u_Tex0;
+uniform sampler2D u_Tex1;
+uniform sampler2D u_Tex2;
+uniform sampler2D u_Tex3;
+varying float v_TexIndex;
+varying vec2 v_Tex;
+varying vec4 v_Col;
+void main() {
+	if ((v_TexIndex <= 1.0)) {
+		if ((v_TexIndex == 0.0)) {
+			gl_FragColor = texture2D(u_Tex0, fract(v_Tex.xy));
+		}
+		else {
+			gl_FragColor = texture2D(u_Tex1, fract(v_Tex.xy));
+		}
+	}
+	else {
+		if ((v_TexIndex == 2.0)) {
+			gl_FragColor = texture2D(u_Tex2, fract(v_Tex.xy));
+		}
+		else {
+			gl_FragColor = texture2D(u_Tex3, fract(v_Tex.xy));
+		}
+	}
+	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	gl_FragColor = (gl_FragColor.rgba * v_Col.rgba);
+	if ((gl_FragColor.a <= 0.0)) {
+		discard;
+	}
+}
+""")
 compileShader(2001)
 getShaderiv(2001, 35713, [1])
 getError() = 0
 createShader(35633) = 2002
-shaderSource(2002, "attribute vec2 a_Tex;\nattribute float a_TexIndex;\nattribute vec4 a_Col;\nattribute vec4 a_Col2;\nattribute vec2 a_Pos;\nuniform mat4 u_ProjMat;\nuniform mat4 u_ViewMat;\nvarying vec2 v_Tex;\nvarying float v_TexIndex;\nvarying vec4 v_Col;\nvarying vec4 v_Col2;\nvoid main() {\n\tv_Tex = a_Tex;\n\tv_TexIndex = a_TexIndex;\n\tv_Col = a_Col;\n\tv_Col2 = a_Col2;\n\tgl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));\n}\n")
+shaderSource(2002, """attribute vec2 a_Tex;
+attribute float a_TexIndex;
+attribute vec4 a_Col;
+attribute vec4 a_Col2;
+attribute vec2 a_Pos;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying vec2 v_Tex;
+varying float v_TexIndex;
+varying vec4 v_Col;
+varying vec4 v_Col2;
+void main() {
+	v_Tex = a_Tex;
+	v_TexIndex = a_TexIndex;
+	v_Col = a_Col;
+	v_Col2 = a_Col2;
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+}
+""")
 compileShader(2002)
 getShaderiv(2002, 35713, [1])
 getError() = 0
@@ -19,29 +67,29 @@ useProgram(1001)
 genBuffers(1, [3001])
 bindBuffer(34962, 3001)
 bufferData(34962, 96, FBuffer(size=393216), 35044)
-getAttribLocation(1001, "a_Pos") = 0
-enableVertexAttribArray(0)
-vertexAttribPointer(0, 2, 5126, false, 24, 0)
-getAttribLocation(1001, "a_Tex") = 0
-enableVertexAttribArray(0)
-vertexAttribPointer(0, 2, 5126, false, 24, 8)
-getAttribLocation(1001, "a_Col") = 0
-enableVertexAttribArray(0)
-vertexAttribPointer(0, 4, 5121, true, 24, 16)
-getAttribLocation(1001, "a_Col2") = 0
-enableVertexAttribArray(0)
-vertexAttribPointer(0, 4, 5121, true, 24, 20)
+getAttribLocation(1001, "a_Pos") = 8001
+enableVertexAttribArray(8001)
+vertexAttribPointer(8001, 2, 5126, false, 24, 0)
+getAttribLocation(1001, "a_Tex") = 8002
+enableVertexAttribArray(8002)
+vertexAttribPointer(8002, 2, 5126, false, 24, 8)
+getAttribLocation(1001, "a_Col") = 8003
+enableVertexAttribArray(8003)
+vertexAttribPointer(8003, 4, 5121, true, 24, 16)
+getAttribLocation(1001, "a_Col2") = 8004
+enableVertexAttribArray(8004)
+vertexAttribPointer(8004, 4, 5121, true, 24, 20)
 genBuffers(1, [3002])
 bindBuffer(34962, 3002)
 bufferData(34962, 4, FBuffer(size=4), 35044)
-getAttribLocation(1001, "a_TexIndex") = 0
-enableVertexAttribArray(0)
-vertexAttribPointer(0, 1, 5121, false, 1, 0)
-getUniformLocation(1001, "u_ProjMat") = 0
-uniformMatrix4fv(0, 1, false, FBuffer(size=65536))
-getUniformLocation(1001, "u_ViewMat") = 0
-uniformMatrix4fv(0, 1, false, FBuffer(size=65536))
-getUniformLocation(1001, "u_Tex0") = 0
+getAttribLocation(1001, "a_TexIndex") = 8005
+enableVertexAttribArray(8005)
+vertexAttribPointer(8005, 1, 5121, false, 1, 0)
+getUniformLocation(1001, "u_ProjMat") = 7001
+uniformMatrix4fv(7001, 1, false, FBuffer(size=65536))
+getUniformLocation(1001, "u_ViewMat") = 7002
+uniformMatrix4fv(7002, 1, false, FBuffer(size=65536))
+getUniformLocation(1001, "u_Tex0") = 7003
 activeTexture(33984)
 bindTexture(3553, 6001)
 texImage2D(3553, 0, 6408, 6408, 5121, AwtNativeImage(64, 64))
@@ -50,16 +98,16 @@ texParameteri(3553, 10242, 33071)
 texParameteri(3553, 10243, 33071)
 texParameteri(3553, 10241, 9987)
 texParameteri(3553, 10240, 9729)
-uniform1i(0, 0)
-getUniformLocation(1001, "u_Tex1") = 0
+uniform1i(7003, 0)
+getUniformLocation(1001, "u_Tex1") = 7004
 activeTexture(33985)
-uniform1i(0, 1)
-getUniformLocation(1001, "u_Tex2") = 0
+uniform1i(7004, 1)
+getUniformLocation(1001, "u_Tex2") = 7005
 activeTexture(33986)
-uniform1i(0, 2)
-getUniformLocation(1001, "u_Tex3") = 0
+uniform1i(7005, 2)
+getUniformLocation(1001, "u_Tex3") = 7006
 activeTexture(33987)
-uniform1i(0, 3)
+uniform1i(7006, 3)
 enable(3042)
 blendEquationSeparate(32774, 32774)
 blendFuncSeparate(770, 771, 1, 771)
@@ -74,8 +122,8 @@ genBuffers(1, [3003])
 bindBuffer(34963, 3003)
 bufferData(34963, 12, FBuffer(size=49152), 35044)
 drawElements(4, 6, 5123, 0)
-disableVertexAttribArray(0)
-disableVertexAttribArray(0)
-disableVertexAttribArray(0)
-disableVertexAttribArray(0)
-disableVertexAttribArray(0)
+disableVertexAttribArray(8001)
+disableVertexAttribArray(8002)
+disableVertexAttribArray(8003)
+disableVertexAttribArray(8004)
+disableVertexAttribArray(8005)

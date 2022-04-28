@@ -4,6 +4,7 @@
 
 package com.soywiz.kgl
 
+import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 
@@ -14,6 +15,16 @@ open class KmlGlDummyBase : KmlGl() {
         var id = base
         fun alloc(): Int = ++id
     }
+    class ProgramInfo(val id: Int) {
+        var uniformId = 7000
+        val uniforms = FastStringMap<Int>()
+        var attribId = 8000
+        val attribs = FastStringMap<Int>()
+        fun getUniformLocation(name: String): Int = uniforms.getOrPut(name) { ++uniformId }
+        fun getAttribLocation(name: String): Int = attribs.getOrPut(name) { ++attribId }
+    }
+    val programs = IntMap<ProgramInfo>()
+    fun getProgram(id: Int): ProgramInfo = programs.getOrPut(id) { ProgramInfo(id) }
     val programIds = Allocator(1000)
     val shaderIds = Allocator(2000)
     val bufferIds = Allocator(3000)
@@ -84,8 +95,8 @@ open class KmlGlDummyBase : KmlGl() {
     override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit
     override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit
     override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit = Unit
-    override fun getAttribLocation(program: Int, name: String): Int = 0
-    override fun getUniformLocation(program: Int, name: String): Int = 0
+    override fun getAttribLocation(program: Int, name: String): Int = getProgram(program).getAttribLocation(name)
+    override fun getUniformLocation(program: Int, name: String): Int = getProgram(program).getUniformLocation(name)
     override fun getBooleanv(pname: Int, data: FBuffer): Unit = Unit
     override fun getBufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit = Unit
     override fun getError(): Int = 0
