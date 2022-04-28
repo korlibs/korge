@@ -15,8 +15,8 @@ open class KmlGlDummyBase : KmlGl() {
     val ids = LinkedHashMap<Kind, Int>()
 
     fun alloc(kind: Kind): Int {
-        ids.getOrPut(kind) { 1 }
-        return ids.getOrPut(kind){ ids[kind]!! +1 }
+        ids[kind] = ids.getOrPut(kind) { 0 } + 1
+        return ids[kind]!!
     }
 
     override fun activeTexture(texture: Int): Unit = Unit
