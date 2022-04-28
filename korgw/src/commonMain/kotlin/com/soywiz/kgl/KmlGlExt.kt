@@ -9,7 +9,9 @@ import kotlin.native.concurrent.ThreadLocal
 class KmlGlException(message: String) : RuntimeException(message)
 
 @ThreadLocal
-private val tempFBuffer = FBuffer(4 * 4)
+private val tempFBuffer = FBuffer.allocUnaligned(4)
+@ThreadLocal
+private val tempFBuffer4 = FBuffer.allocUnaligned(4 * 4)
 
 fun KmlGl.getShaderiv(shader: Int, type: Int): Int =
     tempFBuffer.let { getShaderiv(shader, type, it); it.getInt(0) }
@@ -21,10 +23,20 @@ fun KmlGl.getBooleanv(pname: Int): Boolean = tempFBuffer.let { getBooleanv(pname
 fun KmlGl.getFloatv(pname: Int): Float = tempFBuffer.let { getFloatv(pname, it); it.getFloat(0) }
 fun KmlGl.getIntegerv(pname: Int): Int = tempFBuffer.let { getIntegerv(pname, it); it.getInt(0) }
 fun KmlGl.getVertexAttribiv(index: Int, pname: Int): Int = tempFBuffer.let { getVertexAttribiv(index, pname, it); it.getInt(0) }
-fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempFBuffer.let {
+fun KmlGl.getRectanglev(pname: Int, out: Rectangle = Rectangle()): Rectangle = tempFBuffer4.let {
     getFloatv(pname, it)
     out.setTo(it.getFloat(0), it.getFloat(1), it.getFloat(2), it.getFloat(3))
 }
+
+fun KmlGl.genBuffer(): Int = tempFBuffer.let { genBuffers(1, tempFBuffer); it.getInt(0) }
+fun KmlGl.genTexture(): Int = tempFBuffer.let { genTextures(1, tempFBuffer); it.getInt(0) }
+fun KmlGl.genRenderbuffer(): Int = tempFBuffer.let { genRenderbuffers(1, tempFBuffer); it.getInt(0) }
+fun KmlGl.genFramebuffer(): Int = tempFBuffer.let { genFramebuffers(1, tempFBuffer); it.getInt(0) }
+
+fun KmlGl.deleteBuffer(id: Int): Unit = tempFBuffer.let { it.setInt(0, id); deleteBuffers(1, tempFBuffer) }
+fun KmlGl.deleteTexture(id: Int): Unit = tempFBuffer.let { it.setInt(0, id); deleteTextures(1, tempFBuffer) }
+fun KmlGl.deleteRenderbuffer(id: Int): Unit = tempFBuffer.let { it.setInt(0, id); deleteRenderbuffers(1, tempFBuffer) }
+fun KmlGl.deleteFramebuffer(id: Int): Unit = tempFBuffer.let { it.setInt(0, id); deleteFramebuffers(1, tempFBuffer) }
 
 private inline fun KmlGl.getInfoLog(
 	obj: Int,

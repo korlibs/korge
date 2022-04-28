@@ -10,6 +10,24 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.printStackTrace
 
 open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
+    fun Int32Buffer.toRealString(): String = buildString {
+        append("[")
+        for (n in 0 until size) {
+            if (n != 0) append(", ")
+            append(this@toRealString[n])
+        }
+        append("]")
+    }
+
+    open fun serializeParams(name: String, params: List<Any?>): String {
+        val rparams = when {
+            name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv" ->
+                params.map { if (it is FBuffer) it.arrayInt.toRealString() else it }
+            else -> params
+        }
+        return "$rparams"
+    }
+
 	open fun before(name: String, params: List<Any?>): Unit = Unit
 	open fun after(name: String, params: List<Any?>, result: Any?): Unit = Unit
 	override fun activeTexture(texture: Int): Unit {
@@ -1505,15 +1523,16 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
 		return parent.viewport(x, y, width, height)
 	}
 }
+
 open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy) : KmlGlProxy(parent) {
     val log = arrayListOf<String>()
 
     fun clearLog(): Unit { log.clear() }
     fun getLogAsString(): String = log.joinToString("\n")
 
-    open fun getString(name: String, params: List<Any?>, result: Any?): String? {
-        if (result == Unit) return "$name($params)"
-        return "$name($params) = $result"
+    open fun getString(name: String, params: List<Any?>, result: Any?): String? = buildString {
+        append("$name(${serializeParams(name, params)})")
+        if (result != Unit) append(" = $result")
     }
 
     override fun after(name: String, params: List<Any?>, result: Any?): Unit {
@@ -1523,10 +1542,10 @@ open class KmlGlProxyLogToString(parent: KmlGl = KmlGlDummy) : KmlGlProxy(parent
 }
 class LogKmlGlProxy(parent: KmlGl = KmlGlDummy, var logBefore: Boolean = false, var logAfter: Boolean = true) : KmlGlProxy(parent) {
 	override fun before(name: String, params: List<Any?>): Unit {
-        if (logBefore) println("before: $name ($params)")
+        if (logBefore) println("before: $name (${serializeParams(name, params)})")
 	}
 	override fun after(name: String, params: List<Any?>, result: Any?): Unit {
-        if (logAfter) println("after: $name ($params) = $result")
+        if (logAfter) println("after: $name (${serializeParams(name, params)}) = $result")
 	}
 }
 open class CheckErrorsKmlGlProxy(parent: KmlGl, val throwException: Boolean = false, val printStackTrace: Boolean = false) : KmlGlProxy(parent) {
