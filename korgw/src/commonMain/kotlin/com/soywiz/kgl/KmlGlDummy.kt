@@ -6,18 +6,20 @@ package com.soywiz.kgl
 
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.lang.*
 
 object KmlGlDummy : KmlGlDummyBase()
 
 open class KmlGlDummyBase : KmlGl() {
-    enum class Kind { PROGRAM, SHADER, BUFFER, FRAME_BUFFER, RENDER_BUFFER, TEXTURE }
-    val ids = LinkedHashMap<Kind, Int>()
-
-    fun alloc(kind: Kind): Int {
-        ids[kind] = ids.getOrPut(kind) { 0 } + 1
-        return ids[kind]!!
+    class Allocator {
+        var id = 1
+        fun alloc(): Int = id++
     }
+    val programIds = Allocator()
+    val shaderIds = Allocator()
+    val bufferIds = Allocator()
+    val frameBufferIds = Allocator()
+    val renderBufferids = Allocator()
+    val textureIds = Allocator()
 
     override fun activeTexture(texture: Int): Unit = Unit
     override fun attachShader(program: Int, shader: Int): Unit = Unit
@@ -44,8 +46,8 @@ open class KmlGlDummyBase : KmlGl() {
     override fun compressedTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, width: Int, height: Int, format: Int, imageSize: Int, data: FBuffer): Unit = Unit
     override fun copyTexImage2D(target: Int, level: Int, internalformat: Int, x: Int, y: Int, width: Int, height: Int, border: Int): Unit = Unit
     override fun copyTexSubImage2D(target: Int, level: Int, xoffset: Int, yoffset: Int, x: Int, y: Int, width: Int, height: Int): Unit = Unit
-    override fun createProgram(): Int = alloc(Kind.PROGRAM)
-    override fun createShader(type: Int): Int = alloc(Kind.SHADER)
+    override fun createProgram(): Int = programIds.alloc()
+    override fun createShader(type: Int): Int = shaderIds.alloc()
     override fun cullFace(mode: Int): Unit = Unit
     override fun deleteBuffers(n: Int, items: FBuffer): Unit = Unit
     override fun deleteFramebuffers(n: Int, items: FBuffer): Unit = Unit
@@ -69,15 +71,15 @@ open class KmlGlDummyBase : KmlGl() {
     override fun framebufferTexture2D(target: Int, attachment: Int, textarget: Int, texture: Int, level: Int): Unit = Unit
     override fun frontFace(mode: Int): Unit = Unit
 
-    private fun gen(n: Int, buffer: FBuffer, kind: Kind) {
-        for (i in 0 until n) buffer.i32[i] = alloc(kind)
+    private fun gen(n: Int, buffer: FBuffer, allocator: Allocator) {
+        for (i in 0 until n) buffer.i32[i] = allocator.alloc()
     }
 
-    override fun genBuffers(n: Int, buffers: FBuffer): Unit = gen(n, buffers, Kind.BUFFER)
+    override fun genBuffers(n: Int, buffers: FBuffer): Unit = gen(n, buffers, bufferIds)
     override fun generateMipmap(target: Int): Unit = Unit
-    override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = gen(n, framebuffers, Kind.FRAME_BUFFER)
-    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = gen(n, renderbuffers, Kind.RENDER_BUFFER)
-    override fun genTextures(n: Int, textures: FBuffer): Unit = gen(n, textures, Kind.TEXTURE)
+    override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = gen(n, framebuffers, frameBufferIds)
+    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = gen(n, renderbuffers, renderBufferids)
+    override fun genTextures(n: Int, textures: FBuffer): Unit = gen(n, textures, textureIds)
 
     override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit
     override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit
