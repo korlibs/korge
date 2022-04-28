@@ -21,6 +21,17 @@ import kotlin.contracts.*
 import kotlin.coroutines.*
 import kotlin.jvm.*
 
+typealias AGBlendEquation = AG.BlendEquation
+typealias AGBlendFactor = AG.BlendFactor
+typealias AGStencilOp = AG.StencilOp
+typealias AGTriangleFace = AG.TriangleFace
+typealias AGCompareMode = AG.CompareMode
+typealias AGFrontFace = AG.FrontFace
+typealias AGCullFace = AG.CullFace
+typealias AGDrawType = AG.DrawType
+typealias AGIndexType = AG.IndexType
+typealias AGBufferKind = AG.Buffer.Kind
+
 interface AGFactory {
     val supportsNativeFrame: Boolean
     fun create(nativeControl: Any?, config: AGConfig): AG

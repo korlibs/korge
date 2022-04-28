@@ -5,10 +5,7 @@ import com.soywiz.kgl.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.annotations.*
-import com.soywiz.korio.lang.*
 import com.soywiz.krypto.encoding.*
 import kotlin.native.concurrent.*
 
@@ -36,8 +33,7 @@ abstract class AGOpengl : AG() {
     }
 
     private fun setViewport(buffer: BaseRenderBuffer) {
-        commandsSync {  }
-        gl.viewport(buffer.x, buffer.y, buffer.width, buffer.height)
+        commandsNoWait { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
         //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
     }
 
@@ -76,101 +72,33 @@ abstract class AGOpengl : AG() {
     var lastRenderContextId = 0
 
     inner class GlRenderBuffer : RenderBuffer() {
-        var cachedVersion = -1
         override val id = lastRenderContextId++
 
-        val ftex get() = tex
-
-        var depth = 0
-        var framebuffer = 0
+        var frameBufferId: Int = -1
 
         // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
         override fun set() {
-            // Ensure everything has been executed already. @TODO: We should remove this since this is a bottleneck
-            commandsSync { }
-
             setViewport(this)
 
-            val hasStencilAndDepth: Boolean = when {
-                gl.android -> hasStencil || hasDepth // stencil8 causes strange bug artifacts in Android (at least in one of my devices)
-                else -> hasStencil && hasDepth
-            }
-
-            //val width = this.width.nextPowerOfTwo
-            //val height = this.height.nextPowerOfTwo
-            if (dirty) {
-                dirty = false
-                setSwapInterval(0)
-
-                if (cachedVersion != contextVersion) {
-                    cachedVersion = contextVersion
-                    depth = gl.genRenderbuffer()
-                    framebuffer = gl.genFramebuffer()
-                }
-
-                //val doMsaa = nsamples != 1
-                val doMsaa = false
-                val texTarget = when {
-                    doMsaa -> KmlGl.TEXTURE_2D_MULTISAMPLE
-                    else -> KmlGl.TEXTURE_2D
-                }
-
-                commandsSync {
-                    ftex.bind()
-                }
-                gl.texParameteri(texTarget, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
-                gl.texParameteri(texTarget, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
-                if (doMsaa) {
-                    gl.texImage2DMultisample(texTarget, nsamples, gl.RGBA, width, height, false)
-                } else {
-                    gl.texImage2D(texTarget, 0, KmlGl.RGBA, width, height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
-                }
-                gl.bindTexture(texTarget, 0)
-                gl.bindRenderbuffer(KmlGl.RENDERBUFFER, depth)
-                val internalFormat = when {
-                    hasStencilAndDepth -> KmlGl.DEPTH_STENCIL
-                    hasStencil -> KmlGl.STENCIL_INDEX8 // On android this is buggy somehow?
-                    hasDepth -> KmlGl.DEPTH_COMPONENT
-                    else -> 0
-                }
-                if (internalFormat != 0) {
-                    if (doMsaa) {
-                        gl.renderbufferStorageMultisample(KmlGl.RENDERBUFFER, nsamples, internalFormat, width, height)
-                        //gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, width, height)
-                    } else {
-                        gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, width, height)
+            commandsNoWait { list ->
+                if (dirty) {
+                    if (frameBufferId < 0) {
+                        frameBufferId = list.frameBufferCreate()
                     }
+                    list.frameBufferSet(frameBufferId, tex.texId, width, height, hasStencil, hasDepth)
                 }
-                gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
-                //gl.renderbufferStorageMultisample()
+                list.frameBufferUse(frameBufferId)
             }
-
-            gl.bindFramebuffer(KmlGl.FRAMEBUFFER, framebuffer)
-            gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, glProcessorSync.textures[ftex.tex]!!.glId, 0)
-            val internalFormat = when {
-                hasStencilAndDepth -> KmlGl.DEPTH_STENCIL_ATTACHMENT
-                hasStencil -> KmlGl.STENCIL_ATTACHMENT
-                hasDepth -> KmlGl.DEPTH_ATTACHMENT
-                else -> 0
-            }
-            if (internalFormat != 0) {
-                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, depth)
-            } else {
-                gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-                gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
-            }
-            //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER);
-            //if (status != KmlGl.FRAMEBUFFER_COMPLETE) error("Error getting framebuffer")
-            //gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
         }
 
         override fun close() {
             super.close()
-            commandsSync {  }
-            gl.deleteFramebuffer(framebuffer)
-            gl.deleteRenderbuffer(depth)
-            framebuffer = 0
-            depth = 0
+            commandsNoWait { list ->
+                if (frameBufferId >= 0) {
+                    list.frameBufferDelete(frameBufferId)
+                    frameBufferId = -1
+                }
+            }
         }
 
         override fun toString(): String = "GlRenderBuffer[$id]($width, $height)"

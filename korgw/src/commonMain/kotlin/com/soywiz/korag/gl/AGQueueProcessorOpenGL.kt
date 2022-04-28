@@ -18,10 +18,26 @@ import kotlin.math.*
 
 @OptIn(KorIncomplete::class, KorInternal::class)
 class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AGQueueProcessor {
+    class FastResources<T : Any>(val create: (id: Int) -> T) {
+        private val resources = arrayListOf<T?>()
+        operator fun get(id: Int): T? = getOrNull(id)
+        fun getOrNull(id: Int): T? = resources.getOrNull(id)
+        fun getOrCreate(id: Int): T = getOrNull(id) ?: create(id).also {
+            while (resources.size <= id) resources.add(null)
+            resources[id] = it
+        }
+        fun tryGetAndDelete(id: Int): T? = getOrNull(id).also { delete(id) }
+        fun delete(id: Int) {
+            if (id < resources.size) resources[id] = null
+        }
+    }
+
     val config: GlslConfig = GlslConfig(
         gles = gl.gles,
         android = gl.android,
     )
+
+    val contextVersion: Int get() = globalState.contextVersion
 
     override fun finish() {
         gl.flush()
@@ -95,18 +111,14 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         var cachedVersion = -1
     }
 
-    private val buffers = IntMap<BufferInfo>()
+    private val buffers = FastResources { BufferInfo(it) }
 
     override fun bufferCreate(id: Int) {
-        val bufferInfo = buffers.getOrPut(id) { BufferInfo(id) }
+        buffers.getOrCreate(id)
     }
 
     override fun bufferDelete(id: Int) {
-        val bufferInfo = buffers[id]
-        if (bufferInfo != null) {
-            gl.deleteBuffer(bufferInfo.glId)
-        }
-        buffers.remove(id)
+        buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
     }
 
     private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind = buffer.kind) {
@@ -196,6 +208,10 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     override fun scissor(x: Int, y: Int, width: Int, height: Int) {
         gl.scissor(x, y, width, height)
+    }
+
+    override fun viewport(x: Int, y: Int, width: Int, height: Int) {
+        gl.viewport(x, y, width, height)
     }
 
     override fun clear(color: Boolean, depth: Boolean, stencil: Boolean) {
@@ -524,23 +540,20 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         var glId: Int = 0
     }
 
-    internal val textures = IntMap<TextureInfo>()
+    internal val textures = FastResources { TextureInfo(it) }
 
     override fun textureCreate(textureId: Int) {
-        val texInfo = TextureInfo(textureId)
-        texInfo.glId = gl.genTexture()
-        textures[textureId] = texInfo
+        textures.getOrCreate(textureId).glId = gl.genTexture()
     }
 
     override fun textureDelete(textureId: Int) {
-        val info = textures[textureId]
+        val info = textures.tryGetAndDelete(textureId)
         if (info != null) {
             if (info.glId > 0) {
                 gl.deleteTexture(info.glId)
                 info.glId = 0
             }
         }
-        textures.remove(textureId)
     }
 
     override fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int) {
@@ -588,6 +601,13 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
             tex.ready = true
         }
         return
+    }
+
+    override fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int) {
+        val glId = textures[textureId]?.glId ?: return
+        gl.bindTexture(gl.TEXTURE_2D, glId)
+        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
+        gl.bindTexture(gl.TEXTURE_2D, 0)
     }
 
     private fun actualSyncUpload(tex: AG.Texture, source: AG.BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
@@ -696,5 +716,128 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
             gl.pixelStorei(KmlGl.UNPACK_LSB_FIRST, KmlGl.GFALSE)
             gl.pixelStorei(KmlGl.UNPACK_SWAP_BYTES, KmlGl.GTRUE)
         }
+    }
+
+    // FRAME BUFFER
+    inner class FrameBufferInfo {
+        var cachedVersion = -1
+        var texColor = -1
+        var renderbuffer = -1
+        var framebuffer = -1
+        var width = -1
+        var height = -1
+        var hasDepth = false
+        var hasStencil = false
+        var nsamples: Int = 1
+
+        val hasStencilAndDepth: Boolean get() = when {
+            gl.android -> hasStencil || hasDepth // stencil8 causes strange bug artifacts in Android (at least in one of my devices)
+            else -> hasStencil && hasDepth
+        }
+    }
+    val frameBuffers = FastResources { FrameBufferInfo() }
+
+    override fun frameBufferCreate(id: Int) {
+        frameBuffers.getOrCreate(id)
+    }
+
+    override fun frameBufferDelete(id: Int) {
+        val fb = frameBuffers.getOrNull(id)
+        if (fb != null) {
+            //gl.deleteTexture(fb.texColor).also { fb.texColor = -1 } // Not handled by us
+            gl.deleteRenderbuffer(fb.renderbuffer).also { fb.renderbuffer = -1 }
+            gl.deleteFramebuffer(fb.framebuffer).also { fb.framebuffer = -1 }
+        }
+        frameBuffers.delete(id)
+    }
+
+    override fun frameBufferSet(id: Int, textureId: Int, width: Int, height: Int, hasStencil: Boolean, hasDepth: Boolean) {
+        // Ensure everything has been executed already. @TODO: We should remove this since this is a bottleneck
+        val fb = frameBuffers.getOrCreate(id)
+        val glTexId = textures.getOrNull(textureId)?.glId ?: 0
+
+        val nsamples = 1
+        val dirty = fb.width != width
+            || fb.height != height
+            || fb.hasDepth != hasDepth
+            || fb.hasStencil != hasStencil
+            || fb.nsamples != nsamples
+            || fb.cachedVersion != contextVersion
+            || fb.texColor != glTexId
+
+        //val width = this.width.nextPowerOfTwo
+        //val height = this.height.nextPowerOfTwo
+        if (dirty) {
+            fb.width = width
+            fb.height = height
+            fb.hasDepth = hasDepth
+            fb.hasStencil = hasStencil
+            fb.nsamples = nsamples
+            fb.texColor = glTexId
+
+            //dirty = false
+            //setSwapInterval(0)
+
+            if (fb.cachedVersion != contextVersion) {
+                fb.cachedVersion = contextVersion
+                fb.renderbuffer = gl.genRenderbuffer()
+                fb.framebuffer = gl.genFramebuffer()
+            }
+
+            //val doMsaa = nsamples != 1
+            val doMsaa = false
+            val texTarget = when {
+                doMsaa -> KmlGl.TEXTURE_2D_MULTISAMPLE
+                else -> KmlGl.TEXTURE_2D
+            }
+
+            gl.bindTexture(KmlGl.TEXTURE_2D, fb.texColor)
+            gl.texParameteri(texTarget, KmlGl.TEXTURE_MAG_FILTER, KmlGl.LINEAR)
+            gl.texParameteri(texTarget, KmlGl.TEXTURE_MIN_FILTER, KmlGl.LINEAR)
+            if (doMsaa) {
+                gl.texImage2DMultisample(texTarget, fb.nsamples, KmlGl.RGBA, fb.width, fb.height, false)
+            } else {
+                gl.texImage2D(texTarget, 0, KmlGl.RGBA, fb.width, fb.height, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, null)
+            }
+            gl.bindTexture(texTarget, 0)
+            gl.bindRenderbuffer(KmlGl.RENDERBUFFER, fb.renderbuffer)
+            val internalFormat = when {
+                fb.hasStencilAndDepth -> KmlGl.DEPTH_STENCIL
+                fb.hasStencil -> KmlGl.STENCIL_INDEX8 // On android this is buggy somehow?
+                fb.hasDepth -> KmlGl.DEPTH_COMPONENT
+                else -> 0
+            }
+            if (internalFormat != 0) {
+                if (doMsaa) {
+                    gl.renderbufferStorageMultisample(KmlGl.RENDERBUFFER, fb.nsamples, internalFormat, fb.width, fb.height)
+                    //gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, width, height)
+                } else {
+                    gl.renderbufferStorage(KmlGl.RENDERBUFFER, internalFormat, fb.width, fb.height)
+                }
+            }
+            gl.bindRenderbuffer(KmlGl.RENDERBUFFER, 0)
+            //gl.renderbufferStorageMultisample()
+        }
+    }
+
+    override fun frameBufferUse(id: Int) {
+        val fb = frameBuffers.getOrCreate(id)
+        gl.bindFramebuffer(KmlGl.FRAMEBUFFER, fb.framebuffer)
+        gl.framebufferTexture2D(KmlGl.FRAMEBUFFER, KmlGl.COLOR_ATTACHMENT0, KmlGl.TEXTURE_2D, fb.texColor, 0)
+        val internalFormat = when {
+            fb.hasStencilAndDepth -> KmlGl.DEPTH_STENCIL_ATTACHMENT
+            fb.hasStencil -> KmlGl.STENCIL_ATTACHMENT
+            fb.hasDepth -> KmlGl.DEPTH_ATTACHMENT
+            else -> 0
+        }
+        if (internalFormat != 0) {
+            gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, internalFormat, KmlGl.RENDERBUFFER, fb.renderbuffer)
+        } else {
+            gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+            gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
+        }
+        //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER);
+        //if (status != KmlGl.FRAMEBUFFER_COMPLETE) error("Error getting framebuffer")
+        //gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
     }
 }

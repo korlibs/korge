@@ -16,73 +16,6 @@ import com.soywiz.korio.annotations.*
 import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 
-typealias AGBlendEquation = AG.BlendEquation
-typealias AGBlendFactor = AG.BlendFactor
-typealias AGStencilOp = AG.StencilOp
-typealias AGTriangleFace = AG.TriangleFace
-typealias AGCompareMode = AG.CompareMode
-typealias AGFrontFace = AG.FrontFace
-typealias AGCullFace = AG.CullFace
-typealias AGDrawType = AG.DrawType
-typealias AGIndexType = AG.IndexType
-typealias AGBufferKind = AG.Buffer.Kind
-
-@KorIncomplete
-@KorInternal
-interface AGQueueProcessor {
-    fun finish()
-    fun enableDisable(kind: AGEnable, enable: Boolean)
-    fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean)
-    fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation)
-    fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor = srcRgb, dstA: AGBlendFactor = dstRgb)
-    fun cullFace(face: AGCullFace)
-    fun frontFace(face: AGFrontFace)
-    fun depthFunction(depthTest: AGCompareMode)
-    fun programCreate(programId: Int, program: Program, programConfig: ProgramConfig?)
-    fun programDelete(programId: Int)
-    fun programUse(programId: Int)
-    fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null)
-    fun uniformsSet(layout: UniformLayout, data: FBuffer)
-    fun depthMask(depth: Boolean)
-    fun depthRange(near: Float, far: Float)
-    fun stencilFunction(compareMode: AG.CompareMode, referenceValue: Int, readMask: Int)
-    fun stencilOperation(actionOnDepthFail: AG.StencilOp, actionOnDepthPassStencilFail: AG.StencilOp, actionOnBothPass: AG.StencilOp)
-    fun stencilMask(writeMask: Int)
-    fun scissor(x: Int, y: Int, width: Int, height: Int)
-    fun clear(color: Boolean, depth: Boolean, stencil: Boolean)
-    fun clearColor(red: Float, green: Float, blue: Float, alpha: Float)
-    fun clearDepth(depth: Float)
-    fun clearStencil(stencil: Int)
-    // VAO
-    fun vaoCreate(id: Int)
-    fun vaoDelete(id: Int)
-    fun vaoSet(id: Int, vao: AG.VertexArrayObject)
-    fun vaoUse(id: Int)
-    // UBO
-    fun uboCreate(id: Int)
-    fun uboDelete(id: Int)
-    fun uboSet(id: Int, ubo: AG.UniformValues)
-    fun uboUse(id: Int)
-    fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
-    fun bufferCreate(id: Int)
-    fun bufferDelete(id: Int)
-    // TEXTURES
-    fun textureCreate(textureId: Int)
-    fun textureDelete(textureId: Int)
-    fun textureUpdate(
-        textureId: Int,
-        target: AG.TextureTargetKind,
-        index: Int,
-        bmp: Bitmap?,
-        source: AG.BitmapSourceBase,
-        doMipmaps: Boolean,
-        premultiplied: Boolean
-    )
-
-    fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int)
-    fun textureBindEnsuring(tex: AG.Texture)
-}
-
 @KorInternal
 inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
     with(list) {
@@ -108,6 +41,7 @@ class AGGlobalState {
     internal val bufferIndices = ConcurrentPool { it + 1 }
     internal val programIndices = ConcurrentPool { it + 1 }
     internal val textureIndices = ConcurrentPool { it + 1 }
+    internal val frameBufferIndices = ConcurrentPool { it + 1 }
     //var programIndex = KorAtomicInt(0)
     private val lock = Lock()
     private val lists = Deque<AGList>()
@@ -218,6 +152,7 @@ class AGList(val globalState: AGGlobalState) {
                 //CMD_STENCIL_MASK -> processor.stencilMask(data.extract8(0))
                 CMD_STENCIL_MASK -> processor.stencilMask(readInt())
                 CMD_SCISSOR -> processor.scissor(readInt(), readInt(), readInt(), readInt())
+                CMD_VIEWPORT -> processor.viewport(readInt(), readInt(), readInt(), readInt())
                 CMD_CLEAR -> processor.clear(data.extract(0), data.extract(1), data.extract(2))
                 CMD_CLEAR_COLOR -> processor.clearColor(readFloat(), readFloat(), readFloat(), readFloat())
                 CMD_CLEAR_DEPTH -> processor.clearDepth(readFloat())
@@ -244,6 +179,11 @@ class AGList(val globalState: AGGlobalState) {
                     textureId = data.extract16(0), target = AG.TextureTargetKind.VALUES[data.extract4(16)], index = readInt(),
                     bmp = readExtra(), source = readExtra(), doMipmaps = data.extract(20), premultiplied = data.extract(21)
                 )
+                // FRAMEBUFFERS
+                CMD_FRAMEBUFFER_CREATE -> processor.frameBufferCreate(data.extract16(0))
+                CMD_FRAMEBUFFER_DELETE -> processor.frameBufferDelete(data.extract16(0))
+                CMD_FRAMEBUFFER_SET -> processor.frameBufferSet(data.extract16(0), readInt(), readInt(), readInt(), data.extractBool(17), data.extractBool(18))
+                CMD_FRAMEBUFFER_USE -> processor.frameBufferUse(data.extract16(0))
                 else -> TODO("Unknown AG command ${cmd.hex}")
             }
         }
@@ -329,6 +269,11 @@ class AGList(val globalState: AGGlobalState) {
     fun scissor(x: Int, y: Int, width: Int, height: Int) {
         addInt(x, y, width, height)
         add(CMD(CMD_SCISSOR))
+    }
+
+    fun viewport(x: Int, y: Int, width: Int, height: Int) {
+        addInt(x, y, width, height)
+        add(CMD(CMD_VIEWPORT))
     }
 
     fun finish() {
@@ -494,6 +439,26 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_BUFFER_DELETE).finsert16(id, 0))
     }
 
+    ////////////////////////////////////////
+    // Frame Buffers
+    ////////////////////////////////////////
+    fun frameBufferCreate(): Int {
+        val id = globalState.frameBufferIndices.alloc()
+        add(CMD(CMD_FRAMEBUFFER_CREATE).finsert16(id, 0))
+        return id
+    }
+    fun frameBufferDelete(id: Int) {
+        globalState.uboIndices.free(id)
+        add(CMD(CMD_FRAMEBUFFER_DELETE).finsert16(id, 0))
+    }
+    fun frameBufferSet(id: Int, textureId: Int, width: Int, height: Int, hasStencil: Boolean, hasDepth: Boolean) {
+        addInt(textureId, width, height)
+        add(CMD(CMD_FRAMEBUFFER_SET).finsert16(id, 0).finsert(hasStencil, 17).finsert(hasDepth, 18))
+    }
+    fun frameBufferUse(id: Int) {
+        add(CMD(CMD_FRAMEBUFFER_USE).finsert16(id, 0))
+    }
+
     companion object {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
@@ -516,6 +481,7 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_DEPTH_MASK = 0x09
         private const val CMD_DEPTH_RANGE = 0x0A
         private const val CMD_SCISSOR = 0x0B
+        private const val CMD_VIEWPORT = 0x0C
         // Clear
         private const val CMD_CLEAR = 0x10
         private const val CMD_CLEAR_COLOR = 0x11
@@ -562,8 +528,11 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_BUFFER_DELETE = 0xB1
         private const val CMD_BUFFER_SET = 0xB2
         private const val CMD_BUFFER_USE = 0xB3
-
-
+        // FRAME BUFFERS
+        private const val CMD_FRAMEBUFFER_CREATE = 0xC0
+        private const val CMD_FRAMEBUFFER_DELETE = 0xC1
+        private const val CMD_FRAMEBUFFER_SET = 0xC2
+        private const val CMD_FRAMEBUFFER_USE = 0xC3
     }
 }
 
