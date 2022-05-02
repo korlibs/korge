@@ -1,4 +1,4 @@
-package com.soywiz.korau.format.mp3
+package com.soywiz.korau.format.mp3.javamp3
 
 import kotlin.math.*
 

@@ -1,4 +1,4 @@
-package com.soywiz.korau.format.mp3
+package com.soywiz.korau.format.mp3.javamp3
 
 import com.soywiz.kmem.*
 import com.soywiz.korau.internal.*
@@ -13,7 +13,7 @@ The build from this repository is the basis for the MP3 decoding dependency that
 Currently supports MPEG-1 Layer I/II/III (that is, most MP1, MP2, and MP3 files)
  */
 
-object JavaMp3Decoder {
+internal object JavaMp3Decoder {
     const val L3_NSAMPLES = JavaMp3DecoderTables.L3_NSAMPLES
     internal val INV_SQUARE_2 = JavaMp3DecoderTables.INV_SQUARE_2
     internal val BITRATE_LAYER_I = JavaMp3DecoderTables.BITRATE_LAYER_I

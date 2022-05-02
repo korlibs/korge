@@ -16,8 +16,12 @@ abstract class AudioStream(
     val totalLength get() = ((totalLengthInSamples ?: 0L).toDouble() / rate.toDouble()).seconds
     open var currentPositionInSamples: Long = 0L
     var currentTime: TimeSpan
-        set(value) { currentPositionInSamples = (value.seconds * rate.toDouble()).toLong() }
-        get() = (currentPositionInSamples.toDouble() / rate.toDouble()).seconds
+        set(value) { currentPositionInSamples = estimateSamplesFromTime(value) }
+        get() = estimateTimeFromSamples(currentPositionInSamples)
+
+    fun estimateSamplesFromTime(time: TimeSpan): Long = (time.seconds * rate.toDouble()).toLong()
+    fun estimateTimeFromSamples(samples: Long): TimeSpan = (samples.toDouble() / rate.toDouble()).seconds
+
     open suspend fun read(out: AudioSamples, offset: Int = 0, length: Int = out.totalSamples): Int = 0
     override fun close() = Unit
 
