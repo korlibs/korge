@@ -3,6 +3,19 @@ package com.soywiz.korio.util
 import kotlin.test.*
 
 class DoubleExtTest {
+    @Test
+    fun testSimple() {
+        //assertEquals("10", 10.0.toStringDecimal(0))
+        assertEquals("2", 2.0.toStringDecimal(0))
+    }
+
+    @Test
+    fun testNanInf() {
+        assertEquals("NaN", Double.NaN.toStringDecimal(10))
+        assertEquals("Infinity", Double.POSITIVE_INFINITY.toStringDecimal(10))
+        assertEquals("-Infinity", Double.NEGATIVE_INFINITY.toStringDecimal(10))
+    }
+
 	@Test
 	fun test() {
 		assertEquals("10", 10.0.toStringDecimal(0))
@@ -13,7 +26,7 @@ class DoubleExtTest {
 		assertEquals("10", 10.0.toStringDecimal(0, true))
 		assertEquals("10", 10.0.toStringDecimal(1, true))
 		assertEquals("10", 10.0.toStringDecimal(2, true))
-	}
+    }
 
 	@Test
 	fun test2() {
@@ -28,6 +41,9 @@ class DoubleExtTest {
 		assertEquals("10.12", 10.123.toStringDecimal(2, true))
 		assertEquals("10.123", 10.123.toStringDecimal(3, true))
 		assertEquals("10.123", 10.123.toStringDecimal(4, true))
+
+        assertEquals("100.12", 100.12.toStringDecimal(2, true))
+        assertEquals("100.01", 100.01.toStringDecimal(2, true))
 	}
 
 	@Test
