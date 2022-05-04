@@ -1,3 +1,5 @@
+package com.soywiz.krypto
+
 import kotlinx.cinterop.*
 import platform.Security.*
 import platform.posix.*
