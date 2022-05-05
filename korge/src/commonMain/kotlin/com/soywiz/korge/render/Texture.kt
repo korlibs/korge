@@ -25,7 +25,11 @@ class TextureBase(
         base = null
     }
     fun update(bmp: Bitmap, mipmaps: Boolean = bmp.mipmaps) {
-        base?.upload(bmp, mipmaps)
+        if (bmp is MultiBitmap) {
+            base?.upload(bmp.bitmaps, bmp.width, bmp.height)
+        } else {
+            base?.upload(bmp, mipmaps)
+        }
     }
 
     override fun toString(): String = "TextureBase($base)"

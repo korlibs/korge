@@ -96,7 +96,8 @@ class Views constructor(
     var currentVfs: VfsFile = resourcesVfs
     var imageFormats = RegisteredImageFormats
 	val renderContext = RenderContext(ag, this, stats, coroutineContext, batchMaxQuads)
-	val agBitmapTextureManager = renderContext.agBitmapTextureManager
+	@KorgeDeprecated val agBitmapTextureManager get() = renderContext.agBitmapTextureManager
+    @KorgeDeprecated val agBufferManager get() = renderContext.agBufferManager
 	var clearEachFrame = true
 	var clearColor: RGBA = Colors.BLACK
 	val propsTriggers = hashMapOf<String, (View, String, String) -> Unit>()
@@ -240,9 +241,7 @@ class Views constructor(
 		injector.mapInstance(AG::class, ag)
 		injector.mapInstance(Views::class, this)
         onAfterRender {
-            renderContext.flush()
-            renderContext.finish()
-            agBitmapTextureManager.afterRender()
+            renderContext.afterRender()
         }
         installFpsDebugOverlay()
     }

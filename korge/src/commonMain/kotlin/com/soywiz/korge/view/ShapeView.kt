@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.view.vector.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
@@ -20,8 +21,10 @@ open class ShapeView(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
-) : Graphics(autoScaling = autoScaling) {
-    var shape: VectorPath? = shape
+// @TODO: This should probably use
+//) : Graphics(autoScaling = autoScaling) {
+) : GpuShapeView(autoScaling = autoScaling) {
+    var path: VectorPath? = shape
         set(value) {
             field = value
             updateGraphics()
@@ -54,22 +57,24 @@ open class ShapeView(
 
     @PublishedApi
     internal val internalShape = VectorPath()
-    inline fun updateShape(block: VectorPath.() -> Unit) {
+    inline fun updatePath(block: VectorPath.() -> Unit) {
         block(internalShape)
-        shape = internalShape
+        path = internalShape
     }
 
     private fun updateGraphics() {
-        val shape = this.shape
-        clear()
-        if (shape != null && shape.isNotEmpty()) {
-            if (strokeThickness != 0.0) {
-                fillStroke(this@ShapeView.fill, this@ShapeView.stroke, StrokeInfo(thickness = strokeThickness)) {
-                    this.path(shape)
-                }
-            } else {
-                fill(this@ShapeView.fill) {
-                    this.path(shape)
+        updateShape {
+            val shapeView = this@ShapeView
+            val shape = shapeView.path
+            if (shape != null && shape.isNotEmpty()) {
+                if (shapeView.strokeThickness != 0.0) {
+                    this.fillStroke(shapeView.fill, shapeView.stroke, StrokeInfo(thickness = shapeView.strokeThickness)) {
+                        this.path(shape)
+                    }
+                } else {
+                    this.fill(shapeView.fill) {
+                        this.path(shape)
+                    }
                 }
             }
         }

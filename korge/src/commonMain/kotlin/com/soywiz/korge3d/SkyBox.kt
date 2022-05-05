@@ -2,7 +2,10 @@ package com.soywiz.korge3d
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.shader.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.MultiBitmap
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.format.readBitmapOptimized
 import com.soywiz.korim.format.readNativeImage
 import com.soywiz.korio.async.async
 import com.soywiz.korio.async.asyncImmediately
@@ -12,15 +15,15 @@ import com.soywiz.korma.geom.*
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.coroutineContext
 
-interface CubeMap {
-    val right: NativeImage
-    val left: NativeImage
-    val top: NativeImage
-    val bottom: NativeImage
-    val back: NativeImage
-    val front: NativeImage
-
-    fun faces(): List<NativeImage> = listOf(right, left, top, bottom, back, front)
+class CubeMap(
+    val right: Bitmap,
+    val left: Bitmap,
+    val top: Bitmap,
+    val bottom: Bitmap,
+    val back: Bitmap,
+    val front: Bitmap,
+) : MultiBitmap(right.width, right.height, listOf(right, left, top, bottom, back, front)) {
+    val faces: List<Bitmap> get() = bitmaps
 }
 
 val CubeMap.width: Int get() = right.width
@@ -33,28 +36,17 @@ suspend fun cubeMapFromResourceDirectory(directory: String, ext: String): CubeMa
 suspend fun VfsFile.readCubeMap(ext: String): CubeMap {
     val file = this
     return coroutineScope {
-        val rightImage = async { file["right.$ext"].readNativeImage() }
-        val leftImage = async { file["left.$ext"].readNativeImage() }
-        val topImage = async { file["top.$ext"].readNativeImage() }
-        val bottomImage = async { file["bottom.$ext"].readNativeImage() }
-        val backImage = async { file["back.$ext"].readNativeImage() }
-        val frontImage = async { file["front.$ext"].readNativeImage() }
-        CubeMapSimple(
+        val rightImage = async { file["right.$ext"].readBitmapOptimized() }
+        val leftImage = async { file["left.$ext"].readBitmapOptimized() }
+        val topImage = async { file["top.$ext"].readBitmapOptimized() }
+        val bottomImage = async { file["bottom.$ext"].readBitmapOptimized() }
+        val backImage = async { file["back.$ext"].readBitmapOptimized() }
+        val frontImage = async { file["front.$ext"].readBitmapOptimized() }
+        CubeMap(
             rightImage.await(), leftImage.await(), topImage.await(),
             bottomImage.await(), backImage.await(), frontImage.await()
         )
     }
-}
-
-class CubeMapSimple(
-    override val right: NativeImage,
-    override val left: NativeImage,
-    override val top: NativeImage,
-    override val bottom: NativeImage,
-    override val back: NativeImage,
-    override val front: NativeImage
-) : CubeMap {
-
 }
 
 @Korge3DExperimental
@@ -159,22 +151,12 @@ class SkyBox(
     private val uniformValues = AG.UniformValues()
     private val rs = AG.RenderState(depthMask = false, depthFunc = AG.CompareMode.LESS_EQUAL)
 
-    private var init = true
     private val cubeMapTexUnit = AG.TextureUnit()
     private val viewNoTrans = Matrix3D()
 
     override fun render(ctx: RenderContext3D) {
         //println("----------- SkyBox render ---------------")
-        val ag = ctx.ag
-
-        if (init) {
-            val faces = cubemap.faces()
-            val texCubeMap = ag.createTexture(premultiplied = false, targetKind = AG.TextureTargetKind.TEXTURE_CUBE_MAP)
-            texCubeMap.upload(faces.toList(), cubemap.width, cubemap.height)
-
-            cubeMapTexUnit.texture = texCubeMap
-            init = false
-        }
+        cubeMapTexUnit.texture = ctx.textureManager.getTextureBase(cubemap).base
 
         ctx.dynamicIndexBufferPool.alloc { indexBuffer ->
             ctx.dynamicVertexBufferPool.alloc { vertexBuffer ->
@@ -187,7 +169,7 @@ class SkyBox(
                     .setColumn(3, 0f, 0f, 0f, 0f)
                     .setRow(3, 0f, 0f, 0f, 0f)
                     .translate(center)
-                ag.draw(
+                ctx.ag.draw(
                     vertices = vertexBuffer,
                     type = AG.DrawType.TRIANGLES,
                     program = skyBoxProgram,

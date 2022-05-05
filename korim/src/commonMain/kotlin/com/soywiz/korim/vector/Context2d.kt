@@ -376,7 +376,7 @@ open class Context2d constructor(
         lineJoin: LineJoin = this.lineJoin,
         miterLimit: Double = this.miterLimit,
         begin: Boolean = true,
-        callback: () -> Unit
+        callback: () -> Unit = {}
     ) {
         if (begin) beginPath()
 		callback()
@@ -389,14 +389,14 @@ open class Context2d constructor(
         }
 	}
 
-    inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit) {
+    inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit = {}) {
         stroke(paint, info.thickness, info.startCap, info.lineJoin, info.miterLimit, begin, callback)
     }
 
-    inline fun fillStroke(fill: Paint, stroke: Paint, callback: () -> Unit) {
+    inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
         callback()
         fill(fill)
-        stroke(stroke)
+        if (strokeInfo != null) stroke(stroke, strokeInfo) else stroke(stroke)
     }
 
     fun fillStroke() { fill(); stroke() }

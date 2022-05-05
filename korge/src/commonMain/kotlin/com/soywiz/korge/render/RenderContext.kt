@@ -40,6 +40,7 @@ class RenderContext constructor(
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
 ) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag {
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
+    val agBufferManager = AgBufferManager(ag)
 
     /** Allows to register handlers when the [flush] method is called */
     val flushers = Signal<Unit>()
@@ -176,12 +177,20 @@ class RenderContext constructor(
      */
     fun getTex(bmp: BmpSlice): Texture = agBitmapTextureManager.getTexture(bmp)
 	fun getTex(bmp: BitmapCoords): TextureCoords = agBitmapTextureManager.getTexture(bmp)
+    fun getBuffer(buffer: AgCachedBuffer): AG.Buffer = agBufferManager.getBuffer(buffer)
 
     /**
      * Allocates a [Texture.Base] from a [Bitmap]. A Texture.Base doesn't have region information.
      * It is just the whole texture/bitmap.
      */
     fun getTex(bmp: Bitmap): TextureBase = agBitmapTextureManager.getTextureBase(bmp)
+
+    internal fun afterRender() {
+        flush()
+        finish()
+        agBitmapTextureManager.afterRender()
+        agBufferManager.afterRender()
+    }
 
     inline fun <T> useBatcher(batcher: T, block: (T) -> Unit) {
         if (currentBatcher !== batcher) {

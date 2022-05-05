@@ -3,6 +3,7 @@ package com.soywiz.kmem.internal
 import com.soywiz.kmem.Arch
 import com.soywiz.kmem.Os
 import com.soywiz.kmem.Runtime
+import java.lang.management.*
 import java.nio.ByteOrder
 
 internal actual val currentOs: Os by lazy {
@@ -32,8 +33,11 @@ internal actual val currentArch: Arch by lazy {
     }
 }
 
-internal actual val currentIsDebug: Boolean =
-    java.lang.management.ManagementFactory.getRuntimeMXBean().inputArguments.toString().indexOf("-agentlib:jdwp") > 0
+internal actual val currentIsDebug: Boolean by lazy {
+    val inputArguments = ManagementFactory.getRuntimeMXBean().inputArguments
+    val inputArgumentsString = inputArguments.toString()
+    inputArguments.contains("-Xdebug") || inputArgumentsString.contains("-agentlib:jdwp")
+}
 internal actual val currentIsLittleEndian: Boolean get() = ByteOrder.nativeOrder() == ByteOrder.LITTLE_ENDIAN
 
 internal actual val currentRawPlatformName: String = "jvm-$currentOs-$currentArch-$currentBuildVariant"

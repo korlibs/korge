@@ -1,7 +1,11 @@
-createBuffer(VERTEX):0
-createBuffer(VERTEX):1
-createBuffer(INDEX):2
-createBuffer(VERTEX):3
+createBuffer():0
+bufferCreate: 1
+createBuffer():1
+bufferCreate: 2
+createBuffer():2
+bufferCreate: 3
+createBuffer():3
+bufferCreate: 4
 RenderBuffer[0].setSize(1280, 720)
 createMainRenderBuffer():0
 RenderBuffer[0].set()
@@ -10,43 +14,55 @@ disposeTemporalPerFrameStuff()
 flipInternal()
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
+textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=1, height=1), 1, 1)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[49152])
-draw(vertexCount=6, instances=1, indices=Buffer[2], type=TRIANGLES, offset=0)
-::draw.program=Program(name=BatchBuilder2D.NoPremultiplied.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3])
-::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
-::draw.scissor=Scissor(x=0, y=0, width=1280, height=720)
-::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
-::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
-::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
-::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
+enable: SCISSOR
+scissor: 0, 0, 1280, 720
+vaoCreate: 1
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
+vaoUse: 1
+uboCreate: 1
+uboSet: 1
+uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0.0015625, 0, 0, -1 ],
   [ 0, -0.0027777778, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
+uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 1, 0, 0, 0 ],
   [ 0, 1, 0, 0 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
-::draw.attribute[0][0]=Attribute(a_Pos, type=Float2, normalized=false, offset=null, active=true, precision=HIGH, divisor=0)
-::draw.attribute[0][1]=Attribute(a_Tex, type=Float2, normalized=false, offset=null, active=true, precision=MEDIUM, divisor=0)
-::draw.attribute[0][2]=Attribute(a_Col, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=0)
-::draw.attribute[0][3]=Attribute(a_Col2, type=Byte4, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=0)
-::draw.attribute[1][0]=Attribute(a_TexIndex, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=0)
-::draw.indices=[0, 1, 2, 3, 0, 2]
+uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboUse: 1
+enable: BLEND
+blendEquation: ADD, ADD
+blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+disable: CULL_FACE
+depthMask: true
+depthRange: 0.0, 1.0
+disable: DEPTH
+colorMask: true, true, true, true
+disable: STENCIL
+stencilMask: 0
+draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
+::draw.indices: [0, 1, 2, 3, 0, 2]
+::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
 ::draw.vertex[0]: a_Pos[150,250], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[1]: a_Pos[250,250], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[2]: a_Pos[250,350], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[3]: a_Pos[150,350], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+uboDelete: 1
+vaoUse: 0
+vaoDelete: 1
 disposeTemporalPerFrameStuff()
 flipInternal()

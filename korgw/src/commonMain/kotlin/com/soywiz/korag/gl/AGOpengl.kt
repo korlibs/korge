@@ -112,11 +112,6 @@ abstract class AGOpengl : AG() {
         return _glProcessor!!
     }
 
-    val glProcessorSync: AGQueueProcessorOpenGL get() {
-        commandsSync {  }
-        return glProcessor
-    }
-
     override fun executeList(list: AGList) {
         glProcessor?.processBlockingAll(list)
     }

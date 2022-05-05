@@ -64,7 +64,7 @@ class RoundRect(
     }
 
     private fun updateGraphics() {
-        updateShape {
+        updatePath {
             clear()
             roundRect(0.0, 0.0, this@RoundRect.width, this@RoundRect.height, this@RoundRect.rx, this@RoundRect.ry)
         }

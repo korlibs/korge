@@ -5,7 +5,6 @@ import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.annotations.*
 
-@KorIncomplete
 @KorInternal
 interface AGQueueProcessor {
     // SYNC

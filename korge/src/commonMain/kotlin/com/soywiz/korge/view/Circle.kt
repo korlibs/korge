@@ -48,7 +48,7 @@ open class Circle(
         val radius = this.radius
         hitShape2d = Shape2d.Circle(radius, radius, radius)
         //println("radius=$radius, halfStroke=$halfStroke")
-        updateShape {
+        updatePath {
             clear()
             circle(radius, radius, radius)
             //circle(radius + halfStroke, radius + halfStroke, radius)

@@ -222,7 +222,12 @@ class GlslBodyGenerator(
     }
 
     override fun visit(stm: Program.Stm.Return) {
-        programIndenter.line("return ${visit(stm.result)};")
+        val result = stm.result
+        if (result != null) {
+            programIndenter.line("return ${visit(result)};")
+        } else {
+            programIndenter.line("return;")
+        }
     }
 
     override fun visit(operand: Program.Vector): String =

@@ -3,6 +3,7 @@ package com.soywiz.korge.view
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.*
+import com.soywiz.korge.annotations.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
@@ -13,6 +14,23 @@ import kotlin.jvm.*
 
 inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
 inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback).apply { redrawIfRequired() }
+inline fun Container.graphicsView(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
+
+@KorgeExperimental
+inline fun Container.graphics(
+    build: ShapeBuilder.() -> Unit,
+    antialiased: Boolean = true,
+    callback: @ViewDslMarker Graphics.() -> Unit = {}
+) = Graphics(buildShape { build() }, antialiased).addTo(this, callback)
+
+fun Graphics(
+    shape: Shape,
+    antialiased: Boolean = true,
+): Graphics = Graphics().apply {
+    this.antialiased = antialiased
+    this.clear()
+    this.shape(shape)
+}
 
 open class Graphics @JvmOverloads constructor(
     autoScaling: Boolean = false
@@ -26,6 +44,14 @@ open class Graphics @JvmOverloads constructor(
 	private var stroke: Paint? = null
 	@PublishedApi
 	internal var currentPath = graphicsPathPool.alloc()
+
+    // @TODO: Not used but to have same API as GpuShapeView
+    var antialiased: Boolean = true
+
+    inline fun updateShape(block: ShapeBuilder.() -> Unit) {
+        this.clear()
+        this.shape(buildShape { block() })
+    }
 
     private var hitShapeVersion = -1
     private var hitShape2dVersion = -1

@@ -23,6 +23,8 @@ class RenderContext3D() {
     val dynamicVertexDataPool = Pool { ag.createVertexData() }
     val dynamicIndexBufferPool = Pool { ag.createIndexBuffer() }
     val ambientColor: Vector3D = Vector3D()
+    val textureManager by lazy { AgBitmapTextureManager(ag) }
+    val bufferManager by lazy { AgBufferManager(ag) }
 
     val tempAgVertexData = FastArrayList<AG.VertexData>()
 

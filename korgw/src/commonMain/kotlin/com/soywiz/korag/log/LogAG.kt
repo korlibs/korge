@@ -1,16 +1,14 @@
 package com.soywiz.korag.log
 
 import com.soywiz.kds.*
-import com.soywiz.kgl.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korio.annotations.KorInternal
+import com.soywiz.korio.util.niceStr
 
 /*
 open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agBase {
@@ -142,17 +140,19 @@ open class LogAG(
     height: Int = 480,
 ) : LogBaseAG(width, height) {
     val log = arrayListOf<String>()
+    fun clearLog() = log.clear()
     fun getLogAsString(): String = log.joinToString("\n")
     override fun log(str: String, kind: Kind) {
         this.log += str
     }
 }
 
+@OptIn(KorInternal::class)
 open class LogBaseAG(
 	width: Int = 640,
 	height: Int = 480,
 ) : DummyAG(width, height) {
-    enum class Kind { DRAW, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, RENDER_BUFFER, BUFFER, TEXTURE, SHADER }
+    enum class Kind { DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE }
 
 	open fun log(str: String, kind: Kind) {
 	}
@@ -188,7 +188,7 @@ open class LogBaseAG(
 		override fun toString(): String = "Texture[$id]"
 	}
 
-	inner class LogBuffer(val id: Int, kind: Kind, list: AGList) : Buffer(kind, list) {
+	inner class LogBuffer(val id: Int, list: AGList) : Buffer(list) {
 		val logmem: FBuffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
@@ -200,10 +200,10 @@ open class LogBaseAG(
 	inner class LogRenderBuffer(override val id: Int, val isMain: Boolean) : RenderBuffer() {
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
             super.setSize(x, y, width, height, fullWidth, fullHeight)
-            log("$this.setSize($width, $height)", LogBaseAG.Kind.RENDER_BUFFER)
+            log("$this.setSize($width, $height)", Kind.FRAME_BUFFER)
         }
-        override fun set() = log("$this.set()", LogBaseAG.Kind.RENDER_BUFFER)
-		override fun close() = log("$this.close()", LogBaseAG.Kind.RENDER_BUFFER)
+        override fun set() = log("$this.set()", Kind.FRAME_BUFFER)
+		override fun close() = log("$this.close()", Kind.FRAME_BUFFER)
 		override fun toString(): String = "RenderBuffer[$id]"
         init {
             if (isMain) {
@@ -219,82 +219,72 @@ open class LogBaseAG(
 	override fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind): Texture =
 		LogTexture(textureId++, premultiplied).apply { log("createTexture():$id", Kind.TEXTURE) }
 
-	override fun createBuffer(kind: Buffer.Kind): Buffer =
-        commandsNoWait { LogBuffer(bufferId++, kind, _list).apply { log("createBuffer($kind):$id", Kind.BUFFER) } }
+	override fun createBuffer(): Buffer =
+        commandsNoWait { LogBuffer(bufferId++, _list).apply { log("createBuffer():$id", Kind.BUFFER) } }
 
     data class VertexAttributeEx(val index: Int, val attribute: Attribute, val pos: Int, val data: VertexData) {
         val layout = data.layout
         val buffer = data.buffer as LogBuffer
     }
 
-    override fun draw(batch: Batch) {
-        val program = batch.program
-        val type = batch.type
-        val vertexData = batch.vertexData
-        val vertexCount = batch.vertexCount
-        val instances = batch.instances
-        val indices = batch.indices
-        val offset = batch.offset
-        val blending = batch.blending
-        val uniforms = batch.uniforms
-        val stencil = batch.stencil
-        val colorMask = batch.colorMask
-        val renderState = batch.renderState
-        val scissor = batch.scissor
-        try {
-            log("draw(vertexCount=$vertexCount, instances=$instances, indices=$indices, type=$type, offset=$offset)", Kind.DRAW)
-            log("::draw.program=$program", Kind.DRAW)
-            log("::draw.renderState=$renderState", Kind.DRAW)
-            log("::draw.scissor=$scissor", Kind.DRAW)
-            log("::draw.stencil=$stencil", Kind.DRAW)
-            log("::draw.blending=$blending", Kind.DRAW)
-            log("::draw.colorMask=$colorMask", Kind.DRAW)
+    class ShaderInfo(val shader: Shader, val id: Int, val code: String) {
+        var requested: Int = 0
 
-            for (index in 0 until uniforms.size) {
-                val uniform = uniforms.keys[index]
-                val value = uniforms.values[index]
-                log("::draw.uniform.$uniform = ${value.convertToStriangle()}", Kind.DRAW)
+        override fun toString(): String = if (requested <= 1) "#SHADER-$id: $code" else "#SHADER-$id (already shown)"
+    }
+    var shaderSourceId = 0
+    val shaderSources = linkedHashMapOf<Shader, ShaderInfo>()
+    fun getShaderSource(shader: Shader, type: ShaderType): ShaderInfo {
+        return shaderSources.getOrPut(shader) {
+            ShaderInfo(shader, ++shaderSourceId, GlslGenerator(type).generate(shader))
+        }.also {
+            it.requested++
+        }
+    }
+
+    val agProcessor = object : AGQueueProcessor {
+        override fun finish() = log("finish", Kind.CLOSE)
+        override fun enableDisable(kind: AGEnable, enable: Boolean) {
+            log("${if (enable) "enable" else "disable"}: $kind", Kind.ENABLE_DISABLE)
+        }
+        override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: ReadKind) =
+            log("readPixels($x, $y, $width, $height, $kind)", Kind.READ)
+
+        override fun draw(
+            type: AGDrawType,
+            vertexCount: Int,
+            offset: Int,
+            instances: Int,
+            indexType: AGIndexType?,
+            indices: Buffer?
+        ) {
+            val _indices: IntArrayList? = when {
+                indices != null -> {
+                    val indexMem = (indices as LogBuffer).logmem!!
+                    val range = offset until offset + vertexCount
+                    when (indexType) {
+                        IndexType.UBYTE -> range.mapInt { indexMem.getAlignedUInt8(it) }
+                        IndexType.USHORT -> range.mapInt { indexMem.getAlignedUInt16(it) }
+                        IndexType.UINT -> range.mapInt { indexMem.getAlignedInt32(it) }
+                        null -> null
+                    }
+                }
+                else -> null
             }
+            val _indicesSure: IntArrayList = _indices ?: (0 until vertexCount).mapInt { offset + it }
+            log("draw: $type, offset=$offset, count=$vertexCount, instances=$instances, indexType=$indexType", Kind.DRAW)
+            log("::draw.indices: $_indicesSure", Kind.DRAW_DETAILS)
 
             val vertexLayoutAttributesEx = vertexData.flatMap { vd ->
                 vd.layout.attributes.zip(vd.layout.attributePositions).mapIndexed { index, pair ->
                     VertexAttributeEx(index, pair.first, pair.second, vd)
                 }
             }
-            val vertexLayoutAttributes = vertexLayoutAttributesEx.map { it.attribute }.toSet()
 
-            val missingUniforms = program.uniforms - uniforms.keys
-            val extraUniforms = uniforms.keys - program.uniforms
-            val missingAttributes = vertexLayoutAttributes - program.attributes
-            val extraAttributes = program.attributes - vertexLayoutAttributes
+            log("::draw.attributes[${vertexData.size}]: ${vertexLayoutAttributesEx.map { it.attribute }}", Kind.DRAW_DETAILS)
 
-            if (missingUniforms.isNotEmpty()) log("::draw.ERROR.Missing:$missingUniforms", Kind.DRAW)
-            if (extraUniforms.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraUniforms", Kind.DRAW)
-
-            if (missingAttributes.isNotEmpty()) log("::draw.ERROR.Missing:$missingAttributes", Kind.DRAW)
-            if (extraAttributes.isNotEmpty()) log("::draw.ERROR.Unexpected:$extraAttributes", Kind.DRAW)
-
-            val _indices = when {
-                indices != null -> {
-                    val indexMem = (indices as LogBuffer).logmem!!
-                    val range = offset until offset + vertexCount
-                    when (batch?.indexType) {
-                        IndexType.UBYTE -> range.mapInt { indexMem.getAlignedUInt8(it) }
-                        IndexType.USHORT -> range.mapInt { indexMem.getAlignedUInt16(it) }
-                        IndexType.UINT -> range.mapInt { indexMem.getAlignedInt32(it) }
-                    }
-                }
-                else -> {
-                    (0 until vertexCount).toList().toIntList()
-                }
-            }
-            for (vlae in vertexLayoutAttributesEx) {
-                log("::draw.attribute[${vlae.buffer.id}][${vlae.index}]=${vlae.attribute.toStringEx()}", Kind.DRAW)
-            }
-
-            log("::draw.indices=$_indices", Kind.DRAW)
             for (doInstances in listOf(false, true)) {
-                for (index in if (doInstances) IntArray(instances) { it }.toIntArrayList() else _indices.sorted().distinct()) {
+                for (index in if (doInstances) IntArray(instances) { it }.toIntArrayList() else _indicesSure.sorted().distinct()) {
                     val attributes = arrayListOf<String>()
                     for (vlae in vertexLayoutAttributesEx) {
                         if ((vlae.attribute.divisor == 0) == doInstances) continue
@@ -317,19 +307,101 @@ open class LogBaseAG(
                     }
                     if (doInstances) {
                         if (attributes.isNotEmpty()) {
-                            log("::draw.instance[$index]: ${attributes.joinToString(", ")}", Kind.DRAW)
+                            log("::draw.instance[$index]: ${attributes.joinToString(", ")}", Kind.DRAW_DETAILS)
                         }
                     } else {
-                        log("::draw.vertex[$index]: ${attributes.joinToString(", ")}", Kind.DRAW)
+                        log("::draw.vertex[$index]: ${attributes.joinToString(", ")}", Kind.DRAW_DETAILS)
                     }
                 }
             }
-            log("::draw.shader.vertex=${GlslGenerator(ShaderType.VERTEX).generate(program.vertex)}", Kind.SHADER)
-            log("::draw.shader.fragment=${GlslGenerator(ShaderType.FRAGMENT).generate(program.fragment)}", Kind.SHADER)
-        } catch (e: Throwable) {
-            log("LogBaseAG.draw.ERROR: ${e.message}", Kind.DRAW)
-            e.printStackTrace()
         }
+
+        override fun bufferCreate(id: Int) = log("bufferCreate: $id", Kind.BUFFER)
+        override fun bufferDelete(id: Int) = log("bufferDelete: $id", Kind.BUFFER)
+        override fun uniformsSet(layout: UniformLayout, data: FBuffer) = log("uniformsSet: $layout", Kind.UNIFORM)
+        override fun uboCreate(id: Int) = log("uboCreate: $id", Kind.UNIFORM)
+        override fun uboDelete(id: Int) = log("uboDelete: $id", Kind.UNIFORM)
+        override fun uboSet(id: Int, ubo: UniformValues) {
+            log("uboSet: $id", Kind.UNIFORM)
+            ubo.fastForEach { uniform, value ->
+                log("uboSet.uniform: $uniform = ${UniformValues.valueToString(value)}", Kind.UNIFORM_VALUES)
+            }
+        }
+        override fun uboUse(id: Int) = log("uboUse: $id", Kind.UNIFORM)
+        override fun cullFace(face: AGCullFace) = log("cullFace: $face", Kind.OTHER)
+        override fun frontFace(face: AGFrontFace) = log("frontFace: $face", Kind.OTHER)
+        override fun blendEquation(rgb: AGBlendEquation, a: AGBlendEquation) = log("blendEquation: $rgb, $a", Kind.OTHER)
+        override fun blendFunction(srcRgb: AGBlendFactor, dstRgb: AGBlendFactor, srcA: AGBlendFactor, dstA: AGBlendFactor) = log("blendFunction: $srcRgb, $dstRgb, $srcA, $dstA", Kind.OTHER)
+        override fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) = log("colorMask: $red, $green, $blue, $alpha", Kind.OTHER)
+        override fun depthFunction(depthTest: AGCompareMode) = log("depthFunction: $depthTest", Kind.OTHER)
+        override fun depthMask(depth: Boolean) = log("depthMask: $depth", Kind.OTHER)
+        override fun depthRange(near: Float, far: Float) = log("depthRange: $near, $far", Kind.OTHER)
+        override fun stencilFunction(compareMode: CompareMode, referenceValue: Int, readMask: Int) = log("stencilFunction: $compareMode, $referenceValue, $readMask", Kind.OTHER)
+
+        override fun stencilOperation(
+            actionOnDepthFail: StencilOp,
+            actionOnDepthPassStencilFail: StencilOp,
+            actionOnBothPass: StencilOp
+        ) = log("stencilOperation: $actionOnDepthFail, $actionOnDepthPassStencilFail, $actionOnBothPass", Kind.OTHER)
+
+        override fun stencilMask(writeMask: Int) = log("stencilMask: $writeMask", Kind.OTHER)
+        override fun scissor(x: Int, y: Int, width: Int, height: Int) = log("scissor: $x, $y, $width, $height", Kind.SCISSORS)
+        override fun viewport(x: Int, y: Int, width: Int, height: Int) = log("viewport: $x, $y, $width, $height", Kind.VIEWPORT)
+
+        override fun clear(color: Boolean, depth: Boolean, stencil: Boolean) = log("clear: color=$color, depth=$depth, stencil=$stencil", Kind.CLEAR)
+        override fun clearColor(red: Float, green: Float, blue: Float, alpha: Float) = log("createColor: $red, $green, $blue, $alpha", Kind.CLEAR)
+        override fun clearDepth(depth: Float) = log("createDepth: $depth", Kind.CLEAR)
+        override fun clearStencil(stencil: Int) = log("createStencil: $stencil", Kind.CLEAR)
+
+        override fun programCreate(programId: Int, program: Program, programConfig: ProgramConfig?) {
+            val fragmentGlSl = GlslGenerator(ShaderType.FRAGMENT).generate(program.fragment)
+            val vertexGlSl = GlslGenerator(ShaderType.VERTEX).generate(program.vertex)
+            log("programCreate: $programId, $program, $programConfig\nprogramCreate.fragment:${fragmentGlSl}\nprogramCreate.vertex:${vertexGlSl}", Kind.SHADER)
+        }
+        override fun programDelete(programId: Int) = log("programDelete: $programId", Kind.SHADER)
+        override fun programUse(programId: Int) = log("programUse: $programId", Kind.SHADER)
+        override fun vaoCreate(id: Int) = log("vaoCreate: $id", Kind.VERTEX)
+        override fun vaoDelete(id: Int) = log("vaoDelete: $id", Kind.VERTEX)
+        private var vertexData: FastArrayList<VertexData> = fastArrayListOf()
+        override fun vaoSet(id: Int, vao: VertexArrayObject) {
+            log("vaoSet: $id, $vao", Kind.VERTEX)
+            vertexData = vao.list
+        }
+        override fun vaoUse(id: Int) = log("vaoUse: $id", Kind.VERTEX)
+        override fun textureCreate(textureId: Int) = log("textureCreate: $textureId", Kind.TEXTURE)
+        override fun textureDelete(textureId: Int) = log("textureDelete: $textureId", Kind.TEXTURE)
+        override fun textureUpdate(
+            textureId: Int,
+            target: TextureTargetKind,
+            index: Int,
+            bmp: Bitmap?,
+            source: BitmapSourceBase,
+            doMipmaps: Boolean,
+            premultiplied: Boolean
+        ) {
+            log("textureUpdate: $textureId, $target, $index, $bmp, $source, $doMipmaps, $premultiplied", Kind.TEXTURE_UPLOAD)
+        }
+
+        override fun textureBind(textureId: Int, target: TextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
+        override fun textureBindEnsuring(tex: Texture) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
+        override fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int) = log("textureSetFromFrameBuffer: $textureId, $x, $y, $width, $height", Kind.TEXTURE)
+        override fun frameBufferCreate(id: Int) = log("frameBufferCreate: $id", Kind.FRAME_BUFFER)
+        override fun frameBufferDelete(id: Int) = log("frameBufferDelete: $id", Kind.FRAME_BUFFER)
+        override fun frameBufferSet(
+            id: Int,
+            textureId: Int,
+            width: Int,
+            height: Int,
+            hasStencil: Boolean,
+            hasDepth: Boolean
+        ) =
+            log("frameBufferSet: $id, $textureId, size=($width, $height), hasStencil=$hasStencil, hasDepth=$hasDepth", Kind.FRAME_BUFFER)
+
+        override fun frameBufferUse(id: Int) = log("frameBufferUse: $id", Kind.FRAME_BUFFER)
+    }
+
+    override fun executeList(list: AGList) {
+        agProcessor.processBlockingAll(list)
     }
 
     fun Any?.convertToStriangle(): Any? = when (this) {
@@ -340,10 +412,10 @@ open class LogBaseAG(
 
     override fun disposeTemporalPerFrameStuff() = log("disposeTemporalPerFrameStuff()", Kind.DISPOSE)
 	override fun createRenderBuffer(): RenderBuffer =
-		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.RENDER_BUFFER) }
+		LogRenderBuffer(renderBufferId++, isMain = false).apply { log("createRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun createMainRenderBuffer(): RenderBuffer =
-        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.RENDER_BUFFER) }
+        LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)
 	override fun readColor(bitmap: Bitmap32) = log("$this.readBitmap($bitmap)", Kind.READ)

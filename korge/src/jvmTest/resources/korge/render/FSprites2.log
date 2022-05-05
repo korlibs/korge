@@ -1,48 +1,54 @@
-draw(vertexCount=4, instances=4, indices=null, type=TRIANGLE_FAN, offset=0)
-::draw.program=Program(name=FSprites2, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1])
-::draw.renderState=RenderState(depthFunc=ALWAYS, depthMask=true, depthNear=0.0, depthFar=1.0, lineWidth=1.0, frontFace=BOTH)
-::draw.scissor=null
-::draw.stencil=StencilState(enabled=false, triangleFace=FRONT_AND_BACK, compareMode=ALWAYS, actionOnBothPass=KEEP, actionOnDepthFail=KEEP, actionOnDepthPassStencilFail=KEEP, referenceValue=0, readMask=255, writeMask=255)
-::draw.blending=Blending(srcRGB=SOURCE_ALPHA, dstRGB=ONE_MINUS_SOURCE_ALPHA, srcA=ONE, dstA=ONE_MINUS_SOURCE_ALPHA, eqRGB=ADD, eqA=ADD)
-::draw.colorMask=ColorMaskState(red=true, green=true, blue=true, alpha=true)
-::draw.uniform.Uniform(u_ProjMat) = Matrix3D(
-  [ 0.01, 0, 0, -1 ],
-  [ 0, -0.01, 0, 1 ],
-  [ 0, 0, -1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_ViewMat) = Matrix3D(
-  [ 2, 0, 0, 0 ],
-  [ 0, 2, 0, 0 ],
-  [ 0, 0, 1, 0 ],
-  [ 0, 0, 0, 1 ],
-)
-::draw.uniform.Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
-::draw.uniform.Uniform(u_Tex1) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
-::draw.uniform.Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
-::draw.uniform.Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
-::draw.uniform.Uniform(u_texSize0) = [0.03125, 0.03125]
-::draw.uniform.Uniform(u_texSize1) = [0.03125, 0.03125]
-::draw.ERROR.Unexpected:[Uniform(u_Tex2), Uniform(u_Tex3)]
-::draw.attribute[7][0]=Attribute(a_xy, type=Float2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=0)
-::draw.attribute[4][0]=Attribute(a_rxy, type=Float2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=1)
-::draw.attribute[4][1]=Attribute(a_scale, type=Float2, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=1)
-::draw.attribute[4][2]=Attribute(a_rangle, type=Float1, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=1)
-::draw.attribute[4][3]=Attribute(a_axy, type=UShort2, normalized=true, offset=null, active=true, precision=DEFAULT, divisor=1)
-::draw.attribute[4][4]=Attribute(a_uv0, type=UShort2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=1)
-::draw.attribute[4][5]=Attribute(a_uv1, type=UShort2, normalized=false, offset=null, active=true, precision=DEFAULT, divisor=1)
-::draw.attribute[5][0]=Attribute(a_colMul, type=Byte4, normalized=true, offset=null, active=true, precision=LOW, divisor=1)
-::draw.attribute[6][0]=Attribute(a_texId, type=UByte1, normalized=false, offset=null, active=true, precision=LOW, divisor=1)
-::draw.indices=[0, 1, 2, 3]
-::draw.vertex[0]: a_xy[0,0]
-::draw.vertex[1]: a_xy[1,0]
-::draw.vertex[2]: a_xy[1,1]
-::draw.vertex[3]: a_xy[0,1]
-::draw.instance[0]: a_rxy[100,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[0]
-::draw.instance[1]: a_rxy[200,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[1]
-::draw.instance[2]: a_rxy[300,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[0]
-::draw.instance[3]: a_rxy[400,100], a_scale[1,1], a_rangle[0], a_axy[0,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[1]
-::draw.shader.vertex=#version 100 compatibility
+RenderBuffer[0].set()
+clear(#00000000, 1.0, 0, true, true, true)
+textureCreate: 1
+createTexture():0
+Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=32, height=32), 32, 32)
+createBuffer():4
+bufferCreate: 5
+Buffer[4].afterSetMem(mem[512])
+createBuffer():5
+bufferCreate: 6
+Buffer[5].afterSetMem(mem[64])
+createBuffer():6
+bufferCreate: 7
+Buffer[6].afterSetMem(mem[4])
+createBuffer():7
+bufferCreate: 8
+Buffer[7].afterSetMem(mem[32])
+enable: SCISSOR
+scissor: 0, 0, 200, 200
+programCreate: 1, Program(name=FSprites2, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1]), ProgramConfig(externalTextureSampler=false)
+programCreate.fragment:#version 100 compatibility
+#ifdef GL_ES
+	precision highp float;
+	precision highp int;
+	precision lowp sampler2D;
+	precision lowp samplerCube;
+#else
+	  #define highp 
+	  #define mediump 
+	  #define lowp 
+#endif
+uniform sampler2D u_Tex0;
+uniform sampler2D u_Tex1;
+varying lowp float v_TexId;
+varying mediump vec2 v_Tex;
+varying vec4 v_Col;
+void main() {
+	if ((v_TexId == 0.0)) {
+		gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
+	}
+	else {
+		gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
+	}
+	if ((gl_FragColor.a <= 0.0)) {
+		discard;
+	}
+	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	gl_FragColor.rgba = (gl_FragColor.rgba * v_Col);
+}
+
+programCreate.vertex:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
 	precision highp int;
@@ -91,32 +97,55 @@ void main() {
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4((temp0.xy + vec2(a_rxy.x, a_rxy.y)), 0.0, 1.0));
 }
 
-::draw.shader.fragment=#version 100 compatibility
-#ifdef GL_ES
-	precision highp float;
-	precision highp int;
-	precision lowp sampler2D;
-	precision lowp samplerCube;
-#else
-	  #define highp 
-	  #define mediump 
-	  #define lowp 
-#endif
-uniform sampler2D u_Tex0;
-uniform sampler2D u_Tex1;
-varying lowp float v_TexId;
-varying mediump vec2 v_Tex;
-varying vec4 v_Col;
-void main() {
-	if ((v_TexId == 0.0)) {
-		gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
-	}
-	else {
-		gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
-	}
-	if ((gl_FragColor.a <= 0.0)) {
-		discard;
-	}
-	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
-	gl_FragColor.rgba = (gl_FragColor.rgba * v_Col);
-}
+programUse: 1
+vaoCreate: 1
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[7], layout=VertexLayout[a_xy]), VertexData(_buffer=Buffer[4], layout=VertexLayout[a_rxy, a_scale, a_rangle, a_axy, a_uv0, a_uv1]), VertexData(_buffer=Buffer[5], layout=VertexLayout[a_colMul]), VertexData(_buffer=Buffer[6], layout=VertexLayout[a_texId])])
+vaoUse: 1
+uboCreate: 1
+uboSet: 1
+uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
+  [ 0.01, 0, 0, -1 ],
+  [ 0, -0.01, 0, 1 ],
+  [ 0, 0, -1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
+  [ 2, 0, 0, 0 ],
+  [ 0, 2, 0, 0 ],
+  [ 0, 0, 1, 0 ],
+  [ 0, 0, 0, 1 ],
+)
+uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_texSize0) = [0.03125, 0.03125]
+uboSet.uniform: Uniform(u_texSize1) = [0.03125, 0.03125]
+uboUse: 1
+enable: BLEND
+blendEquation: ADD, ADD
+blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+disable: CULL_FACE
+depthMask: true
+depthRange: 0.0, 1.0
+disable: DEPTH
+colorMask: true, true, true, true
+disable: STENCIL
+stencilMask: 0
+draw: TRIANGLE_FAN, offset=0, count=4, instances=4, indexType=null
+::draw.indices: [0, 1, 2, 3]
+::draw.attributes[4]: [Attribute(a_xy), Attribute(a_rxy), Attribute(a_scale), Attribute(a_rangle), Attribute(a_axy), Attribute(a_uv0), Attribute(a_uv1), Attribute(a_colMul), Attribute(a_texId)]
+::draw.vertex[0]: a_xy[0,0]
+::draw.vertex[1]: a_xy[1,0]
+::draw.vertex[2]: a_xy[1,1]
+::draw.vertex[3]: a_xy[0,1]
+::draw.instance[0]: a_rxy[100,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[0]
+::draw.instance[1]: a_rxy[200,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[1]
+::draw.instance[2]: a_rxy[300,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[0]
+::draw.instance[3]: a_rxy[400,100], a_scale[1,1], a_rangle[0], a_axy[0,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[1]
+uboDelete: 1
+vaoUse: 0
+vaoDelete: 1
+Buffer[4].afterSetMem(mem[512])
+disposeTemporalPerFrameStuff()
+flipInternal()

@@ -22,27 +22,9 @@ import com.soywiz.korma.geom.Rectangle
 class AgBitmapTextureManager(
     val ag: AG
 ) {
-    // @TODO: Use HashSet if items.size increases
-    internal class SmallSet<T> {
-        val items = FastArrayList<T>()
 
-        fun add(item: T) {
-            if (item in items) return
-            items.add(item)
-        }
 
-        fun remove(item: T) {
-            items.remove(item)
-        }
-
-        inline operator fun contains(item: T): Boolean = item in items
-
-        fun clear() {
-            items.clear()
-        }
-    }
-
-	private val referencedBitmapsSinceGC = SmallSet<Bitmap>()
+	private val referencedBitmapsSinceGC = AgFastSet<Bitmap>()
 	private var referencedBitmaps = FastArrayList<Bitmap>()
 
     /** Number of frames between each Texture Garbage Collection step */
@@ -50,11 +32,11 @@ class AgBitmapTextureManager(
     //var framesBetweenGC = 30 * 60 // 30 seconds
     //var framesBetweenGC = 360
 
-	//var Bitmap._textureBase: Texture.Base? by Extra.Property { null }
+	//var Bitmap._textureBase: TextureBase? by Extra.Property { null }
 	//var Bitmap._slices by Extra.Property { LinkedHashSet<BmpCoordsWithBitmap>() }
 	//var BmpCoordsWithBitmap._texture: Texture? by Extra.Property { null }
 
-    /** Wrapper of [Texture.Base] that contains all the [TextureCoords] slices referenced as [BitmapCoords] in our current cache */
+    /** Wrapper of [TextureBase] that contains all the [TextureCoords] slices referenced as [BitmapCoords] in our current cache */
 	private class BitmapTextureInfo {
         var textureBase: TextureBase = TextureBase(null, 0, 0)
 		val slices = FastIdentityMap<BitmapCoords, TextureCoords>()
@@ -85,7 +67,7 @@ class AgBitmapTextureManager(
     /**
      * Obtains a temporal [BitmapTextureInfo] from a [Bitmap].
      *
-     * The [BitmapTextureInfo] is a wrapper of [Bitmap] including a [Texture.Base] and information about slices of that [Bitmap]
+     * The [BitmapTextureInfo] is a wrapper of [Bitmap] including a [TextureBase] and information about slices of that [Bitmap]
      * that is just kept temporarily until released.
      *
      * You shouldn't call this method directly. Use [getTexture] or [getTextureBase] instead.
@@ -99,7 +81,10 @@ class AgBitmapTextureManager(
             textureInfoPool.alloc().also {
                 val base = it.textureBase
                 base.version = -1
-                base.base = ag.createTexture(bitmap.premultiplied)
+                base.base = ag.createTexture(bitmap.premultiplied, targetKind = when (bitmap) {
+                    is MultiBitmap -> AG.TextureTargetKind.TEXTURE_CUBE_MAP
+                    else -> AG.TextureTargetKind.TEXTURE_2D
+                })
                 base.width = bitmap.width
                 base.height = bitmap.height
             }
@@ -121,7 +106,7 @@ class AgBitmapTextureManager(
 		return textureInfo
 	}
 
-    /** Obtains a temporal [Texture.Base] from [bitmap] [Bitmap]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
+    /** Obtains a temporal [TextureBase] from [bitmap] [Bitmap]. The texture shouldn't be stored, but used for drawing since it will be destroyed once not used anymore. */
 	fun getTextureBase(bitmap: Bitmap): TextureBase = getTextureInfo(bitmap).textureBase!!
 
     fun getTexture(slice: BmpSlice): Texture = _getTexture(slice) as Texture

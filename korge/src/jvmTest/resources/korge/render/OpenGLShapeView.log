@@ -1,0 +1,142 @@
+createProgram() = 1001
+getString(35724) = 
+createShader(35632) = 2001
+shaderSource(2001, """uniform float u_ProgramType;
+uniform float u_LineWidth;
+uniform vec4 u_Color;
+uniform sampler2D u_Tex;
+uniform mat4 u_Transform;
+uniform vec3 u_Gradientp0;
+uniform vec3 u_Gradientp1;
+uniform float u_GlobalAlpha;
+varying float v_Dist;
+varying vec2 v_Tex;
+void main() {
+	vec2 temp3;
+	vec4 temp0;
+	vec4 temp1;
+	vec2 temp4;
+	if ((u_ProgramType == 5.0)) {
+		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+		return;
+	}
+	if ((abs(v_Dist) >= u_LineWidth)) {
+		discard;
+	}
+	if ((u_ProgramType == 0.0)) {
+		gl_FragColor = u_Color;
+	}
+	else {
+		if ((u_ProgramType == 1.0)) {
+			gl_FragColor = texture2D(u_Tex, fract(vec2((u_Transform * vec4(v_Tex, 0.0, 1.0)).xy)));
+		}
+		else {
+			if ((u_ProgramType == 2.0)) {
+				gl_FragColor = texture2D(u_Tex, (u_Transform * vec4(v_Tex.x, v_Tex.y, 0.0, 1.0)).xy);
+			}
+			else {
+				if ((u_ProgramType == 3.0)) {
+					temp3.xy = (u_Transform * vec4(v_Tex.x, v_Tex.y, 0.0, 1.0)).xy;
+					temp0.y = ((2.0 * u_Gradientp0.z) * u_Gradientp1.z);
+					temp0.z = pow(u_Gradientp0.z, 2.0);
+					temp0.w = pow(u_Gradientp1.z, 2.0);
+					temp1.y = (u_Gradientp0.x - u_Gradientp1.x);
+					temp1.x = (u_Gradientp0.y - u_Gradientp1.y);
+					temp1.z = (u_Gradientp0.z - u_Gradientp1.z);
+					temp1.w = (1.0 / ((pow((u_Gradientp0.z - u_Gradientp1.z), 2.0) - pow((u_Gradientp0.x - u_Gradientp1.x), 2.0)) - pow((u_Gradientp0.y - u_Gradientp1.y), 2.0)));
+					temp0.x = (1.0 - ((((((-(u_Gradientp1.z)) * temp1.z) + (temp1.y * (u_Gradientp1.x - temp3.x))) + (temp1.x * (u_Gradientp1.y - temp3.y))) - sqrt(((((temp0.w * (pow((u_Gradientp0.x - temp3.x), 2.0) + pow((u_Gradientp0.y - temp3.y), 2.0))) - (temp0.y * (((u_Gradientp0.x - temp3.x) * (u_Gradientp1.x - temp3.x)) + ((u_Gradientp0.y - temp3.y) * (u_Gradientp1.y - temp3.y))))) + (temp0.z * (pow((u_Gradientp1.x - temp3.x), 2.0) + pow((u_Gradientp1.y - temp3.y), 2.0)))) - pow(((((((u_Gradientp1.x * u_Gradientp0.y) - (temp3.x * u_Gradientp0.y)) - (u_Gradientp0.x * u_Gradientp1.y)) + (temp3.x * u_Gradientp1.y)) + (u_Gradientp0.x * temp3.y)) - (u_Gradientp1.x * temp3.y)), 2.0)))) * temp1.w));
+					gl_FragColor = texture2D(u_Tex, vec2(temp0.x, 0.0));
+				}
+				else {
+					temp4.xy = (u_Transform * vec4(v_Tex.x, v_Tex.y, 0.0, 1.0)).xy;
+					temp0.y = atan((temp4.y - u_Gradientp0.y), (temp4.x - u_Gradientp0.x));
+					if ((temp0.y < 0.0)) {
+						temp0.y = (temp0.y + 6.2831855);
+					}
+					temp0.x = (temp0.y / 6.2831855);
+					gl_FragColor = texture2D(u_Tex, fract(vec2(temp0.x, 0.0)));
+				}
+			}
+		}
+	}
+	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+	if ((abs(v_Dist) >= (u_LineWidth - 1.0))) {
+		gl_FragColor.a = (gl_FragColor.a * (1.0 - (abs(v_Dist) - (u_LineWidth - 1.0))));
+	}
+}
+""")
+compileShader(2001)
+getShaderiv(2001, 35713, [1])
+getError() = 0
+createShader(35633) = 2002
+shaderSource(2002, """attribute vec2 a_Pos;
+attribute vec2 a_Tex;
+attribute float a_Dist;
+uniform mat4 u_ProjMat;
+uniform mat4 u_ViewMat;
+varying vec2 v_Tex;
+varying float v_Dist;
+void main() {
+	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
+	v_Tex = a_Tex;
+	v_Dist = a_Dist;
+}
+""")
+compileShader(2002)
+getShaderiv(2002, 35713, [1])
+getError() = 0
+attachShader(1001, 2001)
+attachShader(1001, 2002)
+linkProgram(1001)
+getProgramiv(1001, 35714, [0])
+useProgram(1001)
+genBuffers(1, [3001])
+bindBuffer(34962, 3001)
+bufferData(34962, 200, FBuffer(size=256), 35044)
+getAttribLocation(1001, "a_Pos") = 8001
+enableVertexAttribArray(8001)
+vertexAttribPointer(8001, 2, 5126, false, 20, 0)
+getAttribLocation(1001, "a_Tex") = 8002
+enableVertexAttribArray(8002)
+vertexAttribPointer(8002, 2, 5126, false, 20, 8)
+getAttribLocation(1001, "a_Dist") = 8003
+enableVertexAttribArray(8003)
+vertexAttribPointer(8003, 1, 5126, false, 20, 16)
+getUniformLocation(1001, "u_ProjMat") = 7001
+uniformMatrix4fv(7001, 1, false, FBuffer(size=65536))
+getUniformLocation(1001, "u_ViewMat") = 7002
+uniformMatrix4fv(7002, 1, false, FBuffer(size=65536))
+getUniformLocation(1001, "u_Tex0") = 7003
+activeTexture(33984)
+uniform1i(7003, 0)
+getUniformLocation(1001, "u_Tex1") = 7004
+activeTexture(33985)
+uniform1i(7004, 1)
+getUniformLocation(1001, "u_Tex2") = 7005
+activeTexture(33986)
+uniform1i(7005, 2)
+getUniformLocation(1001, "u_Tex3") = 7006
+activeTexture(33987)
+uniform1i(7006, 3)
+getUniformLocation(1001, "u_GlobalAlpha") = 7007
+uniform1f(7007, 1.0)
+clearStencil(0)
+stencilMask(255)
+clear(1024)
+getUniformLocation(1001, "u_ProgramType") = 7008
+uniform1f(7008, 0.0)
+getUniformLocation(1001, "u_Color") = 7009
+uniform4f(7009, 1.0, 1.0, 1.0, 0.49803922)
+uniform1f(7007, 1.0)
+getUniformLocation(1001, "u_LineWidth") = 7010
+uniform1f(7010, 6.25)
+disable(2960)
+stencilMask(0)
+colorMask(true, true, true, true)
+enable(3042)
+blendEquationSeparate(32774, 32774)
+blendFuncSeparate(770, 771, 1, 771)
+drawArrays(5, 0, 10)
+disableVertexAttribArray(8001)
+disableVertexAttribArray(8002)
+disableVertexAttribArray(8003)

@@ -61,13 +61,13 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         }
     }
 
-    inner class SoftwareBuffer(kind: Kind, list: AGList) : Buffer(kind, list) {
+    inner class SoftwareBuffer(list: AGList) : Buffer( list) {
         val memory: FBuffer? get() = mem
         override fun afterSetMem() {
         }
     }
 
-    override fun createBuffer(kind: Buffer.Kind): Buffer = commandsNoWait { SoftwareBuffer(kind, it) }
+    override fun createBuffer(): Buffer = commandsNoWait { SoftwareBuffer(it) }
     override fun createMainRenderBuffer(): BaseRenderBuffer = SoftwareRenderBuffer()
     override fun createRenderBuffer(): RenderBuffer = SoftwareRenderBuffer()
 

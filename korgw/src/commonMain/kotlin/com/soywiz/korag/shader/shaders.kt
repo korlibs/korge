@@ -334,7 +334,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 	sealed class Stm {
 		data class Stms(val stms: List<Stm>) : Stm()
         data class Set(val to: Operand, val from: Operand) : Stm()
-        data class Return(val result: Operand) : Stm()
+        data class Return(val result: Operand?) : Stm()
         object Break : Stm() {
             override fun toString(): String = "Break"
         }
@@ -528,9 +528,9 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         class FuncBuilder(parent: Builder) : Builder(parent) {
             fun ARG(name: String, type: VarType): Operand = Arg(name, type)
 
-            fun RETURN(expr: Operand) {
-                outputStms.add(Stm.Return(expr))
-            }
+            //fun RETURN(expr: Operand) {
+            //    outputStms.add(Stm.Return(expr))
+            //}
         }
 
         fun FUNC(name: String, rettype: VarType, vararg args: Pair<String, VarType>, block: FuncBuilder.() -> Unit): FuncRef {
@@ -620,6 +620,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 		fun DISCARD() { outputStms += Stm.Discard }
         fun BREAK() { outputStms += Stm.Break }
         fun CONTINUE() { outputStms += Stm.Continue }
+        fun RETURN(operand: Operand? = null) { outputStms += Stm.Return(operand) }
 
         fun createTemp(type: VarType, arrayCount: Int) = Temp(context.tempLastId++, type, arrayCount)
 		fun createTemp(type: VarType) = Temp(context.tempLastId++, type, 1)
@@ -686,7 +687,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         }
 
         open fun visit(stm: Stm.Return) {
-            visit(stm.result)
+            stm.result?.let { visit(it) }
         }
 
         open fun visit(operand: Operand): E = when (operand) {

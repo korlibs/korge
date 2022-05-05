@@ -434,10 +434,12 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
 
     fun clear() { length = 0 }
 
-    fun add(value: Float) {
-        ensure(1)
-        data[length++] = value
-    }
+    fun add(value: Float) { ensure(1); data[length++] = value }
+    fun add(v0: Float, v1: Float) { ensure(2); data[length++] = v0; data[length++] = v1 }
+    fun add(v0: Float, v1: Float, v2: Float) { ensure(3); data[length++] = v0; data[length++] = v1; data[length++] = v2 }
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float) { ensure(4); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3 }
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float) { ensure(5); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3; data[length++] = v4 }
+    fun add(v0: Float, v1: Float, v2: Float, v3: Float, v4: Float, v5: Float) { ensure(6); data[length++] = v0; data[length++] = v1; data[length++] = v2; data[length++] = v3; data[length++] = v4; data[length++] = v5 }
 
     operator fun plusAssign(value: Float) = add(value)
     operator fun plusAssign(value: FloatArray) = add(value)

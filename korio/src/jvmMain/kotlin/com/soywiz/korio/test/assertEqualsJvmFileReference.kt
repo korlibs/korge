@@ -40,7 +40,21 @@ fun assertEqualsJvmFileReference(path: String, content: String) {
     val expected: String = file.takeIf { it.exists() }?.readText() ?: ""
     val actual: String = content
 
-    Dyn.global["kotlin.test.AssertionsKt"]
+    val expectedLines = expected.lines()
+    val actualLines = actual.lines()
+
+    val asserter = Dyn.global["kotlin.test.AssertionsKt"]
         .dynamicInvokeOrThrow("getAsserter")
-        .dynamicInvokeOrThrow("assertEquals", message, expected, actual)
+
+    val MAX_LINES = 300
+
+    if ((actualLines.size < MAX_LINES && expectedLines.size < MAX_LINES) || expected == actual) {
+        asserter.dynamicInvokeOrThrow("assertEquals", message, expected, actual)
+    } else {
+        for (n in 0 until kotlin.math.max(actualLines.size, expectedLines.size)) {
+            val expectedLine = "LINE[$n]: ${expectedLines[n]}"
+            val actualLine = "LINE[$n]: ${actualLines[n]}"
+            asserter.dynamicInvokeOrThrow("assertEquals", message, expectedLine, actualLine)
+        }
+    }
 }

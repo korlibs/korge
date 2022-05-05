@@ -951,7 +951,7 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
-	inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: () -> Unit) {
+	inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) {
         tempOldUniformsList { tempOldUniforms ->
             if (uniforms != null && uniforms.isNotEmpty()) {
                 flush()
@@ -959,7 +959,7 @@ class BatchBuilder2D constructor(
                 this.uniforms.put(uniforms)
             }
             try {
-                callback()
+                callback(this.uniforms)
             } finally {
                 if (uniforms != null && uniforms.isNotEmpty()) {
                     flush()

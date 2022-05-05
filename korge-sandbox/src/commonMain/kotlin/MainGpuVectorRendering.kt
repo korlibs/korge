@@ -21,21 +21,39 @@ import com.soywiz.korma.geom.vector.*
 
 @OptIn(KorgeExperimental::class)
 suspend fun Stage.mainGpuVectorRendering() {
+    val mainStrokePaint = LinearGradientPaint(0, 0, 0, 300).addColorStop(0.0, Colors.GREEN).addColorStop(0.5, Colors.RED).addColorStop(1.0, Colors.BLUE)
+    val secondaryStrokePaint = Colors.GREEN.withAd(0.5)
+
+
+    //circle(128.0, fill = Colors.RED).xy(200, 200).also { it.antialiased = false }
+    //roundRect(300, 300, 64, fill = mainStrokePaint).xy(200, 200).also { it.antialiased = true }
+
+    //return
+
     container {
+        //xy(0, 0)
         xy(300, 300)
+        //val shape = graphics({
         val shape = gpuShapeView({
             //val lineWidth = 6.12123231 * 2
             val lineWidth = 12.0
             val width = 300.0
             val height = 300.0
             //rotation = 180.degrees
-            this.stroke(Colors.WHITE.withAd(0.5), lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
+            this.stroke(mainStrokePaint, lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
+            //this.fill(mainStrokePaint) {
                 this.rect(
                     lineWidth / 2, lineWidth / 2,
-                    width,
-                    height
+                    width, height
+                )
+                this.rect(
+                    lineWidth / 2 + 32, lineWidth / 2 + 32,
+                    width - 64, height - 64
                 )
             }
+            //this.fill(secondaryStrokePaint) {
+            //    this.rect(600, 50, 300, 200)
+            //}
         }) {
             xy(-150, -150)
             keys {
@@ -61,6 +79,7 @@ suspend fun Stage.mainGpuVectorRendering() {
 
     //return
 
+    /*
     gpuShapeView({
         //val paint = createLinearGradient(200, 200, 400, 400).add(0.0, Colors.BLUE.withAd(0.9)).add(1.0, Colors.WHITE.withAd(0.7))
         val paint = Colors.WHITE.withAd(0.7)
@@ -100,8 +119,9 @@ suspend fun Stage.mainGpuVectorRendering() {
             down(Key.A) { antialiased = !antialiased }
         }
     }
+    */
 
-    circle(6.0, Colors.RED).anchor(Anchor.CENTER).xy(100, 100)
+    //circle(6.0, Colors.RED).anchor(Anchor.CENTER).xy(100, 100)
         //.xy(40, 0)
         //.scale(1.1)
         //.rotation(15.degrees)

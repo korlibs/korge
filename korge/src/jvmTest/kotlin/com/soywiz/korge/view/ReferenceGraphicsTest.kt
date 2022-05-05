@@ -22,7 +22,14 @@ class ReferenceGraphicsTest : ViewsForTesting(
     virtualSize = SizeInt(100, 100),
     log = true,
 ) {
-    override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW || kind == LogBaseAG.Kind.SHADER
+    //override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind == LogBaseAG.Kind.DRAW || kind == LogBaseAG.Kind.SHADER
+    //override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = kind != LogBaseAG.Kind.DRAW_DETAILS
+    override fun filterLogDraw(str: String, kind: LogBaseAG.Kind): Boolean = true
+
+    private suspend fun testFrame() {
+        logAg.clearLog()
+        delayFrame()
+    }
 
     @Test
     fun testGraphics() = viewsTest {
@@ -42,7 +49,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
         )
         val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
 
-        delayFrame()
+        testFrame()
         assertEqualsFileReference(
             "korge/render/Graphics.log",
             listOf(
@@ -87,7 +94,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
         val fview = FSprites.FView(sprites, Array(N) { bmp.bmpBase })
         addChild(fview)
 
-        delayFrame()
+        testFrame()
         "korge/render/FSprites.log"
         "korge/render/FSprites1.log"
         "korge/render/FSprites2.log"
@@ -171,7 +178,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
             rotation = 180.degrees
         }
 
-        delayFrame()
+        testFrame()
         assertEqualsFileReference(
             "korge/render/GpuShapeView.log",
             listOf(
@@ -187,7 +194,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
         val view = container {
             filter = BlurFilter(4.0)
         }
-        delayFrame()
+        testFrame()
         assertEqualsFileReference(
             "korge/render/BlurFilterEmptyContainer.log",
             listOf(

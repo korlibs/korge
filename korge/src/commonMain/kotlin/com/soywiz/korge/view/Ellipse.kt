@@ -60,7 +60,7 @@ open class Ellipse(
     }
 
     private fun updateGraphics() {
-        updateShape {
+        updatePath {
             clear()
             ellipse(0.0, 0.0, this@Ellipse.width, this@Ellipse.height)
         }

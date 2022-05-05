@@ -125,7 +125,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         buffers.tryGetAndDelete(id)?.let { gl.deleteBuffer(it.glId); it.glId = 0 }
     }
 
-    private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind = buffer.kind) {
+    private fun bindBuffer(buffer: AG.Buffer, target: AGBufferKind) {
         val bufferInfo = buffers[buffer.agId] ?: return
         if (bufferInfo.cachedVersion != globalState.contextVersion) {
             bufferInfo.cachedVersion = globalState.contextVersion
@@ -289,7 +289,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                 val vattrs = vertexLayout.attributes
                 val vattrspos = vertexLayout.attributePositions
 
-                if (vertices?.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
+                //if (vertices.kind != AG.Buffer.Kind.VERTEX) invalidOp("Not a VertexBuffer")
 
                 bindBuffer(vertices, AGBufferKind.VERTEX)
                 val totalSize = vertexLayout.totalSize
@@ -371,7 +371,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                     val unit = value.fastCastTo<AG.TextureUnit>()
                     gl.activeTexture(KmlGl.TEXTURE0 + textureUnit)
 
-                    val tex = (unit.texture.fastCastTo<AG.Texture?>())
+                    val tex = unit.texture
                     if (tex != null) {
                         // @TODO: This might be enqueuing commands, we shouldn'd do that here.
                         textureBindEnsuring(tex)
@@ -473,12 +473,24 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                             }
                         }
                     } else {
-                        when (uniform.type) {
-                            VarType.Float1 -> gl.uniform1fv(location, arrayCount, tempBuffer)
-                            VarType.Float2 -> gl.uniform2fv(location, arrayCount, tempBuffer)
-                            VarType.Float3 -> gl.uniform3fv(location, arrayCount, tempBuffer)
-                            VarType.Float4 -> gl.uniform4fv(location, arrayCount, tempBuffer)
-                            else -> Unit
+                        val tb = tempBuffer
+                        val f32 = tb.f32
+                        if (arrayCount == 1) {
+                            when (uniform.type) {
+                                VarType.Float1 -> gl.uniform1f(location, f32[0])
+                                VarType.Float2 -> gl.uniform2f(location, f32[0], f32[1])
+                                VarType.Float3 -> gl.uniform3f(location, f32[0], f32[1], f32[2])
+                                VarType.Float4 -> gl.uniform4f(location, f32[0], f32[1], f32[2], f32[3])
+                                else -> Unit
+                            }
+                        } else {
+                            when (uniform.type) {
+                                VarType.Float1 -> gl.uniform1fv(location, arrayCount, tempBuffer)
+                                VarType.Float2 -> gl.uniform2fv(location, arrayCount, tempBuffer)
+                                VarType.Float3 -> gl.uniform3fv(location, arrayCount, tempBuffer)
+                                VarType.Float4 -> gl.uniform4fv(location, arrayCount, tempBuffer)
+                                else -> Unit
+                            }
                         }
                     }
                 }

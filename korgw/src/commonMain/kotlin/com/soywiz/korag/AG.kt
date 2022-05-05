@@ -5,12 +5,10 @@ import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.kmem.*
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.gl.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.lang.*
@@ -78,6 +76,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         Console.info("AG.contextLost()", this)
         contextVersion++
     }
+
+    val tempVertexBufferPool = Pool { createBuffer() }
+    val tempIndexBufferPool = Pool { createBuffer() }
 
     open val maxTextureSize = Size(2048, 2048)
 
@@ -188,13 +189,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
         fun setTo(rect: Rectangle): Scissor = setTo(rect.x, rect.y, rect.width, rect.height)
 
-        fun applyTransform(m: Matrix) {
-            val l = m.transformX(left, top)
-            val t = m.transformY(left, top)
-            val r = m.transformX(right, bottom)
-            val b = m.transformY(right, bottom)
-            setTo(l, t, r - l, b - t)
-        }
+        fun setToBounds(left: Int, top: Int, right: Int, bottom: Int): Scissor =
+            setTo(left, top, right - left, bottom - top)
+
+        fun setToBounds(left: Double, top: Double, right: Double, bottom: Double): Scissor =
+            setTo(left, top, right - left, bottom - top)
 
         override fun toString(): String = "Scissor(x=${x.niceStr}, y=${y.niceStr}, width=${width.niceStr}, height=${height.niceStr})"
 
@@ -456,7 +455,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    open class Buffer constructor(val kind: AGBufferKind, val list: AGList) {
+    open class Buffer constructor(val list: AGList) {
         enum class Kind { INDEX, VERTEX }
 
         var dirty = false
@@ -490,6 +489,23 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         fun upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer =
             _upload(data, offset, length)
 
+        private fun getLen(len: Int, dataSize: Int): Int {
+            return if (len >= 0) len else dataSize
+        }
+
+        fun upload(data: Any, offset: Int = 0, length: Int = -1): Buffer {
+            return when (data) {
+                is ByteArray -> upload(data, offset, getLen(length, data.size))
+                is ShortArray -> upload(data, offset, getLen(length, data.size))
+                is IntArray -> upload(data, offset, getLen(length, data.size))
+                is FloatArray -> upload(data, offset, getLen(length, data.size))
+                is FBuffer -> upload(data, offset, getLen(length, data.size))
+                is IntArrayList -> upload(data.data, offset, getLen(length, data.size))
+                is FloatArrayList -> upload(data.data, offset, getLen(length, data.size))
+                else -> TODO()
+            }
+        }
+
         private fun _upload(data: FBuffer, offset: Int = 0, length: Int = data.size): Buffer {
             mem = data
             memOffset = offset
@@ -510,7 +526,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             list.bufferDelete(this.agId)
             agId = 0
         }
-
     }
 
     enum class DrawType {
@@ -556,9 +571,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture =
         Texture(premultiplied, targetKind)
 
-    open fun createBuffer(kind: AGBufferKind): Buffer = commandsNoWait { Buffer(kind, it) }
-    fun createIndexBuffer() = createBuffer(AGBufferKind.INDEX)
-    fun createVertexBuffer() = createBuffer(AGBufferKind.VERTEX)
+    open fun createBuffer(): Buffer = commandsNoWait { Buffer(it) }
+    @Deprecated("")
+    fun createIndexBuffer() = createBuffer()
+    @Deprecated("")
+    fun createVertexBuffer() = createBuffer()
 
     fun createVertexData(vararg attributes: Attribute, layoutSize: Int? = null) = AG.VertexData(createVertexBuffer(), VertexLayout(*attributes, layoutSize = layoutSize))
 
@@ -611,11 +628,16 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     }
 
     data class ColorMaskState(
-        var red: Boolean = true,
-        var green: Boolean = true,
-        var blue: Boolean = true,
-        var alpha: Boolean = true
+        var red: Boolean,
+        var green: Boolean,
+        var blue: Boolean,
+        var alpha: Boolean
     ) {
+        constructor(value: Boolean = true) : this(value, value, value, value)
+        companion object {
+            internal val DUMMY = ColorMaskState()
+        }
+
         //val enabled = !red || !green || !blue || !alpha
     }
 
@@ -644,7 +666,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         @Deprecated("This is not used anymore, since it is not available on WebGL")
         var lineWidth: Float = 1f,
         var frontFace: FrontFace = FrontFace.BOTH
-    )
+    ) {
+        companion object {
+            internal val DUMMY = RenderState()
+        }
+    }
 
     data class StencilState(
         var enabled: Boolean = false,
@@ -657,6 +683,10 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         var readMask: Int = 0xFF,
         var writeMask: Int = 0xFF
     ) {
+        companion object {
+            internal val DUMMY = StencilState()
+        }
+
         fun copyFrom(other: StencilState) {
             this.enabled = other.enabled
             this.triangleFace = other.triangleFace
@@ -669,10 +699,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             this.writeMask = other.writeMask
         }
     }
-
-    private val dummyRenderState = RenderState()
-    private val dummyStencilState = StencilState()
-    private val dummyColorMaskState = ColorMaskState()
 
     //open val supportInstancedDrawing: Boolean get() = false
 
@@ -688,9 +714,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         offset: Int = 0,
         blending: Blending = Blending.NORMAL,
         uniforms: UniformValues = UniformValues.EMPTY,
-        stencil: StencilState = dummyStencilState,
-        colorMask: ColorMaskState = dummyColorMaskState,
-        renderState: RenderState = dummyRenderState,
+        stencil: StencilState = StencilState.DUMMY,
+        colorMask: ColorMaskState = ColorMaskState.DUMMY,
+        renderState: RenderState = RenderState.DUMMY,
         scissor: Scissor? = null,
         instances: Int = 1
     ) = draw(batch.also { batch ->
@@ -721,9 +747,9 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         offset: Int = 0,
         blending: Blending = Blending.NORMAL,
         uniforms: UniformValues = UniformValues.EMPTY,
-        stencil: StencilState = dummyStencilState,
-        colorMask: ColorMaskState = dummyColorMaskState,
-        renderState: RenderState = dummyRenderState,
+        stencil: StencilState = StencilState.DUMMY,
+        colorMask: ColorMaskState = ColorMaskState.DUMMY,
+        renderState: RenderState = RenderState.DUMMY,
         scissor: Scissor? = null,
         instances: Int = 1
     ) = draw(batch.also { batch ->
@@ -815,67 +841,26 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         //println("SCISSOR: $scissor")
 
         //finalScissor.setTo(0, 0, backWidth, backHeight)
-        if (indices != null && indices.kind != AGBufferKind.INDEX) invalidOp("Not a IndexBuffer")
 
         commandsNoWait { list ->
-            applyScissorState(list, scissor)
+            list.setScissorState(this, scissor)
 
             getProgram(program, config = when {
                 uniforms.useExternalSampler() -> ProgramConfig.EXTERNAL_TEXTURE_SAMPLER
                 else -> ProgramConfig.DEFAULT
             }).use(list)
 
-            val vaoId = list.vaoCreate()
-            list.vaoSet(vaoId, VertexArrayObject(batch.vertexData))
-            list.vaoUse(vaoId)
+            list.vertexArrayObjectSet(VertexArrayObject(batch.vertexData)) {
+                list.uniformsSet(uniforms) {
+                    list.setState(blending, stencil, colorMask, renderState)
 
-            val uboId = list.uboCreate()
-            list.uboSet(uboId, uniforms)
-            list.uboUse(uboId)
+                    //val viewport = FBuffer(4 * 4)
+                    //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
+                    //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
 
-            list.enableDisable(AGEnable.BLEND, blending.enabled) {
-                list.blendEquation(blending.eqRGB, blending.eqA)
-                list.blendFunction(blending.srcRGB, blending.dstRGB, blending.srcA, blending.dstA)
+                    list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null, indices)
+                }
             }
-
-            list.enableDisable(AGEnable.CULL_FACE, renderState.frontFace != FrontFace.BOTH) {
-                list.frontFace(renderState.frontFace)
-            }
-
-            list.depthMask(renderState.depthMask)
-            list.depthRange(renderState.depthNear, renderState.depthFar)
-
-            list.enableDisable(AGEnable.DEPTH, renderState.depthFunc != CompareMode.ALWAYS) {
-                list.depthFunction(renderState.depthFunc)
-            }
-
-            list.colorMask(colorMask.red, colorMask.green, colorMask.blue, colorMask.alpha)
-
-            if (stencil.enabled) {
-                list.enable(AGEnable.STENCIL)
-                list.stencilFunction(stencil.compareMode, stencil.referenceValue, stencil.readMask)
-                list.stencilOperation(
-                    stencil.actionOnDepthFail,
-                    stencil.actionOnDepthPassStencilFail,
-                    stencil.actionOnBothPass
-                )
-                list.stencilMask(stencil.writeMask)
-            } else {
-                list.disable(AGEnable.STENCIL)
-                list.stencilMask(0)
-            }
-
-            //val viewport = FBuffer(4 * 4)
-            //gl.getIntegerv(KmlGl.VIEWPORT, viewport)
-            //println("viewport=${viewport.getAlignedInt32(0)},${viewport.getAlignedInt32(1)},${viewport.getAlignedInt32(2)},${viewport.getAlignedInt32(3)}")
-
-            list.draw(type, vertexCount, offset, instances, if (indices != null) indexType else null, indices)
-
-            //list.uboUse(0)
-            list.uboDelete(uboId)
-
-            list.vaoUse(0)
-            list.vaoDelete(vaoId)
         }
     }
 
@@ -1039,7 +1024,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     ) {
         commandsNoWait { list ->
             //println("CLEAR: $color, $depth")
-            applyScissorState(list, scissor)
+            list.setScissorState(this, scissor)
             //gl.disable(KmlGl.SCISSOR_TEST)
             if (clearColor) {
                 list.colorMask(true, true, true, true)
@@ -1060,50 +1045,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     private val finalScissorBL = Rectangle()
     private val tempRect = Rectangle()
-
-    protected fun applyScissorState(list: AGList, scissor: Scissor? = null) {
-        //println("applyScissorState")
-        if (this.currentRenderBuffer == null) {
-            //println("this.currentRenderBuffer == null")
-        }
-        val currentRenderBuffer = this.currentRenderBuffer ?: return
-        if (currentRenderBuffer === mainRenderBuffer) {
-            var realScissors: Rectangle? = finalScissorBL
-            realScissors?.setTo(0.0, 0.0, realBackWidth.toDouble(), realBackHeight.toDouble())
-            if (scissor != null) {
-                tempRect.setTo(
-                    currentRenderBuffer.x + scissor.x,
-                    ((currentRenderBuffer.y + currentRenderBuffer.height) - (scissor.y + scissor.height)),
-                    (scissor.width),
-                    scissor.height
-                )
-                realScissors = realScissors?.intersection(tempRect, realScissors)
-            }
-
-            //println("currentRenderBuffer: $currentRenderBuffer")
-
-            val renderBufferScissor = currentRenderBuffer.scissor
-            if (renderBufferScissor != null) {
-                realScissors = realScissors?.intersection(renderBufferScissor.rect, realScissors)
-            }
-
-            //println("[MAIN_BUFFER] realScissors: $realScissors")
-
-            list.enable(AGEnable.SCISSOR)
-            if (realScissors != null) {
-                list.scissor(realScissors.x.toInt(), realScissors.y.toInt(), realScissors.width.toInt(), realScissors.height.toInt())
-            } else {
-                list.scissor(0, 0, 0, 0)
-            }
-        } else {
-            //println("[RENDER_TARGET] scissor: $scissor")
-
-            list.enableDisable(AGEnable.SCISSOR, scissor != null) {
-                list.scissor(scissor!!.x.toIntRound(), scissor.y.toIntRound(), scissor.width.toIntRound(), scissor.height.toIntRound())
-            }
-        }
-    }
-
 
     fun clearStencil(stencil: Int = 0, scissor: Scissor? = null) = clear(clearColor = false, clearDepth = false, clearStencil = true, stencil = stencil, scissor = scissor)
     fun clearDepth(depth: Float = 1f, scissor: Scissor? = null) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
@@ -1224,7 +1165,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     inner class TextureDrawer {
         val VERTEX_COUNT = 4
-        val vertices = createBuffer(AGBufferKind.VERTEX)
+        val vertices = createBuffer()
         val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
         val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
         val program = Program(VertexShader {
@@ -1394,10 +1335,17 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         drawTempTexture.upload(Bitmaps.transparent)
     }
 
-    class UniformValues() {
+    class UniformValues() : Iterable<Pair<Uniform, Any>> {
         companion object {
             internal val EMPTY = UniformValues()
+
+            fun valueToString(value: Any?): String {
+                if (value is FloatArray) return value.toList().toString()
+                return value.toString()
+            }
         }
+
+        fun clone(): UniformValues = UniformValues().also { it.setTo(this) }
 
         private val _uniforms = FastArrayList<Uniform>()
         private val _values = FastArrayList<Any>()
@@ -1484,7 +1432,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             put(uniforms)
         }
 
-        override fun toString() = "{" + keys.zip(values).map { "${it.first}=${it.second}" }.joinToString(", ") + "}"
+        override fun iterator(): Iterator<Pair<Uniform, Any>> = iterator {
+            fastForEach { uniform, value -> yield(uniform to value) }
+        }
+
+        override fun toString() = "{" + keys.zip(values)
+            .joinToString(", ") { "${it.first}=${valueToString(it.second)}" } + "}"
     }
 }
 

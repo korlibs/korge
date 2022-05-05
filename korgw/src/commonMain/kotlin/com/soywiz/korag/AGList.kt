@@ -13,6 +13,7 @@ import com.soywiz.korag.annotation.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.annotations.*
+import com.soywiz.korma.geom.*
 import com.soywiz.krypto.encoding.*
 import kotlinx.coroutines.*
 
@@ -58,8 +59,11 @@ class AGGlobalState {
     fun createList(): AGList = AGList(this)
 }
 
+// @TODO: Support either calling other lists, or copying the contents of other list here
 class AGList(val globalState: AGGlobalState) {
     var contextVersion: Int by globalState::contextVersion
+
+    val tempRect = Rectangle()
 
     internal val completed = CompletableDeferred<Unit>()
     private val _lock = Lock() // @TODO: This is slow!
@@ -67,6 +71,8 @@ class AGList(val globalState: AGGlobalState) {
     private val _ints = IntDeque(16)
     private val _float = FloatDeque(16)
     private val _extra = Deque<Any?>(16)
+
+    private val uniformValuesPool = Pool { AG.UniformValues() }
 
     private fun addExtra(v0: Any?) { _lock { _extra.add(v0) } }
     private fun addExtra(v0: Any?, v1: Any?) { _lock { _extra.add(v0); _extra.add(v1) } }
@@ -156,7 +162,7 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CLEAR -> processor.clear(data.extract(0), data.extract(1), data.extract(2))
                 CMD_CLEAR_COLOR -> processor.clearColor(readFloat(), readFloat(), readFloat(), readFloat())
                 CMD_CLEAR_DEPTH -> processor.clearDepth(readFloat())
-                CMD_CLEAR_STENCIL -> processor.clearStencil(readInt())
+                CMD_CLEAR_STENCIL -> processor.clearStencil(data.extract24(0))
                 // VAO
                 CMD_VAO_CREATE -> processor.vaoCreate(data.extract16(0))
                 CMD_VAO_DELETE -> processor.vaoDelete(data.extract16(0))
@@ -165,7 +171,11 @@ class AGList(val globalState: AGGlobalState) {
                 // UBO
                 CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
                 CMD_UBO_DELETE -> processor.uboDelete(data.extract16(0))
-                CMD_UBO_SET -> processor.uboSet(data.extract16(0), readExtra())
+                CMD_UBO_SET -> {
+                    val ubo = readExtra<AG.UniformValues>()
+                    processor.uboSet(data.extract16(0), ubo)
+                    uniformValuesPool.free(ubo)
+                }
                 CMD_UBO_USE -> processor.uboUse(data.extract16(0))
                 // BUFFER
                 CMD_BUFFER_CREATE -> processor.bufferCreate(data.extract16(0))
@@ -234,8 +244,7 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun clearStencil(stencil: Int) {
-        addInt(stencil)
-        add(CMD(CMD_CLEAR_STENCIL))
+        add(CMD(CMD_CLEAR_STENCIL).finsert24(stencil, 0))
     }
 
     fun clear(color: Boolean, depth: Boolean, stencil: Boolean) {
@@ -303,6 +312,11 @@ class AGList(val globalState: AGGlobalState) {
 
     fun useProgram(programId: Int) {
         add(CMD(CMD_PROGRAM_USE).finsert16(programId, 0))
+    }
+
+    fun useProgram(program: AG.AgProgram) {
+        program.ensure(this)
+        useProgram(program.programId)
     }
 
     ////////////////////////////////////////
@@ -407,7 +421,9 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun uboSet(id: Int, ubo: AG.UniformValues) {
-        addExtra(ubo)
+        val uboCopy = uniformValuesPool.alloc()
+        uboCopy.setTo(ubo)
+        addExtra(uboCopy)
         add(CMD(CMD_UBO_SET).finsert16(id, 0))
     }
 
@@ -535,15 +551,3 @@ class AGList(val globalState: AGGlobalState) {
         private const val CMD_FRAMEBUFFER_USE = 0xC3
     }
 }
-
-@KorIncomplete fun AGList.enableBlend(): Unit = enable(AGEnable.BLEND)
-@KorIncomplete fun AGList.enableCullFace(): Unit = enable(AGEnable.CULL_FACE)
-@KorIncomplete fun AGList.enableDepth(): Unit = enable(AGEnable.DEPTH)
-@KorIncomplete fun AGList.enableScissor(): Unit = enable(AGEnable.SCISSOR)
-@KorIncomplete fun AGList.enableStencil(): Unit = enable(AGEnable.STENCIL)
-@KorIncomplete fun AGList.disableBlend(): Unit = disable(AGEnable.BLEND)
-@KorIncomplete fun AGList.disableCullFace(): Unit = disable(AGEnable.CULL_FACE)
-@KorIncomplete fun AGList.disableDepth(): Unit = disable(AGEnable.DEPTH)
-@KorIncomplete fun AGList.disableScissor(): Unit = disable(AGEnable.SCISSOR)
-@KorIncomplete fun AGList.disableStencil(): Unit = disable(AGEnable.STENCIL)
-
