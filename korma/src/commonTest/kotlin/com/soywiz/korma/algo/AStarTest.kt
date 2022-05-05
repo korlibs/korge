@@ -107,7 +107,7 @@ class AStarTest {
             //pointsMap[PointInt(x, y)]?.let { xdigits[it] } ?: (if (c) '#' else '.') // @TODO: Kotlin-native: Regression Crashes BUG in runtime - https://github.com/JetBrains/kotlin-native/issues/1736
             (pointsMap[PointInt(x, y)]?.let { "" + xdigits[it] } ?: (if (c) "#" else ".")).first()
         }
-        val output = res.toString { it }
+        val output = res.asString { it }
         assertEquals(expected.trimIndent(), output)
     }
 }

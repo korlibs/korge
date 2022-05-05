@@ -22,7 +22,7 @@ class Array2Test {
 		)
 
 
-		val output = map.toString(Tiles.REV_MAPPING, margin = ":")
+		val output = map.asString(Tiles.REV_MAPPING, margin = ":")
 
 		val expected = listOf(
 			":     #####          ",

@@ -1,8 +1,8 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
 import com.soywiz.kds.internal.umod
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
 
 inline fun count(cond: (index: Int) -> Boolean): Int {
     var counter = 0
