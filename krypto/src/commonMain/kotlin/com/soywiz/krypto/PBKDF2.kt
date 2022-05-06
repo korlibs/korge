@@ -10,6 +10,9 @@ class PBKDF2 {
         fun pbkdf2WithHmacSHA256(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int) =
             pbkdf2(password, salt, iterationCount, keySizeInBits, SHA256())
 
+        fun pbkdf2WithHmacSHA512(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int) =
+            pbkdf2(password, salt, iterationCount, keySizeInBits, SHA512())
+
         private fun Int.toByteArray(): ByteArray {
             return byteArrayOf(
                 (this shr 24 and 0xff).toByte(),
@@ -19,7 +22,7 @@ class PBKDF2 {
             )
         }
 
-        private fun pbkdf2(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int, hasher: Hasher): ByteArray {
+        fun pbkdf2(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int, hasher: Hasher): ByteArray {
             val hLen = hasher.digestSize
             val blockSize = keySizeInBits / hLen
             val outSize = keySizeInBits / 8
