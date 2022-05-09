@@ -564,7 +564,7 @@ class MyDefaultGameWindow : GameWindow() {
     }
 }
 
-actual fun CreateDefaultGameWindow(): GameWindow = MyDefaultGameWindow()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyDefaultGameWindow()
 
 private val atomicDisplayLinkContext = AtomicReference<COpaquePointer?>(null)
 

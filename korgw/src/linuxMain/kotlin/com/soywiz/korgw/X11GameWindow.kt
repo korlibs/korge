@@ -42,7 +42,7 @@ internal object X11 : DynamicLibrary("libX11.so") {
 
 
 //actual fun CreateDefaultGameWindow(): GameWindow = glutGameWindow
-actual fun CreateDefaultGameWindow(): GameWindow {
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow {
     val engine = com.soywiz.korio.lang.Environment["KORGW_NATIVE_ENGINE"]
         ?: "default"
     println("Engine: $engine")

@@ -476,7 +476,7 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-actual fun CreateDefaultGameWindow(): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserGameWindow()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserGameWindow()
 
 /*
 public external open class TouchEvent(type: String, eventInitDict: MouseEventInit = definedExternally) : UIEvent {

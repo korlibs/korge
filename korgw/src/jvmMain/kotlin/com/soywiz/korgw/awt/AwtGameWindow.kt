@@ -1,6 +1,7 @@
 package com.soywiz.korgw.awt
 
 import com.soywiz.korev.*
+import com.soywiz.korgw.GameWindowCreationConfig
 import com.soywiz.korgw.internal.*
 import com.soywiz.korgw.internal.MicroDynamic.invoke
 import com.soywiz.korgw.platform.*
@@ -17,7 +18,7 @@ import java.io.*
 import javax.imageio.*
 import javax.swing.*
 
-class AwtGameWindow(checkGl: Boolean, logGl: Boolean) : BaseAwtGameWindow() {
+class AwtGameWindow(checkGl: Boolean, logGl: Boolean, config: GameWindowCreationConfig) : BaseAwtGameWindow(config) {
     override val ag: AwtAg = AwtAg(this, checkGl, logGl)
 
     /*

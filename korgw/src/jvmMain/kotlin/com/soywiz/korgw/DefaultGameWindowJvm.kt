@@ -16,7 +16,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.util.OS
 import kotlinx.coroutines.runBlocking
 
-actual fun CreateDefaultGameWindow(): GameWindow {
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow {
     if (OS.isMac) {
         initializeMacOnce()
     }
@@ -41,7 +41,7 @@ actual fun CreateDefaultGameWindow(): GameWindow {
     return when (engine) {
         "default" -> when {
             //OS.isLinux -> X11GameWindow(checkGl)
-            else -> AwtGameWindow(checkGl, logGl)
+            else -> AwtGameWindow(checkGl, logGl, config)
         }
         "jna" -> when {
             OS.isMac -> {
@@ -49,19 +49,19 @@ actual fun CreateDefaultGameWindow(): GameWindow {
                     isOSXMainThread -> MacGameWindow(checkGl, logGl)
                     else -> {
                         println("WARNING. Slower startup: NOT in main thread! Using AWT! (on mac use -XstartOnFirstThread when possible)")
-                        AwtGameWindow(checkGl, logGl)
+                        AwtGameWindow(checkGl, logGl, config)
                     }
                 }
             }
             //OS.isLinux -> X11GameWindow(checkGl)
-            OS.isLinux -> AwtGameWindow(checkGl, logGl)
+            OS.isLinux -> AwtGameWindow(checkGl, logGl, config)
             //OS.isWindows -> com.soywiz.korgw.win32.Win32GameWindow()
-            OS.isWindows -> AwtGameWindow(checkGl, logGl)
+            OS.isWindows -> AwtGameWindow(checkGl, logGl, config)
             else -> X11GameWindow(checkGl)
         }
         "awt" -> when {
             OS.isMac && isOSXMainThread -> MacGameWindow(checkGl,logGl)
-            else -> AwtGameWindow(checkGl, logGl)
+            else -> AwtGameWindow(checkGl, logGl, config)
         }
         //"jogl" -> {
         //    if (isOSXMainThread) {

@@ -32,12 +32,13 @@ suspend fun main() = Korge(
     clipBorders = false,
     //scaleMode = ScaleMode.EXACT,
     debug = true,
+    multithreaded = true,
     //debugAg = true,
 ) {
-    mainDraggable()
+    //mainDraggable()
     //mainSkybox()
     //mainHaptic()
-//    mainMasks()
+    mainMasks()
     //mainGpuVectorRendering()
     //mainFiltersRenderToBitmap()
     //mainBlur()

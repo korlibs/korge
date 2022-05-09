@@ -17,7 +17,7 @@ import kotlinx.coroutines.*
 import java.io.*
 import kotlin.coroutines.*
 
-actual fun CreateDefaultGameWindow(): GameWindow = TODO()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
 abstract class BaseAndroidGameWindow() : GameWindow() {
     abstract val androidContext: Context

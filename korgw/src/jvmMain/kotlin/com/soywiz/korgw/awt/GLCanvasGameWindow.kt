@@ -1,9 +1,10 @@
 package com.soywiz.korgw.awt
 
+import com.soywiz.korgw.GameWindowCreationConfig
 import com.soywiz.korgw.platform.*
 import java.awt.*
 
-open class GLCanvasGameWindow(val canvas: GLCanvas) : BaseAwtGameWindow() {
+open class GLCanvasGameWindow(val canvas: GLCanvas, config: GameWindowCreationConfig = GameWindowCreationConfig()) : BaseAwtGameWindow(config) {
     init {
         exitProcessOnExit = false
         canvas.ag.isGlAvailable = false

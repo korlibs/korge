@@ -70,6 +70,7 @@ object Korge {
             gameId = config.gameId,
             settingsFolder = config.settingsFolder,
             batchMaxQuads = config.batchMaxQuads,
+            multithreaded = config.multithreaded,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
@@ -125,12 +126,13 @@ object Korge {
         gameId: String = DEFAULT_GAME_ID,
         settingsFolder: String? = null,
         batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+        multithreaded: Boolean? = null,
         entry: @ViewDslMarker suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])
         }
-        val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow())
+        val realGameWindow = (gameWindow ?: coroutineContext[GameWindow] ?: CreateDefaultGameWindow(GameWindowCreationConfig(multithreaded = multithreaded)))
         realGameWindow.bgcolor = bgcolor ?: Colors.BLACK
         //println("Configure: ${width}x${height}")
         // @TODO: Configure should happen before loop. But we should ensure that all the korgw targets are ready for this
@@ -528,6 +530,7 @@ object Korge {
         val bgcolor: RGBA? = null,
         val quality: GameWindow.Quality? = null,
         val icon: String? = null,
+        val multithreaded: Boolean? = null,
         val main: (suspend Stage.() -> Unit)? = null,
         val constructedScene: Scene.(Views) -> Unit = {},
         val constructedViews: (Views) -> Unit = {}

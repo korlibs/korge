@@ -15,7 +15,7 @@ import platform.windows.*
 
 //@ThreadLocal
 val windowsGameWindow: WindowsGameWindow = WindowsGameWindow()
-actual fun CreateDefaultGameWindow(): GameWindow = windowsGameWindow
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = windowsGameWindow
 
 fun processString(maxLen: Int, callback: (ptr: CPointer<WCHARVar>, maxLen: Int) -> Unit): String {
     return memScoped {

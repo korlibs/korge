@@ -27,7 +27,12 @@ import kotlin.native.concurrent.*
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
 
-expect fun CreateDefaultGameWindow(): GameWindow
+data class GameWindowCreationConfig(
+    val multithreaded: Boolean? = null
+)
+
+expect fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
+fun CreateDefaultGameWindow() = CreateDefaultGameWindow(GameWindowCreationConfig())
 
 /**
  * @example FileFilter("All files" to listOf("*.*"), "Image files" to listOf("*.png", "*.jpg", "*.jpeg", "*.gif"))
