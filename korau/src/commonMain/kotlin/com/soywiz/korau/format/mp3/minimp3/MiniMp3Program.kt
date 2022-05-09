@@ -6,22 +6,22 @@ package com.soywiz.korau.format.mp3.minimp3
 @OptIn(ExperimentalUnsignedTypes::class)
 internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     companion object {
-        const val MINIMP3_IMPLEMENTATION = 1
-        const val MINIMP3_MAX_SAMPLES_PER_FRAME = 2304
-        const val MAX_FREE_FORMAT_FRAME_SIZE = 2304
-        const val MAX_FRAME_SYNC_MATCHES = 10
-        const val MAX_L3_FRAME_PAYLOAD_BYTES = 2304
-        const val MAX_BITRESERVOIR_BYTES = 511
-        const val SHORT_BLOCK_TYPE = 2
-        const val STOP_BLOCK_TYPE = 3
-        const val MODE_MONO = 3
-        const val MODE_JOINT_STEREO = 1
-        const val HDR_SIZE = 4
-        const val BITS_DEQUANTIZER_OUT = -1
-        const val MAX_SCF = 41
-        const val HAVE_SSE = 0
-        const val HAVE_SIMD = 0
-        const val HAVE_ARMV6 = 0
+        internal const val MINIMP3_IMPLEMENTATION = 1
+        internal const val MINIMP3_MAX_SAMPLES_PER_FRAME = 2304
+        internal const val MAX_FREE_FORMAT_FRAME_SIZE = 2304
+        internal const val MAX_FRAME_SYNC_MATCHES = 10
+        internal const val MAX_L3_FRAME_PAYLOAD_BYTES = 2304
+        internal const val MAX_BITRESERVOIR_BYTES = 511
+        internal const val SHORT_BLOCK_TYPE = 2
+        internal const val STOP_BLOCK_TYPE = 3
+        internal const val MODE_MONO = 3
+        internal const val MODE_JOINT_STEREO = 1
+        internal const val HDR_SIZE = 4
+        internal const val BITS_DEQUANTIZER_OUT = -1
+        internal const val MAX_SCF = 41
+        internal const val HAVE_SSE = 0
+        internal const val HAVE_SIMD = 0
+        internal const val HAVE_ARMV6 = 0
     }
 
     private var __STATIC_hdr_bitrate_kbps_halfrate: Array2Array3Array15UByte = Array2Array3Array15UByteAlloc(arrayOf(Array3Array15UByteAlloc(arrayOf(
@@ -2219,350 +2219,350 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class mp3dec_frame_info_t(val ptr: Int)
-const val mp3dec_frame_info_t__SIZE_BYTES = 24
-const val mp3dec_frame_info_t__OFFSET_frame_bytes = 0
-const val mp3dec_frame_info_t__OFFSET_frame_offset = 4
-const val mp3dec_frame_info_t__OFFSET_channels = 8
-const val mp3dec_frame_info_t__OFFSET_hz = 12
-const val mp3dec_frame_info_t__OFFSET_layer = 16
-const val mp3dec_frame_info_t__OFFSET_bitrate_kbps = 20
+internal const val mp3dec_frame_info_t__SIZE_BYTES = 24
+internal const val mp3dec_frame_info_t__OFFSET_frame_bytes = 0
+internal const val mp3dec_frame_info_t__OFFSET_frame_offset = 4
+internal const val mp3dec_frame_info_t__OFFSET_channels = 8
+internal const val mp3dec_frame_info_t__OFFSET_hz = 12
+internal const val mp3dec_frame_info_t__OFFSET_layer = 16
+internal const val mp3dec_frame_info_t__OFFSET_bitrate_kbps = 20
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class mp3dec_t(val ptr: Int)
-const val mp3dec_t__SIZE_BYTES = 6667
-const val mp3dec_t__OFFSET_mdct_overlap = 0
-const val mp3dec_t__OFFSET_qmf_state = 2304
-const val mp3dec_t__OFFSET_reserv = 6144
-const val mp3dec_t__OFFSET_free_format_bytes = 6148
-const val mp3dec_t__OFFSET_header = 6152
-const val mp3dec_t__OFFSET_reserv_buf = 6156
+internal const val mp3dec_t__SIZE_BYTES = 6667
+internal const val mp3dec_t__OFFSET_mdct_overlap = 0
+internal const val mp3dec_t__OFFSET_qmf_state = 2304
+internal const val mp3dec_t__OFFSET_reserv = 6144
+internal const val mp3dec_t__OFFSET_free_format_bytes = 6148
+internal const val mp3dec_t__OFFSET_header = 6152
+internal const val mp3dec_t__OFFSET_reserv_buf = 6156
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class bs_t(val ptr: Int)
-const val bs_t__SIZE_BYTES = 12
-const val bs_t__OFFSET_buf = 0
-const val bs_t__OFFSET_pos = 4
-const val bs_t__OFFSET_limit = 8
+internal const val bs_t__SIZE_BYTES = 12
+internal const val bs_t__OFFSET_buf = 0
+internal const val bs_t__OFFSET_pos = 4
+internal const val bs_t__OFFSET_limit = 8
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class L12_scale_info(val ptr: Int)
-const val L12_scale_info__SIZE_BYTES = 898
-const val L12_scale_info__OFFSET_scf = 0
-const val L12_scale_info__OFFSET_total_bands = 768
-const val L12_scale_info__OFFSET_stereo_bands = 769
-const val L12_scale_info__OFFSET_bitalloc = 770
-const val L12_scale_info__OFFSET_scfcod = 834
+internal const val L12_scale_info__SIZE_BYTES = 898
+internal const val L12_scale_info__OFFSET_scf = 0
+internal const val L12_scale_info__OFFSET_total_bands = 768
+internal const val L12_scale_info__OFFSET_stereo_bands = 769
+internal const val L12_scale_info__OFFSET_bitalloc = 770
+internal const val L12_scale_info__OFFSET_scfcod = 834
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class L12_subband_alloc_t(val ptr: Int)
-const val L12_subband_alloc_t__SIZE_BYTES = 3
-const val L12_subband_alloc_t__OFFSET_tab_offset = 0
-const val L12_subband_alloc_t__OFFSET_code_tab_width = 1
-const val L12_subband_alloc_t__OFFSET_band_count = 2
+internal const val L12_subband_alloc_t__SIZE_BYTES = 3
+internal const val L12_subband_alloc_t__OFFSET_tab_offset = 0
+internal const val L12_subband_alloc_t__OFFSET_code_tab_width = 1
+internal const val L12_subband_alloc_t__OFFSET_band_count = 2
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class L3_gr_info_t(val ptr: Int)
-const val L3_gr_info_t__SIZE_BYTES = 28
-const val L3_gr_info_t__OFFSET_sfbtab = 0
-const val L3_gr_info_t__OFFSET_part_23_length = 4
-const val L3_gr_info_t__OFFSET_big_values = 6
-const val L3_gr_info_t__OFFSET_scalefac_compress = 8
-const val L3_gr_info_t__OFFSET_global_gain = 10
-const val L3_gr_info_t__OFFSET_block_type = 11
-const val L3_gr_info_t__OFFSET_mixed_block_flag = 12
-const val L3_gr_info_t__OFFSET_n_long_sfb = 13
-const val L3_gr_info_t__OFFSET_n_short_sfb = 14
-const val L3_gr_info_t__OFFSET_table_select = 15
-const val L3_gr_info_t__OFFSET_region_count = 18
-const val L3_gr_info_t__OFFSET_subblock_gain = 21
-const val L3_gr_info_t__OFFSET_preflag = 24
-const val L3_gr_info_t__OFFSET_scalefac_scale = 25
-const val L3_gr_info_t__OFFSET_count1_table = 26
-const val L3_gr_info_t__OFFSET_scfsi = 27
+internal const val L3_gr_info_t__SIZE_BYTES = 28
+internal const val L3_gr_info_t__OFFSET_sfbtab = 0
+internal const val L3_gr_info_t__OFFSET_part_23_length = 4
+internal const val L3_gr_info_t__OFFSET_big_values = 6
+internal const val L3_gr_info_t__OFFSET_scalefac_compress = 8
+internal const val L3_gr_info_t__OFFSET_global_gain = 10
+internal const val L3_gr_info_t__OFFSET_block_type = 11
+internal const val L3_gr_info_t__OFFSET_mixed_block_flag = 12
+internal const val L3_gr_info_t__OFFSET_n_long_sfb = 13
+internal const val L3_gr_info_t__OFFSET_n_short_sfb = 14
+internal const val L3_gr_info_t__OFFSET_table_select = 15
+internal const val L3_gr_info_t__OFFSET_region_count = 18
+internal const val L3_gr_info_t__OFFSET_subblock_gain = 21
+internal const val L3_gr_info_t__OFFSET_preflag = 24
+internal const val L3_gr_info_t__OFFSET_scalefac_scale = 25
+internal const val L3_gr_info_t__OFFSET_count1_table = 26
+internal const val L3_gr_info_t__OFFSET_scfsi = 27
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class mp3dec_scratch_t(val ptr: Int)
-const val mp3dec_scratch_t__SIZE_BYTES = 16233
-const val mp3dec_scratch_t__OFFSET_bs = 0
-const val mp3dec_scratch_t__OFFSET_maindata = 12
-const val mp3dec_scratch_t__OFFSET_gr_info = 2827
-const val mp3dec_scratch_t__OFFSET_grbuf = 2939
-const val mp3dec_scratch_t__OFFSET_scf = 7547
-const val mp3dec_scratch_t__OFFSET_syn = 7707
-const val mp3dec_scratch_t__OFFSET_ist_pos = 16155
-const val Array2Array288Float__NUM_ELEMENTS = 2
-const val Array2Array288Float__ELEMENT_SIZE_BYTES = 1152
-const val Array2Array288Float__TOTAL_SIZE_BYTES = 2304
+internal const val mp3dec_scratch_t__SIZE_BYTES = 16233
+internal const val mp3dec_scratch_t__OFFSET_bs = 0
+internal const val mp3dec_scratch_t__OFFSET_maindata = 12
+internal const val mp3dec_scratch_t__OFFSET_gr_info = 2827
+internal const val mp3dec_scratch_t__OFFSET_grbuf = 2939
+internal const val mp3dec_scratch_t__OFFSET_scf = 7547
+internal const val mp3dec_scratch_t__OFFSET_syn = 7707
+internal const val mp3dec_scratch_t__OFFSET_ist_pos = 16155
+internal const val Array2Array288Float__NUM_ELEMENTS = 2
+internal const val Array2Array288Float__ELEMENT_SIZE_BYTES = 1152
+internal const val Array2Array288Float__TOTAL_SIZE_BYTES = 2304
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array288Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array288Float__ELEMENT_SIZE_BYTES
 }
-const val Array288Float__NUM_ELEMENTS = 288
-const val Array288Float__ELEMENT_SIZE_BYTES = 4
-const val Array288Float__TOTAL_SIZE_BYTES = 1152
+internal const val Array288Float__NUM_ELEMENTS = 288
+internal const val Array288Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array288Float__TOTAL_SIZE_BYTES = 1152
 internal @kotlin.jvm.JvmInline value/*!*/ class Array288Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array288Float__ELEMENT_SIZE_BYTES
 }
-const val Array960Float__NUM_ELEMENTS = 960
-const val Array960Float__ELEMENT_SIZE_BYTES = 4
-const val Array960Float__TOTAL_SIZE_BYTES = 3840
+internal const val Array960Float__NUM_ELEMENTS = 960
+internal const val Array960Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array960Float__TOTAL_SIZE_BYTES = 3840
 internal @kotlin.jvm.JvmInline value/*!*/ class Array960Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array960Float__ELEMENT_SIZE_BYTES
 }
-const val Array4UByte__NUM_ELEMENTS = 4
-const val Array4UByte__ELEMENT_SIZE_BYTES = 1
-const val Array4UByte__TOTAL_SIZE_BYTES = 4
+internal const val Array4UByte__NUM_ELEMENTS = 4
+internal const val Array4UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array4UByte__TOTAL_SIZE_BYTES = 4
 internal @kotlin.jvm.JvmInline value/*!*/ class Array4UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array4UByte__ELEMENT_SIZE_BYTES
 }
-const val Array511UByte__NUM_ELEMENTS = 511
-const val Array511UByte__ELEMENT_SIZE_BYTES = 1
-const val Array511UByte__TOTAL_SIZE_BYTES = 511
+internal const val Array511UByte__NUM_ELEMENTS = 511
+internal const val Array511UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array511UByte__TOTAL_SIZE_BYTES = 511
 internal @kotlin.jvm.JvmInline value/*!*/ class Array511UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array511UByte__ELEMENT_SIZE_BYTES
 }
-const val Array192Float__NUM_ELEMENTS = 192
-const val Array192Float__ELEMENT_SIZE_BYTES = 4
-const val Array192Float__TOTAL_SIZE_BYTES = 768
+internal const val Array192Float__NUM_ELEMENTS = 192
+internal const val Array192Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array192Float__TOTAL_SIZE_BYTES = 768
 internal @kotlin.jvm.JvmInline value/*!*/ class Array192Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array192Float__ELEMENT_SIZE_BYTES
 }
-const val Array64UByte__NUM_ELEMENTS = 64
-const val Array64UByte__ELEMENT_SIZE_BYTES = 1
-const val Array64UByte__TOTAL_SIZE_BYTES = 64
+internal const val Array64UByte__NUM_ELEMENTS = 64
+internal const val Array64UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array64UByte__TOTAL_SIZE_BYTES = 64
 internal @kotlin.jvm.JvmInline value/*!*/ class Array64UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array64UByte__ELEMENT_SIZE_BYTES
 }
-const val Array3UByte__NUM_ELEMENTS = 3
-const val Array3UByte__ELEMENT_SIZE_BYTES = 1
-const val Array3UByte__TOTAL_SIZE_BYTES = 3
+internal const val Array3UByte__NUM_ELEMENTS = 3
+internal const val Array3UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array3UByte__TOTAL_SIZE_BYTES = 3
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3UByte__ELEMENT_SIZE_BYTES
 }
-const val Array2815UByte__NUM_ELEMENTS = 2815
-const val Array2815UByte__ELEMENT_SIZE_BYTES = 1
-const val Array2815UByte__TOTAL_SIZE_BYTES = 2815
+internal const val Array2815UByte__NUM_ELEMENTS = 2815
+internal const val Array2815UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array2815UByte__TOTAL_SIZE_BYTES = 2815
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2815UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2815UByte__ELEMENT_SIZE_BYTES
 }
-const val Array4L3_gr_info_t__NUM_ELEMENTS = 4
-const val Array4L3_gr_info_t__ELEMENT_SIZE_BYTES = 28
-const val Array4L3_gr_info_t__TOTAL_SIZE_BYTES = 112
+internal const val Array4L3_gr_info_t__NUM_ELEMENTS = 4
+internal const val Array4L3_gr_info_t__ELEMENT_SIZE_BYTES = 28
+internal const val Array4L3_gr_info_t__TOTAL_SIZE_BYTES = 112
 internal @kotlin.jvm.JvmInline value/*!*/ class Array4L3_gr_info_t(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array4L3_gr_info_t__ELEMENT_SIZE_BYTES
 }
-const val Array2Array576Float__NUM_ELEMENTS = 2
-const val Array2Array576Float__ELEMENT_SIZE_BYTES = 2304
-const val Array2Array576Float__TOTAL_SIZE_BYTES = 4608
+internal const val Array2Array576Float__NUM_ELEMENTS = 2
+internal const val Array2Array576Float__ELEMENT_SIZE_BYTES = 2304
+internal const val Array2Array576Float__TOTAL_SIZE_BYTES = 4608
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array576Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array576Float__ELEMENT_SIZE_BYTES
 }
-const val Array576Float__NUM_ELEMENTS = 576
-const val Array576Float__ELEMENT_SIZE_BYTES = 4
-const val Array576Float__TOTAL_SIZE_BYTES = 2304
+internal const val Array576Float__NUM_ELEMENTS = 576
+internal const val Array576Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array576Float__TOTAL_SIZE_BYTES = 2304
 internal @kotlin.jvm.JvmInline value/*!*/ class Array576Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array576Float__ELEMENT_SIZE_BYTES
 }
-const val Array40Float__NUM_ELEMENTS = 40
-const val Array40Float__ELEMENT_SIZE_BYTES = 4
-const val Array40Float__TOTAL_SIZE_BYTES = 160
+internal const val Array40Float__NUM_ELEMENTS = 40
+internal const val Array40Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array40Float__TOTAL_SIZE_BYTES = 160
 internal @kotlin.jvm.JvmInline value/*!*/ class Array40Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array40Float__ELEMENT_SIZE_BYTES
 }
-const val Array33Array64Float__NUM_ELEMENTS = 33
-const val Array33Array64Float__ELEMENT_SIZE_BYTES = 256
-const val Array33Array64Float__TOTAL_SIZE_BYTES = 8448
+internal const val Array33Array64Float__NUM_ELEMENTS = 33
+internal const val Array33Array64Float__ELEMENT_SIZE_BYTES = 256
+internal const val Array33Array64Float__TOTAL_SIZE_BYTES = 8448
 internal @kotlin.jvm.JvmInline value/*!*/ class Array33Array64Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array33Array64Float__ELEMENT_SIZE_BYTES
 }
-const val Array64Float__NUM_ELEMENTS = 64
-const val Array64Float__ELEMENT_SIZE_BYTES = 4
-const val Array64Float__TOTAL_SIZE_BYTES = 256
+internal const val Array64Float__NUM_ELEMENTS = 64
+internal const val Array64Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array64Float__TOTAL_SIZE_BYTES = 256
 internal @kotlin.jvm.JvmInline value/*!*/ class Array64Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array64Float__ELEMENT_SIZE_BYTES
 }
-const val Array2Array39UByte__NUM_ELEMENTS = 2
-const val Array2Array39UByte__ELEMENT_SIZE_BYTES = 39
-const val Array2Array39UByte__TOTAL_SIZE_BYTES = 78
+internal const val Array2Array39UByte__NUM_ELEMENTS = 2
+internal const val Array2Array39UByte__ELEMENT_SIZE_BYTES = 39
+internal const val Array2Array39UByte__TOTAL_SIZE_BYTES = 78
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array39UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array39UByte__ELEMENT_SIZE_BYTES
 }
-const val Array39UByte__NUM_ELEMENTS = 39
-const val Array39UByte__ELEMENT_SIZE_BYTES = 1
-const val Array39UByte__TOTAL_SIZE_BYTES = 39
+internal const val Array39UByte__NUM_ELEMENTS = 39
+internal const val Array39UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array39UByte__TOTAL_SIZE_BYTES = 39
 internal @kotlin.jvm.JvmInline value/*!*/ class Array39UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array39UByte__ELEMENT_SIZE_BYTES
 }
-const val Array2Array3Array15UByte__NUM_ELEMENTS = 2
-const val Array2Array3Array15UByte__ELEMENT_SIZE_BYTES = 45
-const val Array2Array3Array15UByte__TOTAL_SIZE_BYTES = 90
+internal const val Array2Array3Array15UByte__NUM_ELEMENTS = 2
+internal const val Array2Array3Array15UByte__ELEMENT_SIZE_BYTES = 45
+internal const val Array2Array3Array15UByte__TOTAL_SIZE_BYTES = 90
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array3Array15UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array3Array15UByte__ELEMENT_SIZE_BYTES
 }
-const val Array3Array15UByte__NUM_ELEMENTS = 3
-const val Array3Array15UByte__ELEMENT_SIZE_BYTES = 15
-const val Array3Array15UByte__TOTAL_SIZE_BYTES = 45
+internal const val Array3Array15UByte__NUM_ELEMENTS = 3
+internal const val Array3Array15UByte__ELEMENT_SIZE_BYTES = 15
+internal const val Array3Array15UByte__TOTAL_SIZE_BYTES = 45
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3Array15UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3Array15UByte__ELEMENT_SIZE_BYTES
 }
-const val Array15UByte__NUM_ELEMENTS = 15
-const val Array15UByte__ELEMENT_SIZE_BYTES = 1
-const val Array15UByte__TOTAL_SIZE_BYTES = 15
+internal const val Array15UByte__NUM_ELEMENTS = 15
+internal const val Array15UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array15UByte__TOTAL_SIZE_BYTES = 15
 internal @kotlin.jvm.JvmInline value/*!*/ class Array15UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array15UByte__ELEMENT_SIZE_BYTES
 }
-const val Array3UInt__NUM_ELEMENTS = 3
-const val Array3UInt__ELEMENT_SIZE_BYTES = 4
-const val Array3UInt__TOTAL_SIZE_BYTES = 12
+internal const val Array3UInt__NUM_ELEMENTS = 3
+internal const val Array3UInt__ELEMENT_SIZE_BYTES = 4
+internal const val Array3UInt__TOTAL_SIZE_BYTES = 12
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3UInt(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3UInt__ELEMENT_SIZE_BYTES
 }
-const val Array54Float__NUM_ELEMENTS = 54
-const val Array54Float__ELEMENT_SIZE_BYTES = 4
-const val Array54Float__TOTAL_SIZE_BYTES = 216
+internal const val Array54Float__NUM_ELEMENTS = 54
+internal const val Array54Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array54Float__TOTAL_SIZE_BYTES = 216
 internal @kotlin.jvm.JvmInline value/*!*/ class Array54Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array54Float__ELEMENT_SIZE_BYTES
 }
-const val Array8Array23UByte__NUM_ELEMENTS = 8
-const val Array8Array23UByte__ELEMENT_SIZE_BYTES = 23
-const val Array8Array23UByte__TOTAL_SIZE_BYTES = 184
+internal const val Array8Array23UByte__NUM_ELEMENTS = 8
+internal const val Array8Array23UByte__ELEMENT_SIZE_BYTES = 23
+internal const val Array8Array23UByte__TOTAL_SIZE_BYTES = 184
 internal @kotlin.jvm.JvmInline value/*!*/ class Array8Array23UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array8Array23UByte__ELEMENT_SIZE_BYTES
 }
-const val Array23UByte__NUM_ELEMENTS = 23
-const val Array23UByte__ELEMENT_SIZE_BYTES = 1
-const val Array23UByte__TOTAL_SIZE_BYTES = 23
+internal const val Array23UByte__NUM_ELEMENTS = 23
+internal const val Array23UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array23UByte__TOTAL_SIZE_BYTES = 23
 internal @kotlin.jvm.JvmInline value/*!*/ class Array23UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array23UByte__ELEMENT_SIZE_BYTES
 }
-const val Array8Array40UByte__NUM_ELEMENTS = 8
-const val Array8Array40UByte__ELEMENT_SIZE_BYTES = 40
-const val Array8Array40UByte__TOTAL_SIZE_BYTES = 320
+internal const val Array8Array40UByte__NUM_ELEMENTS = 8
+internal const val Array8Array40UByte__ELEMENT_SIZE_BYTES = 40
+internal const val Array8Array40UByte__TOTAL_SIZE_BYTES = 320
 internal @kotlin.jvm.JvmInline value/*!*/ class Array8Array40UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array8Array40UByte__ELEMENT_SIZE_BYTES
 }
-const val Array40UByte__NUM_ELEMENTS = 40
-const val Array40UByte__ELEMENT_SIZE_BYTES = 1
-const val Array40UByte__TOTAL_SIZE_BYTES = 40
+internal const val Array40UByte__NUM_ELEMENTS = 40
+internal const val Array40UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array40UByte__TOTAL_SIZE_BYTES = 40
 internal @kotlin.jvm.JvmInline value/*!*/ class Array40UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array40UByte__ELEMENT_SIZE_BYTES
 }
-const val Array4Float__NUM_ELEMENTS = 4
-const val Array4Float__ELEMENT_SIZE_BYTES = 4
-const val Array4Float__TOTAL_SIZE_BYTES = 16
+internal const val Array4Float__NUM_ELEMENTS = 4
+internal const val Array4Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array4Float__TOTAL_SIZE_BYTES = 16
 internal @kotlin.jvm.JvmInline value/*!*/ class Array4Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array4Float__ELEMENT_SIZE_BYTES
 }
-const val Array3Array28UByte__NUM_ELEMENTS = 3
-const val Array3Array28UByte__ELEMENT_SIZE_BYTES = 28
-const val Array3Array28UByte__TOTAL_SIZE_BYTES = 84
+internal const val Array3Array28UByte__NUM_ELEMENTS = 3
+internal const val Array3Array28UByte__ELEMENT_SIZE_BYTES = 28
+internal const val Array3Array28UByte__TOTAL_SIZE_BYTES = 84
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3Array28UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3Array28UByte__ELEMENT_SIZE_BYTES
 }
-const val Array28UByte__NUM_ELEMENTS = 28
-const val Array28UByte__ELEMENT_SIZE_BYTES = 1
-const val Array28UByte__TOTAL_SIZE_BYTES = 28
+internal const val Array28UByte__NUM_ELEMENTS = 28
+internal const val Array28UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array28UByte__TOTAL_SIZE_BYTES = 28
 internal @kotlin.jvm.JvmInline value/*!*/ class Array28UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array28UByte__ELEMENT_SIZE_BYTES
 }
-const val Array16UByte__NUM_ELEMENTS = 16
-const val Array16UByte__ELEMENT_SIZE_BYTES = 1
-const val Array16UByte__TOTAL_SIZE_BYTES = 16
+internal const val Array16UByte__NUM_ELEMENTS = 16
+internal const val Array16UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array16UByte__TOTAL_SIZE_BYTES = 16
 internal @kotlin.jvm.JvmInline value/*!*/ class Array16UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array16UByte__ELEMENT_SIZE_BYTES
 }
-const val Array24UByte__NUM_ELEMENTS = 24
-const val Array24UByte__ELEMENT_SIZE_BYTES = 1
-const val Array24UByte__TOTAL_SIZE_BYTES = 24
+internal const val Array24UByte__NUM_ELEMENTS = 24
+internal const val Array24UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array24UByte__TOTAL_SIZE_BYTES = 24
 internal @kotlin.jvm.JvmInline value/*!*/ class Array24UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array24UByte__ELEMENT_SIZE_BYTES
 }
-const val Array10UByte__NUM_ELEMENTS = 10
-const val Array10UByte__ELEMENT_SIZE_BYTES = 1
-const val Array10UByte__TOTAL_SIZE_BYTES = 10
+internal const val Array10UByte__NUM_ELEMENTS = 10
+internal const val Array10UByte__ELEMENT_SIZE_BYTES = 1
+internal const val Array10UByte__TOTAL_SIZE_BYTES = 10
 internal @kotlin.jvm.JvmInline value/*!*/ class Array10UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array10UByte__ELEMENT_SIZE_BYTES
 }
-const val Array145Float__NUM_ELEMENTS = 145
-const val Array145Float__ELEMENT_SIZE_BYTES = 4
-const val Array145Float__TOTAL_SIZE_BYTES = 580
+internal const val Array145Float__NUM_ELEMENTS = 145
+internal const val Array145Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array145Float__TOTAL_SIZE_BYTES = 580
 internal @kotlin.jvm.JvmInline value/*!*/ class Array145Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array145Float__ELEMENT_SIZE_BYTES
 }
-const val Array32Short__NUM_ELEMENTS = 32
-const val Array32Short__ELEMENT_SIZE_BYTES = 2
-const val Array32Short__TOTAL_SIZE_BYTES = 64
+internal const val Array32Short__NUM_ELEMENTS = 32
+internal const val Array32Short__ELEMENT_SIZE_BYTES = 2
+internal const val Array32Short__TOTAL_SIZE_BYTES = 64
 internal @kotlin.jvm.JvmInline value/*!*/ class Array32Short(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array32Short__ELEMENT_SIZE_BYTES
 }
-const val Array3Int__NUM_ELEMENTS = 3
-const val Array3Int__ELEMENT_SIZE_BYTES = 4
-const val Array3Int__TOTAL_SIZE_BYTES = 12
+internal const val Array3Int__NUM_ELEMENTS = 3
+internal const val Array3Int__ELEMENT_SIZE_BYTES = 4
+internal const val Array3Int__TOTAL_SIZE_BYTES = 12
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3Int(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3Int__ELEMENT_SIZE_BYTES
 }
-const val Array14Float__NUM_ELEMENTS = 14
-const val Array14Float__ELEMENT_SIZE_BYTES = 4
-const val Array14Float__TOTAL_SIZE_BYTES = 56
+internal const val Array14Float__NUM_ELEMENTS = 14
+internal const val Array14Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array14Float__TOTAL_SIZE_BYTES = 56
 internal @kotlin.jvm.JvmInline value/*!*/ class Array14Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array14Float__ELEMENT_SIZE_BYTES
 }
-const val Array2Array8Float__NUM_ELEMENTS = 2
-const val Array2Array8Float__ELEMENT_SIZE_BYTES = 32
-const val Array2Array8Float__TOTAL_SIZE_BYTES = 64
+internal const val Array2Array8Float__NUM_ELEMENTS = 2
+internal const val Array2Array8Float__ELEMENT_SIZE_BYTES = 32
+internal const val Array2Array8Float__TOTAL_SIZE_BYTES = 64
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array8Float__ELEMENT_SIZE_BYTES
 }
-const val Array8Float__NUM_ELEMENTS = 8
-const val Array8Float__ELEMENT_SIZE_BYTES = 4
-const val Array8Float__TOTAL_SIZE_BYTES = 32
+internal const val Array8Float__NUM_ELEMENTS = 8
+internal const val Array8Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array8Float__TOTAL_SIZE_BYTES = 32
 internal @kotlin.jvm.JvmInline value/*!*/ class Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array8Float__ELEMENT_SIZE_BYTES
 }
-const val Array18Float__NUM_ELEMENTS = 18
-const val Array18Float__ELEMENT_SIZE_BYTES = 4
-const val Array18Float__TOTAL_SIZE_BYTES = 72
+internal const val Array18Float__NUM_ELEMENTS = 18
+internal const val Array18Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array18Float__TOTAL_SIZE_BYTES = 72
 internal @kotlin.jvm.JvmInline value/*!*/ class Array18Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array18Float__ELEMENT_SIZE_BYTES
 }
-const val Array9Float__NUM_ELEMENTS = 9
-const val Array9Float__ELEMENT_SIZE_BYTES = 4
-const val Array9Float__TOTAL_SIZE_BYTES = 36
+internal const val Array9Float__NUM_ELEMENTS = 9
+internal const val Array9Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array9Float__TOTAL_SIZE_BYTES = 36
 internal @kotlin.jvm.JvmInline value/*!*/ class Array9Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array9Float__ELEMENT_SIZE_BYTES
 }
-const val Array6Float__NUM_ELEMENTS = 6
-const val Array6Float__ELEMENT_SIZE_BYTES = 4
-const val Array6Float__TOTAL_SIZE_BYTES = 24
+internal const val Array6Float__NUM_ELEMENTS = 6
+internal const val Array6Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array6Float__TOTAL_SIZE_BYTES = 24
 internal @kotlin.jvm.JvmInline value/*!*/ class Array6Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array6Float__ELEMENT_SIZE_BYTES
 }
-const val Array3Float__NUM_ELEMENTS = 3
-const val Array3Float__ELEMENT_SIZE_BYTES = 4
-const val Array3Float__TOTAL_SIZE_BYTES = 12
+internal const val Array3Float__NUM_ELEMENTS = 3
+internal const val Array3Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array3Float__TOTAL_SIZE_BYTES = 12
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3Float__ELEMENT_SIZE_BYTES
 }
-const val Array2Array18Float__NUM_ELEMENTS = 2
-const val Array2Array18Float__ELEMENT_SIZE_BYTES = 72
-const val Array2Array18Float__TOTAL_SIZE_BYTES = 144
+internal const val Array2Array18Float__NUM_ELEMENTS = 2
+internal const val Array2Array18Float__ELEMENT_SIZE_BYTES = 72
+internal const val Array2Array18Float__TOTAL_SIZE_BYTES = 144
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array18Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array18Float__ELEMENT_SIZE_BYTES
 }
-const val Array24Float__NUM_ELEMENTS = 24
-const val Array24Float__ELEMENT_SIZE_BYTES = 4
-const val Array24Float__TOTAL_SIZE_BYTES = 96
+internal const val Array24Float__NUM_ELEMENTS = 24
+internal const val Array24Float__ELEMENT_SIZE_BYTES = 4
+internal const val Array24Float__TOTAL_SIZE_BYTES = 96
 internal @kotlin.jvm.JvmInline value/*!*/ class Array24Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array24Float__ELEMENT_SIZE_BYTES
 }
-const val Array4Array8Float__NUM_ELEMENTS = 4
-const val Array4Array8Float__ELEMENT_SIZE_BYTES = 32
-const val Array4Array8Float__TOTAL_SIZE_BYTES = 128
+internal const val Array4Array8Float__NUM_ELEMENTS = 4
+internal const val Array4Array8Float__ELEMENT_SIZE_BYTES = 32
+internal const val Array4Array8Float__TOTAL_SIZE_BYTES = 128
 internal @kotlin.jvm.JvmInline value/*!*/ class Array4Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array4Array8Float__ELEMENT_SIZE_BYTES
 }
-const val Array1bs_t__NUM_ELEMENTS = 1
-const val Array1bs_t__ELEMENT_SIZE_BYTES = 12
-const val Array1bs_t__TOTAL_SIZE_BYTES = 12
+internal const val Array1bs_t__NUM_ELEMENTS = 1
+internal const val Array1bs_t__ELEMENT_SIZE_BYTES = 12
+internal const val Array1bs_t__TOTAL_SIZE_BYTES = 12
 internal @kotlin.jvm.JvmInline value/*!*/ class Array1bs_t(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array1bs_t__ELEMENT_SIZE_BYTES
 }
-const val Array1L12_scale_info__NUM_ELEMENTS = 1
-const val Array1L12_scale_info__ELEMENT_SIZE_BYTES = 898
-const val Array1L12_scale_info__TOTAL_SIZE_BYTES = 898
+internal const val Array1L12_scale_info__NUM_ELEMENTS = 1
+internal const val Array1L12_scale_info__ELEMENT_SIZE_BYTES = 898
+internal const val Array1L12_scale_info__TOTAL_SIZE_BYTES = 898
 internal @kotlin.jvm.JvmInline value/*!*/ class Array1L12_scale_info(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array1L12_scale_info__ELEMENT_SIZE_BYTES
 }
