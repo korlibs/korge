@@ -65,7 +65,7 @@ class RenderContext constructor(
     @OptIn(KorgeInternal::class)
     inline fun useBatcher(block: (BatchBuilder2D) -> Unit) = batch.use(block)
 
-    /** [RenderContext2D] similar to the one from JS, that keeps an matrix (affine transformation) and allows to draw shapes using the current matrix */
+    /** [RenderContext2D] similar to the one from JS, that keeps a matrix (affine transformation) and allows to draw shapes using the current matrix */
     @KorgeInternal
     @Deprecated("Use useCtx2d instead")
     val ctx2d = RenderContext2D(batch, agBitmapTextureManager)
@@ -105,35 +105,48 @@ class RenderContext constructor(
     @PublishedApi
     internal val renderToTextureScissors = Pool { AG.Scissor() }
 
+    inline fun renderToFrameBuffer(
+        frameBuffer: AG.RenderBuffer,
+        clear: Boolean = true,
+        render: (AG.RenderBuffer) -> Unit,
+    ) {
+        flush()
+        ag.setRenderBufferTemporally(frameBuffer) {
+            useBatcher { batch ->
+                val oldScissors = batch.scissor
+                renderToTextureScissors.alloc { scissor ->
+                    batch.scissor = scissor.setTo(0, 0, frameBuffer.width, frameBuffer.height)
+                    //batch.scissor = null
+                    try {
+                        if (clear) ag.clear(Colors.TRANSPARENT_BLACK)
+                        render(frameBuffer)
+                        flush()
+                    } finally {
+                        batch.scissor = oldScissors
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Temporarily sets the render buffer to a temporal texture of the size [width] and [height] that can be used later in the [use] method.
      * First the texture is created, then [render] method is called once the render buffer is set to the texture,
      * and later the context is restored and the [use] method is called providing as first argument the rendered [Texture].
      * This method is useful for per-frame filters. If you plan to keep the texture data, consider using the [renderToBitmap] method.
      */
-	@OptIn(KorgeInternal::class)
     inline fun renderToTexture(
         width: Int, height: Int,
         render: (AG.RenderBuffer) -> Unit = {},
-        hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
+        hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1,
         use: (texture: Texture) -> Unit
     ) {
 		flush()
-		ag.renderToTexture(width, height, render = {
-			val oldScissors = batch.scissor
-            renderToTextureScissors.alloc { scissor ->
-                batch.scissor = scissor.setTo(0, 0, width, height)
-                try {
-                    render(it)
-                    flush()
-                } finally {
-                    batch.scissor = oldScissors
-                }
-            }
-		}, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples, use = { tex, texWidth, texHeight ->
-            use(Texture(tex, texWidth, texHeight).slice(0, 0, width, height))
-			flush()
-		})
+        ag.tempAllocateFrameBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples) { fb ->
+            renderToFrameBuffer(fb) { render(it) }
+            use(Texture(fb).slice(0, 0, width, height))
+            flush()
+        }
 	}
 
     /**

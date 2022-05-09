@@ -247,6 +247,11 @@ open class LogBaseAG(
         override fun enableDisable(kind: AGEnable, enable: Boolean) {
             log("${if (enable) "enable" else "disable"}: $kind", Kind.ENABLE_DISABLE)
         }
+
+        override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: ReadKind) {
+            log("readPixelsToTexture($textureId, $x, $y, $width, $height, $kind)", Kind.READ)
+        }
+
         override fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: ReadKind) =
             log("readPixels($x, $y, $width, $height, $kind)", Kind.READ)
 

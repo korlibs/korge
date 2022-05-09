@@ -208,7 +208,7 @@ inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix
 
 data class BitmapPaint(
     val bitmap: Bitmap,
-    override val transform: Matrix,
+    override val transform: Matrix = Matrix(),
     val cycleX: CycleMethod = CycleMethod.NO_CYCLE,
     val cycleY: CycleMethod = CycleMethod.NO_CYCLE,
     val smooth: Boolean = true

@@ -11,6 +11,7 @@ fun ProgramWithDefault(
 
 interface IDefaultShaders {
     val u_Tex: Uniform get() = DefaultShaders.u_Tex
+    val u_Tex2: Uniform get() = DefaultShaders.u_Tex2
     val u_ProjMat: Uniform get() = DefaultShaders.u_ProjMat
     val u_ViewMat: Uniform get() = DefaultShaders.u_ViewMat
     val a_Pos: Attribute get() = DefaultShaders.a_Pos
@@ -27,6 +28,7 @@ interface IDefaultShaders {
 object DefaultShaders {
     // from korge
 	val u_Tex: Uniform = Uniform("u_Tex", VarType.Sampler2D)
+    val u_Tex2: Uniform = Uniform("u_Tex2", VarType.Sampler2D)
 
 	val u_ProjMat: Uniform = Uniform("u_ProjMat", VarType.Mat4)
 	val u_ViewMat: Uniform = Uniform("u_ViewMat", VarType.Mat4)

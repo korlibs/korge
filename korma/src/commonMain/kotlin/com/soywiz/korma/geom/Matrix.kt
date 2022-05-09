@@ -278,6 +278,7 @@ data class Matrix(
     fun clone() = Matrix(a, b, c, d, tx, ty)
 
     operator fun times(that: Matrix): Matrix = Matrix().multiply(this, that)
+    operator fun times(scale: Double): Matrix = Matrix().copyFrom(this).scale(scale)
 
     fun toTransform(out: Transform = Transform()): Transform {
         out.setMatrixNoReturn(this)

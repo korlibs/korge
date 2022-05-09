@@ -16,9 +16,7 @@ import com.soywiz.korim.bitmap.trace.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
@@ -29,13 +27,17 @@ import com.soywiz.korma.random.*
 import kotlinx.coroutines.*
 import kotlin.random.*
 
-suspend fun main() = Korge(bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8), clipBorders = false,
+suspend fun main() = Korge(
+    bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
+    clipBorders = false,
+    //scaleMode = ScaleMode.EXACT,
     debug = true,
     //debugAg = true,
 ) {
     //mainSkybox()
     //mainHaptic()
-    mainGpuVectorRendering()
+    mainMasks()
+    //mainGpuVectorRendering()
     //mainFiltersRenderToBitmap()
     //mainBlur()
     //mainCustomSolidRectShader()

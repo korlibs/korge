@@ -24,7 +24,6 @@ suspend fun Stage.mainGpuVectorRendering() {
     val mainStrokePaint = LinearGradientPaint(0, 0, 0, 300).addColorStop(0.0, Colors.GREEN).addColorStop(0.5, Colors.RED).addColorStop(1.0, Colors.BLUE)
     val secondaryStrokePaint = Colors.GREEN.withAd(0.5)
 
-
     //circle(128.0, fill = Colors.RED).xy(200, 200).also { it.antialiased = false }
     //roundRect(300, 300, 64, fill = mainStrokePaint).xy(200, 200).also { it.antialiased = true }
 

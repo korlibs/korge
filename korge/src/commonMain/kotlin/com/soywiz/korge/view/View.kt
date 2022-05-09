@@ -253,7 +253,11 @@ abstract class View internal constructor(
     }
 
     /** Position of the view. **@NOTE**: If [pos] coordinates are manually changed, you should call [View.invalidateMatrix] later to keep the matrix in sync */
-    var pos: Point
+    var pos: IPoint
+        get() = Point(x, y)
+        set(value) = setXY(value.x, value.y)
+
+    var posOpt: Point
         get() {
             _pos.setTo(x, y)
             return _pos
@@ -748,34 +752,34 @@ abstract class View internal constructor(
         dirtyVertices = true
     }
 
-    /**
-     * An optional [Filter] attached to this view.
-     * Filters allow to render this view to a texture, and to control how to render that texture (using shaders, repeating the texture, etc.).
-     * You add multiple filters by creating a composite filter [ComposedFilter].
-     */
-    private var _isFilterSet = false
-    var filter: Filter? = null
-        set(value) {
-            field = value
-            _isFilterSet = (value != null)
-        }
-
-    fun addFilter(filter: Filter) {
-        when (this.filter) {
-            null -> this.filter = filter
-            is ComposedFilter -> this.filter = ComposedFilter((this.filter as ComposedFilter).filters + filter)
-            else -> this.filter = ComposedFilter(listOf(this.filter!!, filter))
-        }
-    }
-
-    fun removeFilter(filter: Filter) {
-        when (this.filter) {
-            filter -> this.filter = null
-            is ComposedFilter -> this.filter = ComposedFilter((this.filter as ComposedFilter).filters.filter { it != filter })
-        }
-    }
-
     var debugAnnotate: Boolean = false
+
+    @PublishedApi
+    internal var _renderPhases: FastArrayList<ViewRenderPhase>? = null
+
+    val renderPhases: List<ViewRenderPhase> get() = _renderPhases ?: emptyList<ViewRenderPhase>()
+
+    inline fun <reified T : ViewRenderPhase> removeRenderPhaseOfType() {
+        _renderPhases?.removeAll { it is T }
+    }
+
+    inline fun <reified T : ViewRenderPhase> getRenderPhaseOfTypeOrNull(): T? = _renderPhases?.firstOrNull { it is T } as? T?
+
+    fun addRenderPhase(phase: ViewRenderPhase) {
+        if (_renderPhases == null) _renderPhases = fastArrayListOf()
+        _renderPhases?.add(phase)
+        _renderPhases?.sortBy { it.priority }
+    }
+
+    inline fun <reified T : ViewRenderPhase> replaceRenderPhase(create: () -> T) {
+        removeRenderPhaseOfType<T>()
+        addRenderPhase(create())
+    }
+
+    inline fun <reified T : ViewRenderPhase> getOrCreateAndAddRenderPhase(create: () -> T): T {
+        getRenderPhaseOfTypeOrNull<T>()?.let { return it }
+        return create().also { addRenderPhase(it) }
+    }
 
     /**
      * The [render] method that is in charge of rendering.
@@ -788,10 +792,30 @@ abstract class View internal constructor(
      */
     final override fun render(ctx: RenderContext) {
         if (!visible) return
-        if (_isFilterSet) {
-            renderFiltered(ctx)
-        } else {
-            renderInternal(ctx)
+        renderFirstPhase(ctx)
+    }
+
+    fun renderFirstPhase(ctx: RenderContext) {
+        val oldPhase = currentStage
+        try {
+            currentStage = 0
+            renderNextPhase(ctx)
+        } finally {
+            currentStage = oldPhase
+        }
+    }
+
+    private var currentStage: Int = 0
+    fun renderNextPhase(ctx: RenderContext) {
+        val stages = _renderPhases
+        when {
+            stages != null && currentStage < stages.size -> {
+                stages[currentStage++].render(this, ctx)
+            }
+            currentStage == (stages?.size ?: 0) -> {
+                renderInternal(ctx)
+                currentStage++
+            }
         }
     }
 
@@ -838,70 +862,6 @@ abstract class View internal constructor(
         }
 
         //ctx.flush()
-    }
-
-    private fun renderFiltered(ctx: RenderContext) {
-        renderFiltered(ctx, filter!!)
-    }
-
-    /** Usually a value between [0.0, 1.0] */
-    var filterScale: Double = 1.0
-        set(value) {
-            field = Filter.discretizeFilterScale(value)
-        }
-
-    fun renderFiltered(ctx: RenderContext, filter: Filter) {
-        val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
-
-        if (bounds.width <= 0.0 || bounds.height <= 0.0) return
-
-        ctx.matrixPool.alloc { tempMat2d ->
-            val tryFilterScale = Filter.discretizeFilterScale(kotlin.math.min(filterScale, filter.recommendedFilterScale))
-            //println("tryFilterScale=$tryFilterScale")
-            val texWidthNoBorder = (bounds.width * tryFilterScale).toInt().coerceAtLeast(1)
-            val texHeightNoBorder = (bounds.height * tryFilterScale).toInt().coerceAtLeast(1)
-
-            val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width).clamp(0.03125, 1.0)
-
-            val texWidth = texWidthNoBorder
-            val texHeight = texHeightNoBorder
-
-            val addx = -bounds.x
-            val addy = -bounds.y
-
-            //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
-            //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")
-
-            ctx.renderToTexture(texWidth, texHeight, render = {
-                tempMat2d.copyFrom(globalMatrixInv)
-                //tempMat2d.copyFrom(globalMatrix)
-                tempMat2d.translate(addx, addy)
-                tempMat2d.scale(realFilterScale)
-                //println("globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-                //println("texWidth=$texWidth, texHeight=$texHeight, $bounds, addx=$addx, addy=$addy, globalMatrix=$globalMatrix, globalMatrixInv:$globalMatrixInv, tempMat2d=$tempMat2d")
-                @Suppress("DEPRECATION")
-                ctx.batch.setViewMatrixTemp(tempMat2d) {
-                    // @TODO: Set blendMode to normal, colorMul to WHITE, colorAdd to NEUTRAL
-                    renderInternal(ctx)
-                }
-            }) { texture ->
-                //println("texWidthHeight=$texWidth,$texHeight")
-                tempMat2d.copyFrom(globalMatrix)
-                tempMat2d.pretranslate(-addx, -addy)
-                tempMat2d.prescale(1.0 / realFilterScale)
-                filter.render(
-                    ctx,
-                    tempMat2d,
-                    texture,
-                    texWidth,
-                    texHeight,
-                    renderColorAdd,
-                    renderColorMul,
-                    blendMode,
-                    realFilterScale
-                )
-            }
-        }
     }
 
     /** Method that all views must override in order to control how the view is going to be rendered */
@@ -1581,6 +1541,11 @@ class ViewTransform(var view: View) {
 }
 */
 
+interface ViewRenderPhase {
+    val priority: Int get() = 0
+    fun render(view: View, ctx: RenderContext) = view.renderNextPhase(ctx)
+}
+
 /**
  * Determines if the given coords [x] and [y] hit this view or any of its descendants.
  * Returns the view that was hit or null
@@ -1711,16 +1676,6 @@ fun <T : View> T.onNextFrame(updatable: T.(views: Views) -> Unit): UpdateCompone
             updatable(this@onNextFrame, views)
         }
     }.attach()
-}
-
-inline fun <T : View> T.filterScale(scale: Double): T {
-    filterScale = scale
-    return this
-}
-
-inline fun <T : View> T.filters(vararg filters: Filter): T {
-    filters.fastForEach { addFilter(it) }
-    return this
 }
 
 

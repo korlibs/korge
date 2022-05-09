@@ -79,6 +79,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     val tempVertexBufferPool = Pool { createBuffer() }
     val tempIndexBufferPool = Pool { createBuffer() }
+    val tempTexturePool = Pool { createTexture() }
 
     open val maxTextureSize = Size(2048, 2048)
 
@@ -1079,20 +1080,37 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    //var adjustFrameRenderBufferSize = false
-    var adjustFrameRenderBufferSize = true
+    var adjustFrameRenderBufferSize = false
+    //var adjustFrameRenderBufferSize = true
 
     //open fun fixWidthForRenderToTexture(width: Int): Int = kotlin.math.max(64, width).nextPowerOfTwo
     //open fun fixHeightForRenderToTexture(height: Int): Int = kotlin.math.max(64, height).nextPowerOfTwo
 
-    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameRenderBufferSize) width.nextMultipleOf(64) else 64
-    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameRenderBufferSize) height.nextMultipleOf(64) else 64
+    open fun fixWidthForRenderToTexture(width: Int): Int = if (adjustFrameRenderBufferSize) width.nextMultipleOf(64) else width
+    open fun fixHeightForRenderToTexture(height: Int): Int = if (adjustFrameRenderBufferSize) height.nextMultipleOf(64) else height
 
     //open fun fixWidthForRenderToTexture(width: Int): Int = width
     //open fun fixHeightForRenderToTexture(height: Int): Int = height
 
+    inline fun tempAllocateFrameBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb: RenderBuffer) -> Unit) {
+        val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth = hasDepth, hasStencil = hasStencil, msamples = msamples)
+        try {
+            block(rb)
+        } finally {
+            unsafeFreeFrameRenderBuffer(rb)
+        }
+    }
+
+    inline fun tempAllocateFrameBuffers2(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1, block: (rb0: RenderBuffer, rb1: RenderBuffer) -> Unit) {
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb0 ->
+            tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb1 ->
+                block(rb0, rb1)
+            }
+        }
+    }
+
     @KoragExperimental
-    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1): RenderBuffer {
+    fun unsafeAllocateFrameRenderBuffer(width: Int, height: Int, hasDepth: Boolean = false, hasStencil: Boolean = true, msamples: Int = 1): RenderBuffer {
         val realWidth = fixWidthForRenderToTexture(kotlin.math.max(width, 64))
         val realHeight = fixHeightForRenderToTexture(kotlin.math.max(height, 64))
         val rb = renderBuffers.alloc()
@@ -1117,15 +1135,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
         use: (tex: Texture, texWidth: Int, texHeight: Int) -> Unit
     ) {
-        val rb = unsafeAllocateFrameRenderBuffer(width, height, hasDepth, hasStencil, msamples)
-        try {
+        tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setRenderBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent
                 render(rb)
             }
             use(rb.tex, rb.width, rb.height)
-        } finally {
-            unsafeFreeFrameRenderBuffer(rb)
         }
     }
 
@@ -1191,7 +1206,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
         fun draw(tex: Texture, left: Float, top: Float, right: Float, bottom: Float) {
             //tex.upload(Bitmap32(32, 32) { x, y -> Colors.RED })
-            //uniforms[DefaultShaders.u_Tex] = TextureUnit(tex)
+            uniforms[DefaultShaders.u_Tex] = TextureUnit(tex)
 
             val texLeft = -1f
             val texRight = +1f

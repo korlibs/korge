@@ -140,6 +140,10 @@ class AGList(val globalState: AGGlobalState) {
                     readExtra(),
                     AG.ReadKind.VALUES[data.extract4(0)]
                 )
+                CMD_READ_PIXELS_TO_TEXTURE -> processor.readPixelsToTexture(
+                    readInt(), readInt(), readInt(), readInt(), readInt(),
+                    AG.ReadKind.VALUES[data.extract4(0)]
+                )
                 // Uniforms
                 CMD_UNIFORMS_SET -> processor.uniformsSet(readExtra(), readExtra())
                 CMD_DEPTH_MASK -> processor.depthMask(data.extract(0))
@@ -444,6 +448,12 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_READ_PIXELS).finsert4(kind.ordinal, 0))
     }
 
+    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind) {
+        addInt(textureId)
+        addInt(x, y, width, height)
+        add(CMD(CMD_READ_PIXELS_TO_TEXTURE).finsert4(kind.ordinal, 0))
+    }
+
     // BUFFERS
     fun bufferCreate(): Int {
         val id = globalState.bufferIndices.alloc()
@@ -480,7 +490,8 @@ class AGList(val globalState: AGGlobalState) {
 
         // Special
 
-        private const val CMD_READ_PIXELS = 0xFC
+        private const val CMD_READ_PIXELS = 0xFB
+        private const val CMD_READ_PIXELS_TO_TEXTURE = 0xFC
         private const val CMD_DRAW = 0xFD
         private const val CMD_SYNC = 0xFE
         private const val CMD_FINISH = 0xFF

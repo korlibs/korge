@@ -125,7 +125,7 @@ uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 createRenderBuffer():1
-RenderBuffer[1].setSize(256, 256)
+RenderBuffer[1].setSize(200, 200)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createBuffer():4
@@ -238,8 +238,8 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.0078125, 0, 0, -1 ],
-  [ 0, 0.0078125, 0, -1 ],
+  [ 0.01, 0, 0, -1 ],
+  [ 0, 0.01, 0, -1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -1119,9 +1119,9 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
 ::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
 ::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[200,0], a_Tex[0.78125,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[200,200], a_Tex[0.78125,0.78125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[0,200], a_Tex[0,0.78125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[200,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[200,200], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[0,200], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 uboDelete: 1
 vaoUse: 0
 vaoDelete: 1

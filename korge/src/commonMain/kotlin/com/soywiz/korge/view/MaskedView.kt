@@ -2,6 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.render.*
 
+@Deprecated("Use View.mask property instead")
 class MaskedView : Container() {
     var mask: View? = null
         set(value) {

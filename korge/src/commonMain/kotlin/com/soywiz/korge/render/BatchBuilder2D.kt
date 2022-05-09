@@ -860,19 +860,19 @@ class BatchBuilder2D constructor(
 			//println("RENDER: $realFactors")
             //println("DRAW: $uniforms")
 
-			ag.drawV2(
+            ag.drawV2(
                 vertexData = vertexData,
                 indices = indexBuffer,
-				program = currentProgram ?: getDefaultProgramForTexture(currentTexN[0]),
-				//program = PROGRAM_PRE,
-				type = AG.DrawType.TRIANGLES,
-				vertexCount = indexPos,
-				blending = realFactors,
-				uniforms = uniforms,
-				stencil = stencil,
-				colorMask = colorMask,
-				scissor = scissor
-			)
+                program = currentProgram ?: getDefaultProgramForTexture(currentTexN[0]),
+                //program = PROGRAM_PRE,
+                type = AG.DrawType.TRIANGLES,
+                vertexCount = indexPos,
+                blending = realFactors,
+                uniforms = uniforms,
+                stencil = stencil,
+                colorMask = colorMask,
+                scissor = scissor
+            )
             beforeFlush(this)
 		}
 
@@ -920,17 +920,20 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily an [uniform] to a [value]
      */
-	inline fun setTemporalUniform(uniform: Uniform, value: Any?, callback: () -> Unit) {
+	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: () -> Unit) {
 		val old = this.uniforms[uniform]
+        if (flush) flush()
 		this.uniforms.putOrRemove(uniform, value)
 		try {
 			callback()
 		} finally {
+            if (flush) flush()
 			this.uniforms.putOrRemove(uniform, old)
 		}
 	}
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), callback: () -> Unit) {
+    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: () -> Unit) {
+        if (flush) flush()
         for (n in 0 until count) {
             olds[n] = this.uniforms[uniforms[n]] as T?
             this.uniforms.putOrRemove(uniforms[n], values[n])
@@ -938,6 +941,7 @@ class BatchBuilder2D constructor(
         try {
             callback()
         } finally {
+            if (flush) flush()
             for (n in 0 until count) {
                 val m = olds.size - 1 - n
                 this.uniforms.putOrRemove(uniforms[m], olds[m])

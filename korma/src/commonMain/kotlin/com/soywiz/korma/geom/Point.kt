@@ -237,7 +237,7 @@ data class Point(
     fun add(x: Double, y: Double) = this.setTo(this.x + x, this.y + y)
     fun sub(x: Double, y: Double) = this.setTo(this.x - x, this.y - y)
 
-    fun copyFrom(that: Point) = setTo(that.x, that.y)
+    fun copyFrom(that: IPoint) = setTo(that.x, that.y)
 
     fun setToTransform(mat: Matrix, p: Point): Point = setToTransform(mat, p.x, p.y)
     fun setToTransform(mat: Matrix, x: Double, y: Double): Point = setTo(mat.transformX(x, y), mat.transformY(x, y))

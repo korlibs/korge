@@ -1,16 +1,14 @@
-import com.soywiz.kmem.*
-import com.soywiz.kmem.clamp
-import com.soywiz.korge.input.*
+import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.degrees
+import kotlin.reflect.KMutableProperty
+import kotlin.reflect.KMutableProperty0
 
 suspend fun Stage.mainBlur() {
     solidRect(stage.width, stage.height, Colors.WHITE)
@@ -18,25 +16,36 @@ suspend fun Stage.mainBlur() {
 
     val initialBlur = 6.0
     var filterScale = 1.0
+    fun <T : View> T.bindScale(): T {
+        addUpdater { this.filterScale = filterScale }
+        return this
+    }
 
-    val blur0a = DirectionalBlurFilter(angle = 0.degrees, radius = initialBlur)
-    val blur0b = DirectionalBlurFilter(angle = 90.degrees, radius = initialBlur)
-    val blur0c = DirectionalBlurFilter(angle = 45.degrees, radius = initialBlur)
-    val blur0d = DirectionalBlurFilter(angle = 45.degrees, radius = initialBlur, expandBorder = false)
     val blur1 = BlurFilter(initialBlur)
-    //val blur1 = DirectionalBlurFilter(angle = 0.degrees, radius = 32.0)
-    //val blur1 = DirectionalBlurFilter(angle = 90.degrees, radius = 32.0)
-    //val blur2 = OldBlurFilter(initialBlur)
     val blur2 = BlurFilter(initialBlur)
+    val radiusProps = fastArrayListOf<KMutableProperty0<Double>>()
 
-    val image0b = image(bitmap).xy(700, 100).filters(blur0b)
-    val image0a = image(bitmap).xy(700, 400).filters(blur0a)
-    val image0c = image(bitmap).xy(900, 100).filters(blur0c)
-    val image0d = image(bitmap).xy(1100, 100).filters(blur0d)
+    addUpdater {
+        //blur2.radius = blur1.radius
+        blur2.radius = blur1.radius / 2.0
+        for (prop in radiusProps) prop.set(blur1.radius)
+        //println(blur1.radius)
+    }
 
-    val image1 = image(bitmap)
+    fun bindRadius(prop: KMutableProperty0<Double>) = radiusProps.add(prop)
+    fun DirectionalBlurFilter.bindRadius() = also { bindRadius(it::radius) }
+    fun BlurFilter.bindRadius() = also { bindRadius(it::radius) }
+
+    image(bitmap).xy(700, 100).filters(DirectionalBlurFilter(angle = 0.degrees, radius = initialBlur).bindRadius()).bindScale()
+    image(bitmap).xy(700, 400).filters(DirectionalBlurFilter(angle = 90.degrees, radius = initialBlur).bindRadius()).bindScale()
+    image(bitmap).xy(900, 100).filters(DirectionalBlurFilter(angle = 45.degrees, radius = initialBlur).bindRadius()).bindScale()
+    image(bitmap).xy(1100, 100).filters(DirectionalBlurFilter(angle = 45.degrees, radius = initialBlur, expandBorder = false).bindRadius()).bindScale()
+    image(bitmap).xy(1100, 400).filters(BlurFilter(radius = initialBlur, expandBorder = false).bindRadius()).bindScale()
+
+    image(bitmap)
         .xy(100, 100)
         .filters(blur1)
+        .bindScale()
 
     val rotatedBitmap = image(bitmap)
         .xy(150, 300)
@@ -44,32 +53,34 @@ suspend fun Stage.mainBlur() {
         .anchor(Anchor.CENTER)
         .rotation(45.degrees)
         .filters(blur1)
+        .bindScale()
 
     val image2 = image(bitmap)
     //solidRect(128, 128, Colors.RED)
         .xy(300, 100)
         .filters(blur2)
+        .bindScale()
         //.visible(false)
 
     val dropshadowFilter = DropshadowFilter(blurRadius = 1.0, shadowColor = Colors.RED.withAd(0.3))
-    val image3 = image(bitmap).xy(500, 100).filters(dropshadowFilter)
+    image(bitmap).xy(500, 100).filters(dropshadowFilter).bindScale()
 
     val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5)
-    val image4 = image(bitmap).xy(500, 250).filters(colorMatrixFilter)
+    image(bitmap).xy(500, 250).filters(colorMatrixFilter).bindScale()
 
     val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5)
-    val image4b = image(bitmap).xy(370, 250).filters(transitionFilter)
+    image(bitmap).xy(370, 250).filters(transitionFilter).bindScale()
 
     val pageFilter = PageFilter()
-    val image5 = image(bitmap).xy(500, 450).filters(pageFilter)
+    image(bitmap).xy(500, 450).filters(pageFilter).bindScale()
 
     val waveFilter = WaveFilter()
-    val image6 = image(bitmap).xy(500, 600).filters(waveFilter)
+    image(bitmap).xy(500, 600).filters(waveFilter).bindScale()
 
     val flagFilter = FlagFilter()
-    val image7 = image(bitmap).xy(700, 600).filters(flagFilter)
+    image(bitmap).xy(700, 600).filters(flagFilter).bindScale()
 
-    val image8 = image(bitmap).xy(900, 600).filters(blur1, waveFilter, blur1, pageFilter)
+    image(bitmap).xy(900, 600).filters(blur1, waveFilter, blur1, pageFilter).bindScale()
 
     uiVerticalStack(padding = 2.0, width = 370.0) {
         xy(50, 400)
@@ -128,32 +139,6 @@ suspend fun Stage.mainBlur() {
                 filterScale = it
             }
         }
-    }
-
-    addUpdater {
-        //blur2.radius = blur1.radius
-        blur2.radius = blur1.radius / 2.0
-        blur0a.radius = blur1.radius
-        blur0b.radius = blur1.radius
-        blur0c.radius = blur1.radius
-        blur0d.radius = blur1.radius
-
-        image0a.filterScale = filterScale
-        image0b.filterScale = filterScale
-        image0c.filterScale = filterScale
-        image0d.filterScale = filterScale
-        image1.filterScale = filterScale
-        rotatedBitmap.filterScale = filterScale
-        image2.filterScale = filterScale
-        image3.filterScale = filterScale
-        image4.filterScale = filterScale
-        image5.filterScale = filterScale
-        image6.filterScale = filterScale
-        image4b.filterScale = filterScale
-        image7.filterScale = filterScale
-        image8.filterScale = filterScale
-
-        //println(blur1.radius)
     }
 
     /*

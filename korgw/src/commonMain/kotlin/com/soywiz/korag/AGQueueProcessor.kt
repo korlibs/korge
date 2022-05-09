@@ -13,6 +13,7 @@ interface AGQueueProcessor {
     fun enableDisable(kind: AGEnable, enable: Boolean)
     // READ
     fun readPixels(x: Int, y: Int, width: Int, height: Int, data: Any, kind: AG.ReadKind)
+    fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind)
     // DRAW
     fun draw(type: AGDrawType, vertexCount: Int, offset: Int = 0, instances: Int = 1, indexType: AGIndexType? = null, indices: AG.Buffer? = null)
     // Buffers

@@ -68,7 +68,7 @@ disposeTemporalPerFrameStuff()
 flipInternal()
 ---------
 createRenderBuffer():1
-RenderBuffer[1].setSize(192, 128)
+RenderBuffer[1].setSize(150, 100)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 Buffer[0].afterSetMem(mem[393216])
@@ -82,8 +82,8 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.010416667, 0, 0, -1 ],
-  [ 0, 0.015625, 0, -1 ],
+  [ 0.013333334, 0, 0, -1 ],
+  [ 0, 0.02, 0, -1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )

@@ -9,6 +9,7 @@ import com.soywiz.korag.internal.*
 import com.soywiz.korag.shader.*
 import com.soywiz.korag.shader.gl.*
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.async.*
@@ -551,9 +552,22 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         }
     }
 
+    override fun readPixelsToTexture(textureId: Int, x: Int, y: Int, width: Int, height: Int, kind: AG.ReadKind) {
+        //println("BEFORE:" + gl.getError())
+        //textureBindEnsuring(tex)
+        textureBind(textureId, AG.TextureTargetKind.TEXTURE_2D, -1)
+        //println("BIND:" + gl.getError())
+        gl.copyTexImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, x, y, width, height, 0)
+
+        //val data = FBuffer.alloc(800 * 800 * 4)
+        //for (n in 0 until 800 * 800) data.setInt(n, Colors.RED.value)
+        //gl.texImage2D(KmlGl.TEXTURE_2D, 0, KmlGl.RGBA, 800, 800, 0, KmlGl.RGBA, KmlGl.UNSIGNED_BYTE, data)
+        //println("COPY_TEX:" + gl.getError())
+    }
+
     // TEXTURES
     class TextureInfo(val id: Int) {
-        var glId: Int = 0
+        var glId: Int = -1
     }
 
     internal val textures = FastResources { TextureInfo(it) }
@@ -574,6 +588,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     override fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int) {
         val glId = implForcedTexId.takeIf { it >= 0 } ?: textures[textureId]?.glId ?: 0
+        //if (glId == -1) println("glId=$glId")
         gl.bindTexture(target.toGl(), glId)
     }
 

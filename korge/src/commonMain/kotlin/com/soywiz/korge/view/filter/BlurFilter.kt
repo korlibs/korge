@@ -6,10 +6,10 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korui.*
 import kotlin.math.*
 
-class BlurFilter(radius: Double, expandBorder: Boolean = true) : ComposedFilter() {
+class BlurFilter(radius: Double = 4.0, expandBorder: Boolean = true) : ComposedFilter() {
     companion object {
         @Deprecated("", ReplaceWith("BlurFilter(radius = initialRadius)"))
-        operator fun invoke(initialRadius: Double = 4.0, dummy: Unit = Unit): BlurFilter = BlurFilter(radius = initialRadius)
+        operator fun invoke(initialRadius: Double, dummy: Unit = Unit): BlurFilter = BlurFilter(radius = initialRadius)
     }
     private val horizontal = DirectionalBlurFilter(angle = 0.degrees, radius, expandBorder).also { filters.add(it) }
     private val vertical = DirectionalBlurFilter(angle = 90.degrees, radius, expandBorder).also { filters.add(it) }

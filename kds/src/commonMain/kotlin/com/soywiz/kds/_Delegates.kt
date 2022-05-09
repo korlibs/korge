@@ -34,29 +34,34 @@ interface Extra {
         }
     }
 
-    class PropertyThis<in T2 : Extra, T : Any?>(val name: String? = null, val defaultGen: T2.() -> T) {
+    class PropertyThis<T2 : Extra, T : Any?>(val name: String? = null, val defaultGen: T2.() -> T) {
+        @PublishedApi internal var transform: (T2.(value: T) -> T) = { it }
+
+        inline fun withTransform(noinline block: T2.(T) -> T): PropertyThis<T2, T> { transform = block; return this }
+
         inline operator fun getValue(thisRef: T2, property: KProperty<*>): T {
-            val res = (thisRef.extra?.get(name ?: property.name).fastCastTo<T?>())
+            val res = thisRef.getExtraTyped<T>(name ?: property.name)
             if (res == null) {
                 val r = defaultGen(thisRef)
-                setValue(thisRef, property, r)
+                setValueUntransformed(thisRef, property, r)
                 return r
             }
             return res
         }
 
+        inline fun setValueUntransformed(thisRef: T2, property: KProperty<*>, value: T): Unit {
+            thisRef.setExtra(name ?: property.name, value)
+        }
+
         inline operator fun setValue(thisRef: T2, property: KProperty<*>, value: T): Unit {
-            //beforeSet(value)
-            if (thisRef.extra == null) thisRef.extra = ExtraTypeCreate()
-            thisRef.extra?.set(name ?: property.name, value.fastCastTo<Any?>())
-            //afterSet(value)
+            setValueUntransformed(thisRef, property, transform(thisRef, value))
         }
     }
 }
 
 fun <T> Extra.extraCache(name: String, block: () -> T): T =
     (getExtra(name) as? T?) ?: block().also { setExtra(name, it) }
-fun <T : Any> Extra.getExtraTyped(name: String): T? = extra?.get(name).fastCastTo<T?>()
+fun <T : Any?> Extra.getExtraTyped(name: String): T? = extra?.get(name).fastCastTo<T?>()
 fun Extra.getExtra(name: String): Any? = extra?.get(name)
 fun Extra.setExtra(name: String, value: Any?): Unit {
     if (extra == null) {
@@ -67,7 +72,11 @@ fun Extra.setExtra(name: String, value: Any?): Unit {
 }
 
 inline fun <T> extraProperty(name: String? = null, noinline default: () -> T) = Extra.Property(name, default)
-inline fun <T2 : Extra, T> extraPropertyThis(name: String? = null, noinline default: T2.() -> T) = Extra.PropertyThis(name, default)
+inline fun <T2 : Extra, T> extraPropertyThis(
+    name: String? = null,
+    noinline transform: T2.(T) -> T = { it },
+    noinline default: T2.() -> T
+): Extra.PropertyThis<T2, T> = Extra.PropertyThis(name, default).withTransform(transform)
 
 class Computed<K : Computed.WithParent<K>, T>(val prop: KProperty1<K, T?>, val default: () -> T) {
     interface WithParent<T> {
