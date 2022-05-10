@@ -116,9 +116,11 @@ abstract class AGOpengl : AG() {
         glProcessor?.processBlockingAll(list)
     }
 
-    override fun readColorTexture(texture: Texture, width: Int, height: Int) {
+    override fun readColorTexture(texture: Texture, x: Int, y: Int, width: Int, height: Int) {
+        //gl.flush()
+        //gl.finish()
         texture.bind()
-        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0)
+        gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
         texture.unbind()
     }
 }

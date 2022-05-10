@@ -792,7 +792,12 @@ abstract class View internal constructor(
      */
     final override fun render(ctx: RenderContext) {
         if (!visible) return
-        renderFirstPhase(ctx)
+        _renderPhases?.fastForEach { it.beforeRender(this, ctx) }
+        try {
+            renderFirstPhase(ctx)
+        } finally {
+            _renderPhases?.fastForEachReverse { it.afterRender(this, ctx) }
+        }
     }
 
     fun renderFirstPhase(ctx: RenderContext) {
@@ -1544,6 +1549,8 @@ class ViewTransform(var view: View) {
 interface ViewRenderPhase {
     val priority: Int get() = 0
     fun render(view: View, ctx: RenderContext) = view.renderNextPhase(ctx)
+    fun beforeRender(view: View, ctx: RenderContext) = Unit
+    fun afterRender(view: View, ctx: RenderContext) = Unit
 }
 
 /**

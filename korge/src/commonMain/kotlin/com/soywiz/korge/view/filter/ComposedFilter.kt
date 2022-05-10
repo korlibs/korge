@@ -13,6 +13,18 @@ import com.soywiz.korui.*
  * Allows to create a single [Filter] that will render several [filters] in order.
  */
 open class ComposedFilter private constructor(val filters: FastArrayList<Filter>, unit: Unit = Unit) : Filter {
+    companion object {
+        fun combine(left: Filter?, right: Filter?): Filter? = when {
+            left == null && right == null -> null
+            left == null -> right
+            right == null -> left
+            left is ComposedFilter && right is ComposedFilter -> ComposedFilter(left.filters + right.filters)
+            left is ComposedFilter -> ComposedFilter(left.filters + right)
+            right is ComposedFilter -> ComposedFilter(listOf(left) + right)
+            else -> ComposedFilter(left, right)
+        }
+    }
+
     constructor() : this(mutableListOf())
     constructor(filters: List<Filter>) : this(if (filters is FastArrayList<Filter>) filters else FastArrayList(filters))
 	constructor(vararg filters: Filter) : this(filters.toList())

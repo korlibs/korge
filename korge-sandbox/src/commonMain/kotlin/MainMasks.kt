@@ -9,9 +9,11 @@ import com.soywiz.korge.render.Texture
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.shape.buildPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.interpolation.Easing
@@ -26,10 +28,26 @@ suspend fun Stage.mainMasks() {
     val circle1 = circle(100.0, fill = fill1)
         //val circle1 = solidRect(200, 200, Colors.PURPLE)
         .filters(DropshadowFilter())
-        //r.filters(BlurFilter())
+        //.filters(BlurFilter())
         //.filters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
         .mask(maskView)
     //.mask(solidRect(100, 100, Colors.WHITE).xy(50, 50).visible(false))
+
+    roundRect(100, 100, 16, 16).xy(50, 50)
+        .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
+        .backdropFilters(BlurFilter())
+
+    /*
+    addChild(BackdropMaskView().apply {
+        //roundRect(100, 100, 16, 16).xy(10, 10)
+        //roundRect(100, 100, 16, 16).xy(0, 0)
+        roundRect(100, 100, 16, 16).xy(50, 50)
+        //solidRect(100, 100, Colors.WHITE).xy(10, 10)
+        //addChild(Circle(50.0, Colors.GREEN))
+        filters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
+        //filters(BlurFilter(radius = 4.0, expandBorder = false))
+    })
+    */
 
     val circle3 = circle(100.0, fill = fill1).centered
     launchImmediately {
@@ -39,11 +57,14 @@ suspend fun Stage.mainMasks() {
         }
     }
 
-    animate(looped = true) {
-        //parallel {
+
+    launchImmediately {
+        animate(looped = true) {
+            //parallel {
             tween(maskView::radius[150.0], time = 1.seconds)
             tween(maskView::radius[10.0], time = 1.seconds)
-        //}
+            //}
+        }
     }
 
 
@@ -57,19 +78,6 @@ suspend fun Stage.mainMasks() {
     //        this.circle(50 * 2, 50 * 2, 100 * 2)
     //    }
     //}
-
-    /*
-    addChild(BackgroundMaskView().apply {
-        //roundRect(200, 100, 16, 16).xy(100, 100)
-        solidRect(100, 100, Colors.WHITE).xy(80, 80)
-        //addChild(Circle(50.0, Colors.GREEN))
-    }
-        //.filters(ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX))
-        //.filters(BlurFilter(radius = 4.0, expandBorder = false))
-        //.filters(BlurFilter(radius = 10.0, expandBorder = true))
-        //.filters(WaveFilter())
-    )
-    */
 
 
     /*
@@ -90,31 +98,49 @@ suspend fun Stage.mainMasks() {
      */
 }
 
+/*
 // @TODO: Mask proper region
-class BackgroundMaskView : Container() {
+class BackdropMaskView : Container() {
     init {
         addRenderPhase(object : ViewRenderPhase {
-            override fun render(view: View, ctx: RenderContext) {
-                ctx.flush()
+            override val priority: Int
+                get() = +100000
+
+            var bgrtex: Texture? = null
+
+            override fun beforeRender(view: View, ctx: RenderContext) {
                 val bgtex = ctx.ag.tempTexturePool.alloc()
-                ctx.ag.readColorTexture(bgtex, ctx.ag.currentWidth, ctx.ag.currentHeight)
-                val bgrtex = Texture(bgtex, ctx.ag.currentWidth, ctx.ag.currentHeight)
-                try {
-                    ctx.renderToTexture(bgrtex.width, bgrtex.height, {
-                        super.render(view, ctx)
+                val width = ctx.ag.currentRenderBufferOrMain.width
+                val height = ctx.ag.currentRenderBufferOrMain.height
+                ctx.ag.readColorTexture(bgtex, 0, 0, width, height)
+                bgrtex = Texture(bgtex, width, height)
+            }
+
+            override fun afterRender(view: View, ctx: RenderContext) {
+                bgrtex?.let { ctx.ag.tempTexturePool.free(it.base.base!!) }
+                bgrtex = null
+            }
+
+            override fun render(view: View, ctx: RenderContext) {
+                //println(ctx.ag.renderBufferStack)
+                //println("width=$width, height=$height")
+                ctx.useBatcher { batcher ->
+                    ctx.renderToTexture(bgrtex!!.width, bgrtex!!.height, {
+                        //println(ctx.batch.viewMat2D)
+                        batcher.setViewMatrixTemp(Matrix()) {
+                            super.render(view, ctx)
+                        }
                     }) { mask ->
-                        ctx.useBatcher { batcher ->
-                            batcher.setTemporalUniform(
-                                DefaultShaders.u_Tex2,
-                                AG.TextureUnit(mask.base.base),
-                                flush = true
-                            ) {
-                                batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
-                            }
+                        batcher.setTemporalUniform(
+                            DefaultShaders.u_Tex2,
+                            AG.TextureUnit(mask.base.base),
+                            flush = true
+                        ) {
+                            //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
+                            batcher.drawQuad(bgrtex!!, x = 0f, y = 0f, m = view.globalMatrix, program = MERGE_ALPHA)
+                            //batcher.drawQuad(mask, x = 0f, y = 0f, m = view.globalMatrix, program = MERGE_ALPHA)
                         }
                     }
-                } finally {
-                    ctx.ag.tempTexturePool.free(bgrtex.base.base!!)
                 }
             }
         })
@@ -129,3 +155,4 @@ class BackgroundMaskView : Container() {
         })
     }
 }
+*/

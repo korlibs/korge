@@ -363,7 +363,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
     override fun readDepth(width: Int, height: Int, out: FloatArray): Unit {
         println("WARNNING. AGSoftware.readDepth not implemented")
     }
-    override fun readColorTexture(texture: Texture, width: Int, height: Int): Unit {
+    override fun readColorTexture(texture: Texture, x: Int, y: Int, width: Int, height: Int): Unit {
         TODO("readColorTexture")
     }
 

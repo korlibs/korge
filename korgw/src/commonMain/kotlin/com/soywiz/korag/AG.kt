@@ -1051,6 +1051,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
     fun clearDepth(depth: Float = 1f, scissor: Scissor? = null) = clear(clearColor = false, clearDepth = true, clearStencil = false, depth = depth, scissor = scissor)
     fun clearColor(color: RGBA = Colors.TRANSPARENT_BLACK, scissor: Scissor? = null) = clear(clearColor = true, clearDepth = false, clearStencil = false, color = color, scissor = scissor)
 
+    val renderBufferStack = FastArrayList<BaseRenderBuffer?>()
+
     //@PublishedApi
     @KoragExperimental
     var currentRenderBuffer: BaseRenderBuffer? = null
@@ -1062,7 +1064,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     inline fun backupTexture(tex: Texture?, callback: () -> Unit) {
         if (tex != null) {
-            readColorTexture(tex, backWidth, backHeight)
+            readColorTexture(tex, 0, 0, backWidth, backHeight)
         }
         try {
             callback()
@@ -1071,12 +1073,12 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
     }
 
-    inline fun setRenderBufferTemporally(rb: BaseRenderBuffer, callback: () -> Unit) {
-        val old = setRenderBuffer(rb)
+    inline fun setRenderBufferTemporally(rb: BaseRenderBuffer, callback: (BaseRenderBuffer) -> Unit) {
+        pushRenderBuffer(rb)
         try {
-            callback()
+            callback(rb)
         } finally {
-            setRenderBuffer(old)
+            popRenderBuffer()
         }
     }
 
@@ -1164,6 +1166,21 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         return old
     }
 
+    fun getRenderBufferAtStackPoint(offset: Int): BaseRenderBuffer {
+        if (offset == 0) return currentRenderBufferOrMain
+        return renderBufferStack.getOrNull(renderBufferStack.size + offset) ?: mainRenderBuffer
+    }
+
+    fun pushRenderBuffer(renderBuffer: BaseRenderBuffer) {
+        renderBufferStack.add(currentRenderBuffer)
+        setRenderBuffer(renderBuffer)
+    }
+
+    fun popRenderBuffer() {
+        setRenderBuffer(renderBufferStack.last())
+        renderBufferStack.removeAt(renderBufferStack.size - 1)
+    }
+
     open fun readColor(bitmap: Bitmap32): Unit {
         commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
     }
@@ -1174,7 +1191,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, ReadKind.STENCIL) }
     }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)
-    open fun readColorTexture(texture: Texture, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
+    open fun readColorTexture(texture: Texture, x: Int = 0, y: Int = 0, width: Int = backWidth, height: Int = backHeight): Unit = TODO()
     fun readColor() = Bitmap32(backWidth, backHeight).apply { readColor(this) }
     fun readDepth() = FloatArray2(backWidth, backHeight) { 0f }.apply { readDepth(this) }
 
