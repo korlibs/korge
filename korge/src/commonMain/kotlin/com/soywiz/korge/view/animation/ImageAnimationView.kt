@@ -21,6 +21,11 @@ inline fun Container.repeatedImageAnimationView(
     block: @ViewDslMarker ImageAnimationView<SingleTile>.() -> Unit = {}
 ) = ImageAnimationView(animation, direction) { SingleTile(Bitmaps.transparent) }.addTo(this, block)
 
+fun ImageAnimationView(
+    animation: ImageAnimation? = null,
+    direction: ImageAnimation.Direction? = null,
+): ImageAnimationView<Image> = ImageAnimationView(animation, direction) { Image(Bitmaps.transparent) }
+
 open class ImageAnimationView<T: SmoothedBmpSlice>(
     animation: ImageAnimation? = null,
     direction: ImageAnimation.Direction? = null,

@@ -35,10 +35,11 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
+    mainGifAnimation()
     //mainDraggable()
     //mainSkybox()
     //mainHaptic()
-    mainMasks()
+    //mainMasks()
     //mainGpuVectorRendering()
     //mainFiltersRenderToBitmap()
     //mainBlur()

@@ -32,7 +32,7 @@ object GIF : ImageFormat("gif") {
         val frames = arrayListOf<ImageFrame>()
         while (GifDec.gd_get_frame(gif) >= 1) {
             val out = Bitmap32(gif.width, gif.height)
-            val time = ((gif.gce.delay + 1) * 10).milliseconds
+            val time = (max(gif.gce.delay, 1) * 10).milliseconds
             try {
                 GifDec.gd_render_frame(gif, out.data)
                 frames.add(ImageFrame(out, time = time, main = (frames.size == 0)))
@@ -52,7 +52,8 @@ object GIF : ImageFormat("gif") {
     }
 }
 
-// https://github.com/lecram/gifdec/blob/master/gifdec.c
+// https://github.com/lecram/gifdec/blob/ea1ed06c03dda22a042f1bdc187fedd6cd608e1d/gifdec.c
+// https://github.com/lecram/gifdec/compare/ea1ed06c03dda22a042f1bdc187fedd6cd608e1d..1dcbae19363597314f6623010cc80abad4e47f7c
 @OptIn(ExperimentalUnsignedTypes::class)
 object GifDec {
     class gd_Palette(
@@ -165,6 +166,11 @@ object GifDec {
         if (gif.bgindex != 0) {
             gif.frame.fill(gif.bgindex.toUByte(), 0, gif.width * gif.height)
         }
+        gif.palette.colors[gif.bgindex] = Colors.TRANSPARENT_BLACK
+        //val bgcolor = gif.palette.colors[gif.bgindex]
+        //if (bgcolor.r != 0 || bgcolor.g != 0 || bgcolor.b != 0) {
+        //    gif.canvas.fill(bgcolor, gif.width * gif.height)
+        //}
         gif.anim_start = lseek(fd, 0, SEEK_CUR);
         return gif;
     }
@@ -300,6 +306,9 @@ object GifDec {
                 /* Update byte. */
                 if (s.sub_len == 0) {
                     s.sub_len = gif.fd.readU8() /* Must be nonzero! */
+                    if (s.sub_len == 0) {
+                        return 0x1000
+                    }
                 }
                 s.byte = gif.fd.readU8()
                 s.sub_len--
@@ -337,6 +346,7 @@ object GifDec {
         var table_is_full: Boolean = false
         val byte = gif.fd.readU8()
         var key_size = byte.toInt()
+        if (key_size < 2 || key_size > 8) return -1
         val start = lseek(gif.fd, 0, SEEK_CUR);
         discard_sub_blocks(gif);
         val end = lseek(gif.fd, 0, SEEK_CUR);
@@ -352,7 +362,8 @@ object GifDec {
         var key = get_key(gif, key_size, state); /* clear code */
         var frm_off = 0;
         var ret = 0;
-        while (true) {
+        val frm_size = gif.fw*gif.fh;
+        while (frm_off < frm_size) {
             if (key == clear) {
                 key_size = init_key_size;
                 table.nentries = (1 shl (key_size - 1)) + 2;
@@ -369,12 +380,12 @@ object GifDec {
                 }
             }
             key = get_key(gif, key_size, state);
-            if (key == clear) continue;
-            if (key == stop) break;
+            if (key == clear) continue
+            if (key == stop || key == 0x1000) break
             if (ret == 1) key_size++;
             entry = table.entries[key.toInt()];
             str_len = entry.length;
-            while (true) {
+            for (i in 0 until str_len) {
                 val p = frm_off + entry.length - 1;
                 val x = p % gif.fw;
                 var y = p / gif.fw;
@@ -393,7 +404,9 @@ object GifDec {
                 table.entries[table.nentries - 1].suffix = entry.suffix;
         }
         free(table);
-        state.sub_len = gif.fd.readU8()  /* Must be zero! */
+        if (key == stop) {
+            state.sub_len = gif.fd.readU8()  /* Must be zero! */
+        }
         lseek(gif.fd, end, SEEK_SET);
         return 0;
     }
@@ -404,8 +417,16 @@ object GifDec {
         /* Image Descriptor. */
         gif.fx = read_num(gif.fd);
         gif.fy = read_num(gif.fd);
+
+        if (gif.fx >= gif.width || gif.fy >= gif.height) {
+            return -1
+        }
         gif.fw = read_num(gif.fd);
         gif.fh = read_num(gif.fd);
+
+        gif.fw = min(gif.fw, gif.width - gif.fx);
+        gif.fh = min(gif.fh, gif.height - gif.fy);
+
         val fisrz = gif.fd.readU8()
         val interlace = (fisrz and 0x40) != 0
         /* Ignore Sort Flag. */
@@ -444,13 +465,14 @@ object GifDec {
     fun dispose(gif: gd_GIF) {
         when (gif.gce.disposal) {
             2 -> { /* Restore to background color. */
-                val bgcolor = gif.palette.colors[gif.bgindex*3]
+                //val bgcolor = gif.palette.colors[gif.bgindex]
+                //gif.palette.colors[gif.bgindex] = Colors.TRANSPARENT_BLACK
                 var i = gif.fy * gif.width+gif.fx;
                 for (j in 0 until gif.fh) {
                     for (k in 0 until gif.fw) {
-                        gif.canvas[i+k] = bgcolor
+                        gif.canvas[i+k] = Colors.TRANSPARENT_BLACK
                     }
-                    i += gif.width;
+                    i += gif.width
                 }
             }
             3 -> { /* Restore to previous, i.e., don't update canvas.*/
@@ -486,6 +508,10 @@ object GifDec {
         render_frame_rect(gif, buffer);
     }
 
+    fun gd_is_bgcolor(gif: gd_GIF, color: RGBA): Boolean {
+        return gif.palette.colors[gif.bgindex] == color
+    }
+
     fun gd_rewind(gif: gd_GIF) {
         lseek(gif.fd, gif.anim_start.toLong(), SEEK_SET);
     }
@@ -516,11 +542,4 @@ object GifDec {
         }
         return fd.position
     }
-
-    val O_RDONLY = 0
-    suspend fun open(name: String, mode: Int): SyncStream {
-        return name.uniVfs.readAll().openSync()
-    }
 }
-
-private inline class GifPtr(val pos: Int)
