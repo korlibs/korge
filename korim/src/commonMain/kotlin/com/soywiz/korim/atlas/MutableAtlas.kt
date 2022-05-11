@@ -102,8 +102,11 @@ class MutableAtlas<T>(
                 )
                 val dstX = slice.left
                 val dstY = slice.top
-                this.bitmap.draw(bmp, dstX, dstY)
-                this.bitmap.expandBorder(slice.bounds, border)
+                val boundsWithBorder = slice.bounds.rect.clone().expand(border, border, border, border)
+                this.bitmap.lock(boundsWithBorder) {
+                    this.bitmap.draw(bmp, dstX, dstY)
+                    this.bitmap.expandBorder(slice.bounds, border)
+                }
                 //bmp.bmp.copy(srcX, srcY, this.bitmap, dstX, dstY, w, h)
                 entry = Entry(slice, data)
 
@@ -114,7 +117,6 @@ class MutableAtlas<T>(
 
             entries += entry
             entriesByName[rname] = entry
-            bitmap.contentVersion++
 
             return entry
         } catch (e: Throwable) {
