@@ -10,7 +10,7 @@ import com.soywiz.korim.bitmap.*
 import com.soywiz.korio.lang.*
 
 open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
-    fun Int32Buffer.toRealString(): String = buildString {
+    fun Int32Buffer.toRealString(size: Int = this.size): String = buildString {
         append("[")
         for (n in 0 until size) {
             if (n != 0) append(", ")
@@ -23,7 +23,7 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         val bufferIsInt = name.startsWith("gen") || name.startsWith("delete") || name == "getShaderiv" || name == "getProgramiv"
         return params.joinToString(", ") {
             when {
-                bufferIsInt && it is FBuffer -> it.arrayInt.toRealString()
+                bufferIsInt && it is FBuffer -> it.arrayInt.toRealString(it.size / 4)
                 it is String -> if (it.contains("\n")) "\"\"\"$it\"\"\"" else it.quoted
                 else -> "$it"
             }

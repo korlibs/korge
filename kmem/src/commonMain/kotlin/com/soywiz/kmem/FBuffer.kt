@@ -8,6 +8,10 @@ import com.soywiz.kmem.FBuffer.Companion.sizeAligned
 public class FBuffer private constructor(public val mem: MemBuffer, public val size: Int = mem.size) {
     override fun toString(): String = "FBuffer(size=$size)"
 
+    init {
+        if (mem.size % 8 != 0) error("FBuffer size must be multiple of 8")
+    }
+
     public val buffer: MemBuffer get() = mem
 	public val data: DataBuffer = mem.getData()
 	public val arrayByte: Int8Buffer = mem.asInt8Buffer()
@@ -31,6 +35,7 @@ public class FBuffer private constructor(public val mem: MemBuffer, public val s
 
 		private fun Int.sizeAligned() = getSizeAligned(this)
 
+        @Deprecated("")
         public fun allocUnaligned(size: Int): FBuffer = FBuffer(MemBufferAlloc(size), size)
 		public fun alloc(size: Int): FBuffer = allocUnaligned(size.sizeAligned())
 
@@ -41,7 +46,7 @@ public class FBuffer private constructor(public val mem: MemBuffer, public val s
 		public fun wrap(array: ByteArray): FBuffer = FBuffer(MemBufferWrap(array), array.size)
 
 		public operator fun invoke(size: Int, direct: Boolean): FBuffer = FBuffer(if (direct) MemBufferAlloc(size.sizeAligned()) else MemBufferAllocNoDirect(size.sizeAligned()), size)
-		public operator fun invoke(size: Int): FBuffer = FBuffer(MemBufferAlloc(size.sizeAligned()), size)
+        public operator fun invoke(size: Int): FBuffer = FBuffer(MemBufferAlloc(size.sizeAligned()), size)
 		public operator fun invoke(buffer: MemBuffer, size: Int = buffer.size): FBuffer = FBuffer(buffer, size)
 		public operator fun invoke(array: ByteArray): FBuffer = FBuffer(MemBufferWrap(array), array.size)
 
