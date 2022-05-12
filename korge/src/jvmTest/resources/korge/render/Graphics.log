@@ -88,8 +88,8 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.01, 0, 0, -1 ],
-  [ 0, -0.01, 0, 1 ],
+  [ 0.02, 0, 0, -1 ],
+  [ 0, -0.02, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -117,10 +117,10 @@ stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
 ::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
-::draw.vertex[0]: a_Pos[-120,-120], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[20,-120], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[20,20], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[-120,20], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[0]: a_Pos[-60,-60], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[10,-60], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[10,10], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[-60,10], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
@@ -244,8 +244,8 @@ uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0, 0, 0, 1 ],
 )
 uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
-  [ 1.7320508, -1, 0, 100 ],
-  [ 1, 1.7320508, 0, 100 ],
+  [ 0.8660254, -0.5, 0, 50 ],
+  [ 0.5, 0.8660254, 0, 50 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -260,7 +260,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -28, 100, 350, 350
+scissor: -14, 50, 175, 175
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -1089,8 +1089,8 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.01, 0, 0, -1 ],
-  [ 0, -0.01, 0, 1 ],
+  [ 0.02, 0, 0, -1 ],
+  [ 0, -0.02, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -1209,8 +1209,8 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.01, 0, 0, -1 ],
-  [ 0, -0.01, 0, 1 ],
+  [ 0.02, 0, 0, -1 ],
+  [ 0, -0.02, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -1238,10 +1238,10 @@ stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
 ::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
-::draw.vertex[0]: a_Pos[473.1103,137.3693], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[583.96155,201.3693], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[519.96155,312.22055], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[409.1103,248.22055], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[0]: a_Pos[236.55515,68.68465], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[1]: a_Pos[291.98077,100.68465], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[2]: a_Pos[259.98077,156.11028], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.vertex[3]: a_Pos[204.55515,124.110275], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 uboDelete: 1
 vaoUse: 0
 vaoDelete: 1

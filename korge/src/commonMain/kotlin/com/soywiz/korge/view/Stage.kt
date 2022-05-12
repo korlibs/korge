@@ -19,6 +19,7 @@ class Stage(override val views: Views) : Container()
     , EventDispatcher by EventDispatcher.Mixin()
     , ViewsContainer
     , ResourcesContainer
+    , BoundsProvider by views.bp
 {
     val keys get() = views.input.keys
     val input get() = views.input
@@ -52,8 +53,10 @@ class Stage(override val views: Views) : Container()
     override fun renderInternal(ctx: RenderContext) {
         if (views.clipBorders) {
             ctx.useCtx2d { ctx2d ->
-                ctx2d.scissor(x, y, (views.virtualWidth * scaleX), (views.virtualHeight * scaleY)) {
-                    super.renderInternal(ctx)
+                ctx.rectPool.alloc { _tempWindowBounds ->
+                    ctx2d.scissor(views.globalToWindowBounds(this.globalBounds, _tempWindowBounds)) {
+                        super.renderInternal(ctx)
+                    }
                 }
             }
         } else {

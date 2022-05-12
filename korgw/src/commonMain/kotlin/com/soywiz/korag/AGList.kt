@@ -280,6 +280,7 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun scissor(x: Int, y: Int, width: Int, height: Int) {
+        //if (width < 200) println("AGList.scissor: $x, $y, $width, $height")
         addInt(x, y, width, height)
         add(CMD(CMD_SCISSOR))
     }

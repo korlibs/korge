@@ -43,12 +43,19 @@ class BatchBuilder2D constructor(
 ) {
     val maxTextures = BB_MAX_TEXTURES
 
+    @KorgeInternal
+    val viewMat: Matrix3D get() = ctx.viewMat
+    @KorgeInternal
+    val viewMat2D: Matrix get() = ctx.viewMat2D
+    @KorgeInternal
+    val uniforms: AG.UniformValues get() = ctx.uniforms
+
     inline fun use(block: (BatchBuilder2D) -> Unit) = ctx.useBatcher(this, block)
 
     val maxQuads: Int = min(reqMaxQuads, MAX_BATCH_QUADS)
 
     val texManager = ctx.agBitmapTextureManager
-    constructor(ag: AG, maxQuads: Int = DEFAULT_BATCH_QUADS) : this(RenderContext(ag), maxQuads)
+    //constructor(ag: AG, maxQuads: Int = DEFAULT_BATCH_QUADS) : this(RenderContext(ag), maxQuads)
     val ag: AG = ctx.ag
 	init {
         logger.trace { "BatchBuilder2D[0]" }
@@ -142,13 +149,6 @@ class BatchBuilder2D constructor(
 
 	init { logger.trace { "BatchBuilder2D[8]" } }
 
-	private val projMat: Matrix3D = Matrix3D()
-
-    @KorgeInternal
-	val viewMat: Matrix3D = Matrix3D()
-    @KorgeInternal
-    val viewMat2D: Matrix = Matrix()
-
 	init { logger.trace { "BatchBuilder2D[9]" } }
 
     val textureUnitN = Array(maxTextures) { AG.TextureUnit(null, linear = false) }
@@ -163,14 +163,12 @@ class BatchBuilder2D constructor(
 	//	DefaultShaders.u_ProjMat to projMat,
 	//	DefaultShaders.u_Tex to textureUnit
 	//)
-	@KorgeInternal
-	val uniforms by lazy {
-		AG.UniformValues(
-			DefaultShaders.u_ProjMat to projMat,
-			DefaultShaders.u_ViewMat to viewMat,
-            *Array(maxTextures) { u_TexN[it] to textureUnitN[it] },
-		)
-	}
+
+    init {
+        ctx.uniforms.put(AG.UniformValues(
+            *Array(maxTextures) { BatchBuilder2D.u_TexN[it] to textureUnitN[it] },
+        ))
+    }
 
 	init { logger.trace { "BatchBuilder2D[11]" } }
 
@@ -804,7 +802,6 @@ class BatchBuilder2D constructor(
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
 	}
 
-	private val tempRect = Rectangle()
     val beforeFlush = Signal<BatchBuilder2D>()
     val onInstanceCount = Signal<Int>()
 
@@ -824,11 +821,7 @@ class BatchBuilder2D constructor(
 
     fun updateStandardUniforms() {
         //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
-        if (flipRenderTexture && ag.renderingToTexture) {
-            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
-        } else {
-            projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
-        }
+        ctx.updateStandardUniforms()
 
         for (n in 0 until maxTextures) {
             val textureUnit = textureUnitN[n]
@@ -897,81 +890,20 @@ class BatchBuilder2D constructor(
     /**
      * Executes [callback] while setting temporarily the view matrix to [matrix]
      */
-	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
-        ctx.matrix3DPool.alloc { temp ->
-            ctx.matrixPool.alloc { temp2d ->
-                flush()
-                temp.copyFrom(this.viewMat)
-                temp2d.copyFrom(this.viewMat2D)
-                this.viewMat2D.copyFrom(matrix)
-                this.viewMat.copyFrom(matrix)
-                //println("viewMat: $viewMat, matrix: $matrix")
-                try {
-                    callback()
-                } finally {
-                    flush()
-                    this.viewMat.copyFrom(temp)
-                    this.viewMat2D.copyFrom(temp2d)
-                }
-            }
-        }
-	}
+	inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) = ctx.setViewMatrixTemp(matrix, callback)
 
     /**
      * Executes [callback] while setting temporarily an [uniform] to a [value]
      */
-	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: () -> Unit) {
-		val old = this.uniforms[uniform]
-        if (flush) flush()
-		this.uniforms.putOrRemove(uniform, value)
-		try {
-			callback()
-		} finally {
-            if (flush) flush()
-			this.uniforms.putOrRemove(uniform, old)
-		}
-	}
+	inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AG.UniformValues) -> Unit) = ctx.setTemporalUniform(uniform, value, flush, callback)
 
-    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: () -> Unit) {
-        if (flush) flush()
-        for (n in 0 until count) {
-            olds[n] = this.uniforms[uniforms[n]] as T?
-            this.uniforms.putOrRemove(uniforms[n], values[n])
-        }
-        try {
-            callback()
-        } finally {
-            if (flush) flush()
-            for (n in 0 until count) {
-                val m = olds.size - 1 - n
-                this.uniforms.putOrRemove(uniforms[m], olds[m])
-            }
-        }
-    }
-
-    @PublishedApi
-	internal val tempOldUniformsList: Pool<AG.UniformValues> = Pool { AG.UniformValues() }
+    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AG.UniformValues) -> Unit) =
+        ctx.setTemporalUniforms(uniforms, values, count, olds, flush, callback)
 
     /**
      * Executes [callback] while setting temporarily a set of [uniforms]
      */
-	inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) {
-        tempOldUniformsList { tempOldUniforms ->
-            if (uniforms != null && uniforms.isNotEmpty()) {
-                flush()
-                tempOldUniforms.setTo(this.uniforms)
-                this.uniforms.put(uniforms)
-            }
-            try {
-                callback(this.uniforms)
-            } finally {
-                if (uniforms != null && uniforms.isNotEmpty()) {
-                    flush()
-                    this.uniforms.setTo(tempOldUniforms)
-                }
-            }
-        }
-	}
+	inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) = ctx.setTemporalUniforms(uniforms, callback)
 }
 
 @ThreadLocal

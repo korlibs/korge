@@ -16,9 +16,16 @@ class ViewsFixedSizeContainerHitTestTest : ViewsForTesting() {
             rect.mouseEnabled = true
         }
 
-        assertEquals(rect, stage.mouseHitTest(100.0, 100.0))
-        assertEquals(null, stage.mouseHitTest(100.0, 200.0))
+        val log = arrayListOf<Any?>()
+
+        log += stage.mouseHitTest(100.0, 200.0)
+        log += stage.mouseHitTest(100.0, 100.0)
+        log += stage.mouseHitTest(2000.0, 2000.0)
         clip.clip = false
-        assertEquals(rect, stage.mouseHitTest(100.0, 200.0))
+        log += stage.mouseHitTest(100.0, 200.0)
+        assertEquals(
+            listOf<Any?>(null, rect, null, rect),
+            log
+        )
     }
 }

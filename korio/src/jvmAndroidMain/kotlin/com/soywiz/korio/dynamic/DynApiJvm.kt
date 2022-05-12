@@ -17,17 +17,17 @@ internal actual object DynamicInternal : DynApi {
     }
 
     private fun tryGetMethod(clazz: Class<*>, name: String, args: Array<out Any?>?): Method? {
-        val methods = clazz.allDeclaredMethods.filter { it.name == name }
+        val methods = (clazz.interfaces + clazz).flatMap { it.allDeclaredMethods.filter { it.name == name } }
         val method = when (methods.size) {
             0 -> null
             1 -> methods.first()
             else -> {
                 if (args != null) {
                     val methodsSameArity = methods.filter { it.parameterTypes.size == args.size }
-                    val argTypes = args.map { it!!::class.javaObjectType }
+                    val argTypes = args.map { if (it == null) null else it::class.javaObjectType }
                     methodsSameArity.firstOrNull {
                         it.parameterTypes.toList().zip(argTypes).all {
-                            it.first.kotlin.javaObjectType.isAssignableFrom(it.second)
+                            (it.second == null) || it.first.kotlin.javaObjectType.isAssignableFrom(it.second)
                         }
                     }
                 } else {

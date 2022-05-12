@@ -98,7 +98,7 @@ private fun <T : View> T.onMouseDragInternal(
         val views = views()
         //println("views.globalMouse=${views.globalMouseXY}, views.nativeMouse=${views.nativeMouseXY}")
         //mousePos.copyFrom(views.globalMouseXY)
-        mousePos.copyFrom(views.nativeMouseXY)
+        mousePos.copyFrom(views.globalMouseXY)
     }
 
     fun handle(it: MouseEvents, state: MouseDragState) {

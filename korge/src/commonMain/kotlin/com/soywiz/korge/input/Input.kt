@@ -48,8 +48,18 @@ class Input : Extra by Extra.Mixin() {
     /** Configures the distance from down to up to consider a finger up event a tap */
     var clickDistance = 20.0 // @TODO: We should take into account pointSize/DPI
 
-    val mouse = Point(-1000.0, -1000.0)
-    val mouseDown = Point(-1000.0, -1000.0)
+    // Mouse coordinates relative to the Stage
+    private val _mouse: Point = Point(-1000.0, -1000.0)
+    private val _mouseDown: Point = Point(-1000.0, -1000.0)
+    val mouse: IPoint get() = _mouse
+    val mouseDown: IPoint get() = _mouseDown
+
+    @KorgeInternal fun setMouseGlobalXY(x: Double, y: Double, down: Boolean = false) {
+        val point = if (down) _mouseDown else _mouse
+        //println("setMouseGlobalXY: x=$x, y=$y, down=$down")
+        //if (x == 5.0) println("-----")
+        point.setTo(x, y)
+    }
 
     /** BitField with pressed mouse buttons */
     var mouseButtons = 0

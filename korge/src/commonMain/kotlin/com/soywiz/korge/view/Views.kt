@@ -54,12 +54,13 @@ class Views constructor(
     val gameWindow: GameWindow,
     val gameId: String = "korgegame",
     val settingsFolder: String? = null,
-    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
+    val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
+    val bp: BoundsProvider = BoundsProvider.Base()
 ) :
     Extra by Extra.Mixin(),
     EventDispatcher by EventDispatcher.Mixin(),
     CoroutineScope, ViewsContainer,
-	BoundsProvider,
+	BoundsProvider by bp,
     DialogInterfaceProvider by gameWindow,
     Closeable,
     ResourcesContainer
@@ -68,7 +69,7 @@ class Views constructor(
 
     var rethrowRenderError = false
 
-    val devicePixelRatio get() = ag.devicePixelRatio
+    val devicePixelRatio: Double get() = ag.devicePixelRatio
 
     val keys get() = input.keys
 
@@ -129,30 +130,6 @@ class Views constructor(
         get() = virtualHeight.toDouble()
         set(value) { virtualHeight = value.toInt() }
 
-    @KorgeExperimental
-	var actualVirtualLeft = 0; private set
-    @KorgeExperimental
-	var actualVirtualTop = 0; private set
-
-    @KorgeExperimental
-	var actualVirtualWidth = DefaultViewport.WIDTH; private set
-    @KorgeExperimental
-	var actualVirtualHeight = DefaultViewport.HEIGHT; private set
-
-    //@KorgeExperimental
-	override val virtualLeft get() = -actualVirtualLeft * views.stage.scaleX
-    //@KorgeExperimental
-	override val virtualTop get() = -actualVirtualTop * views.stage.scaleY
-    //@KorgeExperimental
-	override val virtualRight get() = virtualLeft + virtualWidth * views.stage.scaleX
-    //@KorgeExperimental
-	override val virtualBottom get() = virtualTop + virtualHeight * views.stage.scaleY
-
-    @KorgeExperimental
-    val actualVirtualRight get() = actualVirtualWidth
-    @KorgeExperimental
-    val actualVirtualBottom get() = actualVirtualHeight
-
 	private val closeables = arrayListOf<AsyncCloseable>()
 
     /**
@@ -182,12 +159,24 @@ class Views constructor(
 
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
     @KorgeInternal
-	val nativeMouseX: Double get() = input.mouse.x
+    val windowMouseX: Double get() = bp.globalToWindowCoordsX(input.mouse)
     /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
     @KorgeInternal
-	val nativeMouseY: Double get() = input.mouse.y
+    val windowMouseY: Double get() = bp.globalToWindowCoordsY(input.mouse)
     @KorgeInternal
-    val nativeMouseXY: Point get() = input.mouse
+    val windowMouseXY: Point get() = bp.globalToWindowCoords(input.mouse)
+
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseX] instead */
+    @KorgeInternal
+    @Deprecated("Use windowMouseX instead")
+	val nativeMouseX: Double get() = windowMouseX
+    /** Mouse coordinates relative to the native window. Can't be used directly. Use [globalMouseY] instead */
+    @KorgeInternal
+    @Deprecated("Use windowMouseY instead")
+	val nativeMouseY: Double get() = windowMouseY
+    @KorgeInternal
+    @Deprecated("Use windowMouseXY instead")
+    val nativeMouseXY: Point get() = windowMouseXY
 
     /** Mouse coordinates relative to the [Stage] singleton */
     val globalMouseXY get() = stage.mouseXY
@@ -325,9 +314,12 @@ class Views constructor(
         stage.renderDebug(renderContext)
 
 		if (debugViews) {
-			debugHandlers.fastForEach { debugHandler ->
-				this.debugHandler(renderContext)
-			}
+            //renderContext.setTemporalProjectionMatrixTransform(Matrix()) {
+            run {
+                debugHandlers.fastForEach { debugHandler ->
+                    this.debugHandler(renderContext)
+                }
+            }
 		}
 
         onAfterRender(renderContext)
@@ -378,6 +370,7 @@ class Views constructor(
 		resized()
 	}
 
+
 	fun resized() {
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
 		val virtualWidth = virtualWidth
@@ -391,18 +384,32 @@ class Views constructor(
 		val ratioX = targetSize.width.toDouble() / virtualWidth.toDouble()
 		val ratioY = targetSize.height.toDouble() / virtualHeight.toDouble()
 
-		actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
-		actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
+		val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
+        val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
 
-        // @TODO: Create a parent to stage that is "invisible" in code but that affect the matrix so we don't adjust stage stuff?
-		stage.scaleX = ratioX
-		stage.scaleY = ratioY
+        // Update [BoundsProvider]
+        run {
+            bp.globalToWindowMatrix.identity()
+            bp.globalToWindowMatrix.prescale(ratioX, ratioY)
+            bp.globalToWindowMatrix.pretranslate(
+                ((actualVirtualWidth - virtualWidth) * anchor.sx).toIntRound().toDouble(),
+                ((actualVirtualHeight - virtualHeight) * anchor.sy).toIntRound().toDouble(),
+            )
+            bp.windowToGlobalMatrix.invert(bp.globalToWindowMatrix)
+            bp.globalToWindowMatrix.decompose(bp.globalToWindowTransform)
+            bp.windowToGlobalMatrix.decompose(bp.windowToGlobalTransform)
 
-		stage.x = (((actualVirtualWidth - virtualWidth) * anchor.sx) * ratioX).toIntRound().toDouble()
-		stage.y = (((actualVirtualHeight - virtualHeight) * anchor.sy) * ratioY).toIntRound().toDouble()
+            val tl = bp.windowToGlobalCoords(0.0, 0.0)
+            val br = bp.windowToGlobalCoords(actualSize.width.toDouble(), actualSize.height.toDouble())
+            bp.actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
+        }
 
-		actualVirtualLeft = -(stage.x / ratioX).toIntRound()
-		actualVirtualTop = -(stage.y / ratioY).toIntRound()
+        //println("RESIZED: $virtualSize, $actualSize, $targetSize")
+
+        renderContext.projectionMatrixTransform.copyFrom(bp.globalToWindowMatrix)
+        renderContext.projectionMatrixTransformInv.copyFrom(bp.windowToGlobalMatrix)
+
+        //println("virtualSize=$virtualSize, targetSize=$targetSize, actualVirtualBounds=${actualVirtualBounds}")
 
         resizedEvent.apply {
             this.width = actualSize.width
@@ -605,16 +612,60 @@ fun View.updateSingleViewWithViewsAll(
 }
 
 interface BoundsProvider {
-    val virtualLeft: Double
-    val virtualTop: Double
-    val virtualRight: Double
-    val virtualBottom: Double
+    val windowToGlobalMatrix: Matrix
+    val windowToGlobalTransform: Matrix.Transform
+    val globalToWindowMatrix: Matrix
+    val globalToWindowTransform: Matrix.Transform
+    val actualVirtualBounds: Rectangle
 
-    object Dummy : BoundsProvider {
-        override val virtualLeft: Double = 0.0
-        override val virtualTop: Double = 0.0
-        override val virtualRight: Double = 0.0
-        override val virtualBottom: Double = 0.0
+    @KorgeExperimental val actualVirtualLeft: Int get() = actualVirtualBounds.left.toIntRound()
+    @KorgeExperimental val actualVirtualTop: Int get() = actualVirtualBounds.top.toIntRound()
+    @KorgeExperimental val actualVirtualWidth: Int get() = actualVirtualBounds.width.toIntRound()
+    @KorgeExperimental val actualVirtualHeight: Int get() = actualVirtualBounds.height.toIntRound()
+    //@KorgeExperimental var actualVirtualWidth = DefaultViewport.WIDTH; private set
+    //@KorgeExperimental var actualVirtualHeight = DefaultViewport.HEIGHT; private set
+
+    val virtualLeft: Double get() = actualVirtualBounds.left
+    val virtualTop: Double get() = actualVirtualBounds.top
+    val virtualRight: Double get() = actualVirtualBounds.right
+    val virtualBottom: Double get() = actualVirtualBounds.bottom
+
+    @KorgeExperimental
+    val actualVirtualRight: Double get() = actualVirtualBounds.right
+    @KorgeExperimental
+    val actualVirtualBottom: Double get() = actualVirtualBounds.bottom
+
+    fun globalToWindowBounds(bounds: Rectangle, out: Rectangle = Rectangle()): Rectangle =
+        out.copyFrom(bounds).applyTransform(globalToWindowMatrix)
+
+    val windowToGlobalScaleX: Double get() = windowToGlobalTransform.scaleX
+    val windowToGlobalScaleY: Double get() = windowToGlobalTransform.scaleY
+    val windowToGlobalScaleAvg: Double get() = windowToGlobalTransform.scaleAvg
+
+    val globalToWindowScaleX: Double get() = globalToWindowTransform.scaleX
+    val globalToWindowScaleY: Double get() = globalToWindowTransform.scaleY
+    val globalToWindowScaleAvg: Double get() = globalToWindowTransform.scaleAvg
+
+    fun windowToGlobalCoords(pos: IPoint, out: Point = Point()): Point = windowToGlobalMatrix.transform(pos, out)
+    fun windowToGlobalCoords(x: Double, y: Double, out: Point = Point()): Point = windowToGlobalMatrix.transform(x, y, out)
+    fun windowToGlobalCoordsX(x: Double, y: Double): Double = windowToGlobalMatrix.transformX(x, y)
+    fun windowToGlobalCoordsY(x: Double, y: Double): Double = windowToGlobalMatrix.transformY(x, y)
+    fun windowToGlobalCoordsX(pos: IPoint): Double = windowToGlobalCoordsX(pos.x, pos.y)
+    fun windowToGlobalCoordsY(pos: IPoint): Double = windowToGlobalCoordsY(pos.x, pos.y)
+
+    fun globalToWindowCoords(pos: IPoint, out: Point = Point()): Point = globalToWindowMatrix.transform(pos, out)
+    fun globalToWindowCoords(x: Double, y: Double, out: Point = Point()): Point = globalToWindowMatrix.transform(x, y, out)
+    fun globalToWindowCoordsX(x: Double, y: Double): Double = globalToWindowMatrix.transformX(x, y)
+    fun globalToWindowCoordsY(x: Double, y: Double): Double = globalToWindowMatrix.transformY(x, y)
+    fun globalToWindowCoordsX(pos: IPoint): Double = globalToWindowCoordsX(pos.x, pos.y)
+    fun globalToWindowCoordsY(pos: IPoint): Double = globalToWindowCoordsY(pos.x, pos.y)
+
+    open class Base : BoundsProvider {
+        override val windowToGlobalMatrix: Matrix = Matrix()
+        override val windowToGlobalTransform: Matrix.Transform = Matrix.Transform()
+        override val globalToWindowMatrix: Matrix = Matrix()
+        override val globalToWindowTransform: Matrix.Transform = Matrix.Transform()
+        override val actualVirtualBounds: Rectangle = Rectangle(0, 0, DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
     }
 }
 

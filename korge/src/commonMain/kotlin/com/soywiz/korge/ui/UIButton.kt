@@ -58,6 +58,11 @@ open class UIButton(
     var text: String = "",
     var icon: BmpSlice? = null,
 ) : UIView(width, height) {
+    companion object {
+        const val DEFAULT_WIDTH = UI_DEFAULT_WIDTH
+        const val DEFAULT_HEIGHT = UI_DEFAULT_HEIGHT
+    }
+
     @Deprecated("Use uiSkin instead")
     var skin: UISkin? get() = uiSkin ; set(value) { uiSkin = value }
 

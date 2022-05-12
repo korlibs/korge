@@ -9,6 +9,7 @@ import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.math.*
 
 @OptIn(KorgeInternal::class)
@@ -63,9 +64,11 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         frames++
         previousTime = currentTime
 
+        val matrix = views.windowToGlobalMatrix
+
         fun drawTextWithShadow(text: String, x: Int, y: Int) {
-            ctx.drawText(debugBmpFont, fontSize, text, x = x + 1, y = y + 1, colMul = Colors.BLACK, filtering = false)
-            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false)
+            //ctx.drawText(debugBmpFont, fontSize, text, x = x + 1, y = y + 1, colMul = Colors.BLACK, filtering = false, m = matrix)
+            ctx.drawText(debugBmpFont, fontSize, text, x = x, y = y, colMul = ctx.debugExtraFontColor, filtering = false, m = matrix, blendMode = BlendMode.INVERT)
         }
 
         drawTextWithShadow("FPS: " +
@@ -84,7 +87,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
         val overlayHeight = 30 * scale
         val overlayHeightGap = 5.0
 
-        renderContext.useLineBatcher { debugLineRenderContext ->
+        renderContext.useLineBatcher(matrix) { debugLineRenderContext -> debugLineRenderContext.blending(BlendMode.INVERT) {
             debugLineRenderContext.color(Colors.YELLOW) {
                 // y-axis
                 debugLineRenderContext.line(
@@ -98,7 +101,8 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
                 )
             }
 
-            for (index in 0 until 2) {
+            //for (index in 0 until 2) {
+            for (index in 0..0) {
                 val color = if (index == 0) Colors.WHITE else Colors.BLACK
                 debugLineRenderContext.color(color) {
                     val ratio = longWindow.size.toDouble() / longWindow.capacity.toDouble()
@@ -146,7 +150,7 @@ internal fun ViewsContainer.installFpsDebugOverlay() {
                     }
                 }
             }
-        }
+        } }
     }
 }
 

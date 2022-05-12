@@ -266,9 +266,14 @@ object Korge {
         var moveMouseOutsideInNextFrame = false
         val mouseTouchId = -1
 
+        val tempXY: Point = Point()
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
-        fun getRealX(x: Double, scaleCoords: Boolean) = if (scaleCoords) x * ag.devicePixelRatio else x
-        fun getRealY(y: Double, scaleCoords: Boolean) = if (scaleCoords) y * ag.devicePixelRatio else y
+        fun getRealXY(x: Double, y: Double, scaleCoords: Boolean, out: Point = tempXY): Point {
+            return views.windowToGlobalCoords(x, y, out)
+        }
+
+        fun getRealX(x: Double, scaleCoords: Boolean): Double = if (scaleCoords) x * ag.devicePixelRatio else x
+        fun getRealY(y: Double, scaleCoords: Boolean): Double = if (scaleCoords) y * ag.devicePixelRatio else y
 
         /*
         fun updateTouch(id: Int, x: Double, y: Double, start: Boolean, end: Boolean) {
@@ -292,8 +297,8 @@ object Korge {
 
         fun mouseDown(type: String, x: Double, y: Double, button: MouseButton) {
             input.toggleButton(button, true)
-            input.mouse.setTo(x, y)
-            input.mouseDown.setTo(x, y)
+            input.setMouseGlobalXY(x, y, down = false)
+            input.setMouseGlobalXY(x, y, down = true)
             views.mouseUpdated()
             downPos.copyFrom(input.mouse)
             downTime = DateTime.now()
@@ -303,13 +308,13 @@ object Korge {
         fun mouseUp(type: String, x: Double, y: Double, button: MouseButton) {
             //Console.log("mouseUp: $name")
             input.toggleButton(button, false)
-            input.mouse.setTo(x, y)
+            input.setMouseGlobalXY(x, y, down = false)
             views.mouseUpdated()
             upPos.copyFrom(views.input.mouse)
         }
 
         fun mouseMove(type: String, x: Double, y: Double, inside: Boolean) {
-            views.input.mouse.setTo(x, y)
+            views.input.setMouseGlobalXY(x, y, down = false)
             views.input.mouseInside = inside
             if (!inside) {
                 moveMouseOutsideInNextFrame = true
@@ -319,7 +324,7 @@ object Korge {
         }
 
         fun mouseDrag(type: String, x: Double, y: Double) {
-            views.input.mouse.setTo(x, y)
+            views.input.setMouseGlobalXY(x, y, down = false)
             views.mouseUpdated()
             moveTime = DateTime.now()
         }
@@ -340,8 +345,7 @@ object Korge {
         eventDispatcher.addEventListener<MouseEvent> { e ->
             //println("MOUSE: $e")
             logger.trace { "eventDispatcher.addEventListener<MouseEvent>:$e" }
-            val x = getRealX(e.x.toDouble(), e.scaleCoords)
-            val y = getRealY(e.y.toDouble(), e.scaleCoords)
+            val (x, y) = getRealXY(e.x.toDouble(), e.y.toDouble(), e.scaleCoords)
             when (e.type) {
                 MouseEvent.Type.DOWN -> {
                     mouseDown("mouseDown", x, y, e.button)
@@ -397,8 +401,7 @@ object Korge {
                 val start = e.isStart
                 val end = e.isEnd
                 val t = e.touches.first()
-                val x = getRealX(t.x, e.scaleCoords)
-                val y = getRealY(t.y, e.scaleCoords)
+                val (x, y) = getRealXY(t.x, t.y, e.scaleCoords)
                 val button = MouseButton.LEFT
                 touchMouseEvent.id = 0
                 touchMouseEvent.button = button

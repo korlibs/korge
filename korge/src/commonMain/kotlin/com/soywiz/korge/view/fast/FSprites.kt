@@ -150,7 +150,7 @@ open class FSprites(val maxSize: Int) {
                     //println(ttex.base)
                 }
                 //batch.setTemporalUniform(u_i_texSizeN[0], u_i_texSizeDataN[0]) {
-                batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) {
+                batch.setTemporalUniforms(u_i_texSizeN, u_i_texSizeDataN, texs.size, olds) { uniforms ->
                     batch.setViewMatrixTemp(globalMatrix) {
                         //ctx.batch.setStateFast()
                         sprites.uploadVertices(ctx)
@@ -161,7 +161,7 @@ open class FSprites(val maxSize: Int) {
                             type = AG.DrawType.TRIANGLE_FAN,
                             vertexCount = 4,
                             instances = sprites.size,
-                            uniforms = batch.uniforms,
+                            uniforms = uniforms,
                             //renderState = AG.RenderState(depthFunc = AG.CompareMode.LESS),
                             blending = blending
                         )

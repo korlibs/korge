@@ -8,6 +8,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
 import kotlin.jvm.*
 
+/** [x] and [y] positions are window-based where 0,0 is the top-left position in the window client area */
 data class MouseEvent(
     var type: Type = Type.MOVE,
     var id: Int = 0,

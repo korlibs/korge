@@ -11,6 +11,7 @@ import com.soywiz.korge.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.input.MouseEvents
 import com.soywiz.korge.internal.*
+import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.view.*
 import com.soywiz.korgw.*
@@ -66,6 +67,7 @@ open class ViewsForTesting(
 	val viewsLog by lazy { ViewsLog(gameWindow, ag = ag, gameWindow = gameWindow, timeProvider = timeProvider).also { viewsLog ->
         viewsLog.views.virtualWidth = virtualSize.width
         viewsLog.views.virtualHeight = virtualSize.height
+        viewsLog.views.resized(windowSize.width, windowSize.height)
     } }
 	val injector get() = viewsLog.injector
     val logAgOrNull get() = ag as? LogAG?
@@ -75,7 +77,7 @@ open class ViewsForTesting(
 	val views get() = viewsLog.views
     val stage get() = views.stage
 	val stats get() = views.stats
-	val mouse get() = input.mouse
+	val mouse: IPoint get() = input.mouse
 
     fun resizeGameWindow(width: Int, height: Int, scaleMode: ScaleMode = views.scaleMode, scaleAnchor: Anchor = views.scaleAnchor) {
         logAgOrNull?.backWidth = width
@@ -105,8 +107,12 @@ open class ViewsForTesting(
 
     suspend fun mouseMoveTo(point: IPoint) = mouseMoveTo(point.x, point.y)
 
+    /**
+     * x, y in global/virtual coordinates
+     */
     suspend fun mouseMoveTo(x: Int, y: Int) {
-        gameWindow.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = x, y = y))
+        val pos = views.globalToWindowMatrix.transform(x, y)
+        gameWindow.dispatch(MouseEvent(type = MouseEvent.Type.MOVE, id = 0, x = pos.x.toInt(), y = pos.y.toInt()))
         //views.update(frameTime)
         simulateFrame(count = 2)
     }
@@ -143,8 +149,8 @@ open class ViewsForTesting(
             MouseEvent(
                 type = type,
                 id = 0,
-                x = input.mouse.x.toInt(),
-                y = input.mouse.y.toInt(),
+                x = views.windowMouseX.toInt(),
+                y = views.windowMouseY.toInt(),
                 button = button,
                 buttons = mouseButtons
             )
@@ -358,4 +364,11 @@ open class ViewsForTesting(
 
 		override fun toString(): String = "FastGameWindowCoroutineDispatcher"
 	}
+
+    inline fun <T : AG> testRenderContext(ag: T, block: (RenderContext) -> Unit): T {
+        val ctx = RenderContext(ag, views)
+        block(ctx)
+        ctx.flush()
+        return ag
+    }
 }

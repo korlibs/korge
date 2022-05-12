@@ -1,25 +1,34 @@
 package com.soywiz.korge
 
-import com.soywiz.korge.view.*
-import com.soywiz.korgw.awt.*
-import com.soywiz.korio.async.*
+import com.soywiz.korge.view.Stage
+import com.soywiz.korgw.awt.GLCanvas
+import com.soywiz.korgw.awt.GLCanvasGameWindow
+import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.SizeInt
-import kotlinx.coroutines.*
-import java.io.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.io.Closeable
 
 fun GLCanvasWithKorge(
     config: Korge.Config,
     block: suspend Stage.() -> Unit
-): GLCanvas {
-    val canvas = GLCanvas()
+): GLCanvasWithKorge {
+    val canvas = GLCanvasWithKorge()
     val korge = GLCanvasKorge(false, canvas, config)
     korge.initNoWait(block)
     return canvas
 }
 
+open class GLCanvasWithKorge : GLCanvas() {
+    lateinit var korge: GLCanvasKorge
+    val views get() = korge.views
+    val injector get() = korge.injector
+}
+
 class GLCanvasKorge internal constructor(
     val dummy: Boolean,
-    val canvas: GLCanvas,
+    val canvas: GLCanvasWithKorge,
     val config: Korge.Config,
 ) : Closeable {
     val gameWindow = GLCanvasGameWindow(canvas)
@@ -28,6 +37,7 @@ class GLCanvasKorge internal constructor(
     val injector get() = views.injector
 
     internal fun initNoWait(block: suspend Stage.() -> Unit = {}) {
+        canvas.korge = this
         //val deferred = CompletableDeferred<Stage>()
         //val context = coroutineContext
         //println("[a]")
@@ -63,8 +73,8 @@ class GLCanvasKorge internal constructor(
         //println("[c]")
     }
 
-    suspend fun executeInContext(block: suspend Stage.() -> Unit) {
-        withContext(stage.coroutineContext) {
+    suspend fun <T> executeInContext(block: suspend Stage.() -> T): T {
+        return withContext(stage.coroutineContext) {
             block(stage)
         }
     }
@@ -81,7 +91,7 @@ class GLCanvasKorge internal constructor(
 
     companion object {
         suspend operator fun invoke(
-            canvas: GLCanvas,
+            canvas: GLCanvasWithKorge,
             virtualWidth: Int? = null,
             virtualHeight: Int? = null
         ): GLCanvasKorge {

@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
@@ -39,6 +40,10 @@ class ViewTest {
 
     @Test
     fun testConcatMatrix() {
+        val viewsForTesting = ViewsForTesting(
+            windowSize = SizeInt(200, 200),
+            virtualSize = SizeInt(100, 100),
+        )
         lateinit var root: Container
         lateinit var middle: Container
         lateinit var leaf: Image
@@ -52,6 +57,24 @@ class ViewTest {
                 }
             }
         }
+
+        val log = arrayListOf<String>()
+        log.add("[1]:${leaf.getLocalBoundsOptimizedAnchored().toStringCompat()}")
+        log.add("[3]:${leaf.getBounds().toStringCompat()}")
+        log.add("[2]:${leaf.getBounds(leaf).toStringCompat()}")
+        log.add("[4]:${leaf.getBounds(middle).toStringCompat()}")
+        log.add("[5]:${leaf.getBounds(root).toStringCompat()}")
+        log.add("[6]:${leaf.getGlobalBounds().toStringCompat()}")
+        log.add("[7]:${leaf.getBounds(root, inclusive = true).toStringCompat()}")
+        log.add("[8]:${leaf.getWindowBoundsOrNull()?.toStringCompat()}")
+        log.add("[9]:${leaf.getWindowBounds().toStringCompat()}")
+
+        root.addTo(viewsForTesting.stage)
+
+        log.add("[b1]:${leaf.getBounds(root, inclusive = true).toStringCompat()}")
+        log.add("[b2]:${leaf.getWindowBoundsOrNull()?.toStringCompat()}")
+        log.add("[b3]:${leaf.getWindowBounds().toStringCompat()}")
+
         assertEquals(
             """
                 [1]:Rectangle(x=0, y=0, w=32, h=32)
@@ -59,20 +82,15 @@ class ViewTest {
                 [2]:Rectangle(x=0, y=0, w=32, h=32)
                 [4]:Rectangle(x=70, y=90, w=64, h=160)
                 [5]:Rectangle(x=540, y=300, w=448, h=480)
-                [6]:Rectangle(x=540, y=300, w=448, h=480)
+                [6]:Rectangle(x=2180, y=610, w=1792, h=960)
                 [7]:Rectangle(x=2180, y=610, w=1792, h=960)
-                [8]:Rectangle(x=2180, y=610, w=1792, h=960)
+                [8]:null
+                [9]:Rectangle(x=2180, y=610, w=1792, h=960)
+                [b1]:Rectangle(x=2180, y=610, w=1792, h=960)
+                [b2]:Rectangle(x=4360, y=1220, w=3584, h=1920)
+                [b3]:Rectangle(x=4360, y=1220, w=3584, h=1920)
             """.trimIndent(),
-            """
-                [1]:${leaf.getLocalBoundsOptimizedAnchored().toStringCompat()}
-                [3]:${leaf.getBounds().toStringCompat()}
-                [2]:${leaf.getBounds(leaf).toStringCompat()}
-                [4]:${leaf.getBounds(middle).toStringCompat()}
-                [5]:${leaf.getBounds(root).toStringCompat()}
-                [6]:${leaf.getGlobalBounds().toStringCompat()}
-                [7]:${leaf.getBounds(root, inclusive = true).toStringCompat()}
-                [8]:${leaf.getWindowBounds().toStringCompat()}
-            """.trimIndent()
+            log.joinToString("\n")
         )
     }
 

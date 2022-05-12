@@ -113,6 +113,7 @@ external class JsWeakMap {
     fun has(k: dynamic): Boolean
     fun set(k: dynamic, v: dynamic): Unit
     fun get(k: dynamic): dynamic
+    fun delete(k: dynamic)
 }
 
 actual class WeakMap<K : Any, V> {
@@ -125,6 +126,10 @@ actual class WeakMap<K : Any, V> {
     }
 
     actual operator fun get(key: K): V? = wm.get(key).unsafeCast<V?>()
+    actual fun remove(key: K): Unit {
+        wm.delete(key)
+    }
+
 }
 
 internal fun Array_from(value: dynamic): Array<dynamic> = JsArray.from(value)

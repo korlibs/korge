@@ -12,6 +12,8 @@ inline class Dyn(val value: Any?) : Comparable<Dyn> {
     val isNull get() = value == null
     val isNotNull get() = value != null
 
+    inline fun <T> casted(): T = value as T
+
     @Suppress("UNCHECKED_CAST")
     fun toComparable(): Comparable<Any?> = when (value) {
         null -> 0 as Comparable<Any?>

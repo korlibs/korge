@@ -54,8 +54,8 @@ fun <T : View> T.onSwipe(
     fun updateMouse() {
         val views = views()
         mousePos.setTo(
-            views.nativeMouseX,
-            views.nativeMouseY
+            views.globalMouseX,
+            views.globalMouseY
         )
     }
 

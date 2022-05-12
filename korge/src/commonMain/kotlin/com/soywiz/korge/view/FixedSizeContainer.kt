@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.identityHashCode
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.filter.*
@@ -62,19 +63,23 @@ open class FixedSizeContainer(
                 return
             }
             ctx.useCtx2d { c2d ->
-                val bounds = getWindowBounds(tempBounds)
+                val windowBounds = getWindowBounds(ctx, tempBounds)
+
+                //println("BOUNDS: globalToWindowMatrix=${ctx.globalToWindowMatrix} : ${ctx.identityHashCode()}, ${ctx.globalToWindowMatrix.identityHashCode()}")
+                //println("BOUNDS: windowBounds=$windowBounds, globalBounds=${getGlobalBounds()}")
+
                 @Suppress("DEPRECATION")
-                bounds.applyTransform(ctx.batch.viewMat2D) // @TODO: Should viewMat2D be in the context instead?
-                bounds.normalize() // If width or height are negative, because scale was negative
+                windowBounds.applyTransform(ctx.batch.viewMat2D) // @TODO: Should viewMat2D be in the context instead?
+                windowBounds.normalize() // If width or height are negative, because scale was negative
 
                 //println("FIXED_CLIP: bounds=$bounds")
                 val rect = c2d.batch.scissor?.rect
                 var intersects = true
                 if (rect != null) {
-                    intersects = bounds.setToIntersection(bounds, rect) != null
+                    intersects = windowBounds.setToIntersection(windowBounds, rect) != null
                 }
                 if (intersects) {
-                    c2d.scissor(bounds) {
+                    c2d.scissor(windowBounds) {
                         super.renderInternal(ctx)
                     }
                 } else {

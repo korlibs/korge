@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.AG
 import com.soywiz.korag.log.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.tests.*
@@ -17,14 +18,16 @@ class ViewFixedSizeContainerTest : ViewsForTesting(
             xy(50, 70)
             solidRect(20, 20, Colors.RED).xy(-10, -10)
         }
-        val log = arrayListOf<String>()
+        delayFrame()
+        val log = arrayListOf<Any?>()
         testRenderContext(object : LogBaseAG() {
             override fun draw(batch: Batch) {
-                log += batch.scissor.toString()
+                log += batch.scissor?.rect
             }
         }) {
             stage.render(it)
         }
-        assertEquals("Scissor(x=235, y=105, width=150, height=150)", log.joinToString(","))
+
+        assertEquals(listOf<Any?>(Rectangle(234, 105, 150, 150)), log)
     }
 }

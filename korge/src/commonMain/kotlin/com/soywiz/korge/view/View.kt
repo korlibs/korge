@@ -848,7 +848,7 @@ abstract class View internal constructor(
                 close()
             }
             lines.drawVector(Colors.YELLOW) {
-                val anchorSize = 5.0
+                val anchorSize = 6.0 * ctx.views!!.windowToGlobalScaleAvg
                 circle(localToGlobal(local.topLeft), anchorSize)
                 circle(localToGlobal(local.topRight), anchorSize)
                 circle(localToGlobal(local.bottomRight), anchorSize)
@@ -1032,6 +1032,7 @@ abstract class View internal constructor(
     }
 
     // @TODO: we should compute view bounds on demand
+    /** [x] and [y] are in global coordinates */
     fun mouseHitTest(x: Double, y: Double): View? {
         if (!hitTestEnabled) return null
         if (!visible) return null
@@ -1062,7 +1063,7 @@ abstract class View internal constructor(
         var count = 0
         forEachAscendant(true) {
             if (it !is Stage && it is FixedSizeContainer && it.clip) {
-                it.getWindowBounds(this._localBounds)
+                it.getGlobalBounds(this._localBounds)
                 if (count == 0) {
                     this._localBounds2.copyFrom(this._localBounds)
                 } else {
@@ -1292,13 +1293,25 @@ abstract class View internal constructor(
     val windowBounds: Rectangle get() = getWindowBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
-    fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
+    @Deprecated("")
+    fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getWindowBoundsOrNull() ?: getGlobalBounds(out)
+
+    fun getWindowBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? {
+        val stage = root
+        if (stage !is Stage) return null
+        //return getBounds(stage, out, inclusive = true).applyTransform(stage.views.globalToWindowMatrix)
+        return getWindowBounds(stage, out)
+    }
+
+    fun getWindowBounds(bp: BoundsProvider, out: Rectangle = Rectangle()): Rectangle =
+        getGlobalBounds(out).applyTransform(bp.globalToWindowMatrix)
 
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
     val globalBounds: Rectangle get() = getGlobalBounds()
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
-    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
+    //fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = false)
+    fun getGlobalBounds(out: Rectangle = Rectangle()): Rectangle = getBounds(root, out, inclusive = true)
 
     // @TODO: Would not include strokes
     //fun getRect(target: View? = this, out: Rectangle = Rectangle()): Rectangle = TODO()

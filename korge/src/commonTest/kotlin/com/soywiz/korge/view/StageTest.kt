@@ -8,7 +8,7 @@ import kotlin.test.*
 class StageTest : ViewsForTesting() {
     @Test
     fun test() {
-        views.input.mouse.setTo(10.0, 20.0)
+        views.input.setMouseGlobalXY(10.0, 20.0, down = false)
         stage.scale(0.5, 0.5)
         stage.mouse.currentPosGlobal
         assertEquals(Point(20, 40), stage.mouseXY)

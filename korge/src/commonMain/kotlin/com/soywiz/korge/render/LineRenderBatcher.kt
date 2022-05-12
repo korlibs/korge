@@ -21,7 +21,11 @@ import kotlin.native.concurrent.ThreadLocal
 val RenderContext.debugLineRenderContext: LineRenderBatcher by Extra.PropertyThis<RenderContext, LineRenderBatcher> { LineRenderBatcher(this) }
 
 @Suppress("DEPRECATION")
-inline fun RenderContext.useLineBatcher(block: (LineRenderBatcher) -> Unit) = debugLineRenderContext.use(block)
+inline fun RenderContext.useLineBatcher(matrix: Matrix? = null, block: (LineRenderBatcher) -> Unit) = debugLineRenderContext.use { batcher ->
+    debugLineRenderContext.drawWithGlobalMatrix(matrix) {
+        block(batcher)
+    }
+}
 
 typealias DebugLineRenderContext = LineRenderBatcher
 
@@ -71,19 +75,13 @@ class LineRenderBatcher(
         }
     }
 
-    internal val uniforms by lazy {
-        AG.UniformValues(
-            DefaultShaders.u_ProjMat to projMat,
-            DefaultShaders.u_ViewMat to viewMat
-        )
-    }
+    internal val uniforms get() = ctx.uniforms
 
     private val vertexBuffer = ag.createVertexBuffer()
     private val program = Program(VERTEX, FRAGMENT)
     private val maxVertexCount = 1024
     private val vertices = FBuffer.alloc(6 * 4 * maxVertexCount)
     private val tempRect = Rectangle()
-    private val projMat = Matrix3D()
     @PublishedApi
     internal val viewMat = Matrix3D()
     @PublishedApi
@@ -166,7 +164,8 @@ class LineRenderBatcher(
         if (vertexCount > 0) {
             beforeFlush(this)
             vertexBuffer.upload(vertices, 0, vertexPos * 4)
-            projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
+            ctx.updateStandardUniforms()
+            //projMat.setToOrtho(tempRect.setBounds(0, 0, ag.backWidth, ag.backHeight), -1f, 1f)
 
             ag.draw(
                 vertices = vertexBuffer,
@@ -185,11 +184,9 @@ class LineRenderBatcher(
     @PublishedApi
     internal val currentMatrix: Matrix = Matrix()
 
-    fun <T> drawWithGlobalMatrix(matrix: Matrix, block: () -> T): T {
-        return currentMatrix.keepMatrix {
-            it.copyFrom(matrix)
-            block()
-        }
+    inline fun <T> drawWithGlobalMatrix(matrix: Matrix?, block: () -> T): T = currentMatrix.keepMatrix {
+        if (matrix != null) it.copyFrom(matrix)
+        block()
     }
 
     private fun addVertex(x: Float, y: Float, color: RGBA = this.color, m: Matrix = currentMatrix) {

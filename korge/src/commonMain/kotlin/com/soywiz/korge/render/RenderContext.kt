@@ -3,6 +3,7 @@ package com.soywiz.korge.render
 import com.soywiz.kds.*
 import com.soywiz.korag.*
 import com.soywiz.korag.log.*
+import com.soywiz.korag.shader.Uniform
 import com.soywiz.korge.internal.*
 import com.soywiz.korge.stat.*
 import com.soywiz.korge.view.*
@@ -33,12 +34,133 @@ import kotlin.coroutines.*
 class RenderContext constructor(
     /** The Accelerated Graphics object that allows direct rendering */
 	val ag: AG,
-	val bp: BoundsProvider = BoundsProvider.Dummy,
+	val bp: BoundsProvider = BoundsProvider.Base(),
     /** Object storing all the rendering [Stats] like number of batches, number of vertices etc. */
 	val stats: Stats = Stats(),
 	val coroutineContext: CoroutineContext = EmptyCoroutineContext,
     val batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS
 ) : Extra by Extra.Mixin(), BoundsProvider by bp, AGFeatures by ag {
+    val projectionMatrixTransform = Matrix()
+    val projectionMatrixTransformInv = Matrix()
+    private val projMat: Matrix3D = Matrix3D()
+    @KorgeInternal
+    val viewMat: Matrix3D = Matrix3D()
+    @KorgeInternal
+    val viewMat2D: Matrix = Matrix()
+
+    @KorgeInternal
+    val uniforms: AG.UniformValues by lazy {
+        AG.UniformValues(
+            DefaultShaders.u_ProjMat to projMat,
+            DefaultShaders.u_ViewMat to viewMat,
+        )
+    }
+
+    inline fun <T> setTemporalProjectionMatrixTransform(m: Matrix, block: () -> T): T =
+        this.projectionMatrixTransform.keepMatrix {
+            flush()
+            this.projectionMatrixTransform.copyFrom(m)
+            try {
+                block()
+            } finally {
+                flush()
+            }
+        }
+
+    var flipRenderTexture = true
+    //var flipRenderTexture = false
+    private val tempRect = Rectangle()
+    private val tempMat3d = Matrix3D()
+
+    fun updateStandardUniforms() {
+        //println("updateStandardUniforms: ag.currentSize(${ag.currentWidth}, ${ag.currentHeight}) : ${ag.currentRenderBuffer}")
+        if (flipRenderTexture && ag.renderingToTexture) {
+            projMat.setToOrtho(tempRect.setBounds(0, ag.currentHeight, ag.currentWidth, 0), -1f, 1f)
+        } else {
+            projMat.setToOrtho(tempRect.setBounds(0, 0, ag.currentWidth, ag.currentHeight), -1f, 1f)
+            projMat.multiply(projMat, projectionMatrixTransform.toMatrix3D(tempMat3d))
+        }
+    }
+
+    /**
+     * Executes [callback] while setting temporarily the view matrix to [matrix]
+     */
+    inline fun setViewMatrixTemp(matrix: Matrix, crossinline callback: () -> Unit) {
+        matrix3DPool.alloc { temp ->
+            matrixPool.alloc { temp2d ->
+                flush()
+                temp.copyFrom(this.viewMat)
+                temp2d.copyFrom(this.viewMat2D)
+                this.viewMat2D.copyFrom(matrix)
+                this.viewMat.copyFrom(matrix)
+                //println("viewMat: $viewMat, matrix: $matrix")
+                try {
+                    callback()
+                } finally {
+                    flush()
+                    this.viewMat.copyFrom(temp)
+                    this.viewMat2D.copyFrom(temp2d)
+                }
+            }
+        }
+    }
+
+    /**
+     * Executes [callback] while setting temporarily an [uniform] to a [value]
+     */
+    inline fun setTemporalUniform(uniform: Uniform, value: Any?, flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
+        val old = this.uniforms[uniform]
+        if (flush) flush()
+        this.uniforms.putOrRemove(uniform, value)
+        try {
+            callback(this.uniforms)
+        } finally {
+            if (flush) flush()
+            this.uniforms.putOrRemove(uniform, old)
+        }
+    }
+
+    inline fun <reified T> setTemporalUniforms(uniforms: Array<Uniform>, values: Array<T>, count: Int = values.size, olds: Array<T?> = arrayOfNulls<T>(count), flush: Boolean = true, callback: (AG.UniformValues) -> Unit) {
+        if (flush) flush()
+        for (n in 0 until count) {
+            olds[n] = this.uniforms[uniforms[n]] as T?
+            this.uniforms.putOrRemove(uniforms[n], values[n])
+        }
+        try {
+            callback(this.uniforms)
+        } finally {
+            if (flush) flush()
+            for (n in 0 until count) {
+                val m = olds.size - 1 - n
+                this.uniforms.putOrRemove(uniforms[m], olds[m])
+            }
+        }
+    }
+
+    @PublishedApi
+    internal val tempOldUniformsList: Pool<AG.UniformValues> = Pool { AG.UniformValues() }
+
+    /**
+     * Executes [callback] while setting temporarily a set of [uniforms]
+     */
+    inline fun setTemporalUniforms(uniforms: AG.UniformValues?, callback: (AG.UniformValues) -> Unit) {
+        tempOldUniformsList { tempOldUniforms ->
+            if (uniforms != null && uniforms.isNotEmpty()) {
+                flush()
+                tempOldUniforms.setTo(this.uniforms)
+                this.uniforms.put(uniforms)
+            }
+            try {
+                callback(this.uniforms)
+            } finally {
+                if (uniforms != null && uniforms.isNotEmpty()) {
+                    flush()
+                    this.uniforms.setTo(tempOldUniforms)
+                }
+            }
+        }
+    }
+
 	val agBitmapTextureManager = AgBitmapTextureManager(ag)
     val agBufferManager = AgBufferManager(ag)
 
@@ -80,6 +202,8 @@ class RenderContext constructor(
     val matrix3DPool = Pool(reset = { it.identity() }, preallocate = 8) { Matrix3D() }
     /** Pool of [Point] objects that could be used temporarily by renders */
     val pointPool = Pool(reset = { it.setTo(0, 0) }, preallocate = 8) { Point() }
+    /** Pool of [Rectangle] objects that could be used temporarily by renders */
+    val rectPool = Pool(reset = { it.setTo(0, 0, 0, 0) }, preallocate = 8) { Rectangle() }
 
     val tempMargin: MutableMarginInt = MutableMarginInt()
     val tempMatrix: Matrix = Matrix()
@@ -214,11 +338,11 @@ class RenderContext constructor(
     }
 }
 
-inline fun <T : AG> testRenderContext(ag: T, block: (RenderContext) -> Unit): T {
-    val ctx = RenderContext(ag)
+inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider, block: (RenderContext) -> Unit): T {
+    val ctx = RenderContext(ag, bp)
     block(ctx)
     ctx.flush()
     return ag
 }
 
-inline fun testRenderContext(block: (RenderContext) -> Unit): LogAG = testRenderContext(LogAG(), block)
+inline fun testRenderContext(bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): LogAG = testRenderContext(LogAG(), bp, block)

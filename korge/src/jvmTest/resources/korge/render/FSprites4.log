@@ -128,14 +128,14 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.01, 0, 0, -1 ],
-  [ 0, -0.01, 0, 1 ],
+  [ 0.02, 0, 0, -1 ],
+  [ 0, -0.02, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )
 uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
-  [ 2, 0, 0, 0 ],
-  [ 0, 2, 0, 0 ],
+  [ 1, 0, 0, 0 ],
+  [ 0, 1, 0, 0 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )

@@ -193,6 +193,8 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
 
             //println("-- viewport=$viewport, scissors=$scissor")
 
+            //println("RENDER: $info, factor=$factor")
+
             if (component is JFrame) {
                 //println("component.width: ${contentComponent.width}x${contentComponent.height}")
                 ag.mainRenderBuffer.setSize(

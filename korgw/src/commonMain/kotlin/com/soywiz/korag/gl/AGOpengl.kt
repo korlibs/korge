@@ -32,11 +32,6 @@ abstract class AGOpengl : AG() {
         //gl.swapInterval = 0
     }
 
-    private fun setViewport(buffer: BaseRenderBuffer) {
-        commandsNoWait { it.viewport(buffer.x, buffer.y, buffer.width, buffer.height) }
-        //println("setViewport: ${buffer.x}, ${buffer.y}, ${buffer.width}, ${buffer.height}")
-    }
-
     override fun createMainRenderBuffer(): BaseRenderBufferImpl {
         var backBufferTextureBinding2d: Int = 0
         var backBufferRenderBufferBinding: Int = 0
@@ -68,43 +63,6 @@ abstract class AGOpengl : AG() {
     }
 
     fun createGlState() = KmlGlState(gl)
-
-    var lastRenderContextId = 0
-
-    inner class GlRenderBuffer : RenderBuffer() {
-        override val id = lastRenderContextId++
-
-        var frameBufferId: Int = -1
-
-        // http://wangchuan.github.io/coding/2016/05/26/multisampling-fbo.html
-        override fun set() {
-            setViewport(this)
-
-            commandsNoWait { list ->
-                if (dirty) {
-                    if (frameBufferId < 0) {
-                        frameBufferId = list.frameBufferCreate()
-                    }
-                    list.frameBufferSet(frameBufferId, tex.texId, width, height, hasStencil, hasDepth)
-                }
-                list.frameBufferUse(frameBufferId)
-            }
-        }
-
-        override fun close() {
-            super.close()
-            commandsNoWait { list ->
-                if (frameBufferId >= 0) {
-                    list.frameBufferDelete(frameBufferId)
-                    frameBufferId = -1
-                }
-            }
-        }
-
-        override fun toString(): String = "GlRenderBuffer[$id]($width, $height)"
-    }
-
-    override fun createRenderBuffer(): RenderBuffer = GlRenderBuffer()
 
     private var _glProcessor: AGQueueProcessorOpenGL? = null
     private val glProcessor: AGQueueProcessorOpenGL get() {

@@ -12,6 +12,9 @@ actual class WeakMap<K : Any, V> {
         wm[key] = value
     }
     actual operator fun get(key: K): V? = wm[key]
+    actual fun remove(key: K): Unit {
+        wm.remove(key)
+    }
 }
 
 /////////////////

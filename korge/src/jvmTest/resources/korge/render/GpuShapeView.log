@@ -120,8 +120,8 @@ uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0, 0, 0, 1 ],
 )
 uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
-  [ -4, -4.8985874E-16, 0, 100 ],
-  [ 4.8985874E-16, -4, 0, 100 ],
+  [ -2, -2.4492937E-16, 0, 50 ],
+  [ 2.4492937E-16, -2, 0, 50 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -136,7 +136,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -780, -1180, 520, 520
+scissor: -390, -590, 260, 260
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -257,7 +257,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -860, -1260, 320, 320
+scissor: -430, -630, 160, 160
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -899,7 +899,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -804, -1220, 208, 240
+scissor: -402, -610, 104, 120
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -990,7 +990,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -1100, -780, 800, 800
+scissor: -550, -390, 400, 400
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -1086,7 +1086,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -1900, -780, 800, 800
+scissor: -950, -390, 400, 400
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -1852,7 +1852,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -1900, -1580, 800, 800
+scissor: -950, -790, 400, 400
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -1955,7 +1955,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -1900, -980, 400, 400
+scissor: -950, -490, 200, 200
 disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
@@ -2150,8 +2150,8 @@ vaoUse: 1
 uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
-  [ 0.01, 0, 0, -1 ],
-  [ 0, -0.01, 0, 1 ],
+  [ 0.02, 0, 0, -1 ],
+  [ 0, -0.02, 0, 1 ],
   [ 0, 0, -1, 0 ],
   [ 0, 0, 0, 1 ],
 )

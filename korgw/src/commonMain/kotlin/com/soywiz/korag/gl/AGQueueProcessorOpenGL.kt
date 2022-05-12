@@ -213,10 +213,12 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     override fun scissor(x: Int, y: Int, width: Int, height: Int) {
         gl.scissor(x, y, width, height)
+        //println("SCISSOR: $x, $y, $width, $height")
     }
 
     override fun viewport(x: Int, y: Int, width: Int, height: Int) {
         gl.viewport(x, y, width, height)
+        //println("VIEWPORT: $x, $y, $width, $height")
     }
 
     override fun clear(color: Boolean, depth: Boolean, stencil: Boolean) {

@@ -15,13 +15,23 @@ class Views2Test : ViewsForTesting(
 
     @Test
     fun testScaleMode() = viewsTest {
-        assertEquals("window(1280,720),virtual(640,480),stage(160.0,0.0,640.0,480.0,1.5,1.5)", str())
+        val lines = arrayListOf<String>()
+        lines.add(str())
         resizeGameWindow(640, 480)
-        assertEquals("window(640,480),virtual(640,480),stage(0.0,0.0,640.0,480.0,1.0,1.0)", str())
+        lines.add(str())
         resizeGameWindow(1280, 720, scaleAnchor = Anchor.TOP_LEFT)
-        assertEquals("window(1280,720),virtual(640,480),stage(0.0,0.0,640.0,480.0,1.5,1.5)", str())
+        lines.add(str())
         resizeGameWindow(1280, 720, scaleMode = ScaleMode.EXACT)
-        assertEquals("window(1280,720),virtual(640,480),stage(0.0,0.0,640.0,480.0,2.0,1.5)", str())
+        lines.add(str())
+        assertEquals(
+            """
+                window(1280,720),virtual(640,480),stage(0.0,0.0,640.0,480.0,1.0,1.0)
+                window(640,480),virtual(640,480),stage(0.0,0.0,640.0,480.0,1.0,1.0)
+                window(1280,720),virtual(640,480),stage(0.0,0.0,640.0,480.0,1.0,1.0)
+                window(1280,720),virtual(640,480),stage(0.0,0.0,640.0,480.0,1.0,1.0)
+            """.trimIndent(),
+            lines.joinToString("\n")
+        )
     }
 
     @Test
