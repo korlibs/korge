@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
-      - run: CALL gradlew.bat --no-daemon jvmTest publishMingwX64PublicationToMavenRepository
+      - run: CALL gradlew.bat --no-daemon publishMingwX64PublicationToMavenRepository
         shell: cmd
         env:
           DISABLE_JAVASCRIPT_TEST: true
@@ -36,7 +36,7 @@ jobs:
         with:
           java-version: 1.8
       - run: ./gradlew
-      - run: ./gradlew jvmTest publishMacosX64PublicationToMavenRepository publishMacosArm64PublicationToMavenRepository
+      - run: ./gradlew publishMacosX64PublicationToMavenRepository publishMacosArm64PublicationToMavenRepository
         env:
           DISABLE_JAVASCRIPT_TEST: true
   publish-ios:
@@ -83,7 +83,7 @@ jobs:
           java-version: 1.8
       - run: sudo apt-get install xvfb
       - run: xvfb-run --auto-servernum ./gradlew --no-daemon
-      - run: xvfb-run --auto-servernum ./gradlew --no-daemon jvmTest publishLinuxX64PublicationToMavenRepository
+      - run: xvfb-run --auto-servernum ./gradlew --no-daemon publishLinuxX64PublicationToMavenRepository
 
   publish-finalize:
     needs: [publish-windows, publish-mac, publish-linux, publish-ios, publish-jvm-multiplatform, publish-js-android]
