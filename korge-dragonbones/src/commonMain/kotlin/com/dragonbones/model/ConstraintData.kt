@@ -37,7 +37,7 @@ abstract class ConstraintData(pool: SingleObjectPool<out ConstraintData>) : Base
 	var root: BoneData? = null
 	var bone: BoneData? = null
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this.order = 0
 		this.name = ""
 		this.type = ConstraintType.IK
@@ -57,7 +57,7 @@ class IKConstraintData(pool: SingleObjectPool<IKConstraintData>) : ConstraintDat
 	var bendPositive: Boolean = false
 	var weight: Double = 1.0
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		this.scaleEnabled = false
@@ -104,7 +104,7 @@ class PathConstraintData(pool: SingleObjectPool<PathConstraintData>) : Constrain
 		this.translateMix = 0.0
 	}
 
-	fun AddBone(value: BoneData): Unit {
+	fun AddBone(value: BoneData) {
         this.bones.add(value)
 	}
 }

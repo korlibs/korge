@@ -6,7 +6,7 @@ class SwfTest {
 	val viewsLog = ViewsLog(eventLoopTest)
 	val views = viewsLog.views
 
-	fun syncTest(block: suspend EventLoopTest.() -> Unit): Unit {
+	fun syncTest(block: suspend EventLoopTest.() -> Unit) {
 		sync(el = eventLoopTest, step = 10, block = block)
 	}
 

@@ -1,14 +1,16 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.json.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
-import kotlin.test.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeProvider
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.SimpleStorage
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.std.toVfs
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.serialization.json.toJson
+import kotlinx.coroutines.flow.toList
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MapLikeStorageVfsTest {
     @Test
@@ -59,7 +61,7 @@ class MapLikeStorageVfsTest {
         val map = LinkedHashMap<String, String>()
         override suspend fun get(key: String): String? = map[key]
         override suspend fun set(key: String, value: String) { map[key] = value }
-        override suspend fun remove(key: String): Unit { map.remove(key) }
+        override suspend fun remove(key: String) { map.remove(key) }
         fun keysToString() = map.keys.sorted().joinToString(",")
     }
 }

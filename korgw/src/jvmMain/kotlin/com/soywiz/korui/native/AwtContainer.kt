@@ -1,10 +1,9 @@
 package com.soywiz.korui.native
 
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import java.awt.*
-import java.awt.Rectangle
-import javax.swing.*
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.toAwt
+import com.soywiz.korim.color.toRgba
+import java.awt.Container
 
 open class AwtContainer(
     factory: BaseAwtUiFactory,
@@ -40,10 +39,10 @@ open class AwtContainer(
     override fun insertChildAt(index: Int, child: NativeUiFactory.NativeComponent) {
         childContainer.add((child as AwtComponent).component, index)
     }
-    override fun removeChild(child: NativeUiFactory.NativeComponent): Unit {
+    override fun removeChild(child: NativeUiFactory.NativeComponent) {
         childContainer.remove((child as AwtComponent).component)
     }
-    override fun removeChildAt(index: Int): Unit {
+    override fun removeChildAt(index: Int) {
         childContainer.remove(index)
     }
 }

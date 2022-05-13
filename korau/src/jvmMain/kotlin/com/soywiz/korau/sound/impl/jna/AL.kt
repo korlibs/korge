@@ -1,14 +1,13 @@
 package com.soywiz.korau.sound.impl.jna
 
-import com.soywiz.klock.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.time.*
-import com.soywiz.korio.util.*
-import com.sun.jna.*
-import java.io.*
-import java.net.*
+import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.time.traceTime
+import com.soywiz.korio.util.OS
+import com.sun.jna.Native
+import com.sun.jna.Pointer
+import java.io.File
+import java.net.URL
 import java.nio.Buffer
-import kotlin.printStackTrace
 
 @Suppress("unused")
 object AL {
@@ -91,8 +90,8 @@ object AL {
 
     fun alGenBuffer(): Int = tempI.also { alGenBuffers(1, it) }[0]
     fun alGenSource(): Int = tempI.also { alGenSources(1, it) }[0]
-    fun alDeleteBuffer(buffer: Int): Unit { alDeleteBuffers(1, tempI.also { it[0] = buffer }) }
-    fun alDeleteSource(buffer: Int): Unit { alDeleteSources(1, tempI.also { it[0] = buffer }) }
+    fun alDeleteBuffer(buffer: Int) { alDeleteBuffers(1, tempI.also { it[0] = buffer }) }
+    fun alDeleteSource(buffer: Int) { alDeleteSources(1, tempI.also { it[0] = buffer }) }
     fun alGetSourcef(source: Int, param: Int): Float = tempF.also { alGetSourcef(source, param, it) }[0]
     fun alGetSourcei(source: Int, param: Int): Int = tempI.also { alGetSourcei(source, param, it) }[0]
     fun alGetSourceState(source: Int): Int = alGetSourcei(source, AL.AL_SOURCE_STATE)

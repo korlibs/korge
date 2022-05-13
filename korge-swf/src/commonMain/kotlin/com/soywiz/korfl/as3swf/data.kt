@@ -429,7 +429,7 @@ open class SWFColorTransform {
 	protected open fun updateHasMultTerms(): Unit =
 		run { hasMultTerms = (_rMult != 256) || (_gMult != 256) || (_bMult != 256) }
 
-	protected open fun updateHasAddTerms(): Unit { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
+	protected open fun updateHasAddTerms() { hasAddTerms = (_rAdd != 0) || (_gAdd != 0) || (_bAdd != 0) }
 
 	protected fun clamp(value: Int): Int = min(max(value, -32768), 32767)
 	fun isIdentity(): Boolean = !hasMultTerms && !hasAddTerms

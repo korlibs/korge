@@ -1,23 +1,33 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
+import com.soywiz.klock.measureTime
+import com.soywiz.klogger.Console
+import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.isPowerOfTwo
+import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
+import com.soywiz.korag.shader.gl.GlslGenerator
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.*
-import kotlin.contracts.*
-import kotlin.coroutines.*
-import kotlin.jvm.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.annotations.KorIncomplete
+import com.soywiz.korio.async.runBlockingNoJs
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.math.nextMultipleOf
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.jvm.JvmInline
+import kotlin.jvm.JvmOverloads
 
 typealias AGBlendEquation = AG.BlendEquation
 typealias AGBlendFactor = AG.BlendFactor
@@ -392,7 +402,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         open fun unbind(): Unit = commandsNoWait { it.bindTexture(0, implForcedTexTarget) }
 
         private var closed = false
-        override fun close(): Unit {
+        override fun close() {
             if (!alreadyClosed) {
                 alreadyClosed = true
                 source = SyncBitmapSource.NIL
@@ -993,7 +1003,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         override fun set(): Unit = Unit
         fun readBitmap(bmp: Bitmap32) = this@AG.readColor(bmp)
         fun readDepth(width: Int, height: Int, out: FloatArray): Unit = this@AG.readDepth(width, height, out)
-        override fun close(): Unit {
+        override fun close() {
             cachedTexVersion = -1
             _tex?.close()
             _tex = null
@@ -1223,13 +1233,13 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         renderBufferStack.removeAt(renderBufferStack.size - 1)
     }
 
-    open fun readColor(bitmap: Bitmap32): Unit {
+    open fun readColor(bitmap: Bitmap32) {
         commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
     }
-    open fun readDepth(width: Int, height: Int, out: FloatArray): Unit {
+    open fun readDepth(width: Int, height: Int, out: FloatArray) {
         commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }
     }
-    open fun readStencil(bitmap: Bitmap8): Unit {
+    open fun readStencil(bitmap: Bitmap8) {
         commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data, ReadKind.STENCIL) }
     }
     fun readDepth(out: FloatArray2): Unit = readDepth(out.width, out.height, out.data)

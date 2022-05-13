@@ -1,11 +1,14 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korau.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import kotlin.math.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.kmem.arraycopy
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.defaultAudioFormats
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.invalidOp
+import kotlin.math.min
 
 class AudioData(
     val rate: Int,
@@ -26,7 +29,7 @@ class AudioData(
     operator fun get(channel: Int): ShortArray = samples.data[channel]
     operator fun get(channel: Int, sample: Int): Short = samples.data[channel][sample]
 
-    operator fun set(channel: Int, sample: Int, value: Short): Unit { samples.data[channel][sample] = value }
+    operator fun set(channel: Int, sample: Int, value: Short) { samples.data[channel][sample] = value }
 
     override fun toString(): String = "AudioData(rate=$rate, channels=$channels, samples=$totalSamples)"
 }

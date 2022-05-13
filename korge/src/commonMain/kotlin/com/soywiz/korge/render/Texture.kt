@@ -20,7 +20,7 @@ class TextureBase(
 ) : Closeable, ISizeInt {
     var version = -1
     val premultiplied get() = base?.premultiplied == true
-    override fun close(): Unit {
+    override fun close() {
         base?.close()
         base = null
     }

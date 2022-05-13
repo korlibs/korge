@@ -327,7 +327,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		return animation
 	}
 
-	override fun _parseGeometry(rawData: Any?, geometry: GeometryData): Unit {
+	override fun _parseGeometry(rawData: Any?, geometry: GeometryData) {
 		geometry.offset = rawData.getDynamic(DataParser.OFFSET) as Int
 		geometry.data = this._data
 
@@ -356,7 +356,7 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 		}
 	}
 
-	override fun _parseArray(rawData: Any?): Unit {
+	override fun _parseArray(rawData: Any?) {
 		val offsets = rawData.getDynamic(DataParser.OFFSET).intArrayList
 		val l1 = offsets[1]
 		val l2 = offsets[3]

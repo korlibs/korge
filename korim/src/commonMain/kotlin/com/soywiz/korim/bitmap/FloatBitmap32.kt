@@ -1,7 +1,7 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.*
-import com.soywiz.kmem.*
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAf
 
 class FloatBitmap32(
     width: Int,
@@ -11,7 +11,7 @@ class FloatBitmap32(
 ) : Bitmap(width, height, 32, premultiplied, data) {
     private fun index4(x: Int, y: Int) = index(x, y) * 4
 
-    override fun setRgba(x: Int, y: Int, v: RGBA): Unit {
+    override fun setRgba(x: Int, y: Int, v: RGBA) {
         val rindex = index4(x, y)
         data[rindex + 0] = v.rf
         data[rindex + 1] = v.gf
@@ -23,14 +23,14 @@ class FloatBitmap32(
         return RGBA.float(data[rindex + 0], data[rindex + 1], data[rindex + 2], data[rindex + 3])
     }
 
-    fun setRgbaf(x: Int, y: Int, r: Float, g: Float, b: Float, a: Float): Unit {
+    fun setRgbaf(x: Int, y: Int, r: Float, g: Float, b: Float, a: Float) {
         val rindex = index4(x, y)
         data[rindex + 0] = r
         data[rindex + 1] = g
         data[rindex + 2] = b
         data[rindex + 3] = a
     }
-    fun setRgbaf(x: Int, y: Int, rgbaf: RGBAf): Unit {
+    fun setRgbaf(x: Int, y: Int, rgbaf: RGBAf) {
         setRgbaf(x, y, rgbaf.r, rgbaf.g, rgbaf.b, rgbaf.a)
     }
 

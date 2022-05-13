@@ -70,8 +70,8 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = glGenFramebuffers(n, framebuffers.nioIntBuffer)
     override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = glGenRenderbuffers(n, renderbuffers.nioIntBuffer)
     override fun genTextures(n: Int, textures: FBuffer): Unit = glGenTextures(n, textures.nioIntBuffer)
-    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveAttrib(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt(0, alen[0]); size.setInt(0, asize[0]); type.setInt(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
-    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveUniform(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt(0, alen[0]); size.setInt(0, asize[0]); type.setInt(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
+    override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveAttrib(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt(0, alen[0]); size.setInt(0, asize[0]); type.setInt(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
+    override fun getActiveUniform(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer) { val alen = IntArray(1) ; val asize = IntArray(1) ; val atype = IntArray(1) ; val aname = ByteArray(name.size); glGetActiveUniform(program, index, bufSize, alen, 0, asize, 0, atype, 0, aname, 0); length.setInt(0, alen[0]); size.setInt(0, asize[0]); type.setInt(0, atype[0]); name.putAsciiString(aname.toString(Charsets.US_ASCII)) }
     override fun getAttachedShaders(program: Int, maxCount: Int, count: FBuffer, shaders: FBuffer): Unit = glGetAttachedShaders(program, maxCount, count.nioIntBuffer, shaders.nioIntBuffer)
     override fun getAttribLocation(program: Int, name: String): Int = glGetAttribLocation(program, name)
     override fun getUniformLocation(program: Int, name: String): Int = glGetUniformLocation(program, name)
@@ -81,13 +81,13 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override fun getFloatv(pname: Int, data: FBuffer): Unit = glGetFloatv(pname, data.nioFloatBuffer)
     override fun getFramebufferAttachmentParameteriv(target: Int, attachment: Int, pname: Int, params: FBuffer): Unit = glGetFramebufferAttachmentParameteriv(target, attachment, pname, params.nioIntBuffer)
     override fun getIntegerv(pname: Int, data: FBuffer): Unit = glGetIntegerv(pname, data.nioIntBuffer)
-    override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit { infoLog.putAsciiString(glGetProgramInfoLog(program)) }
+    override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer) { infoLog.putAsciiString(glGetProgramInfoLog(program)) }
     override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit = glGetRenderbufferParameteriv(target, pname, params.nioIntBuffer)
     override fun getProgramiv(program: Int, pname: Int, params: FBuffer): Unit = glGetProgramiv(program, pname, params.nioIntBuffer)
     override fun getShaderiv(shader: Int, pname: Int, params: FBuffer): Unit = glGetShaderiv(shader, pname, params.nioIntBuffer)
-    override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit { infoLog.putAsciiString(glGetShaderInfoLog(shader)) }
+    override fun getShaderInfoLog(shader: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer) { infoLog.putAsciiString(glGetShaderInfoLog(shader)) }
     override fun getShaderPrecisionFormat(shadertype: Int, precisiontype: Int, range: FBuffer, precision: FBuffer): Unit = glGetShaderPrecisionFormat(shadertype, precisiontype, range.nioIntBuffer, precision.nioIntBuffer)
-    override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer): Unit { val len = IntArray(1); glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, len, 0); val src = ByteArray(len[0]); glGetShaderSource(shader, bufSize, len, 0, src, 0); source.putAsciiString(src.toString(Charsets.US_ASCII)) }
+    override fun getShaderSource(shader: Int, bufSize: Int, length: FBuffer, source: FBuffer) { val len = IntArray(1); glGetShaderiv(shader, GL_SHADER_SOURCE_LENGTH, len, 0); val src = ByteArray(len[0]); glGetShaderSource(shader, bufSize, len, 0, src, 0); source.putAsciiString(src.toString(Charsets.US_ASCII)) }
     override fun getString(name: Int): String = glGetString(name) ?: ""
     override fun getTexParameterfv(target: Int, pname: Int, params: FBuffer): Unit = glGetTexParameterfv(target, pname, params.nioFloatBuffer)
     override fun getTexParameteriv(target: Int, pname: Int, params: FBuffer): Unit = glGetTexParameteriv(target, pname, params.nioIntBuffer)
@@ -122,7 +122,7 @@ class KmlGlAndroid(val clientVersion: () -> Int) : KmlGlWithExtensions() {
     override fun stencilOp(fail: Int, zfail: Int, zpass: Int): Unit = glStencilOp(fail, zfail, zpass)
     override fun stencilOpSeparate(face: Int, sfail: Int, dpfail: Int, dppass: Int): Unit = glStencilOpSeparate(face, sfail, dpfail, dppass)
     override fun texImage2D(target: Int, level: Int, internalformat: Int, width: Int, height: Int, border: Int, format: Int, type: Int, pixels: FBuffer?): Unit = glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels?.nioBuffer)
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
+    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage) {
         val out = ByteBuffer.allocateDirect(data.width * data.height * 4)
         val image = (data as AndroidNativeImage)
         image.androidBitmap.copyPixelsToBuffer(out)

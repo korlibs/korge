@@ -532,7 +532,7 @@ class AGAwt(config: AGConfig, glDecorator: (KmlGl) -> KmlGl = { it }) : AGAwtBas
         glcanvas.addGLEventListener(glEventListener)
     }
 
-    //override fun readColor(bitmap: Bitmap32): Unit {
+    //override fun readColor(bitmap: Bitmap32) {
     //	checkErrors {
     //		gl.readPixels(
     //			0, 0, bitmap.width, bitmap.height,
@@ -542,7 +542,7 @@ class AGAwt(config: AGConfig, glDecorator: (KmlGl) -> KmlGl = { it }) : AGAwtBas
     //	}
     //}
 
-    //override fun readDepth(width: Int, height: Int, out: FloatArray): Unit {
+    //override fun readDepth(width: Int, height: Int, out: FloatArray) {
     //	val GL_DEPTH_COMPONENT = 0x1902
     //	checkErrors { gl.readPixels(0, 0, width, height, GL_DEPTH_COMPONENT, GL.GL_FLOAT, FloatBuffer.wrap(out)) }
     //}

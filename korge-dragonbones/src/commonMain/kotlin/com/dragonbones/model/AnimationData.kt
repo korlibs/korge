@@ -165,7 +165,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	 */
 	var parent: ArmatureData? = null
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this.boneTimelines.fastValueForEach { tl ->
 			tl.fastForEach { timeline ->
 				timeline.returnToPool()
@@ -292,7 +292,7 @@ class AnimationData(pool: SingleObjectPool<AnimationData>) :  BaseObject(pool) {
 	/**
 	 * @private
 	 */
-	fun addAnimationTimeline(timelineName: String, timeline: TimelineData): Unit {
+	fun addAnimationTimeline(timelineName: String, timeline: TimelineData) {
 		val timelines = this.animationTimelines.getOrPut(timelineName) { FastArrayList() }
 		if (timelines.indexOf(timeline) < 0) {
 			timelines.add(timeline)
@@ -341,7 +341,7 @@ open class TimelineData(pool: SingleObjectPool<out TimelineData>) : BaseObject(p
 	var offset: Int = 0 // TimelineArray.
 	var frameIndicesOffset: Int = -1 // FrameIndices.
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this.type = TimelineType.BoneAll
 		this.offset = 0
 		this.frameIndicesOffset = -1
@@ -358,7 +358,7 @@ class AnimationTimelineData(pool: SingleObjectPool<AnimationTimelineData>) :  Ti
 	var x: Double = 0.0
 	var y: Double = 0.0
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		this.x = 0.0

@@ -1,7 +1,7 @@
 package com.soywiz.kgl
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
+import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.get
 
 class KmlGlState(val gl: KmlGl) {
     val enabledList = listOf(
@@ -146,7 +146,7 @@ class KmlGlState(val gl: KmlGl) {
 
     fun restoreEnable() { for (n in enabledList.indices) gl.enableDisable(enabledList[n], enabledArray[n]) }
 
-    inline fun keep(block: () -> Unit): Unit {
+    inline fun keep(block: () -> Unit) {
         save()
         try {
             block()

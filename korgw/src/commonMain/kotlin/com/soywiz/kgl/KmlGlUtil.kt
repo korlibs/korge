@@ -1,7 +1,7 @@
 package com.soywiz.kgl
 
 import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.NativeImage
 
 class KmlGlProgram(val gl: KmlGl, val program: Int, val vertex: Int, val fragment: Int) {
 	fun use() = gl.useProgram(program)
@@ -117,7 +117,7 @@ class KmlGlVertexLayout(val program: KmlGlProgram) {
 		}
 	}
 
-	inline fun use(callback: () -> Unit): Unit {
+	inline fun use(callback: () -> Unit) {
 		program.use {
 			enable()
 			try {

@@ -1,7 +1,9 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
-import kotlin.math.*
+import com.soywiz.kds.internal.arraycopy
+import com.soywiz.kds.internal.contentHashCode
+import com.soywiz.kds.internal.umod
+import kotlin.math.min
 
 typealias Deque<TGen> = TGenDeque<TGen>
 
@@ -147,7 +149,7 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: TGen): Unit { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: TGen) { data[internalIndex(index)] = value }
     operator fun get(index: Int): TGen = data[internalIndex(index)]
 
     override fun contains(element: TGen): Boolean = (0 until size).any { this[it] == element }
@@ -172,7 +174,7 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
             var index = 0
             override fun next(): TGen = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove(): Unit { removeAt(--index) }
+            override fun remove() { removeAt(--index) }
         }
     }
 
@@ -329,7 +331,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Int): Unit { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Int) { data[internalIndex(index)] = value }
     operator fun get(index: Int): Int = data[internalIndex(index)]
 
     override fun contains(element: Int): Boolean = (0 until size).any { this[it] == element }
@@ -354,7 +356,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
             var index = 0
             override fun next(): Int = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove(): Unit { removeAt(--index) }
+            override fun remove() { removeAt(--index) }
         }
     }
 
@@ -506,7 +508,7 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Double): Unit { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Double) { data[internalIndex(index)] = value }
     operator fun get(index: Int): Double = data[internalIndex(index)]
 
     override fun contains(element: Double): Boolean = (0 until size).any { this[it] == element }
@@ -531,7 +533,7 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
             var index = 0
             override fun next(): Double = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove(): Unit { removeAt(--index) }
+            override fun remove() { removeAt(--index) }
         }
     }
 
@@ -683,7 +685,7 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Float): Unit { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Float) { data[internalIndex(index)] = value }
     operator fun get(index: Int): Float = data[internalIndex(index)]
 
     override fun contains(element: Float): Boolean = (0 until size).any { this[it] == element }
@@ -708,7 +710,7 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
             var index = 0
             override fun next(): Float = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove(): Unit { removeAt(--index) }
+            override fun remove() { removeAt(--index) }
         }
     }
 
@@ -872,7 +874,7 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
 
     private fun internalIndex(index: Int) = (_start + index) umod capacity
 
-    operator fun set(index: Int, value: Byte): Unit { data[internalIndex(index)] = value }
+    operator fun set(index: Int, value: Byte) { data[internalIndex(index)] = value }
     operator fun get(index: Int): Byte = data[internalIndex(index)]
 
     override fun contains(element: Byte): Boolean = (0 until size).any { this[it] == element }
@@ -897,7 +899,7 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
             var index = 0
             override fun next(): Byte = that[index++]
             override fun hasNext(): Boolean = index < size
-            override fun remove(): Unit { removeAt(--index) }
+            override fun remove() { removeAt(--index) }
         }
     }
 

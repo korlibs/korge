@@ -2,8 +2,6 @@
 
 package com.soywiz.kds
 
-import com.soywiz.kds.iterators.*
-
 actual inline fun <T> Any?.fastCastTo(): T = this.unsafeCast<T>()
 
 actual class FastIntMap<T>(dummy: Boolean)
@@ -21,9 +19,9 @@ actual fun <T> FastIntMap(): FastIntMap<T> = JsMap().asDynamic()
 actual val <T> FastIntMap<T>.size: Int get() = (this.asDynamic()).size
 actual fun <T> FastIntMap<T>.keys(): List<Int> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<Int>>().toList()
 actual inline operator fun <T> FastIntMap<T>.get(key: Int): T? = (this.asDynamic()).get(key)
-actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T): Unit { (this.asDynamic()).set(key, value) }
+actual inline operator fun <T> FastIntMap<T>.set(key: Int, value: T) { (this.asDynamic()).set(key, value) }
 actual inline operator fun <T> FastIntMap<T>.contains(key: Int): Boolean = (this.asDynamic()).contains(key) != undefined
-actual inline fun <T> FastIntMap<T>.remove(key: Int): Unit { (this.asDynamic()).delete(key) }
+actual inline fun <T> FastIntMap<T>.remove(key: Int) { (this.asDynamic()).delete(key) }
 actual inline fun <T> FastIntMap<T>.removeRange(src: Int, dst: Int) {
     //@Suppress("UNUSED_VARIABLE") val obj = this.asDynamic()
     //js("for (var key in obj.keys()) if (key >= src && key <= dst) obj.delete(key);")
@@ -35,7 +33,7 @@ actual inline fun <T> FastIntMap<T>.clear() {
 }
 
 @Suppress("UnsafeCastFromDynamic")
-actual inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit): Unit {
+actual inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit) {
     //println("FastStringMap<T>.fastKeyForEach")
     val mapIterator = this.asDynamic().keys()
     //console.log(mapIterator)
@@ -62,7 +60,7 @@ actual inline operator fun <T> FastStringMap<T>.set(key: String, value: T): Unit
     run { (this.asDynamic()).set(key, value) }
 
 actual inline operator fun <T> FastStringMap<T>.contains(key: String): Boolean = (this.asDynamic()).has(key)
-actual inline fun <T> FastStringMap<T>.remove(key: String): Unit { (this.asDynamic()).delete(key) }
+actual inline fun <T> FastStringMap<T>.remove(key: String) { (this.asDynamic()).delete(key) }
 actual inline fun <T> FastStringMap<T>.clear() { (this.asDynamic()).clear() }
 actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
     for (key in other.keys) {
@@ -70,7 +68,7 @@ actual fun <T> FastStringMap<T>.putAll(other: FastStringMap<T>) {
     }
 }
 @Suppress("UnsafeCastFromDynamic")
-actual inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) -> Unit): Unit {
+actual inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) -> Unit) {
     //println("FastStringMap<T>.fastKeyForEach")
     val mapIterator = this.asDynamic().keys()
     //console.log(mapIterator)
@@ -90,11 +88,11 @@ actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = JsMap().asDynamic()
 actual val <K, V> FastIdentityMap<K, V>.size: Int get() = this.asDynamic().size
 actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> = Array_from((this.asDynamic()).keys()).unsafeCast<Array<K>>().toList()
 actual operator fun <K, V> FastIdentityMap<K, V>.get(key: K): V? = (this.asDynamic()).get(key)
-actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V): Unit { (this.asDynamic()).set(key, value) }
+actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V) { (this.asDynamic()).set(key, value) }
 actual operator fun <K, V> FastIdentityMap<K, V>.contains(key: K): Boolean = (this.asDynamic()).has(key)
-actual fun <K, V> FastIdentityMap<K, V>.remove(key: K): Unit { (this.asDynamic()).delete(key) }
+actual fun <K, V> FastIdentityMap<K, V>.remove(key: K) { (this.asDynamic()).delete(key) }
 actual fun <K, V> FastIdentityMap<K, V>.clear() { (this.asDynamic()).clear() }
-actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit): Unit {
+actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit) {
     //println("FastStringMap<T>.fastKeyForEach")
     val mapIterator = this.asDynamic().keys()
     //console.log(mapIterator)
@@ -126,7 +124,7 @@ actual class WeakMap<K : Any, V> {
     }
 
     actual operator fun get(key: K): V? = wm.get(key).unsafeCast<V?>()
-    actual fun remove(key: K): Unit {
+    actual fun remove(key: K) {
         wm.delete(key)
     }
 
@@ -178,7 +176,7 @@ public actual open class FastArrayList<E> internal constructor(@PublishedApi int
         return true
     }
 
-    actual override fun add(index: Int, element: E): Unit {
+    actual override fun add(index: Int, element: E) {
         array.asDynamic().splice(insertionRangeCheck(index), 0, element)
         modCount++
     }

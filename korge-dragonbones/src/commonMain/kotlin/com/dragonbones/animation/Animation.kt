@@ -77,7 +77,7 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 	private var _animationConfig: AnimationConfig? = null // Initial value.
 	private var _lastAnimationState: AnimationState? = null
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this._animationStates.fastForEach { animationState ->
 			animationState.returnToPool()
 		}
@@ -106,7 +106,7 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 		this._lastAnimationState = null
 	}
 
-	private fun _fadeOut(animationConfig: AnimationConfig): Unit {
+	private fun _fadeOut(animationConfig: AnimationConfig) {
 		when (animationConfig.fadeOutMode) {
 			AnimationFadeOutMode.SameLayer -> {
 				this._animationStates.fastForEach { animationState ->
@@ -160,7 +160,7 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun init(armature: Armature): Unit {
+	fun init(armature: Armature) {
 		if (this._armature != null) {
 			return
 		}
@@ -172,7 +172,7 @@ class Animation(pool: SingleObjectPool<Animation>) : BaseObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun advanceTime(passedTime: Double): Unit {
+	fun advanceTime(passedTime: Double) {
 		//println(this.animationNames)
 		var passedTime = passedTime
 		if (passedTime < 0.0) { // Only animationState can reverse play.

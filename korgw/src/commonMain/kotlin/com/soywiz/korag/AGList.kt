@@ -7,15 +7,17 @@
 package com.soywiz.korag
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.*
+import com.soywiz.kds.lock.Lock
 import com.soywiz.kmem.*
-import com.soywiz.korag.annotation.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.korma.geom.*
-import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.*
+import com.soywiz.korag.annotation.KoragExperimental
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.ProgramConfig
+import com.soywiz.korag.shader.UniformLayout
+import com.soywiz.korio.annotations.KorIncomplete
+import com.soywiz.korio.annotations.KorInternal
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.krypto.encoding.hex
+import kotlinx.coroutines.CompletableDeferred
 
 @KorInternal
 inline fun AGQueueProcessor.processBlocking(list: AGList, maxCount: Int = 1) {
@@ -220,7 +222,7 @@ class AGList(val globalState: AGGlobalState) {
         deferred.await()
     }
 
-    inline fun enableDisable(kind: AGEnable, enable: Boolean, block: () -> Unit = {}): Unit {
+    inline fun enableDisable(kind: AGEnable, enable: Boolean, block: () -> Unit = {}) {
         if (enable) {
             enable(kind)
             block()

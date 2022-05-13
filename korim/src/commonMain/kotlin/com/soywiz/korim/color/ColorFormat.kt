@@ -1,7 +1,7 @@
 package com.soywiz.korim.color
 
 import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap32
 
 interface ColorFormat {
     val bpp: Int
@@ -168,7 +168,7 @@ fun ColorFormat.encode(
     return out
 }
 
-fun ColorFormat16.encode(colors: IntArray, colorsOffset: Int, out: ShortArray, outOffset: Int, size: Int): Unit {
+fun ColorFormat16.encode(colors: IntArray, colorsOffset: Int, out: ShortArray, outOffset: Int, size: Int) {
     var io = colorsOffset
     var oo = outOffset
     for (n in 0 until size) {
@@ -177,7 +177,7 @@ fun ColorFormat16.encode(colors: IntArray, colorsOffset: Int, out: ShortArray, o
     }
 }
 
-fun ColorFormat32.encode(colors: IntArray, colorsOffset: Int, out: IntArray, outOffset: Int, size: Int): Unit {
+fun ColorFormat32.encode(colors: IntArray, colorsOffset: Int, out: IntArray, outOffset: Int, size: Int) {
     var io = colorsOffset
     var oo = outOffset
     for (n in 0 until size) {

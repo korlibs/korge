@@ -164,7 +164,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
                 threadDeque!!.write(samples, offset, size)
             }
 
-            override fun start(): Unit {
+            override fun start() {
                 if (started) return
                 started = true
                 launchImmediately(coroutineContext) {

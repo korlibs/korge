@@ -1,17 +1,18 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import kotlin.math.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.lang.toCharArray
+import kotlin.math.sqrt
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ReadSpecialTest {
 	class CharArray2(val width: Int, val height: Int, val data: CharArray) {
 		fun index(x: Int, y: Int): Int = y * width + x
 		operator fun get(x: Int, y: Int): Char = data[index(x, y)]
-		operator fun set(x: Int, y: Int, v: Char): Unit { data[index(x, y)] = v }
+		operator fun set(x: Int, y: Int, v: Char) { data[index(x, y)] = v }
 	}
 
 	suspend fun VfsFile.readCharArray2(): CharArray2 {

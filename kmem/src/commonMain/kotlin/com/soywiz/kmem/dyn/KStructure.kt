@@ -1,7 +1,7 @@
 package com.soywiz.kmem.dyn
 
+import kotlin.math.max
 import kotlin.reflect.KProperty
-import kotlin.math.*
 
 expect class KArena() {
     fun allocBytes(size: Int): KPointer
@@ -186,12 +186,12 @@ inline class KMemDelegateKPointerProperty(val offset: Int) {
     fun get(pointer: KPointer): KPointer = pointer.getPointer(offset)
     fun set(pointer: KPointer, value: KPointer) = pointer.setPointer(offset, value)
     operator fun getValue(obj: KStructure, property: KProperty<*>): KPointer = get(obj.pointerSure)
-    operator fun setValue(obj: KStructure, property: KProperty<*>, i: KPointer): Unit { set(obj.pointerSure, i) }
+    operator fun setValue(obj: KStructure, property: KProperty<*>, i: KPointer) { set(obj.pointerSure, i) }
 }
 
 inline class KMemDelegatePointerProperty<T>(val offset: Int) {
     fun get(pointer: KPointer): KPointerT<T> = KPointerT(pointer.getPointer(offset))
     fun set(pointer: KPointer, value: KPointerT<T>) = pointer.setPointer(offset, value.pointer)
     operator fun getValue(obj: KStructure, property: KProperty<*>): KPointerT<T> = get(obj.pointerSure)
-    operator fun setValue(obj: KStructure, property: KProperty<*>, i: KPointerT<T>): Unit { set(obj.pointerSure, i) }
+    operator fun setValue(obj: KStructure, property: KProperty<*>, i: KPointerT<T>) { set(obj.pointerSure, i) }
 }

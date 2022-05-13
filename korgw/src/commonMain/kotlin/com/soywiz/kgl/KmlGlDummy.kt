@@ -4,9 +4,11 @@
 
 package com.soywiz.kgl
 
-import com.soywiz.kds.*
+import com.soywiz.kds.FastStringMap
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.getOrPut
 import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.NativeImage
 
 class KmlGlDummy : KmlGlDummyBase()
 
@@ -106,7 +108,7 @@ open class KmlGlDummyBase : KmlGl() {
     override fun getProgramInfoLog(program: Int, bufSize: Int, length: FBuffer, infoLog: FBuffer): Unit = Unit
     override fun getRenderbufferParameteriv(target: Int, pname: Int, params: FBuffer): Unit = Unit
     override fun getProgramiv(program: Int, pname: Int, params: FBuffer): Unit = Unit
-    override fun getShaderiv(shader: Int, pname: Int, params: FBuffer): Unit {
+    override fun getShaderiv(shader: Int, pname: Int, params: FBuffer) {
         when (pname) {
             COMPILE_STATUS -> params.i32[0] = GTRUE
         }

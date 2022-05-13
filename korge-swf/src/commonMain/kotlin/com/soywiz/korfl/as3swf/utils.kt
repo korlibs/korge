@@ -107,7 +107,7 @@ open class FlashByteArray() {
 	fun writeByte(i: Int): Unit = data.write8(i)
 	fun writeShort(i: Int): Unit = if (little) data.write16LE(i) else data.write16BE(i)
 	fun writeInt(i: Int): Unit = if (little) data.write32LE(i) else data.write32BE(i)
-	fun writeLong(i: Long): Unit { if (little) data.write64LE(i) else data.write64BE(i) }
+	fun writeLong(i: Long) { if (little) data.write64LE(i) else data.write64BE(i) }
 
 	fun writeUnsignedByte(i: Int): Unit = writeByte(i)
 	fun writeUnsignedShort(i: Int): Unit = writeShort(i)
@@ -120,7 +120,7 @@ open class FlashByteArray() {
 	fun writeUTFBytes(str: String, position: Int = 0, length: Int = -1): Unit = throw Error("")
 	fun writeBytes(bytes: ByteArray) { this.data.writeBytes(bytes) }
 
-	fun writeBytes(bytes: FlashByteArray, offset: Int = 0, length: Int = -1): Unit {
+	fun writeBytes(bytes: FlashByteArray, offset: Int = 0, length: Int = -1) {
 		val len = if (length >= 0) length else bytes.length
 		bytes.position = offset
 		this.data.writeBytes(bytes.data.readBytes(len))

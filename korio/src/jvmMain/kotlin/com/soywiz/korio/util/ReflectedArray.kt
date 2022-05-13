@@ -3,7 +3,7 @@ package com.soywiz.korio.util
 class ReflectedArray(val array: Any) {
 	fun getType(): Class<*> = array::class.java.componentType
 	operator fun get(index: Int): Any? = java.lang.reflect.Array.get(array, index)
-	operator fun set(index: Int, value: Any?): Unit {
+	operator fun set(index: Int, value: Any?) {
 		java.lang.reflect.Array.set(array, index, value)
 	}
 

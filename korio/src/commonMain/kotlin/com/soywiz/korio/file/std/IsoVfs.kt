@@ -1,12 +1,14 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.async.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.async.AsyncCloseable
 import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.lang.ASCII
+import com.soywiz.korio.lang.format
+import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.flow
 
 suspend fun IsoVfs(file: VfsFile): VfsFile =
 	ISO.openVfs(file.open(VfsOpenMode.READ), closeStream = true)
@@ -126,7 +128,7 @@ object ISO {
 			return root
 		}
 
-		suspend fun readDirectoryRecords(parent: IsoFile, sector: SyncStream): Unit {
+		suspend fun readDirectoryRecords(parent: IsoFile, sector: SyncStream) {
 			while (!sector.eof) {
 				val dr = DirectoryRecord(sector)
 				if (dr == null) {

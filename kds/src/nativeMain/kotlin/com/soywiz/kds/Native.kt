@@ -1,7 +1,7 @@
 package com.soywiz.kds
 
 import kotlin.native.identityHashCode
-import kotlin.native.ref.*
+import kotlin.native.ref.WeakReference
 
 actual class WeakMap<K : Any, V> {
     inner class Bucket {
@@ -92,11 +92,11 @@ actual fun <K, V> FastIdentityMap(): FastIdentityMap<K, V> = FastIdentityMap(tru
 actual val <K, V> FastIdentityMap<K, V>.size: Int get() = this.map.size
 actual fun <K, V> FastIdentityMap<K, V>.keys(): List<K> = this.map.keys.toList()
 actual operator fun <K, V> FastIdentityMap<K, V>.get(key: K): V? = this.map[key]
-actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V): Unit { this.map[key] = value }
+actual operator fun <K, V> FastIdentityMap<K, V>.set(key: K, value: V) { this.map[key] = value }
 actual operator fun <K, V> FastIdentityMap<K, V>.contains(key: K): Boolean = this.map.containsKey(key)
-actual fun <K, V> FastIdentityMap<K, V>.remove(key: K): Unit { this.map.remove(key) }
+actual fun <K, V> FastIdentityMap<K, V>.remove(key: K) { this.map.remove(key) }
 actual fun <K, V> FastIdentityMap<K, V>.clear() { this.map.clear() }
-actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit): Unit {
+actual inline fun <K, V> FastIdentityMap<K, V>.fastKeyForEach(callback: (key: K) -> Unit) {
     this.map.buckets.fastForEach { _, bucket ->
         bucket.keys.fastForEach {
             callback(it)

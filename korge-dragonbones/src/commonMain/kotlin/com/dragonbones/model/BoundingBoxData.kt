@@ -67,7 +67,7 @@ abstract class BoundingBoxData(pool: SingleObjectPool<out BoundingBoxData>) : Ba
 	 */
 	var height: Double = 0.0
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this.color = 0x000000
 		this.width = 0.0
 		this.height = 0.0
@@ -317,7 +317,7 @@ class RectangleBoundingBoxData(pool: SingleObjectPool<RectangleBoundingBoxData>)
 		}
 	}
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		this.type = BoundingBoxType.Rectangle
@@ -483,7 +483,7 @@ class EllipseBoundingBoxData(pool: SingleObjectPool<EllipseBoundingBoxData>) : B
 		}
 	}
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		this.type = BoundingBoxType.Ellipse
@@ -701,7 +701,7 @@ class PolygonBoundingBoxData(pool: SingleObjectPool<PolygonBoundingBoxData>) : B
 	 */
 	var vertices: DoubleArray = DoubleArray(0)
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		this.type = BoundingBoxType.Polygon

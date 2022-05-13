@@ -1,8 +1,8 @@
 package com.soywiz.kds.iterators
 
-import com.soywiz.kds.internal.*
-import java.util.concurrent.*
-import kotlin.math.*
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
+import kotlin.math.max
 
 //actual val CONCURRENCY_COUNT: Int = max(1, Runtime.getRuntime().availableProcessors() / 2)
 actual val CONCURRENCY_COUNT: Int = max(1, java.lang.Runtime.getRuntime().availableProcessors())
@@ -10,7 +10,7 @@ actual val CONCURRENCY_COUNT: Int = max(1, java.lang.Runtime.getRuntime().availa
 @PublishedApi
 internal val exec = Executors.newFixedThreadPool(CONCURRENCY_COUNT)
 
-actual inline fun parallelForeach(count: Int, crossinline block: (n: Int) -> Unit): Unit {
+actual inline fun parallelForeach(count: Int, crossinline block: (n: Int) -> Unit) {
     if (count == 0) return
 
     val futures = arrayListOf<Future<*>>()

@@ -2,11 +2,9 @@
 
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.*
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
-import kotlin.jvm.*
 import kotlin.math.*
 
 data class Matrix(
@@ -312,7 +310,7 @@ data class Matrix(
     fun transformYf(px: Int, py: Int): Float = transformY(px.toDouble(), py.toDouble()).toFloat()
 
     @Suppress("DuplicatedCode")
-    fun transformRectangle(rectangle: Rectangle, delta: Boolean = false): Unit {
+    fun transformRectangle(rectangle: Rectangle, delta: Boolean = false) {
         val a = this.af
         val b = this.bf
         val c = this.cf

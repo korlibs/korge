@@ -1,14 +1,12 @@
 package com.soywiz.kds
 
-import kotlin.jvm.*
-
 expect class FastIntMap<T>
 
 expect fun <T> FastIntMap(): FastIntMap<T>
 expect val <T> FastIntMap<T>.size: Int
 expect fun <T> FastIntMap<T>.keys(): List<Int>
 expect operator fun <T> FastIntMap<T>.get(key: Int): T?
-expect operator fun <T> FastIntMap<T>.set(key: Int, value: T): Unit
+expect operator fun <T> FastIntMap<T>.set(key: Int, value: T)
 expect operator fun <T> FastIntMap<T>.contains(key: Int): Boolean
 expect fun <T> FastIntMap<T>.remove(key: Int)
 expect fun <T> FastIntMap<T>.removeRange(src: Int, dst: Int)
@@ -26,19 +24,19 @@ fun <T> FastIntMap<T>.toLinkedMap(): Map<Int, T> {
     return out
 }
 
-expect inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit): Unit
+expect inline fun <T> FastIntMap<T>.fastKeyForEach(callback: (key: Int) -> Unit)
 
-inline fun <T : Any?> FastIntMap<T>.fastValueForEachNullable(callback: (value: T?) -> Unit): Unit {
+inline fun <T : Any?> FastIntMap<T>.fastValueForEachNullable(callback: (value: T?) -> Unit) {
     fastKeyForEach { callback(this[it]) }
 }
-inline fun <T : Any?> FastIntMap<T>.fastForEachNullable(callback: (key: Int, value: T?) -> Unit): Unit {
+inline fun <T : Any?> FastIntMap<T>.fastForEachNullable(callback: (key: Int, value: T?) -> Unit) {
     fastKeyForEach { callback(it, this[it]) }
 }
 
-inline fun <T : Any> FastIntMap<T>.fastValueForEach(callback: (value: T) -> Unit): Unit {
+inline fun <T : Any> FastIntMap<T>.fastValueForEach(callback: (value: T) -> Unit) {
     fastKeyForEach { callback(this[it]!!) }
 }
-inline fun <T : Any> FastIntMap<T>.fastForEach(callback: (key: Int, value: T) -> Unit): Unit {
+inline fun <T : Any> FastIntMap<T>.fastForEach(callback: (key: Int, value: T) -> Unit) {
     fastKeyForEach { callback(it, this[it]!!) }
 }
 
@@ -76,17 +74,17 @@ fun <T> FastStringMap<T>.toMap(): Map<String, T> = LinkedHashMap<String, T>(this
 
 expect inline fun <T> FastStringMap<T>.fastKeyForEach(callback: (key: String) -> Unit): Unit
 
-inline fun <T : Any?> FastStringMap<T>.fastValueForEachNullable(callback: (value: T?) -> Unit): Unit {
+inline fun <T : Any?> FastStringMap<T>.fastValueForEachNullable(callback: (value: T?) -> Unit) {
     fastKeyForEach { callback(this[it]) }
 }
-inline fun <T : Any?> FastStringMap<T>.fastForEachNullable(callback: (key: String, value: T?) -> Unit): Unit {
+inline fun <T : Any?> FastStringMap<T>.fastForEachNullable(callback: (key: String, value: T?) -> Unit) {
     fastKeyForEach { callback(it, this[it]) }
 }
 
-inline fun <T : Any> FastStringMap<T>.fastValueForEach(callback: (value: T) -> Unit): Unit {
+inline fun <T : Any> FastStringMap<T>.fastValueForEach(callback: (value: T) -> Unit) {
     fastKeyForEach { callback(this[it]!!) }
 }
-inline fun <T : Any> FastStringMap<T>.fastForEach(callback: (key: String, value: T) -> Unit): Unit {
+inline fun <T : Any> FastStringMap<T>.fastForEach(callback: (key: String, value: T) -> Unit) {
     fastKeyForEach { callback(it, this[it]!!) }
 }
 
@@ -118,17 +116,17 @@ val <K, V> FastIdentityMap<K, V>.keys: List<K> get() = keys()
 val <K, V> FastIdentityMap<K, V>.values: List<V> get() = values()
 fun <K, V> FastIdentityMap<K, V>.getAndRemove(key: K): V? = get(key).also { remove(key) }
 
-inline fun <K, V : Any?> FastIdentityMap<K, V>.fastValueForEachNullable(callback: (value: V?) -> Unit): Unit {
+inline fun <K, V : Any?> FastIdentityMap<K, V>.fastValueForEachNullable(callback: (value: V?) -> Unit) {
     fastKeyForEach { callback(this[it]) }
 }
-inline fun <K, V : Any?> FastIdentityMap<K, V>.fastForEachNullable(callback: (key: K, value: V?) -> Unit): Unit {
+inline fun <K, V : Any?> FastIdentityMap<K, V>.fastForEachNullable(callback: (key: K, value: V?) -> Unit) {
     fastKeyForEach { callback(it, this[it]) }
 }
 
-inline fun <K, V : Any> FastIdentityMap<K, V>.fastValueForEach(callback: (value: V) -> Unit): Unit {
+inline fun <K, V : Any> FastIdentityMap<K, V>.fastValueForEach(callback: (value: V) -> Unit) {
     fastKeyForEach { callback(this[it]!!) }
 }
-inline fun <K, V : Any> FastIdentityMap<K, V>.fastForEach(callback: (key: K, value: V) -> Unit): Unit {
+inline fun <K, V : Any> FastIdentityMap<K, V>.fastForEach(callback: (key: K, value: V) -> Unit) {
     fastKeyForEach { callback(it, this[it]!!) }
 }
 

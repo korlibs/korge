@@ -1,13 +1,16 @@
 package com.soywiz.korma.algo
 
-import com.soywiz.kds.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.BooleanArray2
+import com.soywiz.kds.IntPriorityQueue
+import com.soywiz.korma.geom.IPointIntArrayList
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointIntArrayList
 
 class AStar(val width: Int, val height: Int, val isBlocking: (x: Int, y: Int) -> Boolean) {
     companion object {
-        operator fun invoke(board: Array2<Boolean>) = AStar(board.width, board.height) { x, y -> board[x, y] }
+        operator fun invoke(board: BooleanArray2) = AStar(board.width, board.height) { x, y -> board[x, y] }
         fun find(
-            board: Array2<Boolean>, x0: Int, y0: Int, x1: Int, y1: Int, findClosest: Boolean = false,
+            board: BooleanArray2, x0: Int, y0: Int, x1: Int, y1: Int, findClosest: Boolean = false,
             diagonals: Boolean = false
         ): IPointIntArrayList = AStar(board.width, board.height) { x, y -> board[x, y] }.find(x0, y0, x1, y1, findClosest, diagonals)
     }

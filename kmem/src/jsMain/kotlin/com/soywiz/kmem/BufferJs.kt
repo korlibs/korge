@@ -48,7 +48,7 @@ public actual inline val Int8Buffer.mem: MemBuffer get() = this.buffer
 public actual inline val Int8Buffer.offset: Int get() = this.byteOffset / 1
 public actual inline val Int8Buffer.size: Int get() = this.asDynamic().length
 public actual inline operator fun Int8Buffer.get(index: Int): Byte = this.asDynamic()[index]
-public actual inline operator fun Int8Buffer.set(index: Int, value: Byte): Unit { this.asDynamic()[index] = value }
+public actual inline operator fun Int8Buffer.set(index: Int, value: Byte) { this.asDynamic()[index] = value }
 
 public actual typealias Int16Buffer = Int16Array
 
@@ -56,7 +56,7 @@ public actual inline val Int16Buffer.mem: MemBuffer get() = this.buffer
 public actual inline val Int16Buffer.offset: Int get() = this.byteOffset / 2
 public actual inline val Int16Buffer.size: Int get() = this.asDynamic().length
 public actual inline operator fun Int16Buffer.get(index: Int): Short = this.asDynamic()[index]
-public actual inline operator fun Int16Buffer.set(index: Int, value: Short): Unit { this.asDynamic()[index] = value }
+public actual inline operator fun Int16Buffer.set(index: Int, value: Short) { this.asDynamic()[index] = value }
 
 public actual typealias Int32Buffer = Int32Array
 
@@ -64,7 +64,7 @@ public actual inline val Int32Buffer.mem: MemBuffer get() = this.buffer
 public actual inline val Int32Buffer.offset: Int get() = this.byteOffset / 4
 public actual inline val Int32Buffer.size: Int get() = this.asDynamic().length
 public actual inline operator fun Int32Buffer.get(index: Int): Int = this.asDynamic()[index]
-public actual inline operator fun Int32Buffer.set(index: Int, value: Int): Unit { this.asDynamic()[index] = value }
+public actual inline operator fun Int32Buffer.set(index: Int, value: Int) { this.asDynamic()[index] = value }
 
 public actual typealias Float32Buffer = Float32Array
 
@@ -72,7 +72,7 @@ public actual inline val Float32Buffer.mem: MemBuffer get() = this.buffer
 public actual inline val Float32Buffer.offset: Int get() = this.byteOffset / 4
 public actual inline val Float32Buffer.size: Int get() = this.asDynamic().length
 public actual inline operator fun Float32Buffer.get(index: Int): Float = this.asDynamic()[index]
-public actual inline operator fun Float32Buffer.set(index: Int, value: Float): Unit { this.asDynamic()[index] = value }
+public actual inline operator fun Float32Buffer.set(index: Int, value: Float) { this.asDynamic()[index] = value }
 
 public actual typealias Float64Buffer = Float64Array
 
@@ -80,7 +80,7 @@ public actual inline val Float64Buffer.mem: MemBuffer get() = this.buffer
 public actual inline val Float64Buffer.offset: Int get() = this.byteOffset / 8
 public actual inline val Float64Buffer.size: Int get() = this.asDynamic().length
 public actual inline operator fun Float64Buffer.get(index: Int): Double = this.asDynamic()[index]
-public actual inline operator fun Float64Buffer.set(index: Int, value: Double): Unit { this.asDynamic()[index] = value }
+public actual inline operator fun Float64Buffer.set(index: Int, value: Double) { this.asDynamic()[index] = value }
 
 public inline fun ByteArray.asInt8Array(): Int8Array = this.unsafeCast<Int8Array>()
 public inline fun ByteArray.asTyped(): Int8Array = this.unsafeCast<Int8Array>()
@@ -94,7 +94,7 @@ public inline fun DoubleArray.asFloat64Array(): Float64Array = this.unsafeCast<F
 public inline fun DoubleArray.asTyped(): Float64Array = this.unsafeCast<Float64Array>()
 
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int) {
     if (src !== dst && size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -102,7 +102,7 @@ public actual fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPo
     arraycopy(src.mem, srcPos * 1, dst.mem, dstPos * 1, size * 1)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -110,7 +110,7 @@ public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos
     arraycopy(src, srcPos, dst.mem, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -118,7 +118,7 @@ public actual fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos
     arraycopy(src.mem, srcPos, dst, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int) {
     if (src !== dst && size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -126,7 +126,7 @@ public actual fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dst
     arraycopy(src.mem, srcPos * 2, dst.mem, dstPos * 2, size * 2)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -134,7 +134,7 @@ public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstP
     arraycopy(src, srcPos, dst.mem, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -142,7 +142,7 @@ public actual fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstP
     arraycopy(src.mem, srcPos, dst, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int) {
     if (src !== dst && size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -150,7 +150,7 @@ public actual fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dst
     arraycopy(src.mem, srcPos * 4, dst.mem, dstPos * 4, size * 4)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -158,7 +158,7 @@ public actual fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos
     arraycopy(src, srcPos, dst.mem, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -166,7 +166,7 @@ public actual fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos
     arraycopy(src.mem, srcPos, dst, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int) {
     if (src !== dst && size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -174,7 +174,7 @@ public actual fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer,
     arraycopy(src.mem, srcPos * 4, dst.mem, dstPos * 4, size * 4)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -182,7 +182,7 @@ public actual fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, ds
     arraycopy(src, srcPos, dst.mem, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -190,7 +190,7 @@ public actual fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, ds
     arraycopy(src.mem, srcPos, dst, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int) {
     if (src !== dst && size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -198,7 +198,7 @@ public actual fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer,
     arraycopy(src.mem, srcPos * 8, dst.mem, dstPos * 8, size * 8)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -206,7 +206,7 @@ public actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, d
     arraycopy(src, srcPos, dst.mem, dstPos, size)
 }
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public actual fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int) {
     if (size <= 128) {
         for (n in 0 until size) dst[dstPos + n] = src[srcPos + n]
         return
@@ -215,7 +215,7 @@ public actual fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, d
 }
 
 // @TODO (SAFARI BUG): Int8Array(dst, dstPos) -> Int8Array(dst, dstPos, size)
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     Int8Array(dst, dstPos, size).set(Int8Array(src, srcPos, size), 0)
 }
 

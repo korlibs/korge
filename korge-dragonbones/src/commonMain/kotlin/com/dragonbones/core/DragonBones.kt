@@ -328,7 +328,7 @@ class DragonBones(eventManager: IEventDispatcher) {
 	//	println("DragonBones: ${DragonBones.VERSION}\nWebsite: http://dragonbones.com/\nSource and Demo: https://github.com/DragonBones/")
 	//}
 
-	//fun advanceTime(passedTime: Double): Unit {
+	//fun advanceTime(passedTime: Double) {
 	//	if (this._objects.size > 0) {
 	//		for (obj in this._objects) {
 	//			obj.returnToPool()

@@ -1,8 +1,12 @@
 package com.soywiz.korma.algo
 
-import com.soywiz.kds.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.kds.BooleanArray2
+import com.soywiz.kds.map2
+import com.soywiz.korma.geom.IPointInt
+import com.soywiz.korma.geom.PointInt
+import com.soywiz.korma.geom.toPoints
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AStarTest {
     @Test
@@ -63,24 +67,24 @@ class AStarTest {
     }
 
 
-    data class Result(val map: Array2<Boolean>, val start: IPointInt, val end: IPointInt)
+    data class Result(val map: BooleanArray2, val start: IPointInt, val end: IPointInt)
 
     fun map(str: String): Result {
         var start = PointInt(0, 0)
         var end = PointInt(0, 0)
-        val map = Array2(str) { c, x, y ->
+        val map = BooleanArray2(str) arr@{ c, x, y ->
             //println("$x, $y, $c")
-            if (c == '.') return@Array2 false
-            if (c == '*' || c == '#') return@Array2 true
+            if (c == '.') return@arr false
+            if (c == '*' || c == '#') return@arr true
             if (c == 'S') {
                 start = PointInt(x, y)
-                return@Array2 false
+                return@arr false
             }
             if (c == 'E') {
                 end = PointInt(x, y)
-                return@Array2 false
+                return@arr false
             }
-            return@Array2 false
+            return@arr false
         }
         return Result(map, start, end)
     }

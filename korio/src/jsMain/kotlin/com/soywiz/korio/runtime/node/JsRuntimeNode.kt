@@ -6,7 +6,8 @@ import com.soywiz.korio.async.AsyncQueue
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.withContext
 import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
+import com.soywiz.korio.file.std.LocalVfs
+import com.soywiz.korio.file.std.ShellArgs
 import com.soywiz.korio.lang.FileAlreadyExistsException
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.lang.IOException
@@ -17,7 +18,9 @@ import com.soywiz.korio.net.http.HttpClient
 import com.soywiz.korio.net.http.HttpServer
 import com.soywiz.korio.runtime.JsRuntime
 import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.khronos.webgl.ArrayBuffer
 import org.khronos.webgl.Int8Array
 import org.khronos.webgl.Uint8Array
@@ -368,7 +371,7 @@ private class NodeFDStream(val file: VfsFile, var fd: NodeFD?) : AsyncStreamBase
 
     //private var closed = false
 
-    override suspend fun close(): Unit {
+    override suspend fun close() {
         //if (closed) error("File already closed")
         //closed = true
         if (fd != null) {

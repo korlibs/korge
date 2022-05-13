@@ -1,19 +1,22 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.klock.*
-import com.soywiz.korag.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.resources.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.util.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korag.AG
+import com.soywiz.korge.debug.KorgeDebugNode
+import com.soywiz.korge.resources.ResourcesRoot
+import com.soywiz.korge.time.delay
+import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.*
-import com.soywiz.korinject.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.resources.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korinject.AsyncInjectorContext
+import com.soywiz.korinject.InjectorAsyncDependency
+import com.soywiz.korio.lang.cancel
+import com.soywiz.korio.resources.Resources
+import com.soywiz.korio.resources.ResourcesContainer
+import com.soywiz.korma.geom.ISize
+import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import kotlin.coroutines.coroutineContext
 
 /**
  * Acts as a controller. Subclasses must override at least one of: [sceneInit] or [sceneMain].
@@ -75,7 +78,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Here you can read and wait for resources.
      * No need to call super.
      **/
-	open suspend fun Container.sceneInit(): Unit {
+	open suspend fun Container.sceneInit() {
     }
 
     /**
@@ -85,7 +88,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Its underlying job will be automatically closed on the [sceneAfterDestroy].
      * No need to call super.
      */
-    open suspend fun Container.sceneMain(): Unit {
+    open suspend fun Container.sceneMain() {
 
     }
 

@@ -1,21 +1,27 @@
 package com.soywiz.korgw.win32
 
-import com.soywiz.kgl.*
-import com.soywiz.klogger.*
+import com.soywiz.kgl.checkError
+import com.soywiz.kgl.getIntegerv
 import com.soywiz.klogger.Console
-import com.soywiz.korgw.*
-import com.soywiz.korgw.platform.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korgw.GameWindow
+import com.soywiz.korgw.GameWindowConfig
+import com.soywiz.korgw.platform.BaseOpenglContext
+import com.soywiz.korgw.platform.INativeGL
+import com.soywiz.korgw.platform.NativeKgl
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korio.lang.Environment
 import com.sun.jna.*
 import com.sun.jna.Function
-import com.sun.jna.platform.win32.*
+import com.sun.jna.platform.win32.OpenGL32
+import com.sun.jna.platform.win32.WinDef
 import com.sun.jna.platform.win32.WinDef.*
-import com.sun.jna.ptr.*
-import java.awt.*
-import java.io.*
-import java.lang.reflect.*
-import javax.swing.*
+import com.sun.jna.platform.win32.WinGDI
+import com.sun.jna.platform.win32.WinUser
+import com.sun.jna.ptr.PointerByReference
+import java.awt.Component
+import java.io.File
+import java.lang.reflect.Method
+import java.lang.reflect.Proxy
 
 //open class Win32KmlGl : CheckErrorsKmlGlProxy(NativeKgl(Win32GL)) {
 open class Win32KmlGl : NativeKgl(Win32GL) {
@@ -24,7 +30,7 @@ open class Win32KmlGl : NativeKgl(Win32GL) {
     var vertexArrayCachedVersion = -1
     var vertexArray = -1
 
-    override fun beforeDoRender(contextVersion: Int): Unit {
+    override fun beforeDoRender(contextVersion: Int) {
         if (vertexArrayCachedVersion != contextVersion) {
             vertexArrayCachedVersion = contextVersion
             val out = intArrayOf(-1)

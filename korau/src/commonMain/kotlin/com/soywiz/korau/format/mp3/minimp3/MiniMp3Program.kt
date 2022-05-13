@@ -90,7 +90,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     // typealias L12_subband_alloc_t = L12_subband_alloc_t
     // typealias L3_gr_info_t = L3_gr_info_t
     // typealias mp3dec_scratch_t = mp3dec_scratch_t
-    fun bs_init(bs: CPointer<bs_t>, data: CPointer<UByte>, bytes: Int): Unit {
+    fun bs_init(bs: CPointer<bs_t>, data: CPointer<UByte>, bytes: Int) {
         bs.value.buf = data
         bs.value.pos = 0
         bs.value.limit = bytes * 8
@@ -190,7 +190,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return alloc
 
     }
-    fun L12_read_scalefactors(bs: CPointer<bs_t>, pba: CPointer<UByte>, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer): Unit {
+    fun L12_read_scalefactors(bs: CPointer<bs_t>, pba: CPointer<UByte>, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer) {
         var pba: CPointer<UByte> = pba // Mutating parameter
         var scf: FloatPointer = scf // Mutating parameter
         var g_deq_L12: Array54Float = __STATIC_L12_read_scalefactors_g_deq_L12
@@ -218,7 +218,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L12_read_scale_info(hdr: CPointer<UByte>, bs: CPointer<bs_t>, sci: CPointer<L12_scale_info>): Unit {
+    fun L12_read_scale_info(hdr: CPointer<UByte>, bs: CPointer<bs_t>, sci: CPointer<L12_scale_info>) {
         var g_bitalloc_code_tab: CPointer<UByte> = __STATIC_L12_read_scale_info_g_bitalloc_code_tab
         var subband_alloc: CPointer<L12_subband_alloc_t> = L12_subband_alloc_table(hdr, sci)
         var i: Int = 0
@@ -304,7 +304,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return group_size * 4
 
     }
-    fun L12_apply_scf_384(sci: CPointer<L12_scale_info>, scf: FloatPointer, dst: FloatPointer): Unit {
+    fun L12_apply_scf_384(sci: CPointer<L12_scale_info>, scf: FloatPointer, dst: FloatPointer) {
         var scf: FloatPointer = scf // Mutating parameter
         var dst: FloatPointer = dst // Mutating parameter
         var i: Int = 0
@@ -406,7 +406,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return main_data_begin
 
     }
-    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: CPointer<UByte>, bitbuf: CPointer<bs_t>, scfsi: Int): Unit {
+    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: CPointer<UByte>, bitbuf: CPointer<bs_t>, scfsi: Int) {
         var scf: CPointer<UByte> = scf // Mutating parameter
         var ist_pos: CPointer<UByte> = ist_pos // Mutating parameter
         var scfsi: Int = scfsi // Mutating parameter
@@ -460,7 +460,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return y
 
     }
-    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: CPointer<bs_t>, gr: CPointer<L3_gr_info_t>, scf: FloatPointer, ch: Int): Unit {
+    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: CPointer<bs_t>, gr: CPointer<L3_gr_info_t>, scf: FloatPointer, ch: Int) {
         var g_scf_partitions: Array3Array28UByte = __STATIC_L3_decode_scalefactors_g_scf_partitions
         var scf_partition: CPointer<UByte> = CPointer<UByte>(g_scf_partitions[(((!(!gr.value.n_short_sfb.toBool()))).toInt().toInt()) + (((!gr.value.n_long_sfb.toBool())).toInt().toInt())].ptr)
         var scf_size: Array4UByte = Array4UByte(fixedArrayOfUByte("\u0000", size = 4).ptr)
@@ -546,7 +546,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return (g_pow43[16 + ((x + sign) shr 6)] * (1f + (frac * ((4f / 3f) + (frac * (2f / 9f)))))) * (mult.toFloat())
 
     }
-    fun L3_huffman(dst: FloatPointer, bs: CPointer<bs_t>, gr_info: CPointer<L3_gr_info_t>, scf: FloatPointer, layer3gr_limit: Int): Unit {
+    fun L3_huffman(dst: FloatPointer, bs: CPointer<bs_t>, gr_info: CPointer<L3_gr_info_t>, scf: FloatPointer, layer3gr_limit: Int) {
         var dst: FloatPointer = dst // Mutating parameter
         var scf: FloatPointer = scf // Mutating parameter
         var tabs: CPointer<Short> = __STATIC_L3_huffman_tabs
@@ -715,7 +715,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         bs.value.pos = layer3gr_limit
 
     }
-    fun L3_midside_stereo(left: FloatPointer, n: Int): Unit {
+    fun L3_midside_stereo(left: FloatPointer, n: Int) {
         var i: Int = 0
         var right: FloatPointer = left + 576
         while (i < n) {
@@ -730,7 +730,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_intensity_stereo_band(left: FloatPointer, n: Int, kl: Float, kr: Float): Unit {
+    fun L3_intensity_stereo_band(left: FloatPointer, n: Int, kl: Float, kr: Float) {
         var i: Int = 0
         i = 0
         while (i < n) {
@@ -740,7 +740,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_top_band(right: FloatPointer, sfb: CPointer<UByte>, nbands: Int, max_band: Array3Int): Unit {
+    fun L3_stereo_top_band(right: FloatPointer, sfb: CPointer<UByte>, nbands: Int, max_band: Array3Int) {
         var right: FloatPointer = right // Mutating parameter
         var i: Int = 0
         var k: Int = 0
@@ -760,7 +760,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: CPointer<UByte>, hdr: CPointer<UByte>, max_band: Array3Int, mpeg2_sh: Int): Unit {
+    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: CPointer<UByte>, hdr: CPointer<UByte>, max_band: Array3Int, mpeg2_sh: Int) {
         var left: FloatPointer = left // Mutating parameter
         var g_pan: Array14Float = __STATIC_L3_stereo_process_g_pan
         var i: UInt = 0u
@@ -798,7 +798,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>): Unit {
+    fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>) {
         var max_band: Array3Int = Array3Int(fixedArrayOfInt(0, size = 3).ptr)
         var n_sfb: Int = (((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt()
         var i: Int = 0
@@ -821,7 +821,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, ((((gr[1].scalefac_compress.toUInt()) and 1u)).toInt()))
 
     }
-    fun L3_reorder(grbuf: FloatPointer, scratch: FloatPointer, sfb: CPointer<UByte>): Unit {
+    fun L3_reorder(grbuf: FloatPointer, scratch: FloatPointer, sfb: CPointer<UByte>) {
         var sfb: CPointer<UByte> = sfb // Mutating parameter
         var i: Int = 0
         var len: Int = 0
@@ -840,7 +840,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         memcpy((CPointer<Unit>(grbuf.ptr)), (CPointer<Unit>(scratch.ptr)), ((dst - scratch) * Float.SIZE_BYTES))
 
     }
-    fun L3_antialias(grbuf: FloatPointer, nbands: Int): Unit {
+    fun L3_antialias(grbuf: FloatPointer, nbands: Int) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
         var g_aa: Array2Array8Float = __STATIC_L3_antialias_g_aa
@@ -863,7 +863,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_dct3_9(y: FloatPointer): Unit {
+    fun L3_dct3_9(y: FloatPointer) {
         var s0: Float = 0f
         var s1: Float = 0f
         var s2: Float = 0f
@@ -914,7 +914,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         y[8] = s4 + s7
 
     }
-    fun L3_imdct36(grbuf: FloatPointer, overlap: FloatPointer, window: FloatPointer, nbands: Int): Unit {
+    fun L3_imdct36(grbuf: FloatPointer, overlap: FloatPointer, window: FloatPointer, nbands: Int) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var overlap: FloatPointer = overlap // Mutating parameter
         var i: Int = 0
@@ -959,7 +959,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_idct3(x0: Float, x1: Float, x2: Float, dst: FloatPointer): Unit {
+    fun L3_idct3(x0: Float, x1: Float, x2: Float, dst: FloatPointer) {
         var m1: Float = x1 * 0.8660254f
         var a1: Float = x0 - (x2 * 0.5f)
         dst[1] = x0 + x2
@@ -967,7 +967,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         dst[2] = a1 - m1
 
     }
-    fun L3_imdct12(x: FloatPointer, dst: FloatPointer, overlap: FloatPointer): Unit {
+    fun L3_imdct12(x: FloatPointer, dst: FloatPointer, overlap: FloatPointer) {
         var g_twid3: Array6Float = __STATIC_L3_imdct12_g_twid3
         var co: Array3Float = Array3Float(fixedArrayOfFloat(0f, size = 3).ptr)
         var si: Array3Float = Array3Float(fixedArrayOfFloat(0f, size = 3).ptr)
@@ -989,7 +989,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_imdct_short(grbuf: FloatPointer, overlap: FloatPointer, nbands: Int): Unit {
+    fun L3_imdct_short(grbuf: FloatPointer, overlap: FloatPointer, nbands: Int) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var overlap: FloatPointer = overlap // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
@@ -1007,7 +1007,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_change_sign(grbuf: FloatPointer): Unit {
+    fun L3_change_sign(grbuf: FloatPointer) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var b: Int = 0
         var i: Int = 0
@@ -1022,7 +1022,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_imdct_gr(grbuf: FloatPointer, overlap: FloatPointer, block_type: UInt, n_long_bands: UInt): Unit {
+    fun L3_imdct_gr(grbuf: FloatPointer, overlap: FloatPointer, block_type: UInt, n_long_bands: UInt) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var overlap: FloatPointer = overlap // Mutating parameter
         var g_mdct_window: Array2Array18Float = __STATIC_L3_imdct_gr_g_mdct_window
@@ -1038,7 +1038,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_save_reservoir(h: CPointer<mp3dec_t>, s: CPointer<mp3dec_scratch_t>): Unit {
+    fun L3_save_reservoir(h: CPointer<mp3dec_t>, s: CPointer<mp3dec_scratch_t>) {
         var pos: Int = (s.value.bs.pos + 7) / 8
         var remains: Int = (s.value.bs.limit / 8) - pos
         if (remains > 511) {
@@ -1060,7 +1060,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return ((h.value.reserv >= main_data_begin)).toInt().toInt()
 
     }
-    fun L3_decode(h: CPointer<mp3dec_t>, s: CPointer<mp3dec_scratch_t>, gr_info: CPointer<L3_gr_info_t>, nch: Int): Unit {
+    fun L3_decode(h: CPointer<mp3dec_t>, s: CPointer<mp3dec_scratch_t>, gr_info: CPointer<L3_gr_info_t>, nch: Int) {
         var gr_info: CPointer<L3_gr_info_t> = gr_info // Mutating parameter
         var ch: Int = 0
         ch = 0
@@ -1098,7 +1098,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun mp3d_DCT_II(grbuf: FloatPointer, n: Int): Unit {
+    fun mp3d_DCT_II(grbuf: FloatPointer, n: Int) {
         var g_sec: Array24Float = __STATIC_mp3d_DCT_II_g_sec
         var i: Int = 0
         var k: Int = 0
@@ -1201,7 +1201,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return s
 
     }
-    fun mp3d_synth_pair(pcm: CPointer<Short>, nch: Int, z: FloatPointer): Unit {
+    fun mp3d_synth_pair(pcm: CPointer<Short>, nch: Int, z: FloatPointer) {
         var z: FloatPointer = z // Mutating parameter
         var a: Float = 0f
         a = (z[14 * 64] - z[0]) * 29f
@@ -1225,7 +1225,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         pcm[16 * nch] = mp3d_scale_pcm(a)
 
     }
-    fun mp3d_synth(xl: FloatPointer, dstl: CPointer<Short>, nch: Int, lins: FloatPointer): Unit {
+    fun mp3d_synth(xl: FloatPointer, dstl: CPointer<Short>, nch: Int, lins: FloatPointer) {
         var i: Int = 0
         var xr: FloatPointer = xl + ((576 * (nch - 1)))
         var dstr: CPointer<Short> = dstl + ((nch - 1))
@@ -1375,7 +1375,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun mp3d_synth_granule(qmf_state: FloatPointer, grbuf: FloatPointer, nbands: Int, nch: Int, pcm: CPointer<Short>, lins: FloatPointer): Unit {
+    fun mp3d_synth_granule(qmf_state: FloatPointer, grbuf: FloatPointer, nbands: Int, nch: Int, pcm: CPointer<Short>, lins: FloatPointer) {
         var i: Int = 0
         i = 0
         while (i < nch) {
@@ -1466,7 +1466,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return mp3_bytes
 
     }
-    fun mp3dec_init(dec: CPointer<mp3dec_t>): Unit {
+    fun mp3dec_init(dec: CPointer<mp3dec_t>) {
         dec.value.header[0] = 0.toUByte()
 
     }
@@ -1555,7 +1555,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     class ExitError(val code: Int) : Error()
-    fun exit(status: Int): Unit {
+    fun exit(status: Int) {
 
         throw ExitError(status)
 
@@ -1743,7 +1743,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     /////////////
     operator fun Array2Array288Float.get(index: Int): Array288Float = Array288Float(addr(index))
-    operator fun Array2Array288Float.set(index: Int, value: Array288Float): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array288Float__ELEMENT_SIZE_BYTES) }
+    operator fun Array2Array288Float.set(index: Int, value: Array288Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array288Float__ELEMENT_SIZE_BYTES) }
     var Array2Array288Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2Array288FloatAlloc(setItems: Array2Array288Float.() -> Unit): Array2Array288Float = Array2Array288Float(alloca_zero(
         Array2Array288Float__TOTAL_SIZE_BYTES
@@ -1753,7 +1753,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2Array288Float.minus(offset: Int): CPointer<Array288Float> = CPointer<Array288Float>(addr(-offset))
     /////////////
     operator fun Array288Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array288Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array288Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array288Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array288FloatAlloc(setItems: Array288Float.() -> Unit): Array288Float = Array288Float(alloca_zero(
         Array288Float__TOTAL_SIZE_BYTES
@@ -1763,7 +1763,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array288Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array960Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array960Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array960Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array960Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array960FloatAlloc(setItems: Array960Float.() -> Unit): Array960Float = Array960Float(alloca_zero(
         Array960Float__TOTAL_SIZE_BYTES
@@ -1773,7 +1773,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array960Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array4UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array4UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array4UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array4UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array4UByteAlloc(setItems: Array4UByte.() -> Unit): Array4UByte = Array4UByte(alloca_zero(
         Array4UByte__TOTAL_SIZE_BYTES
@@ -1783,7 +1783,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array4UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array511UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array511UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array511UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array511UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array511UByteAlloc(setItems: Array511UByte.() -> Unit): Array511UByte = Array511UByte(alloca_zero(
         Array511UByte__TOTAL_SIZE_BYTES
@@ -1793,7 +1793,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array511UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array192Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array192Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array192Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array192Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array192FloatAlloc(setItems: Array192Float.() -> Unit): Array192Float = Array192Float(alloca_zero(
         Array192Float__TOTAL_SIZE_BYTES
@@ -1803,7 +1803,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array192Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array64UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array64UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array64UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array64UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array64UByteAlloc(setItems: Array64UByte.() -> Unit): Array64UByte = Array64UByte(alloca_zero(
         Array64UByte__TOTAL_SIZE_BYTES
@@ -1813,7 +1813,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array64UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array3UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array3UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array3UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array3UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array3UByteAlloc(setItems: Array3UByte.() -> Unit): Array3UByte = Array3UByte(alloca_zero(
         Array3UByte__TOTAL_SIZE_BYTES
@@ -1823,7 +1823,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array2815UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array2815UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array2815UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array2815UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2815UByteAlloc(setItems: Array2815UByte.() -> Unit): Array2815UByte = Array2815UByte(alloca_zero(
         Array2815UByte__TOTAL_SIZE_BYTES
@@ -1833,7 +1833,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2815UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array4L3_gr_info_t.get(index: Int): L3_gr_info_t = L3_gr_info_t(addr(index))
-    operator fun Array4L3_gr_info_t.set(index: Int, value: L3_gr_info_t): Unit { L3_gr_info_t(addr(index)).copyFrom(value) }
+    operator fun Array4L3_gr_info_t.set(index: Int, value: L3_gr_info_t) { L3_gr_info_t(addr(index)).copyFrom(value) }
     var Array4L3_gr_info_t.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array4L3_gr_info_tAlloc(setItems: Array4L3_gr_info_t.() -> Unit): Array4L3_gr_info_t = Array4L3_gr_info_t(alloca_zero(
         Array4L3_gr_info_t__TOTAL_SIZE_BYTES
@@ -1843,7 +1843,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array4L3_gr_info_t.minus(offset: Int): CPointer<L3_gr_info_t> = CPointer<L3_gr_info_t>(addr(-offset))
     /////////////
     operator fun Array2Array576Float.get(index: Int): Array576Float = Array576Float(addr(index))
-    operator fun Array2Array576Float.set(index: Int, value: Array576Float): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array576Float__ELEMENT_SIZE_BYTES) }
+    operator fun Array2Array576Float.set(index: Int, value: Array576Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array576Float__ELEMENT_SIZE_BYTES) }
     var Array2Array576Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2Array576FloatAlloc(setItems: Array2Array576Float.() -> Unit): Array2Array576Float = Array2Array576Float(alloca_zero(
         Array2Array576Float__TOTAL_SIZE_BYTES
@@ -1853,7 +1853,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2Array576Float.minus(offset: Int): CPointer<Array576Float> = CPointer<Array576Float>(addr(-offset))
     /////////////
     operator fun Array576Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array576Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array576Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array576Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array576FloatAlloc(setItems: Array576Float.() -> Unit): Array576Float = Array576Float(alloca_zero(
         Array576Float__TOTAL_SIZE_BYTES
@@ -1863,7 +1863,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array576Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array40Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array40Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array40Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array40Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array40FloatAlloc(setItems: Array40Float.() -> Unit): Array40Float = Array40Float(alloca_zero(
         Array40Float__TOTAL_SIZE_BYTES
@@ -1873,7 +1873,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array40Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array33Array64Float.get(index: Int): Array64Float = Array64Float(addr(index))
-    operator fun Array33Array64Float.set(index: Int, value: Array64Float): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array33Array64Float__ELEMENT_SIZE_BYTES) }
+    operator fun Array33Array64Float.set(index: Int, value: Array64Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array33Array64Float__ELEMENT_SIZE_BYTES) }
     var Array33Array64Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array33Array64FloatAlloc(setItems: Array33Array64Float.() -> Unit): Array33Array64Float = Array33Array64Float(alloca_zero(
         Array33Array64Float__TOTAL_SIZE_BYTES
@@ -1883,7 +1883,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array33Array64Float.minus(offset: Int): CPointer<Array64Float> = CPointer<Array64Float>(addr(-offset))
     /////////////
     operator fun Array64Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array64Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array64Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array64Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array64FloatAlloc(setItems: Array64Float.() -> Unit): Array64Float = Array64Float(alloca_zero(
         Array64Float__TOTAL_SIZE_BYTES
@@ -1893,7 +1893,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array64Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array2Array39UByte.get(index: Int): Array39UByte = Array39UByte(addr(index))
-    operator fun Array2Array39UByte.set(index: Int, value: Array39UByte): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array39UByte__ELEMENT_SIZE_BYTES) }
+    operator fun Array2Array39UByte.set(index: Int, value: Array39UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array39UByte__ELEMENT_SIZE_BYTES) }
     var Array2Array39UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2Array39UByteAlloc(setItems: Array2Array39UByte.() -> Unit): Array2Array39UByte = Array2Array39UByte(alloca_zero(
         Array2Array39UByte__TOTAL_SIZE_BYTES
@@ -1903,7 +1903,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2Array39UByte.minus(offset: Int): CPointer<Array39UByte> = CPointer<Array39UByte>(addr(-offset))
     /////////////
     operator fun Array39UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array39UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array39UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array39UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array39UByteAlloc(setItems: Array39UByte.() -> Unit): Array39UByte = Array39UByte(alloca_zero(
         Array39UByte__TOTAL_SIZE_BYTES
@@ -1913,7 +1913,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array39UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array2Array3Array15UByte.get(index: Int): Array3Array15UByte = Array3Array15UByte(addr(index))
-    operator fun Array2Array3Array15UByte.set(index: Int, value: Array3Array15UByte): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array3Array15UByte__ELEMENT_SIZE_BYTES) }
+    operator fun Array2Array3Array15UByte.set(index: Int, value: Array3Array15UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array3Array15UByte__ELEMENT_SIZE_BYTES) }
     var Array2Array3Array15UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2Array3Array15UByteAlloc(setItems: Array2Array3Array15UByte.() -> Unit): Array2Array3Array15UByte = Array2Array3Array15UByte(alloca_zero(
         Array2Array3Array15UByte__TOTAL_SIZE_BYTES
@@ -1923,7 +1923,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2Array3Array15UByte.minus(offset: Int): CPointer<Array3Array15UByte> = CPointer<Array3Array15UByte>(addr(-offset))
     /////////////
     operator fun Array3Array15UByte.get(index: Int): Array15UByte = Array15UByte(addr(index))
-    operator fun Array3Array15UByte.set(index: Int, value: Array15UByte): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array3Array15UByte__ELEMENT_SIZE_BYTES) }
+    operator fun Array3Array15UByte.set(index: Int, value: Array15UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array3Array15UByte__ELEMENT_SIZE_BYTES) }
     var Array3Array15UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array3Array15UByteAlloc(setItems: Array3Array15UByte.() -> Unit): Array3Array15UByte = Array3Array15UByte(alloca_zero(
         Array3Array15UByte__TOTAL_SIZE_BYTES
@@ -1933,7 +1933,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3Array15UByte.minus(offset: Int): CPointer<Array15UByte> = CPointer<Array15UByte>(addr(-offset))
     /////////////
     operator fun Array15UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array15UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array15UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array15UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array15UByteAlloc(setItems: Array15UByte.() -> Unit): Array15UByte = Array15UByte(alloca_zero(
         Array15UByte__TOTAL_SIZE_BYTES
@@ -1943,7 +1943,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array15UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array3UInt.get(index: Int): UInt = lw(addr(index)).toUInt()
-    operator fun Array3UInt.set(index: Int, value: UInt): Unit { sw(addr(index), (value).toInt()) }
+    operator fun Array3UInt.set(index: Int, value: UInt) { sw(addr(index), (value).toInt()) }
     var Array3UInt.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array3UIntAlloc(setItems: Array3UInt.() -> Unit): Array3UInt = Array3UInt(alloca_zero(
         Array3UInt__TOTAL_SIZE_BYTES
@@ -1953,7 +1953,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3UInt.minus(offset: Int): CPointer<UInt> = CPointer<UInt>(addr(-offset))
     /////////////
     operator fun Array54Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array54Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array54Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array54Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array54FloatAlloc(setItems: Array54Float.() -> Unit): Array54Float = Array54Float(alloca_zero(
         Array54Float__TOTAL_SIZE_BYTES
@@ -1963,7 +1963,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array54Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array8Array23UByte.get(index: Int): Array23UByte = Array23UByte(addr(index))
-    operator fun Array8Array23UByte.set(index: Int, value: Array23UByte): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array23UByte__ELEMENT_SIZE_BYTES) }
+    operator fun Array8Array23UByte.set(index: Int, value: Array23UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array23UByte__ELEMENT_SIZE_BYTES) }
     var Array8Array23UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array8Array23UByteAlloc(setItems: Array8Array23UByte.() -> Unit): Array8Array23UByte = Array8Array23UByte(alloca_zero(
         Array8Array23UByte__TOTAL_SIZE_BYTES
@@ -1973,7 +1973,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array8Array23UByte.minus(offset: Int): CPointer<Array23UByte> = CPointer<Array23UByte>(addr(-offset))
     /////////////
     operator fun Array23UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array23UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array23UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array23UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array23UByteAlloc(setItems: Array23UByte.() -> Unit): Array23UByte = Array23UByte(alloca_zero(
         Array23UByte__TOTAL_SIZE_BYTES
@@ -1983,7 +1983,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array23UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array8Array40UByte.get(index: Int): Array40UByte = Array40UByte(addr(index))
-    operator fun Array8Array40UByte.set(index: Int, value: Array40UByte): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array40UByte__ELEMENT_SIZE_BYTES) }
+    operator fun Array8Array40UByte.set(index: Int, value: Array40UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array40UByte__ELEMENT_SIZE_BYTES) }
     var Array8Array40UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array8Array40UByteAlloc(setItems: Array8Array40UByte.() -> Unit): Array8Array40UByte = Array8Array40UByte(alloca_zero(
         Array8Array40UByte__TOTAL_SIZE_BYTES
@@ -1993,7 +1993,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array8Array40UByte.minus(offset: Int): CPointer<Array40UByte> = CPointer<Array40UByte>(addr(-offset))
     /////////////
     operator fun Array40UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array40UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array40UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array40UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array40UByteAlloc(setItems: Array40UByte.() -> Unit): Array40UByte = Array40UByte(alloca_zero(
         Array40UByte__TOTAL_SIZE_BYTES
@@ -2003,7 +2003,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array40UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array4Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array4Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array4Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array4Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array4FloatAlloc(setItems: Array4Float.() -> Unit): Array4Float = Array4Float(alloca_zero(
         Array4Float__TOTAL_SIZE_BYTES
@@ -2013,7 +2013,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array4Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array3Array28UByte.get(index: Int): Array28UByte = Array28UByte(addr(index))
-    operator fun Array3Array28UByte.set(index: Int, value: Array28UByte): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array3Array28UByte__ELEMENT_SIZE_BYTES) }
+    operator fun Array3Array28UByte.set(index: Int, value: Array28UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array3Array28UByte__ELEMENT_SIZE_BYTES) }
     var Array3Array28UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array3Array28UByteAlloc(setItems: Array3Array28UByte.() -> Unit): Array3Array28UByte = Array3Array28UByte(alloca_zero(
         Array3Array28UByte__TOTAL_SIZE_BYTES
@@ -2023,7 +2023,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3Array28UByte.minus(offset: Int): CPointer<Array28UByte> = CPointer<Array28UByte>(addr(-offset))
     /////////////
     operator fun Array28UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array28UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array28UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array28UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array28UByteAlloc(setItems: Array28UByte.() -> Unit): Array28UByte = Array28UByte(alloca_zero(
         Array28UByte__TOTAL_SIZE_BYTES
@@ -2033,7 +2033,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array28UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array16UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array16UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array16UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array16UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array16UByteAlloc(setItems: Array16UByte.() -> Unit): Array16UByte = Array16UByte(alloca_zero(
         Array16UByte__TOTAL_SIZE_BYTES
@@ -2043,7 +2043,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array16UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array24UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array24UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array24UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array24UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array24UByteAlloc(setItems: Array24UByte.() -> Unit): Array24UByte = Array24UByte(alloca_zero(
         Array24UByte__TOTAL_SIZE_BYTES
@@ -2053,7 +2053,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array24UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array10UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array10UByte.set(index: Int, value: UByte): Unit { sb(addr(index), (value).toByte()) }
+    operator fun Array10UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array10UByte.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array10UByteAlloc(setItems: Array10UByte.() -> Unit): Array10UByte = Array10UByte(alloca_zero(
         Array10UByte__TOTAL_SIZE_BYTES
@@ -2063,7 +2063,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array10UByte.minus(offset: Int): CPointer<UByte> = CPointer<UByte>(addr(-offset))
     /////////////
     operator fun Array145Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array145Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array145Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array145Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array145FloatAlloc(setItems: Array145Float.() -> Unit): Array145Float = Array145Float(alloca_zero(
         Array145Float__TOTAL_SIZE_BYTES
@@ -2073,7 +2073,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array145Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array32Short.get(index: Int): Short = lh(addr(index))
-    operator fun Array32Short.set(index: Int, value: Short): Unit { sh(addr(index), value) }
+    operator fun Array32Short.set(index: Int, value: Short) { sh(addr(index), value) }
     var Array32Short.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array32ShortAlloc(setItems: Array32Short.() -> Unit): Array32Short = Array32Short(alloca_zero(
         Array32Short__TOTAL_SIZE_BYTES
@@ -2083,7 +2083,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array32Short.minus(offset: Int): CPointer<Short> = CPointer<Short>(addr(-offset))
     /////////////
     operator fun Array3Int.get(index: Int): Int = lw(addr(index))
-    operator fun Array3Int.set(index: Int, value: Int): Unit { sw(addr(index), value) }
+    operator fun Array3Int.set(index: Int, value: Int) { sw(addr(index), value) }
     var Array3Int.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array3IntAlloc(setItems: Array3Int.() -> Unit): Array3Int = Array3Int(alloca_zero(
         Array3Int__TOTAL_SIZE_BYTES
@@ -2093,7 +2093,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3Int.minus(offset: Int): IntPointer = IntPointer(addr(-offset))
     /////////////
     operator fun Array14Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array14Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array14Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array14Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array14FloatAlloc(setItems: Array14Float.() -> Unit): Array14Float = Array14Float(alloca_zero(
         Array14Float__TOTAL_SIZE_BYTES
@@ -2103,7 +2103,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array14Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array2Array8Float.get(index: Int): Array8Float = Array8Float(addr(index))
-    operator fun Array2Array8Float.set(index: Int, value: Array8Float): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array8Float__ELEMENT_SIZE_BYTES) }
+    operator fun Array2Array8Float.set(index: Int, value: Array8Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array8Float__ELEMENT_SIZE_BYTES) }
     var Array2Array8Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2Array8FloatAlloc(setItems: Array2Array8Float.() -> Unit): Array2Array8Float = Array2Array8Float(alloca_zero(
         Array2Array8Float__TOTAL_SIZE_BYTES
@@ -2113,7 +2113,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2Array8Float.minus(offset: Int): CPointer<Array8Float> = CPointer<Array8Float>(addr(-offset))
     /////////////
     operator fun Array8Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array8Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array8Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array8Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array8FloatAlloc(setItems: Array8Float.() -> Unit): Array8Float = Array8Float(alloca_zero(
         Array8Float__TOTAL_SIZE_BYTES
@@ -2123,7 +2123,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array8Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array18Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array18Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array18Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array18Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array18FloatAlloc(setItems: Array18Float.() -> Unit): Array18Float = Array18Float(alloca_zero(
         Array18Float__TOTAL_SIZE_BYTES
@@ -2133,7 +2133,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array18Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array9Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array9Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array9Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array9Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array9FloatAlloc(setItems: Array9Float.() -> Unit): Array9Float = Array9Float(alloca_zero(
         Array9Float__TOTAL_SIZE_BYTES
@@ -2143,7 +2143,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array9Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array6Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array6Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array6Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array6Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array6FloatAlloc(setItems: Array6Float.() -> Unit): Array6Float = Array6Float(alloca_zero(
         Array6Float__TOTAL_SIZE_BYTES
@@ -2153,7 +2153,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array6Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array3Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array3Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array3Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array3Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array3FloatAlloc(setItems: Array3Float.() -> Unit): Array3Float = Array3Float(alloca_zero(
         Array3Float__TOTAL_SIZE_BYTES
@@ -2163,7 +2163,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array2Array18Float.get(index: Int): Array18Float = Array18Float(addr(index))
-    operator fun Array2Array18Float.set(index: Int, value: Array18Float): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array18Float__ELEMENT_SIZE_BYTES) }
+    operator fun Array2Array18Float.set(index: Int, value: Array18Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array18Float__ELEMENT_SIZE_BYTES) }
     var Array2Array18Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array2Array18FloatAlloc(setItems: Array2Array18Float.() -> Unit): Array2Array18Float = Array2Array18Float(alloca_zero(
         Array2Array18Float__TOTAL_SIZE_BYTES
@@ -2173,7 +2173,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array2Array18Float.minus(offset: Int): CPointer<Array18Float> = CPointer<Array18Float>(addr(-offset))
     /////////////
     operator fun Array24Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array24Float.set(index: Int, value: Float): Unit { swf(addr(index), (value)) }
+    operator fun Array24Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array24Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array24FloatAlloc(setItems: Array24Float.() -> Unit): Array24Float = Array24Float(alloca_zero(
         Array24Float__TOTAL_SIZE_BYTES
@@ -2183,7 +2183,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array24Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array4Array8Float.get(index: Int): Array8Float = Array8Float(addr(index))
-    operator fun Array4Array8Float.set(index: Int, value: Array8Float): Unit { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array4Array8Float__ELEMENT_SIZE_BYTES) }
+    operator fun Array4Array8Float.set(index: Int, value: Array8Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array4Array8Float__ELEMENT_SIZE_BYTES) }
     var Array4Array8Float.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array4Array8FloatAlloc(setItems: Array4Array8Float.() -> Unit): Array4Array8Float = Array4Array8Float(alloca_zero(
         Array4Array8Float__TOTAL_SIZE_BYTES
@@ -2193,7 +2193,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array4Array8Float.minus(offset: Int): CPointer<Array8Float> = CPointer<Array8Float>(addr(-offset))
     /////////////
     operator fun Array1bs_t.get(index: Int): bs_t = bs_t(addr(index))
-    operator fun Array1bs_t.set(index: Int, value: bs_t): Unit { bs_t(addr(index)).copyFrom(value) }
+    operator fun Array1bs_t.set(index: Int, value: bs_t) { bs_t(addr(index)).copyFrom(value) }
     var Array1bs_t.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array1bs_tAlloc(setItems: Array1bs_t.() -> Unit): Array1bs_t = Array1bs_t(alloca_zero(
         Array1bs_t__TOTAL_SIZE_BYTES
@@ -2203,7 +2203,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array1bs_t.minus(offset: Int): CPointer<bs_t> = CPointer<bs_t>(addr(-offset))
     /////////////
     operator fun Array1L12_scale_info.get(index: Int): L12_scale_info = L12_scale_info(addr(index))
-    operator fun Array1L12_scale_info.set(index: Int, value: L12_scale_info): Unit { L12_scale_info(addr(index)).copyFrom(value) }
+    operator fun Array1L12_scale_info.set(index: Int, value: L12_scale_info) { L12_scale_info(addr(index)).copyFrom(value) }
     var Array1L12_scale_info.value get() = this[0]; set(value) { this[0] = value }
     inline fun Array1L12_scale_infoAlloc(setItems: Array1L12_scale_info.() -> Unit): Array1L12_scale_info = Array1L12_scale_info(alloca_zero(
         Array1L12_scale_info__TOTAL_SIZE_BYTES
@@ -2590,19 +2590,19 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     fun lwu(ptr: Int): Long = lw(ptr).toLong() and 0xFFFFFFFFL
 
     open fun lh(ptr: Int): Short = ((lbu(ptr) shl 0) or (lbu(ptr + 1) shl 8)).toShort()
-    open fun sh(ptr: Int, value: Short): Unit { sb(ptr, (value.toInt() ushr 0).toByte()); sb(ptr + 1, (value.toInt() ushr 8).toByte()) }
+    open fun sh(ptr: Int, value: Short) { sb(ptr, (value.toInt() ushr 0).toByte()); sb(ptr + 1, (value.toInt() ushr 8).toByte()) }
 
     open fun lw(ptr: Int): Int = ((lbu(ptr) shl 0) or (lbu(ptr + 1) shl 8) or (lbu(ptr + 2) shl 16) or (lbu(ptr + 3) shl 24))
-    open fun sw(ptr: Int, value: Int): Unit { sb(ptr + 0, (value ushr 0).toByte()); sb(ptr + 1, (value ushr 8).toByte()); sb(ptr + 2, (value ushr 16).toByte()); sb(ptr + 3, (value ushr 24).toByte()) }
+    open fun sw(ptr: Int, value: Int) { sb(ptr + 0, (value ushr 0).toByte()); sb(ptr + 1, (value ushr 8).toByte()); sb(ptr + 2, (value ushr 16).toByte()); sb(ptr + 3, (value ushr 24).toByte()) }
 
     open fun ld(ptr: Int): Long = (lwu(ptr) shl 0) or (lwu(ptr + 4) shl 32)
-    open fun sd(ptr: Int, value: Long): Unit { sw(ptr, (value ushr 0).toInt()); sw(ptr + 4, (value ushr 32).toInt()) }
+    open fun sd(ptr: Int, value: Long) { sw(ptr, (value ushr 0).toInt()); sw(ptr + 4, (value ushr 32).toInt()) }
 
     open fun lwf(ptr: Int): Float = Float.fromBits(lw(ptr))
-    open fun swf(ptr: Int, value: Float): Unit { sw(ptr, value.toRawBits()) }
+    open fun swf(ptr: Int, value: Float) { sw(ptr, value.toRawBits()) }
 
     open fun ldf(ptr: Int): Double = Double.fromBits(ld(ptr))
-    open fun sdf(ptr: Int, value: Double): Unit { sd(ptr, value.toRawBits()) }
+    open fun sdf(ptr: Int, value: Double) { sd(ptr, value.toRawBits()) }
 
     open fun memWrite(ptr: CPointer<*>, data: ByteArray, offset: Int = 0, size: Int = data.size) { for (n in offset until offset + size) sb(ptr.ptr + n, data[n]) }
     open fun memRead(ptr: CPointer<*>, data: ByteArray, offset: Int = 0, size: Int = data.size) { for (n in offset until offset + size) data[n] = lb(ptr.ptr + n) }
@@ -2645,7 +2645,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     // char*
     @kotlin.jvm.JvmName("getterByte") operator fun CPointer<Byte>.get(offset: Int): Byte = lb(this.ptr + offset * 1)
     @kotlin.jvm.JvmName("setterByte") operator fun CPointer<Byte>.set(offset: Int, value: Byte): Unit = sb(this.ptr + offset * 1, value)
-    @set:kotlin.jvm.JvmName("setter_Byte_value") @get:kotlin.jvm.JvmName("getter_Byte_value") var CPointer<Byte>.value: Byte get() = this[0]; set(value): Unit { this[0] = value }
+    @set:kotlin.jvm.JvmName("setter_Byte_value") @get:kotlin.jvm.JvmName("getter_Byte_value") var CPointer<Byte>.value: Byte get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusByte") operator fun CPointer<Byte>.plus(offset: Int): CPointer<Byte> = addPtr<Byte>(offset, 1)
     @kotlin.jvm.JvmName("minusByte") operator fun CPointer<Byte>.minus(offset: Int): CPointer<Byte> = addPtr<Byte>(-offset, 1)
     fun CPointer<Byte>.minusPtrByte(other: CPointer<Byte>): Int = (this.ptr - other.ptr) / 1
@@ -2656,7 +2656,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     // short*
     @kotlin.jvm.JvmName("getterShort") operator fun CPointer<Short>.get(offset: Int): Short = lh(this.ptr + offset * 2)
     @kotlin.jvm.JvmName("setterShort") operator fun CPointer<Short>.set(offset: Int, value: Short): Unit = sh(this.ptr + offset * 2, value)
-    @set:kotlin.jvm.JvmName("setter_Short_value") @get:kotlin.jvm.JvmName("getter_Short_value") var CPointer<Short>.value: Short get() = this[0]; set(value): Unit { this[0] = value }
+    @set:kotlin.jvm.JvmName("setter_Short_value") @get:kotlin.jvm.JvmName("getter_Short_value") var CPointer<Short>.value: Short get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusShort") operator fun CPointer<Short>.plus(offset: Int): CPointer<Short> = addPtr<Short>(offset, 2)
     @kotlin.jvm.JvmName("minusShort") operator fun CPointer<Short>.minus(offset: Int): CPointer<Short> = addPtr<Short>(-offset, 2)
     fun CPointer<Short>.minusPtrShort(other: CPointer<Short>): Int = (this.ptr - other.ptr) / 2
@@ -2667,7 +2667,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     // int*
     @kotlin.jvm.JvmName("getterInt") operator fun IntPointer.get(offset: Int): Int = lw(this.ptr + offset * 4)
     @kotlin.jvm.JvmName("setterInt") operator fun IntPointer.set(offset: Int, value: Int): Unit = sw(this.ptr + offset * 4, value)
-    @set:kotlin.jvm.JvmName("setter_Int_value") @get:kotlin.jvm.JvmName("getter_Int_value") var IntPointer.value: Int get() = this[0]; set(value): Unit { this[0] = value }
+    @set:kotlin.jvm.JvmName("setter_Int_value") @get:kotlin.jvm.JvmName("getter_Int_value") var IntPointer.value: Int get() = this[0]; set(value) { this[0] = value }
     inline fun fixedArrayOfInt(size: Int, setItems: IntPointer.() -> Unit): IntPointer = IntPointer(alloca_zero(size * 4).ptr).apply(setItems)
     fun fixedArrayOfInt(vararg values: Int, size: Int = values.size): IntPointer = fixedArrayOfInt(size) { for (n in 0 until values.size) this[n] = values[n] }
     ///////////////////////////////////////
@@ -2675,7 +2675,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     // long*
     @kotlin.jvm.JvmName("getterLong") operator fun CPointer<Long>.get(offset: Int): Long = ld(this.ptr + offset * 8)
     @kotlin.jvm.JvmName("setterLong") operator fun CPointer<Long>.set(offset: Int, value: Long): Unit = sd(this.ptr + offset * 8, value)
-    @set:kotlin.jvm.JvmName("setter_Long_value") @get:kotlin.jvm.JvmName("getter_Long_value") var CPointer<Long>.value: Long get() = this[0]; set(value): Unit { this[0] = value }
+    @set:kotlin.jvm.JvmName("setter_Long_value") @get:kotlin.jvm.JvmName("getter_Long_value") var CPointer<Long>.value: Long get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusLong") operator fun CPointer<Long>.plus(offset: Int): CPointer<Long> = addPtr<Long>(offset, 8)
     @kotlin.jvm.JvmName("minusLong") operator fun CPointer<Long>.minus(offset: Int): CPointer<Long> = addPtr<Long>(-offset, 8)
     fun CPointer<Long>.minusPtrLong(other: CPointer<Long>): Int = (this.ptr - other.ptr) / 8
@@ -2684,7 +2684,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
 
     operator fun CPointer<UByte>.get(offset: Int): UByte = lb(this.ptr + offset * 1).toUByte()
     operator fun CPointer<UByte>.set(offset: Int, value: UByte): Unit = sb(this.ptr + offset * 1, (value).toByte())
-    var CPointer<UByte>.value: UByte get() = this[0]; set(value): Unit { this[0] = value }
+    var CPointer<UByte>.value: UByte get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusUByte") operator fun CPointer<UByte>.plus(offset: Int): CPointer<UByte> = addPtr<UByte>(offset, 1)
     @kotlin.jvm.JvmName("minusUByte") operator fun CPointer<UByte>.minus(offset: Int): CPointer<UByte> = addPtr<UByte>(-offset, 1)
     fun CPointer<UByte>.minusPtrUByte(other: CPointer<UByte>): Int = (this.ptr - other.ptr) / 1
@@ -2694,7 +2694,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
 
     operator fun CPointer<UShort>.get(offset: Int): UShort = lh(this.ptr + offset * 2).toUShort()
     operator fun CPointer<UShort>.set(offset: Int, value: UShort): Unit = sh(this.ptr + offset * 2, (value).toShort())
-    var CPointer<UShort>.value: UShort get() = this[0]; set(value): Unit { this[0] = value }
+    var CPointer<UShort>.value: UShort get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusUShort") operator fun CPointer<UShort>.plus(offset: Int): CPointer<UShort> = addPtr<UShort>(offset, 2)
     @kotlin.jvm.JvmName("minusUShort") operator fun CPointer<UShort>.minus(offset: Int): CPointer<UShort> = addPtr<UShort>(-offset, 2)
     fun CPointer<UShort>.minusPtrUShort(other: CPointer<UShort>): Int = (this.ptr - other.ptr) / 2
@@ -2704,7 +2704,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
 
     operator fun CPointer<UInt>.get(offset: Int): UInt = lw(this.ptr + offset * 4).toUInt()
     operator fun CPointer<UInt>.set(offset: Int, value: UInt): Unit = sw(this.ptr + offset * 4, (value).toInt())
-    var CPointer<UInt>.value: UInt get() = this[0]; set(value): Unit { this[0] = value }
+    var CPointer<UInt>.value: UInt get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusUInt") operator fun CPointer<UInt>.plus(offset: Int): CPointer<UInt> = addPtr<UInt>(offset, 4)
     @kotlin.jvm.JvmName("minusUInt") operator fun CPointer<UInt>.minus(offset: Int): CPointer<UInt> = addPtr<UInt>(-offset, 4)
     fun CPointer<UInt>.minusPtrUInt(other: CPointer<UInt>): Int = (this.ptr - other.ptr) / 4
@@ -2713,7 +2713,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
 
     operator fun CPointer<ULong>.get(offset: Int): ULong = ld(this.ptr + offset * 8).toULong()
     operator fun CPointer<ULong>.set(offset: Int, value: ULong): Unit = sd(this.ptr + offset * 8, (value).toLong())
-    var CPointer<ULong>.value: ULong get() = this[0]; set(value): Unit { this[0] = value }
+    var CPointer<ULong>.value: ULong get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusULong") operator fun CPointer<ULong>.plus(offset: Int): CPointer<ULong> = addPtr<ULong>(offset, 8)
     @kotlin.jvm.JvmName("minusULong") operator fun CPointer<ULong>.minus(offset: Int): CPointer<ULong> = addPtr<ULong>(-offset, 8)
     fun CPointer<ULong>.minusPtrULong(other: CPointer<ULong>): Int = (this.ptr - other.ptr) / 8
@@ -2723,14 +2723,14 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     ///////////////////////////////////////
     operator fun FloatPointer.get(offset: Int): Float = lwf(this.ptr + offset * 4)
     operator fun FloatPointer.set(offset: Int, value: Float): Unit = swf(this.ptr + offset * 4, (value))
-    var FloatPointer.value: Float get() = this[0]; set(value): Unit { this[0] = value }
+    var FloatPointer.value: Float get() = this[0]; set(value) { this[0] = value }
     inline fun fixedArrayOfFloat(size: Int, setItems: FloatPointer.() -> Unit): FloatPointer = FloatPointer(alloca_zero(size * 4).ptr).apply(setItems)
     fun fixedArrayOfFloat(vararg values: Float, size: Int = values.size): FloatPointer = fixedArrayOfFloat(size) { for (n in 0 until values.size) this[n] = values[n] }
     ///////////////////////////////////////
 
     @kotlin.jvm.JvmName("getterDouble") operator fun CPointer<Double>.get(offset: Int): Double = ldf(this.ptr + offset * 4)
     @kotlin.jvm.JvmName("setterDouble") operator fun CPointer<Double>.set(offset: Int, value: Double): Unit = sdf(this.ptr + offset * 4, (value))
-    @set:kotlin.jvm.JvmName("setter_Double_value") @get:kotlin.jvm.JvmName("getter_Double_value") var CPointer<Double>.value: Double get() = this[0]; set(value): Unit { this[0] = value }
+    @set:kotlin.jvm.JvmName("setter_Double_value") @get:kotlin.jvm.JvmName("getter_Double_value") var CPointer<Double>.value: Double get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusDouble") operator fun CPointer<Double>.plus(offset: Int): CPointer<Double> = addPtr<Double>(offset, 4)
     @kotlin.jvm.JvmName("minusDouble") operator fun CPointer<Double>.minus(offset: Int): CPointer<Double> = addPtr<Double>(-offset, 4)
     fun CPointer<Double>.minusPtrDouble(other: CPointer<Double>): Int = (this.ptr - other.ptr) / 4
@@ -2767,7 +2767,7 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
             return CPointer(head)
         }
     }
-    fun free(ptr: CPointer<*>): Unit { chunks.remove(ptr.ptr)?.let { freeChunks += it } }
+    fun free(ptr: CPointer<*>) { chunks.remove(ptr.ptr)?.let { freeChunks += it } }
 
     ///////////////////////////////////////
     // I/O
@@ -2852,7 +2852,7 @@ internal open class Runtime(REQUESTED_HEAP_SIZE: Int = 0, REQUESTED_STACK_PTR: I
     private val HEAP = ByteArray(HEAP_SIZE)
 
     final override fun lb(ptr: Int): Byte = HEAP[ptr]
-    final override fun sb(ptr: Int, value: Byte): Unit { HEAP[ptr] = value }
+    final override fun sb(ptr: Int, value: Byte) { HEAP[ptr] = value }
 
     override fun memset(ptr: CPointer<*>, value: Int, num: Int): CPointer<Unit> {
         this.HEAP.fill(value.toByte(), ptr.ptr, ptr.ptr + num)

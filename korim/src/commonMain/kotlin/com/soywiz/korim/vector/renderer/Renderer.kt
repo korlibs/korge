@@ -1,12 +1,12 @@
 package com.soywiz.korim.vector.renderer
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.GraphicsPath
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.transformed
 
 abstract class Renderer {
     var debug: Boolean = false
@@ -69,7 +69,7 @@ abstract class Renderer {
         transform: Matrix = Matrix()
     ) = drawImage(image, x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble(), transform)
 
-    open fun dispose(): Unit {
+    open fun dispose() {
         flush()
     }
 }

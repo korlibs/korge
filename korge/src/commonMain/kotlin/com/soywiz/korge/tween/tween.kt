@@ -2,20 +2,24 @@
 
 package com.soywiz.korge.tween
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.jvm.*
-import kotlin.reflect.*
+import com.soywiz.kmem.clamp
+import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.component.UpdateComponent
+import com.soywiz.korge.component.attach
+import com.soywiz.korge.component.detach
+import com.soywiz.korge.view.QView
+import com.soywiz.korio.async.asyncImmediately
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.withTimeout
+import com.soywiz.korma.interpolation.Easing
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.resume
 
 class TweenComponent(
     override val view: BaseView,
@@ -114,7 +118,7 @@ suspend fun BaseView?.tween(
     waitTime: TimeSpan = TimeSpan.NIL,
     timeout: Boolean = false,
     callback: (Double) -> Unit = { }
-): Unit {
+) {
 	if (this != null) {
 		var tc: TweenComponent? = null
 		try {
@@ -148,7 +152,7 @@ suspend fun QView.tween(
     easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
     callback: (Double) -> Unit = { }
-): Unit {
+) {
     if (isEmpty()) {
         // @TODO: Do this?
         delay(time)

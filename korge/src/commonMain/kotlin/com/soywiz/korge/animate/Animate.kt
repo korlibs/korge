@@ -1,23 +1,31 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.*
-import com.soywiz.klock.milliseconds
-import com.soywiz.kmem.*
+import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.fill
 import com.soywiz.korge.debug.*
-import com.soywiz.korge.debug.ObservableProperty
-import com.soywiz.korge.html.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
+import com.soywiz.korge.html.Html
+import com.soywiz.korge.internal.KorgeDeprecated
+import com.soywiz.korge.render.MaskStates
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
-import kotlinx.coroutines.*
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.util.Once
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korui.UiContainer
+import com.soywiz.korui.button
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
 
 interface AnElement {
 	val library: AnLibrary
@@ -617,7 +625,7 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
             update()
         }
 
-    suspend fun playAndWaitStop(name: String): Unit { playAndWaitEvent(name, setOf()) }
+    suspend fun playAndWaitStop(name: String) { playAndWaitEvent(name, setOf()) }
 
 	suspend fun playAndWaitEvent(name: String, vararg events: String): String? = playAndWaitEvent(name, events.toSet())
 

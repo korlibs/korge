@@ -1,16 +1,23 @@
 package com.soywiz.korag.software
 
-import com.soywiz.kgl.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
+import com.soywiz.klock.measureTime
+import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.clamp
 import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.interpolation.*
-import kotlin.math.*
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.VarKind
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointInt
+import com.soywiz.korma.geom.vector.Edge
+import com.soywiz.korma.interpolation.interpolate
+import kotlin.math.max
+import kotlin.math.min
 
 open class AGFactorySoftware() : AGFactory {
 	override val supportsNativeFrame: Boolean = false
@@ -357,13 +364,13 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         return out.setTo((((x + 1f) * .5f) * bitmap.width).toInt(), (((y + 1f) * .5f) * bitmap.height).toInt())
     }
 
-    override fun readColor(bitmap: Bitmap32): Unit {
+    override fun readColor(bitmap: Bitmap32) {
         println("WARNNING. AGSoftware.readColor not implemented")
     }
-    override fun readDepth(width: Int, height: Int, out: FloatArray): Unit {
+    override fun readDepth(width: Int, height: Int, out: FloatArray) {
         println("WARNNING. AGSoftware.readDepth not implemented")
     }
-    override fun readColorTexture(texture: Texture, x: Int, y: Int, width: Int, height: Int): Unit {
+    override fun readColorTexture(texture: Texture, x: Int, y: Int, width: Int, height: Int) {
         TODO("readColorTexture")
     }
 

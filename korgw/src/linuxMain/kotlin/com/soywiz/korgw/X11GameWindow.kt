@@ -2,15 +2,20 @@ package com.soywiz.korgw
 
 import X11Embed.*
 import com.soywiz.kgl.*
-import com.soywiz.kmem.*
-import com.soywiz.kmem.dyn.*
+import com.soywiz.kmem.Platform
+import com.soywiz.kmem.dyn.DynamicLibrary
+import com.soywiz.kmem.dyn.func
+import com.soywiz.kmem.startAddressOf
+import com.soywiz.kmem.toInt
+import com.soywiz.kmem.write32LE
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korim.bitmap.Bitmap
 import kotlinx.cinterop.*
-import platform.posix.*
+import platform.posix.fflush
+import platform.posix.stdout
 
 internal object X11 : DynamicLibrary("libX11.so") {
     val XDefaultScreen by func<(d: CDisplayPointer) -> Int>()
@@ -156,7 +161,7 @@ class X11GameWindow : EventLoopGameWindow() {
     var w: Window = 0UL
     var s: Int = 0
 
-    fun realSetTitle(title: String): Unit {
+    fun realSetTitle(title: String) {
         if (d == null || w == NilWin) return
         try {
             memScoped {
@@ -170,7 +175,7 @@ class X11GameWindow : EventLoopGameWindow() {
         }
     }
 
-    fun realSetIcon(value: Bitmap?): Unit {
+    fun realSetIcon(value: Bitmap?) {
         if (d == null || w == NilWin || value == null) return
         try {
             memScoped {
@@ -205,7 +210,7 @@ class X11GameWindow : EventLoopGameWindow() {
     private fun ArenaBase.cstr(str: String) = str.cstr.placeTo(this)
 
     // https://stackoverflow.com/questions/9065669/x11-glx-fullscreen-mode
-    fun realSetFullscreen(value: Boolean): Unit {
+    fun realSetFullscreen(value: Boolean) {
         println("realSetFullscreen. value=$value")
         if (d == null || w == NilWin) return
         try {
@@ -263,7 +268,7 @@ class X11GameWindow : EventLoopGameWindow() {
         }
     }
 
-    fun realSetVisible(value: Boolean): Unit {
+    fun realSetVisible(value: Boolean) {
         if (d == null || w == NilWin) return
     }
 

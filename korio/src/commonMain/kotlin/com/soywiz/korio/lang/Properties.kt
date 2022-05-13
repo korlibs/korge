@@ -1,7 +1,14 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.kds.*
-import com.soywiz.korio.file.*
+import com.soywiz.kds.CopyOnWriteFrozenMap
+import com.soywiz.korio.file.VfsFile
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.Map
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
+import kotlin.collections.set
+import kotlin.collections.toMap
 
 expect object SystemProperties : Properties
 
@@ -14,11 +21,11 @@ open class Properties(map: Map<String, String>? = null) {
 
     open operator fun contains(key: String): Boolean = get(key) != null
     open operator fun get(key: String): String? = map[key]
-    open operator fun set(key: String, value: String): Unit { map[key] = value }
-    open fun setAll(values: Map<String, String>): Unit {
+    open operator fun set(key: String, value: String) { map[key] = value }
+    open fun setAll(values: Map<String, String>) {
         for ((key, value) in values) set(key, value)
     }
-    open fun remove(key: String): Unit { map.remove(key) }
+    open fun remove(key: String) { map.remove(key) }
     open fun getAll(): Map<String, String> = map.toMap()
 
     companion object {

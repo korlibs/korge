@@ -1,12 +1,12 @@
 package com.soywiz.korui
 
-import com.soywiz.kds.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.native.*
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.SizeInt
+import com.soywiz.korui.layout.UiLayout
+import com.soywiz.korui.layout.VerticalUiLayout
+import com.soywiz.korui.native.NativeUiFactory
 
 open class UiContainer(app: UiApplication, val container: NativeUiFactory.NativeContainer = app.factory.createContainer()) : UiComponent(app, container) {
     private val _children = arrayListOf<UiComponent>()
@@ -39,7 +39,7 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
 
     fun getChildIndex(child: UiComponent): Int = _children.indexOf(child)
     fun getChildAt(index: Int): UiComponent = _children[index]
-    fun removeChildAt(index: Int): Unit {
+    fun removeChildAt(index: Int) {
         _children.removeAt(index)
         container.removeChildAt(index)
     }
@@ -57,7 +57,7 @@ open class UiContainer(app: UiApplication, val container: NativeUiFactory.Native
         _children.add(rindex.coerceAtLeast(0), child)
         child._parent = this
     }
-    fun replaceChildAt(index: Int, newChild: UiComponent): Unit {
+    fun replaceChildAt(index: Int, newChild: UiComponent) {
         removeChildAt(index)
         insertChildAt(index, newChild)
     }

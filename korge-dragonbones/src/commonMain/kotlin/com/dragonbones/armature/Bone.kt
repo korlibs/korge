@@ -96,7 +96,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 	 */
 	var _cachedFrameIndices:  IntArrayList? = null
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		this.offsetMode = OffsetMode.Additive
@@ -113,7 +113,7 @@ open class Bone(pool: SingleObjectPool<out Bone>) :  TransformObject(pool) {
 		this._cachedFrameIndices = null
 	}
 
-	protected open fun _updateGlobalTransformMatrix(isCache: Boolean): Unit {
+	protected open fun _updateGlobalTransformMatrix(isCache: Boolean) {
 		// For typescript.
 		val boneData = this._boneData
 		val global = this.global

@@ -1,8 +1,11 @@
 package com.soywiz.korte
 
-import com.soywiz.korte.dynamic.*
-import com.soywiz.korte.internal.*
-import com.soywiz.korte.util.*
+import com.soywiz.korte.dynamic.Dynamic2
+import com.soywiz.korte.dynamic.DynamicContext
+import com.soywiz.korte.dynamic.Mapper2
+import com.soywiz.korte.dynamic.ObjectMapper2
+import com.soywiz.korte.internal.Pool
+import com.soywiz.korte.util.AsyncTextWriterContainer
 import kotlin.collections.set
 
 open class TemplateContent(
@@ -52,7 +55,7 @@ class Template internal constructor(
         suspend fun get(key: Any?): Any? = Dynamic2.accessAny(map, key, mapper) ?: parent?.get(key)
 
         // operator
-        suspend fun set(key: Any?, value: Any?): Unit {
+        suspend fun set(key: Any?, value: Any?) {
             Dynamic2.setAny(map, key, value, mapper)
         }
     }

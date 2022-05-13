@@ -1,9 +1,10 @@
 package com.soywiz.korio.net
 
-import com.soywiz.korio.async.*
-import java.io.*
-import java.net.*
-import javax.net.ssl.*
+import com.soywiz.korio.async.AsyncThread2
+import java.io.InputStream
+import java.io.OutputStream
+import java.net.Socket
+import javax.net.ssl.SSLSocketFactory
 
 class JvmAsyncClient(private var socket: Socket? = null, val secure: Boolean = false) : AsyncClient {
     //private val queue = AsyncThread()
@@ -29,7 +30,7 @@ class JvmAsyncClient(private var socket: Socket? = null, val secure: Boolean = f
 
     override val address: AsyncAddress get() = socket?.remoteSocketAddress.toAsyncAddress()
 
-    override suspend fun connect(host: String, port: Int): Unit {
+    override suspend fun connect(host: String, port: Int) {
         connectionQueue {
             doIo {
                 socket = if (secure) SSLSocketFactory.getDefault().createSocket(host, port) else Socket(host, port)
@@ -43,7 +44,7 @@ class JvmAsyncClient(private var socket: Socket? = null, val secure: Boolean = f
     override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int {
         return readQueue { doIo { socketIs?.read(buffer, offset, len) ?: -1 } }
     }
-    override suspend fun write(buffer: ByteArray, offset: Int, len: Int): Unit {
+    override suspend fun write(buffer: ByteArray, offset: Int, len: Int) {
         writeQueue { doIo { socketOs?.write(buffer, offset, len) } }
     }
 

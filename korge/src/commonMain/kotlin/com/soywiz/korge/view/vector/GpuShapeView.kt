@@ -1,22 +1,29 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korag.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
+import com.soywiz.kds.FastIdentityMap
+import com.soywiz.kds.clear
+import com.soywiz.kds.getOrPut
+import com.soywiz.klock.measureTime
+import com.soywiz.klogger.Console
+import com.soywiz.korag.AG
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korim.paint.*
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Line
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.math.*
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.shape.emitPoints2
+import com.soywiz.korma.geom.shape.toPathPointList
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
+import kotlin.math.max
+import kotlin.math.sign
 
 @KorgeExperimental
 inline fun Container.gpuShapeView(
@@ -188,7 +195,7 @@ open class GpuShapeView(
         fun p0(index: Int) = if (index == 0) s0 else e0
         fun p1(index: Int) = if (index == 0) s1 else e1
 
-        fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool): Unit {
+        fun setTo(s: Point, e: Point, lineWidth: Double, scope: PointPool) {
             this.s = s
             this.e = e
             scope.apply {

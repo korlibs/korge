@@ -112,7 +112,7 @@ class ActionExecutionContext(
 }
 
 class ActionUnknown(code: Int, length: Int, pos: Int) : Action(code, length, pos), IAction {
-	override fun parse(data: SWFData): Unit { if (length > 0) data.skipBytes(length) }
+	override fun parse(data: SWFData) { if (length > 0) data.skipBytes(length) }
 
 	override fun toString(indent: Int): String = "[????] Code: " + code.toString(16) + ", Length: " + length
 }
@@ -349,7 +349,7 @@ class ActionIf(code: Int, length: Int, pos: Int) : Action(code, length, pos), IA
 	// branchIndex is resolved in TagDoAction::parse()
 	override var branchIndex: Int = -2
 
-	override fun parse(data: SWFData): Unit { branchOffset = data.readSI16() }
+	override fun parse(data: SWFData) { branchOffset = data.readSI16() }
 
 	override fun toString(indent: Int): String {
 		val bi = "[" + when {
@@ -376,7 +376,7 @@ class ActionJump(code: Int, length: Int, pos: Int) : Action(code, length, pos), 
 	// branchIndex is resolved in TagDoAction::parse()
 	override var branchIndex: Int = -2
 
-	override fun parse(data: SWFData): Unit { branchOffset = data.readSI16() }
+	override fun parse(data: SWFData) { branchOffset = data.readSI16() }
 
 	override fun toString(indent: Int): String {
 		val bi = " [" + when {

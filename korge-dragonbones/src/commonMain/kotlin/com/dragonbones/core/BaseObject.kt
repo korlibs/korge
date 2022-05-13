@@ -64,7 +64,7 @@ abstract class BaseObject(val sopool: SingleObjectPool<out BaseObject>) {
 	 * @version DragonBones 4.5
 	 * @language zh_CN
 	 */
-	fun returnToPool(): Unit {
+	fun returnToPool() {
 		this._onClear()
         ipool.returnObject(this)
 	}

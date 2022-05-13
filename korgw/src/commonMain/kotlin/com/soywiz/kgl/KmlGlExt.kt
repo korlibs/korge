@@ -1,9 +1,10 @@
 package com.soywiz.kgl
 
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
+import com.soywiz.klogger.Console
+import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.fbuffer
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.krypto.encoding.*
+import com.soywiz.krypto.encoding.hex
 import kotlin.native.concurrent.ThreadLocal
 
 class KmlGlException(message: String) : RuntimeException(message)
@@ -52,10 +53,10 @@ fun KmlGl.genTexture(): Int = tempInt1Buffer { genTextures(1, it) }
 fun KmlGl.genRenderbuffer(): Int = tempInt1Buffer { genRenderbuffers(1, it) }
 fun KmlGl.genFramebuffer(): Int = tempInt1Buffer { genFramebuffers(1, it) }
 
-fun KmlGl.deleteBuffer(id: Int): Unit { tempInt1Buffer(id) { deleteBuffers(1, it) } }
-fun KmlGl.deleteTexture(id: Int): Unit { tempInt1Buffer(id) { deleteTextures(1, it) } }
-fun KmlGl.deleteRenderbuffer(id: Int): Unit { tempInt1Buffer(id) { deleteRenderbuffers(1, it) } }
-fun KmlGl.deleteFramebuffer(id: Int): Unit { tempInt1Buffer(id) { deleteFramebuffers(1, it) } }
+fun KmlGl.deleteBuffer(id: Int) { tempInt1Buffer(id) { deleteBuffers(1, it) } }
+fun KmlGl.deleteTexture(id: Int) { tempInt1Buffer(id) { deleteTextures(1, it) } }
+fun KmlGl.deleteRenderbuffer(id: Int) { tempInt1Buffer(id) { deleteRenderbuffers(1, it) } }
+fun KmlGl.deleteFramebuffer(id: Int) { tempInt1Buffer(id) { deleteFramebuffers(1, it) } }
 
 private inline fun KmlGl.getInfoLog(
 	obj: Int,

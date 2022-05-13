@@ -1,9 +1,10 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RgbaArray
 import org.khronos.webgl.*
-import org.w3c.dom.*
+import org.w3c.dom.CanvasRenderingContext2D
 
 // @TODO: BrowserImage and HtmlImage should be combined!
 object HtmlImage {
@@ -38,7 +39,7 @@ object HtmlImage {
 	fun renderToHtmlCanvas(bmp: Bitmap32, canvas: HTMLCanvasElementLike): HTMLCanvasElementLike =
         renderToHtmlCanvas(bmp.depremultipliedIfRequired().data, bmp.width, bmp.height, canvas)
 
-	fun renderHtmlCanvasIntoBitmap(canvas: HTMLCanvasElementLike, out: RgbaArray): Unit {
+	fun renderHtmlCanvasIntoBitmap(canvas: HTMLCanvasElementLike, out: RgbaArray) {
 		val width = canvas.width
 		val height = canvas.height
 		val len = width * height
@@ -50,7 +51,7 @@ object HtmlImage {
         //console.log(out);
 	}
 
-	fun renderHtmlCanvasIntoBitmap(canvas: HTMLCanvasElementLike, bmp: Bitmap32): Unit {
+	fun renderHtmlCanvasIntoBitmap(canvas: HTMLCanvasElementLike, bmp: Bitmap32) {
 		renderHtmlCanvasIntoBitmap(canvas, bmp.data)
 	}
 
@@ -60,7 +61,7 @@ object HtmlImage {
 
 	fun htmlCanvasToDataUrl(canvas: HTMLCanvasElementLike): String = canvas.toDataURL()
 
-	fun htmlCanvasClear(canvas: HTMLCanvasElementLike): Unit {
+	fun htmlCanvasClear(canvas: HTMLCanvasElementLike) {
 		val ctx = canvas.getContext("2d").unsafeCast<CanvasRenderingContext2D>()
 		ctx.clearRect(
 			0.0, 0.0, canvas.width.toDouble(), canvas.height.toDouble()

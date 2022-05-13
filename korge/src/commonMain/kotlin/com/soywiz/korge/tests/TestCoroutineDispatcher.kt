@@ -1,10 +1,9 @@
 package com.soywiz.korge.tests
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.*
-import com.soywiz.klock.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.lock.Lock
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
@@ -47,7 +46,7 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 		scheduleAfter(0) { block.run() }
 	}
 
-	override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>): Unit {
+	override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {
 		scheduleAfter(timeMillis.toInt()) { continuation.resume(Unit) }
 	}
 

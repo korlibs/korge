@@ -1,9 +1,11 @@
 package com.soywiz.korma.triangle.pathfind
 
 import com.soywiz.kds.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.triangle.*
-import kotlin.math.*
+import kotlin.math.hypot
 
 private typealias SpatialNode = SpatialMesh.Node
 
@@ -84,15 +86,15 @@ class SpatialMeshFind(val spatialMesh: SpatialMesh) {
         return returnList
     }
 
-    private fun addToOpenedList(node: SpatialNode): Unit { openedList.add(node) }
+    private fun addToOpenedList(node: SpatialNode) { openedList.add(node) }
     private fun openedListHasItems(): Boolean = openedList.size > 0
     private fun getAndRemoveFirstFromOpenedList(): SpatialNode = openedList.removeHead()
-    private fun addNodeToClosedList(node: SpatialNode): Unit { node.closed = true }
+    private fun addNodeToClosedList(node: SpatialNode) { node.closed = true }
     private fun inClosedList(node: SpatialNode): Boolean = node.closed
     private fun getNodeNeighbors(node: SpatialNode): ArrayList<SpatialNode> = node.neighbors
     private fun inOpenedList(node: SpatialNode): Boolean = openedList.contains(node)
 
-    private fun updatedNodeOnOpenedList(node: SpatialNode): Unit {
+    private fun updatedNodeOnOpenedList(node: SpatialNode) {
         openedList.updateObject(node)
     }
 

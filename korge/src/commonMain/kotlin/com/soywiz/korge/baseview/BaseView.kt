@@ -80,7 +80,7 @@ open class BaseView {
 //fun removeComponents(c: KClass<out Component>) { _components?.removeAll(c) }
 
     /** Removes all the components attached to this view */
-    fun removeAllComponents(): Unit {
+    fun removeAllComponents() {
         _components?.removeAll()
     }
 

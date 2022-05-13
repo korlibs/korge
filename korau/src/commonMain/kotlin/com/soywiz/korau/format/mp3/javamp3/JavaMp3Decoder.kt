@@ -1,10 +1,13 @@
 package com.soywiz.korau.format.mp3.javamp3
 
-import com.soywiz.kmem.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.fill
+import com.soywiz.korau.internal.SampleConvert
+import com.soywiz.korio.lang.Charsets
+import com.soywiz.korio.lang.EOFException
 import com.soywiz.korio.stream.*
-import kotlin.math.*
+import kotlin.math.min
+import kotlin.math.pow
 
 /*
 https://github.com/kevinstadler/JavaMP3
@@ -1587,7 +1590,7 @@ internal object JavaMp3Decoder {
             return _samplesBuffer!!
         }
 
-        fun seek(pos: Long): Unit {
+        fun seek(pos: Long) {
             //frequency = -1
             //stereo = -1
             //mainDataReader.top = 0

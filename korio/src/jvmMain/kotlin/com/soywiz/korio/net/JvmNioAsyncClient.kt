@@ -1,12 +1,12 @@
 package com.soywiz.korio.net
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.concurrent.atomic.*
-import java.io.*
-import java.net.*
-import java.nio.*
-import java.nio.channels.*
-import java.util.concurrent.*
+import com.soywiz.korio.async.AsyncThread2
+import com.soywiz.korio.concurrent.atomic.incrementAndGet
+import java.io.IOException
+import java.net.InetSocketAddress
+import java.nio.ByteBuffer
+import java.nio.channels.AsynchronousSocketChannel
+import java.util.concurrent.TimeUnit
 
 class JvmNioAsyncClient(private var client: AsynchronousSocketChannel? = null) : AsyncClient {
     private val readQueue = AsyncThread2()
@@ -72,8 +72,8 @@ class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocket
             AsynchronousChannelGroup.withThreadPool(EventLoopExecutorService(c.context))
         )
         sc?.connect(InetSocketAddress(host, port), this, object : CompletionHandler<Void, AsyncClient> {
-            override fun completed(result: Void?, attachment: AsyncClient): Unit { c.resume(Unit) }
-            override fun failed(exc: Throwable, attachment: AsyncClient): Unit { c.resumeWithException(exc) }
+            override fun completed(result: Void?, attachment: AsyncClient) { c.resume(Unit) }
+            override fun failed(exc: Throwable, attachment: AsyncClient) { c.resumeWithException(exc) }
         })
     }
 
@@ -102,7 +102,7 @@ class JvmAsyncClientAsynchronousSocketChannel(private var sc: AsynchronousSocket
         }
     }
 
-    private suspend fun _write(buffer: ByteArray, offset: Int, len: Int): Unit {
+    private suspend fun _write(buffer: ByteArray, offset: Int, len: Int) {
         _writeBufferFull(ByteBuffer.wrap(buffer, offset, len))
     }
 

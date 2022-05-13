@@ -61,7 +61,7 @@ class TagCSMTextSettings : _BaseTag(74, "CSMTextSettings", 8, 1) {
 	var thickness = 0.0
 	var sharpness = 0.0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		textId = data.readUI16()
 		useFlashType = data.readUB(2)
 		gridFit = data.readUB(3)
@@ -78,7 +78,7 @@ class TagCSMTextSettings : _BaseTag(74, "CSMTextSettings", 8, 1) {
 class TagDebugID : _BaseTag(63, "DebugID", 6, 1) {
 	private var uuid = ByteArray(0)
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		if (length > 0) uuid = data.data.readBytes(length)
 	}
 
@@ -99,7 +99,7 @@ class TagDebugID : _BaseTag(63, "DebugID", 6, 1) {
 class TagDefineBinaryData : _BaseDefinitionTag(87, "DefineBinaryData", 9, 1) {
 	var binaryData = ByteArray(0)
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		data.readUI32() // reserved, always 0
 		if (length > 6) binaryData = data.readBytes(length - 6)
@@ -119,7 +119,7 @@ open class TagDefineBits(
 
 	var bitmapData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		if (length > 2) bitmapData = FlashByteArray(data.readBytes(length - 2))
 	}
@@ -134,7 +134,7 @@ open class TagDefineBitsJPEG2(
     version: Int = 2,
     level: Int = 2,
 ) : TagDefineBits(type, name, version, level) {
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		super.parse(data, length, version, async)
         setBitmapType()
 	}
@@ -161,7 +161,7 @@ open class TagDefineBitsJPEG3(
 ) : TagDefineBitsJPEG2(type, name, version, level) {
 	var bitmapAlphaData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		val alphaDataOffset: Int = data.readUI32()
 		bitmapData = data.readBytes(alphaDataOffset).toFlash()
@@ -181,7 +181,7 @@ open class TagDefineBitsJPEG3(
 class TagDefineBitsJPEG4() : TagDefineBitsJPEG3(90, "DefineBitsJPEG4", 10, 4) {
 	var deblockParam: Double = 0.0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		val alphaDataOffset: Int = data.readUI32()
 		deblockParam = data.readFIXED8()
@@ -237,7 +237,7 @@ open class TagDefineBitsLossless(
 
 	var zlibBitmapData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		val rawFormat = data.readUI8()
 		bitmapFormat = BitmapFormat[rawFormat]
@@ -274,7 +274,7 @@ open class TagDefineButton : _BaseDefinitionTag(7, "DefineButton", 1) {
 
 	protected var labelCount: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		var record: SWFButtonRecord?
 		while (true) {
@@ -294,7 +294,7 @@ open class TagDefineButton : _BaseDefinitionTag(7, "DefineButton", 1) {
 
 	fun getRecordsByState(state: String): ArrayList<SWFButtonRecord> = frames[state]!!
 
-	protected fun processRecords(): Unit {
+	protected fun processRecords() {
 		val upState = ArrayList<SWFButtonRecord>()
 		val overState = ArrayList<SWFButtonRecord>()
 		val downState = ArrayList<SWFButtonRecord>()
@@ -347,7 +347,7 @@ open class TagDefineButton2 : _BaseDefinitionTag(34, "DefineButton2", 3, 2) {
 
 	protected var frames = hashMapOf<String, ArrayList<SWFButtonRecord>>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		trackAsMenu = ((data.readUI8() and 0x01) != 0)
 		val actionOffset: Int = data.readUI16()
@@ -371,7 +371,7 @@ open class TagDefineButton2 : _BaseDefinitionTag(34, "DefineButton2", 3, 2) {
 		return frames[state]!!
 	}
 
-	protected fun processRecords(): Unit {
+	protected fun processRecords() {
 		val upState = ArrayList<SWFButtonRecord>()
 		val overState = ArrayList<SWFButtonRecord>()
 		val downState = ArrayList<SWFButtonRecord>()
@@ -409,7 +409,7 @@ open class TagDefineButton2 : _BaseDefinitionTag(34, "DefineButton2", 3, 2) {
 class TagDefineButtonCxform : _BaseDefinitionTag(23, "DefineButtonCxform", 2) {
 	lateinit var buttonColorTransform: SWFColorTransform
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		buttonColorTransform = data.readCXFORM()
 	}
@@ -428,7 +428,7 @@ class TagDefineButtonSound : _BaseDefinitionTag(17, "DefineButtonSound", 2) {
 	lateinit var buttonSoundInfo2: SWFSoundInfo
 	lateinit var buttonSoundInfo3: SWFSoundInfo
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		buttonSoundChar0 = data.readUI16()
 		if (buttonSoundChar0 != 0) buttonSoundInfo0 = data.readSOUNDINFO()
@@ -477,7 +477,7 @@ class TagDefineEditText : _BaseDefinitionTag(37, "DefineEditText", 4) {
 	var leading = 0
 	var initialText: String? = null
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		bounds = data.readRECT()
 		val flags1: Int = data.readUI8()
@@ -586,7 +586,7 @@ open class TagDefineFont2(
 	val fontBoundsTable = ArrayList<SWFRectangle>()
 	val fontKerningTable = ArrayList<SWFKerningRecord>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		val flags: Int = data.readUI8()
 		hasLayout = ((flags and 0x80) != 0)
@@ -686,7 +686,7 @@ class TagDefineFont4 : _BaseDefinitionTag(91, "DefineFont4", 10) {
 
 	private var fontData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		val pos: Int = data.position
 		characterId = data.readUI16()
 		val flags: Int = data.readUI8()
@@ -709,7 +709,7 @@ class TagDefineFontAlignZones : _BaseTag(73, "DefineFontAlignZones", 8) {
 
 	private var _zoneTable = ArrayList<SWFZoneRecord>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		fontId = data.readUI16()
 		csmTableHint = (data.readUI8() ushr 6)
 		val recordsEndPos: Int = data.position + length - 3
@@ -746,7 +746,7 @@ open class TagDefineFontInfo(
 
 	protected var langCodeLength: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		fontId = data.readUI16()
 
 		val fontNameLen: Int = data.readUI8()
@@ -768,7 +768,7 @@ open class TagDefineFontInfo(
 		}
 	}
 
-	protected open fun parseLangCode(data: SWFData): Unit {
+	protected open fun parseLangCode(data: SWFData) {
 		// Does nothing here.
 		// Overridden in TagDefineFontInfo2, where it:
 		// - reads langCode
@@ -780,7 +780,7 @@ open class TagDefineFontInfo(
 }
 
 class TagDefineFontInfo2 : TagDefineFontInfo(62, "DefineFontInfo2", 6, 2) {
-	override fun parseLangCode(data: SWFData): Unit {
+	override fun parseLangCode(data: SWFData) {
 		langCode = data.readUI8()
 		langCodeLength = 1
 	}
@@ -794,7 +794,7 @@ class TagDefineFontName : _BaseTag(88, "DefineFontName", 9) {
 	lateinit var fontName: String
 	lateinit var fontCopyright: String
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		fontId = data.readUI16()
 		fontName = data.readString()
 		fontCopyright = data.readString()
@@ -821,7 +821,7 @@ open class TagDefineMorphShape(
 	protected var morphFillStyles = ArrayList<SWFMorphFillStyle>()
 	protected var morphLineStyles = ArrayList<SWFMorphLineStyle>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		startBounds = data.readRECT()
 		endBounds = data.readRECT()
@@ -840,7 +840,7 @@ open class TagDefineMorphShape(
 		endEdges = data.readSHAPE()
 	}
 
-	fun export(handler: ShapeExporter, ratio: Double = 0.0): Unit {
+	fun export(handler: ShapeExporter, ratio: Double = 0.0) {
 		var j = 0
 		val exportShape = SWFShape()
 		val numEdges: Int = startEdges.records.size
@@ -950,7 +950,7 @@ class TagDefineMorphShape2 : TagDefineMorphShape(84, "DefineMorphShape2", 8, 2) 
 	var usesNonScalingStrokes = false
 	var usesScalingStrokes = false
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		startBounds = data.readRECT()
 		endBounds = data.readRECT()
@@ -1009,7 +1009,7 @@ class TagDefineMorphShape2 : TagDefineMorphShape(84, "DefineMorphShape2", 8, 2) 
 class TagDefineScalingGrid : _BaseDefinitionTag(78, "DefineScalingGrid", 8, 1) {
 	lateinit var splitter: SWFRectangle
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		splitter = data.readRECT()
 	}
@@ -1023,7 +1023,7 @@ class TagDefineSceneAndFrameLabelData : _BaseTag(TYPE, "DefineSceneAndFrameLabel
 	var scenes = ArrayList<SWFScene>()
 	var frameLabels = ArrayList<SWFFrameLabel>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		val sceneCount: Int = data.readEncodedU32()
 		for (i in 0 until sceneCount) {
 			val sceneOffset: Int = data.readEncodedU32()
@@ -1061,13 +1061,13 @@ open class TagDefineShape(
 	lateinit var shapeBounds: SWFRectangle
 	lateinit var shapes: SWFShapeWithStyle
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		shapeBounds = data.readRECT()
 		shapes = data.readSHAPEWITHSTYLE(level)
 	}
 
-	fun export(handler: ShapeExporter): Unit {
+	fun export(handler: ShapeExporter) {
 		shapes.export(handler)
 	}
 
@@ -1103,7 +1103,7 @@ class TagDefineShape4 : TagDefineShape3(83, "DefineShape4", 8, 4) {
 	var usesNonScalingStrokes = false
 	var usesScalingStrokes = false
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		shapeBounds = data.readRECT()
 		edgeBounds = data.readRECT()
@@ -1133,7 +1133,7 @@ class TagDefineSound : _BaseDefinitionTag(14, "DefineSound", 1) {
 
 	var soundData: FlashByteArray = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		soundFormat = data.readUB(4)
 		soundRate = data.readUB(2)
@@ -1146,7 +1146,7 @@ class TagDefineSound : _BaseDefinitionTag(14, "DefineSound", 1) {
 	override fun toString(indent: Int, flags: Int): String =
         "${Tag.toStringCommon(type, name, indent)}SoundID: $characterId, Format: ${SoundCompression.toString(soundFormat)}, Rate: ${SoundRate.toString(soundRate)}, Size: ${SoundSize.toString(soundSize)}, Type: ${SoundType.toString(soundType)}, Samples: $soundSampleCount"
 
-	internal fun processMP3(mp3: FlashByteArray): Unit {
+	internal fun processMP3(mp3: FlashByteArray) {
 		var i = 0
 		var beginIdx = 0
 		var endIdx: Int = mp3.length
@@ -1217,7 +1217,7 @@ class TagDefineSound : _BaseDefinitionTag(14, "DefineSound", 1) {
 class TagDefineSprite : com.soywiz.korfl.as3swf.SWFTimelineContainer(), IDefinitionTag by _BaseDefinitionTag(39, "DefineSprite", 3) {
 	var frameCount: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		frameCount = data.readUI16()
 		/*
@@ -1246,7 +1246,7 @@ open class TagDefineText(
 
 	var records = ArrayList<SWFTextRecord>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		textBounds = data.readRECT()
 		textMatrix = data.readMATRIX()
@@ -1291,7 +1291,7 @@ class TagDefineVideoStream : _BaseDefinitionTag(60, "DefineVideoStream", 6) {
 	var smoothing = false
 	var codecId = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		numFrames = data.readUI16()
 		width = data.readUI16()
@@ -1338,7 +1338,7 @@ class TagDoABC : _BaseTag(82, "DoABC", 9) {
 			return _abc!!
 		}
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		val pos = data.position
 		val flags = data.readUI32()
 		lazyInitializeFlag = ((flags and 0x01) != 0)
@@ -1360,7 +1360,7 @@ class TagDoABCDeprecated : _BaseTag(72, "DoABCDeprecated", 9) {
 
 	private var bytes = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		val pos = data.position
 		bytes = FlashByteArray(data.readBytes(length - (data.position - pos)))
 	}
@@ -1379,7 +1379,7 @@ open class TagDoAction(
 
 	protected var labelCount: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		var action: IAction?
 		while (true) {
 			action = data.readACTIONRECORD()
@@ -1412,7 +1412,7 @@ open class TagDoAction(
 class TagDoInitAction : TagDoAction(59, "DoInitAction", 6) {
 	var spriteId = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		spriteId = data.readUI16()
 		while (true) actions.add(data.readACTIONRECORD() ?: break)
 		labelCount = Action.resolveOffsets(actions)
@@ -1430,7 +1430,7 @@ open class TagEnableDebugger(
 ) : _BaseTag(type, name, version, level) {
 	protected var password = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		if (length > 0) password = FlashByteArray(data.readBytes(length))
 	}
 }
@@ -1440,7 +1440,7 @@ class TagEnableDebugger2 : TagEnableDebugger(64, "EnableDebugger2", 6, 2) {
 	// Observed other values from generated SWFs, e.g. 0x1975.
 	private var reserved = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		reserved = data.readUI16()
 		if (length > 2) password = data.readBytes(length - 2).toFlash()
 	}
@@ -1452,7 +1452,7 @@ class TagEnableDebugger2 : TagEnableDebugger(64, "EnableDebugger2", 6, 2) {
 class TagEnableTelemetry : _BaseTag(93, "EnableTelemetry", 19) {
 	private var password = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		if (length > 2) {
 			data.readByte()
 			data.readByte()
@@ -1472,7 +1472,7 @@ class TagFileAttributes : _BaseTag(69, "FileAttributes", 8) {
 	var actionscript3 = true
 	var useNetwork = false
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		val flags = data.readUI8()
 		useDirectBlit = ((flags and 0x40) != 0)
 		useGPU = ((flags and 0x20) != 0)
@@ -1494,7 +1494,7 @@ class TagFrameLabel : _BaseTag(TYPE, "FrameLabel", 3) {
 	lateinit var frameName: String
 	var namedAnchorFlag = false
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		val start = data.position
 		frameName = data.readString()
 		if ((data.position - start) < length) {
@@ -1519,7 +1519,7 @@ open class TagImportExportAssets(
 ) : _BaseTag(type, name, version, level) {
     val symbols = ArrayList<SWFSymbol>()
 
-    override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+    override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
         val numSymbols = data.readUI16()
         for (i in 0 until numSymbols) {
             symbols.add(data.readSYMBOL())
@@ -1547,14 +1547,14 @@ open class TagImportAssets(
 ) : TagImportExportAssets(type, name, version, level) {
 	lateinit var url: String
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		url = data.readString()
         super.parse(data, length, version, async)
 	}
 }
 
 class TagImportAssets2 : TagImportAssets(71, "ImportAssets2", 8, 2) {
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		url = data.readString()
 		data.readUI8() // reserved, always 1
 		data.readUI8() // reserved, always 0
@@ -1570,7 +1570,7 @@ class TagJPEGTables : _BaseTag(TYPE, "JPEGTables", 1) {
 
 	var jpegTables = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		if (length > 0) {
 			jpegTables = data.readBytes(length).toFlash()
 		}
@@ -1583,7 +1583,7 @@ class TagJPEGTables : _BaseTag(TYPE, "JPEGTables", 1) {
 class TagMetadata : _BaseTag(77, "Metadata", 1) {
 	lateinit var xmlString: String
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		xmlString = data.readString()
 	}
 
@@ -1596,7 +1596,7 @@ class TagNameCharacter : _BaseTag(40, "NameCharacter", 3) {
 
 	private var binaryData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		if (length > 2) {
 			binaryData = data.readBytes(length - 2).toFlash()
@@ -1690,7 +1690,7 @@ open class TagPlaceObject2(
 ) : TagPlaceObject(), IDisplayListTag {
 	companion object : TagObj(26)
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
         readFlags1(data)
 		depth = data.readUI16()
 		if (hasCharacter) characterId = data.readUI16()
@@ -1734,7 +1734,7 @@ open class TagPlaceObject3(
 ) : TagPlaceObject2(), IDisplayListTag {
 	companion object : TagObj(70)
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
         readFlags1(data)
         readFlags2(data)
         depth = data.readUI16()
@@ -1798,7 +1798,7 @@ open class TagPlaceObject3(
  * http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/flash/display/DisplayObject.html#metaData
  */
 class TagPlaceObject4 : TagPlaceObject3(94, "PlaceObject4", 19, 4), IDisplayListTag {
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		super.parse(data, length, version, async)
 		if (data.bytesAvailable > 0) {
 			metaData = data.readObject()
@@ -1821,7 +1821,7 @@ class TagProductInfo : _BaseTag(41, "ProductInfo", 3) {
 	var build: Long = 0L
 	var compileDate: DateTime = DateTime.EPOCH
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		productId = data.readUI32()
 		edition = data.readUI32()
 		majorVersion = data.readUI8()
@@ -1842,7 +1842,7 @@ class TagPathsArePostScript : _BaseTag(25, "PathsArePostScript", 2)
 class TagProtect : _BaseTag(24, "Protect", 2) {
 	private var password = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		if (length > 0) {
 			password = data.readBytes(length).toFlash()
 		}
@@ -1860,7 +1860,7 @@ open class TagRemoveObject(
 	var characterId: Int = 0
 	var depth: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		characterId = data.readUI16()
 		depth = data.readUI16()
 	}
@@ -1872,7 +1872,7 @@ open class TagRemoveObject(
 class TagRemoveObject2 : TagRemoveObject(TagRemoveObject2.TYPE, "RemoveObject2", 3, 2), IDisplayListTag {
 	companion object : TagObj(28)
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		depth = data.readUI16()
 	}
 
@@ -1883,7 +1883,7 @@ class TagScriptLimits : _BaseTag(65, "ScriptLimits", 7, 1) {
 	var maxRecursionDepth: Int = 0
 	var scriptTimeoutSeconds: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		maxRecursionDepth = data.readUI16()
 		scriptTimeoutSeconds = data.readUI16()
 	}
@@ -1903,7 +1903,7 @@ class TagSetBackgroundColor : _BaseTag(TYPE, "SetBackgroundColor", 1) {
 
 	var color: Int = 0xffffff
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		color = data.readRGB()
 	}
 
@@ -1915,7 +1915,7 @@ class TagSetTabIndex : _BaseTag(66, "SetTabIndex", 7) {
 	var depth: Int = 0
 	var tabIndex: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		depth = data.readUI16()
 		tabIndex = data.readUI16()
 	}
@@ -1933,7 +1933,7 @@ class TagSoundStreamBlock : _BaseTag(TYPE, "SoundStreamBlock", 1) {
 
 	var soundData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		soundData = data.readBytes(length).toFlash()
 	}
 
@@ -1958,7 +1958,7 @@ open class TagSoundStreamHead(
 	var streamSoundSampleCount: Int = 0
 	var latencySeek: Int = 0
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		data.readUB(4)
 		playbackSoundRate = data.readUB(2)
 		playbackSoundSize = data.readUB(1)
@@ -1997,7 +1997,7 @@ class TagStartSound : _BaseTag(15, "StartSound", 1, 1) {
 	var soundId: Int = 0
 	lateinit var soundInfo: SWFSoundInfo
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		soundId = data.readUI16()
 		soundInfo = data.readSOUNDINFO()
 	}
@@ -2010,7 +2010,7 @@ class TagStartSound2 : _BaseTag(89, "StartSound2", 9, 2) {
 	lateinit var soundClassName: String
 	lateinit var soundInfo: SWFSoundInfo
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		soundClassName = data.readString()
 		soundInfo = data.readSOUNDINFO()
 	}
@@ -2022,7 +2022,7 @@ class TagStartSound2 : _BaseTag(89, "StartSound2", 9, 2) {
 class TagSymbolClass : _BaseTag(76, "SymbolClass", 9, 1) { // educated guess (not specified in SWF10 spec)
 	val symbols = ArrayList<SWFSymbol>()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		for (i in 0 until data.readUI16()) symbols.add(data.readSYMBOL())
 	}
 
@@ -2045,7 +2045,7 @@ class TagVideoFrame : _BaseTag(61, "VideoFrame", 6, 1) {
 
 	private var _videoData = FlashByteArray()
 
-	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean): Unit {
+	override suspend fun parse(data: SWFData, length: Int, version: Int, async: Boolean) {
 		streamId = data.readUI16()
 		frameNum = data.readUI16()
 		_videoData = data.readBytes(length - 4).toFlash()

@@ -1384,7 +1384,7 @@ abstract class View internal constructor(
     }
 
     private val _localBounds: Rectangle = Rectangle()
-    open fun getLocalBoundsInternal(out: Rectangle = _localBounds): Unit {
+    open fun getLocalBoundsInternal(out: Rectangle = _localBounds) {
         out.clear()
     }
 

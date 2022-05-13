@@ -101,7 +101,7 @@ class WorldClock : IAnimatable {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	override fun advanceTime(passedTime: Double): Unit {
+	override fun advanceTime(passedTime: Double) {
 		var passedTime = passedTime.seconds
 		if (passedTime != passedTime) {
 			passedTime = 0.seconds
@@ -196,7 +196,7 @@ class WorldClock : IAnimatable {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun add(value: IAnimatable): Unit {
+	fun add(value: IAnimatable) {
 		if (this._animatebles.indexOf(value) < 0) {
 			this._animatebles.add(value)
 			value.clock = this
@@ -214,7 +214,7 @@ class WorldClock : IAnimatable {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun remove(value: IAnimatable): Unit {
+	fun remove(value: IAnimatable) {
 		val index = this._animatebles.indexOf(value)
 		if (index >= 0) {
 			this._animatebles[index] = null
@@ -231,7 +231,7 @@ class WorldClock : IAnimatable {
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun clear(): Unit {
+	fun clear() {
 		this._animatebles.fastForEach { animatable ->
 			if (animatable != null) {
 				animatable.clock = null

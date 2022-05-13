@@ -260,7 +260,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	 */
 	var _parent: AnimationState? = null
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this._boneTimelines.fastForEach { timeline ->
 			timeline.returnToPool()
 		}
@@ -341,7 +341,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 		this._parent = null
 	}
 
-	private fun _updateTimelines(): Unit {
+	private fun _updateTimelines() {
 		// Update constraint timelines.
 		this._armature!!._constraints.fastForEach { constraint ->
 			val timelineDatas = this._animationData?.getConstraintTimelines(constraint.name)
@@ -370,7 +370,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 
 	}
 
-	private fun _updateBoneAndSlotTimelines(): Unit {
+	private fun _updateBoneAndSlotTimelines() {
 		run {
 			// Update bone and surface timelines.
 			val boneTimelines: FastStringMap<FastArrayList<TimelineState>> = FastStringMap()
@@ -713,7 +713,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	/**
 	 * @internal
 	 */
-	fun init(armature: Armature, animationData: AnimationData, animationConfig: AnimationConfig): Unit {
+	fun init(armature: Armature, animationData: AnimationData, animationConfig: AnimationConfig) {
 		if (this._armature != null) {
 			return
 		}
@@ -1072,7 +1072,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun play(): Unit {
+	fun play() {
 		this._playheadState = 3 // 11
 	}
 	/**
@@ -1085,7 +1085,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun stop(): Unit {
+	fun stop() {
 		this._playheadState = this._playheadState and 1 // 0x
 	}
 	/**
@@ -1102,7 +1102,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun fadeOut(fadeOutTime: Double, pausePlayhead: Boolean = true): Unit {
+	fun fadeOut(fadeOutTime: Double, pausePlayhead: Boolean = true) {
 		var fadeOutTime = fadeOutTime
 		if (fadeOutTime < 0.0) {
 			fadeOutTime = 0.0
@@ -1216,7 +1216,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	 * @version DragonBones 3.0
 	 * @language zh_CN
 	 */
-	fun removeBoneMask(boneName: String, recursive: Boolean = true): Unit {
+	fun removeBoneMask(boneName: String, recursive: Boolean = true) {
 		val index = this._boneMask.indexOf(boneName)
 		if (index >= 0) { // Remove mixing.
 			this._boneMask.splice(index, 1)
@@ -1315,7 +1315,7 @@ class AnimationState(pool: SingleObjectPool<AnimationState>) : BaseObject(pool) 
 	/**
 	 * @internal
 	 */
-	fun activeTimeline(): Unit {
+	fun activeTimeline() {
 		this._slotTimelines.fastForEach { timeline ->
 			timeline.dirty = true
 			timeline._currentTime = -1.0

@@ -60,7 +60,7 @@ class DisplayFrame(pool: SingleObjectPool<DisplayFrame>) :  BaseObject(pool) {
     val meshDisplayData get() = displayData as MeshDisplayData
     val pathDisplayData get() = displayData as PathDisplayData
 
-    override fun _onClear(): Unit {
+    override fun _onClear() {
 		this.rawDisplayData = null
 		this.displayData = null
 		this._textureData = null
@@ -68,7 +68,7 @@ class DisplayFrame(pool: SingleObjectPool<DisplayFrame>) :  BaseObject(pool) {
 		this.deformVertices = DoubleArray(0)
 	}
 
-	fun updateDeformVertices(): Unit {
+	fun updateDeformVertices() {
 		if (this.rawDisplayData == null || this.deformVertices.size != 0) {
 			return
 		}
@@ -281,7 +281,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	//var _cachedFrameIndices:  DoubleArray? = null
 	var _cachedFrameIndices:  IntArrayList? = null
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		super._onClear()
 
 		val disposeDisplayList: FastArrayList<Any> = FastArrayList()
@@ -405,7 +405,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 		}
 	}
 
-	protected fun _updateDisplayData(): Unit {
+	protected fun _updateDisplayData() {
 		//println("_updateDisplayData:$name,_displayIndex=$_displayIndex")
 		val prevDisplayFrame = this._displayFrame
 		val prevGeometryData = this._geometryData
@@ -528,7 +528,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 		}
 	}
 
-	protected fun _updateDisplay(): Unit {
+	protected fun _updateDisplay() {
 		val prevDisplay = this._display ?: this._rawDisplay
 		val prevChildArmature = _childArmature
 
@@ -610,7 +610,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 		}
 	}
 
-	protected fun _updateGlobalTransformMatrix(isCache: Boolean): Unit {
+	protected fun _updateGlobalTransformMatrix(isCache: Boolean) {
 		val parentMatrix = if (this._parent!!._boneData!!.isBone) this._parent!!.globalTransformMatrix else (this._parent as Surface)._getGlobalTransformMatrix(this.global.xf, this.global.yf)
 		this.globalTransformMatrix.copyFrom(this._localMatrix)
 		this.globalTransformMatrix.concat(parentMatrix)
@@ -626,7 +626,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun _setDisplayIndex(value: Int, isAnimation: Boolean = false): Unit {
+	fun _setDisplayIndex(value: Int, isAnimation: Boolean = false) {
 		if (isAnimation) {
 			if (this._animationDisplayIndex == value) {
 				return
@@ -670,7 +670,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * @internal
 	 */
-	fun init(slotData: SlotData, armatureValue: Armature, rawDisplay: Any, meshDisplay: Any): Unit {
+	fun init(slotData: SlotData, armatureValue: Armature, rawDisplay: Any, meshDisplay: Any) {
 		if (this._slotData != null) {
 			return
 		}
@@ -830,7 +830,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	 * @version DragonBones 4.5
 	 * @language zh_CN
 	 */
-	fun invalidUpdate(): Unit {
+	fun invalidUpdate() {
 		this._displayDataDirty = true
 		this._displayDirty = true
 		//
@@ -840,7 +840,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * @private
 	 */
-	fun updateTransformAndMatrix(): Unit {
+	fun updateTransformAndMatrix() {
 		if (this._transformDirty) {
 			this._updateGlobalTransformMatrix(false)
 			this._transformDirty = false
@@ -850,7 +850,7 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * @private
 	 */
-	fun replaceRawDisplayData(displayData: DisplayData?, index: Int = -1): Unit {
+	fun replaceRawDisplayData(displayData: DisplayData?, index: Int = -1) {
 		var index = index
 		if (index < 0) {
 			index = if (this._displayIndex < 0) 0 else this._displayIndex
@@ -926,8 +926,8 @@ abstract class Slot(pool: SingleObjectPool<out Slot>) :  TransformObject(pool) {
 	/**
 	 * @private
 	 */
-	//fun replaceDisplay(value: Armature?, index: Int = -1): Unit {
-	fun replaceDisplay(value: Any?, index: Int = -1): Unit {
+	//fun replaceDisplay(value: Armature?, index: Int = -1) {
+	fun replaceDisplay(value: Any?, index: Int = -1) {
 		var index = index
 
 		if (index < 0) {

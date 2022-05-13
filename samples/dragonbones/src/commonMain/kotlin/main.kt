@@ -27,7 +27,7 @@ import kotlinx.coroutines.*
 import kotlin.math.*
 import kotlin.random.*
 
-suspend fun main(): Unit {
+suspend fun main() {
 	//Logger.defaultLevel = Logger.Level.TRACE
 	//Logger("Views").level = Logger.Level.TRACE
 	//Logger("Korge").level = Logger.Level.TRACE

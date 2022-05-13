@@ -161,7 +161,7 @@ class DragonBonesData(pool: SingleObjectPool<DragonBonesData>) : BaseObject(pool
 	 */
 	var userData: UserData? = null // Initial value.
 
-	override fun _onClear(): Unit {
+	override fun _onClear() {
 		this.armatures.fastValueForEach { a ->
 			a.returnToPool()
 		}

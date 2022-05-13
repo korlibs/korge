@@ -1,31 +1,25 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.klock.*
-import com.soywiz.korio.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.measureTime
+import com.soywiz.korio.async.executeInWorker
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsProcessHandler
+import com.soywiz.korio.file.VfsStat
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.internal.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.net.http.*
-import com.soywiz.korio.net.ws.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.flow.*
-import kotlin.reflect.*
-import kotlin.coroutines.*
-import kotlinx.coroutines.*
-import kotlin.math.*
-import kotlinx.cinterop.*
-import platform.posix.*
-import kotlin.native.concurrent.*
-import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.posix.*
-import com.soywiz.korio.posix.posixFread
 import com.soywiz.korio.process.posixExec
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.toAsyncStream
+import kotlinx.cinterop.*
+import kotlinx.coroutines.flow.flow
+import platform.posix.*
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.Worker
 
 @ThreadLocal
 val tmpdir: String by lazy { Environment["TMPDIR"] ?: Environment["TEMP"] ?: Environment["TMP"] ?: "/tmp" }
@@ -183,7 +177,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 				fileTransfer(fd!!, position, buffer, offset, len, write = true)
 			}
 
-			override suspend fun setLength(value: Long): Unit {
+			override suspend fun setLength(value: Long) {
 				checkFd()
                 data class Info(val file: String, val length: Long)
 
@@ -210,7 +204,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 		}.toAsyncStream()
 	}
 
-	override suspend fun setSize(path: String, size: Long): Unit {
+	override suspend fun setSize(path: String, size: Long) {
 		posixTruncate(resolve(path), size.convert())
 	}
 
@@ -243,7 +237,7 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 
 	override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = posixMkdir(resolve(path), "0777".toInt(8).convert()) == 0
 
-	override suspend fun touch(path: String, time: DateTime, atime: DateTime): Unit {
+	override suspend fun touch(path: String, time: DateTime, atime: DateTime) {
 		// @TODO:
 		println("TODO:LocalVfsNative.touch")
 	}

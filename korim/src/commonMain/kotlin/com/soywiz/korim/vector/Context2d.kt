@@ -1,17 +1,19 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.*
+import com.soywiz.kds.Stack
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.renderer.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korim.vector.renderer.Renderer
+import com.soywiz.korio.lang.Disposable
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
+import com.soywiz.korma.geom.shape.buildPath
 import com.soywiz.korma.geom.vector.*
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.ceil
 
 open class Context2d constructor(
     val renderer: Renderer,
@@ -77,7 +79,7 @@ open class Context2d constructor(
 		//override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
 		//	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
-		override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix): Unit {
+		override fun drawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
 			adjustMatrix(transform) { parent.drawImage(image, x, y, width, height, transform) }
 		}
 	}
@@ -533,7 +535,7 @@ open class Context2d constructor(
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
         color: Paint? = null
-    ): Unit {
+    ) {
         font(font, halign, valign, fontSize) {
             fillStyle(color ?: fillStyle) {
                 drawText(text, x.toDouble(), y.toDouble(), fill = true)

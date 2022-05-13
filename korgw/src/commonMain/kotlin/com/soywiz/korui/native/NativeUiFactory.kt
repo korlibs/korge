@@ -1,13 +1,19 @@
 package com.soywiz.korui.native
 
-import com.soywiz.kds.*
-import com.soywiz.korev.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
+import com.soywiz.kds.Extra
+import com.soywiz.korev.FocusEvent
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.MouseEvent
+import com.soywiz.korev.ReshapeEvent
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.Disposable
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korui.UiCursor
+import com.soywiz.korui.UiMenu
+import com.soywiz.korui.UiMenuItem
+import com.soywiz.korui.UiTreeNode
 
 expect val DEFAULT_UI_FACTORY: NativeUiFactory
 
@@ -156,17 +162,17 @@ interface NativeUiFactory {
 
             override val numChildren: Int get() = children.size
             override fun getChildAt(index: Int): NativeComponent = children[index]
-            override fun insertChildAt(index: Int, child: NativeComponent): Unit {
+            override fun insertChildAt(index: Int, child: NativeComponent) {
                 if (index < 0) {
                     children.add(child)
                 } else {
                     children.add(index, child)
                 }
             }
-            override fun removeChild(child: NativeComponent): Unit {
+            override fun removeChild(child: NativeComponent) {
                 children.remove(child)
             }
-            override fun removeChildAt(index: Int): Unit {
+            override fun removeChildAt(index: Int) {
                 children.removeAt(index)
             }
         }

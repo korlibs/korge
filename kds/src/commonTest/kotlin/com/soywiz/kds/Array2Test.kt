@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class Array2Test {
 	@Test
@@ -85,4 +86,33 @@ class Array2Test {
 		assertEquals(FloatArray2(5, 5, 100f), FloatArray2.withGen(5, 5) { _, _ -> 100f })
 		assertEquals(FloatArray2(5, 5, 100f), FloatArray2((0 until 5).map { (0 until 5).map { 100f } }))
 	}
+
+    @Test
+    fun eachWorks() {
+        val intArray2 = IntArray2(2, 2) {
+            it.toInt()
+        }
+        val floatArray2 = FloatArray2(2, 2) {
+            it.toFloat()
+        }
+        val doubleArray2 = DoubleArray2(2, 2) {
+            it.toDouble()
+        }
+        val typedArray2 = Array2<Boolean>(2, 2) {
+            (it % 2) == 1
+        }
+
+        intArray2.each { x, y, v ->
+            println("x: $x, y: $y, v: $v")
+        }
+        floatArray2.each { x, y, v ->
+            println("x: $x, y: $y, v: $v")
+        }
+        doubleArray2.each { x, y, v ->
+            println("x: $x, y: $y, v: $v")
+        }
+        typedArray2.each { x, y, v ->
+            println("x: $x, y: $y, v: $v")
+        }
+    }
 }

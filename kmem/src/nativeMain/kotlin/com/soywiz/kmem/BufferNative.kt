@@ -111,37 +111,37 @@ public actual operator fun Float64Buffer.set(index: Int, value: Double): Unit = 
 @PublishedApi internal const val FLOAT_SIZE_BYTES: Int = 4
 @PublishedApi internal const val DOUBLE_SIZE_BYTES: Int = 8
 
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     src.data.copyInto(dst.data, dstPos, srcPos, srcPos + size)
 }
-public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     src.copyInto(dst.data, dstPos, srcPos, srcPos + size)
 }
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) {
     src.data.copyInto(dst, dstPos, srcPos, srcPos + size)
 }
-public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     for (n in 0 until size) dst.data.setShortAt((dstPos + n) * SHORT_SIZE_BYTES, src[srcPos + n])
 }
-public actual fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: IntArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     for (n in 0 until size) dst.data.setIntAt((dstPos + n) * INT_SIZE_BYTES, src[srcPos + n])
 }
-public actual fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: FloatArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     for (n in 0 until size) dst.data.setFloatAt((dstPos + n) * FLOAT_SIZE_BYTES, src[srcPos + n])
 }
-public actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     for (n in 0 until size) dst.data.setDoubleAt((dstPos + n) * DOUBLE_SIZE_BYTES, src[srcPos + n])
 }
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int) {
     for (n in 0 until size) dst[dstPos + n] = src.data.getShortAt((srcPos + n) * SHORT_SIZE_BYTES)
 }
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int) {
     for (n in 0 until size) dst[dstPos + n] = src.data.getIntAt((srcPos + n) * INT_SIZE_BYTES)
 }
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int) {
     for (n in 0 until size) dst[dstPos + n] = src.data.getFloatAt((srcPos + n) * FLOAT_SIZE_BYTES)
 }
-public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit {
+public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int) {
     for (n in 0 until size) dst[dstPos + n] = src.data.getDoubleAt((srcPos + n) * DOUBLE_SIZE_BYTES)
 }
 

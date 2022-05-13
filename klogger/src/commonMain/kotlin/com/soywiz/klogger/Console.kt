@@ -1,6 +1,6 @@
 package com.soywiz.klogger
 
-import kotlin.native.concurrent.*
+import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal
 @PublishedApi
@@ -90,7 +90,7 @@ open class BaseConsole() : AnsiEscape {
 
 expect object Console : BaseConsole
 
-fun Console.assert(cond: Boolean, msg: String): Unit {
+fun Console.assert(cond: Boolean, msg: String) {
     if (cond) throw AssertionError(msg)
 }
 

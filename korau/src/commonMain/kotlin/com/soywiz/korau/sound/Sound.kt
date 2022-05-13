@@ -1,16 +1,27 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korau.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.concurrent.atomic.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import com.soywiz.kds.Extra
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.WAV
+import com.soywiz.korau.format.defaultAudioFormats
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.concurrent.atomic.korAtomic
+import com.soywiz.korio.file.FinalVfsFile
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.lang.Disposable
+import com.soywiz.korio.lang.unsupported
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.openAsync
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.SupervisorJob
+import kotlin.coroutines.CoroutineContext
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
@@ -264,7 +275,7 @@ abstract class SoundChannel(val sound: Sound) : SoundChannelBase, Extra by Extra
         current < total -> SoundChannelState.PLAYING
         else -> SoundChannelState.STOPPED
     }
-    final override fun reset(): Unit { current = 0.seconds }
+    final override fun reset() { current = 0.seconds }
 	abstract override fun stop(): Unit
 
     open fun pause(): Unit = unsupported()

@@ -1,10 +1,13 @@
 package com.soywiz.korio.stream
 
-import com.soywiz.kds.*
+import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.kds.Extra
 import com.soywiz.kmem.*
-import com.soywiz.korio.internal.*
+import com.soywiz.korio.internal.bytesTempPool
+import com.soywiz.korio.internal.smallBytesPool
 import com.soywiz.korio.lang.*
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
 
 interface MarkableSyncInputStream : SyncInputStream {
     fun mark(readlimit: Int)
@@ -130,7 +133,7 @@ class SyncStream constructor(
 		return smallTemp[0].unsigned
 	}
 
-	override fun write(buffer: ByteArray, offset: Int, len: Int): Unit {
+	override fun write(buffer: ByteArray, offset: Int, len: Int) {
 		base.write(positionWrite, buffer, offset, len)
         positionWrite += len
 	}
@@ -409,7 +412,7 @@ fun SyncInputStream.readString(len: Int, charset: Charset = UTF8): String = read
 fun SyncOutputStream.writeString(string: String, charset: Charset = UTF8): Unit =
 	writeBytes(string.toByteArray(charset))
 
-fun SyncInputStream.readExact(out: ByteArray, offset: Int, len: Int): Unit {
+fun SyncInputStream.readExact(out: ByteArray, offset: Int, len: Int) {
 	var ooffset = offset
 	var remaining = len
 	while (remaining > 0) {
@@ -497,19 +500,19 @@ fun SyncInputStream.readDoubleArrayBE(count: Int): DoubleArray = readBytesExact(
 
 fun SyncOutputStream.write8(v: Int): Unit = write(v)
 
-fun SyncOutputStream.write16LE(v: Int): Unit { write8(v and 0xFF); write8((v ushr 8) and 0xFF) }
-fun SyncOutputStream.write24LE(v: Int): Unit { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF) }
-fun SyncOutputStream.write32LE(v: Int): Unit { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 24) and 0xFF) }
+fun SyncOutputStream.write16LE(v: Int) { write8(v and 0xFF); write8((v ushr 8) and 0xFF) }
+fun SyncOutputStream.write24LE(v: Int) { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF) }
+fun SyncOutputStream.write32LE(v: Int) { write8(v and 0xFF); write8((v ushr 8) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 24) and 0xFF) }
 fun SyncOutputStream.write32LE(v: Long): Unit = write32LE(v.toInt())
-fun SyncOutputStream.write64LE(v: Long): Unit { write32LE(v.toInt()); write32LE((v ushr 32).toInt()) }
+fun SyncOutputStream.write64LE(v: Long) { write32LE(v.toInt()); write32LE((v ushr 32).toInt()) }
 fun SyncOutputStream.writeF32LE(v: Float): Unit = write32LE(v.reinterpretAsInt())
 fun SyncOutputStream.writeF64LE(v: Double): Unit = write64LE(v.reinterpretAsLong())
 
-fun SyncOutputStream.write16BE(v: Int): Unit { write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
-fun SyncOutputStream.write24BE(v: Int): Unit { write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
-fun SyncOutputStream.write32BE(v: Int): Unit { write8((v ushr 24) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
+fun SyncOutputStream.write16BE(v: Int) { write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
+fun SyncOutputStream.write24BE(v: Int) { write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
+fun SyncOutputStream.write32BE(v: Int) { write8((v ushr 24) and 0xFF); write8((v ushr 16) and 0xFF); write8((v ushr 8) and 0xFF); write8(v and 0xFF) }
 fun SyncOutputStream.write32BE(v: Long): Unit = write32BE(v.toInt())
-fun SyncOutputStream.write64BE(v: Long): Unit { write32BE((v ushr 32).toInt()); write32BE(v.toInt()) }
+fun SyncOutputStream.write64BE(v: Long) { write32BE((v ushr 32).toInt()); write32BE(v.toInt()) }
 fun SyncOutputStream.writeF32BE(v: Float): Unit = write32BE(v.reinterpretAsInt())
 fun SyncOutputStream.writeF64BE(v: Double): Unit = write64BE(v.reinterpretAsLong())
 
@@ -525,7 +528,7 @@ fun String.openAsync(charset: Charset = UTF8): AsyncStream = toByteArray(charset
 
 fun SyncOutputStream.writeStream(source: SyncInputStream): Unit = source.copyTo(this)
 
-fun SyncInputStream.copyTo(target: SyncOutputStream): Unit {
+fun SyncInputStream.copyTo(target: SyncOutputStream) {
 	bytesTempPool.alloc { chunk ->
 		while (true) {
 			val count = this.read(chunk)
@@ -613,7 +616,7 @@ fun SyncInputStream.readS_VL(): Int {
 	return if (sign) -uvalue - 1 else uvalue
 }
 
-fun SyncOutputStream.writeU_VL(v: Int): Unit {
+fun SyncOutputStream.writeU_VL(v: Int) {
 	var value = v
 	while (true) {
 		val c = value and 0x7f
@@ -626,12 +629,12 @@ fun SyncOutputStream.writeU_VL(v: Int): Unit {
 	}
 }
 
-fun SyncOutputStream.writeS_VL(v: Int): Unit {
+fun SyncOutputStream.writeS_VL(v: Int) {
 	val sign = if (v < 0) 1 else 0
 	writeU_VL(sign or ((if (v < 0) -v - 1 else v) shl 1))
 }
 
-fun SyncOutputStream.writeStringVL(str: String, charset: Charset = UTF8): Unit {
+fun SyncOutputStream.writeStringVL(str: String, charset: Charset = UTF8) {
 	val bytes = str.toByteArray(charset)
 	writeU_VL(bytes.size)
 	writeBytes(bytes)

@@ -175,7 +175,7 @@ fun Long.msgSendNSRect(sel: String, vararg args: Any?): NSRectRes {
         return out
     }
 }
-fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?): Unit {
+fun Long.msgSend_stret(output: Any?, sel: String, vararg args: Any?) {
     if (isArm64) error("Not available on arm64")
     ObjectiveC.objc_msgSend_stret(output, this, sel(sel), *args)
 }

@@ -1,13 +1,15 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import org.khronos.webgl.*
-import kotlinx.browser.*
-import kotlin.coroutines.*
+import com.soywiz.kds.FloatArrayDeque
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korau.internal.SampleConvert
+import com.soywiz.korau.internal.write
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.cancel
+import kotlinx.browser.document
+import kotlin.coroutines.CoroutineContext
 
 
 actual val nativeSoundProvider: NativeSoundProvider by lazy { HtmlNativeSoundProvider() }
@@ -85,7 +87,7 @@ class JsPlatformAudioOutput(coroutineContext: CoroutineContext, val freq: Int) :
 	var totalShorts = 0
 	override val availableSamples get() = totalShorts
 
-	override suspend fun add(samples: AudioSamples, offset: Int, size: Int): Unit {
+	override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
 		//println("addSamples: $available, $size")
 		//println(samples.sliceArray(offset until offset + size).toList())
 		totalShorts += size

@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
-import kotlin.reflect.*
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty1
 
 typealias ExtraType = FastStringMap<Any?>?
 fun ExtraTypeCreate() = FastStringMap<Any?>()
@@ -27,7 +28,7 @@ interface Extra {
             return res
         }
 
-        inline operator fun setValue(thisRef: Extra, property: KProperty<*>, value: T): Unit {
+        inline operator fun setValue(thisRef: Extra, property: KProperty<*>, value: T) {
             //beforeSet(value)
             thisRef.setExtra(name ?: property.name, value.fastCastTo<Any?>())
             //afterSet(value)
@@ -49,11 +50,11 @@ interface Extra {
             return res
         }
 
-        inline fun setValueUntransformed(thisRef: T2, property: KProperty<*>, value: T): Unit {
+        inline fun setValueUntransformed(thisRef: T2, property: KProperty<*>, value: T) {
             thisRef.setExtra(name ?: property.name, value)
         }
 
-        inline operator fun setValue(thisRef: T2, property: KProperty<*>, value: T): Unit {
+        inline operator fun setValue(thisRef: T2, property: KProperty<*>, value: T) {
             setValueUntransformed(thisRef, property, transform(thisRef, value))
         }
     }
@@ -63,7 +64,7 @@ fun <T> Extra.extraCache(name: String, block: () -> T): T =
     (getExtra(name) as? T?) ?: block().also { setExtra(name, it) }
 fun <T : Any?> Extra.getExtraTyped(name: String): T? = extra?.get(name).fastCastTo<T?>()
 fun Extra.getExtra(name: String): Any? = extra?.get(name)
-fun Extra.setExtra(name: String, value: Any?): Unit {
+fun Extra.setExtra(name: String, value: Any?) {
     if (extra == null) {
         if (value == null) return
         extra = ExtraTypeCreate()

@@ -1,9 +1,10 @@
 package com.soywiz.korio.compression
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.async.AsyncByteArrayDequeChunked
+import com.soywiz.korio.async.runBlockingNoSuspensions
+import com.soywiz.korio.compression.util.BitReader
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.lang.unsupported
 import com.soywiz.korio.stream.*
 
 open class CompressionContext(var level: Int = 6) {
@@ -24,9 +25,9 @@ interface CompressionMethod {
 
 	object Uncompressed : CompressionMethod {
 		@OptIn(KorioExperimentalApi::class)
-		override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream): Unit { reader.copyTo(out) }
+		override suspend fun uncompress(reader: BitReader, out: AsyncOutputStream) { reader.copyTo(out) }
 		@OptIn(KorioExperimentalApi::class)
-		override suspend fun compress(i: BitReader, o: AsyncOutputStream, context: CompressionContext): Unit { i.copyTo(o) }
+		override suspend fun compress(i: BitReader, o: AsyncOutputStream, context: CompressionContext) { i.copyTo(o) }
 	}
 }
 

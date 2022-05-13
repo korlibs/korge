@@ -3,9 +3,18 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
-import com.soywiz.kds.iterators.*
-import kotlin.contracts.*
-import kotlin.math.*
+import com.soywiz.kds.iterators.fastForEach
+import kotlin.collections.Collection
+import kotlin.collections.Iterable
+import kotlin.collections.Map
+import kotlin.collections.associateWith
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.copyOf
+import kotlin.collections.indices
+import kotlin.collections.iterator
+import kotlin.contracts.ExperimentalContracts
+import kotlin.math.max
 
 private fun _mask(value: Int, mask: Int) = (value + ((value ushr 8) and 0xFF) + ((value ushr 16) and 0xFF) + ((value shr 24) and 0xFF)) and mask
 //private fun _mask(value: Int, mask: Int) = (value + (value shr 16)) and mask
@@ -156,7 +165,7 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
     private fun hash2(key: Int) = _hash2(key, mask)
     private fun hash3(key: Int) = _hash3(key, mask)
 
-    fun removeRange(src: Int, dst: Int): Unit {
+    fun removeRange(src: Int, dst: Int) {
         //println("removeRange($src, $dst)")
         if (0 in src..dst && hasZero) {
             size--
@@ -241,18 +250,18 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
             index = nextNonEmptyIndex(_keys, if (index == ZERO_INDEX) 0 else (index + 1))
         }
     }
-    inline fun fastValueForEachNullable(callback: (value: T?) -> Unit): Unit {
+    inline fun fastValueForEachNullable(callback: (value: T?) -> Unit) {
         fastKeyForEach { callback(this[it]) }
     }
-    inline fun fastForEachNullable(callback: (key: Int, value: T?) -> Unit): Unit {
+    inline fun fastForEachNullable(callback: (key: Int, value: T?) -> Unit) {
         fastKeyForEach { callback(it, this[it]) }
     }
 
     @OptIn(ExperimentalContracts::class)
-    inline fun fastValueForEach(callback: (value: T) -> Unit): Unit {
+    inline fun fastValueForEach(callback: (value: T) -> Unit) {
         fastKeyForEach { callback(this[it]!!) }
     }
-    inline fun fastForEach(callback: (key: Int, value: T) -> Unit): Unit {
+    inline fun fastForEach(callback: (key: Int, value: T) -> Unit) {
         fastKeyForEach { callback(it, this[it]!!) }
     }
 
@@ -346,10 +355,10 @@ class IntFloatMap {
         i.fastKeyForEach(callback)
     }
 
-    inline fun fastValueForEach(callback: (value: Float) -> Unit): Unit {
+    inline fun fastValueForEach(callback: (value: Float) -> Unit) {
         fastKeyForEach { callback(this[it]) }
     }
-    inline fun fastForEach(callback: (key: Int, value: Float) -> Unit): Unit {
+    inline fun fastForEach(callback: (key: Int, value: Float) -> Unit) {
         fastKeyForEach { callback(it, this[it]) }
     }
 
@@ -573,10 +582,10 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
         }
     }
 
-    inline fun fastValueForEach(callback: (value: Int) -> Unit): Unit {
+    inline fun fastValueForEach(callback: (value: Int) -> Unit) {
         fastKeyForEach { callback(this[it]) }
     }
-    inline fun fastForEach(callback: (key: Int, value: Int) -> Unit): Unit {
+    inline fun fastForEach(callback: (key: Int, value: Int) -> Unit) {
         fastKeyForEach { callback(it, this[it]) }
     }
 

@@ -1,10 +1,11 @@
 package com.soywiz.korgw
 
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.util.*
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.std.localCurrentDirVfs
+import com.soywiz.korio.file.std.localVfs
+import com.soywiz.korio.lang.unsupported
+import com.soywiz.korio.net.URL
+import com.soywiz.korio.util.fromGlob
 
 expect fun createDialogInterfaceForComponent(nativeComponent: Any?): DialogInterface
 
@@ -51,8 +52,8 @@ open class ZenityDialogs : DialogInterface {
     companion object : ZenityDialogs()
 
     open suspend fun exec(vararg args: String): String = localCurrentDirVfs.execToString(args.toList())
-    override suspend fun browse(url: URL): Unit { exec("xdg-open", url.toString()) }
-    override suspend fun alert(message: String): Unit { exec("zenity", "--warning", "--text=$message") }
+    override suspend fun browse(url: URL) { exec("xdg-open", url.toString()) }
+    override suspend fun alert(message: String) { exec("zenity", "--warning", "--text=$message") }
     override suspend fun confirm(message: String): Boolean =
         try {
             exec("zenity", "--question", "--text=$message")

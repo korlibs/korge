@@ -1,9 +1,11 @@
 package com.soywiz.korge.service.storage
 
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.dynamic.serialization.*
-import com.soywiz.korio.serialization.json.*
-import kotlin.reflect.*
+import com.soywiz.korio.dynamic.mapper.Mapper
+import com.soywiz.korio.dynamic.mapper.ObjectMapper
+import com.soywiz.korio.dynamic.serialization.parseTyped
+import com.soywiz.korio.serialization.json.Json
+import kotlin.reflect.KClass
+import kotlin.reflect.KProperty
 
 class StorageItem<T : Any>(val storage: IStorage, val clazz: KClass<T>, val key: String, val mapper: ObjectMapper, val gen: (() -> T)?) {
     val isDefined: Boolean get() = key in storage
@@ -33,7 +35,7 @@ class StorageItem<T : Any>(val storage: IStorage, val clazz: KClass<T>, val key:
 	fun remove() = storage.remove(key)
 
 	inline operator fun getValue(thisRef: Any, property: KProperty<*>): T = value
-	inline operator fun setValue(thisRef: Any, property: KProperty<*>, value: T): Unit { this.value = value }
+	inline operator fun setValue(thisRef: Any, property: KProperty<*>, value: T) { this.value = value }
 }
 
 inline fun <reified T : Any> IStorage.item(key: String, mapper: ObjectMapper = Mapper, noinline gen: (() -> T)? = null) = StorageItem(this, T::class, key, mapper, gen)
