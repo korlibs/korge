@@ -1,6 +1,19 @@
 package com.soywiz.kmem
 
-import kotlinx.cinterop.*
+import kotlinx.cinterop.ByteVar
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.DoubleVar
+import kotlinx.cinterop.FloatVar
+import kotlinx.cinterop.IntVar
+import kotlinx.cinterop.LongVar
+import kotlinx.cinterop.Pinned
+import kotlinx.cinterop.ShortVar
+import kotlinx.cinterop.UByteVar
+import kotlinx.cinterop.UIntVar
+import kotlinx.cinterop.ULongVar
+import kotlinx.cinterop.UShortVar
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.pin
 
 //private val emptyPinnedBoolean = BooleanArray(1).pin()
 private val emptyAddressByte = ByteArray(1).pin().addressOf(0)

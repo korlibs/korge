@@ -26,7 +26,7 @@
  */
 package org.jbox2d.pooling.arrays
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.assert
 
 /**
  * Not thread safe int[] pooling

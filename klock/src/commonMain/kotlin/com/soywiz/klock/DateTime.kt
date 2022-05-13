@@ -1,5 +1,6 @@
 package com.soywiz.klock
 
+import com.soywiz.klock.DateTime.Companion.EPOCH
 import com.soywiz.klock.internal.*
 import kotlin.jvm.JvmInline
 import kotlin.math.*

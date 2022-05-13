@@ -1,7 +1,10 @@
 package com.soywiz.klogger.test
 
 import com.soywiz.klogger.Logger
-import kotlin.native.concurrent.*
+import kotlin.native.concurrent.TransferMode
+import kotlin.native.concurrent.Worker
+import kotlin.native.concurrent.freeze
+import kotlin.native.concurrent.isFrozen
 import kotlin.test.Test
 import kotlin.test.assertTrue
 

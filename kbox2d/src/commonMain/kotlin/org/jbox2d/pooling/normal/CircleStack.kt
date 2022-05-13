@@ -23,7 +23,8 @@
  */
 package org.jbox2d.pooling.normal
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 import org.jbox2d.pooling.IOrderedStack
 
 abstract class CircleStack<E>(private val size: Int, argContainerSize: Int) : IOrderedStack<E> {

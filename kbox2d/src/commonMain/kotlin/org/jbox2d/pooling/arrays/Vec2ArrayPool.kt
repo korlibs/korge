@@ -24,7 +24,7 @@
 package org.jbox2d.pooling.arrays
 
 import org.jbox2d.common.Vec2
-import org.jbox2d.internal.*
+import org.jbox2d.internal.assert
 
 /**
  * not thread safe Vec2[] pool

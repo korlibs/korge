@@ -1,6 +1,6 @@
 package com.soywiz.kds.algo
 
-import com.soywiz.kds.*
+import com.soywiz.kds.IntArrayList
 
 class RLE(val capacity: Int = 7) {
     val data = IntArrayList(capacity)

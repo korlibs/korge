@@ -3,7 +3,7 @@ package com.soywiz.kmem.internal
 import com.soywiz.kmem.Arch
 import com.soywiz.kmem.Os
 import com.soywiz.kmem.Runtime
-import java.lang.management.*
+import java.lang.management.ManagementFactory
 import java.nio.ByteOrder
 
 internal actual val currentOs: Os by lazy {

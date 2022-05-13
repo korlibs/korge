@@ -1,8 +1,9 @@
 package com.soywiz.korau.internal
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.kmem.arraycopy
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.SyncStream
 
 internal fun List<ShortArray>.combine(): ShortArray {
     val combined = ShortArray(this.sumBy { it.size })

@@ -1,8 +1,10 @@
 package com.soywiz.kmem.dyn
 
-import kotlinx.cinterop.*
+import kotlinx.cinterop.CFunction
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.interpretCPointer
 import kotlin.native.internal.NativePtr
-import kotlin.reflect.*
+import kotlin.reflect.KProperty
 
 public fun <T : Function<*>> DynamicLibrary.func(name: String? = null): DynamicFun<T> = DynamicFun<T>(this, name)
 public fun <T : Function<*>> DynamicLibrary.funcNull(name: String? = null): DynamicFunNull<T> = DynamicFunNull<T>(this, name)

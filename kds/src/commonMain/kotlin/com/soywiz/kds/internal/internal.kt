@@ -1,7 +1,5 @@
 package com.soywiz.kds.internal
 
-import kotlin.math.*
-
 @Retention(value = AnnotationRetention.BINARY)
 @RequiresOptIn(level = RequiresOptIn.Level.WARNING)
 public annotation class KdsInternalApi

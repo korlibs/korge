@@ -1,6 +1,13 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.*
+import com.soywiz.klock.internal.MILLIS_PER_DAY
+import com.soywiz.klock.internal.MILLIS_PER_HOUR
+import com.soywiz.klock.internal.MILLIS_PER_MINUTE
+import com.soywiz.klock.internal.MILLIS_PER_SECOND
+import com.soywiz.klock.internal.MILLIS_PER_WEEK
+import com.soywiz.klock.internal.Moduler
+import com.soywiz.klock.internal.Serializable
+import com.soywiz.klock.internal.klockLazyOrGet
 
 /**
  * Immutable structure representing a set of a [monthSpan] and a [timeSpan].

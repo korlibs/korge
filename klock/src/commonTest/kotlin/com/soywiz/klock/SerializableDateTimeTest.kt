@@ -4,7 +4,6 @@ import com.soywiz.klock.wrapped.WDateTime
 import com.soywiz.klock.wrapped.wrapped
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class SerializableDateTimeTest {
 	@Test

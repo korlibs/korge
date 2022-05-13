@@ -1,12 +1,16 @@
 package com.soywiz.korau
 
-import com.soywiz.klock.*
-import com.soywiz.korau.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.http.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.korau.format.readSoundInfo
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.file.std.UrlVfs
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.file.std.withCatalogJail
+import com.soywiz.korio.net.http.FakeHttpServerClient
+import com.soywiz.korio.net.http.router
 import org.junit.Test
-import kotlin.test.*
+import kotlin.test.assertEquals
 
 class KorauCatalogOverHttpVfsTest {
     @Test

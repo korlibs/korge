@@ -32,7 +32,8 @@ import org.jbox2d.common.Color3f
 import org.jbox2d.common.MathUtils
 import org.jbox2d.common.Settings
 import org.jbox2d.common.Vec2
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 
 /**
  * A dynamic tree arranges data in a binary tree to accelerate queries such as volume queries and

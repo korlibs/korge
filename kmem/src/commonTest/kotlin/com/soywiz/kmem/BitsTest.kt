@@ -1,7 +1,9 @@
 package com.soywiz.kmem
 
-import com.soywiz.kmem.internal.*
-import kotlin.test.*
+import com.soywiz.kmem.internal.byteArrayOf
+import com.soywiz.kmem.internal.format
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class BitsTest {
 	@kotlin.test.Test

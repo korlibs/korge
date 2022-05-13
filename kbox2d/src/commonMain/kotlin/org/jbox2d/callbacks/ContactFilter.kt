@@ -26,7 +26,6 @@
  */
 package org.jbox2d.callbacks
 
-import org.jbox2d.dynamics.Filter
 import org.jbox2d.dynamics.Fixture
 
 // updated to rev 100

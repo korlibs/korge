@@ -1,7 +1,7 @@
 package org.jbox2d.particle
 
-import org.jbox2d.common.*
-import org.jbox2d.userdata.*
+import org.jbox2d.common.Vec2
+import org.jbox2d.userdata.Box2dTypedUserData
 
 class ParticleDef : Box2dTypedUserData by Box2dTypedUserData.Mixin() {
     /**

@@ -23,8 +23,7 @@
  */
 package org.jbox2d.dynamics.joints
 
-import org.jbox2d.dynamics.*
-import kotlin.jvm.*
+import org.jbox2d.dynamics.Body
 
 /**
  * Definition for a [ConstantVolumeJoint], which connects a group a bodies together so they

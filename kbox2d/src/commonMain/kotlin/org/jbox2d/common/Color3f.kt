@@ -46,9 +46,6 @@
 
 package org.jbox2d.common
 
-import org.jbox2d.internal.*
-import kotlin.native.concurrent.ThreadLocal
-
 // updated to rev 100
 /**
  * Similar to javax.vecmath.Color3f holder

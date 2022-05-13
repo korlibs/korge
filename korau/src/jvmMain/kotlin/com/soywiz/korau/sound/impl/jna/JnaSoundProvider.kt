@@ -1,21 +1,36 @@
 package com.soywiz.korau.sound.impl.jna
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
-import com.soywiz.korau.format.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.krypto.encoding.*
-import com.sun.jna.*
-import kotlinx.coroutines.*
-import java.lang.RuntimeException
-import java.nio.*
-import kotlin.coroutines.*
-import kotlin.math.*
+import com.soywiz.kds.Pool
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.klogger.Console
+import com.soywiz.kmem.clamp01
+import com.soywiz.korau.internal.coerceToShort
+import com.soywiz.korau.sound.AudioData
+import com.soywiz.korau.sound.AudioSamples
+import com.soywiz.korau.sound.DummySoundChannel
+import com.soywiz.korau.sound.NativeSoundProvider
+import com.soywiz.korau.sound.PlatformAudioOutput
+import com.soywiz.korau.sound.PlaybackParameters
+import com.soywiz.korau.sound.Sound
+import com.soywiz.korau.sound.SoundChannel
+import com.soywiz.korau.sound.SoundChannelState
+import com.soywiz.korau.sound.SoundProps
+import com.soywiz.korau.sound.copyOfRange
+import com.soywiz.korau.sound.copySoundPropsFromCombined
+import com.soywiz.korau.sound.nativeAudioFormats
+import com.soywiz.korau.sound.playingOrPaused
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.launchImmediately
+import com.sun.jna.Pointer
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import java.nio.ShortBuffer
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.math.sqrt
 
 class OpenALException(message: String) : RuntimeException(message)
 

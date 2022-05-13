@@ -1,10 +1,11 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.*
 import com.soywiz.klock.internal.MicroStrReader
+import com.soywiz.klock.internal.Serializable
 import com.soywiz.klock.internal.increment
 import com.soywiz.klock.internal.padded
 import com.soywiz.klock.internal.substr
+import com.soywiz.klock.internal.umod
 import kotlin.math.log10
 import kotlin.math.pow
 

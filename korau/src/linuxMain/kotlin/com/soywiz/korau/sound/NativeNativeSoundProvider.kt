@@ -1,14 +1,20 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.clamp01
-import com.soywiz.kmem.startAddressOf
-import com.soywiz.korau.format.*
-import com.soywiz.korio.async.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.WAV
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.util.redirected
 import kotlinx.cinterop.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.delay
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.math.sqrt
 
 val openalNativeSoundProvider: OpenALNativeSoundProvider? by lazy {

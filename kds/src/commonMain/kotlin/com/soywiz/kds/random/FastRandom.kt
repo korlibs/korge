@@ -1,7 +1,7 @@
 package com.soywiz.kds.random
 
 import kotlin.native.concurrent.ThreadLocal
-import kotlin.random.*
+import kotlin.random.Random
 
 @ThreadLocal
 private val LocalFastRandom = FastRandom(Random.Default.nextLong())

@@ -5,7 +5,12 @@ import com.soywiz.kmem.fill
 import com.soywiz.korau.internal.SampleConvert
 import com.soywiz.korio.lang.Charsets
 import com.soywiz.korio.lang.EOFException
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.MarkableSyncInputStream
+import com.soywiz.korio.stream.SyncInputStream
+import com.soywiz.korio.stream.SyncPositionStream
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.readU8
 import kotlin.math.min
 import kotlin.math.pow
 

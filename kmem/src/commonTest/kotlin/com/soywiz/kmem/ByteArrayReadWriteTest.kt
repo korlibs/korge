@@ -1,7 +1,8 @@
 package com.soywiz.kmem
 
 import com.soywiz.kmem.internal.byteArrayOf
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ByteArrayReadWriteTest {
     @Test

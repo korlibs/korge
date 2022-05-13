@@ -1,7 +1,10 @@
 package com.soywiz.kds
 
-import kotlin.random.*
-import kotlin.test.*
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class PriorityQueueTest {
     @Test

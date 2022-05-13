@@ -9,7 +9,13 @@
 
 package com.soywiz.kmem
 
-import org.khronos.webgl.*
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.DataView
+import org.khronos.webgl.Float32Array
+import org.khronos.webgl.Float64Array
+import org.khronos.webgl.Int16Array
+import org.khronos.webgl.Int32Array
+import org.khronos.webgl.Int8Array
 
 public actual typealias MemBuffer = ArrayBuffer
 

@@ -1,6 +1,5 @@
 package com.soywiz.kds
 
-import kotlin.math.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

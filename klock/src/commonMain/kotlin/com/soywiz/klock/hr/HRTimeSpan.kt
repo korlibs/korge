@@ -1,6 +1,8 @@
 package com.soywiz.klock.hr
 
-import com.soywiz.klock.*
+import com.soywiz.klock.PerformanceCounter
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.nanoseconds
 import kotlin.jvm.JvmInline
 import kotlin.math.round
 

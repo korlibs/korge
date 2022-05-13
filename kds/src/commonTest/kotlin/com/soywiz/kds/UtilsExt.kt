@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import kotlin.math.*
+import kotlin.math.abs
 
 fun Int.reverseBytes(): Int {
 	val v0 = ((this ushr 0) and 0xFF)

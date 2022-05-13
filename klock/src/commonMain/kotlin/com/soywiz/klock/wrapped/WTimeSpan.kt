@@ -1,8 +1,20 @@
 package com.soywiz.klock.wrapped
 
-import com.soywiz.klock.*
-import com.soywiz.klock.annotations.*
-import com.soywiz.klock.internal.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.annotations.KlockExperimental
+import com.soywiz.klock.clamp
+import com.soywiz.klock.days
+import com.soywiz.klock.hours
+import com.soywiz.klock.internal.Serializable
+import com.soywiz.klock.max
+import com.soywiz.klock.microseconds
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.min
+import com.soywiz.klock.minutes
+import com.soywiz.klock.nanoseconds
+import com.soywiz.klock.seconds
+import com.soywiz.klock.toTimeString
+import com.soywiz.klock.weeks
 
 @KlockExperimental
 val TimeSpan.wrapped get() = WTimeSpan(this)

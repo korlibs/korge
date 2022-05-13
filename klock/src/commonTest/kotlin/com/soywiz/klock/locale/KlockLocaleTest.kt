@@ -1,6 +1,14 @@
 package com.soywiz.klock.locale
 
-import com.soywiz.klock.*
+import com.soywiz.klock.DateFormat
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.DayOfWeek
+import com.soywiz.klock.KlockLocale
+import com.soywiz.klock.KlockLocaleContext
+import com.soywiz.klock.KlockLocaleGender
+import com.soywiz.klock.Month
+import com.soywiz.klock.format
+import com.soywiz.klock.parse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

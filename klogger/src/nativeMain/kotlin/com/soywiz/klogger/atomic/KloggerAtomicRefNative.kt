@@ -1,6 +1,7 @@
 package com.soywiz.klogger.atomic
 
-import kotlin.native.concurrent.*
+import kotlin.native.concurrent.FreezableAtomicReference
+import kotlin.native.concurrent.freeze
 
 internal actual class KloggerAtomicRef<T> actual constructor(initial: T) {
     private val ref = FreezableAtomicReference(initial.freeze())

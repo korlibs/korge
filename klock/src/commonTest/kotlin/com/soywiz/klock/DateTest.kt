@@ -1,6 +1,6 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.locale.*
+import com.soywiz.klock.locale.spanish
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

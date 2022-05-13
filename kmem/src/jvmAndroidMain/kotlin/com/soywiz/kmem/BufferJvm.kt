@@ -3,7 +3,12 @@
 @file:Suppress("NOTHING_TO_INLINE", "EXTENSION_SHADOWED_BY_MEMBER", "RedundantUnitReturnType", "FunctionName", "USELESS_CAST")
 package com.soywiz.kmem
 
-import java.nio.*
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.DoubleBuffer
+import java.nio.FloatBuffer
+import java.nio.IntBuffer
+import java.nio.ShortBuffer
 
 private fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
 	//val end = offset + size - 1

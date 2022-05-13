@@ -1,6 +1,6 @@
 package com.soywiz.kmem
 
-import kotlin.native.internal.*
+import kotlin.native.internal.GC
 
 public actual val KmemGC: KmemGCImpl = object : KmemGCImpl() {
     override fun collect() = GC.collect()

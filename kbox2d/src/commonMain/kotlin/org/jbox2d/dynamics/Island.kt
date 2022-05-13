@@ -36,7 +36,8 @@ import org.jbox2d.dynamics.contacts.ContactVelocityConstraint
 import org.jbox2d.dynamics.contacts.Position
 import org.jbox2d.dynamics.contacts.Velocity
 import org.jbox2d.dynamics.joints.Joint
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 
 /*
  Position Correction Notes

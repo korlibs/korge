@@ -1,6 +1,9 @@
 package com.soywiz.klock.benchmark
 
-import com.soywiz.klock.*
+import com.soywiz.klock.Stopwatch
+import com.soywiz.klock.measureTime
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.nanoseconds
 import kotlin.jvm.JvmName
 import kotlin.math.pow
 

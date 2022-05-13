@@ -1,10 +1,14 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klogger.*
-import com.soywiz.korau.format.*
-import com.soywiz.korau.format.mp3.*
-import com.soywiz.korau.sound.impl.jna.*
-import com.soywiz.korio.time.*
+import com.soywiz.klogger.Console
+import com.soywiz.korau.format.AudioFormat
+import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.OGG
+import com.soywiz.korau.format.WAV
+import com.soywiz.korau.format.mp3.MP3Decoder
+import com.soywiz.korau.sound.impl.jna.JnaOpenALNativeSoundProvider
+import com.soywiz.korau.sound.impl.jna.OpenALException
+import com.soywiz.korio.time.traceTime
 import java.util.*
 
 internal val nativeAudioFormats = AudioFormats(WAV, MP3Decoder, OGG) + AudioFormats(try {

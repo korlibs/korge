@@ -29,7 +29,7 @@ import org.jbox2d.collision.shapes.EdgeShape
 import org.jbox2d.collision.shapes.ShapeType
 import org.jbox2d.common.Transform
 import org.jbox2d.dynamics.Fixture
-import org.jbox2d.internal.*
+import org.jbox2d.internal.assert
 import org.jbox2d.pooling.IWorldPool
 
 class EdgeAndCircleContact(argPool: IWorldPool) : Contact(argPool) {

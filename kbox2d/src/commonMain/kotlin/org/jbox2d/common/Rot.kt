@@ -23,8 +23,9 @@
  */
 package org.jbox2d.common
 
-import com.soywiz.korma.geom.*
-import org.jbox2d.internal.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.radians
+import org.jbox2d.internal.assert
 
 /**
  * Represents a rotation

@@ -1,6 +1,5 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.klockLazyOrGet
 import com.soywiz.klock.internal.substr
 import kotlin.native.concurrent.ThreadLocal
 

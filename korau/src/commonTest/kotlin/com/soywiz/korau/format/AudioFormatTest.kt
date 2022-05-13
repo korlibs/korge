@@ -1,10 +1,10 @@
 package com.soywiz.korau.format
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import doIOTest
-import kotlin.test.*
+import kotlin.test.assertEquals
 
 class AudioFormatTest {
 	val formats = standardAudioFormats()

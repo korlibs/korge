@@ -1,7 +1,19 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.Month.*
-import kotlin.test.*
+import com.soywiz.klock.Month.April
+import com.soywiz.klock.Month.August
+import com.soywiz.klock.Month.December
+import com.soywiz.klock.Month.February
+import com.soywiz.klock.Month.January
+import com.soywiz.klock.Month.July
+import com.soywiz.klock.Month.June
+import com.soywiz.klock.Month.March
+import com.soywiz.klock.Month.May
+import com.soywiz.klock.Month.November
+import com.soywiz.klock.Month.October
+import com.soywiz.klock.Month.September
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MonthTest {
     @Test

@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import kotlin.test.*
+import kotlin.test.assertEquals
 
 class ExtraTest {
 	class Demo : Extra by Extra.Mixin() {

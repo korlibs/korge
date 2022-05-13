@@ -1,7 +1,8 @@
 package com.soywiz.kmem
 
-import com.soywiz.kmem.annotations.*
-import kotlin.math.*
+import com.soywiz.kmem.annotations.KmemExperimental
+import kotlin.math.ceil
+import kotlin.math.floor
 
 /**
  * Represents and integral value of 52-bits + sign using a Double as internal representation.

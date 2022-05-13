@@ -1,6 +1,6 @@
 package com.soywiz.korau.internal
 
-import com.soywiz.kds.*
+import com.soywiz.kds.FloatArrayDeque
 
 private val temp = FloatArray(1)
 

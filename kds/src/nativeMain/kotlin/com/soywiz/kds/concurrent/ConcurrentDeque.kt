@@ -1,6 +1,7 @@
 package com.soywiz.kds.concurrent
 
-import kotlin.native.concurrent.*
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 
 class ConcurrentDeque<T : Any> {
     private val items = AtomicReference<List<T>>(emptyList<T>().freeze())

@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import kotlin.test.*
+import kotlin.test.assertEquals
 
 class ComputedTest {
 	class Format(override var parent: Format? = null) : Computed.WithParent<Format> {

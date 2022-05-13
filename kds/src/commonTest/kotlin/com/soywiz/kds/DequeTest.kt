@@ -1,6 +1,8 @@
 package com.soywiz.kds
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class DequeTest {
 	private val Deque<String>.str get() = this.joinToString(",")

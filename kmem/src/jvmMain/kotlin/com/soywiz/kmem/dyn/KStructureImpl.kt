@@ -1,6 +1,9 @@
 package com.soywiz.kmem.dyn
 
-import com.sun.jna.*
+import com.sun.jna.FromNativeContext
+import com.sun.jna.Memory
+import com.sun.jna.NativeMapped
+import com.sun.jna.Pointer
 
 actual class KArena actual constructor() {
     private val pointers = arrayListOf<Memory>()

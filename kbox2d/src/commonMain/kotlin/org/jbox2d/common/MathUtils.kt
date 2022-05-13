@@ -46,8 +46,11 @@
 
 package org.jbox2d.common
 
-import kotlin.math.*
-import kotlin.random.*
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.random.Random
 
 /**
  * A few math methods that don't fit very well anywhere else.

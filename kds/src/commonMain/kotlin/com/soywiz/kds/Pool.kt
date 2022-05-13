@@ -1,7 +1,7 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.kds.lock.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.lock.Lock
 
 open class ConcurrentPool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
     : Pool<T>(reset, preallocate, gen) {

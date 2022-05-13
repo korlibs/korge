@@ -26,10 +26,19 @@
  */
 package org.jbox2d.utests
 
-import org.jbox2d.common.*
-import kotlin.math.*
-import kotlin.random.*
-import kotlin.test.*
+import org.jbox2d.common.Mat22
+import org.jbox2d.common.Mat33
+import org.jbox2d.common.MathUtils
+import org.jbox2d.common.Vec2
+import org.jbox2d.common.Vec3
+import kotlin.math.abs
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.round
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 
 /**
  * @author Daniel Murphy

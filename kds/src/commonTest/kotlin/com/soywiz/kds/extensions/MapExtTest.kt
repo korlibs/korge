@@ -1,7 +1,12 @@
 package com.soywiz.kds.extensions
 
-import com.soywiz.kds.*
-import kotlin.test.*
+import com.soywiz.kds.countMap
+import com.soywiz.kds.flip
+import com.soywiz.kds.incr
+import com.soywiz.kds.linkedHashMapOf
+import com.soywiz.kds.toLinkedMap
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MapExtTest {
     @Test

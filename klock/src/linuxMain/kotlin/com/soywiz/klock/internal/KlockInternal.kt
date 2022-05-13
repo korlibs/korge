@@ -1,9 +1,19 @@
 package com.soywiz.klock.internal
 
-import com.soywiz.klock.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.hr.HRTimeSpan
-import kotlinx.cinterop.*
-import platform.posix.*
+import com.soywiz.klock.seconds
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.value
+import platform.posix.gettimeofday
+import platform.posix.localtime_r
+import platform.posix.time_tVar
+import platform.posix.timeval
+import platform.posix.tm
 
 internal actual object KlockInternal {
     actual val currentTime: Double get() = memScoped {

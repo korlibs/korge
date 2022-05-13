@@ -23,8 +23,7 @@
  */
 package org.jbox2d.common
 
-import org.jbox2d.internal.*
-import kotlin.jvm.*
+import org.jbox2d.internal.assert
 import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal

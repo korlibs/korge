@@ -2,15 +2,33 @@
 
 package com.soywiz.korau.format
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
+import com.soywiz.klock.microseconds
+import com.soywiz.kmem.readS16LE
+import com.soywiz.kmem.readS24LE
+import com.soywiz.kmem.readU8
 import com.soywiz.korau.internal.coerceToShort
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlin.coroutines.cancellation.*
+import com.soywiz.korau.sound.AudioData
+import com.soywiz.korau.sound.AudioSamples
+import com.soywiz.korau.sound.AudioStream
+import com.soywiz.korau.sound.interleaved
+import com.soywiz.korio.annotations.Keep
+import com.soywiz.korio.async.runBlockingNoSuspensions
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.MemorySyncStream
+import com.soywiz.korio.stream.readBytesUpTo
+import com.soywiz.korio.stream.readS16LE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU32LE
+import com.soywiz.korio.stream.toAsync
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.writeShortArrayLE
+import com.soywiz.korio.stream.writeString
+import kotlin.coroutines.cancellation.CancellationException
 
 @Keep
 open class WAV : AudioFormat("wav") {

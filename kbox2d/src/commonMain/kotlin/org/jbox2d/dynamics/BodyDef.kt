@@ -23,9 +23,11 @@
  */
 package org.jbox2d.dynamics
 
-import com.soywiz.korma.geom.*
-import org.jbox2d.common.*
-import org.jbox2d.userdata.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.radians
+import org.jbox2d.common.MathUtils
+import org.jbox2d.common.Vec2
+import org.jbox2d.userdata.Box2dTypedUserData
 
 /**
  * A body definition holds all the data needed to construct a rigid body. You can safely re-use body

@@ -2,14 +2,14 @@
 
 package com.soywiz.korau.format
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.checksum.*
-import com.soywiz.korio.util.encoding.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.util.checksum.CRC32
+import com.soywiz.korio.util.checksum.checksum
+import com.soywiz.krypto.encoding.hex
 import doIOTest
-import kotlin.test.*
+import kotlin.test.assertEquals
 
 class DecodeTest {
     val formats = AudioFormats(WAV)

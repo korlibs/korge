@@ -1,8 +1,10 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.jvm.*
+import com.soywiz.klock.jvm.toDate
+import com.soywiz.klock.jvm.toDateTime
 import org.junit.Test
 import java.util.*
+import java.util.Date
 import kotlin.test.assertEquals
 
 class DateExtTest {

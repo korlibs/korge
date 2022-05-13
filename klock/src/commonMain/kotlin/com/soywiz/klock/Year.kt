@@ -2,7 +2,7 @@ package com.soywiz.klock
 
 import com.soywiz.klock.internal.Serializable
 import kotlin.jvm.JvmInline
-import kotlin.math.*
+import kotlin.math.min
 
 /**
  * Represents a Year in a typed way.

@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class BitSetTest {
 	fun BitSet.setCheckSeq(vararg bits: Boolean) {

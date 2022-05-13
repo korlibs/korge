@@ -30,7 +30,7 @@ import org.jbox2d.common.Transform
 import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.TimeStep
 import org.jbox2d.dynamics.contacts.ContactVelocityConstraint.VelocityConstraintPoint
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
 
 
 /**

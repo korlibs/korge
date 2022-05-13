@@ -1,6 +1,7 @@
 package com.soywiz.korau.sound
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AudioSamplesDequeTest {
     @Test

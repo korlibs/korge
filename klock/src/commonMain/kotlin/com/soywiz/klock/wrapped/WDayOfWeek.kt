@@ -1,7 +1,7 @@
 package com.soywiz.klock.wrapped
 
-import com.soywiz.klock.*
-import com.soywiz.klock.annotations.*
+import com.soywiz.klock.DayOfWeek
+import com.soywiz.klock.annotations.KlockExperimental
 
 @KlockExperimental
 val DayOfWeek.wrapped get() = this

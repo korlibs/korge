@@ -1,6 +1,10 @@
 package com.soywiz.korau.format.mp3.javamp3
 
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.cos
+import kotlin.math.pow
+import kotlin.math.sin
+import kotlin.math.tan
 
 internal object JavaMp3DecoderTables {
     const val L3_NSAMPLES = 576

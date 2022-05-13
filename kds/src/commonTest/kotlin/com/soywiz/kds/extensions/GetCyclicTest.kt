@@ -1,6 +1,10 @@
 package com.soywiz.kds.extensions
 
-import com.soywiz.kds.*
+import com.soywiz.kds.IntArray2
+import com.soywiz.kds.doubleArrayListOf
+import com.soywiz.kds.floatArrayListOf
+import com.soywiz.kds.getCyclic
+import com.soywiz.kds.intArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

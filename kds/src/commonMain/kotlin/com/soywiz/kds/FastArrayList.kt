@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 
 // @TODO: ArrayList that prevents isObject + jsInstanceOf on getter on Kotlin/JS
 // @TODO: This class should be temporal until Kotlin/JS fixes this issue

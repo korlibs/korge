@@ -2,12 +2,25 @@
 
 package com.soywiz.korau.format
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.binarySearch
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.measureTimeWithResult
+import com.soywiz.klock.microseconds
+import com.soywiz.klock.seconds
+import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.kmem.extract
+import com.soywiz.kmem.readU8
+import com.soywiz.korio.annotations.Keep
+import com.soywiz.korio.lang.Charsets
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readBytesUpTo
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.toSyncOrNull
 
 @Keep
 open class MP3 : MP3Base() {

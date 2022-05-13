@@ -1,6 +1,6 @@
 package com.soywiz.kmem
 
-import kotlin.math.*
+import kotlin.math.max
 
 
 /**

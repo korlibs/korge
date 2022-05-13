@@ -1,16 +1,17 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korau.format.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import org.w3c.dom.*
-import kotlin.coroutines.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.internal.SampleConvert
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.std.LocalVfs
+import com.soywiz.korio.file.std.UrlVfs
+import com.soywiz.korio.lang.invalidOp
+import kotlinx.coroutines.CompletableDeferred
+import org.w3c.dom.HTMLAudioElement
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 class HtmlNativeSoundProvider : NativeSoundProvider() {
     override fun init() {

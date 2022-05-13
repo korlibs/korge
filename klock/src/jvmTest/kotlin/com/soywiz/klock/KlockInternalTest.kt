@@ -2,8 +2,6 @@ package com.soywiz.klock
 
 import com.soywiz.klock.internal.KlockInternalJvm
 import com.soywiz.klock.internal.TemporalKlockInternalJvm
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

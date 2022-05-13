@@ -1,14 +1,17 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korau.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.Pool
+import com.soywiz.klock.milliseconds
+import com.soywiz.klogger.Console
+import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.WAV
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.lang.Disposable
+import kotlinx.coroutines.CancellationException
+import kotlin.coroutines.CoroutineContext
+import kotlin.native.concurrent.ThreadLocal
+import kotlin.native.concurrent.Worker
 
 actual val nativeSoundProvider: NativeSoundProvider = Win32NativeSoundProvider
 

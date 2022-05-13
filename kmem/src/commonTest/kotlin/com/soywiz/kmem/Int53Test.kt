@@ -1,6 +1,7 @@
 package com.soywiz.kmem
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @Suppress("INTEGER_OVERFLOW")
 class Int53Test {

@@ -3,7 +3,7 @@ package com.soywiz.klock.locale
 import com.soywiz.klock.TimezoneNames
 import com.soywiz.klock.hours
 import com.soywiz.klock.minutes
-import kotlin.native.concurrent.*
+import kotlin.native.concurrent.ThreadLocal
 
 private fun utc(hours: Int, minutes: Int = 0) = hours.hours + minutes.minutes
 

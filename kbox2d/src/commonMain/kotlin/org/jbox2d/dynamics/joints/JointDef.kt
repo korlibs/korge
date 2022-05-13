@@ -23,8 +23,8 @@
  */
 package org.jbox2d.dynamics.joints
 
-import org.jbox2d.dynamics.*
-import org.jbox2d.userdata.*
+import org.jbox2d.dynamics.Body
+import org.jbox2d.userdata.Box2dTypedUserData
 
 /**
  * Joint definitions are used to construct joints.

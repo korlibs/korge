@@ -1,7 +1,7 @@
 package com.soywiz.korau.sound.internal.jvm
 
-import com.soywiz.kds.*
-import java.io.*
+import com.soywiz.kds.ByteArrayDeque
+import java.io.InputStream
 
 internal fun ByteArrayDeque.inputStream() = object : InputStream() {
     override fun read(b: ByteArray, off: Int, len: Int): Int {

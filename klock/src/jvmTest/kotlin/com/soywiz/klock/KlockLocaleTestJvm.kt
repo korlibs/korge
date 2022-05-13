@@ -1,6 +1,17 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.locale.*
+import com.soywiz.klock.locale.chinese
+import com.soywiz.klock.locale.dutch
+import com.soywiz.klock.locale.french
+import com.soywiz.klock.locale.german
+import com.soywiz.klock.locale.japanese
+import com.soywiz.klock.locale.korean
+import com.soywiz.klock.locale.norwegian
+import com.soywiz.klock.locale.portuguese
+import com.soywiz.klock.locale.russian
+import com.soywiz.klock.locale.spanish
+import com.soywiz.klock.locale.swedish
+import com.soywiz.klock.locale.ukrainian
 import org.junit.Test
 import java.time.LocalDateTime
 import java.time.ZoneOffset

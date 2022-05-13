@@ -2,7 +2,7 @@ package com.soywiz.klock
 
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.hr.timeSpan
-import com.soywiz.klock.internal.*
+import com.soywiz.klock.internal.KlockInternal
 
 /**
  * Class for measuring relative times with as much precision as possible.

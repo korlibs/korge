@@ -23,8 +23,10 @@
  */
 package org.jbox2d.dynamics.joints
 
-import com.soywiz.korma.geom.*
-import org.jbox2d.common.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.radians
+import org.jbox2d.common.MathUtils
+import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 
 /**

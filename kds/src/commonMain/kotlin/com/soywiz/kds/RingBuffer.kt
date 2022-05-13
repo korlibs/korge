@@ -1,8 +1,11 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
-import kotlin.jvm.*
-import kotlin.math.*
+import com.soywiz.kds.internal.KdsInternalApi
+import com.soywiz.kds.internal.arraycopy
+import com.soywiz.kds.internal.equaler
+import com.soywiz.kds.internal.hashCoder
+import kotlin.jvm.JvmOverloads
+import kotlin.math.min
 
 class RingBuffer(bits: Int) : ByteRingBuffer(bits)
 

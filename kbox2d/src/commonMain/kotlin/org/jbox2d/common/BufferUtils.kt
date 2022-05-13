@@ -1,6 +1,7 @@
 package org.jbox2d.common
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 
 object BufferUtils {
     /** Reallocate a buffer.  */

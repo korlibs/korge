@@ -1,6 +1,7 @@
 package com.soywiz.kds.algo
 
-import com.soywiz.kds.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.Pool
 
 class RLEComparer<T : RLEComparer.Rle>(
     val rlePool: Pool<T>,

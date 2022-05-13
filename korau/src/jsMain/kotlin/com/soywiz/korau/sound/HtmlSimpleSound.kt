@@ -1,16 +1,30 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import org.khronos.webgl.*
-import org.w3c.dom.*
-import org.w3c.dom.events.*
-import kotlinx.browser.*
-import kotlin.coroutines.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.klogger.Console
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.file.std.uniVfs
+import com.soywiz.korio.lang.Cancellable
+import kotlinx.browser.document
+import kotlinx.browser.window
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.job
+import org.khronos.webgl.ArrayBuffer
+import org.khronos.webgl.Float32Array
+import org.khronos.webgl.Int8Array
+import org.w3c.dom.Audio
+import org.w3c.dom.HTMLAudioElement
+import org.w3c.dom.HTMLMediaElement
+import org.w3c.dom.events.Event
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 class AudioBufferOrHTMLMediaElement(
     val audioBuffer: AudioBuffer?,

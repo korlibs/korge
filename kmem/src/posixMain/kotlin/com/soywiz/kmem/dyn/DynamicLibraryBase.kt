@@ -1,7 +1,10 @@
 package com.soywiz.kmem.dyn
 
-import kotlinx.cinterop.*
-import platform.posix.*
+import kotlinx.cinterop.toKString
+import platform.posix.RTLD_LAZY
+import platform.posix.dlclose
+import platform.posix.dlopen
+import platform.posix.dlsym
 
 internal val DEBUG_DYNAMIC_LIB = platform.posix.getenv("DEBUG_DYNAMIC_LIB")?.toKString() == "true"
 

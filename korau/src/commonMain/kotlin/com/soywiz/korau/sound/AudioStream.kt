@@ -1,11 +1,16 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.korau.format.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import kotlin.math.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioEncodingProps
+import com.soywiz.korau.format.AudioFormat
+import com.soywiz.korau.format.defaultAudioFormats
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.lang.Closeable
+import kotlin.math.min
 
 abstract class AudioStream(
     val rate: Int,

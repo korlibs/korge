@@ -44,7 +44,7 @@ import org.jbox2d.dynamics.contacts.EdgeAndCircleContact
 import org.jbox2d.dynamics.contacts.EdgeAndPolygonContact
 import org.jbox2d.dynamics.contacts.PolygonAndCircleContact
 import org.jbox2d.dynamics.contacts.PolygonContact
-import org.jbox2d.internal.*
+import org.jbox2d.internal.assert
 import org.jbox2d.pooling.IDynamicStack
 import org.jbox2d.pooling.IWorldPool
 

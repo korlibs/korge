@@ -1,6 +1,5 @@
 package com.soywiz.kds.atomic
 
-import kotlin.native.concurrent.ensureNeverFrozen
 import kotlin.native.concurrent.freeze
 import kotlin.native.concurrent.isFrozen
 

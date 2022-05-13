@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.js.*
+import com.soywiz.klock.js.toDate
+import com.soywiz.klock.js.toDateTime
 import kotlin.js.Date
 import kotlin.test.Test
 import kotlin.test.assertEquals

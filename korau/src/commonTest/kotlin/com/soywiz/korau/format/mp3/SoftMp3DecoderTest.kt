@@ -1,11 +1,11 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.korau.format.*
-import com.soywiz.korau.format.mp3.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
+import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.mp3.MP3Decoder
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
 import doIOTest
-import kotlin.test.*
+import kotlin.test.Test
 
 class SoftMp3DecoderTest {
     val formats = AudioFormats(MP3Decoder)

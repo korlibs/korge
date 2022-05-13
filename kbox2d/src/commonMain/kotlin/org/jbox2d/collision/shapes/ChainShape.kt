@@ -31,7 +31,7 @@ import org.jbox2d.common.MathUtils
 import org.jbox2d.common.Settings
 import org.jbox2d.common.Transform
 import org.jbox2d.common.Vec2
-import org.jbox2d.internal.*
+import org.jbox2d.internal.assert
 
 /**
  * A chain shape is a free form sequence of line segments. The chain has two-sided collision, so you

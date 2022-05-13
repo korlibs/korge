@@ -23,7 +23,7 @@
  */
 package org.jbox2d.common
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.System_nanoTime
 
 /**
  * Timer for profiling

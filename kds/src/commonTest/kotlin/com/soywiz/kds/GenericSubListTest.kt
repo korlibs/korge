@@ -1,6 +1,7 @@
 package com.soywiz.kds
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class GenericSubListTest {
     private val list = listOf(1, 2, 3, 4, 3)

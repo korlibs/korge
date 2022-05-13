@@ -1,8 +1,11 @@
 package com.soywiz.klock.wrapped
 
-import com.soywiz.klock.*
-import com.soywiz.klock.annotations.*
+import com.soywiz.klock.MonthSpan
+import com.soywiz.klock.annotations.KlockExperimental
 import com.soywiz.klock.internal.Serializable
+import com.soywiz.klock.months
+import com.soywiz.klock.totalYears
+import com.soywiz.klock.years
 
 @KlockExperimental
 val MonthSpan.wrapped get() = WMonthSpan(this)

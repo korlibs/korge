@@ -1,8 +1,8 @@
 package com.soywiz.klock.locale
 
 import com.soywiz.klock.DayOfWeek
-import com.soywiz.klock.KlockLocaleContext
 import com.soywiz.klock.KlockLocale
+import com.soywiz.klock.KlockLocaleContext
 import com.soywiz.klock.KlockLocaleGender
 
 val KlockLocale.Companion.russian get() = RussianKlockLocale

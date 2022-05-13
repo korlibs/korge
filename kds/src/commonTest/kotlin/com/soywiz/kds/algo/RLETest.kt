@@ -1,6 +1,7 @@
 package com.soywiz.kds.algo
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class RLETest {
     @Test

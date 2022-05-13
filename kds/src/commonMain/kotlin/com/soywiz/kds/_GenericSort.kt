@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import kotlin.math.*
+import kotlin.math.min
 
 fun <T> genericSort(subject: T, left: Int, right: Int, ops: SortOps<T>): T =
     genericSort(subject, left, right, ops, false)

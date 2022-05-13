@@ -1,7 +1,9 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import kotlin.coroutines.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 class AudioChannel {
     private var channel: SoundChannel? = null

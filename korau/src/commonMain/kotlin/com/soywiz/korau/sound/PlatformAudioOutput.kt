@@ -1,10 +1,11 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import kotlin.coroutines.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.clamp
+import com.soywiz.kmem.clamp01
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.lang.Disposable
+import kotlin.coroutines.CoroutineContext
 
 open class PlatformAudioOutput(
     val coroutineContext: CoroutineContext,

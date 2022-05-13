@@ -1,11 +1,41 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.concurrent.*
-import com.soywiz.kmem.*
-import com.soywiz.kmem.dyn.*
-import kotlinx.cinterop.*
-import platform.windows.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.concurrent.ConcurrentDeque
+import com.soywiz.kmem.dyn.DynamicLibrary
+import com.soywiz.kmem.dyn.func
+import com.soywiz.kmem.startAddressOf
+import kotlinx.cinterop.Arena
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.invoke
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.pin
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.sizeOf
+import kotlinx.cinterop.value
+import platform.windows.CALLBACK_NULL
+import platform.windows.DWORD
+import platform.windows.DWORD_PTR
+import platform.windows.HWAVEOUT
+import platform.windows.HWAVEOUTVar
+import platform.windows.LPCWAVEFORMATEX
+import platform.windows.LPHWAVEOUT
+import platform.windows.LPWAVEHDR
+import platform.windows.MMRESULT
+import platform.windows.Sleep
+import platform.windows.UINT
+import platform.windows.WAVEFORMATEX
+import platform.windows.WAVEHDR
+import platform.windows.WAVE_FORMAT_PCM
+import platform.windows.WAVE_MAPPER
+import platform.windows.WHDR_DONE
+import kotlin.native.concurrent.AtomicLong
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.Future
+import kotlin.native.concurrent.TransferMode
+import kotlin.native.concurrent.Worker
+import kotlin.native.concurrent.freeze
 
 internal object WINMM : DynamicLibrary("winmm.dll") {
     val waveOutOpenExt by func<(phwo: LPHWAVEOUT?, uDeviceID: UINT, pwfx: LPCWAVEFORMATEX?, dwCallback: DWORD_PTR, dwInstance: DWORD_PTR, fdwOpen: DWORD) -> MMRESULT>()

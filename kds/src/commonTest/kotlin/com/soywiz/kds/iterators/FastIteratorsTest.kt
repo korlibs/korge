@@ -1,6 +1,7 @@
 package com.soywiz.kds.iterators
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class FastIteratorsTest {
 	@Test

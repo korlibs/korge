@@ -1,8 +1,17 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.*
+import com.soywiz.klock.internal.MILLIS_PER_DAY
+import com.soywiz.klock.internal.MILLIS_PER_HOUR
+import com.soywiz.klock.internal.MILLIS_PER_MINUTE
+import com.soywiz.klock.internal.MILLIS_PER_SECOND
+import com.soywiz.klock.internal.MILLIS_PER_WEEK
+import com.soywiz.klock.internal.Serializable
+import com.soywiz.klock.internal.niceStr
+import com.soywiz.klock.internal.padded
 import kotlin.jvm.JvmInline
-import kotlin.math.*
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 /** [TimeSpan] representing this number as [nanoseconds] or 1 / 1_000_000_000 [seconds]. */
 inline val Long.nanoseconds get() = TimeSpan.fromNanoseconds(this.toDouble())

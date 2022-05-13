@@ -1,8 +1,10 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.comparator.*
-import com.soywiz.kds.map.*
-import kotlin.math.*
+import com.soywiz.kds.comparator.ComparatorComparable
+import com.soywiz.kds.map.MutableEntryExt
+import com.soywiz.kds.map.MutableMapExt
+import kotlin.math.max
+import kotlin.math.min
 
 fun <K, V> sortedMapOf(comparator: Comparator<K>, vararg values: Pair<K, V>): SortedMap<K, V> =
     SortedMap<K, V>(comparator).also { it.putAll(values) }

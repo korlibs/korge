@@ -1,8 +1,10 @@
 package com.soywiz.klock.internal
 
-import com.soywiz.klock.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.hr.HRTimeSpan
-import kotlinx.browser.*
+import com.soywiz.klock.minutes
+import kotlinx.browser.window
 
 private external val process: dynamic
 

@@ -1,6 +1,6 @@
 package org.jbox2d.particle
 
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Angle
 import org.jbox2d.common.Transform
 import org.jbox2d.common.Vec2
 

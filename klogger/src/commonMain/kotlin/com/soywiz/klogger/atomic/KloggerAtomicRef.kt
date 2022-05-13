@@ -1,6 +1,6 @@
 package com.soywiz.klogger.atomic
 
-import kotlin.reflect.*
+import kotlin.reflect.KProperty
 
 internal expect class KloggerAtomicRef<T>(initial: T) {
     var value: T

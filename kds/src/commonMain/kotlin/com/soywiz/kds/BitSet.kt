@@ -1,6 +1,12 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.internal.*
+import kotlin.collections.Collection
+import kotlin.collections.Iterator
+import kotlin.collections.any
+import kotlin.collections.contentEquals
+import kotlin.collections.contentHashCode
+import kotlin.collections.map
 
 /**
  * Fixed size [BitSet]. Similar to a [BooleanArray] but tightly packed to reduce memory usage.

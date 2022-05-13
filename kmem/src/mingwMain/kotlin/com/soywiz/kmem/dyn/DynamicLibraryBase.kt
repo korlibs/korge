@@ -1,7 +1,10 @@
 package com.soywiz.kmem.dyn
 
-import kotlinx.cinterop.*
-import platform.windows.*
+import kotlinx.cinterop.CPointer
+import platform.windows.FreeLibrary
+import platform.windows.GetProcAddress
+import platform.windows.HINSTANCE__
+import platform.windows.LoadLibraryW
 
 public actual open class DynamicLibraryBase actual constructor(public val name: String) : DynamicSymbolResolver {
     public val handle: CPointer<HINSTANCE__>? = LoadLibraryW(name)

@@ -1,8 +1,8 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
-import com.soywiz.kds.lock.*
-import kotlin.math.*
+import com.soywiz.kds.internal.arraycopy
+import com.soywiz.kds.lock.Lock
+import kotlin.math.min
 
 class ChunkedByteDeque {
     private val lock = Lock()

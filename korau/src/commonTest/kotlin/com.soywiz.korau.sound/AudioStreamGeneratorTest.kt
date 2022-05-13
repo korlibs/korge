@@ -1,7 +1,8 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.korio.async.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AudioStreamGeneratorTest {
     @Test

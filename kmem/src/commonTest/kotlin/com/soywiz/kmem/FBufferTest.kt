@@ -1,6 +1,8 @@
 package com.soywiz.kmem
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class FBufferTest {
 	@Test

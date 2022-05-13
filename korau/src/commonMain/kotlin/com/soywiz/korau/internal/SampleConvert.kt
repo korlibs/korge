@@ -1,6 +1,6 @@
 package com.soywiz.korau.internal
 
-import com.soywiz.kmem.*
+import com.soywiz.kmem.clamp
 
 object SampleConvert {
     // (value.clamp(-1f, +1f) * Short.MAX_VALUE).toShort()

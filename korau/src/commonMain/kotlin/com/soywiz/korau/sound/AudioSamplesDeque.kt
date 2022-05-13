@@ -1,8 +1,8 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.*
-import com.soywiz.korau.internal.*
-import kotlin.math.*
+import com.soywiz.kds.ShortArrayDeque
+import com.soywiz.korau.internal.SampleConvert
+import kotlin.math.min
 
 class AudioSamplesDeque(val channels: Int) {
     val buffer = Array(channels) { ShortArrayDeque() }

@@ -1,6 +1,11 @@
 package com.soywiz.klock.internal
 
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.floor
+import kotlin.math.pow
+import kotlin.math.round
+import kotlin.math.sign
 
 internal const val MILLIS_PER_SECOND = 1000
 internal const val MILLIS_PER_MINUTE = MILLIS_PER_SECOND * 60 // 60_000

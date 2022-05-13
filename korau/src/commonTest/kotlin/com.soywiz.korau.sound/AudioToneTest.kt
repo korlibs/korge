@@ -1,7 +1,8 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import kotlin.test.*
+import com.soywiz.klock.seconds
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AudioToneTest {
     @Test

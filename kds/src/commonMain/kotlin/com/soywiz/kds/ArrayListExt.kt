@@ -1,6 +1,6 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 
 inline fun IntRange.toIntList(): IntArrayList = IntArrayList(this.endInclusive - this.start).also { for (v in this.start .. this.endInclusive) it.add(v) }
 

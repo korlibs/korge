@@ -2,7 +2,6 @@ package com.soywiz.korau.format.mp3
 
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
-import com.soywiz.korau.format.mp3.javamp3.JavaMp3AudioFormat
 import com.soywiz.korau.format.mp3.minimp3.Minimp3AudioFormat
 import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korio.stream.AsyncStream

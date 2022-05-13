@@ -1,8 +1,10 @@
 package com.soywiz.klock.wrapped
 
-import com.soywiz.klock.*
-import com.soywiz.klock.annotations.*
+import com.soywiz.klock.Time
+import com.soywiz.klock.TimeFormat
+import com.soywiz.klock.annotations.KlockExperimental
 import com.soywiz.klock.internal.Serializable
+import com.soywiz.klock.plus
 
 @KlockExperimental
 val Time.wrapped get() = WTime(this)

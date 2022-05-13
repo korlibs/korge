@@ -1,9 +1,11 @@
 
 package com.soywiz.korau.sound
 
+import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.dyn.DynamicLibrary
+import com.soywiz.kmem.dyn.func
+import com.soywiz.kmem.startAddressOf
 import kotlinx.cinterop.*
-import com.soywiz.kmem.*
-import com.soywiz.kmem.dyn.*
 
 //typealias ALuintVar = UIntVar
 typealias ALuint = Int

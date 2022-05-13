@@ -1,6 +1,6 @@
 package org.jbox2d.dynamics
 
-import org.jbox2d.dynamics.joints.*
+import org.jbox2d.dynamics.joints.Joint
 
 inline fun WorldRef.forEachBody(callback: (body: Body) -> Unit) {
     var node = world.bodyList

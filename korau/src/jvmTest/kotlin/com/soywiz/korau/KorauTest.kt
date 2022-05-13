@@ -1,10 +1,10 @@
 package com.soywiz.korau
 
-import com.soywiz.korau.format.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlin.test.*
+import com.soywiz.korau.format.standardAudioFormats
+import com.soywiz.korau.sound.readAudioData
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.test.Test
 
 class KorauTest {
     val formats = standardAudioFormats()

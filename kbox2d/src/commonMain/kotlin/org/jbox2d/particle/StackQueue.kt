@@ -1,6 +1,7 @@
 package org.jbox2d.particle
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 
 
 class StackQueue<T> {

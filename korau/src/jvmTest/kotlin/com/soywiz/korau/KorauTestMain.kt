@@ -1,8 +1,8 @@
 package com.soywiz.korau
 
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.file.std.*
-import kotlinx.coroutines.*
+import com.soywiz.korau.sound.readMusic
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlinx.coroutines.runBlocking
 
 object KorauTestMain  {
     @JvmStatic

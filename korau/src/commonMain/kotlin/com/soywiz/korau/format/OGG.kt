@@ -1,11 +1,17 @@
 package com.soywiz.korau.format
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlin.coroutines.cancellation.*
+import com.soywiz.klock.microseconds
+import com.soywiz.kmem.extract
+import com.soywiz.korio.annotations.Keep
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readS64LE
+import com.soywiz.korio.stream.readS8
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU8
+import kotlin.coroutines.cancellation.CancellationException
 
 @Keep
 open class OGG : OggBase() {

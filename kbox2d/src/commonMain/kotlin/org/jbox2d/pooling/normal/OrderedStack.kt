@@ -26,7 +26,8 @@
  */
 package org.jbox2d.pooling.normal
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 
 /**
  * @author Daniel Murphy

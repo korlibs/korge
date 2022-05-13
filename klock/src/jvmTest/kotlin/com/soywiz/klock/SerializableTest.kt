@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.wrapped.*
+import com.soywiz.klock.wrapped.WDate
+import com.soywiz.klock.wrapped.WDateTime
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.ObjectInputStream

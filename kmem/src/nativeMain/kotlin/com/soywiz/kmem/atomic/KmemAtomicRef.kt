@@ -1,6 +1,7 @@
 package com.soywiz.kmem.atomic
 
-import kotlin.native.concurrent.*
+import kotlin.native.concurrent.AtomicReference
+import kotlin.native.concurrent.freeze
 
 // @TODO: Use AtomicReference
 actual class KmemAtomicRef<T> actual constructor(initial: T) {

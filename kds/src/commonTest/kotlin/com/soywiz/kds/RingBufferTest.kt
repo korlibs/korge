@@ -1,7 +1,8 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
-import kotlin.test.*
+import com.soywiz.kds.internal.KdsInternalApi
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(KdsInternalApi::class)
 class RingBufferTest {

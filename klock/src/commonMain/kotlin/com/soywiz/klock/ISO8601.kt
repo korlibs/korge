@@ -1,6 +1,9 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.*
+import com.soywiz.klock.internal.MicroStrReader
+import com.soywiz.klock.internal.fastForEach
+import com.soywiz.klock.internal.padded
+import com.soywiz.klock.internal.readTimeZoneOffset
 import kotlin.math.absoluteValue
 
 // https://en.wikipedia.org/wiki/ISO_8601

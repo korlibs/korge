@@ -1,7 +1,10 @@
 package com.soywiz.kmem.numeric
 
-import com.soywiz.kmem.*
-import kotlin.test.*
+import com.soywiz.kmem.isAlignedTo
+import com.soywiz.kmem.nextAlignedTo
+import com.soywiz.kmem.prevAlignedTo
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AlignmentTest {
     @Test

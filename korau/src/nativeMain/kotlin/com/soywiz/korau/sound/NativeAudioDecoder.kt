@@ -1,14 +1,28 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormat
+import com.soywiz.korau.format.MP3
+import com.soywiz.korau.format.MP3Base
+import com.soywiz.korau.format.OGG
+import com.soywiz.korau.internal.SampleConvert
+import com.soywiz.korio.lang.portableSimpleName
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.read
 import kotlinx.cinterop.*
-import com.soywiz.korau.format.*
-import minimp3.*
-import com.soywiz.klock.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korio.lang.*
-import stb_vorbis.*
+import minimp3.MINIMP3_MAX_SAMPLES_PER_FRAME
+import minimp3.mp3dec_decode_frame
+import minimp3.mp3dec_frame_info_t
+import minimp3.mp3dec_init
+import minimp3.mp3dec_t
+import stb_vorbis.stb_vorbis
+import stb_vorbis.stb_vorbis_alloc
+import stb_vorbis.stb_vorbis_close
+import stb_vorbis.stb_vorbis_decode_frame_pushdata
+import stb_vorbis.stb_vorbis_get_info
+import stb_vorbis.stb_vorbis_open_pushdata
+import stb_vorbis.stb_vorbis_stream_length_in_samples
 
 @kotlin.native.concurrent.ThreadLocal
 actual val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)

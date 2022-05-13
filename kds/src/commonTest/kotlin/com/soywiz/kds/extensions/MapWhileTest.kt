@@ -1,7 +1,12 @@
 package com.soywiz.kds.extensions
 
-import com.soywiz.kds.*
-import kotlin.test.*
+import com.soywiz.kds.mapWhile
+import com.soywiz.kds.mapWhileArray
+import com.soywiz.kds.mapWhileDouble
+import com.soywiz.kds.mapWhileFloat
+import com.soywiz.kds.mapWhileInt
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MapWhileTest {
     @Test

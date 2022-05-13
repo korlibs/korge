@@ -1,5 +1,12 @@
 package com.soywiz.klock
 
+import com.soywiz.klock.DayOfWeek.Friday
+import com.soywiz.klock.DayOfWeek.Monday
+import com.soywiz.klock.DayOfWeek.Saturday
+import com.soywiz.klock.DayOfWeek.Sunday
+import com.soywiz.klock.DayOfWeek.Thursday
+import com.soywiz.klock.DayOfWeek.Tuesday
+import com.soywiz.klock.DayOfWeek.Wednesday
 import com.soywiz.klock.internal.Serializable
 import com.soywiz.klock.internal.umod
 

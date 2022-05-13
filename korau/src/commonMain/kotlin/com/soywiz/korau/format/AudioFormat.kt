@@ -2,14 +2,23 @@
 
 package com.soywiz.korau.format
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlin.coroutines.cancellation.*
+import com.soywiz.kds.Extra
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korau.internal.niceStr
+import com.soywiz.korau.sound.AudioData
+import com.soywiz.korau.sound.AudioStream
+import com.soywiz.korau.sound.toData
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.lang.unsupported
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.toAsync
+import kotlin.coroutines.cancellation.CancellationException
 
 open class AudioFormat(vararg exts: String) {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()

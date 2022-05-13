@@ -10,7 +10,11 @@ import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioSamplesDeque
 import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korio.lang.unsupported
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.DequeSyncStream
+import com.soywiz.korio.stream.markable
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAll
 
 internal open class JavaMp3AudioFormat() : AudioFormat("mp3") {
     companion object : JavaMp3AudioFormat()

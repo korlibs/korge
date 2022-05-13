@@ -1,7 +1,9 @@
 package com.soywiz.klock.internal
 
-import com.soywiz.klock.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.hr.HRTimeSpan
+import com.soywiz.klock.milliseconds
 import java.util.*
 
 internal actual object KlockInternal {

@@ -1,6 +1,6 @@
 package com.soywiz.kmem
 
-import java.nio.*
+import java.nio.ByteBuffer
 
 //private val unsafe: Unsafe? = try {
 //    Unsafe::class.java.getDeclaredField("theUnsafe")

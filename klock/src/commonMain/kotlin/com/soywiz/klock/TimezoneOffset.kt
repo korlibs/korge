@@ -1,8 +1,11 @@
 package com.soywiz.klock
 
-import com.soywiz.klock.internal.*
+import com.soywiz.klock.internal.KlockInternal
+import com.soywiz.klock.internal.MILLIS_PER_MINUTE
+import com.soywiz.klock.internal.Serializable
+import com.soywiz.klock.internal.padded
 import kotlin.jvm.JvmInline
-import kotlin.math.*
+import kotlin.math.abs
 
 /**
  * Represents a time zone offset with millisecond precision. Usually minute is enough.

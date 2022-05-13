@@ -23,7 +23,7 @@
  */
 package org.jbox2d.common
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.assert
 
 /**
  * A 3-by-3 matrix. Stored in column-major order.

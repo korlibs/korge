@@ -1,6 +1,8 @@
 package com.soywiz.klock
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class SimplerDateFormatTest {
     // Sun, 06 Nov 1994 08:49:37 GMT

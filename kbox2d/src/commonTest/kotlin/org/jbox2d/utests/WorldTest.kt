@@ -1,10 +1,14 @@
 package org.jbox2d.utests
 
-import org.jbox2d.collision.shapes.*
-import org.jbox2d.common.*
-import org.jbox2d.dynamics.*
-import org.jbox2d.userdata.*
-import kotlin.test.*
+import org.jbox2d.collision.shapes.PolygonShape
+import org.jbox2d.common.Vec2
+import org.jbox2d.dynamics.BodyDef
+import org.jbox2d.dynamics.BodyType
+import org.jbox2d.dynamics.FixtureDef
+import org.jbox2d.dynamics.World
+import org.jbox2d.userdata.Box2dTypedUserData
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 
 class WorldTest {

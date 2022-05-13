@@ -1,7 +1,6 @@
 package org.jbox2d.pooling.arrays
 
-import org.jbox2d.internal.*
-
+import org.jbox2d.internal.assert
 import org.jbox2d.particle.VoronoiDiagram
 
 class GeneratorArrayPool {

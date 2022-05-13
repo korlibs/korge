@@ -1,6 +1,8 @@
 package com.soywiz.klock
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class DateRangeTest {
     val date1 = DateTime(2018, Month.December, 24)

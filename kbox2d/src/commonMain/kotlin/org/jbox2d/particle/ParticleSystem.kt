@@ -16,7 +16,8 @@ import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Fixture
 import org.jbox2d.dynamics.TimeStep
 import org.jbox2d.dynamics.World
-import org.jbox2d.internal.*
+import org.jbox2d.internal.Arrays_sort
+import org.jbox2d.internal.assert
 import org.jbox2d.particle.VoronoiDiagram.VoronoiDiagramCallback
 
 class ParticleSystem(internal var m_world: World) {

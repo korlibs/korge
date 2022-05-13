@@ -2,12 +2,18 @@
 
 package com.soywiz.korau.format.mp3.minimp3
 
-import com.soywiz.kds.*
-import com.soywiz.korau.format.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlin.jvm.*
+import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormat
+import com.soywiz.korau.format.MP3
+import com.soywiz.korau.format.MP3Base
+import com.soywiz.korau.sound.AudioSamples
+import com.soywiz.korau.sound.AudioSamplesDeque
+import com.soywiz.korau.sound.AudioStream
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readBytesUpTo
+import kotlin.jvm.JvmName
 
 internal object Minimp3AudioFormat : AudioFormat("mp3") {
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? {

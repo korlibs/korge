@@ -1,13 +1,21 @@
 package com.soywiz.korau.impl.jna
 
-import com.soywiz.klock.*
-import com.soywiz.korau.format.*
-import com.soywiz.korau.format.mp3.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
+import com.soywiz.klock.seconds
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.mp3.MP3Decoder
+import com.soywiz.korau.format.readSoundInfo
+import com.soywiz.korau.sound.SoundChannelGroup
+import com.soywiz.korau.sound.attachTo
+import com.soywiz.korau.sound.await
+import com.soywiz.korau.sound.playbackTimes
+import com.soywiz.korau.sound.readAudioStream
+import com.soywiz.korau.sound.readSound
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.stream.openAsync
+import kotlinx.coroutines.runBlocking
 
 fun ByteArray.asMemoryVfsFile(name: String = "temp.bin"): VfsFile = MemoryVfs(mapOf(name to openAsync()))[name]
 suspend fun VfsFile.cachedToMemory(): VfsFile = this.readAll().asMemoryVfsFile(this.fullName)

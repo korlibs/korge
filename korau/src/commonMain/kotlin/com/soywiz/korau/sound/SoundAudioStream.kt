@@ -1,10 +1,11 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import kotlin.coroutines.*
-import kotlin.coroutines.cancellation.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.launchImmediately
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.cancellation.CancellationException
 
 class SoundAudioStream(
     coroutineContext: CoroutineContext,

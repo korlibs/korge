@@ -1,7 +1,7 @@
 package com.soywiz.kmem.dyn
 
-import com.soywiz.kmem.atomic.*
-import kotlin.reflect.*
+import com.soywiz.kmem.atomic.KmemAtomicRef
+import kotlin.reflect.KProperty
 
 public open class DynamicLibrary(name: String) : DynamicLibraryBase(name) {
 }

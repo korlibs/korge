@@ -27,9 +27,9 @@ import org.jbox2d.common.Vec2
 import org.jbox2d.dynamics.Body
 import org.jbox2d.dynamics.SolverData
 import org.jbox2d.dynamics.World
-import org.jbox2d.internal.*
-import org.jbox2d.pooling.*
-import org.jbox2d.userdata.*
+import org.jbox2d.internal.assert
+import org.jbox2d.pooling.IWorldPool
+import org.jbox2d.userdata.Box2dTypedUserData
 
 /**
  * The base joint class. Joints are used to constrain two bodies together in various fashions. Some

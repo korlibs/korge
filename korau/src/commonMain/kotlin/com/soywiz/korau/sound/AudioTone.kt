@@ -1,8 +1,9 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.korau.internal.*
-import kotlin.math.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korau.internal.SampleConvert
+import kotlin.math.PI
+import kotlin.math.sin
 
 object AudioTone {
     fun generate(length: TimeSpan, freq: Double, rate: Int = 44100): AudioData {

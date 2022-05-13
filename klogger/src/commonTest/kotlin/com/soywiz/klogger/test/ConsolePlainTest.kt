@@ -1,7 +1,8 @@
 package com.soywiz.klogger.test
 
-import com.soywiz.klogger.*
-import kotlin.test.*
+import com.soywiz.klogger.Console
+import kotlin.test.Ignore
+import kotlin.test.Test
 
 class ConsolePlainTest {
     @Test

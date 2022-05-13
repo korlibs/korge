@@ -23,8 +23,8 @@
  */
 package org.jbox2d.dynamics
 
-import org.jbox2d.collision.shapes.*
-import org.jbox2d.userdata.*
+import org.jbox2d.collision.shapes.Shape
+import org.jbox2d.userdata.Box2dTypedUserData
 
 /**
  * A fixture definition is used to create a fixture. This class defines an abstract fixture

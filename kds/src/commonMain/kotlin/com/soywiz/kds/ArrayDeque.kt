@@ -1,8 +1,8 @@
 package com.soywiz.kds
 
-import com.soywiz.kds.internal.*
-import kotlin.jvm.*
-import kotlin.math.*
+import com.soywiz.kds.internal.KdsInternalApi
+import com.soywiz.kds.internal.ilog2
+import kotlin.jvm.JvmOverloads
 
 class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
     private var ring = RingBuffer(initialBits)

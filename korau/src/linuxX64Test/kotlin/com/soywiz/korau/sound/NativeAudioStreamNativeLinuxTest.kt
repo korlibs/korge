@@ -1,11 +1,5 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlinx.coroutines.*
-import kotlin.test.*
-
 class NativeAudioStreamNativeLinuxTest {
     //@Test
     //fun test() = suspendTest {

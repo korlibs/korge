@@ -1,6 +1,9 @@
 package com.soywiz.klock
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 class DateTimeWithOffsetTest {
     val date1 = (DateTime(2018, 3, 2, 1) + 100.seconds)

@@ -1,12 +1,9 @@
 package com.soywiz.korau
 
-import com.soywiz.klock.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import org.junit.*
+import com.soywiz.korau.sound.readSound
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
+import org.junit.Test
 
 class PlaySoundJvmTest {
     @Test

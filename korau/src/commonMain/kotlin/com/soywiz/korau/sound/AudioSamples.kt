@@ -1,10 +1,17 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
-import com.soywiz.korau.internal.*
-import com.soywiz.korio.lang.*
-import kotlin.math.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.FastShortTransfer
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.arrayinterleave
+import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.fill
+import com.soywiz.korau.internal.SampleConvert
+import com.soywiz.korau.internal.coerceToShort
+import com.soywiz.korio.lang.assert
+import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.min
 
 interface IAudioSamples {
     val channels: Int

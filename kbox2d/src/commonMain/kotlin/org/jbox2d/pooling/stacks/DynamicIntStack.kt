@@ -23,7 +23,8 @@
  */
 package org.jbox2d.pooling.stacks
 
-import org.jbox2d.internal.*
+import org.jbox2d.internal.arraycopy
+import org.jbox2d.internal.assert
 
 class DynamicIntStack(private var size: Int) {
 

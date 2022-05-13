@@ -1,10 +1,23 @@
 package com.soywiz.klock.internal
 
-import com.soywiz.klock.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.hr.HRTimeSpan
-import kotlinx.cinterop.*
-import platform.posix.*
-import platform.windows.*
+import com.soywiz.klock.milliseconds
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import platform.posix.mingw_gettimeofday
+import platform.posix.timeval
+import platform.windows.FILETIME
+import platform.windows.FileTimeToSystemTime
+import platform.windows.GetTimeZoneInformation
+import platform.windows.SYSTEMTIME
+import platform.windows.SystemTimeToFileTime
+import platform.windows.SystemTimeToTzSpecificLocalTime
+import platform.windows.TIME_ZONE_INFORMATION
+import platform.windows.TzSpecificLocalTimeToSystemTime
 
 internal actual object KlockInternal {
     actual val currentTime: Double

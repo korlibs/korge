@@ -1,6 +1,7 @@
 package com.soywiz.klock
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class YearMonthTest {
     @Test
