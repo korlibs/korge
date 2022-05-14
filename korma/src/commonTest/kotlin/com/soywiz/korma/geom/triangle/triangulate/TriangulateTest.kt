@@ -1,10 +1,9 @@
 package com.soywiz.korma.geom.triangle.triangulate
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.triangulate.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.triangle.triangulate.triangulate
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TriangulateTest {
     //@Test

@@ -1,10 +1,14 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.interpolation.*
-import com.soywiz.korma.math.*
-import kotlin.math.*
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.math.clamp
+import com.soywiz.korma.math.maxOrElse
+import com.soywiz.korma.math.minOrElse
+import kotlin.math.abs
+import kotlin.math.hypot
+import kotlin.math.sqrt
 
 //(x0,y0) is start point; (x1,y1),(x2,y2) is control points; (x3,y3) is end point.
 // https://pomax.github.io/bezierinfo/

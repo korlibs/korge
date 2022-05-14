@@ -1,6 +1,8 @@
 package com.soywiz.korma.interpolation
 
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.pow
+import kotlin.math.sin
 
 private inline fun combine(it: Double, start: Easing, end: Easing) =
     if (it < 0.5) 0.5 * start(it * 2.0) else 0.5 * end((it - 0.5) * 2.0) + 0.5

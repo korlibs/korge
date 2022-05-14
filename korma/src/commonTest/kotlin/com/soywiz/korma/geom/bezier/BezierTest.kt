@@ -1,7 +1,8 @@
 package com.soywiz.korma.geom.bezier
 
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Point
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class BezierTest {
     @Test

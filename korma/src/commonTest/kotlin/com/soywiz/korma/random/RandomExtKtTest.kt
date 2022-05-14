@@ -1,7 +1,8 @@
 package com.soywiz.korma.random
 
-import kotlin.random.*
-import kotlin.test.*
+import kotlin.random.Random
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class RandomExtKtTest {
     @Test

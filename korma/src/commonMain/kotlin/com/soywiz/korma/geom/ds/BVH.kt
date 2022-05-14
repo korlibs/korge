@@ -29,9 +29,22 @@ Jon-Carlos Rivera - imbcmdth@hotmail.com
 
 package com.soywiz.korma.geom.ds
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import kotlin.math.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.fastArrayListOf
+import kotlin.collections.HashMap
+import kotlin.collections.List
+import kotlin.collections.contains
+import kotlin.collections.copyInto
+import kotlin.collections.copyOf
+import kotlin.collections.isNotEmpty
+import kotlin.collections.remove
+import kotlin.collections.removeLast
+import kotlin.collections.set
+import kotlin.math.abs
+import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 
 /**
  * A Bounding Volume Hierarchy implementation for arbitrary dimensions.

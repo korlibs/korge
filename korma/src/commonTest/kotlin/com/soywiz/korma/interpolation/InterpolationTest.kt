@@ -1,6 +1,7 @@
 package com.soywiz.korma.interpolation
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class InterpolationTest {
     @Test

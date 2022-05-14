@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.interpolation.interpolate
 import kotlin.test.*
 
 class AnchorTest {

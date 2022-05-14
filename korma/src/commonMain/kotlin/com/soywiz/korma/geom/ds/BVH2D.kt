@@ -1,7 +1,10 @@
 package com.soywiz.korma.geom.ds
 
-import com.soywiz.kds.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.Ray
+import com.soywiz.korma.geom.Rectangle
 
 fun BVHIntervals.toRectangle(out: Rectangle = Rectangle()) = out.setTo(a(0), a(1), b(0), b(1))
 fun IRectangle.toBVH(out: BVHIntervals = BVHIntervals(2)): BVHIntervals {

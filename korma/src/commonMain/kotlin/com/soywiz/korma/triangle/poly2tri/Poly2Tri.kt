@@ -46,12 +46,16 @@
 
 package com.soywiz.korma.triangle.poly2tri
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.SortOps
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.genericSort
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.swap
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.triangle.*
-import kotlin.jvm.*
-import kotlin.math.*
+import kotlin.jvm.JvmName
+import kotlin.math.abs
 
 object Poly2Tri {
 

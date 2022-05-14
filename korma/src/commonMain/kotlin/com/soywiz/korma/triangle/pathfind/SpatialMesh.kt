@@ -1,9 +1,22 @@
 package com.soywiz.korma.triangle.pathfind
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.triangle.*
-import com.soywiz.korma.internal.*
-import kotlin.math.*
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.triangle.Edge
+import com.soywiz.korma.geom.triangle.Triangle
+import com.soywiz.korma.geom.triangle.containsPoint
+import com.soywiz.korma.geom.triangle.pointInsideTriangle
+import com.soywiz.korma.internal.niceStr
+import kotlin.collections.ArrayList
+import kotlin.collections.Iterable
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.arrayListOf
+import kotlin.collections.getOrPut
+import kotlin.collections.hashMapOf
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.plusAssign
+import kotlin.collections.set
+import kotlin.math.hypot
 
 fun Iterable<Triangle>.spatialMesh() = SpatialMesh(this)
 

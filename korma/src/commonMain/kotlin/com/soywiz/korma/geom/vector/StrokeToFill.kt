@@ -1,11 +1,20 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.*
-import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.math.*
+import com.soywiz.kds.IntArrayList
+import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointIntArrayList
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.shape.emitPoints2
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.unaryPlus
+import com.soywiz.korma.math.clamp
 
 // @TODO: Implement LineCap + LineJoin
 @OptIn(KormaExperimental::class)

@@ -1,10 +1,18 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Line
+import com.soywiz.korma.geom.LineIntersection
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.internal.niceStr
 import kotlin.native.concurrent.ThreadLocal
 

@@ -1,9 +1,30 @@
 package com.soywiz.korma.geom.vector
 
 import com.soywiz.korma.annotations.KorDslMarker
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import kotlin.math.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.IRectangle
+import com.soywiz.korma.geom.IRectangleInt
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.times
+import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.unit
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.cos
+import kotlin.math.min
+import kotlin.math.sin
+import kotlin.math.tan
 
 @KorDslMarker
 interface VectorBuilder {

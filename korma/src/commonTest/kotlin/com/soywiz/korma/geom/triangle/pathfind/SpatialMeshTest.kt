@@ -1,11 +1,14 @@
 package com.soywiz.korma.geom.triangle.pathfind
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.pathfind.*
-import com.soywiz.korma.triangle.poly2tri.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.triangle.pathfind.finder
+import com.soywiz.korma.triangle.pathfind.spatialMesh
+import com.soywiz.korma.triangle.poly2tri.triangulateSafe
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class SpatialMeshTest {
     @Test

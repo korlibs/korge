@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom.binpack
 
-import com.soywiz.kds.*
+import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korma.geom.Rectangle
 
 class MaxRects(

@@ -1,7 +1,7 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.kds.*
-import com.soywiz.korma.internal.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.korma.internal.umod
 
 typealias PointScope = PointPool
 

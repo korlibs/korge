@@ -1,8 +1,8 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.shape.buildPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

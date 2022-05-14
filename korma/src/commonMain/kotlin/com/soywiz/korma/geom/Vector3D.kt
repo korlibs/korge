@@ -1,9 +1,9 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.internal.*
+import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.*
-import kotlin.math.*
+import com.soywiz.korma.math.almostEquals
+import kotlin.math.sqrt
 
 /*
 interface IVector3 {

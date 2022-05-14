@@ -1,7 +1,7 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.geom.ds.*
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
 
 fun Ray3D.intersectRayAABox1(box: AABB3D) : Boolean {
     val ray = this

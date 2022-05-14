@@ -1,14 +1,19 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.shape.ops.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.*
-import com.soywiz.korma.triangle.pathfind.*
-import com.soywiz.korma.triangle.triangulate.*
-import kotlin.math.*
-import kotlin.test.*
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.shape.ops.plus
+import com.soywiz.korma.geom.shape.toShape
+import com.soywiz.korma.geom.shape.toShape2d
+import com.soywiz.korma.geom.shape.totalVertices
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.triangle.area
+import com.soywiz.korma.triangle.pathfind.pathFind
+import com.soywiz.korma.triangle.triangulate.triangulateFlat
+import kotlin.math.abs
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class IntegrationShapeTest {
     @Test

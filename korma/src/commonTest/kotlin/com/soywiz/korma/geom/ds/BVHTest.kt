@@ -1,7 +1,10 @@
 package com.soywiz.korma.geom.ds
 
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Ray
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.Vector2D
+import kotlin.test.Test
 
 class BVHTest {
     @Test

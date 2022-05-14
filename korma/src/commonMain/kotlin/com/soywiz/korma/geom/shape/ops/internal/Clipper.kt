@@ -40,9 +40,21 @@
 
 package com.soywiz.korma.geom.shape.ops.internal
 
-import com.soywiz.kds.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.atan2
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.round
+import kotlin.math.sign
+import kotlin.math.sqrt
+import kotlin.math.tan
 
 private fun vector2(v: IPoint) = IPoint(v.x, v.y)
 

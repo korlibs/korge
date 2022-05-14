@@ -1,8 +1,15 @@
 package com.soywiz.korma.geom.shape.ops
 
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.shape.ops.internal.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.shape.ops.internal.Clipper
+import com.soywiz.korma.geom.shape.ops.internal.ClipperOffset
+import com.soywiz.korma.geom.shape.ops.internal.Paths
+import com.soywiz.korma.geom.shape.ops.internal.clipperOp
+import com.soywiz.korma.geom.shape.ops.internal.toClipper
+import com.soywiz.korma.geom.shape.ops.internal.toClipperPaths
+import com.soywiz.korma.geom.shape.ops.internal.toShape2d
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
 
 infix fun Shape2d.collidesWith(other: Shape2d): Boolean =
     this.clipperOp(other, Clipper.ClipType.INTERSECTION) != Shape2d.Empty

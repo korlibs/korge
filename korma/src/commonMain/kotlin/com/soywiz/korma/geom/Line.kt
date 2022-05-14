@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.math.*
+import com.soywiz.korma.math.almostEquals
+import com.soywiz.korma.math.clamp
 
 interface ILine {
     val a: IPoint

@@ -1,6 +1,13 @@
 package com.soywiz.korma.geom
 
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.acos
+import kotlin.math.asin
+import kotlin.math.atan2
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
 data class Quaternion(

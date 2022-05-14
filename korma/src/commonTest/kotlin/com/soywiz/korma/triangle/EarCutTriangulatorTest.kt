@@ -1,8 +1,10 @@
 package com.soywiz.korma.triangle
 
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.rectHole
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class EarCutTriangulatorTest {
     @Test

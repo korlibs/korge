@@ -1,6 +1,12 @@
 package com.soywiz.korma.math
 
-import kotlin.math.*
+import kotlin.math.abs
+import kotlin.math.absoluteValue
+import kotlin.math.ln
+import kotlin.math.log
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.pow
 
 fun Long.clamp(min: Long, max: Long): Long = if (this < min) min else if (this > max) max else this
 fun Int.clamp(min: Int, max: Int): Int = if (this < min) min else if (this > max) max else this

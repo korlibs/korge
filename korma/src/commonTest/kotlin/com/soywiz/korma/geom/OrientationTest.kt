@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class OrientationTest {
     @Test

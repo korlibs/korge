@@ -1,6 +1,7 @@
 package com.soywiz.korma.math
 
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
 
 fun DoubleArray.minOrElse(nil: Double): Double {
     if (isEmpty()) return nil

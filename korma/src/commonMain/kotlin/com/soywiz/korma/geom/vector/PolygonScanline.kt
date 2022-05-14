@@ -1,10 +1,28 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.kds.*
-import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.segment.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.FastIntMap
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.Pool
+import com.soywiz.kds.SortOps
+import com.soywiz.kds.clear
+import com.soywiz.kds.fastForEach
+import com.soywiz.kds.genericSort
+import com.soywiz.kds.get
+import com.soywiz.kds.getOrPut
+import com.soywiz.kds.size
+import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.IPointInt
+import com.soywiz.korma.geom.Line
+import com.soywiz.korma.geom.LineIntersection
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.fastForEach
+import com.soywiz.korma.geom.shape.emitPoints2
+import com.soywiz.korma.segment.IntSegmentSet
 
 @KormaExperimental
 open class RastScale {

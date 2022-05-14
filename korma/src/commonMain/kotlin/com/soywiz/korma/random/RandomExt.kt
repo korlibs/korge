@@ -1,9 +1,14 @@
 package com.soywiz.korma.random
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
-import kotlin.math.*
-import kotlin.random.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.interpolate
+import com.soywiz.korma.interpolation.Interpolable
+import com.soywiz.korma.interpolation.MutableInterpolable
+import com.soywiz.korma.interpolation.interpolate
+import kotlin.math.pow
+import kotlin.random.Random
 
 fun Random.ints(): Sequence<Int> = sequence { while (true) yield(nextInt()) }
 fun Random.ints(from: Int, until: Int): Sequence<Int> = sequence { while (true) yield(nextInt(from, until)) }

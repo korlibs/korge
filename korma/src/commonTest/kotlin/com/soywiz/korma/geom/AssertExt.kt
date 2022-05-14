@@ -1,7 +1,8 @@
 package com.soywiz.korma.geom
 
-import kotlin.math.*
-import kotlin.test.*
+import kotlin.math.absoluteValue
+import kotlin.test.assertSame
+import kotlin.test.assertTrue
 
 fun assertEquals(
     expected: IPoint?,

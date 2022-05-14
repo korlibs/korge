@@ -1,7 +1,9 @@
 package com.soywiz.korma.geom.triangle
 
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.assertEquals
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TriangleTest {
     val t1 = Triangle(Point(0, 0), Point(10, 0), Point(0, 10))

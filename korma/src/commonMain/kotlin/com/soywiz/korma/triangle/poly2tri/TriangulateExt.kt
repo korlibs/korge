@@ -1,12 +1,16 @@
 package com.soywiz.korma.triangle.poly2tri
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.shape.ops.internal.*
-import com.soywiz.korma.geom.triangle.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.shape.ops.internal.Clipper
+import com.soywiz.korma.geom.shape.ops.internal.DefaultClipper
+import com.soywiz.korma.geom.shape.ops.internal.executePaths
+import com.soywiz.korma.geom.shape.ops.internal.toClipperPaths
+import com.soywiz.korma.geom.shape.ops.internal.toPathList
+import com.soywiz.korma.geom.shape.toPathList
+import com.soywiz.korma.geom.triangle.TriangleList
+import com.soywiz.korma.geom.vector.VectorPath
 
 fun VectorPath.triangulateSafe(doClipper: Boolean = true): TriangleList {
     val pathList = if (doClipper) {

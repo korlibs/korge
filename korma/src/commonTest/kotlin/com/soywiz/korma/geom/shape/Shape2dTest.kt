@@ -1,10 +1,21 @@
 package com.soywiz.korma.geom.shape
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.ops.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.internal.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.shape.ops.extend
+import com.soywiz.korma.geom.shape.ops.intersection
+import com.soywiz.korma.geom.shape.ops.union
+import com.soywiz.korma.geom.shape.ops.xor
+import com.soywiz.korma.geom.toPoints
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.internal.niceStr
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 
 class Shape2dTest {
     @Test

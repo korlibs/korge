@@ -1,6 +1,6 @@
 package com.soywiz.korma.interpolation
 
-import com.soywiz.kds.*
+import com.soywiz.kds.fastCastTo
 
 interface Interpolable<T> {
     fun interpolateWith(ratio: Double, other: T): T

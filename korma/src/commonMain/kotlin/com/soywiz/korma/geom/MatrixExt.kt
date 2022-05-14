@@ -1,6 +1,6 @@
 package com.soywiz.korma.geom
 
-import kotlin.jvm.*
+import kotlin.jvm.JvmName
 
 fun Matrix3D.copyFrom(that: Matrix): Matrix3D = that.toMatrix3D(this)
 

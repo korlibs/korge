@@ -1,9 +1,12 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.internal.*
-import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.interpolation.Interpolable
+import com.soywiz.korma.interpolation.MutableInterpolable
+import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.isAlmostEquals
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
 
 interface IRectangle {
     val x: Double

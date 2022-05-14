@@ -1,11 +1,12 @@
 package com.soywiz.korma.triangle.pathfind
 
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.triangle.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.poly2tri.*
-import com.soywiz.korma.triangle.triangulate.*
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.triangle.Triangle
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.triangle.poly2tri.triangulateSafe
+import com.soywiz.korma.triangle.triangulate.triangulateFlat
 
 fun Iterable<Triangle>.toSpatialMesh(): SpatialMesh = SpatialMesh(this)
 fun Iterable<Triangle>.pathFind(): SpatialMeshFind = SpatialMeshFind(this.toSpatialMesh())

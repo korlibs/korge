@@ -1,8 +1,11 @@
 package com.soywiz.korma.geom
 
-import com.soywiz.korma.internal.*
-import com.soywiz.korma.interpolation.*
-import kotlin.math.*
+import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.interpolation.Interpolable
+import com.soywiz.korma.interpolation.MutableInterpolable
+import com.soywiz.korma.interpolation.interpolate
+import kotlin.math.max
+import kotlin.math.min
 
 interface ISize {
     val width: Double

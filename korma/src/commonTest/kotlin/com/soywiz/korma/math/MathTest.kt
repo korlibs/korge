@@ -1,8 +1,9 @@
 package com.soywiz.korma.math
 
 import com.soywiz.kds.rotated
-import kotlin.math.E
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class MathTest {
     @Test

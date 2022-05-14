@@ -1,9 +1,18 @@
 package com.soywiz.korma.geom.vector
 
-import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.internal.*
-import kotlin.math.*
+import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Line
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointInt
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.internal.floorCeil
+import kotlin.math.absoluteValue
+import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
 
 @Suppress("DuplicatedCode")
 @KormaExperimental

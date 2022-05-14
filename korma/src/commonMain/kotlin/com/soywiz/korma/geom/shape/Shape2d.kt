@@ -1,12 +1,19 @@
 package com.soywiz.korma.geom.shape
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.buildFastList
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.internal.*
-import kotlin.math.*
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
+import com.soywiz.korma.geom.vector.applyTransform
+import com.soywiz.korma.geom.vector.ellipse
+import com.soywiz.korma.geom.vector.polygon
+import com.soywiz.korma.internal.niceStr
+import kotlin.math.PI
+import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
 
 private fun Matrix?.tx(x: Double, y: Double) = this?.transformX(x, y) ?: x
 private fun Matrix?.ty(x: Double, y: Double) = this?.transformY(x, y) ?: y

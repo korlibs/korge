@@ -5,7 +5,14 @@ package com.soywiz.korma.geom
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
-import kotlin.math.*
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.atan2
+import kotlin.math.ceil
+import kotlin.math.cos
+import kotlin.math.floor
+import kotlin.math.hypot
+import kotlin.math.sin
 
 data class Matrix(
     var a: Double = 1.0,

@@ -2,7 +2,7 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.geom.range.OpenRange
 import com.soywiz.korma.internal.umod
-import com.soywiz.korma.interpolation.*
+import com.soywiz.korma.interpolation.interpolate
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2

@@ -1,7 +1,8 @@
 package com.soywiz.korma.segment
 
-import com.soywiz.korma.annotations.*
-import kotlin.test.*
+import com.soywiz.korma.annotations.KormaExperimental
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(KormaExperimental::class)
 class IntSegmentSetTest {
