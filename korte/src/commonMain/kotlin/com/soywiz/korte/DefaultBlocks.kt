@@ -1,7 +1,7 @@
 package com.soywiz.korte
 
-import com.soywiz.korte.internal.*
-import kotlin.coroutines.cancellation.*
+import com.soywiz.korte.internal.extraProperty
+import kotlin.coroutines.cancellation.CancellationException
 
 var TemplateConfig.debugPrintln by extraProperty({ extra }) { { v: Any? -> println(v) } }
 

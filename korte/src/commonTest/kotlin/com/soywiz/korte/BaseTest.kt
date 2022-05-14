@@ -1,6 +1,7 @@
 package com.soywiz.korte
 
-import kotlin.test.*
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 open class BaseTest {
 

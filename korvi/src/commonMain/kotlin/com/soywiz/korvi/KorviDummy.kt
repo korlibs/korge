@@ -1,15 +1,19 @@
 package com.soywiz.korvi
 
-import com.soywiz.klock.*
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.hr.hr
 import com.soywiz.klock.hr.timeSpan
-import com.soywiz.korau.sound.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.klock.seconds
+import com.soywiz.klock.toTimeString
+import com.soywiz.korau.sound.AudioData
+import com.soywiz.korau.sound.AudioSamples
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.SystemFont
-import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.VerticalAlign
 
 class DummyKorviVideoLL(
     val totalFrames: Long,

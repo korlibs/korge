@@ -1,8 +1,13 @@
 package com.soywiz.korte
 
-import kotlin.coroutines.*
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 fun suspendTest(callback: suspend () -> Unit) {
     runBlockingNoSuspensions(callback)

@@ -1,6 +1,6 @@
 package com.soywiz.korte
 
-import com.soywiz.korte.dynamic.*
+import com.soywiz.korte.dynamic.DynamicContext
 
 data class Filter(val name: String, val eval: suspend Ctx.() -> Any?) {
     class Ctx : DynamicContext {

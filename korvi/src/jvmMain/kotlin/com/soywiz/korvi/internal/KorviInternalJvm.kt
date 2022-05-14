@@ -1,24 +1,38 @@
 package com.soywiz.korvi.internal
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
+import com.soywiz.kds.TGenDeque
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.hr.hr
-import com.soywiz.kmem.*
-import com.soywiz.korau.sound.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import com.soywiz.korvi.*
-import kotlinx.coroutines.*
-import org.jcodec.api.specific.*
-import org.jcodec.common.*
-import org.jcodec.common.io.*
-import org.jcodec.common.model.*
-import org.jcodec.containers.mp4.demuxer.*
-import org.jcodec.scale.*
-import java.nio.*
+import com.soywiz.klock.seconds
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.readShortArrayLE
+import com.soywiz.kmem.writeArrayLE
+import com.soywiz.korau.sound.AudioData
+import com.soywiz.korau.sound.AudioSamples
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readBytesUpTo
+import com.soywiz.korio.util.toByteArray
+import com.soywiz.korvi.BaseKorviStream
+import com.soywiz.korvi.KorviAudioFrame
+import com.soywiz.korvi.KorviFrame
+import com.soywiz.korvi.KorviVideoFrame
+import com.soywiz.korvi.KorviVideoLL
+import kotlinx.coroutines.runBlocking
+import org.jcodec.api.specific.AVCMP4Adaptor
+import org.jcodec.common.Demuxer
+import org.jcodec.common.DemuxerTrack
+import org.jcodec.common.JCodecUtil
+import org.jcodec.common.SeekableDemuxerTrack
+import org.jcodec.common.io.SeekableByteChannel
+import org.jcodec.common.model.ColorSpace
+import org.jcodec.common.model.Picture
+import org.jcodec.containers.mp4.demuxer.MP4Demuxer
+import org.jcodec.scale.ColorUtil
+import java.nio.ByteBuffer
 
 internal actual val korviInternal: KorviInternal = JvmKorviInternal()
 

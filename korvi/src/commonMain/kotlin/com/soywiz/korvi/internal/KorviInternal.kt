@@ -1,10 +1,12 @@
 package com.soywiz.korvi.internal
 
-import com.soywiz.klock.*
-import com.soywiz.klock.hr.hr
+import com.soywiz.klock.minutes
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.stream.*
-import com.soywiz.korvi.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korvi.DummyKorviVideoLL
+import com.soywiz.korvi.KorviVideo
+import com.soywiz.korvi.KorviVideoFromLL
+import com.soywiz.korvi.KorviVideoLL
 
 internal expect val korviInternal: KorviInternal
 

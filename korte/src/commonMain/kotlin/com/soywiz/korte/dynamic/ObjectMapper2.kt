@@ -1,6 +1,6 @@
 package com.soywiz.korte.dynamic
 
-import kotlin.reflect.*
+import kotlin.reflect.KClass
 
 @Suppress("UNCHECKED_CAST")
 open class ObjectMapper2 {

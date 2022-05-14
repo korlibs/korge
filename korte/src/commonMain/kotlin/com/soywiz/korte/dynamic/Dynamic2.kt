@@ -1,8 +1,8 @@
 package com.soywiz.korte.dynamic
 
-import com.soywiz.korte.internal.*
-import kotlin.math.*
-import kotlin.reflect.*
+import com.soywiz.korte.internal.quote
+import kotlin.math.pow
+import kotlin.reflect.KClass
 
 //expect class DynamicBase {
 //	//fun getFields(obj: Any?): List<String>

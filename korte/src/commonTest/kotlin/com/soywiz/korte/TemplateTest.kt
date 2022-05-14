@@ -1,9 +1,12 @@
 package com.soywiz.korte
 
-import com.soywiz.korte.dynamic.*
-import com.soywiz.korte.util.*
-import kotlin.js.*
-import kotlin.test.*
+import com.soywiz.korte.dynamic.DynamicContext
+import com.soywiz.korte.dynamic.DynamicType
+import com.soywiz.korte.dynamic.Mapper2
+import com.soywiz.korte.util.KorteDeferred
+import kotlin.js.JsName
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TemplateTest : BaseTest() {
     //@Reflect

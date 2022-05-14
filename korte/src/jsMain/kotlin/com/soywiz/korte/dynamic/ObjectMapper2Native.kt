@@ -1,7 +1,9 @@
 package com.soywiz.korte.dynamic
 
-import kotlin.coroutines.*
-import kotlin.reflect.*
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
+import kotlin.reflect.KClass
 
 open class JsObjectMapper2 : ObjectMapper2() {
     override fun hasProperty(instance: Any, key: String): Boolean {

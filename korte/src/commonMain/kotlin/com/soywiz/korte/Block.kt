@@ -1,8 +1,8 @@
 package com.soywiz.korte
 
-import com.soywiz.korte.dynamic.*
-import com.soywiz.korte.internal.*
-import com.soywiz.korte.util.*
+import com.soywiz.korte.dynamic.DynamicContext
+import com.soywiz.korte.internal.Yaml
+import com.soywiz.korte.util.ListReader
 
 interface Block : DynamicContext {
     suspend fun eval(context: Template.EvalContext)

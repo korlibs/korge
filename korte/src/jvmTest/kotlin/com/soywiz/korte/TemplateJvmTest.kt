@@ -1,7 +1,9 @@
 package com.soywiz.korte
 
-import java.time.*
-import kotlin.test.*
+import java.time.LocalDate
+import java.time.Month
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TemplateJvmTest {
     class GeoLocation {

@@ -4,18 +4,14 @@ import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.hr.hr
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
-import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.format.HtmlImage
 import com.soywiz.korim.format.HtmlNativeImage
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.UrlVfs
 import com.soywiz.korvi.KorviVideo
-import org.w3c.dom.CanvasRenderingContext2D
-import org.w3c.dom.HTMLCanvasElement
-import org.w3c.dom.HTMLVideoElement
-import org.w3c.dom.events.Event
 import kotlinx.browser.document
 import kotlinx.browser.window
+import org.w3c.dom.HTMLVideoElement
+import org.w3c.dom.events.Event
 
 internal actual val korviInternal: KorviInternal = JsKorviInternal()
 

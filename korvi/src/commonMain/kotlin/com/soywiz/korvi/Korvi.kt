@@ -11,7 +11,11 @@ import com.soywiz.klock.nanoseconds
 import com.soywiz.korau.sound.AudioData
 import com.soywiz.korau.sound.PlatformAudioOutput
 import com.soywiz.korim.annotation.KorimExperimental
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BitmapCoords
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.transformed
 import com.soywiz.korio.async.AsyncCloseable
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay

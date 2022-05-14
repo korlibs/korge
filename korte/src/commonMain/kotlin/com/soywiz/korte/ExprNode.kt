@@ -1,9 +1,13 @@
 package com.soywiz.korte
 
-import com.soywiz.korte.dynamic.*
-import com.soywiz.korte.internal.*
-import com.soywiz.korte.util.*
-import kotlin.coroutines.cancellation.*
+import com.soywiz.korte.dynamic.Dynamic2
+import com.soywiz.korte.dynamic.DynamicContext
+import com.soywiz.korte.internal.StrReader
+import com.soywiz.korte.internal.isDigit
+import com.soywiz.korte.internal.isLetterDigitOrUnderscore
+import com.soywiz.korte.internal.unescape
+import com.soywiz.korte.util.ListReader
+import kotlin.coroutines.cancellation.CancellationException
 
 interface ExprNode : DynamicContext {
     suspend fun eval(context: Template.EvalContext): Any?

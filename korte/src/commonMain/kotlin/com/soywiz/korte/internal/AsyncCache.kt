@@ -1,7 +1,7 @@
 package com.soywiz.korte.internal
 
-import com.soywiz.korte.util.*
-import kotlin.coroutines.*
+import com.soywiz.korte.util.KorteDeferred
+import kotlin.coroutines.coroutineContext
 
 internal class AsyncCache {
 	private val lock = KorteLock()
