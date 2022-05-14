@@ -6,11 +6,12 @@
 
 package com.soywiz.korag.shader
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
+import com.soywiz.kds.mapInt
+import com.soywiz.kds.toFastList
+import com.soywiz.kmem.nextAlignedTo
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korio.lang.*
-import kotlin.jvm.*
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.invalidOp
 
 enum class VarKind(val bytesSize: Int) {
     //BYTE(1), UNSIGNED_BYTE(1), SHORT(2), UNSIGNED_SHORT(2), INT(4), FLOAT(4) // @TODO: This cause problems on Kotlin/Native Objective-C header.h

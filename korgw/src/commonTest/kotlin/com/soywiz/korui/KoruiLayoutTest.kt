@@ -1,8 +1,11 @@
 package com.soywiz.korui
 
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.native.*
-import kotlin.test.*
+import com.soywiz.korui.layout.horizontal
+import com.soywiz.korui.layout.preferredHeight
+import com.soywiz.korui.layout.preferredWidth
+import com.soywiz.korui.native.DummyUiFactory
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class KoruiLayoutTest {
     @Test

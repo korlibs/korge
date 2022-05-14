@@ -1,7 +1,8 @@
 package com.soywiz.korgw.internal
 
-import com.soywiz.klock.*
-import kotlin.reflect.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeSpan
+import kotlin.reflect.KProperty
 
 // @TODO: Move to Klock?
 

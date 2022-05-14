@@ -1,6 +1,6 @@
 package com.soywiz.korag.log
 
-import com.soywiz.korag.*
+import com.soywiz.korag.AG
 
 open class DummyAG(width: Int = 640, height: Int = 480) : AG() {
     override val nativeComponent: Any = Any()

@@ -1,7 +1,8 @@
 package com.soywiz.korag.shader
 
-import com.soywiz.kds.*
-import kotlin.test.*
+import com.soywiz.kds.intArrayListOf
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class VertexLayoutTest {
 	@Test

@@ -2,13 +2,22 @@
 
 package com.soywiz.korag.software
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kmem.extract
+import com.soywiz.kmem.insert
+import com.soywiz.korag.AG
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarKind
+import com.soywiz.korag.shader.Variable
+import com.soywiz.korio.lang.assert
+import com.soywiz.korma.geom.MajorOrder
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.copyToFloat4x4
+import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.sqrt
 
 // Software Graphics Virtual Machine
 // @TODO: Port dynarek for even faster performance https://github.com/kpspemu/kpspemu/tree/master/dynarek2/

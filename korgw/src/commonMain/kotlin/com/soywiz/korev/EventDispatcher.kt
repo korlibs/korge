@@ -1,8 +1,8 @@
 package com.soywiz.korev
 
-import com.soywiz.kds.*
-import com.soywiz.korio.lang.*
-import kotlin.reflect.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.korio.lang.Closeable
+import kotlin.reflect.KClass
 
 interface EventDispatcher {
 	fun <T : Event> addEventListener(clazz: KClass<T>, handler: (T) -> Unit): Closeable

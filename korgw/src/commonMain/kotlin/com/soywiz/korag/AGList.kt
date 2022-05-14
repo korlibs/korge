@@ -6,9 +6,25 @@
 
 package com.soywiz.korag
 
-import com.soywiz.kds.*
+import com.soywiz.kds.ConcurrentPool
+import com.soywiz.kds.Deque
+import com.soywiz.kds.FloatDeque
+import com.soywiz.kds.IntDeque
+import com.soywiz.kds.Pool
+import com.soywiz.kds.fastCastTo
 import com.soywiz.kds.lock.Lock
-import com.soywiz.kmem.*
+import com.soywiz.kmem.FBuffer
+import com.soywiz.kmem.extract
+import com.soywiz.kmem.extract16
+import com.soywiz.kmem.extract24
+import com.soywiz.kmem.extract4
+import com.soywiz.kmem.extract8
+import com.soywiz.kmem.extractBool
+import com.soywiz.kmem.finsert
+import com.soywiz.kmem.finsert16
+import com.soywiz.kmem.finsert24
+import com.soywiz.kmem.finsert4
+import com.soywiz.kmem.finsert8
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig

@@ -1,11 +1,20 @@
 package com.soywiz.korio.file.registry
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.flow.*
-import kotlin.reflect.*
+import com.soywiz.kmem.toIntClamp
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlin.reflect.KClass
 
 object WindowsRegistryVfs : Vfs() {
     fun normalizePath(path: String) = path.trim('/').replace('\\', '/')

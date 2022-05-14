@@ -1,7 +1,15 @@
 package com.soywiz.korag
 
-import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Precision
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Temp
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korag.shader.VertexShader
 
 fun ProgramWithDefault(
 	vertex: VertexShader = DefaultShaders.VERTEX_DEFAULT,

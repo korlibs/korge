@@ -1,6 +1,6 @@
 package com.soywiz.kgl
 
-import kotlin.test.*
+import kotlin.test.Test
 
 class KglTest {
 	@Test

@@ -1,14 +1,15 @@
 package com.soywiz.korui
 
-import com.soywiz.kds.*
-import com.soywiz.korev.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.native.*
+import com.soywiz.kds.Extra
+import com.soywiz.korev.FocusEvent
+import com.soywiz.korev.MouseEvent
+import com.soywiz.korev.ReshapeEvent
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.Disposable
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korui.layout.LengthExtensions
+import com.soywiz.korui.native.NativeUiFactory
 
 var NativeUiFactory.NativeComponent.uiComponent by Extra.PropertyThis<NativeUiFactory.NativeComponent, UiComponent?> { null }
 

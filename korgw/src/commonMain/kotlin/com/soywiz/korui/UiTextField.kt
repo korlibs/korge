@@ -1,9 +1,9 @@
 package com.soywiz.korui
 
-import com.soywiz.korev.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korui.native.*
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korio.lang.Disposable
+import com.soywiz.korio.util.RedirectMutableField
+import com.soywiz.korui.native.NativeUiFactory
 
 open class UiTextField(app: UiApplication, val textField: NativeUiFactory.NativeTextField = app.factory.createTextField()) : UiComponent(app, textField) {
     var text by RedirectMutableField(textField::text)

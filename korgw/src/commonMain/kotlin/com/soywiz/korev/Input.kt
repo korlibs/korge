@@ -1,8 +1,9 @@
 package com.soywiz.korev
 
-import com.soywiz.kmem.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.extract
 import com.soywiz.korma.geom.Point
-import kotlin.math.*
+import kotlin.math.min
 
 enum class MouseButton(val id: Int, val bits: Int = 1 shl id) {
 	LEFT(0), MIDDLE(1), RIGHT(2), BUTTON3(3),

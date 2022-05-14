@@ -1,10 +1,23 @@
 package com.soywiz.korag.shaders
 
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Operand
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korag.shader.appending
+import com.soywiz.korag.shader.gl.GlslConfig
+import com.soywiz.korag.shader.gl.GlslGenerator
+import com.soywiz.korag.shader.gl.VertexShaderRawGlSl
+import com.soywiz.korag.shader.gl.toNewGlslString
+import com.soywiz.korag.shader.gl.toNewGlslStringResult
+import com.soywiz.korio.util.Indenter
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
 
 class ShadersTest {
 	@Test

@@ -1,10 +1,10 @@
 package com.soywiz.korag.shader
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korma.geom.*
-import kotlin.reflect.*
+import com.soywiz.kmem.toInt
+import com.soywiz.korag.AG
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Vector3D
+import kotlin.reflect.KProperty
 
 class DoubleDelegatedUniform(val uniform: Uniform, val values: FloatArray, val index: Int, val onSet: (Double) -> Unit, default: Double) {
 	init {

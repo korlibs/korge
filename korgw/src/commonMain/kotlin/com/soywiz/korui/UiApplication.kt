@@ -1,9 +1,9 @@
 package com.soywiz.korui
 
-import com.soywiz.kds.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.native.*
+import com.soywiz.kds.Extra
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korui.layout.VerticalUiLayout
+import com.soywiz.korui.native.NativeUiFactory
 
 //fun NativeUiFactory.createApp() = UiApplication(this)
 

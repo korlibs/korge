@@ -1,9 +1,9 @@
 package com.soywiz.korui
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.util.*
-import com.soywiz.korui.layout.*
-import com.soywiz.korui.native.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korui.layout.preferredHeight
+import com.soywiz.korui.layout.preferredWidth
+import com.soywiz.korui.native.NativeUiFactory
 
 open class UiCanvas(app: UiApplication, val canvas: NativeUiFactory.NativeCanvas = app.factory.createCanvas()) : UiComponent(app, canvas) {
     var image: Bitmap?

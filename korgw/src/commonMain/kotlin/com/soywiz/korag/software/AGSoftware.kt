@@ -3,7 +3,11 @@ package com.soywiz.korag.software
 import com.soywiz.klock.measureTime
 import com.soywiz.kmem.FBuffer
 import com.soywiz.kmem.clamp
-import com.soywiz.korag.*
+import com.soywiz.korag.AG
+import com.soywiz.korag.AGConfig
+import com.soywiz.korag.AGFactory
+import com.soywiz.korag.AGList
+import com.soywiz.korag.AGWindow
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.VarKind

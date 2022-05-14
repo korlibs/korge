@@ -1,8 +1,8 @@
 package com.soywiz.korui
 
-import com.soywiz.kds.*
-import com.soywiz.korio.util.*
-import com.soywiz.korui.native.*
+import com.soywiz.kds.Extra
+import com.soywiz.korio.util.RedirectMutableField
+import com.soywiz.korui.native.NativeUiFactory
 
 open class UiTree(app: UiApplication, val tree: NativeUiFactory.NativeTree = app.factory.createTree()) : UiComponent(app, tree) {
     var nodeRoot by RedirectMutableField(tree::root)

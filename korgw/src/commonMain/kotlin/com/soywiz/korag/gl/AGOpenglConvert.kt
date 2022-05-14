@@ -1,8 +1,19 @@
 package com.soywiz.korag.gl
 
 import com.soywiz.kgl.KmlGl
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
+import com.soywiz.korag.AG
+import com.soywiz.korag.AGBlendEquation
+import com.soywiz.korag.AGBlendFactor
+import com.soywiz.korag.AGCompareMode
+import com.soywiz.korag.AGCullFace
+import com.soywiz.korag.AGDrawType
+import com.soywiz.korag.AGEnable
+import com.soywiz.korag.AGFrontFace
+import com.soywiz.korag.AGIndexType
+import com.soywiz.korag.AGStencilOp
+import com.soywiz.korag.AGTriangleFace
+import com.soywiz.korag.shader.VarKind
+import com.soywiz.korag.shader.VarType
 
 fun AGCullFace.toGl(): Int = when (this) {
     AG.CullFace.BOTH -> KmlGl.FRONT_AND_BACK

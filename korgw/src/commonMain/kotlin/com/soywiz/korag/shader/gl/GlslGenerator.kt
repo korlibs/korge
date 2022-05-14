@@ -1,9 +1,23 @@
 package com.soywiz.korag.shader.gl
 
-import com.soywiz.klogger.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
+import com.soywiz.klogger.Console
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.FuncDecl
+import com.soywiz.korag.shader.Output
+import com.soywiz.korag.shader.Precision
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.ProgramConfig
+import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.ShaderType
+import com.soywiz.korag.shader.Temp
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarKind
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Variable
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.util.Indenter
 
 data class GlslConfig(
     val gles: Boolean = true,

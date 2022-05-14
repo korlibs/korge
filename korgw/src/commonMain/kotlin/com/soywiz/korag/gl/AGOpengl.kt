@@ -1,13 +1,18 @@
 package com.soywiz.korag.gl
 
-import com.soywiz.kds.*
-import com.soywiz.kgl.*
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korio.annotations.*
-import com.soywiz.krypto.encoding.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.Extra
+import com.soywiz.kgl.KmlGl
+import com.soywiz.kgl.KmlGlState
+import com.soywiz.kgl.getIntegerv
+import com.soywiz.klogger.Console
+import com.soywiz.korag.AG
+import com.soywiz.korag.AGFeatures
+import com.soywiz.korag.AGList
+import com.soywiz.korag.processBlockingAll
+import com.soywiz.korio.annotations.KorIncomplete
+import com.soywiz.korio.annotations.KorInternal
+import com.soywiz.krypto.encoding.hex
+import kotlin.native.concurrent.SharedImmutable
 
 open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
 

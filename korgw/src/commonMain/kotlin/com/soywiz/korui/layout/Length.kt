@@ -1,10 +1,8 @@
 package com.soywiz.korui.layout
 
-import com.soywiz.kgl.internal.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.kmem.clamp
+import kotlin.math.max
+import kotlin.math.min
 
 //sealed class Length : Comparable<Length> {
 

@@ -1,13 +1,17 @@
 package com.soywiz.korag.gl
 
-import com.soywiz.kds.*
-import com.soywiz.kgl.*
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.FastStringMap
+import com.soywiz.kds.getOrPut
+import com.soywiz.kgl.KmlGl
+import com.soywiz.kgl.getProgramiv
+import com.soywiz.kgl.getShaderInfoLog
+import com.soywiz.kgl.getShaderiv
+import com.soywiz.klogger.Console
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.gl.GlslConfig
+import com.soywiz.korag.shader.gl.GlslGenerator
+import com.soywiz.korag.shader.gl.toNewGlslString
 
 internal data class GLProgramInfo(var programId: Int, var vertexId: Int, var fragmentId: Int) {
     val cachedAttribLocations = FastStringMap<Int>()

@@ -1,11 +1,14 @@
 package com.soywiz.korio.file.registry
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.krypto.encoding.hex
+import kotlin.test.Ignore
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class WindowsRegistryTest {
     @Test

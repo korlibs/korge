@@ -1,8 +1,30 @@
 package com.soywiz.korag.software
 
-import com.soywiz.kds.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.Pool
+import com.soywiz.korag.shader.Operand
+import com.soywiz.korag.shader.Output
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.Temp
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Variable
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korio.lang.Assert
+import com.soywiz.korio.lang.assert
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.MutableMap
+import kotlin.collections.arrayListOf
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.flatMap
+import kotlin.collections.getOrPut
+import kotlin.collections.indices
+import kotlin.collections.map
+import kotlin.collections.set
+import kotlin.collections.sumBy
+import kotlin.collections.toIntArray
 
 class ShaderAllocator(
     var currentIndex: Int = 0,

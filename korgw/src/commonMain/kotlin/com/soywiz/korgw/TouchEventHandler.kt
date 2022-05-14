@@ -1,10 +1,11 @@
 package com.soywiz.korgw
 
-import com.soywiz.kds.*
-import com.soywiz.korev.*
-import com.soywiz.korio.concurrent.lock.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import com.soywiz.kds.Pool
+import com.soywiz.korev.TouchEvent
+import com.soywiz.korev.dispatch
+import com.soywiz.korio.concurrent.lock.Lock
+import kotlinx.coroutines.Runnable
+import kotlin.coroutines.CoroutineContext
 
 class TouchEventHandler {
     @PublishedApi

@@ -1,12 +1,17 @@
 package com.soywiz.korui.react
 
-import com.soywiz.kds.*
-import com.soywiz.kgl.internal.*
-import com.soywiz.korio.async.*
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
-import kotlin.math.*
-import kotlin.reflect.*
+import com.soywiz.kds.Extra
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.invoke
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.UiComponent
+import com.soywiz.korui.UiContainer
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.MutableMap
+import kotlin.collections.getOrPut
+import kotlin.collections.set
+import kotlin.math.min
+import kotlin.reflect.KProperty
 
 var UiComponent.reactUid by Extra.PropertyThis<UiComponent, Any?> { null }
 

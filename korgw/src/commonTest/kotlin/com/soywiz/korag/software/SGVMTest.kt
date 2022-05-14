@@ -1,10 +1,15 @@
 package com.soywiz.korag.software
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korio.lang.*
-import kotlin.test.*
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korag.shader.VertexShader
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SGVMTest {
     @Test

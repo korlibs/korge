@@ -1,7 +1,10 @@
 package com.soywiz.korag.shader.gl
 
 import com.soywiz.korag.annotation.KoragExperimental
-import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.VertexShader
 
 fun Shader.toNewGlslStringResult(gles: Boolean = true, version: Int = GlslGenerator.DEFAULT_VERSION, compatibility: Boolean = true, android: Boolean = false) =
     toNewGlslStringResult(GlslConfig(gles = gles, version = version, compatibility = compatibility, android = android))

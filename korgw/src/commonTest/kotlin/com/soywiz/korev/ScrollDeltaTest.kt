@@ -1,6 +1,7 @@
 package com.soywiz.korev
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ScrollDeltaTest {
     @Test
