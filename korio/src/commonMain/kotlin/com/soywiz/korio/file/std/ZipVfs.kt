@@ -1,16 +1,30 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.compression.zip.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.checksum.*
-import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
+import com.soywiz.korio.compression.deflate.Deflate
+import com.soywiz.korio.compression.deflate.DeflatePortable
+import com.soywiz.korio.compression.uncompressed
+import com.soywiz.korio.compression.zip.ZipBuilder
+import com.soywiz.korio.compression.zip.ZipEntry2
+import com.soywiz.korio.compression.zip.ZipFile
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.VfsV2
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readSlice
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU16LE
+import com.soywiz.korio.stream.sliceStart
+import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.korio.stream.withLength
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlin.collections.*
 
 suspend fun ZipVfs(

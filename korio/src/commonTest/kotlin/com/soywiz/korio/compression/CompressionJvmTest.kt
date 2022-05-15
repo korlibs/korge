@@ -1,10 +1,17 @@
 package com.soywiz.korio.compression
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.kmem.readIntArrayLE
+import com.soywiz.korio.compression.deflate.Deflate
+import com.soywiz.korio.compression.deflate.DeflatePortable
+import com.soywiz.korio.compression.deflate.GZIP
+import com.soywiz.korio.compression.deflate.GZIPNoCrc
+import com.soywiz.korio.compression.deflate.ZLib
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.krypto.encoding.fromBase64
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class CompressionJvmTest {
 	val compressedData =

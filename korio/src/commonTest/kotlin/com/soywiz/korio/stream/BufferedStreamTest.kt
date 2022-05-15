@@ -1,7 +1,9 @@
 package com.soywiz.korio.stream
 
-import com.soywiz.korio.async.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.fail
 
 class BufferedStreamTest {
 	@Test

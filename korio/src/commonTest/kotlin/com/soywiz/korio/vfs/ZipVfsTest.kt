@@ -1,15 +1,26 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.stream.*
+import com.soywiz.klock.DateFormat
+import com.soywiz.klock.format
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.file.std.createZipFromTree
+import com.soywiz.korio.file.std.openAsZip
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.serialization.xml.readXml
+import com.soywiz.korio.stream.SeekNotSupportedException
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAvailable
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 @Suppress("EXPERIMENTAL_FEATURE_WARNING")
 class ZipVfsTest {

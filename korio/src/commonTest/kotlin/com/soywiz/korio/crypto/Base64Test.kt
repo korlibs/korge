@@ -1,11 +1,17 @@
 package com.soywiz.korio.crypto
 
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.encoding.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korio.compression.deflate.ZLib
+import com.soywiz.korio.compression.uncompress
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.util.encoding.encode
+import com.soywiz.krypto.encoding.Base64
+import com.soywiz.krypto.encoding.fromBase64
+import com.soywiz.krypto.encoding.toBase64
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class Base64Test {
 	@Test

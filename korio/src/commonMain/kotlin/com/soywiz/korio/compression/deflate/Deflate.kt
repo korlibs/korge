@@ -1,11 +1,22 @@
 package com.soywiz.korio.compression.deflate
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.stream.*
-import kotlin.math.*
+import com.soywiz.kmem.FixedSizeByteArrayBuilder
+import com.soywiz.kmem.fill
+import com.soywiz.kmem.unsigned
+import com.soywiz.korio.compression.CompressionContext
+import com.soywiz.korio.compression.CompressionMethod
+import com.soywiz.korio.compression.util.BitReader
+import com.soywiz.korio.compression.util.HuffmanTree
+import com.soywiz.korio.compression.util.SlidingWindow
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.getAvailable
+import com.soywiz.korio.stream.hasAvailable
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
+import kotlin.math.min
 
 expect fun Deflate(windowBits: Int): CompressionMethod
 

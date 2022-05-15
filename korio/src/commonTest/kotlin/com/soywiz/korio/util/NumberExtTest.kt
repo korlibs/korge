@@ -1,8 +1,11 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
-import kotlin.test.*
+import com.soywiz.kmem.insert
+import com.soywiz.kmem.nextAlignedTo
+import com.soywiz.kmem.prevAlignedTo
+import com.soywiz.korio.lang.format
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class NumberExtTest {
 	@Test

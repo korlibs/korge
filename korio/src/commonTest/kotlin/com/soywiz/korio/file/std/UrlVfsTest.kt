@@ -1,8 +1,10 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.net.http.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.net.http.FakeHttpClient
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class UrlVfsTest {
     @Test

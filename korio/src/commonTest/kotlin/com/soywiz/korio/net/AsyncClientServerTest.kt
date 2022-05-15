@@ -1,16 +1,19 @@
 package com.soywiz.korio.net
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
-import kotlin.coroutines.*
-import kotlin.test.*
+import com.soywiz.kds.Deque
+import com.soywiz.korio.async.asyncImmediately
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.writeString
+import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.UUID
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.take
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @ExperimentalCoroutinesApi
 class AsyncClientServerTest {

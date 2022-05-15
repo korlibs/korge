@@ -1,7 +1,8 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.klogger.*
-import kotlin.test.*
+import com.soywiz.klogger.Console
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ExceptionExtTest {
 	@Test

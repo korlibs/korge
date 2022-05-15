@@ -1,8 +1,9 @@
 package com.soywiz.korio.async
 
-import com.soywiz.klock.*
-import kotlinx.coroutines.*
-import kotlin.test.*
+import com.soywiz.klock.milliseconds
+import kotlinx.coroutines.CompletableDeferred
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AsyncQueueTest {
 	@Test

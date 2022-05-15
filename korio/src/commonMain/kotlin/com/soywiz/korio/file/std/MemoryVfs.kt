@@ -2,9 +2,19 @@
 
 package com.soywiz.korio.file.std
 
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.folder
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.Charsets
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.toAsync
 
 fun VfsFileFromData(data: ByteArray, ext: String = "bin") = MemoryVfsMix(mapOf("file.$ext" to data))["file.$ext"]
 fun VfsFileFromData(data: String, ext: String = "bin", charset: Charset = Charsets.UTF8) = MemoryVfsMix(mapOf("file.$ext" to data), charset = charset)["file.$ext"]

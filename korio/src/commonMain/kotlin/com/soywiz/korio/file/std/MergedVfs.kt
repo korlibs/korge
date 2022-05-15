@@ -1,9 +1,14 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.flow.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.lang.runIgnoringExceptions
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
 
 open class MergedVfs(vfsList: List<VfsFile> = listOf()) : Vfs.Proxy() {
     constructor(vararg vfsList: VfsFile) : this(vfsList.toList())

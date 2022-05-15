@@ -1,16 +1,31 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
+import com.soywiz.kds.Extra
+import com.soywiz.kmem.ByteArrayBuilder
+import com.soywiz.korio.async.AsyncCloseable
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.net.AsyncAddress
+import com.soywiz.korio.net.QueryString
 import com.soywiz.korio.net.ws.WsCloseInfo
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlin.coroutines.*
+import com.soywiz.korio.stream.AsyncGetLengthStream
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.EMPTY_BYTE_ARRAY
+import com.soywiz.korio.stream.copyTo
+import com.soywiz.korio.stream.slice
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 open class HttpServer protected constructor() : AsyncCloseable {
 	companion object {

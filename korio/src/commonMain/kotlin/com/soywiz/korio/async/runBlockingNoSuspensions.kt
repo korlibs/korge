@@ -1,9 +1,17 @@
 package com.soywiz.korio.async
 
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.coroutines.intrinsics.*
+import com.soywiz.korio.lang.invalidOp
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlin.coroutines.AbstractCoroutineContextElement
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
+import kotlin.coroutines.intrinsics.startCoroutineUninterceptedOrReturn
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 
 fun <T> runBlockingNoSuspensionsNullable(callback: suspend () -> T): T {
     return runBlockingNoSuspensions {

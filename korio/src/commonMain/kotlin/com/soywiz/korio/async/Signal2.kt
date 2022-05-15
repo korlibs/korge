@@ -1,10 +1,10 @@
 package com.soywiz.korio.async
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlin.coroutines.*
+import com.soywiz.kds.iterators.fastIterateRemove
+import com.soywiz.korio.lang.Closeable
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 abstract class BaseSignal2<T1, T2>(val onRegister: () -> Unit = {}) {
     inner class Node(val once: Boolean, val item: (T1, T2) -> Unit) : Closeable {

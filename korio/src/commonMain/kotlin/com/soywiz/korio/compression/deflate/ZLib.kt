@@ -1,13 +1,18 @@
 package com.soywiz.korio.compression.deflate
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.checksum.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.kmem.extract
+import com.soywiz.korio.compression.CompressionContext
+import com.soywiz.korio.compression.CompressionMethod
+import com.soywiz.korio.compression.compress
+import com.soywiz.korio.compression.util.BitReader
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.AsyncInputStreamWithLength
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.write32BE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.util.checksum.Adler32
+import com.soywiz.krypto.encoding.hex
 
 @OptIn(KorioExperimentalApi::class)
 open class ZLib(val deflater: (windowBits: Int) -> CompressionMethod) : CompressionMethod {

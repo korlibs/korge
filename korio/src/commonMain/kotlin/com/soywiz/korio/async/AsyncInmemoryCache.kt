@@ -1,9 +1,11 @@
 package com.soywiz.korio.async
 
-import com.soywiz.klock.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.reflect.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeProvider
+import com.soywiz.klock.TimeSpan
+import kotlinx.coroutines.Deferred
+import kotlin.coroutines.coroutineContext
+import kotlin.reflect.KClass
 
 class AsyncInmemoryCache(val timeProvider: TimeProvider = TimeProvider) {
 	data class Entry(val timestamp: DateTime, val data: Deferred<Any?>)

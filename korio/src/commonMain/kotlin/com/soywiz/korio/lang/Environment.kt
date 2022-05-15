@@ -1,7 +1,16 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.kds.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.toLinkedMap
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.Map
+import kotlin.collections.MutableMap
+import kotlin.collections.map
+import kotlin.collections.mapOf
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.toMap
+import kotlin.collections.toMutableMap
+import kotlin.native.concurrent.ThreadLocal
 
 internal expect object EnvironmentInternal {
 	// Uses querystring on JS/Browser, and proper env vars in the rest

@@ -1,8 +1,9 @@
 package com.soywiz.korio.serialization.yaml
 
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.dynamic.serialization.*
-import kotlin.test.*
+import com.soywiz.korio.dynamic.mapper.ObjectMapper
+import com.soywiz.korio.dynamic.serialization.decodeToType
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 // http://nodeca.github.io/js-yaml/
 class YamlTest {

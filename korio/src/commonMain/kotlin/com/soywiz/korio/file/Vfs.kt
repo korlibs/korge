@@ -2,16 +2,34 @@
 
 package com.soywiz.korio.file
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.flow.*
-import kotlin.coroutines.*
-import kotlin.math.*
-import kotlin.reflect.*
+import com.soywiz.klock.DateTime
+import com.soywiz.korio.async.AsyncCloseable
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.toChannel
+import com.soywiz.korio.async.use
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.file.std.localVfs
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.DummyCloseable
+import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.portableSimpleName
+import com.soywiz.korio.lang.unsupported
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.copyTo
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readBytesUpTo
+import com.soywiz.korio.stream.writeBytes
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.toList
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.math.min
+import kotlin.reflect.KClass
 
 abstract class Vfs : AsyncCloseable {
 	protected open val absolutePath: String get() = ""

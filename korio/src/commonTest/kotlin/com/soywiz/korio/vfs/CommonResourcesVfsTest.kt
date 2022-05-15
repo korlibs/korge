@@ -1,7 +1,7 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import kotlin.test.Test
 
 class CommonResourcesVfsTest {
 	@Test

@@ -1,6 +1,6 @@
 package com.soywiz.korio.util
 
-import kotlin.test.*
+import kotlin.test.Test
 
 class ReflectExtKtTest {
 	@Test

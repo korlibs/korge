@@ -1,7 +1,7 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.arraycopy
 
 inline operator fun ByteArray.set(o: Int, v: Int) { this[o] = v.toByte() }
 inline operator fun ByteArray.set(o: Int, v: Long) { this[o] = v.toByte() }

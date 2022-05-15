@@ -5,7 +5,15 @@ import com.soywiz.korio.async.runBlockingNoSuspensions
 import com.soywiz.korio.compression.util.BitReader
 import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.lang.unsupported
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.SyncInputStream
+import com.soywiz.korio.stream.SyncOutputStream
+import com.soywiz.korio.stream.asyncStreamWriter
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.toAsyncInputStream
+import com.soywiz.korio.stream.toAsyncOutputStream
 
 open class CompressionContext(var level: Int = 6) {
 	var name: String? = null

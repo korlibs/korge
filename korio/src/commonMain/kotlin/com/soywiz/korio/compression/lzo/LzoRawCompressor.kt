@@ -1,7 +1,14 @@
 package com.soywiz.korio.compression.lzo
 
-import com.soywiz.kmem.*
-import kotlin.collections.fill
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.readS32LE
+import com.soywiz.kmem.readS64LE
+import com.soywiz.kmem.readU16LE
+import com.soywiz.kmem.readU32LE
+import com.soywiz.kmem.readU8
+import com.soywiz.kmem.write16LE
+import com.soywiz.kmem.write64LE
+import com.soywiz.kmem.write8
 
 object LzoRawCompressor {
     const val LAST_LITERAL_SIZE = 5

@@ -1,6 +1,6 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.klogger.*
+import com.soywiz.klogger.Console
 
 expect open class IOException(msg: String) : Exception
 expect open class EOFException(msg: String) : IOException

@@ -1,10 +1,15 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.FloatArrayList
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.String_fromCharArray
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.substr
 import kotlin.collections.*
-import kotlin.math.*
-import com.soywiz.kds.*
+import kotlin.math.max
+import kotlin.math.min
 
 class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     private val tempCharArray = CharArray(str.length)

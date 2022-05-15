@@ -1,9 +1,9 @@
 package com.soywiz.korio.net.ws
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.lang.IOException
 import com.soywiz.korio.net.http.Http
-import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.channels.Channel
 
 abstract class WebSocketClient protected constructor(val url: String, val protocols: List<String>?, debug: Boolean) {
 	val onOpen = Signal<Unit>()

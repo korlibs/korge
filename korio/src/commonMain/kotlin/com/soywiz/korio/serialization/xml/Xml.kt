@@ -1,10 +1,33 @@
 package com.soywiz.korio.serialization.xml
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
+import com.soywiz.kds.flip
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.toCaseInsensitiveMap
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.eachBuilder
+import com.soywiz.korio.util.Indenter
+import com.soywiz.korio.util.StrReader
+import kotlin.collections.Iterable
+import kotlin.collections.Iterator
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.arrayListOf
+import kotlin.collections.asSequence
+import kotlin.collections.contains
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.firstOrNull
+import kotlin.collections.flatMap
+import kotlin.collections.joinToString
+import kotlin.collections.linkedMapOf
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.toList
+import kotlin.collections.toMap
+import kotlin.collections.toTypedArray
 
 data class Xml(
 	val type: Type,

@@ -1,8 +1,9 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.UTF8
 
 class Props(private val props: LinkedHashMap<String, String> = LinkedHashMap<String, String>()) : MutableMap<String, String> by props {
 	companion object {

@@ -1,11 +1,21 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.file.std.MergedVfs
+import com.soywiz.korio.file.std.Mountable
+import com.soywiz.korio.file.std.MountableVfs
+import com.soywiz.korio.file.std.MountableVfsSync
+import com.soywiz.korio.file.std.mount
+import com.soywiz.korio.file.std.openAsIso
+import com.soywiz.korio.file.std.openAsZip
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.util.expectException
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MountableVfsTest {
 	@Test

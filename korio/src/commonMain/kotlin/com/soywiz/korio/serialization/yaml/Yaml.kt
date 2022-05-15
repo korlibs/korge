@@ -1,16 +1,9 @@
 package com.soywiz.korio.serialization.yaml
 
-import com.soywiz.kds.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.List
-import kotlin.collections.MutableMap
-import kotlin.collections.arrayListOf
-import kotlin.collections.isNotEmpty
-import kotlin.collections.last
-import kotlin.collections.plusAssign
+import com.soywiz.kds.ListReader
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.util.StrReader
+import com.soywiz.korio.util.unquote
 import kotlin.collections.set
 
 object Yaml {

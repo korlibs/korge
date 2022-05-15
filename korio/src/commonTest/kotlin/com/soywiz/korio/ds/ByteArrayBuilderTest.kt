@@ -1,8 +1,9 @@
 package com.soywiz.korio.ds
 
-import com.soywiz.kmem.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.kmem.ByteArrayBuilder
+import com.soywiz.krypto.encoding.hex
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ByteArrayBuilderTest {
 	@Test

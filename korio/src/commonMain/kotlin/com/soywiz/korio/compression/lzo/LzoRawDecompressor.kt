@@ -1,7 +1,14 @@
 package com.soywiz.korio.compression.lzo
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.readS64LE
+import com.soywiz.kmem.readU16LE
+import com.soywiz.kmem.readU32LE
+import com.soywiz.kmem.readU8
+import com.soywiz.kmem.write32LE
+import com.soywiz.kmem.write64LE
+import com.soywiz.kmem.write8
+import com.soywiz.korio.lang.MalformedInputException
 
 object LzoRawDecompressor {
     private val DEC_32_TABLE = intArrayOf(4, 1, 2, 1, 4, 4, 4, 4)

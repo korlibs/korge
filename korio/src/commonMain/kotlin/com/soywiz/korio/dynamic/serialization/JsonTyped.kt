@@ -1,8 +1,8 @@
 package com.soywiz.korio.dynamic.serialization
 
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.serialization.json.*
-import kotlin.reflect.*
+import com.soywiz.korio.dynamic.mapper.ObjectMapper
+import com.soywiz.korio.serialization.json.Json
+import kotlin.reflect.KClass
 
 inline fun <reified T : Any> Json.stringifyTyped(obj: T?, mapper: ObjectMapper, pretty: Boolean = false): String =
 	stringify(mapper.toUntyped(T::class, obj), pretty = pretty)

@@ -1,9 +1,12 @@
 package com.soywiz.korio.async
 
-import com.soywiz.klock.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.test.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.milliseconds
+import kotlinx.coroutines.delay
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class PromiseTest {
     @Test

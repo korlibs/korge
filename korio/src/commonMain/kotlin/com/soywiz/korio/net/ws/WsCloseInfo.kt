@@ -1,6 +1,11 @@
 package com.soywiz.korio.net.ws
 
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readS16BE
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.write16BE
+import com.soywiz.korio.stream.writeString
 
 // https://developer.mozilla.org/en-US/docs/Web/API/CloseEvent#status_codes
 data class WsCloseInfo(val code: Int, val reason: String) {

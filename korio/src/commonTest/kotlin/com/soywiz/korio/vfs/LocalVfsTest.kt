@@ -1,12 +1,18 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.std.localCurrentDirVfs
+import com.soywiz.korio.file.std.tempVfs
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.slice
+import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.expectException
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class LocalVfsTest {
 	val temp by lazy { tempVfs }

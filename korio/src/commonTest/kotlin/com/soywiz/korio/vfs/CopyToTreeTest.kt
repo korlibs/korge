@@ -1,13 +1,14 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.stream.openAsync
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class CopyToTreeTest {
 	@Test

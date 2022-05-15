@@ -1,15 +1,26 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.kds.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.compression.deflate.*
+import com.soywiz.kds.getCyclic
+import com.soywiz.korio.async.AsyncThread
+import com.soywiz.korio.compression.deflate.Deflate
+import com.soywiz.korio.compression.deflate.GZIP
 import com.soywiz.korio.compression.uncompressed
-import com.soywiz.korio.concurrent.atomic.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
+import com.soywiz.korio.concurrent.atomic.korAtomic
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.net.URL
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncInputStreamWithLength
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.asyncStreamWriter
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readLine
+import kotlinx.coroutines.delay
 
 abstract class HttpClient protected constructor() {
 	var ignoreSslCertificates = false

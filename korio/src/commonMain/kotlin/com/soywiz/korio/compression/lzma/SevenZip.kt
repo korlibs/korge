@@ -2,10 +2,13 @@
 
 package com.soywiz.korio.compression.lzma
 
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.checksum.*
-import kotlin.math.*
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.stream.SyncInputStream
+import com.soywiz.korio.stream.SyncOutputStream
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.util.checksum.CRC32
+import kotlin.math.max
+import kotlin.math.min
 
 // Ported from the public domain Java version of the LZMA SDK : https://www.7-zip.org/download.html
 

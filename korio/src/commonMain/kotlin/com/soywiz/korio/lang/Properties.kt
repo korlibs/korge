@@ -2,13 +2,9 @@ package com.soywiz.korio.lang
 
 import com.soywiz.kds.CopyOnWriteFrozenMap
 import com.soywiz.korio.file.VfsFile
-import kotlin.collections.LinkedHashMap
-import kotlin.collections.Map
 import kotlin.collections.component1
 import kotlin.collections.component2
-import kotlin.collections.iterator
 import kotlin.collections.set
-import kotlin.collections.toMap
 
 expect object SystemProperties : Properties
 

@@ -1,6 +1,6 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 
 class Indenter(internal val actions: ArrayList<Action> = arrayListOf()) {
 	object INDENTS {

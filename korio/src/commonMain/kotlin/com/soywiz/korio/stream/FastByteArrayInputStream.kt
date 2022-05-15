@@ -1,9 +1,44 @@
 package com.soywiz.korio.stream
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import kotlin.math.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.nextAlignedTo
+import com.soywiz.kmem.readByteArray
+import com.soywiz.kmem.readCharArrayBE
+import com.soywiz.kmem.readCharArrayLE
+import com.soywiz.kmem.readDoubleArrayBE
+import com.soywiz.kmem.readDoubleArrayLE
+import com.soywiz.kmem.readF32BE
+import com.soywiz.kmem.readF32LE
+import com.soywiz.kmem.readF64BE
+import com.soywiz.kmem.readF64LE
+import com.soywiz.kmem.readFloatArrayBE
+import com.soywiz.kmem.readFloatArrayLE
+import com.soywiz.kmem.readIntArrayBE
+import com.soywiz.kmem.readIntArrayLE
+import com.soywiz.kmem.readLongArrayBE
+import com.soywiz.kmem.readLongArrayLE
+import com.soywiz.kmem.readS16BE
+import com.soywiz.kmem.readS16LE
+import com.soywiz.kmem.readS24BE
+import com.soywiz.kmem.readS24LE
+import com.soywiz.kmem.readS32BE
+import com.soywiz.kmem.readS32LE
+import com.soywiz.kmem.readS64BE
+import com.soywiz.kmem.readS64LE
+import com.soywiz.kmem.readS8
+import com.soywiz.kmem.readShortArrayBE
+import com.soywiz.kmem.readShortArrayLE
+import com.soywiz.kmem.readU16BE
+import com.soywiz.kmem.readU16LE
+import com.soywiz.kmem.readU24BE
+import com.soywiz.kmem.readU24LE
+import com.soywiz.kmem.readU32BE
+import com.soywiz.kmem.readU32LE
+import com.soywiz.kmem.readU8
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.util.indexOf
 
 class FastByteArrayInputStream(val ba: ByteArray, offset: Int = 0, val start: Int = 0, val end: Int = ba.size) {
     private var offset = offset + start

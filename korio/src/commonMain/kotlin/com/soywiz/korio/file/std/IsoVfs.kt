@@ -2,11 +2,33 @@ package com.soywiz.korio.file.std
 
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korio.async.AsyncCloseable
-import com.soywiz.korio.file.*
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.VfsV2
+import com.soywiz.korio.file.useVfs
 import com.soywiz.korio.lang.ASCII
 import com.soywiz.korio.lang.format
 import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.eof
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readAvailable
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS16BE
+import com.soywiz.korio.stream.readS16LE
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readS64LE
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.readU16LE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.skipToAlign
+import com.soywiz.korio.stream.sliceWithSize
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flow
 

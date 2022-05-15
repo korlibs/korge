@@ -1,8 +1,11 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.net.URL
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAll
 
 interface HttpClientEndpoint {
 	suspend fun request(

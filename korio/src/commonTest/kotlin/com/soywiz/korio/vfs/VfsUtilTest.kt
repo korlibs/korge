@@ -1,7 +1,12 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.file.*
-import kotlin.test.*
+import com.soywiz.korio.file.combine
+import com.soywiz.korio.file.isAbsolute
+import com.soywiz.korio.file.pathInfo
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class VfsUtilTest {
 	@Test

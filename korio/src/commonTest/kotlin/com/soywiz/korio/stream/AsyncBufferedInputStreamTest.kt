@@ -1,8 +1,10 @@
 package com.soywiz.korio.stream
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AsyncBufferedInputStreamTest {
 	@Test

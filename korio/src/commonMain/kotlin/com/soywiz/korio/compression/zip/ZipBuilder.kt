@@ -6,10 +6,17 @@ import com.soywiz.korio.file.fullName
 import com.soywiz.korio.file.std.createZipFromTreeTo
 import com.soywiz.korio.lang.UTF8
 import com.soywiz.korio.lang.toByteArray
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.MemorySyncStream
+import com.soywiz.korio.stream.toAsync
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.writeBytes
+import com.soywiz.korio.stream.writeFile
+import com.soywiz.korio.stream.writeString
+import com.soywiz.korio.stream.writeSync
 import com.soywiz.korio.util.checksum.CRC32
 import com.soywiz.korio.util.checksum.checksum
-import kotlinx.coroutines.flow.collect
 
 class ZipBuilder {
     companion object {

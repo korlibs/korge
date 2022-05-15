@@ -1,14 +1,27 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korio.dynamic.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
+import com.soywiz.kds.FastStringMap
+import com.soywiz.kds.getOrPut
+import com.soywiz.klock.DateTime
+import com.soywiz.korio.dynamic.dyn
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsCachedStatContext
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.normalize
+import com.soywiz.korio.file.parent
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.buffered
+import com.soywiz.korio.stream.toAsyncStream
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.withContext
 
 fun VfsFile.withCatalog(): VfsFile = CatalogVfs(this).root
 fun VfsFile.withCatalogJail(): VfsFile = CatalogVfs(this.jail()).root

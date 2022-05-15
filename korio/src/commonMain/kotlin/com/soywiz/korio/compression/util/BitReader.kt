@@ -1,13 +1,24 @@
 package com.soywiz.korio.compression.util
 
-import com.soywiz.kds.*
-import com.soywiz.kds.internal.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlin.math.*
+import com.soywiz.kds.RingBuffer
+import com.soywiz.kds.internal.KdsInternalApi
 import com.soywiz.kmem.ilog2
+import com.soywiz.kmem.nextPowerOfTwo
+import com.soywiz.kmem.readS32BE
+import com.soywiz.kmem.readS32LE
+import com.soywiz.kmem.readU16LE
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.lang.ASCII
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.stream.AsyncGetLengthStream
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncInputStreamWithLength
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
+import kotlin.math.max
+import kotlin.math.min
 
 @KorioExperimentalApi
 open class BitReader constructor(

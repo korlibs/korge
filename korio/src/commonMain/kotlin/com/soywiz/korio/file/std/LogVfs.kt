@@ -1,12 +1,17 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
+import com.soywiz.klock.DateTime
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsProcessHandler
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.toAsyncStream
+import kotlinx.coroutines.flow.Flow
 
 @Suppress("RemoveToStringInStringTemplate")
 class LogVfs(val parent: VfsFile) : Vfs.Proxy() {

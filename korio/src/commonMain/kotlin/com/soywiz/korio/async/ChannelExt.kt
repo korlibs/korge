@@ -1,13 +1,15 @@
 package com.soywiz.korio.async
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
-import kotlin.coroutines.*
-import kotlin.experimental.*
-import kotlin.math.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.korio.stream.AsyncInputStream
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.ProducerScope
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.channels.produce
+import kotlinx.coroutines.flow.Flow
+import kotlin.coroutines.coroutineContext
+import kotlin.experimental.ExperimentalTypeInference
+import kotlin.math.min
 
 suspend fun <T> ReceiveChannel<T>.chunks(count: Int) = produce {
 	val chunk = arrayListOf<T>()

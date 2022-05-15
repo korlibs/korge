@@ -1,20 +1,31 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.klock.max
-import com.soywiz.klock.min
-import com.soywiz.kmem.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.internal.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.flow.*
-import kotlin.math.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.TimeProvider
+import com.soywiz.kmem.arraycopy
+import com.soywiz.korio.async.AsyncThread2
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.SimpleStorage
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.VfsV2
+import com.soywiz.korio.file.folder
+import com.soywiz.korio.internal.divCeil
+import com.soywiz.korio.internal.without
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.krypto.encoding.hex
+import com.soywiz.krypto.encoding.unhex
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlin.math.max
+import kotlin.math.min
 
 fun SimpleStorage.toVfs(): VfsFile = MapLikeStorageVfs(this).root
 fun SimpleStorage.toVfs(timeProvider: TimeProvider): VfsFile = MapLikeStorageVfs(this).also { it.timeProvider = timeProvider }.root

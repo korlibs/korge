@@ -1,7 +1,9 @@
 package com.soywiz.korio.net
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.file.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.extensionLC
 import kotlin.collections.set
 
 private val MimeType_byExtensions by lazy { LinkedHashMap<String, MimeType>() }

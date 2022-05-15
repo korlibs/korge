@@ -1,12 +1,29 @@
 package com.soywiz.korio.compression.lzo
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.kmem.hasFlags
+import com.soywiz.korio.compression.CompressionContext
+import com.soywiz.korio.compression.CompressionMethod
+import com.soywiz.korio.compression.util.BitReader
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU16BE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.skip
+import com.soywiz.korio.stream.write16BE
+import com.soywiz.korio.stream.write32BE
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
+import com.soywiz.korio.stream.writeString
+import com.soywiz.krypto.encoding.hex
 
 // @TODO: We might want to support a raw version without headers?
 open class LZO(val headerType: HeaderType = HeaderType.SHORT) : CompressionMethod {

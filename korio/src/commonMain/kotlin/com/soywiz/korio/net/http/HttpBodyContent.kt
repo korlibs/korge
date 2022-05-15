@@ -1,10 +1,23 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.Charsets
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.net.FormUrlEncoded
+import com.soywiz.korio.net.MimeType
+import com.soywiz.korio.stream.AsyncInputStreamWithLength
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.combine
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.slice
+import com.soywiz.korio.stream.sliceStart
+import com.soywiz.korio.util.UUID
+import com.soywiz.korio.util.buildList
 
 interface HttpBodyContent {
     val contentType: String

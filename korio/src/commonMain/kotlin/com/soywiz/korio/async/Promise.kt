@@ -1,9 +1,17 @@
 package com.soywiz.korio.async
 
-import com.soywiz.korio.experimental.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.js.*
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.js.JsName
 
 /**
  * An simple interface compatible with JS Promise used for interop. In other cases just use [CompletableDeferred] instead.

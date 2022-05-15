@@ -1,7 +1,24 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.file.*
-import kotlin.test.*
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.baseNameWithExtension
+import com.soywiz.korio.file.baseNameWithoutCompoundExtension
+import com.soywiz.korio.file.baseNameWithoutExtension
+import com.soywiz.korio.file.compoundExtension
+import com.soywiz.korio.file.compoundExtensionLC
+import com.soywiz.korio.file.extension
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.file.folder
+import com.soywiz.korio.file.fullNameWithoutCompoundExtension
+import com.soywiz.korio.file.fullNameWithoutExtension
+import com.soywiz.korio.file.fullPathWithExtension
+import com.soywiz.korio.file.fullPathWithoutExtension
+import com.soywiz.korio.file.getPathComponents
+import com.soywiz.korio.file.getPathFullComponents
+import com.soywiz.korio.file.parent
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class PathInfoTest {
 	@Test

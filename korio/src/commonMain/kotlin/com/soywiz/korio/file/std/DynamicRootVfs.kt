@@ -1,6 +1,9 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.korio.file.*
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.lightCombine
+import com.soywiz.korio.file.pathInfo
 
 fun DynamicRootVfs(base: Vfs, rootGet: () -> String) = DynamicRootVfsVfs(base, rootGet).root
 

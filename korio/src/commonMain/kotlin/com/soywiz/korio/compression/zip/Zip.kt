@@ -4,10 +4,25 @@ import com.soywiz.klock.DateTime
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.toIntClamp
 import com.soywiz.kmem.unsigned
-import com.soywiz.korio.file.*
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.getPathFullComponents
 import com.soywiz.korio.internal.indexOf
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.EMPTY_BYTE_ARRAY
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readAvailable
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU16LE
+import com.soywiz.korio.stream.readU32LE
+import com.soywiz.korio.stream.sliceStart
+import com.soywiz.korio.stream.sliceWithSize
+import com.soywiz.krypto.encoding.hex
 import kotlin.math.max
 
 class ZipFile private constructor(

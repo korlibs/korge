@@ -1,8 +1,9 @@
 package com.soywiz.korio.serialization.json
 
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.dynamic.serialization.*
-import kotlin.test.*
+import com.soywiz.korio.dynamic.mapper.ObjectMapper
+import com.soywiz.korio.dynamic.serialization.parseTyped
+import com.soywiz.korio.dynamic.serialization.stringifyTyped
+import kotlin.test.assertEquals
 
 class JsonTest {
 	enum class MyEnum { DEMO, HELLO, WORLD }

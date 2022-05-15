@@ -1,10 +1,11 @@
 package com.soywiz.korio.file
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import kotlin.math.*
+import com.soywiz.kds.count
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.lang.indexOfOrNull
+import com.soywiz.korio.lang.lastIndexOfOrNull
+import com.soywiz.korio.net.MimeType
+import kotlin.math.min
 
 expect val File_separatorChar: Char
 

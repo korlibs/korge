@@ -1,8 +1,8 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.net.URL
 
 object UniversalVfs {
 	operator fun invoke(uri: String, providers: UniSchemaProviders, base: VfsFile? = null): VfsFile {

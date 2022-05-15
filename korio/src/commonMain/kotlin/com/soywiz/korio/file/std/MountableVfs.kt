@@ -2,10 +2,12 @@
 
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.normalize
+import com.soywiz.korio.file.pathInfo
+import com.soywiz.korio.lang.FileNotFoundException
 
 suspend fun MountableVfs(closeMounts: Boolean = false, callback: suspend Mountable.() -> Unit): VfsFile =
     MountableVfsSync(closeMounts) { callback() }

@@ -1,8 +1,8 @@
 package com.soywiz.korio.internal
 
-import com.soywiz.kds.*
-import com.soywiz.korio.lang.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.Pool
+import com.soywiz.korio.lang.threadLocal
+import kotlin.native.concurrent.ThreadLocal
 
 @PublishedApi
 internal const val BYTES_TEMP_SIZE = 0x10000

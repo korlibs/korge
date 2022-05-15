@@ -1,6 +1,6 @@
 package com.soywiz.korio.serialization.csv
 
-import com.soywiz.korio.util.*
+import com.soywiz.korio.util.StrReader
 
 class CSV(val lines: List<List<String>>, val names: List<String>? = null) : Collection<CSV.Record> {
     val namesToIndex: Map<String, Int> = names?.withIndex()?.associate { it.value to it.index } ?: emptyMap()

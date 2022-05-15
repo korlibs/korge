@@ -1,8 +1,8 @@
 package com.soywiz.korio.util
 
-import com.soywiz.korio.async.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import com.soywiz.korio.async.asyncImmediately
+import kotlinx.coroutines.Deferred
+import kotlin.coroutines.coroutineContext
 
 class Once {
 	var completed = false

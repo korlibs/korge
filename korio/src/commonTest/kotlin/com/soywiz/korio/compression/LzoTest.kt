@@ -1,10 +1,16 @@
 package com.soywiz.korio.compression
 
-import com.soywiz.korio.compression.lzo.*
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korio.compression.lzo.LZO
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.krypto.encoding.fromBase64
+import com.soywiz.krypto.encoding.unhex
+import com.soywiz.krypto.md5
+import com.soywiz.krypto.sha1
+import com.soywiz.krypto.sha256
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class LzoTest {
     val REF_TEXT = "HELLO THIS IS A HELLO THIS IS A HELLO WORLD HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO HELLO WORLD HELLO WORLD HELLO HELLO HELLO\n"

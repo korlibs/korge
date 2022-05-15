@@ -2,13 +2,19 @@
 
 package com.soywiz.korio.async
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlin.coroutines.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.iterators.fastIterateRemove
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.close
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.ReceiveChannel
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.coroutines.resume
 
 
 abstract class BaseSignal<T, THandler>(val onRegister: () -> Unit = {}) {

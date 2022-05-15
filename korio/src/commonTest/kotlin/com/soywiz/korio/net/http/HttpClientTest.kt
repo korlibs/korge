@@ -1,7 +1,6 @@
 package com.soywiz.korio.net.http
 
 import com.soywiz.korio.async.suspendTest
-import com.soywiz.korio.stream.*
 import com.soywiz.krypto.encoding.fromBase64
 import kotlin.test.Test
 import kotlin.test.assertEquals

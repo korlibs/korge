@@ -1,9 +1,17 @@
 package com.soywiz.korio.compression.lzma
 
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.compression.CompressionContext
+import com.soywiz.korio.compression.CompressionMethod
+import com.soywiz.korio.compression.util.BitReader
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS64LE
+import com.soywiz.korio.stream.write64LE
+import com.soywiz.korio.stream.writeBytes
 
 /**
  * @TODO: Streaming! (right now loads the whole stream in-memory)

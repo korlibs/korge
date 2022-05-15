@@ -1,8 +1,29 @@
 package com.soywiz.korio.dynamic
 
-import com.soywiz.kds.*
-import com.soywiz.korio.util.*
-import kotlin.math.*
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.FloatArrayList
+import com.soywiz.kds.IntArrayList
+import com.soywiz.korio.util.quote
+import kotlin.collections.Iterable
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.MutableList
+import kotlin.collections.MutableMap
+import kotlin.collections.Set
+import kotlin.collections.contains
+import kotlin.collections.joinToString
+import kotlin.collections.listOf
+import kotlin.collections.map
+import kotlin.collections.plus
+import kotlin.collections.set
+import kotlin.collections.toDoubleArray
+import kotlin.collections.toFloatArray
+import kotlin.collections.toIntArray
+import kotlin.collections.toList
+import kotlin.collections.toLongArray
+import kotlin.collections.toMap
+import kotlin.math.pow
 
 val Any?.dyn: Dyn get() = Dyn(this)
 

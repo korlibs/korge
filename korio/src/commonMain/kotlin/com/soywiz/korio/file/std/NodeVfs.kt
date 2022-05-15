@@ -2,15 +2,26 @@
 
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
-import kotlin.coroutines.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.VfsV2
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.folder
+import com.soywiz.korio.file.parts
+import com.soywiz.korio.file.pathInfo
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.MemorySyncStream
+import com.soywiz.korio.stream.SyncStreamBase
+import com.soywiz.korio.stream.toAsyncStream
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 open class NodeVfs(val caseSensitive: Boolean = true) : VfsV2() {
 	val events = Signal<FileEvent>()

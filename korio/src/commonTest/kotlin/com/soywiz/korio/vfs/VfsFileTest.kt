@@ -1,14 +1,33 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import kotlin.test.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.fullPathWithExtension
+import com.soywiz.korio.file.std.JailVfs
+import com.soywiz.korio.file.std.LogVfs
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.file.std.UrlVfs
+import com.soywiz.korio.file.std.localCurrentDirVfs
+import com.soywiz.korio.file.toFile
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.portableSimpleName
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.util.OS
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.toList
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class VfsFileTest {
     @Test

@@ -1,9 +1,26 @@
 package com.soywiz.korio.dynamic.mapper
 
-import com.soywiz.kds.*
-import com.soywiz.korio.dynamic.*
-import com.soywiz.korio.lang.*
-import kotlin.reflect.*
+import com.soywiz.kds.fastCastTo
+import com.soywiz.kds.toLinkedMap
+import com.soywiz.korio.dynamic.KDynamic
+import com.soywiz.korio.lang.invalidArg
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+import kotlin.collections.Iterable
+import kotlin.collections.List
+import kotlin.collections.Map
+import kotlin.collections.MutableList
+import kotlin.collections.MutableMap
+import kotlin.collections.Set
+import kotlin.collections.iterator
+import kotlin.collections.linkedMapOf
+import kotlin.collections.map
+import kotlin.collections.set
+import kotlin.collections.toList
+import kotlin.collections.toMap
+import kotlin.collections.toMutableList
+import kotlin.collections.toSet
+import kotlin.reflect.KClass
 
 /**
  * Register classes and how to type and untype them.

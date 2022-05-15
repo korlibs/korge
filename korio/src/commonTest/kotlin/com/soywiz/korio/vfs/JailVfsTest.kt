@@ -1,13 +1,14 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.util.expectException
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class JailVfsTest {
 	@Test

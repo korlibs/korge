@@ -1,6 +1,7 @@
 package com.soywiz.korio.stream
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MarkSyncInputStreamTest {
     @Test

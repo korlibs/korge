@@ -1,10 +1,18 @@
 package com.soywiz.korio.net
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.util.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.kmem.ByteArrayBuilder
+import com.soywiz.korio.file.normalize
+import com.soywiz.korio.file.pathInfo
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.substr
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.util.StrReader
+import com.soywiz.korio.util.substringAfterOrNull
+import com.soywiz.korio.util.substringBeforeOrNull
+import com.soywiz.krypto.encoding.Hex
+import com.soywiz.krypto.encoding.toBase64
 
 data class URL private constructor(
 	val isOpaque: Boolean,

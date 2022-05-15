@@ -1,16 +1,28 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korio.dynamic.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.net.http.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlin.coroutines.*
+import com.soywiz.kds.linkedHashMapOf
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsCachedStatContext
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.unsupported
+import com.soywiz.korio.net.MimeType
+import com.soywiz.korio.net.URL
+import com.soywiz.korio.net.http.Http
+import com.soywiz.korio.net.http.HttpClient
+import com.soywiz.korio.net.http.createHttpClient
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.buffered
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.korio.util.LONG_ZERO_TO_MAX_RANGE
+import kotlin.coroutines.coroutineContext
 
 fun UrlVfs(url: String, client: HttpClient = createHttpClient(), failFromStatus: Boolean = true): VfsFile =
     UrlVfs(URL(url), client, failFromStatus)

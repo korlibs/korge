@@ -1,18 +1,14 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.klock.DateTime
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.toList
-import kotlin.test.*
-import kotlin.time.Duration
-import kotlin.time.seconds
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ResourcesVfsTest {
     @Test

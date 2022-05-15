@@ -1,11 +1,13 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.file.fullName
+import com.soywiz.korio.file.std.openAsIso
+import com.soywiz.korio.file.std.resourcesVfs
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class IsoVfsTest {
 	@Test

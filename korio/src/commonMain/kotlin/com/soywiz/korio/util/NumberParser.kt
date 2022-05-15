@@ -1,6 +1,6 @@
 package com.soywiz.korio.util
 
-import kotlin.math.*
+import kotlin.math.pow
 
 object NumberParser {
 	fun parseInt(str: String, start: Int = 0, end: Int = str.length, radix: Int = 10): Int {

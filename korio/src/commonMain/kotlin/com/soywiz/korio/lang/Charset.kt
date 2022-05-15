@@ -1,10 +1,12 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.internal.*
-import kotlin.collections.min
-import kotlin.math.*
+import com.soywiz.kds.IntIntMap
+import com.soywiz.kmem.ByteArrayBuilder
+import com.soywiz.kmem.extract
+import com.soywiz.kmem.insert
+import com.soywiz.kmem.readS16
+import com.soywiz.kmem.write16
+import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
 
 abstract class Charset(val name: String) {

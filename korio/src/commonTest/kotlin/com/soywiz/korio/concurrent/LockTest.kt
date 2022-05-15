@@ -1,7 +1,8 @@
 package com.soywiz.korio.concurrent
 
-import com.soywiz.korio.concurrent.lock.*
-import kotlin.test.*
+import com.soywiz.korio.concurrent.lock.Lock
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class LockTest {
 	@Test

@@ -1,7 +1,7 @@
 package com.soywiz.korio.stream
 
-import com.soywiz.korio.lang.*
-import kotlin.test.*
+import com.soywiz.korio.lang.format
+import kotlin.test.assertEquals
 
 class FastByteArrayInputStreamTest {
 	@kotlin.test.Test

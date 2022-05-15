@@ -1,10 +1,11 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.korio.dynamic.mapper.*
-import com.soywiz.korio.dynamic.serialization.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.dynamic.mapper.Mapper
+import com.soywiz.korio.dynamic.mapper.ObjectMapper
+import com.soywiz.korio.dynamic.serialization.stringifyTyped
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.openAsync
 
 class HttpRestClient(val endpoint: HttpClientEndpoint) {
 	suspend fun request(method: Http.Method, path: String, request: Any?, mapper: ObjectMapper = Mapper): Any {

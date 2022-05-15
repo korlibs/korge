@@ -1,7 +1,16 @@
 package com.soywiz.korio.net.ws
 
 import com.soywiz.kmem.extract
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readU16BE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.write16BE
+import com.soywiz.korio.stream.write32BE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
 import kotlin.random.Random
 
 open class WsFrame(val data: ByteArray, val type: WsOpcode, val isFinal: Boolean = true, val masked: Boolean = true) {

@@ -1,9 +1,13 @@
 package com.soywiz.korio.serialization.json
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.util.Indenter
+import com.soywiz.korio.util.NumberParser
+import com.soywiz.korio.util.StrReader
 import kotlin.collections.set
 
 object Json {

@@ -1,8 +1,11 @@
 package com.soywiz.korio.async
 
-import com.soywiz.korio.concurrent.lock.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import com.soywiz.korio.concurrent.lock.Lock
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 interface AsyncInvokable {
 	suspend operator fun <T> invoke(func: suspend () -> T): T

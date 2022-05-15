@@ -1,6 +1,7 @@
 package com.soywiz.korio.util
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class RedirectFieldTest {
 	class A {

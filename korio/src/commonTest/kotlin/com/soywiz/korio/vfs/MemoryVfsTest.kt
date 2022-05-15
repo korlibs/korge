@@ -1,9 +1,10 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlinx.coroutines.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.MemoryVfs
+import kotlinx.coroutines.delay
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MemoryVfsTest {
 	@Test

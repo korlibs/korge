@@ -1,10 +1,15 @@
 package com.soywiz.korio.hash
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.internal.*
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.*
+import com.soywiz.korio.async.use
+import com.soywiz.korio.internal.bytesTempPool
+import com.soywiz.korio.stream.AsyncInputOpenable
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.SyncInputStream
+import com.soywiz.korio.stream.read
+import com.soywiz.krypto.Hash
+import com.soywiz.krypto.HasherFactory
+import com.soywiz.krypto.MD5
+import com.soywiz.krypto.SHA1
 
 suspend fun AsyncInputOpenable.hash(algo: HasherFactory) = openRead().use { hash(algo) }
 suspend fun AsyncInputStream.hash(algo: HasherFactory): Hash = bytesTempPool.alloc { temp -> algo.digest(temp) { read(it) } }

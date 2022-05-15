@@ -1,8 +1,11 @@
 package com.soywiz.korio.async
 
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.jvm.*
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.cancel
+import com.soywiz.korio.lang.cancellable
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 
 suspend fun <T> waitSubscriber(block: ((T) -> Unit) -> Cancellable): T {
     val deferred = CompletableDeferred<T>()

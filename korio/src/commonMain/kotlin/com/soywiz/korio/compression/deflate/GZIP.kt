@@ -1,12 +1,16 @@
 package com.soywiz.korio.compression.deflate
 
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.util.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.checksum.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.korio.compression.CompressionContext
+import com.soywiz.korio.compression.CompressionMethod
+import com.soywiz.korio.compression.util.BitReader
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.AsyncInputStreamWithLength
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.util.checksum.CRC32
+import com.soywiz.krypto.encoding.hex
 
 open class GZIP(deflater: () -> CompressionMethod) : GZIPBase(true, deflater) {
 	companion object : GZIP({ Deflate }) {

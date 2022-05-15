@@ -1,8 +1,8 @@
 package com.soywiz.korio.time
 
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korio.lang.*
+import com.soywiz.klock.measureTime
+import com.soywiz.klogger.Console
+import com.soywiz.korio.lang.Environment
 
 @PublishedApi
 internal val traceTimes by lazy { Environment["TRACE_TIMES"] == "true" }

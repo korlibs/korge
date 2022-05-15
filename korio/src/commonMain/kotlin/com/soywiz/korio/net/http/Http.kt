@@ -1,10 +1,12 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.klock.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.util.encoding.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.klock.DateFormat
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.net.QueryString
+import com.soywiz.krypto.encoding.fromBase64
 
 interface Http {
 	companion object {

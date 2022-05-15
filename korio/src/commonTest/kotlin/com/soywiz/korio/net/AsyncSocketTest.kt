@@ -1,11 +1,13 @@
 package com.soywiz.korio.net
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.test.*
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.writeBytes
+import com.soywiz.korio.util.OS
+import kotlinx.coroutines.CompletableDeferred
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AsyncSocketTest {
 	@Test

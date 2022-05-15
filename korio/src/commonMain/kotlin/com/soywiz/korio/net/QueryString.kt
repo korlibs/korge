@@ -1,7 +1,7 @@
 package com.soywiz.korio.net
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korio.lang.UTF8
 
 typealias FormUrlEncoded = QueryString
 

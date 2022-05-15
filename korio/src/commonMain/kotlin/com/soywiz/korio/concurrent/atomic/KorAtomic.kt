@@ -1,6 +1,6 @@
 package com.soywiz.korio.concurrent.atomic
 
-import kotlin.reflect.*
+import kotlin.reflect.KProperty
 
 expect fun <T> korAtomic(initial: T): KorAtomicRef<T>
 expect fun korAtomic(initial: Boolean): KorAtomicBoolean

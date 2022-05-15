@@ -1,11 +1,15 @@
 package com.soywiz.korio.compression
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.compression.deflate.Deflate
+import com.soywiz.korio.compression.deflate.DeflatePortable
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readAll
+import com.soywiz.krypto.encoding.unhexIgnoreSpaces
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MyInflaterTest {
 	@Test

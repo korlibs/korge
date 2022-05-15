@@ -1,7 +1,11 @@
 package com.soywiz.korio.concurrent
 
-import com.soywiz.korio.concurrent.atomic.*
-import kotlin.test.*
+import com.soywiz.korio.concurrent.atomic.KorAtomicInt
+import com.soywiz.korio.concurrent.atomic.getAndAdd
+import com.soywiz.korio.concurrent.atomic.getAndIncrement
+import com.soywiz.korio.concurrent.atomic.incrementAndGet
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AtomicTest {
 	@Test

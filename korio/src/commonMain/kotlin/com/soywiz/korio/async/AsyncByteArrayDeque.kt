@@ -1,11 +1,13 @@
 package com.soywiz.korio.async
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.channels.*
+import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.kds.ChunkedByteDeque
+import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.ilog2
+import com.soywiz.korio.lang.OutOfBoundsException
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncOutputStream
+import kotlinx.coroutines.channels.Channel
 
 interface IAsyncByteArrayDeque : AsyncOutputStream, AsyncInputStream
 

@@ -1,16 +1,46 @@
 package com.soywiz.korio.net.http
 
-import com.soywiz.klock.*
-import com.soywiz.klogger.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.net.ws.*
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.math.*
+import com.soywiz.klock.seconds
+import com.soywiz.klogger.Console
+import com.soywiz.korio.async.AsyncQueue
+import com.soywiz.korio.async.AsyncSignal
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.asyncImmediately
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.invoke
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.lang.Charsets
+import com.soywiz.korio.lang.IOException
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.printStackTraceWithExtraMessage
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.net.AsyncAddress
+import com.soywiz.korio.net.AsyncClient
+import com.soywiz.korio.net.AsyncSocketFactory
+import com.soywiz.korio.net.URL
+import com.soywiz.korio.net.asyncSocketFactory
+import com.soywiz.korio.net.createClient
+import com.soywiz.korio.net.ws.WsCloseInfo
+import com.soywiz.korio.net.ws.WsFrame
+import com.soywiz.korio.net.ws.WsOpcode
+import com.soywiz.korio.stream.AsyncBufferedInputStream
+import com.soywiz.korio.stream.AsyncInputStreamWithLength
+import com.soywiz.korio.stream.AsyncOutputStream
+import com.soywiz.korio.stream.bufferedInput
+import com.soywiz.korio.stream.copyTo
+import com.soywiz.korio.stream.readBytesUpToFirst
+import com.soywiz.korio.stream.readLine
+import com.soywiz.korio.stream.writeString
+import com.soywiz.krypto.sha1
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
+import kotlin.coroutines.coroutineContext
+import kotlin.math.min
 
 open class HttpPortable(
     private val factory: AsyncSocketFactory = asyncSocketFactory

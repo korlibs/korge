@@ -1,13 +1,19 @@
 package com.soywiz.korio.net.ws
 
 import com.soywiz.korio.async.suspendTestNoJs
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.lang.toByteArray
 import com.soywiz.korio.net.FakeAsyncClient
 import com.soywiz.korio.net.URL
 import com.soywiz.korio.net.http.Http
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
-import kotlin.printStackTrace
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU16BE
+import com.soywiz.korio.stream.toAsync
+import com.soywiz.korio.stream.write16BE
+import com.soywiz.korio.stream.writeBytes
+import com.soywiz.korio.stream.writeString
+import com.soywiz.krypto.encoding.hex
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

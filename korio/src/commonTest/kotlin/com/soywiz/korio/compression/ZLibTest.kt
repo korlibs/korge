@@ -1,11 +1,20 @@
 package com.soywiz.korio.compression
 
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.compression.lzma.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.checksum.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korio.compression.deflate.Deflate
+import com.soywiz.korio.compression.deflate.DeflatePortable
+import com.soywiz.korio.compression.deflate.GZIP
+import com.soywiz.korio.compression.deflate.ZLib
+import com.soywiz.korio.compression.lzma.Lzma
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.util.checksum.CRC32
+import com.soywiz.korio.util.checksum.compute
+import com.soywiz.krypto.encoding.fromBase64
+import com.soywiz.krypto.encoding.fromBase64IgnoreSpaces
+import com.soywiz.krypto.encoding.unhexIgnoreSpaces
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ZLibTest {
 	val data = ByteArray(0x20_000).apply {

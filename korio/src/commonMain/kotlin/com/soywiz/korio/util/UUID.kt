@@ -1,9 +1,11 @@
 package com.soywiz.korio.util
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.*
-import kotlin.random.*
+import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.kmem.asByteArray
+import com.soywiz.kmem.asUByteArrayInt
+import com.soywiz.korio.lang.invalidArg
+import com.soywiz.krypto.encoding.Hex
+import kotlin.random.Random
 
 @Suppress("EXPERIMENTAL_API_USAGE")
 class UUID(val data: UByteArrayInt) {

@@ -1,12 +1,12 @@
 package com.soywiz.korio.resources
 
-import com.soywiz.korio.async.*
+import com.soywiz.korio.async.asyncImmediately
 import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
-import kotlin.coroutines.*
-import kotlinx.coroutines.*
-import kotlin.reflect.*
+import kotlinx.coroutines.Deferred
+import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KProperty
 
 annotation class ResourcePath()
 

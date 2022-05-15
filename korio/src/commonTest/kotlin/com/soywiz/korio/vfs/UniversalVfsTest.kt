@@ -1,11 +1,22 @@
 package com.soywiz.korio.vfs
 
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.http.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.LocalVfs
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.file.std.UniSchema
+import com.soywiz.korio.file.std.UniversalVfs
+import com.soywiz.korio.file.std.UrlVfs
+import com.soywiz.korio.file.std.defaultUniSchema
+import com.soywiz.korio.file.std.plus
+import com.soywiz.korio.file.std.registerUniSchemaTemporarily
+import com.soywiz.korio.file.std.uniVfs
+import com.soywiz.korio.lang.InvalidOperationException
+import com.soywiz.korio.net.http.LogHttpClient
+import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.expectException
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class UniversalVfsTest {
     private val fileIsLocalVfs get() = !OS.isJsBrowser && !OS.isNative

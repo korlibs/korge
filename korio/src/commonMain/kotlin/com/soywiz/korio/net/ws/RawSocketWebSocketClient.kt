@@ -1,18 +1,31 @@
 package com.soywiz.korio.net.ws
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.async.*
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.readU16BE
+import com.soywiz.korio.async.delay
+import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.experimental.KorioInternal
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.net.http.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.random.*
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.readString
+import com.soywiz.korio.lang.toByteArray
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.net.AsyncClient
+import com.soywiz.korio.net.URL
+import com.soywiz.korio.net.http.Http
+import com.soywiz.korio.net.http.HttpClient
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.readLine
+import com.soywiz.korio.stream.writeBytes
+import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.buildList
+import com.soywiz.korio.util.join
+import com.soywiz.krypto.encoding.toBase64
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.random.Random
 
 suspend fun RawSocketWebSocketClient(
     url: String,

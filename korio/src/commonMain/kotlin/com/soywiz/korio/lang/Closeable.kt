@@ -1,7 +1,7 @@
 package com.soywiz.korio.lang
 
-import com.soywiz.kds.iterators.*
-import kotlinx.coroutines.*
+import com.soywiz.kds.iterators.fastForEach
+import kotlinx.coroutines.CancellationException
 
 // @TODO: Merge [Closeable], [Disposable] and [Cancellable]
 
