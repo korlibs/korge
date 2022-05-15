@@ -1,9 +1,11 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korag.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korag.AG
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.setToColor
+import com.soywiz.korma.geom.Vector3D
 
 @Korge3DExperimental
 data class Material3D(

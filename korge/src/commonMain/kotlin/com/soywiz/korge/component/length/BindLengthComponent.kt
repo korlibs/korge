@@ -1,16 +1,27 @@
 package com.soywiz.korge.component.length
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
+import com.soywiz.kds.Extra
+import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.toInt
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.layout.*
-import kotlin.reflect.*
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.component.UpdateComponentWithViews
+import com.soywiz.korge.component.removeFromView
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korui.layout.Length
+import com.soywiz.korui.layout.LengthExtensions
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.iterator
+import kotlin.collections.set
+import kotlin.reflect.KCallable
+import kotlin.reflect.KMutableProperty1
+import kotlin.reflect.KProperty
 
 /**
  * Binds a property [prop] in this [View] to the [Length] value returned by [value].

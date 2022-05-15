@@ -1,13 +1,20 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.tiled.TiledMap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kmem.toInt
+import com.soywiz.korge.tiled.TiledMap.Encoding
+import com.soywiz.korge.tiled.TiledMap.Image
+import com.soywiz.korge.tiled.TiledMap.Layer
+import com.soywiz.korge.tiled.TiledMap.Object
+import com.soywiz.korge.tiled.TiledMap.ObjectAlignment
+import com.soywiz.korge.tiled.TiledMap.Property
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.format
+import com.soywiz.korio.serialization.xml.Xml
+import com.soywiz.korio.serialization.xml.XmlBuilder
+import com.soywiz.korio.serialization.xml.buildXml
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.geom.Point
 
 suspend fun VfsFile.writeTiledMap(map: TiledMap) {
 	writeString(map.toXml().toString())

@@ -1,11 +1,18 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korev.*
+import com.soywiz.kds.Extra
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korev.GameButton
+import com.soywiz.korev.GamePadButtonEvent
+import com.soywiz.korev.GamePadConnectionEvent
+import com.soywiz.korev.GamePadStickEvent
+import com.soywiz.korev.GamePadUpdateEvent
+import com.soywiz.korev.GameStick
+import com.soywiz.korge.component.GamepadComponent
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.launchImmediately
 
 class GamePadEvents(override val view: View) : GamepadComponent {
     @PublishedApi

@@ -1,14 +1,27 @@
 package com.soywiz.korge.component
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.fastCastTo
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
-import com.soywiz.korge.view.*
-import com.soywiz.korev.*
+import com.soywiz.korev.Event
+import com.soywiz.korev.GamePadConnectionEvent
+import com.soywiz.korev.GamePadUpdateEvent
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.MouseEvent
+import com.soywiz.korev.TouchEvent
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.baseview.*
-import kotlin.reflect.*
+import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import kotlin.collections.List
+import kotlin.collections.MutableList
+import kotlin.collections.filterIsInstance
+import kotlin.collections.plus
+import kotlin.collections.plusAssign
+import kotlin.collections.remove
+import kotlin.collections.removeAll
+import kotlin.reflect.KClass
 
 /**
  * An interface that allows to control the behaviour of a [View] after some events.

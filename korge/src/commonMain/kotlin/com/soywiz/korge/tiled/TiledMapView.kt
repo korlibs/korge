@@ -1,13 +1,31 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.tiles.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import kotlin.math.*
+import com.soywiz.kds.iterators.fastForEachWithIndex
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.HitTestDirection
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.alpha
+import com.soywiz.korge.view.container
+import com.soywiz.korge.view.dummyView
+import com.soywiz.korge.view.ellipse
+import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.name
+import com.soywiz.korge.view.rotation
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.tiles.TileMap
+import com.soywiz.korge.view.tiles.tileMap
+import com.soywiz.korge.view.visible
+import com.soywiz.korge.view.xy
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.shape.Shape2d
+import kotlin.math.round
 
 inline fun Container.tiledMapView(tiledMap: TiledMap, showShapes: Boolean = true, smoothing: Boolean = true, callback: TiledMapView.() -> Unit = {}) =
 	TiledMapView(tiledMap, showShapes, smoothing).addTo(this, callback)

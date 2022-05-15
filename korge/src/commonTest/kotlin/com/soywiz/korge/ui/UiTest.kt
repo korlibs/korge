@@ -1,17 +1,11 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.input.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.view.*
-import com.soywiz.korgw.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.view.position
+import com.soywiz.korim.font.readBitmapFont
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.test.Test
 
 class UiTest : ViewsForTesting() {
     @Test

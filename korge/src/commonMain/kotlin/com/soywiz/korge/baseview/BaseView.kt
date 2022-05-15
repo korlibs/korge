@@ -2,7 +2,17 @@ package com.soywiz.korge.baseview
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.*
+import com.soywiz.korge.component.Component
+import com.soywiz.korge.component.Components
+import com.soywiz.korge.component.EventComponent
+import com.soywiz.korge.component.GamepadComponent
+import com.soywiz.korge.component.KeyComponent
+import com.soywiz.korge.component.MouseComponent
+import com.soywiz.korge.component.ResizeComponent
+import com.soywiz.korge.component.TouchComponent
+import com.soywiz.korge.component.UpdateComponent
+import com.soywiz.korge.component.UpdateComponentWithViews
+import com.soywiz.korge.component.detach
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views

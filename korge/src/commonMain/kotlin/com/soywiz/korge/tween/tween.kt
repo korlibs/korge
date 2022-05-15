@@ -3,7 +3,12 @@
 package com.soywiz.korge.tween
 
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.klock.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.clamp
+import com.soywiz.klock.coalesce
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.nanoseconds
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.clamp
 import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.UpdateComponent

@@ -1,11 +1,15 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korui.layout.*
+import com.soywiz.kds.iterators.fastForEachWithIndex
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.DummyView
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.color.Colors
 
 @KorgeExperimental
 class UITreeViewNode<T>(val element: T, val items: List<UITreeViewNode<T>> = emptyList()) {

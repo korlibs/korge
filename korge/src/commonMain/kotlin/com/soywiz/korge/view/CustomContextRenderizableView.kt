@@ -1,6 +1,7 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.RenderContext2D
 
 abstract class CustomContextRenderizableView(width: Double, height: Double) : RectBase() {
     override var width: Double = width; set(v) { field = v; dirtyVertices = true }

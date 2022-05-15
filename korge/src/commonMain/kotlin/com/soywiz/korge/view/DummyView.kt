@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
+import com.soywiz.korge.render.RenderContext
 
 fun Container.dummyView() = DummyView().also { this.addChild(it) }
 

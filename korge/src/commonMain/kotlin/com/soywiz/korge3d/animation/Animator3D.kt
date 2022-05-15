@@ -1,10 +1,17 @@
 package com.soywiz.korge3d.animation
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korge3d.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
+import com.soywiz.kds.getCyclic
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korge3d.Korge3DExperimental
+import com.soywiz.korge3d.Library3D
+import com.soywiz.korge3d.Transform3D
+import com.soywiz.korge3d.View3D
+import com.soywiz.korge3d.get
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.interpolation.interpolate
 
 /**
  * @param playbackPattern: A function that takes normalized time (from 0 to 1) as argument and returns normalized

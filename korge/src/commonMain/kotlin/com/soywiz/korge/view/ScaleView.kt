@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
+import com.soywiz.korge.render.RenderContext
 
 inline fun Container.scaleView(
 	width: Int, height: Int, scale: Double = 2.0, filtering: Boolean = false,

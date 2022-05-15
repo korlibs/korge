@@ -1,16 +1,27 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klogger.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.associateByInt
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klogger.Logger
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.tiles.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korge.view.tiles.TileSet
+import com.soywiz.korge.view.tiles.TileSetTileInfo
+import com.soywiz.korge.view.tiles.TileShapeInfo
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.lang.invalidArgument
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.toShape2dNew
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.applyTransform
+import com.soywiz.korma.geom.vector.ellipse
+import com.soywiz.korma.geom.vector.polygon
+import com.soywiz.korma.geom.vector.rect
 
 class TiledMapData(
     var orientation: TiledMap.Orientation = TiledMap.Orientation.ORTHOGONAL,

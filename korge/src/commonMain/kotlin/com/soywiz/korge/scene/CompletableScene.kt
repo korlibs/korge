@@ -1,10 +1,11 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.klock.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import kotlinx.coroutines.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.korge.view.Container
+import com.soywiz.korio.async.launchImmediately
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.Deferred
 
 abstract class CompletableScene<T>() : Scene() {
 	private val deferred = CompletableDeferred<T>()

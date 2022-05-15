@@ -15,7 +15,12 @@ import com.soywiz.korge.component.UpdateComponentWithViews
 import com.soywiz.korge.component.attach
 import com.soywiz.korge.component.detach
 import com.soywiz.korge.internal.KorgeInternal
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.ViewsContainer
+import com.soywiz.korge.view.hasAncestor
+import com.soywiz.korge.view.onNextFrame
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.RGBA

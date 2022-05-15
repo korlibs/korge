@@ -1,7 +1,9 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korim.bitmap.NinePatchBmpSlice
 
 class UIRadioButtonGroup {
     private var mutableButtons = hashSetOf<UIRadioButton>()

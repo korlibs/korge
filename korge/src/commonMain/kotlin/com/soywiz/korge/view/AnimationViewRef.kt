@@ -1,10 +1,13 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.animate.serialization.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
-import com.soywiz.korio.file.*
-import com.soywiz.korui.*
+import com.soywiz.korge.animate.serialization.readAnimation
+import com.soywiz.korge.debug.UiTextEditableValue
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korui.UiContainer
 
 class AnimationViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {

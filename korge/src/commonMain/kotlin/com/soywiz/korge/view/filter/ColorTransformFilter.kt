@@ -1,10 +1,15 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korui.*
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.storageFor
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.view.Views
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.ColorTransform
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korui.UiContainer
 
 /**
  * A [Filter] applying a multiplicative and additive color transformation to the view.

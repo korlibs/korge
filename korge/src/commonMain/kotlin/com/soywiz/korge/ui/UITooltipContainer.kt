@@ -1,15 +1,23 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.klock.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korio.lang.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.component.detach
+import com.soywiz.korge.input.onOutOnOver
+import com.soywiz.korge.time.timers
+import com.soywiz.korge.tween.TweenComponent
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tweenNoWait
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.container
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.Font
+import com.soywiz.korio.lang.Closeable
 
 @KorgeExperimental
 inline fun Container.uiTooltipContainer(

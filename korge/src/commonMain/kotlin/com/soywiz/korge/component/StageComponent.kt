@@ -1,10 +1,13 @@
 package com.soywiz.korge.component
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.view.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.getExtra
+import com.soywiz.kds.setExtra
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.getAllDescendantViews
 
 /**
  * **Important**: To use this component you have to call the [Views.registerStageComponent] extension method at the start of the APP.

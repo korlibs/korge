@@ -1,8 +1,8 @@
 package com.soywiz.korge.html
 
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.font.*
-import com.soywiz.korim.text.*
+import com.soywiz.korim.font.SystemFont
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korma.geom.Rectangle
 import kotlin.test.Test
 import kotlin.test.assertEquals

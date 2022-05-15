@@ -1,11 +1,10 @@
 package com.soywiz.korge3d
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.degrees
 
 @Korge3DExperimental
 abstract class View3D : BaseView() {

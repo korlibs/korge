@@ -1,11 +1,20 @@
 package com.soywiz.korge.input.component
 
-import com.soywiz.korge.input.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import kotlin.test.*
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onDown
+import com.soywiz.korge.input.onMove
+import com.soywiz.korge.input.onOut
+import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.onUp
+import com.soywiz.korge.input.onUpOutside
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.view.Image
+import com.soywiz.korge.view.fixedSizeContainer
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class MouseComponentTest : ViewsForTesting() {
 	@Test

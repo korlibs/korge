@@ -1,10 +1,19 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kds.*
-import com.soywiz.korag.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.FastIdentityMap
+import com.soywiz.kds.Pool
+import com.soywiz.kds.clear
+import com.soywiz.kds.getAndRemove
+import com.soywiz.kds.getOrPut
+import com.soywiz.korag.AG
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.BitmapCoords
+import com.soywiz.korim.bitmap.BmpCoordsWithInstance
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.MultiBitmap
 import com.soywiz.korma.geom.Rectangle
 
 /**

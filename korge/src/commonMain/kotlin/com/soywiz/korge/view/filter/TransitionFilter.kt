@@ -2,22 +2,24 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders.t_Temp1
-import com.soywiz.korag.DefaultShaders.v_Tex
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.appending
+import com.soywiz.korag.shader.storageFor
+import com.soywiz.korag.shader.storageForTextureUnit
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap32Context2d
-import com.soywiz.korim.bitmap.context2d
-import com.soywiz.korim.color.*
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.GradientPaint
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.paint.RadialGradientPaint
 import com.soywiz.korim.paint.SweepGradientPaint
 import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korui.*
+import com.soywiz.korui.UiContainer
 
 class TransitionFilter(
     var transition: Transition = Transition.CIRCULAR,

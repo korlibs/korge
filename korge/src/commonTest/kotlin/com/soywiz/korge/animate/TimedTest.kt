@@ -1,8 +1,9 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.klock.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.klock.microseconds
+import com.soywiz.korio.util.niceStr
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TimedTest {
 	// @TODO: kotlin-js kotlin.js inconsistency with double toString

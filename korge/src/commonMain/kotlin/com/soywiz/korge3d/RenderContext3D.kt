@@ -1,9 +1,13 @@
 package com.soywiz.korge3d
 
-import com.soywiz.kds.*
-import com.soywiz.korag.*
-import com.soywiz.korge.render.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.Pool
+import com.soywiz.korag.AG
+import com.soywiz.korge.render.AgBitmapTextureManager
+import com.soywiz.korge.render.AgBufferManager
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Vector3D
 
 @Korge3DExperimental
 class RenderContext3D() {

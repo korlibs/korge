@@ -1,8 +1,14 @@
 package com.soywiz.korge.component.docking
 
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korge.component.ResizeComponent
+import com.soywiz.korge.component.attach
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.position
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.Size
 import com.soywiz.korma.interpolation.interpolate
 
 fun <T : View> T.dockedTo(anchor: Anchor, scaleMode: ScaleMode = ScaleMode.NO_SCALE, offset: Point = Point(), hook: (View) -> Unit = {}): T {

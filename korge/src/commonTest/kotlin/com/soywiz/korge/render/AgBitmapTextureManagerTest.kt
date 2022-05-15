@@ -4,7 +4,6 @@ import com.soywiz.korag.log.LogAG
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.sliceWithSize
 import kotlin.test.Test
-import kotlin.test.assertNotSame
 import kotlin.test.assertSame
 
 class AgBitmapTextureManagerTest {

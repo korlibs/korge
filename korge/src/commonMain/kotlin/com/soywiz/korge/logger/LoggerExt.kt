@@ -1,8 +1,18 @@
 package com.soywiz.korge.logger
 
-import com.soywiz.klogger.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
+import com.soywiz.klogger.Logger
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.Charset
+import com.soywiz.korio.lang.UTF8
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.MutableMap
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.getOrElse
+import kotlin.collections.iterator
+import kotlin.collections.joinToString
+import kotlin.collections.map
+import kotlin.collections.set
 
 fun configureLoggerFromProperties(str: String) {
 	val props = Props.load(str)

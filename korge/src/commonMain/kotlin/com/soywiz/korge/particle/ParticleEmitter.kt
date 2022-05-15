@@ -1,11 +1,14 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korag.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.flip
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korag.AG
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.RGBAf
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.degrees
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(ParticleEmitter.Factory::class)

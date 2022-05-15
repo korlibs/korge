@@ -1,16 +1,20 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
+import com.soywiz.kds.IntDeque
+import com.soywiz.klock.PerformanceCounter
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.microseconds
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.klock.toFrequency
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.convertRange
-import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.util.OS
-import com.soywiz.korma.geom.Matrix
-import com.soywiz.korma.math.*
+import com.soywiz.korge.bitmapfont.drawText
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.render.debugLineRenderContext
+import com.soywiz.korge.render.useLineBatcher
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.math.roundDecimalPlaces
 
 @OptIn(KorgeInternal::class)
 internal fun ViewsContainer.installFpsDebugOverlay() {

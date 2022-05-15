@@ -1,22 +1,28 @@
 package com.soywiz.korge.view
 
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.baseview.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.component.docking.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.tests.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.klock.timesPerSecond
+import com.soywiz.korev.Event
+import com.soywiz.korev.dispatch
+import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.component.EventComponent
+import com.soywiz.korge.component.docking.sortChildrenByY
+import com.soywiz.korge.tests.ViewsForTesting
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.lang.portableSimpleName
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.vector.rect
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ViewsTest : ViewsForTesting() {
     val tex = Bitmap32(10, 10)

@@ -1,6 +1,6 @@
 package com.soywiz.korge.view.tiles
 
-import com.soywiz.kds.*
+import com.soywiz.kds.IntArray2
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SmoothedBmpSlice
 import com.soywiz.korge.view.ViewDslMarker

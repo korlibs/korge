@@ -1,7 +1,11 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.size
+import com.soywiz.korge.view.xy
 
 inline fun Container.uiContainer(
     width: Double = 128.0,

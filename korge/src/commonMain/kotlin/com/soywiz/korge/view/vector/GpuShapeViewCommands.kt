@@ -1,13 +1,26 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.floatArrayListOf
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korag.AG
+import com.soywiz.korag.disableScissor
+import com.soywiz.korag.setBlendingState
+import com.soywiz.korag.setColorMaskState
+import com.soywiz.korag.setScissorState
+import com.soywiz.korag.setStencilState
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.uniformsSet
+import com.soywiz.korag.useProgram
+import com.soywiz.korag.vertexArrayObjectSet
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.render.AgCachedBuffer
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.applyTransform
 
 @KorgeInternal
 class GpuShapeViewCommands {

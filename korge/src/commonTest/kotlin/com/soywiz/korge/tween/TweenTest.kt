@@ -1,15 +1,7 @@
 package com.soywiz.korge.tween
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.test.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.korge.tests.ViewsForTesting
 
 class TweenTest : ViewsForTesting(20.milliseconds) {
     /*

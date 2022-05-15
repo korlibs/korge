@@ -1,6 +1,16 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.EulerRotation
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Position3D
+import com.soywiz.korma.geom.Quaternion
+import com.soywiz.korma.geom.Scale3D
+import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.getTRS
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.setTRS
+import com.soywiz.korma.geom.setToLookAt
 
 class Transform3D {
     @PublishedApi

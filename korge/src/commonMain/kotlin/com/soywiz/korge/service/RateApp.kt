@@ -1,7 +1,5 @@
 package com.soywiz.korge.service
 
-import com.soywiz.korinject.*
-
 //@Singleton
 open class RateApp {
 	//companion object {

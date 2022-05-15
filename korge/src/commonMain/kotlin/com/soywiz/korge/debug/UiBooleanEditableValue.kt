@@ -1,11 +1,8 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korev.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.UiCheckBox
+import com.soywiz.korui.layout.HorizontalUiLayout
 
 class UiBooleanEditableValue(
     app: UiApplication,

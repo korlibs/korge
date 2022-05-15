@@ -1,9 +1,19 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.klock.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
-import kotlin.random.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.cos
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.div
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.sin
+import com.soywiz.korma.geom.times
+import kotlin.math.absoluteValue
+import kotlin.math.sqrt
+import kotlin.random.Random
 
 class ParticleEmitterSimulator(
     private val emitter: ParticleEmitter,

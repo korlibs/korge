@@ -1,16 +1,22 @@
 package com.soywiz.korge
 
-import com.soywiz.klock.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
-import kotlin.test.*
+import com.soywiz.klock.seconds
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.anchor
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.scale
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.showImageAndWait
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.interpolation.Easing
+import kotlin.test.Ignore
+import kotlin.test.Test
 
 class KorgeHeadlessTest {
     @Test

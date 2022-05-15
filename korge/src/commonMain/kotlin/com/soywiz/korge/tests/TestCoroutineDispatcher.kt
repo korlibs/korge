@@ -4,8 +4,16 @@ import com.soywiz.kds.*
 import com.soywiz.kds.lock.Lock
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Delay
+import kotlinx.coroutines.InternalCoroutinesApi
+import kotlinx.coroutines.Runnable
+import kotlin.coroutines.Continuation
+import kotlin.coroutines.ContinuationInterceptor
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.resume
+import kotlin.coroutines.startCoroutine
 
 @OptIn(InternalCoroutinesApi::class)
 class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :

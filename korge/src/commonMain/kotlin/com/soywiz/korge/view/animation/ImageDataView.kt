@@ -1,8 +1,10 @@
 package com.soywiz.korge.view.animation
 
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.format.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korim.format.ImageData
 
 /**
  * With imageDataView it is possible to display an image inside a Container or View.

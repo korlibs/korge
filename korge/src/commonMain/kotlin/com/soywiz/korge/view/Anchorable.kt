@@ -1,6 +1,6 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Anchor
 
 interface Anchorable {
     /** Normally in the range [0.0, 1.0] */

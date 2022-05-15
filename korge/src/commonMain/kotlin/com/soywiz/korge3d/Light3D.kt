@@ -1,7 +1,8 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Vector3D
 
 @Korge3DExperimental
 fun Container3D.light(

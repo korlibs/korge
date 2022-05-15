@@ -1,11 +1,15 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.component.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.onClick
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
+import com.soywiz.korge.component.decorateOutOverSimple
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.autoSize
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.text
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.async.Signal
 
 inline fun <T> Container.uiBreadCrumb(
     path: UIBreadCrumb.Path<T>,

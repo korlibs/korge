@@ -1,8 +1,5 @@
 package com.soywiz.korge.component.list
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korge.view.*
-
 /*
 Deprecated("")
 class GridViewList(

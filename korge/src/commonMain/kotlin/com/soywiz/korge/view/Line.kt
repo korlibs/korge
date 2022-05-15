@@ -1,8 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.useLineBatcher
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Point
 
 inline fun Container.line(a: Point, b: Point, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Line.() -> Unit = {})
     = Line(a.x, a.y, b.x, b.y, color).addTo(this, callback)

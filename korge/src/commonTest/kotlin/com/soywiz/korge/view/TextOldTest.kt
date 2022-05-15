@@ -1,9 +1,13 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korge.render.VertexInfo
+import com.soywiz.korge.render.testRenderContext
+import com.soywiz.korge.scene.debugBmpFontSync
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.Size
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TextOldTest {
     @Test

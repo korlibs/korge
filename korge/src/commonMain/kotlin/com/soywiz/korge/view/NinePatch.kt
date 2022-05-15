@@ -1,9 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import kotlin.math.min
 
 inline fun Container.ninePatch(
 	tex: BmpSlice, width: Double, height: Double, left: Double, top: Double, right: Double, bottom: Double,

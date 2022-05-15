@@ -1,9 +1,13 @@
 package com.soywiz.korge.view
 
-import com.soywiz.klock.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korge.tween.V2
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.interpolation.Easing
 
 /**
  * Creates a new [Camera] and attaches to [this] [Container]. The [callback] argument is called with the [Camera] injected as this to be able to configure the camera.

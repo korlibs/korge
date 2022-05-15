@@ -1,12 +1,14 @@
 package com.soywiz.korge3d
 
 import com.soywiz.kds.*
-import com.soywiz.korge3d.animation.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korge3d.animation.Animation3D
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Matrix3D
 
 @Korge3DExperimental
 data class Library3D(

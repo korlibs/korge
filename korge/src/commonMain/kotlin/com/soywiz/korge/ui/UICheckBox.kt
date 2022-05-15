@@ -1,16 +1,28 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
+import com.soywiz.kds.fastCastTo
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.ViewLeaf
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.ninePatch
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.size
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.text
+import com.soywiz.korim.bitmap.NinePatchBmpSlice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korio.async.Signal
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korui.UiContainer
 
 inline fun Container.uiCheckBox(
     width: Double = UI_DEFAULT_WIDTH,

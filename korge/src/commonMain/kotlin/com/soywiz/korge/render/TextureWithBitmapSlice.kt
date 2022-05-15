@@ -1,8 +1,10 @@
 package com.soywiz.korge.render
 
-import com.soywiz.korge.internal.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korma.geom.Rectangle
 
 /**
  * A [texture] wrap that includes [scale] and [bounds] information.

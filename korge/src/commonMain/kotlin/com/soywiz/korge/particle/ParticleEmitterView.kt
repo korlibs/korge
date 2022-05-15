@@ -8,7 +8,12 @@ import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.time.delayFrame
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewFileRef
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.fast.FSpriteFromIndex
 import com.soywiz.korge.view.fast.FSprites
 import com.soywiz.korim.bitmap.Bitmaps
@@ -20,7 +25,7 @@ import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korui.UiContainer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
 import kotlin.random.Random
 
 inline fun Container.particleEmitter(

@@ -1,8 +1,9 @@
 package com.soywiz.korge.time
 
-import com.soywiz.klock.*
-import com.soywiz.korge.internal.*
-import kotlin.test.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TimeSpanTest {
 	private val DELTA = 0.00001

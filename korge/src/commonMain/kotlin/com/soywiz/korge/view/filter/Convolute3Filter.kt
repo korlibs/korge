@@ -1,12 +1,19 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.storageFor
+import com.soywiz.korag.shader.storageForMatrix3D
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.view.Views
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.MutableMarginInt
+import com.soywiz.korma.geom.fromRows3x3
+import com.soywiz.korma.geom.times
+import com.soywiz.korui.UiContainer
 
 /**
  * A [Filter] that will convolute near pixels (3x3) with a [kernel].

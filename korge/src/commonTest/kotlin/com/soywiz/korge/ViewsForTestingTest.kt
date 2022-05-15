@@ -3,7 +3,7 @@ package com.soywiz.korge
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
 import com.soywiz.korinject.AsyncInjector
 import kotlin.test.Test
 import kotlin.test.assertEquals

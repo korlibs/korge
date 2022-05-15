@@ -1,6 +1,5 @@
 package com.soywiz.korge.bus
 
-import com.soywiz.korge.scene.Scene
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.suspendTest
 import kotlin.test.Test

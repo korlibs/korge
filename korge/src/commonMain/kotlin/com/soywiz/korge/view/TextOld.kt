@@ -1,15 +1,17 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.html.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korge.bitmapfont.drawText
+import com.soywiz.korge.html.Html
+import com.soywiz.korge.internal.KorgeDeprecated
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.scene.debugBmpFontSync
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.font.Font
+import com.soywiz.korma.geom.Rectangle
 
 @KorgeDeprecated
 inline fun Container.textOld(

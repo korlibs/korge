@@ -1,16 +1,25 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kds.*
-import com.soywiz.klogger.*
-import com.soywiz.korag.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.triangle.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.native.concurrent.* 
+import com.soywiz.kds.Extra
+import com.soywiz.kds.Pool
+import com.soywiz.klogger.Logger
+import com.soywiz.korag.AG
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.ColorTransform
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.toPathList
+import com.soywiz.korma.geom.triangle.TriangleList
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.ellipse
+import com.soywiz.korma.geom.vector.strokeToFill
+import kotlin.native.concurrent.SharedImmutable
 
 @SharedImmutable
 private val logger = Logger("RenderContext2D")

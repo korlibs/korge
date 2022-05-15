@@ -1,13 +1,32 @@
 package com.soywiz.korge.view.fast
-import com.soywiz.kds.*
+import com.soywiz.kds.Extra
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korag.AG
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Operand
+import com.soywiz.korag.shader.Precision
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.View
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.radians
 
 @PublishedApi
 internal const val FSPRITES_STRIDE = 8

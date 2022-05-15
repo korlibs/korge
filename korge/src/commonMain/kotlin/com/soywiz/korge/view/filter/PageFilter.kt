@@ -1,13 +1,20 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import kotlin.math.*
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Operand
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.storageFor
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.view.Views
+import com.soywiz.korma.geom.MutableMarginInt
+import com.soywiz.korui.UiContainer
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.max
 
 /**
  * A filter that simulates a page of a book.

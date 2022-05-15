@@ -1,10 +1,11 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.SizeInt
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ViewTest {
     @Test

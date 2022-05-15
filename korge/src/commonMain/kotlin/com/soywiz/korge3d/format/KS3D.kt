@@ -2,12 +2,16 @@ package com.soywiz.korge3d.format
 
 import com.soywiz.kds.IndexedTable
 import com.soywiz.kds.fastForEach
-import com.soywiz.kds.iterators.*
 import com.soywiz.kmem.toInt
 import com.soywiz.korge3d.Korge3DExperimental
 import com.soywiz.korge3d.Library3D
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.stream.*
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.writeBytes
+import com.soywiz.korio.stream.writeString
+import com.soywiz.korio.stream.writeStringVL
+import com.soywiz.korio.stream.writeU_VL
 
 // KorGE Scene 3D file format
 @Korge3DExperimental

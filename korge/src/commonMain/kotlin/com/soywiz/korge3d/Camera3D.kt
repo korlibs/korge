@@ -1,6 +1,15 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.times
+import com.soywiz.korma.geom.unaryMinus
 
 @Korge3DExperimental
 abstract class Camera3D : View3D() {

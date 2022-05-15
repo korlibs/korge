@@ -1,11 +1,14 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.clamp
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.internal.KorgeUntested
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
 
 /** Creates a new [Container], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container] */
 inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {}) =

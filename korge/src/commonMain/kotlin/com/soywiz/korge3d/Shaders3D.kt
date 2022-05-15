@@ -1,8 +1,17 @@
 package com.soywiz.korge3d
 
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korge.internal.*
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Operand
+import com.soywiz.korag.shader.Precision
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.ShaderType
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korag.shader.gl.GlslGenerator
 
 @Korge3DExperimental
 open class Shaders3D {

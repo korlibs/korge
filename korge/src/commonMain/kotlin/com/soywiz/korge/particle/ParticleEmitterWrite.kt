@@ -1,9 +1,11 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.color.RGBAf
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.serialization.xml.buildXml
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.degrees
 
 suspend fun VfsFile.writeParticleEmitter(particle: ParticleEmitter) {
     val file = this

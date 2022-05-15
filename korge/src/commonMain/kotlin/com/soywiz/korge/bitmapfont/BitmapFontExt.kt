@@ -1,13 +1,17 @@
 package com.soywiz.korge.bitmapfont
 
-import com.soywiz.korge.html.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.korge.html.Html
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.GlyphMetrics
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import kotlin.math.max
 
 fun Font.getBounds(text: String, format: Html.Format, out: Rectangle = Rectangle()): Rectangle {
 	//val font = getBitmapFont(format.computedFace, format.computedSize)

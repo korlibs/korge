@@ -1,16 +1,38 @@
 package com.soywiz.korge.animate.serialization
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.animate.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.clamp
+import com.soywiz.kmem.insert
+import com.soywiz.korge.animate.AnEventAction
+import com.soywiz.korge.animate.AnLibrary
+import com.soywiz.korge.animate.AnPlaySoundAction
+import com.soywiz.korge.animate.AnSymbolBitmap
+import com.soywiz.korge.animate.AnSymbolEmpty
+import com.soywiz.korge.animate.AnSymbolMorphShape
+import com.soywiz.korge.animate.AnSymbolMovieClip
+import com.soywiz.korge.animate.AnSymbolShape
+import com.soywiz.korge.animate.AnSymbolSound
+import com.soywiz.korge.animate.AnTextFieldSymbol
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.ColorTransform
+import com.soywiz.korim.format.ImageEncodingProps
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.writeBitmap
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.stream.MemorySyncStreamToByteArray
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeF32LE
+import com.soywiz.korio.stream.writeS_VL
+import com.soywiz.korio.stream.writeStringVL
+import com.soywiz.korio.stream.writeStringz
+import com.soywiz.korio.stream.writeU_VL
+import com.soywiz.korma.geom.IRectangleInt
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
 
 suspend fun AnLibrary.writeTo(file: VfsFile, config: AnLibrarySerializer.Config = AnLibrarySerializer.Config()) {
 	//println("writeTo")

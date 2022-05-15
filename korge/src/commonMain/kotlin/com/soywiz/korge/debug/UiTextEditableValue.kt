@@ -1,11 +1,17 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korev.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
+import com.soywiz.korev.Key
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.relativePathTo
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.UiLabel
+import com.soywiz.korui.UiTextField
+import com.soywiz.korui.button
+import com.soywiz.korui.container
+import com.soywiz.korui.layout.HorizontalUiLayout
+import com.soywiz.korui.layout.UiFillLayout
+import com.soywiz.korui.layout.preferredWidth
 
 class UiTextEditableValue(
     app: UiApplication,

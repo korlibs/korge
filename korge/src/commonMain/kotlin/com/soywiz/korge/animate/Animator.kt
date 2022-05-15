@@ -1,17 +1,23 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
+import com.soywiz.kds.Deque
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korge.tween.V2
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.View
+import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.plus
-import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
-import kotlin.math.*
+import com.soywiz.korma.interpolation.Easing
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.joinAll
+import kotlin.coroutines.coroutineContext
+import kotlin.math.hypot
 
 @DslMarker
 @Target(AnnotationTarget.CLASS, AnnotationTarget.TYPE)

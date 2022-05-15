@@ -1,9 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.useLineBatcher
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.vector.VectorPath
 
 inline fun Container.outline(vectorPath: VectorPath, x: Double = 0.0, y: Double = 0.0, color: RGBA = Colors.WHITE, callback: @ViewDslMarker Outline.() -> Unit = {})
     = Outline(vectorPath, x, y, color).addTo(this, callback)

@@ -1,15 +1,23 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.Extra
+import com.soywiz.kds.clear
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.nanoseconds
-import com.soywiz.kmem.*
-import com.soywiz.korag.gl.*
-import com.soywiz.korev.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.setBits
+import com.soywiz.korag.gl.AGOpenglFactory
+import com.soywiz.korev.GamepadInfo
+import com.soywiz.korev.Key
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.MouseButton
+import com.soywiz.korev.Touch
+import com.soywiz.korev.TouchEvent
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Point
 
 //@Singleton
 @OptIn(KorgeInternal::class)

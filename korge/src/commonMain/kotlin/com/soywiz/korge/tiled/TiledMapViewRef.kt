@@ -1,10 +1,16 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.file.*
-import com.soywiz.korui.*
+import com.soywiz.korge.debug.UiTextEditableValue
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewFileRef
+import com.soywiz.korge.view.ViewLeaf
+import com.soywiz.korge.view.Views
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korui.UiContainer
 
 class TiledMapViewRef() : Container(), ViewLeaf, ViewFileRef by ViewFileRef.Mixin() {
     override suspend fun forceLoadSourceFile(views: Views, currentVfs: VfsFile, sourceFile: String?) {

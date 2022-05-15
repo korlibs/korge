@@ -1,15 +1,19 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
-import com.soywiz.korgw.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
-import kotlin.reflect.*
+import com.soywiz.kmem.clamp
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.input.cursor
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.onMouseDrag
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.append
+import com.soywiz.korge.view.size
+import com.soywiz.korgw.GameWindow
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.util.toStringDecimal
+import com.soywiz.korma.geom.Margin
+import kotlin.math.absoluteValue
 
 @KorgeExperimental
 class UIEditableNumberProps(

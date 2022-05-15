@@ -1,19 +1,24 @@
 package com.soywiz.korge3d
 
 import com.soywiz.korag.AG
-import com.soywiz.korag.shader.*
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Precision
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.MultiBitmap
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.format.readBitmapOptimized
-import com.soywiz.korim.format.readNativeImage
 import com.soywiz.korio.async.async
-import com.soywiz.korio.async.asyncImmediately
-import com.soywiz.korio.file.*
+import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.translate
 import kotlinx.coroutines.coroutineScope
-import kotlin.coroutines.coroutineContext
 
 class CubeMap(
     val right: Bitmap,

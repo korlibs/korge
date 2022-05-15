@@ -1,16 +1,25 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korag.shader.gl.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import kotlin.math.*
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Views
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.MutableMarginInt
+import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.sine
+import com.soywiz.korui.UiContainer
+import kotlin.math.PI
+import kotlin.math.absoluteValue
+import kotlin.math.exp
+import kotlin.math.ln
+import kotlin.math.sqrt
 
 // https://en.wikipedia.org/wiki/Gaussian_blur
 class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4.0, var expandBorder: Boolean = true) : ShaderFilter() {

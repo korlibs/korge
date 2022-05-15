@@ -1,15 +1,29 @@
 package com.soywiz.korge.tween
 
-import com.soywiz.klock.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.coalesce
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.nanoseconds
 import com.soywiz.kmem.fract
 import com.soywiz.kmem.toIntFloor
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.absoluteValue
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.normalized
+import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.interpolation.*
-import kotlin.jvm.*
-import kotlin.reflect.*
+import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.Interpolable
+import com.soywiz.korma.interpolation.interpolate
+import kotlin.jvm.JvmName
+import kotlin.reflect.KMutableProperty0
 
 @Suppress("UNCHECKED_CAST")
 data class V2<V>(

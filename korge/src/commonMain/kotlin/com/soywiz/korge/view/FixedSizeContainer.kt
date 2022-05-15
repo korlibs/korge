@@ -1,12 +1,14 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.identityHashCode
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.*
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.filter.IdentityFilter
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.applyTransform
+import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.math.max
+import com.soywiz.korma.math.min
 
 inline fun Container.fixedSizeContainer(
     width: Double,

@@ -1,10 +1,17 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kmem.Float32Buffer
+import com.soywiz.kmem.Float32BufferAlloc
+import com.soywiz.kmem.Uint16Buffer
+import com.soywiz.kmem.Uint16BufferAlloc
+import com.soywiz.kmem.get
+import com.soywiz.kmem.size
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Rectangle
 
 open class Mesh(
 	var texture: BmpSlice? = null,

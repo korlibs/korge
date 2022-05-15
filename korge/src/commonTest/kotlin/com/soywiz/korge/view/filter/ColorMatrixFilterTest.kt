@@ -1,7 +1,8 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korma.geom.Vector3D
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ColorMatrixFilterTest {
     @Test

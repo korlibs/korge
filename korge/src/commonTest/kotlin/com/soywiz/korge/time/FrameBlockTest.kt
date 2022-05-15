@@ -4,7 +4,6 @@ import com.soywiz.klock.measure
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.timesPerSecond
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.view.ViewsTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

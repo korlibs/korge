@@ -7,7 +7,8 @@ import com.soywiz.korim.format.ImageAnimation
 import com.soywiz.korim.format.ImageFrame
 import com.soywiz.korim.format.ImageFrameLayer
 import com.soywiz.korim.format.ImageLayer
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ImageAnimationViewTest {
     private val animImages4Layers1 = ImageAnimation(

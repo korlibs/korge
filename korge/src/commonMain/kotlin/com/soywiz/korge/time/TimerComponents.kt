@@ -1,15 +1,16 @@
 package com.soywiz.korge.time
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.collections.*
-import kotlin.coroutines.*
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.iterators.fastForEachWithIndex
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.toInt
+import com.soywiz.korge.component.UpdateComponent
+import com.soywiz.korge.view.View
+import com.soywiz.korio.lang.Closeable
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 private typealias TimerCallback = (TimeSpan) -> Unit
 

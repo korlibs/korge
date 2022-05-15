@@ -1,15 +1,29 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.input.TouchEvents
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.singleTouch
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.NinePatchEx
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.ninePatch
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.text
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.font.Font
+import com.soywiz.korio.async.Signal
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korui.UiContainer
 
 inline fun Container.uiButton(
     label: String,

@@ -1,6 +1,6 @@
 package com.soywiz.korge.render
 
-import com.soywiz.korag.*
+import com.soywiz.korag.AG
 
 object MaskStates {
     class LocalRenderState {

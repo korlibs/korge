@@ -1,10 +1,10 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import kotlin.math.*
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.view.Views
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korui.UiContainer
+import kotlin.math.log2
 
 class BlurFilter(radius: Double = 4.0, expandBorder: Boolean = true) : ComposedFilter() {
     companion object {

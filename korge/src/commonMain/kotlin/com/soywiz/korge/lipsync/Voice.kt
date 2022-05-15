@@ -1,11 +1,14 @@
 package com.soywiz.korge.lipsync
 
-import com.soywiz.klock.*
-import com.soywiz.korau.sound.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korau.sound.Sound
+import com.soywiz.korau.sound.readSound
 import com.soywiz.korev.Event
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.animate.play
-import com.soywiz.korge.baseview.*
+import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views

@@ -1,7 +1,12 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.UiComponent
+import com.soywiz.korui.UiContainer
+import com.soywiz.korui.UiLabel
+import com.soywiz.korui.layout.HorizontalUiLayout
+import com.soywiz.korui.layout.preferredSize
+import com.soywiz.korui.layout.preferredWidth
 
 class UiRowEditableValue(app: UiApplication, val labelText: String, val editor: UiComponent) : UiContainer(app) {
     val leftPadding = UiLabel(app)

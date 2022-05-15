@@ -1,9 +1,11 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import kotlin.math.*
+import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.binarySearch
+import com.soywiz.klock.TimeSpan
+import com.soywiz.kmem.clamp
+import kotlin.math.max
+import kotlin.math.min
 
 open class Timed<T>(initialCapacity: Int = 7) {
 	val times = IntArrayList(initialCapacity)

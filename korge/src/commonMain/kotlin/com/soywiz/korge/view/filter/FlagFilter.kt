@@ -9,7 +9,7 @@ import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.view.Views
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.MutableMarginInt
 import com.soywiz.korui.UiContainer
 import kotlin.math.PI
 import kotlin.math.absoluteValue

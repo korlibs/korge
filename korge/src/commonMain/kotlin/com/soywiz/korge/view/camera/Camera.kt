@@ -1,14 +1,32 @@
 package com.soywiz.korge.view.camera
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.kmem.clamp
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.FixedSizeContainer
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.addUpdater
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.async.invoke
+import com.soywiz.korio.async.waitOne
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.interpolate
-import com.soywiz.korma.interpolation.*
-import kotlin.math.*
+import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.MutableInterpolable
+import com.soywiz.korma.interpolation.interpolate
+import kotlin.math.min
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 inline fun Container.cameraContainer(
     width: Double,

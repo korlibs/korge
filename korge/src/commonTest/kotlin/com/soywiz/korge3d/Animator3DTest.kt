@@ -1,14 +1,6 @@
 package com.soywiz.korge3d
 
-import com.soywiz.kds.*
-import com.soywiz.klock.seconds
-import com.soywiz.korge3d.animation.*
-import com.soywiz.korge3d.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.interpolation.Easing
 //import it.krzeminski.visassert.assertFunctionConformsTo
-import kotlin.test.*
 
 @Korge3DExperimental
 class Animator3DTest {

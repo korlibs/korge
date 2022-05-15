@@ -1,10 +1,13 @@
 package com.soywiz.korge.view.grid
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kmem.nearestAlignedTo
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.useLineBatcher
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.vector.rect
 
 interface Grid {
     fun snap(point: Point, out: Point = Point()): Point

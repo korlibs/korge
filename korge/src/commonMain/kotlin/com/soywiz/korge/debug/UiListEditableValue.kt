@@ -1,7 +1,9 @@
 package com.soywiz.korge.debug
 
-import com.soywiz.korui.*
-import com.soywiz.korui.layout.*
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.UiComboBox
+import com.soywiz.korui.UiLabel
+import com.soywiz.korui.layout.UiFillLayout
 
 class UiListEditableValue<T>(
     app: UiApplication,

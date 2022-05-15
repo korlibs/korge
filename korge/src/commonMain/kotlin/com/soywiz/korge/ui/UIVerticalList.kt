@@ -1,10 +1,20 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kmem.clamp
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.DummyView
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.getVisibleWindowArea
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.size
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
 
 @KorgeExperimental
 inline fun Container.uiVerticalList(

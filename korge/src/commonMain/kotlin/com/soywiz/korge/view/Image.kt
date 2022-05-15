@@ -1,16 +1,20 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.resources.*
+import com.soywiz.korge.debug.UiTextEditableValue
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.bitmap.BaseBmpSlice
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.format.readBitmapSlice
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korui.UiContainer
 
 inline fun Container.image(
 	texture: Resourceable<out BaseBmpSlice>, anchorX: Double = 0.0, anchorY: Double = 0.0, callback: @ViewDslMarker Image.() -> Unit = {}

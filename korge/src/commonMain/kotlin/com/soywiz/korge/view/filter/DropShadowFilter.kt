@@ -1,11 +1,15 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.Texture
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MutableMarginInt
 
 open class DropshadowFilter(
     var dropX: Double = 10.0,

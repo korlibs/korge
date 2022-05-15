@@ -1,12 +1,12 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.AG
-import com.soywiz.korag.log.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korag.log.LogBaseAG
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.SizeInt
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ViewFixedSizeContainerTest : ViewsForTesting(
     windowSize = SizeInt(1280, 720),

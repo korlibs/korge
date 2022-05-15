@@ -1,12 +1,12 @@
 package com.soywiz.korge.bus
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korinject.AsyncDestructor
 import com.soywiz.korinject.AsyncInjector
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import kotlin.coroutines.*
-import kotlin.reflect.*
+import com.soywiz.korio.async.launchUnscoped
+import com.soywiz.korio.lang.Closeable
+import kotlin.coroutines.CoroutineContext
+import kotlin.reflect.KClass
 
 class Bus(
 	private val globalBus: GlobalBus,

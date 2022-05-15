@@ -1,9 +1,10 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import kotlinx.coroutines.*
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.bitmap.Bitmap32
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.completeWith
 
 /**
  * Asynchronously renders this [View] (with the provided [views]) to a [Bitmap32] and returns it.

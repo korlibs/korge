@@ -1,16 +1,22 @@
 package com.soywiz.korge.input
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korev.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.reflect.*
+import com.soywiz.kds.Extra
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.clamp01
+import com.soywiz.korev.Key
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korge.component.KeyComponent
+import com.soywiz.korge.time.interpolate
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.addOptFixedUpdater
+import com.soywiz.korge.view.addUpdaterWithViews
+import com.soywiz.korio.async.AsyncSignal
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.waitSubscriberCloseable
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.Closeable
 
 class KeysEvents(override val view: View) : KeyComponent {
     @PublishedApi

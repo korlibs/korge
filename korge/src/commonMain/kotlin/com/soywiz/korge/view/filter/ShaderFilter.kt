@@ -1,15 +1,27 @@
 package com.soywiz.korge.view.filter
 
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korag.AG
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Operand
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korag.shader.appending
+import com.soywiz.korge.render.BatchBuilder2D
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.Texture
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.View
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.fragmentCoords
+import com.soywiz.korge.view.filter.ShaderFilter.Companion.fragmentCoords01
 import com.soywiz.korge.view.filter.ShaderFilter.Companion.tex
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.MutableMarginInt
 
 /**
  * Abstract class for [View] [Filter]s that paints the [Texture] using a [FragmentShader] ([fragment]).

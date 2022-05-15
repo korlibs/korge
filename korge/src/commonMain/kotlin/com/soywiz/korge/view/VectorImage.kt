@@ -1,15 +1,19 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
+import com.soywiz.korge.debug.UiTextEditableValue
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.readVectorImage
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.SizedDrawable
+import com.soywiz.korim.vector.buildShape
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.extensionLC
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korui.UiContainer
 
 inline fun Container.vectorImage(shape: SizedDrawable, autoScaling: Boolean = true, callback: @ViewDslMarker VectorImage.() -> Unit = {}): VectorImage = VectorImage(shape, autoScaling).addTo(this, callback).apply { redrawIfRequired() }
 

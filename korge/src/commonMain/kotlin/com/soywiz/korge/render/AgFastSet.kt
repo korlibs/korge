@@ -1,6 +1,6 @@
 package com.soywiz.korge.render
 
-import com.soywiz.kds.*
+import com.soywiz.kds.FastArrayList
 
 // @TODO: Use HashSet if items.size increases
 internal class AgFastSet<T> {

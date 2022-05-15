@@ -1,10 +1,13 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.render.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.file.std.*
-import kotlin.test.*
+import com.soywiz.korge.render.VertexInfo
+import com.soywiz.korge.render.testRenderContext
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korim.bitmap.NinePatchBitmap32
+import com.soywiz.korim.bitmap.readNinePatch
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class NinePatchTest : ViewsForTesting() {
     @Test

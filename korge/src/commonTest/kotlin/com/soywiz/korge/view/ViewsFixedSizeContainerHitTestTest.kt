@@ -1,10 +1,11 @@
-import com.soywiz.korag.log.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.view.SolidRect
+import com.soywiz.korge.view.fixedSizeContainer
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.xy
+import com.soywiz.korim.color.Colors
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ViewsFixedSizeContainerHitTestTest : ViewsForTesting() {
     @Test

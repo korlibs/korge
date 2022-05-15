@@ -1,9 +1,9 @@
 package com.soywiz.korge3d.internal
 
 import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korma.geom.*
-import kotlin.native.concurrent.*
+import com.soywiz.kmem.FBuffer
+import com.soywiz.korma.geom.Vector3D
+import kotlin.native.concurrent.ThreadLocal
 
 internal fun <T : Any> Map<String, T>.toFast() = FastStringMap<T>().apply {
 	@Suppress("MapGetWithNotNullAssertionOperator")

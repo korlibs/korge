@@ -1,11 +1,22 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kds.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.Extra
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onDown
+import com.soywiz.korge.input.onOut
+import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.onUp
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.size
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.async.Signal
+import com.soywiz.korma.geom.Point
 
 inline fun <T> Container.uiComboBox(
     width: Double = UI_DEFAULT_WIDTH,

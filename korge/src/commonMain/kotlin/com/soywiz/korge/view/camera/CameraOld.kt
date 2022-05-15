@@ -1,14 +1,31 @@
 package com.soywiz.korge.view.camera
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
-import kotlin.math.*
+import com.soywiz.kds.Observable
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.Anchorable
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.FixedSizeContainer
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.hasAncestor
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.cancel
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.interpolate
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.setTo
+import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korma.interpolation.Interpolable
+import com.soywiz.korma.interpolation.MutableInterpolable
+import com.soywiz.korma.interpolation.interpolate
+import kotlin.math.abs
+import kotlin.math.sign
 
 @KorgeExperimental
 inline fun Container.cameraContainerOld(

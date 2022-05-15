@@ -1,16 +1,26 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.log.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.bmpBase
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korag.log.LogAG
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.vector.StrokeInfo
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.vector.cubic
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.geom.vector.rect
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
+import kotlin.test.assertTrue
 
 class GraphicsTest {
 	@Test

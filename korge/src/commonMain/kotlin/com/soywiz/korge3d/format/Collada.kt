@@ -1,20 +1,40 @@
 package com.soywiz.korge3d.format
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge3d.*
-import com.soywiz.korge3d.animation.*
-import com.soywiz.korge3d.internal.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.math.*
-import kotlin.math.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.fastForEachWithIndex
+import com.soywiz.korag.AG
+import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korge3d.BufferWithVertexLayout
+import com.soywiz.korge3d.Korge3DExperimental
+import com.soywiz.korge3d.Library3D
+import com.soywiz.korge3d.Mesh3D
+import com.soywiz.korge3d.Shaders3D
+import com.soywiz.korge3d.animation.Animation3D
+import com.soywiz.korge3d.internal.toFBuffer
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.serialization.xml.Xml
+import com.soywiz.korio.serialization.xml.allChildren
+import com.soywiz.korio.serialization.xml.allNodeChildren
+import com.soywiz.korio.serialization.xml.firstText
+import com.soywiz.korio.serialization.xml.get
+import com.soywiz.korio.serialization.xml.readXml
+import com.soywiz.korio.serialization.xml.text
+import com.soywiz.korio.util.StrReader
+import com.soywiz.korio.util.buildList
+import com.soywiz.korio.util.reader
+import com.soywiz.korma.geom.EulerRotation
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Quaternion
+import com.soywiz.korma.geom.Vector3D
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.setTRS
+import com.soywiz.korma.geom.times
+import com.soywiz.korma.math.nextMultipleOf
+import kotlin.math.abs
+import kotlin.math.max
 
 @Korge3DExperimental
 suspend fun VfsFile.readColladaLibrary(loadTextures: Boolean = true): Library3D {

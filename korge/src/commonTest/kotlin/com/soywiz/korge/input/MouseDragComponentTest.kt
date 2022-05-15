@@ -2,14 +2,12 @@ package com.soywiz.korge.input
 
 import com.soywiz.korev.MouseButton
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.view.ViewsTest
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.SizeInt
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class MouseDragComponentTest : ViewsForTesting(

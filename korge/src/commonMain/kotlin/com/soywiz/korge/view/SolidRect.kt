@@ -1,7 +1,8 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.korim.bitmap.BitmapCoords
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 
 /** Creates a new [SolidRect] of size [width]x[height] and color [color] and allows you to configure it via [callback]. Once created, it is added to this receiver [Container]. */
 inline fun Container.solidRect(width: Double, height: Double, color: RGBA = Colors.WHITE, callback: @ViewDslMarker SolidRect.() -> Unit = {})

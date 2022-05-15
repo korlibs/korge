@@ -1,11 +1,12 @@
 package com.soywiz.korge.input
 
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.view.*
-import kotlin.test.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.korev.Key
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.time.delay
+import com.soywiz.korge.view.solidRect
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class KeysEventsTest : ViewsForTesting() {
     @Test

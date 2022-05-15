@@ -1,10 +1,12 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korge.view.vector.GpuShapeView
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.vector.StrokeInfo
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.isNotEmpty
+import com.soywiz.korma.geom.vector.path
 
 inline fun Container.shapeView(
     shape: VectorPath? = null,

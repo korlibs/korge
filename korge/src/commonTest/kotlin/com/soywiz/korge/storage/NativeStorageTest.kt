@@ -1,8 +1,10 @@
 package com.soywiz.korge.storage
 
-import com.soywiz.korge.service.storage.*
-import com.soywiz.korge.tests.*
-import kotlin.test.*
+import com.soywiz.korge.service.storage.item
+import com.soywiz.korge.service.storage.storage
+import com.soywiz.korge.tests.ViewsForTesting
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class NativeStorageTest : ViewsForTesting() {
     @Test

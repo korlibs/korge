@@ -1,11 +1,19 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.ui.uiObservable
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.div
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.times
+import com.soywiz.korma.geom.vector.circle
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ViewHitTestTest : ViewsForTesting() {
     @Test

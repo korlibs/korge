@@ -1,14 +1,35 @@
 package com.soywiz.korge.html
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korge.bitmapfont.*
-import com.soywiz.korge.scene.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.serialization.xml.*
+import com.soywiz.kds.Computed
+import com.soywiz.kds.Extra
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korge.bitmapfont.getBounds
+import com.soywiz.korge.scene.debugBmpFontSync
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.SystemFont
+import com.soywiz.korim.font.toBitmapFont
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korio.serialization.xml.Xml
+import com.soywiz.korio.serialization.xml.isComment
+import com.soywiz.korio.serialization.xml.isNode
+import com.soywiz.korio.serialization.xml.isText
 import com.soywiz.korma.geom.*
+import kotlin.collections.ArrayList
+import kotlin.collections.Map
+import kotlin.collections.MutableMap
+import kotlin.collections.arrayListOf
+import kotlin.collections.firstOrNull
+import kotlin.collections.flatMap
+import kotlin.collections.getOrPut
+import kotlin.collections.hashMapOf
+import kotlin.collections.isNotEmpty
+import kotlin.collections.map
+import kotlin.collections.mapOf
+import kotlin.collections.plusAssign
+import kotlin.collections.set
 
 object Html {
     class FontsCatalog(val default: Font?, val fonts: Map<String?, Font?> = hashMapOf()) : MetricsProvider {

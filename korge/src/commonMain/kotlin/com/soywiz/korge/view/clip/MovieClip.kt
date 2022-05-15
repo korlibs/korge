@@ -1,12 +1,26 @@
 package com.soywiz.korge.view.clip
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import kotlin.reflect.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.SortedMap
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.toFastList
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.tween.V2
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.addUpdater
+import kotlin.collections.LinkedHashMap
+import kotlin.collections.List
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.getOrPut
+import kotlin.collections.iterator
+import kotlin.collections.mapNotNull
+import kotlin.collections.set
+import kotlin.reflect.KMutableProperty0
 
 @KorgeExperimental
 interface MovieClipTimeline {

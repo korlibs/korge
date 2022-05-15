@@ -1,6 +1,6 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.input.*
+import com.soywiz.korge.input.onClick
 
 inline fun <T : UIButton> T.group(group: UIButtonToggleableGroup, pressed: Boolean = false): T = group.add(this, pressed)
 

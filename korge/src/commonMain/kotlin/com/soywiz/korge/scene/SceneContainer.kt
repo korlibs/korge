@@ -1,17 +1,26 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korinject.*
-import com.soywiz.korio.async.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.views
+import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.async
-import com.soywiz.korio.resources.*
-import com.soywiz.korma.interpolation.*
-import com.soywiz.korui.*
-import kotlinx.coroutines.*
-import kotlin.reflect.*
+import com.soywiz.korio.async.launchUnscoped
+import com.soywiz.korio.async.launchUnscopedAndWait
+import com.soywiz.korio.resources.Resources
+import com.soywiz.korma.interpolation.Easing
+import com.soywiz.korui.UiContainer
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlin.reflect.KClass
 
 /**
  * Creates a new [SceneContainer], allowing to configure with [callback], and attaches the newly created container to the receiver this [Container]

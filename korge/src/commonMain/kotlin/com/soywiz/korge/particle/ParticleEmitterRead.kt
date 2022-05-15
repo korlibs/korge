@@ -1,15 +1,19 @@
 package com.soywiz.korge.particle
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korag.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korag.AG
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBAf
+import com.soywiz.korim.format.readBitmapSlice
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.serialization.xml.readXml
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.vector.circle
 
 suspend fun VfsFile.readParticleEmitter(): ParticleEmitter {
     val file = this

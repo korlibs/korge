@@ -1,6 +1,9 @@
 package com.soywiz.korge.util
 
-import com.soywiz.korio.lang.*
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.cancel
+import com.soywiz.korio.lang.cancellable
 
 class CancellableGroup : Cancellable {
 	private val cancellables = arrayListOf<Cancellable>()

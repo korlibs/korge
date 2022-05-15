@@ -6,7 +6,12 @@ import com.soywiz.korge.debug.KorgeDebugNode
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.time.delay
 import com.soywiz.korge.util.CancellableGroup
-import com.soywiz.korge.view.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ScaleView
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.ViewsContainer
+import com.soywiz.korge.view.views
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
 import com.soywiz.korinject.InjectorAsyncDependency
@@ -15,7 +20,11 @@ import com.soywiz.korio.resources.Resources
 import com.soywiz.korio.resources.ResourcesContainer
 import com.soywiz.korma.geom.ISize
 import com.soywiz.korui.UiContainer
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlin.coroutines.coroutineContext
 
 /**

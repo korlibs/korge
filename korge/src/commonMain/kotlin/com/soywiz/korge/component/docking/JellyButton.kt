@@ -1,15 +1,21 @@
 package com.soywiz.korge.component.docking
 
-import com.soywiz.klock.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.interpolation.*
-import kotlinx.coroutines.*
-import kotlin.coroutines.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.onDown
+import com.soywiz.korge.input.onOut
+import com.soywiz.korge.input.onOver
+import com.soywiz.korge.input.onUpAnywhere
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.get
+import com.soywiz.korio.async.addSuspend
+import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korma.interpolation.Easing
+import kotlinx.coroutines.CoroutineScope
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 class JellyButton(val view: View?, val coroutineContext: CoroutineContext, var targetScale: Double = 1.5) {
 	val hitTest = view["hitTest"].firstOrNull ?: view

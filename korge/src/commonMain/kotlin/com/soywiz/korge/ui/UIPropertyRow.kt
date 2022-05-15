@@ -1,10 +1,19 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.annotations.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import kotlin.reflect.*
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.append
+import com.soywiz.korge.view.size
+import com.soywiz.korim.color.RGBAf
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.unaryPlus
+import kotlin.reflect.KMutableProperty0
+import kotlin.reflect.KProperty0
 
 @KorgeExperimental
 inline fun Container.uiPropertyNumberRow(

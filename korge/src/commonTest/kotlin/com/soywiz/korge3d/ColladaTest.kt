@@ -1,11 +1,18 @@
 package com.soywiz.korge3d
 
-import com.soywiz.kds.*
-import com.soywiz.korge3d.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.serialization.xml.*
-import kotlin.test.*
+import com.soywiz.kds.FastStringMap
+import com.soywiz.kds.get
+import com.soywiz.kds.keys
+import com.soywiz.kds.size
+import com.soywiz.korge3d.format.ColladaParser
+import com.soywiz.korge3d.format.readColladaLibrary
+import com.soywiz.korio.async.suspendTestNoJs
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.serialization.xml.toXml
+import kotlin.test.Test
+import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 @Korge3DExperimental
 class ColladaTest {

@@ -1,10 +1,18 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.kmem.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.extract
+import com.soywiz.kmem.insert
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Vector2D
+import com.soywiz.korma.geom.angleTo
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.div
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.times
+import com.soywiz.korma.geom.vector.VectorPath
 
 fun interface HitTestable {
     fun hitTestAny(x: Double, y: Double, direction: HitTestDirection): Boolean

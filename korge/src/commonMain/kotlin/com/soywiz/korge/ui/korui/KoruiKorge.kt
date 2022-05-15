@@ -1,17 +1,27 @@
 package com.soywiz.korge.ui.korui
 
-import com.soywiz.kds.*
-import com.soywiz.korev.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korui.*
-import com.soywiz.korui.native.*
+import com.soywiz.kds.Extra
+import com.soywiz.korev.MouseEvent
+import com.soywiz.korge.component.removeFromView
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.ui.UICheckBox
+import com.soywiz.korge.ui.UIComboBox
+import com.soywiz.korge.ui.UIText
+import com.soywiz.korge.ui.UITextButton
+import com.soywiz.korge.ui.textAlignment
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.FixedSizeContainer
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.size
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.TextAlignment
+import com.soywiz.korio.lang.Disposable
+import com.soywiz.korio.lang.disposable
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korui.UiApplication
+import com.soywiz.korui.UiContainer
+import com.soywiz.korui.native.NativeUiFactory
 
 var View.koruiComponent by Extra.PropertyThis<View, NativeUiFactory.NativeComponent?> { null }
 

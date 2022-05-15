@@ -1,9 +1,5 @@
 package com.soywiz.korge.view
 
-import com.soywiz.klock.milliseconds
-import com.soywiz.korim.color.Colors
-import kotlin.test.*
-
 class ViewCollisionTest {
     /*
 	@Test

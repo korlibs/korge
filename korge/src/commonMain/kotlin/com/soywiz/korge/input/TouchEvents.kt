@@ -1,13 +1,16 @@
 package com.soywiz.korge.input
 
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klock.DateTime
+import com.soywiz.korev.Touch
+import com.soywiz.korev.TouchEvent
+import com.soywiz.korge.component.TouchComponent
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.hitTest
+import com.soywiz.korio.async.Signal
+import com.soywiz.korma.geom.Point
 
 class TouchEvents(override val view: View) : TouchComponent {
     data class Info(

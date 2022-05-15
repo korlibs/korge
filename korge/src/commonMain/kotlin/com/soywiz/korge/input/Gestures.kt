@@ -1,9 +1,9 @@
 package com.soywiz.korge.input
 
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
-import com.soywiz.korio.async.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korge.component.Component
+import com.soywiz.korge.view.View
+import com.soywiz.korio.async.Signal
+import com.soywiz.korma.geom.IPointInt
 
 class Gestures(override val view: View) : Component {
 	class Direction(val point: IPointInt) {

@@ -1,11 +1,22 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.kmem.clamp
+import com.soywiz.kmem.convertRange
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.addTo
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.applyScaleMode
+import com.soywiz.korma.geom.size
 
 inline fun Container.uiImage(
     width: Number = UI_DEFAULT_WIDTH,

@@ -1,8 +1,10 @@
 package com.soywiz.korge.component.docking
 
 import com.soywiz.klock.TimeSpan
-import com.soywiz.korge.component.*
-import com.soywiz.korge.view.*
+import com.soywiz.korge.component.UpdateComponent
+import com.soywiz.korge.component.attach
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.View
 
 class SortedChildrenByComponent(override val view: Container, var comparator: Comparator<View>) : UpdateComponent {
     override fun update(dt: TimeSpan) {

@@ -1,12 +1,23 @@
 package com.soywiz.korge.view.tiles
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import kotlin.math.*
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.iterators.fastForEachWithIndex
+import com.soywiz.kds.toIntMap
+import com.soywiz.klock.TimeSpan
+import com.soywiz.kmem.nextPowerOfTwo
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BitmapCoords
+import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.mipmaps
+import com.soywiz.korim.bitmap.putSliceWithBorder
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.sliceWithSize
+import kotlin.math.sqrt
 
 data class TileSetAnimationFrame(
     val tileId: Int,

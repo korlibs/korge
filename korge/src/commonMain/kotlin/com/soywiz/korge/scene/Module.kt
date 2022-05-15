@@ -1,14 +1,15 @@
 package com.soywiz.korge.scene
 
-import com.soywiz.korge.internal.*
-import com.soywiz.korgw.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korinject.*
-import com.soywiz.korma.geom.*
-import kotlin.jvm.*
-import kotlin.reflect.*
+import com.soywiz.korge.internal.DefaultViewport
+import com.soywiz.korgw.GameWindow
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.format.ImageFormat
+import com.soywiz.korinject.AsyncInjector
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.SizeInt
+import kotlin.reflect.KClass
 
 open class KorgeModule(mainScene: KClass<out Scene>) : Module() {
 	final override val mainScene: KClass<out Scene> = mainScene

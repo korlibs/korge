@@ -2,22 +2,40 @@
 
 package com.soywiz.korge.render
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.klogger.*
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import kotlin.jvm.*
-import kotlin.math.*
-import kotlin.native.concurrent.*
+import com.soywiz.korag.AG
+import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.shader.Attribute
+import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Precision
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Uniform
+import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.Varying
+import com.soywiz.korag.shader.VertexLayout
+import com.soywiz.korag.shader.VertexShader
+import com.soywiz.korag.toRenderFboIntoBack
+import com.soywiz.korag.toRenderImageIntoFbo
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.async.Signal
+import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Point
+import kotlin.jvm.JvmOverloads
+import kotlin.math.min
+import kotlin.native.concurrent.SharedImmutable
+import kotlin.native.concurrent.ThreadLocal
 
 @SharedImmutable
 private val logger = Logger("BatchBuilder2D")

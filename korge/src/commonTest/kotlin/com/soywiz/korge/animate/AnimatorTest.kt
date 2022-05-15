@@ -1,15 +1,19 @@
 package com.soywiz.korge.animate
 
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.time.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
-import kotlin.test.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.klock.seconds
+import com.soywiz.kmem.toIntRound
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.tween._interpolateAngle
+import com.soywiz.korge.tween.denormalized
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.interpolation.Easing
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class AnimatorTest : ViewsForTesting() {
     @Test

@@ -1,15 +1,20 @@
 package com.soywiz.korge.tiled
 
-import com.soywiz.kmem.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.tests.*
-import com.soywiz.korge.view.tiles.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlin.test.*
+import com.soywiz.kmem.extract
+import com.soywiz.korge.internal.DefaultViewport
+import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korge.view.tiles.BaseTileMap
+import com.soywiz.korge.view.tiles.TileMap
+import com.soywiz.korge.view.tiles.TileSet
+import com.soywiz.korge.view.tiles.TileSetTileInfo
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.async.suspendTestNoJs
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class TiledMapTest : ViewsForTesting() {
 	//@Test

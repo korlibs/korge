@@ -1,15 +1,18 @@
 package com.soywiz.korge.view
 
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.debug.*
-import com.soywiz.korge.internal.*
-import com.soywiz.korge.render.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korui.*
+import com.soywiz.korag.AG
+import com.soywiz.korag.shader.Program
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korim.bitmap.BaseBmpSlice
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korui.UiContainer
+import com.soywiz.korui.button
 
 /**
  * [RectBase] is an abstract [Container] [View] that represents something with a Rect-like shape: like a [SolidRect] or an [Image].
