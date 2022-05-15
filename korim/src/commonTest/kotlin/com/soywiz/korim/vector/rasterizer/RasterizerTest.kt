@@ -1,13 +1,28 @@
 package com.soywiz.korim.vector.rasterizer
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.NativeImageOrBitmap32
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.RastScale
+import com.soywiz.korma.geom.vector.arc
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.lineToH
+import com.soywiz.korma.geom.vector.lineToV
+import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.geom.vector.quadTo
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class RasterizerTest {
     @Test

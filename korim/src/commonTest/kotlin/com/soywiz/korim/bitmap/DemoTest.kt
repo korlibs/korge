@@ -1,17 +1,21 @@
 @file:Suppress("UnusedImport")
 
-import com.soywiz.kds.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.krypto.encoding.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.encoding.*
-import kotlin.native.concurrent.*
-import kotlin.test.*
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.toIntMap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.file.std.MemoryVfs
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korma.geom.Size
+import com.soywiz.krypto.encoding.fromBase64
+import kotlin.native.concurrent.ThreadLocal
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class DemoTest {
     object DebugBitmapFont {

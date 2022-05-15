@@ -1,10 +1,11 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.vector.rect
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class Context2DCommonTest {
     @Test

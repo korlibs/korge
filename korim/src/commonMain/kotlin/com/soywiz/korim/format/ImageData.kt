@@ -1,9 +1,11 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
-import com.soywiz.korim.atlas.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.kds.Extra
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korim.atlas.AtlasPacker
+import com.soywiz.korim.atlas.MutableAtlas
+import com.soywiz.korim.bitmap.Bitmap
 
 open class ImageData constructor(
     val frames: List<ImageFrame>,

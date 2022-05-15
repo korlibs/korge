@@ -1,14 +1,22 @@
 package com.soywiz.korim.font
 
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.effect.BitmapEffect
 import com.soywiz.korim.bitmap.effect.applyEffect
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.text.*
-import com.soywiz.korio.resources.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.paint.DefaultPaint
+import com.soywiz.korim.paint.NonePaint
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.text.BoundBuilderTextRendererActions
+import com.soywiz.korim.text.DefaultStringTextRenderer
+import com.soywiz.korim.text.TextRenderer
+import com.soywiz.korim.text.TextRendererActions
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korio.resources.Resourceable
+import com.soywiz.korma.geom.Matrix
 
 interface Font : Resourceable<Font> {
     override fun getOrNull() = this

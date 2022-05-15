@@ -1,11 +1,9 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.format.*
 import com.soywiz.korim.vector.format.SVG
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlin.test.*
+import com.soywiz.korio.async.suspendTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class SvgTest {
     @Test

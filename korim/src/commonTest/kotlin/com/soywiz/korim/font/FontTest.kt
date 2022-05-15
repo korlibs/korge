@@ -1,17 +1,20 @@
 package com.soywiz.korim.font
 
 import com.soywiz.korim.atlas.MutableAtlasUnit
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.format.showImagesAndWait
-import com.soywiz.korim.vector.*
 import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.text.*
-import com.soywiz.korio.async.*
+import com.soywiz.korim.text.CreateStringTextRenderer
+import com.soywiz.korim.vector.buildSvgXml
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.degrees
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals

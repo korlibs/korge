@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class Bitmap8Test {
     val bmpOdd = Bitmap8(5, 3, byteArrayOf(

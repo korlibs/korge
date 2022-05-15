@@ -1,9 +1,11 @@
 package com.soywiz.korim.font
 
 import com.soywiz.kmem.toIntRound
-import com.soywiz.korio.util.*
+import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Rectangle
-import kotlin.math.*
+import kotlin.math.max
+import kotlin.math.min
+import kotlin.math.roundToInt
 
 data class FontMetrics(
     /** size of the font metric */

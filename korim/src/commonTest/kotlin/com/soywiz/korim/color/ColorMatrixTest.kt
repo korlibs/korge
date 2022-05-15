@@ -1,6 +1,5 @@
 package com.soywiz.korim.color
 
-import com.soywiz.korma.geom.degrees
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

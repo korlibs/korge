@@ -1,8 +1,12 @@
 package com.soywiz.korim.atlas
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.asumePremultiplied
+import com.soywiz.korim.bitmap.copy
+import com.soywiz.korim.format.readBitmapSlice
+import com.soywiz.korio.file.VfsFile
 import com.soywiz.korma.geom.RectangleInt
 
 class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) : AtlasLookup {

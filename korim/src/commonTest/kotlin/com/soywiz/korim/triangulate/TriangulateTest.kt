@@ -1,16 +1,18 @@
 package com.soywiz.korim.triangulate
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.vector.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.triangle.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.triangle.poly2tri.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.vector.triangle
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.writeTo
+import com.soywiz.korio.file.std.localCurrentDirVfs
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.triangle.TriangleList
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.triangle.poly2tri.triangulateSafe
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TriangulateTest {
     @Test

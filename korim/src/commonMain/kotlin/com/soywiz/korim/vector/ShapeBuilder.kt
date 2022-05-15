@@ -1,11 +1,12 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.vector.renderer.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korim.vector.renderer.DummyRenderer
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.isEmpty
+import com.soywiz.korma.geom.vector.rect
 
 inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape =
     ShapeBuilder(width, height).apply(builder).buildShape()

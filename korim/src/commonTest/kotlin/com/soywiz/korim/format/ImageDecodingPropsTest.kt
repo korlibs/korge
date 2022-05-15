@@ -1,6 +1,7 @@
 package com.soywiz.korim.format
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ImageDecodingPropsTest {
     @Test

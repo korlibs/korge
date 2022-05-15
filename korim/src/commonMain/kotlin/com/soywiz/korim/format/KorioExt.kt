@@ -1,14 +1,25 @@
 package com.soywiz.korim.format
 
-import com.soywiz.klogger.*
-import com.soywiz.korim.atlas.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlinx.coroutines.*
+import com.soywiz.klogger.Console
+import com.soywiz.korim.atlas.MutableAtlas
+import com.soywiz.korim.atlas.MutableAtlasUnit
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.vector.SizedDrawable
+import com.soywiz.korim.vector.format.readSVG
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.lang.FileNotFoundException
+import com.soywiz.korio.stream.AsyncInputStream
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readAll
+import kotlinx.coroutines.CancellationException
 
 suspend fun ImageFormat.decode(s: VfsFile, props: ImageDecodingProps = ImageDecodingProps()) =
 	this.read(s.readAsSyncStream(), props.copy(filename = s.baseName))

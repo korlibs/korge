@@ -1,10 +1,20 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.kmem.extract2
+import com.soywiz.kmem.extract4
+import com.soywiz.kmem.extract6
+import com.soywiz.kmem.write32BE
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korio.lang.ASCII
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readAvailable
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.writeBytes
 
 object QOI : ImageFormat("qoi") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {

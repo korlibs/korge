@@ -3,11 +3,17 @@ package com.soywiz.korim.vector
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.toUri
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
+import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.drawText
+import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.paint.ColorPaint
+import com.soywiz.korim.paint.GradientKind
+import com.soywiz.korim.paint.GradientPaint
+import com.soywiz.korim.paint.NonePaint
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.VerticalAlign
-import com.soywiz.korim.vector.format.*
+import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korio.util.toStringDecimal
@@ -16,7 +22,12 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.contains
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.add
+import com.soywiz.korma.geom.vector.applyTransform
+import com.soywiz.korma.geom.vector.strokeToFill
 import kotlin.math.max
 import kotlin.math.round
 

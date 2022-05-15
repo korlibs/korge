@@ -1,7 +1,7 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.lang.invalidOp
 
 enum class BitmapChannel(val index: Int) {
 	RED(0), GREEN(1), BLUE(2), ALPHA(3);

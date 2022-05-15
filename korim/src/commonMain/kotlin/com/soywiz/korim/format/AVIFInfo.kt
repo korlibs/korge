@@ -1,10 +1,27 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
-import com.soywiz.klogger.*
-import com.soywiz.korio.experimental.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kds.IntMap
+import com.soywiz.klogger.Console
+import com.soywiz.korio.experimental.KorioExperimentalApi
+import com.soywiz.korio.lang.LATIN1
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.ByteArrayBitReader
+import com.soywiz.korio.stream.readAllAsFastStream
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readS64BE
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.readU16BE
+import com.soywiz.korio.stream.readU24BE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.skip
+import com.soywiz.korio.stream.slice
+import com.soywiz.korio.stream.sliceHere
+import com.soywiz.korio.stream.sliceWithSize
+import com.soywiz.korio.stream.toAsyncStream
 
 // AVIF & HEIC metadata extractor
 object AVIFInfo : ISOBMFF("avif")

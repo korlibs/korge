@@ -1,7 +1,7 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class BitmapSliceTest {
     @Test

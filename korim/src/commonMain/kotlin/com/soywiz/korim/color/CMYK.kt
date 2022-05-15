@@ -1,7 +1,7 @@
 package com.soywiz.korim.color
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.internal.*
+import com.soywiz.kmem.extract8
+import com.soywiz.korim.internal.clamp0_255
 import kotlin.math.max
 
 // https://en.wikipedia.org/wiki/CMYK_color_model

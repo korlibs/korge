@@ -1,10 +1,18 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kmem.unsigned
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.FastByteArrayInputStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.openFastStream
+import com.soywiz.korio.stream.readAvailable
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readS32BE
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.readU16BE
 
 // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
 object PSD : ImageFormat("psd") {

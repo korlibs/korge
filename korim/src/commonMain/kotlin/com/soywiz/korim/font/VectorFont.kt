@@ -1,7 +1,7 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korim.vector.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korim.vector.Context2d
 
 interface VectorFont : Font {
     fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath = GlyphPath()): GlyphPath?

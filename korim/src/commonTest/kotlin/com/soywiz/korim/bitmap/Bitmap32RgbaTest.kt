@@ -4,7 +4,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmapNoNative
 import com.soywiz.korim.format.readBitmapOptimized
-import com.soywiz.korio.async.*
+import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import kotlin.test.Test

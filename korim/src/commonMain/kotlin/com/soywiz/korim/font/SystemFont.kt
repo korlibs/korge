@@ -1,6 +1,6 @@
 package com.soywiz.korim.font
 
-import com.soywiz.korio.resources.*
+import com.soywiz.korio.resources.Resourceable
 
 inline class SystemFont(override val name: String) : VectorFont, Resourceable<Font> {
     companion object {

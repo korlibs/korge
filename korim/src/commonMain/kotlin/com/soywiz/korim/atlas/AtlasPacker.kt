@@ -1,8 +1,12 @@
 package com.soywiz.korim.atlas
 
-import com.soywiz.kds.iterators.*
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.nextPowerOfTwo
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.extract
+import com.soywiz.korim.bitmap.slice
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.binpack.BinPacker

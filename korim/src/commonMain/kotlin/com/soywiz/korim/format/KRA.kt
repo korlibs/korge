@@ -1,14 +1,27 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.serialization.xml.*
-import com.soywiz.korio.stream.*
-import kotlin.math.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.extraProperty
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.bitmap.BitmapChannel
+import com.soywiz.korio.async.runBlockingNoSuspensions
+import com.soywiz.korio.file.std.ZipVfs
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.serialization.xml.descendants
+import com.soywiz.korio.serialization.xml.firstDescendant
+import com.soywiz.korio.serialization.xml.readXml
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.hasMore
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.toAsync
+import kotlin.math.max
 
 object KRA : ImageFormat("kra") {
     private const val mergedImagePng = "mergedimage.png"

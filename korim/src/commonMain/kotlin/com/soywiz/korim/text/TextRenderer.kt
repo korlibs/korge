@@ -1,15 +1,27 @@
 package com.soywiz.korim.text
 
-import com.soywiz.kds.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.kds.doubleArrayListOf
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.font.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.font.Font
+import com.soywiz.korim.font.FontMetrics
+import com.soywiz.korim.font.GlyphMetrics
+import com.soywiz.korim.font.GlyphPath
+import com.soywiz.korim.font.VectorFont
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korio.lang.forEachCodePoint
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.radians
+import com.soywiz.korma.geom.vector.VectorBuilder
+import com.soywiz.korma.geom.vector.path
 import kotlin.native.concurrent.SharedImmutable
 
 abstract class TextRendererActions {

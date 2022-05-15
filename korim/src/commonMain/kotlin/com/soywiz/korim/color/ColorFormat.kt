@@ -1,6 +1,20 @@
 package com.soywiz.korim.color
 
-import com.soywiz.kmem.*
+import com.soywiz.kmem.extractScaledFF
+import com.soywiz.kmem.extractScaledFFDefault
+import com.soywiz.kmem.insertScaledFF
+import com.soywiz.kmem.readS32BE
+import com.soywiz.kmem.readS32LE
+import com.soywiz.kmem.readU16BE
+import com.soywiz.kmem.readU16LE
+import com.soywiz.kmem.readU24BE
+import com.soywiz.kmem.readU24LE
+import com.soywiz.kmem.write16BE
+import com.soywiz.kmem.write16LE
+import com.soywiz.kmem.write24BE
+import com.soywiz.kmem.write24LE
+import com.soywiz.kmem.write32BE
+import com.soywiz.kmem.write32LE
 import com.soywiz.korim.bitmap.Bitmap32
 
 interface ColorFormat {

@@ -1,10 +1,14 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.format.ImageEncodingProps
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.nativeImageFormatProvider
+import com.soywiz.korim.vector.Drawable
+import com.soywiz.korim.vector.SizedDrawable
+import com.soywiz.krypto.encoding.toBase64
 
 abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplied: Boolean) : Bitmap(width, height, 32, premultiplied, null) {
     /** Allow to force to use a texture id from OpenGL. For example a video texture from Android */

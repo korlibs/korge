@@ -1,6 +1,8 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kmem.*
+import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.fract
+import com.soywiz.kmem.umod
 
 enum class CycleMethod {
     NO_CYCLE, NO_CYCLE_CLAMP, REPEAT, REFLECT;

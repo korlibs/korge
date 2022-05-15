@@ -1,10 +1,9 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import kotlinx.coroutines.flow.*
+import com.soywiz.kmem.readS32BE
+import com.soywiz.korim.format.ImageFormat
+import com.soywiz.korim.format.RegisteredImageFormats
+import com.soywiz.korio.file.VfsFile
 
 suspend fun VfsFile.readFont(preload: Boolean = false, imageFormat: ImageFormat = RegisteredImageFormats, mipmaps: Boolean = true): Font {
     val header = readRangeBytes(0 until 16)

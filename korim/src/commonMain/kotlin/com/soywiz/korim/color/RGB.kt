@@ -1,6 +1,7 @@
 package com.soywiz.korim.color
 
-import com.soywiz.kmem.*
+import com.soywiz.kmem.extract8
+import com.soywiz.kmem.insert8
 
 open class RGB(val rOffset: Int, val gOffset: Int, val bOffset: Int) : ColorFormat24() {
 	override fun getR(v: Int): Int = v.extract8(rOffset)

@@ -1,7 +1,9 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.ScaleMode
 
 // -1 if dimensions do not match
 fun Bitmap.matchContentsDistinctCount(that: Bitmap): Int {

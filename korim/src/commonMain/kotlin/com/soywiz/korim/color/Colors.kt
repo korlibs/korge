@@ -1,7 +1,7 @@
 package com.soywiz.korim.color
 
-import com.soywiz.kds.*
-import com.soywiz.korio.lang.*
+import com.soywiz.kds.toIntMap
+import com.soywiz.korio.lang.substr
 
 @Suppress("MemberVisibilityCanBePrivate")
 object Colors {

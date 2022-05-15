@@ -1,11 +1,12 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.util.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.NativeImageOrBitmap32
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.color.Colors
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.util.OS
+import kotlin.test.Test
 
 class GradientTest {
     @Test

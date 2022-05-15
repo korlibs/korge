@@ -1,8 +1,13 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korim.bitmap.*
+import com.soywiz.kds.Extra
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.slice
 
 /**
  * This class defines one frame of a sprite object like e.g. an aseprite image file.

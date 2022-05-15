@@ -1,14 +1,19 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.writeTo
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.fullPathNormalized
+import com.soywiz.korio.file.std.tempVfs
+import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.degrees
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class NativeRenderTest {
     @Test fun testNativeFill() = doTest(native = true, drawBitmap = false)

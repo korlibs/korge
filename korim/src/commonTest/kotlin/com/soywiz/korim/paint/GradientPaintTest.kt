@@ -1,8 +1,9 @@
 package com.soywiz.korim.paint
 
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
-import kotlin.test.*
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korma.geom.Matrix
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class GradientPaintTest {
     @Test

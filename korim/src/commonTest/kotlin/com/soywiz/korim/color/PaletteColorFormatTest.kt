@@ -1,6 +1,7 @@
 package com.soywiz.korim.color
 
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class PaletteColorFormatTest {
     @Test

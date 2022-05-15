@@ -1,7 +1,9 @@
 package com.soywiz.korim.bitmap.effect
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.distanceMap
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 
 fun Bitmap32.border(r: Int, color: RGBA = Colors.BLACK): Bitmap32 {
     val out = Bitmap32(width + (r * 2), height + (r * 2), premultiplied = true)

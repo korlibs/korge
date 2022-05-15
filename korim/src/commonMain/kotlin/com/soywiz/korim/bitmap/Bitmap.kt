@@ -1,17 +1,22 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.kds.*
+import com.soywiz.kds.Extra
 import com.soywiz.kds.atomic.kdsIsFrozen
-import com.soywiz.kmem.*
-import com.soywiz.korim.annotation.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.resources.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
-import kotlin.native.concurrent.*
+import com.soywiz.kds.fastCastTo
+import com.soywiz.kmem.clamp
+import com.soywiz.kmem.fract
+import com.soywiz.kmem.toIntCeil
+import com.soywiz.kmem.toIntFloor
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korma.geom.ISizeInt
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.Sizeable
+import kotlin.math.min
 
 abstract class Bitmap(
     override val width: Int,

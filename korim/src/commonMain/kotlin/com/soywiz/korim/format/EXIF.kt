@@ -1,12 +1,30 @@
 package com.soywiz.korim.format
 
-import com.soywiz.klogger.*
-import com.soywiz.kmem.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.*
+import com.soywiz.klogger.Console
+import com.soywiz.kmem.Endian
+import com.soywiz.kmem.readS32
+import com.soywiz.kmem.readU16
+import com.soywiz.korio.async.runBlockingNoSuspensions
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
 import com.soywiz.korio.lang.Charsets
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.FastByteArrayInputStream
+import com.soywiz.korio.stream.readAllAsFastStream
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS32
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.readU16
+import com.soywiz.korio.stream.readU16BE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.skip
+import com.soywiz.korio.stream.skipToAlign
+import com.soywiz.korio.stream.sliceHere
+import com.soywiz.korio.stream.sliceStart
+import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.krypto.encoding.hex
 
 // https://zpl.fi/exif-orientation-in-different-formats/
 // https://exiftool.org/TagNames/EXIF.html

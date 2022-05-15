@@ -1,6 +1,9 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.extract
 
 /**
  * This class is used to store the layer image from e.g. an aseprite image file.

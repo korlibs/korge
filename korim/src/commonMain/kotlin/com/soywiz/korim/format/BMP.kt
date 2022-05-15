@@ -1,9 +1,23 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.stream.*
-import kotlin.math.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.color.BGR
+import com.soywiz.korim.color.BGRA
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.decode
+import com.soywiz.korim.color.encode
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readFastByteArrayInputStream
+import com.soywiz.korio.stream.readS16LE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readStringz
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
+import kotlin.math.abs
 
 @Suppress("UNUSED_VARIABLE")
 object BMP : ImageFormat("bmp") {

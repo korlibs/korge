@@ -1,6 +1,7 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
 
 data class StrokeInfo(
     val thickness: Double = 1.0,

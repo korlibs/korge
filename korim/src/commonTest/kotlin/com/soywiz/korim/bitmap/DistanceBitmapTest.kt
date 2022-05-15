@@ -1,8 +1,9 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korio.async.*
+import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.toStringDecimal
-import kotlin.test.*
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class DistanceBitmapTest {
     @Test

@@ -1,12 +1,17 @@
 package com.soywiz.korim.bitmap.trace
 
-import com.soywiz.kds.*
-import com.soywiz.kds.algo.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kds.Pool
+import com.soywiz.kds.algo.RLEComparer
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap1
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.toBitmap1
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.PointIntArrayList
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
 
 inline fun Bitmap.trace() = toBMP32().trace()
 inline fun Bitmap.trace(func: (RGBA) -> Boolean): VectorPath = toBMP32().trace(func)

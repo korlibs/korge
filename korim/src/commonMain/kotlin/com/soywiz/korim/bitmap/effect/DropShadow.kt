@@ -1,10 +1,11 @@
 package com.soywiz.korim.bitmap.effect
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-
-import kotlin.math.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BitmapChannel
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import kotlin.math.absoluteValue
+import kotlin.math.max
 
 fun Bitmap32.dropShadow(x: Int, y: Int, r: Int, color: RGBA = Colors.BLACK): Bitmap32 {
     val pcolor = color.premultiplied

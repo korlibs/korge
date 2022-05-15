@@ -1,9 +1,11 @@
 package com.soywiz.korim.color
 
-import com.soywiz.kmem.*
-import com.soywiz.korio.util.*
-import com.soywiz.korma.interpolation.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.kmem.clamp
+import com.soywiz.korio.util.niceStr
+import com.soywiz.korma.interpolation.Interpolable
+import com.soywiz.korma.interpolation.MutableInterpolable
+import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.krypto.encoding.shex
 
 data class ColorTransform(
     private var _mR: Double,

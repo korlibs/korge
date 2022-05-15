@@ -1,10 +1,16 @@
 package com.soywiz.korim.vector.chart
 
-import com.soywiz.korim.color.*
-import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
-import kotlin.math.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.VerticalAlign
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korma.geom.Rectangle
+import kotlin.math.ceil
+import kotlin.math.floor
+import kotlin.math.log10
+import kotlin.math.min
+import kotlin.math.pow
 
 open class ChartBars(val list: List<DataPoint>) : Chart() {
     companion object {

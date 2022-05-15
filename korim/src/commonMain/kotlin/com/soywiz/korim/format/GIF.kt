@@ -1,15 +1,19 @@
 package com.soywiz.korim.format
 
-import com.soywiz.klock.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import com.soywiz.krypto.encoding.*
-import kotlin.math.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.color.arraycopy
+import com.soywiz.korio.lang.format
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readU8
+import com.soywiz.krypto.encoding.hex
+import kotlin.math.max
+import kotlin.math.min
 
 object GIF : ImageFormat("gif") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {

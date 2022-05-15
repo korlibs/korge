@@ -2,16 +2,21 @@ package com.soywiz.korim.color
 
 import com.soywiz.kds.GenericListIterator
 import com.soywiz.kds.GenericSubList
-import com.soywiz.kmem.*
-import com.soywiz.korim.internal.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.extract8
+import com.soywiz.kmem.fill
 import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
-import com.soywiz.korim.paint.*
+import com.soywiz.korim.internal.packIntClamped
+import com.soywiz.korim.internal.packIntUnchecked
+import com.soywiz.korim.internal.sumPacked4MulR
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.krypto.encoding.*
+import com.soywiz.krypto.encoding.appendHexByte
 
 inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
     override fun clone(): Paint = this

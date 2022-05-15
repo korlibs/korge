@@ -1,6 +1,6 @@
 package com.soywiz.korim.color
 
-import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.Vector3D
 
 fun Vector3D.setToColorPremultiplied(col: RGBA): Vector3D = this.apply { col.toPremultipliedVector3D(this) }
 fun Vector3D.setToColor(col: RGBA): Vector3D = this.apply { col.toPremultipliedVector3D(this) }

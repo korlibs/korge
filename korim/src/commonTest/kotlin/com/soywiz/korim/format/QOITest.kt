@@ -1,10 +1,11 @@
 package com.soywiz.korim.format
 
-import com.soywiz.klock.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlin.test.*
+import com.soywiz.klock.measureTimeWithResult
+import com.soywiz.korim.bitmap.matchContentsDistinctCount
+import com.soywiz.korio.async.suspendTestNoBrowser
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class QOITest {
     val formats = ImageFormats(PNG, QOI)

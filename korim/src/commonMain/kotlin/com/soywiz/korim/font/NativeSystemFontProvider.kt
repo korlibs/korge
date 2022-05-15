@@ -1,15 +1,18 @@
 package com.soywiz.korim.font
 
-import com.soywiz.kds.CopyOnWriteFrozenMap
 import com.soywiz.kds.atomic.kdsFreeze
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
+import com.soywiz.klock.measureTime
+import com.soywiz.klock.measureTimeWithResult
+import com.soywiz.klock.milliseconds
+import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.concurrent.atomic.KorAtomicRef
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
-import kotlinx.coroutines.*
-import kotlin.native.concurrent.SharedImmutable
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.std.VfsFileFromData
+import com.soywiz.korio.file.std.localVfs
+import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.expand
+import kotlinx.coroutines.CancellationException
 
 expect val nativeSystemFontProvider: NativeSystemFontProvider
 

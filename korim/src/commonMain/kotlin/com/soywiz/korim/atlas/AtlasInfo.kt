@@ -1,9 +1,9 @@
 package com.soywiz.korim.atlas
 
-import com.soywiz.kds.*
-import com.soywiz.korio.dynamic.*
-import com.soywiz.korio.serialization.json.*
-import com.soywiz.korio.serialization.xml.*
+import com.soywiz.kds.ListReader
+import com.soywiz.korio.dynamic.KDynamic
+import com.soywiz.korio.serialization.json.Json
+import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korma.geom.*
 
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory

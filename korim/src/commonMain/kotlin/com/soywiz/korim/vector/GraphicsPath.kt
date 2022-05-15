@@ -1,10 +1,10 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.*
-import com.soywiz.klogger.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.Extra
+import com.soywiz.kds.IntArrayList
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
 
 open class GraphicsPath(
 	commands: IntArrayList = IntArrayList(),

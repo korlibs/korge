@@ -1,9 +1,13 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
-import kotlin.math.*
+import com.soywiz.korim.vector.render
+import com.soywiz.korio.lang.UTF8
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.sliceStart
+import kotlin.math.min
 
 object SVG : ImageFormat("svg") {
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? = kotlin.runCatching {

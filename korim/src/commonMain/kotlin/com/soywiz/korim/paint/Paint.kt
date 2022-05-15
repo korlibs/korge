@@ -4,11 +4,17 @@ import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.clamp
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
-import kotlin.apply
-import kotlin.math.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaPremultipliedArray
+import com.soywiz.korim.vector.CycleMethod
+import com.soywiz.korma.geom.Angle
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.div
+import com.soywiz.korma.geom.unaryMinus
+import kotlin.math.sqrt
 
 interface Paint {
     fun clone(): Paint

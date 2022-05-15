@@ -1,8 +1,29 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap1
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap4
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.color.BGRA
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.color.toRgbaArray
+import com.soywiz.korio.stream.MemorySyncStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readS16LE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readU16LE
+import com.soywiz.korio.stream.readU32BE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.sliceStart
+import com.soywiz.korio.stream.sliceWithSize
+import com.soywiz.korio.stream.toByteArray
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write32LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
 
 @Suppress("UNUSED_VARIABLE")
 object ICO : ImageFormat("ico") {

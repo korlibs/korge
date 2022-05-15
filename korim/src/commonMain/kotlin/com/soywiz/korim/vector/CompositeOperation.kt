@@ -1,7 +1,8 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
+import com.soywiz.korim.color.RgbaPremultipliedArray
+import com.soywiz.korim.color.mix
+import com.soywiz.korim.internal.clamp0_255
 
 // https://drafts.fxtf.org/compositing-1/
 interface CompositeOperation {

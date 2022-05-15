@@ -1,17 +1,33 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.compression.*
-import com.soywiz.korio.compression.deflate.*
-import com.soywiz.korio.lang.toCharArray
-import com.soywiz.korio.stream.*
-import com.soywiz.korma.geom.*
-import com.soywiz.krypto.encoding.*
+import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.clamp
+import com.soywiz.kmem.hasBitSet
+import com.soywiz.kmem.readIntArray
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.bitmap.Palette
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.vector.BlendMode
+import com.soywiz.korio.compression.deflate.ZLib
+import com.soywiz.korio.compression.uncompress
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readAvailable
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.readS16LE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.readU16LE
+import com.soywiz.korio.stream.readU32LE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.krypto.encoding.hex
 
 // Aseprite: https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
 object ASE : ImageFormatWithContainer("ase") {

@@ -1,14 +1,21 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.util.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.extract
+import com.soywiz.korio.file.PathInfo
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.baseName
+import com.soywiz.korio.file.extensionLC
 import com.soywiz.korio.lang.ASCII
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.encoding.*
-import com.soywiz.krypto.encoding.*
-import kotlinx.coroutines.*
+import com.soywiz.korio.lang.toString
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readString
+import com.soywiz.korio.stream.sliceStart
+import com.soywiz.krypto.encoding.hex
+import kotlinx.coroutines.CancellationException
 
 class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
     constructor(vararg formats: ImageFormat) : this(formats.toList())

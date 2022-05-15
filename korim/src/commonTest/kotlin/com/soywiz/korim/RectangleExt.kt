@@ -1,8 +1,9 @@
 package com.soywiz.korim
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.bounds
 
 fun Iterable<Rectangle>.render(): Bitmap32 {
     val colors = listOf(Colors.RED, Colors.GREEN, Colors.BLUE, Colors.BLACK)

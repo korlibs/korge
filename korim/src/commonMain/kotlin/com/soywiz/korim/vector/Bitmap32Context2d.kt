@@ -1,18 +1,29 @@
 package com.soywiz.korim.vector
 
 import com.soywiz.kds.intArrayListOf
-import com.soywiz.kmem.*
+import com.soywiz.kmem.clamp01
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.rasterizer.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.collections.fill
-import kotlin.math.absoluteValue
+import com.soywiz.korim.color.RgbaPremultipliedArray
+import com.soywiz.korim.color.depremultiply
+import com.soywiz.korim.color.premultiply
+import com.soywiz.korim.color.scale
+import com.soywiz.korim.paint.BaseFiller
+import com.soywiz.korim.paint.BitmapFiller
+import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.paint.ColorFiller
+import com.soywiz.korim.paint.ColorPaint
+import com.soywiz.korim.paint.GradientFiller
+import com.soywiz.korim.paint.GradientPaint
+import com.soywiz.korim.paint.NoneFiller
+import com.soywiz.korim.paint.NonePaint
+import com.soywiz.korim.vector.rasterizer.Rasterizer
+import com.soywiz.korma.geom.float
+import com.soywiz.korma.geom.shape.emitPoints2
+import com.soywiz.korma.geom.vector.RastScale
+import com.soywiz.korma.geom.vector.StrokeToFill
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
+import com.soywiz.korma.geom.vector.strokeToFill
 import kotlin.math.max
 import kotlin.math.min
 

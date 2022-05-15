@@ -1,8 +1,17 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.stream.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.color.BGR
+import com.soywiz.korim.color.BGRA
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.readBytes
+import com.soywiz.korio.stream.readS16LE
+import com.soywiz.korio.stream.readU16LE
+import com.soywiz.korio.stream.readU8
+import com.soywiz.korio.stream.write16LE
+import com.soywiz.korio.stream.write8
+import com.soywiz.korio.stream.writeBytes
 
 object TGA : ImageFormat("tga") {
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? = kotlin.runCatching {

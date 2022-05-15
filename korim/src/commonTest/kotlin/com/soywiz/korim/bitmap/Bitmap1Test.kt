@@ -1,8 +1,9 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korio.lang.splitInChunks
+import com.soywiz.krypto.encoding.hex
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class Bitmap1Test {
     @Test

@@ -1,10 +1,10 @@
 package com.soywiz.korim.font
 
-import com.soywiz.klock.*
+import com.soywiz.klock.measureTimeWithResult
 import com.soywiz.korio.compression.deflate.ZLib
 import com.soywiz.korio.compression.uncompress
-import com.soywiz.krypto.encoding.*
-import kotlin.native.concurrent.*
+import com.soywiz.krypto.encoding.fromBase64
+import kotlin.native.concurrent.ThreadLocal
 
 // Sani Trixie Sans
 // 1.6.1 - December 3, 2014

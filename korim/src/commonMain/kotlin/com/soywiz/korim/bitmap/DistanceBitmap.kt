@@ -1,9 +1,12 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
-import kotlin.math.*
+import com.soywiz.kmem.clamp01
+import com.soywiz.kmem.convertRange
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korio.lang.assert
+import kotlin.math.max
+import kotlin.math.min
 
 // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.102.7988&rep=rep1&type=pdf
 // Dead Reckoning Algorithm

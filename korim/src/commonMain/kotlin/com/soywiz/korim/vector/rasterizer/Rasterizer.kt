@@ -1,14 +1,13 @@
 package com.soywiz.korim.vector.rasterizer
 
-import com.soywiz.kds.*
+import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korim.internal.*
-
-import com.soywiz.korma.annotations.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.segment.*
-import kotlin.math.absoluteValue
+import com.soywiz.korma.annotations.KormaExperimental
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.vector.PolygonScanline
+import com.soywiz.korma.geom.vector.RastScale
+import com.soywiz.korma.geom.vector.Winding
+import com.soywiz.korma.segment.IntSegmentSet
 import kotlin.math.max
 import kotlin.math.min
 

@@ -1,8 +1,14 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.stream.*
+import com.soywiz.kds.Extra
+import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.SyncStream
+import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.readIntArrayLE
+import com.soywiz.korio.stream.readS32LE
+import com.soywiz.korio.stream.readStream
+import com.soywiz.korio.stream.readString
 
 object DDS : ImageFormat("dds") {
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {

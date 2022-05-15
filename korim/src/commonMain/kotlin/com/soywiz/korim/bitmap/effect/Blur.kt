@@ -2,9 +2,14 @@
 
 package com.soywiz.korim.bitmap.effect
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
-import kotlin.math.*
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.readU8
+import com.soywiz.kmem.toIntFloor
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.bitmap.BitmapChannel
+import kotlin.math.round
+import kotlin.math.sqrt
 
 fun Bitmap32.blur(r: Int): Bitmap32 {
     val out = Bitmap32(width + r * 2, height + r * 2, premultiplied = this.premultiplied)

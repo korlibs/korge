@@ -7,8 +7,9 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaPremultipliedArray
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.CycleMethod
+import com.soywiz.korma.geom.Matrix
 
 abstract class BaseFiller {
     abstract fun fill(data: RgbaPremultipliedArray, offset: Int, x0: Int, x1: Int, y: Int)

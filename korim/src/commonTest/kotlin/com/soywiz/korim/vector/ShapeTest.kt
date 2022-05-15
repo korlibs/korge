@@ -1,12 +1,11 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korio.async.suspendTestNoJs
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import kotlin.test.*
+import com.soywiz.korim.color.Colors
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ShapeTest {
 	@Test

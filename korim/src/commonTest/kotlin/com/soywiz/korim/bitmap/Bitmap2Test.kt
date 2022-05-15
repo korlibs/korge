@@ -1,7 +1,8 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.korim.color.*
-import kotlin.test.*
+import com.soywiz.korim.color.Colors
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class Bitmap2Test {
     @Test

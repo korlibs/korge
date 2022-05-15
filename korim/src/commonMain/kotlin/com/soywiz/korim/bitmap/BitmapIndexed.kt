@@ -1,10 +1,13 @@
 package com.soywiz.korim.bitmap
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.internal.*
-
-import kotlin.math.*
+import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.extract
+import com.soywiz.kmem.ilog2
+import com.soywiz.kmem.insert
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import kotlin.math.max
 
 abstract class BitmapIndexed(
 	bpp: Int,

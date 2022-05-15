@@ -1,7 +1,8 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korio.stream.*
-import kotlin.native.concurrent.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.SyncStream
+import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal
 private var RegisteredImageFormats_formats: ImageFormats = ImageFormats()

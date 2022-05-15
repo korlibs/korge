@@ -1,9 +1,10 @@
 package com.soywiz.korim.color
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.lang.*
-import com.soywiz.krypto.encoding.*
-import kotlin.test.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korio.lang.splitInChunks
+import com.soywiz.krypto.encoding.hex
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class ColorFormatTest {
 	//fun bmp() = Bitmap32(3, 1, arrayOf(Colors.RED, Colors.GREEN, Colors.BLUE).toRgbaArray())

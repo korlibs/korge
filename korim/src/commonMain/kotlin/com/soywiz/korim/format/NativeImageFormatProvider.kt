@@ -1,12 +1,23 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.file.*
-import kotlinx.coroutines.*
-import kotlin.math.*
-import kotlin.native.concurrent.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.ensureNative
+import com.soywiz.korim.bitmap.extract
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.SizedDrawable
+import com.soywiz.korim.vector.render
+import com.soywiz.korio.file.FinalVfsFile
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import kotlinx.coroutines.CancellationException
+import kotlin.math.ceil
+import kotlin.native.concurrent.ThreadLocal
 
 @ThreadLocal
 expect val nativeImageFormatProvider: NativeImageFormatProvider
