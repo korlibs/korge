@@ -33,6 +33,7 @@ include(":korau")
 include(":korgw")
 include(":korvi")
 include(":korge")
+include(":korge-gradle-plugin")
 
 if (!inCI) {
     include(":korge-sandbox")
@@ -45,7 +46,6 @@ if (!disabledExtraKorgeLibs) {
     include(":korge-spine")
     include(":korge-swf")
     include(":korge-box2d")
-    include(":korge-gradle-plugin")
     include(":korge-fleks")
 
     //include(":samples:parallax-scrolling-aseprite")
