@@ -193,18 +193,18 @@ abstract class BaseTileMap(
         val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
         val mapTileWidth = tileSize.width
         val mapTileHeight = tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0
-        val mx0 = ((pp0.x / mapTileWidth) - 1).toInt()
+        val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()
         val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
         val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
         val mx3 = ((pp3.x / mapTileWidth) + 1).toInt()
-        val my0 = ((pp0.y / mapTileHeight) - 1).toInt()
+        val my0 = ((pp0.y / mapTileHeight) + 1).toInt()
         val my1 = ((pp1.y / mapTileHeight) + 1).toInt()
         val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
         val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
 
-        val ymin = min(min(min(my0, my1), my2), my3)
+        val ymin = min(min(min(my0, my1), my2), my3) - 1
         val ymax = max(max(max(my0, my1), my2), my3)
-        val xmin = min(min(min(mx0, mx1), mx2), mx3)
+        val xmin = min(min(min(mx0, mx1), mx2), mx3) - 1
         val xmax = max(max(max(mx0, mx1), mx2), mx3)
 
         val yheight = ymax - ymin
