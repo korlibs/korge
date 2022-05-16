@@ -106,7 +106,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
-        printStackTrace("AG.contextLost")
+        //printStackTrace("AG.contextLost")
         commandsSync { it.contextLost() }
     }
 
