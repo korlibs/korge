@@ -6,12 +6,31 @@ import org.gradle.process.*
 import java.io.*
 
 fun Project.debugExecSpec(exec: ExecSpec) {
-	logger.info("COMMAND: ${exec.commandLine.joinToString(" ")}")
+	logger.warn("COMMAND: ${exec.commandLine.joinToString(" ")}")
+    //println("COMMAND: ${exec.commandLine.joinToString(" ")}")
 }
+
+/*
+class LoggerOutputStream(val logger: org.gradle.api.logging.Logger, val prefix: String) : OutputStream() {
+    val buffer = ByteArrayOutputStream()
+
+    override fun write(b: Int) {
+        if (b == 13 || b == 10) {
+            val line = buffer.toString("UTF-8")
+            println("$prefix: $line")
+            buffer.reset()
+        } else {
+            buffer.write(b)
+        }
+    }
+}
+*/
 
 fun Project.execLogger(action: (ExecSpec) -> Unit): ExecResult {
 	return exec {
 		action(this)
+        //standardOutput = LoggerOutputStream(logger, "OUT")
+        //errorOutput = LoggerOutputStream(logger, "ERR")
 		debugExecSpec(this)
 	}
 }
@@ -28,6 +47,7 @@ fun Project.execOutput(vararg cmds: String, log: Boolean = true): String {
 	exec {
 		commandLineCompat(*cmds)
 		standardOutput = stdout
+        //errorOutput = stdout
 		if (log) {
 			debugExecSpec(this)
 		}

@@ -9,47 +9,30 @@ import com.soywiz.korge.gradle.util.get
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.intellij.lang.annotations.Language
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import java.io.*
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
+import java.util.*
+import javax.security.auth.x500.X500Principal
 
 fun Project.configureNativeIos() {
 	val prepareKotlinNativeBootstrapIos = tasks.create("prepareKotlinNativeBootstrapIos") {
         doLast {
-            File(buildDir, "platforms/native-ios/info.kt").delete() // Delete old versions
             File(buildDir, "platforms/native-ios/bootstrap.kt").apply {
                 parentFile.mkdirs()
-                val DOLLAR = "\$"
                 writeText("""
                     import ${korge.realEntryPoint}
                     
-                    object RootGameMain {
-                        fun preRunMain() {
-                            // println("RootGameMain.preRunMain")
-                            val path = platform.Foundation.NSBundle.mainBundle.resourcePath
-                            // println("RootGameMain.runMain: path=${DOLLAR}path")
-                            if (path != null) {
-                                val rpath = "${DOLLAR}path/include/app/resources"
-                                // println("RootGameMain.runMain: rpath=${DOLLAR}rpath")
-                                platform.Foundation.NSFileManager.defaultManager.changeCurrentDirectoryPath(rpath)
-                                MyIosGameWindow2.setCustomCwd(rpath)
-                            }                        
-                        }
-                    
-                        fun runMain() {
-                            MyIosGameWindow2.gameWindow.entry {
-                                ${korge.realEntryPoint}()
-                            }
-                        }
-                    }
-                    
-                    object MyIosGameWindow2 {
-                        fun setCustomCwd(cwd: String?) { com.soywiz.korio.file.std.customCwd = cwd }
-                        val gameWindow get() = com.soywiz.korgw.MyIosGameWindow
+                    @ThreadLocal
+                    object NewAppDelegate : com.soywiz.korgw.KorgwBaseNewAppDelegate() {
+                        override fun applicationDidFinishLaunching(app: platform.UIKit.UIApplication) { applicationDidFinishLaunching(app) { ${korge.realEntryPoint}() } }
                     }
                 """.trimIndent())
             }
         }
-
 	}
 
     val iosTargets = listOf(kotlin.iosX64(), kotlin.iosArm64(), kotlin.iosSimulatorArm64())
@@ -140,189 +123,40 @@ fun Project.configureNativeIos() {
 			//File(rootDir, "src/commonMain/resources").mkdirs()
 
 			val folder = File(buildDir, "platforms/ios")
-			val swift = false
-			if (swift) {
-				//folder["app/AppDelegate.swift"].ensureParents().writeText(Indenter {
-				//	line("import UIKit")
-				//	line("@UIApplicationMain")
-				//	line("class AppDelegate: UIResponder, UIApplicationDelegate") {
-				//		line("var window: UIWindow?")
-				//		line("func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool") {
-				//			line("return true")
-				//		}
-				//		line("func applicationWillResignActive(_ application: UIApplication)") {
-				//		}
-				//		line("func applicationDidEnterBackground(_ application: UIApplication)") {
-				//		}
-				//		line("func applicationWillEnterForeground(_ application: UIApplication)") {
-				//		}
-				//		line("func applicationDidBecomeActive(_ application: UIApplication)") {
-				//		}
-				//		line("func applicationWillTerminate(_ application: UIApplication)") {
-				//		}
-				//	}
-				//})
-//
-				//folder["app/ViewController.swift"].ensureParents().writeText(Indenter {
-				//	line("import UIKit")
-				//	line("import GLKit")
-				//	line("import GameMain")
-//
-				//	line("class ViewController: GLKViewController") {
-				//		line("var context: EAGLContext? = nil")
-				//		line("var gameWindow2: MyIosGameWindow2? = nil")
-				//		line("var rootGameMain: RootGameMain? = nil")
-//
-				//		line("deinit") {
-				//			line("self.tearDownGL()")
-//
-				//			line("if EAGLContext.current() === self.context") {
-				//				line("EAGLContext.setCurrent(nil)")
-				//			}
-				//		}
-//
-				//		line("override func viewDidLoad()") {
-				//			line("super.viewDidLoad()")
-//
-				//			line("self.gameWindow2 = MyIosGameWindow2.init()")
-				//			line("self.rootGameMain = RootGameMain.init()")
-//
-				//			line("context = EAGLContext(api: .openGLES2)")
-				//			line("if context == nil") {
-				//				line("print(\"Failed to create ES context\")")
-				//			}
-//
-				//			line("let view = self.view as! GLKView")
-				//			line("view.context = self.context!")
-				//			line("view.drawableDepthFormat = .format24")
-//
-				//			line("self.setupGL()")
-				//		}
-//
-				//		line("override func didReceiveMemoryWarning()") {
-				//			line("super.didReceiveMemoryWarning()")
-//
-				//			line("if self.isViewLoaded && self.view.window != nil") {
-				//				line("self.view = nil")
-//
-				//				line("self.tearDownGL()")
-//
-				//				line("if EAGLContext.current() === self.context") {
-				//					line("EAGLContext.setCurrent(nil)")
-				//				}
-				//				line("self.context = nil")
-				//			}
-				//		}
-//
-				//		line("func setupGL()") {
-				//			line("EAGLContext.setCurrent(self.context)")
-//
-				//			// Change the working directory so that we can use C code to grab resource files
-				//			line("if let path = Bundle.main.resourcePath") {
-				//				line("let rpath = \"\\(path)/include/app/resources\"")
-				//				line("FileManager.default.changeCurrentDirectoryPath(rpath)")
-				//				line("self.gameWindow2?.setCustomCwd(cwd: rpath)")
-				//			}
-//
-				//			line("engineInitialize()")
-//
-				//			line("let width = Float(view.frame.size.width) // * view.contentScaleFactor)")
-				//			line("let height = Float(view.frame.size.height) // * view.contentScaleFactor)")
-				//			line("engineResize(width: width, height: height)")
-				//		}
-//
-				//		line("func tearDownGL()") {
-				//			line("EAGLContext.setCurrent(self.context)")
-//
-				//			line("engineFinalize()")
-				//		}
-//
-				//		// MARK: - GLKView and GLKViewController delegate methods
-				//		line("func update()") {
-				//			line("engineUpdate()")
-				//		}
-//
-				//		// Render
-				//		line("var initialized = false")
-				//		line("var reshape = true")
-				//		line("override func glkView(_ view: GLKView, drawIn rect: CGRect)") {
-				//			//glClearColor(1.0, 0.5, Float(n) / 60.0, 1.0);
-				//			line("if !initialized") {
-				//				line("initialized = true")
-				//				line("gameWindow2?.gameWindow.dispatchInitEvent()")
-				//				line("rootGameMain?.runMain()")
-				//				line("reshape = true")
-				//			}
-				//			line("let width = Int32(view.bounds.width * view.contentScaleFactor)")
-				//			line("let height = Int32(view.bounds.height * view.contentScaleFactor)")
-				//			line("if reshape") {
-				//				line("reshape = false")
-				//				line("gameWindow2?.gameWindow.dispatchReshapeEvent(x: 0, y: 0, width: width, height: height)")
-				//			}
-//
-				//			//line("gameWindow2?.gameWindow.ag.setViewport(x: 0, y: 0, width: width, height: height)")
-				//			line("gameWindow2?.gameWindow.frame()")
-				//		}
-//
-				//		line("private func engineInitialize()") {
-				//			//print("init[a]")
-				//			//glClearColor(1.0, 0.5, Float(n) / 60.0, 1.0);
-				//			//glClear(GLbitfield(GL_COLOR_BUFFER_BIT));
-				//			//gameWindow2?.gameWindow.frame()
-				//			//print("init[b]")
-				//		}
-//
-				//		line("var touches: [UITouch] = []")
-//
-				//		line("override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?)") {
-				//			line("self.touches.removeAll()")
-				//			line("gameWindow2?.gameWindow.dispatchTouchEventStartStart()")
-				//			line("self.addTouches(touches)")
-				//			line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
-				//		}
-//
-				//		line("override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?)") {
-				//			line("gameWindow2?.gameWindow.dispatchTouchEventStartMove()")
-				//			line("self.addTouches(touches)")
-				//			line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
-				//		}
-//
-				//		line("override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?)") {
-				//			line("gameWindow2?.gameWindow.dispatchTouchEventStartEnd()")
-				//			line("self.addTouches(touches)")
-				//			line("gameWindow2?.gameWindow.dispatchTouchEventEnd()")
-				//		}
-//
-				//		line("private func addTouches(_ touches: Set<UITouch>)") {
-				//			line("for touch in touches") {
-				//				line("var index = self.touches.index(of: touch)")
-				//				line("if index == nil") {
-				//					line("index = self.touches.count")
-				//					line("self.touches.append(touch)")
-				//				}
-				//				line("let location = touch.location(in: self.view)")
-				//				line("gameWindow2?.gameWindow.dispatchTouchEventAddTouch(id: Int32(index!), x: Double(location.x * view.contentScaleFactor), y: Double(location.y * view.contentScaleFactor))")
-				//			}
-				//		}
-//
-				//		line("private func engineFinalize()") {
-				//		}
-//
-				//		line("private func engineResize(width: Float, height: Float)") {
-				//		}
-//
-				//		line("private func engineUpdate()") {
-				//		}
-				//	}
-				//})
-			} else {
-				folder["app/main.m"].ensureParents().writeText(getResourceString("ios/main.m"))
-				folder["app/AppDelegate.h"].ensureParents().writeText(getResourceString("ios/AppDelegate.h"))
-				folder["app/AppDelegate.m"].ensureParents().writeText(getResourceString("ios/AppDelegate.m"))
-				folder["app/ViewController.h"].ensureParents().writeText(getResourceString("ios/ViewController.h"))
-				folder["app/ViewController.m"].ensureParents().writeText(getResourceString("ios/ViewController.m"))
-			}
+            folder["app/main.m"].ensureParents().writeText("""
+                #import <UIKit/UIKit.h>
+                #import <GameMain/GameMain.h>
 
+                @interface AppDelegate : UIResponder <UIApplicationDelegate>
+                @property (strong, nonatomic) UIWindow *window;
+                @end
+
+                int main(int argc, char * argv[]) {
+                    @autoreleasepool { return UIApplicationMain(argc, argv, nil, NSStringFromClass([AppDelegate class])); }
+                }
+
+                @implementation AppDelegate
+                - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+                    [[GameMainNewAppDelegate getNewAppDelegate] applicationDidFinishLaunchingApp: application];
+                    return YES;
+                }
+                - (void)applicationWillResignActive:(UIApplication *)application {
+                    [[GameMainNewAppDelegate getNewAppDelegate] applicationWillResignActiveApp: application];
+                }
+                - (void)applicationDidEnterBackground:(UIApplication *)application {
+                    [[GameMainNewAppDelegate getNewAppDelegate] applicationDidEnterBackgroundApp: application];
+                }
+                - (void)applicationWillEnterForeground:(UIApplication *)application {
+                    [[GameMainNewAppDelegate getNewAppDelegate] applicationWillEnterForegroundApp: application];
+                }
+                - (void)applicationDidBecomeActive:(UIApplication *)application {
+                    [[GameMainNewAppDelegate getNewAppDelegate] applicationDidBecomeActiveApp: application];
+                }
+                - (void)applicationWillTerminate:(UIApplication *)application {
+                    [[GameMainNewAppDelegate getNewAppDelegate] applicationWillTerminateApp: application];
+                }
+                @end
+            """.trimIndent())
 			folder["app/Info.plist"].ensureParents().writeText(Indenter {
 				line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
 				line("<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">")
@@ -349,8 +183,8 @@ fun Project.configureNativeIos() {
 					line("<true/>")
 					line("<key>UILaunchStoryboardName</key>")
 					line("<string>LaunchScreen</string>")
-					line("<key>UIMainStoryboardFile</key>")
-					line("<string>Main</string>")
+					//line("<key>UIMainStoryboardFile</key>")
+					//line("<string>Main</string>")
 					line("<key>UIRequiredDeviceCapabilities</key>")
 					line("<array>")
 					indent {
@@ -377,57 +211,6 @@ fun Project.configureNativeIos() {
 				}
 				line("</dict>")
 				line("</plist>")
-			})
-
-			folder["app/Base.lproj/Main.storyboard"].ensureParents().writeText(Indenter {
-				line("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
-				line("<document type=\"com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB\" version=\"3.0\" toolsVersion=\"14460.31\" targetRuntime=\"iOS.CocoaTouch\" propertyAccessControl=\"none\" useAutolayout=\"YES\" useTraitCollections=\"YES\" useSafeAreas=\"YES\" colorMatched=\"YES\" initialViewController=\"v5j-5E-UgZ\">")
-				indent {
-					line("<device id=\"retina4_7\" orientation=\"portrait\">")
-					indent {
-						line("<adaptation id=\"fullscreen\"/>")
-					}
-					line("</device>")
-					line("<dependencies>")
-					indent {
-						line("<deployment identifier=\"iOS\"/>")
-						line("<plugIn identifier=\"com.apple.InterfaceBuilder.IBCocoaTouchPlugin\" version=\"14460.20\"/>")
-						line("<capability name=\"Safe area layout guides\" minToolsVersion=\"9.0\"/>")
-						line("<capability name=\"documents saved in the Xcode 8 format\" minToolsVersion=\"8.0\"/>")
-					}
-					line("</dependencies>")
-					line("<scenes>")
-					indent {
-						line("<!--GLKit View Controller-->")
-						line("<scene sceneID=\"yeC-8Z-GkV\">")
-						indent {
-							line("<objects>")
-							indent {
-								line("""<glkViewController preferredFramesPerSecond="60" id="v5j-5E-UgZ" customClass="ViewController" customModuleProvider="" sceneMemberID="viewController">""")
-								indent {
-									line("""<glkView key="view" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" enableSetNeedsDisplay="NO" id="xs3-K8-37B">""")
-									indent {
-										line("""<rect key="frame" x="0.0" y="0.0" width="375" height="667"/>""")
-										line("""<autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>""")
-										line("""<viewLayoutGuide key="safeArea" id="bUC-GZ-6eT"/>""")
-										line("""<connections>""")
-										indent {
-											line("""<outlet property="delegate" destination="v5j-5E-UgZ" id="2Fl-xi-v2b"/>""")
-										}
-										line("""</connections>""")
-									}
-									line("""</glkView>""")
-								}
-								line("""</glkViewController>""")
-								line("""<placeholder placeholderIdentifier="IBFirstResponder" id="6d6-DE-sl0" userLabel="First Responder" sceneMemberID="firstResponder"/>""")
-							}
-							line("</objects>")
-						}
-						line("</scene>")
-					}
-					line("</scenes>")
-				}
-				line("</document>")
 			})
 
 			folder["app/Base.lproj/LaunchScreen.storyboard"].ensureParents().writeText("""
@@ -531,8 +314,9 @@ fun Project.configureNativeIos() {
 				indent {
 					line("PRODUCT_NAME: ${korge.name}")
 					line("ENABLE_BITCODE: NO")
-					if (korge.appleDevelopmentTeamId != null) {
-						line("DEVELOPMENT_TEAM: ${korge.appleDevelopmentTeamId}")
+                    val team = korge.appleDevelopmentTeamId ?: appleGetDefaultDeveloperCertificateTeamId()
+					if (team != null) {
+						line("DEVELOPMENT_TEAM: $team")
 					}
 				}
 				line("targets:")
@@ -631,19 +415,21 @@ fun Project.configureNativeIos() {
 			val arch = if (simulator) "X64" else "Arm64"
 			val arch2 = if (simulator) "x86_64" else "arm64"
 			val sdkName = if (simulator) "iphonesimulator" else "iphoneos"
-			tasks.create("iosBuild$simulatorSuffix$debugSuffix") {
+			tasks.create("iosBuild$simulatorSuffix$debugSuffix", Exec::class.java) {
 				//task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
-				dependsOn(prepareKotlinNativeIosProject, "link${debugSuffix}FrameworkIos$arch")
+                val linkTaskName = "link${debugSuffix}FrameworkIos$arch"
+                val linkTask: KotlinNativeLink = tasks.findByName(linkTaskName) as KotlinNativeLink
+				dependsOn(prepareKotlinNativeIosProject, linkTask)
 				val xcodeProjDir = buildDir["platforms/ios/app.xcodeproj"]
-				afterEvaluate {
-					outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
-				}
-				doLast {
-					execLogger {
-						it.workingDir(xcodeProjDir)
-						it.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
-					}
-				}
+                inputs.dir(linkTask.outputFile)
+                outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
+				//afterEvaluate {
+				//}
+                this.workingDir(xcodeProjDir)
+                this.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
+                doFirst {
+                    println("COMMAND: ${commandLine.joinToString(" ")}")
+                }
 			}
 		}
 
@@ -675,7 +461,7 @@ fun Project.configureNativeIos() {
 			dependsOn("installIosDeploy", buildTaskName)
 			doFirst {
 				val appFolder = tasks.getByName(buildTaskName).outputs.files.first().parentFile
-                iosDeployExt.command("--noninteractive", "--bundle", appFolder.absolutePath)
+                iosDeployExt.command("--noninteractive", "-d", "--bundle", appFolder.absolutePath)
 			}
 		}
 
@@ -712,6 +498,25 @@ fun Project.configureNativeIos() {
 }
 
 data class IosDevice(val booted: Boolean, val isAvailable: Boolean, val name: String, val udid: String)
+
+// https://gist.github.com/luckman212/ec52e9291f27bc39c2eecee07e7a9aa7
+fun Project.appleGetDefaultDeveloperCertificateTeamId(): String? {
+    @Throws(IOException::class)
+    fun execCmd(cmd: String?): String {
+        return Runtime.getRuntime().exec(cmd).inputStream.reader().readText()
+    }
+
+    val certB64 = execCmd("security find-certificate -p")
+        .replace("-----BEGIN CERTIFICATE-----", "")
+        .replace("-----END CERTIFICATE-----", "")
+        .lines()
+        .joinToString("")
+
+    val cert = CertificateFactory.getInstance("X.509").generateCertificate(ByteArrayInputStream(Base64.getDecoder().decode(certB64))) as X509Certificate
+    val subjectStr = cert.subjectX500Principal.getName(X500Principal.RFC2253)
+
+    return Regex("OU=(\\w+)").find(subjectStr)?.groups?.get(1)?.value
+}
 
 fun Project.appleGetDevices(os: String = "iOS"): List<IosDevice> = KDynamic {
 	val res = Json.parse(execOutput("xcrun", "simctl", "list", "-j", "devices"))
