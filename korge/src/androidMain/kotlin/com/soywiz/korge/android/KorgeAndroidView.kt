@@ -1,6 +1,7 @@
 package com.soywiz.korge.android
 
 import android.content.Context
+import android.util.AttributeSet
 import android.widget.RelativeLayout
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.KmlGlAndroid
@@ -18,7 +19,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
+open class KorgeAndroidView(
+    context: Context,
+    attrs: AttributeSet? = null,
+    defStyleAttr: Int = 0
+) : RelativeLayout(context, attrs, defStyleAttr) {
     var mGLView: com.soywiz.korgw.KorgwSurfaceView? = null
     private var agOpenGl: AGOpengl? = null
     private var gameWindow: AndroidGameWindowNoActivity? = null
@@ -30,11 +35,11 @@ class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
 
     inner class KorgeViewAGOpenGL : AGOpengl() {
 
-        override val gl: KmlGl = KmlGlAndroid({ mGLView?.clientVersion ?: -1 })
+        override val gl: KmlGl = KmlGlAndroid { mGLView?.clientVersion ?: -1 }
         override val nativeComponent: Any get() = this@KorgeAndroidView
 
         // @TODO: Cache somehow?
-        override val pixelsPerInch: Double get() = getResources().getDisplayMetrics().densityDpi.toDouble()
+        override val pixelsPerInch: Double get() = resources.displayMetrics.densityDpi.toDouble()
 
         override fun repaint() {
             mGLView?.invalidate()
@@ -90,5 +95,9 @@ class KorgeAndroidView(context: Context) : RelativeLayout(context, null) {
 
             moduleLoaded = true
         }
+    }
+
+    fun queueEvent(runnable: Runnable) {
+        mGLView?.queueEvent(runnable)
     }
 }

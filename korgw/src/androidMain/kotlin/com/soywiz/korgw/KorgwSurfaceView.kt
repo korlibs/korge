@@ -14,7 +14,7 @@ import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.opengles.GL10
 
 // https://github.com/aosp-mirror/platform_frameworks_base/blob/e4df5d375df945b0f53a9c7cca83d37970b7ce64/opengl/java/android/opengl/GLSurfaceView.java
-class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindow: BaseAndroidGameWindow) : GLSurfaceView(context) {
+open class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindow: BaseAndroidGameWindow) : GLSurfaceView(context) {
     val view = this
 
     val onDraw = Signal<Unit>()
@@ -90,24 +90,16 @@ class KorgwSurfaceView(val viewOrActivity: Any?, context: Context, val gameWindo
 }
 
 private fun getVersionFromPackageManager(context: Context): Int {
+    var version = 1
     val packageManager = context.packageManager
     val featureInfos = packageManager.systemAvailableFeatures
-    if (featureInfos != null && featureInfos.isNotEmpty()) {
-        for (featureInfo in featureInfos) {
-            // Null feature name means this feature is the open gl es version feature.
-            if (featureInfo.name == null) {
-                return when {
-                    featureInfo.reqGlEsVersion != FeatureInfo.GL_ES_VERSION_UNDEFINED -> {
-                        (featureInfo.reqGlEsVersion ushr 16) and 0xFF
-                    }
-                    else -> {
-                        1 // Lack of property means OpenGL ES version 1
-                    }
-                }
-            }
-        }
-    }
-    return 1
+    if (featureInfos.isNotEmpty())
+        for (featureInfo in featureInfos)
+        // Null feature name means this feature is the open gl es version feature.
+            if (featureInfo.name == null && featureInfo.reqGlEsVersion != FeatureInfo.GL_ES_VERSION_UNDEFINED)
+                version = (featureInfo.reqGlEsVersion ushr 16) and 0xFF
+
+    return version
 }
 
 // https://kotlinlang.slack.com/archives/CJEF0LB6Y/p1630391858001400
