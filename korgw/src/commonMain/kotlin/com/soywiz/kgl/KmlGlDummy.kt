@@ -6,6 +6,7 @@ package com.soywiz.kgl
 
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.IntMap
+import com.soywiz.kds.clear
 import com.soywiz.kds.getOrPut
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.NativeImage
@@ -16,14 +17,27 @@ open class KmlGlDummyBase : KmlGl() {
     class Allocator(val base: Int = 0) {
         var id = base
         fun alloc(): Int = ++id
+        fun reset() {
+            id = base
+        }
     }
     class ProgramInfo(val id: Int) {
-        var uniformId = 7000
+        companion object {
+            val BASE_UNIFORM = 7000
+            val BASE_ATTRIB = 8000
+        }
+        var uniformId = BASE_UNIFORM
         val uniforms = FastStringMap<Int>()
-        var attribId = 8000
+        var attribId = BASE_ATTRIB
         val attribs = FastStringMap<Int>()
         fun getUniformLocation(name: String): Int = uniforms.getOrPut(name) { ++uniformId }
         fun getAttribLocation(name: String): Int = attribs.getOrPut(name) { ++attribId }
+        fun reset() {
+            uniformId = BASE_UNIFORM
+            attribId = BASE_ATTRIB
+            uniforms.clear()
+            attribs.clear()
+        }
     }
     val programs = IntMap<ProgramInfo>()
     fun getProgram(id: Int): ProgramInfo = programs.getOrPut(id) { ProgramInfo(id) }
@@ -33,6 +47,17 @@ open class KmlGlDummyBase : KmlGl() {
     val frameBufferIds = Allocator(4000)
     val renderBufferids = Allocator(5000)
     val textureIds = Allocator(6000)
+
+    override fun handleContextLost() {
+        super.handleContextLost()
+        programs.clear()
+        programIds.reset()
+        shaderIds.reset()
+        bufferIds.reset()
+        frameBufferIds.reset()
+        renderBufferids.reset()
+        textureIds.reset()
+    }
 
     override fun activeTexture(texture: Int): Unit = Unit
     override fun attachShader(program: Int, shader: Int): Unit = Unit

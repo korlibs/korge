@@ -1,0 +1,7 @@
+genTextures(1, [6001])
+bindTexture(3553, 6001)
+texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, FBuffer(size=4))
+handleContextLost()
+genTextures(1, [6001])
+bindTexture(3553, 6001)
+texImage2D(3553, 0, 6408, 1, 1, 0, 6408, 5121, FBuffer(size=4))

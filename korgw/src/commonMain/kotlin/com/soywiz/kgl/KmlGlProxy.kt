@@ -1059,6 +1059,13 @@ open class KmlGlProxy(parent: KmlGl) : KmlGlFastProxy(parent) {
         after("vertexAttribDivisor", sparams, res)
         return res
     }
+
+    override fun handleContextLost() {
+        val sparams = listOf<Any?>()
+        before("handleContextLost", sparams)
+        val res = parent.handleContextLost()
+        after("handleContextLost", sparams, res)
+    }
 }
 open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
     override val gles: Boolean get() = parent.gles
@@ -1093,7 +1100,9 @@ open class KmlGlFastProxy(var parent: KmlGl) : KmlGl() {
         get() = parent.info
         set(value) { parent.info = value }
 
-    override fun handleContextLost() = parent.handleContextLost()
+    override fun handleContextLost() {
+        parent.handleContextLost()
+    }
 
     override fun beforeDoRender(contextVersion: Int) {
         parent.beforeDoRender(contextVersion)

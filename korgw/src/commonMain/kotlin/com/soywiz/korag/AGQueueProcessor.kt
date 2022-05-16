@@ -9,6 +9,8 @@ import com.soywiz.korio.annotations.KorInternal
 
 @KorInternal
 interface AGQueueProcessor {
+    // EXTRA
+    fun contextLost()
     // SYNC
     fun finish()
     // ENABLE / DISABLE
@@ -73,7 +75,7 @@ interface AGQueueProcessor {
         premultiplied: Boolean
     )
     fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int)
-    fun textureBindEnsuring(tex: AG.Texture)
+    fun textureBindEnsuring(tex: AG.Texture?)
     fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int)
     // FRAME BUFFER
     fun frameBufferCreate(id: Int)

@@ -26,11 +26,6 @@ abstract class AGOpengl : AG() {
 
     override val parentFeatures: AGFeatures get() = gl
 
-    override fun contextLost() {
-        Console.info("AG.contextLost()", this, gl, gl.root)
-        contextVersion++
-    }
-
     //val queue = Deque<(gl: GL) -> Unit>()
 
     open fun setSwapInterval(value: Int) {

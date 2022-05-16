@@ -127,6 +127,7 @@ class AGList(val globalState: AGGlobalState) {
                     completed.complete(Unit)
                     return true
                 }
+                CMD_CONTEXT_LOST -> processor.contextLost()
                 CMD_DEPTH_FUNCTION -> processor.depthFunction(AGCompareMode.VALUES[data.extract4(0)])
                 CMD_ENABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = true)
                 CMD_DISABLE -> processor.enableDisable(AGEnable.VALUES[data.extract4(0)], enable = false)
@@ -245,6 +246,10 @@ class AGList(val globalState: AGGlobalState) {
         } else {
             disable(kind)
         }
+    }
+
+    fun contextLost() {
+        add(CMD(CMD_CONTEXT_LOST))
     }
 
     fun colorMask(red: Boolean, green: Boolean, blue: Boolean, alpha: Boolean) {
@@ -368,7 +373,7 @@ class AGList(val globalState: AGGlobalState) {
         add(CMD(CMD_TEXTURE_BIND).finsert16(textureId, 0).finsert4(target.ordinal, 16))
     }
 
-    fun bindTextureEnsuring(texture: AG.Texture) {
+    fun bindTextureEnsuring(texture: AG.Texture?) {
         addExtra(texture)
         add(CMD(CMD_TEXTURE_BIND_ENSURING))
     }
@@ -508,7 +513,7 @@ class AGList(val globalState: AGGlobalState) {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
         // Special
-
+        private const val CMD_CONTEXT_LOST = 0xFA
         private const val CMD_READ_PIXELS = 0xFB
         private const val CMD_READ_PIXELS_TO_TEXTURE = 0xFC
         private const val CMD_DRAW = 0xFD

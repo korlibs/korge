@@ -36,6 +36,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
@@ -105,7 +106,8 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     open fun contextLost() {
         Console.info("AG.contextLost()", this)
-        contextVersion++
+        printStackTrace("AG.contextLost")
+        commandsSync { it.contextLost() }
     }
 
     val tempVertexBufferPool = Pool { createBuffer() }
@@ -351,19 +353,19 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         var implForcedTexId: Int = -1
         var implForcedTexTarget: AG.TextureTargetKind = targetKind
 
-        private fun ensureTexId() {
-            if (implForcedTexId >= 0) return
-            if (cachedVersion != contextVersion) {
-                cachedVersion = contextVersion
-                invalidate()
-                texId = commandsNoWait { it.createTexture() }
-            }
-        }
+        //private fun ensureTexId() {
+        //    if (implForcedTexId >= 0) return
+        //    if (cachedVersion != contextVersion) {
+        //        cachedVersion = contextVersion
+        //        invalidate()
+        //        texId = commandsNoWait { it.createTexture() }
+        //        println("**** RE/CREATING TEXTURE: $texId")
+        //    }
+        //}
 
         val tex: Int
             get() {
                 if (implForcedTexId >= 0) return implForcedTexId
-                ensureTexId()
                 return texId
             }
 
@@ -373,7 +375,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             createdTextureCount++
         }
 
-        protected fun invalidate() {
+        internal fun invalidate() {
             uploaded = false
             generating = false
             generated = false
@@ -453,7 +455,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         }
 
         fun bindEnsuring(): Texture {
-            ensureTexId()
             commandsNoWait { it.bindTextureEnsuring(this) }
             return this
         }

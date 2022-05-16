@@ -2,6 +2,8 @@ package com.soywiz.korag
 
 import com.soywiz.kgl.*
 import com.soywiz.korag.gl.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
 import com.soywiz.korio.annotations.*
 import com.soywiz.korio.test.*
 import kotlin.test.*
@@ -22,5 +24,18 @@ class AGQueueProcessorOpenGLTest {
         list.finish()
         processor.processBlocking(list, -1)
         assertEqualsJvmFileReference("com/soywiz/korag/AGQueueProcessorOpenGLTest.ref", gl.getLogAsString())
+    }
+
+    @Test
+    fun testContextLost() {
+        val gl = KmlGlProxyLogToString()
+        val ag = SimpleAGOpengl(gl)
+        val tex = ag.createTexture()
+        tex.upload(Bitmap32(1, 1, Colors.RED))
+        tex.bindEnsuring()
+        ag.contextLost()
+        tex.bindEnsuring()
+        ag.commandsSync {  }
+        assertEqualsJvmFileReference("com/soywiz/korag/AGQueueProcessorContextLost.ref", gl.getLogAsString())
     }
 }

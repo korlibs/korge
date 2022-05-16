@@ -176,7 +176,7 @@ open class LogBaseAG(
 	width: Int = 640,
 	height: Int = 480,
 ) : DummyAG(width, height) {
-    enum class Kind { DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE }
+    enum class Kind { DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST }
 
 	open fun log(str: String, kind: Kind) {
 	}
@@ -268,6 +268,9 @@ open class LogBaseAG(
 
     val agProcessor = object : AGQueueProcessor {
         override fun finish() = log("finish", Kind.CLOSE)
+
+        override fun contextLost() { log("contextLost", Kind.CONTEXT_LOST) }
+
         override fun enableDisable(kind: AGEnable, enable: Boolean) {
             log("${if (enable) "enable" else "disable"}: $kind", Kind.ENABLE_DISABLE)
         }
@@ -412,7 +415,7 @@ open class LogBaseAG(
         }
 
         override fun textureBind(textureId: Int, target: TextureTargetKind, implForcedTexId: Int) = log("textureBind: $textureId", Kind.TEXTURE)
-        override fun textureBindEnsuring(tex: Texture) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
+        override fun textureBindEnsuring(tex: Texture?) = log("textureBindEnsuring: $tex", Kind.TEXTURE)
         override fun textureSetFromFrameBuffer(textureId: Int, x: Int, y: Int, width: Int, height: Int) = log("textureSetFromFrameBuffer: $textureId, $x, $y, $width, $height", Kind.TEXTURE)
         override fun frameBufferCreate(id: Int) = log("frameBufferCreate: $id", Kind.FRAME_BUFFER)
         override fun frameBufferDelete(id: Int) = log("frameBufferDelete: $id", Kind.FRAME_BUFFER)

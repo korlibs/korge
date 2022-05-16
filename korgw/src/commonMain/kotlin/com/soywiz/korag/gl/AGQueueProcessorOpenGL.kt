@@ -76,6 +76,11 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     val contextVersion: Int get() = globalState.contextVersion
 
+    override fun contextLost() {
+        globalState.contextVersion++
+        gl.handleContextLost()
+    }
+
     override fun finish() {
         gl.flush()
         gl.finish()
@@ -630,13 +635,20 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         gl.bindTexture(target.toGl(), glId)
     }
 
-    // @TODO: Handle context loss and restoring here
-    fun textureBind(tex: AG.Texture) {
-        textureBind(tex.texId, tex.implForcedTexTarget, tex.implForcedTexId)
-    }
+    override fun textureBindEnsuring(tex: AG.Texture?) {
+        if (tex == null) {
+            return gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+        }
 
-    override fun textureBindEnsuring(tex: AG.Texture) {
-        textureBind(tex)
+        // Context lost
+        if (tex.cachedVersion != contextVersion) {
+            tex.cachedVersion = contextVersion
+            tex.invalidate()
+            textureCreate(tex.texId)
+        }
+
+        textureBind(tex.texId, tex.implForcedTexTarget, tex.implForcedTexId)
+
         if (tex.isFbo) return
         val source = tex.source
         if (tex.uploaded) return
