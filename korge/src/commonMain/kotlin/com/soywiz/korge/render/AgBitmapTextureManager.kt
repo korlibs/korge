@@ -27,6 +27,7 @@ import com.soywiz.korma.geom.Rectangle
  * you can just call any of the getTexture* methods here each frame, even if not using it in the current frame.
  * You can also manage [Texture] manually, but you should release the textures manually by calling [Texture.close] so the resources are freed.
  */
+// @TODO: Use [com.soywiz.kds.FastIdentityCacheMap]
 @OptIn(KorgeInternal::class, KorgeExperimental::class)
 class AgBitmapTextureManager(
     val ag: AG

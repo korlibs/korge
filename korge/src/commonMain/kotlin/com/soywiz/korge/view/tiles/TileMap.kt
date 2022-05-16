@@ -1,10 +1,9 @@
 package com.soywiz.korge.view.tiles
 
-import com.soywiz.kds.FastIdentityMap
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.FastIdentityCacheMap
 import com.soywiz.kds.IntArray2
 import com.soywiz.kds.Pool
-import com.soywiz.kds.clear
-import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.klock.milliseconds
@@ -27,6 +26,8 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
@@ -98,12 +99,28 @@ abstract class BaseTileMap(
 
     // @TODO: Use a TextureVertexBuffer or something
     @KorgeInternal
-    private class Info(var tex: Bitmap, var vertices: TexturedVertexArray) {
-        var vcount = 0
-        var icount = 0
+    private class Info(var tex: Bitmap, var vertices: GrowableTexturedVertexArray) {
+        val verticesList = FastArrayList<GrowableTexturedVertexArray>().also {
+            it.add(vertices)
+        }
+
+        fun addNewVertices(vertices: GrowableTexturedVertexArray) {
+            this.vertices = vertices
+            verticesList.add(vertices)
+        }
     }
 
-    private val verticesPerTex = FastIdentityMap<Bitmap, Info>()
+    // @TODO: Should we move this outside?
+    class GrowableTexturedVertexArray(val vertices: TexturedVertexArray, var vcount: Int = 0, var icount: Int = 0) {
+        fun quadV(x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
+            vertices.quadV(vcount++, x, y, u, v, colMul, colAdd)
+        }
+
+        override fun toString(): String = "GrowableTexturedVertexArray(vcount=$vcount, icount=$icount)"
+    }
+
+
+    private val verticesPerTex = FastIdentityCacheMap<Bitmap, Info>()
     private val infos = arrayListOf<Info>()
 
     companion object {
@@ -142,7 +159,7 @@ abstract class BaseTileMap(
         //private const val BL = 3
     }
 
-    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, dummyTexturedVertexArray) }
+    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, GrowableTexturedVertexArray(dummyTexturedVertexArray)) }
     private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
     private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
 
@@ -150,6 +167,7 @@ abstract class BaseTileMap(
     private val tempX = FloatArray(4)
     private val tempY = FloatArray(4)
 
+    // @TODO: Use instanced rendering to support much more tiles at once
     private fun computeVertexIfRequired(ctx: RenderContext) {
         if (!dirtyVertices && cachedContentVersion == contentVersion) return
         cachedContentVersion = contentVersion
@@ -211,6 +229,7 @@ abstract class BaseTileMap(
         val xwidth = xmax - xmin
         val ntiles = xwidth * yheight
         val allocTiles = ntiles.nextPowerOfTwo
+        val allocTilesClamped = min(allocTiles, 16 * 1024)
         //println("(mx0=$mx0, my0=$my0)-(mx1=$mx1, my1=$my1)-(mx2=$mx2, my2=$my2)-(mx3=$mx3, my3=$my3) ($xwidth, $yheight)")
         infos.fastForEach { infosPool.free(it) }
         verticesPerTex.clear()
@@ -219,6 +238,7 @@ abstract class BaseTileMap(
         var count = 0
         val passes = if (staggerAxis == TiledMap.StaggerAxis.X) 2 else 1
 
+        // @TODO: Try to reduce xy/min/max so we reduce continue. Maybe we can do a bisect or something, to allow huge out scalings
         for (y in ymin until ymax) {
             // interlace rows when staggered on X to ensure proper z-index
             for (pass in 0 until passes) {
@@ -268,15 +288,14 @@ abstract class BaseTileMap(
                     val info = verticesPerTex.getOrPut(tex.base) {
                         infosPool.alloc().also { info ->
                             info.tex = tex.base
-                            if (info.vertices.initialVcount < allocTiles * 4) {
-                                info.vertices = TexturedVertexArray(allocTiles * 4, TexturedVertexArray.quadIndices(allocTiles))
-                                //println("ALLOC TexturedVertexArray")
-                            }
-                            info.vcount = 0
-                            info.icount = 0
+                            info.verticesList.clear()
+                            info.addNewVertices(GrowableTexturedVertexArray(TexturedVertexArray(allocTilesClamped * 4, TexturedVertexArray.quadIndices(allocTilesClamped))))
+                            info.vertices.vcount = 0
+                            info.vertices.icount = 0
                             infos += info
                         }
                     }
+                    //println("info=${info.identityHashCode()}")
 
                     run {
                         val p0X = posX + (nextTileX * x) + (dVX * y) + staggerOffsetX
@@ -303,13 +322,19 @@ abstract class BaseTileMap(
 
                         computeIndices(flipX = flipX, flipY = flipY, rotate = rotate, indices = indices)
 
-                        info.vertices.quadV(info.vcount++, p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
-                        info.vertices.quadV(info.vcount++, p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
-                        info.vertices.quadV(info.vcount++, p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
-                        info.vertices.quadV(info.vcount++, p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
+                        info.vertices.quadV(p0X, p0Y, tempX[indices[0]], tempY[indices[0]], colMul, colAdd)
+                        info.vertices.quadV(p1X, p1Y, tempX[indices[1]], tempY[indices[1]], colMul, colAdd)
+                        info.vertices.quadV(p2X, p2Y, tempX[indices[2]], tempY[indices[2]], colMul, colAdd)
+                        info.vertices.quadV(p3X, p3Y, tempX[indices[3]], tempY[indices[3]], colMul, colAdd)
                     }
 
-                    info.icount += 6
+                    info.vertices.icount += 6
+
+                    //println("info.icount=${info.icount}")
+
+                    if (info.vertices.icount >= 16000) {
+                        info.addNewVertices(GrowableTexturedVertexArray(TexturedVertexArray(allocTilesClamped * 4, TexturedVertexArray.quadIndices(allocTilesClamped))))
+                    }
                 }
             }
         }
@@ -325,11 +350,16 @@ abstract class BaseTileMap(
         }
         computeVertexIfRequired(ctx)
 
+        //println("---")
+
         ctx.useBatcher { batch ->
             infos.fastForEach { buffer ->
-                batch.drawVertices(
-                    buffer.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, buffer.vcount, buffer.icount
-                )
+                buffer.verticesList.fastForEach { vertices ->
+                    //println("VERTICES: $vertices")
+                    batch.drawVertices(
+                        vertices.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, vertices.vcount, vertices.icount
+                    )
+                }
             }
         }
 

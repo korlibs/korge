@@ -4,6 +4,8 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.camera.cameraContainer
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
+import com.soywiz.korim.atlas.MutableAtlasUnit
+import com.soywiz.korim.atlas.add
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.*
 import com.soywiz.korma.geom.*
@@ -88,15 +90,16 @@ private fun makeDonutMap(
 }
 
 private fun makeSimpleTileSet(tileWidth: Int): TileSet {
+    val atlas = MutableAtlasUnit()
     val tileBitmaps =
         listOf(Colors.TRANSPARENT_BLACK, Colors.GREEN, Colors.ORANGE, Colors.GREENYELLOW, Colors.YELLOW).map { c ->
-            Bitmap32(tileWidth, tileWidth).also {
+            atlas.add(Bitmap32(tileWidth, tileWidth).also {
                 it.fill(c)
                 for (i in (tileWidth / 5) until (tileWidth * 4 / 5)) {
                     it[i, tileWidth / 2] = Colors.TRANSPARENT_BLACK
                     it[tileWidth / 2, i] = Colors.TRANSPARENT_BLACK
                 }
-            }
+            }).slice
         }
-    return TileSet.fromBitmaps(tileWidth, tileWidth, tileBitmaps)
+    return TileSet.fromBitmapSlices(tileWidth, tileWidth, tileBitmaps)
 }
