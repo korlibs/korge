@@ -349,6 +349,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     var lastEventSet = false
     var currentEvent: MouseEvent? = null
     var lastEvent: MouseEvent = MouseEvent()
+    var lastEmulated: Boolean = false
     var lastEventUp: MouseEvent = MouseEvent()
 
     //var lastEventDown: MouseEvent? = null
@@ -397,6 +398,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         // Store event
         this.currentEvent = event
         this.lastEvent.copyFrom(event)
+        this.lastEmulated = event.emulated
         lastEventSet = true
 
         //println("MouseEvent.onMouseEvent($views, $event)")

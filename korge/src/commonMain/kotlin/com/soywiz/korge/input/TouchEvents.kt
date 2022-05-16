@@ -66,6 +66,8 @@ class TouchEvents(override val view: View) : TouchComponent {
     override fun onTouchEvent(views: Views, e: TouchEvent) {
         infos.clear()
 
+        //println("onTouchEvents: $e")
+
         val now = views.timeProvider.now()
 
         if (e.type == TouchEvent.Type.START) {

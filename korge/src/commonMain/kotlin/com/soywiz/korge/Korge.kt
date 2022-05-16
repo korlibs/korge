@@ -434,14 +434,21 @@ object Korge {
             logger.trace { "eventDispatcher.addEventListener<TouchEvent>:$e" }
 
             input.updateTouches(e)
-            views.dispatch(e)
+            val ee = input.touch
+            for (t in ee.touches) {
+                val (x, y) = getRealXY(t.x, t.y, e.scaleCoords)
+                t.x = x
+                t.y = y
+            }
+            views.dispatch(ee)
 
             // Touch to mouse events
-            if (e.numTouches == 1) {
-                val start = e.isStart
-                val end = e.isEnd
-                val t = e.touches.first()
-                val (x, y) = getRealXY(t.x, t.y, e.scaleCoords)
+            if (ee.numTouches == 1) {
+                val start = ee.isStart
+                val end = ee.isEnd
+                val t = ee.touches.first()
+                val x = t.x
+                val y = t.y
                 val button = MouseButton.LEFT
                 touchMouseEvent.id = 0
                 touchMouseEvent.button = button

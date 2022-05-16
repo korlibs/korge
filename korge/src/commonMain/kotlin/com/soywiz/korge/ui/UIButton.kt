@@ -158,21 +158,32 @@ open class UIButton(
 	init {
         singleTouch {
             start {
+                //println("singleTouch.start")
                 simulateDown()
             }
             endAnywhere {
+                //println("singleTouch.endAnywhere")
                 simulateUp()
             }
             tap {
+                //println("singleTouch.tap")
                 onPress(it)
             }
         }
 		mouse {
 			onOver {
-				simulateOver()
+                //if (!it.lastEmulated) {
+                run {
+                    //println("mouse.onOver: ${input.mouse}, ${input.activeTouches}")
+                    simulateOver()
+                }
 			}
 			onOut {
-				simulateOut()
+                //if (!it.lastEmulated) {
+                run {
+                    //println("mouse.onOut")
+                    simulateOut()
+                }
 			}
 		}
 	}
