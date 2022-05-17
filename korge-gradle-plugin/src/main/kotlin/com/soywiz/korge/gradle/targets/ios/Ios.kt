@@ -418,16 +418,18 @@ fun Project.configureNativeIos() {
 			tasks.create("iosBuild$simulatorSuffix$debugSuffix", Exec::class.java) {
 				//task.dependsOn(prepareKotlinNativeIosProject, "linkMain${debugSuffix}FrameworkIos$arch")
                 val linkTaskName = "link${debugSuffix}FrameworkIos$arch"
-                val linkTask: KotlinNativeLink = tasks.findByName(linkTaskName) as KotlinNativeLink
-				dependsOn(prepareKotlinNativeIosProject, linkTask)
+				dependsOn(prepareKotlinNativeIosProject, linkTaskName)
 				val xcodeProjDir = buildDir["platforms/ios/app.xcodeproj"]
-                inputs.dir(linkTask.outputFile)
-                outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
+                afterEvaluate {
+                    val linkTask: KotlinNativeLink = tasks.findByName(linkTaskName) as KotlinNativeLink
+                    inputs.dir(linkTask.outputFile)
+                    outputs.file(xcodeProjDir["build/Build/Products/$debugSuffix-$sdkName/${korge.name}.app/${korge.name}"])
+                }
 				//afterEvaluate {
 				//}
-                this.workingDir(xcodeProjDir)
-                this.commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
+                workingDir(xcodeProjDir)
                 doFirst {
+                    commandLine("xcrun", "xcodebuild", "-scheme", "app-$arch-$debugSuffix", "-project", ".", "-configuration", debugSuffix, "-derivedDataPath", "build", "-arch", arch2, "-sdk", appleFindSdk(sdkName))
                     println("COMMAND: ${commandLine.joinToString(" ")}")
                 }
 			}
