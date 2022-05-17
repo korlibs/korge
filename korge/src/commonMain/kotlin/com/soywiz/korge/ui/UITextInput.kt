@@ -15,6 +15,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.ViewRenderer
 import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.bounds
 import com.soywiz.korge.view.clipContainer
 import com.soywiz.korge.view.renderableView
 import com.soywiz.korge.view.solidRect

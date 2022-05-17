@@ -8,33 +8,34 @@ internal class ContainerTest {
     @Test
     fun retainAllWorks() {
         val container = Container()
+        val collection = container.childrenCollection
 
         val view1 = SolidRect(1, 100)
         val view2 = SolidRect(2, 100)
         val view3 = SolidRect(3, 100)
         val view4 = SolidRect(4, 100)
 
-        container.add(view1)
-        container.add(view2)
-        container.add(view3)
-        container.add(view4)
+        collection.add(view1)
+        collection.add(view2)
+        collection.add(view3)
+        collection.add(view4)
 
         assertTrue {
-            container.containsAll(listOf(
+            collection.containsAll(listOf(
                 view1, view2, view3, view4
             ))
         }
 
         assertTrue {
-            container.retainAll(listOf(
+            collection.retainAll(listOf(
                 view1, view3
             ))
         }
 
-        assertEquals(container.size, 2)
+        assertEquals(collection.size, 2)
 
         assertTrue {
-            container.containsAll(listOf(
+            collection.containsAll(listOf(
                 view1, view3
             ))
         }
@@ -43,33 +44,34 @@ internal class ContainerTest {
     @Test
     fun removeAllWorks() {
         val container = Container()
+        val collection = container.collection
 
         val view1 = SolidRect(1, 100)
         val view2 = SolidRect(2, 100)
         val view3 = SolidRect(3, 100)
         val view4 = SolidRect(4, 100)
 
-        container.add(view1)
-        container.add(view2)
-        container.add(view3)
-        container.add(view4)
+        collection.add(view1)
+        collection.add(view2)
+        collection.add(view3)
+        collection.add(view4)
 
         assertTrue {
-            container.containsAll(listOf(
+            collection.containsAll(listOf(
                 view1, view2, view3, view4
             ))
         }
 
         assertTrue {
-            container.removeAll(listOf(
+            collection.removeAll(listOf(
                 view1, view3
             ))
         }
 
-        assertEquals(container.size, 2)
+        assertEquals(collection.size, 2)
 
         assertTrue {
-            container.containsAll(listOf(
+            collection.containsAll(listOf(
                 view2, view4
             ))
         }

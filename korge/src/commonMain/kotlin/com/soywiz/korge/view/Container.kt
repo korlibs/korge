@@ -29,7 +29,7 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
  * You can add new children to this container by calling [addChild] or [addChildAt].
  */
 @OptIn(KorgeInternal::class)
-open class Container : View(true), MutableCollection<View> {
+open class Container : View(true) {
     @PublishedApi
     internal val __children: FastArrayList<View> = FastArrayList()
 
@@ -54,6 +54,10 @@ open class Container : View(true), MutableCollection<View> {
     @KorgeInternal
     val children: FastArrayList<View>
         get() = __children
+
+    val childrenCollection: ViewContainerCollection by lazy { ViewContainerCollection(this) }
+
+    val collection get() = childrenCollection
 
     fun toChildrenList() = __children.toList()
 
@@ -99,7 +103,7 @@ open class Container : View(true), MutableCollection<View> {
         }
 
     /** Returns the number of children this container has */
-    override val size: Int get() = numChildren
+    val size: Int get() = numChildren
 
     /**
      * Recursively retrieves the top ancestor in the container hierarchy.
@@ -322,6 +326,12 @@ open class Container : View(true), MutableCollection<View> {
         }
         return null
     }
+}
+
+class ViewContainerCollection(val container: Container) : MutableCollection<View> {
+    private val __children get() = container.__children
+
+    override val size: Int get() = container.size
 
     override fun contains(element: View): Boolean {
         return __children.contains(element)
@@ -336,10 +346,11 @@ open class Container : View(true), MutableCollection<View> {
     }
 
     override fun add(element: View): Boolean {
-        addChild(element)
+        container.addChild(element)
         return true
     }
 
+    // @TODO: Optimize?
     override fun addAll(elements: Collection<View>): Boolean {
         elements.forEach {
             add(it)
@@ -348,17 +359,19 @@ open class Container : View(true), MutableCollection<View> {
     }
 
     override fun clear() {
-        removeChildren()
+        container.removeChildren()
     }
 
+    // @TODO: Is this really mutable?
     override fun iterator(): MutableIterator<View> {
         return __children.iterator()
     }
 
     override fun remove(element: View): Boolean {
-        return removeChild(element)
+        return container.removeChild(element)
     }
 
+    // @TODO: Optimize
     override fun removeAll(elements: Collection<View>): Boolean {
         return elements.fold(false) { acc, ele ->
             remove(ele) || acc
@@ -368,8 +381,9 @@ open class Container : View(true), MutableCollection<View> {
     // Retains only the elements in this collection that are contained in the specified collection.
     // Returns:
     // true if any element was removed from the collection, false if the collection was not modified.
+    // @TODO: Optimize
     override fun retainAll(elements: Collection<View>): Boolean {
-        val currentElements = this.toChildrenList()
+        val currentElements = container.toChildrenList()
         return currentElements.fold(false) { acc, it ->
             if (elements.contains(it)) {
                 acc
