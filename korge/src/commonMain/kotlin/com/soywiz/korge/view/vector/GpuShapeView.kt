@@ -5,6 +5,7 @@ import com.soywiz.kds.clear
 import com.soywiz.kds.getOrPut
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
+import com.soywiz.kmem.clamp
 import com.soywiz.korag.AG
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.internal.KorgeInternal
@@ -110,7 +111,7 @@ open class GpuShapeView(
         gpuShapeViewCommands.clearStencil()
         renderShape(shape)
         gpuShapeViewCommands.finish()
-
+        cachedScale = globalScale
         //strokeCache.clear()
     }
 
@@ -144,7 +145,16 @@ open class GpuShapeView(
             }
         }
 
+    private val globalTransform = Matrix.Transform()
+    private var globalScale: Double = 1.0
+    private var cachedScale: Double = Double.NaN
+
     override fun renderInternal(ctx: RenderContext) {
+        //globalScale = globalTransform.setMatrix(globalMatrix).setMatrix(globalMatrix).scaleAvg * ctx.bp.globalToWindowScaleAvg
+        //globalScale = ctx.bp.globalToWindowScaleAvg
+        //if (cachedScale != globalScale) {
+        //    invalidateShape()
+        //}
         ctx.flush()
 
         val doRequireTexture = shape.requireStencil
@@ -157,23 +167,24 @@ open class GpuShapeView(
                 //ctx.renderToTexture(currentRenderBuffer.width, currentRenderBuffer.height, {
                 bufferWidth = currentRenderBuffer.width
                 bufferHeight = currentRenderBuffer.height
+                //println("bufferWidth=$bufferWidth, bufferHeight=$bufferHeight")
                 ctx.renderToTexture(bufferWidth, bufferHeight, {
-                    renderCommands(ctx)
+                    renderCommands(ctx, doRequireTexture)
                 }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
                     ctx.useBatcher {
-                        it.drawQuad(texture, x = 0f, y = 0f)
+                        it.drawQuad(texture, m = ctx.bp.windowToGlobalMatrix)
                     }
                 }
             } else {
-                renderCommands(ctx)
+                renderCommands(ctx, doRequireTexture)
             }
         }
 
         //println("GPU RENDER IN: $time, doRequireTexture=$doRequireTexture")
     }
 
-    private fun renderCommands(ctx: RenderContext) {
-        gpuShapeViewCommands.render(ctx, globalMatrix, localMatrix, renderAlpha)
+    private fun renderCommands(ctx: RenderContext, doRequireTexture: Boolean) {
+        gpuShapeViewCommands.render(ctx, if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix, localMatrix, renderAlpha)
     }
 
     private fun renderShape(shape: Shape) {
@@ -187,7 +198,7 @@ open class GpuShapeView(
                 shape.path,
                 shape.paint,
                 shape.globalAlpha,
-                shape.thickness,
+                shape.thickness, //* (1.0 / globalScale), // This depends if we want to keep line width when scaling
                 shape.scaleMode,
                 shape.startCaps,
                 shape.endCaps,
@@ -563,12 +574,13 @@ open class GpuShapeView(
         if (antialiased && shape.clip == null) {
         //if (true) {
         //if (false) {
+            //println("globalScale=$globalScale")
             renderStroke(
                 stateTransform = shape.transform,
                 strokePath = shape.path,
                 paint = shape.paint,
                 globalAlpha = shape.globalAlpha,
-                lineWidth = 2.0,
+                lineWidth = (1.6 * globalScale).clamp(1.4, 1.8),
                 scaleMode = LineScaleMode.NONE,
                 startCap = LineCap.BUTT,
                 endCap = LineCap.BUTT,

@@ -140,7 +140,6 @@ class GpuShapeViewCommands {
                                                 val rect = cmd.scissor.clone()
                                                 rect.applyTransform(globalMatrix)
                                                 list.setScissorState(ag, AG.Scissor().setTo(rect))
-                                                list.disableScissor()
                                             }
                                             is ClearCommand -> {
                                                 list.clearStencil(cmd.i)
