@@ -130,6 +130,7 @@ enum class Key {
     LAST_CHANNEL, MANNER_MODE,
 
     NAVIGATE_IN, NAVIGATE_NEXT, NAVIGATE_OUT, NAVIGATE_PREVIOUS,
+    HYPHEN,
 
 	UNDEFINED,
 	UNKNOWN,
@@ -168,19 +169,22 @@ enum class GameStick(val id: Int) {
 	}
 }
 
-enum class GameButton(val index: Int) {
-	LEFT(0), RIGHT(1), UP(2), DOWN(3),
-	BUTTON0(4), // XBox: A, Playstation: Cross
-    BUTTON1(5), // XBox: B, Playstation: Circle
-    BUTTON2(6), // XBox: X, Playstation: Square
-    BUTTON3(7), // XBox: Y, Playstation: Triangle
-	SELECT(8), START(9), SYSTEM(10),
-	L1(11), R1(12),
-	L2(13), R2(14),
-	L3(15), R3(16),
-	LX(17), LY(18),
-	RX(19), RY(20),
-	BUTTON4(24), BUTTON5(25), BUTTON6(26), BUTTON7(27), BUTTON8(28);
+enum class GameButton {
+	LEFT, RIGHT, UP, DOWN,
+	BUTTON0, // XBox: A, Playstation: Cross
+    BUTTON1, // XBox: B, Playstation: Circle
+    BUTTON2, // XBox: X, Playstation: Square
+    BUTTON3, // XBox: Y, Playstation: Triangle
+	SELECT, START, SYSTEM,
+	L1, R1,
+	L2, R2,
+	L3, R3,
+	LX, LY,
+	RX, RY,
+	BUTTON4, BUTTON5, BUTTON6, BUTTON7, BUTTON8, RECORD;
+
+    val index: Int get() = ordinal
+    val bitMask: Int get() = 1 shl ordinal
 
 	companion object {
 		val BUTTONS = values()
@@ -203,6 +207,11 @@ enum class GameButton(val index: Int) {
         val PS_CIRCLE get() = BUTTON1
         val PS_SQUARE get() = BUTTON2
         val PS_TRIANGLE get() = BUTTON3
+
+        val GENERIC_BUTTON_DOWN get() = BUTTON0
+        val GENERIC_BUTTON_RIGHT get() = BUTTON1
+        val GENERIC_BUTTON_LEFT get() = BUTTON2
+        val GENERIC_BUTTON_UP get() = BUTTON3
 	}
 }
 
@@ -215,7 +224,8 @@ class GamepadInfo(
     var rawButtonsPressed: Int = 0,
     val rawAxes: DoubleArray = DoubleArray(16),
     var axesLength: Int = 0,
-    var buttonsLength: Int = 0
+    var buttonsLength: Int = 0,
+    var batteryLevel: Double = 1.0,
 ) {
     private val axesData: Array<Point> = Array(2) { Point() }
 
@@ -227,10 +237,23 @@ class GamepadInfo(
 		this.connected = that.connected
         this.axesLength = that.axesLength
         this.buttonsLength = that.buttonsLength
+        this.batteryLevel = that.batteryLevel
         arraycopy(that.axesData, 0, this.axesData, 0, min(this.axesData.size, that.axesData.size))
         arraycopy(that.rawButtonsPressure, 0, this.rawButtonsPressure, 0, min(this.rawButtonsPressure.size, that.rawButtonsPressure.size))
 		arraycopy(that.rawAxes, 0, this.rawAxes, 0, min(this.rawAxes.size, that.rawAxes.size))
 	}
+
+    val up: Boolean get() = this[GameButton.UP] != 0.0
+    val down: Boolean get() = this[GameButton.DOWN] != 0.0
+    val left: Boolean get() = this[GameButton.LEFT] != 0.0
+    val right: Boolean get() = this[GameButton.RIGHT] != 0.0
+    val start: Boolean get() = this[GameButton.START] != 0.0
+    val select: Boolean get() = this[GameButton.SELECT] != 0.0
+    val system: Boolean get() = this[GameButton.SYSTEM] != 0.0
+    val lx: Double get() = this[GameButton.LX]
+    val ly: Double get() = this[GameButton.LY]
+    val rx: Double get() = this[GameButton.RX]
+    val ry: Double get() = this[GameButton.RY]
 
 	operator fun get(button: GameButton): Double = mapping.get(button, this)
     operator fun get(stick: GameStick): Point = axesData[stick.id].apply {
@@ -254,7 +277,18 @@ abstract class GamepadMapping {
     fun GamepadInfo.getRawPressureButton(index: Int) = this.rawButtonsPressure[index]
     fun GamepadInfo.getRawButton(index: Int): Double = this.rawButtonsPressed.getButton(index)
     fun GamepadInfo.getRawAxe(index: Int) = this.rawAxes.getOrElse(index) { 0.0 }
-    abstract fun get(button: GameButton, info: GamepadInfo): Double
+    open fun getButtonIndex(button: GameButton): Int = button.ordinal
+    open fun getAxeIndex(button: GameButton): Int = when (button) {
+        GameButton.LX -> 0
+        GameButton.LY -> 1
+        GameButton.RX -> 2
+        GameButton.RY -> 3
+        else -> 0
+    }
+    open fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
+        GameButton.LX, GameButton.LY, GameButton.RX, GameButton.RY -> info.getRawAxe(getAxeIndex(button))
+        else -> info.getRawButton(getButtonIndex(button))
+    }
 
 	fun toString(info: GamepadInfo) = "$id(" + GameButton.values().joinToString(", ") {
 		"${it.name}=${get(it, info)}"
@@ -266,31 +300,4 @@ open class StandardGamepadMapping : GamepadMapping() {
     companion object : StandardGamepadMapping()
 
 	override val id = "Standard"
-
-	override fun get(button: GameButton, info: GamepadInfo): Double {
-		return when (button) {
-			GameButton.BUTTON0 -> info.getRawButton(0)
-			GameButton.BUTTON1 -> info.getRawButton(1)
-			GameButton.BUTTON2 -> info.getRawButton(2)
-			GameButton.BUTTON3 -> info.getRawButton(3)
-			GameButton.L1     -> info.getRawButton(4)
-			GameButton.R1     -> info.getRawButton(5)
-			GameButton.L2     -> info.getRawButton(6)
-			GameButton.R2     -> info.getRawButton(7)
-			GameButton.SELECT -> info.getRawButton(8)
-			GameButton.START -> info.getRawButton(9)
-			GameButton.L3 -> info.getRawButton(10)
-			GameButton.R3 -> info.getRawButton(11)
-			GameButton.UP -> info.getRawButton(12)
-			GameButton.DOWN -> info.getRawButton(13)
-			GameButton.LEFT -> info.getRawButton(14)
-			GameButton.RIGHT -> info.getRawButton(15)
-			GameButton.SYSTEM -> info.getRawButton(16)
-			GameButton.LX -> info.getRawAxe(0)
-			GameButton.LY -> info.getRawAxe(1)
-			GameButton.RX -> info.getRawAxe(2)
-			GameButton.RY -> info.getRawAxe(3)
-			else -> 0.0
-		}
-	}
 }

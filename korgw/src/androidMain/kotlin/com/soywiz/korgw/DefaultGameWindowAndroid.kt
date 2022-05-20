@@ -1,25 +1,17 @@
 package com.soywiz.korgw
 
-import android.app.*
 import android.content.*
-import android.content.DialogInterface
-import android.net.*
-import android.text.*
 import android.view.*
 import android.view.inputmethod.*
-import android.widget.*
 import com.soywiz.korag.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.net.*
-import kotlinx.coroutines.*
-import java.io.*
 import kotlin.coroutines.*
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
-abstract class BaseAndroidGameWindow() : GameWindow() {
+abstract class BaseAndroidGameWindow(
+    val config: GameWindowCreationConfig = GameWindowCreationConfig(),
+) : GameWindow() {
     abstract val androidContext: Context
     abstract val androidView: View
     val context get() = androidContext
@@ -66,13 +58,24 @@ abstract class BaseAndroidGameWindow() : GameWindow() {
             e.printStackTrace()
         }
     }
+
+    //fun <T : Any> queueAndWait(callback: () -> T): T {
+    //    var result: Result<T>? = null
+    //    val semaphore = java.util.concurrent.Semaphore(0)
+    //    coroutineDispatcher.queue {
+    //        result = kotlin.runCatching { callback() }
+    //        semaphore.release()
+    //    }
+    //    semaphore.acquire()
+    //    return result!!.getOrThrow()
+    //}
 }
 
-class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow() {
+class AndroidGameWindow(val activity: KorgwActivity) : BaseAndroidGameWindow(activity.config) {
     override val androidContext get() = activity
     override val androidView: View get() = activity.mGLView ?: error("Can't find mGLView")
 
-    val mainHandler by lazy { android.os.Handler(androidContext.getMainLooper()) }
+    val mainHandler by lazy { android.os.Handler(androidContext.mainLooper) }
 
     override val ag: AG get() = activity.ag
 
@@ -115,8 +118,9 @@ class AndroidGameWindowNoActivity(
     override val height: Int,
     override val ag: AG,
     override val androidContext: Context,
+    config: GameWindowCreationConfig = GameWindowCreationConfig(),
     val getView: () -> View
-) : BaseAndroidGameWindow() {
+) : BaseAndroidGameWindow(config) {
     override val dialogInterface = DialogInterfaceAndroid { androidContext }
 
     override val androidView: View get() = getView()

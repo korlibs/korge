@@ -1,6 +1,6 @@
 package com.soywiz.korlibs.modules
 
-import com.soywiz.korlibs.util.*
+import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
 import java.util.*

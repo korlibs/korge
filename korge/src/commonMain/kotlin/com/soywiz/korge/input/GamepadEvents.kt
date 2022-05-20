@@ -8,6 +8,7 @@ import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadStickEvent
 import com.soywiz.korev.GamePadUpdateEvent
 import com.soywiz.korev.GameStick
+import com.soywiz.korev.GamepadInfo
 import com.soywiz.korge.component.GamepadComponent
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
@@ -22,14 +23,18 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 
 	val gamepads = GamePadUpdateEvent()
 	val updated = Signal<GamePadUpdateEvent>()
+    val updatedGamepad = Signal<GamepadInfo>()
+    @Deprecated("")
 	val stick = Signal<GamePadStickEvent>()
 	val button = Signal<GamePadButtonEvent>()
 	val connection = Signal<GamePadConnectionEvent>()
 
+    @Deprecated("")
 	fun stick(playerId: Int, stick: GameStick, callback: suspend (x: Double, y: Double) -> Unit) {
 		stick { e -> if (e.gamepad == playerId && e.stick == stick) launchImmediately(coroutineContext) { callback(e.x, e.y) } }
 	}
 
+    @Deprecated("")
 	fun stick(callback: suspend (playerId: Int, stick: GameStick, x: Double, y: Double) -> Unit) {
 		stick { e -> launchImmediately(coroutineContext) { callback(e.gamepad, e.stick, e.x, e.y) } }
 	}
@@ -57,6 +62,10 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 			if (e.gamepad == playerId && e.button == button && e.type == GamePadButtonEvent.Type.UP) launchImmediately(coroutineContext) { callback() }
 		}
 	}
+
+    fun updatedGamepad(callback: (GamepadInfo) -> Unit) {
+        this.updatedGamepad.add(callback)
+    }
 
 	fun connected(callback: suspend (playerId: Int) -> Unit) {
 		connection { e ->
@@ -103,6 +112,7 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 					})
 				}
 			}
+            updatedGamepad(gamepad)
 		}
 		oldGamepads.copyFrom(event)
 		updated(event)

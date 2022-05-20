@@ -1,8 +1,14 @@
 import com.soywiz.korlibs.modules.*
-import com.soywiz.korlibs.util.*
+import com.soywiz.korge.gradle.util.*
+import com.soywiz.korge.gradle.targets.*
+import com.soywiz.korge.gradle.targets.android.AndroidSdk
+import com.soywiz.korge.gradle.targets.ios.configureNativeIos
+import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
 import org.gradle.kotlin.dsl.kotlin
 import java.io.File
+import java.nio.file.Files
 import com.soywiz.korlibs.modules.*
+import kotlin.io.path.relativeTo
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -75,7 +81,7 @@ allprojects {
 	}
 }
 
-val hasAndroidSdk by lazy { hasAndroidSdk() }
+val hasAndroidSdk by lazy { AndroidSdk.hasAndroidSdk(project) }
 
 // Required by RC
 kotlin {
@@ -133,6 +139,10 @@ subprojects {
             }
         }
 
+        if (isSample && doEnableKotlinNative && com.soywiz.korge.gradle.targets.isMacos) {
+            configureNativeIos()
+        }
+
         if (!isSample && rootProject.plugins.hasPlugin("org.jetbrains.dokka")) {
             apply(plugin = "org.jetbrains.dokka")
 
@@ -169,10 +179,10 @@ subprojects {
                     testClassesDirs = jvmTest.testClassesDirs
                     classpath = jvmTest.classpath
                     bootstrapClasspath = jvmTest.bootstrapClasspath
-                    if (!beforeJava9) jvmArgs(*javaAddOpens)
+                    if (!JvmAddOpens.beforeJava9) jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                     if (headlessTests) systemProperty("java.awt.headless", "true")
                 }
-                if (!beforeJava9) jvmTest.jvmArgs(*javaAddOpens)
+                if (!JvmAddOpens.beforeJava9) jvmTest.jvmArgs(*JvmAddOpens.createAddOpensTypedArray())
                 if (headlessTests) jvmTest.systemProperty("java.awt.headless", "true")
             }
         }
@@ -924,6 +934,34 @@ val gitVersion = try {
     "unknown"
 }
 
+fun symlinktree(fromFolder: File, intoFolder: File) {
+    try {
+        if (!intoFolder.isDirectory && !Files.isSymbolicLink(intoFolder.toPath())) {
+            runCatching { intoFolder.delete() }
+            runCatching { intoFolder.deleteRecursively() }
+            Files.createSymbolicLink(intoFolder.toPath(), intoFolder.parentFile.toPath().relativize(fromFolder.toPath()))
+        }
+    } catch (e: Throwable) {
+        copy {
+            val it = this
+            it.from(fromFolder)
+            it.into(intoFolder)
+            it.duplicatesStrategy = DuplicatesStrategy.INCLUDE
+        }
+    }
+}
+
+//fileTree(new File(rootProject.projectDir, "buildSrc/src/main/kotlinShared"))
+//copy {
+symlinktree(
+    fromFolder = File(rootProject.projectDir, "buildSrc/src/main/kotlin"),
+    intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2")
+)
+
+symlinktree(
+    fromFolder = File(rootProject.projectDir, "buildSrc/src/main/resources"),
+    intoFolder = File(rootProject.projectDir, "korge-gradle-plugin/build/srcgen2res")
+)
 
 val buildVersionsFile = file("korge-gradle-plugin/build/srcgen/com/soywiz/korge/gradle/BuildVersions.kt")
 val oldBuildVersionsText = buildVersionsFile.takeIf { it.exists() }?.readText()

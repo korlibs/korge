@@ -1,3 +1,7 @@
+import org.apache.tools.ant.taskdefs.optional.unix.Symlink
+
+import java.nio.file.Files
+
 plugins {
     id "org.gradle.kotlin.kotlin-dsl" version "2.1.7"
     id "java"
@@ -43,7 +47,10 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 }
 
 kotlin.sourceSets.main.each {
-    it.kotlin.srcDir(new File(buildDir, "srcgen"))
+    it.kotlin.srcDirs(new File(buildDir, "srcgen"), new File(buildDir, "srcgen2"))
+}
+java.sourceSets.main.each {
+    it.resources.srcDirs(new File(buildDir, "srcgen2res"))
 }
 
 com.soywiz.korlibs.NativeTools.groovyConfigurePublishing(project, false)
@@ -56,9 +63,10 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-gradle-plugin")
 
     implementation(libs.proguard.gradle)
+    implementation(libs.closure.compiler)
+    implementation(libs.gson)
 
     implementation("com.android.tools.build:gradle:${libs.versions.android.build.gradle.get()}")
-    implementation(libs.closure.compiler)
 
 	implementation(gradleApi())
 	implementation(localGroovy())

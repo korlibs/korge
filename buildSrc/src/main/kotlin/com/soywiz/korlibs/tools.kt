@@ -14,13 +14,6 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 import java.net.*
 
-class MultiOutputStream(val outs: List<OutputStream>) : OutputStream() {
-    override fun write(b: Int) { for (out in outs) out.write(b) }
-    override fun write(b: ByteArray, off: Int, len: Int) { for (out in outs) out.write(b, off, len) }
-    override fun flush() { for (out in outs) out.flush() }
-    override fun close() { for (out in outs) out.close() }
-}
-
 // Extensions
 operator fun File.get(name: String) = File(this, name)
 
@@ -47,11 +40,6 @@ fun Project.extractArchive(archive: File, output: File) {
         }
         into(output)
     }
-}
-
-object OsInfo {
-    val isWindows get() = Os.isFamily(Os.FAMILY_WINDOWS)
-    val isMac get() = Os.isFamily(Os.FAMILY_MAC)
 }
 
 // Gradle extensions

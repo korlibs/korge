@@ -7,6 +7,7 @@ import kotlin.test.*
 
 class IosDeployTest : AbstractGradleIntegrationTest() {
     @Test
+    @Ignore
     fun testInstall() = createTempDirectory { tempDir ->
         project.korgeCacheDir = tempDir
         val commandLog = arrayListOf<String>()

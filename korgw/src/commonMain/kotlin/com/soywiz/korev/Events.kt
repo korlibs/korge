@@ -391,6 +391,7 @@ data class GamePadButtonEvent @JvmOverloads constructor(
     }
 }
 
+@Deprecated("")
 data class GamePadStickEvent(
     var gamepad: Int = 0,
     var stick: GameStick = GameStick.LEFT,

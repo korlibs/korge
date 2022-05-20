@@ -38,6 +38,7 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.distanceTo
+import com.soywiz.korma.geom.expand
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.shape.emitPoints2
@@ -159,7 +160,6 @@ open class GpuShapeView(
                 ctx.renderToTexture(bufferWidth, bufferHeight, {
                     renderCommands(ctx)
                 }, hasDepth = false, hasStencil = true, msamples = 1) { texture ->
-                    ctx.ag.clearStencil()
                     ctx.useBatcher {
                         it.drawQuad(texture, x = 0f, y = 0f)
                     }
@@ -514,7 +514,7 @@ open class GpuShapeView(
         val pathDataStart = gpuShapeViewCommands.verticesStart()
         val pathData = getPointsForPath(shape.path)
         val pathDataEnd = gpuShapeViewCommands.verticesEnd()
-        val pathBounds = pathData.bounds
+        val pathBounds = pathData.bounds.clone().expand(2, 2, 2, 2)
 
         if (!shape.requireStencil && shape.clip == null) {
             gpuShapeViewCommands.draw(
@@ -584,7 +584,7 @@ open class GpuShapeView(
             )
         }
 
-        writeFill(paintShader, stencilEqualsValue)
+        writeFill(paintShader, stencilEqualsValue, pathBounds, pathDataStart, pathDataEnd)
 
         gpuShapeViewCommands.clearStencil(0)
 
@@ -603,18 +603,23 @@ open class GpuShapeView(
         )
     }
 
-    private fun writeFill(paintShader: GpuShapeViewPrograms.PaintShader, stencilEqualsValue: Int) {
-        val x0 = 0f
-        val y0 = 0f
-        val x1 = bufferWidth.toFloat()
-        val y1 = bufferHeight.toFloat()
-
-        val vstart = gpuShapeViewCommands.verticesStart()
-        gpuShapeViewCommands.addVertex(x0, y0)
-        gpuShapeViewCommands.addVertex(x1, y0)
-        gpuShapeViewCommands.addVertex(x1, y1)
-        gpuShapeViewCommands.addVertex(x0, y1)
-        val vend = gpuShapeViewCommands.verticesEnd()
+    private fun writeFill(
+        paintShader: GpuShapeViewPrograms.PaintShader,
+        stencilEqualsValue: Int,
+        pathBounds: Rectangle,
+        pathDataStart: Int,
+        pathDataEnd: Int
+    ) {
+        //val vstart = gpuShapeViewCommands.verticesStart()
+        //val x0 = pathBounds.left.toFloat()
+        //val y0 = pathBounds.top.toFloat()
+        //val x1 = pathBounds.right.toFloat()
+        //val y1 = pathBounds.bottom.toFloat()
+        //gpuShapeViewCommands.addVertex(x0, y0)
+        //gpuShapeViewCommands.addVertex(x1, y0)
+        //gpuShapeViewCommands.addVertex(x1, y1)
+        //gpuShapeViewCommands.addVertex(x0, y1)
+        //val vend = gpuShapeViewCommands.verticesEnd()
 
         //println("[($lx0,$ly0)-($lx1,$ly1)]")
 
@@ -628,8 +633,10 @@ open class GpuShapeView(
                 referenceValue = stencilEqualsValue,
                 writeMask = 0,
             ),
-            startIndex = vstart,
-            endIndex = vend,
+            //startIndex = vstart,
+            //endIndex = vend,
+            startIndex = pathDataStart,
+            endIndex = pathDataEnd,
         )
     }
 

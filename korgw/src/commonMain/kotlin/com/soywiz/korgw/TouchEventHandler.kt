@@ -15,7 +15,7 @@ class TouchEventHandler {
     @PublishedApi
     internal var lastTouchEvent: TouchEvent = TouchEvent()
 
-    inline fun handleEvent(gameWindow: GameWindow, coroutineContext: CoroutineContext, kind: TouchEvent.Type, emitter: (TouchEvent) -> Unit) {
+    inline fun handleEvent(gameWindow: GameWindow, kind: TouchEvent.Type, emitter: (TouchEvent) -> Unit) {
         val currentTouchEvent = lock {
             val currentTouchEvent = touchesEventPool.alloc()
             currentTouchEvent.copyFrom(lastTouchEvent)
@@ -27,9 +27,12 @@ class TouchEventHandler {
             currentTouchEvent
         }
 
-        gameWindow.coroutineDispatcher.dispatch(coroutineContext, Runnable {
-            gameWindow.dispatch(currentTouchEvent)
-            lock { touchesEventPool.free(currentTouchEvent) }
-        })
+        gameWindow.queue {
+            try {
+                gameWindow.dispatch(currentTouchEvent)
+            } finally {
+                lock { touchesEventPool.free(currentTouchEvent) }
+            }
+        }
     }
 }

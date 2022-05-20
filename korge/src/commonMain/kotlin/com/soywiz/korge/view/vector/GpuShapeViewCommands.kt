@@ -135,6 +135,7 @@ class GpuShapeViewCommands {
                                 try {
                                     commands.fastForEach { cmd ->
                                         when (cmd) {
+                                            //is FinishCommand -> list.flush()
                                             is ScissorCommand -> {
                                                 val rect = cmd.scissor.clone()
                                                 rect.applyTransform(globalMatrix)
@@ -170,6 +171,7 @@ class GpuShapeViewCommands {
 
                             }
                         }
+                        //list.finish()
                     }
                 }
             }
@@ -189,6 +191,8 @@ class GpuShapeViewCommands {
     data class ScissorCommand(val scissor: Rectangle) : ICommand
 
     data class ClearCommand(val i: Int) : ICommand
+
+    //object FinishCommand : ICommand
 
     data class ShapeCommand(
         var drawType: AG.DrawType = AG.DrawType.LINE_STRIP,

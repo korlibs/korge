@@ -2,6 +2,9 @@ package com.soywiz.korgw.win32
 
 import com.soywiz.kmem.convertRangeClamped
 import com.soywiz.korev.*
+import com.soywiz.korgw.win32.XInputEventAdapter.XInputMapping.getRawAxe
+import com.soywiz.korgw.win32.XInputEventAdapter.XInputMapping.getRawButton
+import com.soywiz.korgw.win32.XInputEventAdapter.XInputMapping.getRawPressureButton
 import com.soywiz.korio.util.toStringUnsigned
 import com.sun.jna.Library
 import com.sun.jna.Native
@@ -137,29 +140,25 @@ internal class XInputEventAdapter {
     object XInputMapping : GamepadMapping() {
         override val id = "XInput"
 
-        override fun get(button: GameButton, info: GamepadInfo): Double = when (button) {
-            GameButton.XBOX_A -> info.getRawButton(XInputState.XINPUT_GAMEPAD_A)
-            GameButton.XBOX_B -> info.getRawButton(XInputState.XINPUT_GAMEPAD_B)
-            GameButton.XBOX_X -> info.getRawButton(XInputState.XINPUT_GAMEPAD_X)
-            GameButton.XBOX_Y -> info.getRawButton(XInputState.XINPUT_GAMEPAD_Y)
-            GameButton.L1     -> info.getRawButton(XInputState.XINPUT_GAMEPAD_LEFT_SHOULDER)
-            GameButton.R1     -> info.getRawButton(XInputState.XINPUT_GAMEPAD_RIGHT_SHOULDER)
-            GameButton.L2     -> info.getRawPressureButton(GameButton.L2.index)
-            GameButton.R2     -> info.getRawPressureButton(GameButton.R2.index)
-            GameButton.LEFT_THUMB -> info.getRawButton(XInputState.XINPUT_GAMEPAD_LEFT_THUMB)
-            GameButton.RIGHT_THUMB -> info.getRawButton(XInputState.XINPUT_GAMEPAD_RIGHT_THUMB)
-            GameButton.BACK -> info.getRawButton(XInputState.XINPUT_GAMEPAD_BACK)
-            GameButton.START -> info.getRawButton(XInputState.XINPUT_GAMEPAD_START)
-            GameButton.UP -> info.getRawButton(XInputState.XINPUT_GAMEPAD_DPAD_UP)
-            GameButton.DOWN -> info.getRawButton(XInputState.XINPUT_GAMEPAD_DPAD_DOWN)
-            GameButton.LEFT -> info.getRawButton(XInputState.XINPUT_GAMEPAD_DPAD_LEFT)
-            GameButton.RIGHT -> info.getRawButton(XInputState.XINPUT_GAMEPAD_DPAD_RIGHT)
-            GameButton.SYSTEM -> 0.0
-            GameButton.LX -> info.getRawAxe(0)
-            GameButton.LY -> info.getRawAxe(1)
-            GameButton.RX -> info.getRawAxe(2)
-            GameButton.RY -> info.getRawAxe(3)
-            else -> 0.0
+        override fun getButtonIndex(button: GameButton): Int = when (button) {
+            GameButton.XBOX_A -> XInputState.XINPUT_GAMEPAD_A
+            GameButton.XBOX_B -> XInputState.XINPUT_GAMEPAD_B
+            GameButton.XBOX_X -> XInputState.XINPUT_GAMEPAD_X
+            GameButton.XBOX_Y -> XInputState.XINPUT_GAMEPAD_Y
+            GameButton.L1     -> XInputState.XINPUT_GAMEPAD_LEFT_SHOULDER
+            GameButton.R1     -> XInputState.XINPUT_GAMEPAD_RIGHT_SHOULDER
+            GameButton.L2     -> GameButton.L2.index
+            GameButton.R2     -> GameButton.R2.index
+            GameButton.LEFT_THUMB -> XInputState.XINPUT_GAMEPAD_LEFT_THUMB
+            GameButton.RIGHT_THUMB -> XInputState.XINPUT_GAMEPAD_RIGHT_THUMB
+            GameButton.BACK -> XInputState.XINPUT_GAMEPAD_BACK
+            GameButton.START -> XInputState.XINPUT_GAMEPAD_START
+            GameButton.UP -> XInputState.XINPUT_GAMEPAD_DPAD_UP
+            GameButton.DOWN -> XInputState.XINPUT_GAMEPAD_DPAD_DOWN
+            GameButton.LEFT -> XInputState.XINPUT_GAMEPAD_DPAD_LEFT
+            GameButton.RIGHT -> XInputState.XINPUT_GAMEPAD_DPAD_RIGHT
+            GameButton.SYSTEM -> -1
+            else -> -1
         }
     }
 }

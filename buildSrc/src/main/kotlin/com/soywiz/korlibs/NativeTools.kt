@@ -1,5 +1,7 @@
 package com.soywiz.korlibs
 
+import com.soywiz.korge.gradle.targets.isLinux
+import com.soywiz.korge.gradle.targets.isMingw
 import com.soywiz.korlibs.modules.*
 import org.gradle.api.*
 
@@ -9,7 +11,7 @@ object NativeTools {
         if (project.doEnableKotlinNative) {
             project.kotlin {
                 for (target in nativeTargets(project)) {
-                    if (target.isWin) {
+                    if (target.isMingw) {
                         target.compilations["main"].cinterops {
                             maybeCreate(name)
                         }

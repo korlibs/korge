@@ -6,8 +6,17 @@ import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 
 import com.soywiz.klogger.Console
+import com.soywiz.kmem.hasFlags
+import com.soywiz.korev.GameButton
+import com.soywiz.korev.GamePadConnectionEvent
+import com.soywiz.korev.GamepadMapping
+import com.soywiz.korev.Key
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.StandardGamepadMapping
+import com.soywiz.korma.geom.Point
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExportObjCClass
+import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.UnsafeNumber
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGRect
@@ -15,16 +24,30 @@ import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
 import platform.Foundation.NSBundle
 import platform.Foundation.NSFileManager
+import platform.Foundation.NSNotification
+import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSSelectorFromString
 import platform.GLKit.GLKView
 import platform.GLKit.GLKViewController
 import platform.GLKit.GLKViewDrawableDepthFormat24
 import platform.GLKit.GLKViewDrawableStencilFormat8
+import platform.GameController.GCController
+import platform.GameController.GCControllerButtonInput
+import platform.GameController.GCControllerDidConnectNotification
+import platform.GameController.GCControllerDidDisconnectNotification
+import platform.GameController.GCControllerDirectionPad
+import platform.GameController.GCEventViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
 import platform.UIKit.UIEvent
+import platform.UIKit.UIKeyModifierAlternate
+import platform.UIKit.UIKeyModifierCommand
+import platform.UIKit.UIKeyModifierControl
+import platform.UIKit.UIKeyModifierShift
+import platform.UIKit.UIPress
+import platform.UIKit.UIPressesEvent
 import platform.UIKit.UIScreen
 import platform.UIKit.UITouch
-import platform.UIKit.UIViewController
 import platform.UIKit.UIWindow
 import platform.UIKit.addSubview
 import platform.UIKit.backgroundColor
@@ -86,9 +109,10 @@ abstract class KorgwBaseNewAppDelegate {
 //}
 
 @ExportObjCClass
-class ViewController(val entry: suspend () -> Unit) : UIViewController(null, null) {
+class ViewController(val entry: suspend () -> Unit) : GCEventViewController(null, null) {
     // Keep references to avoid collecting instances
     lateinit var glXViewController: MyGLKViewController
+    val gameWindow: IosGameWindow get() = MyIosGameWindow
 
     override fun viewDidLoad() {
         super.viewDidLoad()
@@ -103,12 +127,82 @@ class ViewController(val entry: suspend () -> Unit) : UIViewController(null, nul
         Console.info("glView: ${glView}")
         Console.info("glView: ${glView.bounds}")
         view.addSubview(glView)
+
+        //NSNotificationCenter.defaultCenter.addObserver(this, NSSelectorFromString(this::controllerDidConnect.name), GCControllerDidConnectNotification, null)
+        //NSNotificationCenter.defaultCenter.addObserver(this, NSSelectorFromString(this::controllerDidDisconnect.name), GCControllerDidDisconnectNotification, null)
     }
+
+    @ObjCAction
+    fun controllerDidConnect(notification: NSNotification) {
+        println("controllerDidConnect: $notification")
+    }
+
+    @ObjCAction
+    fun controllerDidDisconnect(notification: NSNotification) {
+        println("controllerDidDisconnect: $notification")
+    }
+
+    @Suppress("RemoveRedundantCallsOfConversionMethods")
+    @OptIn(UnsafeNumber::class)
+    private fun pressesHandler(type: KeyEvent.Type, presses: Set<*>, withEvent: UIPressesEvent?) {
+        super.pressesBegan(presses, withEvent)
+        for (press in presses) {
+            if (press !is UIPress) continue
+            val uiKey = press.key ?: continue
+            val keyCode = uiKey.keyCode.toInt()
+            val modifierFlags = uiKey.modifierFlags.toInt()
+            val key = IosKeyMap.KEY_MAP[keyCode.toInt()] ?: Key.UNKNOWN
+            //println("pressesHandler[$type]: ${keyCode}, ${modifierFlags}, $key, ${uiKey.charactersIgnoringModifiers}")
+
+            gameWindow.dispatchKeyEventEx(
+                type,
+                0,
+                uiKey.charactersIgnoringModifiers.firstOrNull() ?: '\u0000',
+                key,
+                keyCode.toInt(),
+                shift = modifierFlags.hasFlags(UIKeyModifierShift.toInt()),
+                ctrl = modifierFlags.hasFlags(UIKeyModifierControl.toInt()),
+                alt = modifierFlags.hasFlags(UIKeyModifierAlternate.toInt()),
+                meta = modifierFlags.hasFlags(UIKeyModifierCommand.toInt()),
+            )
+        }
+    }
+
+    override fun pressesBegan(presses: Set<*>, withEvent: UIPressesEvent?) {
+        super.pressesBegan(presses, withEvent)
+        pressesHandler(KeyEvent.Type.DOWN, presses, withEvent)
+    }
+
+    override fun pressesEnded(presses: Set<*>, withEvent: UIPressesEvent?) {
+        super.pressesBegan(presses, withEvent)
+        pressesHandler(KeyEvent.Type.UP, presses, withEvent)
+    }
+
+
+
+    //override fun pressesCancelled(presses: Set<*>, withEvent: UIPressesEvent?) {
+    //    super.pressesBegan(presses, withEvent)
+    //    pressesHandler(KeyEvent.Type.UP, presses, withEvent)
+    //}
+    //override fun pressesChanged(presses: Set<*>, withEvent: UIPressesEvent?) {
+    //    super.pressesBegan(presses, withEvent)
+    //    pressesHandler(KeyEvent.Type.UP, presses, withEvent)
+    //}
 }
 
 @OptIn(UnsafeNumber::class)
 @ExportObjCClass
 class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(null, null) {
+    var value = 0
+    var initialized = false
+    private var myContext: EAGLContext? = null
+    val gameWindow: IosGameWindow get() = MyIosGameWindow
+    val touches = arrayListOf<UITouch>()
+    val touchesIds = arrayListOf<Int>()
+    val freeIds = Pool { it }
+    var lastWidth = 0
+    var lastHeight = 0
+
     override fun viewDidLoad() {
         val view = this.view as? GLKView?
         view?.multipleTouchEnabled = true
@@ -116,19 +210,9 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
         view?.drawableStencilFormat = GLKViewDrawableStencilFormat8
         view?.context = EAGLContext(kEAGLRenderingAPIOpenGLES2)
         initialized = false
-        reshape = true
+        lastWidth = 0
+        lastHeight = 0
     }
-
-    var value = 0
-
-    var initialized = false
-    var reshape = false
-    private var myContext: EAGLContext? = null
-    val gameWindow: IosGameWindow get() = MyIosGameWindow
-    val touches = arrayListOf<UITouch>()
-    val freeIds = Pool { it }
-    val touchesIds = arrayListOf<Int>()
-    var lastTouchId = 0
 
     override fun glkView(view: GLKView, drawInRect: CValue<CGRect>) {
         if (!initialized) {
@@ -141,16 +225,12 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
             }
             //self.lastTouchId = 0;
 
-            val width = view.frame.useContents { this.size.width.toDouble() }
-            val height = view.frame.useContents { this.size.height.toDouble() }
-
             Console.info("dispatchInitEvent")
             gameWindow.dispatchInitEvent()
             gameWindow.entry {
                 Console.info("Executing entry...")
                 this.entry()
             }
-            this.reshape = true
         }
 
         // Context changed!
@@ -162,25 +242,129 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
             gameWindow.ag.contextLost()
         }
 
-        val width = view.bounds.useContents { size.width } * view.contentScaleFactor
-        val height = view.bounds.useContents { size.height } * view.contentScaleFactor
-        if (this.reshape) {
-            this.reshape = false
-            gameWindow.dispatchReshapeEvent(0, 0, width.toInt(), height.toInt())
+        val width = (view.bounds.useContents { size.width } * view.contentScaleFactor).toInt()
+        val height = (view.bounds.useContents { size.height } * view.contentScaleFactor).toInt()
+        if (lastWidth != width || lastHeight != height) {
+            println("RESHAPE: $lastWidth, $lastHeight -> $width, $height")
+            this.lastWidth = width
+            this.lastHeight = height
+            gameWindow.dispatchReshapeEvent(0, 0, width, height)
         }
 
-        /*
-        this.value++
-        glDisable(GL_SCISSOR_TEST)
-        glDisable(GL_STENCIL_TEST)
-        glViewport(0, 0, 200, 300)
-        glScissor(0, 0, 200, 300)
-        glClearColor((this.value % 100).toFloat() / 100f, 0f, 1f, 1f)
-        glClear(GL_COLOR_BUFFER_BIT)
-         */
+        //this.value++
+        //glDisable(GL_SCISSOR_TEST)
+        //glDisable(GL_STENCIL_TEST)
+        //glViewport(0, 0, 200, 300)
+        //glScissor(0, 0, 200, 300)
+        //glClearColor((this.value % 100).toFloat() / 100f, 0f, 1f, 1f)
+        //glClear(GL_COLOR_BUFFER_BIT)
 
+        updateGamepads()
         gameWindow.frame()
     }
+
+    @Suppress("RemoveRedundantCallsOfConversionMethods")
+    private fun updateGamepads() {
+        val controllers = GCController.controllers().filterIsInstance<GCController>().sortedBy { it.playerIndex.toInt() }
+        if (controllers.isNotEmpty() || knownControllers.isNotEmpty()) {
+            val addedControllers = controllers - knownControllers
+            val removedControllers = knownControllers - controllers
+            knownControllers.clear()
+            knownControllers.addAll(controllers)
+            for (controller in addedControllers) {
+                gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.CONNECTED, controller.playerIndex.toInt())
+            }
+            for (controller in removedControllers) {
+                gameWindow.dispatchGamepadConnectionEvent(
+                    GamePadConnectionEvent.Type.DISCONNECTED,
+                    controller.playerIndex.toInt()
+                )
+            }
+            gameWindow.dispatchGamepadUpdateStart()
+            val mapping = StandardGamepadMapping
+            for ((index, controller) in controllers.withIndex()) {
+                var buttonMask = 0
+                val leftStick = Point()
+                val rightStick = Point()
+                fun button(button: GameButton, pressed: Boolean) {
+                    if (pressed) buttonMask = buttonMask or (1 shl button.ordinal)
+                }
+
+                fun button(button: GameButton, gcbutton: GCControllerButtonInput?) {
+                    if (gcbutton != null) {
+                        button(button, gcbutton.pressed)
+                    }
+                }
+                fun stick(stick: Point, pad: GCControllerDirectionPad) {
+                    stick.setTo(pad.xAxis.value, pad.yAxis.value)
+                }
+
+                // https://developer.apple.com/documentation/gamecontroller/gcmicrogamepad
+                // https://developer.apple.com/documentation/gamecontroller/gcgamepad
+                // https://developer.apple.com/documentation/gamecontroller/gcextendedgamepad
+                val microGamepad = controller.microGamepad
+                val gamepad = controller.gamepad
+                val extendedGamepad = controller.extendedGamepad
+
+                when {
+                    extendedGamepad != null -> {
+                        button(GameButton.SYSTEM, extendedGamepad.buttonHome)
+                        button(GameButton.START, extendedGamepad.buttonMenu)
+                        button(GameButton.SELECT, extendedGamepad.buttonOptions)
+                        button(GameButton.UP, extendedGamepad.dpad.up)
+                        button(GameButton.DOWN, extendedGamepad.dpad.down)
+                        button(GameButton.LEFT, extendedGamepad.dpad.left)
+                        button(GameButton.RIGHT, extendedGamepad.dpad.right)
+                        button(GameButton.GENERIC_BUTTON_UP, extendedGamepad.buttonY)
+                        button(GameButton.GENERIC_BUTTON_RIGHT, extendedGamepad.buttonB)
+                        button(GameButton.GENERIC_BUTTON_DOWN, extendedGamepad.buttonA)
+                        button(GameButton.GENERIC_BUTTON_LEFT, extendedGamepad.buttonX)
+                        button(GameButton.L1, extendedGamepad.leftShoulder)
+                        button(GameButton.L2, extendedGamepad.leftTrigger)
+                        button(GameButton.R1, extendedGamepad.rightShoulder)
+                        button(GameButton.R2, extendedGamepad.rightTrigger)
+                        button(GameButton.L3, extendedGamepad.leftThumbstickButton)
+                        button(GameButton.R3, extendedGamepad.rightThumbstickButton)
+                        stick(leftStick, extendedGamepad.leftThumbstick)
+                        stick(rightStick, extendedGamepad.rightThumbstick)
+                    }
+                    gamepad != null -> {
+                        button(GameButton.UP, gamepad.dpad.up)
+                        button(GameButton.DOWN, gamepad.dpad.down)
+                        button(GameButton.LEFT, gamepad.dpad.left)
+                        button(GameButton.RIGHT, gamepad.dpad.right)
+                        button(GameButton.GENERIC_BUTTON_UP, gamepad.buttonY)
+                        button(GameButton.GENERIC_BUTTON_RIGHT, gamepad.buttonB)
+                        button(GameButton.GENERIC_BUTTON_DOWN, gamepad.buttonA)
+                        button(GameButton.GENERIC_BUTTON_LEFT, gamepad.buttonX)
+                        button(GameButton.L1, gamepad.leftShoulder)
+                        button(GameButton.R1, gamepad.rightShoulder)
+                    }
+                    microGamepad != null -> {
+                        button(GameButton.START, microGamepad.buttonMenu)
+                        button(GameButton.UP, microGamepad.dpad.up)
+                        button(GameButton.DOWN, microGamepad.dpad.down)
+                        button(GameButton.LEFT, microGamepad.dpad.left)
+                        button(GameButton.RIGHT, microGamepad.dpad.right)
+                        button(GameButton.GENERIC_BUTTON_DOWN, microGamepad.buttonA)
+                        button(GameButton.GENERIC_BUTTON_LEFT, microGamepad.buttonX)
+                        stick(leftStick, microGamepad.dpad)
+                    }
+                }
+
+                gameWindow.dispatchGamepadUpdateAdd(
+                    leftStick, rightStick,
+                    buttonMask,
+                    mapping,
+                    controller.vendorName,
+                    controller.battery?.batteryLevel?.toDouble() ?: 1.0
+                )
+            }
+            gameWindow.dispatchGamepadUpdateEnd()
+        }
+    }
+
+    val knownControllers = mutableSetOf<GCController>()
 
     override fun didReceiveMemoryWarning() {
         //super.didReceiveMemoryWarning()

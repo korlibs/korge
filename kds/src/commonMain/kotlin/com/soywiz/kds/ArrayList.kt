@@ -204,6 +204,7 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
     }.toString()
 }
 
+fun buildIntArray(block: IntArrayList.() -> Unit): IntArray = IntArrayList().also(block).toIntArray()
 fun intArrayListOf(vararg values: Int) = IntArrayList(*values)
 fun IntArray.toIntArrayList() = IntArrayList(*this)
 
@@ -560,5 +561,6 @@ class FloatArrayList(capacity: Int = 7) : Collection<Float> {
     }.toString()
 }
 
+fun buildFloatArray(block: FloatArrayList.() -> Unit): FloatArray = FloatArrayList().also(block).toFloatArray()
 fun floatArrayListOf(vararg values: Float) = FloatArrayList(*values)
 fun FloatArray.toFloatArrayList() = FloatArrayList(*this)

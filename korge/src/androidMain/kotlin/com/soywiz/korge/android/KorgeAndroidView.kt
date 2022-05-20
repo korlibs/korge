@@ -11,6 +11,7 @@ import com.soywiz.korev.RenderEvent
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Module
 import com.soywiz.korgw.AndroidGameWindowNoActivity
+import com.soywiz.korgw.GameWindowCreationConfig
 import com.soywiz.korio.Korio
 import com.soywiz.korio.android.withAndroidContext
 import com.soywiz.korio.file.std.cleanUpResourcesVfs
@@ -19,10 +20,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@Suppress("unused")
 open class KorgeAndroidView(
     context: Context,
     attrs: AttributeSet? = null,
-    defStyleAttr: Int = 0
+    defStyleAttr: Int = 0,
+    val config: GameWindowCreationConfig = GameWindowCreationConfig(),
 ) : RelativeLayout(context, attrs, defStyleAttr) {
     var mGLView: com.soywiz.korgw.KorgwSurfaceView? = null
     private var agOpenGl: AGOpengl? = null
@@ -72,7 +75,7 @@ open class KorgeAndroidView(
         if (!moduleLoaded) {
 
             agOpenGl = KorgeViewAGOpenGL()
-            gameWindow = AndroidGameWindowNoActivity(module.windowSize.width, module.windowSize.height, agOpenGl!!, context) { mGLView!! }
+            gameWindow = AndroidGameWindowNoActivity(module.windowSize.width, module.windowSize.height, agOpenGl!!, context, config) { mGLView!! }
 
             mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!)
 

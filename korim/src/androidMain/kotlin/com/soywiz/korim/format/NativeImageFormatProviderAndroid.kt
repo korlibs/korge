@@ -173,11 +173,11 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     val matrixValues = FloatArray(9)
     var androidMatrix = android.graphics.Matrix()
 
-    fun GraphicsPath.toAndroid(out: Path = Path()): Path {
+    fun GraphicsPath.toAndroid(out: Path = Path(), winding: Winding = this.winding): Path {
         //out.reset()
         out.rewind()
 
-        out.fillType = when (this.winding) {
+        out.fillType = when (winding) {
             Winding.EVEN_ODD -> Path.FillType.EVEN_ODD
             Winding.NON_ZERO -> Path.FillType.INVERSE_EVEN_ODD
             else -> Path.FillType.EVEN_ODD
@@ -222,8 +222,17 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             }
             is com.soywiz.korim.paint.GradientPaint -> {
                 val colors = c.colors.toColorScaledAlpha(alpha)
-                    // @TODO: Why is this required?
-                    .also { it.reverse() }
+                    .apply {
+                        if (c.kind != GradientKind.SWEEP) {
+                            // @TODO: Why is this required?
+                            reverse()
+                        } else {
+                            // @TODO: Why is this required?
+                            for (n in indices) {
+                                this[n] = BGRA.rgbaToBgra(this[n])
+                            }
+                        }
+                    }
                 val stops = c.stops.toFloatArray()
                 out.shader = when (c.kind) {
                     GradientKind.LINEAR ->
@@ -296,7 +305,12 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
 
         keep {
             if (state.clip != null) {
-                canvas.clipPath(state.clip!!.toAndroid(androidClipPath))
+                val clipPath = state.clip!!.toAndroid(androidClipPath)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    canvas.clipOutPath(clipPath)
+                } else {
+                    canvas.clipPath(clipPath, Region.Op.DIFFERENCE)
+                }
             }
 
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE

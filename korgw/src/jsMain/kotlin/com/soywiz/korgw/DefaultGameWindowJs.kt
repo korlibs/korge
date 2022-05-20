@@ -509,29 +509,11 @@ external class Touch {
 object Nimbus_111_1420_Safari_GamepadMapping : GamepadMapping() {
     override val id = "111-1420-Nimbus"
 
-    override fun get(button: GameButton, info: GamepadInfo): Double {
-        return when (button) {
-            GameButton.BUTTON0 -> info.getRawButton(0)
-            GameButton.BUTTON1 -> info.getRawButton(1)
-            GameButton.BUTTON2 -> info.getRawButton(2)
-            GameButton.BUTTON3 -> info.getRawButton(3)
-            GameButton.L1 -> info.getRawButton(4)
-            GameButton.R1 -> info.getRawButton(5)
-            GameButton.L2 -> info.getRawButton(6)
-            GameButton.R2 -> info.getRawButton(7)
-            GameButton.LEFT -> info.getRawButton(8)
-            GameButton.DOWN -> info.getRawButton(9)
-            GameButton.RIGHT -> info.getRawButton(10)
-            GameButton.UP -> info.getRawButton(11)
-            GameButton.SELECT -> 0.0
-            GameButton.START -> 0.0
-            GameButton.SYSTEM -> 0.0
-            GameButton.LX -> info.getRawAxe(0)
-            GameButton.LY -> info.getRawAxe(1)
-            GameButton.RX -> info.getRawAxe(2)
-            GameButton.RY -> info.getRawAxe(3)
-            else -> 0.0
-        }
+    override fun getButtonIndex(button: GameButton): Int = when (button) {
+        GameButton.SELECT -> -1
+        GameButton.START -> -1
+        GameButton.SYSTEM -> -1
+        else -> super.getButtonIndex(button)
     }
 }
 

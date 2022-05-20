@@ -2,10 +2,14 @@ apply plugin: 'com.android.application'
 //apply plugin: 'kotlin-android'
 //apply plugin: 'kotlin-android-extensions'
 
-String androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}";
+import com.soywiz.korge.gradle.targets.android.AndroidSdk
 
-kotlin.android();
+String androidApplicationId = "com.korge.samples.${project.name.replace("-", "_")}"
 
+kotlin.android()
+
+//File korgeGradlePluginResources = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources")
+File korgeGradlePluginResources = new File(rootProject.projectDir, "buildSrc/src/main/resources")
 
 android {
     lintOptions {
@@ -44,7 +48,7 @@ android {
     signingConfigs {
         release {
             //storeFile file(findProperty('RELEASE_STORE_FILE') ?: "korge.keystore")
-            storeFile new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/korge.keystore")
+            storeFile new File(korgeGradlePluginResources, "korge.keystore")
             storePassword findProperty('RELEASE_STORE_PASSWORD') ?: "password"
             keyAlias findProperty('RELEASE_KEY_ALIAS') ?: "korge"
             keyPassword findProperty('RELEASE_KEY_PASSWORD') ?: "password"
@@ -103,7 +107,8 @@ def createAndroidManifest =tasks.create("createAndroidManifest") {
                         android:icon="@drawable/app_icon"
                         android:label="unnamed"
                         android:logo="@drawable/app_icon"
-                        android:screenOrientation="landscape"
+                        android:screenOrientation="sensor"
+                        android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
                     >
                         <intent-filter>
                             <action android:name="android.intent.action.MAIN"/>
@@ -122,9 +127,9 @@ def createAndroidManifest =tasks.create("createAndroidManifest") {
         new File(mainDir, "androidres/drawable").mkdirs()
         new File(mainDir, "androidres/mipmap").mkdirs()
 
-        new File(mainDir, "androidres/drawable/app_banner.png").bytes = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/banners/korge.png").bytes
-        new File(mainDir, "androidres/drawable/app_icon.png").bytes = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/icons/korge.png").bytes
-        new File(mainDir, "androidres/mipmap/icon.png").bytes = new File(rootProject.projectDir, "korge-gradle-plugin/src/main/resources/icons/korge.png").bytes
+        new File(mainDir, "androidres/drawable/app_banner.png").bytes = new File(korgeGradlePluginResources, "banners/korge.png").bytes
+        new File(mainDir, "androidres/drawable/app_icon.png").bytes = new File(korgeGradlePluginResources, "icons/korge.png").bytes
+        new File(mainDir, "androidres/mipmap/icon.png").bytes = new File(korgeGradlePluginResources, "icons/korge.png").bytes
 
         new File(mainDir, "androidsrc/MainActivity.kt").text = """
             package ${androidApplicationId}
@@ -157,15 +162,16 @@ def execOutput(String... args) {
 
 tasks.create("onlyRunAndroid") {
     doFirst {
+        def adb = "${AndroidSdk.guessAndroidSdkPath()}/platform-tools/adb"
         exec {
-            commandLine "adb", "shell", "am", "start", "-n", "${androidApplicationId}/${androidApplicationId}.MainActivity"
+            commandLine adb, "shell", "am", "start", "-n", "${androidApplicationId}/${androidApplicationId}.MainActivity"
         }
 
         String pid = ""
         for (int n = 0; n < 10; n++) {
             try {
-                pid = execOutput("adb", "shell", "pidof", androidApplicationId)
-                break;
+                pid = execOutput(adb, "shell", "pidof", androidApplicationId)
+                break
             } catch (e) {
                 Thread.sleep(500L)
                 if (n == 9) throw e
@@ -173,7 +179,7 @@ tasks.create("onlyRunAndroid") {
         }
         println(pid)
         exec {
-            commandLine "adb", "logcat", "--pid=${pid.trim()}"
+            commandLine adb, "logcat", "--pid=${pid.trim()}"
         }
     }
 }

@@ -812,7 +812,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         var nsamples: Int = 1
 
         val hasStencilAndDepth: Boolean get() = when {
-            gl.android -> hasStencil || hasDepth // stencil8 causes strange bug artifacts in Android (at least in one of my devices)
+            //gl.android -> hasStencil || hasDepth // stencil8 causes strange bug artifacts in Android (at least in one of my devices)
             else -> hasStencil && hasDepth
         }
     }
@@ -917,8 +917,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
             gl.framebufferRenderbuffer(KmlGl.FRAMEBUFFER, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
             gl.framebufferRenderbuffer(KmlGl.DEPTH_ATTACHMENT, KmlGl.STENCIL_ATTACHMENT, KmlGl.RENDERBUFFER, 0)
         }
-        //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER);
-        //if (status != KmlGl.FRAMEBUFFER_COMPLETE) error("Error getting framebuffer")
-        //gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0)
+        //val status = gl.checkFramebufferStatus(KmlGl.FRAMEBUFFER)
+        //if (status != KmlGl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(KmlGl.FRAMEBUFFER, 0); error("Error getting framebuffer") }
     }
 }
