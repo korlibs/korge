@@ -9,6 +9,7 @@ class ListReader<T>(val list: List<T>) {
     val eof: Boolean get() = position >= list.size
     val hasMore: Boolean get() = position < list.size
     fun peek(): T = list[position]
+    fun peek(offset: Int): T = list[position + offset]
     fun skip(count: Int = 1) = this.apply { this.position += count }
     fun read(): T = peek().apply { skip(1) }
     override fun toString(): String = "ListReader($list)"

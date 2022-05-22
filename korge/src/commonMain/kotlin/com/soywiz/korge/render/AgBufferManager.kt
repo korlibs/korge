@@ -1,9 +1,11 @@
 package com.soywiz.korge.render
 
 import com.soywiz.kds.FastIdentityMap
+import com.soywiz.kds.Pool
 import com.soywiz.kds.getAndRemove
 import com.soywiz.kds.getOrPut
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.FBuffer
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGList
 
@@ -15,11 +17,15 @@ class AgBufferManager(
 ) {
     private val buffers = FastIdentityMap<AgCachedBuffer, AG.Buffer>()
     private val referencedBuffersSinceGC = AgFastSet<AgCachedBuffer>()
+    private val bufferPool = Pool {
+        //println("CREATE BUFFER")
+        ag.createBuffer()
+    }
 
     fun getBuffer(cached: AgCachedBuffer): AG.Buffer {
         referencedBuffersSinceGC.add(cached)
         return buffers.getOrPut(cached) {
-            ag.createBuffer().also {
+            bufferPool.alloc().also {
                 it.upload(cached.data, cached.dataOffset, cached.dataLen)
             }
         }
@@ -52,11 +58,19 @@ class AgBufferManager(
             buffer.fastForEach { delete(it, list) }
         }
     }
-    fun delete(buffer: AgCachedBuffer) = ag.commandsNoWait { delete(buffer, it) }
+    fun delete(buffer: AgCachedBuffer) {
+        ag.commandsNoWait { delete(buffer, it) }
+    }
+
+    val empty = FBuffer(0)
 
     fun delete(buffer: AgCachedBuffer, list: AGList) {
         val buf = buffers.getAndRemove(buffer)
-        buf?.close(list)
+        buf?.let {
+            it.upload(empty)
+            bufferPool.free(buf)
+        }
+        //buf?.close(list)
     }
 }
 

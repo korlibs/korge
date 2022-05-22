@@ -7,7 +7,9 @@ import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.clamp
 import com.soywiz.korag.AG
+import com.soywiz.korev.Key
 import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.input.keys
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Anchorable
@@ -104,7 +106,10 @@ open class GpuShapeView(
             invalidateShape()
         }
 
+    private var renderCount = 0
+
     private fun invalidateShape() {
+        renderCount = 0
         pointCache.clear()
 
         gpuShapeViewCommands.clear()
@@ -155,6 +160,7 @@ open class GpuShapeView(
         //if (cachedScale != globalScale) {
         //    invalidateShape()
         //}
+        //invalidateShape()
         ctx.flush()
 
         val doRequireTexture = shape.requireStencil
@@ -192,19 +198,27 @@ open class GpuShapeView(
             EmptyShape -> Unit
             is CompoundShape -> for (v in shape.components) renderShape(v)
             is TextShape -> renderShape(shape.primitiveShapes)
-            is FillShape -> renderFill(shape)
-            is PolylineShape -> renderStroke(
-                shape.transform,
-                shape.path,
-                shape.paint,
-                shape.globalAlpha,
-                shape.thickness, //* (1.0 / globalScale), // This depends if we want to keep line width when scaling
-                shape.scaleMode,
-                shape.startCaps,
-                shape.endCaps,
-                shape.lineJoin,
-                shape.miterLimit,
-            )
+            is FillShape -> {
+                renderCount++
+                if (renderCount > maxRenderCount) return
+                renderFill(shape)
+            }
+            is PolylineShape -> {
+                renderCount++
+                if (renderCount > maxRenderCount) return
+                renderStroke(
+                    shape.transform,
+                    shape.path,
+                    shape.paint,
+                    shape.globalAlpha,
+                    shape.thickness, //* (1.0 / globalScale), // This depends if we want to keep line width when scaling
+                    shape.scaleMode,
+                    shape.startCaps,
+                    shape.endCaps,
+                    shape.lineJoin,
+                    shape.miterLimit,
+                )
+            }
             //is PolylineShape -> renderShape(ctx, shape.fillShape)
             else -> TODO("shape=$shape")
         }
@@ -509,7 +523,24 @@ open class GpuShapeView(
         return PointsResult(bb.getBounds(), points.size + 2)
     }
 
+    var maxRenderCount: Int = 100000
+    //var maxRenderCount: Int = 1
+    //var maxRenderCount: Int = 14
+        set(value) {
+            field = value
+            invalidateShape()
+        }
+
+    init {
+        keys {
+            down(Key.UP) { maxRenderCount++ }
+            down(Key.DOWN) { maxRenderCount-- }
+        }
+    }
+
     private fun renderFill(shape: FillShape) {
+        //println("maxRenderCount=$maxRenderCount")
+        //println("renderCount=$renderCount")
         if (shape.path.winding != Winding.EVEN_ODD) {
             if (!notifyAboutEvenOdd) {
                 notifyAboutEvenOdd = true
@@ -580,7 +611,7 @@ open class GpuShapeView(
                 strokePath = shape.path,
                 paint = shape.paint,
                 globalAlpha = shape.globalAlpha,
-                lineWidth = (1.6 * globalScale).clamp(1.4, 1.8),
+                lineWidth = (1.6 * globalScale).clamp(1.4, 1.8), // @TODO: Scale lineWidth based on the global scale and device pixel ratio
                 scaleMode = LineScaleMode.NONE,
                 startCap = LineCap.BUTT,
                 endCap = LineCap.BUTT,
@@ -622,16 +653,16 @@ open class GpuShapeView(
         pathDataStart: Int,
         pathDataEnd: Int
     ) {
-        //val vstart = gpuShapeViewCommands.verticesStart()
-        //val x0 = pathBounds.left.toFloat()
-        //val y0 = pathBounds.top.toFloat()
-        //val x1 = pathBounds.right.toFloat()
-        //val y1 = pathBounds.bottom.toFloat()
-        //gpuShapeViewCommands.addVertex(x0, y0)
-        //gpuShapeViewCommands.addVertex(x1, y0)
-        //gpuShapeViewCommands.addVertex(x1, y1)
-        //gpuShapeViewCommands.addVertex(x0, y1)
-        //val vend = gpuShapeViewCommands.verticesEnd()
+        val vstart = gpuShapeViewCommands.verticesStart()
+        val x0 = pathBounds.left.toFloat()
+        val y0 = pathBounds.top.toFloat()
+        val x1 = pathBounds.right.toFloat()
+        val y1 = pathBounds.bottom.toFloat()
+        gpuShapeViewCommands.addVertex(x0, y0)
+        gpuShapeViewCommands.addVertex(x1, y0)
+        gpuShapeViewCommands.addVertex(x1, y1)
+        gpuShapeViewCommands.addVertex(x0, y1)
+        val vend = gpuShapeViewCommands.verticesEnd()
 
         //println("[($lx0,$ly0)-($lx1,$ly1)]")
 
@@ -645,10 +676,10 @@ open class GpuShapeView(
                 referenceValue = stencilEqualsValue,
                 writeMask = 0,
             ),
-            //startIndex = vstart,
-            //endIndex = vend,
-            startIndex = pathDataStart,
-            endIndex = pathDataEnd,
+            startIndex = vstart,
+            endIndex = vend,
+            //startIndex = pathDataStart,
+            //endIndex = pathDataEnd,
         )
     }
 

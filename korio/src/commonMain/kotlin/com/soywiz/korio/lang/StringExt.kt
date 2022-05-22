@@ -5,6 +5,7 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korio.util.endExclusive
 import com.soywiz.korio.util.quote
 import com.soywiz.korio.util.toStringUnsigned
+import kotlin.jvm.JvmStatic
 
 operator fun String.Companion.invoke(arrays: IntArray, offset: Int = 0, size: Int = arrays.size - offset): String {
 	val sb = StringBuilder()
@@ -139,4 +140,13 @@ fun String.withInsertion(index: Int, insertedText: String): String {
     val before = this.substr(0, index)
     val after = this.substr(index, this.length)
     return "$before$insertedText$after"
+}
+
+fun String.Companion.substringEquals(a: String, aIndex: Int, b: String, bIndex: Int, count: Int): Boolean {
+    if (count == 0) return true
+    if (aIndex < 0 || bIndex < 0) return false
+    if (aIndex + count > a.length) return false
+    if (bIndex + count > b.length) return false
+    for (n in 0 until count) if (a[aIndex + n] != b[bIndex + n]) return false
+    return true
 }

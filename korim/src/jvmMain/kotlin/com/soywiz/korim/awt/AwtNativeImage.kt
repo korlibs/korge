@@ -1,21 +1,49 @@
 package com.soywiz.korim.awt
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.ensureNative
+import com.soywiz.korim.color.BGRA
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.paint.ColorPaint
+import com.soywiz.korim.paint.GradientFiller
+import com.soywiz.korim.paint.GradientInterpolationMethod
+import com.soywiz.korim.paint.GradientKind
 import com.soywiz.korim.paint.GradientPaint
 import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
-import java.awt.*
+import com.soywiz.korim.paint.TransformedPaint
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.CycleMethod
+import com.soywiz.korim.vector.GraphicsPath
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.Winding
+import com.soywiz.korma.geom.vector.isEmpty
+import java.awt.AlphaComposite
+import java.awt.BasicStroke
+import java.awt.Color
+import java.awt.Graphics2D
+import java.awt.Image
+import java.awt.MultipleGradientPaint
+import java.awt.PaintContext
 import java.awt.Rectangle
+import java.awt.RenderingHints
 import java.awt.RenderingHints.*
-import java.awt.geom.*
-import java.awt.image.*
-import java.nio.*
+import java.awt.Transparency
+import java.awt.geom.AffineTransform
+import java.awt.geom.Point2D
+import java.awt.geom.Rectangle2D
 import java.awt.image.BufferedImage
-
+import java.awt.image.ColorModel
+import java.awt.image.DataBufferInt
+import java.awt.image.Raster
+import java.awt.image.WritableRaster
+import java.nio.Buffer
+import java.nio.ByteBuffer
 
 
 const val AWT_INTERNAL_IMAGE_TYPE_PRE = BufferedImage.TYPE_INT_ARGB_PRE
@@ -293,7 +321,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                                 if (USE_ACCURATE_RADIAL_PAINT) {
                                     AwtKorimGradientPaint(
                                         this,
-                                        t1
+                                        transform
                                     )
                                 } else {
                                     java.awt.RadialGradientPaint(
@@ -312,7 +340,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                             }
                         }
                         else -> {
-                            AwtKorimGradientPaint(this, t1)
+                            AwtKorimGradientPaint(this, transform)
                         }
                     }
 
@@ -413,9 +441,9 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 
 class AwtKorimGradientPaint(
     val paint: GradientPaint,
-    val transform: AffineTransform
+    val stateTransform: AffineTransform
 ) : java.awt.Paint {
-    val filler = GradientFiller().set(paint, Context2d.State(transform = transform.toMatrix()))
+    val filler = GradientFiller().set(paint, Context2d.State(transform = stateTransform.toMatrix()))
 
     override fun getTransparency(): Int = Transparency.TRANSLUCENT
 
@@ -426,18 +454,33 @@ class AwtKorimGradientPaint(
         xform: AffineTransform?,
         hints: RenderingHints?
     ): PaintContext {
-        val colorModel = cm ?: ColorModel.getRGBdefault()
+        //println("userBounds=$userBounds, deviceBounds=$deviceBounds, xform=$xform")
 
         return object : PaintContext {
+            val _colorModel = cm ?: ColorModel.getRGBdefault()
+
             override fun dispose() = Unit
-            override fun getColorModel(): ColorModel = colorModel
+            override fun getColorModel(): ColorModel = _colorModel
+
+            var rasterSide = 0
+            lateinit var raster: WritableRaster
+            lateinit var out: IntArray
+
             override fun getRaster(x: Int, y: Int, w: Int, h: Int): Raster {
-                val raster = colorModel.createCompatibleWritableRaster(w, h)
-                val out = IntArray(w * h * 4)
+                val maxSide = kotlin.math.max(kotlin.math.max(w, h), 32)
+                if (rasterSide < maxSide) {
+                    rasterSide = maxSide
+                    raster = _colorModel.createCompatibleWritableRaster(rasterSide, rasterSide)
+                    out = IntArray(rasterSide * rasterSide * 4)
+                }
+                //val raster = _colorModel.createCompatibleWritableRaster(w, h)
+                //val out = IntArray(w * h * 4)
+
                 var n = 0
                 for (py in 0 until h) {
                     for (px in 0 until w) {
-                        val col = filler.getColor((x + px).toDouble(), (y + py).toDouble()).depremultiplied
+                        val col = filler.getColor((x + px).toDouble(), (y + py).toDouble())
+                        //val col = Colors.RED
                         out[n++] = col.r
                         out[n++] = col.g
                         out[n++] = col.b

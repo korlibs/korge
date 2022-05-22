@@ -1,48 +1,40 @@
 package com.soywiz.korim.vector.format
 
 import com.soywiz.kds.ListReader
-import com.soywiz.kds.expect
 import com.soywiz.kds.mapWhile
+import com.soywiz.klock.TimeSpan
+import com.soywiz.korim.annotation.KorimExperimental
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.paint.*
+import com.soywiz.korim.style.CSS
+import com.soywiz.korim.style.DOM
+import com.soywiz.korim.style.DOMAnimator
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.korim.vector.toSvgPathString
-import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.StrReader
-import com.soywiz.korio.util.isDigit
 import com.soywiz.korio.util.isLetterOrDigit
-import com.soywiz.korio.util.isLetterOrUnderscore
 import com.soywiz.korio.util.isNumeric
-import com.soywiz.korio.util.isWhitespaceFast
 import com.soywiz.korio.util.reader
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.ellipse
-import com.soywiz.korma.geom.vector.rLineTo
-import com.soywiz.korma.geom.vector.rLineToH
-import com.soywiz.korma.geom.vector.rLineToV
-import com.soywiz.korma.geom.vector.rMoveTo
+import com.soywiz.korma.geom.vector.isNotEmpty
 import com.soywiz.korma.geom.vector.roundRect
+import com.soywiz.korma.geom.vector.write
 import kotlin.collections.set
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.acos
-import kotlin.math.cos
-import kotlin.math.hypot
-import kotlin.math.sin
-import kotlin.math.sqrt
+import kotlin.reflect.KMutableProperty1
 
 class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = null) : SizedDrawable {
 	//constructor(@Language("xml") str: String) : this(Xml(str))
@@ -67,583 +59,389 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	override val width get() = viewBoxRectangle.width.toInt()
 	override val height get() = viewBoxRectangle.height.toInt()
 
-	class Style {
-		val props = hashMapOf<String, Any?>()
-	}
-
-	val defs = hashMapOf<String, Paint>()
-
-	//interface Def
-
-	fun parseDef(def: Xml) {
-		val type = def.nameLC
-		when (type) {
-			"lineargradient", "radialgradient" -> {
-				val id = def.str("id").toLowerCase()
-				val stops = parseStops(def)
-                val gradientUnits = when (def.getString("gradientUnits") ?: "objectBoundingBox") {
-                    "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
-                    else -> GradientUnits.OBJECT_BOUNDING_BOX
+	val defs by lazy {
+        hashMapOf<String, SvgDef>().also { _defs ->
+            for (defs in root.children("defs")) {
+                for (def in defs.allNodeChildren) {
+                    val svgDef = SvgDef(def)
+                    _defs[svgDef.id] = svgDef
                 }
+            }
+        }
+    }
+    @KorimExperimental
+    val cssList by lazy {
+        arrayListOf<CSS>().also { cssList ->
+            for (style in root.children("style")) {
+                cssList += CSS.parseCSS(style.text)
+            }
+        }
+    }
+    @KorimExperimental
+    val cssCombined by lazy { CSS(cssList) }
+    private val _dom by lazy { DOM(cssCombined) }
+    @KorimExperimental
+    val dom by lazy {
+        renderElement
+        _dom
+    }
+    //val elementsById by lazy {
+    //    (_dom.elementsById as Map<String, SvgElement>).also {
+    //        renderElement
+    //    }
+    //}
+    val renderElement by lazy {
+        SvgElement(root)
+    }
+    @KorimExperimental
+    val animator by lazy {
+        DOMAnimator(dom)
+    }
 
-				val g: GradientPaint = if (type == "lineargradient") {
-					//println("Linear: ($x0,$y0)-($x1-$y1)")
-                    val x0 = def.double("x1", 0.0)
-                    val y0 = def.double("y1", 0.0)
-                    val x1 = def.double("x2", 1.0)
-                    val y1 = def.double("y2", 1.0)
-					GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0, units = gradientUnits)
-				} else {
-                    val cx = def.double("cx", 0.0)
-                    val cy = def.double("cy", 0.0)
-					val r = def.double("r", 16.0)
-					val fx = def.double("fx", 0.0)
-                    val fy = def.double("fy", 0.0)
-					GradientPaint(GradientKind.RADIAL, cx, cy, 0.0, fx, fy, r, units = gradientUnits)
-				}
+    @KorimExperimental
+    fun updateStyles(dt: TimeSpan) {
+        animator.update(dt)
+    }
 
-				def.strNull("xlink:href")?.let {
-					val id = it.trim('#')
-					val original = defs[id] as? GradientPaint?
-					//println("href: $it --> $original")
-					original?.let {
-						g.stops.add(original.stops)
-						g.colors.add(original.colors)
-					}
-				}
+    class SvgDef(val def: Xml) {
+        val id = def.str("id").lowercase()
+        val type = def.nameLC
+        val stops = parseStops(def)
+        val gradientUnits = when (def.getString("gradientUnits") ?: "objectBoundingBox") {
+            "userSpaceOnUse" -> GradientUnits.USER_SPACE_ON_USE
+            else -> GradientUnits.OBJECT_BOUNDING_BOX
+        }
+        val gradientTransform: Matrix = def.getString("gradientTransform")?.let { CSS.parseTransform(it) } ?: Matrix()
+        val spreadMethod = when ((def.getString("spreadMethod") ?: "pad").lowercase()) {
+            "pad" -> CycleMethod.NO_CYCLE
+            "repeat" -> CycleMethod.REPEAT
+            "reflect" -> CycleMethod.REFLECT
+            else -> CycleMethod.NO_CYCLE
+        }
 
-				for ((offset, color) in stops) {
-					//println(" - $offset: $color")
-					g.addColorStop(offset, color)
-				}
+        val g: GradientPaint = when (type) {
+            "lineargradient" -> {
+                //println("Linear: ($x0,$y0)-($x1-$y1)")
+                val x0 = def.double("x1", 0.0)
+                val y0 = def.double("y1", 0.0)
+                val x1 = def.double("x2", 1.0)
+                val y1 = def.double("y2", 1.0)
+                GradientPaint(GradientKind.LINEAR, x0, y0, 0.0, x1, y1, 0.0, cycle = spreadMethod, transform = gradientTransform, units = gradientUnits)
+            }
+            else -> {
+                val cx = def.double("cx", 0.0)
+                val cy = def.double("cy", 0.0)
+                val r = def.double("r", 16.0)
+                val fx = def.double("fx", cx)
+                val fy = def.double("fy", cy)
+                GradientPaint(GradientKind.RADIAL, cx, cy, 0.0, fx, fy, r, cycle = spreadMethod, transform = gradientTransform, units = gradientUnits)
+            }
+        }
 
-				//println("Gradient: $g")
-				def.getString("gradientTransform")?.let {
-					g.transform.premultiply(parseTransform(it))
-				}
+        val ref = def.strNull("xlink:href")
 
-				defs[id] = g
-			}
-			"style" -> {
-			}
-			"_text_" -> {
-			}
-			else -> {
-				println("Unhandled def: '$type'")
-			}
-		}
-	}
+        init {
+            for ((offset, color) in stops) {
+                //println(" - $offset: $color")
+                g.addColorStop(offset, color)
+            }
+        }
+
+        val paint = g
+
+        fun parseStops(xml: Xml): List<Pair<Double, RGBA>> {
+            val out = arrayListOf<Pair<Double, RGBA>>()
+            for (stop in xml.children("stop")) {
+                val info = SVG.parseAttributesAndStyles(stop)
+                var offset = 0.0
+                var colorStop = SVG.ColorDefaultBlack.defaultColor
+                var alphaStop = 1.0
+                for ((key, value) in info) {
+                    when (key) {
+                        "offset" -> offset = CSS.parseRatio(value)
+                        "stop-color" -> colorStop = SVG.ColorDefaultBlack[value]
+                        "stop-opacity" -> alphaStop = value.toDoubleOrNull() ?: 1.0
+                    }
+                }
+                out += Pair(offset, RGBA(colorStop.rgb, ((colorStop.ad * alphaStop) * 255).toInt()))
+            }
+            return out
+        }
+    }
+
+    fun createSvgElementFromXml(xml: Xml): SvgElement? {
+        val nodeName = xml.nameLC
+        return when (nodeName) {
+            "g", "a", "svg" -> SvgElement(xml)
+            "defs" -> null
+            "_text_" -> null
+            "_comment_" -> null
+            "title" -> null
+            "rect" -> RectSvgElement(xml)
+            "circle" -> CircleSvgElement(xml)
+            "ellipse" -> EllipseSvgElement(xml)
+            "polyline", "polygon" -> PolySvgElement(xml)
+            "line" -> LineSvgElement(xml)
+            "text" -> TextSvgElement(xml)
+            "path" -> PathSvgElement(xml)
+            else -> {
+                warningProcessor?.invoke("Unhandled SVG node '$nodeName'")
+                null
+            }
+        }
+    }
+
+    object Mappings {
+        val SVGMapping = DOM.DomPropertyMapping()
+            .add("transform", SvgElement::transform)
+            .add("opacity", SvgElement::opacity)
+    }
+
+    open inner class SvgElement(val xml: Xml) : DOM.DomElement(_dom, Mappings.SVGMapping) {
+        init {
+            id = xml.getString("id")
+        }
+
+        val attributes: Map<String, String> = parseAttributesAndStyles(xml)
+        var transform: Matrix? = attributes["transform"]?.let { CSS.parseTransform(it) }
+        var opacity: Double = attributes["opacity"]?.toDoubleOrNull() ?: 1.0
+
+        val children = xml.allNodeChildren.mapNotNull {
+            createSvgElementFromXml(it)
+        }
+
+        override fun toString(): String = "SvgElement($id, ${xml.nameLC}, children=${children.size})"
+
+        fun draw(c: Context2d): Unit {
+            c.keepApply {
+                //svg.drawElement(xml, c, render)
+                transform?.let {
+                    c.state.transform.premultiply(it)
+                    //c.state.transform.postmultiply(it)
+                }
+                setCommonStyles(c)
+                drawChildren(c)
+                drawInternal(c)
+                fillStrokeInternal(c)
+            }
+        }
+
+        open fun drawChildren(c: Context2d) {
+            for (child in children) {
+                child.draw(c)
+            }
+        }
+
+        open fun drawInternal(c: Context2d) {
+        }
+
+        open fun fillStrokeInternal(c: Context2d) {
+            if (c.state.path.isNotEmpty()) {
+                c.keep {
+                    //c.fillStyle = c.fillStyle.getPaintWithUnits(c.state.transform, c.state.path.clone().applyTransform(c.state.transform).getBounds())
+                    c.fillStyle = c.fillStyle.getPaintWithUnits(c.state.transform, c.state.path)
+                    c.strokeStyle = c.strokeStyle.getPaintWithUnits(c.state.transform, c.state.path)
+                    //println("fillStyle=${c.fillStyle}, strokeStyle=${c.strokeStyle}")
+                    c.fillStroke()
+                }
+            }
+        }
+
+        open fun setCommonStyles(c: Context2d) {
+            for ((key, it) in attributes) {
+                when (key) {
+                    "stroke-width" -> c.lineWidth = it.toDoubleOrNull() ?: 1.0
+                    "stroke-linejoin" -> c.lineJoin = LineJoin[it]
+                    "stroke-linecap" -> c.lineCap = LineCap[it]
+                    "stroke" -> c.strokeStyle = parseFillStroke(c, it)
+                    "opacity" -> c.globalAlpha *= opacity
+                    "fill-opacity" -> c.globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
+                    "stroke-opacity" -> c.globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
+                    "fill" -> c.fillStyle = parseFillStroke(c, it)
+                    "font-size" -> c.fontSize = CSS.parseSizeAsDouble(it)
+                    "font-family" -> c.font = c.fontRegistry?.get(it)
+                    "text-anchor" -> c.horizontalAlign = when (it.lowercase().trim()) {
+                        "left" -> HorizontalAlign.LEFT
+                        "center", "middle" -> HorizontalAlign.CENTER
+                        "right", "end" -> HorizontalAlign.RIGHT
+                        else -> c.horizontalAlign
+                    }
+                    "alignment-baseline" -> c.verticalAlign = when (it.lowercase().trim()) {
+                        "hanging" -> VerticalAlign.TOP
+                        "center", "middle" -> VerticalAlign.MIDDLE
+                        "baseline" -> VerticalAlign.BASELINE
+                        "bottom" -> VerticalAlign.BOTTOM
+                        else -> c.verticalAlign
+                    }
+                    "fill-rule" -> Unit // @TODO
+                }
+            }
+        }
+
+        //override fun setProperty(prop: String, value: Any?) {
+        //    when (prop) {
+        //        "transform" -> {
+        //            //this.transform = getMatrix(prop, value)
+        //            this.transform = getTransform(prop, value).toMatrix()
+        //        }
+        //        "opacity" -> {
+        //            this.opacity = getRatio(prop, value)
+        //        }
+        //    }
+        //}
+
+        fun parseFillStroke(c: Context2d, str2: String): Paint {
+            val str = str2.lowercase().trim()
+            val res = when {
+                str.startsWith("url(") -> {
+                    val urlPattern = str.substr(4, -1).substringBefore(')')
+                    val extra = str.substringAfter(')')
+
+                    if (urlPattern.startsWith("#")) {
+                        val idName = urlPattern.substr(1).toLowerCase()
+                        val def = defs[idName]
+                        if (def == null) {
+                            println(defs)
+                            println("Can't find svg definition '$idName'")
+                        }
+                        //println("URL: def=$def")
+                        def?.paint ?: NonePaint
+                    } else {
+                        println("Unsupported $str")
+                        NonePaint
+                    }
+                }
+                str.startsWith("rgba(") -> {
+                    val components = str.removePrefix("rgba(").removeSuffix(")").split(",").map { it.trim().toDoubleOrNull() ?: 0.0 }
+                    ColorPaint(RGBA(components[0].toInt(), components[1].toInt(), components[2].toInt(), (components[3] * 255).toInt()))
+                }
+                str.startsWith("rgb(") -> {
+                    val components = str.removePrefix("rgb(").removeSuffix(")").split(",").map { it.trim().toDoubleOrNull() ?: 0.0 }
+                    ColorPaint(RGBA(components[0].toInt(), components[1].toInt(), components[2].toInt(), 255))
+                }
+                else -> when (str) {
+                    "none" -> NonePaint
+                    else -> c.createColor(ColorDefaultBlack[str])
+                }
+            }
+            //println("parseFillStroke: res=$res, str2='$str2'")
+            return res
+        }
+
+    }
+
+    open inner class RectSvgElement(xml: Xml) : SvgElement(xml) {
+        var x = xml.double("x")
+        var y = xml.double("y")
+        var width = xml.double("width")
+        var height = xml.double("height")
+        var ry = xml.double("ry", xml.double("rx"))
+        var rx = xml.double("rx", xml.double("ry"))
+
+        override fun drawInternal(c: Context2d) {
+            c.roundRect(x, y, width, height, rx, ry)
+        }
+    }
+
+    open inner class CircleSvgElement(xml: Xml) : SvgElement(xml) {
+        var cx = xml.double("cx")
+        var cy = xml.double("cy")
+        var radius = xml.double("r")
+
+        override fun drawInternal(c: Context2d) {
+            c.circle(cx, cy, radius)
+        }
+    }
+
+    open inner class EllipseSvgElement(xml: Xml) : SvgElement(xml) {
+        var cx = xml.double("cx")
+        var cy = xml.double("cy")
+        var rx = xml.double("rx")
+        var ry = xml.double("ry")
+
+        override fun drawInternal(c: Context2d) {
+            c.ellipse(cx - rx, cy - ry, rx * 2, ry * 2)
+        }
+    }
+
+    open inner class PolySvgElement(xml: Xml) : SvgElement(xml) {
+        val ss = StrReader(xml.str("points"))
+        val pps = ListReader(mapWhile(cond = { ss.hasMore }, gen = {
+            ss.skipWhile { !it.isNumeric }
+            val out = ss.readWhile { it.isNumeric }.toDouble()
+            ss.skipWhile { !it.isNumeric }
+            out
+        }).toList())
+        val path = GraphicsPath().also { path ->
+            var edges = 0
+            path.moveTo(pps.read(), pps.read())
+            while (pps.hasMore) {
+                val x = pps.read()
+                val y = pps.read()
+                path.lineTo(x, y)
+                edges++
+            }
+            if (xml.nameLC == "polygon") path.close()
+        }
+
+        override fun drawInternal(c: Context2d) {
+            c.beginPath()
+            //println("bounds: $bounds, edges: $edges")
+            c.path(path)
+        }
+    }
+
+    open inner class LineSvgElement(xml: Xml) : SvgElement(xml) {
+        var x1 = xml.double("x1")
+        var y1 = xml.double("y1")
+        var x2 = xml.double("x2")
+        var y2 = xml.double("y2")
+
+        override fun drawInternal(c: Context2d) {
+            c.beginPath()
+            c.moveTo(x1, y1)
+            c.lineTo(x2, y2)
+        }
+    }
+
+    open inner class TextSvgElement(xml: Xml) : SvgElement(xml) {
+        var text = xml.text.trim()
+        var x = xml.double("x")
+        var dx = xml.double("dx")
+        var y = xml.double("y")
+        var dy = xml.double("dy")
+
+        override fun drawInternal(c: Context2d) {
+        }
+
+        override fun fillStrokeInternal(c: Context2d) {
+            c.fillText(text, x + dx, y + dy)
+        }
+    }
+
+    open inner class PathSvgElement(xml: Xml) : SvgElement(xml) {
+        var d = xml.str("d")
+
+        override fun drawInternal(c: Context2d) {
+            c.beginPath()
+            val path = SvgPath.parse(d)
+            c.write(path)
+            warningProcessor?.invoke("Parsed SVG Path: '${path.toSvgPathString()}'")
+            warningProcessor?.invoke("Original SVG Path: '$d'")
+            warningProcessor?.invoke("Points: ${path.getPoints2()}")
+        }
+    }
+
+    //interface Def
 
 	override fun draw(c: Context2d) {
 		c.keep {
-			c.strokeStyle = NonePaint
-			c.fillStyle = Colors.BLACK
-			drawElement(root, c, true)
+            c.strokeStyle = NonePaint
+            c.fillStyle = Colors.BLACK
+            renderElement.draw(c)
 		}
 	}
 
-	fun drawChildren(xml: Xml, c: Context2d, render: Boolean) {
-		for (child in xml.allChildren) {
-			drawElement(child, c, render)
-		}
-	}
-
-	fun parseFillStroke(c: Context2d, str2: String, bounds: Rectangle): Paint {
-		val str = str2.toLowerCase().trim()
-		val res = when {
-            str.startsWith("url(") -> {
-                val urlPattern = str.substr(4, -1).substringBefore(')')
-                val extra = str.substringAfter(')')
-
-                if (urlPattern.startsWith("#")) {
-                    val idName = urlPattern.substr(1).toLowerCase()
-                    val def = defs[idName]
-                    if (def == null) {
-                        println(defs)
-                        println("Can't find svg definition '$idName'")
-                    }
-                    //println("URL: def=$def")
-                    def ?: NonePaint
-                } else {
-                    println("Unsupported $str")
-                    NonePaint
-                }
-            }
-            str.startsWith("rgba(") -> {
-                val components = str.removePrefix("rgba(").removeSuffix(")").split(",").map { it.trim().toDoubleOrNull() ?: 0.0 }
-                ColorPaint(RGBA(components[0].toInt(), components[1].toInt(), components[2].toInt(), (components[3] * 255).toInt()))
-            }
-            str.startsWith("rgb(") -> {
-                val components = str.removePrefix("rgb(").removeSuffix(")").split(",").map { it.trim().toDoubleOrNull() ?: 0.0 }
-                ColorPaint(RGBA(components[0].toInt(), components[1].toInt(), components[2].toInt(), 255))
-            }
-            else -> when (str) {
-                "none" -> NonePaint
-                else -> c.createColor(ColorDefaultBlack[str])
-            }
-        }
-        return when (res) {
-            is GradientPaint -> {
-                val m = Matrix()
-                m.scale(bounds.width, bounds.height)
-                res.applyMatrix(m).also {
-                    //println(it)
-                }
-            }
-            else -> {
-                res
-            }
-        }
-	}
-
-    private val t = DoubleArray(6)
-
-    fun drawElement(xml: Xml, c: Context2d, render: Boolean): Context2d = c.keepApply {
-		val bounds = Rectangle()
-		val nodeName = xml.nameLC
-
-        var drawChildren = false
-        var render = render
-
-        val attributes = parseAttributesAndStyles(xml)
-
-        attributes["transform"]?.let {
-            applyTransform(state, parseTransform(it))
-        }
-
-		when (nodeName) {
-            "g", "a", "svg" -> {
-                drawChildren = true
-            }
-            "defs" -> {
-                drawChildren = true
-                render = false
-            }
-            "_text_" -> Unit
-            "_comment_" -> Unit
-            "title" -> Unit
-			"lineargradient", "radialgradient" -> {
-				parseDef(xml)
-			}
-			"rect" -> {
-				val x = xml.double("x")
-				val y = xml.double("y")
-				val width = xml.double("width")
-				val height = xml.double("height")
-                val ry = xml.double("ry", xml.double("rx"))
-				val rx = xml.double("rx", xml.double("ry"))
-				bounds.setTo(x, y, width, height)
-				roundRect(x, y, width, height, rx, ry)
-			}
-			"circle" -> {
-				val cx = xml.double("cx")
-				val cy = xml.double("cy")
-				val radius = xml.double("r")
-				circle(cx, cy, radius)
-				bounds.setBounds(cx - radius, cy - radius, cx + radius, cy + radius)
-			}
-            "ellipse" -> {
-                val cx = xml.double("cx")
-                val cy = xml.double("cy")
-                val rx = xml.double("rx")
-                val ry = xml.double("ry")
-                ellipse(cx - rx, cy - ry, rx * 2, ry * 2)
-                bounds.setBounds(cx - rx, cy - ry, cx + rx, cy + ry)
-            }
-			"polyline", "polygon" -> {
-				beginPath()
-				val ss = StrReader(xml.str("points"))
-
-				val pps = ListReader(mapWhile(cond = { ss.hasMore }, gen = {
-					ss.skipWhile { !it.isNumeric }
-					val out = ss.readWhile { it.isNumeric }.toDouble()
-					ss.skipWhile { !it.isNumeric }
-					out
-				}).toList())
-				val path = GraphicsPath()
-				var edges = 0
-				path.moveTo(pps.read(), pps.read())
-				while (pps.hasMore) {
-					val x = pps.read()
-                    val y = pps.read()
-					path.lineTo(x, y)
-					edges++
-				}
-				if (nodeName == "polygon") path.close()
-				path.getBounds(bounds)
-				//println("bounds: $bounds, edges: $edges")
-				c.path(path)
-			}
-			"line" -> {
-				beginPath()
-				val x1 = xml.double("x1")
-				val y1 = xml.double("y1")
-				val x2 = xml.double("x2")
-				val y2 = xml.double("y2")
-				moveTo(x1, y1)
-				lineTo(x2, y2)
-				bounds.setBounds(x1, y1, x2, y2)
-			}
-			"text" -> {
-			}
-			"path" -> {
-				val d = xml.str("d")
-				val tokens = tokenizePath(d)
-				val tl = ListReader(tokens)
-
-				fun dumpTokens() { for ((n, token) in tokens.withIndex()) warningProcessor?.invoke("- $n: $token") }
-				fun isNextNumber(): Boolean = if (tl.hasMore) tl.peek() is PathTokenNumber else false
-				fun readNumber(): Double {
-					while (tl.hasMore) {
-						val token = tl.read()
-						if (token is PathTokenNumber) return token.value
-                        warningProcessor?.invoke("Invalid path (expected number but found $token) at ${tl.position - 1}")
-						dumpTokens()
-					}
-					return 0.0
-				}
-                fun n(): Double = readNumber()
-                fun nX(relative: Boolean): Double = if (relative) lastX + readNumber() else readNumber()
-                fun nY(relative: Boolean): Double = if (relative) lastY + readNumber() else readNumber()
-
-				fun readNextTokenCmd(): Char? {
-					while (tl.hasMore) {
-						val token = tl.read()
-						if (token is PathTokenCmd) return token.id
-                        warningProcessor?.invoke("Invalid path (expected command but found $token) at ${tl.position - 1}")
-						dumpTokens()
-					}
-					return null
-				}
-
-				//dumpTokens()
-
-				beginPath()
-                moveTo(0.0, 0.0) // Supports relative positioning as first command
-                var lastCX = 0.0
-                var lastCY = 0.0
-                var lastCmd = '-'
-
-                while (tl.hasMore) {
-					val cmd = readNextTokenCmd() ?: break
-                    if (cmd == '\u0000' || cmd.isWhitespaceFast()) continue
-                    val relative = cmd in 'a'..'z' // lower case
-                    var lastCurve = when (lastCmd) {
-                        'S', 'C', 'T', 'Q', 's', 'c', 't', 'q' -> true
-                        else -> false
-                    }
-					when (cmd) {
-						'M', 'm' -> {
-							rMoveTo(n(), n(), relative)
-							while (isNextNumber()) rLineTo(n(), n(), relative)
-						}
-						'L', 'l' -> while (isNextNumber()) rLineTo(n(), n(), relative)
-						'H', 'h' -> while (isNextNumber()) rLineToH(n(), relative)
-						'V', 'v' -> while (isNextNumber()) rLineToV(n(), relative)
-						'Q', 'q' -> while (isNextNumber()) {
-                            val cx = nX(relative)
-                            val cy = nY(relative)
-                            val x2 = nX(relative)
-                            val y2 = nY(relative)
-                            lastCX = cx
-                            lastCY = cy
-                            quadTo(cx, cy, x2, y2)
-                        }
-						'C', 'c' -> while (isNextNumber()) {
-                            val x1 = nX(relative)
-                            val y1 = nY(relative)
-                            val x2 = nX(relative)
-                            val y2 = nY(relative)
-                            val x = nX(relative)
-                            val y = nY(relative)
-                            lastCX = x2
-                            lastCY = y2
-                            cubicTo(x1, y1, x2, y2, x, y)
-                        }
-                        'S', 's' -> {
-                            while (isNextNumber()) {
-                                // https://www.stkent.com/2015/07/03/building-smooth-paths-using-bezier-curves.html
-                                // https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
-
-                                // S produces the same type of curve as earlier—but if it follows another S command or a C command,
-                                // the first control point is assumed to be a reflection of the one used previously.
-                                // If the S command doesn't follow another S or C command, then the current position of the cursor
-                                // is used as the first control point. In this case the result is the same as what the Q command
-                                // would have produced with the same parameters.
-
-                                val x2 = nX(relative)
-                                val y2 = nY(relative)
-                                val x = nX(relative)
-                                val y = nY(relative)
-
-                                val x1 = if (lastCurve) lastX * 2 - lastCX else lastX
-                                val y1 = if (lastCurve) lastY * 2 - lastCY else lastY
-
-                                lastCX = x2
-                                lastCY = y2
-
-                                cubicTo(x1, y1, x2, y2, x, y)
-                                lastCurve = true
-                            }
-                        }
-                        'T', 't' -> {
-                            var n = 0
-                            while (isNextNumber()) {
-                                val x2 = nX(relative)
-                                val y2 = nY(relative)
-                                val cx = if (lastCurve) lastX * 2 - lastCX else lastX
-                                val cy = if (lastCurve) lastY * 2 - lastCY else lastY
-                                //println("[$cmd]: $lastX, $lastY, $cx, $cy, $x2, $y2 :: $lastX - $lastCX :: $cx :: $lastCurve :: $lastCmd")
-                                lastCX = cx
-                                lastCY = cy
-                                quadTo(cx, cy, x2, y2)
-                                n++
-                                lastCurve = true
-                            }
-                        }
-                        'A', 'a' -> {
-                            // Ported from nanosvg (https://github.com/memononen/nanosvg/blob/25241c5a8f8451d41ab1b02ab2d865b01600d949/src/nanosvg.h#L2067)
-                            // Ported from canvg (https://code.google.com/p/canvg/)
-                            var rx = readNumber().absoluteValue				// y radius
-                            var ry = readNumber().absoluteValue				// x radius
-                            val rotx = readNumber() / 180.0 * PI        // x rotation angle
-                            val fa = if ((readNumber().absoluteValue) > 1e-6) 1 else 0	// Large arc
-                            val fs = if ((readNumber().absoluteValue) > 1e-6) 1 else 0	// Sweep direction
-                            val x1 = lastX							// start point
-                            val y1 = lastY                          // end point
-                            val x2 = nX(relative)
-                            val y2 = nY(relative)
-
-                            var dx = x1 - x2
-                            var dy = y1 - y2
-
-                            val d = hypot(dx, dy)
-                            if (d < 1e-6f || rx < 1e-6f || ry < 1e-6f) {
-                                // The arc degenerates to a line
-                                lineTo(x2, y2)
-                            } else {
-                                val sinrx = kotlin.math.sin(rotx)
-                                val cosrx = kotlin.math.cos(rotx)
-
-                                // Convert to center point parameterization.
-                                // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
-                                // 1) Compute x1', y1'
-                                val x1p = cosrx * dx / 2.0f + sinrx * dy / 2.0f
-                                val y1p = -sinrx * dx / 2.0f + cosrx * dy / 2.0f
-                                var d = sqr(x1p) / sqr(rx) + sqr(y1p) / sqr(ry)
-                                if (d > 1) {
-                                    d = sqr(d)
-                                    rx *= d
-                                    ry *= d
-                                }
-                                // 2) Compute cx', cy'
-                                var s = 0.0
-                                var sa = sqr(rx) * sqr(ry) - sqr(rx) * sqr(y1p) - sqr(ry) * sqr(x1p)
-                                val sb = sqr(rx) * sqr(y1p) + sqr(ry) * sqr(x1p)
-                                if (sa < 0.0) sa = 0.0
-                                if (sb > 0.0)
-                                    s = sqrt(sa / sb)
-                                if (fa == fs)
-                                    s = -s
-                                val cxp = s * rx * y1p / ry
-                                val cyp = s * -ry * x1p / rx
-
-                                // 3) Compute cx,cy from cx',cy'
-                                val cx = (x1 + x2) / 2.0 + cosrx * cxp - sinrx * cyp
-                                val cy = (y1 + y2) / 2.0 + sinrx * cxp + cosrx * cyp
-
-                                // 4) Calculate theta1, and delta theta.
-                                val ux = (x1p - cxp) / rx
-                                val uy = (y1p - cyp) / ry
-                                val vx = (-x1p - cxp) / rx
-                                val vy = (-y1p - cyp) / ry
-                                val a1 = vecang(1.0, 0.0, ux, uy)    // Initial angle
-                                var da = vecang(ux, uy, vx, vy)        // Delta angle
-
-                                //	if (vecrat(ux,uy,vx,vy) <= -1.0f) da = NSVG_PI;
-                                //	if (vecrat(ux,uy,vx,vy) >= 1.0f) da = 0;
-
-                                if (fs == 0 && da > 0)
-                                    da -= 2 * PI
-                                else if (fs == 1 && da < 0)
-                                    da += 2 * PI
-
-
-                                // Approximate the arc using cubic spline segments.
-                                t[0] = cosrx
-                                t[1] = sinrx
-                                t[2] = -sinrx
-                                t[3] = cosrx
-                                t[4] = cx
-                                t[5] = cy
-
-                                // Split arc into max 90 degree segments.
-                                // The loop assumes an iteration per end point (including start and end), this +1.
-                                val ndivs = (abs(da) / (PI * 0.5) + 1.0).toInt()
-                                val hda = (da / ndivs.toDouble()) / 2.0
-                                var kappa = abs(4.0f / 3.0f * (1.0f - cos(hda)) / sin(hda))
-                                if (da < 0.0f) kappa = -kappa
-
-                                var ptanx = 0.0
-                                var ptany = 0.0
-                                var px = 0.0
-                                var py = 0.0
-
-                                for (i in 0..ndivs) {
-                                    val a = a1 + da * (i.toDouble() / ndivs.toDouble())
-                                    dx = cos(a)
-                                    dy = sin(a)
-                                    val x = xformPointX(dx*rx, dy*ry, t) // position
-                                    val y = xformPointY( dx*rx, dy*ry, t) // position
-                                    val tanx = xformVecX( -dy*rx * kappa, dx*ry * kappa, t) // tangent
-                                    val tany = xformVecY(-dy*rx * kappa, dx*ry * kappa, t) // tangent
-                                    if (i > 0) {
-                                        cubicTo(px + ptanx, py + ptany, x - tanx, y - tany, x, y)
-                                    }
-                                    px = x
-                                    py = y
-                                    ptanx = tanx
-                                    ptany = tany
-                                }
-
-                                lastX = x2
-                                lastY = y2
-                                //*cpx = x2;
-                                //*cpy = y2;
-                            }
-                        }
-                        'Z', 'z' -> close()
-						else -> {
-                            TODO("Unsupported command '$cmd' (${cmd.toInt()}) : Parsed: '${state.path.toSvgPathString()}', Original: '$d'")
-                        }
-					}
-                    lastCmd = cmd
-				}
-                warningProcessor?.invoke("Parsed SVG Path: '${state.path.toSvgPathString()}'")
-                warningProcessor?.invoke("Original SVG Path: '$d'")
-                warningProcessor?.invoke("Points: ${state.path.getPoints()}")
-				getBounds(bounds)
-			}
-            else -> {
-                warningProcessor?.invoke("Unhandled SVG node '$nodeName'")
-                drawChildren = true
-            }
-		}
-
-        for ((key, it) in attributes) {
-            when (key) {
-                "stroke-width" -> lineWidth = it.toDoubleOrNull() ?: 1.0
-                "stroke-linejoin" -> lineJoin = LineJoin[it]
-                "stroke-linecap" -> lineCap = LineCap[it]
-                "stroke" -> strokeStyle = parseFillStroke(c, it, bounds)
-                "opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0
-                "fill-opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
-                "stroke-opacity" -> globalAlpha *= it.toDoubleOrNull() ?: 1.0 // @TODO: Do this properly
-                "fill" -> applyFill(c, it, bounds)
-                "font-size" -> fontSize = parseSizeAsDouble(it)
-                "font-family" -> font = fontRegistry?.get(it)
-                "text-anchor" -> horizontalAlign = when (it.lowercase().trim()) {
-                    "left" -> HorizontalAlign.LEFT
-                    "center", "middle" -> HorizontalAlign.CENTER
-                    "right", "end" -> HorizontalAlign.RIGHT
-                    else -> horizontalAlign
-                }
-                "alignment-baseline" -> verticalAlign = when (it.lowercase().trim()) {
-                    "hanging" -> VerticalAlign.TOP
-                    "center", "middle" -> VerticalAlign.MIDDLE
-                    "baseline" -> VerticalAlign.BASELINE
-                    "bottom" -> VerticalAlign.BOTTOM
-                    else -> verticalAlign
-                }
-                "fill-rule" -> Unit // @TODO
-            }
-        }
-
-        if (drawChildren) {
-            drawChildren(xml, c, render)
-        }
-
-		when (nodeName) {
-            "text" -> {
-                fillText(xml.text.trim(), xml.double("x") + xml.double("dx"), xml.double("y") + xml.double("dy"))
-            }
-		}
-
-		c.fillStroke()
-	}
-
-    private fun sqr(v: Double) = v * v
-    private fun vmag(x: Double, y: Double): Double {
-        return sqrt(x * x + y * y)
-    }
-
-    private fun vecrat(ux: Double, uy: Double, vx: Double, vy: Double): Double {
-        return (ux * vx + uy * vy) / (vmag(ux, uy) * vmag(vx, vy))
-    }
-
-    private fun vecang(ux: Double, uy: Double, vx: Double, vy: Double): Double {
-        var r = vecrat(ux, uy, vx, vy)
-        if (r < -1.0) r = -1.0
-        if (r > 1.0) r = 1.0
-        return (if (ux * vy < uy * vx) -1.0 else 1.0) * acos(r)
-    }
-    private fun xformPointX(x: Double, y: Double, t: DoubleArray) = x*t[0] + y*t[2] + t[4]
-    private fun xformPointY(x: Double, y: Double, t: DoubleArray) = x*t[1] + y*t[3] + t[5]
-    private fun xformVecX(x: Double, y: Double, t: DoubleArray) = x*t[0] + y*t[2]
-    private fun xformVecY(x: Double, y: Double, t: DoubleArray): Double = x*t[1] + y*t[3]
-
-    fun parseSizeAsDouble(size: String): Double {
-        return size.filter { it !in 'a'..'z' && it !in 'A'..'Z' }.toDoubleOrNull() ?: 16.0
-    }
-
-	fun applyFill(c: Context2d, str: String, bounds: Rectangle) {
-		c.fillStyle = parseFillStroke(c, str, bounds)
-	}
-
-	private fun applyTransform(state: Context2d.State, transform: Matrix) {
-		//println("Apply transform $transform to $state")
-		state.transform.premultiply(transform)
-	}
-
-	fun parseTransform(str: String): Matrix {
-		val tokens = SvgStyle.tokenize(str)
-		val tr = ListReader(tokens)
-		val out = Matrix()
-		//println("Not implemented: parseTransform: $str: $tokens")
-		while (tr.hasMore) {
-			val id = tr.read().toLowerCase()
-			val args = arrayListOf<String>()
-			if (tr.peek() == "(") {
-				tr.read()
-				while (true) {
-					if (tr.peek() == ")") {
-						tr.read()
-						break
-					}
-					if (tr.peek() == ",") {
-						tr.read()
-						continue
-					}
-					args += tr.read()
-				}
-			}
-			val doubleArgs = args.map { it.toDoubleOrNull() ?: 0.0 }
-			fun double(index: Int) = doubleArgs.getOrElse(index) { 0.0 }
-			when (id) {
-				"translate" -> out.pretranslate(double(0), double(1))
-				"scale" -> out.prescale(double(0), if (doubleArgs.size >= 2) double(1) else double(0))
-				"matrix" -> out.premultiply(double(0), double(1), double(2), double(3), double(4), double(5))
-                "rotate" -> {
-                    if (doubleArgs.size >= 3) out.pretranslate(double(1), double(2))
-                    out.prerotate(double(0).degrees)
-                    if (doubleArgs.size >= 3) out.pretranslate(-double(1), -double(2))
-                }
-				else -> invalidOp("Unsupported transform $id : $args : $doubleArgs ($str)")
-			}
-			//println("ID: $id, args=$args")
-		}
-		return out
-	}
 
     class CSSDeclarations {
         val props = LinkedHashMap<String, String>()
@@ -688,78 +486,8 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             return out
         }
 
-        fun parsePercent(str: String, default: Double = 0.0): Double {
-            return if (str.endsWith("%")) {
-                str.substr(0, -1).toDouble() / 100.0
-            } else {
-                str.toDoubleOrNull() ?: default
-            }
-        }
-
-        fun parseStops(xml: Xml): List<Pair<Double, RGBA>> {
-            val out = arrayListOf<Pair<Double, RGBA>>()
-            for (stop in xml.children("stop")) {
-                val info = parseAttributesAndStyles(stop)
-                var offset = 0.0
-                var colorStop = ColorDefaultBlack.defaultColor
-                var alphaStop = 1.0
-                for ((key, value) in info) {
-                    when (key) {
-                        "offset" -> offset = parsePercent(value)
-                        "stop-color" -> colorStop = ColorDefaultBlack[value]
-                        "stop-opacity" -> alphaStop = value.toDoubleOrNull() ?: 1.0
-                    }
-                }
-                out += Pair(offset, RGBA(colorStop.rgb, (alphaStop * 255).toInt()))
-            }
-            return out
-        }
-
-        // @TODO: Do not allocate PathToken!
-		fun tokenizePath(str: String): List<PathToken> {
-			val sr = StrReader(str)
-			fun StrReader.skipSeparators() {
-				skipWhile { it == ',' || it == ' ' || it == '\t' || it == '\n' || it == '\r' }
-			}
-
-			fun StrReader.readNumber(): Double {
-				skipSeparators()
-				var first = true
-				val str = readWhile {
-                    when {
-                        first -> {
-                            first = false
-                            it.isDigit() || it == '-' || it == '+'
-                        }
-                        it == 'e' || it == 'E' -> {
-                            first = true
-                            true
-                        }
-                        else -> {
-                            it.isDigit() || it == '.'
-                        }
-                    }
-				}
-				return if (str.isEmpty()) 0.0 else try {
-					str.toDouble()
-				} catch (e: Throwable) {
-					e.printStackTrace()
-					0.0
-				}
-			}
-
-			val out = arrayListOf<PathToken>()
-			while (sr.hasMore) {
-				sr.skipSeparators()
-				val c = sr.peekChar()
-				out += if (c in '0'..'9' || c == '-' || c == '+') {
-					PathTokenNumber(sr.readNumber())
-				} else {
-					PathTokenCmd(sr.readChar())
-				}
-			}
-			return out
-		}
+        @Deprecated("", ReplaceWith("SvgPath.tokenizePath(str)"))
+		fun tokenizePath(str: String): List<PathToken> = SvgPath.tokenizePath(str)
 	}
 
 	interface PathToken {
@@ -771,58 +499,4 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 	data class PathTokenCmd(val id: Char) : PathToken {
         override val anyValue: Any get() = id
     }
-
-	data class SvgStyle(
-		val styles: MutableMap<String, String> = hashMapOf()
-	) {
-		companion object {
-			fun tokenize(str: String): List<String> {
-				val sr = StrReader(str)
-				val out = arrayListOf<String>()
-				while (sr.hasMore) {
-					while (true) {
-						sr.skipSpaces()
-						val id = sr.readWhile { it.isLetterOrUnderscore() || it.isNumeric || it == '-' || it == '#' }
-						if (id.isNotEmpty()) {
-							out += id
-						} else {
-							break
-						}
-					}
-					if (sr.eof) break
-					sr.skipSpaces()
-					val symbol = sr.read()
-					out += "$symbol"
-				}
-				return out
-			}
-
-			fun ListReader<String>.readId() = this.read()
-			fun ListReader<String>.readColon() = expect(":")
-			fun ListReader<String>.readExpression() = this.read()
-
-			fun parse(str: String, warningProcessor: ((message: String) -> Unit)? = null): SvgStyle {
-				val tokens = tokenize(str)
-				val tr = ListReader(tokens)
-				//println("Style: $str : $tokens")
-				val style = SvgStyle()
-				while (tr.hasMore) {
-					val id = tr.readId()
-					if (tr.eof) {
-                        warningProcessor?.invoke("EOF. Parsing (ID='$id'): '$str', $tokens")
-						break
-					}
-					tr.readColon()
-					val rexpr = arrayListOf<String>()
-					while (tr.hasMore && tr.peek() != ";") {
-						rexpr += tr.readExpression()
-					}
-					style.styles[id.toLowerCase()] = rexpr.joinToString("")
-					if (tr.hasMore) tr.expect(";")
-					//println("$id --> $rexpr")
-				}
-				return style
-			}
-		}
-	}
 }

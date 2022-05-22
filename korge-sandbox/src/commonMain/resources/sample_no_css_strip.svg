@@ -1,0 +1,24 @@
+<svg id="e3cpZqDbltQ1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     viewBox="0 0 300 300" shape-rendering="geometricPrecision" text-rendering="geometricPrecision">
+    <defs>
+        <radialGradient id="fill1" cx="0" cy="0" r="50" spreadMethod="pad"
+                        gradientUnits="userSpaceOnUse" gradientTransform="translate(0 0)">
+            <stop id="e3cpZqDbltQ22-fill-0" offset="0%" stop-color="#3e4c68"/>
+            <stop id="e3cpZqDbltQ22-fill-1" offset="100%" stop-color="#000000"/>
+        </radialGradient>
+        <radialGradient id="fill2" cx="0.5" cy="0.5" r="0.5" spreadMethod="repeat"
+                        gradientUnits="objectBoundingBox" gradientTransform="translate(1 0)">
+            <stop id="e3cpZqDbltQ22-fill-0" offset="0%" stop-color="#3e4c68"/>
+            <stop id="e3cpZqDbltQ22-fill-1" offset="100%" stop-color="#000000"/>
+        </radialGradient>
+    </defs>
+    <circle r="50" transform="matrix(1.569486 0 0 0.580533 50 50)"
+            fill="url(#fill1)"/>
+    <circle r="90" transform="matrix(1.569486 0 0 0.580533 140 140)"
+            fill="url(#fill2)"/>
+
+    <!--
+    <rect x="-90" y="0" width="180" height="180" transform="matrix(1.569486 0 0 0.580533 140 140)"
+          fill="url(#fill2)"/>
+          -->
+</svg>

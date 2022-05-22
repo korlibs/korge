@@ -360,14 +360,15 @@ inline fun VectorPath.emitPoints2(
         },
         quadTo = { x0, y0, x1, y1 ->
             val sum = Point.distance(lx, ly, x0, y0) + Point.distance(x0, y0, x1, y1)
-            approximateCurve(sum.toInt(), { ratio, get -> Bezier.quadCalc(lx, ly, x0, y0, x1, y1, ratio) { x, y -> get(x, y) } }) { x, y -> emit(x, y, false) }
+            approximateCurve(sum.toInt(), { ratio, get -> Bezier.quadCalc(lx, ly, x0, y0, x1, y1, ratio) { x, y -> get(x, y) } }, { x, y -> emit(x, y, false) })
             lx = x1
             ly = y1
             joint(false)
         },
         cubicTo = { x0, y0, x1, y1, x2, y2 ->
             val sum = Point.distance(lx, ly, x0, y0) + Point.distance(x0, y0, x1, y1) + Point.distance(x1, y1, x2, y2)
-            approximateCurve(sum.toInt(), { ratio, get -> Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, ratio) { x, y -> get(x, y) }}) { x, y -> emit(x, y, false) }
+            approximateCurve(sum.toInt(), { ratio, get ->
+                Bezier.cubicCalc(lx, ly, x0, y0, x1, y1, x2, y2, ratio) { x, y -> get(x, y) }}, { x, y -> emit(x, y, false) })
             lx = x2
             ly = y2
             joint(false)
@@ -386,8 +387,10 @@ fun VectorPath.getPoints2(out: PointArrayList = PointArrayList()): PointArrayLis
     return out
 }
 
-inline fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
-inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
+@Deprecated("", ReplaceWith("buildVectorPath(out, block)"))
+inline fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, block)
+@Deprecated("", ReplaceWith("buildVectorPath(out, winding, block)"))
+inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, winding, block)
 
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
@@ -395,7 +398,9 @@ inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Wi
 inline fun approximateCurve(
     curveSteps: Int,
     crossinline compute: (ratio: Double, get: (x: Double, y: Double) -> Unit) -> Unit,
-    crossinline emit: (x: Double, y: Double) -> Unit
+    crossinline emit: (x: Double, y: Double) -> Unit,
+    includeStart: Boolean = false,
+    includeEnd: Boolean = true,
 ) {
     val rcurveSteps = max(curveSteps, 20)
     val dt = 1.0 / rcurveSteps
@@ -408,7 +413,9 @@ inline fun approximateCurve(
         lastX = x
         lastY = y
     }
-    for (n in 1 until rcurveSteps) {
+    val nStart = if (includeStart) 0 else 1
+    val nEnd = if (includeEnd) rcurveSteps else rcurveSteps - 1
+    for (n in nStart .. nEnd) {
         val ratio = n * dt
         //println("ratio: $ratio")
         compute(ratio) { x, y ->

@@ -22,6 +22,18 @@ class SvgTest {
     }
 
     @Test
+    fun testTokenizePath2() {
+        val tokens = SVG.tokenizePath("M117.35,110.75v-34.42c.34-.45.68-.89,1.05-1.31v37c-.4-.38-.71-.83-1.05-1.27Z").map { it.anyValue }
+        assertEquals(listOf('M', 117.35, 110.75, 'v', -34.42, 'c', 0.34, -0.45, 0.68, -0.89, 1.05, -1.31, 'v', 37.0, 'c', -0.4, -0.38, -0.71, -0.83, -1.05, -1.27, 'Z'), tokens)
+    }
+
+    @Test
+    fun testTokenizePath3() {
+        val tokens = SVG.tokenizePath("M.1-.1.1").map { it.anyValue }
+        assertEquals(arrayListOf('M', 0.1, -0.1, 0.1), tokens)
+    }
+
+    @Test
     fun testShapeCoords() {
         val svg = SVG("""
             <?xml version="1.0" encoding="UTF-8" standalone="no"?>

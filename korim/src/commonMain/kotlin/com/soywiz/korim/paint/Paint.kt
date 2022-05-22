@@ -6,6 +6,7 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korma.geom.Angle
@@ -14,6 +15,7 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.vector.VectorPath
 import kotlin.math.sqrt
 
 interface Paint {
@@ -33,6 +35,9 @@ val DefaultPaint get() = Colors.BLACK
 
 interface TransformedPaint : Paint {
     val transform: Matrix
+    val units: GradientUnits
+    fun applyMatrix(m: Matrix): TransformedPaint = replaceMatrix(this.transform * m)
+    fun replaceMatrix(m: Matrix): TransformedPaint
 }
 
 enum class GradientKind {
@@ -62,7 +67,7 @@ data class GradientPaint(
     val cycle: CycleMethod = CycleMethod.NO_CYCLE,
     override val transform: Matrix = Matrix(),
     val interpolationMethod: GradientInterpolationMethod = GradientInterpolationMethod.NORMAL,
-    val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
+    override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
 ) : TransformedPaint {
     @Deprecated("")
     fun x0(m: Matrix) = m.transformX(x0, y0)
@@ -191,14 +196,23 @@ data class GradientPaint(
         //return getRatioAt(x, y)
     }
 
-    fun applyMatrix(m: Matrix): GradientPaint = copy(transform = transform * m)
+    //override fun applyMatrix(m: Matrix): GradientPaint = copy(transform = transform * m)
+    override fun replaceMatrix(m: Matrix): GradientPaint = copy(transform = m)
 
     override fun clone(): Paint = copy(transform = transform.clone())
 
-    override fun toString(): String = when (kind) {
-        GradientKind.LINEAR -> "LinearGradient($x0, $y0, $x1, $y1, $stops, $colors)"
-        GradientKind.RADIAL -> "RadialGradient($x0, $y0, $r0, $x1, $y1, $r1, $stops, $colors)"
-        GradientKind.SWEEP -> "SweepGradient($x0, $y0, $stops, $colors)"
+    private fun colorsToString(colors: RgbaArray): String = "[" + colors.joinToString(", ") { it.hexString } + "]"
+    private fun colorsToString(colors: IntArrayList): String = colorsToString(RgbaArray(colors.toIntArray()))
+
+    override fun toString(): String {
+        return buildString {
+            append(when (kind) {
+                GradientKind.LINEAR -> "LinearGradient([$x0, $y0], [$x1, $y1]"
+                GradientKind.RADIAL -> "RadialGradient([$x0, $y0, $r0], [$x1, $y1, $r1]"
+                GradientKind.SWEEP -> "SweepGradient([$x0, $y0]"
+            })
+            append(", stops=$stops, colors=${colorsToString(colors)}, cycle=$cycle, transform=$transform, interpolationMethod=$interpolationMethod, units=$units)")
+        }
     }
 }
 
@@ -217,7 +231,8 @@ data class BitmapPaint(
     override val transform: Matrix = Matrix(),
     val cycleX: CycleMethod = CycleMethod.NO_CYCLE,
     val cycleY: CycleMethod = CycleMethod.NO_CYCLE,
-    val smooth: Boolean = true
+    val smooth: Boolean = true,
+    override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
 ) : TransformedPaint {
     val repeatX: Boolean get() = cycleX.repeating
     val repeatY: Boolean get() = cycleY.repeating
@@ -225,6 +240,9 @@ data class BitmapPaint(
 
     val bmp32 = bitmap.toBMP32()
     override fun clone(): Paint = copy(transform = transform.clone())
+
+    //override fun applyMatrix(m: Matrix): BitmapPaint = copy(transform = transform * m)
+    override fun replaceMatrix(m: Matrix): BitmapPaint = copy(transform = m)
 
     //override fun transformed(m: Matrix) = BitmapPaint(bitmap, Matrix().multiply(this.transform, m))
     override fun toString(): String = "BitmapPaint($bitmap, cycle=($cycleX, $cycleY), smooth=$smooth, transform=$transform)"
@@ -242,3 +260,17 @@ ctx.translate(100, 20)
 ctx.scale(2, 2)
 ctx.fillRect(100, 100, 100, 100);
 */
+
+fun Paint.getPaintWithUnits(transform: Matrix, path: VectorPath): Paint {
+    val paint = this
+    if (paint !is TransformedPaint) return this
+    if (paint.units == GradientUnits.USER_SPACE_ON_USE) return this
+    //val points = path.clone().applyTransform(transform).getPoints2()
+    //val points = path.getPoints2()
+    //val bounds = BoundsBuilder().add(path.getPoints2()).getBounds()
+    val bounds = path.getBounds()
+    val m = Matrix()
+    m.pretranslate(bounds.x, bounds.y)
+    m.prescale(bounds.width, bounds.height)
+    return paint.replaceMatrix(paint.transform * m * transform.inverted())
+}

@@ -43,4 +43,12 @@ class StringExtTest {
 		assertEquals("0F", "%02X".format(15))
 	}
 
+    @Test
+    fun testSubstringEquals() {
+        assertEquals(true, String.substringEquals("hola", 1, "caracola", 5, 3))
+        assertEquals(false, String.substringEquals("hola", -1, "caracola", 5, 3))
+        assertEquals(false, String.substringEquals("hola", -1, "caracola", 5, 6))
+        assertEquals(false, String.substringEquals("hola", -1, "caracola", 9, 6))
+    }
+
 }

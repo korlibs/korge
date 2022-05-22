@@ -7,6 +7,7 @@ import com.soywiz.korio.lang.IOException
 import com.soywiz.korio.lang.String_fromCharArray
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.lang.substr
+import com.soywiz.korio.lang.substringEquals
 import kotlin.collections.*
 import kotlin.math.max
 import kotlin.math.min
@@ -112,7 +113,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     }
 
     fun tryLit(lit: String): String? {
-        if (substr(this.pos, lit.length) != lit) return null
+        if (!String.substringEquals(this.str, this.pos, lit, 0, lit.length)) return null
         this.pos += lit.length
         return lit
     }

@@ -510,6 +510,9 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix) {
 }
 
 fun BoundsBuilder.add(path: VectorPath) {
+    //add(path.getPoints2())
+    //return
+
     val bb = this
     var lx = 0.0
     var ly = 0.0

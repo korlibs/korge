@@ -2,12 +2,14 @@ package com.soywiz.korma.geom.shape
 
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.map
 import com.soywiz.korma.geom.shape.ops.extend
 import com.soywiz.korma.geom.shape.ops.intersection
 import com.soywiz.korma.geom.shape.ops.union
 import com.soywiz.korma.geom.shape.ops.xor
 import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 import com.soywiz.korma.geom.vector.rect
@@ -69,6 +71,7 @@ class Shape2dTest {
         assertNull(PointArrayList(a, b, c, a).toRectangleOrNull())
         assertNull(PointArrayList(a, b, b, c).toRectangleOrNull())
         assertNull(PointArrayList(a, a, a, a).toRectangleOrNull())
+
 
         assertNull(PointArrayList(Point(0.0, 1.0), Point(1.0, 2.0), Point(2.0, 2.0), Point(2.0, 1.0)).toRectangleOrNull())
         assertNull(PointArrayList(Point(1.0, 1.0), Point(0.0, 2.0), Point(2.0, 2.0), Point(2.0, 1.0)).toRectangleOrNull())
@@ -144,6 +147,44 @@ class Shape2dTest {
                 val kind = if (it.closed) "closed" else "opened"
                 "$kind : " + it.toPoints().joinToString(",") { "(${it.x.niceStr},${it.y.niceStr})" }
             }
+        )
+    }
+
+    @Test
+    fun testApproximateCurve() {
+        fun approx(start: Boolean, end: Boolean) = arrayListOf<String>().also { out ->
+            approximateCurve(
+                10,
+                { ratio, get -> get(ratio * 100, -ratio * 100) },
+                { x, y -> out.add("(${x.toInt()},${y.toInt()})") },
+                start, end
+            )
+        }.joinToString(" ")
+        assertEquals(
+            "(5,-5) (10,-10) (15,-15) (20,-20) (25,-25) (30,-30) (35,-35) (40,-40) (45,-45) (50,-50) (55,-55) (60,-60) (65,-65) (70,-70) (75,-75) (80,-80) (85,-85) (90,-90) (95,-95)",
+            approx(start = false, end = false)
+        )
+        assertEquals(
+            "(5,-5) (10,-10) (15,-15) (20,-20) (25,-25) (30,-30) (35,-35) (40,-40) (45,-45) (50,-50) (55,-55) (60,-60) (65,-65) (70,-70) (75,-75) (80,-80) (85,-85) (90,-90) (95,-95) (100,-100)",
+            approx(start = false, end = true)
+        )
+        assertEquals(
+            "(0,0) (5,-5) (10,-10) (15,-15) (20,-20) (25,-25) (30,-30) (35,-35) (40,-40) (45,-45) (50,-50) (55,-55) (60,-60) (65,-65) (70,-70) (75,-75) (80,-80) (85,-85) (90,-90) (95,-95)",
+            approx(start = true, end = false)
+        )
+        assertEquals(
+            "(0,0) (5,-5) (10,-10) (15,-15) (20,-20) (25,-25) (30,-30) (35,-35) (40,-40) (45,-45) (50,-50) (55,-55) (60,-60) (65,-65) (70,-70) (75,-75) (80,-80) (85,-85) (90,-90) (95,-95) (100,-100)",
+            approx(start = true, end = true)
+        )
+    }
+
+    @Test
+    fun testApproximateCurve2() {
+        val path = buildVectorPath { circle(0, 0, 10) }
+        val pointsStr = path.getPoints2().map { x, y -> "(${(x * 100).toInt()},${(y * 100).toInt()})" }.joinToString(" ")
+        assertEquals(
+            "(1000,0) (996,-82) (986,-162) (970,-240) (949,-316) (921,-389) (888,-459) (850,-526) (807,-590) (759,-650) (707,-707) (650,-759) (590,-807) (526,-850) (459,-888) (389,-921) (316,-949) (240,-970) (162,-986) (82,-996) (0,-1000) (-82,-996) (-162,-986) (-240,-970) (-316,-949) (-389,-921) (-459,-888) (-526,-850) (-590,-807) (-650,-759) (-707,-707) (-759,-650) (-807,-590) (-850,-526) (-888,-459) (-921,-389) (-949,-316) (-970,-240) (-986,-162) (-996,-82) (-1000,0) (-996,82) (-986,162) (-970,240) (-949,316) (-921,389) (-888,459) (-850,526) (-807,590) (-759,650) (-707,707) (-650,759) (-590,807) (-526,850) (-459,888) (-389,921) (-316,949) (-240,970) (-162,986) (-82,996) (0,1000) (82,996) (162,986) (240,970) (316,949) (389,921) (459,888) (526,850) (590,807) (650,759) (707,707) (759,650) (807,590) (850,526) (888,459) (921,389) (949,316) (970,240) (986,162) (996,82) (1000,0) (1000,0)",
+            pointsStr
         )
     }
 }

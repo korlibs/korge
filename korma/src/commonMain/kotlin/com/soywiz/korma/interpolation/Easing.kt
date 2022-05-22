@@ -1,11 +1,15 @@
 package com.soywiz.korma.interpolation
 
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.math.clamp
 import kotlin.math.PI
+import kotlin.math.absoluteValue
 import kotlin.math.pow
 import kotlin.math.sin
 
 private inline fun combine(it: Double, start: Easing, end: Easing) =
     if (it < 0.5) 0.5 * start(it * 2.0) else 0.5 * end((it - 0.5) * 2.0) + 0.5
+
 private const val BOUNCE_FACTOR = 1.70158
 private const val HALF_PI = PI / 2.0
 
@@ -14,6 +18,42 @@ fun interface Easing {
     operator fun invoke(it: Double): Double
 
     companion object {
+        fun steps(steps: Int, easing: Easing): Easing = Easing {
+            easing((it * steps).toInt().toDouble() / steps)
+        }
+
+        fun cubic(x1: Double, y1: Double, x2: Double, y2: Double): Easing {
+            // @TODO: We need to heavily optimize this. If we can have a formula instead of doing a bisect, this would be much faster.
+            val cubic = Bezier.Cubic(0.0, 0.0, x1.clamp(0.0, 1.0), y1, x2.clamp(0.0, 1.0), y2, 1.0, 1.0)
+            return Easing { time ->
+                val x = time
+                var pivotLeft = if (time < 0.0) time else 0.0
+                var pivotRight = if (time > 1.0) time else 1.0
+                var pivot = 0.5
+                var lastX = 0.0
+                var lastY = 0.0
+                var steps = 0
+                for (n in 0 until 40) {
+                    steps++
+                    val res = cubic.calc(pivot)
+                    lastX = res.x
+                    lastY = res.y
+                    if ((lastX - x).absoluteValue < 0.001) break
+                    if (x < lastX) {
+                        pivotRight = pivot
+                        pivot = (pivotLeft + pivot) * 0.5
+                    } else if (x > lastX) {
+                        pivotLeft = pivot
+                        pivot = (pivotRight + pivot) * 0.5
+                    } else {
+                        break
+                    }
+                }
+                //println("Requested requestedX=$x, lastX=$lastX pivot=$pivot, steps=$steps, lastY=$lastY")
+                lastY
+            }
+        }
+
         fun cubic(f: (t: Double, b: Double, c: Double, d: Double) -> Double): Easing = Easing { f(it, 0.0, 1.0, 1.0) }
         fun combine(start: Easing, end: Easing) = Easing { combine(it, start, end) }
 
@@ -161,7 +201,13 @@ private enum class Easings : Easing {
     EASE_SINE {
         override fun invoke(it: Double): Double = sin(it * HALF_PI)
     },
-    EASE_CLAMP_START { override fun invoke(it: Double): Double = if (it <= 0.0) 0.0 else 1.0 },
-    EASE_CLAMP_END { override fun invoke(it: Double): Double = if (it < 1.0) 0.0 else 1.0 },
-    EASE_CLAMP_MIDDLE { override fun invoke(it: Double): Double = if (it < 0.5) 0.0 else 1.0 },
+    EASE_CLAMP_START {
+        override fun invoke(it: Double): Double = if (it <= 0.0) 0.0 else 1.0
+    },
+    EASE_CLAMP_END {
+        override fun invoke(it: Double): Double = if (it < 1.0) 0.0 else 1.0
+    },
+    EASE_CLAMP_MIDDLE {
+        override fun invoke(it: Double): Double = if (it < 0.5) 0.0 else 1.0
+    },
 }

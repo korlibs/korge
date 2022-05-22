@@ -94,6 +94,7 @@ class GpuShapeViewCommands {
     }
 
     private val decomposed = Matrix.Transform()
+    private val texturesToDelete = FastArrayList<AG.Texture>()
     fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, globalAlpha: Double) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
@@ -175,12 +176,19 @@ class GpuShapeViewCommands {
                 }
             }
         }
+        for (tex in texturesToDelete) {
+            ag.tempTexturePool.free(tex)
+        }
+        texturesToDelete.clear()
     }
 
     private fun resolve(ctx: RenderContext, uniforms: AG.UniformValues, texUniforms: AG.UniformValues) {
         texUniforms.fastForEach { uniform, value ->
             if (value is Bitmap) {
-                uniforms[uniform] = AG.TextureUnit(ctx.getTex(value).base)
+                val tex = ctx.ag.tempTexturePool.alloc()
+                tex.upload(value)
+                uniforms[uniform] = AG.TextureUnit(tex)
+                texturesToDelete.add(tex)
             }
         }
     }
