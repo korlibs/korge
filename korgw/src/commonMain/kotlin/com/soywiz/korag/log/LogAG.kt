@@ -450,6 +450,6 @@ open class LogBaseAG(
         LogRenderBuffer(renderBufferId++, isMain = true).apply { log("createMainRenderBuffer():$id", Kind.FRAME_BUFFER) }
 
     override fun flipInternal() = log("flipInternal()", Kind.FLIP)
-	override fun readColor(bitmap: Bitmap32) = log("$this.readBitmap($bitmap)", Kind.READ)
+	override fun readColor(bitmap: Bitmap32, x: Int, y: Int) = log("$this.readBitmap($bitmap, $x, $y)", Kind.READ)
 	override fun readDepth(width: Int, height: Int, out: FloatArray) = log("$this.readDepth($width, $height, $out)", Kind.READ)
 }

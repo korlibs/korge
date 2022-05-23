@@ -368,7 +368,7 @@ open class AGSoftware(val bitmap: Bitmap32) : AG() {
         return out.setTo((((x + 1f) * .5f) * bitmap.width).toInt(), (((y + 1f) * .5f) * bitmap.height).toInt())
     }
 
-    override fun readColor(bitmap: Bitmap32) {
+    override fun readColor(bitmap: Bitmap32, x: Int, y: Int) {
         println("WARNNING. AGSoftware.readColor not implemented")
     }
     override fun readDepth(width: Int, height: Int, out: FloatArray) {

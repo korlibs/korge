@@ -36,7 +36,6 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.RectangleInt
@@ -1255,8 +1254,11 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         renderBufferStack.removeAt(renderBufferStack.size - 1)
     }
 
-    open fun readColor(bitmap: Bitmap32) {
-        commandsSync { it.readPixels(0, 0, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
+    // @TODO: Rename to Sync and add Suspend versions
+    fun readPixel(x: Int, y: Int): RGBA = Bitmap32(1, 1).also { readColor(it, x, y) }.data[0]
+
+    open fun readColor(bitmap: Bitmap32, x: Int = 0, y: Int = 0) {
+        commandsSync { it.readPixels(x, y, bitmap.width, bitmap.height, bitmap.data.ints, ReadKind.COLOR) }
     }
     open fun readDepth(width: Int, height: Int, out: FloatArray) {
         commandsSync { it.readPixels(0, 0, width, height, out, ReadKind.DEPTH) }

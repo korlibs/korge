@@ -4,9 +4,7 @@ import com.soywiz.korag.*
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import kotlinx.coroutines.*
 import java.awt.*
 import kotlin.test.*
