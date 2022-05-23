@@ -9,7 +9,9 @@ import com.soywiz.korag.shader.Program
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
 import com.soywiz.korim.color.Colors
+import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
 private var View.__mask: View? by extraProperty { null }
 
 fun <T : View> T.mask(mask: View?): T {

@@ -6,6 +6,7 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.filter.ComposedFilter
 import com.soywiz.korge.view.filter.Filter
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * An optional [Filter] attached to this view.
@@ -49,6 +50,7 @@ fun View.removeFilter(filter: Filter) {
 }
 
 /** Usually a value between [0.0, 1.0] */
+@ThreadLocal
 var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
 fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = true) {
