@@ -465,7 +465,7 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
-ViewsForTesting.LogAG.readBitmap(Bitmap32(512, 512))
+ViewsForTesting.LogAG.readBitmap(Bitmap32(512, 512), 0, 0)
 RenderBuffer[0].set()
 RenderBuffer[1].setSize(512, 512)
 RenderBuffer[1].set()

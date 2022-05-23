@@ -118,6 +118,6 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
-ViewsForTesting.LogAG.readBitmap(Bitmap32(150, 100))
+ViewsForTesting.LogAG.readBitmap(Bitmap32(150, 100), 0, 0)
 textureCreate: 2
 createTexture():1
