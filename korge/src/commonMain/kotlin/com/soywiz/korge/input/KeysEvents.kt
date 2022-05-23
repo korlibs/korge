@@ -17,6 +17,7 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.waitSubscriberCloseable
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.Closeable
+import kotlin.native.concurrent.ThreadLocal
 
 class KeysEvents(override val view: View) : KeyComponent {
     @PublishedApi
@@ -113,7 +114,9 @@ class KeysEvents(override val view: View) : KeyComponent {
 	}
 }
 
+@ThreadLocal
 val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
+
 inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
 
 suspend fun KeysEvents.waitUp(key: Key): KeyEvent = waitUp { it.key == key }

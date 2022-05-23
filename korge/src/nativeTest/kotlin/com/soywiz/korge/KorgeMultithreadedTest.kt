@@ -1,6 +1,10 @@
 package com.soywiz.korge
 
 import com.soywiz.klock.*
+import com.soywiz.korev.Key
+import com.soywiz.korge.input.keys
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.touch
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.BlurFilter
@@ -47,6 +51,17 @@ class KorgeMultithreadedTest {
                     .filterScale(0.1)
                     .mask(solidRect(5, 5))
                 this.views.render()
+                rect.keys {
+                    down(Key.UP) { }
+                    down(Key.DOWN) { }
+                }
+                rect.mouse {
+                    onDown {  }
+                }
+                rect.touch {
+                    start { }
+                    end { }
+                }
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"
             }

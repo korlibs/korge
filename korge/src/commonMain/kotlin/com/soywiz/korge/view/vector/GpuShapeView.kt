@@ -523,7 +523,7 @@ open class GpuShapeView(
         return PointsResult(bb.getBounds(), points.size + 2)
     }
 
-    var maxRenderCount: Int = 100000
+    var maxRenderCount: Int = 100_000
     //var maxRenderCount: Int = 1
     //var maxRenderCount: Int = 14
         set(value) {
@@ -531,12 +531,12 @@ open class GpuShapeView(
             invalidateShape()
         }
 
-    init {
-        keys {
-            down(Key.UP) { maxRenderCount++ }
-            down(Key.DOWN) { maxRenderCount-- }
-        }
-    }
+    //init {
+    //    keys {
+    //        down(Key.UP) { maxRenderCount++ }
+    //        down(Key.DOWN) { maxRenderCount-- }
+    //    }
+    //}
 
     private fun renderFill(shape: FillShape) {
         //println("maxRenderCount=$maxRenderCount")
