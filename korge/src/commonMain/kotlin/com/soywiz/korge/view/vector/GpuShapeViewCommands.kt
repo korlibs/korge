@@ -95,7 +95,7 @@ class GpuShapeViewCommands {
 
     private val decomposed = Matrix.Transform()
     private val texturesToDelete = FastArrayList<AG.Texture>()
-    fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, globalAlpha: Double) {
+    fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, globalAlpha: Double, applyScissor: Boolean) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
         verticesToDelete.clear()
@@ -111,6 +111,11 @@ class GpuShapeViewCommands {
                     decomposed.scaleX
                     decomposed.scaleY
                     ag.commandsNoWait { list ->
+                        // applyScissor is for using the ctx.batch.scissor infrastructure
+                        if (!applyScissor) {
+                            list.disableScissor()
+                        }
+
                         //list.setScissorState(ag, AG.Scissor().setTo(rect))
                         //list.disableScissor()
 
@@ -139,6 +144,9 @@ class GpuShapeViewCommands {
                                             //is FinishCommand -> list.flush()
                                             is ScissorCommand -> {
                                                 val rect = cmd.scissor.clone()
+                                                // @TODO: Do scissor intersection
+                                                if (applyScissor) {
+                                                }
                                                 rect.applyTransform(globalMatrix)
                                                 list.setScissorState(ag, AG.Scissor().setTo(rect))
                                             }

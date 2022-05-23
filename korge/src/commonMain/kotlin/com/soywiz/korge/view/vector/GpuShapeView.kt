@@ -190,7 +190,7 @@ open class GpuShapeView(
     }
 
     private fun renderCommands(ctx: RenderContext, doRequireTexture: Boolean) {
-        gpuShapeViewCommands.render(ctx, if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix, localMatrix, renderAlpha)
+        gpuShapeViewCommands.render(ctx, if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix, localMatrix, renderAlpha, applyScissor)
     }
 
     private fun renderShape(shape: Shape) {
