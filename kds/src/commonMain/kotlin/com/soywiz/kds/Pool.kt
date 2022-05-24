@@ -11,6 +11,10 @@ open class ConcurrentPool<T>(private val reset: (T) -> Unit = {}, preallocate: I
         return lock { super.alloc() }
     }
 
+    override fun clear() {
+        lock { super.clear() }
+    }
+
     override fun free(element: T) {
         lock { super.free(element) }
     }
@@ -47,6 +51,11 @@ open class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, pr
 
     interface Poolable {
         fun reset()
+    }
+
+    open fun clear() {
+        items.clear()
+        lastId = 0
     }
 
     open fun free(element: T) {

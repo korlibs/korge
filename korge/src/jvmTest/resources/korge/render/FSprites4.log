@@ -169,9 +169,9 @@ draw: TRIANGLE_FAN, offset=0, count=4, instances=4, indexType=null
 ::draw.instance[1]: a_rxy[200,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[1]
 ::draw.instance[2]: a_rxy[300,100], a_scale[1,1], a_rangle[0], a_axy[0.49999237,0], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[2]
 ::draw.instance[3]: a_rxy[400,100], a_scale[1,1], a_rangle[0], a_axy[0,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[3]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 Buffer[4].afterSetMem(mem[512])
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish

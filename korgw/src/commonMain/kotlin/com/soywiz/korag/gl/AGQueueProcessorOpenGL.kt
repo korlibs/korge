@@ -11,6 +11,9 @@ import com.soywiz.kgl.genBuffer
 import com.soywiz.kgl.genFramebuffer
 import com.soywiz.kgl.genRenderbuffer
 import com.soywiz.kgl.genTexture
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.Stopwatch
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.FBuffer
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.fbuffer
@@ -81,9 +84,21 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         gl.handleContextLost()
     }
 
+    //var doPrintTimer = Stopwatch().also { it.start() }
+    //var doPrint = false
+
     override fun finish() {
         gl.flush()
         gl.finish()
+
+       //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
+       //    println("---------------------------------")
+       //    doPrintTimer.restart()
+       //    true
+       //} else {
+       //    false
+       //}
+
     }
 
     override fun enableDisable(kind: AGEnable, enable: Boolean) {
@@ -374,9 +389,11 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
 
     override fun uboCreate(id: Int) {
+        //println("uboCreate: id=$id")
     }
 
     override fun uboDelete(id: Int) {
+        //println("uboDelete: id=$id")
         if (id < ubos.size) ubos[id] = null
     }
 
@@ -393,9 +410,12 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     private val tempFloats = FloatArray(16 * TEMP_MAX_MATRICES)
     private val mat3dArray = arrayOf(Matrix3D())
 
+
     override fun uboUse(id: Int) {
         val uniforms = ubos[id] ?: return
         val glProgram = currentProgram ?: return
+
+        //if (doPrint) println("-----------")
 
         var textureUnit = 0
         //for ((uniform, value) in uniforms) {
@@ -421,6 +441,11 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                         textureBindEnsuring(tex)
                         textureSetWrap(tex)
                         textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
+                        //val texture = textures[tex.texId]
+                        //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
+                    } else {
+                        gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+                        //if (doPrint) println("NULL TEXTURE")
                     }
 
                     gl.uniform1i(location, textureUnit)
@@ -616,17 +641,17 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     internal val textures = FastResources { TextureInfo(it) }
 
     override fun textureCreate(textureId: Int) {
-        textures.getOrCreate(textureId).glId = gl.genTexture()
+        val tex = textures.getOrCreate(textureId)
+        tex.glId = gl.genTexture()
+        //println("gl.textureCreate: textureId=$textureId, tex=${tex.id}, glId=${tex.glId}")
     }
 
     override fun textureDelete(textureId: Int) {
-        val info = textures.tryGetAndDelete(textureId)
-        if (info != null) {
-            if (info.glId > 0) {
-                gl.deleteTexture(info.glId)
-                info.glId = 0
-            }
-        }
+        val tex = textures.tryGetAndDelete(textureId) ?: return
+        //println("gl.textureDelete: textureId=$textureId, tex=${tex.id}, glId=${tex.glId}")
+        if (tex.glId <= 0) return
+        gl.deleteTexture(tex.glId)
+        tex.glId = 0
     }
 
     override fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int) {
@@ -642,6 +667,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
         // Context lost
         if (tex.cachedVersion != contextVersion) {
+            println("Texture context lost")
             tex.cachedVersion = contextVersion
             tex.invalidate()
             textureCreate(tex.texId)
@@ -715,19 +741,19 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                     }
                 }
 
-                _textureUpdate(tex.implForcedTexTarget, index, rbmp, tex.source, tex.mipmaps, tex.premultiplied)
+                _textureUpdate(tex.texId, tex.implForcedTexTarget, index, rbmp, tex.source, tex.mipmaps, tex.premultiplied)
             }
         } else {
-            _textureUpdate(tex.implForcedTexTarget, 0, null, tex.source, tex.mipmaps, tex.premultiplied)
+            _textureUpdate(tex.texId, tex.implForcedTexTarget, 0, null, tex.source, tex.mipmaps, tex.premultiplied)
         }
     }
 
     override fun textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         //textureBind(textureId, target, -1)
-        _textureUpdate(target, index, bmp, source, doMipmaps, premultiplied)
+        _textureUpdate(textureId, target, index, bmp, source, doMipmaps, premultiplied)
     }
 
-    fun _textureUpdate(target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
+    fun _textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {
         val bytesPerPixel = if (source.rgba) 4 else 1
 
         val isFloat = bmp is FloatBitmap32
@@ -741,6 +767,9 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
             AG.TextureTargetKind.TEXTURE_CUBE_MAP -> KmlGl.TEXTURE_CUBE_MAP_POSITIVE_X + index
             else -> target.toGl()
         }
+
+        //val tex = textures.getOrNull(textureId)
+        //println("_textureUpdate: texId=$textureId, id=${tex?.id}, glId=${tex?.glId}, target=$target, source=${source.width}x${source.height}")
 
         if (bmp == null) {
             gl.texImage2D(target.toGl(), 0, type, source.width, source.height, 0, type, KmlGl.UNSIGNED_BYTE, null)

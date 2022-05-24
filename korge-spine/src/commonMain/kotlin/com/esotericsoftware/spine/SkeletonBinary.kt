@@ -34,7 +34,6 @@ import com.esotericsoftware.spine.BoneData.*
 import com.esotericsoftware.spine.PathConstraintData.*
 import com.esotericsoftware.spine.SkeletonJson.*
 import com.esotericsoftware.spine.attachments.*
-import com.esotericsoftware.spine.internal.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import com.soywiz.korim.atlas.*

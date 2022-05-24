@@ -6,6 +6,7 @@ package com.soywiz.kgl
 
 import com.soywiz.kds.FastStringMap
 import com.soywiz.kds.IntMap
+import com.soywiz.kds.Pool
 import com.soywiz.kds.clear
 import com.soywiz.kds.getOrPut
 import com.soywiz.kmem.*
@@ -16,9 +17,14 @@ class KmlGlDummy : KmlGlDummyBase()
 open class KmlGlDummyBase : KmlGl() {
     class Allocator(val base: Int = 0) {
         var id = base
-        fun alloc(): Int = ++id
+        var pool = Pool { ++id }
+        fun alloc(): Int = pool.alloc()
+        fun free(value: Int) {
+            pool.free(value)
+        }
         fun reset() {
             id = base
+            pool = Pool { ++id }
         }
     }
     class ProgramInfo(val id: Int) {
@@ -45,7 +51,7 @@ open class KmlGlDummyBase : KmlGl() {
     val shaderIds = Allocator(2000)
     val bufferIds = Allocator(3000)
     val frameBufferIds = Allocator(4000)
-    val renderBufferids = Allocator(5000)
+    val renderBufferIds = Allocator(5000)
     val textureIds = Allocator(6000)
 
     override fun handleContextLost() {
@@ -55,7 +61,7 @@ open class KmlGlDummyBase : KmlGl() {
         shaderIds.reset()
         bufferIds.reset()
         frameBufferIds.reset()
-        renderBufferids.reset()
+        renderBufferIds.reset()
         textureIds.reset()
     }
 
@@ -87,12 +93,17 @@ open class KmlGlDummyBase : KmlGl() {
     override fun createProgram(): Int = programIds.alloc()
     override fun createShader(type: Int): Int = shaderIds.alloc()
     override fun cullFace(mode: Int): Unit = Unit
-    override fun deleteBuffers(n: Int, items: FBuffer): Unit = Unit
-    override fun deleteFramebuffers(n: Int, items: FBuffer): Unit = Unit
-    override fun deleteProgram(program: Int): Unit = Unit
-    override fun deleteRenderbuffers(n: Int, items: FBuffer): Unit = Unit
-    override fun deleteShader(shader: Int): Unit = Unit
-    override fun deleteTextures(n: Int, items: FBuffer): Unit = Unit
+
+    private fun delete(n: Int, buffer: FBuffer, allocator: Allocator) {
+        for (i in 0 until n) allocator.free(buffer.i32[i])
+    }
+    override fun deleteBuffers(n: Int, items: FBuffer): Unit = delete(n, items, bufferIds)
+    override fun deleteFramebuffers(n: Int, items: FBuffer): Unit = delete(n, items, frameBufferIds)
+    override fun deleteProgram(program: Int): Unit = programIds.free(program)
+    override fun deleteRenderbuffers(n: Int, items: FBuffer): Unit = delete(n, items, renderBufferIds)
+    override fun deleteShader(shader: Int): Unit = shaderIds.free(shader)
+    override fun deleteTextures(n: Int, items: FBuffer): Unit = delete(n, items, textureIds)
+
     override fun depthFunc(func: Int): Unit = Unit
     override fun depthMask(flag: Boolean): Unit = Unit
     override fun depthRangef(n: Float, f: Float): Unit = Unit
@@ -112,11 +123,10 @@ open class KmlGlDummyBase : KmlGl() {
     private fun gen(n: Int, buffer: FBuffer, allocator: Allocator) {
         for (i in 0 until n) buffer.i32[i] = allocator.alloc()
     }
-
     override fun genBuffers(n: Int, buffers: FBuffer): Unit = gen(n, buffers, bufferIds)
     override fun generateMipmap(target: Int): Unit = Unit
     override fun genFramebuffers(n: Int, framebuffers: FBuffer): Unit = gen(n, framebuffers, frameBufferIds)
-    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = gen(n, renderbuffers, renderBufferids)
+    override fun genRenderbuffers(n: Int, renderbuffers: FBuffer): Unit = gen(n, renderbuffers, renderBufferIds)
     override fun genTextures(n: Int, textures: FBuffer): Unit = gen(n, textures, textureIds)
 
     override fun getActiveAttrib(program: Int, index: Int, bufSize: Int, length: FBuffer, size: FBuffer, type: FBuffer, name: FBuffer): Unit = Unit

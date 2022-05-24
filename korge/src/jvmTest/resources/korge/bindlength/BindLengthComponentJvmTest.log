@@ -12,6 +12,7 @@ RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 textureCreate: 1
@@ -61,8 +62,8 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.vertex[1]: a_Pos[250,250], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[2]: a_Pos[250,350], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[3]: a_Pos[150,350], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish

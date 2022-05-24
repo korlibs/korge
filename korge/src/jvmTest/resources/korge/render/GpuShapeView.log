@@ -2062,7 +2062,6 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 uboDelete: 2
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 RenderBuffer[0].set()
@@ -2150,7 +2149,6 @@ programUse: 2
 vaoCreate: 1
 vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
 vaoUse: 1
-uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0.02, 0, 0, -1 ],
@@ -2186,10 +2184,10 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.vertex[1]: a_Pos[100,0], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[2]: a_Pos[100,100], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[3]: a_Pos[0,100], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish
 Rectangle(x=-950, y=-790, width=1000, height=840)
 Rectangle(x=0, y=0, width=500, height=420)

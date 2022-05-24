@@ -29,7 +29,6 @@
 
 package com.esotericsoftware.spine.utils
 
-import com.esotericsoftware.spine.internal.*
 import com.soywiz.kds.*
 import kotlin.math.*
 
@@ -42,7 +41,7 @@ internal class SpineTriangulator {
     private val triangles = ShortArrayList()
 
     private val polygonPool = Pool { FloatArrayList(16) }
-    private val polygonIndicesPool = Pool() { ShortArrayList(16) }
+    private val polygonIndicesPool = Pool { ShortArrayList(16) }
 
     fun triangulate(verticesArray: FloatArrayList): ShortArrayList {
         val vertices = verticesArray.data

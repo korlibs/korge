@@ -12,6 +12,7 @@ RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 textureCreate: 1
@@ -81,9 +82,9 @@ draw: TRIANGLE_FAN, offset=0, count=4, instances=10, indexType=null
 ::draw.instance[7]: a_rxy[8,9], a_scale[1,1], a_rangle[3.6651914], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1], a_texId[0]
 ::draw.instance[8]: a_rxy[9,10], a_scale[1,1], a_rangle[4.1887903], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1], a_texId[0]
 ::draw.instance[9]: a_rxy[10,11], a_scale[1,1], a_rangle[4.712389], a_axy[0.49999237,0.49999237], a_uv0[0,0], a_uv1[1,1], a_colMul[1,1,1,1], a_texId[0]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 Buffer[4].afterSetMem(mem[2048])
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish

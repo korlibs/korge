@@ -52,7 +52,7 @@ enum class AGEnable {
     }
 }
 
-@KorIncomplete
+//@KorIncomplete
 class AGGlobalState {
     internal var contextVersion = 0
     internal val vaoIndices = ConcurrentPool { it + 1 }
@@ -89,6 +89,8 @@ class AGList(val globalState: AGGlobalState) {
     private val _ints = IntDeque(16)
     private val _float = FloatDeque(16)
     private val _extra = Deque<Any?>(16)
+
+    val tempUBOs = Pool { uboCreate() }
 
     private val uniformValuesPool = Pool { AG.UniformValues() }
 
@@ -145,7 +147,11 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_FRONT_FACE -> processor.frontFace(AGFrontFace.VALUES[data.extract4(0)])
                 // Programs
                 CMD_PROGRAM_CREATE -> processor.programCreate(data.extract16(0), readExtra(), readExtra())
-                CMD_PROGRAM_DELETE -> processor.programDelete(data.extract16(0))
+                CMD_PROGRAM_DELETE -> {
+                    val programId = data.extract16(0)
+                    processor.programDelete(programId)
+                    globalState.programIndices.free(programId)
+                }
                 CMD_PROGRAM_USE -> processor.programUse(data.extract16(0))
                 // Draw
                 CMD_DRAW -> processor.draw(
@@ -188,12 +194,20 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_CLEAR_STENCIL -> processor.clearStencil(data.extract24(0))
                 // VAO
                 CMD_VAO_CREATE -> processor.vaoCreate(data.extract16(0))
-                CMD_VAO_DELETE -> processor.vaoDelete(data.extract16(0))
+                CMD_VAO_DELETE -> {
+                    val id = data.extract16(0)
+                    processor.vaoDelete(id)
+                    globalState.vaoIndices.free(id)
+                }
                 CMD_VAO_SET -> processor.vaoSet(data.extract16(0), AG.VertexArrayObject(readExtra()))
                 CMD_VAO_USE -> processor.vaoUse(data.extract16(0))
                 // UBO
                 CMD_UBO_CREATE -> processor.uboCreate(data.extract16(0))
-                CMD_UBO_DELETE -> processor.uboDelete(data.extract16(0))
+                CMD_UBO_DELETE -> {
+                    val id = data.extract16(0)
+                    processor.uboDelete(id)
+                    globalState.uboIndices.free(id)
+                }
                 CMD_UBO_SET -> {
                     val ubo = readExtra<AG.UniformValues>()
                     processor.uboSet(data.extract16(0), ubo)
@@ -205,7 +219,11 @@ class AGList(val globalState: AGGlobalState) {
                 CMD_BUFFER_DELETE -> processor.bufferDelete(data.extract16(0))
                 // TEXTURES
                 CMD_TEXTURE_CREATE -> processor.textureCreate(data.extract16(0))
-                CMD_TEXTURE_DELETE -> processor.textureDelete(data.extract16(0))
+                CMD_TEXTURE_DELETE -> {
+                    val textureId = data.extract16(0)
+                    processor.textureDelete(textureId)
+                    globalState.textureIndices.free(textureId)
+                }
                 CMD_TEXTURE_BIND -> processor.textureBind(data.extract16(0), AG.TextureTargetKind.VALUES[data.extract4(16)], readInt())
                 CMD_TEXTURE_BIND_ENSURING -> processor.textureBindEnsuring(readExtra())
                 CMD_TEXTURE_UPDATE -> processor.textureUpdate(
@@ -334,7 +352,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun deleteProgram(programId: Int) {
-        globalState.programIndices.free(programId)
         add(CMD(CMD_PROGRAM_DELETE).finsert16(programId, 0))
     }
 
@@ -358,7 +375,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun deleteTexture(textureId: Int) {
-        globalState.programIndices.free(textureId)
         add(CMD(CMD_TEXTURE_DELETE).finsert16(textureId, 0))
     }
 
@@ -421,7 +437,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun vaoDelete(id: Int) {
-        globalState.vaoIndices.free(id)
         add(CMD(CMD_VAO_DELETE).finsert16(id, 0))
     }
 
@@ -444,7 +459,6 @@ class AGList(val globalState: AGGlobalState) {
     }
 
     fun uboDelete(id: Int) {
-        globalState.uboIndices.free(id)
         add(CMD(CMD_UBO_DELETE).finsert16(id, 0))
     }
 

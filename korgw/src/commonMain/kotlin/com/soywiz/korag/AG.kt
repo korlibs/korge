@@ -1080,6 +1080,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         renderBuffers.free(frameRenderBuffers)
         if (frameRenderBuffers.isNotEmpty()) frameRenderBuffers.clear()
         flipInternal()
+        commandsSync { it.finish() }
     }
 
     open fun flipInternal() = Unit

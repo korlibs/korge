@@ -31,10 +31,11 @@ suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
     clipBorders = false,
     //scaleMode = ScaleMode.EXACT,
-    debug = true,
+    //debug = true,
     multithreaded = true,
     //debugAg = true,
 ) {
+    mainTextureIssue()
     //mainTilemapTest()
     //mainTransition()
     //mainClipping()
@@ -44,7 +45,7 @@ suspend fun main() = Korge(
     //mainHaptic()
     //mainMasks()
     //mainGpuVectorRendering()
-    mainColorPicker()
+    //mainColorPicker()
     //mainSvgAnimation()
     //mainFiltersRenderToBitmap()
     //mainBlur()

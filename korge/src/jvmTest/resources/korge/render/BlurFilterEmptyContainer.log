@@ -2,5 +2,6 @@ RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish
 Rectangle(x=-15, y=-14, width=30, height=28)
 Rectangle(x=-15, y=-14, width=30, height=28)

@@ -12,6 +12,7 @@ RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
 textureCreate: 1
@@ -101,7 +102,6 @@ draw: TRIANGLES, offset=0, count=48, instances=1, indexType=USHORT
 ::draw.vertex[29]: a_Pos[128,112], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[3]
 ::draw.vertex[30]: a_Pos[128,128], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[3]
 ::draw.vertex[31]: a_Pos[112,128], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[3]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 Buffer[0].afterSetMem(mem[393216])
@@ -112,7 +112,6 @@ scissor: 0, 0, 1280, 720
 vaoCreate: 1
 vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
 vaoUse: 1
-uboCreate: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0.0015625, 0, 0, -1 ],
@@ -152,8 +151,8 @@ draw: TRIANGLES, offset=0, count=12, instances=1, indexType=USHORT
 ::draw.vertex[5]: a_Pos[160,144], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[6]: a_Pos[160,160], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[7]: a_Pos[144,160], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()
 flipInternal()
+finish

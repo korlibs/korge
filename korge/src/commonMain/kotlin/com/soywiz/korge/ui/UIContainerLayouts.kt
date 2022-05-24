@@ -126,7 +126,7 @@ inline fun Container.uiGridFill(
     height: Double = 128.0,
     cols: Int = 3,
     rows: Int = 3,
-    block: @ViewDslMarker UIContainer.() -> Unit = {}
+    block: @ViewDslMarker UIGridFill.() -> Unit = {}
 ) = UIGridFill(width, height, cols, rows).addTo(this).apply(block)
 
 open class UIGridFill(width: Double = 128.0, height: Double = 128.0, cols: Int = 3, rows: Int = 3) : UIContainer(width, height) {

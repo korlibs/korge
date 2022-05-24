@@ -101,12 +101,15 @@ texParameteri(3553, 10240, 9729)
 uniform1i(7003, 0)
 getUniformLocation(1001, "u_Tex1") = 7004
 activeTexture(33985)
+bindTexture(3553, 0)
 uniform1i(7004, 1)
 getUniformLocation(1001, "u_Tex2") = 7005
 activeTexture(33986)
+bindTexture(3553, 0)
 uniform1i(7005, 2)
 getUniformLocation(1001, "u_Tex3") = 7006
 activeTexture(33987)
+bindTexture(3553, 0)
 uniform1i(7006, 3)
 enable(3042)
 blendEquationSeparate(32774, 32774)

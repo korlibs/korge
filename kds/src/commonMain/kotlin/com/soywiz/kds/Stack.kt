@@ -21,6 +21,9 @@ class TGenStack<TGen>() : Collection<TGen> {
     fun push(v: TGen) { items.add(v) }
     fun pop(): TGen = items.removeAt(items.size - 1)
     fun peek(): TGen? = items.lastOrNull()
+    fun clear() {
+        items.clear()
+    }
 
     override fun contains(element: TGen): Boolean = items.contains(element)
     override fun containsAll(elements: Collection<TGen>): Boolean = items.containsAll(elements)

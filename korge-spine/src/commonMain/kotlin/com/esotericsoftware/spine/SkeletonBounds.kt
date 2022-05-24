@@ -30,7 +30,6 @@
 package com.esotericsoftware.spine
 
 import com.esotericsoftware.spine.attachments.BoundingBoxAttachment
-import com.esotericsoftware.spine.internal.*
 import com.esotericsoftware.spine.utils.*
 import com.soywiz.kds.*
 import kotlin.math.*

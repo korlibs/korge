@@ -108,15 +108,19 @@ getUniformLocation(1001, "u_ViewMat") = 7002
 uniformMatrix4fv(7002, 1, false, FBuffer(size=65536))
 getUniformLocation(1001, "u_Tex0") = 7003
 activeTexture(33984)
+bindTexture(3553, 0)
 uniform1i(7003, 0)
 getUniformLocation(1001, "u_Tex1") = 7004
 activeTexture(33985)
+bindTexture(3553, 0)
 uniform1i(7004, 1)
 getUniformLocation(1001, "u_Tex2") = 7005
 activeTexture(33986)
+bindTexture(3553, 0)
 uniform1i(7005, 2)
 getUniformLocation(1001, "u_Tex3") = 7006
 activeTexture(33987)
+bindTexture(3553, 0)
 uniform1i(7006, 3)
 getUniformLocation(1001, "u_GlobalAlpha") = 7007
 uniform1f(7007, 1.0)

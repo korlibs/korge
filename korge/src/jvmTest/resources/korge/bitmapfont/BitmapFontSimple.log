@@ -63,6 +63,5 @@ draw: TRIANGLES, offset=0, count=24, instances=1, indexType=USHORT
 ::draw.vertex[13]: a_Pos[37,12.25], a_Tex[0.601108,0.69921875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[14]: a_Pos[37,17.25], a_Tex[0.601108,0.73828125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
 ::draw.vertex[15]: a_Pos[34.5,17.25], a_Tex[0.5734072,0.73828125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-uboDelete: 1
 vaoUse: 0
 vaoDelete: 1
