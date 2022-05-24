@@ -14,6 +14,7 @@ import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.BmpCoordsWithInstance
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.MultiBitmap
+import com.soywiz.korio.lang.currentThreadId
 import com.soywiz.korma.geom.Rectangle
 
 /**
@@ -167,7 +168,7 @@ class AgBitmapTextureManager(
         //println("AgBitmapTextureManager.gc[${referencedBitmaps.size}] - [${referencedBitmapsSinceGC.size}]")
         referencedBitmaps.fastForEach { bmp ->
             if (bmp !in referencedBitmapsSinceGC) {
-                removeBitmap(bmp)
+                removeBitmap(bmp, "GC")
             }
         }
         referencedBitmaps.clear()
@@ -176,13 +177,13 @@ class AgBitmapTextureManager(
 	}
 
     @KorgeExperimental
-    fun removeBitmap(bmp: Bitmap) {
-        //println("removeBitmap:${bmp.size}")
+    fun removeBitmap(bmp: Bitmap, reason: String) {
         val info = bitmapsToTextureBase.getAndRemove(bmp) ?: return
         referencedBitmapsSinceGC.remove(bmp)
-        if (cachedBitmapTextureInfo == info || cachedBitmapTextureInfo2 == info) removeCache()
+        if (cachedBitmapTextureInfo === info || cachedBitmapTextureInfo2 === info) removeCache()
         info.textureBase.close()
         textureInfoPool.free(info)
+        //println("AgBitmapTextureManager.removeBitmap[$currentThreadId]:${bmp.size}, reason=$reason, textureInfoPool=${textureInfoPool.itemsInPool},${textureInfoPool.totalAllocatedItems}")
     }
 
     private fun removeCache() {

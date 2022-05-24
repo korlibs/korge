@@ -183,7 +183,7 @@ open class Text(
     override fun renderInternal(ctx: RenderContext) {
         _renderInternal(ctx)
         while (imagesToRemove.isNotEmpty()) {
-            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast())
+            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast(), "Text")
         }
         //val tva: TexturedVertexArray? = null
         if (tva != null) {

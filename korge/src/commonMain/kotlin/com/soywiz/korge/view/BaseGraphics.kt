@@ -62,7 +62,7 @@ abstract class BaseGraphics(
     override fun renderInternal(ctx: RenderContext) {
         bitmapsToRemove.fastForEach {
             if (it != Bitmaps.transparent.bmpBase) {
-                ctx.agBitmapTextureManager.removeBitmap(it)
+                ctx.agBitmapTextureManager.removeBitmap(it, "BaseGraphics")
             }
         }
         bitmapsToRemove.clear()

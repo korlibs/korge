@@ -14,10 +14,10 @@ import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.krypto.encoding.hex
 import kotlin.native.concurrent.SharedImmutable
 
-open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit) : AGOpengl()
+open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val nativeComponent: Any = Unit, checked: Boolean = false) : AGOpengl(checked)
 
 @OptIn(KorIncomplete::class, KorInternal::class)
-abstract class AGOpengl : AG() {
+abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
     class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
         RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 

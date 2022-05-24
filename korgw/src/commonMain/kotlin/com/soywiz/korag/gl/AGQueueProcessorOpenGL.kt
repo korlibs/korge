@@ -11,9 +11,6 @@ import com.soywiz.kgl.genBuffer
 import com.soywiz.kgl.genFramebuffer
 import com.soywiz.kgl.genRenderbuffer
 import com.soywiz.kgl.genTexture
-import com.soywiz.klock.DateTime
-import com.soywiz.klock.Stopwatch
-import com.soywiz.klock.seconds
 import com.soywiz.kmem.FBuffer
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.fbuffer
@@ -88,8 +85,8 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     //var doPrint = false
 
     override fun finish() {
-        gl.flush()
-        gl.finish()
+        //gl.flush()
+        //gl.finish()
 
        //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
        //    println("---------------------------------")
@@ -643,12 +640,12 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     override fun textureCreate(textureId: Int) {
         val tex = textures.getOrCreate(textureId)
         tex.glId = gl.genTexture()
-        //println("gl.textureCreate: textureId=$textureId, tex=${tex.id}, glId=${tex.glId}")
+        //println("gl.textureCreate[$currentThreadId]: textureId=$textureId, tex=${tex.id}, glId=${tex.glId}")
     }
 
     override fun textureDelete(textureId: Int) {
         val tex = textures.tryGetAndDelete(textureId) ?: return
-        //println("gl.textureDelete: textureId=$textureId, tex=${tex.id}, glId=${tex.glId}")
+        //println("gl.textureDelete[$currentThreadId]: textureId=$textureId, tex=${tex.id}, glId=${tex.glId}")
         if (tex.glId <= 0) return
         gl.deleteTexture(tex.glId)
         tex.glId = 0
@@ -734,8 +731,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                     }
                     bmp is NativeImage && bmp.forcedTexId != -1 -> {
                         tex.implForcedTexId = bmp.forcedTexId
-                        if (bmp.forcedTexTarget != -1) tex.implForcedTexTarget =
-                            AG.TextureTargetKind.fromGl(bmp.forcedTexTarget)
+                        if (bmp.forcedTexTarget >= 0) tex.implForcedTexTarget = AG.TextureTargetKind.fromGl(bmp.forcedTexTarget)
                         //gl.bindTexture(implForcedTexTarget, implForcedTexId) // @TODO: Check. Why do we need to bind it now?
                         return
                     }

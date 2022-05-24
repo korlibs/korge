@@ -100,7 +100,7 @@ interface AGFeatures {
 }
 
 @OptIn(KorIncomplete::class)
-abstract class AG : AGFeatures, Extra by Extra.Mixin() {
+abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mixin() {
     abstract val nativeComponent: Any
 
     open fun contextLost() {
@@ -352,24 +352,6 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
         var implForcedTexId: Int = -1
         var implForcedTexTarget: AG.TextureTargetKind = targetKind
 
-        //private fun ensureTexId() {
-        //    if (implForcedTexId >= 0) return
-        //    if (cachedVersion != contextVersion) {
-        //        cachedVersion = contextVersion
-        //        invalidate()
-        //        texId = commandsNoWait { it.createTexture() }
-        //        println("**** RE/CREATING TEXTURE: $texId")
-        //    }
-        //}
-
-        val tex: Int
-            get() {
-                if (implForcedTexId >= 0) return implForcedTexId
-                return texId
-            }
-
-        open val nativeTexId: Int get() = tex
-
         init {
             createdTextureCount++
         }
@@ -420,7 +402,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             return requestMipmaps && source.width.isPowerOfTwo && source.height.isPowerOfTwo
         }
 
-        open fun bind(): Unit = commandsNoWait { it.bindTexture(tex, implForcedTexTarget, implForcedTexId) }
+        open fun bind(): Unit = commandsNoWait { it.bindTexture(texId, implForcedTexTarget, implForcedTexId) }
         open fun unbind(): Unit = commandsNoWait { it.bindTexture(0, implForcedTexTarget) }
 
         private var closed = false
@@ -437,17 +419,19 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
             if (!closed) {
                 closed = true
                 if (cachedVersion == contextVersion) {
-                    if (tex != 0) {
-                        commandsNoWait { it.deleteTexture(tex) }
+                    if (texId != 0) {
+                        commandsNoWait { it.deleteTexture(texId) }
                         texId = 0
                     }
                 } else {
-                    //println("YAY! NO DELETE texture because in new context and would remove the wrong texture: ${texIds[0]}")
+                    //println("YAY! NO DELETE texture because in new context and would remove the wrong texture: $texId")
                 }
+            } else {
+                //println("ALREADY CLOSED TEXTURE: $texId")
             }
         }
 
-        override fun toString(): String = "AGOpengl.GlTexture($tex)"
+        override fun toString(): String = "AGOpengl.GlTexture($texId)"
         fun manualUpload(): Texture {
             uploaded = true
             return this
@@ -1378,7 +1362,7 @@ abstract class AG : AGFeatures, Extra by Extra.Mixin() {
 
     private val drawTempTexture: Texture by lazy { createTexture() }
 
-    protected val _globalState = AGGlobalState()
+    protected val _globalState = AGGlobalState(checked)
     var contextVersion: Int by _globalState::contextVersion
     @PublishedApi internal val _list = _globalState.createList()
 

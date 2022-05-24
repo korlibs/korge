@@ -10,6 +10,7 @@ import com.soywiz.kds.ConcurrentPool
 import com.soywiz.kds.Deque
 import com.soywiz.kds.FloatDeque
 import com.soywiz.kds.IntDeque
+import com.soywiz.kds.IntSet
 import com.soywiz.kds.Pool
 import com.soywiz.kds.fastCastTo
 import com.soywiz.kds.lock.Lock
@@ -52,15 +53,34 @@ enum class AGEnable {
     }
 }
 
+class AGManagedObjectPool(val name: String, val checked: Boolean = true) {
+    private val pool = ConcurrentPool { it + 1 }
+    private val allocated = IntSet()
+
+    fun alloc(): Int {
+        return pool.alloc().also {
+            if (checked) allocated.add(it)
+        }
+    }
+
+    fun free(value: Int) {
+        if (checked) {
+            if (value !in allocated) error("Not allocated $value in $name")
+            allocated.remove(value)
+        }
+        pool.free(value)
+    }
+}
+
 //@KorIncomplete
-class AGGlobalState {
+class AGGlobalState(val checked: Boolean = false) {
     internal var contextVersion = 0
-    internal val vaoIndices = ConcurrentPool { it + 1 }
-    internal val uboIndices = ConcurrentPool { it + 1 }
-    internal val bufferIndices = ConcurrentPool { it + 1 }
-    internal val programIndices = ConcurrentPool { it + 1 }
-    internal val textureIndices = ConcurrentPool { it + 1 }
-    internal val frameBufferIndices = ConcurrentPool { it + 1 }
+    internal val vaoIndices = AGManagedObjectPool("vao", checked = checked)
+    internal val uboIndices = AGManagedObjectPool("ubo", checked = checked)
+    internal val bufferIndices = AGManagedObjectPool("buffer", checked = checked)
+    internal val programIndices = AGManagedObjectPool("program", checked = checked)
+    internal val textureIndices = AGManagedObjectPool("texture", checked = checked)
+    internal val frameBufferIndices = AGManagedObjectPool("frame", checked = checked)
     //var programIndex = KorAtomicInt(0)
     private val lock = Lock()
     private val lists = Deque<AGList>()
