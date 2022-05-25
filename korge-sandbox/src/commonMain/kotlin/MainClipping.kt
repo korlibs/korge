@@ -1,3 +1,4 @@
+import com.soywiz.korge.component.onStageResized
 import com.soywiz.korge.scene.MaskTransition
 import com.soywiz.korge.scene.TransitionView
 import com.soywiz.korge.view.Container
@@ -10,10 +11,13 @@ import com.soywiz.korge.view.filter.IdentityFilter
 import com.soywiz.korge.view.filter.TransitionFilter
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.unsafeRenderToBitmapSync
+import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.vector.rect
 
 suspend fun Stage.mainClipping() {
     image(resourcesVfs["korge.png"].readBitmap()).xy(-50, 0)
@@ -45,4 +49,37 @@ suspend fun Stage.mainClipping() {
     }, MaskTransition(TransitionFilter.Transition.CIRCULAR))
     tv.ratio = 0.5
     addChild(tv)
+
+    gpuShapeView({
+        stroke(Colors.GREEN, lineWidth = 2.0) {
+            rect(0.0, 0.0, views.virtualWidthDouble, views.virtualHeightDouble)
+        }
+    })
+
+    run {
+        //val escale = 1.1
+        val escale = 1.0
+        val container = Container().apply {
+            y = views.virtualHeightDouble; scaleY = -1.0 * escale; scaleX = escale
+            clipContainer(150, 100) {
+                xy(75, 50)
+                solidRect(300, 400)
+            }
+        }
+        addChild(container)
+        container {
+            val container2 = this
+            // This shouldn't be needed since Stage.localMatrix is always the identity
+            onStageResized { width, height ->
+                //println("resized=$width, $height")
+                container2.removeChildren()
+                container2.addChild(image(container.unsafeRenderToBitmapSync(views.renderContext).also {
+                    it.updateColors { if (it.a == 0) Colors.RED else it }
+                }).also {
+                    it.x = 300.0
+                    it.y = views.virtualHeightDouble - it.bitmap.height - 50 * escale
+                })
+            }
+        }
+    }
 }

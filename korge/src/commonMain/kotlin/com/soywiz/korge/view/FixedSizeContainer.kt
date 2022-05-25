@@ -81,7 +81,7 @@ open class FixedSizeContainer(
                 bounds.applyTransform(ctx.viewMat2D)
                 bounds.normalize() // If width or height are negative, because scale was negative
 
-                //println("ctx.viewMat2D=${ctx.viewMat2D}")
+                //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}, FIXED_CLIP: bounds=$bounds, ctx.viewMat2D=${ctx.viewMat2D}")
 
                 //println("FIXED_CLIP: bounds=$bounds")
                 val rect = c2d.batch.scissor?.rect

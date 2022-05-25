@@ -74,7 +74,10 @@ class Stage(override val views: Views) : FixedSizeContainer()
         container.uiCollapsibleSection("Stage") {
             uiEditableValue(Pair(views::virtualWidthDouble, views::virtualHeightDouble), name = "virtualSize", min = 0.0, max = 2000.0).findObservableProperties().fastForEach {
                 it.onChange {
-                    views.resized()
+                    // @TODO: This shouldn't be necessary
+                    views.gameWindow.queue {
+                        views.resized()
+                    }
                 }
             }
         }

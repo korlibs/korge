@@ -837,7 +837,7 @@ abstract class View internal constructor(
         ctx.useLineBatcher { lines ->
             lines.blending(BlendMode.INVERT) {
                 lines.drawVector(Colors.RED) {
-                    rect(windowBounds)
+                    rect(globalBounds)
                 }
             }
             lines.drawVector(Colors.RED) {
