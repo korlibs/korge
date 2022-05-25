@@ -17,6 +17,7 @@ import com.soywiz.kmem.FBuffer
 import com.soywiz.kmem.isPowerOfTwo
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.korag.annotation.KoragExperimental
+import com.soywiz.korag.gl.fromGl
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Program
@@ -31,6 +32,8 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.ForcedTexId
+import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.annotations.KorIncomplete
@@ -349,8 +352,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         var cachedVersion = contextVersion
         var texId = commandsNoWait { it.createTexture() }
 
-        var implForcedTexId: Int = -1
-        var implForcedTexTarget: AG.TextureTargetKind = targetKind
+        var forcedTexId: ForcedTexId? = null
+        val implForcedTexId: Int get() = forcedTexId?.forcedTexId ?: -1
+        val implForcedTexTarget: AG.TextureTargetKind get() = forcedTexId?.forcedTexTarget?.let { TextureTargetKind.fromGl(it) } ?: targetKind
 
         init {
             createdTextureCount++
@@ -367,6 +371,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
 
         fun upload(bmp: Bitmap?, mipmaps: Boolean = false): Texture {
+            this.forcedTexId = (bmp as? ForcedTexId?)
             return upload(
                 if (bmp != null) SyncBitmapSource(
                     rgba = bmp.bpp > 8,
@@ -889,13 +894,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                     val unit = value.fastCastTo<TextureUnit>()
                     val tex = (unit.texture.fastCastTo<Texture?>())
                     if (tex != null) {
-                        if (tex.implForcedTexTarget != AG.TextureTargetKind.TEXTURE_2D) {
+                        if (tex.implForcedTexTarget == AG.TextureTargetKind.EXTERNAL_TEXTURE) {
                             useExternalSampler = true
                         }
                     }
                 }
             }
         }
+        //println("useExternalSampler=$useExternalSampler")
         return useExternalSampler
     }
 

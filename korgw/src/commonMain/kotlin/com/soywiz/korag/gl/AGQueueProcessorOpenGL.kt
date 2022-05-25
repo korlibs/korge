@@ -28,8 +28,6 @@ import com.soywiz.korag.AGFrontFace
 import com.soywiz.korag.AGGlobalState
 import com.soywiz.korag.AGIndexType
 import com.soywiz.korag.AGQueueProcessor
-import com.soywiz.korag.ForcedTexId
-import com.soywiz.korag.ForcedTexTarget
 import com.soywiz.korag.internal.setFloats
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.ProgramConfig
@@ -40,6 +38,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.FloatBitmap32
+import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
@@ -440,8 +439,10 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                         textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
                         //val texture = textures[tex.texId]
                         //if (doPrint) println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, glId=${texture?.glId}")
+                        //println("BIND TEXTURE: $textureUnit, tex=${tex.texId}, implForcedTexId=${tex.implForcedTexId}")
                     } else {
                         gl.bindTexture(KmlGl.TEXTURE_2D, 0)
+                        //println("NULL TEXTURE")
                         //if (doPrint) println("NULL TEXTURE")
                     }
 
@@ -654,13 +655,12 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     override fun textureBind(textureId: Int, target: AG.TextureTargetKind, implForcedTexId: Int) {
         val glId = implForcedTexId.takeIf { it >= 0 } ?: textures[textureId]?.glId ?: 0
         //if (glId == -1) println("glId=$glId")
+        //println("textureBind: $glId, textureId=$textureId, target=$target, implForcedTexId=$implForcedTexId")
         gl.bindTexture(target.toGl(), glId)
     }
 
     override fun textureBindEnsuring(tex: AG.Texture?) {
-        if (tex == null) {
-            return gl.bindTexture(KmlGl.TEXTURE_2D, 0)
-        }
+        if (tex == null) return gl.bindTexture(KmlGl.TEXTURE_2D, 0)
 
         // Context lost
         if (tex.cachedVersion != contextVersion) {
@@ -671,6 +671,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         }
 
         textureBind(tex.texId, tex.implForcedTexTarget, tex.implForcedTexId)
+        if (tex.forcedTexId != null) return
 
         if (tex.isFbo) return
         val source = tex.source
@@ -700,9 +701,21 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
             tex.uploaded = true
             tex.generating = false
             tex.generated = false
-            actualSyncUpload(tex, source, tex.tempBitmaps, tex.requestMipmaps)
-            tex.tempBitmaps = null
-            tex.ready = true
+            try {
+                val bmps: List<Bitmap?>? = tex.tempBitmaps
+                val requestMipmaps: Boolean = tex.requestMipmaps
+                tex.mipmaps = tex.doMipmaps(source, requestMipmaps)
+                if (bmps != null) {
+                    for ((index, rbmp) in bmps.withIndex()) {
+                        _textureUpdate(tex.texId, tex.implForcedTexTarget, index, rbmp, tex.source, tex.mipmaps, tex.premultiplied)
+                    }
+                } else {
+                    _textureUpdate(tex.texId, tex.implForcedTexTarget, 0, null, tex.source, tex.mipmaps, tex.premultiplied)
+                }
+            } finally {
+                tex.tempBitmaps = null
+                tex.ready = true
+            }
         }
         return
     }
@@ -712,36 +725,6 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         gl.bindTexture(gl.TEXTURE_2D, glId)
         gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, x, y, width, height, 0)
         gl.bindTexture(gl.TEXTURE_2D, 0)
-    }
-
-    private fun actualSyncUpload(tex: AG.Texture, source: AG.BitmapSourceBase, bmps: List<Bitmap?>?, requestMipmaps: Boolean) {
-        tex.mipmaps = tex.doMipmaps(source, requestMipmaps)
-        if (bmps != null) {
-            for ((index, rbmp) in bmps.withIndex()) {
-                val bmp = when (rbmp) {
-                    is BitmapVector -> rbmp.nativeImage
-                    else -> rbmp
-                }
-
-                when {
-                    bmp is ForcedTexId -> {
-                        tex.implForcedTexId = bmp.forcedTexId
-                        if (bmp is ForcedTexTarget) tex.implForcedTexTarget = bmp.forcedTexTarget
-                        return
-                    }
-                    bmp is NativeImage && bmp.forcedTexId != -1 -> {
-                        tex.implForcedTexId = bmp.forcedTexId
-                        if (bmp.forcedTexTarget >= 0) tex.implForcedTexTarget = AG.TextureTargetKind.fromGl(bmp.forcedTexTarget)
-                        //gl.bindTexture(implForcedTexTarget, implForcedTexId) // @TODO: Check. Why do we need to bind it now?
-                        return
-                    }
-                }
-
-                _textureUpdate(tex.texId, tex.implForcedTexTarget, index, rbmp, tex.source, tex.mipmaps, tex.premultiplied)
-            }
-        } else {
-            _textureUpdate(tex.texId, tex.implForcedTexTarget, 0, null, tex.source, tex.mipmaps, tex.premultiplied)
-        }
     }
 
     override fun textureUpdate(textureId: Int, target: AG.TextureTargetKind, index: Int, bmp: Bitmap?, source: AG.BitmapSourceBase, doMipmaps: Boolean, premultiplied: Boolean) {

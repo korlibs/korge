@@ -10,6 +10,7 @@ import com.soywiz.klock.hr.hr
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.nanoseconds
 import com.soywiz.klock.timesPerSecond
+import com.soywiz.korim.bitmap.ForcedTexNativeImage
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korio.async.launchImmediately
@@ -119,8 +120,8 @@ class AndroidKorviVideoAndroidMediaPlayer private constructor(val file: VfsFile)
 
 data class SurfaceTextureInfo(val surface: Surface, val texture: SurfaceTexture, val texId: Int)
 
-class SurfaceNativeImage(width: Int, height: Int, val info: SurfaceTextureInfo) :
-    NativeImage(width, height, info, true), Disposable {
+class SurfaceNativeImage constructor(width: Int, height: Int, val info: SurfaceTextureInfo) :
+    ForcedTexNativeImage(width, height, true), Disposable {
     val surface get() = info.surface
     val surfaceTexture get() = info.texture
 

@@ -11,11 +11,6 @@ import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.krypto.encoding.toBase64
 
 abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplied: Boolean) : Bitmap(width, height, 32, premultiplied, null) {
-    /** Allow to force to use a texture id from OpenGL. For example a video texture from Android */
-    open val forcedTexId: Int get() = -1
-    /** Allow to force to use a texture target from OpenGL. For example a video texture from Android (-1 means GL_TEXTURE_2D) */
-    open val forcedTexTarget: Int get() = -1
-
 	open val name: String = "NativeImage"
     open fun toUri(): String = "data:image/png;base64," + PNG.encode(this, ImageEncodingProps("out.png")).toBase64()
 
@@ -63,6 +58,34 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
 
     override fun createWithThisFormat(width: Int, height: Int): Bitmap = NativeImage(width, height)
     override fun toString(): String = "$name($width, $height)"
+}
+
+interface ForcedTexId {
+    /** Allow to force to use a texture id from OpenGL. For example a video texture from Android */
+    val forcedTexId: Int
+    /** Allow to force to use a texture target from OpenGL. For example a video texture from Android (-1 means GL_TEXTURE_2D) */
+    val forcedTexTarget: Int get() = TEXTURE_2D
+
+    data class Fixed(
+        override val forcedTexId: Int,
+        override val forcedTexTarget: Int = TEXTURE_2D
+    ) : ForcedTexId
+
+    companion object {
+        // OpenGL typical constants
+        const val TEXTURE_2D: Int = 0x0DE1
+        const val TEXTURE_EXTERNAL = 0x8D65
+    }
+}
+
+abstract class ForcedTexNativeImage(width: Int, height: Int, premultiplied: Boolean = true) : NativeImage(width, height, null, premultiplied), ForcedTexId {
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+        TODO("Not yet implemented")
+    }
+
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+        TODO("Not yet implemented")
+    }
 }
 
 fun Bitmap.mipmap(levels: Int): NativeImage = nativeImageFormatProvider.mipmap(this, levels)
