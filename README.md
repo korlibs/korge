@@ -21,6 +21,8 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 
 <https://korge.org>
 
+Note: active development of korge is currently being done in the [korge-next](https://github.com/korlibs/korge-next) monorepo. Please check there for the latest releases and code.
+
 ## Contributors
 
 ### Code Contributors
