@@ -64,4 +64,14 @@ class DoubleExtTest {
 		assertEquals("0.0000123", 1.23e-5.toStringDecimal(10, true))
 		assertEquals("0.00000123", 1.23e-6.toStringDecimal(10, true))
 	}
+
+    @Test
+    fun test4() {
+        assertEquals("1", 1.0001.toStringDecimal(1, skipTrailingZeros = true))
+        assertEquals("1", 1.0000.toStringDecimal(1, skipTrailingZeros = true))
+        assertEquals("1", 1.0000.toStringDecimal(3, skipTrailingZeros = true))
+        assertEquals("1", 1.0001.toStringDecimal(3, skipTrailingZeros = true))
+        assertEquals("1.000", 1.0000.toStringDecimal(3, skipTrailingZeros = false))
+        assertEquals("1.000", 1.0001.toStringDecimal(3, skipTrailingZeros = false))
+    }
 }

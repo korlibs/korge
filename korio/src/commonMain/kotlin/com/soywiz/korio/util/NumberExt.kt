@@ -57,10 +57,13 @@ fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = fals
     return buildString(2 + integral.length + decimalPlaces) {
         append(integral)
         if (decimal.isNotEmpty() || !skipTrailingZeros) {
-            append('.')
             val decimalCount = min(decimal.length, decimalPlaces)
-            append(decimal, 0, decimalCount)
-            if (!skipTrailingZeros) repeat(decimalPlaces - decimalCount) { append('0') }
+            val allZeros = (0 until decimalCount).all { decimal[it] == '0' }
+            if (!skipTrailingZeros || !allZeros) {
+                append('.')
+                append(decimal, 0, decimalCount)
+                if (!skipTrailingZeros) repeat(decimalPlaces - decimalCount) { append('0') }
+            }
         }
     }
 }
