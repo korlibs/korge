@@ -27,7 +27,7 @@ inline fun Container.fixedSizeContainer(
 open class FixedSizeContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,
-    var clip: Boolean = false
+    open var clip: Boolean = false
 ) : Container(), View.Reference {
 
     override fun getLocalBoundsInternal(out: Rectangle) {
@@ -54,6 +54,7 @@ open class FixedSizeContainer(
             //val hasNegativeScale = m.a < 0.0 || m.d < 0.0
             //if (hasRotation || hasNegativeScale) {
             if (hasRotation) {
+            //if (true) {
                 // Use a renderbuffer instead
                 val old = renderingInternal
                 try {
@@ -65,23 +66,32 @@ open class FixedSizeContainer(
                 return
             }
             ctx.useCtx2d { c2d ->
-                val windowBounds = getWindowBounds(ctx, tempBounds)
+                // @TODO: Maybe scissor should be global and do the global to window / texture conversions in the very last moment,
+                // @TODO: so we don't propagate that complexity here
+                val bounds = getClippingBounds(ctx, tempBounds)
+                //val bounds = getWindowBounds(ctx, tempBounds)
+                //val bounds = getGlobalBounds(tempBounds)
 
                 //println("BOUNDS: globalToWindowMatrix=${ctx.globalToWindowMatrix} : ${ctx.identityHashCode()}, ${ctx.globalToWindowMatrix.identityHashCode()}")
                 //println("BOUNDS: windowBounds=$windowBounds, globalBounds=${getGlobalBounds()}")
+                //println("BOUNDS1: $windowBounds, ${ctx.viewMat2D}")
+                //println("bounds=$bounds, bp.globalToWindowMatrix=${ctx.globalToWindowMatrix}")
 
                 @Suppress("DEPRECATION")
-                windowBounds.applyTransform(ctx.batch.viewMat2D) // @TODO: Should viewMat2D be in the context instead?
-                windowBounds.normalize() // If width or height are negative, because scale was negative
+                bounds.applyTransform(ctx.viewMat2D)
+                bounds.normalize() // If width or height are negative, because scale was negative
+
+                //println("ctx.viewMat2D=${ctx.viewMat2D}")
 
                 //println("FIXED_CLIP: bounds=$bounds")
                 val rect = c2d.batch.scissor?.rect
                 var intersects = true
                 if (rect != null) {
-                    intersects = windowBounds.setToIntersection(windowBounds, rect) != null
+                    intersects = bounds.setToIntersection(bounds, rect) != null
                 }
+                //println("BOUNDS2: $windowBounds, ${ctx.viewMat2D}")
                 if (intersects) {
-                    c2d.scissor(windowBounds) {
+                    c2d.scissor(bounds) {
                         super.renderInternal(ctx)
                     }
                 } else {

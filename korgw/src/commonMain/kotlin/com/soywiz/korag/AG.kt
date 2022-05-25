@@ -1124,7 +1124,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     val currentRenderBufferOrMain: BaseRenderBuffer get() = currentRenderBuffer ?: mainRenderBuffer
 
-    val renderingToTexture get() = currentRenderBuffer !== mainRenderBuffer && currentRenderBuffer !== null
+    val isRenderingToWindow: Boolean get() = currentRenderBufferOrMain === mainRenderBuffer
+    val isRenderingToTexture: Boolean get() = !isRenderingToWindow
+
+    @Deprecated("", ReplaceWith("isRenderingToTexture"))
+    val renderingToTexture: Boolean get() = isRenderingToTexture
 
     inline fun backupTexture(tex: Texture?, callback: () -> Unit) {
         if (tex != null) {

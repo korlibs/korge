@@ -17,7 +17,7 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.
  */
-class Stage(override val views: Views) : Container()
+class Stage(override val views: Views) : FixedSizeContainer()
     , View.Reference
     , CoroutineScope by views
     , EventDispatcher by EventDispatcher.Mixin()
@@ -25,6 +25,10 @@ class Stage(override val views: Views) : Container()
     , ResourcesContainer
     , BoundsProvider by views.bp
 {
+    override var clip: Boolean by views::clipBorders
+    override var width: Double by views::virtualWidthDouble
+    override var height: Double by views::virtualHeightDouble
+
     val keys get() = views.input.keys
     val input get() = views.input
     val injector get() = views.injector
@@ -48,25 +52,23 @@ class Stage(override val views: Views) : Container()
     /** Mouse Y coordinate relative to the [Stage] singleton */
     val mouseY get() = localMouseY(views)
 
-    override fun getLocalBoundsInternal(out: Rectangle) {
-        out.setTo(0.0, 0.0, views.virtualWidth, views.virtualHeight)
-    }
-
-    //override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
-
-    override fun renderInternal(ctx: RenderContext) {
-        if (views.clipBorders) {
-            ctx.useCtx2d { ctx2d ->
-                ctx.rectPool.alloc { _tempWindowBounds ->
-                    ctx2d.scissor(views.globalToWindowBounds(this.globalBounds, _tempWindowBounds)) {
-                        super.renderInternal(ctx)
-                    }
-                }
-            }
-        } else {
-            super.renderInternal(ctx)
-        }
-    }
+    //override fun getLocalBoundsInternal(out: Rectangle) {
+    //    out.setTo(0.0, 0.0, views.virtualWidth, views.virtualHeight)
+    //}
+    ////override fun hitTest(x: Double, y: Double): View? = super.hitTest(x, y) ?: this
+    //override fun renderInternal(ctx: RenderContext) {
+    //    if (views.clipBorders) {
+    //        ctx.useCtx2d { ctx2d ->
+    //            ctx.rectPool.alloc { _tempWindowBounds ->
+    //                ctx2d.scissor(views.globalToWindowBounds(this.globalBounds, _tempWindowBounds)) {
+    //                    super.renderInternal(ctx)
+    //                }
+    //            }
+    //        }
+    //    } else {
+    //        super.renderInternal(ctx)
+    //    }
+    //}
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection("Stage") {
@@ -78,4 +80,6 @@ class Stage(override val views: Views) : Container()
         }
         super.buildDebugComponent(views, container)
     }
+
+    override fun toString(): String = "Stage"
 }

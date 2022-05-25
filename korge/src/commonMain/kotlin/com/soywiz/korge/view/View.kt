@@ -1306,6 +1306,14 @@ abstract class View internal constructor(
     fun getWindowBounds(bp: BoundsProvider, out: Rectangle = Rectangle()): Rectangle =
         getGlobalBounds(out).applyTransform(bp.globalToWindowMatrix)
 
+    fun getRenderTargetBounds(ctx: RenderContext, out: Rectangle = Rectangle()): Rectangle {
+        //println("ctx.ag.isRenderingToWindow=${ctx.ag.isRenderingToWindow}")
+        return if (ctx.ag.isRenderingToWindow) getWindowBounds(ctx, out) else getGlobalBounds(out)
+    }
+
+    fun getClippingBounds(ctx: RenderContext, out: Rectangle = Rectangle()): Rectangle =
+        getRenderTargetBounds(ctx, out)
+
     /** Returns the global bounds of this object. Note this incurs in allocations. Use [getGlobalBounds] (out) to avoid it */
     val globalBounds: Rectangle get() = getGlobalBounds()
 

@@ -7,11 +7,11 @@ bufferCreate: 3
 createBuffer():3
 bufferCreate: 4
 clear(#000000ff, 1.0, 0, true, true, true)
+RenderBuffer[0].setSize(1280, 720)
+createMainRenderBuffer():0
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=10, height=10), 10, 10)
-RenderBuffer[0].setSize(1280, 720)
-createMainRenderBuffer():0
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[49152])

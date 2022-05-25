@@ -165,9 +165,9 @@ class Views constructor(
 
     // Later updated
     /** The defined virtual width */
-	var virtualWidth = DefaultViewport.WIDTH; internal set
+	var virtualWidth: Int = DefaultViewport.WIDTH; internal set
     /** The defined virtual height */
-	var virtualHeight = DefaultViewport.HEIGHT; internal set
+	var virtualHeight: Int = DefaultViewport.HEIGHT; internal set
 
     var virtualWidthDouble: Double
         get() = virtualWidth.toDouble()
@@ -419,36 +419,15 @@ class Views constructor(
 
 	fun resized() {
 		//println("$e : ${views.ag.backWidth}x${views.ag.backHeight}")
-		val virtualWidth = virtualWidth
-		val virtualHeight = virtualHeight
-		val anchor = scaleAnchor
-
-		virtualSize.setTo(virtualWidth, virtualHeight)
-
-		scaleMode(virtualSize, actualSize, targetSize)
-
-		val ratioX = targetSize.width.toDouble() / virtualWidth.toDouble()
-		val ratioY = targetSize.height.toDouble() / virtualHeight.toDouble()
-
-		val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
-        val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
-
-        // Update [BoundsProvider]
-        run {
-            bp.globalToWindowMatrix.identity()
-            bp.globalToWindowMatrix.prescale(ratioX, ratioY)
-            bp.globalToWindowMatrix.pretranslate(
-                ((actualVirtualWidth - virtualWidth) * anchor.sx).toIntRound().toDouble(),
-                ((actualVirtualHeight - virtualHeight) * anchor.sy).toIntRound().toDouble(),
-            )
-            bp.windowToGlobalMatrix.invert(bp.globalToWindowMatrix)
-            bp.globalToWindowMatrix.decompose(bp.globalToWindowTransform)
-            bp.windowToGlobalMatrix.decompose(bp.windowToGlobalTransform)
-
-            val tl = bp.windowToGlobalCoords(0.0, 0.0)
-            val br = bp.windowToGlobalCoords(actualSize.width.toDouble(), actualSize.height.toDouble())
-            bp.actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
-        }
+        bp.setBoundsInfo(
+            virtualWidth,
+            virtualHeight,
+            actualSize,
+            scaleMode,
+            scaleAnchor,
+            virtualSize,
+            targetSize
+        )
 
         //println("RESIZED: $virtualSize, $actualSize, $targetSize")
 
@@ -713,6 +692,38 @@ interface BoundsProvider {
         override val globalToWindowTransform: Matrix.Transform = Matrix.Transform()
         override val actualVirtualBounds: Rectangle = Rectangle(0, 0, DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
     }
+}
+
+fun BoundsProvider.setBoundsInfo(
+    virtualWidth: Int,
+    virtualHeight: Int,
+    actualSize: SizeInt,
+    scaleMode: ScaleMode = ScaleMode.FILL,
+    anchor: Anchor = Anchor.CENTER,
+    virtualSize: SizeInt = SizeInt(),
+    targetSize: SizeInt = SizeInt()
+) {
+    virtualSize.setTo(virtualWidth, virtualHeight)
+    scaleMode(virtualSize, actualSize, targetSize)
+
+    val ratioX = targetSize.width.toDouble() / virtualWidth.toDouble()
+    val ratioY = targetSize.height.toDouble() / virtualHeight.toDouble()
+    val actualVirtualWidth = (actualSize.width / ratioX).toIntRound()
+    val actualVirtualHeight = (actualSize.height / ratioY).toIntRound()
+
+    globalToWindowMatrix.identity()
+    globalToWindowMatrix.prescale(ratioX, ratioY)
+    globalToWindowMatrix.pretranslate(
+        ((actualVirtualWidth - virtualWidth) * anchor.sx).toIntRound().toDouble(),
+        ((actualVirtualHeight - virtualHeight) * anchor.sy).toIntRound().toDouble(),
+    )
+    windowToGlobalMatrix.invert(globalToWindowMatrix)
+    globalToWindowMatrix.decompose(globalToWindowTransform)
+    windowToGlobalMatrix.decompose(windowToGlobalTransform)
+
+    val tl = windowToGlobalCoords(0.0, 0.0)
+    val br = windowToGlobalCoords(actualSize.width.toDouble(), actualSize.height.toDouble())
+    actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
 }
 
 var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }

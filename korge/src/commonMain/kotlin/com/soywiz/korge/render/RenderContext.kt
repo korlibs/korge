@@ -338,7 +338,7 @@ class RenderContext constructor(
     }
 }
 
-inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider, block: (RenderContext) -> Unit): T {
+inline fun <T : AG> testRenderContext(ag: T, bp: BoundsProvider = BoundsProvider.Base(), block: (RenderContext) -> Unit): T {
     val ctx = RenderContext(ag, bp)
     block(ctx)
     ctx.flush()

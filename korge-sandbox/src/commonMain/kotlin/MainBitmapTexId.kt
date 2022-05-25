@@ -30,15 +30,6 @@ suspend fun Stage.mainBitmapTexId() {
 
 class MyNativeImage(
     override var forcedTexId: Int = -1
-) : NativeImage(128, 128, null, false) {
+) : ForcedTexNativeImage(128, 128, false) {
     override var forcedTexTarget: Int = -1
-
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        TODO("Not yet implemented")
-    }
-
 }

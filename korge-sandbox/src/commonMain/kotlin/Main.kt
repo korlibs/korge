@@ -35,7 +35,8 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
-    mainTextureIssue()
+    mainClipping()
+    //mainTextureIssue()
     //mainTilemapTest()
     //mainTransition()
     //mainClipping()
