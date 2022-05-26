@@ -20,6 +20,7 @@ import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.withTimeout
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.CancellableContinuation
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.CoroutineContext
@@ -180,7 +181,7 @@ suspend fun BaseView?.tweenAsync(
 	easing: Easing = DEFAULT_EASING,
     waitTime: TimeSpan = TimeSpan.NIL,
 	callback: (Double) -> Unit = {}
-) = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }
+): Deferred<Unit> = asyncImmediately(coroutineContext) { tween(*vs, time = time, easing = easing, waitTime = waitTime, callback = callback) }
 
 fun BaseView?.tweenAsync(
 	vararg vs: V2<*>,

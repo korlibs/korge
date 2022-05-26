@@ -74,4 +74,12 @@ class DoubleExtTest {
         assertEquals("1.000", 1.0000.toStringDecimal(3, skipTrailingZeros = false))
         assertEquals("1.000", 1.0001.toStringDecimal(3, skipTrailingZeros = false))
     }
+
+    @Test
+    fun testRound() {
+        assertEquals("1.8", 1.7777.toStringDecimal(1, skipTrailingZeros = true))
+        assertEquals("1.78", 1.7777.toStringDecimal(2, skipTrailingZeros = true))
+        assertEquals("1.778", 1.7777.toStringDecimal(3, skipTrailingZeros = true))
+        assertEquals("1.7777", 1.7777.toStringDecimal(4, skipTrailingZeros = true))
+    }
 }

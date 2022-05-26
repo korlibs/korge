@@ -5,6 +5,7 @@ package com.soywiz.korio.util
 import com.soywiz.kmem.isNanOrInfinite
 import kotlin.math.absoluteValue
 import kotlin.math.min
+import kotlin.math.pow
 import kotlin.math.round
 
 fun Int.toStringUnsigned(radix: Int): String = this.toUInt().toString(radix)
@@ -12,6 +13,11 @@ fun Long.toStringUnsigned(radix: Int): String = this.toULong().toString(radix)
 
 val Float.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
 val Double.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
+
+private fun Double.roundDecimalPlaces(places: Int): Double {
+    val placesFactor: Double = 10.0.pow(places.toDouble())
+    return kotlin.math.round(this * placesFactor) / placesFactor
+}
 
 fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = false): String {
     if (this.isNanOrInfinite()) return this.toString()
@@ -21,7 +27,7 @@ fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = fals
     //val exponent = (bits ushr 52) and 0b11111111111
     //val fraction = bits and ((1L shl 52) - 1L)
 
-	val res = this.toString()
+	val res = this.roundDecimalPlaces(decimalPlaces).toString()
 
 	val eup = res.indexOf('E')
 	val elo = res.indexOf('e')

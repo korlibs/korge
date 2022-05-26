@@ -35,7 +35,8 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
-    mainBezier()
+    mainEasing()
+    //mainBezier()
     //mainGpuVectorRendering()
     //mainClipping()
     //mainTextureIssue()

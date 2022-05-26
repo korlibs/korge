@@ -175,10 +175,17 @@ inline fun <V> V2<V>.duration(duration: TimeSpan) = this.copy(duration = duratio
 
 inline fun <V> V2<V>.linear() = this
 inline fun <V> V2<V>.smooth() = this.easing(Easing.SMOOTH)
+
+inline fun <V> V2<V>.ease() = this.easing(Easing.EASE)
 inline fun <V> V2<V>.easeIn() = this.easing(Easing.EASE_IN)
 inline fun <V> V2<V>.easeOut() = this.easing(Easing.EASE_OUT)
 inline fun <V> V2<V>.easeInOut() = this.easing(Easing.EASE_IN_OUT)
-inline fun <V> V2<V>.easeOutIn() = this.easing(Easing.EASE_OUT_IN)
+
+inline fun <V> V2<V>.easeInOld() = this.easing(Easing.EASE_IN_OLD)
+inline fun <V> V2<V>.easeOutOld() = this.easing(Easing.EASE_OUT_OLD)
+inline fun <V> V2<V>.easeInOutOld() = this.easing(Easing.EASE_IN_OUT_OLD)
+inline fun <V> V2<V>.easeOutInOld() = this.easing(Easing.EASE_OUT_IN_OLD)
+
 inline fun <V> V2<V>.easeInBack() = this.easing(Easing.EASE_IN_BACK)
 inline fun <V> V2<V>.easeOutBack() = this.easing(Easing.EASE_OUT_BACK)
 inline fun <V> V2<V>.easeInOutBack() = this.easing(Easing.EASE_IN_OUT_BACK)
