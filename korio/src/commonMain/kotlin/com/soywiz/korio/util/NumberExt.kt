@@ -14,6 +14,9 @@ fun Long.toStringUnsigned(radix: Int): String = this.toULong().toString(radix)
 val Float.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
 val Double.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
 
+//private fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
+private fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this
+
 private fun Double.roundDecimalPlaces(places: Int): Double {
     val placesFactor: Double = 10.0.pow(places.toDouble())
     return kotlin.math.round(this * placesFactor) / placesFactor
@@ -27,7 +30,7 @@ fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = fals
     //val exponent = (bits ushr 52) and 0b11111111111
     //val fraction = bits and ((1L shl 52) - 1L)
 
-	val res = this.roundDecimalPlaces(decimalPlaces).toString()
+	val res = this.roundDecimalPlaces(decimalPlaces).normalizeZero().toString()
 
 	val eup = res.indexOf('E')
 	val elo = res.indexOf('e')

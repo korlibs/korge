@@ -1,5 +1,6 @@
 package com.soywiz.korma.test
 
+import com.soywiz.korma.math.normalizeZero
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.absoluteValue
 import kotlin.math.min
@@ -8,7 +9,7 @@ import kotlin.math.min
 internal fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = false): String {
     if (this.isNanOrInfinite()) return this.toString()
 
-    val res = this.roundDecimalPlaces(decimalPlaces).toString()
+    val res = this.roundDecimalPlaces(decimalPlaces).normalizeZero().toString()
 
     val eup = res.indexOf('E')
     val elo = res.indexOf('e')

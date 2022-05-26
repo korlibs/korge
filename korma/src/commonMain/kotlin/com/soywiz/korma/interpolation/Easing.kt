@@ -28,67 +28,6 @@ fun interface Easing {
         fun steps(steps: Int, easing: Easing): Easing = Easing({ "steps($steps, $easing)" }) {
             easing((it * steps).toInt().toDouble() / steps)
         }
-
-        /*
-        fun cubic(x1: Double, y1: Double, x2: Double, y2: Double): Easing {
-            // @TODO: We need to heavily optimize this. If we can have a formula instead of doing a bisect, this would be much faster.
-            val cubic = Bezier.Cubic(0.0, 0.0, x1.clamp(0.0, 1.0), y1, x2.clamp(0.0, 1.0), y2, 1.0, 1.0)
-            return Easing { time ->
-                val points = listOf(
-                    Point(x1.clamp(0.0, 1.0), y1),
-                    Point(x2.clamp(0.0, 1.0), y2),
-                )
-
-                /** Step 0 */
-                val n = 5
-                val x = doubleArrayOf(0.0, points[0].x, points[1].x, 1.0)
-                val a = doubleArrayOf(0.0, points[0].y, points[1].y, 1.0)
-                val h = DoubleArray(n)
-                val A = DoubleArray(n)
-                val l = DoubleArray(n + 1)
-                val u = DoubleArray(n + 1)
-                val z = DoubleArray(n + 1)
-                val c = DoubleArray(n + 1)
-                val b = DoubleArray(n)
-                val d = DoubleArray(n)
-                /** Step 1 */
-                for (i in 0 until n) h[i] = x[i + 1] - x[i]
-                /** Step 2 */
-                for (i in 1 until n) A[i] = (3.0 * (a[i + 1] - a[i]) / h[i]) - (3.0 * (a[i] - a[i - 1]) / h[i - 1])
-                /** Step 3 */
-                l[0] = 1.0
-                u[0] = 0.0
-                z[0] = 0.0
-                /** Step 4 */
-                for (i in 1 until n) {
-                    l[i] = 2.0 * (x[i + 1] - x[i - 1]) - (h[i - 1] * u[i - 1])
-                    u[i] = h[i] / l[i]
-                    z[i] = (A[i] - h[i - 1] * z[i - 1]) / l[i]
-                }
-                /** Step 5 */
-                l[n] = 1.0
-                z[n] = 0.0
-                c[n] = 0.0
-                /** Step 6 */
-                for (j in (n - 1) downTo 0) {
-                    c[j] = z[j] - (u[j] * c[j + 1])
-                    b[j] = ((a[j + 1] - a[j]) / h[j]) - (h[j] * (c[j + 1] + 2 * c[j]) / 3)
-                    d[j] = (c[j + 1] - c[j]) / (3 * h[j])
-                }
-                // get t position
-                var result = 0.0
-                var t = time
-                for (i in 0 until n) {
-                    if (t >= x[i] && t < x[i + 1]) {
-                        t -= x[i]
-                        result = a[i] + b[i] * t + c[i] * t * t + d[i] * t * t * t
-                    }
-                }
-                result
-            }
-        }
-        */
-
         fun cubic(x1: Double, y1: Double, x2: Double, y2: Double, name: String? = null): Easing =
             EasingCubic(x1, y1, x2, y2, name)
 
@@ -150,7 +89,8 @@ fun interface Easing {
 class EasingCubic(val x1: Double, val y1: Double, val x2: Double, val y2: Double, val name: String? = null) : Easing {
     val cubic = Bezier.Cubic(0.0, 0.0, x1.clamp(0.0, 1.0), y1, x2.clamp(0.0, 1.0), y2, 1.0, 1.0)
     override fun toString(): String = name ?: "cubic-bezier($x1, $y1, $x2, $y2)"
-    // @TODO: this doesn't work properly for `it` outside range [0, 1]
+
+    // @TODO: this doesn't work properly for `it` outside range [0, 1], and not in constant time
     override fun invoke(it: Double): Double {
         var pivotLeft = if (it < 0.0) it * 10.0 else 0.0
         var pivotRight = if (it > 1.0) it * 10.0 else 1.0
@@ -179,6 +119,60 @@ class EasingCubic(val x1: Double, val y1: Double, val x2: Double, val y2: Double
         //println("Requested steps=$steps, deviation=${(lastX - x).absoluteValue} requestedX=$x, lastX=$lastX, pivot=$pivot, pivotLeft=$pivotLeft, pivotRight=$pivotRight, lastY=$lastY")
         return lastY
     }
+
+    /*
+    override fun invoke(it: Double): Double {
+        val points = listOf(cubic.p0, cubic.p1, cubic.p2, cubic.p3)
+        val time = it
+
+        /** Step 0 */
+        val n = 5
+        val x = doubleArrayOf(0.0, points[0].x, points[1].x, points[2].x, points[3].x, 1.0)
+        val a = doubleArrayOf(0.0, points[0].y, points[1].y, points[2].y, points[3].y, 1.0)
+        val h = DoubleArray(n)
+        val A = DoubleArray(n)
+        val l = DoubleArray(n + 1)
+        val u = DoubleArray(n + 1)
+        val z = DoubleArray(n + 1)
+        val c = DoubleArray(n + 1)
+        val b = DoubleArray(n)
+        val d = DoubleArray(n)
+        /** Step 1 */
+        for (i in 0 until n) h[i] = x[i + 1] - x[i]
+        /** Step 2 */
+        for (i in 1 until n) A[i] = (3.0 * (a[i + 1] - a[i]) / h[i]) - (3.0 * (a[i] - a[i - 1]) / h[i - 1])
+        /** Step 3 */
+        l[0] = 1.0
+        u[0] = 0.0
+        z[0] = 0.0
+        /** Step 4 */
+        for (i in 1 until n) {
+            l[i] = 2.0 * (x[i + 1] - x[i - 1]) - (h[i - 1] * u[i - 1])
+            u[i] = h[i] / l[i]
+            z[i] = (A[i] - h[i - 1] * z[i - 1]) / l[i]
+        }
+        /** Step 5 */
+        l[n] = 1.0
+        z[n] = 0.0
+        c[n] = 0.0
+        /** Step 6 */
+        for (j in (n - 1) downTo 0) {
+            c[j] = z[j] - (u[j] * c[j + 1])
+            b[j] = ((a[j + 1] - a[j]) / h[j]) - (h[j] * (c[j + 1] + 2 * c[j]) / 3)
+            d[j] = (c[j + 1] - c[j]) / (3 * h[j])
+        }
+        // get t position
+        var result = 0.0
+        var t = time
+        for (i in 0 until n) {
+            if (t >= x[i] && t < x[i + 1]) {
+                t -= x[i]
+                result = a[i] + b[i] * t + c[i] * t * t + d[i] * t * t * t
+            }
+        }
+        return result
+    }
+    */
 }
 
 private enum class Easings : Easing {
