@@ -11,7 +11,7 @@ env:
   SKIP_KORGE_SAMPLES: true
 
 jobs:
-  test:
+  test-jvm:
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
@@ -22,8 +22,30 @@ jobs:
     - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
     - { name: Start gradle, run: ./gradlew }
     - { name: Testing JVM, run: ./gradlew jvmTest -i }
-    - { name: Testing Node JS, run: ./gradlew jsNodeTest -i }
-    - { name: Try building Android, run: ./gradlew publishAndroidPublicationToMavenLocal }
+
+  test-js:
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    steps:
+      - { uses: actions/checkout@v2 }
+      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Start gradle, run: ./gradlew }
+      - { name: Testing Node JS, run: ./gradlew jsNodeTest -i }
+
+  test-android:
+    timeout-minutes: 120
+    runs-on: ubuntu-latest
+    steps:
+      - { uses: actions/checkout@v2 }
+      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Start gradle, run: ./gradlew }
+      - { name: Try building Android, run: ./gradlew publishAndroidPublicationToMavenLocal }
 
   test-native-linux:
     timeout-minutes: 120
