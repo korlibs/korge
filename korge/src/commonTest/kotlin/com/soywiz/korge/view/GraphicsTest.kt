@@ -179,7 +179,7 @@ class GraphicsTest {
                 cubic(cubic3)
             }
         }
-        assertEquals(Rectangle(0, 0, 234, 250), g.getLocalBounds())
+        assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds())
     }
 }
 

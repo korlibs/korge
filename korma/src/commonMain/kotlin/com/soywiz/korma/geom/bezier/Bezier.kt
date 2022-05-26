@@ -2,12 +2,16 @@ package com.soywiz.korma.geom.bezier
 
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.clamp
 import com.soywiz.korma.math.clamp
 import com.soywiz.korma.math.maxOrElse
 import com.soywiz.korma.math.minOrElse
 import kotlin.math.abs
 import kotlin.math.hypot
+import kotlin.math.max
+import kotlin.math.min
 import kotlin.math.sqrt
 
 //(x0,y0) is start point; (x1,y1),(x2,y2) is control points; (x3,y3) is end point.
@@ -41,6 +45,7 @@ interface Bezier {
             this.p2.setTo(p2x, p2y)
             return this
         }
+
         fun setTo(p0: IPoint, p1: IPoint, p2: IPoint) = setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y)
         fun copyFrom(other: Quad): Quad = setTo(other.p0, other.p1, other.p2)
         override fun getBounds(target: Rectangle): Rectangle = quadBounds(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, target)
@@ -119,10 +124,17 @@ interface Bezier {
             this.p3.setTo(p3x, p3y)
             return this
         }
-        fun setTo(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint) = setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+
+        fun setTo(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint) =
+            setTo(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
+
         fun copyFrom(other: Cubic): Cubic = setTo(other.p0, other.p1, other.p2, other.p3)
-        override fun getBounds(target: Rectangle): Rectangle = cubicBounds(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, target, temp)
-        override fun calc(t: Double, target: Point): Point = cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+        override fun getBounds(target: Rectangle): Rectangle =
+            cubicBounds(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, target, temp)
+
+        override fun calc(t: Double, target: Point): Point =
+            cubicCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, t, target)
+
         fun clone() = Cubic(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, p3.x, p3.y)
 
         override fun toString(): String = "Bezier.Cubic($p0, $p1, $p2, $p3)"
@@ -132,6 +144,7 @@ interface Bezier {
         val tvalues = DoubleArray(6)
         val xvalues = DoubleArray(8)
         val yvalues = DoubleArray(8)
+        val points = PointPool()
         var tpoint0 = Point()
         var tpoint1 = Point()
         var tpoint2 = Point()
@@ -139,9 +152,9 @@ interface Bezier {
     }
 
     companion object {
-        operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint): Bezier.Quad = Bezier.Quad(p0, p1, p2)
-        operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint): Bezier.Cubic =
-            Bezier.Cubic(p0, p1, p2, p3)
+        operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint): Quad = Quad(p0, p1, p2)
+        operator fun invoke(p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint): Cubic =
+            Cubic(p0, p1, p2, p3)
 
 
         // http://fontforge.github.io/bezier.html
@@ -166,23 +179,57 @@ interface Bezier {
 
         @Suppress("UNUSED_PARAMETER")
         fun quadToCubic1(v0: Double, v1: Double, v2: Double) = v0 + (v1 - v0) * (2.0 / 3.0)
+
         @Suppress("UNUSED_PARAMETER")
         fun quadToCubic2(v0: Double, v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
 
-        // @TODO: Make an optimized version!
+        // https://iquilezles.org/articles/bezierbbox/
         fun quadBounds(
             x0: Double, y0: Double,
             xc: Double, yc: Double,
             x1: Double, y1: Double,
             target: Rectangle = Rectangle(),
             temp: Temp = Temp()
-        ): Rectangle = cubicBounds(
-            x0, y0,
-            quadToCubic1(x0, xc, x1), quadToCubic1(y0, yc, y1),
-            quadToCubic2(x0, xc, x1), quadToCubic2(y0, yc, y1),
-            x1, y1,
-            target, temp
-        )
+        ): Rectangle {
+            temp.points {
+                //Point(1, 1) + Point(2, 2)
+                val p0 = Point(x0, y0)
+                val p1 = Point(xc, yc)
+                val p2 = Point(x1, y1)
+
+                var mi = min(p0, p2)
+                var ma = max(p0, p2)
+
+                if (p1.x < mi.x || p1.x > ma.x || p1.y < mi.y || p1.y > ma.y) {
+                    val t = clamp((p0 - p1) / (p0 - Point(2.0) * p1 + p2), 0.0, 1.0)
+                    val s = Point(1.0) - t
+                    val q = s * s * p0 + Point(2.0) * s * t * p1 + t * t * p2
+                    mi = min(mi, q)
+                    ma = max(ma, q)
+                }
+
+                return target.setBounds(mi.x, mi.y, ma.x, ma.y)
+            }
+            //val cX = xc
+            //val cY = yc
+            //var miX = min(x0, x1)
+            //var miY = min(y0, y1)
+            //var maX = max(x0, x1)
+            //var maY = max(y0, y1)
+            //if (cX < miX || cX > maX || cY < miY || cY > maY) {
+            //    val tX = ((x0 - cX) / (x0 - 2.0 * cX + x1)).clamp(0.0, 1.0)
+            //    val tY = ((y0 - cY) / (y0 - 2.0 * cY + y1)).clamp(0.0, 1.0)
+            //    val sX = 1.0 - tX
+            //    val sY = 1.0 - tY
+            //    val qX = sX * sX * x0 + (2.0 * sX * tX * cX + tX * tX * x1)
+            //    val qY = sY * sY * y0 + (2.0 * sY * tY * cY + tY * tY * y1)
+            //    miX = min(miX, qX)
+            //    miY = min(miY, qY)
+            //    maX = max(maX, qX)
+            //    maY = max(maY, qY)
+            //}
+            //return target.setBounds(miX, miY, maX, maY)
+        }
 
         inline fun <T> quadCalc(
             x0: Double, y0: Double,
@@ -216,6 +263,44 @@ interface Bezier {
             target: Rectangle = Rectangle(),
             temp: Temp = Temp()
         ): Rectangle {
+            temp.points {
+                val p0 = Point(x0, y0)
+                val p1 = Point(x1, y1)
+                val p2 = Point(x2, y2)
+                val p3 = Point(x3, y3)
+
+                val mi = min(p0, p3) as Point
+                val ma = max(p0, p3) as Point
+
+                val c = -1.0 * p0 + 1.0 * p1
+                val b = 1.0 * p0 - 2.0 * p1 + 1.0 * p2
+                val a = -1.0 * p0 + 3.0 * p1 - 3.0 * p2 + 1.0 * p3
+
+                val h = b * b - a * c
+
+                if (h.x > 0.0 || h.y > 0.0) {
+                    val g = sqrt(abs(h))
+                    val t1 = clamp((-b - g) / a, 0.0, 1.0)
+                    val s1 = 1.0 - t1
+                    val t2 = clamp((-b + g) / a, 0.0, 1.0)
+                    val s2 = 1.0 - t2
+                    val q1 = s1 * s1 * s1 * p0 + 3.0 * s1 * s1 * t1 * p1 + 3.0 * s1 * t1 * t1 * p2 + t1 * t1 * t1 * p3
+                    val q2 = s2 * s2 * s2 * p0 + 3.0 * s2 * s2 * t2 * p1 + 3.0 * s2 * t2 * t2 * p2 + t2 * t2 * t2 * p3
+
+                    if (h.x > 0.0) {
+                        mi.x = min(mi.x, min(q1.x, q2.x))
+                        ma.x = max(ma.x, max(q1.x, q2.x))
+                    }
+
+                    if (h.y > 0.0) {
+                        mi.y = min(mi.y, min(q1.y, q2.y))
+                        ma.y = max(ma.y, max(q1.y, q2.y))
+                    }
+                }
+
+                return target.setBounds(mi.x, mi.y, ma.x, ma.y)
+            }
+            /*
             var j = 0
             var a: Double
             var b: Double
@@ -268,6 +353,7 @@ interface Bezier {
                 temp.xvalues.maxOrElse(0.0),
                 temp.yvalues.maxOrElse(0.0)
             )
+            */
         }
 
         inline fun <T> cubicCalc(
@@ -301,13 +387,36 @@ interface Bezier {
         ): Point = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
 
         // Suggested number of points
-        fun quadNPoints(x0: Double, y0: Double, cx: Double, cy: Double, x1: Double, y1: Double, scale: Double = 1.0): Int {
+        fun quadNPoints(
+            x0: Double,
+            y0: Double,
+            cx: Double,
+            cy: Double,
+            x1: Double,
+            y1: Double,
+            scale: Double = 1.0
+        ): Int {
             return ((Point.distance(x0, y0, cx, cy) + Point.distance(cx, cy, x1, y1)) * scale).toInt().clamp(5, 256)
         }
 
         // Suggested number of points
-        fun cubicNPoints(x0: Double, y0: Double, cx1: Double, cy1: Double, cx2: Double, cy2: Double, x1: Double, y1: Double, scale: Double = 1.0): Int {
-            return ((Point.distance(x0, y0, cx1, cy1) + Point.distance(cx1, cy1, cx2, cy2) + Point.distance(cx2, cy2, x1, y1)) * scale).toInt().clamp(5, 256)
+        fun cubicNPoints(
+            x0: Double,
+            y0: Double,
+            cx1: Double,
+            cy1: Double,
+            cx2: Double,
+            cy2: Double,
+            x1: Double,
+            y1: Double,
+            scale: Double = 1.0
+        ): Int {
+            return ((Point.distance(x0, y0, cx1, cy1) + Point.distance(cx1, cy1, cx2, cy2) + Point.distance(
+                cx2,
+                cy2,
+                x1,
+                y1
+            )) * scale).toInt().clamp(5, 256)
         }
 
         fun cubicCalc(

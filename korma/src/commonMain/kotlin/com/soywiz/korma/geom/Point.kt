@@ -6,7 +6,9 @@ import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.math.clamp
 import com.soywiz.korma.math.isAlmostZero
+import com.soywiz.korma.math.min
 import kotlin.math.absoluteValue
 import kotlin.math.acos
 import kotlin.math.ceil
@@ -395,5 +397,9 @@ fun Iterable<IPoint>.getPolylineLength(): Double {
     return out
 }
 fun Iterable<IPoint>.bounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle = bb.add(this).getBounds(out)
+
+fun min(a: Point, b: Point, out: Point = Point()): Point = out.setTo(kotlin.math.min(a.x, b.x), kotlin.math.min(a.y, b.y))
+fun max(a: Point, b: Point, out: Point = Point()): Point = out.setTo(kotlin.math.max(a.x, b.x), kotlin.math.max(a.y, b.y))
+fun Point.clamp(min: Double, max: Double, out: Point = Point()): Point = out.setTo(x.clamp(min, max), y.clamp(min, max))
 
 typealias Vector2D = Point

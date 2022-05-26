@@ -312,6 +312,9 @@ fun VectorBuilder.cubic(o: Point, c1: Point, c2: Point, a: Point) = cubic(o.x, o
 fun VectorBuilder.quad(curve: Bezier.Quad) = quad(curve.p0, curve.p1, curve.p2)
 fun VectorBuilder.cubic(curve: Bezier.Cubic) = cubic(curve.p0, curve.p1, curve.p2, curve.p3)
 
+fun VectorBuilder.curve(curve: Bezier.Quad) = quad(curve)
+fun VectorBuilder.curve(curve: Bezier.Cubic) = cubic(curve)
+
 // Variants supporting relative and absolute modes
 
 fun VectorBuilder.rCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, relative: Boolean) = if (relative) rCubicTo(cx1, cy1, cx2, cy2, ax, ay) else cubicTo(cx1, cy1, cx2, cy2, ax, ay)

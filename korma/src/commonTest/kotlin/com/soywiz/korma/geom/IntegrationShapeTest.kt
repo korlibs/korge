@@ -23,7 +23,7 @@ class IntegrationShapeTest {
         val shape = vp.toShape2d()
         assertEquals(true, shape.closed)
         assertTrue(abs(exactArea - shape.area) / exactArea < 0.01)
-        assertEquals(77, shape.paths.totalVertices)
+        assertEquals(81, shape.paths.totalVertices)
     }
 
     @Test
