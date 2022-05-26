@@ -1221,8 +1221,7 @@ abstract class View internal constructor(
      * Removes this view from its parent.
      */
     fun removeFromParent() {
-        if (parent == null) return
-        val p = parent!!
+        val p = parent ?: return
         for (i in index + 1 until p.numChildren) p[i].index--
         p._children?.removeAt(index)
         parent = null

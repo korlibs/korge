@@ -213,12 +213,43 @@ open class Container : View(true) {
      * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
      */
     fun removeChild(view: View?): Boolean {
-        if (view?.parent == this) {
+        if (view?.parent === this) {
             view?.removeFromParent()
             return true
         }
         return false
     }
+
+    fun removeChildAt(index: Int): Boolean {
+        return removeChild(getChildAtOrNull(index))
+    }
+
+    // @TODO: Optimize
+    fun removeChildAt(index: Int, count: Int) {
+        repeat(count) { removeChildAt(index) }
+    }
+
+    // @TODO: Optimize
+    fun swapChildrenAt(indexA: Int, indexB: Int) {
+        val a = getChildAtOrNull(indexA) ?: return
+        val b = getChildAtOrNull(indexB) ?: return
+        swapChildren(a, b)
+    }
+
+    // @TODO: Optimize
+    fun swapChildrenAt(indexA: Int, indexB: Int, count: Int) {
+        repeat(count) { swapChildrenAt(indexA + it, indexB + it) }
+    }
+
+    // @TODO: Optimize
+    fun moveChildrenAt(from: Int, to: Int, count: Int = 1) {
+        val children = (0 until count).mapNotNull {
+            getChildAtOrNull(from).also { removeChildAt(from) }
+        }
+        val finalTo = if (from < to) to - count else to
+        children.fastForEach { child -> addChildAt(child, finalTo) }
+    }
+
 
     /**
      * Removes all [View]s children from this container.
