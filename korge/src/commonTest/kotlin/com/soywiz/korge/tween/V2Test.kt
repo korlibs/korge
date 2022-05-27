@@ -13,7 +13,7 @@ class V2Test {
         val out = arrayListOf<String>()
         for (clamped in listOf(false, true)) {
             for (easing in Easing.ALL_LIST) {
-                val v2 = this::x[100.0, 200.0].easing(easing).let { if (clamped) it.clamped() else it }
+                val v2 = this::x[100.0, 200.0].let { if (clamped) it.clamped() else it }.easing(easing)
                 out.add("$easing[clamped=$clamped] : ${v2.samplesString()}")
             }
         }
