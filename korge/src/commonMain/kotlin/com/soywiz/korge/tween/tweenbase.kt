@@ -13,16 +13,23 @@ import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.absoluteValue
+import com.soywiz.korma.geom.bezier.getPoints
 import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.firstX
+import com.soywiz.korma.geom.firstY
+import com.soywiz.korma.geom.lastX
+import com.soywiz.korma.geom.lastY
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.normalized
 import com.soywiz.korma.geom.plus
-import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
 import kotlin.reflect.KMutableProperty0
 
@@ -106,7 +113,14 @@ internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): Time
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
 
-inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath): V2<IPoint> = this[path.getPoints2()]
+inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = true): V2<IPoint> = this[path.getCurves().getPoints().also {
+    //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
+    //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
+    if (!includeLastPoint && it.lastX.isAlmostEquals(it.firstX) && it.lastY.isAlmostEquals(it.firstY)) {
+        (it as PointArrayList).removeAt(it.size - 1)
+        //println("REMOVED LAST POINT!")
+    }
+}]
 
 inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IPoint> {
     val temp = Point()
