@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.geom.range.OpenRange
+import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.internal.umod
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.isAlmostEquals
@@ -49,7 +50,7 @@ inline class Angle private constructor(
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
     val degrees: Double get() = ratioToDegrees(ratio)
 
-    override fun toString(): String = "$degrees.degrees"
+    override fun toString(): String = "${degrees.niceStr}.degrees"
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {

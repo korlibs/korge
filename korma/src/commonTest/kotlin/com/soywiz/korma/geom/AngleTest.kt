@@ -127,9 +127,9 @@ class AngleTest {
 
     @Test
     fun testToString() {
-        assertEquals("180.0.degrees", Angle.fromRatio(0.5).toString())
-        assertEquals("180.0.degrees", PI.radians.toString())
-        assertEquals("180.0.degrees", 180.degrees.toString())
+        assertEquals("180.degrees", Angle.fromRatio(0.5).toString())
+        assertEquals("180.degrees", PI.radians.toString())
+        assertEquals("180.degrees", 180.degrees.toString())
     }
 
     // @TODO: Required to avoid: java.lang.AssertionError: expected:<3.141592653589793> but was:<Angle(180.0)>
