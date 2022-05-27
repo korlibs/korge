@@ -1,6 +1,7 @@
 package com.soywiz.korma.geom
 
 import com.soywiz.korma.math.isAlmostZero
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -38,6 +39,7 @@ class AngleTest {
         assertEquals((+90).degrees, +(90.degrees))
 
         assertEquals(90.degrees, (-(90).degrees).absoluteValue)
+        assertEquals(90.degrees, abs(-(90).degrees))
 
         assertEquals(0.degrees, 360.degrees.normalized)
 
@@ -114,6 +116,20 @@ class AngleTest {
         assertTrue { 90.degrees <= 90.degrees }
         assertTrue { 90.degrees <= 100.degrees }
         assertTrue { 100.degrees >= 90.degrees }
+    }
+
+    @Test
+    fun testFrom() {
+        assertTrue { Angle(PI) == (Angle.fromDegrees(180.0)) }
+        assertTrue { Angle.fromRadians(PI) == (Angle.fromDegrees(180.0)) }
+        assertTrue { Angle.fromRatio(0.5) == (Angle.fromDegrees(180.0)) }
+    }
+
+    @Test
+    fun testToString() {
+        assertEquals("180.0.degrees", Angle.fromRatio(0.5).toString())
+        assertEquals("180.0.degrees", PI.radians.toString())
+        assertEquals("180.0.degrees", 180.degrees.toString())
     }
 
     // @TODO: Required to avoid: java.lang.AssertionError: expected:<3.141592653589793> but was:<Angle(180.0)>
