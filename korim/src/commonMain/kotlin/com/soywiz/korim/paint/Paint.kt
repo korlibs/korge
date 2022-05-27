@@ -226,6 +226,14 @@ inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y
 @Deprecated("Only available on Android or Bitmap32")
 inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix()) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform)
 
+fun Bitmap.toPaint(
+    transform: Matrix = Matrix(),
+    cycleX: CycleMethod = CycleMethod.NO_CYCLE,
+    cycleY: CycleMethod = CycleMethod.NO_CYCLE,
+    smooth: Boolean = true,
+    units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
+): BitmapPaint = BitmapPaint(this, transform, cycleX, cycleY, smooth, units)
+
 data class BitmapPaint(
     val bitmap: Bitmap,
     override val transform: Matrix = Matrix(),
