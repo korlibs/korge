@@ -9,6 +9,7 @@ import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
 import com.soywiz.korge.view.text
+import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.annotation.*
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
@@ -16,7 +17,11 @@ import com.soywiz.korim.bitmap.trace.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.paint.LinearGradientPaint
+import com.soywiz.korim.paint.toPaint
 import com.soywiz.korim.text.*
+import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
@@ -35,7 +40,8 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
-    mainEasing()
+    mainVectorFill()
+    //mainEasing()
     //mainBezier()
     //mainGpuVectorRendering()
     //mainClipping()
