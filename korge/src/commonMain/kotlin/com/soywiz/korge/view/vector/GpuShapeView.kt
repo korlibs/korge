@@ -111,6 +111,13 @@ open class GpuShapeView(
         }
 
     private var renderCount = 0
+    private val shapeBounds = Rectangle()
+
+    val shapeWidth: Double get() = shapeBounds.width
+    val shapeHeight: Double get() = shapeBounds.height
+
+    override val anchorDispX: Double get() = shapeBounds.width * anchorX
+    override val anchorDispY: Double get() = shapeBounds.height * anchorY
 
     private fun invalidateShape() {
         renderCount = 0
@@ -123,13 +130,21 @@ open class GpuShapeView(
         gpuShapeViewCommands.finish()
         cachedScale = globalScale
         //strokeCache.clear()
+
+        shape.getBounds(shapeBounds, bb)
+    }
+
+    override fun invalidate() {
+        super.invalidate()
+        invalidateShape()
     }
 
     override fun getLocalBoundsInternal(out: Rectangle) {
-        shape.getBounds(out, bb)
-        out.setXY(
-            out.x - out.width * anchorX,
-            out.y - out.height * anchorY
+        out.setTo(
+            shapeBounds.x - anchorDispX,
+            shapeBounds.y - anchorDispY,
+            shapeBounds.width,
+            shapeBounds.height,
         )
     }
 
@@ -194,8 +209,12 @@ open class GpuShapeView(
         //println("GPU RENDER IN: $time, doRequireTexture=$doRequireTexture")
     }
 
+    private val renderMat = Matrix()
     private fun renderCommands(ctx: RenderContext, doRequireTexture: Boolean) {
-        gpuShapeViewCommands.render(ctx, if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix, localMatrix, renderAlpha, applyScissor)
+        val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix
+        renderMat.copyFrom(mat)
+        renderMat.pretranslate(-anchorDispX, -anchorDispY)
+        gpuShapeViewCommands.render(ctx, renderMat, localMatrix, renderAlpha, applyScissor)
     }
 
     private fun renderShape(shape: Shape) {

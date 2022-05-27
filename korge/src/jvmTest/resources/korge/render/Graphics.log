@@ -242,8 +242,8 @@ uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0, 0, 0, 1 ],
 )
 uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
-  [ 1.7320508, -1, 0, 100 ],
-  [ 1, 1.7320508, 0, 100 ],
+  [ 1.7320508, -1, 0, 53.148746 ],
+  [ 1, 1.7320508, 0, -74.85125 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -258,7 +258,7 @@ createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
 enable: SCISSOR
-scissor: -33, 95, 361, 361
+scissor: -80, -80, 361, 361
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboUse: 2
