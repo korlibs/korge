@@ -40,8 +40,9 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
-    mainVectorFill()
+    //mainVectorFill()
     //mainEasing()
+    mainTweenPoint()
     //mainBezier()
     //mainGpuVectorRendering()
     //mainClipping()
