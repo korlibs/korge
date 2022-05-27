@@ -74,5 +74,5 @@ class AgBufferManager(
     }
 }
 
-//class AgCachedBuffer(val kind: AG.Buffer.Kind, val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)
+//class AgCachedBuffer(val kind: AG.BufferKind, val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)
 class AgCachedBuffer(val data: Any, val dataOffset: Int = 0, val dataLen: Int = -1)

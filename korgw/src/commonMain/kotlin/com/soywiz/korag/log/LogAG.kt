@@ -90,7 +90,7 @@ open class ComposedAG(val agBase: AG, val agExtra: AG) : AG(), AGFeatures by agB
         return ComposedTexture()
     }
 
-    override fun createBuffer(kind: Buffer.Kind): Buffer {
+    override fun createBuffer(kind: BufferKind): Buffer {
         return super.createBuffer(kind)
     }
 
@@ -216,7 +216,10 @@ open class LogBaseAG(
 		val logmem: FBuffer? get() = mem
 		val logmemOffset get() = memOffset
 		val logmemLength get() = memLength
-		override fun afterSetMem() = log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
+		override fun afterSetMem() {
+            super.afterSetMem()
+            log("$this.afterSetMem(mem[${mem!!.size}])", LogBaseAG.Kind.BUFFER)
+        }
 		override fun close(list: AGList) = log("$this.close()", LogBaseAG.Kind.BUFFER)
 		override fun toString(): String = "Buffer[$id]"
 	}

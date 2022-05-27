@@ -16,6 +16,7 @@ import com.soywiz.klogger.Console
 import com.soywiz.kmem.FBuffer
 import com.soywiz.kmem.isPowerOfTwo
 import com.soywiz.kmem.nextPowerOfTwo
+import com.soywiz.kmem.unit.ByteUnits
 import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.gl.fromGl
 import com.soywiz.korag.shader.Attribute
@@ -33,7 +34,6 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.ForcedTexId
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.annotations.KorIncomplete
@@ -62,7 +62,7 @@ typealias AGFrontFace = AG.FrontFace
 typealias AGCullFace = AG.CullFace
 typealias AGDrawType = AG.DrawType
 typealias AGIndexType = AG.IndexType
-typealias AGBufferKind = AG.Buffer.Kind
+typealias AGBufferKind = AG.BufferKind
 
 interface AGFactory {
     val supportsNativeFrame: Boolean
@@ -280,16 +280,18 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val rgba: Boolean
         val width: Int
         val height: Int
+        val depth: Int get() = 1
     }
 
     class SyncBitmapSourceList(
         override val rgba: Boolean,
         override val width: Int,
         override val height: Int,
+        override val depth: Int,
         val gen: () -> List<Bitmap>?
     ) : BitmapSourceBase {
         companion object {
-            val NIL = SyncBitmapSourceList(true, 0, 0) { null }
+            val NIL = SyncBitmapSourceList(true, 0, 0, 0) { null }
         }
 
         override fun toString(): String = "SyncBitmapSourceList(rgba=$rgba, width=$width, height=$height)"
@@ -320,9 +322,12 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
-    var lastTextureId = 0
     var createdTextureCount = 0
     var deletedTextureCount = 0
+
+    private val textures = LinkedHashSet<Texture>()
+    private val texturesCount: Int get() = textures.size
+    private val texturesMemory: ByteUnits get() = ByteUnits.fromBytes(textures.sumOf { it.estimatedMemoryUsage.bytesLong })
 
     enum class TextureKind { RGBA, LUMINANCE }
 
@@ -358,6 +363,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         init {
             createdTextureCount++
+            textures += this
         }
 
         internal fun invalidate() {
@@ -367,7 +373,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
 
         fun upload(list: List<Bitmap>, width: Int, height: Int): Texture {
-            return upload(SyncBitmapSourceList(rgba = true, width = width, height = height) { list })
+            return upload(SyncBitmapSourceList(rgba = true, width = width, height = height, depth = list.size) { list })
         }
 
         fun upload(bmp: Bitmap?, mipmaps: Boolean = false): Texture {
@@ -385,8 +391,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             return upload(bmp?.extract(), mipmaps)
         }
 
+        var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0L)
+
         fun upload(source: BitmapSourceBase, mipmaps: Boolean = false): Texture {
             this.source = source
+            estimatedMemoryUsage = ByteUnits.fromBytes(source.width * source.height * source.depth * 4)
             uploadedSource()
             invalidate()
             this.requestMipmaps = mipmaps
@@ -417,6 +426,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 source = SyncBitmapSource.NIL
                 tempBitmaps = null
                 deletedTextureCount++
+                textures -= this
                 //Console.log("CLOSED TEXTURE: $texId")
                 //printTexStats()
             }
@@ -476,15 +486,26 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
-    open class Buffer constructor(val list: AGList) {
-        enum class Kind { INDEX, VERTEX }
+    private val buffers = LinkedHashSet<Buffer>()
+    private val buffersCount: Int get() = buffers.size
+    private val buffersMemory: ByteUnits get() = ByteUnits.fromBytes(buffers.sumOf { it.estimatedMemoryUsage.bytesLong })
 
+    enum class BufferKind { INDEX, VERTEX }
+
+    open inner class Buffer constructor(val list: AGList) {
         var dirty = false
         internal var mem: FBuffer? = null
         internal var memOffset: Int = 0
         internal var memLength: Int = 0
 
+        var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
+
+        init {
+            buffers += this
+        }
+
         open fun afterSetMem() {
+            estimatedMemoryUsage = ByteUnits.fromBytes(memLength)
         }
 
         private fun allocateMem(size: Int): FBuffer {
@@ -545,6 +566,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             dirty = true
 
             list.bufferDelete(this.agId)
+            buffers -= this
             agId = 0
         }
     }
@@ -910,7 +932,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     val frameRenderBuffers = LinkedHashSet<RenderBuffer>()
     val renderBuffers = Pool<RenderBuffer>() { createRenderBuffer() }
 
-    interface BaseRenderBuffer {
+    interface BaseRenderBuffer : Closeable {
         val x: Int
         val y: Int
         val width: Int
@@ -918,6 +940,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val fullWidth: Int
         val fullHeight: Int
         val scissor: RectangleInt?
+        val estimatedMemoryUsage: ByteUnits
         fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int = width, fullHeight: Int = height)
         fun init() = Unit
         fun set() = Unit
@@ -930,7 +953,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         const val DEFAULT_INITIAL_HEIGHT = 128
     }
 
-    open class BaseRenderBufferImpl : BaseRenderBuffer {
+    private val allRenderBuffers = LinkedHashSet<BaseRenderBuffer>()
+    private val renderBufferCount: Int get() = allRenderBuffers.size
+    private val renderBuffersMemory: ByteUnits get() = ByteUnits.fromBytes(allRenderBuffers.sumOf { it.estimatedMemoryUsage.bytesLong })
+
+    open inner class BaseRenderBufferImpl : BaseRenderBuffer {
         override var x = 0
         override var y = 0
         override var width = RenderBufferConsts.DEFAULT_INITIAL_WIDTH
@@ -940,7 +967,11 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         private val _scissor = RectangleInt()
         override var scissor: RectangleInt? = null
 
+        override var estimatedMemoryUsage: ByteUnits = ByteUnits.fromBytes(0)
+
         override fun setSize(x: Int, y: Int, width: Int, height: Int, fullWidth: Int, fullHeight: Int) {
+            estimatedMemoryUsage = ByteUnits.fromBytes(fullWidth * fullHeight * (4 + 4))
+
             this.x = x
             this.y = y
             this.width = width
@@ -951,6 +982,14 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         override fun scissor(scissor: RectangleInt?) {
             this.scissor = scissor?.let { _scissor.setTo(it) }
+        }
+
+        init {
+            allRenderBuffers += this
+        }
+
+        override fun close() {
+            allRenderBuffers -= this
         }
     }
 
@@ -966,7 +1005,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     open fun createMainRenderBuffer(): BaseRenderBuffer = BaseRenderBufferImpl()
 
-    open inner class RenderBuffer : Closeable, BaseRenderBufferImpl() {
+    open inner class RenderBuffer : BaseRenderBufferImpl() {
         open val id: Int = -1
         private var cachedTexVersion = -1
         private var _tex: Texture? = null
@@ -1015,6 +1054,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         fun readBitmap(bmp: Bitmap32) = this@AG.readColor(bmp)
         fun readDepth(width: Int, height: Int, out: FloatArray): Unit = this@AG.readDepth(width, height, out)
         override fun close() {
+            super.close()
             cachedTexVersion = -1
             _tex?.close()
             _tex = null
@@ -1541,6 +1581,34 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         override fun toString() = "{" + keys.zip(values)
             .joinToString(", ") { "${it.first}=${valueToString(it.second)}" } + "}"
+    }
+
+    private val stats = AGStats()
+
+    fun getStats(out: AGStats = stats): AGStats {
+        out.texturesMemory = this.texturesMemory
+        out.texturesCount = this.texturesCount
+        out.buffersMemory = this.buffersMemory
+        out.buffersCount = this.buffersCount
+        out.renderBuffersMemory = this.renderBuffersMemory
+        out.renderBuffersCount = this.renderBufferCount
+        out.texturesCreated = this.createdTextureCount
+        out.texturesDeleted = this.deletedTextureCount
+        return out
+    }
+
+    class AGStats(
+        var texturesCount: Int = 0,
+        var texturesMemory: ByteUnits = ByteUnits.fromBytes(0),
+        var buffersCount: Int = 0,
+        var buffersMemory: ByteUnits = ByteUnits.fromBytes(0),
+        var renderBuffersCount: Int = 0,
+        var renderBuffersMemory: ByteUnits = ByteUnits.fromBytes(0),
+        var texturesCreated: Int = 0,
+        var texturesDeleted: Int = 0,
+    ) {
+        override fun toString(): String =
+            "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory)"
     }
 }
 

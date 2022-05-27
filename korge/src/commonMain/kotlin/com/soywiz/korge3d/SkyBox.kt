@@ -67,7 +67,7 @@ class SkyBox(
     /*
         inner class Texture3DDrawer {
             val VERTEX_COUNT = 4
-            val vertices = createBuffer(AG.Buffer.Kind.VERTEX)
+            val vertices = createBuffer(AG.BufferKind.VERTEX)
             val vertexLayout = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
             val verticesData = FBuffer(VERTEX_COUNT * vertexLayout.totalSize)
             val program = Program(VertexShader {

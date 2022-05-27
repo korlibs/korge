@@ -53,7 +53,7 @@ class AG {
     
     fun createTexture(): Texture
     fun createTexture(bmp: Bitmap, mipmaps: Boolean = false): Texture
-    fun createBuffer(kind: Buffer.Kind): Buffer
+    fun createBuffer(kind: BufferKind): Buffer
     fun createIndexBuffer(): Buffer
     fun createVertexBuffer(): Buffer
     fun createIndexBuffer(data: ShortArray, offset: Int = 0, length: Int = data.size - offset): Buffer
