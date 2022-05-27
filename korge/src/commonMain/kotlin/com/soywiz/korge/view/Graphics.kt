@@ -40,6 +40,13 @@ inline fun Container.graphics(
     callback: @ViewDslMarker Graphics.() -> Unit = {}
 ) = Graphics(buildShape { build() }, antialiased).addTo(this, callback)
 
+@KorgeExperimental
+inline fun Container.graphics(
+    shape: Shape,
+    antialiased: Boolean = true,
+    callback: @ViewDslMarker Graphics.() -> Unit = {}
+) = Graphics(shape, antialiased).addTo(this, callback)
+
 fun Graphics(
     shape: Shape,
     antialiased: Boolean = true,
