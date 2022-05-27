@@ -1,5 +1,7 @@
 package com.soywiz.korlibs.modules
 
+// https://central.sonatype.org/publish/publish-guide/#deployment
+
 import com.soywiz.korge.gradle.util.*
 import org.gradle.api.*
 import java.io.*
