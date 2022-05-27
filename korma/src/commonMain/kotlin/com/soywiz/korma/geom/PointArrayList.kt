@@ -14,6 +14,11 @@ interface IPointArrayList : Extra {
     fun getY(index: Int): Double
 }
 
+val IPointArrayList.firstX: Double get() = getX(0)
+val IPointArrayList.firstY: Double get() = getY(0)
+val IPointArrayList.lastX: Double get() = getX(size - 1)
+val IPointArrayList.lastY: Double get() = getY(size - 1)
+
 fun IPointArrayList.orientation(): Orientation {
     if (size < 3) return Orientation.COLLINEAR
     return Orientation.orient2dFixed(getX(0), getY(0), getX(1), getY(1), getX(2), getY(2))
