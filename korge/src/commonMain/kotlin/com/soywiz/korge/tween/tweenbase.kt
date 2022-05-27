@@ -4,6 +4,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.coalesce
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.nanoseconds
+import com.soywiz.kmem.clamp01
 import com.soywiz.kmem.fract
 import com.soywiz.kmem.toIntFloor
 import com.soywiz.korim.color.ColorAdd
@@ -59,32 +60,16 @@ operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(end: V) = V2(this, t
 operator fun <V : Interpolable<V>> KMutableProperty0<V>.get(initial: V, end: V) = V2(this, initial, end, ::_interpolateInterpolable, includeStart = true)
 
 @PublishedApi
-internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = when {
-    ratio < 0.0 -> l
-    ratio >= 1.0 -> r
-    else -> ratio.interpolate(l, r)
-}
+internal fun _interpolate(ratio: Double, l: Double, r: Double): Double = ratio.interpolate(l, r)
 
 @PublishedApi
-internal fun _interpolateInt(ratio: Double, l: Int, r: Int): Int = when {
-    ratio < 0.0 -> l
-    ratio >= 1.0 -> r
-    else -> ratio.interpolate(l, r)
-}
+internal fun _interpolateInt(ratio: Double, l: Int, r: Int): Int = ratio.interpolate(l, r)
 
 @PublishedApi
-internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Double, l: V, r: V): V = when {
-    ratio < 0.0 -> l
-    ratio >= 1.0 -> r
-    else -> ratio.interpolate(l, r)
-}
+internal fun <V : Interpolable<V>> _interpolateInterpolable(ratio: Double, l: V, r: V): V = ratio.interpolate(l, r)
 
 @PublishedApi
-internal fun _interpolateFloat(ratio: Double, l: Float, r: Float): Float = when {
-    ratio < 0.0 -> l
-    ratio >= 1.0 -> r
-    else -> ratio.interpolate(l, r)
-}
+internal fun _interpolateFloat(ratio: Double, l: Float, r: Float): Float = ratio.interpolate(l, r)
 
 @PublishedApi
 internal fun _interpolateColor(ratio: Double, l: RGBA, r: RGBA): RGBA = RGBA.mixRgba(l, r, ratio)
@@ -139,6 +124,11 @@ inline operator fun KMutableProperty0<IPoint>.get(range: IPointArrayList): V2<IP
     )
 }
 
+@JvmName("getFloat")
+inline operator fun KMutableProperty0<Float>.get(end: Float) = V2(this, this.get(), end, ::_interpolateFloat, includeStart = false)
+@JvmName("getFloat")
+inline operator fun KMutableProperty0<Float>.get(initial: Float, end: Float) = V2(this, initial, end, ::_interpolateFloat, true)
+
 inline operator fun KMutableProperty0<Double>.get(end: Double) = V2(this, this.get(), end, ::_interpolate, includeStart = false)
 inline operator fun KMutableProperty0<Double>.get(initial: Double, end: Double) = V2(this, initial, end, ::_interpolate, true)
 
@@ -168,6 +158,7 @@ fun V2<Angle>.denormalized(): V2<Angle> = this.copy(interpolator = ::_interpolat
 inline operator fun KMutableProperty0<TimeSpan>.get(end: TimeSpan) = V2(this, this.get(), end, ::_interpolateTimeSpan, includeStart = false)
 inline operator fun KMutableProperty0<TimeSpan>.get(initial: TimeSpan, end: TimeSpan) = V2(this, initial, end, ::_interpolateTimeSpan, includeStart = true)
 
+fun <V> V2<V>.clamped(): V2<V> = copy(interpolator = { ratio, l, r -> this.interpolator(ratio.clamp01(), l, r) })
 fun <V> V2<V>.easing(easing: Easing): V2<V> = this.copy(interpolator = { ratio, a, b -> this.interpolator(easing(ratio), a, b) })
 
 inline fun <V> V2<V>.delay(startTime: TimeSpan) = this.copy(startTime = startTime)
