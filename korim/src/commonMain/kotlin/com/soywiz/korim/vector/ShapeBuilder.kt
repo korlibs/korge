@@ -3,10 +3,28 @@ package com.soywiz.korim.vector
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.renderer.DummyRenderer
 import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.isEmpty
 import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.write
+
+fun VectorPath.toFillShape(paint: Paint): Shape = buildShape { fill(paint) { write(this@toFillShape) } }
+fun VectorPath.toStrokeShape(paint: Paint, info: StrokeInfo = StrokeInfo()): Shape = buildShape { stroke(paint, info) { write(this@toStrokeShape) } }
+fun VectorPath.toStrokeShape(
+    paint: Paint,
+    thickness: Double = 1.0,
+    pixelHinting: Boolean = false,
+    scaleMode: LineScaleMode = LineScaleMode.NORMAL,
+    startCap: LineCap = LineCap.BUTT,
+    endCap: LineCap = LineCap.BUTT,
+    lineJoin: LineJoin = LineJoin.MITER,
+    miterLimit: Double = 20.0
+): Shape = buildShape { stroke(paint, StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)) { write(this@toStrokeShape) } }
 
 inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape =
     ShapeBuilder(width, height).apply(builder).buildShape()
