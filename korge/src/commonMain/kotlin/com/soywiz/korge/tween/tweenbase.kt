@@ -89,13 +89,13 @@ internal fun _interpolateAngle(ratio: Double, l: Angle, r: Angle): Angle = _inte
 internal fun _interpolateAngleDenormalized(ratio: Double, l: Angle, r: Angle): Angle = _interpolateAngleAny(ratio, l, r, minimizeAngle = false)
 
 internal fun _interpolateAngleAny(ratio: Double, l: Angle, r: Angle, minimizeAngle: Boolean = true): Angle {
-    if (!minimizeAngle) return Angle(_interpolate(ratio, l.radians, r.radians))
+    if (!minimizeAngle) return Angle.fromRatio(_interpolate(ratio, l.ratio, r.ratio))
     val ln = l.normalized
     val rn = r.normalized
     return when {
-        (rn - ln).absoluteValue <= 180.degrees -> Angle(_interpolate(ratio, ln.radians, rn.radians))
-        ln < rn -> Angle(_interpolate(ratio, (ln + 360.degrees).radians, rn.radians)).normalized
-        else -> Angle(_interpolate(ratio, ln.radians, (rn + 360.degrees).radians)).normalized
+        (rn - ln).absoluteValue <= 180.degrees -> Angle.fromRadians(_interpolate(ratio, ln.radians, rn.radians))
+        ln < rn -> Angle.fromRadians(_interpolate(ratio, (ln + 360.degrees).radians, rn.radians)).normalized
+        else -> Angle.fromRadians(_interpolate(ratio, ln.radians, (rn + 360.degrees).radians)).normalized
     }
 }
 
