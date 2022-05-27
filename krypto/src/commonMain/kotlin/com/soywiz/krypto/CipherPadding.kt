@@ -42,7 +42,7 @@ abstract class CipherPadding {
 private object CipherPaddingNo : CipherPadding() {
     override fun paddingSize(dataSize: Int, blockSize: Int): Int {
         if (dataSize % blockSize != 0) {
-            throw IllegalArgumentException("Data is not multiple of ${blockSize}, and padding was set to $NoPadding")
+            throw IllegalArgumentException("Data ($dataSize) is not multiple of ${blockSize}, and padding was set to $NoPadding")
         }
         return 0
     }

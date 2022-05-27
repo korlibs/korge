@@ -7,11 +7,12 @@ interface Cipher {
 }
 
 class CipherWithModeAndPadding(val cipher: Cipher, val mode: CipherMode, val padding: CipherPadding, val iv: ByteArray? = null) {
-    fun encrypt(data: ByteArray, offset: Int = 0, len: Int = data.size - offset): ByteArray =
-        mode.encrypt(data.copyOfRange(offset, offset + len), cipher, padding, iv)
+    fun encrypt(data: ByteArray, offset: Int = 0, len: Int = data.size - offset): ByteArray {
+        return mode.encryptSafe(data.copyOfRange(offset, offset + len), cipher, padding, iv)
+    }
 
     fun decrypt(data: ByteArray, offset: Int = 0, len: Int = data.size - offset): ByteArray =
-        mode.decrypt(data.copyOfRange(offset, offset + len), cipher, padding, iv)
+        mode.decryptSafe(data.copyOfRange(offset, offset + len), cipher, padding, iv)
 }
 
 fun Cipher.with(mode: CipherMode, padding: CipherPadding, iv: ByteArray? = null): CipherWithModeAndPadding = CipherWithModeAndPadding(this, mode, padding, iv)

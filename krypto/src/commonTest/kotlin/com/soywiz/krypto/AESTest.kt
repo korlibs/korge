@@ -218,9 +218,11 @@ class AESTest {
         val data = "0000040100000000000e0000000e000104010100".unhex
         val key = "11090c51a42c0b98cd2b7b7480d80dc86458258c010c306e60e94cde7f8eaffb".unhex
 
+        AES.encryptAesCbc(data, key, iv, Padding.NoPadding)
+        AES.encryptAes128Cbc(data, key)
         // Data not aligned, and NoPadding used, it should fail
-        assertFailsWith<IllegalArgumentException> { AES.encryptAesCbc(data, key, iv, Padding.NoPadding) }
-        assertFailsWith<IllegalArgumentException> { AES.encryptAes128Cbc(data, key) }
+        //assertFailsWith<IllegalArgumentException> { AES.encryptAesCbc(data, key, iv, Padding.NoPadding) }
+        //assertFailsWith<IllegalArgumentException> { AES.encryptAes128Cbc(data, key) }
         assertEquals(
             "6ed24a2790e3bb1a3cecd89c6d33b487cb2c38471ea7e3c2771ab537fb23875e",
             AES.encryptAesCbc(data, key, iv, Padding.ZeroPadding).hex
@@ -229,6 +231,15 @@ class AESTest {
             "6ed24a2790e3bb1a3cecd89c6d33b487cb2c38471ea7e3c2771ab537fb23875e",
             AES.encryptAes128Cbc(data, key, iv, padding = Padding.ZeroPadding).hex
         )
+    }
+
+    @Test
+    fun test2() {
+        val key = ByteArray(32) { (it + 1).toByte() }
+        val nonce = ByteArray(8) { (it + 1).toByte() }
+        val initialisationVector = nonce + ByteArray(8)
+        assertEquals("14e2d5701d", AES.encryptAesCtr("hello".encodeToByteArray(), key, initialisationVector, Padding.NoPadding).hex)
+        assertEquals("hello", AES.decryptAesCtr("14e2d5701d".unhex, key, initialisationVector, Padding.NoPadding).decodeToString())
     }
 }
 

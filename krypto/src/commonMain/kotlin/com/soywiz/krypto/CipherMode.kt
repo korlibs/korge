@@ -22,6 +22,21 @@ interface CipherMode {
     fun decrypt(data: ByteArray, cipher: Cipher, padding: Padding, iv: ByteArray?): ByteArray
 }
 
+private fun Int.nextMultipleOf(multiple: Int) = if (this % multiple == 0) this else (((this / multiple) + 1) * multiple)
+
+fun CipherMode.encryptSafe(data: ByteArray, cipher: Cipher, padding: Padding, iv: ByteArray?): ByteArray {
+    if (padding == CipherPadding.NoPadding) {
+        return encrypt(data, cipher, CipherPadding.ZeroPadding, iv).copyOf(data.size)
+    }
+    return encrypt(data, cipher, padding, iv)
+}
+fun CipherMode.decryptSafe(data: ByteArray, cipher: Cipher, padding: Padding, iv: ByteArray?): ByteArray {
+    if (padding == CipherPadding.NoPadding) {
+        return decrypt(data.copyOf(data.size.nextMultipleOf(cipher.blockSize)), cipher, CipherPadding.ZeroPadding, iv).copyOf(data.size)
+    }
+    return decrypt(data, cipher, padding, iv)
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
