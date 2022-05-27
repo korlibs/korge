@@ -10,12 +10,12 @@ import android.view.*
 import android.widget.*
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korio.android.androidContext
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
+import com.soywiz.korio.android.androidContext
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import kotlinx.coroutines.*
@@ -209,6 +209,12 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         CycleMethod.REPEAT -> Shader.TileMode.REPEAT
     }
 
+    // https://developer.android.com/reference/android/graphics/Color
+    fun argb(a: Int, r: Int, g: Int, b: Int): Int =
+        (a and 0xff shl 24) or (r and 0xff shl 16) or (g and 0xff shl 8) or (b and 0xff)
+
+    fun argb(color: RGBA): Int = argb(color.a, color.r, color.g, color.b)
+
     @Suppress("RemoveRedundantQualifierName")
     fun convertPaint(c: com.soywiz.korim.paint.Paint, m: com.soywiz.korma.geom.Matrix, out: Paint, alpha: Double) {
         when (c) {
@@ -216,22 +222,13 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
                 out.shader = null
             }
             is com.soywiz.korim.paint.ColorPaint -> {
-                val cc = c.color.withScaledAlpha(alpha)
-                out.setARGB(cc.a, cc.r, cc.g, cc.b)
+                out.color = argb(c.color.withScaledAlpha(alpha))
                 out.shader = null
             }
             is com.soywiz.korim.paint.GradientPaint -> {
                 val colors = c.colors.toColorScaledAlpha(alpha)
                     .apply {
-                        if (c.kind != GradientKind.SWEEP) {
-                            // @TODO: Why is this required?
-                            reverse()
-                        } else {
-                            // @TODO: Why is this required?
-                            for (n in indices) {
-                                this[n] = BGRA.rgbaToBgra(this[n])
-                            }
-                        }
+                        for (n in indices) this[n] = argb(RGBA(this[n]))
                     }
                 val stops = c.stops.toFloatArray()
                 out.shader = when (c.kind) {
