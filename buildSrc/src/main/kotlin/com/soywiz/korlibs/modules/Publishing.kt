@@ -68,10 +68,13 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                             username = publishUser
                             password = publishPassword
                         }
+                        val deployByRepositoryId = System.getenv("deployByRepositoryId")
                         url = when {
                             version.toString().contains("-SNAPSHOT") -> uri("https://oss.sonatype.org/content/repositories/snapshots/")
+                            deployByRepositoryId != null -> uri("https://oss.sonatype.org/service/local/staging/deployByRepositoryId/$deployByRepositoryId/")
                             else -> uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                         }
+                        //println("DEPLOY TO: $url")
                     }
                 }
             }

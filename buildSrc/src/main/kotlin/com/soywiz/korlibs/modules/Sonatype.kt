@@ -21,12 +21,25 @@ fun Project.configureMavenCentralRelease() {
 	if (rootProject.tasks.findByName("releaseMavenCentral") == null) {
         rootProject.tasks.create("releaseMavenCentral").also { task ->
 			task.doLast {
-				if (!Sonatype.fromProject(project).releaseGroupId(project.group.toString())) {
+				if (!Sonatype.fromProject(rootProject).releaseGroupId(rootProject.group.toString())) {
 					error("Can't promote artifacts. Check log for details")
 				}
 			}
 		}
 	}
+
+    if (rootProject.tasks.findByName("startReleasingMavenCentral") == null) {
+        rootProject.tasks.create("startReleasingMavenCentral").also { task ->
+            task.doLast {
+                val sonatype = Sonatype.fromProject(rootProject)
+                val profileId = sonatype.findProfileIdByGroupId("com.soywiz")
+                val stagedRepositoryId = sonatype.startStagedRepository(profileId)
+                println("profileId=$profileId")
+                println("stagedRepositoryId=$stagedRepositoryId")
+                println("::set-output name=stagedRepositoryId::$stagedRepositoryId")
+            }
+        }
+    }
 }
 
 open class Sonatype(
