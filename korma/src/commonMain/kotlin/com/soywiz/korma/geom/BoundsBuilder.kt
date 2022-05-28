@@ -55,9 +55,13 @@ class BoundsBuilder {
     }
     fun add(rect: Rectangle): BoundsBuilder {
         if (rect.isNotEmpty) {
-            add(rect.left, rect.top)
-            add(rect.right, rect.bottom)
+            addEvenEmpty(rect)
         }
+        return this
+    }
+    fun addEvenEmpty(rect: Rectangle): BoundsBuilder {
+        add(rect.left, rect.top)
+        add(rect.right, rect.bottom)
         return this
     }
 

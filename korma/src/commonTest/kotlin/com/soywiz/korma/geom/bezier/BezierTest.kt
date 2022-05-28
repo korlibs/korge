@@ -5,6 +5,8 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.map
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.getCurves
+import com.soywiz.korma.geom.vector.getCurvesLists
+import com.soywiz.korma.geom.vector.rect
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -50,5 +52,18 @@ class BezierTest {
             """.trimIndent(),
             curves.getPoints(20).map { x, y -> "(${x.roundToInt()}, ${y.roundToInt()})" }.joinToString("\n")
         )
+    }
+
+    @Test
+    fun testCurveList() {
+        val path = buildVectorPath {
+            rect(0, 0, 100, 100)
+            rect(300, 0, 100, 100)
+        }
+        val curves = path.getCurvesLists()
+        assertEquals(2, curves.size)
+        assertEquals(Rectangle(0, 0, 100, 100), curves[0].getBounds())
+        assertEquals(Rectangle(300, 0, 100, 100), curves[1].getBounds())
+        assertEquals(Rectangle(0, 0, 400, 100), curves.toCurves().getBounds())
     }
 }

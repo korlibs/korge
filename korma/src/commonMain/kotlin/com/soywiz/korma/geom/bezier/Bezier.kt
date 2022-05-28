@@ -10,10 +10,14 @@ import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.clamp
+import kotlin.jvm.JvmName
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 
+@JvmName("ListCurves_toCurves")
+fun List<Curves>.toCurves() = Curves(this.flatMap { it.curves })
+@JvmName("ListCurve_toCurves")
 fun List<Curve>.toCurves() = Curves(this)
 
 data class Curves(val curves: List<Curve>) : Curve {
@@ -41,7 +45,7 @@ data class Curves(val curves: List<Curve>) : Curve {
 
     override fun getBounds(target: Rectangle): Rectangle {
         bb.reset()
-        infos.fastForEach { bb.add(it.bounds) }
+        infos.fastForEach { bb.addEvenEmpty(it.bounds) }
         return bb.getBounds(target)
     }
 
