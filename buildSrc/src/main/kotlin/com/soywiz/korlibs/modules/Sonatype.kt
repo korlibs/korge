@@ -10,6 +10,7 @@ import java.util.*
 val Project.customMavenUser: String? get() = System.getenv("KORLIBS_CUSTOM_MAVEN_USER") ?: rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_USER")?.toString()
 val Project.customMavenPass: String? get() = System.getenv("KORLIBS_CUSTOM_MAVEN_PASS") ?: rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_PASS")?.toString()
 val Project.customMavenUrl: String? get() = System.getenv("KORLIBS_CUSTOM_MAVEN_URL") ?: rootProject.findProperty("KORLIBS_CUSTOM_MAVEN_URL")?.toString()
+val Project.stagedRepositoryId: String? get() = System.getenv("stagedRepositoryId") ?: rootProject.findProperty("stagedRepositoryId")?.toString()
 
 val Project.sonatypePublishUserNull: String? get() = (System.getenv("SONATYPE_USERNAME") ?: rootProject.findProperty("SONATYPE_USERNAME")?.toString() ?: project.findProperty("sonatypeUsername")?.toString())
 val Project.sonatypePublishPasswordNull: String? get() = (System.getenv("SONATYPE_PASSWORD") ?: rootProject.findProperty("SONATYPE_PASSWORD")?.toString() ?: project.findProperty("sonatypePassword")?.toString())
@@ -28,6 +29,16 @@ fun Project.configureMavenCentralRelease() {
 		}
 	}
 
+    if (rootProject.tasks.findByName("checkReleasingMavenCentral") == null) {
+        rootProject.tasks.create("checkReleasingMavenCentral").also { task ->
+            task.doLast {
+                println("stagedRepositoryId=${rootProject.stagedRepositoryId}")
+                if (rootProject.stagedRepositoryId.isNullOrEmpty()) {
+                    error("Couldn't find 'stagedRepositoryId' aborting...")
+                }
+            }
+        }
+    }
     if (rootProject.tasks.findByName("startReleasingMavenCentral") == null) {
         rootProject.tasks.create("startReleasingMavenCentral").also { task ->
             task.doLast {
