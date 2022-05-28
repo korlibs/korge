@@ -1,4 +1,5 @@
 import org.apache.tools.ant.taskdefs.optional.unix.Symlink
+import org.gradle.api.publish.maven.internal.publication.DefaultMavenPom
 
 import java.nio.file.Files
 
@@ -25,6 +26,7 @@ pluginBundle {
 gradlePlugin {
 	plugins {
 		create("korge") {
+            //PluginDeclaration decl = it
 			id = "com.soywiz.korge"
 			displayName = "Korge"
 			description = "Multiplatform Game Engine for Kotlin"
@@ -32,6 +34,17 @@ gradlePlugin {
 		}
 	}
 }
+
+/*
+afterEvaluate {
+    GenerateMavenPom generatePomFileForKorgePluginMarkerMavenPublication = tasks.findByName("generatePomFileForKorgePluginMarkerMavenPublication")
+    generatePomFileForKorgePluginMarkerMavenPublication.pom.licenses {
+        it.license {
+            it.name = "MIT"
+        }
+    }
+}
+*/
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8

@@ -106,47 +106,35 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                 //println("PUBLICATION: ${publication.name}")
 
                 //if (multiplatform) {
-                if (!isGradlePluginMarker) {
-                    publication.pom.withXml {
-                        val baseProjectName = project.name.substringBefore('-')
-                        //println("baseProjectName=$baseProjectName")
-                        val defaultGitUrl = "https://github.com/korlibs/$baseProjectName"
-                        this.asNode().apply {
-                            //replaceNode(Node(this, "name", project.name))
-                            appendNode("name", project.name)
-                            appendNode(
-                                "description",
-                                project.description ?: project.getCustomProp("project.description", project.description ?: project.name)
-                            )
-                            appendNode("url", project.getCustomProp("project.scm.url", defaultGitUrl))
-                            appendNode("licenses").apply {
-                                appendNode("license").apply {
-                                    appendNode("name").setValue(project.getCustomProp("project.license.name", "MIT"))
-                                    appendNode("url").setValue(
-                                        project.getCustomProp(
-                                            "project.license.url",
-                                            "https://raw.githubusercontent.com/korlibs/$baseProjectName/master/LICENSE"
-                                        )
-                                    )
-                                }
+                //if (!isGradlePluginMarker) {
+                run {
+                    val baseProjectName = project.name.substringBefore('-')
+                    val defaultGitUrl = "https://github.com/korlibs/$baseProjectName"
+                    publication.pom.also { pom ->
+                        pom.name.set(project.name)
+                        pom.description.set(project.description ?: project.getCustomProp("project.description", project.description ?: project.name))
+                        pom.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
+                        pom.licenses {
+                            license {
+                                this.name.set(project.getCustomProp("project.license.name", "MIT"))
+                                this.url.set(project.getCustomProp("project.license.url", "https://raw.githubusercontent.com/korlibs/$baseProjectName/master/LICENSE"))
                             }
-                            appendNode("developers").apply {
-                                appendNode("developer").apply {
-                                    appendNode("id").setValue(project.getCustomProp("project.author.id", "soywiz"))
-                                    appendNode("name").setValue(
-                                        project.getCustomProp("project.author.name", "Carlos Ballesteros Velasco")
-                                    )
-                                    appendNode("email").setValue(
-                                        project.getCustomProp("project.author.email", "soywiz@gmail.com")
-                                    )
-                                }
+                        }
+                        pom.developers {
+                            developer {
+                                this.id.set(project.getCustomProp("project.author.id", "soywiz"))
+                                this.name.set(project.getCustomProp("project.author.name", "Carlos Ballesteros Velasco"))
+                                this.email.set(project.getCustomProp("project.author.email", "soywiz@gmail.com"))
                             }
-                            appendNode("scm").apply {
-                                appendNode("url").setValue(project.getCustomProp("project.scm.url", defaultGitUrl))
-                            }
-
-                            // Changes runtime -> compile in Android's AAR publications
-                            if (publication.pom.packaging == "aar") {
+                        }
+                        pom.scm {
+                            this.url.set(project.getCustomProp("project.scm.url", defaultGitUrl))
+                        }
+                    }
+                    if (publication.pom.packaging == "aar") {
+                        publication.pom.withXml {
+                            //println("baseProjectName=$baseProjectName")
+                            this.asNode().apply {
                                 val nodes: NodeList =
                                     this.getAt(QName("dependencies")).getAt("dependency").getAt("scope")
                                 for (node in nodes as List<Node>) {
