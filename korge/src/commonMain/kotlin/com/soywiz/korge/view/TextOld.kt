@@ -12,6 +12,8 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.font.Font
 import com.soywiz.korma.geom.Rectangle
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 
 @KorgeDeprecated
 inline fun Container.textOld(
@@ -19,7 +21,7 @@ inline fun Container.textOld(
     textSize: Double = 16.0,
     color: RGBA = Colors.WHITE,
     font: BitmapFont = debugBmpFontSync,
-    fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
+    fontsCatalog: Html.FontsCatalog? = null,
     callback: @ViewDslMarker TextOld.() -> Unit = {}
 ) = TextOld(text, textSize = textSize, color = color, font = font, fontsCatalog = fontsCatalog).addTo(this, callback)
 
@@ -31,16 +33,16 @@ class TextOld : View(), IText, IHtml {
             textSize: Double = 16.0,
             color: RGBA = Colors.WHITE,
             font: BitmapFont = debugBmpFontSync,
-            fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog,
+            fontsCatalog: Html.FontsCatalog?  =null,
 		): TextOld = TextOld().apply {
 			this.format = Html.Format(color = color, face = font, size = textSize.toInt())
 			if (text != "") this.text = text
-            this.fontsCatalog = fontsCatalog
+            this.fontsCatalog = fontsCatalog ?: Html.DefaultFontCatalogWithoutSystemFonts
 		}
 	}
 
 	//var verticalAlign: Html.VerticalAlignment = Html.VerticalAlignment.TOP
-    var fontsCatalog: Html.FontsCatalog = Html.DefaultFontsCatalog
+    var fontsCatalog: Html.FontsCatalog = Html.DefaultFontCatalogWithoutSystemFonts
 	val textBounds = Rectangle(0, 0, 1024, 1024)
 	private val tempRect = Rectangle()
 	var _text: String = ""

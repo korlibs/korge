@@ -27,8 +27,11 @@ import kotlin.math.*
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
 
-actual val resourcesVfs: VfsFile by lazy { ResourcesVfsProviderJvm()().root.jail() }
-actual val rootLocalVfs: VfsFile by lazy { localVfs(absoluteCwd) }
+actual val standardVfs: StandardVfs = object : StandardVfs() {
+    override val resourcesVfs: VfsFile by lazy { ResourcesVfsProviderJvm()().root.jail() }
+    override val rootLocalVfs: VfsFile by lazy { localVfs(absoluteCwd) }
+}
+
 actual val applicationVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val applicationDataVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
@@ -475,7 +478,4 @@ private class LocalVfsJvm : LocalVfsV2() {
 	}
 
 	override fun toString(): String = "LocalVfs"
-}
-
-actual fun cleanUpResourcesVfs() {
 }

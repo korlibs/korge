@@ -90,7 +90,8 @@ suspend fun main() = Korge(
     //mainTrimmedAtlas()
     //mainRotateCircle()
     //mainImageTrace()
-    //mainEmoji()
+    mainEmoji()
+    //mainUITreeView()
     //Bunnymark().apply { bunnymarkMain() }
     //bezierSample()
     //particlesMain()
@@ -205,11 +206,22 @@ suspend fun Stage.mainImageTrace() {
 
 @OptIn(KorimInternal::class)
 suspend fun Stage.mainEmoji() {
+    println("coroutineContext: $coroutineContext")
+    image(resourcesVfs["korge.png"].readBitmap())
     //val fontEmojiOther = localVfs("C:/temp/emoji.ttf").takeIfExists()?.readTtfFont()
     val fontEmojiOther = SystemFont("emoji")
     val fontEmojiApple = localVfs("C:/temp/AppleColorEmoji.ttf").takeIfExists()?.readTtfFont()
     val fontEmojiSystem = SystemFont.getEmojiFont()
     val font0 = DefaultTtfFont.withFallback(SystemFont.getDefaultFont())
+    println("fontEmojiOther=$fontEmojiOther")
+    println("fontEmojiApple=$fontEmojiApple")
+    println("fontEmojiSystem=$fontEmojiSystem")
+    println("font0=$font0")
+    println("fontList=${kotlin.runCatching { localVfs("/system/fonts").listNames() }}")
+    println("/System/Library/Fonts/Cache=${kotlin.runCatching { localVfs("/System/Library/Fonts/Cache").listNames() }}")
+    println("/System/Library/Fonts=${kotlin.runCatching { localVfs("/System/Library/Fonts").listNames() }}")
+    println("/System/Library/Fonts/Core=${kotlin.runCatching { localVfs("/System/Library/Fonts/Core").listNames() }}")
+    println("listFontNamesWithFiles=${kotlin.runCatching { SystemFont.listFontNamesWithFiles() }}")
     //val font0 = localVfs("C:/temp/FrankRuhlHofshi-Regular-ttf.ttf").readTtfFont()
     //val font0 = SystemFont.getDefaultFont().ttf
     //val font0 = SystemFont("Arial Unicode").ttf

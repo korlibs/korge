@@ -22,6 +22,7 @@ import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.copyTo
 import com.soywiz.korio.stream.openSync
+import com.soywiz.korio.util.AsyncOnce
 import com.soywiz.korio.util.LONG_ZERO_TO_MAX_RANGE
 import com.soywiz.korio.util.toLongRange
 import kotlinx.coroutines.flow.Flow
@@ -286,6 +287,23 @@ data class VfsFile(
 	suspend fun getUnderlyingUnscapedFile(): FinalVfsFile = vfs.getUnderlyingUnscapedFile(this.path)
 
 	override fun toString(): String = "$vfs[${this.path}]"
+}
+
+fun VfsFile.proxied(transform: suspend (VfsFile) -> VfsFile): VfsFile {
+    val file = this
+    return object : Vfs.Proxy() {
+        override suspend fun access(path: String): VfsFile {
+            return transform(file[path])
+        }
+    }[file.path]
+}
+
+fun VfsFile.withOnce(once: suspend (VfsFile) -> Unit): VfsFile {
+    val file = this
+    val executed = AsyncOnce<Unit>()
+    return proxied {
+        it.also { executed { once(file) } }
+    }
 }
 
 fun VfsFile.toUnscaped() = FinalVfsFile(this)

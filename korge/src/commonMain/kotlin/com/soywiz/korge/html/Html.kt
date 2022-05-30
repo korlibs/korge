@@ -2,12 +2,15 @@ package com.soywiz.korge.html
 
 import com.soywiz.kds.Computed
 import com.soywiz.kds.Extra
+import com.soywiz.kds.cacheLazyNullable
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korge.bitmapfont.getBounds
 import com.soywiz.korge.scene.debugBmpFontSync
+import com.soywiz.korge.ui.DefaultUIFont
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
+import com.soywiz.korim.font.DefaultFontRegistry
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.SystemFont
 import com.soywiz.korim.font.toBitmapFont
@@ -30,19 +33,29 @@ import kotlin.collections.map
 import kotlin.collections.mapOf
 import kotlin.collections.plusAssign
 import kotlin.collections.set
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
+import kotlin.native.concurrent.ThreadLocal
+
+@ThreadLocal
+private var _DefaultFontsCatalog: Html.FontsCatalog? = null
 
 object Html {
-    class FontsCatalog(val default: Font?, val fonts: Map<String?, Font?> = hashMapOf()) : MetricsProvider {
+    class FontsCatalog(val default: Font?, val context: CoroutineContext? = null, val fonts: Map<String?, Font?> = hashMapOf()) : MetricsProvider {
+        open val defaultFont: BitmapFont get() = debugBmpFontSync
         fun String.normalize() = this.lowercase().trim()
         fun registerFont(name: String, font: Font) { (fonts as MutableMap<String, Font>)[name.normalize()] = font }
-        fun getBitmapFont(name: String?, font: Font? = null): Font = fonts[name?.normalize()] ?: font ?: default ?: SystemFont(name ?: "default")
+        fun getBitmapFontOrNull(name: String?, font: Font? = null): Font? =
+            fonts[name?.normalize()] ?: font ?: default ?: context?.let { SystemFont(name ?: "default", it) }
+        fun getBitmapFont(name: String?, font: Font? = null): Font =
+            getBitmapFontOrNull(name, font) ?: defaultFont
         fun getBitmapFont(font: Font?): BitmapFont {
             if (font is BitmapFont) return font
             val fontName = font?.name?.normalize()
             (fonts[fontName] as? BitmapFont)?.let { return it }
             return (fonts as MutableMap<String?, Font?>)?.getOrPut("$fontName.\$BitmapFont") {
                 font?.toBitmapFont(32.0)
-            } as? BitmapFont? ?: debugBmpFontSync
+            } as? BitmapFont? ?: defaultFont
         }
         override fun getBounds(text: String, format: Format, out: Rectangle) {
             val font = format.computedFace
@@ -50,7 +63,9 @@ object Html {
         }
     }
 
-    val DefaultFontsCatalog = FontsCatalog(null, mapOf())
+    val DefaultFontCatalogWithoutSystemFonts: FontsCatalog = FontsCatalog(null, null)
+    fun DefaultFontsCatalog(coroutineContext: CoroutineContext): FontsCatalog = cacheLazyNullable(::_DefaultFontsCatalog) { FontsCatalog(null, coroutineContext, mapOf()) }
+    suspend fun DefaultFontsCatalog(): FontsCatalog = DefaultFontsCatalog(coroutineContext)
 
 	data class Format(
         override var parent: Format? = null,
@@ -178,7 +193,7 @@ object Html {
 		}
 	}
 
-	class HtmlParser(val fontsCatalog: FontsCatalog) {
+	class HtmlParser(val fontsCatalog: FontsCatalog?) {
 		val document = Document()
 		var currentLine = Line()
 		var currentParagraph = Paragraph()
@@ -221,7 +236,7 @@ object Html {
 						else -> format.align
 					}
 					val face = xml.strNull("face")
-					format.face = if (face != null) fontsCatalog.getBitmapFont(face) else format.face
+					format.face = if (face != null) fontsCatalog?.getBitmapFont(face) else format.face
 					format.size = xml.intNull("size") ?: format.size
 					format.letterSpacing = xml.doubleNull("letterSpacing") ?: format.letterSpacing
 					format.kerning = xml.intNull("kerning") ?: format.kerning
@@ -248,5 +263,5 @@ object Html {
 		}
 	}
 
-	fun parse(html: String, fontsCatalog: FontsCatalog = DefaultFontsCatalog): Document = HtmlParser(fontsCatalog).apply { parse(html) }.document
+	fun parse(html: String, fontsCatalog: FontsCatalog?): Document = HtmlParser(fontsCatalog).apply { parse(html) }.document
 }

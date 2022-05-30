@@ -1,44 +1,71 @@
 package com.soywiz.korio.file.std
 
 import android.content.Context
+import com.soywiz.klock.DateTime
 import com.soywiz.korio.android.androidContext
-import com.soywiz.klock.*
-import com.soywiz.korio.file.*
-import com.soywiz.korio.internal.*
+import com.soywiz.korio.file.Vfs
+import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.VfsProcessHandler
+import com.soywiz.korio.file.VfsStat
+import com.soywiz.korio.file.withOnce
 import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.*
-import java.io.*
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.AsyncStreamBase
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.toAsyncStream
+import com.soywiz.korio.util.LONG_ZERO_TO_MAX_RANGE
+import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.endExclusiveClamped
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
-import java.net.*
-import kotlin.math.*
+import java.io.InputStream
+import java.io.InputStreamReader
+import java.io.RandomAccessFile
+import java.net.URL
+import kotlin.math.min
 
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
 
-private var androidContext: Context? = null
-private var resourcesVfsProvider: ResourcesVfsProviderAndroid? = null
-private lateinit var jailedResourcesVfsFile: VfsFile
-
-actual val resourcesVfs: VfsFile
-get() {
-    if(resourcesVfsProvider == null) {
-        resourcesVfsProvider = ResourcesVfsProviderAndroid().apply {
-            jailedResourcesVfsFile = this.invoke().root.jail()
+class AndroidDeferredVfs(private val generate: (Context) -> VfsFile) : Vfs.Proxy() {
+    private var _generated: VfsFile? = null
+    suspend fun generated(): VfsFile {
+        val context = androidContext()
+        if (_generated == null) {
+            _generated = generate(context)
         }
+        return _generated!!
     }
-    return jailedResourcesVfsFile
+
+    override suspend fun access(path: String): VfsFile {
+        return generated()[path]
+    }
 }
 
-actual val rootLocalVfs: VfsFile by lazy { localVfs(absoluteCwd) }
+fun AndroidDeferredFile(generate: (Context) -> File): VfsFile =
+    AndroidDeferredVfs { localVfs(generate(it)).jail() }.root
+
+actual val standardVfs: StandardVfs = object : StandardVfs() {
+    override val resourcesVfs: VfsFile by lazy { AndroidResourcesVfs().root }
+    override val rootLocalVfs: VfsFile by lazy { localVfs(absoluteCwd) }
+}
+
 actual val applicationVfs: VfsFile by lazy { localVfs(absoluteCwd) }
-actual val applicationDataVfs: VfsFile by lazy { localVfs(absoluteCwd) }
-actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
+actual val applicationDataVfs: VfsFile by lazy { AndroidDeferredFile { it.getDir("korio", Context.MODE_PRIVATE) } }
+actual val cacheVfs: VfsFile by lazy { AndroidDeferredFile { it.cacheDir } }
 actual val externalStorageVfs: VfsFile by lazy { localVfs(absoluteCwd) }
 actual val userHomeVfs: VfsFile by lazy { localVfs(absoluteCwd) }
-actual val tempVfs: VfsFile by lazy { localVfs(tmpdir) }
+actual val tempVfs: VfsFile by lazy { AndroidDeferredFile { it.cacheDir } }
 
 actual fun localVfs(path: String, async: Boolean): VfsFile = LocalVfsJvm()[path]
 
@@ -51,40 +78,13 @@ suspend fun File.open(mode: VfsOpenMode) = localVfs(this).open(mode)
 fun File.toVfs() = localVfs(this)
 fun UrlVfs(url: URL): VfsFile = UrlVfs(url.toString())
 
-class ResourcesVfsProviderAndroid {
+class AndroidResourcesVfs : Vfs() {
+	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream =
+        readRange(path, LONG_ZERO_TO_MAX_RANGE).openAsync(mode.cmode)
 
-    private var androidResourcesVfs: AndroidResourcesVfs? = null
-
-    fun deinit() {
-        androidContext = null
-        androidResourcesVfs?.context = null
-        androidResourcesVfs = null
-    }
-
-	operator fun invoke(): Vfs {
-
-        val merged = MergedVfs()
-
-        return object: Vfs.Decorator(merged.root) {
-			override suspend fun init() = run<ResourcesVfsProviderAndroid, Unit> {
-                androidContext = androidContext()
-                androidResourcesVfs = AndroidResourcesVfs(androidContext).apply {
-                    merged += root
-                }
-			}
-			override fun toString(): String = "ResourcesVfs"
-		}
-	}
-}
-
-class AndroidResourcesVfs(var context: Context?) : Vfs() {
-
-	override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
-		return readRange(path, LONG_ZERO_TO_MAX_RANGE).openAsync(mode.cmode)
-	}
-
-	override suspend fun readRange(path: String, range: LongRange): ByteArray = executeIo {
-        context?.let { context ->
+	override suspend fun readRange(path: String, range: LongRange): ByteArray {
+        val context = androidContext()
+        return executeIo {
 
             //val path = "/assets/" + path.trim('/')
             val rpath = path.trim('/')
@@ -101,8 +101,8 @@ class AndroidResourcesVfs(var context: Context?) : Vfs() {
                 available -= read
             }
             out.toByteArray()
-        } ?: throw IllegalStateException("Android context not set and required to access assets")
-	}
+        }
+    }
 }
 
 
@@ -287,10 +287,4 @@ private class LocalVfsJvm : LocalVfsV2() {
 	override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable = TODO()
 
 	override fun toString(): String = "LocalVfs"
-}
-
-actual fun cleanUpResourcesVfs() {
-    androidContext = null
-    resourcesVfsProvider?.deinit()
-    resourcesVfsProvider = null
 }

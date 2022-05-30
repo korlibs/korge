@@ -7,7 +7,10 @@ import platform.Foundation.*
 fun appleInitAudio() {
     memScoped {
         val error = alloc<ObjCObjectVar<NSError?>>().ptr
-        AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, error)
+        //AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryPlayback, error) // Stops Music apps, etc.
+        //AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategorySoloAmbient, error)
+        AVAudioSession.sharedInstance().setCategory(AVAudioSessionCategoryAmbient, error)
+        //AVAudioSessionCategoryOptionMixWithOthers
         AVAudioSession.sharedInstance().setActive(true, error)
     }
 }

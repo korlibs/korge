@@ -32,14 +32,18 @@ val cwd: String get() = customCwd ?: nativeCwd
 //@ThreadLocal
 //val cwdVfs: VfsFile by lazy { DynamicRootVfs(rootLocalVfsNative) { cwd } }
 val cwdVfs: VfsFile get() = rootLocalVfsNative[cwd]
+
 @ThreadLocal
-actual val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
+actual val standardVfs: StandardVfs = object : StandardVfs() {
+    override val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
+    override val rootLocalVfs: VfsFile get() = cwdVfs
+}
+
 @ThreadLocal
 actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
 @ThreadLocal
 actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
-actual val rootLocalVfs: VfsFile get() = cwdVfs
 actual val applicationVfs: VfsFile get() = cwdVfs
 actual val applicationDataVfs: VfsFile get() = cwdVfs
 actual val externalStorageVfs: VfsFile get() = cwdVfs
@@ -256,7 +260,4 @@ open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
 	}
 
 	override fun toString(): String = "LocalVfs"
-}
-
-actual fun cleanUpResourcesVfs() {
 }

@@ -1,14 +1,28 @@
 package com.soywiz.korim.font
 
 import com.soywiz.korio.resources.Resourceable
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.coroutines.coroutineContext
 
-inline class SystemFont(override val name: String) : VectorFont, Resourceable<Font> {
+suspend fun SystemFont(name: String): SystemFont = SystemFont(name, coroutineContext)
+
+class SystemFont constructor(override val name: String, val coroutineContext: CoroutineContext) : VectorFont, Resourceable<Font> {
+    override fun hashCode(): Int = name.hashCode()
+    override fun equals(other: Any?): Boolean = other is SystemFont && this.name == other.name
+    override fun toString(): String = "SystemFont(name=$name)"
+
     companion object {
-        fun listFontNames() = nativeSystemFontProvider.listFontNames()
-        fun listFontNamesWithFiles() = nativeSystemFontProvider.listFontNamesWithFiles()
-        fun getDefaultFont() = SystemFont(nativeSystemFontProvider.getDefaultFontName())
-        fun getEmojiFont() = SystemFont(nativeSystemFontProvider.getEmojiFontName())
+        @Deprecated("This doesn't work on Android")
+        operator fun invoke(name: String): SystemFont = SystemFont(name, EmptyCoroutineContext)
+
+        suspend fun listFontNames() = nativeSystemFontProvider().listFontNames()
+        suspend fun listFontNamesWithFiles() = nativeSystemFontProvider().listFontNamesWithFiles()
+        suspend fun getDefaultFont() = SystemFont(nativeSystemFontProvider().getDefaultFontName())
+        suspend fun getEmojiFont() = SystemFont(nativeSystemFontProvider().getEmojiFontName())
     }
+
+    val nativeSystemFontProvider get() = nativeSystemFontProvider(coroutineContext)
 
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.also { nativeSystemFontProvider.getSystemFontMetrics(this, size, metrics) }

@@ -5,22 +5,52 @@ import com.soywiz.kmem.internal.currentIsLittleEndian
 import com.soywiz.kmem.internal.currentRawOsName
 import com.soywiz.kmem.internal.currentRawPlatformName
 
-object Platform {
+interface Platform {
     // Endianness
-    val endian: Endian get() = Endian.NATIVE
-    val isLittleEndian: Boolean get() = currentIsLittleEndian
-    val isBigEndian: Boolean get() = !currentIsLittleEndian
+    val endian: Endian
+    val arch: Arch
+    val os: Os
+    val runtime: Runtime
+    val rawPlatformName: String
+    val rawOsName: String
+    val buildVariant: BuildVariant
 
-    // Architecture, operating system & runtime
-    val arch: Arch get() = Arch.CURRENT
-    val os: Os get() = Os.CURRENT
-    val runtime: Runtime get() = Runtime.CURRENT
-    val rawPlatformName: String get() = currentRawPlatformName
-    val rawOsName: String get() = currentRawOsName
+    val isLittleEndian: Boolean get() = endian == Endian.LITTLE_ENDIAN
+    val isBigEndian: Boolean get() = endian == Endian.BIG_ENDIAN
+    val isDebug: Boolean get() = buildVariant == BuildVariant.DEBUG
+    val isRelease: Boolean get() = buildVariant == BuildVariant.RELEASE
 
-    // Build variant: debug, release
-    val buildVariant: BuildVariant get() = BuildVariant.CURRENT
-    val isDebug: Boolean get() = currentIsDebug
-    val isRelease: Boolean get() = !currentIsDebug
+    companion object : Platform {
+        override val endian: Endian get() = Endian.NATIVE
+        override val isLittleEndian: Boolean get() = currentIsLittleEndian
+        override val isBigEndian: Boolean get() = !currentIsLittleEndian
+        override val arch: Arch get() = Arch.CURRENT
+        override val os: Os get() = Os.CURRENT
+        override val runtime: Runtime get() = Runtime.CURRENT
+        override val rawPlatformName: String get() = currentRawPlatformName
+        override val rawOsName: String get() = currentRawOsName
+        override val buildVariant: BuildVariant get() = BuildVariant.CURRENT
+        override val isDebug: Boolean get() = currentIsDebug
+        override val isRelease: Boolean get() = !currentIsDebug
 
+        operator fun invoke(
+            endian: Endian = Endian.LITTLE_ENDIAN,
+            arch: Arch = Arch.UNKNOWN,
+            os: Os = Os.UNKNOWN,
+            runtime: Runtime = Runtime.JVM,
+            buildVariant: BuildVariant = BuildVariant.DEBUG,
+            rawPlatformName: String = "unknown",
+            rawOsName: String = "unknown",
+        ): Platform = Impl(endian, arch, os, runtime, buildVariant, rawPlatformName, rawOsName)
+    }
+
+    data class Impl(
+        override val endian: Endian,
+        override val arch: Arch,
+        override val os: Os,
+        override val runtime: Runtime,
+        override val buildVariant: BuildVariant,
+        override val rawPlatformName: String,
+        override val rawOsName: String,
+    ) : Platform
 }

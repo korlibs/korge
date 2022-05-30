@@ -1,7 +1,11 @@
 package com.soywiz.korio.file.std
 
+import com.soywiz.kmem.Platform
 import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.withOnce
+import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.expand
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.toList
@@ -21,12 +25,37 @@ abstract class LocalVfsV2 : LocalVfs() {
 
 var resourcesVfsDebug = false
 
-/** Contains files from `src/...Main/resources` and generated files by the build system */
-expect val resourcesVfs: VfsFile
-expect fun cleanUpResourcesVfs()
+open class StandardVfs {
+    /**
+     * Typically a dot folder in the home directory ~/.[name]
+     *
+     * For example userSharedFolder("korimFontCache") will map to `~/.korimFontCache` whenever possible
+     */
+    open fun userSharedCacheFile(name: String): VfsFile = when {
+        Platform.os.isMobile -> cacheVfs[".$name"]
+        else -> localVfs(Environment.expand("~/.${name.removePrefix(".")}"))
+    }
+
+    open fun userSharedCacheDir(name: String): VfsFile = userSharedCacheFile(name).withOnce { it.mkdirs() }
+
+    /** Contains files from `src/...Main/resources` and generated files by the build system */
+    open val resourcesVfs: VfsFile get() = TODO()
+    open val rootLocalVfs: VfsFile get() = TODO()
+
+    @Deprecated("")
+    open fun cleanUpResourcesVfs(): Unit {
+    }
+}
+
+expect val standardVfs: StandardVfs
+
+val resourcesVfs: VfsFile get() = standardVfs.resourcesVfs
+
+@Deprecated("")
+fun cleanUpResourcesVfs() = standardVfs.cleanUpResourcesVfs()
 
 /** @TODO */
-expect val rootLocalVfs: VfsFile
+val rootLocalVfs: VfsFile get() = standardVfs.rootLocalVfs
 /** @TODO */
 expect val applicationVfs: VfsFile
 /** @TODO */

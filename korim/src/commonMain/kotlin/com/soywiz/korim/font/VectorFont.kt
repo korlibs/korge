@@ -32,7 +32,7 @@ fun VectorFont.withFallback(vararg other: VectorFont?): VectorFontList = when (t
     else -> VectorFontList(listOfNotNull(this, *other))
 }
 
-class VectorFontList(val list: List<VectorFont>) : VectorFont {
+data class VectorFontList(val list: List<VectorFont>) : VectorFont {
     constructor(vararg fonts: VectorFont?) : this(fonts.filterNotNull())
 
     override val name: String = list.joinToString(", ") { it.name }

@@ -5,8 +5,11 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.Environment
 import com.soywiz.korio.lang.tempPath
 
-actual val resourcesVfs: VfsFile by lazy { applicationVfs.jail() }
-actual val rootLocalVfs: VfsFile by lazy { localVfs(".") }
+actual val standardVfs: StandardVfs = object : StandardVfs() {
+    override val resourcesVfs: VfsFile by lazy { applicationVfs.jail() }
+    override val rootLocalVfs: VfsFile by lazy { localVfs(".") }
+}
+
 actual val applicationVfs: VfsFile by lazy { localVfs(".") }
 
 private var applicationDataVfsOrNull: VfsFile? = null
@@ -27,5 +30,3 @@ actual val tempVfs: VfsFile get() {
     return tempVfsOrNull!!
 }
 actual fun localVfs(path: String, async: Boolean): VfsFile = jsRuntime.openVfs(path)
-
-actual fun cleanUpResourcesVfs() = Unit

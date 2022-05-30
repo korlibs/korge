@@ -40,7 +40,7 @@ class TtfFontTest {
     }
 
     @Test
-    fun testColorFont() {
+    fun testColorFont() = suspendTest {
         println(SystemFont.getEmojiFont().name)
         val smileyGlyph = SystemFont.getEmojiFont().ttf[WString("😀")[0]]
         //Colors["#ffc83dff"]

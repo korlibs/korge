@@ -19,6 +19,7 @@ import com.soywiz.korio.file.std.MemoryVfsMix
 import com.soywiz.korio.file.std.UrlVfs
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korio.file.toFile
+import com.soywiz.korio.file.withOnce
 import com.soywiz.korio.lang.UTF8
 import com.soywiz.korio.lang.portableSimpleName
 import com.soywiz.korio.lang.toString
@@ -210,5 +211,18 @@ class VfsFileTest {
             """.trimIndent(),
             log.joinToString("\n")
         )
+    }
+
+    @Test
+    fun testWithOnce() = suspendTest {
+        val log = arrayListOf<String>()
+        val mem = MemoryVfsMix(
+            "hello/world.txt" to "test"
+        )["hello"].withOnce {
+            log += "$it"
+        }
+        assertEquals("test", mem["world.txt"].readString())
+        assertEquals("test", mem["world.txt"].readString())
+        assertEquals("NodeVfs[/hello]", log.joinToString("\n"))
     }
 }
