@@ -41,7 +41,8 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
-    mainFilterSwitch()
+    mainCircleColor()
+    //mainFilterSwitch()
     //mainVectorFill()
     //mainEasing()
     //mainTweenPoint()
@@ -124,6 +125,11 @@ suspend fun main() = Korge(
 //        println(sw.elapsed)
 //    }
 //}
+
+suspend fun Stage.mainCircleColor() {
+    colorMul = Colors.RED.withAd(0.9)
+    circle(100.0)
+}
 
 suspend fun Stage.rotatedTexture() {
     //val tex = resourcesVfs["korim.png"].readBitmapSlice().rotateRight()

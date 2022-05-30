@@ -31,6 +31,7 @@ object GpuShapeViewPrograms {
     val u_ProgramType = Uniform("u_ProgramType", VarType.Float1)
     val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
     val u_Color = Uniform("u_Color", VarType.Float4)
+    val u_ColorMul = Uniform("u_ColorMul", VarType.Float4)
     val u_GlobalAlpha = Uniform("u_GlobalAlpha", VarType.Float1)
     val u_Transform = Uniform("u_Transform", VarType.Mat4)
     val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
@@ -146,6 +147,7 @@ object GpuShapeViewPrograms {
 
             // Update global alpha
             SET(out.a, out.a * u_GlobalAlpha)
+            SET(out, out * u_ColorMul)
             IF(abs(v_Dist) ge LW1) {
                 //run {
                 val aaAlpha = 1f.lit - (abs(v_Dist) - LW1)

@@ -9,6 +9,7 @@ uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
 uniform float u_GlobalAlpha;
+uniform vec4 u_ColorMul;
 varying float v_Dist;
 varying vec2 v_Tex;
 void main() {
@@ -60,6 +61,7 @@ void main() {
 		}
 	}
 	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+	gl_FragColor = (gl_FragColor * u_ColorMul);
 	if ((abs(v_Dist) >= (u_LineWidth - 1.0))) {
 		gl_FragColor.a = (gl_FragColor.a * (1.0 - (abs(v_Dist) - (u_LineWidth - 1.0))));
 	}
@@ -122,8 +124,8 @@ getUniformLocation(1001, "u_Tex3") = 7006
 activeTexture(33987)
 bindTexture(3553, 0)
 uniform1i(7006, 3)
-getUniformLocation(1001, "u_GlobalAlpha") = 7007
-uniform1f(7007, 1.0)
+getUniformLocation(1001, "u_ColorMul") = 7007
+uniform4f(7007, 1.0, 1.0, 1.0, 1.0)
 clearStencil(0)
 stencilMask(255)
 clear(1024)
@@ -131,9 +133,10 @@ getUniformLocation(1001, "u_ProgramType") = 7008
 uniform1f(7008, 0.0)
 getUniformLocation(1001, "u_Color") = 7009
 uniform4f(7009, 1.0, 1.0, 1.0, 0.49803922)
-uniform1f(7007, 1.0)
-getUniformLocation(1001, "u_LineWidth") = 7010
-uniform1f(7010, 6.25)
+getUniformLocation(1001, "u_GlobalAlpha") = 7010
+uniform1f(7010, 1.0)
+getUniformLocation(1001, "u_LineWidth") = 7011
+uniform1f(7011, 6.25)
 disable(2960)
 stencilMask(0)
 colorMask(true, true, true, true)

@@ -214,7 +214,7 @@ open class GpuShapeView(
         val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix
         renderMat.copyFrom(mat)
         renderMat.pretranslate(-anchorDispX, -anchorDispY)
-        gpuShapeViewCommands.render(ctx, renderMat, localMatrix, renderAlpha, applyScissor)
+        gpuShapeViewCommands.render(ctx, renderMat, localMatrix, applyScissor, renderColorMul)
     }
 
     private fun renderShape(shape: Shape) {

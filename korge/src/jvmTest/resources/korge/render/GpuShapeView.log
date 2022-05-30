@@ -5,7 +5,7 @@ RenderBuffer[1].setSize(200, 200)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createBuffer():4
-programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Tex, a_Dist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_LineWidth, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_GlobalAlpha]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Tex, a_Dist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_LineWidth, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_GlobalAlpha, u_ColorMul]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -25,6 +25,7 @@ uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
 uniform float u_GlobalAlpha;
+uniform vec4 u_ColorMul;
 varying mediump float v_Dist;
 varying mediump vec2 v_Tex;
 void main() {
@@ -76,6 +77,7 @@ void main() {
 		}
 	}
 	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+	gl_FragColor = (gl_FragColor * u_ColorMul);
 	if ((abs(v_Dist) >= (u_LineWidth - 1.0))) {
 		gl_FragColor.a = (gl_FragColor.a * (1.0 - (abs(v_Dist) - (u_LineWidth - 1.0))));
 	}
@@ -129,7 +131,7 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilin
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
-uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
+uboSet.uniform: Uniform(u_ColorMul) = [1.0, 1.0, 1.0, 1.0]
 uboUse: 1
 uboCreate: 2
 createStencil: 0

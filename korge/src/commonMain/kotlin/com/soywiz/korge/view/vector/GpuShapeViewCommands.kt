@@ -18,6 +18,8 @@ import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.AgCachedBuffer
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.writeFloat
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.applyTransform
@@ -94,8 +96,9 @@ class GpuShapeViewCommands {
     }
 
     private val decomposed = Matrix.Transform()
+    private val tempColorMul = FloatArray(4)
     private val texturesToDelete = FastArrayList<AG.Texture>()
-    fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, globalAlpha: Double, applyScissor: Boolean) {
+    fun render(ctx: RenderContext, globalMatrix: Matrix, localMatrix: Matrix, applyScissor: Boolean, colorMul: RGBA) {
         val vertices = this.vertices ?: return
         ctx.agBufferManager.delete(verticesToDelete)
         verticesToDelete.clear()
@@ -104,7 +107,8 @@ class GpuShapeViewCommands {
         val ag = ctx.ag
         ctx.useBatcher { batcher ->
             batcher.updateStandardUniforms()
-            batcher.setTemporalUniform(GpuShapeViewPrograms.u_GlobalAlpha, globalAlpha.toFloat()) {
+            colorMul.writeFloat(tempColorMul)
+            batcher.setTemporalUniform(GpuShapeViewPrograms.u_ColorMul, tempColorMul) {
                 batcher.setViewMatrixTemp(globalMatrix) {
                     globalMatrix.decompose(decomposed)
                     // @TODO: Use this scale
