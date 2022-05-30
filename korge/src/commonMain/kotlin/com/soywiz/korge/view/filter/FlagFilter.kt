@@ -30,13 +30,13 @@ class FlagFilter(
     cyclesPerSecond: Double = 2.0,
     time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
-    companion object {
+    companion object : BaseProgramProvider() {
         val u_amplitude = Uniform("amplitude", VarType.Float1)
         val u_crestCount = Uniform("crestCount", VarType.Float1)
         val u_cyclesPerSecond = Uniform("cyclesPerSecond", VarType.Float1)
         val u_Time = Uniform("time", VarType.Float1)
 
-        private val FRAGMENT_SHADER = FragmentShader {
+        override val fragment: FragmentShader = FragmentShader {
             //val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
             val x01 = createTemp(Float1)
             SET(x01, v_Tex01.x)
@@ -64,7 +64,7 @@ class FlagFilter(
             timeSeconds = value.seconds
         }
 
-    override val fragment = FRAGMENT_SHADER
+    override val programProvider: ProgramProvider get() = FlagFilter
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(amplitude.absoluteValue.toIntCeil())

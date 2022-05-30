@@ -8,6 +8,7 @@ import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.VertexShaderDefault
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Precision
@@ -704,15 +705,13 @@ class BatchBuilder2D constructor(
         @KorgeInternal
         val LAYOUT_TEX_INDEX = VertexLayout(a_TexIndex)
         @KorgeInternal
-		val VERTEX = VertexShader {
-			DefaultShaders.apply {
-                SET(v_Tex, a_Tex)
+		val VERTEX = VertexShaderDefault {
+            SET(v_Tex, a_Tex)
 
-                SET(v_TexIndex, a_TexIndex)
-				SET(v_ColMul, a_ColMul)
-				SET(v_ColAdd, a_ColAdd)
-				SET(out, (u_ProjMat * u_ViewMat) * vec4(DefaultShaders.a_Pos, 0f.lit, 1f.lit))
-			}
+            SET(v_TexIndex, a_TexIndex)
+            SET(v_ColMul, a_ColMul)
+            SET(v_ColAdd, a_ColAdd)
+            SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
 		}
 
 		init { logger.trace { "BatchBuilder2D.Companion[3]" } }

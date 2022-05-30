@@ -26,7 +26,7 @@ class Convolute3Filter(
     dist: Double = 1.0,
     applyAlpha: Boolean = false
 ) : ShaderFilter() {
-    companion object {
+    companion object : BaseProgramProvider() {
         private val u_ApplyAlpha = Uniform("apply_alpha", VarType.Float1)
         private val u_Dist = Uniform("dist", VarType.Float1)
         private val u_Weights = Uniform("weights", VarType.Mat3)
@@ -66,27 +66,6 @@ class Convolute3Filter(
             -1f, -1f, -1f
         )
 
-        private val FRAGMENT_SHADER = FragmentShader {
-            DefaultShaders.apply {
-                out setTo vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit)
-
-                for (y in 0 until 3) {
-                    for (x in 0 until 3) {
-                        val color = tex(
-                            fragmentCoords + vec2(
-                                (x - 1).toFloat().lit * u_Dist,
-                                (y - 1).toFloat().lit * u_Dist
-                            )
-                        )
-                        out setTo out + (color * u_Weights[x][y])
-                    }
-                }
-                IF(u_ApplyAlpha ne 1f.lit) {
-                    out["a"] setTo tex(fragmentCoords)["a"]
-                }
-            }
-        }
-
         val NAMED_KERNELS = mapOf(
             "IDENTITY" to KERNEL_IDENTITY,
             "GAUSSIAN_BLUR" to KERNEL_GAUSSIAN_BLUR,
@@ -94,6 +73,25 @@ class Convolute3Filter(
             "EDGE_DETECTION" to KERNEL_EDGE_DETECTION,
             "SHARPEN" to KERNEL_SHARPEN,
         )
+
+        override val fragment = FragmentShader {
+            SET(out, vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit))
+
+            for (y in 0 until 3) {
+                for (x in 0 until 3) {
+                    val color = tex(
+                        fragmentCoords + vec2(
+                            (x - 1).toFloat().lit * u_Dist,
+                            (y - 1).toFloat().lit * u_Dist
+                        )
+                    )
+                    SET(out, out + (color * u_Weights[x][y]))
+                }
+            }
+            IF(u_ApplyAlpha ne 1f.lit) {
+                SET(out["a"], tex(fragmentCoords)["a"])
+            }
+        }
     }
 
     /** 3x3 matrix representing a convolution kernel */
@@ -103,7 +101,7 @@ class Convolute3Filter(
     /** Whether or not kernel must be applied to the alpha component */
     var applyAlpha by uniforms.storageFor(u_ApplyAlpha).boolDelegateX(applyAlpha)
 
-    override val fragment = FRAGMENT_SHADER
+    override val programProvider: ProgramProvider get() = Convolute3Filter
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(dist.toIntCeil())

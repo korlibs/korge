@@ -23,13 +23,13 @@ import kotlin.math.sqrt
 
 // https://en.wikipedia.org/wiki/Gaussian_blur
 class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4.0, var expandBorder: Boolean = true) : ShaderFilter() {
-    companion object {
+    companion object : BaseProgramProvider() {
         private val u_radius = Uniform("u_radius", VarType.Float1)
         private val u_constant1 = Uniform("u_constant1", VarType.Float1)
         private val u_constant2 = Uniform("u_constant2", VarType.Float1)
         private val u_direction = Uniform("u_direction", VarType.Float2)
 
-        val FRAGMENT = FragmentShader {
+        override val fragment = FragmentShader {
             val loopLen = createTemp(Int1)
             val gaussianResult = createTemp(Float1)
             IF (u_radius lt 1f.lit) {
@@ -103,7 +103,7 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
         uniforms[u_direction] = Vector3D(angle.cosine, angle.sine, 0.0)
     }
 
-    override val fragment: FragmentShader get() = FRAGMENT
+    override val programProvider: ProgramProvider get() = DirectionalBlurFilter
 
     override val isIdentity: Boolean get() = radius == 0.0
 

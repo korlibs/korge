@@ -31,22 +31,20 @@ class WaveFilter(
 	cyclesPerSecondY: Double = 1.0,
 	time: TimeSpan = 0.seconds
 ) : ShaderFilter() {
-	companion object {
+	companion object : BaseProgramProvider() {
 		val u_Time = Uniform("time", VarType.Float1)
 		val u_Amplitude = Uniform("amplitude", VarType.Float2)
 		val u_crestCount = Uniform("crestCount", VarType.Float2)
 		val u_cyclesPerSecond = Uniform("cyclesPerSecond", VarType.Float2)
-        private val FRAGMENT_SHADER = FragmentShader {
-            apply {
-                val tmpx = t_Temp0.x
-                val tmpy = t_Temp0.y
-                val tmpxy = t_Temp0["zw"]
-                SET(tmpxy, v_Tex01)
-                SET(tmpx, sin(PI.lit * ((tmpxy.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x)))
-                SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
-                SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
-                //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
-            }
+        override val fragment = FragmentShader {
+            val tmpx = t_Temp0.x
+            val tmpy = t_Temp0.y
+            val tmpxy = t_Temp0["zw"]
+            SET(tmpxy, v_Tex01)
+            SET(tmpx, sin(PI.lit * ((tmpxy.x * u_crestCount.x) + u_Time * u_cyclesPerSecond.x)))
+            SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
+            SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
+            //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
         }
 	}
 
@@ -77,7 +75,7 @@ class WaveFilter(
         get() = timeSeconds.seconds
         set(value) { timeSeconds = value.seconds }
 
-    override val fragment = FRAGMENT_SHADER
+    override val programProvider: ProgramProvider get() = WaveFilter
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(amplitudeY.absoluteValue, amplitudeX.absoluteValue)

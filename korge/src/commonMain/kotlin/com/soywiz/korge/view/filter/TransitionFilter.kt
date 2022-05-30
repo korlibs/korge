@@ -53,13 +53,13 @@ class TransitionFilter(
         }
     }
 
-    companion object {
+    companion object : BaseProgramProvider() {
         private val u_Reversed = Uniform("u_Reversed", VarType.Float1)
         private val u_Smooth = Uniform("u_Smooth", VarType.Float1)
         private val u_Ratio = Uniform("u_Ratio", VarType.Float1)
         private val u_Mask = Uniform("u_Mask", VarType.Sampler2D)
 
-        private val FRAGMENT_SHADER = Filter.DEFAULT_FRAGMENT.appending {
+        override val fragment = Filter.DEFAULT_FRAGMENT.appending {
             val alpha = t_Temp1.x
             SET(alpha, texture2D(u_Mask, v_Tex01).r)
             IF(u_Reversed eq 1f.lit) {
@@ -83,8 +83,7 @@ class TransitionFilter(
         this.filtering = filtering
     }
 
-    override val fragment: FragmentShader = FRAGMENT_SHADER
-
+    override val programProvider: ProgramProvider get() = TransitionFilter
     private val textureUnit = AG.TextureUnit()
     private val s_ratio = uniforms.storageFor(u_Ratio)
     private val s_tex = uniforms.storageForTextureUnit(u_Mask, textureUnit)

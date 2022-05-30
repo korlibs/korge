@@ -1,6 +1,9 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.kds.CopyOnWriteFrozenMap
 import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Program
+import com.soywiz.korag.shader.Shader
 import com.soywiz.korag.shader.appending
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
@@ -19,12 +22,16 @@ import com.soywiz.korui.UiContainer
  * - swizzle="bgra" would interchange red and blue channels
  * - swizzle="rrra" would show as greyscale the red component
  */
-class SwizzleColorsFilter(initialSwizzle: String = "rgba") : Filter {
-    private var proxy: ProxySwizzle = ProxySwizzle(initialSwizzle)
+class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
+    companion object {
+        class SwizzleProgram(val swizzle: String) : BaseProgramProvider() {
+            override val fragment = Filter.DEFAULT_FRAGMENT.appending { SET(out, out[swizzle]) }
+        }
 
-    class ProxySwizzle(val swizzle: String = "rgba") : ShaderFilter() {
-        override val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT.appending { out setTo out[swizzle] }
+        private val CACHE = CopyOnWriteFrozenMap<String, SwizzleProgram>()
     }
+
+    var _programProvider: ProgramProvider? = null
 
     /**
      * The swizzling string
@@ -36,20 +43,15 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : Filter {
     var swizzle: String = initialSwizzle
         set(value) {
             field = value
-            proxy = ProxySwizzle(value)
+            _programProvider = null
         }
 
-    override fun render(
-        ctx: RenderContext,
-        matrix: Matrix,
-        texture: Texture,
-        texWidth: Int,
-        texHeight: Int,
-        renderColorAdd: ColorAdd,
-        renderColorMul: RGBA,
-        blendMode: BlendMode,
-        filterScale: Double,
-    ) = proxy.render(ctx, matrix, texture, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
+    override val programProvider: ProgramProvider get() {
+        if (_programProvider == null) {
+            _programProvider = CACHE.getOrPut(swizzle) { SwizzleProgram(swizzle) }
+        }
+        return _programProvider!!
+    }
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::swizzle)

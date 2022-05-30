@@ -1361,12 +1361,19 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     //////////////
 
-
-    private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
+    private var programCount = 0
+    // @TODO: Simplify this. Why do we need external? Maybe we could copy external textures into normal ones to avoid issues
+    //private val programs = FastIdentityMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
+    //private val programs = HashMap<Program, FastIdentityMap<ProgramConfig, AgProgram>>()
+    //private val normalPrograms = FastIdentityMap<Program, AgProgram>()
+    //private val externalPrograms = FastIdentityMap<Program, AgProgram>()
+    private val normalPrograms = HashMap<Program, AgProgram>()
+    private val externalPrograms = HashMap<Program, AgProgram>()
 
     @JvmOverloads
     fun getProgram(program: Program, config: ProgramConfig = ProgramConfig.DEFAULT): AgProgram {
-        return programs.getOrPut(program) { FastIdentityMap() }.getOrPut(config) { AgProgram(program, config) }
+        val map = if (config.externalTextureSampler) externalPrograms else normalPrograms
+        return map.getOrPut(program) { AgProgram(program, config) }
     }
 
     inner class AgProgram(val program: Program, val programConfig: ProgramConfig) {
@@ -1376,6 +1383,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         fun ensure(list: AGList) {
             if (cachedVersion != contextVersion) {
                 val time = measureTime {
+                    programCount++
                     programId = list.createProgram(program, programConfig)
                     cachedVersion = contextVersion
                 }
@@ -1396,7 +1404,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
 
         fun close(list: AGList) {
-            if (programId != 0) list.deleteProgram(programId)
+            if (programId != 0) {
+                programCount--
+                list.deleteProgram(programId)
+            }
             programId = 0
         }
     }
@@ -1594,6 +1605,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         out.renderBuffersCount = this.renderBufferCount
         out.texturesCreated = this.createdTextureCount
         out.texturesDeleted = this.deletedTextureCount
+        out.programCount = this.programCount
         return out
     }
 
@@ -1606,9 +1618,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         var renderBuffersMemory: ByteUnits = ByteUnits.fromBytes(0),
         var texturesCreated: Int = 0,
         var texturesDeleted: Int = 0,
+        var programCount: Int = 0,
     ) {
         override fun toString(): String =
-            "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory)"
+            "AGStats(textures[$texturesCount] = $texturesMemory, buffers[$buffersCount] = $buffersMemory, renderBuffers[$renderBuffersCount] = $renderBuffersMemory, programs[$programCount])"
     }
 }
 

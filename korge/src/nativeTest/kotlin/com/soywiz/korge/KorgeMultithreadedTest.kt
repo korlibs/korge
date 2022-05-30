@@ -1,6 +1,7 @@
 package com.soywiz.korge
 
 import com.soywiz.klock.*
+import com.soywiz.korag.shader.ShaderType
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.input.mouse
@@ -8,6 +9,8 @@ import com.soywiz.korge.input.touch
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.BlurFilter
+import com.soywiz.korge.view.filter.ColorMatrixFilter
+import com.soywiz.korge.view.filter.renderToTextureWithBorder
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
@@ -42,6 +45,7 @@ class KorgeMultithreadedTest {
 
     @Test
     fun test2() {
+        ColorMatrixFilter.getProgram(true)
         val log = runInWorker {
             val log = arrayListOf<String>()
             val viewsForTesting = ViewsForTesting()
@@ -62,15 +66,21 @@ class KorgeMultithreadedTest {
                     start { }
                     end { }
                 }
+                ColorMatrixFilter.getProgram(true)
+                ColorMatrixFilter.getProgram(false)
+                this.views.render()
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"
+                log += "program=${ColorMatrixFilter.getProgram(true).fragment.type == ShaderType.FRAGMENT}"
             }
             log
         }
+        ColorMatrixFilter.getProgram(false)
         assertEquals(
             """
                 rect.filterScale=0.125
                 rect.mask=true
+                program=true
             """.trimIndent(),
             log.joinToString("\n")
         )

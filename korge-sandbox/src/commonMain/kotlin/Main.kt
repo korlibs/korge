@@ -8,6 +8,7 @@ import com.soywiz.korge.tiled.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.animation.*
+import com.soywiz.korge.view.filter.ColorMatrixFilter
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.annotation.*
@@ -40,9 +41,10 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
+    mainFilterSwitch()
     //mainVectorFill()
     //mainEasing()
-    mainTweenPoint()
+    //mainTweenPoint()
     //mainBezier()
     //mainGpuVectorRendering()
     //mainClipping()
@@ -99,7 +101,6 @@ suspend fun main() = Korge(
     //println("HELLO WORLD!")
     //withContext(Dispatchers.Unconfined) {
 }
-
 
 //suspend fun main() {
 //    for (n in 0 until 1000) {

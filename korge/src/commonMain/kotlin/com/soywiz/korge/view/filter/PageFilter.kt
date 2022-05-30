@@ -30,13 +30,13 @@ class PageFilter(
     vamplitude1: Double = 0.0,
     vamplitude2: Double = 0.0
 ) : ShaderFilter() {
-    companion object {
+    companion object : BaseProgramProvider() {
         val u_Offset = Uniform("u_Offset", VarType.Float2)
         val u_HAmplitude = Uniform("u_HAmplitude", VarType.Float3)
         val u_VAmplitude = Uniform("u_VAmplitude", VarType.Float3)
 
         private fun Program.Builder.sin01(arg: Operand) = sin(arg * (PI.lit * 0.5.lit))
-        private val FRAGMENT_SHADER = FragmentShader {
+        override val fragment = FragmentShader {
             val x01 = DefaultShaders.t_Temp0["zw"]
             SET(x01, v_Tex01)
             for (n in 0..1) {
@@ -71,7 +71,7 @@ class PageFilter(
     var vamplitude1 by vamplitude.doubleDelegate(1, default = vamplitude1)
     var vamplitude2 by vamplitude.doubleDelegate(2, default = vamplitude2)
 
-    override val fragment = FRAGMENT_SHADER
+    override val programProvider: ProgramProvider get() = PageFilter
 
     override fun computeBorder(out: MutableMarginInt, texWidth: Int, texHeight: Int) {
         out.setTo(max(max(abs(hamplitude0), abs(hamplitude1)), abs(hamplitude2)).toIntCeil())

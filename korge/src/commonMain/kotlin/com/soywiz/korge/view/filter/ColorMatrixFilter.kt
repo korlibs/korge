@@ -22,7 +22,7 @@ import com.soywiz.korui.UiContainer
  * - [ColorMatrixFilter.IDENTITY_MATRIX]  - Doesn't modify the colors at all
  */
 class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : ShaderFilter() {
-	companion object {
+	companion object : BaseProgramProvider() {
 		private val u_ColorMatrix = Uniform("colorMatrix", VarType.Mat4)
 		private val u_BlendRatio = Uniform("blendRatio", VarType.Float1)
 
@@ -49,18 +49,16 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
 			0f, 0f, 0f, 1f
 		)
 
-        private val FRAGMENT_SHADER = FragmentShader {
-            apply {
-                out setTo tex(fragmentCoords)
-                out setTo mix(out, (u_ColorMatrix * out), u_BlendRatio)
-            }
-        }
-
         val NAMED_MATRICES = mapOf(
             "IDENTITY" to IDENTITY_MATRIX,
             "GRAYSCALE" to GRAYSCALE_MATRIX,
         )
-	}
+
+        override val fragment: FragmentShader = FragmentShader {
+            SET(out, tex(fragmentCoords))
+            SET(out, mix(out, (u_ColorMatrix * out), u_BlendRatio))
+        }
+    }
 
     /** The 4x4 [Matrix3D] that will be used for transforming each pixel components [r, g, b, a] */
 	var colorMatrix by uniforms.storageForMatrix3D(u_ColorMatrix, colorMatrix)
@@ -73,7 +71,7 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
      * */
 	var blendRatio by uniforms.storageFor(u_BlendRatio).doubleDelegateX(blendRatio)
 
-	override val fragment = FRAGMENT_SHADER
+    override val programProvider: ProgramProvider get() = ColorMatrixFilter
 
     var namedColorMatrix: String
         get() = NAMED_MATRICES.entries.firstOrNull { it.value == colorMatrix }?.key ?: NAMED_MATRICES.keys.first()

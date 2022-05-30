@@ -22,6 +22,7 @@ import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.MutableMarginInt
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Abstract class for [View] [Filter]s that paints the [Texture] using a [FragmentShader] ([fragment]).
@@ -44,18 +45,26 @@ abstract class ShaderFilter : Filter {
         val Program.ExpressionBuilder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
         val Program.ExpressionBuilder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
         fun Program.ExpressionBuilder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
+    }
+
+    interface ProgramProvider {
+        fun getProgram(premultiplied: Boolean): Program
+    }
+
+    open class BaseProgramProvider : ProgramProvider {
+        companion object : BaseProgramProvider()
 
         protected fun createProgram(vertex: VertexShader, fragment: FragmentShader, premultiplied: Boolean): Program {
             return Program(vertex, fragment.appending {
                 // Premultiplied
                 if (premultiplied) {
-                    out["rgb"] setTo out["rgb"] / out["a"]
+                    SET(out["rgb"], out["rgb"] / out["a"])
                 }
 
                 // Color multiply and addition
                 // @TODO: Kotlin.JS BUG
                 //out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
-                out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit)
+                SET(out, (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
 
                 // Required for shape masks:
                 if (premultiplied) {
@@ -63,6 +72,17 @@ abstract class ShaderFilter : Filter {
                 }
             })
         }
+
+        /** The [VertexShader] used this this [Filter] */
+        protected open val vertex: VertexShader = BatchBuilder2D.VERTEX
+
+        /** The [FragmentShader] used this this [Filter]. This is usually overriden. */
+        protected open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
+
+        private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
+        private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
+
+        override fun getProgram(premultiplied: Boolean): Program = if (premultiplied) programPremult else programNormal
     }
 
     var filtering = true
@@ -84,14 +104,14 @@ abstract class ShaderFilter : Filter {
         out.setTo(0)
     }
 
-    /** The [VertexShader] used this this [Filter] */
-    open val vertex: VertexShader = BatchBuilder2D.VERTEX
+    ///** The [VertexShader] used this this [Filter] */
+    //open val vertex: VertexShader = BatchBuilder2D.VERTEX
+    ///** The [FragmentShader] used this this [Filter]. This is usually overriden. */
+    //open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
+    //private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
+    //private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
 
-    /** The [FragmentShader] used this this [Filter]. This is usually overriden. */
-    open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
-
-    private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
-    private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
+    open val programProvider: ProgramProvider = BaseProgramProvider
 
     //@CallSuper
     protected open fun updateUniforms(ctx: RenderContext, filterScale: Double) {
@@ -174,7 +194,8 @@ abstract class ShaderFilter : Filter {
                     colorAdd = renderColorAdd,
                     colorMul = renderColorMul,
                     blendFactors = blendMode.factors,
-                    program = if (texture.premultiplied) programPremult else programNormal
+                    //program = if (texture.premultiplied) programPremult else programNormal
+                    program = programProvider.getProgram(texture.premultiplied)
                 )
                 //ctx.batch.flush()
             }

@@ -259,16 +259,10 @@ data class ProgramConfig(
     }
 }
 
-inline fun VertexShader.appending(block: Program.Builder.() -> Unit): VertexShader {
+inline fun Shader.appending(block: Program.Builder.() -> Unit): FragmentShader {
     // @TODO: Raw shaders don't support appending
     if (this.isRaw) return this
-    return VertexShader(Program.Builder(ShaderType.VERTEX).WITH(this).also(block)._buildFuncs())
-}
-
-inline fun FragmentShader.appending(block: Program.Builder.() -> Unit): FragmentShader {
-    // @TODO: Raw shaders don't support appending
-    if (this.isRaw) return this
-    return FragmentShader(Program.Builder(ShaderType.FRAGMENT).WITH(this).also(block)._buildFuncs())
+    return FragmentShader(Program.Builder(this.type).WITH(this).also(block)._buildFuncs())
 }
 
 inline fun Program.replacingVertex(extraName: String, block: Program.Builder.() -> Unit): Program =
@@ -282,13 +276,13 @@ inline fun Program.appendingVertex(extraName: String, block: Program.Builder.() 
 inline fun Program.appendingFragment(extraName: String, block: Program.Builder.() -> Unit): Program =
     this.copy(fragment = this.fragment.appending(block), name = "$name-$extraName")
 
-data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program") : Closeable {
+data class Program(val vertex: VertexShader, val fragment: FragmentShader, val name: String = "program-${vertex.name}-${fragment.name}") : Closeable {
 	val uniforms = vertex.uniforms + fragment.uniforms
 	val attributes = vertex.attributes + fragment.attributes
     val cachedHashCode = (vertex.hashCode() * 11) + (fragment.hashCode() * 7) + name.hashCode()
     override fun hashCode(): Int = cachedHashCode
-    override fun equals(other: Any?): Boolean = (other is Program) && (this.vertex == other.vertex)
-        && (this.fragment == other.fragment) && (this.name == other.name)
+    override fun equals(other: Any?): Boolean = (this === other) || ((other is Program) && (this.vertex == other.vertex)
+        && (this.fragment == other.fragment) && (this.name == other.name))
 
     override fun close() {
 	}
@@ -776,7 +770,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 	}
 }
 
-open class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<FuncDecl>) {
+data class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<FuncDecl>, val name: String? = null) {
     private val stmHashCode = stm.hashCode()
     private val funcsHashCode = funcs.hashCode()
     private val cachedHashCode = (type.hashCode() * 17) + stmHashCode + (funcsHashCode * 53)
@@ -795,16 +789,18 @@ open class Shader(val type: ShaderType, val stm: Program.Stm, val funcs: List<Fu
         }.visit(stm)
     }.toSet()
 
-    override fun equals(other: Any?): Boolean = other is Shader && (this.type == other.type) && (this.stmHashCode == other.stmHashCode) && (this.stm == other.stm)
+    override fun equals(other: Any?): Boolean = (this === other) || (other is Shader && (this.type == other.type) && (this.cachedHashCode == other.cachedHashCode) && (this.stm == other.stm) && (this.funcs == other.funcs))
     override fun hashCode(): Int = cachedHashCode
 }
 
-class VertexShader(stm: Program.Stm, funcs: List<FuncDecl> = listOf()) : Shader(ShaderType.VERTEX, stm, funcs) {
-    constructor(info: Pair<Program.Stm, List<FuncDecl>>) : this(info.first, info.second)
-}
-class FragmentShader(stm: Program.Stm, funcs: List<FuncDecl> = listOf()) : Shader(ShaderType.FRAGMENT, stm, funcs) {
-    constructor(info: Pair<Program.Stm, List<FuncDecl>>) : this(info.first, info.second)
-}
+typealias VertexShader = Shader
+typealias FragmentShader = Shader
+
+fun VertexShader(stm: Program.Stm, funcs: List<FuncDecl> = listOf()): Shader = Shader(ShaderType.VERTEX, stm, funcs)
+fun VertexShader(info: Pair<Program.Stm, List<FuncDecl>>): Shader = VertexShader(info.first, info.second)
+
+fun FragmentShader(stm: Program.Stm, funcs: List<FuncDecl> = listOf()): Shader = Shader(ShaderType.FRAGMENT, stm, funcs)
+fun FragmentShader(info: Pair<Program.Stm, List<FuncDecl>>): Shader = FragmentShader(info.first, info.second)
 
 @KoragExperimental
 fun VertexShader(rawStrings: Map<String, String>, stm: Program.Stm? = null) = VertexShader(Program.Stm.Raw(rawStrings, stm))
