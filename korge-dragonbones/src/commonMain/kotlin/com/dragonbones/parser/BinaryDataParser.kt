@@ -317,6 +317,8 @@ class BinaryDataParser(pool: BaseObjectPool = BaseObjectPool())  :  ObjectDataPa
 						TimelineType.AnimationParameter -> {
 							this._animation?.addAnimationTimeline(timelineName, timeline)
 						}
+
+                        else -> Unit
 					}
 				}
 			}

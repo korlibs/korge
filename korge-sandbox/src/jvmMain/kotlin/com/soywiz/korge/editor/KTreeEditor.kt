@@ -355,6 +355,7 @@ suspend fun ktreeEditorKorge(
                        }
                    }
                 }
+                else -> Unit
             }
         }
         up { e ->

@@ -117,6 +117,7 @@ private fun <T : View> T.onMouseDragInternal(
             MouseDragState.END -> {
                 dragging = false
             }
+            else -> Unit
         }
         cx = mousePos.x
         cy = mousePos.y

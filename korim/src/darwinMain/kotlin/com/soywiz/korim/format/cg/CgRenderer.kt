@@ -203,6 +203,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                         GradientKind.RADIAL -> {
                                                             CGContextDrawRadialGradient(ctx, gradient, start, style.r0.cg, end, style.r1.cg, options)
                                                         }
+                                                        else -> Unit
                                                     }
                                                 }
                                                 CGGradientRelease(gradient)

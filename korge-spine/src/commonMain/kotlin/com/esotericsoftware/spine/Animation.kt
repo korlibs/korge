@@ -340,6 +340,7 @@ class Animation(
                         val r = bone.data.rotation - bone.rotation
                         bone.rotation += (r - (16384 - (16384.499999999996 - r / 360).toInt()) * 360) * alpha
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -432,6 +433,7 @@ class Animation(
                         bone.x += (bone.data.x - bone.x) * alpha
                         bone.y += (bone.data.y - bone.y) * alpha
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -502,6 +504,7 @@ class Animation(
                         bone.scaleX += (bone.data.scaleX - bone.scaleX) * alpha
                         bone.scaleY += (bone.data.scaleY - bone.scaleY) * alpha
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -605,6 +608,7 @@ class Animation(
                         bone.shearX += (bone.data.shearX - bone.shearX) * alpha
                         bone.shearY += (bone.data.shearY - bone.shearY) * alpha
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -692,6 +696,7 @@ class Animation(
                         color.add((setup.r - color.r) * alpha, (setup.g - color.g) * alpha, (setup.b - color.b) * alpha,
                                 (setup.a - color.a) * alpha)
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -803,6 +808,7 @@ class Animation(
                                 (setupLight.a - light.a) * alpha)
                         dark!!.add((setupDark.r - dark.r) * alpha, (setupDark.g - dark.g) * alpha, (setupDark.b - dark.b) * alpha, 0f)
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -1014,6 +1020,7 @@ class Animation(
                                 deform[i] *= alpha
                         }
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -1332,6 +1339,7 @@ class Animation(
                         constraint.compress = constraint.data.compress
                         constraint.stretch = constraint.data.stretch
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -1462,6 +1470,7 @@ class Animation(
                         constraint.scaleMix += (data.scaleMix - constraint.scaleMix) * alpha
                         constraint.shearMix += (data.shearMix - constraint.shearMix) * alpha
                     }
+                    else -> Unit
                 }
                 return
             }
@@ -1562,6 +1571,7 @@ class Animation(
                         return
                     }
                     first -> constraint.position += (constraint.data.position - constraint.position) * alpha
+                    else -> Unit
                 }
                 return
             }
@@ -1613,6 +1623,7 @@ class Animation(
                         return
                     }
                     first -> constraint.spacing += (constraint.data.spacing - constraint.spacing) * alpha
+                    else -> Unit
                 }
                 return
             }
@@ -1687,6 +1698,7 @@ class Animation(
                         constraint.rotateMix += (constraint.data.rotateMix - constraint.rotateMix) * alpha
                         constraint.translateMix += (constraint.data.translateMix - constraint.translateMix) * alpha
                     }
+                    else -> Unit
                 }
                 return
             }

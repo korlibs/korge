@@ -286,6 +286,7 @@ fun Paint.toSvg(svg: SvgBuilder): String {
                         stops
                     )
                 }
+                else -> Unit
             }
 
 			return "url(#def$id)"

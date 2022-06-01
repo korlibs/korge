@@ -65,150 +65,148 @@ fun ClassLoader.tryGetURLs(): List<URL> = try {
 
 private class ResourcesVfsProviderJvm {
 	operator fun invoke(): Vfs = invoke(ClassLoader.getSystemClassLoader())
-
-	fun findSrcs(base: File, classPath: File): List<File> {
-		val relative = classPath.relativeTo(base).path.replace('\\', '/')
-		val out = arrayListOf<File>()
-		var current = base
-		for (part in relative.split('/')) {
-			current = File(current, part)
-			val srcDir = File(current, "src")
-			if (srcDir.isDirectory) {
-				out += srcDir
-			}
-		}
-		return out
-	}
-
-	operator fun invoke(classLoader: ClassLoader): Vfs {
-		val merged = MergedVfs()
-
-		return object : Vfs.Decorator(merged.root) {
-			override suspend fun init() {
-				val currentDir = localCurrentDirVfs.absolutePath
-				val urls = classLoader.tryGetURLs()
-				//val urlsApp = urls.filter { File(it.toURI()).absolutePath.startsWith(currentDir) }
-				val classPaths = urls.filter { it.toString().startsWith("file:") }.map { File(it.toURI()).absolutePath }
-				val classPathsApp = classPaths.filter { it.startsWith(currentDir) }
-
-				if (resourcesVfsDebug) {
-					println("currentDirectory: ${localCurrentDirVfs.absolutePath}")
-					if (classLoader is URLClassLoader) {
-						println("classLoader is URLClassLoader")
-					} else {
-						println("classLoader !is URLClassLoader but $classLoader")
-					}
-					for (path in classPaths) {
-						println("classLoader: $path")
-					}
-					for (path in classPathsApp) {
-						println("classPathsApp: $path")
-					}
-				}
-
-				val srcDirs = arrayListOf<File>()
-
-				for (path in classPathsApp) {
-					val relativePath = File(path).relativeTo(File(currentDir))
-					if (resourcesVfsDebug) println("classPathsApp.relative: $relativePath")
-					val srcs = findSrcs(File(currentDir), File(path))
-					if (resourcesVfsDebug) println("classPathsApp.relative: $srcs")
-					srcDirs += srcs
-				}
+	operator fun invoke(classLoader: ClassLoader): Vfs = MergedVfsDecorator(classLoader)
+}
 
 
-				//println("localCurrentDirVfs: $localCurrentDirVfs, ${localCurrentDirVfs.absolutePath}")
+class MergedVfsDecorator(val classLoader: ClassLoader, val merged: MergedVfs = MergedVfs()) : Vfs.Decorator(merged.root) {
+    override suspend fun init() {
+        val currentDir = localCurrentDirVfs.absolutePath
+        val urls = classLoader.tryGetURLs()
+        //val urlsApp = urls.filter { File(it.toURI()).absolutePath.startsWith(currentDir) }
+        val classPaths = urls.filter { it.toString().startsWith("file:") }.map { File(it.toURI()).absolutePath }
+        val classPathsApp = classPaths.filter { it.startsWith(currentDir) }
 
-				// @TODO: IntelliJ doesn't properly set resources folder for MPP just yet (on gradle works just fine),
-				// @TODO: so at least we try to load resources from sources until this is fixed.
-				run {
-					for (folder in listOf(
-						localCurrentDirVfs["src/commonMain/resources"],
-						localCurrentDirVfs["src/jvmMain/resources"],
-						localCurrentDirVfs["resources"],
-						localCurrentDirVfs["jvmResources"],
-						localCurrentDirVfs["src/commonTest/resources"],
-						localCurrentDirVfs["src/jvmTest/resources"]
-					)) {
-						if (folder.exists() && folder.isDirectory()) {
-							merged += folder.jail()
-						}
-					}
+        if (resourcesVfsDebug) {
+            println("currentDirectory: ${localCurrentDirVfs.absolutePath}")
+            if (classLoader is URLClassLoader) {
+                println("classLoader is URLClassLoader")
+            } else {
+                println("classLoader !is URLClassLoader but $classLoader")
+            }
+            for (path in classPaths) {
+                println("classLoader: $path")
+            }
+            for (path in classPathsApp) {
+                println("classPathsApp: $path")
+            }
+        }
 
-					for (srcDir in srcDirs.map { it.toVfs() }) {
-						for (folder in listOf(
-							srcDir["commonMain/resources"],
-							srcDir["jvmMain/resources"],
-							srcDir["commonTest/resources"],
-							srcDir["jvmTest/resources"],
-							// Korge
-							srcDir["../build/genMainResources"],
-							srcDir["../build/genTestResources"]
-						)) {
-							if (folder.exists() && folder.isDirectory()) {
-								merged += folder.jail()
-							}
-						}
-					}
-				}
+        val srcDirs = arrayListOf<File>()
 
-				for (url in urls) {
-					//println("ResourcesVfsProviderJvm.url: $url")
-					val urlStr = url.toString()
-					val vfs = when {
-						urlStr.startsWith("http") -> UrlVfs(url)
-						else -> localVfs(File(url.toURI()))
-					}
+        for (path in classPathsApp) {
+            val relativePath = File(path).relativeTo(File(currentDir))
+            if (resourcesVfsDebug) println("classPathsApp.relative: $relativePath")
+            val srcs = findSrcs(File(currentDir), File(path))
+            if (resourcesVfsDebug) println("classPathsApp.relative: $srcs")
+            srcDirs += srcs
+        }
 
-					//println(vfs)
 
-					when {
-						vfs.extension in setOf("jar", "zip") -> {
-							//merged.vfsList += vfs.openAsZip()
-						}
-						else -> merged += vfs.jail()
-					}
-				}
-				//println(merged.options)
+        //println("localCurrentDirVfs: $localCurrentDirVfs, ${localCurrentDirVfs.absolutePath}")
 
-				//println("ResourcesVfsProviderJvm:classLoader:$classLoader")
+        // @TODO: IntelliJ doesn't properly set resources folder for MPP just yet (on gradle works just fine),
+        // @TODO: so at least we try to load resources from sources until this is fixed.
+        run {
+            for (folder in listOf(
+                localCurrentDirVfs["src/commonMain/resources"],
+                localCurrentDirVfs["src/jvmMain/resources"],
+                localCurrentDirVfs["resources"],
+                localCurrentDirVfs["jvmResources"],
+                localCurrentDirVfs["src/commonTest/resources"],
+                localCurrentDirVfs["src/jvmTest/resources"]
+            )) {
+                if (folder.exists() && folder.isDirectory()) {
+                    merged += folder.jail()
+                }
+            }
 
-				merged += object : Vfs() {
-					private fun normalize(path: String): String = path.trim('/')
+            for (srcDir in srcDirs.map { it.toVfs() }) {
+                for (folder in listOf(
+                    srcDir["commonMain/resources"],
+                    srcDir["jvmMain/resources"],
+                    srcDir["commonTest/resources"],
+                    srcDir["jvmTest/resources"],
+                    // Korge
+                    srcDir["../build/genMainResources"],
+                    srcDir["../build/genTestResources"]
+                )) {
+                    if (folder.exists() && folder.isDirectory()) {
+                        merged += folder.jail()
+                    }
+                }
+            }
+        }
 
-					private fun getResourceAsStream(npath: String) = classLoader.getResourceAsStream(npath)
-						?: classLoader.getResourceAsStream("/$npath")
-						?: invalidOp("Can't find '$npath' in ResourcesVfsProviderJvm")
+        for (url in urls) {
+            //println("ResourcesVfsProviderJvm.url: $url")
+            val urlStr = url.toString()
+            val vfs = when {
+                urlStr.startsWith("http") -> UrlVfs(url)
+                else -> localVfs(File(url.toURI()))
+            }
 
-					override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
-						val npath = normalize(path)
-						//println("ResourcesVfsProviderJvm:open: $path")
-						return MemorySyncStream(getResourceAsStream(npath).readBytes()).toAsync()
-					}
+            //println(vfs)
 
-					override suspend fun stat(path: String): VfsStat {
-						val npath = normalize(path)
-						//println("ResourcesVfsProviderJvm:stat: $npath")
-						return try {
-							val s = getResourceAsStream(npath)
-							val size = s.available()
-							s.read()
-							createExistsStat(npath, isDirectory = false, size = size.toLong())
-						} catch (e: Throwable) {
-							//e.printStackTrace()
-							createNonExistsStat(npath)
-						}
-					}
+            when {
+                vfs.extension in setOf("jar", "zip") -> {
+                    //merged.vfsList += vfs.openAsZip()
+                }
+                else -> merged += vfs.jail()
+            }
+        }
+        //println(merged.options)
 
-					override fun toString(): String = "ResourcesVfsProviderJvm"
-				}.root
+        //println("ResourcesVfsProviderJvm:classLoader:$classLoader")
 
-				//println("ResourcesVfsProviderJvm: $merged")
-			}
+        merged += object : Vfs() {
+            private fun normalize(path: String): String = path.trim('/')
 
-			override fun toString(): String = "ResourcesVfs"
-		}
-	}
+            private fun getResourceAsStream(npath: String) = classLoader.getResourceAsStream(npath)
+                ?: classLoader.getResourceAsStream("/$npath")
+                ?: invalidOp("Can't find '$npath' in ResourcesVfsProviderJvm")
+
+            override suspend fun open(path: String, mode: VfsOpenMode): AsyncStream {
+                val npath = normalize(path)
+                //println("ResourcesVfsProviderJvm:open: $path")
+                return MemorySyncStream(getResourceAsStream(npath).readBytes()).toAsync()
+            }
+
+            override suspend fun stat(path: String): VfsStat {
+                val npath = normalize(path)
+                //println("ResourcesVfsProviderJvm:stat: $npath")
+                return try {
+                    val s = getResourceAsStream(npath)
+                    val size = s.available()
+                    s.read()
+                    createExistsStat(npath, isDirectory = false, size = size.toLong())
+                } catch (e: Throwable) {
+                    //e.printStackTrace()
+                    createNonExistsStat(npath)
+                }
+            }
+
+            override fun toString(): String = "ResourcesVfsProviderJvm"
+        }.root
+
+        //println("ResourcesVfsProviderJvm: $merged")
+    }
+
+    fun findSrcs(base: File, classPath: File): List<File> {
+        val relative = classPath.relativeTo(base).path.replace('\\', '/')
+        val out = arrayListOf<File>()
+        var current = base
+        for (part in relative.split('/')) {
+            current = File(current, part)
+            val srcDir = File(current, "src")
+            if (srcDir.isDirectory) {
+                out += srcDir
+            }
+        }
+        return out
+    }
+
+    override fun toString(): String = "ResourcesVfs"
 }
 
 //private val IOContext by lazy { newSingleThreadContext("IO") }

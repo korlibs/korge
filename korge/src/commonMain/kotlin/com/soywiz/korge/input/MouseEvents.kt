@@ -443,6 +443,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             //MouseEvent.Type.CLICK -> this.lastEventClick = event
             //MouseEvent.Type.ENTER -> this.lastEventEnter = event
             //MouseEvent.Type.EXIT -> this.lastEventExit = event
+            else -> Unit
         }
     }
 

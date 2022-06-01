@@ -573,11 +573,15 @@ samples {
         project.tasks {
             afterEvaluate {
                 for (kind in listOf("Debug", "Release")) {
-                    val linkExecutableMacosArm64 = project.tasks.findByName("link${kind}ExecutableMacosArm64") as org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-                    val runExecutableMacosArm64 = project.tasks.create("run${kind}ExecutableMacosArm64", Exec::class) {
-                        dependsOn(linkExecutableMacosArm64)
-                        group = "run"
-                        commandLine(linkExecutableMacosArm64.binary.outputFile)
+                    val linkTaskName = "link${kind}ExecutableMacosArm64"
+                    val runTaskName = "run${kind}ExecutableMacosArm64"
+                    val linkExecutableMacosArm64 = project.tasks.findByName(linkTaskName) as org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
+                    if (project.tasks.findByName(runTaskName) == null) {
+                        val runExecutableMacosArm64 = project.tasks.create(runTaskName, Exec::class) {
+                            dependsOn(linkExecutableMacosArm64)
+                            group = "run"
+                            commandLine(linkExecutableMacosArm64.binary.outputFile)
+                        }
                     }
                 }
             }

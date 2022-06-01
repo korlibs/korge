@@ -195,6 +195,7 @@ class IkConstraint : Updatable {
                         tx = targetX - bone.worldX
                         ty = targetY - bone.worldY
                     }
+                    else -> Unit
                 }
                 val b = bone.data.length * sx
                 val dd = kotlin.math.sqrt((tx * tx + ty * ty).toDouble()).toFloat()

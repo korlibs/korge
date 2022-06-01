@@ -2047,6 +2047,7 @@ class DefaultClipper(initOptions: Int = 0) : ClipperBase(Clipper.PRESERVE_COLINE
                         Clipper.ClipType.UNION -> if (e1Wc2 <= 0 && e2Wc2 <= 0) addLocalMinPoly(e1, e2, pt)
                         Clipper.ClipType.DIFFERENCE -> if (e1.polyTyp == Clipper.PolyType.CLIP && e1Wc2 > 0 && e2Wc2 > 0 || e1.polyTyp == Clipper.PolyType.SUBJECT && e1Wc2 <= 0 && e2Wc2 <= 0) addLocalMinPoly(e1, e2, pt)
                         Clipper.ClipType.XOR -> addLocalMinPoly(e1, e2, pt)
+                        else -> Unit
                     }
                     else -> Edge.swapSides(e1, e2)
                 }

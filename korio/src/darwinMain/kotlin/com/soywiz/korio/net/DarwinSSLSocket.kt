@@ -170,6 +170,7 @@ class DarwinSSLSocket {
                     SSLSessionState.kSSLClosed -> return false
                     SSLSessionState.kSSLAborted -> return false
                     SSLSessionState.kSSLConnected -> break
+                    else -> Unit
                 }
             }
             return true

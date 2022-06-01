@@ -84,7 +84,10 @@ open class Resources(val coroutineContext: CoroutineContext, val root: VfsFile =
     }
     open fun add(resource: Resource<*>) {
         if (resource.cache == ResourceCache.NONE) return
-        if (parent != null && resource.cache == ResourceCache.GLOBAL) return parent?.add(resource)
+        if (parent != null && resource.cache == ResourceCache.GLOBAL) {
+            parent?.add(resource)
+            return
+        }
         map[resource.name] = resource
     }
     @Suppress("UNCHECKED_CAST")

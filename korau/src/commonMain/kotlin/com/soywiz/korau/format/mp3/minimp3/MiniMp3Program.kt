@@ -102,13 +102,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var s: UInt = ((bs.value.pos and 7)).toUInt()
         var shl: Int = n + (s.toInt())
         var p: CPointer<UByte> = bs.value.buf + ((bs.value.pos shr 3))
-        if ((run { val `$` = bs.value.pos + n; bs.value.pos = `$`; `$` }) > bs.value.limit) {
+        if ((run { val `-` = bs.value.pos + n; bs.value.pos = `-`; `-` }) > bs.value.limit) {
             return 0u
         }
-        next = (run { val `$` = p; p = p + 1; `$` }.value.toUInt()) and (((255 shr (s.toInt()))).toUInt())
-        while ((run { val `$` = shl - 8; shl = `$`; `$` }) > 0) {
+        next = (run { val `-` = p; p = p + 1; `-` }.value.toUInt()) and (((255 shr (s.toInt()))).toUInt())
+        while ((run { val `-` = shl - 8; shl = `-`; `-` }) > 0) {
             cache = cache or (next shl shl)
-            next = run { val `$` = p; p = p + 1; `$` }.value.toUInt()
+            next = run { val `-` = p; p = p + 1; `-` }.value.toUInt()
         }
         return cache or (next shr (-shl))
 
@@ -200,7 +200,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         while (i < bands) {
             block {
                 var s: Float = 0f
-                var ba: Int = run { val `$` = pba; pba = pba + 1; `$` }.value.toInt()
+                var ba: Int = run { val `-` = pba; pba = pba + 1; `-` }.value.toInt()
                 var mask: Int = (if (ba.toBool()) (4 + ((19 shr (scfcod[i].toInt())) and 3)) else 0)
                 m = 4
                 while (m.toBool()) {
@@ -286,7 +286,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                 k = 0
                                 while (k < group_size) {
                                     dst[k] = ((((code % mod) - (mod / 2u))).toInt()).toFloat()
-                                    run { k++; run { val `$` = code / mod; code = `$`; `$` } }
+                                    run { k++; run { val `-` = code / mod; code = `-`; `-` } }
                                 }
 
                             }
@@ -318,7 +318,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 dst[k + 576] = dst[k + 576] * scf[3]
                 k = k + 1
             }
-            run { i++; run { val `$` = dst + 18; dst = `$`; `$` }; run { val `$` = scf + 6; scf = `$`; `$` } }
+            run { i++; run { val `-` = dst + 18; dst = `-`; `-` }; run { val `-` = scf + 6; scf = `-`; `-` } }
         }
 
     }
@@ -443,9 +443,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 scf = scf + cnt
 
             }
-            run { i++; run { val `$` = scfsi * 2; scfsi = `$`; `$` } }
+            run { i++; run { val `-` = scfsi * 2; scfsi = `-`; `-` } }
         }
-        scf[0] = run { val `$` = run { val `$` = 0.toUByte(); scf[2] = `$`; `$` }; scf[1] = `$`; `$` }
+        scf[0] = run { val `-` = run { val `-` = 0.toUByte(); scf[2] = `-`; `-` }; scf[1] = `-`; `-` }
 
     }
     fun L3_ldexp_q2(y: Float, exp_q2: Int): Float {
@@ -456,7 +456,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         do0@do {
             e = (if ((30 * 4) > exp_q2) exp_q2 else (30 * 4))
             y = y * (g_expfrac[e and 3] * ((((1 shl 30) shr (e shr 2))).toFloat()))
-        } while ((run { val `$` = exp_q2 - e; exp_q2 = `$`; `$` }) > 0)
+        } while ((run { val `-` = exp_q2 - e; exp_q2 = `-`; `-` }) > 0)
         return y
 
     }
@@ -473,8 +473,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         if ((((hdr[1].toUInt()) and 8u)).toBool()) {
             var g_scfc_decode: Array16UByte = __STATIC_L3_decode_scalefactors_g_scfc_decode
             var part: Int = g_scfc_decode[gr.value.scalefac_compress.toInt()].toInt()
-            scf_size[1] = run { val `$` = ((part shr 2)).toUByte(); scf_size[0] = `$`; `$` }
-            scf_size[3] = run { val `$` = ((part and 3)).toUByte(); scf_size[2] = `$`; `$` }
+            scf_size[1] = run { val `-` = ((part shr 2)).toUByte(); scf_size[0] = `-`; `-` }
+            scf_size[3] = run { val `-` = ((part and 3)).toUByte(); scf_size[2] = `-`; `-` }
 
         } else {
             var g_mod: Array24UByte = __STATIC_L3_decode_scalefactors_g_mod
@@ -485,13 +485,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             sfc = (((gr.value.scalefac_compress.toUInt()) shr ist)).toInt()
             k = (ist * 3) * 4
             while (sfc >= 0) {
-                run { run { val `$` = 1; modprod = `$`; `$` }; run { val `$` = 3; i = `$`; `$` } }
+                run { run { val `-` = 1; modprod = `-`; `-` }; run { val `-` = 3; i = `-`; `-` } }
                 while (i >= 0) {
                     scf_size[i] = (((sfc / modprod) % (g_mod[k + i].toInt()))).toUByte()
                     modprod = modprod * (g_mod[k + i].toInt())
                     i = i - 1
                 }
-                run { run { val `$` = sfc - modprod; sfc = `$`; `$` }; run { val `$` = k + 4; k = `$`; `$` } }
+                run { run { val `-` = sfc - modprod; sfc = `-`; `-` }; run { val `-` = k + 4; k = `-`; `-` } }
             }
             scf_partition = scf_partition + k
             scfsi = -16
@@ -571,7 +571,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var linbits: Int = g_linbits[tab_num].toInt()
             if (linbits.toBool()) {
                 do0@do {
-                    np = (((run { val `$` = sfb; sfb = sfb + 1; `$` }.value.toUInt()) / 2u)).toInt()
+                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
                     pairs_to_decode = (if (big_val_cnt > np) np else big_val_cnt)
                     one = scf++.value
                     do1@do {
@@ -595,7 +595,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                     bs_cache = bs_cache shl linbits
                                     bs_sh = bs_sh + linbits
                                     while (bs_sh >= 0) {
-                                        bs_cache = bs_cache or ((run { val `$` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `$` }.value.toUInt()) shl bs_sh)
+                                        bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
                                         bs_sh = bs_sh - 8
                                     }
                                     dst.value = (one * L3_pow_43(lsb)) * (((if ((bs_cache.toInt()) < 0) -1L else 1L)).toFloat())
@@ -606,18 +606,18 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                 bs_sh = bs_sh + (if (lsb.toBool()) 1 else 0)
 
                             }
-                            run { j++; dst++; run { val `$` = leaf shr 4; leaf = `$`; `$` } }
+                            run { j++; dst++; run { val `-` = leaf shr 4; leaf = `-`; `-` } }
                         }
                         while (bs_sh >= 0) {
-                            bs_cache = bs_cache or ((run { val `$` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `$` }.value.toUInt()) shl bs_sh)
+                            bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
                             bs_sh = bs_sh - 8
                         }
 
                     } while (((--pairs_to_decode)).toBool())
-                } while (((run { val `$` = big_val_cnt - np; big_val_cnt = `$`; `$` }) > 0) && ((--sfb_cnt) >= 0))
+                } while (((run { val `-` = big_val_cnt - np; big_val_cnt = `-`; `-` }) > 0) && ((--sfb_cnt) >= 0))
             } else {
                 do0@do {
-                    np = (((run { val `$` = sfb; sfb = sfb + 1; `$` }.value.toUInt()) / 2u)).toInt()
+                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
                     pairs_to_decode = (if (big_val_cnt > np) np else big_val_cnt)
                     one = scf++.value
                     do1@do {
@@ -641,15 +641,15 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                 bs_sh = bs_sh + (if (lsb.toBool()) 1 else 0)
 
                             }
-                            run { j++; dst++; run { val `$` = leaf shr 4; leaf = `$`; `$` } }
+                            run { j++; dst++; run { val `-` = leaf shr 4; leaf = `-`; `-` } }
                         }
                         while (bs_sh >= 0) {
-                            bs_cache = bs_cache or ((run { val `$` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `$` }.value.toUInt()) shl bs_sh)
+                            bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
                             bs_sh = bs_sh - 8
                         }
 
                     } while (((--pairs_to_decode)).toBool())
-                } while (((run { val `$` = big_val_cnt - np; big_val_cnt = `$`; `$` }) > 0) && ((--sfb_cnt) >= 0))
+                } while (((run { val `-` = big_val_cnt - np; big_val_cnt = `-`; `-` }) > 0) && ((--sfb_cnt) >= 0))
             }
 
         }
@@ -668,7 +668,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     break@while0
                 }
                 if ((--np) == 0) {
-                    np = (((run { val `$` = sfb; sfb = sfb + 1; `$` }.value.toUInt()) / 2u)).toInt()
+                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
                     if (np == 0) {
                         break@while0
                     }
@@ -685,7 +685,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     bs_sh = bs_sh + 1
                 }
                 if ((--np) == 0) {
-                    np = (((run { val `$` = sfb; sfb = sfb + 1; `$` }.value.toUInt()) / 2u)).toInt()
+                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
                     if (np == 0) {
                         break@while0
                     }
@@ -702,7 +702,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     bs_sh = bs_sh + 1
                 }
                 while (bs_sh >= 0) {
-                    bs_cache = bs_cache or ((run { val `$` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `$` }.value.toUInt()) shl bs_sh)
+                    bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
                     bs_sh = bs_sh - 8
                 }
 
@@ -744,7 +744,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var right: FloatPointer = right // Mutating parameter
         var i: Int = 0
         var k: Int = 0
-        max_band[0] = run { val `$` = run { val `$` = -1; max_band[2] = `$`; `$` }; max_band[1] = `$`; `$` }
+        max_band[0] = run { val `-` = run { val `-` = -1; max_band[2] = `-`; `-` }; max_band[1] = `-`; `-` }
         i = 0
         while0@while (i < nbands) {
             k = 0
@@ -805,7 +805,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var max_blocks: Int = (if (gr.value.n_short_sfb.toBool()) 3 else 1)
         L3_stereo_top_band((left + 576), gr.value.sfbtab, n_sfb, max_band)
         if (gr.value.n_long_sfb.toBool()) {
-            max_band[0] = run { val `$` = run { val `$` = (if ((if (max_band[0] < max_band[1]) max_band[1] else max_band[0]) < max_band[2]) max_band[2] else (if (max_band[0] < max_band[1]) max_band[1] else max_band[0])); max_band[2] = `$`; `$` }; max_band[1] = `$`; `$` }
+            max_band[0] = run { val `-` = run { val `-` = (if ((if (max_band[0] < max_band[1]) max_band[1] else max_band[0]) < max_band[2]) max_band[2] else (if (max_band[0] < max_band[1]) max_band[1] else max_band[0])); max_band[2] = `-`; `-` }; max_band[1] = `-`; `-` }
         }
         i = 0
         while (i < max_blocks) {
@@ -827,7 +827,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var len: Int = 0
         var src: FloatPointer = grbuf
         var dst: FloatPointer = scratch
-        while (0 != (run { val `$` = sfb.value.toInt(); len = `$`; `$` })) {
+        while (0 != (run { val `-` = sfb.value.toInt(); len = `-`; `-` })) {
             i = 0
             while (i < len) {
                 dst++.value = src[0 * len]
@@ -835,7 +835,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 dst++.value = src[2 * len]
                 run { i++; src++ }
             }
-            run { run { val `$` = sfb + 3; sfb = `$`; `$` }; run { val `$` = src + ((2 * len)); src = `$`; `$` } }
+            run { run { val `-` = sfb + 3; sfb = `-`; `-` }; run { val `-` = src + ((2 * len)); src = `-`; `-` } }
         }
         memcpy((CPointer<Unit>(grbuf.ptr)), (CPointer<Unit>(scratch.ptr)), ((dst - scratch) * Float.SIZE_BYTES))
 
@@ -859,7 +859,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 }
 
             }
-            run { nbands--; run { val `$` = grbuf + 18; grbuf = `$`; `$` } }
+            run { nbands--; run { val `-` = grbuf + 18; grbuf = `-`; `-` } }
         }
 
     }
@@ -955,7 +955,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 }
 
             }
-            run { j++; run { val `$` = grbuf + 18; grbuf = `$`; `$` }; run { val `$` = overlap + 9; overlap = `$`; `$` } }
+            run { j++; run { val `-` = grbuf + 18; grbuf = `-`; `-` }; run { val `-` = overlap + 9; overlap = `-`; `-` } }
         }
 
     }
@@ -1003,7 +1003,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 L3_imdct12((tmp + 2), overlap, (overlap + 6))
 
             }
-            run { nbands--; run { val `$` = overlap + 9; overlap = `$`; `$` }; run { val `$` = grbuf + 18; grbuf = `$`; `$` } }
+            run { nbands--; run { val `-` = overlap + 9; overlap = `-`; `-` }; run { val `-` = grbuf + 18; grbuf = `-`; `-` } }
         }
 
     }
@@ -1011,14 +1011,14 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var b: Int = 0
         var i: Int = 0
-        run { run { val `$` = 0; b = `$`; `$` }; run { val `$` = grbuf + 18; grbuf = `$`; `$` } }
+        run { run { val `-` = 0; b = `-`; `-` }; run { val `-` = grbuf + 18; grbuf = `-`; `-` } }
         while (b < 32) {
             i = 1
             while (i < 18) {
                 grbuf[i] = -grbuf[i]
                 i = i + 2
             }
-            run { run { val `$` = b + 2; b = `$`; `$` }; run { val `$` = grbuf + 36; grbuf = `$`; `$` } }
+            run { run { val `-` = b + 2; b = `-`; `-` }; run { val `-` = grbuf + 36; grbuf = `-`; `-` } }
         }
 
     }
@@ -1094,7 +1094,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 L3_change_sign((FloatPointer(s.value.grbuf[ch].ptr)))
 
             }
-            run { ch++; run { val `$` = gr_info; gr_info = gr_info + 1; `$` } }
+            run { ch++; run { val `-` = gr_info; gr_info = gr_info + 1; `-` } }
         }
 
     }
@@ -1107,7 +1107,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 var t: Array4Array8Float = Array4Array8FloatAlloc(arrayOf((Array8Float(0))))
                 var x: FloatPointer = FloatPointer(0)
                 var y: FloatPointer = grbuf + k
-                run { run { val `$` = FloatPointer(t[0].ptr); x = `$`; `$` }; run { val `$` = 0; i = `$`; `$` } }
+                run { run { val `-` = FloatPointer(t[0].ptr); x = `-`; `-` }; run { val `-` = 0; i = `-`; `-` } }
                 while (i < 8) {
                     block {
                         var x0: Float = y[i * 18]
@@ -1126,7 +1126,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     }
                     run { i++; x++ }
                 }
-                run { run { val `$` = FloatPointer(t[0].ptr); x = `$`; `$` }; run { val `$` = 0; i = `$`; `$` } }
+                run { run { val `-` = FloatPointer(t[0].ptr); x = `-`; `-` }; run { val `-` = 0; i = `-`; `-` } }
                 while (i < 4) {
                     block {
                         var x0: Float = x[0]
@@ -1169,7 +1169,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         x[7] = (xt - x7) * 2.56291556f
 
                     }
-                    run { i++; run { val `$` = x + 8; x = `$`; `$` } }
+                    run { i++; run { val `-` = x + 8; x = `-`; `-` } }
                 }
                 i = 0
                 while (i < 7) {
@@ -1177,7 +1177,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     y[1 * 18] = (t[2][i] + t[3][i]) + t[3][i + 1]
                     y[2 * 18] = t[1][i] + t[1][i + 1]
                     y[3 * 18] = (t[2][i + 1] + t[3][i]) + t[3][i + 1]
-                    run { i++; run { val `$` = y + ((4 * 18)); y = `$`; `$` } }
+                    run { i++; run { val `-` = y + ((4 * 18)); y = `-`; `-` } }
                 }
                 y[0 * 18] = t[0][7]
                 y[1 * 18] = t[2][7] + t[3][7]
@@ -1265,7 +1265,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 0) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = (vz[j] * w1) + (vy[j] * w0); b[j] = `$`; `$` }; run { val `$` = (vz[j] * w0) - (vy[j] * w1); a[j] = `$`; `$` } }
+                        run { run { val `-` = (vz[j] * w1) + (vy[j] * w0); b[j] = `-`; `-` }; run { val `-` = (vz[j] * w0) - (vy[j] * w1); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1278,7 +1278,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 1) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1291,7 +1291,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 2) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1304,7 +1304,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 3) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1317,7 +1317,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 4) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1330,7 +1330,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 5) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1343,7 +1343,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 6) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1356,7 +1356,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 7) * 64)))
                     j = 0
                     while (j < 4) {
-                        run { run { val `$` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `$`; `$` }; run { val `$` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `$`; `$` } }
+                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
                         j = j + 1
                     }
 
@@ -1402,7 +1402,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun mp3d_match_frame(hdr: CPointer<UByte>, mp3_bytes: Int, frame_bytes: Int): Int {
         var i: Int = 0
         var nmatch: Int = 0
-        run { run { val `$` = 0; i = `$`; `$` }; run { val `$` = 0; nmatch = `$`; `$` } }
+        run { run { val `-` = 0; i = `-`; `-` }; run { val `-` = 0; nmatch = `-`; `-` } }
         while (nmatch < 10) {
             i = i + (hdr_frame_bytes((hdr + i), frame_bytes) + hdr_padding((hdr + i)))
             if ((i + 4) > mp3_bytes) {
@@ -1460,7 +1460,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     STACK_PTR = __oldPos2
                 }
             }
-            run { i++; run { val `$` = mp3; mp3 = mp3 + 1; `$` } }
+            run { i++; run { val `-` = mp3; mp3 = mp3 + 1; `-` } }
         }
         ptr_frame_bytes.value = 0
         return mp3_bytes
@@ -1523,7 +1523,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
                     L3_decode(dec, (CPointer<mp3dec_scratch_t>(scratch.ptr)), (scratch.gr_info + ((igr * info.value.channels))), info.value.channels)
                     mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 18, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
-                    run { igr++; run { val `$` = pcm + ((576 * info.value.channels)); pcm = `$`; `$` } }
+                    run { igr++; run { val `-` = pcm + ((576 * info.value.channels)); pcm = `-`; `-` } }
                 }
             }
             L3_save_reservoir(dec, (CPointer<mp3dec_scratch_t>(scratch.ptr)))
@@ -1533,9 +1533,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 var sci: Array1L12_scale_info = Array1L12_scale_infoAlloc(arrayOf((L12_scale_info(0))))
                 L12_read_scale_info(hdr, (CPointer<bs_t>(bs_frame.ptr)), (CPointer<L12_scale_info>(sci.ptr)))
                 memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
-                run { run { val `$` = 0; i = `$`; `$` }; run { val `$` = 0; igr = `$`; `$` } }
+                run { run { val `-` = 0; i = `-`; `-` }; run { val `-` = 0; igr = `-`; `-` } }
                 while (igr < 3) {
-                    if (12 == (run { val `$` = i + L12_dequantize_granule((scratch.grbuf[0] + i), (CPointer<bs_t>(bs_frame.ptr)), (CPointer<L12_scale_info>(sci.ptr)), (info.value.layer or 1)); i = `$`; `$` })) {
+                    if (12 == (run { val `-` = i + L12_dequantize_granule((scratch.grbuf[0] + i), (CPointer<bs_t>(bs_frame.ptr)), (CPointer<L12_scale_info>(sci.ptr)), (info.value.layer or 1)); i = `-`; `-` })) {
                         i = 0
                         L12_apply_scf_384((CPointer<L12_scale_info>(sci.ptr)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
                         mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
@@ -1563,7 +1563,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun strlen(str: CPointer<Byte>): Int {
         var str: CPointer<Byte> = str // Mutating parameter
         var out: Int = 0
-        while ((run { val `$` = str; str = str + 1; `$` }.value.toInt()) != 0) {
+        while ((run { val `-` = str; str = str + 1; `-` }.value.toInt()) != 0) {
             out = out + 1
         }
         return out

@@ -102,6 +102,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
                             render(doUpdate = false)
                         }
                         SDL_WindowEventID.CLOSE -> close()
+                        else -> Unit
                     }
                 }
                 SDL_EventType.KEYDOWN,
@@ -167,6 +168,7 @@ class SdlGameWindowNative : EventLoopGameWindow() {
 
                 }
                 // TODO: joystick, controller
+                else -> Unit
             }
         }
     }
