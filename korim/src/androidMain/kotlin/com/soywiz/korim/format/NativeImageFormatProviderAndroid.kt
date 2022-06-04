@@ -173,7 +173,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     val matrixValues = FloatArray(9)
     var androidMatrix = android.graphics.Matrix()
 
-    fun GraphicsPath.toAndroid(out: Path = Path(), winding: Winding = this.winding): Path {
+    fun VectorPath.toAndroid(out: Path = Path(), winding: Winding = this.winding): Path {
         //out.reset()
         out.rewind()
 

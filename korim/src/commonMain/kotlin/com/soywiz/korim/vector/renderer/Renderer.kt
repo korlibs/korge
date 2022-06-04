@@ -3,8 +3,8 @@ package com.soywiz.korim.vector.renderer
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.transformed
 
@@ -45,7 +45,7 @@ abstract class Renderer {
         render(
             Context2d.State(
                 transform = transform,
-                path = GraphicsPath().apply {
+                path = VectorPath().apply {
                     if (transform.getType() == Matrix.Type.IDENTITY) {
                         rect(x, y, width, height)
                     } else {

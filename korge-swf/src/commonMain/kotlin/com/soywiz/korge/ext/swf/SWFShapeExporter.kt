@@ -29,7 +29,7 @@ class SWFShapeExporter(
 	val requestScale: Double = 2.0,
 	val minSide: Int = 16,
 	val maxSide: Int = 512,
-	val path: GraphicsPath = GraphicsPath(),
+	val path: VectorPath = VectorPath(),
     val charId: Int = -1
 ) : ShapeExporter() {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
@@ -82,7 +82,7 @@ class SWFShapeExporter(
 
 	var drawingFill = true
 
-	var apath = GraphicsPath()
+	var apath = VectorPath()
 	override fun beginShape() {
 		//ctx.beginPath()
 	}
@@ -204,7 +204,7 @@ class SWFShapeExporter(
 	private fun __flushFill() {
 		if (apath.isEmpty()) return
         shapes += FillShape(apath, null, fillStyle, Matrix())
-		apath = GraphicsPath()
+		apath = VectorPath()
 	}
 
 	private fun __flushStroke() {
@@ -222,7 +222,7 @@ class SWFShapeExporter(
 			LineJoin.MITER,
 			miterLimit
 		)
-		apath = GraphicsPath()
+		apath = VectorPath()
 	}
 
 	private fun flush() {

@@ -7,7 +7,6 @@ import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korim.font.SystemFont
 import com.soywiz.korim.internal.*
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.file.std.*

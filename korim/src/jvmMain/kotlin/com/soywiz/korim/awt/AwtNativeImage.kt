@@ -17,10 +17,10 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.paint.TransformedPaint
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.isEmpty
 import java.awt.AlphaComposite
@@ -165,7 +165,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 
 	val hints = createRenderingHints(antialiasing)
 
-	fun GraphicsPath.toJava2dPaths(): List<java.awt.geom.Path2D.Double> {
+	fun VectorPath.toJava2dPaths(): List<java.awt.geom.Path2D.Double> {
 		if (this.isEmpty()) return listOf()
 		val winding =
 			if (winding == Winding.EVEN_ODD) java.awt.geom.GeneralPath.WIND_EVEN_ODD else java.awt.geom.GeneralPath.WIND_NON_ZERO
@@ -213,7 +213,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		return polylines
 	}
 
-	fun GraphicsPath.toJava2dPath(): java.awt.geom.Path2D.Double? {
+	fun VectorPath.toJava2dPath(): java.awt.geom.Path2D.Double? {
 		return toJava2dPaths().firstOrNull()
 	}
 
@@ -393,7 +393,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		}
 	}
 
-    private var oldClipState: GraphicsPath? = null
+    private var oldClipState: VectorPath? = null
 
 	fun applyState(state: Context2d.State, fill: Boolean) {
 		val t = state.transform

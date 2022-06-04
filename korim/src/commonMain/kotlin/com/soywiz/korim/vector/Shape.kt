@@ -124,7 +124,7 @@ fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1):
 interface Shape : BoundsDrawable {
 	fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean = false): Unit
 	fun buildSvg(svg: SvgBuilder): Unit = Unit
-    fun getPath(path: GraphicsPath = GraphicsPath()): GraphicsPath = path
+    fun getPath(path: VectorPath = VectorPath()): VectorPath = path
 
     // Unoptimized version
     override val bounds: Rectangle get() = BoundsBuilder().also { addBounds(it) }.getBounds()
@@ -152,14 +152,14 @@ interface StyledShape : Shape {
      *
      * @TODO: Probably it shouldn't have the transform applied
      */
-	val path: GraphicsPath? get() = null
-	val clip: GraphicsPath?
+	val path: VectorPath? get() = null
+	val clip: VectorPath?
 	val paint: Paint
 	val transform: Matrix
     val globalAlpha: Double
 
-    fun getUntransformedPath(): GraphicsPath? {
-        return path?.clone()?.applyTransform(transform.inverted())?.toGraphicsPath()
+    fun getUntransformedPath(): VectorPath? {
+        return path?.clone()?.applyTransform(transform.inverted())
     }
 
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
@@ -178,7 +178,7 @@ interface StyledShape : Shape {
 		)
 	}
 
-    override fun getPath(path: GraphicsPath): GraphicsPath = path.also {
+    override fun getPath(path: VectorPath): VectorPath = path.also {
         this.path?.let { path.write(it) }
     }
 
@@ -331,8 +331,8 @@ object EmptyShape : Shape {
 }
 
 data class FillShape(
-    override val path: GraphicsPath,
-    override val clip: GraphicsPath?,
+    override val path: VectorPath,
+    override val clip: VectorPath?,
     override val paint: Paint,
     override val transform: Matrix = Matrix(),
     override val globalAlpha: Double = 1.0,
@@ -354,8 +354,8 @@ data class FillShape(
 }
 
 data class PolylineShape(
-    override val path: GraphicsPath,
-    override val clip: GraphicsPath?,
+    override val path: VectorPath,
+    override val clip: VectorPath?,
     override val paint: Paint,
     override val transform: Matrix,
     val thickness: Double,
@@ -366,13 +366,13 @@ data class PolylineShape(
     val lineJoin: LineJoin,
     val miterLimit: Double,
     override val globalAlpha: Double = 1.0,
-    ) : StyledShape {
+) : StyledShape {
     private val tempBB = BoundsBuilder()
     private val tempRect = Rectangle()
 
     val fillShape: FillShape by lazy {
         FillShape(
-            path.strokeToFill(thickness, lineJoin, startCaps, endCaps, miterLimit).toGraphicsPath(),
+            path.strokeToFill(thickness, lineJoin, startCaps, endCaps, miterLimit),
             clip, paint, transform, globalAlpha
         )
     }
@@ -423,7 +423,7 @@ class CompoundShape(
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
 	override fun draw(c: Context2d) = c.buffering { components.fastForEach { it.draw(c) } }
 	override fun buildSvg(svg: SvgBuilder) { components.fastForEach { it.buildSvg(svg) } }
-    override fun getPath(path: GraphicsPath): GraphicsPath = path.also { components.fastForEach { it.getPath(path) } }
+    override fun getPath(path: VectorPath): VectorPath = path.also { components.fastForEach { it.getPath(path) } }
 	override fun containsPoint(x: Double, y: Double): Boolean {
 		return components.any { it.containsPoint(x, y) }
 	}
@@ -435,7 +435,7 @@ class TextShape(
     val y: Double,
     val font: Font?,
     val fontSize: Double,
-    override val clip: GraphicsPath?,
+    override val clip: VectorPath?,
     val fill: Paint?,
     val stroke: Paint?,
     val halign: HorizontalAlign = HorizontalAlign.LEFT,

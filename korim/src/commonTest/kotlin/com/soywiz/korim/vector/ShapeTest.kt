@@ -2,6 +2,7 @@ package com.soywiz.korim.vector
 
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 import kotlin.test.Test
@@ -11,7 +12,7 @@ class ShapeTest {
 	@Test
 	fun name() {
 		val shape = FillShape(
-			path = GraphicsPath().apply {
+			path = VectorPath().apply {
 				moveTo(0, 0)
 				lineTo(100, 100)
 				lineTo(0, 100)

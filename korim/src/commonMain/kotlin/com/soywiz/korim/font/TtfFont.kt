@@ -16,7 +16,6 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korim.vector.toSvgPathString
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
@@ -34,6 +33,8 @@ import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.toSyncStream
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.vector.IVectorPath
+import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.lineTo
@@ -86,7 +87,7 @@ class TtfFont(
         val g = getGlyphByCodePoint(codePoint) ?: return null
         val scale = getTextScale(size)
         //println("unitsPerEm = $unitsPerEm")
-        path.path = g.path
+        path.path = g.path.path
         path.colorPaths = g.colorEntry?.getColorPaths()
         val bitmapEntry = g.bitmapEntry
         val bitmap = bitmapEntry?.getBitmap()
@@ -1030,7 +1031,7 @@ class TtfFont(
     inner class ColrLayerInfo(val glyphID: Int, val paletteIndex: Int) {
         fun color(pal: Int) = palettes.getCyclic(pal).colors.getOrElse(paletteIndex) { Colors.FUCHSIA }
         val color: RGBA get() = color(0)
-        fun getColorPath(pal: Int = 0) = getGlyphByIndex(glyphID)?.path?.let { FillShape(it, null, color(pal)) }
+        fun getColorPath(pal: Int = 0) = getGlyphByIndex(glyphID)?.path?.let { FillShape(it.path, null, color(pal)) }
         override fun toString(): String = "ColrLayerInfo($glyphID, $paletteIndex, $color)"
     }
     inner class ColrGlyphInfo(val glyphID: Int, val firstLayerIndex: Int, val numLayers: Int) {
@@ -1041,13 +1042,11 @@ class TtfFont(
         override fun toString(): String = "ColrGlyphInfo[$glyphID][$numLayers](${toList()})"
     }
 
-    open class GlyphGraphicsPath(
+    data class GlyphGraphicsPath(
         val glpyhIndex: Int,
-        commands: IntArrayList = IntArrayList(),
-        data: DoubleArrayList = DoubleArrayList(),
-        winding: Winding = Winding.EVEN_ODD
-    ) : GraphicsPath(commands, data, winding) {
-        override fun toString(): String = "GraphicsPath(glpyhIndex=$glpyhIndex, \"${this.toSvgPathString()}\")"
+        val path: VectorPath
+    ) : IVectorPath by path {
+        override fun toString(): String = "GraphicsPath(glpyhIndex=$glpyhIndex, \"${this.path.toSvgPathString()}\")"
     }
 
     abstract inner class Glyph(
@@ -1083,12 +1082,12 @@ class TtfFont(
         override fun toString(): String = "CompositeGlyph[$advanceWidth](${refs})"
 
         override val paths = refs.map { ref ->
-            val gpath = ref.glyph.path
-            GlyphGraphicsPath(ref.glyph.index, IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size)).also { out ->
+            val gpath = ref.glyph.path.path
+            GlyphGraphicsPath(ref.glyph.index, VectorPath(IntArrayList(gpath.commands.size), DoubleArrayList(gpath.data.size))).also { out ->
                 val m = Matrix()
                 m.translate(ref.x, -ref.y)
                 m.scale(ref.scaleX, ref.scaleY)
-                out.write(ref.glyph.path, m)
+                out.path.write(ref.glyph.path.path, m)
             }
         }
 
@@ -1098,12 +1097,12 @@ class TtfFont(
             var dataSize = 0
 
             paths.fastForEach { gpath ->
-                commandsSize += gpath.commands.size
-                dataSize += gpath.data.size
+                commandsSize += gpath.path.commands.size
+                dataSize += gpath.path.data.size
             }
 
-            GlyphGraphicsPath(index, IntArrayList(commandsSize), DoubleArrayList(dataSize)).also { out ->
-                paths.fastForEach { out.write(it) }
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandsSize), DoubleArrayList(dataSize))).also { out ->
+                paths.fastForEach { out.path.write(it.path) }
             }
         }
     }
@@ -1137,7 +1136,7 @@ class TtfFont(
                 dataSize += 2 + (csize * 8) // Bigger than required
             }
 
-            GlyphGraphicsPath(index, IntArrayList(commandSize), DoubleArrayList(dataSize)).also { p ->
+            GlyphGraphicsPath(index, VectorPath(IntArrayList(commandSize), DoubleArrayList(dataSize))).also { p ->
                 //println("flags.size: ${flags.size}, contoursIndices.size=${contoursIndices.size}, xPos.size=${xPos.size}, yPos.size=${yPos.size}")
                 //assert(flags.size == contoursIndices.size)
                 //assert(xPos.size == contoursIndices.size)

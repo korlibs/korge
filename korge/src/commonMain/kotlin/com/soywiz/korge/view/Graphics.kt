@@ -11,7 +11,6 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.CompoundShape
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korim.vector.LineScaleMode
 import com.soywiz.korim.vector.PolylineShape
 import com.soywiz.korim.vector.Shape
@@ -59,7 +58,7 @@ fun Graphics(
 open class Graphics @JvmOverloads constructor(
     autoScaling: Boolean = false
 ) : BaseGraphics(autoScaling), VectorBuilder {
-    internal val graphicsPathPool = Pool(reset = { it.clear() }) { GraphicsPath() }
+    internal val vectorPathPool = Pool(reset = { it.clear() }) { VectorPath() }
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
     val allShapes: List<Shape> get() = shapes
@@ -67,7 +66,7 @@ open class Graphics @JvmOverloads constructor(
 	private var fill: Paint? = null
 	private var stroke: Paint? = null
 	@PublishedApi
-	internal var currentPath = graphicsPathPool.alloc()
+	internal var currentPath = vectorPathPool.alloc()
 
     // @TODO: Not used but to have same API as GpuShapeView
     var antialiased: Boolean = true
@@ -146,7 +145,7 @@ open class Graphics @JvmOverloads constructor(
     }
 
 	fun clear() {
-        shapes.forEach { (it as? StyledShape)?.path?.let { path -> graphicsPathPool.free(path) } }
+        shapes.forEach { (it as? StyledShape)?.path?.let { path -> vectorPathPool.free(path) } }
 		shapes.clear()
         currentPath.clear()
 	}
@@ -250,7 +249,7 @@ open class Graphics @JvmOverloads constructor(
 
     fun shape(shape: Shape) {
         shapes += shape
-        currentPath = graphicsPathPool.alloc()
+        currentPath = vectorPathPool.alloc()
         dirtyShape()
     }
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
@@ -263,21 +262,21 @@ open class Graphics @JvmOverloads constructor(
 
 	fun endFill() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		currentPath = graphicsPathPool.alloc()
+		currentPath = vectorPathPool.alloc()
         dirtyShape()
 	}
 
 	fun endStroke() = dirty {
 		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
-		currentPath = graphicsPathPool.alloc()
+		currentPath = vectorPathPool.alloc()
         dirtyShape()
 	}
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		shapes += PolylineShape(graphicsPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
-		currentPath = graphicsPathPool.alloc()
+		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		currentPath = vectorPathPool.alloc()
         dirtyShape()
 	}
 

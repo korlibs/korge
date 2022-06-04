@@ -80,11 +80,11 @@ class GraphicsTest {
             g.fill(Colors.RED) { g.rect(0, 0, 100, 100) }
             g.clear()
         }
-        assertEquals(1, g.graphicsPathPool.itemsInPool)
+        assertEquals(1, g.vectorPathPool.itemsInPool)
         for (n in 0 until 10) g.fill(Colors.RED) { g.rect(0, 0, 100, 100) }
         g.clear()
-        assertEquals(10, g.graphicsPathPool.itemsInPool)
-        assertNotSame(g.graphicsPathPool.alloc(), g.graphicsPathPool.alloc())
+        assertEquals(10, g.vectorPathPool.itemsInPool)
+        assertNotSame(g.vectorPathPool.alloc(), g.vectorPathPool.alloc())
     }
 
     @Test

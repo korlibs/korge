@@ -83,7 +83,7 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
     override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
         rendererRender(State(
             transform = transform,
-            path = GraphicsPath().apply { rect(x, y, width.toDouble(), height.toDouble()) },
+            path = VectorPath().apply { rect(x, y, width.toDouble(), height.toDouble()) },
             fillStyle = BitmapPaint(image,
                 transform = Matrix()
                     .scale(width.toDouble() / image.width.toDouble(), height.toDouble() / image.height.toDouble())

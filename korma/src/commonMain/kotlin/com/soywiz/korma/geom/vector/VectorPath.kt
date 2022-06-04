@@ -22,18 +22,20 @@ import kotlin.native.concurrent.ThreadLocal
 // @TODO: ThreadLocal on JVM
 @ThreadLocal
 private val tempMatrix: Matrix = Matrix()
-@ThreadLocal
-private val identityMatrix: Matrix = Matrix()
+
+interface IVectorPath : VectorBuilder {
+    fun toSvgString(): String
+}
 
 @OptIn(KormaExperimental::class)
-open class VectorPath(
+class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
     var winding: Winding = Winding.EVEN_ODD
-) : VectorBuilder {
+) : IVectorPath {
     var version: Int = 0
 
-    open fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
+    fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
     override fun equals(other: Any?): Boolean = other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
     override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
@@ -413,7 +415,7 @@ open class VectorPath(
     //typealias LineJoin = com.soywiz.korma.geom.vector.LineJoin
     //typealias LineCap = com.soywiz.korma.geom.vector.LineCap
 
-    fun toSvgString(): String = buildString {
+    override fun toSvgString(): String = buildString {
         visitCmds(
             moveTo = { x, y -> append("M${x.niceStr},${y.niceStr} ") },
             lineTo = { x, y -> append("L${x.niceStr},${y.niceStr} ") },

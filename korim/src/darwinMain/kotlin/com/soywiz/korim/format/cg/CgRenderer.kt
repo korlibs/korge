@@ -110,7 +110,7 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                             //    cgDrawBitmap(bmp, ctx, colorSpace)
                             //}
 
-                            fun visitCgContext(ctx: CPointer<CGContext>?, path: GraphicsPath) {
+                            fun visitCgContext(ctx: CPointer<CGContext>?, path: VectorPath) {
                                 path.visitCmds(
                                     moveTo = { x, y -> CGContextMoveToPoint(ctx, x.cg, y.cg) },
                                     lineTo = { x, y -> CGContextAddLineToPoint(ctx, x.cg, y.cg) },

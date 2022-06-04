@@ -123,8 +123,8 @@ open class Context2d constructor(
 
 	data class State constructor(
         var transform: Matrix = Matrix(),
-        var clip: GraphicsPath? = null,
-        var path: GraphicsPath = GraphicsPath(),
+        var clip: VectorPath? = null,
+        var path: VectorPath = VectorPath(),
         var lineScaleMode: LineScaleMode = LineScaleMode.NORMAL,
         var lineWidth: Double = 1.0,
         var startLineCap: LineCap = LineCap.BUTT,
@@ -359,7 +359,7 @@ open class Context2d constructor(
 
 	fun strokeDot(x: Double, y: Double) { beginPath(); moveTo(x, y); lineTo(x, y); stroke() }
 
-	fun path(path: GraphicsPath) {
+	fun path(path: VectorPath) {
         this.write(path)
         //this.write(path, state.transform)
     }
@@ -369,7 +369,7 @@ open class Context2d constructor(
 
 	fun fillRect(x: Double, y: Double, width: Double, height: Double) { beginPath(); rect(x, y, width, height); fill() }
 
-	fun beginPath() { state.path = GraphicsPath() }
+	fun beginPath() { state.path = VectorPath() }
 
 	fun getBounds(out: Rectangle = Rectangle()) = state.path.getBounds(out)
 
@@ -429,7 +429,7 @@ open class Context2d constructor(
     fun clip(path: VectorPath? = state.path, winding: Winding = Winding.NON_ZERO) {
         if (path != null) {
             if (state.clip == null) {
-                state.clip = GraphicsPath()
+                state.clip = VectorPath()
             }
             state.clip!!.clear()
             state.clip!!.winding = winding

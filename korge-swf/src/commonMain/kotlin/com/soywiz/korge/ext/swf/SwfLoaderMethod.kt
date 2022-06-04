@@ -16,6 +16,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.VectorPath
 import kotlinx.coroutines.*
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -85,7 +86,7 @@ class SymbolAnalyzeInfo(val characterId: Int) {
 	}
 }
 
-fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale: Double, path: GraphicsPath = GraphicsPath()): SWFShapeExporter {
+fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale: Double, path: VectorPath = VectorPath()): SWFShapeExporter {
     val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
     //val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
     //println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
@@ -112,7 +113,7 @@ class SWFShapeRasterizerRequest constructor(
 ) {
     val charId: Int get () = tag.characterId
     val shapeBounds: Rectangle get() = tag.shapeBounds.rect
-	val path = GraphicsPath()
+	val path = VectorPath()
 	fun getShapeExporter(maxScale: Double): SWFShapeExporter = tag.getShapeExporter(swf, config, maxScale, path)
 }
 

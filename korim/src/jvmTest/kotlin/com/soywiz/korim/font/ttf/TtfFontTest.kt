@@ -27,7 +27,7 @@ class TtfFontTest {
     fun testColon() {
         assertEquals(
             "M300,0 L100,0 L100,-200 L300,-200 L300,0 Z M300,-800 L100,-800 L100,-1000 L300,-1000 L300,-800 Z",
-            DefaultTtfFont.getGlyphByChar(':')!!.path!!.toSvgString()
+            DefaultTtfFont.getGlyphByChar(':')!!.path.toSvgString()
         )
     }
 

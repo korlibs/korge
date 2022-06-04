@@ -14,7 +14,6 @@ import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
-import com.soywiz.korim.vector.GraphicsPath
 import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.korim.vector.toSvgPathString
 import com.soywiz.korio.lang.substr
@@ -28,6 +27,7 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.ellipse
 import com.soywiz.korma.geom.vector.isNotEmpty
@@ -372,7 +372,7 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
             ss.skipWhile { !it.isNumeric }
             out
         }).toList())
-        val path = GraphicsPath().also { path ->
+        val path = VectorPath().also { path ->
             var edges = 0
             path.moveTo(pps.read(), pps.read())
             while (pps.hasMore) {
