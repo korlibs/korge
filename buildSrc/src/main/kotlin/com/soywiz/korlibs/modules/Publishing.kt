@@ -73,9 +73,7 @@ fun Project.configurePublishing(multiplatform: Boolean = true) {
                             project.stagedRepositoryId != null -> uri("https://oss.sonatype.org/service/local/staging/deployByRepositoryId/${project.stagedRepositoryId}/")
                             else -> uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
                         }
-                        rootProject.doOnce("showDeployTo") {
-                            println("DEPLOY mavenRepository: $url")
-                        }
+                        doOnce("showDeployTo") { logger.info("DEPLOY mavenRepository: $url") }
                     }
                 }
             }

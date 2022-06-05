@@ -21,7 +21,9 @@ class LoggerMultithreadedTest {
         val future = worker.execute(TransferMode.SAFE, { changeLoggerLevel.freeze() }) { it() }
         val result = future.result
 
-        assertTrue(logger.isFrozen)
+        if (Platform.memoryModel != MemoryModel.EXPERIMENTAL) {
+            assertTrue(logger.isFrozen)
+        }
         assertTrue { result == Logger.Level.INFO }
         assertTrue { logger.level == Logger.Level.INFO }
 
@@ -35,7 +37,9 @@ class LoggerMultithreadedTest {
         val future2 = worker2.execute(TransferMode.SAFE, { getLoggerLevel.freeze() }) { it() }
         val result2 = future2.result
 
-        assertTrue(logger2.isFrozen)
+        if (Platform.memoryModel != MemoryModel.EXPERIMENTAL) {
+            assertTrue(logger2.isFrozen)
+        }
         assertTrue { result2 == Logger.Level.INFO }
         assertTrue { logger2.level == Logger.Level.INFO }
 
