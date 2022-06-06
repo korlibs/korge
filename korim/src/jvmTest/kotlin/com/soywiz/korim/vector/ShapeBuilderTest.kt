@@ -25,4 +25,17 @@ class ShapeBuilderTest {
         println(shape.toSvg())
          */
     }
+
+    @Test
+    fun testFillStroke() {
+        val shape = buildShape {
+            fillStroke(Colors.RED, Colors.BLUE, StrokeInfo(thickness = 5.0)) {
+                rect(0, 0, 200, 100)
+            }
+        }
+        assertIs<CompoundShape>(shape)
+        assertEquals(2, shape.components.size)
+        assertIs<FillShape>(shape.components[0])
+        assertIs<PolylineShape>(shape.components[1])
+    }
 }

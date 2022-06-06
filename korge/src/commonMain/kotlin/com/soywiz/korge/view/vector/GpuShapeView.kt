@@ -110,8 +110,18 @@ open class GpuShapeView(
             invalidateShape()
         }
 
+    private var validShape = false
+    private var validShapeBounds = false
     private var renderCount = 0
-    private val shapeBounds = Rectangle()
+    private val _shapeBounds: Rectangle = Rectangle()
+    private val shapeBounds: Rectangle
+        get() {
+            if (!validShapeBounds) {
+                validShapeBounds = true
+                shape.getBounds(_shapeBounds, bb, includeStrokes = true)
+            }
+            return _shapeBounds
+        }
 
     val shapeWidth: Double get() = shapeBounds.width
     val shapeHeight: Double get() = shapeBounds.height
@@ -123,15 +133,19 @@ open class GpuShapeView(
         renderCount = 0
         pointCache.clear()
         pointListCache.clear()
+        validShape = false
+        validShapeBounds = false
+        //strokeCache.clear()
+    }
 
+    private fun requireShape() {
+        if (validShape) return
+        validShape = true
         gpuShapeViewCommands.clear()
         gpuShapeViewCommands.clearStencil()
         renderShape(shape)
         gpuShapeViewCommands.finish()
         cachedScale = globalScale
-        //strokeCache.clear()
-
-        shape.getBounds(shapeBounds, bb)
     }
 
     override fun invalidate() {
@@ -148,13 +162,13 @@ open class GpuShapeView(
         )
     }
 
-
     inline fun updateShape(block: ShapeBuilder.() -> Unit) {
         this.shape = buildShape { block() }
     }
 
     val Shape.requireStencil: Boolean
         get() {
+            //return false
             return when (this) {
                 EmptyShape -> false
                 is CompoundShape -> this.components.any { it.requireStencil }
@@ -214,6 +228,7 @@ open class GpuShapeView(
         val mat = if (doRequireTexture) globalMatrix * ctx.bp.globalToWindowMatrix else globalMatrix
         renderMat.copyFrom(mat)
         renderMat.pretranslate(-anchorDispX, -anchorDispY)
+        requireShape()
         gpuShapeViewCommands.render(ctx, renderMat, localMatrix, applyScissor, renderColorMul)
     }
 

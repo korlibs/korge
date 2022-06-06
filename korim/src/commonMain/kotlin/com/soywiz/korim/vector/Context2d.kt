@@ -421,7 +421,7 @@ open class Context2d constructor(
     inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
         callback()
         fill(fill)
-        if (strokeInfo != null) stroke(stroke, strokeInfo) else stroke(stroke)
+        if (strokeInfo != null) stroke(stroke, strokeInfo, begin = false) else stroke(stroke, begin = false)
     }
 
     fun fillStroke() { fill(); stroke() }

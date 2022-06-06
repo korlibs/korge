@@ -23,8 +23,6 @@ open class ShapeView(
     stroke: Paint = Colors.WHITE,
     strokeThickness: Double = 0.0,
     autoScaling: Boolean = true,
-// @TODO: This should probably use
-//) : Graphics(autoScaling = autoScaling) {
 ) : GpuShapeView(autoScaling = autoScaling) {
     var path: VectorPath? = shape
         set(value) {

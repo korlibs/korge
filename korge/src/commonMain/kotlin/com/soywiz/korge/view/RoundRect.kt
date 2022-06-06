@@ -54,12 +54,9 @@ class RoundRect(
     var ry: Double by uiObservable(ry) { updateGraphics() }
 
     /** The [color] of this [RoundRect]. Alias of [colorMul]. */
-    var color: RGBA
-        get() = colorMul
-        set(value) { colorMul = value }
+    var color: RGBA by ::colorMul
 
     init {
-        this.colorMul = color
         updateGraphics()
     }
 

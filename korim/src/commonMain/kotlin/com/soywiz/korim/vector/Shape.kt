@@ -131,9 +131,9 @@ interface Shape : BoundsDrawable {
 	fun containsPoint(x: Double, y: Double): Boolean = bounds.contains(x, y)
 }
 
-fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle {
+fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder(), includeStrokes: Boolean = false): Rectangle {
 	bb.reset()
-	addBounds(bb)
+	addBounds(bb, includeStrokes)
 	bb.getBounds(out)
     return out
 }
