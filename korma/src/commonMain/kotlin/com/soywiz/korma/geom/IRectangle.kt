@@ -58,6 +58,10 @@ interface IRectangle {
     }
 }
 
+val IRectangle.area: Double get() = width * height
+fun IRectangle.clone(): Rectangle = Rectangle(x, y, width, height)
+val IRectangle.isNotEmpty: Boolean get() = area != 0.0
+
 @Deprecated(
     "Properties with underscores are deprecated and will be removed soon",
     ReplaceWith("x"),

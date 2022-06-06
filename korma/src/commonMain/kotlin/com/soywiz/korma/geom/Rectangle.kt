@@ -5,6 +5,7 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.min
 
@@ -89,7 +90,7 @@ data class Rectangle(
     fun setTo(x: Float, y: Float, width: Float, height: Float): Rectangle =
         setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
-    fun copyFrom(that: Rectangle) = setTo(that.x, that.y, that.width, that.height)
+    fun copyFrom(that: IRectangle) = setTo(that.x, that.y, that.width, that.height)
 
     fun setBounds(left: Double, top: Double, right: Double, bottom: Double) =
         setTo(left, top, right - left, bottom - top)
@@ -252,6 +253,16 @@ data class Rectangle(
             kotlin.math.round(y),
             kotlin.math.round(width),
             kotlin.math.round(height)
+        )
+        return this
+    }
+
+    fun roundDecimalPlaces(places: Int): Rectangle {
+        setTo(
+            x.roundDecimalPlaces(places),
+            y.roundDecimalPlaces(places),
+            width.roundDecimalPlaces(places),
+            height.roundDecimalPlaces(places)
         )
         return this
     }

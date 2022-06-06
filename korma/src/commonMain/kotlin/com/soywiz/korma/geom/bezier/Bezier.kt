@@ -4,6 +4,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
+import com.soywiz.korma.geom.IRectangle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
@@ -15,110 +16,24 @@ import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
 
-@JvmName("ListCurves_toCurves")
-fun List<Curves>.toCurves() = Curves(this.flatMap { it.curves })
-@JvmName("ListCurve_toCurves")
-fun List<Curve>.toCurves() = Curves(this)
-
-data class Curves(val curves: List<Curve>) : Curve {
-    data class CurveInfo(
-        val curve: Curve,
-        val start: Double,
-        val end: Double,
-        val bounds: Rectangle,
-    ) {
-        fun contains(pos: Double): Boolean = pos >= start && pos <= end
-
-        val length: Double get() = end - start
-    }
-
-    val infos: List<CurveInfo> by lazy {
-        var pos = 0.0
-        curves.map {
-            val start = pos
-            pos += it.length()
-            CurveInfo(it, start, pos, it.getBounds())
-        }
-    }
-    val length: Double by lazy { infos.sumOf { it.length } }
-    private val bb = BoundsBuilder()
-
-    override fun getBounds(target: Rectangle): Rectangle {
-        bb.reset()
-        infos.fastForEach { bb.addEvenEmpty(it.bounds) }
-        return bb.getBounds(target)
-    }
-
-    override fun calc(t: Double, target: Point): Point {
-        val pos = t * length
-        val index = infos.binarySearch {
-            when {
-                it.contains(pos) -> 0
-                it.end < pos -> -1
-                else -> +1
-            }
-        }
-        val info = infos.getOrNull(index) ?: error("OUTSIDE")
-        val posInCurve = pos - info.start
-        val ratioInCurve = posInCurve / info.length
-        return info.curve.calc(ratioInCurve, target)
-    }
-
-    override fun length(steps: Int): Double = length
-}
-
-fun Curve.getPoints(count: Int = this.recommendedDivisions(), out: PointArrayList = PointArrayList()): IPointArrayList {
-    val c1 = count - 1
-    val temp = Point()
-    for (n in 0..c1) {
-        val ratio = n.toDouble() / c1
-        val point = calc(ratio, temp)
-        //println("${this::class.simpleName}: ratio: $ratio, point=$point")
-        out.add(point)
-    }
-    return out
-}
-
-interface Curve {
+//(x0,y0) is start point; (x1,y1),(x2,y2) is control points; (x3,y3) is end point.
+// https://pomax.github.io/bezierinfo/
+@Deprecated("Use BezierCurve instead")
+interface Bezier {
+    val order: Int
     fun getBounds(target: Rectangle = Rectangle()): Rectangle
     fun calc(t: Double, target: Point = Point()): Point
     fun length(steps: Int = recommendedDivisions()): Double
-    fun recommendedDivisions(): Int = DEFAULT_STEPS
+    fun recommendedDivisions(): Int = Curve.DEFAULT_STEPS
 
-    class Line(
-        val x0: Double = 0.0, val y0: Double = 0.0,
-        val x1: Double = 0.0, val y1: Double = 0.0,
-    ) : Bezier {
-        override fun getBounds(target: Rectangle): Rectangle =
-            target.setBounds(min(x0, x1), min(y0, y1), max(x0, x1), max(y0, y1))
-
-        override fun calc(t: Double, target: Point): Point =
-            target.setTo(t.interpolate(x0, x1), t.interpolate(y0, y1))
-                //.also { println("Line.calc[t=$t] -> $target") }
-
-        override fun length(steps: Int): Double = kotlin.math.hypot(x1 - x0, y1 - y0)
-
-        override fun recommendedDivisions(): Int = lineRecommendedSteps(x0, y0, x1, y1)
-
-        override fun toString(): String = "Curve.Line(($x0, $y0), ($x1, $y1))"
-    }
-    companion object {
-        const val DEFAULT_STEPS = 100
-
-        fun lineRecommendedSteps(x0: Double, y0: Double, x1: Double, y1: Double): Int {
-            return DEFAULT_STEPS
-        }
-    }
-}
-
-//(x0,y0) is start point; (x1,y1),(x2,y2) is control points; (x3,y3) is end point.
-// https://pomax.github.io/bezierinfo/
-interface Bezier : Curve {
+    @Deprecated("Use BezierCurve instead")
     class Quad(
         p0x: Double = 0.0, p0y: Double = 0.0,
         p1x: Double = 0.0, p1y: Double = 0.0,
         p2x: Double = 0.0, p2y: Double = 0.0,
     ) : Bezier {
+        override val order: Int get() = 2
+
         val p0 = Point(p0x, p0y)
         val p1 = Point(p1x, p1y)
         val p2 = Point(p2x, p2y)
@@ -160,12 +75,15 @@ interface Bezier : Curve {
         override fun toString(): String = "Bezier.Quad($p0, $p1, $p2)"
     }
 
+    @Deprecated("Use BezierCurve instead")
     class Cubic(
         p0x: Double = 0.0, p0y: Double = 0.0,
         p1x: Double = 0.0, p1y: Double = 0.0,
         p2x: Double = 0.0, p2y: Double = 0.0,
         p3x: Double = 0.0, p3y: Double = 0.0,
     ) : Bezier {
+        override val order: Int get() = 3
+
         val p0 = Point(p0x, p0y)
         val p1 = Point(p1x, p1y)
         val p2 = Point(p2x, p2y)
@@ -286,52 +204,14 @@ interface Bezier : Curve {
         fun quadToCubic2(v0: Double, v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
 
         // https://iquilezles.org/articles/bezierbbox/
+        @Deprecated("Allocates")
         fun quadBounds(
             x0: Double, y0: Double,
             xc: Double, yc: Double,
             x1: Double, y1: Double,
             target: Rectangle = Rectangle(),
             temp: Temp = Temp()
-        ): Rectangle {
-            temp.points {
-                //Point(1, 1) + Point(2, 2)
-                val p0 = Point(x0, y0)
-                val p1 = Point(xc, yc)
-                val p2 = Point(x1, y1)
-
-                var mi = min(p0, p2)
-                var ma = max(p0, p2)
-
-                if (p1.x < mi.x || p1.x > ma.x || p1.y < mi.y || p1.y > ma.y) {
-                    val t = clamp((p0 - p1) / (p0 - Point(2.0) * p1 + p2), 0.0, 1.0)
-                    val s = Point(1.0) - t
-                    val q = s * s * p0 + Point(2.0) * s * t * p1 + t * t * p2
-                    mi = min(mi, q)
-                    ma = max(ma, q)
-                }
-
-                return target.setBounds(mi.x, mi.y, ma.x, ma.y)
-            }
-            //val cX = xc
-            //val cY = yc
-            //var miX = min(x0, x1)
-            //var miY = min(y0, y1)
-            //var maX = max(x0, x1)
-            //var maY = max(y0, y1)
-            //if (cX < miX || cX > maX || cY < miY || cY > maY) {
-            //    val tX = ((x0 - cX) / (x0 - 2.0 * cX + x1)).clamp(0.0, 1.0)
-            //    val tY = ((y0 - cY) / (y0 - 2.0 * cY + y1)).clamp(0.0, 1.0)
-            //    val sX = 1.0 - tX
-            //    val sY = 1.0 - tY
-            //    val qX = sX * sX * x0 + (2.0 * sX * tX * cX + tX * tX * x1)
-            //    val qY = sY * sY * y0 + (2.0 * sY * tY * cY + tY * tY * y1)
-            //    miX = min(miX, qX)
-            //    miY = min(miY, qY)
-            //    maX = max(maX, qX)
-            //    maY = max(maY, qY)
-            //}
-            //return target.setBounds(miX, miY, maX, maY)
-        }
+        ): Rectangle = target.copyFrom(BezierCurve(x0, y0, xc, yc, x1, y1).boundingBox)
 
         inline fun <T> quadCalc(
             x0: Double, y0: Double,
@@ -359,103 +239,14 @@ interface Bezier : Curve {
             target: Point = Point()
         ): Point = quadCalc(x0, y0, xc, yc, x1, y1, t) { x, y -> target.setTo(x, y) }
 
+        @Deprecated("Allocates")
         fun cubicBounds(
             x0: Double, y0: Double, x1: Double, y1: Double,
             x2: Double, y2: Double, x3: Double, y3: Double,
             target: Rectangle = Rectangle(),
             temp: Temp = Temp()
         ): Rectangle {
-            temp.points {
-                val p0 = Point(x0, y0)
-                val p1 = Point(x1, y1)
-                val p2 = Point(x2, y2)
-                val p3 = Point(x3, y3)
-
-                val mi = min(p0, p3) as Point
-                val ma = max(p0, p3) as Point
-
-                val c = -1.0 * p0 + 1.0 * p1
-                val b = 1.0 * p0 - 2.0 * p1 + 1.0 * p2
-                val a = -1.0 * p0 + 3.0 * p1 - 3.0 * p2 + 1.0 * p3
-
-                val h = b * b - a * c
-
-                if (h.x > 0.0 || h.y > 0.0) {
-                    val g = sqrt(abs(h))
-                    val t1 = clamp((-b - g) / a, 0.0, 1.0)
-                    val s1 = 1.0 - t1
-                    val t2 = clamp((-b + g) / a, 0.0, 1.0)
-                    val s2 = 1.0 - t2
-                    val q1 = s1 * s1 * s1 * p0 + 3.0 * s1 * s1 * t1 * p1 + 3.0 * s1 * t1 * t1 * p2 + t1 * t1 * t1 * p3
-                    val q2 = s2 * s2 * s2 * p0 + 3.0 * s2 * s2 * t2 * p1 + 3.0 * s2 * t2 * t2 * p2 + t2 * t2 * t2 * p3
-
-                    if (h.x > 0.0) {
-                        mi.x = min(mi.x, min(q1.x, q2.x))
-                        ma.x = max(ma.x, max(q1.x, q2.x))
-                    }
-
-                    if (h.y > 0.0) {
-                        mi.y = min(mi.y, min(q1.y, q2.y))
-                        ma.y = max(ma.y, max(q1.y, q2.y))
-                    }
-                }
-
-                return target.setBounds(mi.x, mi.y, ma.x, ma.y)
-            }
-            /*
-            var j = 0
-            var a: Double
-            var b: Double
-            var c: Double
-            var b2ac: Double
-            var sqrtb2ac: Double
-            for (i in 0 until 2) {
-                if (i == 0) {
-                    b = 6 * x0 - 12 * x1 + 6 * x2
-                    a = -3 * x0 + 9 * x1 - 9 * x2 + 3 * x3
-                    c = 3 * x1 - 3 * x0
-                } else {
-                    b = 6 * y0 - 12 * y1 + 6 * y2
-                    a = -3 * y0 + 9 * y1 - 9 * y2 + 3 * y3
-                    c = 3 * y1 - 3 * y0
-                }
-                if (abs(a) < 1e-12) {
-                    if (abs(b) >= 1e-12) {
-                        val t = -c / b
-                        if (0 < t && t < 1) temp.tvalues[j++] = t
-                    }
-                } else {
-                    b2ac = b * b - 4 * c * a
-                    if (b2ac < 0) continue
-                    sqrtb2ac = sqrt(b2ac)
-                    val t1 = (-b + sqrtb2ac) / (2.0 * a)
-                    if (0 < t1 && t1 < 1) temp.tvalues[j++] = t1
-                    val t2 = (-b - sqrtb2ac) / (2.0 * a)
-                    if (0 < t2 && t2 < 1) temp.tvalues[j++] = t2
-                }
-            }
-
-            while (j-- > 0) {
-                val t = temp.tvalues[j]
-                val mt = 1 - t
-                temp.xvalues[j] = (mt * mt * mt * x0) + (3 * mt * mt * t * x1) + (3 * mt * t * t * x2) +
-                    (t * t * t * x3)
-                temp.yvalues[j] = (mt * mt * mt * y0) + (3 * mt * mt * t * y1) + (3 * mt * t * t * y2) +
-                    (t * t * t * y3)
-            }
-
-            temp.xvalues[temp.tvalues.size + 0] = x0
-            temp.xvalues[temp.tvalues.size + 1] = x3
-            temp.yvalues[temp.tvalues.size + 0] = y0
-            temp.yvalues[temp.tvalues.size + 1] = y3
-
-            return target.setBounds(
-                temp.xvalues.minOrElse(0.0),
-                temp.yvalues.minOrElse(0.0),
-                temp.xvalues.maxOrElse(0.0),
-                temp.yvalues.maxOrElse(0.0)
-            )
-            */
+            return target.copyFrom(BezierCurve(x0, y0, x1, y1, x2, y2, x3, y3).boundingBox)
         }
 
         inline fun <T> cubicCalc(
@@ -488,39 +279,6 @@ interface Bezier : Curve {
             t: Double, target: Point = Point()
         ): Point = cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, t) { x, y -> target.setTo(x, y) }
 
-        // Suggested number of points
-        fun quadNPoints(
-            x0: Double,
-            y0: Double,
-            cx: Double,
-            cy: Double,
-            x1: Double,
-            y1: Double,
-            scale: Double = 1.0
-        ): Int {
-            return ((Point.distance(x0, y0, cx, cy) + Point.distance(cx, cy, x1, y1)) * scale).toInt().clamp(5, 256)
-        }
-
-        // Suggested number of points
-        fun cubicNPoints(
-            x0: Double,
-            y0: Double,
-            cx1: Double,
-            cy1: Double,
-            cx2: Double,
-            cy2: Double,
-            x1: Double,
-            y1: Double,
-            scale: Double = 1.0
-        ): Int {
-            return ((Point.distance(x0, y0, cx1, cy1) + Point.distance(cx1, cy1, cx2, cy2) + Point.distance(
-                cx2,
-                cy2,
-                x1,
-                y1
-            )) * scale).toInt().clamp(5, 256)
-        }
-
         fun cubicCalc(
             p0: IPoint, p1: IPoint, p2: IPoint, p3: IPoint,
             t: Double, target: Point = Point()
@@ -531,17 +289,14 @@ interface Bezier : Curve {
             t: Double, target: Point = Point()
         ): IPoint = quadCalc(p0.x, p0.y, p1.x, p1.y, p2.x, p2.y, t, target)
 
-        fun quadRecommendedSteps(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Int {
-            return Curve.DEFAULT_STEPS
-        }
+        fun quadRecommendedSteps(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Int =
+            Curve.DEFAULT_STEPS
 
-        fun quadLength(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, steps: Int = quadRecommendedSteps(x0, y0, x1, y1, x2, y2)): Double {
-            return length(steps) { ratio, consumer -> quadCalc(x0, y0, x1, y1, x2, y2, ratio, consumer) }
-        }
+        fun quadLength(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, steps: Int = quadRecommendedSteps(x0, y0, x1, y1, x2, y2)): Double =
+            length(steps) { ratio, consumer -> quadCalc(x0, y0, x1, y1, x2, y2, ratio, consumer) }
 
-        fun cubicRecommendedSteps(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Int {
-            return Curve.DEFAULT_STEPS
-        }
+        fun cubicRecommendedSteps(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Int =
+            Curve.DEFAULT_STEPS
 
         fun cubicLength(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double, steps: Int = cubicRecommendedSteps(x0, y0, x1, y1, x2, y2, x3, y3)): Double {
             return length(steps) { ratio, consumer -> cubicCalc(x0, y0, x1, y1, x2, y2, x3, y3, ratio, consumer) }

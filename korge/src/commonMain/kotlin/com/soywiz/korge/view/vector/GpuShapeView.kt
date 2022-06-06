@@ -535,6 +535,7 @@ open class GpuShapeView(
                     lineWidth = lineWidth,
                 )
 
+                gpuShapeViewCommands.setScissor(null)
                 gpuShapeViewCommands.draw(AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil)
             }
         }
@@ -621,6 +622,8 @@ open class GpuShapeView(
         val clipData = shape.clip?.let { getPointsForPath(it) }
         val clipDataEnd = gpuShapeViewCommands.verticesEnd()
         val clipBounds = clipData?.bounds
+
+        //println("pathBounds=$pathBounds")
 
         gpuShapeViewCommands.setScissor(when {
             clipBounds != null -> Rectangle().also { it.setToIntersection(pathBounds, clipBounds) }

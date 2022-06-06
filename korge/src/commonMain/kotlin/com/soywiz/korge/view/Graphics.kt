@@ -26,6 +26,7 @@ import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
 import kotlin.jvm.JvmOverloads
 
 inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
@@ -172,14 +173,14 @@ open class Graphics @JvmOverloads constructor(
 	override fun moveTo(x: Double, y: Double) { currentPath.moveTo(x, y) }
 	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
-    inline fun fill(color: RGBA, alpha: Double = 1.0, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), callback)
+    inline fun fill(color: RGBA, alpha: Double = 1.0, winding: Winding = Winding.NON_ZERO, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), winding, callback)
 
-	inline fun fill(paint: Paint, callback: @ViewDslMarker VectorBuilder.() -> Unit) {
+	inline fun fill(paint: Paint, winding: Winding = Winding.NON_ZERO, callback: @ViewDslMarker VectorBuilder.() -> Unit) {
 		beginFill(paint)
 		try {
 			callback()
 		} finally {
-			endFill()
+			endFill(winding)
 		}
 	}
 
@@ -260,7 +261,8 @@ open class Graphics @JvmOverloads constructor(
         dirty()
     }
 
-	fun endFill() = dirty {
+	fun endFill(winding: Winding = Winding.NON_ZERO) = dirty {
+        currentPath.winding = winding
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		currentPath = vectorPathPool.alloc()
         dirtyShape()

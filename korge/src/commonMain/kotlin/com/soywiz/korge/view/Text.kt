@@ -29,6 +29,7 @@ import com.soywiz.korim.text.Text2TextRendererActions
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.VerticalAlign
+import com.soywiz.korim.text.invoke
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC

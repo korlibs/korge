@@ -14,6 +14,7 @@ import com.soywiz.korim.text.BoundBuilderTextRendererActions
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.TextRendererActions
+import com.soywiz.korim.text.invoke
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Matrix

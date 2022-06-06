@@ -13,6 +13,7 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.BezierCurve
 import com.soywiz.korma.geom.bezier.Curve
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
@@ -193,6 +194,8 @@ class VectorPath(
         lastXY(x, y)
         version++
     }
+
+    val isLastCommandClose: Boolean get() = if (commands.isEmpty()) false else commands.last() == Command.CLOSE
 
     fun removeLastCommand() {
         if (commands.isEmpty()) return
@@ -497,47 +500,38 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix) {
     )
 }
 
-fun BoundsBuilder.add(path: VectorPath, transform: Matrix) {
+fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
     val bb = this
     var lx = 0.0
     var ly = 0.0
 
     path.visitCmds(
-        moveTo = { x, y -> bb.add(x, y, transform).also { lx = x }.also { ly = y } },
-        lineTo = { x, y -> bb.add(x, y, transform).also { lx = x }.also { ly = y } },
+        moveTo = { x, y ->
+            bb.add(x, y, transform)
+            lx = x
+            ly = y
+        },
+        lineTo = { x, y ->
+            bb.add(x, y, transform)
+            lx = x
+            ly = y
+        },
         quadTo = { cx, cy, ax, ay ->
-            bb.add(Bezier.quadBounds(lx, ly, cx, cy, ax, ay, bb.tempRect), transform)
-                .also { lx = ax }.also { ly = ay }
+            //bb.add(Bezier.quadBounds(lx, ly, cx, cy, ax, ay, bb.tempRect), transform)
+            bb.add(BezierCurve(lx, ly, cx, cy, ax, ay).boundingBox, transform)
+            lx = ax
+            ly = ay
         },
         cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
-            bb.add(Bezier.cubicBounds(lx, ly, cx1, cy1, cx2, cy2, ax, ay, bb.tempRect, path.bezierTemp), transform)
-                .also { lx = ax }.also { ly = ay }
+            //bb.add(Bezier.cubicBounds(lx, ly, cx1, cy1, cx2, cy2, ax, ay, bb.tempRect, path.bezierTemp), transform)
+            bb.add(BezierCurve(lx, ly, cx1, cy1, cx2, cy2, ax, ay).boundingBox, transform)
+            lx = ax
+            ly = ay
         },
         close = {}
     )
-}
 
-fun BoundsBuilder.add(path: VectorPath) {
-    //add(path.getPoints2())
-    //return
-
-    val bb = this
-    var lx = 0.0
-    var ly = 0.0
-
-    path.visitCmds(
-        moveTo = { x, y -> bb.add(x, y).also { lx = x }.also { ly = y } },
-        lineTo = { x, y -> bb.add(x, y).also { lx = x }.also { ly = y } },
-        quadTo = { cx, cy, ax, ay ->
-            bb.add(Bezier.quadBounds(lx, ly, cx, cy, ax, ay, bb.tempRect))
-                .also { lx = ax }.also { ly = ay }
-        },
-        cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
-            bb.add(Bezier.cubicBounds(lx, ly, cx1, cy1, cx2, cy2, ax, ay, bb.tempRect, path.bezierTemp))
-                .also { lx = ax }.also { ly = ay }
-        },
-        close = {}
-    )
+    //println("BoundsBuilder.add.path: " + bb.getBounds())
 }
 
 fun VectorPath.applyTransform(m: Matrix?): VectorPath {
@@ -553,20 +547,33 @@ fun VectorPath.applyTransform(m: Matrix?): VectorPath {
     return this
 }
 
-fun VectorPath.getCurvesLists(): List<Curves> = arrayListOf<List<Curve>>().also { out ->
+fun VectorPath.getCurvesLists(): List<Curves> = arrayListOf<Curves>().also { out ->
+    var currentClosed = false
     var current = arrayListOf<Curve>()
     fun flush() {
         if (current.isEmpty()) return
-        out.add(current)
+        out.add(Curves(current, currentClosed))
+        currentClosed = false
         current = arrayListOf()
     }
     visitEdges(
-        line = { x0, y0, x1, y1 -> current += Curve.Line(x0, y0, x1, y1) },
-        quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier.Quad(x0, y0, x1, y1, x2, y2) },
-        cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier.Cubic(x0, y0, x1, y1, x2, y2, x3, y3) },
-        move = { x, y -> flush() }
+        //line = { x0, y0, x1, y1 -> current += Curve.Line(x0, y0, x1, y1) },
+        //quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier.Quad(x0, y0, x1, y1, x2, y2) },
+        //cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier.Cubic(x0, y0, x1, y1, x2, y2, x3, y3) },
+
+        line = { x0, y0, x1, y1 -> current += BezierCurve(x0, y0, x1, y1) },
+        quad = { x0, y0, x1, y1, x2, y2 -> current += BezierCurve(x0, y0, x1, y1, x2, y2) },
+        cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += BezierCurve(x0, y0, x1, y1, x2, y2, x3, y3) },
+        move = { x, y -> flush() },
+        close = {
+            currentClosed = true
+            flush()
+        }
     )
     flush()
-}.map { it.toCurves() }
+}
 
-fun VectorPath.getCurves(): Curves = getCurvesLists().flatMap { it.curves }.toCurves()
+fun VectorPath.getCurves(): Curves {
+    val curvesList = getCurvesLists()
+    return curvesList.flatMap { it.curves }.toCurves(curvesList.lastOrNull()?.closed ?: false)
+}

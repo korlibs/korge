@@ -43,9 +43,10 @@ fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this
 fun isEquivalent(a: Double, b: Double, epsilon: Double = 0.0001): Boolean = (a - epsilon < b) && (a + epsilon > b)
 
 fun Double.smoothstep(edge0: Double, edge1: Double): Double {
-    val v = (this - edge0) / (edge1 - edge0)
-    val step2 = v.clamp(0.0, 1.0)
-    return step2 * step2 * (3 - 2 * step2)
+    if (this < edge0) return 0.0
+    if (this >= edge1) return 1.0
+    val v = ((this - edge0) / (edge1 - edge0))//.clamp(0.0, 1.0)
+    return v * v * (3 - 2 * v)
 }
 
 fun Double.convertRange(minSrc: Double, maxSrc: Double, minDst: Double, maxDst: Double): Double = (((this - minSrc) / (maxSrc - minSrc)) * (maxDst - minDst)) + minDst
@@ -58,7 +59,8 @@ fun log10(v: Int): Int = log(v.toDouble(), 10.0).toInt()
 fun signNonZeroM1(x: Double): Int = if (x <= 0) -1 else +1
 fun signNonZeroP1(x: Double): Int = if (x >= 0) +1 else -1
 
-fun Double.isAlmostEquals(other: Double, diff: Double = 0.0001): Boolean = (this - other).absoluteValue < diff
+//fun Double.isAlmostEquals(other: Double, diff: Double = 0.0001): Boolean = (this - other).absoluteValue < diff
+fun Double.isAlmostEquals(other: Double, diff: Double = 0.000001): Boolean = (this - other).absoluteValue < diff
 fun Double.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
 fun Double.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 

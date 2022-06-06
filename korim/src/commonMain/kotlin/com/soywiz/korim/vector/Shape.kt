@@ -203,36 +203,6 @@ interface StyledShape : Shape {
 	}
 }
 
-// @TODO: Once KorMA updated remove
-private fun BoundsBuilder.add(x: Double, y: Double, transform: Matrix) = add(transform.transformX(x, y), transform.transformY(x, y))
-private fun BoundsBuilder.add(rect: Rectangle, transform: Matrix) = this.apply {
-    if (rect.isNotEmpty) {
-        add(rect.left, rect.top, transform)
-        add(rect.right, rect.bottom, transform)
-    }
-}
-
-private fun BoundsBuilder.add(path: VectorPath, transform: Matrix) {
-    val bb = this
-    var lx = 0.0
-    var ly = 0.0
-
-    val bezierTemp = Bezier.Temp()
-    path.visitCmds(
-        moveTo = { x, y -> bb.add(x, y, transform).also { lx = x }.also { ly = y } },
-        lineTo = { x, y -> bb.add(x, y, transform).also { lx = x }.also { ly = y } },
-        quadTo = { cx, cy, ax, ay ->
-            bb.add(Bezier.quadBounds(lx, ly, cx, cy, ax, ay, bb.tempRect), transform)
-                .also { lx = ax }.also { ly = ay }
-        },
-        cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
-            bb.add(Bezier.cubicBounds(lx, ly, cx1, cy1, cx2, cy2, ax, ay, bb.tempRect, bezierTemp), transform)
-                .also { lx = ax }.also { ly = ay }
-        },
-        close = {}
-    )
-}
-
 private fun colorToSvg(color: RGBA): String {
 	val r = color.r
 	val g = color.g

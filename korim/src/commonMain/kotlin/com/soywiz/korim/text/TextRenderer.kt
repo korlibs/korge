@@ -18,54 +18,70 @@ import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.angle
+import com.soywiz.korma.geom.bezier.Curve
+import com.soywiz.korma.geom.bezier.calcOffset
 import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.radians
 import com.soywiz.korma.geom.vector.VectorBuilder
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.path
 import kotlin.native.concurrent.SharedImmutable
 
-abstract class TextRendererActions {
+interface ITextRendererActions {
+    var x: Double
+    var y: Double
+    val lineHeight: Double
+    val transform: Matrix
+
+    fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double
+    fun getGlyphMetrics(codePoint: Int): GlyphMetrics
+    fun reset() {
+        x = 0.0
+        y = 0.0
+    }
+    fun setFont(font: Font, size: Double)
+    fun put(codePoint: Int): GlyphMetrics
+    fun advance(x: Double) {
+        this.x += x
+    }
+    fun newLine(y: Double) {
+        this.x = 0.0
+        this.y += y
+    }
+}
+
+abstract class TextRendererActions : ITextRendererActions {
     protected val glyphPath = GlyphPath()
     protected val glyphMetrics = GlyphMetrics()
     val fontMetrics = FontMetrics()
-    val lineHeight get() = fontMetrics.lineHeight
+    override val lineHeight: Double get() = fontMetrics.lineHeight
     lateinit var font: Font; private set
     var fontSize = 0.0; private set
 
-    fun setFont(font: Font, size: Double) {
+    override fun setFont(font: Font, size: Double) {
         this.font = font
         this.fontSize = size
         font.getFontMetrics(size, fontMetrics)
     }
 
-    var x = 0.0
-    var y = 0.0
+    override var x = 0.0
+    override var y = 0.0
 
-    open fun reset() {
-        x = 0.0
-        y = 0.0
-    }
-
-    fun getGlyphMetrics(codePoint: Int): GlyphMetrics = font.getGlyphMetrics(fontSize, codePoint, glyphMetrics)
+    override fun getGlyphMetrics(codePoint: Int): GlyphMetrics = font.getGlyphMetrics(fontSize, codePoint, glyphMetrics)
 
     //var transformAnchor: Anchor = Anchor.BOTTOM_CENTER
-    val transform: Matrix = Matrix()
+    override val transform: Matrix = Matrix()
     var paint: Paint? = null
     var tint: RGBA = Colors.WHITE // Ignored for now
 
-    abstract fun put(codePoint: Int): GlyphMetrics
+    abstract override fun put(codePoint: Int): GlyphMetrics
 
-    open fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double =
+    override fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double =
         font.getKerning(fontSize, leftCodePoint, rightCodePoint)
-
-    open fun advance(x: Double) {
-        this.x += x
-    }
-
-    open fun newLine(y: Double) {
-        this.x = 0.0
-        this.y += y
-    }
 }
 
 class BoundBuilderTextRendererActions : TextRendererActions() {
@@ -195,9 +211,48 @@ class Text2TextRendererActions : TextRendererActions() {
 
 interface TextRenderer<T> {
     val version: Int get() = 0
-    fun TextRendererActions.run(text: T, size: Double, defaultFont: Font): Unit
-    fun invoke(actions: TextRendererActions, text: T, size: Double, defaultFont: Font) {
-        actions.apply { run(text, size, defaultFont) }
+    fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font): Unit
+}
+
+operator fun <T> TextRenderer<T>.invoke(actions: ITextRendererActions, text: T, size: Double, defaultFont: Font) {
+    actions.apply { run(text, size, defaultFont) }
+}
+
+fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
+    val original = this
+    return object : ITextRendererActions by original {
+        override fun put(codePoint: Int): GlyphMetrics {
+            val oldX = this.x
+            val oldY = this.y
+            this.transform.keepMatrix {
+                try {
+                    val ratio = curve.ratioFromLength(this.x)
+                    val pos = curve.calc(ratio)
+                    val normal = curve.normal(ratio)
+                    val rpos = pos + normal * oldY
+                    this.x = rpos.x
+                    this.y = rpos.y
+                    this.transform.rotate(normal.angle - 90.degrees)
+
+                    //println("PUT: oldX=$oldX, oldY=$oldY, x=$x, y=$y, codePoint=$codePoint")
+                    return original.put(codePoint)
+                } finally {
+                    this.x = oldX
+                    this.y = oldY
+                }
+            }
+        }
+    }
+}
+
+fun <T> TextRenderer<T>.aroundPath(path: VectorPath): TextRenderer<T> = aroundPath(path.getCurves())
+
+fun <T> TextRenderer<T>.aroundPath(curve: Curve): TextRenderer<T> {
+    val original = this
+    return object : TextRenderer<T> {
+        override val version: Int get() = original.version
+        override fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font) =
+            original.invoke(this.aroundPath(curve), text, size, defaultFont)
     }
 }
 
@@ -208,11 +263,11 @@ inline fun <reified T> DefaultTextRenderer() = when (T::class) {
 
 fun CreateStringTextRenderer(
     getVersion: () -> Int = { 0 },
-    handler: TextRendererActions.(text: String, n: Int, c: Int, c1: Int, g: GlyphMetrics, advance: Double) -> Unit
+    handler: ITextRendererActions.(text: String, n: Int, c: Int, c1: Int, g: GlyphMetrics, advance: Double) -> Unit
 ): TextRenderer<String> = object : TextRenderer<String> {
     override val version: Int get() = getVersion()
 
-    private fun TextRendererActions.runStep(n: Int, c: Int, c1: Int, text: String) {
+    private fun ITextRendererActions.runStep(n: Int, c: Int, c1: Int, text: String) {
         if (c == '\n'.toInt()) {
             newLine(lineHeight)
         } else {
@@ -222,7 +277,7 @@ fun CreateStringTextRenderer(
         }
     }
 
-    override fun TextRendererActions.run(text: String, size: Double, defaultFont: Font) {
+    override fun ITextRendererActions.run(text: String, size: Double, defaultFont: Font) {
         reset()
         setFont(defaultFont, size)
         var lastCodePoint = -1

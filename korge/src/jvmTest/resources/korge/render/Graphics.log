@@ -721,6 +721,7 @@ draw: TRIANGLE_FAN, offset=0, count=448, instances=1, indexType=null
 ::draw.vertex[445]: a_Pos[128,64], a_Tex[128,64], a_Dist[0]
 ::draw.vertex[446]: a_Pos[128,64], a_Tex[128,64], a_Dist[0]
 ::draw.vertex[447]: a_Pos[128,64], a_Tex[128,64], a_Dist[0]
+disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)

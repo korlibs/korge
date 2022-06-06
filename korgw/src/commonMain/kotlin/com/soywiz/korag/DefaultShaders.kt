@@ -61,11 +61,11 @@ object DefaultShaders {
 	}
 
 	val FRAGMENT_DEBUG: FragmentShader = FragmentShader {
-		out set vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit)
+        SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
 	}
 
 	val FRAGMENT_SOLID_COLOR: FragmentShader = FragmentShader {
-		out set v_Col
+		SET(out, v_Col)
 	}
 
 	val PROGRAM_TINTED_TEXTURE: Program = Program(
@@ -107,14 +107,14 @@ object DefaultShaders {
 			SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
 		},
 		fragment = FragmentShader {
-			out set vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit)
+			SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit))
 		},
 		name = "PROGRAM_DEBUG"
 	)
 
 	val PROGRAM_DEBUG_WITH_PROJ: Program = Program(
 		vertex = VertexShader {
-			SET(out, u_ProjMat * vec4(a_Pos, 0f.lit, 1f.lit))
+			SET(out, u_ProjMat * u_ViewMat * vec4(a_Pos, 0f.lit, 1f.lit))
 		},
 		fragment = FragmentShader {
 			SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit))

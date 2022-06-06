@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.math.almostEquals
 import com.soywiz.korma.math.clamp
 
@@ -11,10 +12,22 @@ interface ILine {
 data class Line(override val a: Point, override val b: Point) : ILine {
     private val temp = Point()
 
+    fun clone(): Line = Line(a.copy(), b.copy())
+
+    val minX: Double get() = kotlin.math.min(a.x, b.x)
+    val maxX: Double get() = kotlin.math.max(a.x, b.x)
+
+    val minY: Double get() = kotlin.math.min(a.y, b.y)
+    val maxY: Double get() = kotlin.math.max(a.y, b.y)
+
     fun round(): Line {
         a.round()
         b.round()
         return this
+    }
+
+    fun setTo(a: IPoint, b: IPoint): Line {
+        return setTo(a.x, a.y, b.x, b.y)
     }
 
     fun setTo(x0: Double, y0: Double, x1: Double, y1: Double): Line {
@@ -23,7 +36,7 @@ data class Line(override val a: Point, override val b: Point) : ILine {
         return this
     }
 
-    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double): Line {
+    fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Line {
         setTo(x, y, x + angle.cosine * length, y + angle.sine * length)
         return this
     }
@@ -42,16 +55,40 @@ data class Line(override val a: Point, override val b: Point) : ILine {
         return Point.distance(p, v + (w - v) * t);
     }
 
+    @KormaExperimental
+    fun scalePoints(scale: Double): Line {
+        val dx = this.dx
+        val dy = this.dy
+        x0 -= dx * scale
+        y0 -= dy * scale
+        x1 += dx * scale
+        y1 += dy * scale
+        //val p1 = getIntersectXY(rect.topLeft, rect.topRight, this.a, this.b)
+        //val p2 = getIntersectXY(rect.bottomLeft, rect.bottomRight, this.a, this.b)
+        //val p3 = getIntersectXY(rect.topLeft, rect.bottomLeft, this.a, this.b)
+        //val p4 = getIntersectXY(rect.topRight, rect.bottomRight, this.a, this.b)
+        //if (p1 != null) {
+        //    if (Line(this.a, p1!!.mutable).angle.isAlmostEquals(this.angle)) {
+        //        this.setTo(this.a, p1!!.mutable)
+        //    }
+        //    if (Line(p1!!.mutable, this.b).angle.isAlmostEquals(this.angle)) {
+        //        this.setTo(p1!!.mutable, this.b)
+        //    }
+        //}
+        //println("p1=$p1, p2=$p2, p3=$p3, p4=$p4")
+        return this
+    }
+
     constructor() : this(Point(), Point())
     constructor(x0: Double, y0: Double, x1: Double, y1: Double) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Float, y0: Float, x1: Float, y1: Float) : this(Point(x0, y0), Point(x1, y1))
     constructor(x0: Int, y0: Int, x1: Int, y1: Int) : this(Point(x0, y0), Point(x1, y1))
 
-    var x0: Double get() = a.x ; set(value) { a.x = value }
-    var y0: Double get() = a.y ; set(value) { a.y = value }
+    var x0: Double by a::x
+    var y0: Double by a::y
 
-    var x1: Double get() = b.x ; set(value) { b.x = value }
-    var y1: Double get() = b.y ; set(value) { b.y = value }
+    var x1: Double by b::x
+    var y1: Double by b::y
 
     val dx: Double get() = x1 - x0
     val dy: Double get() = y1 - y0
@@ -105,6 +142,12 @@ data class Line(override val a: Point, override val b: Point) : ILine {
     //        (q.y <= max(p.y, r.y)) && (q.y >= min(p.y, r.y)))
 
     companion object {
+        fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0, out: Line = Line()): Line {
+            return out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
+        }
+        fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0, out: Line = Line()): Line =
+            out.setToPolar(point.x, point.y, angle, length)
+
         fun length(Ax: Double, Ay: Double, Bx: Double, By: Double): Double = kotlin.math.hypot(Bx - Ax, By - Ay)
 
         inline fun getIntersectXY(Ax: Double, Ay: Double, Bx: Double, By: Double, Cx: Double, Cy: Double, Dx: Double, Dy: Double, out: (x: Double, y: Double) -> Unit): Boolean {
@@ -147,21 +190,21 @@ data class LineIntersection(
     override fun toString(): String = "LineIntersection($line, intersection=$intersection)"
 }
 
-// @TODO: Should we create a common interface make projectedPoint part of it? (for eample to project other kind of shapes)
-// https://math.stackexchange.com/questions/62633/orthogonal-projection-of-a-point-onto-a-line
-// http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
-fun ILine.projectedPoint(point: IPoint, out: Point = Point()): Point {
+fun Line.Companion.projectedPoint(
+    v1x: Double,
+    v1y: Double,
+    v2x: Double,
+    v2y: Double,
+    px: Double,
+    py: Double,
+    out: Point = Point()
+): Point {
     // return this.getIntersectionPoint(Line(point, Point.fromPolar(point, this.angle + 90.degrees)))!!
-
-    val v1 = this.a
-    val v2 = this.b
-    val p = point
-
     // get dot product of e1, e2
-    val e1x = v2.x - v1.x
-    val e1y = v2.y - v1.y
-    val e2x = p.x - v1.x
-    val e2y = p.y - v1.y
+    val e1x = v2x - v1x
+    val e1y = v2y - v1y
+    val e2x = px - v1x
+    val e2y = py - v1y
     val valDp = Point.dot(e1x, e1y, e2x, e2y)
     // get length of vectors
 
@@ -171,7 +214,7 @@ fun ILine.projectedPoint(point: IPoint, out: Point = Point()): Point {
     // What happens if lenLineE1 or lenLineE2 are zero?, it would be a division by zero.
     // Does that mean that the point is on the line, and we should use it?
     if (lenLineE1 == 0.0 || lenLineE2 == 0.0) {
-        return out.copyFrom(p)
+        return out.setTo(px, py)
     }
 
     val cos = valDp / (lenLineE1 * lenLineE2)
@@ -179,5 +222,29 @@ fun ILine.projectedPoint(point: IPoint, out: Point = Point()): Point {
     // length of v1P'
     val projLenOfLine = cos * lenLineE2
 
-    return out.setTo((v1.x + (projLenOfLine * e1x) / lenLineE1), (v1.y + (projLenOfLine * e1y) / lenLineE1))
+    return out.setTo((v1x + (projLenOfLine * e1x) / lenLineE1), (v1y + (projLenOfLine * e1y) / lenLineE1))
 }
+
+fun Line.Companion.projectedPoint(
+    v1: IPoint,
+    v2: IPoint,
+    point: IPoint,
+    out: Point = Point()
+): Point = projectedPoint(v1.x, v1.y, v2.x, v2.y, point.x, point.y, out)
+
+fun Line.Companion.lineIntersectionPoint(
+    l1: Line,
+    l2: Line,
+    out: Point = Point()
+): Point? = l1.getLineIntersectionPoint(l2, out)
+
+fun Line.Companion.segmentIntersectionPoint(
+    l1: Line,
+    l2: Line,
+    out: Point = Point()
+): Point? = l1.getSegmentIntersectionPoint(l2, out)
+
+// @TODO: Should we create a common interface make projectedPoint part of it? (for ecample to project other kind of shapes)
+// https://math.stackexchange.com/questions/62633/orthogonal-projection-of-a-point-onto-a-line
+// http://www.sunshine2k.de/coding/java/PointOnLine/PointOnLine.html
+fun ILine.projectedPoint(point: IPoint, out: Point = Point()): Point = Line.projectedPoint(a, b, point, out)

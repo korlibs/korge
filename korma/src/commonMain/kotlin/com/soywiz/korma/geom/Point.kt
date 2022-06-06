@@ -8,7 +8,6 @@ import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.clamp
 import com.soywiz.korma.math.isAlmostZero
-import com.soywiz.korma.math.min
 import kotlin.math.absoluteValue
 import kotlin.math.acos
 import kotlin.math.ceil
@@ -67,10 +66,11 @@ fun IPoint.distanceTo(x: Float, y: Float): Double = this.distanceTo(x.toDouble()
 infix fun IPoint.dot(that: IPoint): Double = this.x * that.x + this.y * that.y
 fun IPoint.distanceTo(that: IPoint): Double = distanceTo(that.x, that.y)
 fun IPoint.angleTo(other: IPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
+val IPoint.angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
 fun IPoint.transformed(mat: Matrix, out: Point = Point()): Point = out.setToTransform(mat, this)
-operator fun IPoint.get(index: Int) = when (index) {
+operator fun IPoint.get(component: Int) = when (component) {
     0 -> x; 1 -> y
-    else -> throw IndexOutOfBoundsException("IPoint doesn't have $index component")
+    else -> throw IndexOutOfBoundsException("IPoint doesn't have $component component")
 }
 val IPoint.unit: IPoint get() = this / this.length
 val IPoint.length: Double get() = hypot(x, y)
@@ -146,6 +146,7 @@ data class Point(
         fun fromPolar(angle: Angle, length: Double = 1.0, out: Point = Point()): Point = fromPolar(0.0, 0.0, angle, length, out)
         fun fromPolar(base: IPoint, angle: Angle, length: Double = 1.0, out: Point = Point()): Point = fromPolar(base.x, base.y, angle, length, out)
 
+        fun direction(a: IPoint, b: IPoint, out: Point = Point()): Point = out.setTo(b.x - a.x, b.y - b.y)
         fun middle(a: IPoint, b: IPoint, out: Point = Point()): Point = out.setTo((a.x + b.x) * 0.5, (a.y + b.y) * 0.5)
         fun angleArc(a: IPoint, b: IPoint): Angle = Angle.fromRadians(acos((a.dot(b)) / (a.length * b.length)))
         @Deprecated("")
@@ -175,7 +176,7 @@ data class Point(
         fun distance(x1: Float, y1: Float, x2: Float, y2: Float): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
         fun distance(x1: Int, y1: Int, x2: Int, y2: Int): Double = distance(x1.toDouble(), y1.toDouble(), x2.toDouble(), y2.toDouble())
 
-        fun distance(a: Point, b: Point): Double = distance(a.x, a.y, b.x, b.y)
+        fun distance(a: IPoint, b: IPoint): Double = distance(a.x, a.y, b.x, b.y)
         fun distance(a: IPointInt, b: IPointInt): Double = distance(a.x, a.y, b.x, b.y)
 
         fun distanceSquared(a: Point, b: Point): Double = distanceSquared(a.x, a.y, b.x, b.y)
@@ -235,6 +236,8 @@ data class Point(
     fun setToPolar(base: IPoint, angle: Angle, length: Double = 1.0): Point = setToPolar(base.x, base.y, angle, length)
     fun setToPolar(x: Double, y: Double, angle: Angle, length: Double = 1.0): Point = setTo(x + angle.cosine * length, y + angle.sine * length)
 
+    /** Rotates the vector/point -90 degrees (not normalizing it) */
+    fun setToNormal(): Point = setTo(-this.y, this.x)
     fun neg() = setTo(-this.x, -this.y)
     fun mul(s: Double) = setTo(this.x * s, this.y * s)
     fun mul(s: Float) = mul(s.toDouble())
@@ -261,11 +264,11 @@ data class Point(
     fun setToDiv(a: Point, s: Float): Point = setToDiv(a, s.toDouble())
     operator fun plusAssign(that: Point) { setTo(this.x + that.x, this.y + that.y) }
 
-    operator fun plus(that: Point): Point = Point(this.x + that.x, this.y + that.y)
-    operator fun minus(that: Point): Point = Point(this.x - that.x, this.y - that.y)
-    operator fun times(that: Point): Point = Point(this.x * that.x, this.y * that.y)
-    operator fun div(that: Point): Point = Point(this.x / that.x, this.y / that.y)
-    infix fun dot(that: Point): Double = this.x * that.x + this.y * that.y
+    operator fun plus(that: IPoint): Point = Point(this.x + that.x, this.y + that.y)
+    operator fun minus(that: IPoint): Point = Point(this.x - that.x, this.y - that.y)
+    operator fun times(that: IPoint): Point = Point(this.x * that.x, this.y * that.y)
+    operator fun div(that: IPoint): Point = Point(this.x / that.x, this.y / that.y)
+    infix fun dot(that: IPoint): Double = this.x * that.x + this.y * that.y
 
     operator fun times(scale: Double): Point = Point(this.x * scale, this.y * scale)
     operator fun times(scale: Float): Point = this * scale.toDouble()
@@ -309,6 +312,7 @@ data class Point(
         Point().setToInterpolated(ratio, this, other)
 
     override fun setToInterpolated(ratio: Double, l: Point, r: Point): Point = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
+    fun setToInterpolated(ratio: Double, l: IPoint, r: IPoint): Point = setToInterpolated(ratio, l.x, l.y, r.x, r.y)
 
     fun setToInterpolated(ratio: Double, lx: Double, ly: Double, rx: Double, ry: Double): Point =
         this.setTo(ratio.interpolate(lx, rx), ratio.interpolate(ly, ry))

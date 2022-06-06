@@ -6,16 +6,27 @@ import com.soywiz.kds.IntArrayList
 
 inline fun <T> List<T>.fastForEach(callback: (T) -> Unit) {
 	var n = 0
-	while (n < size) {
-		callback(this[n++])
-	}
+	while (n < size) callback(this[n++])
 }
 
 inline fun <T> Array<T>.fastForEach(callback: (T) -> Unit) {
 	var n = 0
-	while (n < size) {
-		callback(this[n++])
-	}
+	while (n < size) callback(this[n++])
+}
+
+inline fun IntArray.fastForEach(callback: (Int) -> Unit) {
+    var n = 0
+    while (n < size) callback(this[n++])
+}
+
+inline fun FloatArray.fastForEach(callback: (Float) -> Unit) {
+    var n = 0
+    while (n < size) callback(this[n++])
+}
+
+inline fun DoubleArray.fastForEach(callback: (Double) -> Unit) {
+    var n = 0
+    while (n < size) callback(this[n++])
 }
 
 inline fun IntArrayList.fastForEach(callback: (Int) -> Unit) {

@@ -177,6 +177,7 @@ draw: TRIANGLE_FAN, offset=7, count=7, instances=1, indexType=null
 ::draw.vertex[11]: a_Pos[220,240], a_Tex[220,240], a_Dist[0]
 ::draw.vertex[12]: a_Pos[140,240], a_Tex[140,240], a_Dist[0]
 ::draw.vertex[13]: a_Pos[140,240], a_Tex[140,240], a_Dist[0]
+disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
@@ -212,6 +213,7 @@ draw: TRIANGLE_STRIP, offset=14, count=18, instances=1, indexType=null
 ::draw.vertex[29]: a_Pos[88.95,190], a_Tex[88.95,190], a_Dist[1.5]
 ::draw.vertex[30]: a_Pos[91.05,191.05], a_Tex[91.05,191.05], a_Dist[-1.5]
 ::draw.vertex[31]: a_Pos[90,188.95], a_Tex[90,188.95], a_Dist[1.5]
+disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
@@ -565,6 +567,7 @@ draw: TRIANGLE_FAN, offset=54, count=280, instances=1, indexType=null
 ::draw.vertex[331]: a_Pos[240,300], a_Tex[240,300], a_Dist[0]
 ::draw.vertex[332]: a_Pos[240,300], a_Tex[240,300], a_Dist[0]
 ::draw.vertex[333]: a_Pos[240,300], a_Tex[240,300], a_Dist[0]
+disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 1, 0)
@@ -951,6 +954,7 @@ draw: TRIANGLE_FAN, offset=660, count=9, instances=1, indexType=null
 ::draw.vertex[666]: a_Pos[174.01924,285], a_Tex[174.01924,285], a_Dist[0]
 ::draw.vertex[667]: a_Pos[200,270], a_Tex[200,270], a_Dist[0]
 ::draw.vertex[668]: a_Pos[200,270], a_Tex[200,270], a_Dist[0]
+disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
@@ -1039,6 +1043,7 @@ draw: TRIANGLE_FAN, offset=699, count=7, instances=1, indexType=null
 ::draw.vertex[703]: a_Pos[100,220], a_Tex[100,220], a_Dist[0]
 ::draw.vertex[704]: a_Pos[100,20], a_Tex[100,20], a_Dist[0]
 ::draw.vertex[705]: a_Pos[100,20], a_Tex[100,20], a_Dist[0]
+disable: SCISSOR
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=512, height=512), 512, 512)
@@ -1906,6 +1911,7 @@ draw: TRIANGLE_FAN, offset=1440, count=7, instances=1, indexType=null
 ::draw.vertex[1444]: a_Pos[300,420], a_Tex[300,420], a_Dist[0]
 ::draw.vertex[1445]: a_Pos[300,220], a_Tex[300,220], a_Dist[0]
 ::draw.vertex[1446]: a_Pos[300,220], a_Tex[300,220], a_Dist[0]
+disable: SCISSOR
 textureCreate: 4
 createTexture():3
 Texture[3].uploadedBitmap(SyncBitmapSource(rgba=true, width=256, height=1), 256, 1)
@@ -2008,6 +2014,7 @@ draw: TRIANGLE_FAN, offset=1469, count=7, instances=1, indexType=null
 ::draw.vertex[1473]: a_Pos[400,270], a_Tex[400,270], a_Dist[0]
 ::draw.vertex[1474]: a_Pos[400,170], a_Tex[400,170], a_Dist[0]
 ::draw.vertex[1475]: a_Pos[400,170], a_Tex[400,170], a_Dist[0]
+disable: SCISSOR
 textureCreate: 6
 createTexture():5
 Texture[5].uploadedBitmap(SyncBitmapSource(rgba=true, width=256, height=1), 256, 1)

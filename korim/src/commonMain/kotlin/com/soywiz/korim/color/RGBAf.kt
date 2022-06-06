@@ -3,21 +3,17 @@ package com.soywiz.korim.color
 import com.soywiz.kmem.clamp01
 import com.soywiz.korio.util.niceStr
 
-class RGBAf(
-    private var _r: Float = 1f,
-    private var _g: Float = 1f,
-    private var _b: Float = 1f,
-    private var _a: Float = 1f
+//inline class RGBAf private constructor(
+inline class RGBAf(
+    val data: FloatArray,
 ) {
-    init {
-        // @TODO: We cannot do clamping here since we use this class for ParticleEmitter with variance (potential negative values)
-        //clamp()
-    }
-
-    constructor(color: RGBAf) : this(color.r, color.g, color.b, color.a)
+    constructor(r: Float = 1f, g: Float = 1f, b: Float = 1f, a: Float = 1f) : this(floatArrayOf(r, g, b, a))
     constructor(color: RGBA) : this(color.rf, color.gf, color.bf, color.af)
 
-    private var dirty = true
+    companion object {
+        operator fun invoke(color: RGBAf): RGBAf = RGBAf(color.r, color.g, color.b, color.a)
+        fun valueOf(hex: String, color: RGBAf = RGBAf()): RGBAf = color.setTo(Colors[hex])
+    }
 
     fun readFrom(out: FloatArray, index: Int = 0) {
         r = out[index + 0]
@@ -33,15 +29,15 @@ class RGBAf(
         out[index + 3] = a
     }
 
-    var r: Float; get() = _r; set(v) { _r = v; makeDirty() }
-    var g: Float; get() = _g; set(v) { _g = v; makeDirty() }
-    var b: Float; get() = _b; set(v) { _b = v; makeDirty() }
-    var a: Float; get() = _a; set(v) { _a = v; makeDirty() }
+    var r: Float; get() = data[0]; set(v) { data[0] = v }
+    var g: Float; get() = data[1]; set(v) { data[1] = v }
+    var b: Float; get() = data[2]; set(v) { data[2] = v }
+    var a: Float; get() = data[3]; set(v) { data[3] = v }
 
-    var rd: Double; get() = _r.toDouble(); set(v) { _r = v.toFloat(); makeDirty() }
-    var gd: Double; get() = _g.toDouble(); set(v) { _g = v.toFloat(); makeDirty() }
-    var bd: Double; get() = _b.toDouble(); set(v) { _b = v.toFloat(); makeDirty() }
-    var ad: Double; get() = _a.toDouble(); set(v) { _a = v.toFloat(); makeDirty() }
+    var rd: Double; get() = r.toDouble(); set(v) { r = v.toFloat() }
+    var gd: Double; get() = g.toDouble(); set(v) { g = v.toFloat() }
+    var bd: Double; get() = b.toDouble(); set(v) { b = v.toFloat() }
+    var ad: Double; get() = a.toDouble(); set(v) { a = v.toFloat() }
 
     val ri: Int get() = (r * 255).toInt() and 0xFF
     val gi: Int get() = (g * 255).toInt() and 0xFF
@@ -55,26 +51,14 @@ class RGBAf(
         a = a.clamp01()
     }
 
-    private fun makeDirty() {
-        dirty = true
-    }
-
-    private var _rgba: RGBA = RGBA(-1)
     val rgba: RGBA
-        get() {
-            if (dirty) {
-                dirty = false
-                _rgba = RGBA.float(_r, _g, _b, _a)
-            }
-            return _rgba
-        }
+        get() = RGBA.float(r, g, b, a)
 
     fun setTo(r: Float, g: Float, b: Float, a: Float): RGBAf {
-        this._r = r
-        this._g = g
-        this._b = b
-        this._a = a
-        makeDirty()
+        this.r = r
+        this.g = g
+        this.b = b
+        this.a = a
         return this
     }
 
@@ -100,13 +84,9 @@ class RGBAf(
 
     override fun toString(): String = "RGBAf(${r.niceStr}, ${g.niceStr}, ${b.niceStr}, ${a.niceStr})"
     //override fun toString(): String = rgba.hexString
-
-    companion object {
-        fun valueOf(hex: String, color: RGBAf = RGBAf()): RGBAf = color.setTo(Colors[hex])
-    }
 }
 
-inline fun RGBAf(r: Number, g: Number, b: Number, a: Number) = RGBAf(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
+inline fun RGBAf(r: Number, g: Number, b: Number, a: Number): RGBAf = RGBAf(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
 
 fun RGBA.writeFloat(out: FloatArray, index: Int = 0) {
     out[index + 0] = rf

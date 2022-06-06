@@ -15,6 +15,7 @@ import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.absoluteValue
+import com.soywiz.korma.geom.bezier.getEquidistantPoints
 import com.soywiz.korma.geom.bezier.getPoints
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.firstX
@@ -113,12 +114,15 @@ internal fun _interpolateTimeSpan(ratio: Double, l: TimeSpan, r: TimeSpan): Time
 //inline operator fun KMutableProperty0<Float>.get(initial: Number, end: Number) =
 //	V2(this, initial.toFloat(), end.toFloat(), ::_interpolateFloat)
 
-inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = true): V2<IPoint> = this[path.getCurves().getPoints().also {
+inline operator fun KMutableProperty0<IPoint>.get(path: VectorPath, includeLastPoint: Boolean = path.isLastCommandClose, reversed: Boolean = false): V2<IPoint> = this[path.getCurves().getEquidistantPoints().also {
     //println("points.lastX=${points.lastX}, points.firstX=${points.firstX}")
     //println("points.lastY=${points.lastY}, points.firstY=${points.firstY}")
     if (!includeLastPoint && it.lastX.isAlmostEquals(it.firstX) && it.lastY.isAlmostEquals(it.firstY)) {
         (it as PointArrayList).removeAt(it.size - 1)
         //println("REMOVED LAST POINT!")
+    }
+    if (reversed) {
+        (it as PointArrayList).reverse()
     }
 }]
 

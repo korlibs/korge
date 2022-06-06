@@ -86,7 +86,7 @@ class GpuShapeViewCommands {
         commands += ClearCommand(i)
     }
 
-    fun setScissor(scissor: Rectangle) {
+    fun setScissor(scissor: Rectangle?) {
         commands += ScissorCommand(scissor)
     }
 
@@ -147,12 +147,17 @@ class GpuShapeViewCommands {
                                         when (cmd) {
                                             //is FinishCommand -> list.flush()
                                             is ScissorCommand -> {
-                                                val rect = cmd.scissor.clone()
+                                                val rect = cmd.scissor?.clone()
+                                                //rect.normalize()
                                                 // @TODO: Do scissor intersection
                                                 if (applyScissor) {
                                                 }
-                                                rect.applyTransform(globalMatrix)
-                                                list.setScissorState(ag, AG.Scissor().setTo(rect))
+                                                if (rect != null) {
+                                                    rect.applyTransform(globalMatrix)
+                                                    list.setScissorState(ag, AG.Scissor().setTo(rect))
+                                                } else {
+                                                    list.setScissorState(ag, null)
+                                                }
                                             }
                                             is ClearCommand -> {
                                                 list.clearStencil(cmd.i)
@@ -207,7 +212,7 @@ class GpuShapeViewCommands {
 
     sealed interface ICommand
 
-    data class ScissorCommand(val scissor: Rectangle) : ICommand
+    data class ScissorCommand(val scissor: Rectangle?) : ICommand
 
     data class ClearCommand(val i: Int) : ICommand
 

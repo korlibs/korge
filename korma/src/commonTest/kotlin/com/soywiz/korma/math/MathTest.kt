@@ -42,11 +42,13 @@ class MathTest {
 
     @Test
     fun testSmoothStep() {
+        assertEquals(0.0, 90.0.smoothstep(100.0, 200.0))
         assertEquals(0.0, 100.0.smoothstep(100.0, 200.0))
         assertEquals(0.028000000000000004, 110.0.smoothstep(100.0, 200.0))
         assertEquals(0.5, 150.0.smoothstep(100.0, 200.0))
         assertEquals(0.972, 190.0.smoothstep(100.0, 200.0))
         assertEquals(1.0, 200.0.smoothstep(100.0, 200.0))
+        assertEquals(1.0, 210.0.smoothstep(100.0, 200.0))
     }
 
     @Test

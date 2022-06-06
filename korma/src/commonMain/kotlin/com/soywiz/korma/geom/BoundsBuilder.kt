@@ -38,9 +38,9 @@ class BoundsBuilder {
     fun add(x: Int, y: Int): BoundsBuilder = add(x.toDouble(), y.toDouble())
     fun add(x: Float, y: Float): BoundsBuilder = add(x.toDouble(), y.toDouble())
 
-    fun add(x: Double, y: Double, transform: Matrix): BoundsBuilder = add(transform.transformX(x, y), transform.transformY(x, y))
-    fun add(x: Int, y: Int, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
-    fun add(x: Float, y: Float, transform: Matrix): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+    fun add(x: Double, y: Double, transform: Matrix?): BoundsBuilder = if (transform != null) add(transform.transformX(x, y), transform.transformY(x, y)) else add(x, y)
+    fun add(x: Int, y: Int, transform: Matrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
+    fun add(x: Float, y: Float, transform: Matrix?): BoundsBuilder = add(x.toDouble(), y.toDouble(), transform)
 
     fun add(point: IPoint): BoundsBuilder = add(point.x, point.y)
     fun add(point: IPoint, transform: Matrix): BoundsBuilder = add(point.x, point.y, transform)
@@ -53,13 +53,13 @@ class BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n))
         return this
     }
-    fun add(rect: Rectangle): BoundsBuilder {
+    fun add(rect: IRectangle): BoundsBuilder {
         if (rect.isNotEmpty) {
             addEvenEmpty(rect)
         }
         return this
     }
-    fun addEvenEmpty(rect: Rectangle): BoundsBuilder {
+    fun addEvenEmpty(rect: IRectangle): BoundsBuilder {
         add(rect.left, rect.top)
         add(rect.right, rect.bottom)
         return this
@@ -73,7 +73,7 @@ class BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n), transform)
         return this
     }
-    fun add(rect: Rectangle, transform: Matrix): BoundsBuilder {
+    fun add(rect: IRectangle, transform: Matrix?): BoundsBuilder {
         if (rect.isNotEmpty) {
             add(rect.left, rect.top, transform)
             add(rect.right, rect.bottom, transform)
