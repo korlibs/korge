@@ -1089,6 +1089,7 @@ draw: TRIANGLE_FAN, offset=774, count=4, instances=1, indexType=null
 createStencil: 0
 stencilMask: 255
 clear: color=false, depth=false, stencil=true
+disable: SCISSOR
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
