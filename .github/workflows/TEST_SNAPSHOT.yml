@@ -12,7 +12,7 @@ on:
 
 env:
   # https://oss.sonatype.org/content/repositories/snapshots/org/jetbrains/kotlin/kotlin-compiler/1.5.255-SNAPSHOT/
-  FORCED_KOTLIN_VERSION: "1.6.255-SNAPSHOT"
+  FORCED_KOTLIN_VERSION: "1.7.255-SNAPSHOT"
   SKIP_KORGE_SAMPLES: true
 
 jobs:
@@ -34,4 +34,4 @@ jobs:
     - name: Testing JVM
       run: ./gradlew --no-daemon jvmTest
     - name: Testing JS
-      run: ./gradlew --no-daemon jsTest
+      run: ./gradlew --no-daemon jsNodeTest
