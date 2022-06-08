@@ -30,14 +30,15 @@ class AwtAg(override val nativeComponent: Any, private val checkGl: Boolean, log
         return config.defaultTransform.scaleX
     }
 
-    override val pixelsPerInch: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+    //override val pixelsPerInch: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {
+    override val pixelsPerInch: Double get() {
         if (GraphicsEnvironment.isHeadless()) {
-            return@lazy Companion.defaultPixelsPerInch
+            return Companion.defaultPixelsPerInch
         }
         // maybe this is not just windows specific :
         // https://stackoverflow.com/questions/32586883/windows-scaling
         // somehow this value is not update when you change the scaling in the windows settings while the jvm is running :(
-        return@lazy Toolkit.getDefaultToolkit().screenResolution.toDouble()
+        return Toolkit.getDefaultToolkit().screenResolution.toDouble()
     }
 
     override val pixelsPerLogicalInchRatio: Double by lazy(LazyThreadSafetyMode.PUBLICATION) {

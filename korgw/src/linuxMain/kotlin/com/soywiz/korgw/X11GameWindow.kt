@@ -1,7 +1,22 @@
 package com.soywiz.korgw
 
-import X11Embed.*
-import com.soywiz.kgl.*
+import X11Embed.Atom
+import X11Embed.AtomVar
+import X11Embed.Display
+import X11Embed.Status
+import X11Embed.Window
+import X11Embed.XEvent
+import X11Embed.XKeyEvent
+import com.soywiz.kgl.CDisplayPointer
+import com.soywiz.kgl.CString
+import com.soywiz.kgl.GLFuncNull
+import com.soywiz.kgl.GLLib
+import com.soywiz.kgl.GLXDrawable
+import com.soywiz.kgl.KeySym
+import com.soywiz.kgl.KmlGl
+import com.soywiz.kgl.NativeBaseKmlGl
+import com.soywiz.kgl.XVisualInfo
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.DynamicLibrary
 import com.soywiz.kmem.dyn.func
@@ -13,6 +28,7 @@ import com.soywiz.korev.Key
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korio.lang.TimedCache
 import kotlinx.cinterop.*
 import platform.posix.fflush
 import platform.posix.stdout
@@ -29,6 +45,7 @@ internal object X11 : DynamicLibrary("libX11.so") {
     val XFlush by func<(d: CDisplayPointer) -> Unit>()
     val XInternAtom by func<(d: CDisplayPointer, name: CString, p3: Int) -> Atom>()
     val XOpenDisplay by func<(name: CString?) -> CDisplayPointer>()
+    val XResourceManagerString by func<(display: CDisplayPointer) -> CString?>()
     val XDefaultRootWindow by func<(d: CDisplayPointer) -> Window>()
     val XDisplayWidth by func<(d: CDisplayPointer, scr: Int) -> Int>()
     val XDisplayHeight by func<(d: CDisplayPointer, scr: Int) -> Int>()
@@ -61,8 +78,16 @@ actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow
 private val swapIntervalEXT by GLFuncNull<(CPointer<Display>?, GLXDrawable, Int) -> Unit>("swapIntervalEXT")
 
 //class X11Ag(val window: X11GameWindow, override val gl: KmlGl = LogKmlGlProxy(X11KmlGl())) : AGOpengl() {
-class X11Ag(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
+class X11AgOpengl(val window: X11GameWindow, override val gl: KmlGl = com.soywiz.kgl.KmlGlNative()) : AGOpengl() {
     override val nativeComponent: Any = window
+
+    override val pixelsPerInch: Double by TimedCache<Double>(0.5.seconds) {
+        val str = X11.XResourceManagerString(window.d)?.toKStringFromUtf8() ?: ""
+        val Xftdpi = str.lines().firstOrNull { it.contains("Xft.dpi") }
+        val dpiInt = Xftdpi?.split(':')?.lastOrNull()?.trim()?.toDoubleOrNull()
+        //println("X11AgOpengl.pixelsPerInch: str=$str, dpiInt=$dpiInt")
+        kotlin.math.max(dpiInt ?: 96.0, 96.0)
+    }
 }
 
 // https://www.khronos.org/opengl/wiki/Tutorial:_OpenGL_3.0_Context_Creation_(GLX)
@@ -125,7 +150,7 @@ class X11GameWindow : EventLoopGameWindow() {
     override val dialogInterface = ZenityDialogs
 
     //init { println("X11GameWindow") }
-    override val ag: X11Ag by lazy { X11Ag(this) }
+    override val ag: X11AgOpengl by lazy { X11AgOpengl(this) }
     override var width: Int = 200; private set
     override var height: Int = 200; private set
     override var title: String = "Korgw"

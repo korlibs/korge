@@ -77,5 +77,10 @@ val View.timers get() = this.getOrCreateComponentUpdate<TimerComponents> { Timer
 
 fun View.timeout(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.timeout(time, callback)
 fun View.interval(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.interval(time, callback)
+fun View.intervalAndNow(time: TimeSpan, callback: () -> Unit): Closeable {
+    callback()
+    return interval(time, callback)
+}
+
 suspend fun View.delay(time: TimeSpan) = this.timers.wait(time)
 suspend fun View.delayFrame() = this.timers.waitFrame()

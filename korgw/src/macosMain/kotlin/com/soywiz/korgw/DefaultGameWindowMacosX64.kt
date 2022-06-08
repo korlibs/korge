@@ -393,14 +393,6 @@ class MyDefaultGameWindow : GameWindow() {
         //println("doRender[4]")
     }
 
-    open class MacAGNative(val window: NSWindow) : AGNative() {
-        override var devicePixelRatio: Double = 1.0
-            get() {
-                //return NSScreen.mainScreen?.backingScaleFactor?.toDouble() ?: field
-                return window.backingScaleFactor
-            }
-    }
-
     override val ag: AG = MacAGNative(window)
 
     //override val width: Int get() = window.frame.width.toInt()

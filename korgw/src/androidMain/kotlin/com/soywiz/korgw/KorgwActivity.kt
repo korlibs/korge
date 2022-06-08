@@ -40,23 +40,6 @@ abstract class KorgwActivity(
 
     private var defaultUiVisibility = -1
 
-    inner class KorgwActivityAGOpengl : AGOpengl() {
-        //override val gl: KmlGl = CheckErrorsKmlGlProxy(KmlGlAndroid())
-        override val gl: KmlGl = KmlGlAndroid({ mGLView?.clientVersion ?: -1 }).checkedIf(agCheck).logIf(agCheck)
-        override val nativeComponent: Any get() = this@KorgwActivity
-
-        override fun repaint() {
-            mGLView?.invalidate()
-        }
-
-        // @TODO: Cache somehow?
-        override val pixelsPerInch: Double get() = resources.displayMetrics.densityDpi.toDouble()
-
-        init {
-            println("KorgwActivityAGOpengl: Created ag $this for ${this@KorgwActivity} with gl=$gl")
-        }
-    }
-
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -65,9 +48,9 @@ abstract class KorgwActivity(
         //println("KorgwActivity.onCreate")
 
         //ag = AGOpenglFactory.create(this).create(this, AGConfig())
-        ag = KorgwActivityAGOpengl()
 
         mGLView = KorgwSurfaceView(this, this, gameWindow)
+        ag = AndroidAGOpengl(this, agCheck) { mGLView }
 
         gameWindow.initializeAndroid()
         setContentView(mGLView)
