@@ -1159,3 +1159,17 @@ if (isLinux) {
 }
 
 //println("currentJavaVersion=${com.soywiz.korlibs.currentJavaVersion()}")
+
+afterEvaluate {
+    subprojects {
+        val mingwX64Test = project.tasks.findByName("mingwX64Test")
+        if (mingwX64Test != null && com.soywiz.korge.gradle.targets.isWindows && com.soywiz.korge.gradle.targets.inCI) {
+            mingwX64Test.doFirst {
+                exec { commandLine("systeminfo") }
+            }
+            mingwX64Test.doLast {
+                exec { commandLine("systeminfo") }
+            }
+        }
+    }
+}
