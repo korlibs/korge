@@ -13,7 +13,7 @@ inline fun Container.uiContainer(
     block: @ViewDslMarker UIContainer.() -> Unit = {}
 ) = UIContainer(width, height).addTo(this).apply(block)
 
-open class UIContainer(width: Double, height: Double) : UIBaseContainer(width, height) {
+open class UIContainer(width: Double = 128.0, height: Double = 128.0) : UIBaseContainer(width, height) {
     override fun relayout() {}
 }
 

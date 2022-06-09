@@ -4,6 +4,7 @@ pluginManagement {
 		mavenCentral()
         google()
 		gradlePluginPortal()
+        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
         maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }
@@ -43,6 +44,7 @@ if (!inCI) {
 if (!disabledExtraKorgeLibs) {
     include(":luak")
     include(":kbox2d")
+    include(":korge-compose-runtime")
     include(":korge-compose")
     include(":korge-dragonbones")
     include(":korge-spine")

@@ -7,6 +7,21 @@ import com.soywiz.korge.view.*
 import kotlinx.coroutines.*
 import kotlin.coroutines.*
 
+/*
+suspend fun main() = Korge(width = 256, height = 64) {
+    setComposeContent {
+        var count by remember { mutableStateOf(0) }
+        VStack {
+            Text("$count")
+            HStack {
+                Button("-") { count-- }
+                Button("+") { count++ }
+            }
+        }
+    }
+}
+ */
+
 // We would implement an Applier class like the following, which would teach compose how to
 // manage a tree of Nodes.
 // https://developer.android.com/reference/kotlin/androidx/compose/runtime/Applier
@@ -37,31 +52,6 @@ class NodeApplier(root: View) : AbstractApplier<View>(root) {
     override fun onClear() {
         println("onClear")
         (current as? Container?)?.removeChildren()
-    }
-}
-
-// A function like the following could be created to create a composition provided a root Node.
-fun View.setComposeContent(
-    views: Views = stage!!.views,
-    content: @Composable () -> Unit
-): Composition {
-    val context = MonotonicClockImpl(views) + views.coroutineContext
-
-    val snapshotManager = GlobalSnapshotManager(views.gameWindow.coroutineDispatcher)
-    snapshotManager.ensureStarted()
-
-    val recomposer = Recomposer(context)
-
-    CoroutineScope(context).launch(start = CoroutineStart.UNDISPATCHED) {
-        println("runRecomposeAndApplyChanges")
-        recomposer.runRecomposeAndApplyChanges()
-    }
-
-    //CoroutineScope(context).launch(start = CoroutineStart.UNDISPATCHED) {
-    //}
-
-    return ControlledComposition(NodeApplier(this), recomposer).apply {
-        setContent(content)
     }
 }
 
@@ -134,6 +124,25 @@ class MonotonicClockImpl(val views: Views) : MonotonicFrameClock {
     }
 }
 
+
+@Suppress("NONREADONLY_CALL_IN_READONLY_COMPOSABLE")
+@Composable
+inline fun <T : View> ComposeKorgeView(
+    noinline factory: () -> T,
+    update: @DisallowComposableCalls Updater<T>.() -> Unit,
+    content: @Composable () -> Unit
+) {
+    ComposeNode<T, NodeApplier>(factory, update, content)
+}
+
+@Composable inline fun <T : View> ComposeKorgeView(
+    noinline factory: () -> T,
+    update: @DisallowComposableCalls Updater<T>.() -> Unit
+) {
+    ComposeNode<T, NodeApplier>(factory, update)
+}
+
+/*
 // TOOLS
 
 fun Container.removeChildAt(index: Int): Boolean {
@@ -150,3 +159,4 @@ fun Container.swapChildrenAt(indexA: Int, indexB: Int) {
     val b = getChildAtOrNull(indexB) ?: return
     swapChildren(a, b)
 }
+*/

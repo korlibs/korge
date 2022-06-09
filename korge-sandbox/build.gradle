@@ -1,4 +1,5 @@
 import com.soywiz.korlibs.modules.KorgeJavaExec
+import com.soywiz.korlibs.modules.KorgeSandbox
 
 description = "Multiplatform Game Engine written in Kotlin"
 

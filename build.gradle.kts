@@ -72,6 +72,7 @@ allprojects {
         mavenLocal().content { excludeGroup("Kotlin/Native") }
 		mavenCentral().content { excludeGroup("Kotlin/Native") }
         google().content { excludeGroup("Kotlin/Native") }
+        maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
 		maven { url = uri("https://plugins.gradle.org/m2/") }.content { excludeGroup("Kotlin/Native") }
         if (kotlinVersion.contains("eap") || kotlinVersion.contains("-")) {
             maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary").content { excludeGroup("Kotlin/Native") }
@@ -79,6 +80,7 @@ allprojects {
             maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven").content { excludeGroup("Kotlin/Native") }
         }
         maven { url = uri("https://oss.sonatype.org/content/repositories/snapshots/") }.content { excludeGroup("Kotlin/Native") }
+        maven { url = uri("https://androidx.dev/storage/compose-compiler/repository/") }
 	}
 }
 
@@ -1205,6 +1207,19 @@ afterEvaluate {
         if (mingwX64Test != null && isWindows && inCI) {
             mingwX64Test.doFirst { exec { commandLine("systeminfo") } }
             mingwX64Test.doLast { exec { commandLine("systeminfo") } }
+        }
+    }
+}
+
+allprojects {
+    configurations.all {
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("org.jetbrains.compose.compiler:compiler")).apply {
+                //using(module(libs.androidx.compose.compiler))
+                //val compilerVersion = libs.versions.androidx.compose.compiler.get()
+                val compilerVersion = "1.2.0-dev-k1.7.0-53370d83bb1"
+                using(module("androidx.compose.compiler:compiler:$compilerVersion"))
+            }
         }
     }
 }

@@ -24,7 +24,8 @@ open class RectBase(
 	anchorY: Double = anchorX,
 	hitShape: VectorPath? = null,
 	var smoothing: Boolean = true
-) : View(), Anchorable {
+//) : View(), Anchorable {
+) : Container(), Anchorable {
     init {
         this.hitShape = hitShape
     }

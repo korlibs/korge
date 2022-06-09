@@ -8,6 +8,6 @@ object KorgeSandbox {
     @JvmStatic
     fun configure(project: Project) {
         //project.dependencies { add("commonMainApi", "com.soywiz.korlibs.korge2:korge-compose:${BuildVersions.KORGE}") }
-        //project.plugins.apply("org.jetbrains.compose")
+        project.plugins.apply("org.jetbrains.compose")
     }
 }

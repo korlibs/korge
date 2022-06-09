@@ -1,0 +1,11 @@
+import com.soywiz.korlibs.modules.KorgeSandbox
+
+description = "Multiplatform Game Engine written in Kotlin"
+
+dependencies {
+    add("commonMainApi", project(":korge"))
+    add("commonMainApi", 'org.jetbrains.kotlinx:atomicfu:0.17.3')
+    //add("commonMainApi", libs.kotlinx.compose.runtime)
+}
+
+KorgeSandbox.configure(project)

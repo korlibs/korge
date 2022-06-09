@@ -18,6 +18,8 @@ fun Project.configureRepositories() {
             maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
             maven { url = uri("https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven") }
         }
+        maven { url = uri("https://androidx.dev/storage/compose-compiler/repository/") }
+
         //println("kotlinVersion=$kotlinVersion")
 	}
 }

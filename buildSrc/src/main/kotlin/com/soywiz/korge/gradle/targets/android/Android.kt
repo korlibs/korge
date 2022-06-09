@@ -138,6 +138,7 @@ fun Project.configureAndroidIndirect() {
                             line("maven { url = uri(\"https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary\") }")
                             line("maven { url = uri(\"https://maven.pkg.jetbrains.space/public/p/kotlinx-coroutines/maven\") }")
                         }
+                        line("maven { url = uri(\"https://androidx.dev/storage/compose-compiler/repository/\") }")
                     }
 
                     if (korge.androidLibrary) {

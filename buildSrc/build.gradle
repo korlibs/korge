@@ -20,12 +20,14 @@ dependencies {
     implementation(libs.closure.compiler)
     implementation(libs.gson)
     implementation(libs.kotlinx.compose.gradle.plugin)
+    //implementation(libs.kotlinx.compose.runtime)
 }
 
 repositories {
     mavenLocal()
     mavenCentral()
     google()
+    maven { url = uri("https://maven.pkg.jetbrains.space/public/p/compose/dev") }
     if (kotlinVersion.contains("eap") || kotlinVersion.contains("-")) {
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/temporary") }
         maven { url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }

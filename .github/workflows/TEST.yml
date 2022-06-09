@@ -15,20 +15,22 @@ jobs:
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
-    - { uses: actions/checkout@v2 }
-    - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
-    - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
-    - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
-    - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
-    - { name: Start gradle, run: ./gradlew }
-    - { name: Testing JVM, run: ./gradlew jvmTest -i }
+      - { uses: actions/checkout@v2 }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
+      - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
+      - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
+      - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
+      - { name: Start gradle, run: ./gradlew }
+      - { name: Testing JVM, run: ./gradlew jvmTest -i }
 
   test-js:
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
       - { uses: actions/checkout@v2 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
@@ -40,7 +42,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - { uses: actions/checkout@v2 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
@@ -52,7 +55,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - { uses: actions/checkout@v2 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Install freeglut3 & openal, run: sudo apt-get update && sudo apt-get -y install freeglut3-dev libopenal-dev }
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
@@ -64,7 +68,8 @@ jobs:
     runs-on: macos-11
     steps:
       - { uses: actions/checkout@v2 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
@@ -75,7 +80,8 @@ jobs:
     runs-on: macos-11
     steps:
       - { uses: actions/checkout@v2 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
@@ -86,7 +92,8 @@ jobs:
     runs-on: macos-11
     steps:
       - { uses: actions/checkout@v2 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
@@ -101,7 +108,8 @@ jobs:
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
       - { uses: actions/checkout@v1 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat --no-daemon mingwX64Test -i }
 
@@ -113,7 +121,8 @@ jobs:
       GRADLE_OPTS: -Dorg.gradle.daemon=false -Dkotlin.compiler.execution.strategy=in-process -Dorg.gradle.workers.max=3
     steps:
       - { uses: actions/checkout@v1 }
-      - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      #- { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
+      - { name: Set up JDK 11, uses: actions/setup-java@v1, with: { java-version: 11 } } # required by compose e: java.lang.NoSuchMethodError: java.lang.Integer.parseUnsignedInt(Ljava/lang/CharSequence;III)I at androidx.compose.compiler.plugins.kotlin.inference.SchemeStringSerializationReader.number(Scheme.kt:342)
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { run: CALL gradlew.bat --no-daemon publishJvmLocal publishMingwX64PublicationToMavenLocal, shell: cmd }
       - { name: e2e test, shell: cmd, working-directory: e2e-test, run: CALL gradlew.bat --no-daemon jvmTest runJvmCheckReferences }
