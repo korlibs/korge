@@ -62,7 +62,8 @@ open class KorgeAndroidView(
         unloadModule() // Unload module if already loaded
 
         agOpenGl = AndroidAGOpengl(context, agCheck = false) { mGLView }
-        gameWindow = AndroidGameWindowNoActivity(config.windowSize.width, config.windowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
+        gameWindow = AndroidGameWindowNoActivity(config.windowSize?.width ?: config.finalWindowSize.width,
+            config.finalWindowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
         mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!)
 
         addView(mGLView)

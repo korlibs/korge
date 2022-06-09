@@ -584,7 +584,10 @@ object Korge {
         val main: (suspend Stage.() -> Unit)? = module.main,
         val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
         val constructedViews: (Views) -> Unit = module.constructedViews,
-	)
+	) {
+        val finalWindowSize: ISizeInt get() = windowSize ?: module.windowSize
+        val finalVirtualSize: ISizeInt get() = virtualSize ?: module.size
+    }
 
 	data class ModuleArgs(val args: Array<String>)
 }
