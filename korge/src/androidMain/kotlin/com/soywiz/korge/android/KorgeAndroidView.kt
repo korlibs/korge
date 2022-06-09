@@ -33,53 +33,55 @@ open class KorgeAndroidView(
     private val renderEvent = RenderEvent()
     private val initEvent = InitEvent()
 
-    private var moduleLoaded = false
+    var moduleLoaded = false ; private set
 
     fun unloadModule() {
-        if (moduleLoaded) {
+        if (!moduleLoaded) return
 
-            gameWindow?.dispatchDestroyEvent()
-            gameWindow?.coroutineContext = null
-            gameWindow?.close()
-            gameWindow?.exit()
-            mGLView = null
-            gameWindow = null
-            agOpenGl = null
-            cleanUpResourcesVfs()
+        gameWindow?.dispatchDestroyEvent()
+        gameWindow?.coroutineContext = null
+        gameWindow?.close()
+        gameWindow?.exit()
+        mGLView = null
+        gameWindow = null
+        agOpenGl = null
+        cleanUpResourcesVfs()
 
-            CoroutineScope(Dispatchers.Main).launch {
-                mGLView?.let { removeView(it) }
-            }
-
-            moduleLoaded = false
+        CoroutineScope(Dispatchers.Main).launch {
+            mGLView?.let { removeView(it) }
         }
+
+        moduleLoaded = false
     }
 
     fun loadModule(module: Module) {
-        if (!moduleLoaded) {
-            agOpenGl = AndroidAGOpengl(context, agCheck = false) { mGLView }
-            gameWindow = AndroidGameWindowNoActivity(module.windowSize.width, module.windowSize.height, agOpenGl!!, context, config) { mGLView!! }
-            mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!)
+        loadModule(Korge.Config(module))
+    }
 
-            addView(mGLView)
+    fun loadModule(config: Korge.Config) {
+        unloadModule() // Unload module if already loaded
 
-            gameWindow?.let { gameWindow ->
+        agOpenGl = AndroidAGOpengl(context, agCheck = false) { mGLView }
+        gameWindow = AndroidGameWindowNoActivity(config.windowSize.width, config.windowSize.height, agOpenGl!!, context, this.config) { mGLView!! }
+        mGLView = com.soywiz.korgw.KorgwSurfaceView(this, context, gameWindow!!)
 
-                Korio(context) {
-                    try {
-                        withAndroidContext(context) {
-                            withContext(coroutineContext + gameWindow) {
-                                Korge(Korge.Config(module = module))
-                            }
+        addView(mGLView)
+
+        gameWindow?.let { gameWindow ->
+            Korio(context) {
+                try {
+                    withAndroidContext(context) {
+                        withContext(coroutineContext + gameWindow) {
+                            Korge(config)
                         }
-                    } finally {
-                        println("${javaClass.name} completed!")
                     }
+                } finally {
+                    println("${javaClass.name} completed!")
                 }
             }
-
-            moduleLoaded = true
         }
+
+        moduleLoaded = true
     }
 
     fun queueEvent(runnable: Runnable) {
