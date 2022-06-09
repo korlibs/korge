@@ -87,4 +87,9 @@ open class KorgeAndroidView(
     fun queueEvent(runnable: Runnable) {
         mGLView?.queueEvent(runnable)
     }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        unloadModule()
+    }
 }
