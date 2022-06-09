@@ -581,9 +581,9 @@ object Korge {
         val quality: GameWindow.Quality? = null,
         val icon: String? = null,
         val multithreaded: Boolean? = null,
-        val main: (suspend Stage.() -> Unit)? = null,
-        val constructedScene: Scene.(Views) -> Unit = {},
-        val constructedViews: (Views) -> Unit = {}
+        val main: (suspend Stage.() -> Unit)? = module.main,
+        val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
+        val constructedViews: (Views) -> Unit = module.constructedViews,
 	)
 
 	data class ModuleArgs(val args: Array<String>)

@@ -1,6 +1,8 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.korge.internal.DefaultViewport
+import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.Views
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -28,8 +30,13 @@ open class Module {
 	open val size: SizeInt get() = SizeInt(DefaultViewport.WIDTH, DefaultViewport.HEIGHT)
 	open val windowSize: SizeInt get() = size
 
-	open val mainScene: KClass<out Scene> = EmptyScene::class
-	open val clearEachFrame = true
+	open val mainScene: KClass<out Scene>? = null
+    open val main: (suspend (Stage) -> Unit)? = null
+
+    open val constructedScene: Scene.(Views) -> Unit = {}
+    open val constructedViews: (Views) -> Unit = {}
+
+    open val clearEachFrame = true
 
     @Deprecated("")
 	open val targetFps: Double = 0.0
