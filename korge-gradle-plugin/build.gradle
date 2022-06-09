@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.proguard.gradle)
     implementation(libs.closure.compiler)
     implementation(libs.gson)
+    implementation(libs.kotlinx.compose.gradle.plugin)
 
     implementation("com.android.tools.build:gradle:${libs.versions.android.build.gradle.get()}")
 

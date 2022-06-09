@@ -388,7 +388,13 @@ class KorgeExtension(val project: Project) {
 
     var iosDevelopmentTeam: String? = null
 
-	// Already included in core
+    fun supportCompose() {
+        dependencyMulti("com.soywiz.korlibs.korge2:korge-compose:${BuildVersions.KORGE}", registerPlugin = false)
+        project.plugins.apply("org.jetbrains.compose")
+        //id("org.jetbrains.compose") version "1.2.0-alpha01-dev686" apply true
+    }
+
+    // Already included in core
 	fun supportExperimental3d() = Unit
 	fun support3d() = Unit
 

@@ -19,6 +19,7 @@ dependencies {
     implementation(libs.proguard.gradle)
     implementation(libs.closure.compiler)
     implementation(libs.gson)
+    implementation(libs.kotlinx.compose.gradle.plugin)
 }
 
 repositories {
