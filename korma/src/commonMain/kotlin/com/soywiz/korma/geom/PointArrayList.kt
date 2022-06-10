@@ -5,6 +5,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.SortOps
 import com.soywiz.kds.genericSort
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.round
 
 interface IPointArrayList : IVectorArrayList, Extra {
@@ -12,6 +13,11 @@ interface IPointArrayList : IVectorArrayList, Extra {
     override fun get(index: Int, dim: Int): Double = if (dim == 0) getX(index) else getY(index)
     fun getX(index: Int): Double
     fun getY(index: Int): Double
+}
+
+fun IPointArrayList.roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): IPointArrayList {
+    fastForEach { x, y -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
+    return out
 }
 
 //fun IPointArrayList.getComponent(index: Int, component: Int): Double = if (component == 0) getX(index) else getY(index)

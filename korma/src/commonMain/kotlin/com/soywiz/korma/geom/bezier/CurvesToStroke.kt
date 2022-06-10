@@ -123,8 +123,8 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
 
         //println("angle=$angle, currTangent=$currTangent, nextTangent=$nextTangent")
 
-        //if (kind != LineJoin.MITER || miterLength > miterLimit) {
-        run {
+        if (kind != LineJoin.MITER || miterLength > miterLimit) {
+        //run {
             //val angle = Angle.between(nextTangent * 10.0, currTangent * 10.0)
             val p1 = if (direction < 0.0) currLine0.projectedPoint(commonPoint) else nextLine1.projectedPoint(commonPoint)
             val p2 = if (direction < 0.0) nextLine0.projectedPoint(commonPoint) else currLine1.projectedPoint(commonPoint)
@@ -245,7 +245,8 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         if (ratio == 0.0) addTwoPoints(mid, Point.fromPolar(angleStart), width)
     }
 
-    fun addCurvePoints(curr: Curve, nsteps: Int = (curr.length() / 10.0).clamp(20.0, 100.0).toInt()) {
+    // @TODO: instead of nsteps we should have some kind of threshold regarding to how much information do we lose at 1:1 scale
+    fun addCurvePoints(curr: Curve, nsteps: Int = (curr.length() / 10.0).clamp(10.0, 100.0).toInt()) {
         // @TODO: Here we could generate curve information to render in the shader with a plain simple quadratic bezier to reduce the number of points and make the curve as accurate as possible
         forEachRatio01(nsteps, include0 = false, include1 = false) {
             addTwoPoints(curr.calc(it), curr.normal(it), width)
@@ -297,3 +298,6 @@ fun Curves.toStrokePoints(width: Double, join: LineJoin = LineJoin.MITER, startC
         it.addAllCurvesPoints(this, join, startCap, endCap, miterLimit)
     }
 }
+
+fun List<Curves>.toStrokePointsList(width: Double, join: LineJoin = LineJoin.MITER, startCap: LineCap = LineCap.BUTT, endCap: LineCap = LineCap.BUTT, miterLimit: Double = 10.0, mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS, generateDebug: Boolean = false): List<StrokePoints> =
+    this.map { it.toStrokePoints(width, join, startCap, endCap, miterLimit, mode, generateDebug) }
