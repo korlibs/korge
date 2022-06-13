@@ -158,4 +158,18 @@ class ViewTest {
         assertEquals(rect.scaledWidth, 20.0)
         assertEquals(rect.scaledHeight, 15.0)
     }
+
+    @Test
+    fun testZIndexTest() {
+        val c = Container()
+        val rect1 = c.solidRect(1, 1)
+        val rect2 = c.solidRect(1, 1)
+        rect1.zIndex = 0.0
+        rect2.zIndex = 1.0
+        fun getRenderViews(): List<View> = ArrayList<View>().also { array -> c.fastForEachChildRender { array.add(it) } }
+        assertEquals(listOf(rect1, rect2), getRenderViews())
+        rect1.zIndex = 1.0
+        rect2.zIndex = 0.0
+        assertEquals(listOf(rect2, rect1), getRenderViews())
+    }
 }

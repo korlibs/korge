@@ -282,6 +282,18 @@ abstract class View internal constructor(
         }
         set(v) { setXY(x, v) }
 
+    private var _zIndex: Double = 0.0
+
+    // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
+    //@PublishedApi internal var _zIndexIndex: Int = 0
+
+    var zIndex: Double
+        get() = _zIndex
+        set(v) {
+            parent?.updatedChildZIndex(this, _zIndex, v)
+            _zIndex = v
+        }
+
     /*
     var xf: Float get() = x.toFloat() ; set(v) { x = v.toDouble() }
 

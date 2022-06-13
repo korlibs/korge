@@ -91,6 +91,7 @@ open class Container : View(true) {
         forEachChildWithIndex { index: Int, child: View ->
             child.index = index
         }
+        invalidateZIndexChildren()
     }
 
     /** Returns the number of children this container has */
@@ -127,14 +128,14 @@ open class Container : View(true) {
      */
     @KorgeUntested
     fun swapChildren(view1: View, view2: View) {
-        if (view1.parent == view2.parent && view1.parent == this) {
-            val index1 = view1.index
-            val index2 = view2.index
-            __children[index1] = view2
-            view2.index = index1
-            __children[index2] = view1
-            view1.index = index2
-        }
+        if (view1.parent != view2.parent || view1.parent != this) return
+        invalidateZIndexChildren()
+        val index1 = view1.index
+        val index2 = view2.index
+        __children[index1] = view2
+        view2.index = index1
+        __children[index2] = view1
+        view1.index = index2
     }
 
     fun moveChildTo(view: View, index: Int) {
@@ -145,18 +146,16 @@ open class Container : View(true) {
     }
 
     fun sendChildToFront(view: View) {
-        if (view.parent === this) {
-            while (view != lastChild!!) {
-                swapChildren(view, children[view.index + 1])
-            }
+        if (view.parent !== this) return
+        while (view != lastChild!!) {
+            swapChildren(view, children[view.index + 1])
         }
     }
 
     fun sendChildToBack(view: View) {
-        if (view.parent === this) {
-            while (view != firstChild!!) {
-                swapChildren(view, children[view.index - 1])
-            }
+        if (view.parent !== this) return
+        while (view != firstChild!!) {
+            swapChildren(view, children[view.index - 1])
         }
     }
 
@@ -167,6 +166,7 @@ open class Container : View(true) {
      */
     @KorgeUntested
     fun addChildAt(view: View, index: Int) {
+        view.parent?.invalidateZIndexChildren()
         view.removeFromParent()
         val aindex = index.clamp(0, this.numChildren)
         view.index = aindex
@@ -176,6 +176,7 @@ open class Container : View(true) {
         view.parent = this
         view.invalidate()
         onChildAdded(view)
+        invalidateZIndexChildren()
     }
 
     protected open fun onChildAdded(view: View) {
@@ -213,11 +214,10 @@ open class Container : View(true) {
      * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
      */
     fun removeChild(view: View?): Boolean {
-        if (view?.parent === this) {
-            view?.removeFromParent()
-            return true
-        }
-        return false
+        if (view?.parent !== this) return false
+        view?.removeFromParent()
+        invalidateZIndexChildren()
+        return true
     }
 
     fun removeChildAt(index: Int): Boolean {
@@ -227,6 +227,7 @@ open class Container : View(true) {
     // @TODO: Optimize
     fun removeChildAt(index: Int, count: Int) {
         repeat(count) { removeChildAt(index) }
+        invalidateZIndexChildren()
     }
 
     // @TODO: Optimize
@@ -248,8 +249,8 @@ open class Container : View(true) {
         }
         val finalTo = if (from < to) to - count else to
         children.fastForEach { child -> addChildAt(child, finalTo) }
+        invalidateZIndexChildren()
     }
-
 
     /**
      * Removes all [View]s children from this container.
@@ -260,6 +261,7 @@ open class Container : View(true) {
             child.index = -1
         }
         __children.clear()
+        invalidateZIndexChildren()
     }
 
     inline fun removeChildrenIf(cond: (index: Int, child: View) -> Boolean) {
@@ -274,6 +276,7 @@ open class Container : View(true) {
             }
         }
         for (n in 0 until removedCount) __children.removeAt(__children.size - 1)
+        invalidateZIndexChildren()
     }
 
     /**
@@ -309,13 +312,13 @@ open class Container : View(true) {
     }
 
     open fun renderChildrenInternal(ctx: RenderContext) {
-        fastForEachChild { child: View ->
+        fastForEachChildRender { child: View ->
             child.render(ctx)
         }
     }
 
     override fun renderDebug(ctx: RenderContext) {
-        fastForEachChild { child: View ->
+        fastForEachChildRender { child: View ->
             child.renderDebug(ctx)
         }
         super.renderDebug(ctx)
@@ -356,6 +359,50 @@ open class Container : View(true) {
             if (named != null) return named
         }
         return null
+    }
+
+    object ZIndexComparator : Comparator<View> {
+        override fun compare(a: View, b: View): Int = a.zIndex.compareTo(b.zIndex)
+    }
+
+    @PublishedApi internal var __childrenZIndexValid = false
+    @PublishedApi internal var __childrenZIndexValidOrder = false
+    @PublishedApi internal val __childrenZIndex = FastArrayList<View>()
+
+    @PublishedApi internal fun shouldSortChildren(): Boolean {
+        __children.fastForEach { if (it.zIndex != 0.0) { return true } }
+        return false
+    }
+
+    /**
+     * Iterates children in render order
+     */
+    // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
+    inline fun fastForEachChildRender(block: (child: View) -> Unit) {
+        if (!__childrenZIndexValid) {
+            __childrenZIndexValid = true
+            __childrenZIndex.clear()
+            __childrenZIndex.addAll(this.__children)
+            if (shouldSortChildren()) __childrenZIndexValidOrder = false
+            //println("invalidated")
+        }
+        if (!__childrenZIndexValidOrder) {
+            __childrenZIndexValidOrder = true
+            __childrenZIndex.sortWith(ZIndexComparator)
+        }
+        //println(__childrenZIndex.map { it.zIndex })
+        __childrenZIndex.fastForEach { child -> block(child) }
+    }
+
+    // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
+    @PublishedApi internal fun invalidateZIndexChildren() {
+        this.__childrenZIndexValid = false
+    }
+
+    // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
+    @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Double, newZIndex: Double) {
+        if (child.parent != this) return
+        __childrenZIndexValidOrder = false
     }
 }
 

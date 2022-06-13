@@ -42,7 +42,8 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     //mainDpi()
-    mainStrokesExperiment2()
+    mainZIndex()
+    //mainStrokesExperiment2()
     //mainStrokesExperiment()
     //mainCircleColor()
     //mainFilterSwitch()
