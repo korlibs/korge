@@ -8,6 +8,7 @@ import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korio.resources.ResourcesContainer
+import com.soywiz.korma.annotations.RootViewDslMarker
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.setTo
@@ -17,6 +18,7 @@ import kotlinx.coroutines.CoroutineScope
 /**
  * Singleton root [View] and [Container] that contains a reference to the [Views] singleton and doesn't have any parent.
  */
+@RootViewDslMarker
 class Stage(override val views: Views) : FixedSizeContainer()
     , View.Reference
     , CoroutineScope by views

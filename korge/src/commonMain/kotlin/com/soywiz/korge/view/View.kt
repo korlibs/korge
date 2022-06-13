@@ -2102,7 +2102,7 @@ fun <T : View> T.alpha(alpha: Double): T {
 fun <T : View> T.alpha(alpha: Float): T = alpha(alpha.toDouble())
 fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toDouble())
 
-@Target(AnnotationTarget.TYPE, AnnotationTarget.CLASS) annotation class ViewDslMarker
+typealias ViewDslMarker = com.soywiz.korma.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required
 //typealias ViewDslMarker = KorDslMarker
 

@@ -51,6 +51,8 @@ suspend fun Stage.mainMasks() {
 
     val circle3 = circle(100.0, fill = fill1).centered
     launchImmediately {
+        val width = this.width
+        val height = this.height
         val path = buildPath { this.circle(width * 0.5, height * 0.5, 300.0) }
         animate(looped = true) {
             tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)

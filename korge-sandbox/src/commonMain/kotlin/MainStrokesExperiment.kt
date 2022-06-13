@@ -154,7 +154,7 @@ suspend fun Stage.mainStrokesExperiment2() {
                 }
 
                 PointArrayList().also {
-                    for (c in curves.curves) {
+                    for (c in curves.beziers) {
                         val bc = c as Bezier
                         it.add(bc.points.firstPoint())
                         it.add(bc.points.lastPoint())
@@ -167,7 +167,7 @@ suspend fun Stage.mainStrokesExperiment2() {
 
             }
             dbv2.pointsList = listOf(PointArrayList().also {
-                for (c in curves.curves) {
+                for (c in curves.beziers) {
                     val bc = c as Bezier
                     it.add(bc.points.firstPoint())
                     it.add(bc.points.lastPoint())
@@ -192,7 +192,7 @@ suspend fun Stage.mainStrokesExperiment() {
         //.applyTransform(Matrix().translate(-100, -200))
     val curves = path.getCurves()
 
-    println(curves.curves.joinToString("\n"))
+    println(curves.beziers.joinToString("\n"))
 
     val points = curves.toStrokePoints(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
     Bezier(10.0, 10.0).inflections()

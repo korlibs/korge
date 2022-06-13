@@ -423,7 +423,7 @@ class ViewsTest : ViewsForTesting() {
                 this.addEventComponent {
                     log.add("SolidRect1:${it::class.portableSimpleName}")
                     if (it is MyEvent) {
-                        addChildAt(SolidRect(200, 200).apply {
+                        this@container.addChildAt(SolidRect(200, 200).apply {
                             this.addEventComponent {
                                 log.add("SolidRect2:${it::class.portableSimpleName}")
                             }

@@ -52,7 +52,7 @@ suspend fun Stage.mainClipping() {
 
     gpuShapeView({
         stroke(Colors.GREEN, lineWidth = 2.0) {
-            rect(0.0, 0.0, views.virtualWidthDouble, views.virtualHeightDouble)
+            rect(0.0, 0.0, this@mainClipping.views.virtualWidthDouble, this@mainClipping.views.virtualHeightDouble)
         }
     })
 

@@ -36,7 +36,6 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.stat.Stats
 import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.Views
 import com.soywiz.korgw.CreateDefaultGameWindow
 import com.soywiz.korgw.GameWindow
@@ -167,7 +166,7 @@ object Korge {
         settingsFolder: String? = null,
         batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
         multithreaded: Boolean? = null,
-        entry: @ViewDslMarker suspend Stage.() -> Unit
+        entry: suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
             configureLoggerFromProperties(localCurrentDirVfs["klogger.properties"])

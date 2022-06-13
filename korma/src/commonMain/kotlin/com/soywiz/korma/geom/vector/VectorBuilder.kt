@@ -1,6 +1,9 @@
 package com.soywiz.korma.geom.vector
 
 import com.soywiz.korma.annotations.KorDslMarker
+import com.soywiz.korma.annotations.RootViewDslMarker
+import com.soywiz.korma.annotations.VectorDslMarker
+import com.soywiz.korma.annotations.ViewDslMarker
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
@@ -27,6 +30,9 @@ import kotlin.math.sin
 import kotlin.math.tan
 
 @KorDslMarker
+@ViewDslMarker
+@RootViewDslMarker
+@VectorDslMarker
 interface VectorBuilder {
     val totalPoints: Int
     val lastX: Double
