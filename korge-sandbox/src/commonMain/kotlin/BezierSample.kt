@@ -32,8 +32,8 @@ suspend fun Stage.bezierSample() {
             cubic(p0, p1, p2, p3)
         }
         var ratio = 0.3
-        val cubic2 = Bezier.Cubic().setToSplitFirst(Bezier.Cubic(p0, p1, p2, p3), ratio)
-        val cubic3 = Bezier.Cubic().setToSplitSecond(Bezier.Cubic(p0, p1, p2, p3), ratio)
+        val cubic2 = Bezier(p0, p1, p2, p3).split(ratio).leftCurve
+        val cubic3 = Bezier(p0, p1, p2, p3).split(ratio).rightCurve
 
         graphics.stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
             cubic(cubic2)

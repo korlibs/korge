@@ -13,11 +13,10 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.BezierCurve
-import com.soywiz.korma.geom.bezier.Curve
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
 import com.soywiz.korma.internal.niceStr
+import com.soywiz.korma.math.isAlmostEquals
 import kotlin.native.concurrent.ThreadLocal
 
 // @TODO: ThreadLocal on JVM
@@ -34,6 +33,7 @@ class VectorPath(
     val data: DoubleArrayList = DoubleArrayList(),
     var winding: Winding = Winding.EVEN_ODD
 ) : IVectorPath {
+    var assumeConvex: Boolean = false
     var version: Int = 0
 
     fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
@@ -109,7 +109,7 @@ class VectorPath(
                 lx = x3; ly = y3
             },
             close = {
-                if ((lx != mx) || (ly != my)) {
+                if (!lx.isAlmostEquals(mx) || !ly.isAlmostEquals(my)) {
                     line(lx, ly, mx, my)
                 }
                 close()
@@ -250,9 +250,6 @@ class VectorPath(
     private fun ensureMoveTo(x: Double, y: Double) {
         if (isEmpty()) moveTo(x, y)
     }
-
-    @PublishedApi
-    internal val bezierTemp = Bezier.Temp()
 
     fun getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle {
         bb.reset()
@@ -457,8 +454,8 @@ class VectorPath(
     }
 }
 
-fun VectorBuilder.path(path: VectorPath) {
-    write(path)
+fun VectorBuilder.path(path: VectorPath?) {
+    if (path != null) write(path)
 }
 
 fun VectorBuilder.write(path: VectorPath) {
@@ -518,13 +515,13 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
         },
         quadTo = { cx, cy, ax, ay ->
             //bb.add(Bezier.quadBounds(lx, ly, cx, cy, ax, ay, bb.tempRect), transform)
-            bb.add(BezierCurve(lx, ly, cx, cy, ax, ay).boundingBox, transform)
+            bb.add(Bezier(lx, ly, cx, cy, ax, ay).boundingBox, transform)
             lx = ax
             ly = ay
         },
         cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
             //bb.add(Bezier.cubicBounds(lx, ly, cx1, cy1, cx2, cy2, ax, ay, bb.tempRect, path.bezierTemp), transform)
-            bb.add(BezierCurve(lx, ly, cx1, cy1, cx2, cy2, ax, ay).boundingBox, transform)
+            bb.add(Bezier(lx, ly, cx1, cy1, cx2, cy2, ax, ay).boundingBox, transform)
             lx = ax
             ly = ay
         },
@@ -547,12 +544,12 @@ fun VectorPath.applyTransform(m: Matrix?): VectorPath {
     return this
 }
 
-fun VectorPath.getCurvesLists(): List<Curves> = arrayListOf<Curves>().also { out ->
+fun VectorPath.getCurvesList(): List<Curves> = arrayListOf<Curves>().also { out ->
     var currentClosed = false
-    var current = arrayListOf<Curve>()
+    var current = arrayListOf<Bezier>()
     fun flush() {
         if (current.isEmpty()) return
-        out.add(Curves(current, currentClosed))
+        out.add(Curves(current, currentClosed).also { it.assumeConvex = assumeConvex })
         currentClosed = false
         current = arrayListOf()
     }
@@ -561,9 +558,9 @@ fun VectorPath.getCurvesLists(): List<Curves> = arrayListOf<Curves>().also { out
         //quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier.Quad(x0, y0, x1, y1, x2, y2) },
         //cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier.Cubic(x0, y0, x1, y1, x2, y2, x3, y3) },
 
-        line = { x0, y0, x1, y1 -> current += BezierCurve(x0, y0, x1, y1) },
-        quad = { x0, y0, x1, y1, x2, y2 -> current += BezierCurve(x0, y0, x1, y1, x2, y2) },
-        cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += BezierCurve(x0, y0, x1, y1, x2, y2, x3, y3) },
+        line = { x0, y0, x1, y1 -> current += Bezier(x0, y0, x1, y1) },
+        quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier(x0, y0, x1, y1, x2, y2) },
+        cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier(x0, y0, x1, y1, x2, y2, x3, y3) },
         move = { x, y -> flush() },
         close = {
             currentClosed = true
@@ -574,6 +571,9 @@ fun VectorPath.getCurvesLists(): List<Curves> = arrayListOf<Curves>().also { out
 }
 
 fun VectorPath.getCurves(): Curves {
-    val curvesList = getCurvesLists()
-    return curvesList.flatMap { it.curves }.toCurves(curvesList.lastOrNull()?.closed ?: false)
+    val curvesList = getCurvesList()
+    return curvesList.flatMap { it.beziers }.toCurves(curvesList.lastOrNull()?.closed ?: false)
 }
+
+fun VectorPath.toCurves(): Curves = getCurves()
+fun VectorPath.toCurvesList(): List<Curves> = getCurvesList()

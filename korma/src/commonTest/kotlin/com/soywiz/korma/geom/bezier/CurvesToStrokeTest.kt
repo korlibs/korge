@@ -37,8 +37,8 @@ class CurvesToStrokeTest {
             lineTo(100, 0)
             lineTo(200, 0)
         }.getCurves()
-        assertEquals(Curves(BezierCurve(100,0, 150,0)), curves.split(0.5, 0.75))
-        assertEquals(Curves(BezierCurve(50,0, 100,0)), curves.split(0.25, 0.5))
-        assertEquals(Curves(BezierCurve(50,0, 100,0), BezierCurve(100,0, 150,0)), curves.split(0.25, 0.75))
+        assertEquals(Curves(Bezier(100,0, 150,0)), curves.split(0.5, 0.75))
+        assertEquals(Curves(Bezier(50,0, 100,0)), curves.split(0.25, 0.5))
+        assertEquals(Curves(Bezier(50,0, 100,0), Bezier(100,0, 150,0)), curves.split(0.25, 0.75))
     }
 }

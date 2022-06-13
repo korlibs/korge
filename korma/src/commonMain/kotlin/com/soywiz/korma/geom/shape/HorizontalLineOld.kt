@@ -1,3 +1,4 @@
+/*
 package com.soywiz.korma.geom.shape
 
 import com.soywiz.korma.geom.Point
@@ -41,3 +42,4 @@ object HorizontalLine {
         return count
     }
 }
+*/

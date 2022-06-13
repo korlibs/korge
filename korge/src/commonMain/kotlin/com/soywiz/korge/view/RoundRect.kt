@@ -64,6 +64,7 @@ class RoundRect(
         updatePath {
             clear()
             roundRect(0.0, 0.0, this@RoundRect.width, this@RoundRect.height, this@RoundRect.rx, this@RoundRect.ry)
+            assumeConvex = true // Optimization to avoid computing convexity
         }
     }
 }

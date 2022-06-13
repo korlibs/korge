@@ -2,7 +2,9 @@ package com.soywiz.korma.geom.vector
 
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.buildVectorPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -221,6 +223,21 @@ class VectorPathTest {
                 close
             """.trimIndent(),
             log.joinToString("\n")
+        )
+    }
+
+    @Test
+    fun testCircleCurves() {
+        assertEquals(
+            listOf(
+                listOf(
+                    Bezier(100, 0, 100, -55.23, 55.23, -100, 0, -100),
+                    Bezier(0, -100, -55.23, -100, -100, -55.23, -100, 0),
+                    Bezier(-100, 0, -100, 55.23, -55.23, 100, 0, 100),
+                    Bezier(0, 100, 55.23, 100, 100, 55.23, 100, 0),
+                )
+            ),
+            buildVectorPath { circle(0, 0, 100) }.toCurvesList().map { it.beziers.map { it.roundDecimalPlaces(2) } }
         )
     }
 }

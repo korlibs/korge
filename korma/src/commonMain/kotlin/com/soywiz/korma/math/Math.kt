@@ -59,8 +59,8 @@ fun log10(v: Int): Int = log(v.toDouble(), 10.0).toInt()
 fun signNonZeroM1(x: Double): Int = if (x <= 0) -1 else +1
 fun signNonZeroP1(x: Double): Int = if (x >= 0) +1 else -1
 
-//fun Double.isAlmostEquals(other: Double, diff: Double = 0.0001): Boolean = (this - other).absoluteValue < diff
-fun Double.isAlmostEquals(other: Double, diff: Double = 0.000001): Boolean = (this - other).absoluteValue < diff
+//fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.0001): Boolean = (this - other).absoluteValue < epsilon
+fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = (this - other).absoluteValue < epsilon
 fun Double.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
 fun Double.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 

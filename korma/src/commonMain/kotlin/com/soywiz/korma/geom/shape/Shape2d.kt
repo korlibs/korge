@@ -412,6 +412,8 @@ inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
+fun IPointArrayList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
+
 inline fun approximateCurve(
     curveSteps: Int,
     crossinline compute: (ratio: Double, get: (x: Double, y: Double) -> Unit) -> Unit,
@@ -543,7 +545,14 @@ fun List<IPoint>.containsPoint(x: Double, y: Double): Boolean {
     for (n in 0 until this.size - 1) {
         val p1 = this[n + 0]
         val p2 = this[n + 1]
-        intersections += HorizontalLine.intersectionsWithLine(x, y, p1.x, p1.y, p2.x, p2.y)
+        intersections += intersectionsWithLine(x, y, p1.x, p1.y, p2.x, p2.y)
     }
     return (intersections % 2) != 0
+}
+
+private fun intersectionsWithLine(
+    ax: Double, ay: Double,
+    bx0: Double, by0: Double, bx1: Double, by1: Double
+): Int {
+    return if (((by1 > ay) != (by0 > ay)) && (ax < (bx0 - bx1) * (ay - by1) / (by0 - by1) + bx1)) 1 else 0
 }

@@ -5,11 +5,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BezierCurveLinearTest {
-    val b = BezierCurve(0, 0, 100, 100)
+    val b = Bezier(0, 0, 100, 100)
 
     @Test
     fun testLinearCurvesSerializesCorrectly() {
-        assertEquals("BezierCurve([(0, 0), (100, 100)])", b.toString())
+        assertEquals("Bezier([(0, 0), (100, 100)])", b.toString())
     }
 
     @Test

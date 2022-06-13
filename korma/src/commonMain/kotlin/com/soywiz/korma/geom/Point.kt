@@ -7,7 +7,9 @@ import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.clamp
+import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.absoluteValue
 import kotlin.math.acos
 import kotlin.math.ceil
@@ -83,6 +85,9 @@ val IPoint.normalized: IPoint
 val IPoint.mutable: Point get() = Point(x, y)
 val IPoint.immutable: IPoint get() = IPoint(x, y)
 fun IPoint.copy() = IPoint(x, y)
+fun IPoint.isAlmostEquals(other: IPoint, epsilon: Double = 0.000001): Boolean =
+    this.x.isAlmostEquals(other.x, epsilon) && this.y.isAlmostEquals(other.y, epsilon)
+
 fun Point.setToTransform(mat: Matrix, p: IPoint): Point = setToTransform(mat, p.x, p.y)
 fun Point.setToTransform(mat: Matrix, x: Double, y: Double): Point = setTo(mat.transformX(x, y), mat.transformY(x, y))
 fun Point.setToAdd(a: IPoint, b: IPoint): Point = setTo(a.x + b.x, a.y + b.y)
@@ -217,6 +222,7 @@ data class Point(
     fun round() = setTo(round(x), round(y))
     fun ceil() = setTo(ceil(x), ceil(y))
 
+    fun setToRoundDecimalPlaces(places: Int) = setTo(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places))
     fun setTo(x: Int, y: Int): Point = setTo(x.toDouble(), y.toDouble())
 
     fun setTo(x: Double, y: Double): Point {

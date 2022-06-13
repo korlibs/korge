@@ -40,6 +40,7 @@ import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.distanceTo
 import com.soywiz.korma.geom.expand
@@ -81,8 +82,6 @@ open class GpuShapeView(
     // @TODO: Not used, but to be compatible with Graphics
     var autoScaling: Boolean = true
 ) : View(), Anchorable {
-    private val pointCache = FastIdentityMap<VectorPath, PointArrayList>()
-    private val pointListCache = FastIdentityMap<VectorPath, List<PointArrayList>>()
     private val gpuShapeViewCommands = GpuShapeViewCommands()
     private val bb = BoundsBuilder()
     var bufferWidth = 1000
@@ -125,14 +124,13 @@ open class GpuShapeView(
 
     val shapeWidth: Double get() = shapeBounds.width
     val shapeHeight: Double get() = shapeBounds.height
+    private var lastCommandWasClipped: Boolean = false
 
     override val anchorDispX: Double get() = shapeBounds.width * anchorX
     override val anchorDispY: Double get() = shapeBounds.height * anchorY
 
     private fun invalidateShape() {
         renderCount = 0
-        pointCache.clear()
-        pointListCache.clear()
         validShape = false
         validShapeBounds = false
         //strokeCache.clear()
@@ -143,6 +141,7 @@ open class GpuShapeView(
         validShape = true
         gpuShapeViewCommands.clear()
         gpuShapeViewCommands.clearStencil()
+        lastCommandWasClipped = true
         renderShape(shape)
         gpuShapeViewCommands.finish()
         cachedScale = globalScale
@@ -173,13 +172,8 @@ open class GpuShapeView(
                 EmptyShape -> false
                 is CompoundShape -> this.components.any { it.requireStencil }
                 is TextShape -> this.primitiveShapes.requireStencil
-                is FillShape -> {
-                    // @TODO: Check if the shape is convex. If it is context we might not need the stencil
-                    true
-                }
-                is PolylineShape -> {
-                    false
-                }
+                is FillShape -> !this.isConvex
+                is PolylineShape -> false
                 else -> true // UNKNOWN
             }
         }
@@ -548,26 +542,30 @@ open class GpuShapeView(
 
     private fun getPointsForPath(points: PointArrayList): PointsResult {
         val vertexStart = gpuShapeViewCommands.verticesStart()
-        val bb = BoundsBuilder()
+        val bb = this.bb
         bb.reset()
-        val startIndex = gpuShapeViewCommands.addVertex(0f, 0f)
+        bb.add(points)
+        val xMid = (bb.xmax + bb.xmin) / 2
+        val yMid = (bb.ymax + bb.ymin) / 2
+
+        gpuShapeViewCommands.addVertex(xMid.toFloat(), yMid.toFloat())
         for (n in 0 until points.size + 1) {
-            val x = points.getX(n % points.size).toFloat()
-            val y = points.getY(n % points.size).toFloat()
-            gpuShapeViewCommands.addVertex(x, y)
-            bb.add(x, y)
+            val x = points.getX(n % points.size)
+            val y = points.getY(n % points.size)
+            //val dist = Point.distance(x, y, xMid, yMid)
+            val dist = 0.0
+            gpuShapeViewCommands.addVertex(x.toFloat(), y.toFloat(), lw = dist.toFloat())
         }
-        gpuShapeViewCommands.updateVertex(startIndex, ((bb.xmax + bb.xmin) / 2).toFloat(), ((bb.ymax + bb.ymin) / 2).toFloat())
         val vertexEnd = gpuShapeViewCommands.verticesEnd()
         return PointsResult(bb.getBounds(), points.size + 2, vertexStart, vertexEnd)
     }
 
     private fun getPointsForPath(path: VectorPath): PointsResult {
-        return getPointsForPath(pointCache.getOrPut(path) { path.getPoints2() })
+        return getPointsForPath(path.getPoints2())
     }
 
     private fun getPointsForPathList(path: VectorPath): List<PointsResult> {
-        return pointListCache.getOrPut(path) { path.getPoints2List() }.map { getPointsForPath(it) }
+        return path.getPoints2List().map { getPointsForPath(it) }
     }
 
     var maxRenderCount: Int = 100_000
@@ -604,7 +602,29 @@ open class GpuShapeView(
         val pathBoundsNoExpended = BoundsBuilder().also { bb -> pathDataList.fastForEach { bb.add(it.bounds) } }.getBounds()
         val pathBounds = pathBoundsNoExpended.clone().expand(2, 2, 2, 2)
 
-        if (!shape.requireStencil && shape.clip == null) {
+        val clipDataStart = gpuShapeViewCommands.verticesStart()
+        val clipData = shape.clip?.let { getPointsForPath(it) }
+        val clipDataEnd = gpuShapeViewCommands.verticesEnd()
+        val clipBounds = clipData?.bounds
+        val shapeIsConvex = shape.isConvex
+        val isSimpleDraw = shapeIsConvex && shape.clip == null
+
+        //println("pathBounds=$pathBounds")
+
+        if (!isSimpleDraw || lastCommandWasClipped) {
+            lastCommandWasClipped = true
+            gpuShapeViewCommands.setScissor(when {
+                isSimpleDraw -> null
+                clipBounds != null -> Rectangle().also { it.setToIntersection(pathBounds, clipBounds) }
+                else -> pathBounds
+            })
+            //gpuShapeViewCommands.clearStencil(0)
+        }
+
+        if (isSimpleDraw) {
+            lastCommandWasClipped = false
+        //if (false) {
+            //println("convex!")
             pathDataList.fastForEach { pathData ->
                 gpuShapeViewCommands.draw(
                     AG.DrawType.TRIANGLE_FAN,
@@ -612,24 +632,31 @@ open class GpuShapeView(
                     endIndex = pathData.vertexEnd,
                     paintShader = paintShader,
                     colorMask = AG.ColorMaskState(true),
-                    blendMode = BlendMode.NONE.factors,
+                    //blendMode = BlendMode.NONE.factors,
+                    blendMode = BlendMode.NORMAL.factors,
+                )
+            }
+            if (antialiased) {
+                //if (true) {
+                //if (false) {
+                //println("globalScale=$globalScale")
+                renderStroke(
+                    stateTransform = shape.transform,
+                    strokePath = shape.path,
+                    paint = shape.paint,
+                    globalAlpha = shape.globalAlpha,
+                    lineWidth = (1.6 * globalScale).clamp(1.4, 1.8), // @TODO: Scale lineWidth based on the global scale and device pixel ratio
+                    scaleMode = LineScaleMode.NONE,
+                    startCap = LineCap.BUTT,
+                    endCap = LineCap.BUTT,
+                    join = LineJoin.MITER,
+                    miterLimit = 0.5,
+                    forceClosed = false,
                 )
             }
             return
         }
 
-        val clipDataStart = gpuShapeViewCommands.verticesStart()
-        val clipData = shape.clip?.let { getPointsForPath(it) }
-        val clipDataEnd = gpuShapeViewCommands.verticesEnd()
-        val clipBounds = clipData?.bounds
-
-        //println("pathBounds=$pathBounds")
-
-        gpuShapeViewCommands.setScissor(when {
-            clipBounds != null -> Rectangle().also { it.setToIntersection(pathBounds, clipBounds) }
-            else -> pathBounds
-        })
-        //gpuShapeViewCommands.clearStencil(0)
 
         var stencilEqualsValue = 0b00000001
         pathDataList.fastForEach { pathData ->
@@ -671,7 +698,7 @@ open class GpuShapeView(
                 endCap = LineCap.BUTT,
                 join = LineJoin.MITER,
                 miterLimit = 0.5,
-                forceClosed = true,
+                forceClosed = false,
                 stencil = AG.StencilState(
                     enabled = true,
                     compareMode = AG.CompareMode.NOT_EQUAL,

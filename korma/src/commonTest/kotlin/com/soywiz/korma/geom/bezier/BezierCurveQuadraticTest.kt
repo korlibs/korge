@@ -3,15 +3,14 @@ package com.soywiz.korma.geom.bezier
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BezierCurveQuadraticTest {
-    val b = BezierCurve(0.0, 0.0, 0.5, 1.0, 1.0, 0.0);
+    val b = Bezier(0.0, 0.0, 0.5, 1.0, 1.0, 0.0);
     @Test
     fun testSerializesCorrectly() {
-        assertEquals("BezierCurve([(0, 0), (0.5, 1), (1, 0)])", b.toString())
+        assertEquals("Bezier([(0, 0), (0.5, 1), (1, 0)])", b.toString())
     }
 
     @Test
@@ -55,21 +54,21 @@ class BezierCurveQuadraticTest {
     }
 
     @Test
-    @Ignore
     fun testFromPointSet() {
         val M = Point(75, 25)
         val pts = listOf(Point(0, 0), M, Point(100, 100))
 
         run {
-            val b = BezierCurve.quadraticFromPoints(pts[0], pts[1], pts[2]);
+            val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2])
+            assertEquals(Bezier(0, 0, 100, 0, 100, 100), b)
             assertEquals(M, b.get(0.5))
         }
 
         run {
             val t = 0.25;
-            val b = BezierCurve.quadraticFromPoints(pts[0], pts[1], pts[2], t);
-            val quarterpoint = b.get(t)
-            assertEquals(M, quarterpoint)
+            val b = Bezier.quadraticFromPoints(pts[0], pts[1], pts[2], t)
+            assertEquals(Bezier(0.0, 0.0, 183.33, 50.0, 100.0, 100.0), b.roundDecimalPlaces(2))
+            assertEquals(M, b.get(t))
         }
     }
 

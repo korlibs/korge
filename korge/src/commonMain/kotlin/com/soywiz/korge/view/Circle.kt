@@ -50,6 +50,7 @@ open class Circle(
         updatePath {
             clear()
             circle(radius, radius, radius)
+            assumeConvex = true // Optimization to avoid computing convexity
             //circle(radius + halfStroke, radius + halfStroke, radius)
             //println(toSvgString())
         }

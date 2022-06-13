@@ -10,7 +10,6 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.BezierCurve
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
@@ -310,17 +309,12 @@ fun VectorBuilder.cubic(x0: Int, y0: Int, cx1: Int, cy1: Int, cx2: Int, cy2: Int
 fun VectorBuilder.quad(o: IPoint, c: IPoint, a: IPoint) = quad(o.x, o.y, c.x, c.y, a.x, a.y)
 fun VectorBuilder.cubic(o: IPoint, c1: IPoint, c2: IPoint, a: IPoint) = cubic(o.x, o.y, c1.x, c1.y, c2.x, c2.y, a.x, a.y)
 
-@Deprecated("Use BezierCurve instead")
-fun VectorBuilder.quad(curve: Bezier.Quad) = quad(curve.p0, curve.p1, curve.p2)
-@Deprecated("Use BezierCurve instead")
-fun VectorBuilder.cubic(curve: Bezier.Cubic) = cubic(curve.p0, curve.p1, curve.p2, curve.p3)
+@Deprecated("Use Bezier instead")
+fun VectorBuilder.quad(curve: Bezier) = curve(curve)
+@Deprecated("Use Bezier instead")
+fun VectorBuilder.cubic(curve: Bezier) = curve(curve)
 
-@Deprecated("Use BezierCurve instead")
-fun VectorBuilder.curve(curve: Bezier.Quad) = quad(curve)
-@Deprecated("Use BezierCurve instead")
-fun VectorBuilder.curve(curve: Bezier.Cubic) = cubic(curve)
-
-fun VectorBuilder.curve(curve: BezierCurve) {
+fun VectorBuilder.curve(curve: Bezier) {
     val p = curve.points
     when (curve.order) {
         3 -> cubic(p.getX(0), p.getY(0), p.getX(1), p.getY(1), p.getX(2), p.getY(2), p.getX(3), p.getY(3))

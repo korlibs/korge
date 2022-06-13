@@ -3,16 +3,15 @@ package com.soywiz.korma.geom.bezier
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
-import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BezierCurveCubicTest {
-    val b = BezierCurve(0, 0, 0, 1, 1, 1, 1, 0)
+    val b = Bezier(0, 0, 0, 1, 1, 1, 1, 0)
 
     @Test
     fun testSerializesCorrectly() {
-        assertEquals("BezierCurve([(0, 0), (0, 1), (1, 1), (1, 0)])", b.toString())
+        assertEquals("Bezier([(0, 0), (0, 1), (1, 1), (1, 0)])", b.toString())
     }
 
     @Test
@@ -58,27 +57,30 @@ class BezierCurveCubicTest {
 
     @Test
     fun testComplexCubicHasTheCorrectInflectionPoint() {
-        val b = BezierCurve(0.0, 0.0, 1.0, 0.25, 0.0, 1.0, 1.0, 0.0);
+        val b = Bezier(0.0, 0.0, 1.0, 0.25, 0.0, 1.0, 1.0, 0.0)
         assertEquals(listOf(0.8, 0.5), b.inflections().toList())
     }
 
     @Test
-    @Ignore
     fun testFromPointSet() {
         val M = Point(200 / 3.0, 100 / 3.0)
         val pts = listOf(Point(0, 0), M, Point(100, 100))
         run {
-            val b: BezierCurve = BezierCurve.cubicFromPoints(pts[0], pts[1], pts[2])
-            val midpoint = b.get(0.5);
-            assertEquals(midpoint.x, M.x)
-            assertEquals(midpoint.y, M.y)
+            val b: Bezier = Bezier.cubicFromPoints(pts[0], pts[1], pts[2])
+            assertEquals(
+                Bezier(0.0, 0.0, 55.56, 11.11, 88.89, 44.44, 100.0, 100.0),
+                b.roundDecimalPlaces(2)
+            )
+            val midpoint = b.get(0.5)
+            assertEquals(midpoint.x, M.x, 0.00001)
+            assertEquals(midpoint.y, M.y, 0.00001)
         }
         run {
-            val t = 0.25;
-            val b = BezierCurve.cubicFromPoints(pts[0], pts[1], pts[2], t);
-            val quarterpoint = b.get(t);
-            assertEquals(quarterpoint.x, M.x)
-            assertEquals(quarterpoint.y, M.y)
+            val t = 0.25
+            val b = Bezier.cubicFromPoints(pts[0], pts[1], pts[2], t)
+            val quarterpoint = b.get(t)
+            assertEquals(quarterpoint.x, M.x, 0.00001)
+            assertEquals(quarterpoint.y, M.y, 0.00001)
         }
     }
 }

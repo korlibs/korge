@@ -36,7 +36,7 @@ suspend fun Stage.mainBezier() {
     addUpdater {
         shape.updateShape {
             //val curve = Bezier.Quad(bez.p1, bez.p2, bez.p3)
-            val curve = Bezier.Cubic(bez.p1, bez.p2, bez.p3, bez.p4)
+            val curve = Bezier(bez.p1, bez.p2, bez.p3, bez.p4)
 
             stroke(Colors.WHITE, lineWidth = 4.0) {
                 beginPath()

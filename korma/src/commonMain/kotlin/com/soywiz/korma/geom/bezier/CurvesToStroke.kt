@@ -246,7 +246,7 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
     }
 
     // @TODO: instead of nsteps we should have some kind of threshold regarding to how much information do we lose at 1:1 scale
-    fun addCurvePoints(curr: Curve, nsteps: Int = (curr.length() / 10.0).clamp(10.0, 100.0).toInt()) {
+    fun addCurvePoints(curr: Curve, nsteps: Int = (curr.length / 10.0).clamp(10.0, 100.0).toInt()) {
         // @TODO: Here we could generate curve information to render in the shader with a plain simple quadratic bezier to reduce the number of points and make the curve as accurate as possible
         forEachRatio01(nsteps, include0 = false, include1 = false) {
             addTwoPoints(curr.calc(it), curr.normal(it), width)
@@ -255,7 +255,7 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
 
     fun addAllCurvesPoints(curves: Curves, join: LineJoin = LineJoin.MITER, startCap: LineCap = LineCap.BUTT, endCap: LineCap = LineCap.BUTT, miterLimit: Double = 10.0) {
         val closed = curves.closed
-        val curves = curves.curves
+        val curves = curves.beziers
         for (n in curves.indices) {
             val curr = curves.getCyclic(n + 0)
             val next = curves.getCyclic(n + 1)

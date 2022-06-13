@@ -26,7 +26,7 @@ import com.soywiz.korim.text.text
 import com.soywiz.korim.vector.StrokeInfo
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.PointArrayList
-import com.soywiz.korma.geom.bezier.BezierCurve
+import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.StrokePointsMode
 import com.soywiz.korma.geom.bezier.toDashes
 import com.soywiz.korma.geom.bezier.toStrokePoints
@@ -44,6 +44,19 @@ import com.soywiz.korma.geom.vector.star
 import com.soywiz.korma.interpolation.Easing
 
 suspend fun Stage.mainStrokesExperiment2() {
+    //graphics {
+    //    val curve = BezierCurve(0.0, 0.0, 33.33333333333333, 66.66666666666666, 66.66666666666667, 100.0, 100.0, 100.0)
+    //    stroke(Colors.RED, StrokeInfo(thickness = 3.0)) {
+    //        //curve(BezierCurve(0, 0, 50, 100, 100, 100))
+    //        curve(curve)
+    //    }
+    //    stroke(Colors.BLUE, StrokeInfo(thickness = 2.0)) {
+    //        curve(curve.toQuad().translate(0.0, 0.0))
+    //    }
+    //    //println(BezierCurve(0, 0, 50, 100, 100, 100).toCubic())
+    //}
+    //return
+
     val path = buildVectorPath {}
     val curves = path.getCurves()
     val points = curves.toStrokePoints(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
@@ -142,7 +155,7 @@ suspend fun Stage.mainStrokesExperiment2() {
 
                 PointArrayList().also {
                     for (c in curves.curves) {
-                        val bc = c as BezierCurve
+                        val bc = c as Bezier
                         it.add(bc.points.firstPoint())
                         it.add(bc.points.lastPoint())
                     }
@@ -155,7 +168,7 @@ suspend fun Stage.mainStrokesExperiment2() {
             }
             dbv2.pointsList = listOf(PointArrayList().also {
                 for (c in curves.curves) {
-                    val bc = c as BezierCurve
+                    val bc = c as Bezier
                     it.add(bc.points.firstPoint())
                     it.add(bc.points.lastPoint())
                 }
@@ -182,7 +195,7 @@ suspend fun Stage.mainStrokesExperiment() {
     println(curves.curves.joinToString("\n"))
 
     val points = curves.toStrokePoints(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
-    BezierCurve(10.0, 10.0).inflections()
+    Bezier(10.0, 10.0).inflections()
     //points.scale(2.0)
 
     println("path=$path")

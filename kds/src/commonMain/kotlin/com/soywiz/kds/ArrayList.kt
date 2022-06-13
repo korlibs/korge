@@ -337,18 +337,29 @@ class DoubleArrayList(capacity: Int = 7) : Collection<Double> {
         return -1
     }
 
-    fun insertAt(index: Int, value: Double) = this.apply {
-        ensure(1)
-        if (isNotEmpty()) arraycopy(data, index, data, index + 1, length - index)
-        data[index] = value
-        length++
-    }
-
-    fun insertAt(index: Int, value: DoubleArray, start: Int = 0, end: Int = value.size) = this.apply {
-        val count = end - start
+    private fun createHoleAt(index: Int, count: Int) {
         ensure(count)
         if (isNotEmpty()) arraycopy(data, index, data, index + count, length - index)
-        for (n in 0 until count) data[index + n] = value[start + n]
+    }
+
+    fun insertAt(index: Int, value: Double): DoubleArrayList {
+        createHoleAt(index, 1)
+        data[index] = value
+        length++
+        return this
+    }
+
+    fun insertAt(index: Int, v0: Double, v1: Double) = this.apply {
+        createHoleAt(index, 2)
+        data[index + 0] = v0
+        data[index + 1] = v1
+        length += 2
+    }
+
+    fun insertAt(index: Int, values: DoubleArray, start: Int = 0, end: Int = values.size) = this.apply {
+        val count = end - start
+        createHoleAt(index, count)
+        arraycopy(values, start, data, index, count)
         length += count
     }
 

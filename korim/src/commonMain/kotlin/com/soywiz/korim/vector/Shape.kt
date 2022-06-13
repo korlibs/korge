@@ -21,6 +21,8 @@ import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.Curves
+import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.contains
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
@@ -28,6 +30,8 @@ import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.add
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.strokeToFill
+import com.soywiz.korma.geom.vector.toCurves
+import com.soywiz.korma.geom.vector.toCurvesList
 import kotlin.math.max
 import kotlin.math.round
 
@@ -307,6 +311,13 @@ data class FillShape(
     override val transform: Matrix = Matrix(),
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
+    val pathCurvesList: List<Curves> by lazy {
+        //println("Computed pathCurves for path=$path")
+        path.toCurvesList()
+    }
+    val clipCurvesList: List<Curves>? by lazy { clip?.toCurvesList() }
+    val isConvex: Boolean get() = pathCurvesList.size == 1 && pathCurvesList.first().isConvex && (clipCurvesList == null)
+
 	override fun drawInternal(c: Context2d) {
 		c.fill(paint)
 	}
