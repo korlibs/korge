@@ -1,5 +1,6 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 
@@ -9,6 +10,8 @@ data class StrokeInfo(
     val scaleMode: LineScaleMode = LineScaleMode.NORMAL,
     val startCap: LineCap = LineCap.BUTT,
     val endCap: LineCap = LineCap.BUTT,
-    val lineJoin: LineJoin = LineJoin.MITER,
-    val miterLimit: Double = 20.0
+    val join: LineJoin = LineJoin.MITER,
+    val miterLimit: Double = 20.0,
+    val dash: IDoubleArrayList? = null,
+    val dashOffset: Double = 0.0
 )

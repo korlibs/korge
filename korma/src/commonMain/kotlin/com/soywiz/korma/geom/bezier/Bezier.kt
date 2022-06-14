@@ -35,6 +35,9 @@ import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.normalizeZero
 import com.soywiz.korma.math.roundDecimalPlaces
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
@@ -1309,10 +1312,15 @@ class Bezier(
         @PublishedApi internal fun quadToCubic1(v0: Double, v1: Double) = v0 + (v1 - v0) * (2.0 / 3.0)
         @PublishedApi internal fun quadToCubic2(v1: Double, v2: Double) = v2 + (v1 - v2) * (2.0 / 3.0)
 
+        //@InlineOnly
+        @OptIn(ExperimentalContracts::class)
         inline fun <T> quadToCubic(
             x0: Double, y0: Double, xc: Double, yc: Double, x1: Double, y1: Double,
             bezier: (qx0: Double, qy0: Double, qx1: Double, qy1: Double, qx2: Double, qy2: Double, qx3: Double, qy3: Double) -> T
         ): T {
+            contract {
+                callsInPlace(bezier, InvocationKind.EXACTLY_ONCE)
+            }
             return bezier(
                 x0, y0,
                 quadToCubic1(x0, xc), quadToCubic1(y0, yc),

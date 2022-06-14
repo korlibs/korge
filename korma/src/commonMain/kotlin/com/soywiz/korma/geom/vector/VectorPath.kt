@@ -1,7 +1,9 @@
 package com.soywiz.korma.geom.vector
 
 import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.Extra
 import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.extraProperty
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.BoundsBuilder
@@ -32,7 +34,7 @@ class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
     var winding: Winding = Winding.EVEN_ODD
-) : IVectorPath {
+) : IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
 
@@ -544,30 +546,35 @@ fun VectorPath.applyTransform(m: Matrix?): VectorPath {
     return this
 }
 
-fun VectorPath.getCurvesList(): List<Curves> = arrayListOf<Curves>().also { out ->
-    var currentClosed = false
-    var current = arrayListOf<Bezier>()
-    fun flush() {
-        if (current.isEmpty()) return
-        out.add(Curves(current, currentClosed).also { it.assumeConvex = assumeConvex })
-        currentClosed = false
-        current = arrayListOf()
-    }
-    visitEdges(
-        //line = { x0, y0, x1, y1 -> current += Curve.Line(x0, y0, x1, y1) },
-        //quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier.Quad(x0, y0, x1, y1, x2, y2) },
-        //cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier.Cubic(x0, y0, x1, y1, x2, y2, x3, y3) },
+private var VectorPath._curvesCacheVersion by extraProperty { -1 }
+private var VectorPath._curvesCache by extraProperty<List<Curves>?> { null }
 
-        line = { x0, y0, x1, y1 -> current += Bezier(x0, y0, x1, y1) },
-        quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier(x0, y0, x1, y1, x2, y2) },
-        cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier(x0, y0, x1, y1, x2, y2, x3, y3) },
-        move = { x, y -> flush() },
-        close = {
-            currentClosed = true
+fun VectorPath.getCurvesList(): List<Curves> {
+    if (_curvesCacheVersion != version) {
+        _curvesCacheVersion = version
+        _curvesCache = arrayListOf<Curves>().also { out ->
+            var currentClosed = false
+            var current = arrayListOf<Bezier>()
+            fun flush() {
+                if (current.isEmpty()) return
+                out.add(Curves(current, currentClosed).also { it.assumeConvex = assumeConvex })
+                currentClosed = false
+                current = arrayListOf()
+            }
+            visitEdges(
+                line = { x0, y0, x1, y1 -> current += Bezier(x0, y0, x1, y1) },
+                quad = { x0, y0, x1, y1, x2, y2 -> current += Bezier(x0, y0, x1, y1, x2, y2) },
+                cubic = { x0, y0, x1, y1, x2, y2, x3, y3 -> current += Bezier(x0, y0, x1, y1, x2, y2, x3, y3) },
+                move = { x, y -> flush() },
+                close = {
+                    currentClosed = true
+                    flush()
+                }
+            )
             flush()
         }
-    )
-    flush()
+    }
+    return _curvesCache!!
 }
 
 fun VectorPath.getCurves(): Curves {

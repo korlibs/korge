@@ -1,5 +1,6 @@
 package com.soywiz.korim.awt
 
+import com.soywiz.kds.mapFloat
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.ensureNative
@@ -411,7 +412,9 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
                 state.scaledLineWidth.toFloat(),
                 state.lineCap.toAwt(),
                 state.lineJoin.toAwt(),
-                state.miterLimit.toFloat()
+                state.miterLimit.toFloat(),
+                state.lineDash?.mapFloat { it.toFloat() }?.toFloatArray(),
+                state.lineDashOffset.toFloat()
             )
 			g.paint = state.strokeStyle.toAwt(awtTransform)
 		}

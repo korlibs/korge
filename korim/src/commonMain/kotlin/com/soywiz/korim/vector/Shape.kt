@@ -1,5 +1,6 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.toUri
 import com.soywiz.korim.color.RGBA
@@ -18,6 +19,7 @@ import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korio.util.toStringDecimal
 import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
@@ -346,6 +348,8 @@ data class PolylineShape(
     val endCaps: LineCap,
     val lineJoin: LineJoin,
     val miterLimit: Double,
+    val lineDash: IDoubleArrayList?,
+    val lineDashOffset: Double,
     override val globalAlpha: Double = 1.0,
 ) : StyledShape {
     private val tempBB = BoundsBuilder()
@@ -353,7 +357,7 @@ data class PolylineShape(
 
     val fillShape: FillShape by lazy {
         FillShape(
-            path.strokeToFill(thickness, lineJoin, startCaps, endCaps, miterLimit),
+            path.strokeToFill(thickness, lineJoin, startCaps, endCaps, miterLimit, lineDash, lineDashOffset),
             clip, paint, transform, globalAlpha
         )
     }

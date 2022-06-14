@@ -8,6 +8,7 @@ import org.gradle.kotlin.dsl.kotlin
 import java.io.File
 import java.nio.file.Files
 import com.soywiz.korlibs.modules.*
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import kotlin.io.path.relativeTo
 
 buildscript {
@@ -718,12 +719,21 @@ samples {
             //dependsOn("jsBrowserDevelopmentRun")
             dependsOn("jsBrowserProductionRun")
         }
-        fun Task.dependsOnNativeTask(kind: String) {
-            when {
-                isWindows -> dependsOn("run${kind}ExecutableMingwX64")
-                isMacos -> if (isArm) dependsOn("run${kind}ExecutableMacosArm64") else dependsOn("run${kind}ExecutableMacosX64")
-                else -> dependsOn("run${kind}ExecutableLinuxX64")
+
+        fun runNativeTaskNameWin(kind: String): String {
+            return "run${kind}ExecutableMingwX64"
+        }
+
+        fun runNativeTaskName(kind: String): String {
+            return when {
+                isWindows -> runNativeTaskNameWin(kind)
+                isMacos -> if (isArm) "run${kind}ExecutableMacosArm64" else "run${kind}ExecutableMacosX64"
+                else -> "run${kind}ExecutableLinuxX64"
             }
+        }
+
+        fun Task.dependsOnNativeTask(kind: String) {
+            dependsOn(runNativeTaskName(kind))
         }
         val runNativeDebug by creating {
             group = "run"
@@ -732,6 +742,27 @@ samples {
         val runNativeRelease by creating {
             group = "run"
             dependsOnNativeTask("Release")
+        }
+        if (!com.soywiz.korge.gradle.targets.isWindows) {
+            afterEvaluate {
+                val linkReleaseExecutableMingwX64 by getting(KotlinNativeLink::class)
+                val linkDebugExecutableMingwX64 by getting(KotlinNativeLink::class)
+
+                fun Exec.configureLink(link: KotlinNativeLink) {
+                    dependsOn(link)
+                    commandLine("wine64", link.binary.outputFile)
+                    workingDir = link.binary.outputDirectory
+                }
+
+                val runNativeWineDebug by creating(Exec::class) {
+                    group = "run"
+                    configureLink(linkDebugExecutableMingwX64)
+                }
+                val runNativeWineRelease by creating(Exec::class) {
+                    group = "run"
+                    configureLink(linkReleaseExecutableMingwX64)
+                }
+            }
         }
 
         //val jsRun by creating { dependsOn("jsBrowserDevelopmentRun") } // Already available

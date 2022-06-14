@@ -42,13 +42,29 @@ class VectorArrayList(
 
     override fun get(index: Int, dim: Int): Double = data[index * dimensions + dim]
     override fun getGeneric(index: Int): GenericVector = GenericVector(dimensions, data.data, index * dimensions)
+
+    private fun checkDimensions(dim: Int) {
+        if (dim != dimensions) error("Invalid dimensions $dim != $dimensions")
+    }
+
     fun set(index: Int, dim: Int, value: Double) {
         data[index * dimensions + dim] = value
+    }
+    private inline fun setInternal(dims: Int, index: Int, block: (Int) -> Unit) {
+        checkDimensions(dims)
+        block(index * dims)
     }
     fun set(index: Int, vararg values: Double) {
         val rindex = index * dimensions
         for (n in 0 until dimensions) data[rindex + n] = values[n]
     }
+    fun set(index: Int, v0: Double) = setInternal(1, index) { data[it] = v0 }
+    fun set(index: Int, v0: Double, v1: Double) = setInternal(2, index) { data[it] = v0; data[it + 1] = v1 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double) = setInternal(3, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double) = setInternal(4, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) = setInternal(5, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3; data[it + 4] = v4 }
+    fun set(index: Int, v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) = setInternal(6, index) { data[it] = v0; data[it + 1] = v1; data[it + 2] = v2; data[it + 3] = v3; data[it + 4] = v4; data[it + 5] = v5 }
+
     fun set(index: Int, values: DoubleArray, offset: Int = 0) {
         val rindex = index * dimensions
         for (n in 0 until dimensions) data[rindex + n] = values[offset + n]
@@ -63,10 +79,13 @@ class VectorArrayList(
     fun add(values: DoubleArray, offset: Int = 0) {
         data.add(values, offset, dimensions)
     }
-    fun add(vararg values: Double) {
-        if (values.size != dimensions) error("Invalid dimensions ${values.size} != $dimensions")
-        data.add(values)
-    }
+    fun add(v0: Double) = checkDimensions(1).also { data.add(v0) }
+    fun add(v0: Double, v1: Double) = checkDimensions(2).also { data.add(v0, v1) }
+    fun add(v0: Double, v1: Double, v2: Double) = checkDimensions(3).also { data.add(v0, v1, v2) }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double) = checkDimensions(4).also { data.add(v0, v1, v2, v3) }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double) = checkDimensions(5).also { data.add(v0, v1, v2, v3, v4) }
+    fun add(v0: Double, v1: Double, v2: Double, v3: Double, v4: Double, v5: Double) = checkDimensions(6).also { data.add(v0, v1, v2, v3, v4, v5) }
+    fun add(vararg values: Double) = checkDimensions(values.size).also { data.add(values) }
     fun add(vector: GenericVector) {
         add(vector.data, vector.offset)
     }

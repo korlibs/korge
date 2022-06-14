@@ -140,7 +140,10 @@ fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
 }
 
 class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
-    NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = androidBitmap.isPremultiplied()) {
+    NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = when {
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 -> androidBitmap.isPremultiplied
+        else -> false
+    }) {
     override val name: String = "AndroidNativeImage"
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
@@ -312,6 +315,10 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
 
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
             convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01())
+            paint.pathEffect = when {
+                state.lineDash != null -> DashPathEffect(state.lineDash!!.mapFloat { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
+                else -> null
+            }
             paint.isAntiAlias = antialiasing
 
             //println("-----------------")
@@ -319,6 +326,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             //println(state.path.toAndroid())
             //println(paint.style)
             //println(paint.color)
+
             canvas.drawPath(state.path.toAndroid(androidPath), paint)
         }
     }

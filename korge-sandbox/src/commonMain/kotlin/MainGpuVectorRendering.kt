@@ -1,3 +1,4 @@
+import com.soywiz.kds.doubleArrayListOf
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
 import com.soywiz.korev.*
@@ -15,13 +16,46 @@ import com.soywiz.korim.paint.*
 import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.format.*
-import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 
-@OptIn(KorgeExperimental::class)
-suspend fun Stage.mainGpuVectorRendering() {
+suspend fun Stage.mainGpuVectorRendering3() {
+    gpuShapeView({
+        keep {
+            translate(100, 200)
+            fill(Colors.WHITE) {
+                rect(-10, -10, 120, 120)
+                rectHole(40, 40, 80, 80)
+            }
+        }
+    }) {
+        rotation = 15.degrees
+        //debugDrawOnlyAntialiasedBorder = true
+        keys {
+            down(Key.N0) { antialiased = !antialiased }
+            down(Key.N1) { debugDrawOnlyAntialiasedBorder = !debugDrawOnlyAntialiasedBorder }
+        }
+    }
+
+    gpuShapeView({
+        keep {
+            translate(500, 200)
+            stroke(Colors.RED, lineWidth = 10.0) {
+            //fill(Colors.RED) {
+                rect(-10, -10, 120, 120)
+                //rectHole(40, 40, 80, 80)
+            }
+        }
+    }) {
+        rotation = 15.degrees
+        keys {
+            down(Key.N0) { antialiased = !antialiased }
+        }
+    }
+}
+
+suspend fun Stage.mainGpuVectorRendering2() {
     val mainStrokePaint = LinearGradientPaint(0, 0, 0, 300).addColorStop(0.0, Colors.GREEN).addColorStop(0.5, Colors.RED).addColorStop(1.0, Colors.BLUE)
     val secondaryStrokePaint = Colors.GREEN.withAd(0.5)
 
@@ -35,6 +69,7 @@ suspend fun Stage.mainGpuVectorRendering() {
     container {
         //xy(0, 0)
         xy(300, 300)
+        rotation = 30.degrees
         //val shape = graphics({
         shape = gpuShapeView({
             //val lineWidth = 6.12123231 * 2
@@ -44,14 +79,8 @@ suspend fun Stage.mainGpuVectorRendering() {
             //rotation = 180.degrees
             this.stroke(mainStrokePaint, lineWidth = lineWidth, lineJoin = LineJoin.MITER, lineCap = LineCap.BUTT) {
             //this.fill(mainStrokePaint) {
-                this.rect(
-                    lineWidth / 2, lineWidth / 2,
-                    width, height
-                )
-                this.rect(
-                    lineWidth / 2 + 32, lineWidth / 2 + 32,
-                    width - 64, height - 64
-                )
+                this.rect(lineWidth / 2, lineWidth / 2, width, height)
+                this.rect(lineWidth / 2 + 32, lineWidth / 2 + 32, width - 64, height - 64)
             }
             //this.fill(secondaryStrokePaint) {
             //    this.rect(600, 50, 300, 200)
@@ -78,6 +107,29 @@ suspend fun Stage.mainGpuVectorRendering() {
             up(Key.Q) { gameWindow.quality = if (gameWindow.quality == GameWindow.Quality.PERFORMANCE) GameWindow.Quality.QUALITY else GameWindow.Quality.PERFORMANCE }
         }
     }
+
+    gamepad {
+        connected { println("CONNECTED gamepad=${it}") }
+        disconnected { println("DISCONNECTED gamepad=${it}") }
+        button { playerId, pressed, button, value ->
+            if (pressed && button == GameButton.START) {
+                shape.antialiased = !shape.antialiased
+            }
+            println("BUTTON: $playerId, $pressed, button=$button, value=$value")
+        }
+        stick { playerId, stick, x, y ->
+            if (stick == GameStick.LEFT) {
+                rotation += x.degrees
+            }
+        }
+        updatedGamepad {
+            shape.rotation += it.ly.degrees
+        }
+    }
+}
+
+@OptIn(KorgeExperimental::class)
+suspend fun Stage.mainGpuVectorRendering() {
 
     //return
 
@@ -176,6 +228,9 @@ suspend fun Stage.mainGpuVectorRendering() {
                     //rect(-100, -100, 500, 500)
                     //rectHole(40, 40, 320, 320)
                 }
+                stroke(Colors.GREEN, StrokeInfo(thickness = 5.0, startCap = LineCap.ROUND, endCap = LineCap.ROUND, dash = doubleArrayListOf(15.0, 10.0), dashOffset = 8.0)) {
+                    regularPolygon(6, 30.0, x = 100.0, y = 100.0)
+                }
             }
         }
         keep {
@@ -273,9 +328,9 @@ suspend fun Stage.mainGpuVectorRendering() {
         disconnected { println("DISCONNECTED gamepad=${it}") }
         button { playerId, pressed, button, value ->
             if (pressed && button == GameButton.START) {
-                shape.antialiased = !shape.antialiased
+                //shape.antialiased = !shape.antialiased
                 gpuTigger.antialiased = !gpuTigger.antialiased
-                println("shape.antialiased=${shape.antialiased}")
+                //println("shape.antialiased=${shape.antialiased}")
             }
             println("BUTTON: $playerId, $pressed, button=$button, value=$value")
         }
@@ -288,7 +343,7 @@ suspend fun Stage.mainGpuVectorRendering() {
         updatedGamepad {
             //println("updatedGamepad: $it")
             rotation += it.lx.degrees
-            shape.rotation += it.ly.degrees
+            //shape.rotation += it.ly.degrees
         }
     }
 

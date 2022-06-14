@@ -1,5 +1,6 @@
 package com.soywiz.korge.view
 
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.Pool
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.clamp
@@ -158,6 +159,8 @@ open class Graphics @JvmOverloads constructor(
 	private var endCap: LineCap = LineCap.BUTT
 	private var lineJoin: LineJoin = LineJoin.MITER
 	private var miterLimit: Double = 10.0
+    private var lineDash: IDoubleArrayList? = null
+    private var lineDashOffset: Double = 0.0
 
     init {
         hitTestUsingShapes = true
@@ -232,7 +235,7 @@ open class Graphics @JvmOverloads constructor(
 		this.scaleMode = info.scaleMode
 		this.startCap = info.startCap
 		this.endCap = info.endCap
-		this.lineJoin = info.lineJoin
+		this.lineJoin = info.join
 		this.miterLimit = info.miterLimit
 	}
 
@@ -269,7 +272,7 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	fun endStroke() = dirty {
-		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset)
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = vectorPathPool.alloc()
         dirtyShape()
@@ -277,7 +280,7 @@ open class Graphics @JvmOverloads constructor(
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
+		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset)
 		currentPath = vectorPathPool.alloc()
         dirtyShape()
 	}

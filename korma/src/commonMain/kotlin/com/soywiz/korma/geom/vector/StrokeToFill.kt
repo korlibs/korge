@@ -1,11 +1,15 @@
 package com.soywiz.korma.geom.vector
 
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointIntArrayList
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.toDashes
+import com.soywiz.korma.geom.bezier.toVectorPath
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
@@ -17,6 +21,10 @@ import com.soywiz.korma.geom.unaryPlus
 import com.soywiz.korma.math.clamp
 
 // @TODO: Implement LineCap + LineJoin
+// @TODO: Use Curves and reuse code from [CurvesToStrokes]
+/**
+ * @TODO: Use [com.soywiz.korma.geom.bezier.Curves] and reuse code from [toStrokePointLi]
+ */
 @OptIn(KormaExperimental::class)
 class StrokeToFill {
     private var weight: Int = 1
@@ -248,11 +256,21 @@ fun VectorPath.strokeToFill(
     startCap: LineCap = LineCap.BUTT,
     endCap: LineCap = startCap,
     miterLimit: Double = 4.0,
+    lineDash: IDoubleArrayList? = null,
+    lineDashOffset: Double = 0.0,
     temp: StrokeToFill = StrokeToFill(),
-    outFill: VectorPath = VectorPath(winding = Winding.NON_ZERO)
+    outFill: VectorPath = VectorPath(winding = Winding.NON_ZERO),
 ): VectorPath {
-    temp.strokeFill(
-        this@strokeToFill, lineWidth, joins, startCap, endCap, miterLimit, outFill
-    )
+    val strokePaths = when {
+        lineDash != null -> this.toCurvesList()
+            .flatMap { it.toDashes(lineDash.toDoubleArray(), lineDashOffset) }
+            .map { it.toVectorPath() }
+        else -> listOf(this)
+    }
+    strokePaths.fastForEach { strokePath ->
+        temp.strokeFill(
+            strokePath, lineWidth, joins, startCap, endCap, miterLimit, outFill
+        )
+    }
     return outFill
 }

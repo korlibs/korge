@@ -10,8 +10,10 @@ import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.fastForEach
 import com.soywiz.korma.geom.firstX
+import com.soywiz.korma.geom.firstY
 import com.soywiz.korma.geom.lastX
 import com.soywiz.korma.geom.lastY
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
 import kotlin.jvm.JvmName
@@ -147,6 +149,27 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
             }
         }, closed = false)
     }
+}
+
+fun Curves.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
+    var lastX = Double.NaN
+    var lastY = Double.NaN
+    for (bezier in beziers) {
+        val points = bezier.points
+        if (lastX.isNaN() || lastY.isNaN() || points.firstX.isAlmostEquals(lastX) || points.firstY.isAlmostEquals(lastY)) {
+            out.moveTo(points.firstX, points.firstY)
+        }
+        when (bezier.order) {
+            1 -> out.lineTo(points.getX(1), points.getY(1))
+            2 -> out.quadTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2))
+            3 -> out.cubicTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2), points.getX(3), points.getY(3))
+            else -> TODO()
+        }
+        lastX = points.lastX
+        lastY = points.lastY
+    }
+    if (closed) out.close()
+    return out
 }
 
 @KormaExperimental

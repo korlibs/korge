@@ -1,5 +1,6 @@
 package com.soywiz.korma.geom.bezier
 
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.forEachRatio01
 import com.soywiz.kds.getCyclic
 import com.soywiz.korma.geom.Angle
@@ -39,7 +40,7 @@ enum class StrokePointsMode {
 }
 
 /**
- * A generic stroke points with either [x, y] or [x, y, dx, dy, scale] components when having separate components,
+ * A generic stroke points with either [x, y] or [x, y, dx, dy, dist, distMax] components when having separate components,
  * it is possible to later scale the stroke without regenerating it by adjusting the [scale] component
  */
 interface StrokePoints {
@@ -52,6 +53,7 @@ interface StrokePoints {
         if (mode == StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH) {
             vector.fastForEachGeneric {
                 this.set(it, 4, this.get(it, 4) * scale)
+                this.set(it, 5, this.get(it, 5) * scale)
             }
         }
     }
@@ -61,25 +63,26 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
     val NSTEPS = 20
 
     override val vector: VectorArrayList = VectorArrayList(dimensions = when (mode) {
-        StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> 5 // x, y, dx, dy, length
+        StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> 6 // x, y, dx, dy, dist, distMax
         StrokePointsMode.NON_SCALABLE_POS -> 2 // x, y
     })
 
     override val debugPoints: PointArrayList = PointArrayList()
     override val debugSegments: ArrayList<Line> = arrayListOf()
 
-    fun addPoint(pos: IPoint, normal: IPoint, width: Double) = when (mode) {
-        StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> vector.add(pos.x, pos.y, normal.x, normal.y, width)
+    fun addPoint(pos: IPoint, normal: IPoint, width: Double, maxWidth: Double) = when (mode) {
+        StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> vector.add(pos.x, pos.y, normal.x, normal.y, width, maxWidth)
         StrokePointsMode.NON_SCALABLE_POS -> vector.add(pos.x + normal.x * width, pos.y + normal.y * width)
     }
 
     fun addPointRelative(center: IPoint, pos: IPoint, sign: Double = 1.0) {
-        addPoint(center, (pos - center).normalized, (pos - center).length * sign)
+        val width = (pos - center).length * sign
+        addPoint(center, (pos - center).normalized, width, width)
     }
 
     fun addTwoPoints(pos: IPoint, normal: IPoint, width: Double) {
-        addPoint(pos, normal, width)
-        addPoint(pos, normal, -width)
+        addPoint(pos, normal, width, width)
+        addPoint(pos, normal, -width, width)
     }
 
     fun addJoin(curr: Curve, next: Curve, kind: LineJoin, miterLimitRatio: Double) {
@@ -199,8 +202,8 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         val d0 = intersection0 - commonPoint
         val d1 = commonPoint - intersection1
 
-        addPoint(commonPoint, d0.normalized, d0.length)
-        addPoint(commonPoint, d1.normalized, -d1.length)
+        addPoint(commonPoint, d0.normalized, d0.length, d0.length.absoluteValue)
+        addPoint(commonPoint, d1.normalized, -d1.length, d1.length.absoluteValue)
     }
 
     fun addCap(curr: Curve, ratio: Double, kind: LineCap) {
@@ -239,8 +242,8 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         forEachRatio01(nsteps, include0 = true, include1 = true) {
             val angle = it.interpolate(angleStart, angleEnd)
             val dir = Point.fromPolar(angle + addAngle)
-            addPoint(mid, dir, 0.0)
-            addPoint(mid, dir, width)
+            addPoint(mid, dir, 0.0, width)
+            addPoint(mid, dir, width, width)
         }
         if (ratio == 0.0) addTwoPoints(mid, Point.fromPolar(angleStart), width)
     }
@@ -253,8 +256,15 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         }
     }
 
-    fun addAllCurvesPoints(curves: Curves, join: LineJoin = LineJoin.MITER, startCap: LineCap = LineCap.BUTT, endCap: LineCap = LineCap.BUTT, miterLimit: Double = 10.0) {
-        val closed = curves.closed
+    fun addAllCurvesPoints(
+        curves: Curves,
+        join: LineJoin = LineJoin.MITER,
+        startCap: LineCap = LineCap.BUTT,
+        endCap: LineCap = LineCap.BUTT,
+        miterLimit: Double = 10.0,
+        forceClosed: Boolean? = null
+    ) {
+        val closed = forceClosed ?: curves.closed
         val curves = curves.beziers
         for (n in curves.indices) {
             val curr = curves.getCyclic(n + 0)
@@ -292,12 +302,204 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
 }
 
 /** Useful for drawing */
-fun Curves.toStrokePoints(width: Double, join: LineJoin = LineJoin.MITER, startCap: LineCap = LineCap.BUTT, endCap: LineCap = LineCap.BUTT, miterLimit: Double = 10.0, mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS, generateDebug: Boolean = false): StrokePoints {
-    //println("closed: $closed")
-    return StrokePointsBuilder(width, mode, generateDebug).also {
-        it.addAllCurvesPoints(this, join, startCap, endCap, miterLimit)
+fun Curves.toStrokePointsList(
+    width: Double,
+    join: LineJoin = LineJoin.MITER,
+    startCap: LineCap = LineCap.BUTT,
+    endCap: LineCap = LineCap.BUTT,
+    miterLimit: Double = 10.0,
+    mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
+    lineDash: IDoubleArrayList? = null,
+    lineDashOffset: Double = 0.0,
+    generateDebug: Boolean = false
+): List<StrokePoints> =
+    listOf(this).toStrokePointsList(width, join, startCap, endCap, miterLimit, mode, lineDash, lineDashOffset, generateDebug)
+
+fun List<Curves>.toStrokePointsList(
+    width: Double,
+    join: LineJoin = LineJoin.MITER,
+    startCap: LineCap = LineCap.BUTT,
+    endCap: LineCap = LineCap.BUTT,
+    miterLimit: Double = 10.0,
+    mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
+    lineDash: IDoubleArrayList? = null,
+    lineDashOffset: Double = 0.0,
+    generateDebug: Boolean = false,
+    forceClosed: Boolean? = null,
+): List<StrokePoints> {
+    val curvesList = when {
+        lineDash != null -> this.flatMap { it.toDashes(lineDash.toDoubleArray(), lineDashOffset) }
+        else -> this
     }
+    return curvesList.map { curves -> StrokePointsBuilder(width / 2.0, mode, generateDebug).also {
+        it.addAllCurvesPoints(curves, join, startCap, endCap, miterLimit, forceClosed)
+    } }
 }
 
-fun List<Curves>.toStrokePointsList(width: Double, join: LineJoin = LineJoin.MITER, startCap: LineCap = LineCap.BUTT, endCap: LineCap = LineCap.BUTT, miterLimit: Double = 10.0, mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS, generateDebug: Boolean = false): List<StrokePoints> =
-    this.map { it.toStrokePoints(width, join, startCap, endCap, miterLimit, mode, generateDebug) }
+/*
+
+    private fun renderStroke(
+        stateTransform: Matrix,
+        strokePath: VectorPath,
+        paint: Paint,
+        globalAlpha: Double,
+        lineWidth: Double,
+        scaleMode: LineScaleMode,
+        startCap: LineCap,
+        endCap: LineCap,
+        join: LineJoin,
+        miterLimit: Double,
+        forceClosed: Boolean? = null,
+        stencil: AG.StencilState? = null
+    ) {
+        //val m0 = root.globalMatrix
+        //val mt0 = m0.toTransform()
+        //val m = globalMatrix
+        //val mt = m.toTransform()
+
+        val scaleWidth = scaleMode.anyScale
+        //val lineScale = mt.scaleAvg.absoluteValue
+
+        val lineScale = 1.0
+        //println("lineScale=$lineScale")
+        val flineWidth = if (scaleWidth) lineWidth * lineScale else lineWidth
+        val lineWidth = if (antialiased) (flineWidth * 0.5) + 0.25 else flineWidth * 0.5
+
+        //val lineWidth = 0.2
+        //val lineWidth = 20.0
+        val fLineWidth = max((lineWidth).toFloat(), 1.5f)
+
+        //val cacheKey = StrokeRenderCacheKey(lineWidth, strokePath, m)
+
+        //val data = strokeCache.getOrPut(cacheKey) {
+        val data = run {
+            //val pathList = strokePath.toPathPointList(m, emitClosePoint = false)
+            val pathList = strokePath.toPathPointList(null, emitClosePoint = false)
+            //println(pathList.size)
+            for (ppath in pathList) {
+                gpuShapeViewCommands.verticesStart()
+                val loop = forceClosed ?: ppath.closed
+                //println("Points: " + ppath.toList())
+                val end = if (loop) ppath.size + 1 else ppath.size
+                //val end = if (loop) ppath.size else ppath.size
+
+                for (n in 0 until end) pointsScope {
+                    val isFirst = n == 0
+                    val isLast = n == ppath.size - 1
+                    val isFirstOrLast = isFirst || isLast
+                    val a = ppath.getCyclic(n - 1)
+                    val b = ppath.getCyclic(n) // Current point
+                    val c = ppath.getCyclic(n + 1)
+                    val orientation = Point.orientation(a, b, c).sign.toInt()
+                    //val angle = Angle.between(b - a, c - a)
+                    //println("angle = $angle")
+
+                    ab.setTo(a, b, lineWidth, this)
+                    bc.setTo(b, c, lineWidth, this)
+
+                    when {
+                        // Start/End caps
+                        !loop && isFirstOrLast -> {
+                            val start = n == 0
+
+                            val cap = if (start) startCap else endCap
+                            val index = if (start) 0 else 1
+                            val segment = if (start) bc else ab
+                            val p1 = segment.p1(index)
+                            val p0 = segment.p0(index)
+                            val iangle = if (start) segment.angleSE - 180.degrees else segment.angleSE
+
+                            when (cap) {
+                                LineCap.BUTT -> pointsAdd(p1, p0, fLineWidth)
+                                LineCap.SQUARE -> {
+                                    val p1s = Point(p1, iangle, lineWidth)
+                                    val p0s = Point(p0, iangle, lineWidth)
+                                    pointsAdd(p1s, p0s, fLineWidth)
+                                }
+                                LineCap.ROUND -> {
+                                    val p1s = Point(p1, iangle, lineWidth * 1.5)
+                                    val p0s = Point(p0, iangle, lineWidth * 1.5)
+                                    pointsAddCubicOrLine(
+                                        this, p0, p0, p0s, p1s, p1, lineWidth,
+                                        reverse = false,
+                                        start = start
+                                    )
+                                }
+                            }
+                        }
+                        // Joins
+                        else -> {
+                            val m0 = Line.getIntersectXY(ab.s0, ab.e0, bc.s0, bc.e0, MPoint()) // Outer (CW)
+                            val m1 = Line.getIntersectXY(ab.s1, ab.e1, bc.s1, bc.e1, MPoint()) // Inner (CW)
+                            val e1 = m1 ?: ab.e1
+                            val e0 = m0 ?: ab.e0
+                            val round = join == LineJoin.ROUND
+                            val dorientation = when {
+                                (join == LineJoin.MITER && e1.distanceTo(b) <= (miterLimit * lineWidth)) -> 0
+                                else -> orientation
+                            }
+
+                            if (loop && isFirst) {
+                                //println("forientation=$forientation")
+                                when (dorientation) {
+                                    -1 -> pointsAdd(e1, bc.s0, fLineWidth)
+                                    0 -> pointsAdd(e1, e0, fLineWidth)
+                                    +1 -> pointsAdd(bc.s1, e0, fLineWidth)
+                                }
+                            } else {
+                                //println("dorientation=$dorientation")
+                                when (dorientation) {
+                                    // Turn right
+                                    -1 -> {
+                                        val fp = m1 ?: ab.e1
+                                        //points.addCubicOrLine(this, true, fp, p0, p0, p1, p1, lineWidth, cubic = false)
+                                        if (round) {
+                                            pointsAddCubicOrLine(
+                                                this, fp,
+                                                ab.e0, ab.e0s, bc.s0s, bc.s0,
+                                                lineWidth, reverse = true
+                                            )
+                                        } else {
+                                            pointsAdd(fp, ab.e0, fLineWidth)
+                                            pointsAdd(fp, bc.s0, fLineWidth)
+                                        }
+                                    }
+                                    // Miter
+                                    0 -> pointsAdd(e1, e0, fLineWidth)
+                                    // Turn left
+                                    1 -> {
+                                        val fp = m0 ?: ab.e0
+                                        if (round) {
+                                            pointsAddCubicOrLine(
+                                                this, fp,
+                                                ab.e1, ab.e1s, bc.s1s, bc.s1,
+                                                lineWidth, reverse = false
+                                            )
+                                        } else {
+                                            pointsAdd(ab.e1, fp, fLineWidth)
+                                            pointsAdd(bc.s1, fp, fLineWidth)
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                val info = GpuShapeViewPrograms.paintToShaderInfo(
+                    stateTransform = stateTransform,
+                    paint = paint,
+                    globalAlpha = globalAlpha,
+                    lineWidth = lineWidth,
+                )
+
+                gpuShapeViewCommands.setScissor(null)
+                gpuShapeViewCommands.draw(AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil)
+            }
+        }
+
+        //println("vertexCount=$vertexCount")
+    }
+    //private var lastPointsString = ""
+
+ */

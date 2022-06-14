@@ -1,6 +1,8 @@
 package com.soywiz.korim.vector
 
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.Stack
+import com.soywiz.kds.mapFloat
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
@@ -139,10 +141,14 @@ open class Context2d constructor(
         var verticalAlign: VerticalAlign = VerticalAlign.BASELINE,
         var horizontalAlign: HorizontalAlign = HorizontalAlign.LEFT,
         var globalAlpha: Double = 1.0,
-        var globalCompositeOperation: CompositeOperation = CompositeMode.SOURCE_OVER
+        var globalCompositeOperation: CompositeOperation = CompositeMode.SOURCE_OVER,
+        var lineDash: IDoubleArrayList? = null,
+        var lineDashOffset: Double = 0.0,
 	) {
         val transformTransform by lazy { transform.toTransform() }
         val scaledLineWidth get() = lineWidth * transformTransform.scaleAvg.absoluteValue.toFloat()
+
+        val lineDashFloatArray: FloatArray? get() = lineDash?.mapFloat { it.toFloat() }?.toFloatArray()
 
         var alignment: TextAlignment
             get() = TextAlignment.fromAlign(horizontalAlign, verticalAlign)
@@ -163,13 +169,15 @@ open class Context2d constructor(
         fun clone(): State = this.copy(
 			transform = transform.clone(),
 			clip = clip?.clone(),
-			path = path.clone()
+			path = path.clone(),
+            lineDash = lineDash?.clone()
 		)
 	}
 
 	var state = State(fontRegistry = defaultFontRegistry, font = defaultFont)
 	private val stack = Stack<State>()
 
+    // @TODO: Can we use `by state::lineScaleMode` already?
 	var lineScaleMode: LineScaleMode ; get() = state.lineScaleMode ; set(value) { state.lineScaleMode = value }
 	var lineWidth: Double ; get() = state.lineWidth ; set(value) { state.lineWidth = value }
 	var lineCap: LineCap ; get() = state.lineCap ; set(value) { state.lineCap = value }
@@ -193,6 +201,21 @@ open class Context2d constructor(
         }
 	var globalAlpha: Double ; get() = state.globalAlpha ; set(value) { state.globalAlpha = value }
     var globalCompositeOperation: CompositeOperation ; get() = state.globalCompositeOperation ; set(value) { state.globalCompositeOperation = value }
+    var lineDash: IDoubleArrayList?; get() = state.lineDash ; set(value) { state.lineDash = value }
+    var lineDashOffset: Double; get() = state.lineDashOffset ; set(value) { state.lineDashOffset = value }
+
+    inline fun lineDash(lineDash: IDoubleArrayList?, lineDashOffset: Double = 0.0, callback: () -> Unit) {
+        val oldLineDash = this.lineDash
+        val oldLineDashOffset = this.lineDashOffset
+        this.lineDash = lineDash
+        this.lineDashOffset = lineDashOffset
+        try {
+            callback()
+        } finally {
+            this.lineDashOffset = oldLineDashOffset
+            this.lineDash = oldLineDash
+        }
+    }
 
 	inline fun fillStyle(paint: Paint, callback: () -> Unit) {
 		val oldStyle = fillStyle
@@ -400,6 +423,8 @@ open class Context2d constructor(
         lineCap: LineCap = this.lineCap,
         lineJoin: LineJoin = this.lineJoin,
         miterLimit: Double = this.miterLimit,
+        lineDash: IDoubleArrayList? = this.lineDash,
+        lineDashOffset: Double = this.lineDashOffset,
         begin: Boolean = true,
         callback: () -> Unit = {}
     ) {
@@ -410,12 +435,14 @@ open class Context2d constructor(
             this.lineCap = lineCap
             this.lineJoin = lineJoin
             this.miterLimit = miterLimit
+            this.lineDash = lineDash
+            this.lineDashOffset = lineDashOffset
             stroke(paint)
         }
 	}
 
     inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit = {}) {
-        stroke(paint, info.thickness, info.startCap, info.lineJoin, info.miterLimit, begin, callback)
+        stroke(paint, info.thickness, info.startCap, info.join, info.miterLimit, info.dash, info.dashOffset, begin, callback)
     }
 
     inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {

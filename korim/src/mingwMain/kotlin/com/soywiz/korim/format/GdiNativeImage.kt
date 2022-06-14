@@ -1,19 +1,83 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.iterators.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korim.vector.renderer.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.paint.BitmapPaint
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.CycleMethod
+import com.soywiz.korim.vector.renderer.BufferedRenderer
+import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
 import kotlinx.cinterop.*
-import platform.gdiplus.*
-import platform.windows.*
+import platform.gdiplus.CombineModeIntersect
+import platform.gdiplus.FillModeAlternate
+import platform.gdiplus.FillModeWinding
+import platform.gdiplus.FlushIntentionSync
+import platform.gdiplus.GdipAddPathBezier
+import platform.gdiplus.GdipAddPathLine
+import platform.gdiplus.GdipClosePathFigure
+import platform.gdiplus.GdipCreateBitmapFromScan0
+import platform.gdiplus.GdipCreateFromHDC
+import platform.gdiplus.GdipCreateMatrix
+import platform.gdiplus.GdipCreatePath
+import platform.gdiplus.GdipCreatePen2
+import platform.gdiplus.GdipCreateSolidFill
+import platform.gdiplus.GdipCreateTexture
+import platform.gdiplus.GdipDeleteBrush
+import platform.gdiplus.GdipDeleteCachedBitmap
+import platform.gdiplus.GdipDeleteGraphics
+import platform.gdiplus.GdipDeleteMatrix
+import platform.gdiplus.GdipDeletePath
+import platform.gdiplus.GdipDeletePen
+import platform.gdiplus.GdipDrawPath
+import platform.gdiplus.GdipFillPath
+import platform.gdiplus.GdipFlush
+import platform.gdiplus.GdipResetClip
+import platform.gdiplus.GdipSetClipPath
+import platform.gdiplus.GdipSetMatrixElements
+import platform.gdiplus.GdipSetPenDashArray
+import platform.gdiplus.GdipSetPenDashOffset
+import platform.gdiplus.GdipSetPenEndCap
+import platform.gdiplus.GdipSetPenLineJoin
+import platform.gdiplus.GdipSetPenMiterLimit
+import platform.gdiplus.GdipSetPenStartCap
+import platform.gdiplus.GdipSetSmoothingMode
+import platform.gdiplus.GdipSetTextureTransform
+import platform.gdiplus.GdipStartPathFigure
+import platform.gdiplus.LineCapFlat
+import platform.gdiplus.LineCapRound
+import platform.gdiplus.LineCapSquare
+import platform.gdiplus.LineJoinBevel
+import platform.gdiplus.LineJoinMiter
+import platform.gdiplus.LineJoinRound
+import platform.gdiplus.Ok
+import platform.gdiplus.PixelFormat32bppARGB
+import platform.gdiplus.PixelFormat32bppPARGB
+import platform.gdiplus.REALVar
+import platform.gdiplus.SmoothingModeHighQuality
+import platform.gdiplus.SmoothingModeHighSpeed
+import platform.gdiplus.UnitPixel
+import platform.gdiplus.WrapModeClamp
+import platform.gdiplus.WrapModeTile
+import platform.gdiplus.WrapModeTileFlipX
+import platform.gdiplus.WrapModeTileFlipXY
+import platform.gdiplus.WrapModeTileFlipY
+import platform.windows.BITMAPINFO
+import platform.windows.BI_RGB
+import platform.windows.CreateCompatibleBitmap
+import platform.windows.CreateCompatibleDC
+import platform.windows.DIB_RGB_COLORS
+import platform.windows.DeleteDC
+import platform.windows.DeleteObject
+import platform.windows.GetDC
+import platform.windows.GetDIBits
+import platform.windows.SelectObject
+import platform.windows.SetDIBits
 
 class GdiNativeImage(bitmap: Bitmap32) : BitmapNativeImage(bitmap) {
     // @TODO: Enable this once ready!
@@ -180,18 +244,30 @@ class GdiRenderer(val bitmap: Bitmap32, val antialiasing: Boolean) : BufferedRen
                         }
 
                         if (brush != null) {
-                            if (fill) {
-                                GdipFillPath(graphics, brush, path).checkp("GdipFillPath")
-                            } else {
-                                val ppen = allocArray<COpaquePointerVar>(1)
-                                GdipCreatePen2(brush, state.lineWidth.toFloat(), UnitPixel, ppen).checkp("GdipCreatePen2")
-                                val pen = ppen[0]
-                                GdipSetPenEndCap(pen, state.endLineCap.toGdip()).checkp("GdipSetPenEndCap")
-                                GdipSetPenStartCap(pen, state.startLineCap.toGdip()).checkp("GdipSetPenStartCap")
-                                GdipSetPenLineJoin(pen, state.lineJoin.toGdip()).checkp("GdipSetPenLineJoin")
-                                GdipSetPenMiterLimit(pen, state.miterLimit.toFloat()).checkp("GdipSetPenMiterLimit")
-                                GdipDrawPath(graphics, pen, path).checkp("GdipDrawPath")
-                                GdipDeletePen(pen).checkp("GdipDeletePen")
+                            memScoped {
+                                if (fill) {
+                                    GdipFillPath(graphics, brush, path).checkp("GdipFillPath")
+                                } else {
+                                    val ppen = allocArray<COpaquePointerVar>(1)
+                                    GdipCreatePen2(brush, state.lineWidth.toFloat(), UnitPixel, ppen).checkp("GdipCreatePen2")
+                                    val pen = ppen[0]
+                                    GdipSetPenEndCap(pen, state.endLineCap.toGdip()).checkp("GdipSetPenEndCap")
+                                    GdipSetPenStartCap(pen, state.startLineCap.toGdip()).checkp("GdipSetPenStartCap")
+                                    GdipSetPenLineJoin(pen, state.lineJoin.toGdip()).checkp("GdipSetPenLineJoin")
+                                    GdipSetPenMiterLimit(pen, state.miterLimit.toFloat()).checkp("GdipSetPenMiterLimit")
+
+                                    val lineDashFloatArray = state.lineDashFloatArray
+                                    if (lineDashFloatArray != null) {
+                                        val data = allocArray<REALVar>(lineDashFloatArray.size)
+                                        for (n in lineDashFloatArray.indices) data[n] = lineDashFloatArray[n]
+                                        GdipSetPenDashArray(graphics, data, lineDashFloatArray.size)
+                                    } else {
+                                        GdipSetPenDashArray(graphics, null, 0)
+                                    }
+                                    GdipSetPenDashOffset(graphics, state.lineDashOffset.toFloat())
+                                    GdipDrawPath(graphics, pen, path).checkp("GdipDrawPath")
+                                    GdipDeletePen(pen).checkp("GdipDeletePen")
+                                }
                             }
                         }
 

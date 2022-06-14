@@ -29,14 +29,17 @@ import kotlin.math.PI
 @KorgeInternal
 object GpuShapeViewPrograms {
     val u_ProgramType = Uniform("u_ProgramType", VarType.Float1)
-    val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
+    //val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
     val u_Color = Uniform("u_Color", VarType.Float4)
     val u_ColorMul = Uniform("u_ColorMul", VarType.Float4)
     val u_GlobalAlpha = Uniform("u_GlobalAlpha", VarType.Float1)
+    val u_GlobalPixelScale = Uniform("u_GlobalPixelScale", VarType.Float1)
     val u_Transform = Uniform("u_Transform", VarType.Mat4)
     val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
     val u_Gradientp1 = Uniform("u_Gradientp1", VarType.Float3)
+    val a_MaxDist: Attribute = Attribute("a_MaxDist", VarType.Float1, normalized = false, precision = Precision.MEDIUM)
     val a_Dist: Attribute = Attribute("a_Dist", VarType.Float1, normalized = false, precision = Precision.MEDIUM)
+    val v_MaxDist: Varying = Varying("v_MaxDist", VarType.Float1, precision = Precision.MEDIUM)
     val v_Dist: Varying = Varying("v_Dist", VarType.Float1, precision = Precision.MEDIUM)
     val LAYOUT = VertexLayout(DefaultShaders.a_Pos)
     val LAYOUT_TEX = VertexLayout(DefaultShaders.a_Tex)
@@ -44,10 +47,10 @@ object GpuShapeViewPrograms {
     val LAYOUT_FILL = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex)
 
     val LAYOUT_POS_DIST = VertexLayout(DefaultShaders.a_Pos, a_Dist)
-    val LAYOUT_POS_TEX_FILL_DIST = VertexLayout(DefaultShaders.a_Pos, DefaultShaders.a_Tex, a_Dist)
+    val LAYOUT_POS_TEX_FILL_DIST = VertexLayout(DefaultShaders.a_Pos, a_Dist, a_MaxDist)
 
-    val LW = (u_LineWidth)
-    val LW1 = Program.ExpressionBuilder { (LW - 1f.lit) }
+    //val LW = (u_LineWidth)
+    //val LW1 = Program.ExpressionBuilder { (LW - 1f.lit) }
 
     val Operand.pow2: Operand get() = Program.ExpressionBuilder { pow(this@pow2, 2f.lit) }
 
@@ -63,17 +66,16 @@ object GpuShapeViewPrograms {
         vertex = VertexShaderDefault {
             SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
             //SET(out, vec4(a_Pos, 0f.lit, 1f.lit))
-            SET(v_Tex, DefaultShaders.a_Tex)
+            SET(v_Tex, DefaultShaders.a_Pos)
             SET(v_Dist, a_Dist)
+            SET(v_MaxDist, a_MaxDist)
         },
         fragment = FragmentShaderDefault {
             IF(u_ProgramType eq PROGRAM_TYPE_STENCIL.toFloat().lit) {
                 SET(out, vec4(1f.lit, 0f.lit, 0f.lit, 1f.lit))
                 RETURN()
             }
-            IF(abs(v_Dist) ge LW) {
-                DISCARD()
-            }
+            IF(abs(v_Dist) gt v_MaxDist) { DISCARD() }
             IF_ELSE_LIST(u_ProgramType, 0, 4) {
                 when (it) {
                     // Color paint
@@ -148,12 +150,9 @@ object GpuShapeViewPrograms {
             // Update global alpha
             SET(out.a, out.a * u_GlobalAlpha)
             SET(out, out * u_ColorMul)
-            IF(abs(v_Dist) ge LW1) {
-                //run {
-                val aaAlpha = 1f.lit - (abs(v_Dist) - LW1)
-                SET(out["a"], out["a"] * aaAlpha)
-                //SET(out["a"], out["a"] * clamp(aaAlpha, 0f.lit, 1f.lit))
-            }
+            val aaAlpha = 1f.lit - smoothstep(v_MaxDist * u_GlobalPixelScale - 1.5f.lit, v_MaxDist * u_GlobalPixelScale, abs(v_Dist * u_GlobalPixelScale))
+            //val aaAlpha = 1f.lit
+            SET(out["a"], out["a"] * aaAlpha)
         },
     )
 
@@ -183,7 +182,7 @@ object GpuShapeViewPrograms {
                 u_ProgramType to PROGRAM_TYPE_COLOR.toFloat(),
                 u_Color to paint.toVector3D(),
                 u_GlobalAlpha to globalAlpha.toFloat(),
-                u_LineWidth to lineWidth.toFloat(),
+                //u_LineWidth to lineWidth.toFloat(),
             ), AG.UniformValues())
 
         }
@@ -204,7 +203,7 @@ object GpuShapeViewPrograms {
                 u_ProgramType to PROGRAM_TYPE_BITMAP.toFloat(),
                 u_Transform to mat.toMatrix3D(), // @TODO: Why is this transposed???
                 u_GlobalAlpha to globalAlpha.toFloat(),
-                u_LineWidth to lineWidth.toFloat(),
+                //u_LineWidth to lineWidth.toFloat(),
                 //}, GpuShapeView.PROGRAM_BITMAP)
             ), AG.UniformValues(
                 DefaultShaders.u_Tex to paint.bitmap
@@ -238,7 +237,7 @@ object GpuShapeViewPrograms {
                     u_Gradientp0 to Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat()),
                     u_Gradientp1 to Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat()),
                     u_GlobalAlpha to globalAlpha.toFloat(),
-                    u_LineWidth to lineWidth.toFloat(),
+                    //u_LineWidth to lineWidth.toFloat(),
                 ), AG.UniformValues(
                     DefaultShaders.u_Tex to gradientBitmap
                 )

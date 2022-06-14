@@ -1576,7 +1576,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             }
         }
 
-        fun put(uniforms: UniformValues): UniformValues {
+        fun put(uniforms: UniformValues?): UniformValues {
+            if (uniforms == null) return this
             for (n in 0 until uniforms.size) {
                 this.put(uniforms._uniforms[n], uniforms._values[n])
             }

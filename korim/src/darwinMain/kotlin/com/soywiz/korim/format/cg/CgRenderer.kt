@@ -145,27 +145,42 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                         visitCgContext(ctx, clip)
                                     }
 
-
-                                    if (!fill) {
-                                        CGContextSetLineWidth(ctx, state.lineWidth.cg)
-                                        CGContextSetMiterLimit(ctx, state.miterLimit.cg)
-                                        CGContextSetLineJoin(
-                                            ctx, when (state.lineJoin) {
-                                                LineJoin.BEVEL -> CGLineJoin.kCGLineJoinBevel
-                                                LineJoin.MITER -> CGLineJoin.kCGLineJoinMiter
-                                                LineJoin.ROUND -> CGLineJoin.kCGLineJoinRound
-                                            }
-                                        )
-                                        CGContextSetLineCap(
-                                            ctx, when (state.lineCap) {
-                                                LineCap.BUTT -> CGLineCap.kCGLineCapButt
-                                                LineCap.ROUND -> CGLineCap.kCGLineCapRound
-                                                LineCap.SQUARE -> CGLineCap.kCGLineCapSquare
-                                            }
-                                        )
-                                        CGContextReplacePathWithStrokedPath(ctx)
-                                    }
                                     memScoped {
+                                        if (!fill) {
+                                            CGContextSetLineWidth(ctx, state.lineWidth.cg)
+                                            CGContextSetMiterLimit(ctx, state.miterLimit.cg)
+                                            CGContextSetLineJoin(
+                                                ctx, when (state.lineJoin) {
+                                                    LineJoin.BEVEL -> CGLineJoin.kCGLineJoinBevel
+                                                    LineJoin.MITER -> CGLineJoin.kCGLineJoinMiter
+                                                    LineJoin.ROUND -> CGLineJoin.kCGLineJoinRound
+                                                }
+                                            )
+                                            CGContextSetLineCap(
+                                                ctx, when (state.lineCap) {
+                                                    LineCap.BUTT -> CGLineCap.kCGLineCapButt
+                                                    LineCap.ROUND -> CGLineCap.kCGLineCapRound
+                                                    LineCap.SQUARE -> CGLineCap.kCGLineCapSquare
+                                                }
+                                            )
+                                            val lineDashFloatArray = state.lineDashFloatArray
+                                            if (lineDashFloatArray != null) {
+                                                val lengths = allocArray<CGFloatVar>(lineDashFloatArray.size)
+                                                for (n in lineDashFloatArray.indices) {
+                                                    lengths[n] = lineDashFloatArray[n].cg
+                                                }
+                                                CGContextSetLineDash(
+                                                    ctx,
+                                                    state.lineDashOffset.cg,
+                                                    lengths,
+                                                    lineDashFloatArray.size.convert()
+                                                )
+                                            } else {
+                                                CGContextSetLineDash(ctx, 0.0.cg, null, 0)
+                                            }
+                                            CGContextReplacePathWithStrokedPath(ctx)
+                                        }
+
                                         val style = if (fill) state.fillStyle else state.strokeStyle
                                         when (style) {
                                             is NonePaint -> Unit

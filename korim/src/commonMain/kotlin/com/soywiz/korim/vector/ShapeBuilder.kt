@@ -60,6 +60,8 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 lineJoin = state.lineJoin,
                 miterLimit = state.miterLimit,
                 globalAlpha = state.globalAlpha,
+                lineDash = state.lineDash,
+                lineDashOffset = state.lineDashOffset
             )
         }
     }

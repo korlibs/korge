@@ -40,16 +40,19 @@ interface VectorBuilder {
     fun moveTo(x: Double, y: Double)
     fun lineTo(x: Double, y: Double)
     fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) {
-        val x1 = lastX
-        val y1 = lastY
-        val x2 = ax
-        val y2 = ay
-        val tt = (2.0 / 3.0)
-        val cx1 = x1 + (tt * (cx - x1))
-        val cy1 = y1 + (tt * (cy - y1))
-        val cx2 = x2 + (tt * (cx - x2))
-        val cy2 = y2 + (tt * (cy - y2))
-        return cubicTo(cx1, cy1, cx2, cy2, x2, y2)
+        Bezier.quadToCubic(lastX, lastY, cx, cy, ax, ay) { _, _, cx1, cy1, cx2, cy2, x2, y2 ->
+            cubicTo(cx1, cy1, cx2, cy2, x2, y2)
+        }
+        //val x1 = lastX
+        //val y1 = lastY
+        //val x2 = ax
+        //val y2 = ay
+        //val tt = (2.0 / 3.0)
+        //val cx1 = x1 + (tt * (cx - x1))
+        //val cy1 = y1 + (tt * (cy - y1))
+        //val cx2 = x2 + (tt * (cx - x2))
+        //val cy2 = y2 + (tt * (cy - y2))
+        //return cubicTo(cx1, cy1, cx2, cy2, x2, y2)
     }
     fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double)
     fun close()

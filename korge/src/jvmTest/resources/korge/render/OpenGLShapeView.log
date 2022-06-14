@@ -2,7 +2,6 @@ createProgram() = 1001
 getString(35724) = 
 createShader(35632) = 2001
 shaderSource(2001, """uniform float u_ProgramType;
-uniform float u_LineWidth;
 uniform vec4 u_Color;
 uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
@@ -10,7 +9,9 @@ uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
 uniform float u_GlobalAlpha;
 uniform vec4 u_ColorMul;
+uniform float u_GlobalPixelScale;
 varying float v_Dist;
+varying float v_MaxDist;
 varying vec2 v_Tex;
 void main() {
 	vec2 temp3;
@@ -21,7 +22,7 @@ void main() {
 		gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
 		return;
 	}
-	if ((abs(v_Dist) >= u_LineWidth)) {
+	if ((abs(v_Dist) > v_MaxDist)) {
 		discard;
 	}
 	if ((u_ProgramType == 0.0)) {
@@ -62,9 +63,7 @@ void main() {
 	}
 	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
 	gl_FragColor = (gl_FragColor * u_ColorMul);
-	if ((abs(v_Dist) >= (u_LineWidth - 1.0))) {
-		gl_FragColor.a = (gl_FragColor.a * (1.0 - (abs(v_Dist) - (u_LineWidth - 1.0))));
-	}
+	gl_FragColor.a = (gl_FragColor.a * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
 }
 """)
 compileShader(2001)
@@ -72,16 +71,18 @@ getShaderiv(2001, 35713, [1])
 getError() = 0
 createShader(35633) = 2002
 shaderSource(2002, """attribute vec2 a_Pos;
-attribute vec2 a_Tex;
 attribute float a_Dist;
+attribute float a_MaxDist;
 uniform mat4 u_ProjMat;
 uniform mat4 u_ViewMat;
 varying vec2 v_Tex;
 varying float v_Dist;
+varying float v_MaxDist;
 void main() {
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
-	v_Tex = a_Tex;
+	v_Tex = a_Pos;
 	v_Dist = a_Dist;
+	v_MaxDist = a_MaxDist;
 }
 """)
 compileShader(2002)
@@ -94,16 +95,16 @@ getProgramiv(1001, 35714, [0])
 useProgram(1001)
 genBuffers(1, [3001])
 bindBuffer(34962, 3001)
-bufferData(34962, 200, FBuffer(size=256), 35044)
+bufferData(34962, 160, FBuffer(size=256), 35044)
 getAttribLocation(1001, "a_Pos") = 8001
 enableVertexAttribArray(8001)
-vertexAttribPointer(8001, 2, 5126, false, 20, 0)
-getAttribLocation(1001, "a_Tex") = 8002
+vertexAttribPointer(8001, 2, 5126, false, 16, 0)
+getAttribLocation(1001, "a_Dist") = 8002
 enableVertexAttribArray(8002)
-vertexAttribPointer(8002, 2, 5126, false, 20, 8)
-getAttribLocation(1001, "a_Dist") = 8003
+vertexAttribPointer(8002, 1, 5126, false, 16, 8)
+getAttribLocation(1001, "a_MaxDist") = 8003
 enableVertexAttribArray(8003)
-vertexAttribPointer(8003, 1, 5126, false, 20, 16)
+vertexAttribPointer(8003, 1, 5126, false, 16, 12)
 getUniformLocation(1001, "u_ProjMat") = 7001
 uniformMatrix4fv(7001, 1, false, FBuffer(size=65536))
 getUniformLocation(1001, "u_ViewMat") = 7002
@@ -135,8 +136,8 @@ getUniformLocation(1001, "u_Color") = 7009
 uniform4f(7009, 1.0, 1.0, 1.0, 0.49803922)
 getUniformLocation(1001, "u_GlobalAlpha") = 7010
 uniform1f(7010, 1.0)
-getUniformLocation(1001, "u_LineWidth") = 7011
-uniform1f(7011, 6.25)
+getUniformLocation(1001, "u_GlobalPixelScale") = 7011
+uniform1f(7011, 10.0)
 disable(2960)
 stencilMask(0)
 colorMask(true, true, true, true)

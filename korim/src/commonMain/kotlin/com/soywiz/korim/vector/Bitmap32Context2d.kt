@@ -74,7 +74,9 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 state.scaledLineWidth,
                 state.lineJoin, state.startLineCap, state.endLineCap,
                 state.miterLimit,
-                temp = tempFillStrokeTemp, outFill = tempPath
+                temp = tempFillStrokeTemp, outFill = tempPath,
+                lineDash = state.lineDash,
+                lineDashOffset = state.lineDashOffset,
             )
         }
 

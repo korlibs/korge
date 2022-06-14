@@ -220,7 +220,9 @@ class SWFShapeExporter(
 			lineCap,
 			lineCap,
 			LineJoin.MITER,
-			miterLimit
+			miterLimit,
+            lineDash,
+            lineDashOffset
 		)
 		apath = VectorPath()
 	}
@@ -237,6 +239,8 @@ class SWFShapeExporter(
 	private var lineScaleMode = LineScaleMode.NORMAL
 	private var miterLimit = 1.0
 	private var lineCap: LineCap = LineCap.ROUND
+    private var lineDash: IDoubleArrayList? = null
+    private var lineDashOffset: Double = 0.0
 	private var strokeStyle: Paint = ColorPaint(Colors.BLACK)
 
 	override fun lineStyle(
