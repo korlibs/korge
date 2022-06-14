@@ -745,22 +745,24 @@ samples {
         }
         if (!com.soywiz.korge.gradle.targets.isWindows) {
             afterEvaluate {
-                val linkReleaseExecutableMingwX64 by getting(KotlinNativeLink::class)
-                val linkDebugExecutableMingwX64 by getting(KotlinNativeLink::class)
+                if (project.tasks.findByName("linkReleaseExecutableMingwX64") != null) {
+                    val linkReleaseExecutableMingwX64 by getting(KotlinNativeLink::class)
+                    val linkDebugExecutableMingwX64 by getting(KotlinNativeLink::class)
 
-                fun Exec.configureLink(link: KotlinNativeLink) {
-                    dependsOn(link)
-                    commandLine("wine64", link.binary.outputFile)
-                    workingDir = link.binary.outputDirectory
-                }
+                    fun Exec.configureLink(link: KotlinNativeLink) {
+                        dependsOn(link)
+                        commandLine("wine64", link.binary.outputFile)
+                        workingDir = link.binary.outputDirectory
+                    }
 
-                val runNativeWineDebug by creating(Exec::class) {
-                    group = "run"
-                    configureLink(linkDebugExecutableMingwX64)
-                }
-                val runNativeWineRelease by creating(Exec::class) {
-                    group = "run"
-                    configureLink(linkReleaseExecutableMingwX64)
+                    val runNativeWineDebug by creating(Exec::class) {
+                        group = "run"
+                        configureLink(linkDebugExecutableMingwX64)
+                    }
+                    val runNativeWineRelease by creating(Exec::class) {
+                        group = "run"
+                        configureLink(linkReleaseExecutableMingwX64)
+                    }
                 }
             }
         }
