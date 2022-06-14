@@ -1,5 +1,5 @@
 package = win32ssl
-linkerOpts = -lws2_32 -lCrypt32 -lSecur32 -lComctl32
+linkerOpts = -lws2_32 -lcrypt32 -lsecur32 -lcomctl32
 headerFilter = unexistant.h
 ---
 
