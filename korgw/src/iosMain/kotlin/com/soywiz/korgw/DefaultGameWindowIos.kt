@@ -2,10 +2,12 @@ package com.soywiz.korgw
 
 import com.soywiz.kds.Pool
 import com.soywiz.kgl.checkedIf
+import com.soywiz.klock.measureTime
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
 
 import com.soywiz.klogger.Console
+import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
 import com.soywiz.korev.GameButton
 import com.soywiz.korev.GamePadConnectionEvent
@@ -77,20 +79,33 @@ abstract class KorgwBaseNewAppDelegate {
 
     lateinit var viewController: ViewController
 
-    fun applicationWillResignActive(app: UIApplication) {
-        Console.info("applicationWillResignActive")
-    }
     fun applicationDidEnterBackground(app: UIApplication) {
         Console.info("applicationDidEnterBackground")
     }
     fun applicationWillEnterForeground(app: UIApplication) {
         Console.info("applicationWillEnterForeground")
     }
+    fun applicationWillResignActive(app: UIApplication) {
+        Console.info("applicationWillResignActive")
+        forceGC()
+        viewController.gameWindow.dispatchPauseEvent()
+    }
     fun applicationDidBecomeActive(app: UIApplication) {
         Console.info("applicationDidBecomeActive")
+        viewController.gameWindow.dispatchResumeEvent()
     }
     fun applicationWillTerminate(app: UIApplication) {
         Console.info("applicationWillTerminate")
+        viewController.gameWindow.dispatchStopEvent()
+        viewController.gameWindow.dispatchDestroyEvent()
+    }
+
+    private fun forceGC() {
+        Console.info("Collecting GC...")
+        val time = measureTime {
+            KmemGC.collect() // Forces collection when going to background to release resources to the app
+        }
+        Console.info("Collected in $time")
     }
 }
 
