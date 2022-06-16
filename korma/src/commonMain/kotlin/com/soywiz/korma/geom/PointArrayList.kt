@@ -17,6 +17,11 @@ interface IPointArrayList : IVectorArrayList, Extra {
     fun getY(index: Int): Double
 }
 
+fun PointArrayList.setToRoundDecimalPlaces(places: Int): PointArrayList {
+    fastForEachWithIndex { index, x, y -> this.setXY(index, x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
+    return this
+}
+
 fun IPointArrayList.roundDecimalPlaces(places: Int, out: PointArrayList = PointArrayList()): IPointArrayList {
     fastForEach { x, y -> out.add(x.roundDecimalPlaces(places), y.roundDecimalPlaces(places)) }
     return out
@@ -150,7 +155,11 @@ open class PointArrayList(capacity: Int = 7) : IPointArrayList, Extra by Extra.M
         for (n in index until indexEnd) add(p.getX(n), p.getY(n))
     }
 
-    fun copyFrom(other: IPointArrayList): PointArrayList = this.apply { clear() }.apply { add(other) }
+    fun copyFrom(other: IPointArrayList): PointArrayList {
+        clear()
+        add(other)
+        return this
+    }
     fun clone(out: PointArrayList = PointArrayList()): PointArrayList = out.clear().add(this)
 
     fun toList(): List<Point> {
