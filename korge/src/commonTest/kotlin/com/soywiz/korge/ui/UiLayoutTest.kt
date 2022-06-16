@@ -43,7 +43,7 @@ class UiLayoutTest : ViewsForTesting() {
                 Rectangle(x=0, y=100, width=100, height=100): rect3
                 Rectangle(x=100, y=100, width=100, height=100): rect4
             """.trimIndent(),
-            (listOf(container) + container.toChildrenList()).joinToString("\n") { "${it.globalBounds}: ${it.name}" }
+            (listOf(container) + container.children.toList()).joinToString("\n") { "${it.globalBounds}: ${it.name}" }
         )
     }
 }

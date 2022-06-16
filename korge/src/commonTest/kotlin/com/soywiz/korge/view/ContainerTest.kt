@@ -115,4 +115,25 @@ internal class ContainerTest {
         c.moveChildrenAt(1, 3, 1)
         assertEquals(listOf("a", "c", "b", "d", "e"), c.children.map { it.name })
     }
+
+    @Test
+    fun testMutableIterator() {
+        val c = Container().apply {
+            solidRect(1, 1).name("a")
+            solidRect(1, 1).name("b")
+            solidRect(1, 1).name("c")
+            solidRect(1, 1).name("d")
+            solidRect(1, 1).name("e")
+        }
+        fun validateIndices() {
+            for (n in 0 until c.numChildren) assertEquals(n, c.children[n].index)
+        }
+        val iterator = c.childrenCollection.iterator()
+        while (iterator.hasNext()) {
+            val view = iterator.next()
+            if (view.name == "c") iterator.remove()
+        }
+        assertEquals(listOf("a", "b", "d", "e"), c.children.map { it.name })
+        validateIndices()
+    }
 }

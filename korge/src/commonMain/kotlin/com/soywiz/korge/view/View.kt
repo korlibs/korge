@@ -92,9 +92,10 @@ abstract class View internal constructor(
     @KorgeInternal
     open val anchorDispY get() = 0.0
 
+    /** Read-only internal children list, or null when not a [Container] */
     @KorgeInternal
     @PublishedApi
-    internal open val _children: FastArrayList<View>? get() = null
+    internal open val _children: List<View>? get() = null
 
     /** Iterates all the children of this container in normal order of rendering. */
     inline fun forEachChild(callback: (child: View) -> Unit) = _children?.fastForEach(callback)
@@ -1233,11 +1234,7 @@ abstract class View internal constructor(
      * Removes this view from its parent.
      */
     fun removeFromParent() {
-        val p = parent ?: return
-        for (i in index + 1 until p.numChildren) p[i].index--
-        p._children?.removeAt(index)
-        parent = null
-        index = -1
+        parent?.removeChild(this)
     }
 
     //fun getConcatMatrix(target: View, out: Matrix = Matrix2d()): Matrix {
@@ -1615,18 +1612,7 @@ fun View?.commonAncestor(ancestor: View?): View? {
  * If this view doesn't have a parent or [view] is the same as [this], returns false.
  */
 @OptIn(KorgeInternal::class)
-fun View.replaceWith(view: View): Boolean {
-    if (this == view) return false
-    if (parent == null) return false
-    view.parent?._children?.remove(view)
-    parent!!.childrenInternal[this.index] = view
-    view.index = this.index
-    view.parent = parent
-    parent = null
-    view.invalidate()
-    this.index = -1
-    return true
-}
+fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
 fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
@@ -1836,7 +1822,7 @@ inline fun <T : View> T.visible(visible: Boolean): T = this.also { it.visible = 
 inline fun <T : View> T.name(name: String?): T = this.also { it.name = name }
 
 inline fun <T : View> T.hitShape(crossinline block: @ViewDslMarker VectorBuilder.() -> Unit): T {
-    buildPath { block() }.also {
+    buildVectorPath { block() }.also {
         this.hitShape = it
     }
     return this

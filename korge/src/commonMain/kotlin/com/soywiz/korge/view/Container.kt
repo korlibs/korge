@@ -30,36 +30,24 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
  */
 @OptIn(KorgeInternal::class)
 open class Container : View(true) {
+    private val __children: FastArrayList<View> = FastArrayList()
+
     @PublishedApi
-    internal val __children: FastArrayList<View> = FastArrayList()
-
-    override val _children: FastArrayList<View>? get() = __children
-
-    inline fun fastForEachChild(block: (child: View) -> Unit) {
-        __children.fastForEach { child -> block(child) }
-    }
-
-    @KorgeInternal
-    @PublishedApi
-    internal val childrenInternal: FastArrayList<View>
-        get() {
-            return __children!!
-        }
+    override val _children: List<View>? get() = __children
 
     /**
-     * Retrieves all the child [View]s.
-     * Shouldn't be used if possible. You can use [numChildren] and [getChildAt] to get the children.
-     * You can also use [forEachChild], [forEachChildWithIndex] and [forEachChildReversed] to iterate children
+     * A collection with all the children [View]s.
      */
-    @KorgeInternal
-    val children: FastArrayList<View>
-        get() = __children
+    val children: ViewContainerCollection by lazy { ViewContainerCollection(this) }
 
-    val childrenCollection: ViewContainerCollection by lazy { ViewContainerCollection(this) }
+    val childrenCollection: ViewContainerCollection get() = children
+    val collection: ViewContainerCollection get() = childrenCollection
 
-    val collection get() = childrenCollection
+    inline fun fastForEachChild(block: (child: View) -> Unit) {
+        children.fastForEach { child -> block(child) }
+    }
 
-    fun toChildrenList() = __children.toList()
+    //@KorgeInternal @PublishedApi internal val childrenInternal: FastArrayList<View> get() = __children!!
 
     override fun invalidate() {
         super.invalidate()
@@ -96,12 +84,7 @@ open class Container : View(true) {
 
     /** Returns the number of children this container has */
     @Suppress("FoldInitializerAndIfToElvis")
-    val numChildren: Int
-        get() {
-            val children = _children
-            if (children == null) return 0
-            return children.size
-        }
+    val numChildren: Int get() = __children.size
 
     /** Returns the number of children this container has */
     val size: Int get() = numChildren
@@ -164,13 +147,12 @@ open class Container : View(true) {
      *
      * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
      */
-    @KorgeUntested
     fun addChildAt(view: View, index: Int) {
         view.parent?.invalidateZIndexChildren()
         view.removeFromParent()
         val aindex = index.clamp(0, this.numChildren)
         view.index = aindex
-        val children = childrenInternal
+        val children = __children
         children.add(aindex, view)
         for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
         view.parent = this
@@ -192,7 +174,7 @@ open class Container : View(true) {
      * Finds the [View] at a given index.
      * Remarks: if [index] is outside bounds 0..[numChildren] - 1, an [IndexOutOfBoundsException] will be thrown.
      */
-    fun getChildAt(index: Int): View = childrenInternal[index]
+    fun getChildAt(index: Int): View = __children[index]
 
     /**
      * Finds the [View] at a given index. If the index is not valid, it returns null.
@@ -214,20 +196,37 @@ open class Container : View(true) {
      * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
      */
     fun removeChild(view: View?): Boolean {
+        //if (view == null) return false
         if (view?.parent !== this) return false
-        view?.removeFromParent()
+        for (i in view.index + 1 until numChildren) __children[i].index--
+        __children.removeAt(view.index)
+        view.parent = null
+        view.index = -1
         invalidateZIndexChildren()
         return true
     }
 
-    fun removeChildAt(index: Int): Boolean {
-        return removeChild(getChildAtOrNull(index))
-    }
+    fun removeChildAt(index: Int): Boolean =
+        removeChild(getChildAtOrNull(index))
 
     // @TODO: Optimize
     fun removeChildAt(index: Int, count: Int) {
         repeat(count) { removeChildAt(index) }
         invalidateZIndexChildren()
+    }
+
+    fun replaceChild(old: View, new: View): Boolean {
+        if (old === new) return false
+        if (old.parent != this) return false
+        invalidateZIndexChildren()
+        new.parent?.__children?.remove(new)
+        old.parent!!.__children[old.index] = new
+        new.index = old.index
+        new.parent = old.parent
+        old.parent = null
+        new.invalidate()
+        old.index = -1
+        return true
     }
 
     // @TODO: Optimize
@@ -264,7 +263,8 @@ open class Container : View(true) {
         invalidateZIndexChildren()
     }
 
-    inline fun removeChildrenIf(cond: (index: Int, child: View) -> Boolean) {
+    inline fun removeChildrenIf(cond: (index: Int, child: View) -> Boolean): Boolean {
+        val children = this._children!! as FastArrayList<View>
         var removedCount = 0
         forEachChildWithIndex { index, child ->
             if (cond(index, child)) {
@@ -273,10 +273,12 @@ open class Container : View(true) {
                 removedCount++
             } else {
                 child._index -= removedCount
+                children[child._index] = child
             }
         }
-        for (n in 0 until removedCount) __children.removeAt(__children.size - 1)
+        repeat(removedCount) { children.removeAt(children.size - 1) }
         invalidateZIndexChildren()
+        return removedCount > 0
     }
 
     /**
@@ -286,7 +288,10 @@ open class Container : View(true) {
      */
     fun addChild(view: View) = addChildAt(view, numChildren)
 
-    fun addChildren(views: List<View?>?) = views?.toList()?.fastForEach { it?.let { addChild(it) } }
+    fun addChildren(views: List<View?>?) {
+        if (views == null) return
+        views.fastForEach { if (it != null) addChild(it) }
+    }
 
     /**
      * Alias for [addChild].
@@ -382,8 +387,9 @@ open class Container : View(true) {
         if (!__childrenZIndexValid) {
             __childrenZIndexValid = true
             __childrenZIndex.clear()
-            __childrenZIndex.addAll(this.__children)
+            __childrenZIndex.addAll(this.children)
             if (shouldSortChildren()) __childrenZIndexValidOrder = false
+            //println("fastForEachChildRender[$this] __childrenZIndex: ${__childrenZIndex.size}")
             //println("invalidated")
         }
         if (!__childrenZIndexValidOrder) {
@@ -392,6 +398,7 @@ open class Container : View(true) {
         }
         //println(__childrenZIndex.map { it.zIndex })
         __childrenZIndex.fastForEach { child -> block(child) }
+        //__children.fastForEach { child -> block(child) }
     }
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
@@ -406,33 +413,20 @@ open class Container : View(true) {
     }
 }
 
-class ViewContainerCollection(val container: Container) : MutableCollection<View> {
-    private val __children get() = container.__children
-
+class ViewContainerCollection(val container: Container) : MutableCollection<View>, List<View> by container._children!! {
     override val size: Int get() = container.size
 
-    override fun contains(element: View): Boolean {
-        return __children.contains(element)
-    }
-
-    override fun containsAll(elements: Collection<View>): Boolean {
-        return __children.containsAll(elements)
-    }
-
-    override fun isEmpty(): Boolean {
-        return __children.isEmpty()
-    }
+    override fun contains(element: View): Boolean = element.parent === container
+    override fun containsAll(elements: Collection<View>): Boolean = elements.all { it.parent === container }
+    override fun isEmpty(): Boolean = container.numChildren == 0
 
     override fun add(element: View): Boolean {
         container.addChild(element)
         return true
     }
 
-    // @TODO: Optimize?
     override fun addAll(elements: Collection<View>): Boolean {
-        elements.forEach {
-            add(it)
-        }
+        container.addChildren(elements.toList())
         return true
     }
 
@@ -440,35 +434,24 @@ class ViewContainerCollection(val container: Container) : MutableCollection<View
         container.removeChildren()
     }
 
-    // @TODO: Is this really mutable?
-    override fun iterator(): MutableIterator<View> {
-        return __children.iterator()
+    override fun iterator(): MutableIterator<View> = object : MutableIterator<View> {
+        var index = 0
+        override fun hasNext(): Boolean = (index < container.numChildren)
+        override fun next(): View = container.getChildAt(index++)
+        // @TODO: Cannot optimize because we need to move the rest of the children, and we might not complete the iteration
+        override fun remove() { container.removeChildAt(--index) }
     }
 
-    override fun remove(element: View): Boolean {
-        return container.removeChild(element)
-    }
+    override fun remove(element: View): Boolean = container.removeChild(element)
 
-    // @TODO: Optimize
     override fun removeAll(elements: Collection<View>): Boolean {
-        return elements.fold(false) { acc, ele ->
-            remove(ele) || acc
-        }
+        val set = elements.toSet()
+        return container.removeChildrenIf { _, view -> view in set }
     }
 
-    // Retains only the elements in this collection that are contained in the specified collection.
-    // Returns:
-    // true if any element was removed from the collection, false if the collection was not modified.
-    // @TODO: Optimize
     override fun retainAll(elements: Collection<View>): Boolean {
-        val currentElements = container.toChildrenList()
-        return currentElements.fold(false) { acc, it ->
-            if (elements.contains(it)) {
-                acc
-            } else {
-                remove(it) || acc
-            }
-        }
+        val set = elements.toSet()
+        return container.removeChildrenIf { _, view -> view !in set }
     }
 }
 
