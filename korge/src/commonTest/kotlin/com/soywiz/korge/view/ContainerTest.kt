@@ -8,7 +8,7 @@ internal class ContainerTest {
     @Test
     fun retainAllWorks() {
         val container = Container()
-        val collection = container.childrenCollection
+        val collection = container.children
 
         val view1 = SolidRect(1, 100)
         val view2 = SolidRect(2, 100)
@@ -44,7 +44,7 @@ internal class ContainerTest {
     @Test
     fun removeAllWorks() {
         val container = Container()
-        val collection = container.collection
+        val collection = container.children
 
         val view1 = SolidRect(1, 100)
         val view2 = SolidRect(2, 100)
@@ -128,7 +128,7 @@ internal class ContainerTest {
         fun validateIndices() {
             for (n in 0 until c.numChildren) assertEquals(n, c.children[n].index)
         }
-        val iterator = c.childrenCollection.iterator()
+        val iterator = c.children.iterator()
         while (iterator.hasNext()) {
             val view = iterator.next()
             if (view.name == "c") iterator.remove()

@@ -145,7 +145,7 @@ open class Text(
             return _textBounds
         }
 
-    fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.size, color: RGBA = this.color, align: TextAlignment = this.alignment) {
+    fun setFormat(face: Resourceable<out Font>? = this.font, size: Int = this.textSize.toInt(), color: RGBA = this.color, align: TextAlignment = this.alignment) {
         this.font = face ?: DefaultTtfFont
         this.textSize = size.toDouble()
         this.color = color

@@ -24,7 +24,7 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
  * The first child is rendered first, and the last one is rendered last. So when children are overlapping with each other,
  * the last child will overlap the previous ones.
  *
- * You can access the children by [numChildren], [getChildAt] or [size] and [get].
+ * You can access the children by using the [children] collection, or the [numChildren], [getChildAt] and [get] properties.
  *
  * You can add new children to this container by calling [addChild] or [addChildAt].
  */
@@ -32,16 +32,17 @@ inline fun Container.container(callback: @ViewDslMarker Container.() -> Unit = {
 open class Container : View(true) {
     private val __children: FastArrayList<View> = FastArrayList()
 
-    @PublishedApi
-    override val _children: List<View>? get() = __children
-
     /**
      * A collection with all the children [View]s.
      */
-    val children: ViewContainerCollection by lazy { ViewContainerCollection(this) }
+    val children: ContainerCollection = ContainerCollection(this, __children)
+    @Deprecated("", ReplaceWith("children"))
+    val childrenCollection: ContainerCollection get() = children
+    @Deprecated("", ReplaceWith("children"))
+    val collection: ContainerCollection get() = children
 
-    val childrenCollection: ViewContainerCollection get() = children
-    val collection: ViewContainerCollection get() = childrenCollection
+    @PublishedApi
+    override val _children: List<View>? get() = __children
 
     inline fun fastForEachChild(block: (child: View) -> Unit) {
         children.fastForEach { child -> block(child) }
@@ -87,6 +88,7 @@ open class Container : View(true) {
     val numChildren: Int get() = __children.size
 
     /** Returns the number of children this container has */
+    @Deprecated("", ReplaceWith("numChildren"))
     val size: Int get() = numChildren
 
     /**
@@ -413,8 +415,11 @@ open class Container : View(true) {
     }
 }
 
-class ViewContainerCollection(val container: Container) : MutableCollection<View>, List<View> by container._children!! {
-    override val size: Int get() = container.size
+/**
+ * Allows to safely interact with the children of a [container] instance.
+ */
+class ContainerCollection internal constructor(val container: Container, children: List<View>) : MutableCollection<View>, List<View> by children {
+    override val size: Int get() = container.numChildren
 
     override fun contains(element: View): Boolean = element.parent === container
     override fun containsAll(elements: Collection<View>): Boolean = elements.all { it.parent === container }
@@ -426,7 +431,8 @@ class ViewContainerCollection(val container: Container) : MutableCollection<View
     }
 
     override fun addAll(elements: Collection<View>): Boolean {
-        container.addChildren(elements.toList())
+        if (elements.isEmpty()) return false
+        for (element in elements) container.addChild(element)
         return true
     }
 
@@ -455,9 +461,7 @@ class ViewContainerCollection(val container: Container) : MutableCollection<View
     }
 }
 
-/**
- * Alias for `parent += this`. Refer to [Container.plusAssign].
- */
+/** Alias for `parent += this`. Refer to [Container.plusAssign]. */
 fun <T : View> T.addTo(parent: Container): T {
     parent += this
     return this
