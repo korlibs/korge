@@ -420,14 +420,16 @@ class SVG(val root: Xml, val warningProcessor: ((message: String) -> Unit)? = nu
 
     open inner class PathSvgElement(xml: Xml) : SvgElement(xml) {
         var d = xml.str("d")
-
-        override fun drawInternal(c: Context2d) {
-            c.beginPath()
-            val path = SvgPath.parse(d)
-            c.write(path)
+        val path by lazy { SvgPath.parse(d) }
+        init {
             warningProcessor?.invoke("Parsed SVG Path: '${path.toSvgPathString()}'")
             warningProcessor?.invoke("Original SVG Path: '$d'")
             warningProcessor?.invoke("Points: ${path.getPoints2()}")
+        }
+
+        override fun drawInternal(c: Context2d) {
+            c.beginPath()
+            c.write(path)
         }
     }
 
