@@ -3,6 +3,7 @@ package com.soywiz.korma.geom.bezier
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.mapDouble
+import com.soywiz.kds.sort
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
@@ -12,11 +13,8 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.absoluteValue
 import com.soywiz.korma.geom.bottom
 import com.soywiz.korma.geom.clone
-import com.soywiz.korma.geom.cosine
-import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.fastForEach
 import com.soywiz.korma.geom.firstX
 import com.soywiz.korma.geom.firstY
@@ -27,17 +25,11 @@ import com.soywiz.korma.geom.lastX
 import com.soywiz.korma.geom.lastY
 import com.soywiz.korma.geom.left
 import com.soywiz.korma.geom.mapPoints
-import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.mutable
-import com.soywiz.korma.geom.normalized
-import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.pointArrayListOf
 import com.soywiz.korma.geom.radians
 import com.soywiz.korma.geom.right
 import com.soywiz.korma.geom.roundDecimalPlaces
-import com.soywiz.korma.geom.sine
-import com.soywiz.korma.geom.tangent
-import com.soywiz.korma.geom.times
 import com.soywiz.korma.geom.top
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.convertRange
@@ -102,22 +94,22 @@ class Bezier(
             points.getX(1), points.getY(1),
         )
     }
-    val clockwise: Boolean by lazy { direction > 0.radians }
+    val clockwise: Boolean by lazy { direction > Angle.ZERO }
     val extrema: Extrema by lazy {
         val out = (0 until dims).map { dim ->
-            val p = dpoints[0].getComponentList(dim)
             //println("extrema dim=$dim, p=${p.toList()}, droots=${droots(p).toList()}")
-            var result = droots(p)
-            if (order == 3) {
-                val p = dpoints[1].getComponentList(dim)
-                result += droots(p)
-            }
-            result.filter { it in 0.0..1.0 }.sorted().distinct().toDoubleArray()
+            var out = droots(dpoints[0].getComponentList(dim))
+            if (order == 3) out = combineSmallDistinctSorted(out, droots(dpoints[1].getComponentList(dim)))
+            out
         }
         Extrema(out[0], out[1])
     }
     val boundingBox: IRectangle by lazy {
-        fun dimBounds(n: Int): Pair<Double, Double> {
+        var xmin = 0.0
+        var ymin = 0.0
+        var xmax = 0.0
+        var ymax = 0.0
+        for (n in 0..1) {
             //println("extrema=$extrema")
             val ext = doubleArrayOf(0.0, *extrema.dimt(n), 1.0)
             var min = Double.POSITIVE_INFINITY
@@ -131,15 +123,16 @@ class Bezier(
             }
             //println("d=$n, min=$min, max=$max")
             //println("[$n]: min=$min, max=$max")
-            return min to max
+            if (n == 0) {
+                xmin = min
+                xmax = max
+            } else {
+                ymin = min
+                ymax = max
+            }
         }
 
-        val xdim = dimBounds(0)
-        val ydim = dimBounds(1)
-        Rectangle.fromBounds(
-            xdim.first, ydim.first,
-            xdim.second, ydim.second,
-        )
+        Rectangle.fromBounds(xmin, ymin, xmax, ymax)
     }
 
     /** Calculates the length of this curve .*/
@@ -592,7 +585,7 @@ class Bezier(
     class Extrema(
         val xt: DoubleArray, val yt: DoubleArray
     ) {
-        val allt: DoubleArray = (xt + yt).distinct().toDoubleArray().sortedArray()
+        val allt: DoubleArray = combineSmallDistinctSorted(xt, yt)
         fun dimt(index: Int): DoubleArray = if (index == 0) xt else yt
 
         override fun equals(other: Any?): Boolean =
@@ -943,7 +936,7 @@ class Bezier(
 
             var current = points
             while (current.size >= 2) {
-                val new = PointArrayList()
+                val new = PointArrayList(current.size - 1)
                 val c = (current.size - 1).toDouble()
                 for (n in 0 until current.size - 1) {
                     new.add(
@@ -984,10 +977,11 @@ class Bezier(
         private fun between(v: Double, min: Double, max: Double): Boolean =
             ((min <= v) && (v <= max)) || v.isAlmostEquals(min) || v.isAlmostEquals(max)
 
-        private fun roots(points: IPointArrayList, line: Line = Line(0, 0, 1, 0)): DoubleArray {
+        private val X_AXIS = Line(0, 0, 1, 0)
+
+        private fun roots(points: IPointArrayList, line: Line = X_AXIS): DoubleArray {
             val order = points.size - 1
             val aligned = align(points, line)
-            val reduce = { t: Double -> t in 0.0..1.0 }
 
             if (order == 2) {
                 val a: Double = aligned.getY(0)
@@ -999,11 +993,11 @@ class Bezier(
                     val m2 = -a + b
                     val v1 = -(m1 + m2) / d
                     val v2 = -(-m1 + m2) / d
-                    return doubleArrayOf(v1, v2).filter(reduce).toDoubleArray()
+                    return doubleArrayOfValid01(v1, v2)
                 } else if (b != c && d == 0.0) {
-                    return doubleArrayOf((2 * b - c) / (2 * b - 2 * c)).filter(reduce).toDoubleArray()
+                    return doubleArrayOfValid01((2 * b - c) / (2 * b - 2 * c))
                 }
-                return doubleArrayOf()
+                return doubleArrayOfValid01()
             }
 
             // see http://www.trans4mind.com/personal_development/mathematics/polynomials/cubicAlgebra.htm
@@ -1023,15 +1017,15 @@ class Bezier(
                     // in fact, this is not a quadratic curve either.
                     if (b.isAlmostEquals(0.0)) {
                         // in fact in fact, there are no solutions.
-                        return doubleArrayOf()
+                        return doubleArrayOfValid01()
                     }
                     // linear solution:
-                    return doubleArrayOf(-c / b).filter(reduce).toDoubleArray()
+                    return doubleArrayOfValid01(-c / b)
                 }
                 // quadratic solution:
                 val q = kotlin.math.sqrt(b * b - 4 * a * c)
                 val a2 = 2 * a
-                return doubleArrayOf((q - b) / a2, (-b - q) / a2).filter(reduce).toDoubleArray()
+                return doubleArrayOfValid01((q - b) / a2, (-b - q) / a2)
             }
 
             // at this point, we know we need a cubic solution:
@@ -1058,17 +1052,17 @@ class Bezier(
                 val x1 = t1 * cos(phi / 3.0) - a / 3.0
                 val x2 = t1 * cos((phi + tau) / 3.0) - a / 3.0
                 val x3 = t1 * cos((phi + 2 * tau) / 3.0) - a / 3.0
-                return doubleArrayOf(x1, x2, x3).filter(reduce).toDoubleArray()
+                return doubleArrayOfValid01(x1, x2, x3)
             } else if (discriminant == 0.0) {
                 val u1 = if (q2 < 0) crt(-q2) else -crt(q2)
                 val x1 = 2.0 * u1 - a / 3.0
                 val x2 = -u1 - a / 3.0
-                return doubleArrayOf(x1, x2).filter(reduce).toDoubleArray()
+                return doubleArrayOfValid01(x1, x2)
             } else {
                 val sd = kotlin.math.sqrt(discriminant)
                 val u1 = crt(-q2 + sd)
                 val v1 = crt(q2 + sd)
-                return doubleArrayOf(u1 - v1 - a / 3.0).filter(reduce).toDoubleArray()
+                return doubleArrayOfValid01(u1 - v1 - a / 3.0)
             }
         }
 
@@ -1084,22 +1078,39 @@ class Bezier(
                         val m2 = -a + b
                         val v1 = -(m1 + m2) / d
                         val v2 = -(-m1 + m2) / d
-                        return doubleArrayOf(v1.normalizeZero(), v2.normalizeZero())
+                        return doubleArrayOfValid01(v1, v2)
                     } else if (b != c && d == 0.0) {
-                        return doubleArrayOf(((2 * b - c) / (2 * (b - c))).normalizeZero())
+                        return doubleArrayOfValid01((2.0 * b - c) / (2.0 * (b - c)))
                     }
-                    return doubleArrayOf()
                 }
                 2 -> {
                     val a = p[0]
                     val b = p[1]
-                    if (a != b) return doubleArrayOf((a / (a - b)).normalizeZero())
-                    return doubleArrayOf()
+                    if (a != b) return doubleArrayOfValid01(a / (a - b))
                 }
                 else -> {
-                    return doubleArrayOf()
                 }
             }
+            return doubleArrayOfValid01()
+        }
+
+        private val EMPTY_DOUBLE_ARRAY = DoubleArray(0)
+
+        private fun doubleArrayOfValid01(v1: Double = Double.NaN, v2: Double = Double.NaN, v3: Double = Double.NaN): DoubleArray {
+            val v1Valid = v1 in 0.0..1.0
+            val v2Valid = v2 in 0.0..1.0
+            val v3Valid = v3 in 0.0..1.0
+            var validCount = 0
+            if (v1Valid) validCount++
+            if (v2Valid) validCount++
+            if (v3Valid) validCount++
+            if (validCount == 0) return EMPTY_DOUBLE_ARRAY
+            var index = 0
+            val out = DoubleArray(validCount)
+            if (v1Valid) out[index++] = v1.normalizeZero()
+            if (v2Valid) out[index++] = v2.normalizeZero()
+            if (v3Valid) out[index++] = v3.normalizeZero()
+            return out
         }
 
         private fun curveintersects(
@@ -1259,6 +1270,14 @@ class Bezier(
             val dx = p1.x - p2.x
             val dy = p1.y - p2.y
             return kotlin.math.sqrt(dx * dx + dy * dy)
+        }
+
+        private fun combineSmallDistinctSorted(a: DoubleArray, b: DoubleArray): DoubleArray {
+            val out = DoubleArrayList(a.size + b.size)
+            out.add(a)
+            b.fastForEach { if (!out.contains(it)) out.add(it) }
+            out.sort()
+            return out.toDoubleArray()
         }
 
         private fun makeline(p1: IPoint, p2: IPoint): Bezier =
