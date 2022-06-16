@@ -5,6 +5,7 @@ import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.internal.umod
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
@@ -52,7 +53,7 @@ inline class Angle private constructor(
     /** [0..360] degrees -> [0..PI * 2] radians -> [0..1] ratio */
     val degrees: Double get() = ratioToDegrees(ratio)
 
-    override fun toString(): String = "${degrees.niceStr}.degrees"
+    override fun toString(): String = "${degrees.roundDecimalPlaces(2).niceStr}.degrees"
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
