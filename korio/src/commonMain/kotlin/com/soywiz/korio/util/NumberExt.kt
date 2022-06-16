@@ -14,6 +14,9 @@ fun Long.toStringUnsigned(radix: Int): String = this.toULong().toString(radix)
 val Float.niceStr: String get() = buildString { appendNice(this@niceStr) }
 val Double.niceStr: String get() = buildString { appendNice(this@niceStr) }
 
+fun Float.niceStr(decimalPlaces: Int): String = roundDecimalPlaces(decimalPlaces).niceStr
+fun Double.niceStr(decimalPlaces: Int): String = roundDecimalPlaces(decimalPlaces).niceStr
+
 private fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = (this - other).absoluteValue < epsilon
 private fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.000001f): Boolean = (this - other).absoluteValue < epsilon
 
@@ -39,9 +42,14 @@ fun StringBuilder.appendNice(value: Float) {
 //private fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
 private fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this
 
+private fun Float.roundDecimalPlaces(places: Int): Float {
+    val placesFactor: Float = 10f.pow(places.toFloat())
+    return round(this * placesFactor) / placesFactor
+}
+
 private fun Double.roundDecimalPlaces(places: Int): Double {
     val placesFactor: Double = 10.0.pow(places.toDouble())
-    return kotlin.math.round(this * placesFactor) / placesFactor
+    return round(this * placesFactor) / placesFactor
 }
 
 fun Double.toStringDecimal(decimalPlaces: Int, skipTrailingZeros: Boolean = false): String {
