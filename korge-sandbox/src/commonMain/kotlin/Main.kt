@@ -19,8 +19,11 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainGpuVectorRendering),
+        Demo(::MainTrimmedAtlas),
         listOf(
+            Demo(::MainSWF),
+            Demo(::MainSpine),
+            Demo(::MainDragonbones),
             Demo(::MainMutableAtlasTest),
             Demo(::TerminalEmulatorMain),
             Demo(::ParticlesMain),

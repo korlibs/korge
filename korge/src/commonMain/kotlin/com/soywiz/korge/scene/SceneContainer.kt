@@ -7,9 +7,11 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.ui.UIView
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.FixedSizeContainer
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.findFirstAscendant
 import com.soywiz.korge.view.views
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.async
@@ -31,19 +33,25 @@ inline fun Container.sceneContainer(
 	views: Views,
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Double = views.stage.width, height: Double = views.stage.height,
+    width: Double = 0.0, height: Double = 0.0,
 	callback: SceneContainer.() -> Unit = {}
-): SceneContainer = SceneContainer(views, defaultTransition, name, width, height).addTo(this, callback)
+): SceneContainer {
+    var rwidth = width
+    var rheight = height
+    if (width == 0.0 && height == 0.0) {
+        val base = this.findFirstAscendant { it is FixedSizeContainer } as? FixedSizeContainer?
+        rwidth = base?.width ?: views.stage.width
+        rheight = base?.height ?: views.stage.height
+    }
+    return SceneContainer(views, defaultTransition, name, rwidth, rheight).addTo(this, callback)
+}
 
 suspend inline fun Container.sceneContainer(
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
-    width: Double? = null, height: Double? = null,
+    width: Double = 0.0, height: Double = 0.0,
     callback: SceneContainer.() -> Unit = {}
-): SceneContainer {
-    val views = views()
-    return SceneContainer(views, defaultTransition, name, width ?: views.stage.width, height ?: views.stage.height).addTo(this, callback)
-}
+): SceneContainer = sceneContainer(views(), defaultTransition, name, width, height, callback)
 
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.

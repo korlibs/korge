@@ -9,6 +9,7 @@ import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korim.format.readBitmapSliceWithOrientation
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korma.geom.degrees
 
 class MainMutableAtlasTest : Scene() {
     override suspend fun Container.sceneMain() {

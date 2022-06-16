@@ -5,6 +5,10 @@ description = "Multiplatform Game Engine written in Kotlin"
 dependencies {
 	add("commonMainApi", project(":korge"))
     add("commonMainApi", project(":korvi"))
+    add("commonMainApi", project(":korge-dragonbones"))
+    add("commonMainApi", project(":korge-spine"))
+    add("commonMainApi", project(":korge-swf"))
+    //add("commonMainApi", project(":luak"))
 }
 
 tasks.register("runJvmAwtSandbox", KorgeJavaExec) {
