@@ -3,15 +3,20 @@ package com.soywiz.korge.scene
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korag.AG
 import com.soywiz.korge.debug.KorgeDebugNode
+import com.soywiz.korge.input.Input
+import com.soywiz.korge.input.InputKeys
 import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.time.delay
 import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.FixedSizeContainer
 import com.soywiz.korge.view.ScaleView
+import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
 import com.soywiz.korge.view.views
+import com.soywiz.korgw.GameWindow
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
 import com.soywiz.korinject.InjectorAsyncDependency
@@ -54,8 +59,10 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 
     /** A reference to the [AG] from the [Views] */
     val ag: AG get() = views.ag
-
-    val stage get() = views.stage
+    val gameWindow: GameWindow get() = views.gameWindow
+    val stage: Stage get() = views.stage
+    val keys: InputKeys get() = views.input.keys
+    val input: Input get() = views.input
 
     /** A [Container] view that will wrap the Scene view */
     internal val _sceneViewContainer: Container = Container()
@@ -64,11 +71,13 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 
 	protected val cancellables = CancellableGroup()
     override val coroutineContext by lazy { views.coroutineContext + AsyncInjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
-	val sceneView: Container = createSceneView().apply {
-		_sceneViewContainer += this
-	}
+	val sceneView: Container by lazy {
+        createSceneView(sceneContainer.width, sceneContainer.height).apply {
+            _sceneViewContainer += this
+        }
+    }
     override val resources: Resources by lazy { injector.getSync() }
-	protected open fun createSceneView(): Container = Container()
+	protected open fun createSceneView(width: Double, height: Double): Container = FixedSizeContainer(width, height)
 
     /**
      * This method will be called by the [SceneContainer] that will display this [Scene].
@@ -156,7 +165,7 @@ abstract class ScaledScene : Scene() {
 	open val sceneScale: Double = 2.0
 	open val sceneFiltering: Boolean = false
 
-	override fun createSceneView(): Container = ScaleView(
+	override fun createSceneView(width: Double, height: Double): Container = ScaleView(
 		sceneSize.width.toInt(),
 		sceneSize.height.toInt(),
 		scale = sceneScale,

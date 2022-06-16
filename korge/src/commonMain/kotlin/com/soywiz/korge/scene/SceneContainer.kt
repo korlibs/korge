@@ -5,6 +5,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
+import com.soywiz.korge.ui.UIView
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
@@ -30,14 +31,19 @@ inline fun Container.sceneContainer(
 	views: Views,
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
+    width: Double = views.stage.width, height: Double = views.stage.height,
 	callback: SceneContainer.() -> Unit = {}
-): SceneContainer = SceneContainer(views, defaultTransition, name).addTo(this, callback)
+): SceneContainer = SceneContainer(views, defaultTransition, name, width, height).addTo(this, callback)
 
 suspend inline fun Container.sceneContainer(
     defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
     name: String = "sceneContainer",
+    width: Double? = null, height: Double? = null,
     callback: SceneContainer.() -> Unit = {}
-): SceneContainer = SceneContainer(views(), defaultTransition, name).addTo(this, callback)
+): SceneContainer {
+    val views = views()
+    return SceneContainer(views, defaultTransition, name, width ?: views.stage.width, height ?: views.stage.height).addTo(this, callback)
+}
 
 /**
  * A [Container] [View] that can hold [Scene]s controllers and contains a history.
@@ -48,8 +54,9 @@ class SceneContainer(
     val views: Views,
     /** Default [Transition] that will be used when no transition is specified */
     val defaultTransition: Transition = AlphaTransition.withEasing(Easing.EASE_IN_OUT_QUAD),
-    name: String = "sceneContainer"
-) : Container(), CoroutineScope by views {
+    name: String = "sceneContainer",
+    width: Double = views.stage.width, height: Double = views.stage.height,
+) : UIView(width, height), CoroutineScope by views {
     init {
         this.name = name
     }
@@ -58,6 +65,9 @@ class SceneContainer(
 
     /** The [Scene] that is currently set or null */
 	var currentScene: Scene? = null
+    override fun onSizeChanged() {
+        currentScene?.sceneView?.setSize(width, height)
+    }
 
     // Async versions
     /** Async variant returning a [Deferred] for [changeTo] */
@@ -151,20 +161,12 @@ class SceneContainer(
 		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
 
-	private suspend fun _changeTo(
-        entry: VisitEntry,
-        time: TimeSpan = 0.seconds,
-        transition: Transition = defaultTransition
-	): Scene = _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
-
-    /** Check [Scene] for details of the lifecycle. */
-	private suspend fun <T : Scene> _changeTo(
-        clazz: KClass<T>,
+    suspend inline fun <T : Scene> changeTo(
+        gen: (AsyncInjector) -> T,
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
     ): T {
-        val oldScene = currentScene
         val sceneInjector: AsyncInjector =
             views.injector.child()
                 .mapInstance(SceneContainer::class, this@SceneContainer)
@@ -172,7 +174,33 @@ class SceneContainer(
         injects.fastForEach { inject ->
             sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
         }
-        val newScene = sceneInjector.get(clazz)
+        val newScene = gen(sceneInjector)
+        return _changeTo(newScene, time, transition)
+    }
+
+	private suspend fun _changeTo(
+        entry: VisitEntry,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
+	): Scene = _changeTo(entry.clazz, *entry.injects.toTypedArray(), time = time, transition = transition) as Scene
+
+    /** Check [Scene] for details of the lifecycle. */
+    private suspend fun <T : Scene> _changeTo(
+        clazz: KClass<T>,
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
+    ): T {
+        return changeTo({ it.get(clazz) }, *injects, time, transition)
+    }
+
+    /** Check [Scene] for details of the lifecycle. */
+    @PublishedApi internal suspend fun <T : Scene> _changeTo(
+        newScene: T,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition
+    ): T {
+        val oldScene = currentScene
         currentScene = newScene
 
         transitionView.startNewTransition(newScene._sceneViewContainer, transition)
