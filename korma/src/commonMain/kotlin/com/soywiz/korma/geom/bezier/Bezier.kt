@@ -98,6 +98,7 @@ class Bezier(
         if (points.size > 4) error("Only supports quad and cubic beziers")
     }
 
+    constructor() : this(PointArrayList(0.0, 0.0, 0.0, 0.0))
     constructor(vararg points: IPoint) : this(PointArrayList(*points))
     constructor(vararg points: Double) : this(PointArrayList(*points))
     constructor(vararg points: Float) : this(PointArrayList(*points))
@@ -105,21 +106,45 @@ class Bezier(
     @Deprecated("Boxing in K/N debug builds")
     constructor(vararg points: Number) : this(PointArrayList(*points))
 
-    fun setPoints(points: IPointArrayList): Bezier {
-        this._points.copyFrom(points)
+    fun copyFrom(bezier: IBezier): Bezier {
+        this._points.copyFrom(bezier.points)
+        return this
+    }
+
+    private inline fun _setPoints(block: PointArrayList.() -> Unit): Bezier {
+        val p = this._points
+        p.clear()
+        block(p)
         invalidate()
         return this
     }
-    fun setPoints(vararg points: IPoint): Bezier {
-        this._points.clear()
-        points.fastForEach { this._points.add(it) }
-        invalidate()
-        return this
+
+    fun setPoints(points: IPointArrayList): Bezier = _setPoints { copyFrom(points) }
+
+    fun setPoints(vararg points: IPoint): Bezier = _setPoints {
+        points.fastForEach { add(it) }
     }
-    fun setPoints(vararg points: Double): Bezier {
-        this._points.addRaw(*points)
-        invalidate()
-        return this
+
+    fun setPoints(vararg points: Double): Bezier = _setPoints {
+        addRaw(*points)
+    }
+
+    fun setPoints(x0: Double, y0: Double, x1: Double, y1: Double): Bezier = _setPoints {
+        add(x0, y0)
+        add(x1, y1)
+    }
+
+    fun setPoints(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double): Bezier = _setPoints {
+        add(x0, y0)
+        add(x1, y1)
+        add(x2, y2)
+    }
+
+    fun setPoints(x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double): Bezier = _setPoints {
+        add(x0, y0)
+        add(x1, y1)
+        add(x2, y2)
+        add(x3, y3)
     }
 
     private var boundingBoxValid = false
@@ -145,7 +170,7 @@ class Bezier(
     }
 
     fun setToRoundDecimalPlaces(places: Int) {
-        (points as PointArrayList).setToRoundDecimalPlaces(places)
+        _points.setToRoundDecimalPlaces(places)
         invalidate()
     }
     fun roundDecimalPlaces(places: Int): Bezier = Bezier(points.roundDecimalPlaces(places))
@@ -710,15 +735,15 @@ class Bezier(
         val adk: Double = 0.0,
     )
 
-    fun toLine(): Bezier {
+    fun toLine(out: Bezier = Bezier()): Bezier {
         val x0 = points.getX(0)
         val y0 = points.getY(0)
         val x1 = points.getX(order)
         val y1 = points.getY(order)
-        return Bezier(x0, y0, x1, y1)
+        return out.setPoints(x0, y0, x1, y1)
     }
 
-    fun toCubic(): Bezier {
+    fun toCubic(out: Bezier = Bezier()): Bezier {
         return when (order) {
             1 -> {
                 val x0 = points.getX(0)
@@ -729,7 +754,7 @@ class Bezier(
                 val yd = y1 - y0
                 val r1 = 1.0 / 3.0
                 val r2 = 2.0 / 3.0
-                Bezier(
+                out.setPoints(
                     x0, y0,
                     x0 + (xd * r1), y0 + (yd * r1),
                     x0 + (xd * r2), y0 + (yd * r2),
@@ -743,32 +768,32 @@ class Bezier(
                 val yc = points.getY(1)
                 val x1 = points.getX(2)
                 val y1 = points.getY(2)
-                Bezier(
+                out.setPoints(
                     x0, y0,
                     quadToCubic1(x0, xc), quadToCubic1(y0, yc),
                     quadToCubic2(xc, x1), quadToCubic2(yc, y1),
                     x1, y1
                 )
             }
-            3 -> this // No conversion
+            3 -> out.copyFrom(this) // No conversion
             else -> TODO("Unsupported higher order curves")
         }
     }
 
-    fun toQuad(): Bezier {
+    fun toQuad(out: Bezier = Bezier()): Bezier {
         return when (order) {
             1 -> {
                 val x0 = points.getX(0)
                 val y0 = points.getY(0)
                 val x1 = points.getX(1)
                 val y1 = points.getY(1)
-                Bezier(
+                out.setPoints(
                     x0, y0,
                     (x0 + x1) * 0.5, (y0 + y1) * 0.5,
                     y0, y1,
                 )
             }
-            2 -> this // No conversion
+            2 -> out.copyFrom(this) // No conversion
             3 -> {
                 val x0 = points.getX(0)
                 val y0 = points.getY(0)
@@ -780,14 +805,7 @@ class Bezier(
                 val y1 = points.getY(3)
                 val xc = -0.25*x0 + .75*xc1 + .75*xc2 -0.25*x1
                 val yc = -0.25*y0 + .75*yc1 + .75*yc2 -0.25*y1
-                return Bezier(x0, y0, xc, yc, x1, y1)
-                // @TODO: Is this right
-                //quadraticFromPoints(
-                //    points.getPoint(0),
-                //    compute(0.5),
-                //    points.getPoint(3),
-                //    0.5
-                //)
+                return out.setPoints(x0, y0, xc, yc, x1, y1)
             }
             else -> TODO("Unsupported higher order curves")
         }
@@ -830,12 +848,10 @@ class Bezier(
         val reduced = this.reduce()
         val len = reduced.size
         val fcurves = arrayListOf<Bezier>()
-
-        var bcurves0 = arrayListOf<Bezier>()
+        val bcurves0 = arrayListOf<Bezier>()
         val tlen = this.length
         val graduated = d3 != d1 && d4 != d2
 
-        var p: Double = 0.0
         var alen = 0.0
 
         fun linearDistanceFunction(s: Double, e: Double, tlen: Double, alen: Double, slen: Double): (Double) -> Double =
@@ -887,7 +903,7 @@ class Bezier(
 
     companion object {
         // Legendre-Gauss abscissae with n=24 (x_i values, defined at i=n as the roots of the nth order Legendre polynomial Pn(x))
-        val T_VALUES = doubleArrayOf(
+        @PublishedApi internal val T_VALUES = doubleArrayOf(
             -0.06405689286260563, 0.06405689286260563, -0.1911188674736163, 0.1911188674736163,
             -0.3150426796961634, 0.3150426796961634, -0.4337935076260451, 0.4337935076260451,
             -0.5454214713888396, 0.5454214713888396, -0.6480936519369755, 0.6480936519369755,
@@ -897,7 +913,7 @@ class Bezier(
         )
 
         // Legendre-Gauss weights with n=24 (w_i values, defined by a function linked to in the Bezier primer article)
-        val C_VALUES = doubleArrayOf(
+        @PublishedApi internal val C_VALUES = doubleArrayOf(
             0.12793819534675216, 0.12793819534675216, 0.1258374563468283, 0.1258374563468283,
             0.12167047292780339, 0.12167047292780339, 0.1155056680537256, 0.1155056680537256,
             0.10744427011596563, 0.10744427011596563, 0.09761865210411388, 0.09761865210411388,
@@ -1297,7 +1313,7 @@ class Bezier(
         private fun lli4(p1: IPoint, p2: IPoint, p3: IPoint, p4: IPoint, out: Point = Point()): IPoint? =
             lli8(p1.x, p1.y, p2.x, p2.y, p3.x, p3.y, p4.x, p4.y, out)
 
-        fun cubicFromPoints(S: Point, B: Point, E: Point, t: Double = 0.5, d1: Double? = null): Bezier {
+        fun cubicFromPoints(S: IPoint, B: IPoint, E: IPoint, t: Double = 0.5, d1: Double? = null): Bezier {
             val abc = getABC(3, S, B, E, t);
             val d1 = d1 ?: dist(B, abc.C)
             val d2 = (d1 * (1 - t)) / t
