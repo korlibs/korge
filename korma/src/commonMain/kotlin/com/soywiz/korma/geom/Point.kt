@@ -301,6 +301,7 @@ data class Point(
 
 
     val unit: Point get() = this / this.length
+    val squaredLength: Double get() = (x * x) + (y * y)
     val length: Double get() = hypot(this.x, this.y)
     val magnitude: Double get() = hypot(this.x, this.y)
     val normalized: Point
@@ -311,7 +312,10 @@ data class Point(
 
     fun normalize() {
         val len = this.length
-        this.setTo(this.x / len, this.y / len)
+        when {
+            len.isAlmostZero() -> this.setTo(0, 0)
+            else -> this.setTo(this.x / len, this.y / len)
+        }
     }
 
     override fun interpolateWith(ratio: Double, other: Point): Point =

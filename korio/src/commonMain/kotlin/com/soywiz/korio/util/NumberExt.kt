@@ -11,8 +11,30 @@ import kotlin.math.round
 fun Int.toStringUnsigned(radix: Int): String = this.toUInt().toString(radix)
 fun Long.toStringUnsigned(radix: Int): String = this.toULong().toString(radix)
 
-val Float.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
-val Double.niceStr: String get() = if (round(this) == this) "${this.toLong()}" else "$this"
+val Float.niceStr: String get() = buildString { appendNice(this@niceStr) }
+val Double.niceStr: String get() = buildString { appendNice(this@niceStr) }
+
+private fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = (this - other).absoluteValue < epsilon
+private fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.000001f): Boolean = (this - other).absoluteValue < epsilon
+
+fun StringBuilder.appendNice(value: Double) {
+    when {
+        round(value).isAlmostEquals(value) -> when {
+            value >= Int.MIN_VALUE.toDouble() && value <= Int.MAX_VALUE.toDouble() -> append(value.toInt())
+            else -> append(value.toLong())
+        }
+        else -> append(value)
+    }
+}
+fun StringBuilder.appendNice(value: Float) {
+    when {
+        round(value).isAlmostEquals(value) -> when {
+            value >= Int.MIN_VALUE.toFloat() && value <= Int.MAX_VALUE.toFloat() -> append(value.toInt())
+            else -> append(value.toLong())
+        }
+        else -> append(value)
+    }
+}
 
 //private fun Double.normalizeZero(): Double = if (this.isAlmostZero()) 0.0 else this
 private fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this

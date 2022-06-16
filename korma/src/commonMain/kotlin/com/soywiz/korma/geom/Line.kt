@@ -3,6 +3,7 @@ package com.soywiz.korma.geom
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.math.almostEquals
 import com.soywiz.korma.math.clamp
+import com.soywiz.korma.math.isAlmostZero
 
 interface ILine {
     val a: IPoint
@@ -142,10 +143,10 @@ data class Line(override val a: Point, override val b: Point) : ILine {
     //        (q.y <= max(p.y, r.y)) && (q.y >= min(p.y, r.y)))
 
     companion object {
-        fun fromPointAndDirection(point: Point, direction: Point, scale: Double = 1.0, out: Line = Line()): Line {
+        fun fromPointAndDirection(point: IPoint, direction: IPoint, scale: Double = 1.0, out: Line = Line()): Line {
             return out.setTo(point.x, point.y, point.x + direction.x * scale, point.y + direction.y * scale)
         }
-        fun fromPointAngle(point: Point, angle: Angle, length: Double = 1.0, out: Line = Line()): Line =
+        fun fromPointAngle(point: IPoint, angle: Angle, length: Double = 1.0, out: Line = Line()): Line =
             out.setToPolar(point.x, point.y, angle, length)
 
         fun length(Ax: Double, Ay: Double, Bx: Double, By: Double): Double = kotlin.math.hypot(Bx - Ax, By - Ay)
@@ -158,9 +159,10 @@ data class Line(override val a: Point, override val b: Point) : ILine {
             val b2 = Cx - Dx
             val c2 = a2 * (Cx) + b2 * (Cy)
             val determinant = a1 * b2 - a2 * b1
-            if (determinant == 0.0) return false
+            if (determinant.isAlmostZero()) return false
             val x = (b2 * c1 - b1 * c2) / determinant
             val y = (a1 * c2 - a2 * c1) / determinant
+            //if (!x.isFinite() || !y.isFinite()) TODO()
             out(x, y)
             return true
         }

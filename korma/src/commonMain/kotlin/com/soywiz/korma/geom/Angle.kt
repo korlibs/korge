@@ -8,6 +8,8 @@ import com.soywiz.korma.math.isAlmostEquals
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
+import kotlin.math.max
+import kotlin.math.min
 
 @PublishedApi internal const val PI2 = PI * 2.0
 @PublishedApi internal const val DEG2RAD = PI / 180.0
@@ -54,6 +56,7 @@ inline class Angle private constructor(
 
     @Suppress("MemberVisibilityCanBePrivate")
     companion object {
+        inline val EPSILON get() = fromRatio(0.00001)
         inline val ZERO get() = fromRatio(0.0)
         inline val QUARTER get() = fromRatio(0.25)
         inline val HALF get() = fromRatio(0.5)
@@ -114,14 +117,16 @@ inline class Angle private constructor(
     }
 }
 
-val Angle.cosine get() = cos(this)
-val Angle.sine get() = sin(this)
-val Angle.tangent get() = tan(this)
+val Angle.cosine: Double get() = cos(this)
+val Angle.sine: Double get() = sin(this)
+val Angle.tangent: Double get() = tan(this)
 
 inline fun cos(angle: Angle): Double = kotlin.math.cos(angle.radians)
 inline fun sin(angle: Angle): Double = kotlin.math.sin(angle.radians)
 inline fun tan(angle: Angle): Double = kotlin.math.tan(angle.radians)
 inline fun abs(angle: Angle): Angle = Angle.fromRatio(angle.ratio.absoluteValue)
+inline fun min(a: Angle, b: Angle): Angle = Angle.fromRatio(min(a.ratio, b.ratio))
+inline fun max(a: Angle, b: Angle): Angle = Angle.fromRatio(max(a.ratio, b.ratio))
 
 val Angle.absoluteValue: Angle get() = Angle.fromRatio(ratio.absoluteValue)
 fun Angle.shortDistanceTo(other: Angle): Angle = Angle.shortDistanceTo(this, other)

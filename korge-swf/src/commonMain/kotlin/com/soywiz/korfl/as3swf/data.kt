@@ -3,6 +3,7 @@ package com.soywiz.korfl.as3swf
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.LineScaleMode
 import kotlin.collections.set
 import kotlin.math.*
 

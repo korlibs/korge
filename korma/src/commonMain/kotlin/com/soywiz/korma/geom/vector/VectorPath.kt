@@ -470,26 +470,34 @@ fun VectorBuilder.write(path: VectorPath) {
     )
 }
 
-fun VectorBuilder.moveTo(x: Double, y: Double, m: Matrix) = moveTo(m.transformX(x, y), m.transformY(x, y))
-fun VectorBuilder.lineTo(x: Double, y: Double, m: Matrix) = lineTo(m.transformX(x, y), m.transformY(x, y))
-fun VectorBuilder.quadTo(cx: Double, cy: Double, ax: Double, ay: Double, m: Matrix) =
-    quadTo(
-        m.transformX(cx, cy), m.transformY(cx, cy),
-        m.transformX(ax, ay), m.transformY(ax, ay)
-    )
-fun VectorBuilder.cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, m: Matrix) =
-    cubicTo(
-        m.transformX(cx1, cy1), m.transformY(cx1, cy1),
-        m.transformX(cx2, cy2), m.transformY(cx2, cy2),
-        m.transformX(ax, ay), m.transformY(ax, ay)
-    )
+fun VectorBuilder.moveTo(x: Double, y: Double, m: Matrix?) = if (m != null) moveTo(m.transformX(x, y), m.transformY(x, y)) else moveTo(x, y)
+fun VectorBuilder.lineTo(x: Double, y: Double, m: Matrix?) = if (m != null) lineTo(m.transformX(x, y), m.transformY(x, y)) else lineTo(x, y)
+fun VectorBuilder.quadTo(cx: Double, cy: Double, ax: Double, ay: Double, m: Matrix?) =
+    if (m != null) {
+        quadTo(
+            m.transformX(cx, cy), m.transformY(cx, cy),
+            m.transformX(ax, ay), m.transformY(ax, ay)
+        )
+    } else {
+        quadTo(cx, cy, ax, ay)
+    }
+fun VectorBuilder.cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double, m: Matrix?) =
+    if (m != null) {
+        cubicTo(
+            m.transformX(cx1, cy1), m.transformY(cx1, cy1),
+            m.transformX(cx2, cy2), m.transformY(cx2, cy2),
+            m.transformX(ax, ay), m.transformY(ax, ay)
+        )
+    } else {
+        cubicTo(cx1, cy1, cx2, cy2, ax, ay)
+    }
 
 
-fun VectorBuilder.path(path: VectorPath, m: Matrix) {
+fun VectorBuilder.path(path: VectorPath, m: Matrix?) {
     write(path, m)
 }
 
-fun VectorBuilder.write(path: VectorPath, m: Matrix) {
+fun VectorBuilder.write(path: VectorPath, m: Matrix?) {
     path.visitCmds(
         moveTo = { x, y -> moveTo(x, y, m) },
         lineTo = { x, y -> lineTo(x, y, m) },

@@ -8,6 +8,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.bezier.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.geom.vector.StrokeInfo
 
 suspend fun Stage.bezierSample() {
     val p0 = Point(109, 135)

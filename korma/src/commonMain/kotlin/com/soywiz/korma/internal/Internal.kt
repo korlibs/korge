@@ -1,11 +1,35 @@
 package com.soywiz.korma.internal
 
-import com.soywiz.korma.math.almostEquals
+import com.soywiz.korma.math.isAlmostEquals
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.round
 
-internal val Float.niceStr: String get() = if (almostEquals(this.toLong().toFloat(), this)) "${this.toLong()}" else "$this"
-internal val Double.niceStr: String get() = if (almostEquals(this.toLong().toDouble(), this)) "${this.toLong()}" else "$this"
+//internal val Float.niceStr: String get() = if (almostEquals(this.toLong().toFloat(), this)) "${this.toLong()}" else "$this"
+//internal val Double.niceStr: String get() = if (almostEquals(this.toLong().toDouble(), this)) "${this.toLong()}" else "$this"
+
+internal val Float.niceStr: String get() = buildString { appendNice(this@niceStr) }
+internal val Double.niceStr: String get() = buildString { appendNice(this@niceStr) }
+
+internal fun StringBuilder.appendNice(value: Double) {
+    when {
+        round(value).isAlmostEquals(value) -> when {
+            value >= Int.MIN_VALUE.toDouble() && value <= Int.MAX_VALUE.toDouble() -> append(value.toInt())
+            else -> append(value.toLong())
+        }
+        else -> append(value)
+    }
+}
+
+internal fun StringBuilder.appendNice(value: Float) {
+    when {
+        round(value).isAlmostEquals(value) -> when {
+            value >= Int.MIN_VALUE.toFloat() && value <= Int.MAX_VALUE.toFloat() -> append(value.toInt())
+            else -> append(value.toLong())
+        }
+        else -> append(value)
+    }
+}
 
 @PublishedApi internal infix fun Int.umod(other: Int): Int {
     val remainder = this % other

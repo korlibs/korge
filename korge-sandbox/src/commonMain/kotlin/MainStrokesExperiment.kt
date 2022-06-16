@@ -24,7 +24,7 @@ import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.text
-import com.soywiz.korim.vector.StrokeInfo
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.bezier.Bezier

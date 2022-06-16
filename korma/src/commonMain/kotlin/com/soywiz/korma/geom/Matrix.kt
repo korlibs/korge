@@ -253,13 +253,13 @@ data class Matrix(
     }
 
     fun setTransform(
-        x: Double,
-        y: Double,
-        scaleX: Double,
-        scaleY: Double,
-        rotation: Angle,
-        skewX: Angle,
-        skewY: Angle,
+        x: Double = 0.0,
+        y: Double = 0.0,
+        scaleX: Double = 1.0,
+        scaleY: Double = 1.0,
+        rotation: Angle = Angle.ZERO,
+        skewX: Angle = Angle.ZERO,
+        skewY: Angle = Angle.ZERO,
         pivotX: Double = 0.0,
         pivotY: Double = 0.0,
     ): Matrix {
@@ -278,7 +278,8 @@ data class Matrix(
         }
         return this
     }
-    fun setTransform(x: Float, y: Float, scaleX: Float, scaleY: Float, rotation: Angle, skewX: Angle, skewY: Angle): Matrix = setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
+    fun setTransform(x: Float = 0f, y: Float = 0f, scaleX: Float = 1f, scaleY: Float = 1f, rotation: Angle = Angle.ZERO, skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO): Matrix =
+        setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
     fun clone() = Matrix(a, b, c, d, tx, ty)
 

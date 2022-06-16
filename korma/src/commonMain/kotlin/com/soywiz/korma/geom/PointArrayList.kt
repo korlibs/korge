@@ -5,6 +5,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.SortOps
 import com.soywiz.kds.genericSort
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.mapDouble
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.round
@@ -379,3 +380,6 @@ inline fun <T> Iterable<T>.mapPoint(temp: Point = Point(), out: PointArrayList =
     }
     return out
 }
+
+fun List<IPointArrayList>.flatten(): IPointArrayList =
+    PointArrayList(this.sumOf { it.size }).also { out -> this.fastForEach { out.add(it) } }

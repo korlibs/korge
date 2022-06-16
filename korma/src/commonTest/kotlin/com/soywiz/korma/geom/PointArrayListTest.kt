@@ -55,4 +55,12 @@ class PointArrayListTest {
         assertEquals("[(1, 2), (3, 4)]", pointArrayListOf(1, 2, 3, 4).toString())
         assertEquals("[(1, 2), (3, 4)]", pointArrayListOf(1.0, 2.0, 3.0, 4.0).toString())
     }
+
+    @Test
+    fun testFlatten() {
+        assertEquals(
+            "[(1, 2), (3, 4), (5, 6), (7, 8), (9, 10)]",
+            listOf(pointArrayListOf(1, 2, 3, 4), pointArrayListOf(5, 6, 7, 8), PointArrayList(9, 10)).flatten().toString()
+        )
+    }
 }

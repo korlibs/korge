@@ -8,7 +8,6 @@ import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korim.vector.StrokeInfo
 import com.soywiz.korio.async.launch
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle

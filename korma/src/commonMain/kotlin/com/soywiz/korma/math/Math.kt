@@ -64,6 +64,7 @@ fun Double.isAlmostEquals(other: Double, epsilon: Double = 0.000001): Boolean = 
 fun Double.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
 fun Double.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 
+fun Float.isAlmostEquals(other: Float, epsilon: Float = 0.000001f): Boolean = (this - other).absoluteValue < epsilon
 fun Float.isAlmostZero(): Boolean = kotlin.math.abs(this) <= 1e-19
 fun Float.isNanOrInfinite() = this.isNaN() || this.isInfinite()
 

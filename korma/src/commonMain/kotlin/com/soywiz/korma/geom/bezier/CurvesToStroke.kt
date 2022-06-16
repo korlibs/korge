@@ -24,8 +24,12 @@ import com.soywiz.korma.geom.projectedPoint
 import com.soywiz.korma.geom.umod
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.StrokeInfo
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.toCurvesList
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.clamp
+import com.soywiz.korma.math.isNanOrInfinite
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
@@ -59,7 +63,11 @@ interface StrokePoints {
     }
 }
 
-class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS, val generateDebug: Boolean = false) : StrokePoints {
+class StrokePointsBuilder(
+    val width: Double,
+    override val mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
+    val generateDebug: Boolean = false
+) : StrokePoints {
     val NSTEPS = 20
 
     override val vector: VectorArrayList = VectorArrayList(dimensions = when (mode) {
@@ -70,19 +78,26 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
     override val debugPoints: PointArrayList = PointArrayList()
     override val debugSegments: ArrayList<Line> = arrayListOf()
 
-    fun addPoint(pos: IPoint, normal: IPoint, width: Double, maxWidth: Double) = when (mode) {
-        StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> vector.add(pos.x, pos.y, normal.x, normal.y, width, maxWidth)
-        StrokePointsMode.NON_SCALABLE_POS -> vector.add(pos.x + normal.x * width, pos.y + normal.y * width)
+    override fun toString(): String = "StrokePointsBuilder($width, $vector)"
+
+    fun addPoint(pos: IPoint, normal: IPoint, width: Double, maxWidth: Double = width) {
+        //if (!pos.x.isFinite() || !normal.x.isFinite()) TODO("NaN detected pos=$pos, normal=$normal, width=$width, maxWidth=$maxWidth")
+        when (mode) {
+            StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH -> vector.add(pos.x, pos.y, normal.x, normal.y, width, maxWidth.absoluteValue)
+            StrokePointsMode.NON_SCALABLE_POS -> vector.add(pos.x + normal.x * width, pos.y + normal.y * width)
+        }
     }
 
     fun addPointRelative(center: IPoint, pos: IPoint, sign: Double = 1.0) {
-        val width = (pos - center).length * sign
-        addPoint(center, (pos - center).normalized, width, width)
+        val dist = pos - center
+        val normal = if (sign < 0.0) dist.mutable.neg() else dist
+        //if (!center.x.isFinite() || !normal.x.isFinite()) TODO("Non finite value detected detected: center=$center, pos=$pos, sign=$sign, dist=$dist, normal=$normal")
+        addPoint(center, normal.normalized, dist.length * sign)
     }
 
     fun addTwoPoints(pos: IPoint, normal: IPoint, width: Double) {
-        addPoint(pos, normal, width, width)
-        addPoint(pos, normal, -width, width)
+        addPoint(pos, normal, width)
+        addPoint(pos, normal, -width)
     }
 
     fun addJoin(curr: Curve, next: Curve, kind: LineJoin, miterLimitRatio: Double) {
@@ -98,12 +113,15 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         val nextLine0 = Line.fromPointAndDirection(commonPoint + nextNormal * width, nextTangent)
         val nextLine1 = Line.fromPointAndDirection(commonPoint + nextNormal * -width, nextTangent)
 
+        //if (!nextLine1.dx.isFinite()) println((next as Bezier).roundDecimalPlaces(2))
+
         val intersection0 = Line.lineIntersectionPoint(currLine0, nextLine0)
         val intersection1 = Line.lineIntersectionPoint(currLine1, nextLine1)
-        if (intersection0 == null || intersection1 == null) {
-            //println("direction=$direction, currTangent=$currTangent, nextTangent=$nextTangent")
-            val signChanged = currTangent.x.sign != nextTangent.x.sign || currTangent.y.sign != nextTangent.y.sign
-            addTwoPoints(commonPoint, currNormal, if (signChanged) -width else width)
+        if (intersection0 == null || intersection1 == null) { // || !intersection0.x.isFinite() || !intersection1.x.isFinite()) {
+            //println("currTangent=$currTangent, nextTangent=$nextTangent")
+            //val signChanged = currTangent.x.sign != nextTangent.x.sign || currTangent.y.sign != nextTangent.y.sign
+            //addTwoPoints(commonPoint, currNormal, if (signChanged) width else -width)
+            addTwoPoints(commonPoint, currNormal, width)
             return
         }
 
@@ -129,8 +147,8 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         if (kind != LineJoin.MITER || miterLength > miterLimit) {
         //run {
             //val angle = Angle.between(nextTangent * 10.0, currTangent * 10.0)
-            val p1 = if (direction < 0.0) currLine0.projectedPoint(commonPoint) else nextLine1.projectedPoint(commonPoint)
-            val p2 = if (direction < 0.0) nextLine0.projectedPoint(commonPoint) else currLine1.projectedPoint(commonPoint)
+            val p1 = if (direction <= 0.0) currLine0.projectedPoint(commonPoint) else nextLine1.projectedPoint(commonPoint)
+            val p2 = if (direction <= 0.0) nextLine0.projectedPoint(commonPoint) else currLine1.projectedPoint(commonPoint)
             // @TODO: We should try to find the common edge (except when the two lines overlaps), to avoid overlapping in normal curves
 
             //println("direction=$direction")
@@ -148,18 +166,13 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
                 p3 = p4
             }
 
-            //val d3 = Point.distance(commonPoint, p3!!)
-            //val d4 = Point.distance(commonPoint, p4)
-
-            //if (p5 != null) {
             val angleB = (angle + 180.degrees).absoluteValue
             val angle2 = (angle umod 180.degrees).absoluteValue
-            val angle3 = if (angle2 > 90.degrees) 180.degrees - angle2 else angle2
+            val angle3 = if (angle2 >= 90.degrees) 180.degrees - angle2 else angle2
             val ratio = (angle3.ratio.absoluteValue * 4).clamp(0.0, 1.0)
             val p5 = ratio.interpolate(p4, p3!!.mutable)
-            //println("angle3=$angle3, angle2=$angle2, ratio=$ratio")
-            //}
-            //p3 = if (Point.distance(p3, p4) < width) p3 else p4
+
+            //val p5 = p3
 
             if (generateDebug) {
                 debugSegments.add(nextLine1.scalePoints(1000.0).clone())
@@ -180,17 +193,18 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
             //val p6 = if (angleB < 45.degrees) p5 else p3
             val p6 = p5
             //val p6 = p3
+            //val p6 = p4
 
             if (direction < 0.0) {
                 addPointRelative(commonPoint, p1)
-                addPointRelative(commonPoint, p6)
+                addPointRelative(commonPoint, p6, -1.0)
                 addPointRelative(commonPoint, p2)
-                addPointRelative(commonPoint, p6)
+                addPointRelative(commonPoint, p6, -1.0)
             } else {
                 addPointRelative(commonPoint, p6)
-                addPointRelative(commonPoint, p2)
+                addPointRelative(commonPoint, p2, -1.0)
                 addPointRelative(commonPoint, p6)
-                addPointRelative(commonPoint, p1)
+                addPointRelative(commonPoint, p1, -1.0)
             }
             //addPoint(p1, Point(0, 0), 0.0)
             //addCurvePointsCap(p2, p1, 0.5)
@@ -300,6 +314,38 @@ class StrokePointsBuilder(val width: Double, override val mode: StrokePointsMode
         }
     }
 }
+
+fun VectorPath.toStrokePointsList(
+    info: StrokeInfo,
+    mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
+    generateDebug: Boolean = false,
+    forceClosed: Boolean? = null,
+): List<StrokePoints> = toCurvesList().toStrokePointsList(info, mode, generateDebug, forceClosed)
+
+fun Curves.toStrokePointsList(
+    info: StrokeInfo,
+    mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
+    generateDebug: Boolean = false,
+    forceClosed: Boolean? = null,
+): List<StrokePoints> = listOf(this).toStrokePointsList(info, mode, generateDebug, forceClosed)
+
+fun List<Curves>.toStrokePointsList(
+    info: StrokeInfo,
+    mode: StrokePointsMode = StrokePointsMode.NON_SCALABLE_POS,
+    generateDebug: Boolean = false,
+    forceClosed: Boolean? = null,
+): List<StrokePoints> = toStrokePointsList(
+    width = info.thickness,
+    join = info.join,
+    startCap = info.startCap,
+    endCap = info.endCap,
+    miterLimit = info.miterLimit,
+    mode = mode,
+    lineDash = info.dash,
+    lineDashOffset = info.dashOffset,
+    generateDebug = generateDebug,
+    forceClosed = forceClosed
+)
 
 /** Useful for drawing */
 fun Curves.toStrokePointsList(

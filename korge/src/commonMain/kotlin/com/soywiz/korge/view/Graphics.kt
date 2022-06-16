@@ -12,11 +12,9 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.CompoundShape
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.LineScaleMode
 import com.soywiz.korim.vector.PolylineShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korim.vector.StrokeInfo
 import com.soywiz.korim.vector.StyledShape
 import com.soywiz.korim.vector.buildShape
 import com.soywiz.korma.geom.BoundsBuilder
@@ -25,6 +23,8 @@ import com.soywiz.korma.geom.shape.Shape2d
 import com.soywiz.korma.geom.shape.toShape2d
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.LineScaleMode
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
@@ -272,7 +272,7 @@ open class Graphics @JvmOverloads constructor(
 	}
 
 	fun endStroke() = dirty {
-		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset)
+		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset))
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
 		currentPath = vectorPathPool.alloc()
         dirtyShape()
@@ -280,7 +280,7 @@ open class Graphics @JvmOverloads constructor(
 
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset)
+		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset))
 		currentPath = vectorPathPool.alloc()
         dirtyShape()
 	}

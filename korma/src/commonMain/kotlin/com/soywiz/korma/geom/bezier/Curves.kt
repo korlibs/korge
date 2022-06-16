@@ -29,6 +29,19 @@ fun Bezier.toCurves(closed: Boolean) = Curves(listOf(this), closed)
 data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
 
+    /**
+     * All [beziers] in this set are contiguous
+     */
+    val contiguous by lazy {
+        for (n in 1 until beziers.size) {
+            val curr = beziers[n - 1]
+            val next = beziers[n]
+            if (!curr.points.lastX.isAlmostEquals(next.points.firstX)) return@lazy false
+            if (!curr.points.lastY.isAlmostEquals(next.points.firstY)) return@lazy false
+        }
+        return@lazy true
+    }
+
     constructor(vararg curves: Bezier, closed: Boolean = false) : this(curves.toList(), closed)
 
     override val order: Int get() = -1
@@ -149,26 +162,31 @@ data class Curves(val beziers: List<Bezier>, val closed: Boolean) : Curve, Extra
             }
         }, closed = false)
     }
+
+    fun roundDecimalPlaces(places: Int): Curves = Curves(beziers.map { it.roundDecimalPlaces(places) }, closed)
 }
 
-fun Curves.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
-    var lastX = Double.NaN
-    var lastY = Double.NaN
-    for (bezier in beziers) {
-        val points = bezier.points
-        if (lastX.isNaN() || lastY.isNaN() || points.firstX.isAlmostEquals(lastX) || points.firstY.isAlmostEquals(lastY)) {
-            out.moveTo(points.firstX, points.firstY)
+fun Curves.toVectorPath(out: VectorPath = VectorPath()): VectorPath = listOf(this).toVectorPath(out)
+
+fun List<Curves>.toVectorPath(out: VectorPath = VectorPath()): VectorPath {
+    fastForEach { curves ->
+        var first = true
+        for (bezier in curves.beziers) {
+            val points = bezier.points
+            if (first) {
+                out.moveTo(points.firstX, points.firstY)
+                first = false
+            }
+            when (bezier.order) {
+                1 -> out.lineTo(points.getX(1), points.getY(1))
+                2 -> out.quadTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2))
+                3 -> out.cubicTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2), points.getX(3), points.getY(3))
+                else -> TODO()
+            }
         }
-        when (bezier.order) {
-            1 -> out.lineTo(points.getX(1), points.getY(1))
-            2 -> out.quadTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2))
-            3 -> out.cubicTo(points.getX(1), points.getY(1), points.getX(2), points.getY(2), points.getX(3), points.getY(3))
-            else -> TODO()
-        }
-        lastX = points.lastX
-        lastY = points.lastY
+        if (curves.closed) out.close()
     }
-    if (closed) out.close()
+
     return out
 }
 

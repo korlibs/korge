@@ -18,7 +18,6 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.CompoundShape
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.LineScaleMode
 import com.soywiz.korim.vector.PolylineShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.ShapeBuilder
@@ -46,6 +45,8 @@ import com.soywiz.korma.geom.shape.getPoints2
 import com.soywiz.korma.geom.shape.getPoints2List
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.LineScaleMode
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.toCurvesList
@@ -177,11 +178,11 @@ open class GpuShapeView(
     private var cachedScale: Double = Double.NaN
 
     override fun renderInternal(ctx: RenderContext) {
-        //globalScale = globalTransform.setMatrix(globalMatrix).setMatrix(globalMatrix).scaleAvg * ctx.bp.globalToWindowScaleAvg
+        globalScale = globalTransform.setMatrix(globalMatrix).setMatrix(globalMatrix).scaleAvg * ctx.bp.globalToWindowScaleAvg
         //globalScale = ctx.bp.globalToWindowScaleAvg
-        //if (cachedScale != globalScale) {
-        //    invalidateShape()
-        //}
+        if (cachedScale != globalScale) {
+            invalidateShape()
+        }
         //invalidateShape()
         ctx.flush()
 
@@ -238,14 +239,7 @@ open class GpuShapeView(
                     shape.path,
                     shape.paint,
                     shape.globalAlpha,
-                    shape.thickness, //* (1.0 / globalScale), // This depends if we want to keep line width when scaling
-                    shape.scaleMode,
-                    shape.startCaps,
-                    shape.endCaps,
-                    shape.lineJoin,
-                    shape.miterLimit,
-                    shape.lineDash,
-                    shape.lineDashOffset
+                    shape.strokeInfo,
                 )
             }
             //is PolylineShape -> renderShape(ctx, shape.fillShape)
@@ -342,21 +336,14 @@ open class GpuShapeView(
         strokePath: VectorPath,
         paint: Paint,
         globalAlpha: Double,
-        lineWidth: Double,
-        scaleMode: LineScaleMode,
-        startCap: LineCap,
-        endCap: LineCap,
-        join: LineJoin,
-        miterLimit: Double,
-        lineDash: IDoubleArrayList? = null,
-        lineDashOffset: Double = 0.0,
+        strokeInfo: StrokeInfo,
         forceClosed: Boolean? = null,
         stencil: AG.StencilState? = null
     ) {
         val gpuShapeViewCommands = this.gpuShapeViewCommands
 
         val pointsList = strokePath.toCurvesList().toStrokePointsList(
-            lineWidth, join, startCap, endCap, miterLimit, StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH, lineDash, lineDashOffset,
+            strokeInfo, StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH,
             forceClosed = forceClosed
         )
 
@@ -387,7 +374,7 @@ open class GpuShapeView(
                 stateTransform = stateTransform,
                 paint = paint,
                 globalAlpha = globalAlpha,
-                lineWidth = lineWidth,
+                lineWidth = strokeInfo.thickness,
             )
 
             //gpuShapeViewCommands.setScissor(null)
@@ -554,14 +541,15 @@ open class GpuShapeView(
                 strokePath = shape.path,
                 paint = shape.paint,
                 globalAlpha = shape.globalAlpha,
-                lineWidth = (1.6 * globalScale).clamp(1.4, 2.8), // @TODO: Scale lineWidth based on the global scale and device pixel ratio
-                //lineWidth = 10.0, // @TODO: Scale lineWidth based on the global scale and device pixel ratio
-                scaleMode = LineScaleMode.NONE,
-                startCap = LineCap.BUTT,
-                endCap = LineCap.BUTT,
-                join = LineJoin.MITER,
-                miterLimit = 5.0,
-                forceClosed = false,
+                strokeInfo = StrokeInfo(
+                    thickness = (1.6 / globalScale),
+                    scaleMode = LineScaleMode.NONE,
+                    startCap = LineCap.BUTT,
+                    endCap = LineCap.BUTT,
+                    join = LineJoin.MITER,
+                    miterLimit = 5.0,
+                ),
+                forceClosed = true,
                 stencil = if (!drawFill) null else AG.StencilState(
                     enabled = true,
                     compareMode = AG.CompareMode.NOT_EQUAL,

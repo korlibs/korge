@@ -12,8 +12,11 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.absoluteValue
 import com.soywiz.korma.geom.bottom
 import com.soywiz.korma.geom.clone
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.fastForEach
 import com.soywiz.korma.geom.firstX
 import com.soywiz.korma.geom.firstY
@@ -24,15 +27,22 @@ import com.soywiz.korma.geom.lastX
 import com.soywiz.korma.geom.lastY
 import com.soywiz.korma.geom.left
 import com.soywiz.korma.geom.mapPoints
+import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.mutable
+import com.soywiz.korma.geom.normalized
+import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.pointArrayListOf
 import com.soywiz.korma.geom.radians
 import com.soywiz.korma.geom.right
 import com.soywiz.korma.geom.roundDecimalPlaces
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.tangent
+import com.soywiz.korma.geom.times
 import com.soywiz.korma.geom.top
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.normalizeZero
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.contracts.ExperimentalContracts
@@ -510,6 +520,15 @@ class Bezier(
     /** The derivate vector of the curve at [t] (normalized when [normalize] is set to true) */
     fun derivative(t: Double, normalize: Boolean = false, out: Point = Point()): IPoint {
         compute(t, dpoints[0], out)
+        if ((t == 0.0 || t == 1.0) && out.squaredLength.isAlmostZero()) {
+            for (n in 0 until 10) {
+                val newT = 10.0.pow(-(10 - n))
+                val nt = if (t == 1.0) 1.0 - newT else newT
+                //println("newT=$newT, nt=$nt")
+                compute(nt, dpoints[0], out)
+                if (!out.squaredLength.isAlmostZero()) break
+            }
+        }
         if (normalize) out.normalize()
         return out
     }

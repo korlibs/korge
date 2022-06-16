@@ -15,7 +15,6 @@ import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korim.vector.SizedDrawable
-import com.soywiz.korim.vector.toSvgPathString
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.StrReader

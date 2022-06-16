@@ -1,15 +1,18 @@
 package com.soywiz.korim.vector.format
 
 import com.soywiz.kds.ListReader
-import com.soywiz.korim.vector.toSvgPathString
 import com.soywiz.korio.util.StrReader
 import com.soywiz.korio.util.isDigit
 import com.soywiz.korio.util.isWhitespaceFast
+import com.soywiz.korio.util.toStringDecimal
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rLineTo
 import com.soywiz.korma.geom.vector.rLineToH
 import com.soywiz.korma.geom.vector.rLineToV
 import com.soywiz.korma.geom.vector.rMoveTo
+import com.soywiz.korma.geom.vector.write
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
@@ -137,13 +140,16 @@ object SvgPath {
                     }
                 }
                 'A', 'a' -> {
+                    // @TODO: Use [Arc] class
+                    val EPSILON = 1e-6
+
                     // Ported from nanosvg (https://github.com/memononen/nanosvg/blob/25241c5a8f8451d41ab1b02ab2d865b01600d949/src/nanosvg.h#L2067)
                     // Ported from canvg (https://code.google.com/p/canvg/)
                     var rx = readNumber().absoluteValue				// y radius
                     var ry = readNumber().absoluteValue				// x radius
                     val rotx = readNumber() / 180.0 * PI        // x rotation angle
-                    val fa = if ((readNumber().absoluteValue) > 1e-6) 1 else 0	// Large arc
-                    val fs = if ((readNumber().absoluteValue) > 1e-6) 1 else 0	// Sweep direction
+                    val fa = if ((readNumber().absoluteValue) > EPSILON) 1 else 0	// Large arc
+                    val fs = if ((readNumber().absoluteValue) > EPSILON) 1 else 0	// Sweep direction
                     val x1 = out.lastX							// start point
                     val y1 = out.lastY                          // end point
                     val x2 = nX(relative)
@@ -153,12 +159,12 @@ object SvgPath {
                     var dy = y1 - y2
 
                     val d = hypot(dx, dy)
-                    if (d < 1e-6f || rx < 1e-6f || ry < 1e-6f) {
+                    if (d < EPSILON || rx < EPSILON || ry < EPSILON) {
                         // The arc degenerates to a line
                         out.lineTo(x2, y2)
                     } else {
-                        val sinrx = kotlin.math.sin(rotx)
-                        val cosrx = kotlin.math.cos(rotx)
+                        val sinrx = sin(rotx)
+                        val cosrx = cos(rotx)
 
                         // Convert to center point parameterization.
                         // http://www.w3.org/TR/SVG11/implnote.html#ArcImplementationNotes
@@ -322,4 +328,27 @@ object SvgPath {
         }
         return out
     }
+
+    fun toSvgPathString(path: VectorPath, separator: String = " ", decimalPlaces: Int = 1): String {
+        val parts = arrayListOf<String>()
+
+        fun Double.fixX() = this.toStringDecimal(decimalPlaces, skipTrailingZeros = true)
+        fun Double.fixY() = this.toStringDecimal(decimalPlaces, skipTrailingZeros = true)
+
+        path.visitCmds(
+            moveTo = { x, y -> parts += "M${x.fixX()} ${y.fixY()}" },
+            lineTo = { x, y -> parts += "L${x.fixX()} ${y.fixY()}" },
+            quadTo = { x1, y1, x2, y2 -> parts += "Q${x1.fixX()} ${y1.fixY()}, ${x2.fixX()} ${y2.fixY()}" },
+            cubicTo = { x1, y1, x2, y2, x3, y3 -> parts += "C${x1.fixX()} ${y1.fixY()}, ${x2.fixX()} ${y2.fixY()}, ${x3.fixX()} ${y3.fixY()}" },
+            close = { parts += "Z" }
+        )
+        return parts.joinToString("")
+    }
+}
+
+fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1): String =
+    SvgPath.toSvgPathString(this, separator, decimalPlaces)
+
+fun VectorBuilder.pathSvg(path: String, m: Matrix? = null) {
+    write(SvgPath.parse(path), m)
 }

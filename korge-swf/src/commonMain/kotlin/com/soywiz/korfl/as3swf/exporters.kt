@@ -4,6 +4,7 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.vector.LineScaleMode
 
 open class ShapeExporter {
 	open fun beginShape() = Unit
@@ -34,15 +35,15 @@ open class ShapeExporter {
 
 	open fun beginLines() = Unit
 	open fun lineStyle(
-		thickness: Double = Double.NaN,
-		color: Int = 0,
-		alpha: Double = 1.0,
-		pixelHinting: Boolean = false,
-		scaleMode: LineScaleMode = LineScaleMode.NORMAL,
-		startCaps: LineCapsStyle = LineCapsStyle.ROUND,
-		endCaps: LineCapsStyle = LineCapsStyle.ROUND,
-		joints: String? = null,
-		miterLimit: Double = 3.0
+        thickness: Double = Double.NaN,
+        color: Int = 0,
+        alpha: Double = 1.0,
+        pixelHinting: Boolean = false,
+        scaleMode: LineScaleMode = LineScaleMode.NORMAL,
+        startCaps: LineCapsStyle = LineCapsStyle.ROUND,
+        endCaps: LineCapsStyle = LineCapsStyle.ROUND,
+        joints: String? = null,
+        miterLimit: Double = 3.0
 	) = Unit
 
 	open fun lineGradientStyle(

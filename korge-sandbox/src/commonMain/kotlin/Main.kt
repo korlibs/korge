@@ -1,37 +1,110 @@
-import com.soywiz.kds.*
-import com.soywiz.klock.*
-import com.soywiz.korev.*
-import com.soywiz.korge.*
-import com.soywiz.korge.component.docking.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.tiled.*
-import com.soywiz.korge.ui.*
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.animation.*
-import com.soywiz.korge.view.filter.ColorMatrixFilter
+import com.soywiz.kds.extraProperty
+import com.soywiz.kds.fastArrayListOf
+import com.soywiz.klock.Stopwatch
+import com.soywiz.klock.measureTime
+import com.soywiz.klock.milliseconds
+import com.soywiz.korev.Key
+import com.soywiz.korge.Korge
+import com.soywiz.korge.component.docking.dockedTo
+import com.soywiz.korge.component.docking.keepChildrenSortedByY
+import com.soywiz.korge.input.draggable
+import com.soywiz.korge.input.keys
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.input.onMouseDrag
+import com.soywiz.korge.tiled.TiledMapView
+import com.soywiz.korge.tiled.readTiledMap
+import com.soywiz.korge.tiled.tiledMapView
+import com.soywiz.korge.ui.UIButtonToggleableGroup
+import com.soywiz.korge.ui.UIText
+import com.soywiz.korge.ui.UITreeViewList
+import com.soywiz.korge.ui.UITreeViewNode
+import com.soywiz.korge.ui.group
+import com.soywiz.korge.ui.tooltip
+import com.soywiz.korge.ui.uiButton
+import com.soywiz.korge.ui.uiGridFill
+import com.soywiz.korge.ui.uiHorizontalStack
+import com.soywiz.korge.ui.uiImage
+import com.soywiz.korge.ui.uiTooltipContainer
+import com.soywiz.korge.ui.uiTreeView
+import com.soywiz.korge.ui.uiVerticalStack
+import com.soywiz.korge.view.SolidRect
+import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.alpha
+import com.soywiz.korge.view.anchor
+import com.soywiz.korge.view.animation.ImageDataView
+import com.soywiz.korge.view.animation.imageDataView
+import com.soywiz.korge.view.centered
+import com.soywiz.korge.view.circle
+import com.soywiz.korge.view.container
+import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.line
+import com.soywiz.korge.view.moveWithCollisions
+import com.soywiz.korge.view.outline
+import com.soywiz.korge.view.rotation
+import com.soywiz.korge.view.scale
+import com.soywiz.korge.view.size
+import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
-import com.soywiz.korge.view.vector.gpuShapeView
-import com.soywiz.korim.annotation.*
-import com.soywiz.korim.atlas.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.trace.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.BitmapPaint
-import com.soywiz.korim.paint.LinearGradientPaint
-import com.soywiz.korim.paint.toPaint
-import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.stream.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.ds.*
-import com.soywiz.korma.geom.shape.*
-import com.soywiz.korma.geom.vector.*
-import com.soywiz.korma.random.*
-import kotlinx.coroutines.*
-import kotlin.random.*
+import com.soywiz.korge.view.xy
+import com.soywiz.korim.annotation.KorimInternal
+import com.soywiz.korim.atlas.MutableAtlasUnit
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.BitmapSlice
+import com.soywiz.korim.bitmap.context2d
+import com.soywiz.korim.bitmap.flippedX
+import com.soywiz.korim.bitmap.rotatedRight
+import com.soywiz.korim.bitmap.slice
+import com.soywiz.korim.bitmap.trace.trace
+import com.soywiz.korim.bitmap.transformed
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.mix
+import com.soywiz.korim.font.DefaultTtfFont
+import com.soywiz.korim.font.SystemFont
+import com.soywiz.korim.font.readTtfFont
+import com.soywiz.korim.font.withFallback
+import com.soywiz.korim.format.ASE
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.readBitmapSlice
+import com.soywiz.korim.format.readImageDataContainer
+import com.soywiz.korim.format.toAtlas
+import com.soywiz.korim.text.text
+import com.soywiz.korio.file.std.MemoryVfsMix
+import com.soywiz.korio.file.std.localVfs
+import com.soywiz.korio.file.std.openAsZip
+import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.stream.DummyAsyncOutputStream
+import com.soywiz.korio.stream.openAsync
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Ray
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.cosine
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.ds.BVH2D
+import com.soywiz.korma.geom.minus
+import com.soywiz.korma.geom.plus
+import com.soywiz.korma.geom.shape.Shape2d
+import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.rectHole
+import com.soywiz.korma.geom.vector.roundRect
+import com.soywiz.korma.geom.vector.star
+import com.soywiz.korma.geom.vector.write
+import com.soywiz.korma.random.get
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import kotlin.random.Random
 
 suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
@@ -41,21 +114,26 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
-    //mainDpi()
-    //mainZIndex()
+    //mainArc()
+
     //mainStrokesExperiment3()
     //mainStrokesExperiment2()
     //mainStrokesExperiment()
+
+    //mainGpuVectorRendering3()
+    //mainGpuVectorRendering2()
+    mainGpuVectorRendering()
+
+    //mainSvgAnimation()
+
+    //mainDpi()
+    //mainZIndex()
     //mainCircleColor()
     //mainFilterSwitch()
     //mainVectorFill()
     //mainEasing()
     //mainTweenPoint()
     //mainBezier()
-    //mainGpuVectorRendering3()
-    //mainGpuVectorRendering2()
-    mainGpuVectorRendering()
-    //mainSvgAnimation()
     //mainClipping()
     //mainTextureIssue()
     //mainTilemapTest()

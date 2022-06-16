@@ -36,6 +36,8 @@ import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.roundRect
+import com.soywiz.korma.geom.vector.LineScaleMode
+import com.soywiz.korma.geom.vector.StrokeInfo
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
@@ -45,22 +47,6 @@ open class Context2d constructor(
     val defaultFontRegistry: FontRegistry? = null,
     val defaultFont: Font? = null
 ) : Disposable, VectorBuilder {
-    companion object {
-        @Deprecated(
-            "",
-            ReplaceWith("com.soywiz.korim.vector.StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)", "com.soywiz.korim.vector.StrokeInfo"),
-            level = DeprecationLevel.ERROR
-        )
-        fun StrokeInfo(
-            thickness: Double = 1.0, pixelHinting: Boolean = false,
-            scaleMode: LineScaleMode = LineScaleMode.NORMAL,
-            startCap: LineCap = LineCap.BUTT,
-            endCap: LineCap = LineCap.BUTT,
-            lineJoin: LineJoin = LineJoin.MITER,
-            miterLimit: Double = 20.0
-        ) = com.soywiz.korim.vector.StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)
-    }
-
     var debug: Boolean
         get() = renderer.debug
         set(value) { renderer.debug = value }

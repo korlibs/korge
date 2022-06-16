@@ -4,9 +4,11 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.VertexShaderDefault
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
+import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
@@ -17,6 +19,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.IVectorArrayList
 import com.soywiz.korma.geom.VectorArrayList
 import com.soywiz.korma.geom.fastForEachGeneric
+import com.soywiz.korma.geom.toMatrix3D
 
 inline fun Container.debugVertexView(
     pointsList: List<IVectorArrayList> = listOf(),
@@ -28,7 +31,11 @@ inline fun Container.debugVertexView(
 class DebugVertexView(pointsList: List<IVectorArrayList>, var color: RGBA = Colors.WHITE, type: AG.DrawType = AG.DrawType.TRIANGLE_STRIP) : View() {
     companion object {
         val u_Col: Uniform = Uniform("u_Col", VarType.Float4)
+        val u_Matrix: Uniform = Uniform("u_Matrix", VarType.Mat4)
         val PROGRAM = DefaultShaders.PROGRAM_DEBUG_WITH_PROJ.copy(
+            vertex = VertexShaderDefault {
+                SET(out, u_ProjMat * u_ViewMat * u_Matrix * vec4(a_Pos, 0f.lit, 1f.lit))
+            },
             fragment = FragmentShader {
                 SET(out, u_Col)
             }
@@ -94,6 +101,8 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, var color: RGBA = Colo
         ctx.updateStandardUniforms()
         this.uniforms.put(ctx.uniforms)
         this.uniforms.put(u_Col, color * renderColorMul)
+        this.uniforms.put(u_Matrix, globalMatrix.toMatrix3D())
+
         ctx.dynamicVertexBufferPool.alloc { vb ->
             vb.upload(this@DebugVertexView.buffer)
             val vData = fastArrayListOf(

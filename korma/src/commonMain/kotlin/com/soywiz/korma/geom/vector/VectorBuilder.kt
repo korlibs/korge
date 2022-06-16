@@ -13,6 +13,8 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.Curves
+import com.soywiz.korma.geom.bezier.toVectorPath
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
@@ -22,12 +24,9 @@ import com.soywiz.korma.geom.times
 import com.soywiz.korma.geom.unaryMinus
 import com.soywiz.korma.geom.unit
 import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.absoluteValue
-import kotlin.math.cos
-import kotlin.math.min
 import kotlin.math.sin
-import kotlin.math.tan
+import com.soywiz.korma.geom.bezier.Arc
+import kotlin.jvm.JvmName
 
 @KorDslMarker
 @ViewDslMarker
@@ -63,20 +62,7 @@ fun VectorBuilder.isNotEmpty() = totalPoints != 0
 
 //fun arcTo(b: Point2d, a: Point2d, c: Point2d, r: Double) {
 fun VectorBuilder.arcTo(ax: Double, ay: Double, cx: Double, cy: Double, r: Double) {
-    if (isEmpty()) moveTo(ax, ay)
-    val bx = lastX
-    val by = lastY
-    val b = IPoint(bx, by)
-    val a = IPoint(ax, ay)
-    val c = IPoint(cx, cy)
-    val AB = b - a
-    val AC = c - a
-    val angle = Point.angleArc(AB, AC).radians * 0.5
-    val x = r * sin((PI / 2.0) - angle) / sin(angle)
-    val A = a + AB.unit * x
-    val B = a + AC.unit * x
-    lineTo(A.x, A.y)
-    quadTo(a.x, a.y, B.x, B.y)
+    Arc.arcToPath(this, ax, ay, cx, cy, r)
 }
 fun VectorBuilder.arcTo(ax: Float, ay: Float, cx: Float, cy: Float, r: Float) = arcTo(ax.toDouble(), ay.toDouble(), cx.toDouble(), cy.toDouble(), r.toDouble())
 fun VectorBuilder.arcTo(ax: Int, ay: Int, cx: Int, cy: Int, r: Int) = arcTo(ax.toDouble(), ay.toDouble(), cx.toDouble(), cy.toDouble(), r.toDouble())
@@ -121,78 +107,26 @@ fun VectorBuilder.rectHole(x: Float, y: Float, width: Float, height: Float) = re
 fun VectorBuilder.rectHole(x: Int, y: Int, width: Int, height: Int) = rectHole(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 fun VectorBuilder.rectHole(rect: IRectangle) = rectHole(rect.x, rect.y, rect.width, rect.height)
 
-fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle) {
-    // http://hansmuller-flex.blogspot.com.es/2011/04/approximating-circular-arc-with-cubic.html
-    val EPSILON = 0.00001
-    val PI_TWO = PI * 2.0
-    val PI_OVER_TWO = PI / 2.0
+fun VectorBuilder.curves(curves: List<Curves>) = write(curves.toVectorPath())
+fun VectorBuilder.curves(curves: Curves) = write(curves.toVectorPath())
 
-    val startAngle = start.radians % PI_TWO
-    val endAngle = end.radians % PI_TWO
-    var remainingAngle = min(PI_TWO, abs(endAngle - startAngle))
-    if (remainingAngle.absoluteValue < EPSILON && start != end) remainingAngle = PI_TWO
-    val sgn = if (startAngle < endAngle) +1 else -1
-    var a1 = startAngle
-    val p1 = Point()
-    val p2 = Point()
-    val p3 = Point()
-    val p4 = Point()
-    var index = 0
-    while (remainingAngle > EPSILON) {
-        val a2 = a1 + sgn * min(remainingAngle, PI_OVER_TWO)
+@JvmName("writeCurves")
+fun VectorBuilder.write(curves: List<Curves>) = write(curves.toVectorPath())
+fun VectorBuilder.write(curves: Curves) = write(curves.toVectorPath())
 
-        val k = 0.5522847498
-        val a = (a2 - a1) / 2.0
-        val x4 = r * cos(a)
-        val y4 = r * sin(a)
-        val x1 = x4
-        val y1 = -y4
-        val f = k * tan(a)
-        val x2 = x1 + f * y4
-        val y2 = y1 + f * x4
-        val x3 = x2
-        val y3 = -y2
-        val ar = a + a1
-        val cos_ar = cos(ar)
-        val sin_ar = sin(ar)
-        p1.setTo(x + r * cos(a1), y + r * sin(a1))
-        p2.setTo(x + x2 * cos_ar - y2 * sin_ar, y + x2 * sin_ar + y2 * cos_ar)
-        p3.setTo(x + x3 * cos_ar - y3 * sin_ar, y + x3 * sin_ar + y3 * cos_ar)
-        p4.setTo(x + r * cos(a2), y + r * sin(a2))
-
-        if (index == 0) moveTo(p1.x, p1.y)
-        cubicTo(p2.x, p2.y, p3.x, p3.y, p4.x, p4.y)
-
-        index++
-        remainingAngle -= abs(a2 - a1)
-        a1 = a2
-    }
-    if (startAngle == endAngle && index != 0) {
-        close()
-    }
+fun VectorBuilder.arc(x: Double, y: Double, r: Double, start: Angle, end: Angle, counterclockwise: Boolean = false) {
+    Arc.arcPath(this, x, y, r, start, end, counterclockwise)
 }
 fun VectorBuilder.arc(x: Float, y: Float, r: Float, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
 fun VectorBuilder.arc(x: Int, y: Int, r: Int, start: Angle, end: Angle) = arc(x.toDouble(), y.toDouble(), r.toDouble(), start, end)
 
-fun VectorBuilder.circle(point: IPoint, radius: Double) = arc(point.x, point.y, radius, 0.degrees, 360.degrees)
-fun VectorBuilder.circle(x: Double, y: Double, radius: Double) = arc(x, y, radius, 0.degrees, 360.degrees)
+fun VectorBuilder.circle(point: IPoint, radius: Double) = circle(point.x, point.y, radius)
 fun VectorBuilder.circle(x: Float, y: Float, radius: Float) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
 fun VectorBuilder.circle(x: Int, y: Int, radius: Int) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
+fun VectorBuilder.circle(x: Double, y: Double, radius: Double) = arc(x, y, radius, Angle.ZERO, Angle.FULL)
 
 fun VectorBuilder.ellipse(x: Double, y: Double, rw: Double, rh: Double) {
-    val k = .5522848
-    val ox = (rw / 2) * k
-    val oy = (rh / 2) * k
-    val xe = x + rw
-    val ye = y + rh
-    val xm = x + rw / 2
-    val ym = y + rh / 2
-    moveTo(x, ym)
-    cubicTo(x, ym - oy, xm - ox, y, xm, y)
-    cubicTo(xm + ox, y, xe, ym - oy, xe, ym)
-    cubicTo(xe, ym + oy, xm + ox, ye, xm, ye)
-    cubicTo(xm - ox, ye, x, ym + oy, x, ym)
-    close()
+    Arc.ellipsePath(this, x, y, rw, rh)
 }
 fun VectorBuilder.ellipse(x: Float, y: Float, rw: Float, rh: Float) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())
 fun VectorBuilder.ellipse(x: Int, y: Int, rw: Int, rh: Int) = ellipse(x.toDouble(), y.toDouble(), rw.toDouble(), rh.toDouble())

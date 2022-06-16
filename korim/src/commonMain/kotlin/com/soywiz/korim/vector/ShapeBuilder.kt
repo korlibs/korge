@@ -8,6 +8,8 @@ import com.soywiz.korim.vector.renderer.DummyRenderer
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.LineScaleMode
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.isEmpty
 import com.soywiz.korma.geom.vector.rect
@@ -52,16 +54,18 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
                 clip = state.clip?.clone(),
                 paint = state.strokeStyle.clone(),
                 transform = state.transform.clone(),
-                thickness = state.lineWidth,
-                pixelHinting = true,
-                scaleMode = state.lineScaleMode,
-                startCaps = state.startLineCap,
-                endCaps = state.endLineCap,
-                lineJoin = state.lineJoin,
-                miterLimit = state.miterLimit,
+                StrokeInfo(
+                    thickness = state.lineWidth,
+                    pixelHinting = true,
+                    scaleMode = state.lineScaleMode,
+                    startCap = state.startLineCap,
+                    endCap = state.endLineCap,
+                    join = state.lineJoin,
+                    dash = state.lineDash,
+                    dashOffset = state.lineDashOffset,
+                    miterLimit = state.miterLimit,
+                ),
                 globalAlpha = state.globalAlpha,
-                lineDash = state.lineDash,
-                lineDashOffset = state.lineDashOffset
             )
         }
     }
@@ -85,10 +89,10 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
     override fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double, height: Double, transform: Matrix) {
         rendererRender(State(
             transform = transform,
-            path = VectorPath().apply { rect(x, y, width.toDouble(), height.toDouble()) },
+            path = VectorPath().apply { rect(x, y, width, height) },
             fillStyle = BitmapPaint(image,
                 transform = Matrix()
-                    .scale(width.toDouble() / image.width.toDouble(), height.toDouble() / image.height.toDouble())
+                    .scale(width / image.width.toDouble(), height / image.height.toDouble())
                     .translate(x, y)
             )
         ), fill = true)

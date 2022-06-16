@@ -39,6 +39,7 @@ suspend fun Stage.mainSvgAnimation() {
             scale(3.0 * svgScale)
             //rotation(15.degrees)
             keys {
+                down(Key.N9) { debugDrawOnlyAntialiasedBorder = !debugDrawOnlyAntialiasedBorder }
                 down(Key.N0) { antialiased = !antialiased }
                 down(Key.A) { antialiased = !antialiased }
                 down(Key.UP) { svgScale *= 1.1 }

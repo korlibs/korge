@@ -3,7 +3,6 @@ package com.soywiz.korge.view
 import com.soywiz.korag.log.LogAG
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.StrokeInfo
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.Anchor
@@ -11,6 +10,7 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.cubic
 import com.soywiz.korma.geom.vector.lineTo

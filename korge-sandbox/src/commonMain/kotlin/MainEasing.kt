@@ -18,7 +18,7 @@ import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.vector.StrokeInfo
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.textCase
 import com.soywiz.korio.util.StrReader

@@ -1,11 +1,6 @@
+/*
 package com.soywiz.korim.vector
 
-enum class LineScaleMode(val hScale: Boolean, val vScale: Boolean) {
-    NONE(false, false),
-    HORIZONTAL(true, false),
-    VERTICAL(false, true),
-    NORMAL(true, true);
-
-    val anyScale: Boolean = hScale || vScale
-    val allScale: Boolean = hScale && vScale
-}
+@Deprecated("", replaceWith = ReplaceWith("com.soywiz.korma.geom.vector.LineScaleMode"), level = DeprecationLevel.HIDDEN)
+typealias LineScaleMode = com.soywiz.korma.geom.vector.LineScaleMode
+*/

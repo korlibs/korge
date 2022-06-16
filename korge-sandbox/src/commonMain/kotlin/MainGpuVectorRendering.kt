@@ -1,11 +1,14 @@
 import com.soywiz.kds.doubleArrayListOf
 import com.soywiz.klock.*
 import com.soywiz.klogger.*
+import com.soywiz.korag.AG
 import com.soywiz.korev.*
 import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.debug.DebugVertexView
+import com.soywiz.korge.view.debug.debugVertexView
 import com.soywiz.korge.view.vector.*
 import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
@@ -18,42 +21,11 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.bezier.StrokePointsMode
+import com.soywiz.korma.geom.bezier.toStrokePointsList
+import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.*
-
-suspend fun Stage.mainGpuVectorRendering3() {
-    gpuShapeView({
-        keep {
-            translate(100, 200)
-            fill(Colors.WHITE) {
-                rect(-10, -10, 120, 120)
-                rectHole(40, 40, 80, 80)
-            }
-        }
-    }) {
-        rotation = 15.degrees
-        //debugDrawOnlyAntialiasedBorder = true
-        keys {
-            down(Key.N0) { antialiased = !antialiased }
-            down(Key.N1) { debugDrawOnlyAntialiasedBorder = !debugDrawOnlyAntialiasedBorder }
-        }
-    }
-
-    gpuShapeView({
-        keep {
-            translate(500, 200)
-            stroke(Colors.RED, lineWidth = 10.0) {
-            //fill(Colors.RED) {
-                rect(-10, -10, 120, 120)
-                //rectHole(40, 40, 80, 80)
-            }
-        }
-    }) {
-        rotation = 15.degrees
-        keys {
-            down(Key.N0) { antialiased = !antialiased }
-        }
-    }
-}
+import com.soywiz.korma.geom.vector.StrokeInfo
 
 suspend fun Stage.mainGpuVectorRendering2() {
     val mainStrokePaint = LinearGradientPaint(0, 0, 0, 300).addColorStop(0.0, Colors.GREEN).addColorStop(0.5, Colors.RED).addColorStop(1.0, Colors.BLUE)
@@ -306,6 +278,7 @@ suspend fun Stage.mainGpuVectorRendering() {
             keys {
                 down(Key.N0) { antialiased = !antialiased }
                 down(Key.A) { antialiased = !antialiased }
+                down(Key.N9) { debugDrawOnlyAntialiasedBorder = !debugDrawOnlyAntialiasedBorder }
             }
         }
     }) {

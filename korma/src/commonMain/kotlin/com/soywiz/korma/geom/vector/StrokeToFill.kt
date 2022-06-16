@@ -251,6 +251,21 @@ class StrokeToFill {
 }
 
 fun VectorPath.strokeToFill(
+    info: StrokeInfo,
+    temp: StrokeToFill = StrokeToFill(),
+    outFill: VectorPath = VectorPath(winding = Winding.NON_ZERO),
+): VectorPath = strokeToFill(
+    info.thickness,
+    info.join,
+    info.startCap,
+    info.endCap,
+    info.miterLimit,
+    info.dash,
+    info.dashOffset,
+    temp, outFill
+)
+
+fun VectorPath.strokeToFill(
     lineWidth: Double,
     joins: LineJoin = LineJoin.MITER,
     startCap: LineCap = LineCap.BUTT,

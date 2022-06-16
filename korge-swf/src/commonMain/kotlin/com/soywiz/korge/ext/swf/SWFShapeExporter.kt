@@ -214,15 +214,17 @@ class SWFShapeExporter(
 			null,
 			strokeStyle,
             Matrix(),
-			lineWidth,
-			true,
-			LineScaleMode.NORMAL,
-			lineCap,
-			lineCap,
-			LineJoin.MITER,
-			miterLimit,
-            lineDash,
-            lineDashOffset
+            StrokeInfo(
+                lineWidth,
+                true,
+                LineScaleMode.NORMAL,
+                lineCap,
+                lineCap,
+                LineJoin.MITER,
+                miterLimit,
+                lineDash,
+                lineDashOffset
+            )
 		)
 		apath = VectorPath()
 	}
