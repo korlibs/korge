@@ -10,6 +10,7 @@ import java.nio.file.Files
 import com.soywiz.korlibs.modules.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import kotlin.io.path.relativeTo
+import com.soywiz.korge.gradle.KorgeDefaults
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
