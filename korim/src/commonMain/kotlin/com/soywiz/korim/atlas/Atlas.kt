@@ -4,10 +4,9 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.asumePremultiplied
-import com.soywiz.korim.bitmap.copy
+import com.soywiz.korim.bitmap.virtFrame
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korma.geom.RectangleInt
 
 class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo = AtlasInfo()) : AtlasLookup {
     constructor(texture: BitmapSlice<Bitmap>, info: AtlasInfo = AtlasInfo()) : this(mapOf(info.pages.first().fileName to texture), info)
@@ -18,17 +17,8 @@ class Atlas(val textures: Map<String, BitmapSlice<Bitmap>>, val info: AtlasInfo 
     inner class Entry(val info: AtlasInfo.Region, val page: AtlasInfo.Page) {
         val texture = textures[page.fileName]
             ?: error("Can't find '${page.fileName}' in ${textures.keys}")
-        val slice = texture.slice(info.frame.rect, info.name).let {
-            // Define virtual frame with offsets "info.spriteSourceSize.x" and "info.spriteSourceSize.y"
-            // and original texture size "info.sourceSize.width" and "info.sourceSize.height"
-            it.copy(
-                rotated = info.rotated,
-                virtFrame = when {
-                    info.trimmed -> RectangleInt(info.spriteSourceSize.x, info.spriteSourceSize.y, info.sourceSize.width, info.sourceSize.height)
-                    else -> null
-                }
-            )
-        }
+        val slice = texture.slice(info.frame.toRectangleInt(), info.name, info.imageOrientation)
+            .virtFrame(info.virtFrame?.toRectangleInt())
         val name get() = info.name
         // @TODO: Use name instead
         val filename get() = info.name

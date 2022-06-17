@@ -29,6 +29,8 @@ data class ImageOrientation(
         val ROTATE_270 = ImageOrientation(rotation = Rotation.R270)
     }
 
+    val isRotatedDeg90CwOrCcw = rotation == Rotation.R90 || rotation == Rotation.R270
+
     /*
     1 = Horizontal (normal)
     2 = Mirror horizontal

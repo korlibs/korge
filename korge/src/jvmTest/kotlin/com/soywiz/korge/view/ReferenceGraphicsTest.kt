@@ -45,7 +45,8 @@ class ReferenceGraphicsTest : ViewsForTesting(
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE },
             RectangleInt(0, 0, 64, 64),
-            virtFrame = RectangleInt(64, 64, 196, 196)
+            null,
+            RectangleInt(64, 64, 196, 196)
         )
         val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
 

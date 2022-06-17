@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker https://www.codeandweb.com/texturepacker -->
+<!-- $TexturePacker:SmartUpdate:a695530cab5aeef82530f0085a07e744:2f3be7df2bcf97270dd4e3031c5ed008:bbb41286f7c600714fe7c172f83d6d53$ -->
+<TextureAtlas imagePath="atlas-test.png" width="98" height="112">
+    <SubTexture name="1" x="0" y="0" rotated="true" width="46" height="32"/>
+    <SubTexture name="2" x="47" y="0" rotated="true" width="46" height="32" frameX="0" frameY="0" frameWidth="42" frameHeight="56"/>
+    <SubTexture name="3" x="0" y="33" width="32" height="46" frameX="-10" frameY="0" frameWidth="42" frameHeight="56"/>
+    <SubTexture name="4" x="0" y="80" rotated="true" width="46" height="32" frameX="-10" frameY="-10" frameWidth="42" frameHeight="56"/>
+    <SubTexture name="5" x="33" y="33" width="32" height="46" frameX="0" frameY="-10" frameWidth="42" frameHeight="56"/>
+    <SubTexture name="6" x="66" y="33" width="32" height="46" frameX="-5" frameY="-5" frameWidth="42" frameHeight="56"/>
+    <SubTexture name="7" x="47" y="80" rotated="true" width="46" height="32" frameX="-5" frameY="-5" frameWidth="42" frameHeight="56"/>
+</TextureAtlas>
