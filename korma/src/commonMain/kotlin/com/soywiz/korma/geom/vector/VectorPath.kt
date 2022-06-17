@@ -508,35 +508,11 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix?) {
 }
 
 fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
-    val bb = this
-    var lx = 0.0
-    var ly = 0.0
-
-    path.visitCmds(
-        moveTo = { x, y ->
-            bb.add(x, y, transform)
-            lx = x
-            ly = y
-        },
-        lineTo = { x, y ->
-            bb.add(x, y, transform)
-            lx = x
-            ly = y
-        },
-        quadTo = { cx, cy, ax, ay ->
-            //bb.add(Bezier.quadBounds(lx, ly, cx, cy, ax, ay, bb.tempRect), transform)
-            bb.add(Bezier(lx, ly, cx, cy, ax, ay).boundingBox, transform)
-            lx = ax
-            ly = ay
-        },
-        cubicTo = { cx1, cy1, cx2, cy2, ax, ay ->
-            //bb.add(Bezier.cubicBounds(lx, ly, cx1, cy1, cx2, cy2, ax, ay, bb.tempRect, path.bezierTemp), transform)
-            bb.add(Bezier(lx, ly, cx1, cy1, cx2, cy2, ax, ay).boundingBox, transform)
-            lx = ax
-            ly = ay
-        },
-        close = {}
-    )
+    path.getCurvesList().fastForEach { curves ->
+        curves.beziers.fastForEach { bezier ->
+            addEvenEmpty(bezier.getBounds(this.tempRect, transform))
+        }
+    }
 
     //println("BoundsBuilder.add.path: " + bb.getBounds())
 }

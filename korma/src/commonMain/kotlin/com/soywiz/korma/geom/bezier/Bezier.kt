@@ -32,6 +32,9 @@ import com.soywiz.korma.geom.right
 import com.soywiz.korma.geom.roundDecimalPlaces
 import com.soywiz.korma.geom.setToRoundDecimalPlaces
 import com.soywiz.korma.geom.top
+import com.soywiz.korma.geom.transformX
+import com.soywiz.korma.geom.transformY
+import com.soywiz.korma.geom.transformed
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.korma.math.convertRange
 import com.soywiz.korma.math.isAlmostEquals
@@ -193,6 +196,7 @@ class Bezier(
     fun roundDecimalPlaces(places: Int): Bezier = Bezier(points.roundDecimalPlaces(places))
 
     override fun getBounds(target: Rectangle): Rectangle = target.copyFrom(boundingBox)
+    fun getBounds(target: Rectangle, m: Matrix?): IRectangle = _getBoundingBox(target, m)
 
     override fun calc(t: Double, target: Point): Point {
         this.compute(t, target)
@@ -254,18 +258,26 @@ class Bezier(
     override val boundingBox: IRectangle get() {
         if (boundingBoxValid) return _boundingBox
         boundingBoxValid = true
+        _getBoundingBox(_boundingBox, null)
+        return _boundingBox
+    }
+
+    private fun _getBoundingBox(out: Rectangle, m: Matrix? = null): IRectangle {
         var xmin = 0.0
         var ymin = 0.0
         var xmax = 0.0
         var ymax = 0.0
         for (n in 0..1) {
             //println("extrema=$extrema")
-            val ext = doubleArrayOf(0.0, *extrema.dimt(n), 1.0)
+            val ext = extrema.dimt01(n)
             var min = Double.POSITIVE_INFINITY
             var max = Double.NEGATIVE_INFINITY
             ext.fastForEach { t ->
                 val p = get(t)
-                val value = p[n]
+                val value = when (n) {
+                    0 -> p.transformX(m)
+                    else -> p.transformY(m)
+                }
                 min = kotlin.math.min(min, value)
                 max = kotlin.math.max(max, value)
                 //println("t=$t, v=$value, c=${p.x}, ${p.y}, min=$min, max=$max")
@@ -281,8 +293,8 @@ class Bezier(
             }
         }
 
-        _boundingBox.setBounds(xmin, ymin, xmax, ymax)
-        return _boundingBox
+        out.setBounds(xmin, ymin, xmax, ymax)
+        return out
     }
 
     private val temp = Point()
@@ -305,7 +317,7 @@ class Bezier(
         return _length
     }
 
-    private val _lut = CurveLUT(this, 101)
+    private val _lut by lazy { CurveLUT(this, 101) }
     override val lut: CurveLUT get() {
         if (lutValid) return _lut
         lutValid = true
@@ -735,8 +747,13 @@ class Bezier(
     class Extrema(
         val xt: DoubleArray, val yt: DoubleArray
     ) {
-        val allt: DoubleArray = combineSmallDistinctSorted(xt, yt)
+        val allt: DoubleArray by lazy { combineSmallDistinctSorted(xt, yt) }
+
+        val xt01 by lazy { doubleArrayOf(0.0, *xt, 1.0) }
+        val yt01 by lazy { doubleArrayOf(0.0, *yt, 1.0) }
+
         fun dimt(index: Int): DoubleArray = if (index == 0) xt else yt
+        fun dimt01(index: Int): DoubleArray = if (index == 0) xt01 else yt01
 
         override fun equals(other: Any?): Boolean =
             other is Extrema && this.xt.contentEquals(other.xt) && this.yt.contentEquals(other.yt)

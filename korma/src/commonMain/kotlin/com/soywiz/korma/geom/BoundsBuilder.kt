@@ -53,7 +53,10 @@ class BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n))
         return this
     }
-    fun add(rect: IRectangle): BoundsBuilder {
+
+    inline fun add(rect: IRectangle): BoundsBuilder = addNonEmpty(rect)
+
+    fun addNonEmpty(rect: IRectangle): BoundsBuilder {
         if (rect.isNotEmpty) {
             addEvenEmpty(rect)
         }
@@ -76,7 +79,9 @@ class BoundsBuilder {
     fun add(rect: IRectangle, transform: Matrix?): BoundsBuilder {
         if (rect.isNotEmpty) {
             add(rect.left, rect.top, transform)
+            add(rect.right, rect.top, transform)
             add(rect.right, rect.bottom, transform)
+            add(rect.left, rect.bottom, transform)
         }
         return this
     }
