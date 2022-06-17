@@ -246,6 +246,13 @@ subprojects {
                         if (useMimalloc && !target.name.contains("Arm32Hfp")) add("-Xallocator=mimalloc")
                         add("-Xoverride-konan-properties=clangFlags.mingw_x64=-cc1 -emit-obj -disable-llvm-passes -x ir -target-cpu x86-64")
                     }
+                    if (KorgeDefaults.USE_NEW_MEMORY_MANAGER_BY_DEFAULT) {
+                        kotlinOptions.freeCompilerArgs += listOf(
+                            "-Xbinary=memoryModel=experimental",
+                            // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
+                            //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
+                        )
+                    }
                     kotlinOptions.suppressWarnings = true
                 }
             }

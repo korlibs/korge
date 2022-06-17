@@ -242,7 +242,7 @@ class KorgeExtension(val project: Project) {
     //val DEFAULT_JVM_TARGET = "1.6"
 	var jvmTarget: String = project.findProject("jvm.target")?.toString() ?: DEFAULT_JVM_TARGET
     var useMimalloc = true
-    var useNewMemoryModel = true
+    var useNewMemoryModel = KorgeDefaults.USE_NEW_MEMORY_MANAGER_BY_DEFAULT
 	var androidLibrary: Boolean = project.findProperty("android.library") == "true"
     var overwriteAndroidFiles: Boolean = project.findProperty("overwrite.android.files") == "false"
     var id: String = "com.unknown.unknownapp"
