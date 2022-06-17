@@ -11,9 +11,18 @@ import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.BlurFilter
 import com.soywiz.korge.view.filter.ColorMatrixFilter
 import com.soywiz.korge.view.filter.renderToTextureWithBorder
+import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.bezier.isConvex
+import com.soywiz.korma.geom.shape.buildVectorPath
+import com.soywiz.korma.geom.vector.circle
+import com.soywiz.korma.geom.vector.getCurves
+import com.soywiz.korma.geom.vector.getCurvesList
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.geom.vector.roundRect
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
 import kotlin.native.internal.test.*
@@ -54,6 +63,7 @@ class KorgeMultithreadedTest {
                     .filters(BlurFilter())
                     .filterScale(0.1)
                     .mask(solidRect(5, 5))
+                val gpuShapeView = gpuShapeView({ roundRect(0, 0, 200, 100, 10, 10) })
                 this.views.render()
                 rect.keys {
                     down(Key.UP) { }
@@ -69,9 +79,18 @@ class KorgeMultithreadedTest {
                 ColorMatrixFilter.getProgram(true)
                 ColorMatrixFilter.getProgram(false)
                 this.views.render()
+                val path = buildVectorPath { circle(0, 0, 100) }
+                path.getCurvesList()
+                path.moveTo(200, 200)
+                path.lineTo(300, 300)
+                path.getCurvesList()
+                val curves = path.getCurves()
+
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"
                 log += "program=${ColorMatrixFilter.getProgram(true).fragment.type == ShaderType.FRAGMENT}"
+                log += "curves=${curves.beziers.size}"
+                log += "convex=${curves.isConvex}"
             }
             log
         }
@@ -81,12 +100,17 @@ class KorgeMultithreadedTest {
                 rect.filterScale=0.125
                 rect.mask=true
                 program=true
+                curves=5
+                convex=false
             """.trimIndent(),
             log.joinToString("\n")
         )
     }
 
     fun <T> runInWorker(block: () -> T): T {
+        block.freeze()
+        block()
+
         val worker = Worker.start()
         return try {
             worker.execute(TransferMode.SAFE, { block.freeze() }) { it().freeze() }.result

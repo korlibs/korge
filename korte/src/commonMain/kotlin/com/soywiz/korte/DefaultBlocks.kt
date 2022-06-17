@@ -2,7 +2,9 @@ package com.soywiz.korte
 
 import com.soywiz.korte.internal.extraProperty
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
 var TemplateConfig.debugPrintln by extraProperty({ extra }) { { v: Any? -> println(v) } }
 
 object DefaultBlocks {

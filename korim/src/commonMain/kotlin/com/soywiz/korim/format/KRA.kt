@@ -22,6 +22,7 @@ import com.soywiz.korio.stream.readBytesExact
 import com.soywiz.korio.stream.readStringz
 import com.soywiz.korio.stream.toAsync
 import kotlin.math.max
+import kotlin.native.concurrent.ThreadLocal
 
 object KRA : ImageFormat("kra") {
     private const val mergedImagePng = "mergedimage.png"
@@ -250,5 +251,7 @@ object KRA : ImageFormat("kra") {
 
 }
 
+@ThreadLocal
 var ImageDecodingProps.kritaLoadLayers by extraProperty { true }
+@ThreadLocal
 var ImageDecodingProps.kritaPartialImageLayers by extraProperty { false }

@@ -17,18 +17,21 @@ import org.jbox2d.collision.shapes.*
 import org.jbox2d.common.*
 import org.jbox2d.dynamics.*
 import org.jbox2d.userdata.*
+import kotlin.native.concurrent.ThreadLocal
 
 @PublishedApi
 internal val DEFAULT_SCALE = 20.0
 @PublishedApi
 internal val DEFAULT_GRAVITY_Y = 9.8f
 
+@ThreadLocal
 var Views.registeredBox2dSupport: Boolean by Extra.Property { false }
 
 fun Views.checkBox2dRegistered() {
     if (!registeredBox2dSupport) error("You should call Views.registerBox2dSupport()")
 }
 
+@ThreadLocal
 var KTreeSerializer.box2dWorld by Extra.PropertyThis<KTreeSerializer, Box2dWorldComponent?> { null }
 
 object PhysicsKTreeSerializerExtension : KTreeSerializerExtension("physics") {
@@ -219,6 +222,7 @@ class Box2dWorldComponent(
     }
 }
 
+@ThreadLocal
 var View.box2dWorldComponent by Extra.PropertyThis<View, Box2dWorldComponent?> { null }
 
 fun View.getOrCreateBox2dWorld(): Box2dWorldComponent {
@@ -260,6 +264,7 @@ inline fun View.createBody(world: World? = null, callback: BodyDef.() -> Unit): 
 /** Shortcut to create and attach a [Fixture] to this [Body] */
 inline fun Body.fixture(callback: FixtureDef.() -> Unit): Body = this.also { createFixture(FixtureDef().apply(callback)) }
 
+@ThreadLocal
 var View.body by Extra.PropertyThis<View, Body?>("box2dBody") { null }
 
 inline fun <T : View> T.registerBody(body: Body): T {

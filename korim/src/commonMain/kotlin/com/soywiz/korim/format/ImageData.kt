@@ -6,6 +6,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.atlas.AtlasPacker
 import com.soywiz.korim.atlas.MutableAtlas
 import com.soywiz.korim.bitmap.Bitmap
+import kotlin.native.concurrent.ThreadLocal
 
 open class ImageData constructor(
     val frames: List<ImageFrame>,
@@ -48,6 +49,7 @@ open class ImageData constructor(
 
 data class ImageDataWithAtlas(val image: ImageData, val atlas: AtlasPacker.Result<ImageFrameLayer>)
 
+@ThreadLocal
 var ImageData.info: ImageInfo? by Extra.Property { null }
 
 //fun ImageData.packInAtlas(): ImageDataWithAtlas {

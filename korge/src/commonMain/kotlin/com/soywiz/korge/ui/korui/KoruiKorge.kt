@@ -22,7 +22,9 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korui.UiApplication
 import com.soywiz.korui.UiContainer
 import com.soywiz.korui.native.NativeUiFactory
+import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
 var View.koruiComponent by Extra.PropertyThis<View, NativeUiFactory.NativeComponent?> { null }
 
 open class KorgeNativeUiFactory : NativeUiFactory {

@@ -530,7 +530,9 @@ fun VectorPath.applyTransform(m: Matrix?): VectorPath {
     return this
 }
 
+@ThreadLocal
 private var VectorPath._curvesCacheVersion by extraProperty { -1 }
+@ThreadLocal
 private var VectorPath._curvesCache by extraProperty<List<Curves>?> { null }
 
 fun VectorPath.getCurvesList(): List<Curves> {

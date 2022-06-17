@@ -82,6 +82,7 @@ import kotlin.collections.plusAssign
 import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
 
 //@Singleton
@@ -734,6 +735,7 @@ fun BoundsProvider.setBoundsInfo(
     actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
 }
 
+@ThreadLocal
 var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
 
 suspend fun views(): Views = injector().get()

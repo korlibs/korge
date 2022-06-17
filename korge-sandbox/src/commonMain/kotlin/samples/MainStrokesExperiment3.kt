@@ -28,8 +28,10 @@ import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.text
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.StrokePointsMode
 import com.soywiz.korma.geom.bezier.toDashes
 import com.soywiz.korma.geom.bezier.toNonCurveSimplePointList
@@ -40,6 +42,7 @@ import com.soywiz.korma.geom.firstPoint
 import com.soywiz.korma.geom.lastPoint
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.shape.toPolygon
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.line
@@ -220,6 +223,12 @@ class MainStrokesExperiment2 : Scene() {
 
 class MainStrokesExperiment : Scene() {
     override suspend fun Container.sceneMain() {
+        class PathData(
+            val path: VectorPath,
+            val curves: Curves,
+            val points: IPointArrayList
+        )
+
         val path = buildVectorPath {
             //this.circle(400, 300, 200)
             this.star(6, 200.0, 300.0, x = 400.0, y = 300.0)
@@ -231,22 +240,18 @@ class MainStrokesExperiment : Scene() {
         }
         //.applyTransform(Matrix().translate(-100, -200))
         val curves = path.getCurves()
-
-        println(curves.beziers.joinToString("\n"))
-
         val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
         //Bezier(10.0, 10.0).inflections()
         //points.scale(2.0)
 
         println("path=$path")
 
-
         addChild(DebugVertexView(points.map { it.vector }).also { it.color = Colors.WHITE })
 
         fun generateDashes(offset: Double): Container = Container().apply {
             addChild(DebugVertexView(curves
                 .toDashes(doubleArrayOf(180.0, 50.0), offset = offset)
-                .toStrokePointsList(10.0)
+                .toStrokePointsList(20.0)
                 .map { it.vector }
             ).also { it.color = Colors.BLUEVIOLET })
         }
