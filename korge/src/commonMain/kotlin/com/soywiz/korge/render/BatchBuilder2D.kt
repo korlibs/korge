@@ -17,7 +17,6 @@ import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.Varying
 import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korag.toRenderFboIntoBack
 import com.soywiz.korag.toRenderImageIntoFbo
 import com.soywiz.korge.internal.KorgeInternal
@@ -365,17 +364,19 @@ class BatchBuilder2D constructor(
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the current state previously set by calling [setStateFast].
      */
-    fun drawVertices(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize, texIndex: Int = currentTexIndex) {
+    fun drawVertices(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.icount, texIndex: Int = currentTexIndex) {
         ensure(icount, vcount)
+        //println("doFlush=$doFlush : icount=$icount, vcount=$vcount")
 
         val i16 = indicesI16
         val ip = indexPos
         val vc = vertexCount
         val arrayIndices = array.indices
-        val icount = min(icount, array.isize)
+        val icount = min(icount, array.icount)
 
         arraycopy(arrayIndices, 0, i16, ip, icount)
         arrayadd(i16, vc.toShort(), ip, ip + icount)
+        //println("added: $vc"); for (n in 0 until icount) print(",${i16[n]}") ; println()
         //for (n in 0 until icount) i16[ip + n] = (vc + arrayIndices[n]).toShort()
 
         val vp = vertexPos
@@ -386,6 +387,7 @@ class BatchBuilder2D constructor(
 
         //println("texIndex=$texIndex")
         val vp6 = vertexPos / 6
+        //println("texIndex=$texIndex")
         arrayfill(verticesTexIndex, texIndex.toByte(), vp6, vp6 + vcount)
 
         if (matrix != null) {
@@ -422,9 +424,9 @@ class BatchBuilder2D constructor(
      */
     inline fun drawVertices(
         array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending,
-        vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null,
+        vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: Matrix? = null,
     ) {
-        setStateFast(tex.base, smoothing, blendFactors, program)
+        setStateFast(tex.base, smoothing, blendFactors, program, icount, vcount)
         drawVertices(array, matrix, vcount, icount)
 	}
 
@@ -432,26 +434,31 @@ class BatchBuilder2D constructor(
 		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
 	}
 
-	fun ensure(indices: Int, vertices: Int) {
-		if (!checkAvailable(indices, vertices)) flush()
-		if (!checkAvailable(indices, vertices)) error("Too much vertices")
+	fun ensure(indices: Int, vertices: Int): Boolean {
+        if (indices == 0 && vertices == 0) return false
+        val doFlush = !checkAvailable(indices, vertices)
+		if (doFlush) flush()
+		if (!checkAvailable(indices, vertices)) error("Too much vertices: indices=$indices, vertices=$vertices")
+        return doFlush
 	}
 
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
 	fun setStateFast(
-        tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, program: Program?,
+        tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int,
     ) {
-        setStateFast(tex.base, smoothing, blendFactors, program)
+        setStateFast(tex.base, smoothing, blendFactors, program, icount, vcount)
     }
 
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
     inline fun setStateFast(
-        tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?,
+        tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int,
     ) {
+        ensure(icount, vcount)
+
         val isCurrentStateFast = isCurrentStateFast(tex, smoothing, blendFactors, program)
         //println("isCurrentStateFast=$isCurrentStateFast, tex=$tex, currentTex=$currentTex, currentTex2=$currentTex2")
         if (isCurrentStateFast) return
@@ -505,12 +512,12 @@ class BatchBuilder2D constructor(
             && (currentProgram === program)
     }
 
-    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
-        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program)
+    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int) {
+        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program, icount, vcount)
     }
 
-    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
-        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program)
+    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int) {
+        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program, icount, vcount)
     }
 
     /**
@@ -554,10 +561,8 @@ class BatchBuilder2D constructor(
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
 		program: Program? = null,
 	) {
-		setStateFast(tex.base, filtering, blendFactors, program)
+		setStateFast(tex.base, filtering, blendFactors, program, icount = 6 * 9, vcount = 4 * 4)
         val texIndex: Int = currentTexIndex
-
-		ensure(indices = 6 * 9, vertices = 4 * 4)
 
 		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
 		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
@@ -656,7 +661,7 @@ class BatchBuilder2D constructor(
         val x1 = (x + width)
         val y0 = y
         val y1 = (y + height)
-        setStateFast(tex.base, filtering, blendFactors, program)
+        setStateFast(tex.base, filtering, blendFactors, program, icount = 6, vcount = 4)
         drawQuadFast(
             m.transformXf(x0, y0), m.transformYf(x0, y0),
             m.transformXf(x1, y0), m.transformYf(x1, y0),
@@ -673,8 +678,9 @@ class BatchBuilder2D constructor(
     }
 
     companion object {
-        val DEFAULT_BATCH_QUADS = 4096
         val MAX_BATCH_QUADS = 16383
+        val DEFAULT_BATCH_QUADS = 4096
+        //val DEFAULT_BATCH_QUADS = MAX_BATCH_QUADS
 
         init { logger.trace { "BatchBuilder2D.Companion[0]" } }
 

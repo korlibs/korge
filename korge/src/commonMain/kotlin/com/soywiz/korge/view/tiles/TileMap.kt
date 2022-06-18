@@ -13,6 +13,7 @@ import com.soywiz.kmem.isOdd
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.umod
 import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.render.ShrinkableTexturedVertexArray
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korge.tiled.TiledMap
@@ -26,14 +27,14 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.color.ColorAdd
-import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.setTo
-import kotlin.math.max
+import com.soywiz.korma.math.clamp
 import kotlin.math.min
+import com.soywiz.korma.math.min
+import com.soywiz.korma.math.max
 
 inline fun Container.tileMap(
     map: IntArray2,
@@ -99,26 +100,22 @@ abstract class BaseTileMap(
 
     // @TODO: Use a TextureVertexBuffer or something
     @KorgeInternal
-    private class Info(var tex: Bitmap, var vertices: GrowableTexturedVertexArray) {
-        val verticesList = FastArrayList<GrowableTexturedVertexArray>().also {
+    private class Info(var tex: Bitmap, var vertices: ShrinkableTexturedVertexArray) {
+        val verticesList = FastArrayList<ShrinkableTexturedVertexArray>().also {
             it.add(vertices)
         }
 
-        fun addNewVertices(vertices: GrowableTexturedVertexArray) {
+        fun addNewVertices(vertices: ShrinkableTexturedVertexArray) {
+            vertices.reset()
             this.vertices = vertices
             verticesList.add(vertices)
         }
-    }
 
-    // @TODO: Should we move this outside?
-    class GrowableTexturedVertexArray(val vertices: TexturedVertexArray, var vcount: Int = 0, var icount: Int = 0) {
-        fun quadV(x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
-            vertices.quadV(vcount++, x, y, u, v, colMul, colAdd)
+        fun reset() {
+            vertices.icount = 0
+            vertices.vcount = 0
         }
-
-        override fun toString(): String = "GrowableTexturedVertexArray(vcount=$vcount, icount=$icount)"
     }
-
 
     private val verticesPerTex = FastIdentityCacheMap<Bitmap, Info>()
     private val infos = arrayListOf<Info>()
@@ -159,7 +156,7 @@ abstract class BaseTileMap(
         //private const val BL = 3
     }
 
-    private val infosPool = Pool { Info(Bitmaps.transparent.bmpBase, GrowableTexturedVertexArray(dummyTexturedVertexArray)) }
+    private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmpBase, ShrinkableTexturedVertexArray(dummyTexturedVertexArray)) }
     private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
     private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
 
@@ -220,29 +217,50 @@ abstract class BaseTileMap(
         val my2 = ((pp2.y / mapTileHeight) + 1).toInt()
         val my3 = ((pp3.y / mapTileHeight) + 1).toInt()
 
-        val ymin = min(min(min(my0, my1), my2), my3) - 1
-        val ymax = max(max(max(my0, my1), my2), my3)
-        val xmin = min(min(min(mx0, mx1), mx2), mx3) - 1
-        val xmax = max(max(max(mx0, mx1), mx2), mx3)
+        val ymin = min(my0, my1, my2, my3) - 1
+        val ymax = max(my0, my1, my2, my3)
+        val xmin = min(mx0, mx1, mx2, mx3) - 1
+        val xmax = max(mx0, mx1, mx2, mx3)
 
-        val yheight = ymax - ymin
-        val xwidth = xmax - xmin
+        val ymin2 = ymin.clamp(0, intMap.height)
+        val ymax2 = ymax.clamp(0, intMap.height)
+        val xmin2 = xmin.clamp(0, intMap.height)
+        val xmax2 = xmax.clamp(0, intMap.height)
+
+        val yheight = ymax2 - ymin2
+        val xwidth = xmax2 - xmin2
+
         val ntiles = xwidth * yheight
+
+        //println("ntiles=$ntiles")
+
         val allocTiles = ntiles.nextPowerOfTwo
-        val allocTilesClamped = min(allocTiles, 16 * 1024)
+
+        //val MAX_TILES = 64 * 1024 - 16
+        val MAX_TILES = 16 * 1024 - 16
+        //val MAX_TILES = 1 * 1024
+        //val MAX_TILES = 32
+        //val allocTilesClamped = min(allocTiles, MAX_TILES)
+        val allocTilesClamped = min(allocTiles, MAX_TILES)
         //println("(mx0=$mx0, my0=$my0)-(mx1=$mx1, my1=$my1)-(mx2=$mx2, my2=$my2)-(mx3=$mx3, my3=$my3) ($xwidth, $yheight)")
         infos.fastForEach { infosPool.free(it) }
         verticesPerTex.clear()
         infos.clear()
 
+        var iterationCount = 0
         var count = 0
+        var nblocks = 0
         val passes = if (staggerAxis == TiledMap.StaggerAxis.X) 2 else 1
 
+        val quadIndexData = TexturedVertexArray.quadIndices(allocTilesClamped)
+
         // @TODO: Try to reduce xy/min/max so we reduce continue. Maybe we can do a bisect or something, to allow huge out scalings
-        for (y in ymin until ymax) {
+        for (y in ymin2 until ymax2) {
             // interlace rows when staggered on X to ensure proper z-index
             for (pass in 0 until passes) {
-                for (x in xmin until xmax) {
+            //for (pass in 0..0) {
+                for (x in xmin2 until xmax2) {
+                    iterationCount++
                     val rx = repeatX.get(x, intMap.width)
                     val ry = repeatY.get(y, intMap.height)
 
@@ -277,11 +295,12 @@ abstract class BaseTileMap(
 
                     //println("staggerOffsetX=$staggerOffsetX, staggerOffsetY=$staggerOffsetY, initY=$initY")
 
-                    count++
 
                     //println("CELL_DATA: $cellData")
 
                     val tex = tilesetTextures[cellData] ?: continue
+
+                    count++
 
                     //println("CELL_DATA_TEX: $tex")
 
@@ -289,10 +308,11 @@ abstract class BaseTileMap(
                         infosPool.alloc().also { info ->
                             info.tex = tex.base
                             info.verticesList.clear()
-                            info.addNewVertices(GrowableTexturedVertexArray(TexturedVertexArray(allocTilesClamped * 4, TexturedVertexArray.quadIndices(allocTilesClamped))))
-                            info.vertices.vcount = 0
-                            info.vertices.icount = 0
+                            info.addNewVertices(ShrinkableTexturedVertexArray(TexturedVertexArray(allocTilesClamped * 4,
+                                quadIndexData
+                            )))
                             infos += info
+                            nblocks++
                         }
                     }
                     //println("info=${info.identityHashCode()}")
@@ -332,14 +352,29 @@ abstract class BaseTileMap(
 
                     //println("info.icount=${info.icount}")
 
-                    if (info.vertices.icount >= 16000) {
-                        info.addNewVertices(GrowableTexturedVertexArray(TexturedVertexArray(allocTilesClamped * 4, TexturedVertexArray.quadIndices(allocTilesClamped))))
+                    if (info.vertices.icount >= MAX_TILES - 1) {
+                        info.addNewVertices(ShrinkableTexturedVertexArray(TexturedVertexArray(allocTilesClamped * 4,
+                            quadIndexData
+                        )))
+                        nblocks++
                     }
                 }
             }
         }
         renderTilesCounter.increment(count)
+        totalIterationCount = iterationCount
+        //totalTilesRendered = count
+        //totalVertexCount = count * 4
+        //totalIndexCount = count * 6
+        //totalBatchCount = nblocks
     }
+
+    var totalIterationCount: Int = 0
+    val totalGroupsCount: Int get() = infos.size
+    val totalVertexCount: Int get() = infos.sumOf { it.verticesList.sumOf { it.vcount } }
+    val totalIndexCount: Int get() = infos.sumOf { it.verticesList.sumOf { it.icount } }
+    val totalBatchCount: Int get() = infos.sumOf { it.verticesList.size }
+    val totalTilesRendered: Int get() = totalVertexCount / 4
 
     override fun renderInternal(ctx: RenderContext) {
         if (!visible) return
@@ -353,17 +388,14 @@ abstract class BaseTileMap(
         //println("---")
 
         ctx.useBatcher { batch ->
-            infos.fastForEach { buffer ->
-                buffer.verticesList.fastForEach { vertices ->
+            infos.fastForEach { info ->
+                info.verticesList.fastForEach { vertices ->
                     //println("VERTICES: $vertices")
-                    batch.drawVertices(
-                        vertices.vertices, ctx.getTex(buffer.tex), smoothing, renderBlendMode.factors, vertices.vcount, vertices.icount
-                    )
+                    batch.drawVertices(vertices.vertices, ctx.getTex(info.tex), smoothing, renderBlendMode.factors, vertices.vcount, vertices.icount)
                 }
             }
+            //batch.flush()
         }
-
-        //ctx.flush()
     }
 }
 

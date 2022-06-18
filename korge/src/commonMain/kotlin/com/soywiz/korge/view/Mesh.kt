@@ -49,12 +49,12 @@ open class Mesh(
 		val isize = indices.size
 		tva = if (vcount > tva.initialVcount || isize > tva.indices.size) TexturedVertexArray(vcount, ShortArray(isize)) else tva
 		tva.vcount = vcount
-		tva.isize = isize
+		tva.icount = isize
 
 		bb.reset()
         val pivotXf = pivotX.toFloat()
         val pivotYf = pivotY.toFloat()
-		for (n in 0 until tva.isize) tva.indices[n] = indices[n].toShort()
+		for (n in 0 until tva.icount) tva.indices[n] = indices[n].toShort()
 		for (n in 0 until tva.vcount) {
 			val x = vertices[n * 2 + 0] + pivotXf
 			val y = vertices[n * 2 + 1] + pivotYf

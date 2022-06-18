@@ -25,12 +25,12 @@ import kotlin.native.concurrent.SharedImmutable
 
 // @TODO: Call this mesh?
 /**
- * Allows to build a set of textured and colored vertices. Where [vcount] is the number of vertices and [isize] [indices],
+ * Allows to build a set of textured and colored vertices. Where [vcount] is the number of vertices and [icount] [indices],
  * the maximum number of indices.
  *
- * [vcount] and [isize] could be decreased later, but not increased since the buffer is created at the beginning.
+ * [vcount] and [icount] could be decreased later, but not increased since the buffer is created at the beginning.
  */
-class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var isize: Int = indices.size) {
+class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var icount: Int = indices.size) {
     /** The initial/maximum number of vertices */
     val initialVcount = vcount
     //internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
@@ -289,7 +289,7 @@ class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var isize: I
     }
 
     fun copy(): TexturedVertexArray {
-        val out = TexturedVertexArray(vcount, indices, isize)
+        val out = TexturedVertexArray(vcount, indices, icount)
         arraycopy(this._data.arrayByte, 0, out._data.arrayByte, 0, _data.size)
         return out
     }
@@ -310,6 +310,20 @@ class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var isize: I
     //	fun setTXY(tx: Float, ty: Float) { this.tx = tx }.also { this.ty = ty }
     //	fun setCols(colMul: Int, colAdd: Int) { this.colMul = colMul }.also { this.colAdd = colAdd }
     //}
+}
+
+// @TODO: Should we move this outside?
+class ShrinkableTexturedVertexArray(val vertices: TexturedVertexArray, var vcount: Int = 0, var icount: Int = 0) {
+    fun quadV(x: Double, y: Double, u: Float, v: Float, colMul: RGBA, colAdd: ColorAdd) {
+        vertices.quadV(vcount++, x, y, u, v, colMul, colAdd)
+    }
+
+    fun reset() {
+        vcount = 0
+        icount = 0
+    }
+
+    override fun toString(): String = "GrowableTexturedVertexArray(vcount=$vcount, icount=$icount)"
 }
 
 /*

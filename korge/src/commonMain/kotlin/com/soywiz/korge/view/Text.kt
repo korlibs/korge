@@ -187,12 +187,13 @@ open class Text(
             ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast(), "Text")
         }
         //val tva: TexturedVertexArray? = null
+        val tva = tva
         if (tva != null) {
             tempMatrix.copyFrom(globalMatrix)
             tempMatrix.pretranslate(container.x, container.y)
             ctx.useBatcher { batch ->
-                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null)
-                batch.drawVertices(tva!!, tempMatrix)
+                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null, icount = tva.icount, vcount = tva.vcount)
+                batch.drawVertices(tva, tempMatrix)
             }
         } else {
             super.renderInternal(ctx)
