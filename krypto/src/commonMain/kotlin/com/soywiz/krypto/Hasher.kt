@@ -5,7 +5,8 @@ import com.soywiz.krypto.encoding.Hex
 import com.soywiz.krypto.internal.arraycopy
 import kotlin.math.min
 
-open class HasherFactory(val create: () -> Hasher) {
+open class HasherFactory(val name: String, val create: () -> Hasher) {
+    operator fun invoke(): Hasher = create()
     fun digest(data: ByteArray) = create().also { it.update(data, 0, data.size) }.digest()
 
     inline fun digest(temp: ByteArray = ByteArray(0x1000), readBytes: (data: ByteArray) -> Int): Hash =
@@ -18,12 +19,31 @@ open class HasherFactory(val create: () -> Hasher) {
         }.digest()
 }
 
-abstract class Hasher(val chunkSize: Int, val digestSize: Int) {
+abstract class NonCoreHasher(chunkSize: Int, digestSize: Int, name: String) : Hasher(chunkSize, digestSize, name) {
+    abstract override fun reset(): Hasher
+    abstract override fun update(data: ByteArray, offset: Int, count: Int): Hasher
+    abstract override fun digestOut(out: ByteArray): Unit
+
+    override fun coreReset() = TODO()
+    override fun corePadding(totalWritten: Long): ByteArray = TODO()
+    override fun coreUpdate(chunk: ByteArray) = TODO()
+    override fun coreDigest(out: ByteArray) = TODO()
+}
+
+/**
+ * [chunkSize] in bytes
+ */
+abstract class Hasher(val chunkSize: Int, val digestSize: Int, val name: String) {
+    /**
+     * In bits
+     */
+    val blockSize: Int get() = chunkSize * 8
+
     private val chunk = ByteArray(chunkSize)
     private var writtenInChunk = 0
-    private var totalWritten = 0L
+    protected var totalWritten = 0L
 
-    fun reset(): Hasher {
+    open fun reset(): Hasher {
         coreReset()
         writtenInChunk = 0
         totalWritten = 0L

@@ -4,8 +4,8 @@ import com.soywiz.krypto.internal.arraycopy
 import com.soywiz.krypto.internal.readS32_be
 import com.soywiz.krypto.internal.rotateLeft
 
-class SHA1 : SHA(chunkSize = 64, digestSize = 20) {
-    companion object : HasherFactory({ SHA1() }) {
+class SHA1 : SHA(chunkSize = 64, digestSize = 20, name = "SHA1") {
+    companion object : HasherFactory("SHA1", { SHA1() }) {
         private val H = intArrayOf(
             0x67452301L.toInt(),
             0xEFCDAB89L.toInt(),

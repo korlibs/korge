@@ -24,4 +24,16 @@ class PBKDF2Test {
         val v = PBKDF2.pbkdf2WithHmacSHA256(password, salt, iterationCount, keyLength)
         assertEquals("151e360d1a6d085395d6a79473edfbf3dbdbdc6ffadf2b27a255d87f7bc4d2d1", v.hex)
     }
+
+    @Test
+    fun pbkdf2WithHmacSHA512() {
+        val password = "password".encodeToByteArray()
+        val salt = ByteArray(12) { (it + 1).toByte() }
+        val iterationCount = 4096
+        val keyLength = 256
+        assertEquals(
+            PBKDF2.pbkdf2WithHmacSHA512(password, salt, iterationCount, keyLength).hex,
+            "77fec6ca97e3c15022b1c51a37cf05739e6a3c90b8c85518427ac5be6f8fa06d"
+        )
+    }
 }

@@ -2,9 +2,9 @@ package com.soywiz.krypto
 
 import com.soywiz.krypto.internal.rotateLeft
 
-class MD4 : Hasher(chunkSize = 64, digestSize = 16) {
+class MD4 : Hasher(chunkSize = 64, digestSize = 16, "MD4") {
 
-    companion object : HasherFactory({ MD4() }) {
+    companion object : HasherFactory("MD4", { MD4() }) {
         private val S = intArrayOf(3, 7, 11, 19, 3, 5, 9, 13, 3, 9, 11, 15)
         private val R3 = listOf(0, 2, 1, 3)
     }
