@@ -64,7 +64,7 @@ open class Graphics @JvmOverloads constructor(
     private var shapeVersion = 0
 	private val shapes = arrayListOf<Shape>()
     val allShapes: List<Shape> get() = shapes
-    private val compoundShape = CompoundShape(shapes)
+    private val compoundShape: CompoundShape = CompoundShape(shapes)
 	private var fill: Paint? = null
 	private var stroke: Paint? = null
 	@PublishedApi
@@ -74,6 +74,7 @@ open class Graphics @JvmOverloads constructor(
     var antialiased: Boolean = true
 
     inline fun updateShape(block: ShapeBuilder.() -> Unit) {
+        //compoundShape = buildShape { block() }
         this.clear()
         this.shape(buildShape { block() })
     }
@@ -137,6 +138,7 @@ open class Graphics @JvmOverloads constructor(
     /**
      * Ensure that after this function the [bitmap] property is up-to-date with all the drawings inside [block].
      */
+    @Deprecated("Use updateShape instead")
     inline fun lock(block: Graphics.() -> Unit): Graphics {
         try {
             block()
@@ -146,6 +148,7 @@ open class Graphics @JvmOverloads constructor(
         return this
     }
 
+    @Deprecated("Use updateShape instead")
 	fun clear() {
         shapes.forEach { (it as? StyledShape)?.path?.let { path -> vectorPathPool.free(path) } }
 		shapes.clear()
@@ -166,18 +169,28 @@ open class Graphics @JvmOverloads constructor(
         hitTestUsingShapes = true
     }
 
+    @Deprecated("Use updateShape instead")
 	override val lastX: Double get() = currentPath.lastX
+    @Deprecated("Use updateShape instead")
 	override val lastY: Double get() = currentPath.lastY
+    @Deprecated("Use updateShape instead")
 	override val totalPoints: Int get() = currentPath.totalPoints
 
+    @Deprecated("Use updateShape instead")
 	override fun close() = currentPath.close()
+    @Deprecated("Use updateShape instead")
 	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
+    @Deprecated("Use updateShape instead")
 	override fun lineTo(x: Double, y: Double) { currentPath.lineTo(x, y) }
+    @Deprecated("Use updateShape instead")
 	override fun moveTo(x: Double, y: Double) { currentPath.moveTo(x, y) }
+    @Deprecated("Use updateShape instead")
 	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
 
+    @Deprecated("Use updateShape instead")
     inline fun fill(color: RGBA, alpha: Double = 1.0, winding: Winding = Winding.NON_ZERO, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), winding, callback)
 
+    @Deprecated("Use updateShape instead")
 	inline fun fill(paint: Paint, winding: Winding = Winding.NON_ZERO, callback: @ViewDslMarker VectorBuilder.() -> Unit) {
 		beginFill(paint)
 		try {
@@ -187,6 +200,7 @@ open class Graphics @JvmOverloads constructor(
 		}
 	}
 
+    @Deprecated("Use updateShape instead")
 	inline fun stroke(
         paint: Paint,
         info: StrokeInfo,
@@ -200,6 +214,7 @@ open class Graphics @JvmOverloads constructor(
 		}
 	}
 
+    @Deprecated("Use updateShape instead")
 	inline fun fillStroke(
         fill: Paint,
         stroke: Paint,
@@ -214,21 +229,24 @@ open class Graphics @JvmOverloads constructor(
 		}
 	}
 
+    @Deprecated("Use updateShape instead")
 	fun beginFillStroke(
-            fill: Paint,
-            stroke: Paint,
-            strokeInfo: StrokeInfo
+        fill: Paint,
+        stroke: Paint,
+        strokeInfo: StrokeInfo
 	) {
 		this.fill = fill
 		this.stroke = stroke
 		this.setStrokeInfo(strokeInfo)
 	}
 
+    @Deprecated("Use updateShape instead")
 	fun beginFill(paint: Paint) = dirty {
 		fill = paint
 		currentPath.clear()
 	}
 
+    @Deprecated("Use updateShape instead")
 	private fun setStrokeInfo(info: StrokeInfo) {
 		this.thickness = info.thickness
 		this.pixelHinting = info.pixelHinting
@@ -239,6 +257,7 @@ open class Graphics @JvmOverloads constructor(
 		this.miterLimit = info.miterLimit
 	}
 
+    @Deprecated("Use updateShape instead")
 	fun beginStroke(paint: Paint, info: StrokeInfo) = dirty {
 		setStrokeInfo(info)
 		stroke = paint
@@ -246,17 +265,22 @@ open class Graphics @JvmOverloads constructor(
 	}
 
     @PublishedApi
+    @Deprecated("Use updateShape instead")
     internal fun toColorFill(color: RGBA, alpha: Double): ColorPaint =
         ColorPaint(RGBA(color.r, color.g, color.b, (color.a * alpha).toInt().clamp(0, 255)))
 
+    @Deprecated("Use updateShape instead")
 	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
 
+    @Deprecated("Use updateShape instead")
     fun shape(shape: Shape) {
         shapes += shape
         currentPath = vectorPathPool.alloc()
         dirtyShape()
     }
+    @Deprecated("Use updateShape instead")
 	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
+    @Deprecated("Use updateShape instead")
     inline fun shape(shape: VectorPath, matrix: Matrix) = dirty { currentPath.write(shape, matrix) }
 
     private fun dirtyShape() {
@@ -264,6 +288,7 @@ open class Graphics @JvmOverloads constructor(
         dirty()
     }
 
+    @Deprecated("Use updateShape instead")
 	fun endFill(winding: Winding = Winding.NON_ZERO) = dirty {
         currentPath.winding = winding
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
@@ -271,6 +296,7 @@ open class Graphics @JvmOverloads constructor(
         dirtyShape()
 	}
 
+    @Deprecated("Use updateShape instead")
 	fun endStroke() = dirty {
 		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset))
 		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
@@ -278,6 +304,7 @@ open class Graphics @JvmOverloads constructor(
         dirtyShape()
 	}
 
+    @Deprecated("Use updateShape instead")
 	fun endFillStroke() = dirty {
 		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
 		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset))
@@ -286,7 +313,8 @@ open class Graphics @JvmOverloads constructor(
 	}
 
     override fun drawShape(ctx: Context2d) {
-        this@Graphics.compoundShape.draw(ctx)    }
+        this@Graphics.compoundShape.draw(ctx)
+    }
 
     override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
         shapes.fastForEach {

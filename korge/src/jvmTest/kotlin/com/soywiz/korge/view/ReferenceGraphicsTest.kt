@@ -191,6 +191,33 @@ class ReferenceGraphicsTest : ViewsForTesting(
     }
 
     @Test
+    fun testGpuShapeViewFilter() = viewsTest {
+        container {
+            scale = 1.2
+            circle(100.0).xy(100, 100).filters(DropshadowFilter())
+        }
+        logAg.logFilter = { str, kind ->
+            when (kind) {
+                LogBaseAG.Kind.SHADER, LogBaseAG.Kind.DRAW_DETAILS -> false
+                LogBaseAG.Kind.UNIFORM, LogBaseAG.Kind.UNIFORM_VALUES -> true
+                //else -> true
+                else -> false
+            }
+        }
+
+        testFrame()
+
+        //println(logAg.getLogAsString())
+
+        assertEqualsFileReference(
+            "korge/render/GpuShapeViewFilter.log",
+            listOf(
+                logAg.getLogAsString(),
+            ).joinToString("\n")
+        )
+    }
+
+    @Test
     fun testBlurFilterInEmptyContainer() = viewsTest {
         val view = container {
             filter = BlurFilter(4.0)

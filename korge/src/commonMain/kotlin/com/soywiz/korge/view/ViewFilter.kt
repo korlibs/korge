@@ -38,8 +38,9 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
     }
 }
 
-fun View.addFilter(filter: Filter) {
+fun <T : View> T.addFilter(filter: Filter): T {
     this.filter = ComposedFilter.combine(this.filter, filter)
+    return this
 }
 
 fun View.removeFilter(filter: Filter) {

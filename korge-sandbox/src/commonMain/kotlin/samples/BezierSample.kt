@@ -1,17 +1,30 @@
 package samples
 
-import com.soywiz.korge.*
-import com.soywiz.korge.input.*
+import com.soywiz.korge.input.draggable
+import com.soywiz.korge.input.mouse
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.vector.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.bezier.*
-import com.soywiz.korma.geom.vector.*
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.Text
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.centered
+import com.soywiz.korge.view.circle
+import com.soywiz.korge.view.container
+import com.soywiz.korge.view.filter
+import com.soywiz.korge.view.filter.ColorTransformFilter
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.sgraphics
+import com.soywiz.korge.view.text
+import com.soywiz.korge.view.vector.gpuShapeView
+import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korim.color.ColorTransform
+import com.soywiz.korim.color.Colors
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.StrokeInfo
+import com.soywiz.korma.geom.vector.cubic
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
 
 class BezierSample : Scene() {
     override suspend fun Container.sceneMain() {
@@ -20,33 +33,32 @@ class BezierSample : Scene() {
         val p2 = Point(210, 250)
         val p3 = Point(234, 49)
 
-        val graphics = sgraphics {
-            useNativeRendering = true
-            //useNativeRendering = false
-        }
+        val graphics = sgraphics()
+        //val graphics = gpuShapeView()
 
         fun updateGraphics() {
-            graphics.clear()
-            graphics.stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
-                moveTo(p0)
-                lineTo(p1)
-                lineTo(p2)
-                lineTo(p3)
-            }
-            graphics.stroke(Colors.WHITE, info = StrokeInfo(thickness = 2.0)) {
-                cubic(p0, p1, p2, p3)
-            }
-            var ratio = 0.3
-            val cubic2 = Bezier(p0, p1, p2, p3).split(ratio).leftCurve
-            val cubic3 = Bezier(p0, p1, p2, p3).split(ratio).rightCurve
+            graphics.updateShape {
+                stroke(Colors.DIMGREY, info = StrokeInfo(thickness = 1.0)) {
+                    moveTo(p0)
+                    lineTo(p1)
+                    lineTo(p2)
+                    lineTo(p3)
+                }
+                stroke(Colors.WHITE, info = StrokeInfo(thickness = 2.0)) {
+                    cubic(p0, p1, p2, p3)
+                }
+                val ratio = 0.3
+                val split = Bezier(p0, p1, p2, p3).split(ratio)
+                val cubic2 = split.leftCurve
+                val cubic3 = split.rightCurve
 
-            graphics.stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
-                cubic(cubic2)
+                stroke(Colors.PURPLE, info = StrokeInfo(thickness = 4.0)) {
+                    cubic(cubic2)
+                }
+                stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
+                    cubic(cubic3)
+                }
             }
-            graphics.stroke(Colors.YELLOW, info = StrokeInfo(thickness = 4.0)) {
-                cubic(cubic3)
-            }
-            //println("graphics.globalBounds=${graphics.globalBounds}, graphics.localBounds=${graphics.getLocalBounds()}")
         }
 
         updateGraphics()
@@ -69,7 +81,7 @@ class BezierSample : Scene() {
         }
         circle.mouse {
             onOver { circle.filter = ColorTransformFilter(ColorTransform(add = ColorAdd(+64, +64, +64, 0))) }
-            onOut { circle.filter = ColorTransformFilter(ColorTransform(add = ColorAdd(0, 0, 0, 0))) }
+            onOut { circle.filter = null }
         }
         updateText()
         anchorView.draggable(circle) {

@@ -166,8 +166,11 @@ open class LogAG(
     val log = arrayListOf<String>()
     fun clearLog() = log.clear()
     fun getLogAsString(): String = log.joinToString("\n")
+
+    var logFilter: (str: String, kind: Kind) -> Boolean = { str, kind -> true }
+
     override fun log(str: String, kind: Kind) {
-        this.log += str
+        if (logFilter(str, kind)) this.log += str
     }
 }
 
