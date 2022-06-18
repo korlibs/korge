@@ -114,7 +114,7 @@ class MyNSOpenGLView(
                 MouseEvent.Type.SCROLL -> 0
                 else -> buttonMask(e.buttonMask.toInt())
             },
-            scrollDeltaX = e.deltaX.toDouble(), scrollDeltaY = e.deltaY.toDouble(), scrollDeltaZ = e.deltaZ.toDouble(),
+            scrollDeltaX = -e.deltaX, scrollDeltaY = -e.deltaY, scrollDeltaZ = -e.deltaZ,
             isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
         )
     }
