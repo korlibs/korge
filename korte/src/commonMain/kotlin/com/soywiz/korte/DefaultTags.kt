@@ -13,8 +13,8 @@ object DefaultTags {
 		DefaultBlocks.BlockBlock(name, contentType ?: this.context.template.templateContent.contentType)
 	}
 
-	val Capture = Tag("capture", setOf(), null) {
-		val main = chunks[0]
+    val Capture = Tag("capture", setOf(), setOf("end", "endcapture")) {
+        val main = chunks[0]
 		val tr = main.tag.tokens
 		val varname = ExprNode.parseId(tr)
         val contentType = if (tr.hasMore) ExprNode.parseId(tr) else null
@@ -136,7 +136,7 @@ object DefaultTags {
         Set.buildNode(this)
     }
 
-	val Switch = Tag("switch", setOf("case", "default"), setOf("endswitch")) {
+	val Switch = Tag("switch", setOf("case", "default"), setOf("end", "endswitch")) {
 		var subject: ExprNode? = null
 		val cases = arrayListOf<Pair<ExprNode, Block>>()
 		var defaultCase: Block? = null

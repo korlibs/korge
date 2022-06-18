@@ -133,6 +133,11 @@ class TemplateTest : BaseTest() {
     }
 
     @Test
+    fun testCapture() = suspendTest {
+        assertEquals("REPEAT and REPEAT", Template("{% capture variable %}REPEAT{% endcapture %}{{ variable }} and {{ variable }}")())
+    }
+
+    @Test
     fun testSimpleIf() = suspendTest {
         assertEquals("true", Template("{% if cond %}true{% else %}false{% end %}")("cond" to 1))
         assertEquals("false", Template("{% if cond %}true{% else %}false{% end %}")("cond" to 0))
