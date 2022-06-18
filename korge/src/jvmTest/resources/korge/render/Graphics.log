@@ -8,7 +8,7 @@ Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 1, Program(name=BatchBuilder2D.Premultiplied.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=BatchBuilder2D.Premultiplied.Tinted.NoAddNoWrap, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -30,18 +30,18 @@ varying vec4 v_Col;
 void main() {
 	if ((v_TexIndex <= 1.0)) {
 		if ((v_TexIndex == 0.0)) {
-			gl_FragColor = texture2D(u_Tex0, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex1, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
 		}
 	}
 	else {
 		if ((v_TexIndex == 2.0)) {
-			gl_FragColor = texture2D(u_Tex2, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex2, v_Tex.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex3, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex3, v_Tex.xy);
 		}
 	}
 	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
@@ -1271,7 +1271,7 @@ Buffer[1].afterSetMem(mem[4])
 Buffer[2].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 3, Program(name=BatchBuilder2D.NoPremultiplied.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
+programCreate: 3, Program(name=BatchBuilder2D.NoPremultiplied.Tinted.NoAddNoWrap, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -1293,18 +1293,18 @@ varying vec4 v_Col;
 void main() {
 	if ((v_TexIndex <= 1.0)) {
 		if ((v_TexIndex == 0.0)) {
-			gl_FragColor = texture2D(u_Tex0, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex1, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
 		}
 	}
 	else {
 		if ((v_TexIndex == 2.0)) {
-			gl_FragColor = texture2D(u_Tex2, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex2, v_Tex.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex3, fract(v_Tex.xy));
+			gl_FragColor = texture2D(u_Tex3, v_Tex.xy);
 		}
 	}
 	gl_FragColor = (gl_FragColor.rgba * v_Col.rgba);

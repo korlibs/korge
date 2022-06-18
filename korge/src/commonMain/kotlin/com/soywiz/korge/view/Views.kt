@@ -523,8 +523,8 @@ class Views constructor(
     var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
-fun Views.getDefaultProgram(premultiplied: Boolean = true): Program =
-    renderContext.batch.getDefaultProgram(premultiplied)
+fun Views.getDefaultProgram(premultiplied: Boolean = true, wrap: Boolean = false): Program =
+    renderContext.batch.getDefaultProgram(premultiplied, wrap)
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)

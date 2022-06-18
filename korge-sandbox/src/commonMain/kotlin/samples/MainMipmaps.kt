@@ -1,6 +1,7 @@
 package samples
 
 import com.soywiz.klock.*
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.*
 import com.soywiz.korge.view.*
@@ -11,6 +12,7 @@ import com.soywiz.korio.file.std.*
 class MainMipmaps : Scene() {
     override suspend fun Container.sceneMain() {
         val image = image(resourcesVfs["korge.png"].readBitmap().mipmaps())
+        //image.program = BatchBuilder2D.PROGRAM_PRE_WRAP
         while (true) {
             tween(image::scale[0.01], time = 3.seconds)
             tween(image::scale[0.2], time = 1.seconds)
