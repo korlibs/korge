@@ -936,6 +936,7 @@ abstract class View internal constructor(
     /** Converts the local point [x], [y] into a global Y coordinate (using root/stage as reference). */
     fun localToGlobalY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
 
+
     // Version with View.Reference as reference
     /** Converts a point [p] in the nearest ancestor marked as [View.Reference] into the local coordinate system. Allows to define [out] to avoid allocation. */
     fun renderToLocal(p: IPoint, out: Point = Point()): Point = renderToLocalXY(p.x, p.y, out)
@@ -949,17 +950,40 @@ abstract class View internal constructor(
     /** Converts a point [x], [y] in the nearest ancestor marked as [View.Reference] into the local Y coordinate. */
     fun renderToLocalY(x: Double, y: Double): Double = this.globalMatrixInv.transformY(x, y)
 
+
     /** Converts the local point [p] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
+    @Deprecated("")
     fun localToRender(p: IPoint, out: Point = Point()): Point = localToRenderXY(p.x, p.y, out)
 
     /** Converts the local point [x],[y] into a point in the nearest ancestor masked as [View.Reference]. Allows to define [out] to avoid allocation. */
+    @Deprecated("")
     fun localToRenderXY(x: Double, y: Double, out: Point = Point()): Point = this.globalMatrix.transform(x, y, out)
 
     /** Converts the local point [x],[y] into a X coordinate in the nearest ancestor masked as [View.Reference]. */
+    @Deprecated("")
     fun localToRenderX(x: Double, y: Double): Double = this.globalMatrix.transformX(x, y)
 
     /** Converts the local point [x],[y] into a Y coordinate in the nearest ancestor masked as [View.Reference]. */
+    @Deprecated("")
     fun localToRenderY(x: Double, y: Double): Double = this.globalMatrix.transformY(x, y)
+
+
+
+    /** Converts the local point [p] into a point in window coordinates. */
+    fun localToWindow(views: Views, p: IPoint, out: Point = Point()): Point = localToWindowXY(views, p.x, p.y, out)
+
+    /** Converts the local point [x], [y] into a point in window coordinates. */
+    fun localToWindowXY(views: Views, x: Double, y: Double, out: Point = Point()): Point {
+        this.globalMatrix.transform(x, y, out)
+        views.globalToWindowMatrix.transform(out, out)
+        return out
+    }
+
+    /** Converts the local point [x], [y] into a X coordinate in window coordinates. */
+    fun localToWindowX(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).x
+
+    /** Converts the local point [x], [y] into a Y coordinate in window coordinates. */
+    fun localToWindowY(views: Views, x: Double, y: Double): Double = localToWindowXY(views, x, y, tempPoint).y
 
     var hitTestEnabled = true
 
@@ -1033,6 +1057,7 @@ abstract class View internal constructor(
     private val tempMatrix1 = Matrix()
     private val tempMatrix2 = Matrix()
     private val tempMatrix = Matrix()
+    private val tempPoint = Point()
 
     open val customHitShape get() = false
     open protected fun hitTestShapeInternal(shape: Shape2d, matrix: Matrix, direction: HitTestDirection): View? {
@@ -1302,7 +1327,7 @@ abstract class View internal constructor(
 
     /** Returns the global bounds of this object. Allows to specify an [out] [Rectangle] to prevent allocations. */
     @Deprecated("")
-    fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getWindowBoundsOrNull() ?: getGlobalBounds(out)
+    fun getWindowBounds(out: Rectangle = Rectangle()): Rectangle = getWindowBoundsOrNull(out) ?: getGlobalBounds(out)
 
     fun getWindowBoundsOrNull(out: Rectangle = Rectangle()): Rectangle? {
         val stage = root
