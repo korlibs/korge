@@ -42,7 +42,7 @@ class MainBVH : Scene() {
             val view = solidRect(width, height, rand[Colors.RED, Colors.BLUE]).xy(x, y)
             view.movingDirection = if (rand.nextBoolean()) -1 else +1
             rects += view
-            bvh.insertOrUpdate(view.globalBounds, view)
+            bvh.insertOrUpdate(view.getBounds(this), view)
         }
         addUpdater {
             for (n in rects.size - 100 until rects.size) {
@@ -54,7 +54,7 @@ class MainBVH : Scene() {
                     view.movingDirection = -1
                 }
                 view.x += view.movingDirection
-                bvh.insertOrUpdate(view.globalBounds, view)
+                bvh.insertOrUpdate(view.getBounds(this), view)
             }
         }
         val center = Point(width / 2, height / 2)
@@ -87,7 +87,7 @@ class MainBVH : Scene() {
 
         addUpdater {
             //println("moved")
-            val mousePos = stage!!.mouseXY
+            val mousePos = localMouseXY(views)
             val angle = Point.angleFull(center, mousePos)
             //println("center=$center, mousePos=$mousePos, angle = $angle")
             dir.setTo(angle.cosine, angle.sine)
