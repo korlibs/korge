@@ -5,6 +5,7 @@ import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Shader
+import com.soywiz.korag.shader.ShaderType
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.VertexShader
@@ -181,6 +182,12 @@ class ShadersTest {
     fun testRegression() {
         assertEquals(Uniform("test1", VarType.Float1), Uniform("test1", VarType.Float1))
         assertNotEquals(Uniform("test1", VarType.Float1), Uniform("test2", VarType.Float1))
+    }
+
+    @Test
+    fun testAppendingKeepsType() {
+        assertEquals(ShaderType.FRAGMENT, DefaultShaders.FRAGMENT_DEBUG.appending { SET(out, vec4(1f.lit)) }.type)
+        assertEquals(ShaderType.VERTEX, DefaultShaders.VERTEX_DEFAULT.appending { SET(out, vec4(1f.lit)) }.type)
     }
 
     private val u_Weights = Uniform("weights", VarType.Mat3)

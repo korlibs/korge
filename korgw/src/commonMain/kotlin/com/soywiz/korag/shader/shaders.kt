@@ -262,7 +262,8 @@ data class ProgramConfig(
 inline fun Shader.appending(block: Program.Builder.() -> Unit): FragmentShader {
     // @TODO: Raw shaders don't support appending
     if (this.isRaw) return this
-    return FragmentShader(Program.Builder(this.type).WITH(this).also(block)._buildFuncs())
+    val pair = Program.Builder(this.type).WITH(this).also(block)._buildFuncs()
+    return Shader(this.type, pair.first, pair.second)
 }
 
 inline fun Program.replacingVertex(extraName: String, block: Program.Builder.() -> Unit): Program =
