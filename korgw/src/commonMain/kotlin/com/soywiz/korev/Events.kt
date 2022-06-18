@@ -78,6 +78,13 @@ data class MouseEvent(
     fun scrollDeltaY(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
     fun scrollDeltaZ(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
 
+    fun setScrollDelta(mode: ScrollDeltaMode, x: Double, y: Double, z: Double) {
+        this.scrollDeltaMode = mode
+        this.scrollDeltaX = x
+        this.scrollDeltaY = y
+        this.scrollDeltaZ = z
+    }
+
     inline val scrollDeltaXPixels: Double get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
     inline val scrollDeltaYPixels: Double get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
     inline val scrollDeltaZPixels: Double get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)

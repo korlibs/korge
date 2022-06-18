@@ -246,17 +246,21 @@ open class BrowserGameWindow : JsGameWindow() {
             this.isMetaDown = e.metaKey
             if (type == com.soywiz.korev.MouseEvent.Type.SCROLL) {
                 val we = e.unsafeCast<WheelEvent>()
-
-                this.scrollDeltaMode = when (we.deltaMode) {
+                val mode = when (we.deltaMode) {
                     WheelEvent.DOM_DELTA_PIXEL -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL
                     WheelEvent.DOM_DELTA_LINE -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
                     WheelEvent.DOM_DELTA_PAGE -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.PAGE
                     else -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
                 }
 
-                this.scrollDeltaX = we.deltaX
-                this.scrollDeltaY = we.deltaY
-                this.scrollDeltaZ = we.deltaZ
+                //println("scrollDeltaMode: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
+
+                this.setScrollDelta(
+                    mode,
+                    x = we.deltaX,
+                    y = we.deltaY,
+                    z = we.deltaZ,
+                )
             }
         }
 
