@@ -17,6 +17,8 @@ open class HasherFactory(val name: String, val create: () -> Hasher) {
                 it.update(temp, 0, count)
             }
         }.digest()
+
+    override fun toString(): String = "HasherFactory($name)"
 }
 
 abstract class NonCoreHasher(chunkSize: Int, digestSize: Int, name: String) : Hasher(chunkSize, digestSize, name) {
@@ -91,6 +93,8 @@ abstract class Hasher(val chunkSize: Int, val digestSize: Int, val name: String)
 
     fun update(data: ByteArray) = update(data, 0, data.size)
     fun digest(): Hash = Hash(ByteArray(digestSize).also { digestOut(it) })
+
+    override fun toString(): String = "Hasher($name)"
 }
 
 class Hash(val bytes: ByteArray) {
