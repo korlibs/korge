@@ -1,7 +1,6 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.Pool
-import com.soywiz.kgl.checkedIf
 import com.soywiz.klock.measureTime
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
@@ -11,23 +10,33 @@ import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
 import com.soywiz.korev.GameButton
 import com.soywiz.korev.GamePadConnectionEvent
-import com.soywiz.korev.GamepadMapping
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.StandardGamepadMapping
+import com.soywiz.korim.format.cg.cg
 import com.soywiz.korma.geom.Point
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExportObjCClass
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.UnsafeNumber
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
+import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRect
+import platform.CoreGraphics.CGRectMake
+import platform.CoreGraphics.CGSize
 import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
 import platform.Foundation.NSBundle
+import platform.Foundation.NSCoder
+import platform.Foundation.NSComparisonResult
+import platform.Foundation.NSComparisonResultVar
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSNotification
-import platform.Foundation.NSNotificationCenter
+import platform.Foundation.NSRange
 import platform.Foundation.NSSelectorFromString
 import platform.GLKit.GLKView
 import platform.GLKit.GLKViewController
@@ -35,12 +44,14 @@ import platform.GLKit.GLKViewDrawableDepthFormat24
 import platform.GLKit.GLKViewDrawableStencilFormat8
 import platform.GameController.GCController
 import platform.GameController.GCControllerButtonInput
-import platform.GameController.GCControllerDidConnectNotification
-import platform.GameController.GCControllerDidDisconnectNotification
 import platform.GameController.GCControllerDirectionPad
 import platform.GameController.GCEventViewController
+import platform.UIKit.NSWritingDirection
+import platform.UIKit.NSWritingDirectionNatural
+import platform.UIKit.UIAction
 import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
+import platform.UIKit.UIControlEventEditingChanged
 import platform.UIKit.UIEvent
 import platform.UIKit.UIKeyModifierAlternate
 import platform.UIKit.UIKeyModifierCommand
@@ -48,14 +59,32 @@ import platform.UIKit.UIKeyModifierControl
 import platform.UIKit.UIKeyModifierShift
 import platform.UIKit.UIPress
 import platform.UIKit.UIPressesEvent
+import platform.UIKit.UIReturnKeyType
 import platform.UIKit.UIScreen
+import platform.UIKit.UITextAlternativeStyle
+import platform.UIKit.UITextField
+import platform.UIKit.UITextInputDelegateProtocol
+import platform.UIKit.UITextInputProtocol
+import platform.UIKit.UITextInputStringTokenizer
+import platform.UIKit.UITextInputTokenizerProtocol
+import platform.UIKit.UITextLayoutDirection
+import platform.UIKit.UITextPlaceholder
+import platform.UIKit.UITextPosition
+import platform.UIKit.UITextRange
+import platform.UIKit.UITextStorageDirection
 import platform.UIKit.UITouch
+import platform.UIKit.UIView
 import platform.UIKit.UIWindow
 import platform.UIKit.addSubview
 import platform.UIKit.backgroundColor
 import platform.UIKit.contentScaleFactor
 import platform.UIKit.multipleTouchEnabled
+import platform.UIKit.removeFromSuperview
+import platform.UIKit.setAlpha
+import platform.UIKit.setFrame
 import platform.UIKit.systemBackgroundColor
+import platform.darwin.NSInteger
+import platform.darwin.NSObject
 
 // @TODO: Do not remove! Called from a generated .kt file : platforms/native-ios/bootstrap.kt
 @Suppress("unused", "UNUSED_PARAMETER")
@@ -66,10 +95,15 @@ abstract class KorgwBaseNewAppDelegate {
     // Keep references to avoid collecting instances
     lateinit var window: UIWindow
     lateinit var entry: suspend () -> Unit
+    lateinit var viewController: ViewController
+
+    val gameWindow: IosGameWindow get() = MyIosGameWindow
+
     fun applicationDidFinishLaunching(app: UIApplication, entry: suspend () -> Unit) {
         Console.info("applicationDidFinishLaunching: entry=$entry")
         this.entry = entry
         window = UIWindow(frame = UIScreen.mainScreen.bounds)
+        CreateInitialIosGameWindow(this)
         viewController = ViewController(entry)
         window.rootViewController = viewController
         window.makeKeyAndVisible()
@@ -77,7 +111,6 @@ abstract class KorgwBaseNewAppDelegate {
         window.backgroundColor = UIColor.systemBackgroundColor
     }
 
-    lateinit var viewController: ViewController
 
     fun applicationDidEnterBackground(app: UIApplication) {
         Console.info("applicationDidEnterBackground")
@@ -88,16 +121,16 @@ abstract class KorgwBaseNewAppDelegate {
     fun applicationWillResignActive(app: UIApplication) {
         Console.info("applicationWillResignActive")
         forceGC()
-        viewController.gameWindow.dispatchPauseEvent()
+        gameWindow.dispatchPauseEvent()
     }
     fun applicationDidBecomeActive(app: UIApplication) {
         Console.info("applicationDidBecomeActive")
-        viewController.gameWindow.dispatchResumeEvent()
+        gameWindow.dispatchResumeEvent()
     }
     fun applicationWillTerminate(app: UIApplication) {
         Console.info("applicationWillTerminate")
-        viewController.gameWindow.dispatchStopEvent()
-        viewController.gameWindow.dispatchDestroyEvent()
+        gameWindow.dispatchStopEvent()
+        gameWindow.dispatchDestroyEvent()
     }
 
     private fun forceGC() {
@@ -458,7 +491,7 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
     }
 }
 
-open class IosGameWindow : GameWindow() {
+open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
     override val ag: AG = IosAGNative()
@@ -485,12 +518,107 @@ open class IosGameWindow : GameWindow() {
         }
     }
 
-    companion object {
-        fun getGameWindow() = MyIosGameWindow
+    override val isSoftKeyboardVisible: Boolean get() = super.isSoftKeyboardVisible
+    lateinit var textField: MyUITextComponent
+
+    class MyUITextComponent(val gw: IosGameWindow,  rect: CValue<CGRect>) : UIView(rect), UITextInputProtocol {
+        override fun canBecomeFirstResponder(): Boolean = true
+        override fun canBecomeFocused(): Boolean = true
+        override fun baseWritingDirectionForPosition(
+            position: UITextPosition,
+            inDirection: UITextStorageDirection
+        ): NSWritingDirection = NSWritingDirectionNatural
+        val bodPos = UITextPosition()
+        val eodPos = UITextPosition()
+
+        override fun beginningOfDocument(): UITextPosition = bodPos
+        override fun endOfDocument(): UITextPosition = eodPos
+        override fun caretRectForPosition(position: UITextPosition): CValue<CGRect> = CGRectMake(0.0.cg, 0.0.cg, 1.0.cg, 32.cg)
+        override fun characterRangeAtPoint(point: CValue<CGPoint>): UITextRange? = null
+        override fun characterRangeByExtendingPosition(position: UITextPosition, inDirection: UITextLayoutDirection): UITextRange? = null
+        override fun closestPositionToPoint(point: CValue<CGPoint>): UITextPosition? = null
+        override fun closestPositionToPoint(point: CValue<CGPoint>, withinRange: UITextRange): UITextPosition? = null
+        override fun comparePosition(position: UITextPosition, toPosition: UITextPosition): NSComparisonResult = 0
+        override fun firstRectForRange(range: UITextRange): CValue<CGRect> =
+            CGRectMake(0.0.cg, 0.0.cg, 128.0.cg, 32.0.cg)
+
+        override fun inputDelegate(): UITextInputDelegateProtocol? = null
+        override fun markedTextRange(): UITextRange? = null
+        override fun markedTextStyle(): Map<Any?, *>? = null
+        override fun offsetFromPosition(from: UITextPosition, toPosition: UITextPosition): NSInteger = 0
+        override fun positionFromPosition(position: UITextPosition, offset: NSInteger): UITextPosition? = null
+        override fun positionFromPosition(
+            position: UITextPosition,
+            inDirection: UITextLayoutDirection,
+            offset: NSInteger
+        ): UITextPosition? = null
+
+        override fun positionWithinRange(
+            range: UITextRange,
+            farthestInDirection: UITextLayoutDirection
+        ): UITextPosition? = null
+
+        override fun replaceRange(range: UITextRange, withText: String) {
+            //println("replaceRange: range=$range, $withText")
+        }
+
+        override fun selectedTextRange(): UITextRange? = null
+        override fun selectionRectsForRange(range: UITextRange): List<*> = listOf<Any>()
+        override fun setBaseWritingDirection(writingDirection: NSWritingDirection, forRange: UITextRange) {}
+        override fun setInputDelegate(inputDelegate: UITextInputDelegateProtocol?) = Unit
+        override fun setMarkedText(markedText: String?, selectedRange: CValue<NSRange>) = Unit
+        override fun setMarkedTextStyle(markedTextStyle: Map<Any?, *>?) = Unit
+        override fun setSelectedTextRange(selectedTextRange: UITextRange?) = Unit
+        override fun textInRange(range: UITextRange): String? = null
+        override fun textRangeFromPosition(fromPosition: UITextPosition, toPosition: UITextPosition): UITextRange? = null
+        val myTokenizer = UITextInputStringTokenizer()
+        override fun tokenizer(): UITextInputTokenizerProtocol = myTokenizer
+        override fun unmarkText() = Unit
+
+        override fun hasText(): Boolean = false
+
+        override fun deleteBackward() {
+            //println("deleteBackward")
+            gw.dispatchKeyEventDownUp(0, '\b', Key.BACKSPACE, '\b'.code, null)
+        }
+
+        override fun insertText(text: String) {
+            //println("insertText=$text")
+            gw.dispatchKeyEvent(KeyEvent.Type.TYPE, 0, '\u0000', Key.BACKSPACE, 0, text)
+        }
+    }
+
+    private fun prepareSoftKeyboardOnce() = memScoped {
+        if (::textField.isInitialized) return@memScoped
+        val rect = CGRectMake(0.0.cg, 0.0.cg, 128.0.cg, 32.0.cg)
+        textField = MyUITextComponent(this@IosGameWindow, rect)
+    }
+
+    val window: UIWindow get() = app.window
+    //val window = UIApplication.sharedApplication.keyWindow ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
+
+    // https://developer.apple.com/documentation/uikit/uitextinput
+    // https://developer.apple.com/documentation/uikit/uikeyinput
+    override fun showSoftKeyboard(force: Boolean) {
+        println("IosGameWindow.showSoftKeyboard: force=$force")
+        prepareSoftKeyboardOnce()
+        window.addSubview(textField)
+        textField.becomeFirstResponder()
+    }
+
+    override fun hideSoftKeyboard() {
+        println("IosGameWindow.hideSoftKeyboard")
+        prepareSoftKeyboardOnce()
+        textField.removeFromSuperview()
+        textField.resignFirstResponder()
     }
 }
 
-val MyIosGameWindow = IosGameWindow() // Creates instance everytime
+private lateinit var MyIosGameWindow: IosGameWindow // Creates instance everytime
+private fun CreateInitialIosGameWindow(app: KorgwBaseNewAppDelegate): IosGameWindow {
+    MyIosGameWindow = IosGameWindow(app)
+    return MyIosGameWindow
+}
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = MyIosGameWindow
 

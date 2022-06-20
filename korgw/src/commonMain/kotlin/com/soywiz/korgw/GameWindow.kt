@@ -646,8 +646,14 @@ open class GameWindow :
     private val scrollDeltaZ = 0.0
     private val scaleCoords = false
 
-    fun dispatchKeyEvent(type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int): Boolean {
-        return dispatchKeyEventEx(type, id, character, key, keyCode)
+    fun dispatchKeyEvent(type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int, str: String? = null): Boolean {
+        return dispatchKeyEventEx(type, id, character, key, keyCode, str = str)
+    }
+
+    fun dispatchKeyEventDownUp(id: Int, character: Char, key: Key, keyCode: Int, str: String? = null): Boolean {
+        val cancel1 = dispatchKeyEvent(KeyEvent.Type.DOWN, id, character, key, keyCode, str)
+        val cancel2 = dispatchKeyEvent(KeyEvent.Type.UP, id, character, key, keyCode, str)
+        return cancel1 || cancel2
     }
 
     //private val gamePadConnectionEvent = GamePadConnectionEvent()
@@ -691,7 +697,8 @@ open class GameWindow :
 
     fun dispatchKeyEventEx(
         type: KeyEvent.Type, id: Int, character: Char, key: Key, keyCode: Int,
-        shift: Boolean = this.shift, ctrl: Boolean = this.ctrl, alt: Boolean = this.alt, meta: Boolean = this.meta
+        shift: Boolean = this.shift, ctrl: Boolean = this.ctrl, alt: Boolean = this.alt, meta: Boolean = this.meta,
+        str: String? = null
     ): Boolean {
         if (type != KeyEvent.Type.TYPE) {
             keysPresing[key.ordinal] = (type == KeyEvent.Type.DOWN)
@@ -706,6 +713,13 @@ open class GameWindow :
             this.ctrl = ctrl
             this.alt = alt
             this.meta = meta
+            if (str != null && str.length == 1) {
+                this.str = null
+                this.character = str[0]
+                this.keyCode = this.character.code
+            } else {
+                this.str = str
+            }
         })
         return keyEvent._stopPropagation
     }

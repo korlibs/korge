@@ -334,6 +334,7 @@ data class KeyEvent constructor(
     var ctrl: Boolean = false,
     var alt: Boolean = false,
     var meta: Boolean = false,
+    var str: String? = null,
 ) : Event() {
     var deltaTime = TimeSpan.ZERO
 
@@ -342,6 +343,8 @@ data class KeyEvent constructor(
     val typeUp get() = type == Type.UP
 
     val ctrlOrMeta: Boolean get() = if (OS.isMac) meta else ctrl
+
+    fun characters(): String = str ?: "$character"
 
 	enum class Type { UP, DOWN, TYPE }
 
@@ -356,6 +359,7 @@ data class KeyEvent constructor(
         this.alt = other.alt
         this.meta = other.meta
         this.deltaTime = other.deltaTime
+        this.str = other.str
     }
 }
 

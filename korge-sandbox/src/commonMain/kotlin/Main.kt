@@ -19,7 +19,7 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainEmojiColrv1),
+        Demo(::MainTextInput),
         listOf(
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),

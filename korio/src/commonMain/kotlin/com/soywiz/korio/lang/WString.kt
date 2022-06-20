@@ -90,7 +90,7 @@ inline fun String.forEachCodePoint(block: (index: Int, codePoint: Int, error: Bo
         var value = string[n++].code
         var error = false
         // High surrogate
-        if ((value and 0xF800) == 0xD800) {
+        if ((value and 0xF800) == 0xD800 && n < string.length) {
             val extra = string[n++].code
             if ((extra and 0xFC00) != 0xDC00) {
                 n--
