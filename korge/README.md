@@ -19,13 +19,4 @@ in addition to ensure the continuity of the project, you will get exclusive cont
 
 ## Info about the project:
 
-<https://korge.org>
-
-Note: active development of korge is currently being done in the [korge-next](https://github.com/korlibs/korge-next) monorepo. Please check there for the latest releases and code.
-
-## Contributors
-
-### Code Contributors
-
-This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
-<a href="https://github.com/korlibs/korge/graphs/contributors"><img src="https://opencollective.com/korge/contributors.svg?width=890&button=false" /></a>
+<https://korge.org/>
