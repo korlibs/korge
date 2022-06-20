@@ -15,7 +15,7 @@ include specialized versions for primitives like <code>Int</code> or <code>Doubl
 </p>
 <!-- /BADGES -->
 
-### Full Documentation: https://korlibs.soywiz.com/kds/
+### Full Documentation: https://docs.korge.org/kds/
 
 ### Some samples:
 
