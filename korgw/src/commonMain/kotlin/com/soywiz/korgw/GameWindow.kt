@@ -42,8 +42,10 @@ import com.soywiz.korgw.GameWindow.Quality.PERFORMANCE
 import com.soywiz.korgw.GameWindow.Quality.QUALITY
 import com.soywiz.korgw.internal.IntTimedCache
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.vector.Shape
 import com.soywiz.korio.Korio
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay
@@ -243,9 +245,11 @@ open class GameWindow :
     GameWindowConfig,
     Extra by Extra.Mixin()
 {
-    interface ICursor
+    sealed interface ICursor
 
     override val dialogInterface: DialogInterface get() = DialogInterface.Unsupported
+
+    data class CustomCursor(val shape: Shape) : ICursor, Extra by Extra.Mixin()
 
     enum class Cursor : ICursor {
         DEFAULT, CROSSHAIR, TEXT, HAND, MOVE, WAIT,

@@ -2,7 +2,6 @@ package com.soywiz.korgw
 
 import com.soywiz.kmem.*
 import com.soywiz.korag.*
-import com.soywiz.korag.gl.AGOpenglFactory
 import com.soywiz.korev.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korma.geom.*
@@ -124,6 +123,37 @@ class WindowsGameWindow : EventLoopGameWindow() {
         }
     }
 
+    override var cursor: ICursor = Cursor.DEFAULT
+        set(value) {
+            if (field == value) return
+            field = value
+            when (value) {
+                is Cursor -> {
+                    val idc = when (value) {
+                        Cursor.DEFAULT -> IDC.IDC_ARROW
+                        Cursor.CROSSHAIR -> IDC.IDC_CROSS
+                        Cursor.TEXT -> IDC.IDC_IBEAM
+                        Cursor.HAND -> IDC.IDC_HAND
+                        Cursor.MOVE -> IDC.IDC_SIZEALL
+                        Cursor.WAIT -> IDC.IDC_WAIT
+                        Cursor.RESIZE_EAST -> IDC.IDC_SIZEWE
+                        Cursor.RESIZE_WEST -> IDC.IDC_SIZEWE
+                        Cursor.RESIZE_SOUTH -> IDC.IDC_SIZENS
+                        Cursor.RESIZE_NORTH -> IDC.IDC_SIZENS
+                        Cursor.RESIZE_NORTH_EAST -> IDC.IDC_SIZENESW
+                        Cursor.RESIZE_NORTH_WEST -> IDC.IDC_SIZENWSE
+                        Cursor.RESIZE_SOUTH_EAST -> IDC.IDC_SIZENWSE
+                        Cursor.RESIZE_SOUTH_WEST -> IDC.IDC_SIZENESW
+                    }
+                    idc.set()
+                }
+                is CustomCursor -> {
+                    // @TODO: Rasterize and cache shape
+                    val shape = value.shape
+                    IDC.IDC_ARROW.set()
+                }
+            }
+        }
     private var fsX = 0
     private var fsY = 0
     private var fsW = 128
@@ -571,7 +601,6 @@ val MK_XBUTTON2 = 0x0040
 fun mouseMove(x: Int, y: Int, wParam: Int) {
     mouseX = x
     mouseY = y
-    SetCursor(ARROW_CURSOR)
 
     val anyButton = (wParam and (MK_LBUTTON or MK_RBUTTON or MK_MBUTTON or MK_XBUTTON1 or MK_XBUTTON2)) != 0
 
@@ -616,5 +645,43 @@ val FindResourceAFunc by lazy {
     GetProcAddress(USER32_DLL, "FindResourceA")!!.reinterpret<CFunction<Function2<HMODULE?, Int, HICON?>>>()
 }
 
-//val ARROW_CURSOR by lazy { LoadCursorA(null, 32512.reinterpret<CPointer<ByteVar>>().reinterpret()) }
-val ARROW_CURSOR: HICON? by lazy { LoadCursorAFunc(0, 32512)!! }
+enum class IDC(val id: Int) {
+    /** Standard arrow and small hourglass */
+    IDC_APPSTARTING(32650),
+    /** Standard arrow */
+    IDC_ARROW(32512),
+    /** Crosshair */
+    IDC_CROSS(32515),
+    /** Hand */
+    IDC_HAND(32649),
+    /** Arrow and question mark */
+    IDC_HELP(32651),
+    /** I-beam */
+    IDC_IBEAM(32513),
+    /** Obsolete for applications marked version 4.0 or later. */
+    IDC_ICON(32641),
+    /** Slashed circle */
+    IDC_NO(32648),
+    /** Obsolete for applications marked version 4.0 or later. Use IDC_SIZEALL. */
+    IDC_SIZE(32640),
+    /** Four-pointed arrow pointing north, south, east, and west */
+    IDC_SIZEALL(32646),
+    /** Double-pointed arrow pointing northeast and southwest */
+    IDC_SIZENESW(32643),
+    /** Double-pointed arrow pointing north and south */
+    IDC_SIZENS(32645),
+    /** Double-pointed arrow pointing northwest and southeast */
+    IDC_SIZENWSE(32642),
+    /** Double-pointed arrow pointing west and east */
+    IDC_SIZEWE(32644),
+    /** Vertical arrow */
+    IDC_UPARROW(32516),
+    /** Hourglass */
+    IDC_WAIT(32514);
+
+    val cursor by lazy { LoadCursorAFunc(0, id)!! }
+
+    fun set() {
+        SetCursor(cursor)
+    }
+}
