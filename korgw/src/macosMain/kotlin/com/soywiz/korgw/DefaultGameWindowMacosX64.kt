@@ -15,6 +15,10 @@ import platform.AppKit.*
 import platform.CoreGraphics.*
 import platform.CoreVideo.*
 import platform.Foundation.*
+import platform.JavaRuntimeSupport.javaResizeNECursor
+import platform.JavaRuntimeSupport.javaResizeNWCursor
+import platform.JavaRuntimeSupport.javaResizeSECursor
+import platform.JavaRuntimeSupport.javaResizeSWCursor
 import platform.darwin.*
 import kotlin.native.SharedImmutable
 import kotlin.native.concurrent.*
@@ -342,6 +346,31 @@ class MyDefaultGameWindow : GameWindow() {
         //setNextResponder(responder)
         setIsVisible(false)
     }
+
+    // https://developer.apple.com/documentation/appkit/nscursor
+    override var cursor: ICursor = Cursor.DEFAULT
+        set(value) {
+            if (field == value) return
+            field = value
+            val nsCursor = when (value) {
+                Cursor.DEFAULT -> NSCursor.arrowCursor
+                Cursor.CROSSHAIR -> NSCursor.crosshairCursor
+                Cursor.TEXT -> NSCursor.IBeamCursor
+                Cursor.HAND -> NSCursor.pointingHandCursor
+                Cursor.MOVE -> NSCursor.closedHandCursor
+                Cursor.WAIT -> NSCursor.dragCopyCursor
+                Cursor.RESIZE_EAST -> NSCursor.resizeRightCursor
+                Cursor.RESIZE_SOUTH -> NSCursor.resizeDownCursor
+                Cursor.RESIZE_WEST -> NSCursor.resizeLeftCursor
+                Cursor.RESIZE_NORTH -> NSCursor.resizeUpCursor
+                Cursor.RESIZE_NORTH_EAST -> NSCursor.javaResizeNECursor() ?: NSCursor.arrowCursor
+                Cursor.RESIZE_NORTH_WEST -> NSCursor.javaResizeNWCursor() ?: NSCursor.arrowCursor
+                Cursor.RESIZE_SOUTH_EAST -> NSCursor.javaResizeSECursor() ?: NSCursor.arrowCursor
+                Cursor.RESIZE_SOUTH_WEST -> NSCursor.javaResizeSWCursor() ?: NSCursor.arrowCursor
+                else -> NSCursor.arrowCursor
+            }
+            nsCursor.set()
+        }
 
     private fun doWindowDidResize() {
         //println("windowDidResize")

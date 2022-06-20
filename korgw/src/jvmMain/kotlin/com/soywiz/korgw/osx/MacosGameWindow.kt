@@ -82,7 +82,6 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
     val app = NSClass("NSApplication").msgSend("sharedApplication")
     val sharedApp = app
 
-
     val windowWillClose: WindowWillCloseCallback = object : WindowWillCloseCallback {
         override fun invoke(self: Long, _sel: Long, sender: Long): Long {
             running = false
