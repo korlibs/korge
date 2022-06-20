@@ -318,7 +318,7 @@ open class Text(
                                 realTextSize, text,
                                 paint = Colors.WHITE, fill = true, renderer = renderer,
                                 //background = Colors.RED,
-                                nativeRendering = useNativeRendering, drawBorder = true
+                                nativeRendering = useNativeRendering, drawBorder = true,
                             )
                         }
                         else -> {

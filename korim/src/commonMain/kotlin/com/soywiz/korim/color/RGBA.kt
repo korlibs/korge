@@ -68,6 +68,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     fun withBf(v: Float): RGBA = withB(f2i(v))
     fun withAf(v: Float): RGBA = withA(f2i(v))
 
+    fun concatAd(v: Double): RGBA = withAd(this.ad * v)
+
     fun getComponent(c: Int): Int = when (c) {
         0 -> r
         1 -> g

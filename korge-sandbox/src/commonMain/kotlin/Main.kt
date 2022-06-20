@@ -19,8 +19,9 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainTilemapTest),
+        Demo(::MainEmojiColrv1),
         listOf(
+            Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
             Demo(::MainSWF),
             Demo(::MainSpine),

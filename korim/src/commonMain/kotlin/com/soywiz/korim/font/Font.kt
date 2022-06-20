@@ -16,6 +16,7 @@ import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.TextRendererActions
 import com.soywiz.korim.text.invoke
 import com.soywiz.korim.vector.Context2d
+import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Matrix
 
@@ -31,7 +32,7 @@ interface Font : Resourceable<Font> {
     fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double
 
     // Rendering
-    fun renderGlyph(ctx: Context2d, size: Double, codePoint: Int, x: Double, y: Double, fill: Boolean, metrics: GlyphMetrics)
+    fun renderGlyph(ctx: Context2d, size: Double, codePoint: Int, x: Double, y: Double, fill: Boolean, metrics: GlyphMetrics, reader: WStringReader? = null)
 }
 
 data class TextToBitmapResult(
@@ -144,7 +145,7 @@ fun <T> Font.drawText(
     placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
 ) {
     val actions = object : TextRendererActions() {
-        override fun put(codePoint: Int): GlyphMetrics {
+        override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             if (ctx != null) {
                 ctx.keepTransform {
                     val m = getGlyphMetrics(codePoint)
@@ -153,7 +154,7 @@ fun <T> Font.drawText(
                     ctx.transform(this.transform)
                     //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
                     ctx.fillStyle = this.paint ?: paint ?: NonePaint
-                    font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics)
+                    font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics, reader)
                     placed?.invoke(codePoint, this.x + x, this.y + y, size, glyphMetrics, this.transform)
                     if (fill) ctx.fill() else ctx.stroke()
                 }

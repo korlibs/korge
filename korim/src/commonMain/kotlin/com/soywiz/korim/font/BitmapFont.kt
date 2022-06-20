@@ -35,6 +35,7 @@ import com.soywiz.korio.dynamic.KDynamic
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 import com.soywiz.korio.file.baseNameWithoutExtension
+import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.substr
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.serialization.xml.get
@@ -83,7 +84,16 @@ class BitmapFont(
     override fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double =
         getTextScale(size) * (getKerning(leftCodePoint, rightCodePoint)?.amount?.toDouble() ?: 0.0)
 
-    override fun renderGlyph(ctx: Context2d, size: Double, codePoint: Int, x: Double, y: Double, fill: Boolean, metrics: GlyphMetrics) {
+    override fun renderGlyph(
+        ctx: Context2d,
+        size: Double,
+        codePoint: Int,
+        x: Double,
+        y: Double,
+        fill: Boolean,
+        metrics: GlyphMetrics,
+        reader: WStringReader?
+    ) {
         val scale = getTextScale(size)
         val g = glyphs[codePoint] ?: return
         getGlyphMetrics(size, codePoint, metrics).takeIf { it.existing } ?: return

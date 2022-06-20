@@ -12,7 +12,8 @@ import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korim.font.GlyphPath
 import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.paint.Paint
-import com.soywiz.korio.lang.forEachCodePoint
+import com.soywiz.korio.lang.WString
+import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.BoundsBuilder
@@ -20,10 +21,8 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.angle
 import com.soywiz.korma.geom.bezier.Curve
-import com.soywiz.korma.geom.bezier.calcOffset
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
-import com.soywiz.korma.geom.plus
 import com.soywiz.korma.geom.radians
 import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
@@ -44,7 +43,7 @@ interface ITextRendererActions {
         y = 0.0
     }
     fun setFont(font: Font, size: Double)
-    fun put(codePoint: Int): GlyphMetrics
+    fun put(reader: WStringReader, codePoint: Int): GlyphMetrics
     fun advance(x: Double) {
         this.x += x
     }
@@ -78,7 +77,7 @@ abstract class TextRendererActions : ITextRendererActions {
     var paint: Paint? = null
     var tint: RGBA = Colors.WHITE // Ignored for now
 
-    abstract override fun put(codePoint: Int): GlyphMetrics
+    abstract override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics
 
     override fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double =
         font.getKerning(fontSize, leftCodePoint, rightCodePoint)
@@ -121,7 +120,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         flbb.reset()
     }
 
-    override fun put(codePoint: Int): GlyphMetrics {
+    override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
         val g = getGlyphMetrics(codePoint)
         // y = 0 is the baseline
         add(g.bounds)
@@ -185,7 +184,7 @@ class Text2TextRendererActions : TextRendererActions() {
         arrayRot.clear()
     }
 
-    override fun put(codePoint: Int): GlyphMetrics {
+    override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
         val bf = font as BitmapFont
         val m = getGlyphMetrics(codePoint)
         val g = bf[codePoint]
@@ -221,7 +220,7 @@ operator fun <T> TextRenderer<T>.invoke(actions: ITextRendererActions, text: T, 
 fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
     val original = this
     return object : ITextRendererActions by original {
-        override fun put(codePoint: Int): GlyphMetrics {
+        override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             val oldX = this.x
             val oldY = this.y
             this.transform.keepMatrix {
@@ -235,7 +234,7 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
                     this.transform.rotate(normal.angle - 90.degrees)
 
                     //println("PUT: oldX=$oldX, oldY=$oldY, x=$x, y=$y, codePoint=$codePoint")
-                    return original.put(codePoint)
+                    return original.put(reader, codePoint)
                 } finally {
                     this.x = oldX
                     this.y = oldY
@@ -258,42 +257,64 @@ fun <T> TextRenderer<T>.aroundPath(curve: Curve): TextRenderer<T> {
 
 inline fun <reified T> DefaultTextRenderer() = when (T::class) {
     String::class -> DefaultStringTextRenderer
+    WString::class -> DefaultWStringTextRenderer
     else -> error("No default DefaultTextRenderer for class ${T::class} only for String")
+}
+
+fun CreateWStringTextRenderer(
+    getVersion: () -> Int = { 0 },
+    handler: ITextRendererActions.(reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double) -> Unit
+): TextRenderer<WString> = object : TextRenderer<WString> {
+    override val version: Int get() = getVersion()
+
+    override fun ITextRendererActions.run(text: WString, size: Double, defaultFont: Font) {
+        reset()
+        setFont(defaultFont, size)
+        val reader = WStringReader(text)
+        while (reader.hasMore) {
+            val c = reader.peek().codePoint
+            val c1 = reader.peek(+1).codePoint
+            val startPos = reader.position
+            if (c == '\n'.code) {
+                newLine(lineHeight)
+            } else {
+                val g = getGlyphMetrics(c)
+                transform.identity()
+                handler(this, reader, c, g, (g.xadvance + getKerning(c, c1)))
+            }
+            // No explicit movement, skip 1
+            if (reader.position <= startPos) {
+                reader.skip(1)
+            }
+        }
+    }
 }
 
 fun CreateStringTextRenderer(
     getVersion: () -> Int = { 0 },
-    handler: ITextRendererActions.(text: String, n: Int, c: Int, c1: Int, g: GlyphMetrics, advance: Double) -> Unit
+    handler: ITextRendererActions.(reader: WStringReader, c: Int, g: GlyphMetrics, advance: Double) -> Unit
 ): TextRenderer<String> = object : TextRenderer<String> {
-    override val version: Int get() = getVersion()
-
-    private fun ITextRendererActions.runStep(n: Int, c: Int, c1: Int, text: String) {
-        if (c == '\n'.toInt()) {
-            newLine(lineHeight)
-        } else {
-            val g = getGlyphMetrics(c)
-            transform.identity()
-            handler(text, n, c, c1, g, (g.xadvance + getKerning(c, c1)))
-        }
+    val wstring = CreateWStringTextRenderer(getVersion) { text, c, g, advance ->
+        handler(this, text, c, g, advance)
     }
+    override val version: Int get() = wstring.version
 
     override fun ITextRendererActions.run(text: String, size: Double, defaultFont: Font) {
-        reset()
-        setFont(defaultFont, size)
-        var lastCodePoint = -1
-        val length = text.forEachCodePoint { index, codePoint, error ->
-            if (index > 0) {
-                runStep(index - 1, lastCodePoint, codePoint, text)
-            }
-            lastCodePoint = codePoint
+        wstring.apply {
+            run(WString(text), size, defaultFont)
         }
-        runStep(length - 1, lastCodePoint, 0, text)
     }
 }
 
 @SharedImmutable
-val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer { text, n, c, c1, g, advance ->
-    put(c)
+val DefaultWStringTextRenderer: TextRenderer<WString> = CreateWStringTextRenderer { text, c, g, advance ->
+    put(text, c)
+    advance(advance)
+}
+
+@SharedImmutable
+val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer { text, c, g, advance ->
+    put(text, c)
     advance(advance)
 }
 
@@ -306,7 +327,7 @@ fun <T> VectorBuilder.text(
     //transform.pretranslate(x, y)
 
     val actions = object : TextRendererActions() {
-        override fun put(codePoint: Int): GlyphMetrics {
+        override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath)
             if (glyph != null) {
                 transform.keepMatrix {

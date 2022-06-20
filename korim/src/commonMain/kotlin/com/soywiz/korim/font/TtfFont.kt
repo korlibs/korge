@@ -2,12 +2,16 @@ package com.soywiz.korim.font
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.IntIntMap
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.getCyclic
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kds.mapInt
 import com.soywiz.kds.toIntArrayList
+import com.soywiz.kmem.extract
 import com.soywiz.kmem.extract16Signed
-import com.soywiz.kmem.insert
+import com.soywiz.kmem.extractSigned
+import com.soywiz.kmem.insert16
 import com.soywiz.korim.annotation.KorimInternal
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Palette
@@ -15,7 +19,15 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.format.PNG
+import com.soywiz.korim.paint.GradientPaint
+import com.soywiz.korim.paint.LinearGradientPaint
+import com.soywiz.korim.paint.RadialGradientPaint
+import com.soywiz.korim.vector.CompoundShape
+import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korim.vector.FillShape
+import com.soywiz.korim.vector.Shape
+import com.soywiz.korim.vector.buildShape
 import com.soywiz.korim.vector.toSvgPathString
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
@@ -23,6 +35,8 @@ import com.soywiz.korio.lang.Charset
 import com.soywiz.korio.lang.UTF16_BE
 import com.soywiz.korio.lang.UTF8
 import com.soywiz.korio.lang.WChar
+import com.soywiz.korio.lang.WString
+import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.stream.AsyncInputOpenable
 import com.soywiz.korio.stream.AsyncStream
@@ -34,9 +48,7 @@ import com.soywiz.korio.stream.toSyncStream
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.IVectorPath
-import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 import com.soywiz.korma.geom.vector.quadTo
@@ -83,8 +95,28 @@ class TtfFont(
         return 0.0
     }
 
-    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath): GlyphPath? {
-        val g = getGlyphByCodePoint(codePoint) ?: return null
+    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
+        var g = getGlyphByCodePoint(codePoint) ?: return null
+
+        val subs = substitutionsCodePoints[codePoint]
+        if (reader != null && subs != null) {
+            //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
+            for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
+                val sub = reader.substr(0, count)
+                val replacement = subs.map[sub]
+                //println("sub=${sub.toCodePointIntArray().toList()}")
+                if (replacement != null) {
+                    //println("replacement=$replacement")
+                    reader.skip(sub.length)
+                    g = getGlyphByIndex(replacement.first()) ?: break
+                    break
+                }
+            }
+            //println("maxSequence: " + subs.maxSequence)
+            //println("getGlyphPath: codePoint=$codePoint, glyphID=${g.index}, subs=${subs}")
+        }
+
+
         val scale = getTextScale(size)
         //println("unitsPerEm = $unitsPerEm")
         path.path = g.path.path
@@ -212,11 +244,17 @@ class TtfFont(
     var bitmapGlyphInfos = LinkedHashMap<Int, BitmapGlyphInfo>()
 
     // Color extension
-    private var colrLayerInfos = arrayOf<ColrLayerInfo>()
+    private var colrv0LayerInfos = arrayOf<ColrLayerInfo>()
     private val colrGlyphInfos = IntMap<ColrGlyphInfo>()
     var palettes = listOf<Palette>()
+    private var colrv1: COLRv1 = COLRv1()
 
     private var frozen = false
+
+    class SubstitutionInfo(val maxSequence: Int, val map: Map<WString, IntArray>)
+
+    //val substitutionsGlyphIds = IntMap<Map<List<Int>, List<Int>>>()
+    val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
     init {
         readHeaderTables()
@@ -230,6 +268,7 @@ class TtfFont(
             readHmtx()
             readCpal()
             readColr()
+            readGsub()
             //readPost()
             readCblc()
             readCbdt()
@@ -246,6 +285,20 @@ class TtfFont(
         }
 
         frozen = true
+
+        //substitutionsGlyphIds.fastForEach { from, subsMap ->
+        //    val fromCodePoint = getCodePointFromCharIndex(from) ?: -1
+        //    val map = LinkedHashMap<WString, List<Int>>()
+        //    var maxSeq = 0
+        //    for ((fromGlyphIds, to) in subsMap) {
+        //        val fromCodePoints = fromGlyphIds.map { getCodePointFromCharIndex(it) ?: -1 }
+        //        val wstr = WString((listOf(fromCodePoint) + fromCodePoints).toIntArray())
+        //        map[wstr] = to
+        //        maxSeq = kotlin.math.max(maxSeq, wstr.length)
+        //    }
+        //    //println("substitution: $fromCodePoints -> $to")
+        //    substitutionsCodePoints[fromCodePoint] = SubstitutionInfo(maxSeq, map)
+        //}
     }
 
     val ttfName: String get() = namesi.ttfName
@@ -287,8 +340,9 @@ class TtfFont(
 		}
 	}
 
-    internal fun FastByteArrayInputStream.readFWord() = FWord(readU16LE())
-    internal fun FastByteArrayInputStream.readFixed() = Fixed(readS16LE(), readS16LE())
+    internal fun FastByteArrayInputStream.readFWord(): FWord = FWord(readU16BE())
+    internal fun FastByteArrayInputStream.readFixed(): Int = Fixed(readS16BE(), readS16BE())
+    internal fun FastByteArrayInputStream.readFixed2(): Fixed = Fixed(readS32BE())
 	data class HorMetric(val advanceWidth: Int, val lsb: Int)
 
     @PublishedApi
@@ -793,29 +847,567 @@ class TtfFont(
         }
     }
 
+    fun FastByteArrayInputStream.readVarIdxBase(): Int = readS32BE()
+    fun FastByteArrayInputStream.readUFWORD(): Int = readU16BE()
+    fun FastByteArrayInputStream.readFWORD(): Int = readS16BE()
+    fun FastByteArrayInputStream.readOffset16(): Int = readU16BE()
+    fun FastByteArrayInputStream.readOffset24(): Int = readU24BE()
+    fun FastByteArrayInputStream.readOffset32(): Int = readS32BE()
+    fun FastByteArrayInputStream.readAffine2x3(isVar: Boolean, out: Matrix = Matrix()): Matrix {
+        val xx = readFIXED3()
+        val yx = readFIXED3()
+        val xy = readFIXED3()
+        val yy = readFIXED3()
+        val dx = readFIXED3()
+        val dy = readFIXED3()
+        //println("readAffine2x3: $xx, $yx, $xy, $yy, $dx, $dy")
+        out.setTo(
+            xx.toDouble(),
+            yx.toDouble(),
+            xy.toDouble(),
+            yy.toDouble(),
+            dx.toDouble(),
+            -dy.toDouble(),
+        )
+        //out.scale(1.0, -1.0)
+        return out
+    }
+    fun FastByteArrayInputStream.readColorStop(out: ColorStop = ColorStop(0.0, 0, 0.0)): ColorStop {
+        out.stopOffset = readF2DOT14().toDouble()
+        out.paletteIndex = readU16BE()
+        out.alpha = readF2DOT14().toDouble()
+        return out
+    }
+    fun FastByteArrayInputStream.readClipBox(doVar: Boolean = false): Rectangle {
+        val format = readU8()
+        val xMin: Int = readFWORD()
+        val yMin: Int = readFWORD()
+        val xMax: Int = readFWORD()
+        val yMax: Int = readFWORD()
+        if (format == 2) {
+            val varIndexBase = readVarIdxBase()
+        }
+        return Rectangle.fromBounds(xMin, yMin, xMax, yMax)
+    }
+    fun FastByteArrayInputStream.readBaseGlyphPaintRecord() {
+        val glyphID = s.readU16BE()
+        val paint = s.readOffset24() // <Paint>
+        TODO()
+    }
+    fun FastByteArrayInputStream.readColorLine(): ColorLine {
+        val cycle = when (readU8()) {
+            0 -> CycleMethod.NO_CYCLE
+            1 -> CycleMethod.REPEAT
+            2 -> CycleMethod.REFLECT
+            else -> CycleMethod.NO_CYCLE
+        }
+        return ColorLine(cycle, readArrayOf16 { readColorStop() }.toList())
+    }
+    data class ColorLine(val cycle: CycleMethod, val stops: List<ColorStop>) {
+        fun addToPaint(paint: GradientPaint, palette: Palette) {
+            for (stop in stops) {
+                paint.addColorStop(stop.stopOffset, palette.colors[stop.paletteIndex].concatAd(stop.alpha))
+            }
+        }
+    }
+
+    inline fun <reified T> FastByteArrayInputStream.readArrayOf16(block: FastByteArrayInputStream.(index: Int) -> T): Array<T> =
+        Array<T>(readU16BE()) { block(it) }
+    inline fun <reified T> FastByteArrayInputStream.readArrayOf32(block: FastByteArrayInputStream.(index: Int) -> T): Array<T> =
+        Array<T>(readS32BE()) { block(it) }
+
+    class ColorStop(var stopOffset: Double, var paletteIndex: Int, var alpha: Double)
+
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/colr
+    private fun interpretColrv1(glyphID: Int, s: FastByteArrayInputStream, c: Context2d, pal: Int, level: Int) {
+        val nodeFormat = s.readU8()
+        val isVar = nodeFormat % 2 == 1
+        val indent = "  ".repeat(level)
+        val debug = false
+        if (debug) println("${indent}interpretColrv1[glyphID=$glyphID]: $nodeFormat - ${Colrv1Paint.BY_FORMAT.getOrNull(nodeFormat)}")
+        when (nodeFormat) {
+            1 -> { // PaintColrLayers
+                val numLayers = s.readU8()
+                val firstLayerIndex = s.readS32BE() // index into COLRv1::layerList
+                for (n in 0 until numLayers) {
+                    val paint = colrv1.layerList[firstLayerIndex + n]
+                    interpretColrv1(glyphID, colrv1.sLayerOffset.sliceStart(paint), c, pal, level + 1)
+                }
+            }
+            2, 3 -> { // PaintSolid, PaintVarSolid
+                val paletteIndex = s.readU16BE()
+                val alpha = s.readF2DOT14().toDouble()
+                if (isVar) {
+                    val varIndexBase = s.readVarIdxBase()
+                    TODO()
+                }
+                val color = palettes[pal].colors[paletteIndex].concatAd(alpha)
+                if (debug) println("${indent}$color")
+                c.fill(color)
+            }
+            4, 5 -> { // PaintLinearGradient, PaintVarLinearGradient
+                val colorLineOffset = s.readOffset24() // <ColorLine>
+                val x0 = s.readFWORD().toDouble()
+                val y0 = s.readFWORD().toDouble()
+                val x1 = s.readFWORD().toDouble()
+                val y1 = s.readFWORD().toDouble()
+                // @TODO: WTF is this x2 and y2? LOL
+                val x2 = s.readFWORD().toDouble() // Normal; Equal to (x1,y1) in simple cases.
+                val y2 = s.readFWORD().toDouble()
+                val colorLine = s.sliceStart(colorLineOffset).readColorLine()
+                if (isVar) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                val paint = LinearGradientPaint(x0, -y0, x1, -y1, colorLine.cycle)
+                colorLine.addToPaint(paint, palettes[pal])
+                if (debug) println("${indent}$paint")
+                c.fill(paint)
+
+            }
+            6, 7 -> { // PaintRadialGradient, PaintVarRadialGradient
+                val colorLineOffset = s.readOffset24() // <ColorLine>
+                val x0 = s.readFWORD().toDouble()
+                val y0 = s.readFWORD().toDouble()
+                val radius0 = s.readUFWORD().toDouble()
+                val x1 = s.readFWORD().toDouble()
+                val y1 = s.readFWORD().toDouble()
+                val radius1 = s.readUFWORD().toDouble()
+                val colorLine = s.sliceStart(colorLineOffset).readColorLine()
+                if (isVar) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                val paint = RadialGradientPaint(x0, -y0, radius0, x1, -y1, radius1, colorLine.cycle)
+                colorLine.addToPaint(paint, palettes[pal])
+                if (debug) println("${indent}$paint")
+                c.fill(paint)
+            }
+            8, 9 -> { // PaintSweepGradient, PaintVarSweepGradient
+                val colorLine = s.readOffset24() // <ColorLine>
+                val centerX = s.readFWORD()
+                val centerY = s.readFWORD()
+                val startAngle = s.readF2DOT14() // 180° in counter-clockwise degrees per 1.0 of value
+                val endAngle = s.readF2DOT14() // 180° in counter-clockwise degrees per 1.0 of value
+                if (isVar) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                TODO()
+            }
+            10 -> { // PaintGlyph
+                val paint = s.readOffset24() // <Paint>
+                val glyphID = s.readU16BE()
+                val colr = colrGlyphInfos[glyphID]
+                val glyph = this.getGlyphByIndex(glyphID)
+                c.keep {
+                    if (glyph != null) {
+                        c.path(glyph.path.path)
+                        interpretColrv1(glyphID, s.sliceStart(paint), c, pal, level + 1)
+                    }
+                }
+            }
+            11 -> { // PaintColrGlyph
+                val glyphID = s.readU16BE()
+                TODO()
+            }
+            12, 13 -> { // PaintTransform, PaintVarTransform
+                val paint = s.readOffset24() // <Paint>
+                val transform = s.readOffset24() // <Affine2x3> <VarAffine2x3>
+                val affine = s.sliceStart(transform).readAffine2x3(isVar)
+                if (debug) println("${indent}affine=$affine")
+                c.keep {
+                    //c.translate(affine.tx, affine.ty)
+                    //affine.ty = -affine.ty
+                    c.transform(affine)
+                    interpretColrv1(glyphID, s.sliceStart(paint), c, pal, level + 1)
+                }
+            }
+            14, 15 -> { // PaintTranslate, PaintVarTranslate
+                val paint = s.readOffset24() // <Paint>
+                val dx = s.readFWord().toDouble()
+                val dy = s.readFWord().toDouble()
+                if (isVar) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                c.keep {
+                    if (debug) println("translate: $dx, $dy")
+                    c.translate(dx, -dy)
+                    //println(this.unitsPerEm)
+                    interpretColrv1(glyphID, s.sliceStart(paint), c, pal, level + 1)
+                }
+            }
+            16, 17, 18, 19 -> { // PaintScale, PaintVarScale, PaintScaleAroundCenter, PaintVarScaleAroundCenter
+                val paint = s.readOffset24() // <Paint>
+                val scaleX = s.readF2DOT14()
+                val scaleY = s.readF2DOT14()
+                val aroundCenter = nodeFormat >= 18
+                if (aroundCenter) {
+                    val centerX = s.readFWORD()
+                    val centerY = s.readFWORD()
+                    TODO()
+                }
+                if (isVar) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                c.keep {
+                    c.scale(scaleX, scaleY)
+                    interpretColrv1(glyphID, s.sliceStart(paint), c, pal, level + 1)
+                }
+            }
+            20, 21, 22, 23 -> { // PaintScaleUniform, PaintVarScaleUniform, PaintScaleUniformAroundCenter, PaintVarScaleUniformAroundCenter
+                val paint = s.readOffset24() // <Paint>
+                val scale = s.readF2DOT14()
+                if (nodeFormat >= 22) {
+                    val centerX = s.readFWORD()
+                    val centerY = s.readFWORD()
+                }
+                if (nodeFormat % 2 == 1) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                TODO()
+            }
+            24, 25, 26, 27 -> { // PaintRotate, PaintVarRotate, PaintRotateAroundCenter, PaintVarRotateAroundCenter
+                val paint = s.readOffset24() // <Paint>
+                val angle = s.readF2DOT14()
+                if (nodeFormat >= 26) {
+                    val centerX = s.readFWORD()
+                    val centerY = s.readFWORD()
+                }
+                if (nodeFormat % 2 == 1) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                TODO()
+            }
+            28, 29, 30, 31 -> { // PaintSkew, PaintVarSkew, PaintSkewAroundCenter, PaintVarSkewAroundCenter
+                val paint = s.readOffset24() // <Paint>
+                val xSkewAngle = s.readF2DOT14()
+                val ySkewAngle = s.readF2DOT14()
+                if (nodeFormat >= 30) {
+                    val centerX = s.readFWORD()
+                    val centerY = s.readFWORD()
+                }
+                if (nodeFormat % 2 == 1) {
+                    val varIndexBase = s.readVarIdxBase()
+                }
+                TODO()
+            }
+            32 -> { // Paint Composite
+                val sourcePaint = s.readOffset24() // <Paint>
+                val compositeMode = s.readU8() // CompositeMode
+                val backdropPaint = s.readOffset24() // <Paint>
+                TODO()
+            }
+            else -> {
+                TODO("Unknown colorv1 format=$nodeFormat")
+            }
+        }
+    }
+
+    enum class Colrv1Paint {
+        PaintColrLayers,
+        PaintSolid,
+        PaintVarSolid,
+        PaintLinearGradient,
+        PaintVarLinearGradient,
+        PaintRadialGradient,
+        PaintVarRadialGradient,
+        PaintSweepGradient,
+        PaintVarSweepGradient,
+        PaintGlyph,
+        PaintColrGlyph,
+        PaintTransform,
+        PaintVarTransform,
+        PaintTranslate,
+        PaintVarTranslate,
+        PaintScale,
+        PaintVarScale,
+        PaintScaleAroundCenter,
+        PaintVarScaleAroundCenter,
+        PaintScaleUniform,
+        PaintVarScaleUniform,
+        PaintScaleUniformAroundCenter,
+        PaintVarScaleUniformAroundCenter,
+        PaintRotate,
+        PaintVarRotate,
+        PaintRotateAroundCenter,
+        PaintVarRotateAroundCenter,
+        PaintSkew,
+        PaintVarSkew,
+        PaintSkewAroundCenter,
+        PaintVarSkewAroundCenter,
+        PaintComposite;
+        val format: Int = ordinal + 1
+
+        companion object {
+            val BY_FORMAT = arrayOfNulls<Colrv1Paint>(1) + values()
+        }
+    }
+
+    object CompositeModes {
+        // Porter-Duff modes
+        // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators
+        const val COMPOSITE_CLEAR          = 0  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_clear
+        const val COMPOSITE_SRC            = 1  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_src
+        const val COMPOSITE_DEST           = 2  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_dst
+        const val COMPOSITE_SRC_OVER       = 3  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_srcover
+        const val COMPOSITE_DEST_OVER      = 4  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_dstover
+        const val COMPOSITE_SRC_IN         = 5  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_srcin
+        const val COMPOSITE_DEST_IN        = 6  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_dstin
+        const val COMPOSITE_SRC_OUT        = 7  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_srcout
+        const val COMPOSITE_DEST_OUT       = 8  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_dstout
+        const val COMPOSITE_SRC_ATOP       = 9  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_srcatop
+        const val COMPOSITE_DEST_ATOP      = 10  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_dstatop
+        const val COMPOSITE_XOR            = 11  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_xor
+        const val COMPOSITE_PLUS           = 12  // https://www.w3.org/TR/compositing-1/#porterduffcompositingoperators_plus
+
+        // Blend modes
+        // https://www.w3.org/TR/compositing-1/#blending
+        const val COMPOSITE_SCREEN         = 13  // https://www.w3.org/TR/compositing-1/#blendingscreen
+        const val COMPOSITE_OVERLAY        = 14  // https://www.w3.org/TR/compositing-1/#blendingoverlay
+        const val COMPOSITE_DARKEN         = 15  // https://www.w3.org/TR/compositing-1/#blendingdarken
+        const val COMPOSITE_LIGHTEN        = 16  // https://www.w3.org/TR/compositing-1/#blendinglighten
+        const val COMPOSITE_COLOR_DODGE    = 17  // https://www.w3.org/TR/compositing-1/#blendingcolordodge
+        const val COMPOSITE_COLOR_BURN     = 18  // https://www.w3.org/TR/compositing-1/#blendingcolorburn
+        const val COMPOSITE_HARD_LIGHT     = 19  // https://www.w3.org/TR/compositing-1/#blendinghardlight
+        const val COMPOSITE_SOFT_LIGHT     = 20  // https://www.w3.org/TR/compositing-1/#blendingsoftlight
+        const val COMPOSITE_DIFFERENCE     = 21  // https://www.w3.org/TR/compositing-1/#blendingdifference
+        const val COMPOSITE_EXCLUSION      = 22  // https://www.w3.org/TR/compositing-1/#blendingexclusion
+        const val COMPOSITE_MULTIPLY       = 23  // https://www.w3.org/TR/compositing-1/#blendingmultiply
+
+        // Modes that, uniquely, do not operate on components
+        // https://www.w3.org/TR/compositing-1/#blendingnonseparable
+        const val COMPOSITE_HSL_HUE        = 24  // https://www.w3.org/TR/compositing-1/#blendinghue
+        const val COMPOSITE_HSL_SATURATION = 25  // https://www.w3.org/TR/compositing-1/#blendingsaturation
+        const val COMPOSITE_HSL_COLOR      = 26  // https://www.w3.org/TR/compositing-1/#blendingcolor
+        const val COMPOSITE_HSL_LUMINOSITY = 27  // https://www.w3.org/TR/compositing-1/#blendingluminosity
+    }
+
+    data class Clip(
+        val startGlyphID: Int,
+        val endGlyphID: Int,
+        val clipBoxOffset: Int,
+    )
+
+    class COLRv1(
+        var layerList: IntArray = intArrayOf(),
+        var s: FastByteArrayInputStream = FastByteArrayInputStream(byteArrayOf()),
+        var sBaseOffset: FastByteArrayInputStream = FastByteArrayInputStream(byteArrayOf()),
+        var sLayerOffset: FastByteArrayInputStream = FastByteArrayInputStream(byteArrayOf()),
+        var sClipOffset: FastByteArrayInputStream? = null,
+        //var clipList: List<Clip>? = null,
+    ) {
+        val glyphIDToClipOffset = IntIntMap()
+    }
+
+
+
+    private fun readGsub() = runTableUnit("GSUB") {
+        val totalLength = length
+        val majorVersion = readU16BE()
+        val minorVersion = readU16BE()
+        if (majorVersion != 1) error("Unknown GSUB majorVerrsion=$majorVersion")
+        val scriptListOffset = readOffset16()
+        val featureListOffset = readOffset16()
+        val lookupListOffset = readOffset16()
+        if (minorVersion >= 1) {
+            val featureVariationsOffset = readOffset32()
+        }
+        //println("GSUB: $majorVersion,$minorVersion, totalLength=$totalLength, scriptListOffset=$scriptListOffset, featureListOffset=$featureListOffset, lookupListOffset=$lookupListOffset")
+        sliceStart(scriptListOffset).apply {
+            val scriptCount = readU16BE()
+            //println("scriptCount=$scriptCount")
+            for (n in 0 until scriptCount) {
+                val scriptTag = readStringz(4)
+                val scriptOffset = readOffset16()
+                //println("script[$scriptTag]=$scriptOffset")
+            }
+        }
+        sliceStart(featureListOffset).apply {
+            val featureCount = readU16BE()
+            //println("featureCount=$featureCount")
+            for (n in 0 until featureCount) {
+                val featureTag = readStringz(4)
+                val featureOffset = readOffset16()
+                //println("feature[$featureTag]=$featureOffset")
+            }
+        }
+
+        fun FastByteArrayInputStream.readCoverage(count: Int): IntArray {
+            val coverageFormat = readU16BE()
+            when (coverageFormat) {
+                1 -> {
+                    val glyphCount = readU16BE()
+                    return readCharArrayBE(glyphCount).mapInt { it.code }
+                    //println("glyphArray[${glyphArray.size}]=${glyphArray.toList()}")
+                }
+                2 -> {
+                    val glyphArray = IntArray(count)
+                    val rangeCount = readU16BE()
+                    repeat(rangeCount) {
+                        val startGlyphID = readU16BE()
+                        val endGlyphID = readU16BE()
+                        val startCoverageIndex = readU16BE()
+                        for (glyphID in startGlyphID..endGlyphID) {
+                            val offset = glyphID - startGlyphID
+                            glyphArray[startCoverageIndex + offset] = glyphID
+                        }
+                        //println("startGlyphID=$startGlyphID, endGlyphID=$endGlyphID, startCoverageIndex=$startCoverageIndex")
+                    }
+                    return glyphArray
+                    //println("UNSUPPORTED coverageFormat=$coverageFormat")
+                    //return@runTableUnit
+                }
+                else -> TODO("coverageFormat=$coverageFormat")
+            }
+        }
+
+        // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lulTbl
+        sliceStart(lookupListOffset).apply {
+            val lookupCount = readU16BE()
+            //println("lookupCount=$lookupCount")
+            for (n in 0 until lookupCount) {
+                val lookupOffset = readOffset16()
+                //println("lookup=$lookupOffset")
+                sliceStart(lookupOffset).apply {
+                    val lookupType = readU16BE()
+                    val lookupFlag = readU16BE()
+                    val subTableCount = readU16BE()
+                    val subtableOffsets = readShortArrayBE(subTableCount).mapInt { it.toInt() and 0xFFFF }
+                    val markFilteringSet = readU16BE()
+                    //println("   - lookupType=$lookupType, lookupFlag=$lookupFlag, subTableCount=$subTableCount")
+                    for (offset in subtableOffsets) {
+                        sliceStart(offset).apply {
+                            val subsTable = this
+                            when (lookupType) {
+                                4 -> { // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#LS
+                                    val substFormat = readU16BE()
+                                    val coverageOffset = readOffset16() // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+                                    val ligatureSetCount = readU16BE()
+                                    val ligatureSetOffsets = readCharArrayBE(ligatureSetCount).mapInt { it.code }
+                                    val glyphArray = sliceStart(coverageOffset).readCoverage(ligatureSetCount)
+                                    //println("   - substFormat=$substFormat")
+                                    //println("   - coverageOffset=$coverageOffset")
+                                    //println("   - ligatureSetCount=$ligatureSetCount")
+                                    val coverageTable = sliceStart(coverageOffset)
+                                    val glyphIDs = sliceStart(coverageOffset).let {
+                                        it.readCharArrayBE(ligatureSetCount).mapInt { it.code }
+                                    }
+                                    //println("glyphIDs=${glyphIDs.toList()}")
+                                    //println("----")
+                                    for (n in ligatureSetOffsets.indices) {
+                                        val glyphID = glyphArray[n]
+                                        val asetoffset = ligatureSetOffsets[n]
+                                        //val map = LinkedHashMap<List<Int>, List<Int>>()
+                                        val map = LinkedHashMap<WString, IntArray>()
+                                        val codePoint = getCodePointFromCharIndexOrElse(glyphID)
+                                        val codePointIntArray = intArrayOf(codePoint)
+                                        var maxComponentCount = 1
+                                        //substitutionsGlyphIds[glyphID] = map
+                                        subsTable.sliceStart(asetoffset).apply {
+                                            val ligatureCount = readU16BE()
+                                            val ligatureOffsets = readCharArrayBE(ligatureCount).mapInt { it.code }
+                                            //println("      - $ligatureCount: ${ligatureOffsets.toList()}")
+                                            for (offset in ligatureOffsets) {
+                                                sliceStart(offset).apply {
+                                                    val ligatureGlyph = readU16BE()
+                                                    val componentCount = readU16BE()
+                                                    maxComponentCount = kotlin.math.max(maxComponentCount, componentCount + 1)
+                                                    val componentCodePoints = readCharArrayBE(componentCount - 1).mapInt { getCodePointFromCharIndexOrElse(it.code) }
+                                                    val ligature = WString(codePointIntArray + componentCodePoints)
+                                                    map[ligature] = intArrayOf(ligatureGlyph)
+
+                                                    //println("            - ${listOf(glyphID) + componentGlyphIDs.toList()} -> $ligatureGlyph")
+                                                }
+                                            }
+                                        }
+                                        substitutionsCodePoints[codePoint] = SubstitutionInfo(maxComponentCount, map)
+                                    }
+                                }
+                                else -> {
+                                    println("TTF: Unsupported lookupType=$lookupType")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun readColr() = runTableUnit("COLR") {
         val version = readU16BE()
         when (version) {
-            0 -> {
+            0, 1 -> { // COLRv0, COLRv1
                 val numBaseGlyphRecords = readU16BE()
                 val baseGlyphRecordsOffset = readS32BE()
-                val layerRecordsOffset =  readS32BE()
+                val layerRecordsOffset = readS32BE()
                 val numLayerRecords = readU16BE()
                 //println("numBaseGlyphRecords=$numBaseGlyphRecords")
                 //println("baseGlyphRecordsOffset=$baseGlyphRecordsOffset")
                 //println("layerRecordsOffset=$layerRecordsOffset")
                 //println("numLayerRecords=$numLayerRecords")
-                position = layerRecordsOffset
-                colrLayerInfos = Array(numLayerRecords) { ColrLayerInfo(readU16BE(), readU16BE()) }
-                position = baseGlyphRecordsOffset
-                for (n in 0 until numBaseGlyphRecords) {
-                    val info = ColrGlyphInfo(readU16BE(), readU16BE(), readU16BE())
-                    colrGlyphInfos[info.glyphID] = info
-                    //println("- $glyphID = $firstLayerIndex / $numLayers")
+                sliceStart(layerRecordsOffset).apply {
+                    colrv0LayerInfos = Array(numLayerRecords) { ColrLayerInfo(readU16BE(), readU16BE()) }
+                }
+                sliceStart(baseGlyphRecordsOffset).apply {
+                    for (n in 0 until numBaseGlyphRecords) {
+                        val info = ColrGlyphInfoV0(readU16BE(), readU16BE(), readU16BE())
+                        colrGlyphInfos[info.glyphID] = info
+                        //println("- $glyphID = $firstLayerIndex / $numLayers")
+                    }
+                }
+                if (version == 1) {
+                    val baseGlyphListOffset = readOffset32() // <BaseGlyphList>
+                    val layerListOffset = readOffset32() // <LayerList>
+                    val clipListOffset = readOffset32() // <ClipList>. May be NULL
+                    val varIdxMapOffset = readOffset32() // <VarIdxMap>. May be NULL
+                    val varStoreOffset = readOffset32() // <ItemVariationStore>
+
+                    //println("clipListOffset=$clipListOffset")
+                    //println("varIdxMapOffset=$varIdxMapOffset")
+                    //println("varStoreOffset=$varStoreOffset")
+
+                    colrv1.glyphIDToClipOffset.clear()
+                    colrv1 = COLRv1(
+                        s = sliceStart(0),
+                        layerList = sliceStart(layerListOffset).readArrayOf32 { readOffset32() }.toIntArray(),
+                        sBaseOffset = this.sliceStart(baseGlyphListOffset),
+                        sLayerOffset = this.sliceStart(layerListOffset),
+                        sClipOffset = clipListOffset.takeIf { it != 0 }?.let { this.sliceStart(it) },
+                        //val varIdxMap = sliceStart(varIdxMapOffset).readArrayOf32 { readOffset32() }
+                        //val varStore = sliceStart(varStoreOffset).readArrayOf32 { readOffset32() }
+                    )
+
+                    clipListOffset.takeIf { it != 0 }?.let {
+                        val s = sliceStart(clipListOffset)
+                        val format = s.readU8()
+                        s.readArrayOf32 {
+                            val startGlyphID = readU16BE() // first gid clip applies to
+                            val endGlyphID = readU16BE() // last gid clip applies to, inclusive
+                            val clipBoxOffset = readOffset24()
+                            for (glyphID in startGlyphID..endGlyphID) {
+                                colrv1.glyphIDToClipOffset[glyphID] = clipBoxOffset
+                            }
+                            Unit
+                            //Clip(startGlyphID, endGlyphID, clipBoxOffset)
+                        }//.toList()
+                    }
+
+                    sliceStart(baseGlyphListOffset).readArrayOf32 {
+                        val glyphID: Int = readU16BE()
+                        val paint: Int = readOffset32()
+                        //println(colrv1.s.sliceStart(paint).readU8())
+                        colrGlyphInfos[glyphID] = ColrGlyphInfoV1(glyphID, paint)
+                        Unit
+                    }
+
+                    //println("baseGlyphList[${colrv1.baseGlyphList.size}]=${colrv1.baseGlyphList}")
+                    //println("layerList[${colrv1.layerList.size}]=${colrv1.layerList}")
+                    //println("clipList[${clipList.size}]=$clipList")
+                    //println("varIdxMap[${varIdxMap.size}]=$varIdxMap")
+                    //println("varStore[${varStore.size}]=$varStore")
                 }
             }
             else -> {
-                println("TTF WARNING CCOL version != 0")
+                println("TTF WARNING CCOLv$version not supported")
             }
         }
     }
@@ -912,20 +1504,19 @@ class TtfFont(
 							val endCharCode = readS32BE()
 							val startGlyphId = readS32BE()
 
-							var glyphId = startGlyphId
 							for (c in startCharCode..endCharCode) {
-                                addCharacterMap(c, glyphId)
+                                val m = c - startCharCode
+                                addCharacterMap(c, startGlyphId + m)
                                 //println(" - $c -> $glyphId")
-                                glyphId++
 							}
 						}
 					}
                     13 -> { // Many-to-one range mappings
                         println("UNSUPPORTED CMAP format = $format")
                     }
-                    14 -> {
-                        //println("UNSUPPORTED CMAP format = $format")
-                    }
+                    //14 -> {
+                    //    println("UNSUPPORTED CMAP format = $format")
+                    //}
                     //14 -> { // Unicode Variation Sequences
                     //    val length = readS32BE()
                     //    val numVarSelectorRecords = readS32BE()
@@ -970,6 +1561,7 @@ class TtfFont(
         //println(tables)
 	}
 
+    fun getCodePointFromCharIndexOrElse(charIndex: Int, default: Int = -1): Int = characterMapsReverse.getOrElse(charIndex) { default }
     fun getCodePointFromCharIndex(charIndex: Int): Int? = characterMapsReverse[charIndex]
     fun getCharIndexFromCodePoint(codePoint: Int): Int? = getCharacterMapOrNull(codePoint)
     fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.code)
@@ -1031,15 +1623,40 @@ class TtfFont(
     inner class ColrLayerInfo(val glyphID: Int, val paletteIndex: Int) {
         fun color(pal: Int) = palettes.getCyclic(pal).colors.getOrElse(paletteIndex) { Colors.FUCHSIA }
         val color: RGBA get() = color(0)
-        fun getColorPath(pal: Int = 0) = getGlyphByIndex(glyphID)?.path?.let { FillShape(it.path, null, color(pal)) }
+        fun getColorPath(pal: Int = 0): FillShape? = getGlyphByIndex(glyphID)?.path?.let { FillShape(it.path, null, color(pal)) }
         override fun toString(): String = "ColrLayerInfo($glyphID, $paletteIndex, $color)"
     }
-    inner class ColrGlyphInfo(val glyphID: Int, val firstLayerIndex: Int, val numLayers: Int) {
-        operator fun get(index: Int) = colrLayerInfos[firstLayerIndex + index]
+
+    interface ColrGlyphInfo {
+        fun getColorPaths(pal: Int = 0): List<Shape> = listOf(getColorPath(pal))
+        fun getColorPath(pal: Int = 0): Shape
+    }
+
+    inner class ColrGlyphInfoV1(val glyphID: Int, val paint: Int) : ColrGlyphInfo {
+        override fun getColorPath(pal: Int): Shape {
+            return buildShape {
+                val paintS = colrv1.sBaseOffset.sliceStart(paint)
+                //println(this.state.transform)
+                try {
+                    interpretColrv1(glyphID, paintS, this, pal, 0)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }.also { shape ->
+                //println("ColrGlyphInfoV1.getColorPath($pal): $shape")
+                //println("ColrGlyphInfoV1.getColorPath($pal):\n${shape.toSvg().toOuterXmlIndentedString()}")
+            }
+        }
+        override fun toString(): String = "ColrGlyphInfoV1[$glyphID][$paint]"
+    }
+
+    inner class ColrGlyphInfoV0(val glyphID: Int, val firstLayerIndex: Int, val numLayers: Int) : ColrGlyphInfo {
+        operator fun get(index: Int) = colrv0LayerInfos[firstLayerIndex + index]
         fun toList() = Array(numLayers) { this[it] }.toList()
 
-        fun getColorPaths(pal: Int = 0): List<FillShape> = toList().mapNotNull { it.getColorPath(pal) }
-        override fun toString(): String = "ColrGlyphInfo[$glyphID][$numLayers](${toList()})"
+        override fun getColorPaths(pal: Int): List<FillShape> = toList().mapNotNull { it.getColorPath(pal) }
+        override fun getColorPath(pal: Int): Shape = CompoundShape(getColorPaths(pal))
+        override fun toString(): String = "ColrGlyphInfoV0[$glyphID][$numLayers](${toList()})"
     }
 
     data class GlyphGraphicsPath(
@@ -1059,10 +1676,32 @@ class TtfFont(
         abstract val paths: List<GlyphGraphicsPath>
 
         //val colorEntry get() = colrGlyphInfos[codePoint]
-        val colorEntry get() = colrGlyphInfos[index]
-        val bitmapEntry get() = bitmapGlyphInfos[index]
+        val colorEntry: ColrGlyphInfo? get() = colrGlyphInfos[index]
+        val bitmapEntry: BitmapGlyphInfo? get() = bitmapGlyphInfos[index]
 
         val metrics1px = run {
+            var xMin = xMin
+            var yMin = yMin
+            var xMax = xMax
+            var yMax = yMax
+
+            if (xMin == 0 && yMin == 0 && xMax == 0 && yMax == 0) {
+                val sClipOffset = colrv1.sClipOffset
+                val glyphIDToClipOffset = colrv1.glyphIDToClipOffset
+                val bounds = if (sClipOffset != null && glyphIDToClipOffset.contains(index)) {
+                    val clipOffset = glyphIDToClipOffset[index]
+                    sClipOffset.sliceStart(clipOffset).readClipBox()
+                } else {
+                    colorEntry?.getColorPath()?.bounds
+                }
+                if (bounds != null) {
+                    xMin = bounds.left.toInt()
+                    xMax = bounds.right.toInt()
+                    yMin = bounds.top.toInt()
+                    yMax = bounds.bottom.toInt()
+                }
+            }
+
             val size = unitsPerEm.toDouble()
             val scale = getTextScale(size)
             GlyphMetrics(size, true, -1, Rectangle.fromBounds(
@@ -1200,10 +1839,17 @@ class TtfFont(
 
     private fun FastByteArrayInputStream.readF2DOT14(): Float {
 		val v = readS16BE()
-		val i = v shr 14
-		val f = v and 0x3FFF
+		val i = v.extractSigned(14, 2)
+		val f = v.extract(0, 14)
 		return i.toFloat() + f.toFloat() / 16384f
 	}
+
+    private fun FastByteArrayInputStream.readFIXED3(): Float {
+        val v = readS32BE()
+        val i = v.extractSigned(16, 16)
+        val f = v.extract(0, 16)
+        return i.toFloat() + f.toFloat() / 65536f
+    }
 
 	@Suppress("FunctionName")
     private fun FastByteArrayInputStream.readMixBE(signed: Boolean, word: Boolean): Int {
@@ -1346,15 +1992,27 @@ class TtfFont(
 	}
 }
 
+/** int16 that describes a quantity in font design units. */
+// https://docs.microsoft.com/en-us/windows/win32/gdi/device-vs--design-units
+// DeviceUnits	Specifies the DesignUnits font metric converted to device units. This value is in the same units as the value specified for DeviceResolution.
+// DesignUnits	Specifies the font metric to be converted to device units. This value can be any font metric, including the width of a character or the ascender value for an entire font.
+// unitsPerEm	Specifies the em square size for the font.
+// PointSize	Specifies size of the font, in points. (One point equals 1/72 of an inch.)
+// DeviceResolution	Specifies number of device units (pixels) per inch. Typical values might be 300 for a laser printer or 96 for a VGA screen.
 internal inline class FWord(val data: Int) {
+    fun toDouble(): Double = data.toDouble()
 }
 
 internal inline class Fixed(val data: Int) {
     val num: Int get() = data.extract16Signed(0)
     val den: Int get() = data.extract16Signed(16)
+    val value: Double get() = num.toDouble() + den.toDouble() / 65536.0
+    fun toDouble(): Double = value
     companion object {
-        operator fun invoke(num: Int, den: Int) = 0.insert(num, 0, 16).insert(den, 16, 16)
+        operator fun invoke(num: Int, den: Int): Int = 0.insert16(num, 0).insert16(den, 16)
     }
+
+    override fun toString(): String = "Fixed($num,$den)=$value"
 }
 
 suspend fun VfsFile.readTtfFont(

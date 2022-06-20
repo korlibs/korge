@@ -15,13 +15,12 @@ import com.soywiz.korio.file.std.VfsFileFromData
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.file.std.standardVfs
 import com.soywiz.korio.lang.Environment
+import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.expand
-import com.soywiz.korio.util.OS
 import kotlinx.coroutines.CancellationException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.native.concurrent.ThreadLocal
-import kotlin.reflect.KMutableProperty0
 
 internal fun createNativeSystemFontProvider(coroutineContext: CoroutineContext, platform: Platform = Platform): NativeSystemFontProvider = when {
     platform.runtime.isJs -> FallbackNativeSystemFontProvider(DefaultTtfFont)
@@ -75,7 +74,7 @@ open class NativeSystemFontProvider {
         return mapOf()
     }
 
-    open fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath = GlyphPath()): GlyphPath? {
+    open fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath = GlyphPath(), reader: WStringReader? = null): GlyphPath? {
         return null
     }
 
@@ -213,8 +212,14 @@ abstract class TtfNativeSystemFontProvider() : NativeSystemFontProvider() {
 
     override fun getTtfFromSystemFont(systemFont: SystemFont): TtfFont = ttf(systemFont)
 
-    override fun getSystemFontGlyph(systemFont: SystemFont, size: Double, codePoint: Int, path: GlyphPath): GlyphPath? =
-        ttf(systemFont).getGlyphPath(size, codePoint, path)
+    override fun getSystemFontGlyph(
+        systemFont: SystemFont,
+        size: Double,
+        codePoint: Int,
+        path: GlyphPath,
+        reader: WStringReader?
+    ): GlyphPath? =
+        ttf(systemFont).getGlyphPath(size, codePoint, path, reader)
 
     override fun getSystemFontMetrics(systemFont: SystemFont, size: Double, metrics: FontMetrics) {
         ttf(systemFont).getFontMetrics(size, metrics)

@@ -400,6 +400,10 @@ class CompoundShape(
 	override fun containsPoint(x: Double, y: Double): Boolean {
 		return components.any { it.containsPoint(x, y) }
 	}
+
+    override fun toString(): String {
+        return "CompoundShape(\n  " + components.joinToString(",\n  ") + "\n)"
+    }
 }
 
 class TextShape(

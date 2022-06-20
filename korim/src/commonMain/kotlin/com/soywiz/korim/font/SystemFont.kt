@@ -1,5 +1,6 @@
 package com.soywiz.korim.font
 
+import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -36,8 +37,8 @@ class SystemFont constructor(override val name: String, val coroutineContext: Co
         rightCodePoint: Int
     ): Double = nativeSystemFontProvider.getSystemFontKerning(this, size, leftCodePoint, rightCodePoint)
 
-    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath): GlyphPath? {
-        return nativeSystemFontProvider.getSystemFontGlyph(this, size, codePoint, path)
+    override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
+        return nativeSystemFontProvider.getSystemFontGlyph(this, size, codePoint, path, reader)
     }
 
     val ttf get() = nativeSystemFontProvider.getTtfFromSystemFont(this)

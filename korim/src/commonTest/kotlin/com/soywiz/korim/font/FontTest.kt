@@ -114,16 +114,16 @@ class FontTest {
         //}.showImageAndWait()
 
         //val result = font.renderTextToBitmap(48.0, "Helló World!", paint, nativeRendering = false, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
-        val result = font.renderTextToBitmap(48.0, "Helló World!", paint, nativeRendering = false, renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
+        val result = font.renderTextToBitmap(48.0, "Helló World!", paint, nativeRendering = false, renderer = CreateStringTextRenderer { reader, c, g, advance ->
         //val result = font.renderTextToBitmap(24.0, "llll", ColorPaint(Colors.RED), renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
         //val result = font.renderTextToBitmap(24.0, "Hello World!", renderer = CreateStringTextRenderer { text, n, c, c1, g, advance ->
             //dy = -n.toDouble()
-            val scale = 1.0 + n * 0.1
+            val scale = 1.0 + reader.position * 0.1
             //val scale = 1.0
             //transform.translate(0.0, scale)
             transform.scale(scale)
             transform.rotate(25.degrees)
-            put(c)
+            put(reader, c)
             advance(advance * scale)
         })
 
