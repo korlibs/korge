@@ -106,7 +106,7 @@ open class UIComboBox<T>(
         containerRoot.addChild(itemsView)
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
-        itemsView.size(width, 128.0.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
+        itemsView.size(width, viewportHeight.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
         verticalList.size(width, verticalList.height)
 
         verticalList.invalidateList()

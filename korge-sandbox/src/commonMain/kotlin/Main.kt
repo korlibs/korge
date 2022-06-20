@@ -100,7 +100,8 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    uiComboBox(width = 300.0, items = listOf(default) + all) {
+    uiComboBox(width = 300.0, items = (listOf(default) + all).distinct().sortedBy { it.name }) {
+        this.viewportHeight = 600
         this.onSelectionUpdate.add {
             println(it)
             launchImmediately { setDemo(it.selectedItem!!) }
