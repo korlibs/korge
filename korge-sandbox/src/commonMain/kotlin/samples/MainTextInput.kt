@@ -33,17 +33,9 @@ class MainTextInput : Scene() {
         val emojiFont = resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont(preload = false)
         val font = DefaultTtfFont.withFallback(emojiFont)
 
-        container {
-            scale(2.0)
-            text("DEMO").xy(200, 50)
-            uiTextInput("HELLO3", width = 256.0, height = 64.0) {
-                this.textSize = 40.0
-                this.font = font
-            }.xy(200, 100)
-            uiTextInput("WORLD2", width = 256.0, height = 64.0) {
-                this.textSize = 40.0
-                this.font = font
-            }.xy(200, 200)
-        }
+        uiTextInput("HELLO", width = 256.0, height = 64.0) {
+            this.textSize = 40.0
+            this.font = font
+        }.xy(200, 100)
     }
 }

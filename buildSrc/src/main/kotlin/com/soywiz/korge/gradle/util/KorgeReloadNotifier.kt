@@ -20,7 +20,7 @@ object KorgeReloadNotifier {
         val startTime = timeBeforeCompilationFile.readText().toLongOrNull() ?: 0L
         val endTime = System.currentTimeMillis()
         try {
-            println("REPLY FROM SERVER: " + URL("http://127.0.0.1:$httpPort/?startTime=$startTime&endTime=$endTime").readText())
+            println("REPLY FROM KORGE REFRESH: " + URL("http://127.0.0.1:$httpPort/?startTime=$startTime&endTime=$endTime").readText())
         } catch (e: Throwable) {
             e.printStackTrace()
         }
