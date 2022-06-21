@@ -50,7 +50,7 @@ object KorgeReloadAgent {
             val watcher: WatchService = FileSystems.getDefault().newWatchService()
 
             val cannonicalRootFolders = rootFolders.map {
-                File(it).canonicalPath.trimEnd('/') + "/"
+                File(it).canonicalPath.replace("\\", "/").trimEnd('/') + "/"
             }
 
             fun getPathRelativeToRoot(path: String): String? {
@@ -77,9 +77,9 @@ object KorgeReloadAgent {
             }
 
             while (true) {
-                println("[KorgeReloadAgent]: Waiting for event...")
+                //println("[KorgeReloadAgent]: Waiting for event...")
                 val key = watcher.take()
-                println("KorgeReloadAgent: received event $key")
+                //println("KorgeReloadAgent: received event $key")
                 val modifiedClassNames = arrayListOf<ClassInfo>()
                 try {
                     for (event in key.pollEvents()) {
@@ -93,9 +93,10 @@ object KorgeReloadAgent {
                         val fileName: Path = ev.context()
                         val fullPath: Path = dir.resolve(fileName)
                         if (fileName.name.endsWith(".class")) {
-                            val pathRelativeToRoot = getPathRelativeToRoot(fullPath.absolutePathString())
+                            val fullPathStr = fullPath.absolutePathString().replace("\\", "/")
+                            val pathRelativeToRoot = getPathRelativeToRoot(fullPathStr)
 
-                            println("ev=$ev[${kind}], fullPath=$fullPath, pathRelativeToRoot=$pathRelativeToRoot")
+                            //println("[KorgeReloadAgent] ev=$ev[${kind.name()}], pathRelativeToRoot=$pathRelativeToRoot, fullPath=$fullPathStr")
                             if (pathRelativeToRoot != null) {
                                 modifiedClassNames += ClassInfo(
                                     fullPath,
@@ -109,6 +110,7 @@ object KorgeReloadAgent {
                 }
 
                 if (modifiedClassNames.isNotEmpty()) {
+                    println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
                     val classesByName = inst.allLoadedClasses.associateBy { it.name }
                     try {
                         val definitions = modifiedClassNames.mapNotNull { info ->
@@ -131,27 +133,6 @@ object KorgeReloadAgent {
                     }
                 }
             }
-
-            /*
-            println(this::class.java.classLoader)
-            while (true) {
-                Thread.sleep(1000L)
-                val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java)
-                println("triggerReload=$triggerReload")
-                triggerReload.invoke(null, listOf("hello"))
-                /*
-                for (clazz in inst.allLoadedClasses) {
-                    if (clazz.name.contains("ReloadableDemo")) {
-                        val clazzBytes = File("/Users/soywiz/projects/korge/korge-sandbox/build/classes/kotlin/jvm/main/samples/ReloadableDemo.class").readBytes()
-                        // /Users/soywiz/projects/korge/korge-sandbox/build/classes/kotlin/jvm/main/samples/ReloadableDemo.class
-                        inst.redefineClasses(ClassDefinition(clazz, clazzBytes))
-                        println("$clazz: ${inst.isModifiableClass(clazz)}")
-                    }
-                }
-                */
-            }
-
-             */
         }.start()
     }
 
