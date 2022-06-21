@@ -9,16 +9,6 @@ import java.util.concurrent.Executors
 
 // https://www.baeldung.com/java-instrumentation
 object KorgeReloadAgent {
-    //@JvmStatic
-    //fun main(args: Array<String>) {
-    //    val classLoader = this::class.java.classLoader
-    //    println("KorgeReloadAgent: main")
-    //    println("CLASSLOADER: $classLoader")
-    //    val jvm: VirtualMachine = VirtualMachine.attach(jvmPid)
-    //    jvm.loadAgent(agentFile.getAbsolutePath())
-    //    jvm.detach()
-    //}
-
     data class ClassInfo(val path: File, val className: String)
 
     @JvmStatic
@@ -64,23 +54,42 @@ object KorgeReloadAgent {
                 t.responseBody.close()
             }
             Runtime.getRuntime().addShutdownHook(Thread {
+                println("[KorgeReloadAgent] - shutdown http server")
                 httpServer.stop(0)
+                println("[KorgeReloadAgent] - done shutting down http server")
             })
             httpServer.start()
-        }.also { it.isDaemon = true }.start()
+        }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.httpServer" }.start()
         Thread {
             println("[KorgeReloadAgent] - Running $continuousCommand")
             try {
                 val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
-                val args = if (isWindows) arrayOf("cmd.exe", "/c") else arrayOf("/bin/sh", "-c")
-                val p = ProcessBuilder(*args, continuousCommand)
-                    //.directory(File("."))
-                    .inheritIO()
-                    .start()
+                //val args = arrayOf<String>()
+                //val args = if (isWindows) arrayOf("cmd.exe", "/k") else arrayOf("/bin/sh", "-c")
+                //val args = if (isWindows) arrayOf() else arrayOf("/bin/sh", "-c")
+                val javaHomeBinFolder = System.getProperties().getProperty("java.home") + File.separator + "bin" + File.separator
+                val jvmLocation = when {
+                    System.getProperty("os.name").startsWith("Win") -> "${javaHomeBinFolder}java.exe"
+                    else -> "${javaHomeBinFolder}java"
+                }
+                val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
+                //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
+                val pID = p.pid()
+                println("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
+
                 Runtime.getRuntime().addShutdownHook(Thread {
+                    //if (isWindows) {
+                    //    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Killing task")
+                    //    Runtime.getRuntime().exec(arrayOf("taskkill", "/PID", "$pID")).waitFor()
+                    //}
+
+                    //p.outputStream.write()
+                    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping continuousCommand")
                     p.destroy()
                     Thread.sleep(500L)
+                    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Stopping forcibly")
                     p.destroyForcibly()
+                    println("[KorgeReloadAgent] - [isAlive=${p.isAlive}] Done stopping forcibly")
                 })
                 val exit = p.waitFor()
                 println("[KorgeReloadAgent] - Exited continuous command with $exit code")
@@ -88,56 +97,13 @@ object KorgeReloadAgent {
                 println("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
                 e.printStackTrace()
             }
-        }.also { it.isDaemon = true }.start()
-        /*
-        Thread {
-            val watcher = JVMWatchCommonWatcher()
-            //val watcher = FSWatchCommonWatcher()
+        }.also { it.isDaemon = true }.also { it.name = "KorgeReloadAgent.continuousCommand" }.start()
 
-            val seq = watcher.watch(*cannonicalRootFolders.toTypedArray())
-
-            for (files in seq) {
-                val modifiedClassNames = arrayListOf<ClassInfo>()
-                for (fullPathStr in files) {
-                    if (fullPathStr.endsWith(".class")) {
-                        val pathRelativeToRoot = getPathRelativeToRoot(fullPathStr)
-                        if (pathRelativeToRoot != null) {
-                            modifiedClassNames += ClassInfo(
-                                File(fullPathStr),
-                                pathRelativeToRoot.removeSuffix(".class").replace("/", ".")
-                            )
-                        }
-                    }
-                }
-
-                if (modifiedClassNames.isNotEmpty()) {
-                    println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
-                    val classesByName = inst.allLoadedClasses.associateBy { it.name }
-                    try {
-                        val definitions: List<ClassDefinition> = modifiedClassNames.mapNotNull { info ->
-                            val clazz = classesByName[info.className] ?: return@mapNotNull null
-                            if (!info.path.exists()) return@mapNotNull null
-                            ClassDefinition(clazz, info.path.readBytes())
-                        }
-                        //inst.redefineClasses(*definitions.toTypedArray())
-                        val workedDefinitions = arrayListOf<ClassDefinition>()
-                        for (def in definitions) {
-                            try {
-                                inst.redefineClasses(def)
-                                workedDefinitions += def
-                            } catch (e: Throwable) {
-                                e.printStackTrace()
-                            }
-                        }
-                        val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java)
-                        triggerReload.invoke(null, workedDefinitions.map { it.definitionClass.name })
-                    } catch (e: Throwable) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-        }.also { it.isDaemon = true }.start()
-        */
+        Runtime.getRuntime().addShutdownHook(Thread {
+            val threadSet = Thread.getAllStackTraces().keys
+            println("[KorgeReloadAgent] - shutdown: threads=${threadSet.size}")
+            println("[KorgeReloadAgent] ${threadSet.map { it.name to it.state }}")
+        })
     }
 }
 
