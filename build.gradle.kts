@@ -7,10 +7,9 @@ import com.soywiz.korge.gradle.targets.jvm.JvmAddOpens
 import org.gradle.kotlin.dsl.kotlin
 import java.io.File
 import java.nio.file.Files
-import com.soywiz.korlibs.modules.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
-import kotlin.io.path.relativeTo
 import com.soywiz.korge.gradle.KorgeDefaults
+import java.net.URL
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -97,6 +96,10 @@ kotlin {
 
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
+fun Project.mustAutoconfigureKMM(): Boolean =
+    project.name != "korge-gradle-plugin" &&
+    project.name != "korge-reload-agent" &&
+    project.hasBuildGradle()
 
 allprojects {
     if (project.hasBuildGradle()) {
@@ -106,6 +109,7 @@ allprojects {
     val firstComponent = projectName.substringBefore('-')
     group = when {
         projectName == "korge-gradle-plugin" -> "com.soywiz.korlibs.korge.plugins"
+        projectName == "korge-reload-agent" -> "com.soywiz.korlibs.korge.reloadagent"
         firstComponent == "korge" -> "com.soywiz.korlibs.korge2"
         else -> "com.soywiz.korlibs.$firstComponent"
     }
@@ -116,9 +120,7 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJ
 }
 
 subprojects {
-    val doConfigure =
-            project.name != "korge-gradle-plugin" &&
-            project.hasBuildGradle()
+    val doConfigure = mustAutoconfigureKMM()
 
     if (doConfigure) {
         val isSample = project.isSample
@@ -475,7 +477,7 @@ rootProject.configureMavenCentralRelease()
 nonSamples {
     plugins.apply("maven-publish")
 
-    val doConfigure = project.name != "korge-gradle-plugin" && project.hasBuildGradle()
+    val doConfigure = mustAutoconfigureKMM()
 
     if (doConfigure) {
         configurePublishing()
@@ -599,10 +601,44 @@ samples {
 
     // @TODO: Move to KorGE plugin
     project.tasks {
-        val jvmMainClasses by getting
+        // https://www.baeldung.com/java-instrumentation
         val runJvm by creating(KorgeJavaExec::class) {
             group = "run"
             mainClass.set("MainKt")
+        }
+
+        val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
+        val httpPort = 22011
+
+        val compileKotlinJvmAndNotifyBefore by creating(Task::class) {
+            doFirst {
+                KorgeReloadNotifier.beforeBuild(timeBeforeCompilationFile)
+            }
+        }
+        afterEvaluate {
+            tasks.findByName("compileKotlinJvm")?.mustRunAfter("compileKotlinJvmAndNotifyBefore")
+        }
+        val compileKotlinJvmAndNotify by creating(Task::class) {
+            dependsOn("compileKotlinJvmAndNotifyBefore", "compileKotlinJvm")
+            doFirst {
+                KorgeReloadNotifier.afterBuild(timeBeforeCompilationFile, httpPort)
+            }
+        }
+        val runJvmAutoreload by creating(KorgeJavaExec::class) {
+            dependsOn(":korge-reload-agent:jar", "compileKotlinJvm")
+            group = "run"
+            mainClass.set("MainKt")
+            afterEvaluate {
+                val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
+                val outputJar = agentJarTask.outputs.files.files.first()
+                //println("agentJarTask=$outputJar")
+                val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+                val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
+                //val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+                //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+                val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+                jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
+            }
         }
 
         // esbuild
@@ -911,8 +947,6 @@ samples {
 
     project.tasks {
         val runJvm by getting(KorgeJavaExec::class)
-        val jvmMainClasses by getting(Task::class)
-
         //val prepareResourceProcessingClasses = create("prepareResourceProcessingClasses", Copy::class) {
         //    dependsOn(jvmMainClasses)
         //    afterEvaluate {
@@ -927,7 +961,7 @@ samples {
                 compilation.defaultSourceSet.resources.srcDir(processedResourcesFolder)
                 val korgeProcessedResources = create(getKorgeProcessResourcesTaskName(target, compilation)) {
                     //dependsOn(prepareResourceProcessingClasses)
-                    dependsOn(jvmMainClasses)
+                    dependsOn("jvmMainClasses")
 
                     doLast {
                         processedResourcesFolder.mkdirs()
@@ -1216,3 +1250,9 @@ afterEvaluate {
         }
     }
 }
+
+//try {
+//    println(URL("http://127.0.0.1:$httpPort/?startTime=0&endTime=1").readText())
+//} catch (e: Throwable) {
+//    e.printStackTrace()
+//}

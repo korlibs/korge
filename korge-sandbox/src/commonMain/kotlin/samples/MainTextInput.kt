@@ -3,7 +3,10 @@ package samples
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.uiTextInput
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
+import com.soywiz.korge.view.scale
+import com.soywiz.korge.view.text
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.atlas.MutableAtlasUnit
 import com.soywiz.korim.bitmap.NativeImage
@@ -34,9 +37,5 @@ class MainTextInput : Scene() {
             this.textSize = 40.0
             this.font = font
         }.xy(200, 100)
-        uiTextInput("WORLD", width = 256.0, height = 64.0) {
-            this.textSize = 40.0
-            this.font = font
-        }.xy(200, 200)
     }
 }

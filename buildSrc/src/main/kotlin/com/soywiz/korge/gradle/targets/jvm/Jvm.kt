@@ -9,9 +9,14 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.*
 import org.gradle.api.tasks.testing.*
 import org.gradle.jvm.tasks.Jar
+import org.gradle.kotlin.dsl.creating
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import proguard.*
 import proguard.gradle.*
+import java.io.File
+
+val KORGE_RELOAD_AGENT_CONFIGURATION_NAME = "KorgeReloadAgent"
+val httpPort = 22011
 
 fun Project.configureJvm() {
     if (gkotlin.targets.findByName("jvm") != null) return
@@ -44,6 +49,41 @@ fun Project.configureJvm() {
 			task.mainClass.set(korge.realJvmMainClassName)
 		}
 	}
+    val timeBeforeCompilationFile = File(project.buildDir, "timeBeforeCompilation")
+
+    project.addTask<Task>("compileKotlinJvmAndNotifyBefore") { task ->
+        task.doFirst {
+            KorgeReloadNotifier.beforeBuild(timeBeforeCompilationFile)
+        }
+    }
+    afterEvaluate {
+        tasks.findByName("compileKotlinJvm")?.mustRunAfter("compileKotlinJvmAndNotifyBefore")
+    }
+    project.addTask<Task>("compileKotlinJvmAndNotify") { task ->
+        task.dependsOn("compileKotlinJvmAndNotifyBefore", "compileKotlinJvm")
+        task.doFirst {
+            KorgeReloadNotifier.afterBuild(timeBeforeCompilationFile, httpPort)
+        }
+    }
+
+    project.configurations
+        .create(KORGE_RELOAD_AGENT_CONFIGURATION_NAME)
+        //.setVisible(false)
+        //.setTransitive(true)
+        //.setDescription("korge-reload-agent to be downloaded and used for this project.")
+    project.dependencies {
+        add(KORGE_RELOAD_AGENT_CONFIGURATION_NAME, "com.soywiz.korlibs.korge.reloadagent:korge-reload-agent:${BuildVersions.KORGE}")
+    }
+
+    project.addTask<KorgeJavaExecWithAutoreload>("runJvmAutoreload", group = GROUP_KORGE) { task ->
+        group = GROUP_KORGE_RUN
+        dependsOn("jvmMainClasses", "compileKotlinJvm")
+        project.afterEvaluate {
+            val beforeJava9 = JvmAddOpens.beforeJava9
+            if (!beforeJava9) task.jvmArgs(project.korge.javaAddOpens)
+            task.mainClass.set(korge.realJvmMainClassName)
+        }
+    }
 
 	project.afterEvaluate {
 		for (entry in korge.extraEntryPoints) {
@@ -71,6 +111,28 @@ fun Project.configureJvm() {
 
 private val Project.jvmCompilation: NamedDomainObjectSet<*> get() = kotlin.targets.getByName("jvm").compilations as NamedDomainObjectSet<*>
 private val Project.mainJvmCompilation: KotlinJvmCompilation get() = jvmCompilation.getByName("main") as org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+
+open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
+    override fun exec() {
+        val compileKotlinJvm = project.tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+        val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
+        val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+        val rootProject = project.rootProject
+        val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+
+        val outputJars = project.configurations.getByName(KORGE_RELOAD_AGENT_CONFIGURATION_NAME).resolve()
+        println("runJvmAutoreload:outputJars=$outputJars")
+        val outputJar = outputJars.first()
+        //val outputJar = JvmTools.findPathJar(Class.forName("com.soywiz.korge.reloadagent.KorgeReloadAgent"))
+
+        //val agentJarTask: org.gradle.api.tasks.bundling.Jar = project(":korge-reload-agent").tasks.findByName("jar") as org.gradle.api.tasks.bundling.Jar
+        //val outputJar = agentJarTask.outputs.files.files.first()
+        //println("agentJarTask=$outputJar")
+        jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
+
+        super.exec()
+    }
+}
 
 open class KorgeJavaExec : JavaExec() {
     @get:InputFiles

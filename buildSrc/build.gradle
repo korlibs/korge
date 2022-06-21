@@ -1,5 +1,5 @@
 plugins {
-    id "org.gradle.kotlin.kotlin-dsl" version "2.1.7"
+    id "org.gradle.kotlin.kotlin-dsl" version "2.3.3"
     id "publishing"
     id "maven-publish"
     id "signing"
