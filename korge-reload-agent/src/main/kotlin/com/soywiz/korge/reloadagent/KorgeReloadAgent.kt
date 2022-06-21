@@ -71,12 +71,16 @@ object KorgeReloadAgent {
         Thread {
             println("[KorgeReloadAgent] - Running $continuousCommand")
             try {
-                val p = ProcessBuilder("/bin/sh", "-c", continuousCommand)
+                val isWindows = System.getProperty("os.name").toLowerCase().contains("win")
+                val args = if (isWindows) arrayOf("cmd.exe", "/c") else arrayOf("/bin/sh", "-c")
+                val p = ProcessBuilder(*args, continuousCommand)
                     //.directory(File("."))
                     .inheritIO()
                     .start()
                 Runtime.getRuntime().addShutdownHook(Thread {
                     p.destroy()
+                    Thread.sleep(500L)
+                    p.destroyForcibly()
                 })
                 val exit = p.waitFor()
                 println("[KorgeReloadAgent] - Exited continuous command with $exit code")
@@ -156,19 +160,25 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
     }
 
     fun getAllModifiedClassFiles(startTime: Long, endTime: Long): List<File> {
-        return getAllClassFiles().filter { it.lastModified() in startTime..endTime }
+        val allClassFiles = getAllClassFiles()
+        println("[KorgeReloadAgent] allClassFiles=${allClassFiles.size}")
+        return allClassFiles.filter { it.lastModified() in startTime..endTime }
     }
 
     fun reloadClassFilesChangedIn(startTime: Long, endTime: Long) {
         val modifiedClassNames = arrayListOf<KorgeReloadAgent.ClassInfo>()
-        for (file in getAllModifiedClassFiles(startTime, endTime)) {
-            val fullPathStr = file.absolutePath
+        val allModifiedClassFiles = getAllModifiedClassFiles(startTime, endTime)
+        println("[KorgeReloadAgent] allModifiedClassFiles=${allModifiedClassFiles.size}")
+        for (file in allModifiedClassFiles) {
+            val fullPathStr = file.absolutePath.replace("\\", "/")
             val pathRelativeToRoot = getPathRelativeToRoot(fullPathStr)
             if (pathRelativeToRoot != null) {
                 modifiedClassNames += KorgeReloadAgent.ClassInfo(
                     File(fullPathStr),
                     pathRelativeToRoot.removeSuffix(".class").replace("/", ".")
                 )
+            } else {
+                println("[KorgeReloadAgent] ERROR: couldn't find relative to root: '$fullPathStr' in $cannonicalRootFolders")
             }
         }
 

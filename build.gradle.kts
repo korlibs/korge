@@ -634,7 +634,8 @@ samples {
                 //println("agentJarTask=$outputJar")
                 val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
                 val args = compileKotlinJvm.outputs.files.toList().joinToString(":::") { it.absolutePath }
-                val continuousCommand = "${rootProject.rootDir}/gradlew --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
+                val gradlewCommand = if (isWindows) "gradlew.bat" else "gradlew"
+                val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
                 jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
             }
         }
