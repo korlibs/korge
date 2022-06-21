@@ -41,8 +41,7 @@ publishing {
 }
 
 def publishJvmPublicationToMavenLocal = tasks.register("publishJvmPublicationToMavenLocal", Task) {
-    //dependsOn(publishAllPublications ? "publishToMavenLocal" : "publishPluginMavenPublicationToMavenLocal")
-    dependsOn("publishPluginMavenPublicationToMavenLocal")
+    dependsOn("publishMavenPublicationToMavenLocal")
 }
 
 com.soywiz.korlibs.NativeTools.groovyConfigurePublishing(project, false)

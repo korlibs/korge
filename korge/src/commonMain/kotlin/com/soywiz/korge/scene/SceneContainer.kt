@@ -208,6 +208,7 @@ class SceneContainer(
         }
         val newScene = gen(sceneInjector)
         if (remap) {
+            newScene.init(sceneInjector)
             views.injector.mapPrototype(newScene::class as KClass<T>) { gen(sceneInjector) }
             //println("REMAPPED: $clazz")
         }
