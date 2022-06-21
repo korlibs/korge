@@ -71,16 +71,17 @@ class TimerComponents(override val view: View) : UpdateComponent {
 
     fun timeout(time: TimeSpan, callback: () -> Unit = {}): Closeable = _interval(time, false, callback)
     fun interval(time: TimeSpan, callback: () -> Unit = {}): Closeable = _interval(time, true, callback)
+    fun intervalAndNow(time: TimeSpan, callback: () -> Unit): Closeable {
+        callback()
+        return interval(time, callback)
+    }
 }
 
 val View.timers get() = this.getOrCreateComponentUpdate<TimerComponents> { TimerComponents(this) }
 
 fun View.timeout(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.timeout(time, callback)
 fun View.interval(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.interval(time, callback)
-fun View.intervalAndNow(time: TimeSpan, callback: () -> Unit): Closeable {
-    callback()
-    return interval(time, callback)
-}
+fun View.intervalAndNow(time: TimeSpan, callback: () -> Unit): Closeable = this.timers.intervalAndNow(time, callback)
 
 suspend fun View.delay(time: TimeSpan) = this.timers.wait(time)
 suspend fun View.delayFrame() = this.timers.waitFrame()

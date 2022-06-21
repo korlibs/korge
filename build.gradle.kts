@@ -97,6 +97,10 @@ kotlin {
 
 fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
+fun Project.mustAutoconfigureKMM(): Boolean =
+    project.name != "korge-gradle-plugin" &&
+    project.name != "korge-reload-agent" &&
+    project.hasBuildGradle()
 
 allprojects {
     if (project.hasBuildGradle()) {
@@ -116,9 +120,7 @@ rootProject.plugins.withType<org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJ
 }
 
 subprojects {
-    val doConfigure =
-            project.name != "korge-gradle-plugin" &&
-            project.hasBuildGradle()
+    val doConfigure = mustAutoconfigureKMM()
 
     if (doConfigure) {
         val isSample = project.isSample
@@ -475,7 +477,7 @@ rootProject.configureMavenCentralRelease()
 nonSamples {
     plugins.apply("maven-publish")
 
-    val doConfigure = project.name != "korge-gradle-plugin" && project.hasBuildGradle()
+    val doConfigure = mustAutoconfigureKMM()
 
     if (doConfigure) {
         configurePublishing()
@@ -600,9 +602,23 @@ samples {
     // @TODO: Move to KorGE plugin
     project.tasks {
         val jvmMainClasses by getting
+        // https://www.baeldung.com/java-instrumentation
         val runJvm by creating(KorgeJavaExec::class) {
             group = "run"
             mainClass.set("MainKt")
+        }
+        val runJvmAutoreload by creating(KorgeJavaExec::class) {
+            dependsOn(":korge-reload-agent:jar")
+            group = "run"
+            mainClass.set("MainKt")
+            afterEvaluate {
+                val agentJarTask: Jar = project(":korge-reload-agent").tasks.findByName("jar") as Jar
+                val outputJar = agentJarTask.outputs.files.files.first()
+                //println("agentJarTask=$outputJar")
+                val compileKotlinJvm = tasks.findByName("compileKotlinJvm") as org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+                val args = compileKotlinJvm.outputs.files.toList().joinToString(",") { it.absolutePath }
+                jvmArgs("-javaagent:$outputJar=$args")
+            }
         }
 
         // esbuild
