@@ -1,5 +1,6 @@
 package com.soywiz.korge.reloadagent
 
+/*
 import com.sun.nio.file.SensitivityWatchEventModifier
 import java.io.File
 import java.nio.file.FileSystems
@@ -108,3 +109,4 @@ private fun Path.getRecursivePaths(out: ArrayList<Path> = arrayListOf()): List<P
     }
     return out
 }
+*/

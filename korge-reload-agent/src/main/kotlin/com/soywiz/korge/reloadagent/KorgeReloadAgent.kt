@@ -70,12 +70,20 @@ object KorgeReloadAgent {
         }.also { it.isDaemon = true }.start()
         Thread {
             println("[KorgeReloadAgent] - Running $continuousCommand")
-            val p = ProcessBuilder("/bin/sh", "-c", continuousCommand).inheritIO().start()
-            Runtime.getRuntime().addShutdownHook(Thread {
-                p.destroy()
-            })
-            val exit = p.waitFor()
-            println("[KorgeReloadAgent] - Exited continuous command with $exit code")
+            try {
+                val p = ProcessBuilder("/bin/sh", "-c", continuousCommand)
+                    //.directory(File("."))
+                    .inheritIO()
+                    .start()
+                Runtime.getRuntime().addShutdownHook(Thread {
+                    p.destroy()
+                })
+                val exit = p.waitFor()
+                println("[KorgeReloadAgent] - Exited continuous command with $exit code")
+            } catch (e: Throwable) {
+                println("[KorgeReloadAgent] - Continuous command failed with exception '${e.message}'")
+                e.printStackTrace()
+            }
         }.also { it.isDaemon = true }.start()
         /*
         Thread {

@@ -109,6 +109,7 @@ allprojects {
     val firstComponent = projectName.substringBefore('-')
     group = when {
         projectName == "korge-gradle-plugin" -> "com.soywiz.korlibs.korge.plugins"
+        projectName == "korge-reload-agent" -> "com.soywiz.korlibs.korge.reloadagent"
         firstComponent == "korge" -> "com.soywiz.korlibs.korge2"
         else -> "com.soywiz.korlibs.$firstComponent"
     }
