@@ -1,22 +1,11 @@
 package com.soywiz.korge.reloadagent
 
-import com.soywiz.korge.reloadagent.KorgeReloadAgent.getRecursivePaths
-import com.sun.nio.file.SensitivityWatchEventModifier
+import com.sun.net.httpserver.HttpServer
 import java.io.File
 import java.lang.instrument.ClassDefinition
 import java.lang.instrument.Instrumentation
-import java.nio.file.FileSystems
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.nio.file.StandardWatchEventKinds
-import java.nio.file.WatchEvent
-import java.nio.file.WatchService
-import kotlin.io.path.absolutePathString
-import kotlin.io.path.exists
-import kotlin.io.path.isDirectory
-import kotlin.io.path.listDirectoryEntries
-import kotlin.io.path.name
-import kotlin.io.path.readBytes
+import java.net.InetSocketAddress
+import java.util.concurrent.Executors
 
 // https://www.baeldung.com/java-instrumentation
 object KorgeReloadAgent {
@@ -30,7 +19,7 @@ object KorgeReloadAgent {
     //    jvm.detach()
     //}
 
-    class ClassInfo(val path: Path, val className: String)
+    data class ClassInfo(val path: File, val className: String)
 
     @JvmStatic
     fun premain(agentArgs: String?, inst: Instrumentation) {
@@ -44,117 +33,162 @@ object KorgeReloadAgent {
 
     fun reloadCommon(type: String, agentArgs: String?, inst: Instrumentation) {
         val agentArgs = agentArgs ?: ""
-        println("[KorgeReloadAgent] In $type method: agentArgs=$agentArgs")
-        val rootFolders = agentArgs.split(",")
+        val args = agentArgs.split(":::")
+        val httpPort = args[0].toIntOrNull() ?: 22011
+        val continuousCommand = args[1]
+        val rootFolders = args.drop(2)
+        println("[KorgeReloadAgent] In $type method")
+        println("[KorgeReloadAgent] - httpPort=$httpPort")
+        println("[KorgeReloadAgent] - continuousCommand=$continuousCommand")
+        println("[KorgeReloadAgent] - rootFolders=$rootFolders")
+
+        val processor = KorgeReloaderProcessor(rootFolders, inst)
+        val taskExecutor = Executors.newSingleThreadExecutor()
+
+        Runtime.getRuntime().addShutdownHook(Thread {
+            println("[KorgeReloadAgent] - shutdown")
+        })
         Thread {
-            val watcher: WatchService = FileSystems.getDefault().newWatchService()
-
-            val cannonicalRootFolders = rootFolders.map {
-                File(it).canonicalPath.replace("\\", "/").trimEnd('/') + "/"
-            }
-
-            fun getPathRelativeToRoot(path: String): String? {
-                for (root in cannonicalRootFolders) {
-                    if (path.startsWith(root)) {
-                        return path.removePrefix(root)
-                    }
+            val httpServer = HttpServer.create(InetSocketAddress("127.0.0.1", httpPort), 0)
+            httpServer.createContext("/") { t ->
+                val response = "ok".toByteArray()
+                val parts = t.requestURI.query.trim('?').split("&").associate { val (key, value) = it.split('=', limit = 2); key to value }
+                val startTime = parts["startTime"]?.toLongOrNull() ?: 0L
+                val endTime = parts["endTime"]?.toLongOrNull() ?: 0L
+                println("[KorgeReloadAgent] startTime=$startTime, endTime=$endTime, parts=$parts")
+                taskExecutor.submit {
+                    processor.reloadClassFilesChangedIn(startTime, endTime)
                 }
-                return null
+                t.sendResponseHeaders(200, response.size.toLong())
+                t.responseBody.write(response)
+                t.responseBody.close()
             }
+            Runtime.getRuntime().addShutdownHook(Thread {
+                httpServer.stop(0)
+            })
+            httpServer.start()
+        }.also { it.isDaemon = true }.start()
+        Thread {
+            println("[KorgeReloadAgent] - Running $continuousCommand")
+            val p = ProcessBuilder("/bin/sh", "-c", continuousCommand).inheritIO().start()
+            Runtime.getRuntime().addShutdownHook(Thread {
+                p.destroy()
+            })
+            val exit = p.waitFor()
+            println("[KorgeReloadAgent] - Exited continuous command with $exit code")
+        }.also { it.isDaemon = true }.start()
+        /*
+        Thread {
+            val watcher = JVMWatchCommonWatcher()
+            //val watcher = FSWatchCommonWatcher()
 
-            for (rootFolder in cannonicalRootFolders) {
-                val folderToWatch = File(rootFolder).toPath()
-                println("[KorgeReloadAgent]: !!ROOT $folderToWatch")
+            val seq = watcher.watch(*cannonicalRootFolders.toTypedArray())
 
-                for (path in folderToWatch.getRecursivePaths()) {
-                    println("[KorgeReloadAgent]: Watching $path")
-                    path.register(
-                        watcher,
-                        arrayOf(StandardWatchEventKinds.ENTRY_CREATE, StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY),
-                        SensitivityWatchEventModifier.HIGH
-                    )
-                }
-            }
-
-            while (true) {
-                //println("[KorgeReloadAgent]: Waiting for event...")
-                val key = watcher.take()
-                //println("KorgeReloadAgent: received event $key")
+            for (files in seq) {
                 val modifiedClassNames = arrayListOf<ClassInfo>()
-                try {
-                    for (event in key.pollEvents()) {
-                        // @TODO: If we create a new folder, we should register a new key
-                        val kind: WatchEvent.Kind<*> = event.kind()
-                        if (kind == StandardWatchEventKinds.OVERFLOW) {
-                            continue
-                        }
-                        val ev: WatchEvent<Path> = event as WatchEvent<Path>
-                        val dir = key.watchable() as Path
-                        val fileName: Path = ev.context()
-                        val fullPath: Path = dir.resolve(fileName)
-                        if (fileName.name.endsWith(".class")) {
-                            val fullPathStr = fullPath.absolutePathString().replace("\\", "/")
-                            val pathRelativeToRoot = getPathRelativeToRoot(fullPathStr)
-
-                            //println("[KorgeReloadAgent] ev=$ev[${kind.name()}], pathRelativeToRoot=$pathRelativeToRoot, fullPath=$fullPathStr")
-                            if (pathRelativeToRoot != null) {
-                                modifiedClassNames += ClassInfo(
-                                    fullPath,
-                                    pathRelativeToRoot.removeSuffix(".class").replace("/", ".")
-                                )
-                            }
+                for (fullPathStr in files) {
+                    if (fullPathStr.endsWith(".class")) {
+                        val pathRelativeToRoot = getPathRelativeToRoot(fullPathStr)
+                        if (pathRelativeToRoot != null) {
+                            modifiedClassNames += ClassInfo(
+                                File(fullPathStr),
+                                pathRelativeToRoot.removeSuffix(".class").replace("/", ".")
+                            )
                         }
                     }
-                } finally {
-                    key.reset()
                 }
 
                 if (modifiedClassNames.isNotEmpty()) {
                     println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
                     val classesByName = inst.allLoadedClasses.associateBy { it.name }
                     try {
-                        val definitions = modifiedClassNames.mapNotNull { info ->
+                        val definitions: List<ClassDefinition> = modifiedClassNames.mapNotNull { info ->
                             val clazz = classesByName[info.className] ?: return@mapNotNull null
                             if (!info.path.exists()) return@mapNotNull null
                             ClassDefinition(clazz, info.path.readBytes())
                         }
                         //inst.redefineClasses(*definitions.toTypedArray())
+                        val workedDefinitions = arrayListOf<ClassDefinition>()
                         for (def in definitions) {
                             try {
                                 inst.redefineClasses(def)
+                                workedDefinitions += def
                             } catch (e: Throwable) {
                                 e.printStackTrace()
                             }
                         }
                         val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java)
-                        triggerReload.invoke(null, definitions.map { it.definitionClass.name })
+                        triggerReload.invoke(null, workedDefinitions.map { it.definitionClass.name })
                     } catch (e: Throwable) {
                         e.printStackTrace()
                     }
                 }
             }
-        }.start()
+        }.also { it.isDaemon = true }.start()
+        */
+    }
+}
+
+class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrumentation) {
+    val cannonicalRootFolders = rootFolders.map {
+        File(it).canonicalPath.replace("\\", "/").trimEnd('/') + "/"
     }
 
-    fun Path.getRecursivePaths(out: ArrayList<Path> = arrayListOf()): List<Path> {
-        out.add(this)
-        for (child in this.listDirectoryEntries()) {
-            if (child.isDirectory()) {
-                child.getRecursivePaths(out)
+    fun getPathRelativeToRoot(path: String): String? {
+        for (root in cannonicalRootFolders) {
+            if (path.startsWith(root)) {
+                return path.removePrefix(root)
             }
         }
-        return out
+        return null
     }
 
-    /*
-
-    public static void premain(
-    String agentArgs, Instrumentation inst) {
-
-        LOGGER.info("[Agent] In premain method");
-        String className = "com.baeldung.instrumentation.application.MyAtm";
-        transformClass(className,inst);
+    fun getAllClassFiles(): List<File> {
+        return cannonicalRootFolders.map { File(it) }.flatMap { it.walkBottomUp().toList() }.filter { it.name.endsWith(".class") }
     }
 
-     */
+    fun getAllModifiedClassFiles(startTime: Long, endTime: Long): List<File> {
+        return getAllClassFiles().filter { it.lastModified() in startTime..endTime }
+    }
+
+    fun reloadClassFilesChangedIn(startTime: Long, endTime: Long) {
+        val modifiedClassNames = arrayListOf<KorgeReloadAgent.ClassInfo>()
+        for (file in getAllModifiedClassFiles(startTime, endTime)) {
+            val fullPathStr = file.absolutePath
+            val pathRelativeToRoot = getPathRelativeToRoot(fullPathStr)
+            if (pathRelativeToRoot != null) {
+                modifiedClassNames += KorgeReloadAgent.ClassInfo(
+                    File(fullPathStr),
+                    pathRelativeToRoot.removeSuffix(".class").replace("/", ".")
+                )
+            }
+        }
+
+        if (modifiedClassNames.isNotEmpty()) {
+            println("[KorgeReloadAgent] modifiedClassNames=$modifiedClassNames")
+            val classesByName = inst.allLoadedClasses.associateBy { it.name }
+            try {
+                val definitions: List<ClassDefinition> = modifiedClassNames.mapNotNull { info ->
+                    val clazz = classesByName[info.className] ?: return@mapNotNull null
+                    if (!info.path.exists()) return@mapNotNull null
+                    ClassDefinition(clazz, info.path.readBytes())
+                }
+                //inst.redefineClasses(*definitions.toTypedArray())
+                val workedDefinitions = arrayListOf<ClassDefinition>()
+                for (def in definitions) {
+                    try {
+                        inst.redefineClasses(def)
+                        workedDefinitions += def
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    }
+                }
+                val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java)
+                triggerReload.invoke(null, workedDefinitions.map { it.definitionClass.name })
+            } catch (e: Throwable) {
+                e.printStackTrace()
+            }
+        }
+    }
+
 }
