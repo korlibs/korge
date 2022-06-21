@@ -5,9 +5,6 @@ import java.io.File
 import java.net.HttpURLConnection
 import java.net.URI
 import java.net.URL
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 
 object KorgeReloadNotifier {
     @JvmStatic
@@ -24,11 +21,5 @@ object KorgeReloadNotifier {
         } catch (e: Throwable) {
             e.printStackTrace()
         }
-
-        //println("NOTIFY_AND_DO_REFRESH: $startTime->${System.currentTimeMillis()}")
-        //val bytes = ByteArray(8)
-        //val data = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN).asLongBuffer()
-        //data.put(0, startTime)
-        //DatagramSocket(21_111, InetAddress.getByName("127.0.0.1")).send(DatagramPacket(bytes, bytes.size))
     }
 }
