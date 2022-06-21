@@ -32,6 +32,7 @@ import com.soywiz.kds.*
 import com.soywiz.klock.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * - The Dragobones factory.
@@ -200,4 +201,5 @@ open class KorgeDbFactory(pool: BaseObjectPool = BaseObjectPool(), dataParser: D
 		}
 }
 
+@ThreadLocal
 val Views.dragonbonsFactory by Extra.Property { KorgeDbFactory() }

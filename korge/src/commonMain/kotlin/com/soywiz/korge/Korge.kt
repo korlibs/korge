@@ -68,6 +68,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
 
 /**
@@ -284,6 +285,8 @@ object Korge {
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
         fixedSizeStep: TimeSpan = TimeSpan.NIL
     ): CompletableDeferred<Unit> {
+        KorgeReload.registerEventDispatcher(eventDispatcher)
+
         val injector = views.injector
         injector.mapInstance(views)
         injector.mapInstance(views.ag)
@@ -503,6 +506,8 @@ object Korge {
 
         //println("eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight)) : ${views.nativeWidth}x${views.nativeHeight}")
         eventDispatcher.dispatch(ReshapeEvent(0, 0, views.nativeWidth, views.nativeHeight))
+
+        eventDispatcher.addEventListener<ReloadEvent> { views.dispatch(it) }
 
         var renderShown = false
         views.clearEachFrame = clearEachFrame

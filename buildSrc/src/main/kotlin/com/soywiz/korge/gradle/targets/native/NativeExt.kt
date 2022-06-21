@@ -47,7 +47,7 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
                 kotlinOptions.freeCompilerArgs += listOf(
                     "-Xbinary=memoryModel=experimental",
                     // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
-                    "-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
+                    //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
                 )
             }
             // @TODO: Enable for Kotlin 1.6.0

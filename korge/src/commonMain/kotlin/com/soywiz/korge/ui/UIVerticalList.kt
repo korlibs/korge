@@ -9,6 +9,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.getVisibleGlobalArea
 import com.soywiz.korge.view.getVisibleWindowArea
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.size
@@ -82,7 +83,9 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
     fun updateList() {
         if (parent == null) return
-        val area = getVisibleWindowArea(tempRect)
+        //if (stage == null) return
+        val area = getVisibleGlobalArea(tempRect)
+        //val area = getVisibleWindowArea(tempRect)
         val point = globalXY(tempPoint)
         val numItems = provider.numItems
         if (dirty || area != lastArea || point != lastPoint) {
@@ -118,7 +121,12 @@ open class UIVerticalList(provider: Provider, width: Double = 200.0) : UIView(wi
 
                 //val localViewY = view.localToGlobalY(0.0, view.height)
 
-                if (view.localToRenderY(0.0, view.height) >= area.bottom) {
+                //println(":: ${view.localToGlobalY(0.0, view.height)}, ${area.bottom}")
+
+                //if (view.localToRenderY(0.0, view.height) >= area.bottom) {
+                if (view.localToGlobalY(0.0, view.height) >= area.bottom) {
+                //if (view.localToWindowY(stage!!.views, 0.0, view.height) >= area.bottom) {
+                //if (false) {
                     //println("localViewY=localViewY, globalY=${view.localToGlobalY(0.0, view.height)}")
                     break
                 }

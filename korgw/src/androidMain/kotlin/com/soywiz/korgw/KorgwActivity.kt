@@ -8,6 +8,7 @@ import android.view.*
 import android.view.KeyEvent
 import com.soywiz.kds.*
 import com.soywiz.kgl.*
+import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasBits
 import com.soywiz.korag.gl.*
 import com.soywiz.korev.*
@@ -91,6 +92,7 @@ abstract class KorgwActivity(
         super.onPause()
         mGLView?.onPause()
         gameWindow?.dispatchPauseEvent()
+        KmemGC.collect()
     }
 
     override fun onStop() {

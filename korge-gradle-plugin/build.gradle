@@ -4,7 +4,7 @@ import org.gradle.api.publish.maven.internal.publication.DefaultMavenPom
 import java.nio.file.Files
 
 plugins {
-    id "org.gradle.kotlin.kotlin-dsl" version "2.1.7"
+    id "org.gradle.kotlin.kotlin-dsl" version "2.3.3"
     id "java"
     id "java-gradle-plugin"
     id "maven-publish"
@@ -90,6 +90,8 @@ dependencies {
 
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
     testImplementation("io.mockk:mockk:1.11.0")
+
+    //implementation(project(":korge-reload-agent"))
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {

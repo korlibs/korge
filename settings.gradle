@@ -11,7 +11,7 @@ pluginManagement {
 	}
 }
 
-rootProject.name = "korlibs-next"
+rootProject.name = "korlibs"
 
 boolean isPropertyTrue(String name) {
     return System.getenv(name) == "true" || System.getProperty(name) == "true"
@@ -36,6 +36,7 @@ include(":korgw")
 include(":korvi")
 include(":korge")
 include(":korge-gradle-plugin")
+include(":korge-reload-agent")
 
 if (!inCI) {
     include(":korge-sandbox")

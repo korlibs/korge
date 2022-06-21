@@ -1,6 +1,7 @@
 package com.soywiz.korge.baseview
 
 import com.soywiz.klock.TimeSpan
+import com.soywiz.korev.Event
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.Components
@@ -12,11 +13,14 @@ import com.soywiz.korge.component.ResizeComponent
 import com.soywiz.korge.component.TouchComponent
 import com.soywiz.korge.component.UpdateComponent
 import com.soywiz.korge.component.UpdateComponentWithViews
+import com.soywiz.korge.component.cancellable
 import com.soywiz.korge.component.detach
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.lang.CloseableCancellable
 import kotlin.collections.set
+import kotlin.jvm.JvmName
 
 open class BaseView {
     @KorgeInternal
@@ -100,10 +104,29 @@ open class BaseView {
     fun addComponent(c: KeyComponent) = componentsSure.add(c)
     fun addComponent(c: GamepadComponent) = componentsSure.add(c)
     fun addComponent(c: TouchComponent) = componentsSure.add(c)
-    fun addComponent(c: EventComponent) = componentsSure.add(c)
+    fun addComponent(c: EventComponent): EventComponent = componentsSure.add(c)
     fun addComponent(c: UpdateComponentWithViews) = componentsSure.add(c)
     fun addComponent(c: UpdateComponent) = componentsSure.add(c)
     fun addComponent(c: ResizeComponent) = componentsSure.add(c)
+
+    fun addOnEventAny(handler: (Event) -> Unit): CloseableCancellable {
+        return addComponent(object : EventComponent {
+            override val view: BaseView = this@BaseView
+            override fun onEvent(event: Event) {
+                handler(event)
+            }
+        }).cancellable()
+    }
+
+    @JvmName("addOnEventTyped")
+    inline fun <reified R : Event> addOnEvent(noinline handler: (R) -> Unit): CloseableCancellable {
+        return addComponent(object : EventComponent {
+            override val view: BaseView = this@BaseView
+            override fun onEvent(event: Event) {
+                if (event is R) handler(event)
+            }
+        }).cancellable()
+    }
 
     /** Registers a [block] that will be executed once in the next frame that this [View] is displayed with the [Views] singleton */
     fun deferWithViews(block: (views: Views) -> Unit) {

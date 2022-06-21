@@ -16,5 +16,5 @@ fun Animation.getAnimationMaxBounds(skeletonData: SkeletonData, out: Rectangle =
         bb.add(skeletonView.getLocalBoundsOptimized())
         time += 0.1f
     }
-    return bb.getBounds()
+    return bb.getBounds(out)
 }

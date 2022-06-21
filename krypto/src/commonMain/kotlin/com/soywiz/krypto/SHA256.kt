@@ -5,7 +5,7 @@ import com.soywiz.krypto.internal.readS32_be
 import com.soywiz.krypto.internal.rotateRight
 
 class SHA256 : SHA(chunkSize = 64, digestSize = 32) {
-    companion object : HasherFactory({ SHA256() }) {
+    companion object : HasherFactory("SHA256", { SHA256() }) {
         private val H = intArrayOf(
             0x6a09e667, -0x4498517b, 0x3c6ef372, -0x5ab00ac6,
             0x510e527f, -0x64fa9774, 0x1f83d9ab, 0x5be0cd19

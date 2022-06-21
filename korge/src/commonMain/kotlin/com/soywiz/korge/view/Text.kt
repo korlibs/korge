@@ -187,12 +187,13 @@ open class Text(
             ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast(), "Text")
         }
         //val tva: TexturedVertexArray? = null
+        val tva = tva
         if (tva != null) {
             tempMatrix.copyFrom(globalMatrix)
             tempMatrix.pretranslate(container.x, container.y)
             ctx.useBatcher { batch ->
-                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null)
-                batch.drawVertices(tva!!, tempMatrix)
+                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode.factors, null, icount = tva.icount, vcount = tva.vcount)
+                batch.drawVertices(tva, tempMatrix)
             }
         } else {
             super.renderInternal(ctx)
@@ -229,7 +230,7 @@ open class Text(
                 }
             }
         }
-        container.colorMul = color
+        //container.colorMul = color
         val font = this.font.getOrNull()
 
         if (autoSize && font is Font && boundsVersion != version) {
@@ -282,6 +283,7 @@ open class Text(
                             tva?.quad(n * 4, entry.x + dx, entry.y, entry.tex.width * entry.sx, entry.tex.height * entry.sy, identityMat, entry.tex, renderColorMul, renderColorAdd)
                         } else {
                             val it = (container[n] as Image)
+                            it.colorMul = color // @TODO: When doing black, all colors are lost even if the glyph is a colorized image
                             it.anchor(0, 0)
                             it.smoothing = smoothing
                             it.bitmap = entry.tex
@@ -315,9 +317,9 @@ open class Text(
                         text.isNotEmpty() -> {
                             font.renderTextToBitmap(
                                 realTextSize, text,
-                                paint = Colors.WHITE, fill = true, renderer = renderer,
+                                paint = color, fill = true, renderer = renderer,
                                 //background = Colors.RED,
-                                nativeRendering = useNativeRendering, drawBorder = true
+                                nativeRendering = useNativeRendering, drawBorder = true,
                             )
                         }
                         else -> {

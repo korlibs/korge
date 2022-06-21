@@ -45,7 +45,8 @@ class ReferenceGraphicsTest : ViewsForTesting(
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE },
             RectangleInt(0, 0, 64, 64),
-            virtFrame = RectangleInt(64, 64, 196, 196)
+            null,
+            RectangleInt(64, 64, 196, 196)
         )
         val image = image(bmp).anchor(0.5, 1.0).xy(200, 200).rotation(30.degrees)
 
@@ -185,6 +186,33 @@ class ReferenceGraphicsTest : ViewsForTesting(
                 logAg.getLogAsString(),
                 view.getGlobalBounds().toString(),
                 view.getLocalBounds().toString()
+            ).joinToString("\n")
+        )
+    }
+
+    @Test
+    fun testGpuShapeViewFilter() = viewsTest {
+        container {
+            scale = 1.2
+            circle(100.0).xy(100, 100).filters(DropshadowFilter())
+        }
+        logAg.logFilter = { str, kind ->
+            when (kind) {
+                LogBaseAG.Kind.SHADER, LogBaseAG.Kind.DRAW_DETAILS -> false
+                LogBaseAG.Kind.UNIFORM, LogBaseAG.Kind.UNIFORM_VALUES -> true
+                //else -> true
+                else -> false
+            }
+        }
+
+        testFrame()
+
+        //println(logAg.getLogAsString())
+
+        assertEqualsFileReference(
+            "korge/render/GpuShapeViewFilter.log",
+            listOf(
+                logAg.getLogAsString(),
             ).joinToString("\n")
         )
     }

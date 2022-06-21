@@ -19,6 +19,7 @@ import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.iterator
 import kotlin.collections.set
+import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KCallable
 import kotlin.reflect.KMutableProperty1
 import kotlin.reflect.KProperty
@@ -66,6 +67,7 @@ fun View.bindLength(name: String, setProp: (Double) -> Unit, horizontal: Boolean
  * - To remove the binding, set the property to null
  */
 @KorgeExperimental
+@ThreadLocal
 val View.lengths by Extra.PropertyThis { ViewWithLength(this) }
 class ViewWithLength(val view: View) : LengthExtensions {
     inline operator fun <T> invoke(block: ViewWithLength.() -> T): T = block()

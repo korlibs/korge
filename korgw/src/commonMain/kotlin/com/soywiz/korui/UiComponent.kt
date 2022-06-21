@@ -10,7 +10,9 @@ import com.soywiz.korio.lang.Disposable
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korui.layout.LengthExtensions
 import com.soywiz.korui.native.NativeUiFactory
+import kotlin.native.concurrent.ThreadLocal
 
+@ThreadLocal
 var NativeUiFactory.NativeComponent.uiComponent by Extra.PropertyThis<NativeUiFactory.NativeComponent, UiComponent?> { null }
 
 open class UiComponent(val app: UiApplication, val component: NativeUiFactory.NativeComponent) : Extra by Extra.Mixin(), LengthExtensions {

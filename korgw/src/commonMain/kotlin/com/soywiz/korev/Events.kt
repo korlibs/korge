@@ -78,6 +78,13 @@ data class MouseEvent(
     fun scrollDeltaY(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaY, mode)
     fun scrollDeltaZ(mode: ScrollDeltaMode): Double = this.scrollDeltaMode.convertTo(this.scrollDeltaZ, mode)
 
+    fun setScrollDelta(mode: ScrollDeltaMode, x: Double, y: Double, z: Double) {
+        this.scrollDeltaMode = mode
+        this.scrollDeltaX = x
+        this.scrollDeltaY = y
+        this.scrollDeltaZ = z
+    }
+
     inline val scrollDeltaXPixels: Double get() = scrollDeltaX(ScrollDeltaMode.PIXEL)
     inline val scrollDeltaYPixels: Double get() = scrollDeltaY(ScrollDeltaMode.PIXEL)
     inline val scrollDeltaZPixels: Double get() = scrollDeltaZ(ScrollDeltaMode.PIXEL)
@@ -327,6 +334,7 @@ data class KeyEvent constructor(
     var ctrl: Boolean = false,
     var alt: Boolean = false,
     var meta: Boolean = false,
+    var str: String? = null,
 ) : Event() {
     var deltaTime = TimeSpan.ZERO
 
@@ -335,6 +343,8 @@ data class KeyEvent constructor(
     val typeUp get() = type == Type.UP
 
     val ctrlOrMeta: Boolean get() = if (OS.isMac) meta else ctrl
+
+    fun characters(): String = str ?: "$character"
 
 	enum class Type { UP, DOWN, TYPE }
 
@@ -349,6 +359,7 @@ data class KeyEvent constructor(
         this.alt = other.alt
         this.meta = other.meta
         this.deltaTime = other.deltaTime
+        this.str = other.str
     }
 }
 

@@ -11,8 +11,10 @@ import kotlin.collections.MutableMap
 import kotlin.collections.getOrPut
 import kotlin.collections.set
 import kotlin.math.min
+import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KProperty
 
+@ThreadLocal
 var UiComponent.reactUid by Extra.PropertyThis<UiComponent, Any?> { null }
 
 fun UiContainer.react(gen: UiContainerWithReactState.() -> Unit): UiContainer {

@@ -18,12 +18,15 @@ class ParticlesMain : Scene() {
             //val emitter = resourcesVfs["particle/particle.pex"].readParticleEmitter()
             //val emitter = resourcesVfs["particle/1/particle.pex"].readParticleEmitter()
             //val particlesView = particleEmitter(emitter, time = 2.seconds).position(views.virtualWidth * 0.5, views.virtualHeight * 0.5)
-            val particlesView = particleEmitter(emitter, localCoords = false).position(views.virtualWidth * 0.5, views.virtualHeight * 0.5)
+            val particlesView = particleEmitter(emitter, localCoords = false)//.position(views.virtualWidth * 0.5, views.virtualHeight * 0.5)
             //val particlesView = particleEmitter(emitter).position(0.0, 0.0)
 
             addUpdater {
-                //particlesView.emitterPos = stage.mouseXY
-                particlesView.setGlobalXY(stage!!.mouseXY)
+                val localMouse = localMouseXY(views)
+                val stageMouse = stage!!.mouseXY.copy()
+                //println("localMouse=$localMouse, stageMouse=$stageMouse")
+                particlesView.emitterPos = localMouseXY(views)
+                //particlesView.setGlobalXY(stage!!.mouseXY)
                 //println(stage!!.mouseXY)
                 //particlesView.x = stage.mouseX
                 //particlesView.y = stage.mouseY

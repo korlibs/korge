@@ -128,10 +128,11 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
         var n = MathUtils.min(num, Settings.maxPolygonVertices)
 
         // Perform welding and copy vertices into local buffer.
-        val ps = if (vecPool != null)
-            vecPool[Settings.maxPolygonVertices]
+        val ps : Array<Vec2?>
+        if (vecPool != null)
+            ps = vecPool[Settings.maxPolygonVertices] as Array<Vec2?>
         else
-            arrayOfNulls<Vec2>(Settings.maxPolygonVertices)
+            ps = arrayOfNulls<Vec2>(Settings.maxPolygonVertices)
         var tempCount = 0
         for (i in 0 until n) {
             val v = verts[i]
@@ -144,7 +145,7 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
             }
 
             if (unique) {
-                ps[tempCount++]!!.set(v)
+                ps[tempCount++] = v
             }
         }
 
@@ -212,9 +213,6 @@ class PolygonShape : Shape(ShapeType.POLYGON) {
 
         // Copy vertices.
         for (i in 0 until count) {
-            if (vertices[i] == null) {
-                vertices[i] = Vec2()
-            }
             vertices[i].set(ps[hull[i]]!!)
         }
 

@@ -5,6 +5,7 @@ import com.soywiz.korge.input.onScroll
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.camera.cameraContainer
+import com.soywiz.korge.view.tiles.TileMap
 import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.tiles.tileMap
 import com.soywiz.korim.atlas.MutableAtlasUnit
@@ -22,21 +23,28 @@ class MainTilemapTest : Scene() {
     override suspend fun Container.sceneMain() {
         val tileSize = 200
         val tileSet = makeSimpleTileSet(tileSize)
+        //val mapSize = 200
         val mapSize = 100
+        //val mapSize = 16
         val donutMap = makeDonutMap(mapSize, tileSet)
+        lateinit var tilemap: TileMap
 
         val cameraContainer = cameraContainer(stage!!.width, stage!!.height) {
-            tileMap(donutMap, tileSet).centerOn(this)
+            tilemap = tileMap(donutMap, tileSet).centerOn(this)
         }
-        cameraContainer.cameraY = -9000.0
+        cameraContainer.cameraY = -80.0 * mapSize
         val statusOverlay = text("")
 
-        var zoom = 0.0
-        onScroll {
-            println("onscroll: ${it.scrollDeltaYPixels}")
-            zoom -= (it.scrollDeltaYPixels / 240)
+        var zoom = -4.5
+        fun updateZoom() {
             cameraContainer.cameraZoom = 2.0.pow(zoom)
         }
+        onScroll {
+            //println("onscroll: ${it.scrollDeltaYPixels}")
+            zoom -= (it.scrollDeltaYPixels / 240)
+            updateZoom()
+        }
+        updateZoom()
 
         var wasDown = false
         val downVals = object {
@@ -70,7 +78,17 @@ class MainTilemapTest : Scene() {
                     }
                 }
             }
-            statusOverlay.text = "zoom: ${zoom.niceStr(2)}\nangle: ${cameraContainer.cameraAngle}\npos: ${cameraContainer.cameraX.niceStr(2)}, ${cameraContainer.cameraY.niceStr(2)}"
+            statusOverlay.text = listOf(
+                "zoom: ${zoom.niceStr(2)}",
+                "angle: ${cameraContainer.cameraAngle}",
+                "pos: ${cameraContainer.cameraX.niceStr(2)}, ${cameraContainer.cameraY.niceStr(2)}\n",
+                "ngroups: ${tilemap.totalGroupsCount}",
+                "ntiles: ${tilemap.totalTilesRendered}",
+                "nvertices: ${tilemap.totalVertexCount}",
+                "nindices: ${tilemap.totalIndexCount}",
+                "nbatches: ${tilemap.totalBatchCount}",
+                "niterations: ${tilemap.totalIterationCount}"
+            ).joinToString("\n")
             wasDown = isDown
         }
     }

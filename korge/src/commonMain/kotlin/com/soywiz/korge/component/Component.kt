@@ -14,6 +14,8 @@ import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.CloseableCancellable
 import kotlin.collections.List
 import kotlin.collections.MutableList
 import kotlin.collections.filterIsInstance
@@ -30,6 +32,8 @@ import kotlin.reflect.KClass
 interface Component {
     val view: BaseView
 }
+
+fun Component.cancellable(): CloseableCancellable = CloseableCancellable { detach() }
 
 //Deprecated("Unoptimized")
 fun <T : Component> T.attach(): T {

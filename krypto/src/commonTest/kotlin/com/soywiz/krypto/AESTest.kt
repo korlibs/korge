@@ -1,5 +1,6 @@
 package com.soywiz.krypto
 
+import com.soywiz.krypto.CipherPadding.Companion.NoPadding
 import com.soywiz.krypto.encoding.Hex
 import com.soywiz.krypto.encoding.hexLower
 import com.soywiz.krypto.encoding.unhex
@@ -240,6 +241,22 @@ class AESTest {
         val initialisationVector = nonce + ByteArray(8)
         assertEquals("14e2d5701d", AES.encryptAesCtr("hello".encodeToByteArray(), key, initialisationVector, Padding.NoPadding).hex)
         assertEquals("hello", AES.decryptAesCtr("14e2d5701d".unhex, key, initialisationVector, Padding.NoPadding).decodeToString())
+    }
+
+    @Test
+    fun testAESShouldFail() {
+        val exception = assertFailsWith<IllegalArgumentException> {
+            val anyData = Random.Default.nextBytes(ByteArray(1))
+            val anyKey = Random.Default.nextBytes(ByteArray(128 / 8))
+            val invalidIV = ByteArray(15) // This should be at least 16 bytes long
+            AES.decryptAesCtr(
+                data = anyData,
+                key = anyKey,
+                iv = invalidIV,
+                padding = NoPadding
+            )
+        }
+        assertEquals("Wrong IV length: must be 16 bytes long", exception.message)
     }
 }
 

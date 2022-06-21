@@ -24,6 +24,8 @@ import com.soywiz.korma.interpolation.Easing
 class MainMasks : Scene() {
     override suspend fun Container.sceneMain() {
         filter = IdentityFilter
+        scale = 0.9
+        //y -= 32.0
 
         solidRect(width, height, Colors.GREEN)
 
@@ -37,7 +39,7 @@ class MainMasks : Scene() {
             .mask(maskView)
         //.mask(solidRect(100, 100, Colors.WHITE).xy(50, 50).visible(false))
 
-        roundRect(100, 100, 16, 16).xy(50, 50)
+        roundRect(100, 100, 16, 16).xy(15, 15)
             .backdropFilters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
             .backdropFilters(BlurFilter())
 

@@ -1,6 +1,7 @@
 package com.soywiz.korim.atlas
 
 import com.soywiz.kds.ListReader
+import com.soywiz.korim.format.ImageOrientation
 import com.soywiz.korio.dynamic.KDynamic
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korio.serialization.xml.Xml
@@ -32,6 +33,8 @@ data class AtlasInfo(
 
     data class Rect(val x: Int, val y: Int, val w: Int, val h: Int) {
         val rect get() = Rectangle(x, y, w, h)
+
+        fun toRectangleInt() : RectangleInt = RectangleInt(x, y, w, h)
     }
 
     data class Size(val width: Int, val height: Int) {
@@ -92,24 +95,86 @@ data class AtlasInfo(
     data class Region(
         val name: String,
         val frame: Rect,
-        val rotated: Boolean,
-        val sourceSize: Size,
-        val spriteSourceSize: Rect,
-        val trimmed: Boolean,
-        val orig: Size = Size(0, 0),
-        val offset: Point = Point(),
+        val virtFrame: Rect? = null,
+        val imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL,
     ) {
+
+        val srcWidth = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.h else frame.w
+
+        val srcHeight = if (imageOrientation.isRotatedDeg90CwOrCcw) frame.w else frame.h
+
+        @Deprecated("Use primary constructor")
+        constructor(
+            name: String,
+            frame: Rect,
+            rotated: Boolean,
+            sourceSize: Size,
+            spriteSourceSize: Rect,
+            trimmed: Boolean,
+            orig: Size = Size(0, 0),
+            offset: Point = Point(),
+        ) : this(
+            name = name,
+            frame = frame,
+            virtFrame = when {
+                offset.x != 0.0 || offset.y != 0.0 || orig.width != 0 || orig.height != 0 ->
+                    Rect(offset.x.toInt(), offset.y.toInt(), orig.width, orig.height)
+                spriteSourceSize.x != 0 || spriteSourceSize.y != 0 || sourceSize.width != frame.h || sourceSize.height != frame.w ->
+                    Rect(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height)
+                else -> null
+            },
+            imageOrientation = if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL
+        ) {
+            @Suppress("DEPRECATION")
+            this.rotated = rotated
+            @Suppress("DEPRECATION")
+            this.sourceSize = sourceSize
+            @Suppress("DEPRECATION")
+            this.spriteSourceSize = spriteSourceSize
+            @Suppress("DEPRECATION")
+            this.trimmed = trimmed
+            @Suppress("DEPRECATION")
+            this.orig = orig
+            @Suppress("DEPRECATION")
+            this.offset = offset
+        }
+
+        @Deprecated("Use imageOrientation", ReplaceWith("imageOrientation == ImageOrientation.ROTATE_90", imports = ["com.soywiz.korim.format.ImageOrientation"]))
+        var rotated: Boolean = imageOrientation.isRotatedDeg90CwOrCcw
+            private set
+
+        @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
+        var sourceSize: Size = Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)
+            private set
+
+        @Deprecated("Use virtFrame", ReplaceWith("if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)"))
+        var spriteSourceSize: Rect = if (virtFrame == null) frame else Rect(virtFrame.x, virtFrame.y, frame.w, frame.h)
+            private set
+
+        @Deprecated("Use virtFrame", ReplaceWith("virtFrame != null"))
+        var trimmed: Boolean = virtFrame != null
+            private set
+
+        @Deprecated("Use virtFrame", ReplaceWith("Size(virtFrame?.w ?: frame.w, virtFrame?.h ?: frame.h)"))
+        @Suppress("DEPRECATION")
+        var orig: Size = sourceSize
+            private set
+
+        @Deprecated("Use virtFrame", ReplaceWith("Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)"))
+        var offset: Point = Point(virtFrame?.x ?: 0, virtFrame?.y ?: 0)
+            private set
+
         // @TODO: Rename to path or name
         val filename get() = name
 
-        fun applyRotation() = if (rotated) {
+        fun applyRotation() = if (imageOrientation == ImageOrientation.ROTATE_90) {
             this.copy(
                 frame = frame.copy(w = frame.h, h = frame.w),
-                spriteSourceSize = spriteSourceSize.copy(
-                    x = spriteSourceSize.y,
-                    y = spriteSourceSize.x,
-                    w = spriteSourceSize.h,
-                    h = spriteSourceSize.w
+                virtFrame = virtFrame?.copy(
+                    x = virtFrame.y,
+                    y = virtFrame.x,
+                    w = virtFrame.h,
+                    h = virtFrame.w
                 )
             )
         } else {
@@ -127,14 +192,15 @@ data class AtlasInfo(
     companion object {
         private fun Any?.toRect() = KDynamic(this) { Rect(it["x"].int, it["y"].int, it["w"].int, it["h"].int) }
         private fun Any?.toSize() = KDynamic(this) { Size(it["w"].int, it["h"].int) }
-        private fun KDynamic.createEntry(name: String, it: Any?) = Region(
-            name = name,
-            frame = it["frame"].toRect(),
-            rotated = it["rotated"].bool,
-            sourceSize = it["sourceSize"].toSize(),
-            spriteSourceSize = it["spriteSourceSize"].toRect(),
-            trimmed = it["trimmed"].bool
-        )
+        private fun KDynamic.createEntry(name: String, it: Any?): Region {
+            val rotated = it["rotated"].bool
+            val sourceSize = it["sourceSize"].toSize()
+            val spriteSourceSize = it["spriteSourceSize"].toRect()
+            return Region(name = name,
+                frame = it["frame"].toRect(),
+                virtFrame = Rect(spriteSourceSize.x, spriteSourceSize.y, sourceSize.width, sourceSize.height),
+                imageOrientation = if (rotated) ImageOrientation.ROTATE_270 else ImageOrientation.ORIGINAL)
+        }
 
         // @TODO: kotlinx-serialization?
         fun loadJsonSpriter(json: String): AtlasInfo {
@@ -210,29 +276,43 @@ data class AtlasInfo(
         fun loadXml(content: String): AtlasInfo {
             val xml = Xml(content)
             val imagePath = xml.str("imagePath")
+            val size = Size(xml.int("width", -1), xml.int("height", -1))
 
             return AtlasInfo(
                 (xml.children("SubTexture") + xml.children("sprite")).map {
-                    val rect = Rect(
+                    val rotated = it.boolean("rotated", false)
+                    var rect = Rect(
                         it.int("x"),
                         it.int("y"),
                         it.intNull("width") ?: it.int("w"),
                         it.intNull("height") ?: it.int("h")
                     )
+                    val imageOrientation: ImageOrientation
+                    if (rotated) {
+                        rect = rect.copy(w = rect.h, h = rect.w)
+                        imageOrientation = ImageOrientation.ROTATE_270
+                    } else {
+                        imageOrientation = ImageOrientation.ORIGINAL
+                    }
+
+                    val virtFrame = Rect(
+                        it.int("frameX", 0) * -1,
+                        it.int("frameY", 0) * -1,
+                        it.int("frameWidth", 0),
+                        it.int("frameHeight", 0)
+                    )
                     Region(
                         name = it.strNull("name") ?: it.str("n"),
                         frame = rect,
-                        rotated = false,
-                        sourceSize = Size(rect.w, rect.h),
-                        spriteSourceSize = rect,
-                        trimmed = false
+                        virtFrame = if (virtFrame.w != 0 || virtFrame.h != 0) virtFrame else null,
+                        imageOrientation = imageOrientation
                     )
                 }, Meta(
                     app = "Unknown",
                     format = "xml",
                     image = imagePath,
                     scale = 1.0,
-                    size = Size(-1, -1),
+                    size = size,
                     version = "1.0"
                 )
             )
@@ -317,11 +397,17 @@ data class AtlasInfo(
                             "offset" -> offset = value.point()
                         }
                     }
-                    if (rotate) {
-                        size = Size(size.height, size.width)
-                    }
-                    val rect = Rect(xy.x.toInt(), xy.y.toInt(), size.width, size.height)
-                    currentEntryList.add(Region(name, rect, rotate, size, rect, false, orig, offset))
+
+                    currentEntryList.add(Region(
+                        name = name,
+                        frame = Rect(xy.x.toInt(), xy.y.toInt(), size.width, size.height),
+                        virtFrame = Rect(offset.x.toInt(), orig.height - size.height - offset.y.toInt(), orig.width, orig.height), // In Spine atlas format offset is defined from left and bottom
+                        imageOrientation = if (rotate) {
+                            ImageOrientation.ROTATE_90
+                        } else {
+                            ImageOrientation.ORIGINAL
+                        }
+                    ))
                 }
             }
             val firstPage = pages.first()

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with TexturePacker https://www.codeandweb.com/texturepacker -->
+<!-- $TexturePacker:SmartUpdate:4a9e000edabe88f58fd50e6fe40b8d34:1a8f7b1c9e7ff4bb10eb851db86c0355:cde709370900f12288f3449eded86f07$ -->
+<TextureAtlas imagePath="atlas.png" width="140" height="100">
+    <SubTexture name="atlas1" x="0" y="0" rotated="true" width="60" height="100"/>
+    <SubTexture name="atlas2" x="60" y="0" rotated="true" width="60" height="100"/>
+    <SubTexture name="atlas3" x="120" y="0" rotated="true" width="20" height="100"/>
+</TextureAtlas>

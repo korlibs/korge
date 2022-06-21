@@ -80,3 +80,10 @@ fun Closeable.cancellable() = Cancellable { this.close() }
 fun Closeable.disposable() = Disposable { this.close() }
 fun Cancellable.closeable(e: () -> Throwable = { CancellationException("") }) =
 	Closeable { this.cancel(e()) }
+
+interface CloseableCancellable : Closeable, Cancellable
+
+fun CloseableCancellable(callback: (Throwable?) -> Unit): CloseableCancellable = object : CloseableCancellable {
+    override fun close() = callback(null)
+    override fun cancel(e: Throwable) = callback(e)
+}

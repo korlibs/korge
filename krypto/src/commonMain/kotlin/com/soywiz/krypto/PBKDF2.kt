@@ -4,37 +4,38 @@ import com.soywiz.krypto.internal.arraycopy
 
 class PBKDF2 {
     companion object {
-        fun pbkdf2WithHmacSHA1(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int) =
+        fun pbkdf2WithHmacSHA1(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int): Hash =
             pbkdf2(password, salt, iterationCount, keySizeInBits, SHA1())
 
-        fun pbkdf2WithHmacSHA256(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int) =
+        fun pbkdf2WithHmacSHA256(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int): Hash =
             pbkdf2(password, salt, iterationCount, keySizeInBits, SHA256())
 
-        fun pbkdf2WithHmacSHA512(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int) =
+        fun pbkdf2WithHmacSHA512(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int): Hash =
             pbkdf2(password, salt, iterationCount, keySizeInBits, SHA512())
 
-        private fun Int.toByteArray(): ByteArray {
-            return byteArrayOf(
-                (this shr 24 and 0xff).toByte(),
-                (this shr 16 and 0xff).toByte(),
-                (this shr 8 and 0xff).toByte(),
-                (this and 0xff).toByte()
-            )
+        private fun Int.toByteArray(out: ByteArray = ByteArray(4)): ByteArray {
+            out[0] = (this shr 24 and 0xff).toByte()
+            out[1] = (this shr 16 and 0xff).toByte()
+            out[2] = (this shr 8 and 0xff).toByte()
+            out[3] = (this and 0xff).toByte()
+            return out
         }
 
-        fun pbkdf2(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int, hasher: Hasher): ByteArray {
+        fun pbkdf2(password: ByteArray, salt: ByteArray, iterationCount: Int, keySizeInBits: Int, hasher: Hasher): Hash {
             val hLen = hasher.digestSize
             val blockSize = keySizeInBits / hLen
             val outSize = keySizeInBits / 8
-            val result = ByteArray(outSize)
             var offset = 0
+            val result = ByteArray(outSize)
             val t = ByteArray(hLen)
+            val i32be = ByteArray(4)
+            val uv = ByteArray(salt.size + i32be.size)
             gen@ for (i in 1 .. blockSize) {
                 t.fill(0)
-                val i32be = i.toByteArray()
-                var u = ByteArray(salt.size + i32be.size)
-                arraycopy(salt, 0, u, 0, salt.size)
-                arraycopy(i32be, 0, u, salt.size, i32be.size)
+                i.toByteArray(i32be)
+                arraycopy(salt, 0, uv, 0, salt.size)
+                arraycopy(i32be, 0, uv, salt.size, i32be.size)
+                var u = uv
                 for (c in 1 .. iterationCount) {
                     u = HMAC.hmac(password, u, hasher).bytes
                     hasher.reset()
@@ -49,7 +50,7 @@ class PBKDF2 {
                     }
                 }
             }
-            return result
+            return Hash(result)
         }
     }
 }

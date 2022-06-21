@@ -29,6 +29,7 @@ data class GlyphPath(
                 }
                 colorPaths != null -> {
                     colorPaths?.fastForEach { c.draw(it) }
+                    c.beginPath() // to avoid filling/strokking later
                 }
                 else -> {
                     //println("this.transform=${this.transform}, path=$path")

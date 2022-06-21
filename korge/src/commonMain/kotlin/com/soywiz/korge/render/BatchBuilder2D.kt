@@ -17,7 +17,6 @@ import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.Varying
 import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.shader.VertexShader
 import com.soywiz.korag.toRenderFboIntoBack
 import com.soywiz.korag.toRenderImageIntoFbo
 import com.soywiz.korge.internal.KorgeInternal
@@ -365,17 +364,19 @@ class BatchBuilder2D constructor(
     /**
      * Draws/buffers a set of textured and colorized array of vertices [array] with the current state previously set by calling [setStateFast].
      */
-    fun drawVertices(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.isize, texIndex: Int = currentTexIndex) {
+    fun drawVertices(array: TexturedVertexArray, matrix: Matrix?, vcount: Int = array.vcount, icount: Int = array.icount, texIndex: Int = currentTexIndex) {
         ensure(icount, vcount)
+        //println("doFlush=$doFlush : icount=$icount, vcount=$vcount")
 
         val i16 = indicesI16
         val ip = indexPos
         val vc = vertexCount
         val arrayIndices = array.indices
-        val icount = min(icount, array.isize)
+        val icount = min(icount, array.icount)
 
         arraycopy(arrayIndices, 0, i16, ip, icount)
         arrayadd(i16, vc.toShort(), ip, ip + icount)
+        //println("added: $vc"); for (n in 0 until icount) print(",${i16[n]}") ; println()
         //for (n in 0 until icount) i16[ip + n] = (vc + arrayIndices[n]).toShort()
 
         val vp = vertexPos
@@ -386,6 +387,7 @@ class BatchBuilder2D constructor(
 
         //println("texIndex=$texIndex")
         val vp6 = vertexPos / 6
+        //println("texIndex=$texIndex")
         arrayfill(verticesTexIndex, texIndex.toByte(), vp6, vp6 + vcount)
 
         if (matrix != null) {
@@ -422,9 +424,9 @@ class BatchBuilder2D constructor(
      */
     inline fun drawVertices(
         array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending,
-        vcount: Int = array.vcount, icount: Int = array.isize, program: Program? = null, matrix: Matrix? = null,
+        vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: Matrix? = null,
     ) {
-        setStateFast(tex.base, smoothing, blendFactors, program)
+        setStateFast(tex.base, smoothing, blendFactors, program, icount, vcount)
         drawVertices(array, matrix, vcount, icount)
 	}
 
@@ -432,26 +434,31 @@ class BatchBuilder2D constructor(
 		return (this.indexPos + indices < maxIndices) || (this.vertexPos + vertices < maxVertices)
 	}
 
-	fun ensure(indices: Int, vertices: Int) {
-		if (!checkAvailable(indices, vertices)) flush()
-		if (!checkAvailable(indices, vertices)) error("Too much vertices")
+	fun ensure(indices: Int, vertices: Int): Boolean {
+        if (indices == 0 && vertices == 0) return false
+        val doFlush = !checkAvailable(indices, vertices)
+		if (doFlush) flush()
+		if (!checkAvailable(indices, vertices)) error("Too much vertices: indices=$indices, vertices=$vertices")
+        return doFlush
 	}
 
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
 	fun setStateFast(
-        tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, program: Program?,
+        tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int,
     ) {
-        setStateFast(tex.base, smoothing, blendFactors, program)
+        setStateFast(tex.base, smoothing, blendFactors, program, icount, vcount)
     }
 
     /**
      * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
     inline fun setStateFast(
-        tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?,
+        tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int,
     ) {
+        ensure(icount, vcount)
+
         val isCurrentStateFast = isCurrentStateFast(tex, smoothing, blendFactors, program)
         //println("isCurrentStateFast=$isCurrentStateFast, tex=$tex, currentTex=$currentTex, currentTex2=$currentTex2")
         if (isCurrentStateFast) return
@@ -505,12 +512,12 @@ class BatchBuilder2D constructor(
             && (currentProgram === program)
     }
 
-    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
-        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program)
+    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int) {
+        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program, icount, vcount)
     }
 
-    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?) {
-        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program)
+    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int) {
+        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program, icount, vcount)
     }
 
     /**
@@ -554,10 +561,8 @@ class BatchBuilder2D constructor(
 		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
 		program: Program? = null,
 	) {
-		setStateFast(tex.base, filtering, blendFactors, program)
+		setStateFast(tex.base, filtering, blendFactors, program, icount = 6 * 9, vcount = 4 * 4)
         val texIndex: Int = currentTexIndex
-
-		ensure(indices = 6 * 9, vertices = 4 * 4)
 
 		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
 		val p_dU = pt2.setToSub(ptt1.setToTransform(m, ptt1.setTo(x + width, y)), p_o)
@@ -656,7 +661,7 @@ class BatchBuilder2D constructor(
         val x1 = (x + width)
         val y0 = y
         val y1 = (y + height)
-        setStateFast(tex.base, filtering, blendFactors, program)
+        setStateFast(tex.base, filtering, blendFactors, program, icount = 6, vcount = 4)
         drawQuadFast(
             m.transformXf(x0, y0), m.transformYf(x0, y0),
             m.transformXf(x1, y0), m.transformYf(x1, y0),
@@ -673,8 +678,9 @@ class BatchBuilder2D constructor(
     }
 
     companion object {
-        val DEFAULT_BATCH_QUADS = 4096
         val MAX_BATCH_QUADS = 16383
+        val DEFAULT_BATCH_QUADS = 4096
+        //val DEFAULT_BATCH_QUADS = MAX_BATCH_QUADS
 
         init { logger.trace { "BatchBuilder2D.Companion[0]" } }
 
@@ -716,28 +722,30 @@ class BatchBuilder2D constructor(
 
 		init { logger.trace { "BatchBuilder2D.Companion[3]" } }
 
-        private fun getShaderProgramIndex(premultiplied: Boolean, add: AddType): Int = 0
+        private fun getShaderProgramIndex(premultiplied: Boolean, add: AddType, wrap: Boolean): Int = 0
             .insert(premultiplied, 0)
-            .insert(add.index, 1, 2)
+            .insert(wrap, 1)
+            .insert(add.index, 2, 2)
 
-        private fun getOrCreateStandardProgram(premultiplied: Boolean, preaddType: AddType): Program {
-            val index = getShaderProgramIndex(premultiplied, preaddType)
-            if (BATCH_BUILDER2D_PROGRAMS[index] == null) BATCH_BUILDER2D_PROGRAMS[index] = _createProgramUncached(premultiplied, preaddType)
+        private fun getOrCreateStandardProgram(premultiplied: Boolean, preaddType: AddType, wrap: Boolean): Program {
+            val index = getShaderProgramIndex(premultiplied, preaddType, wrap)
+            if (BATCH_BUILDER2D_PROGRAMS[index] == null) BATCH_BUILDER2D_PROGRAMS[index] = _createProgramUncached(premultiplied, preaddType, wrap)
             return BATCH_BUILDER2D_PROGRAMS[index]!!
         }
 
-        private fun _createProgramUncached(premultiplied: Boolean, addType: AddType): Program {
-            val fragment = buildTextureLookupFragment(premultiplied = premultiplied, add = addType)
+        private fun _createProgramUncached(premultiplied: Boolean, addType: AddType, wrap: Boolean): Program {
+            val fragment = buildTextureLookupFragment(premultiplied = premultiplied, add = addType, wrap = wrap)
             val premultString = if (premultiplied) "Premultiplied" else "NoPremultiplied"
             val addString = when (addType) {
                 AddType.NO_ADD -> ".NoAdd"
                 AddType.PRE_ADD -> ".PreAdd"
                 AddType.POST_ADD -> ".PostAdd"
             }
+            val addWrap = if (wrap) "Wrap" else "NoWrap"
             return Program(
                 vertex = VERTEX,
                 fragment = fragment,
-                name = "BatchBuilder2D.${premultString}.Tinted${addString}"
+                name = "BatchBuilder2D.${premultString}.Tinted${addString}$addWrap"
             )
         }
 
@@ -745,15 +753,19 @@ class BatchBuilder2D constructor(
         //private val defaultAddType = AddType.PRE_ADD
 
         @KorgeInternal
-		val PROGRAM_PRE: Program = getOrCreateStandardProgram(true, defaultAddType)
+		val PROGRAM_PRE: Program = getOrCreateStandardProgram(true, defaultAddType, wrap = false)
+        @KorgeInternal
+		val PROGRAM_NOPRE: Program = getOrCreateStandardProgram(false, defaultAddType, wrap = false)
 
         @KorgeInternal
-		val PROGRAM_NOPRE: Program = getOrCreateStandardProgram(false, defaultAddType)
+        val PROGRAM_PRE_WRAP: Program = getOrCreateStandardProgram(true, defaultAddType, wrap = true)
+        @KorgeInternal
+        val PROGRAM_NOPRE_WRAP: Program = getOrCreateStandardProgram(false, defaultAddType, wrap = true)
 
-		init { logger.trace { "BatchBuilder2D.Companion[4]" } }
+        init { logger.trace { "BatchBuilder2D.Companion[4]" } }
 
         @KorgeInternal
-        fun getTextureLookupProgram(premultiplied: Boolean, add: AddType = AddType.POST_ADD): Program = getOrCreateStandardProgram(premultiplied, add)
+        fun getTextureLookupProgram(premultiplied: Boolean, add: AddType = AddType.POST_ADD, wrap: Boolean = false): Program = getOrCreateStandardProgram(premultiplied, add, wrap)
 
 		//val PROGRAM_NORMAL = Program(
 		//	vertex = VERTEX,
@@ -770,7 +782,7 @@ class BatchBuilder2D constructor(
          * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
          */
         @KorgeInternal
-		internal fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType) = FragmentShader {
+		internal fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType, wrap: Boolean) = FragmentShader {
 			DefaultShaders.apply {
                 // @TODO: Due to some android device shader compiler bugs, can't use samplerExternalOES as a parameter of a custom function
                 // @TODO: So disabled this functionality, and keep fract() as the standard
@@ -783,7 +795,8 @@ class BatchBuilder2D constructor(
                 //}
 
                 IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-                    SET(out, texture2D(u_TexN[n], fract(v_Tex["xy"])))
+                    //SET(out, texture2D(u_TexN[n], fract(v_Tex["xy"])))
+                    SET(out, texture2D(u_TexN[n], if (wrap) fract(v_Tex["xy"]) else v_Tex["xy"]))
                 }
                 //for (n in 0 until BB_MAX_TEXTURES) {
                 //    IF(v_TexIndex eq (n.toFloat()).lit) {
@@ -847,8 +860,11 @@ class BatchBuilder2D constructor(
     }
 
     fun getIsPremultiplied(texture: AG.Texture?): Boolean = texture?.premultiplied == true
-    fun getDefaultProgram(premultiplied: Boolean): Program = if (premultiplied) PROGRAM_PRE else PROGRAM_NOPRE
-    fun getDefaultProgramForTexture(texture: AG.Texture?): Program = getDefaultProgram(getIsPremultiplied(texture))
+    fun getDefaultProgram(premultiplied: Boolean, wrap: Boolean = false): Program = when {
+        premultiplied -> if (wrap) PROGRAM_PRE_WRAP else PROGRAM_PRE
+        else -> if (wrap) PROGRAM_NOPRE_WRAP else PROGRAM_NOPRE
+    }
+    fun getDefaultProgramForTexture(texture: AG.Texture?, wrap: Boolean = false): Program = getDefaultProgram(getIsPremultiplied(texture), wrap)
 
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {

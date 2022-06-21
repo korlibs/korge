@@ -1,0 +1,55 @@
+
+atlas-test-spine.atlas.png
+size: 98,112
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+1
+  rotate: true
+  xy: 0, 0
+  size: 32, 46
+  orig: 32, 46
+  offset: 0, 0
+  index: -1
+2
+  rotate: true
+  xy: 47, 0
+  size: 32, 46
+  orig: 42, 56
+  offset: 0, 10
+  index: -1
+3
+  rotate: false
+  xy: 0, 33
+  size: 32, 46
+  orig: 42, 56
+  offset: 10, 10
+  index: -1
+4
+  rotate: true
+  xy: 0, 80
+  size: 32, 46
+  orig: 42, 56
+  offset: 10, 0
+  index: -1
+5
+  rotate: false
+  xy: 33, 33
+  size: 32, 46
+  orig: 42, 56
+  offset: 0, 0
+  index: -1
+6
+  rotate: false
+  xy: 66, 33
+  size: 32, 46
+  orig: 42, 56
+  offset: 5, 5
+  index: -1
+7
+  rotate: true
+  xy: 47, 80
+  size: 32, 46
+  orig: 42, 56
+  offset: 5, 5
+  index: -1

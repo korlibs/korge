@@ -6,8 +6,8 @@ import com.soywiz.krypto.internal.arraycopy
 // https://git.suckless.org/sbase/file/sha512.h.html
 /* public domain sha512 implementation based on fips180-3 */
 @OptIn(ExperimentalUnsignedTypes::class)
-class SHA512 : SHA(chunkSize = 64, digestSize = 64) {
-    companion object : HasherFactory({ SHA512() }) {
+class SHA512 : SHA(chunkSize = 128, digestSize = 64) {
+    companion object : HasherFactory("SHA512", { SHA512() }) {
         private const val SHA512_DIGEST_LENGTH = 64
 
         private fun ror(n: ULong, k: Int): ULong = (n shr k) or (n shl (64 - k))
@@ -66,6 +66,7 @@ class SHA512 : SHA(chunkSize = 64, digestSize = 64) {
     // @TODO: The super update doesn't work with SHA512, do we have to fix something?
     override fun update(data: ByteArray, offset: Int, count: Int): Hasher {
         sha512_update(data.asUByteArray(), offset, count)
+        totalWritten += count
         return this
     }
 

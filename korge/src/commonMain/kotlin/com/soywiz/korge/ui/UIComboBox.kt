@@ -17,6 +17,7 @@ import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.Point
+import kotlin.native.concurrent.ThreadLocal
 
 inline fun <T> Container.uiComboBox(
     width: Double = UI_DEFAULT_WIDTH,
@@ -26,6 +27,7 @@ inline fun <T> Container.uiComboBox(
     block: @ViewDslMarker UIComboBox<T>.() -> Unit = {}
 ) = UIComboBox(width, height, selectedIndex, items).addTo(this).apply(block)
 
+@ThreadLocal
 var Views.openedComboBox by Extra.Property<UIComboBox<*>?>() { null }
 
 open class UIComboBox<T>(
@@ -104,7 +106,7 @@ open class UIComboBox<T>(
         containerRoot.addChild(itemsView)
 
         //itemsView.size(width, viewportHeight.toDouble()).position(0.0, height)
-        itemsView.size(width, 128.0.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
+        itemsView.size(width, viewportHeight.toDouble()).setGlobalXY(localToGlobal(Point(0.0, height)))
         verticalList.size(width, verticalList.height)
 
         verticalList.invalidateList()

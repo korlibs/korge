@@ -196,12 +196,12 @@ class RenderContext2D(
     }
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: Matrix? = null) {
-        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
+        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
         batch.drawVertices(texturedVertexArray, matrix)
     }
 
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
-        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null)
+        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
         batch.drawVertices(texturedVertexArray, m)
     }
 

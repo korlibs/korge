@@ -9,6 +9,7 @@ import com.soywiz.korio.stream.readIntArrayLE
 import com.soywiz.korio.stream.readS32LE
 import com.soywiz.korio.stream.readStream
 import com.soywiz.korio.stream.readString
+import kotlin.native.concurrent.ThreadLocal
 
 object DDS : ImageFormat("dds") {
 	override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
@@ -66,4 +67,5 @@ object DDS : ImageFormat("dds") {
 	}
 }
 
+@ThreadLocal
 private var ImageInfo.fourcc by Extra.Property { "    " }

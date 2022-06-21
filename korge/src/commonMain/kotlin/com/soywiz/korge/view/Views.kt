@@ -82,6 +82,7 @@ import kotlin.collections.plusAssign
 import kotlin.collections.set
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
+import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KClass
 
 //@Singleton
@@ -522,8 +523,8 @@ class Views constructor(
     var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()
 }
 
-fun Views.getDefaultProgram(premultiplied: Boolean = true): Program =
-    renderContext.batch.getDefaultProgram(premultiplied)
+fun Views.getDefaultProgram(premultiplied: Boolean = true, wrap: Boolean = false): Program =
+    renderContext.batch.getDefaultProgram(premultiplied, wrap)
 
 fun viewsLog(callback: suspend Stage.(log: ViewsLog) -> Unit) = Korio {
     viewsLogSuspend(callback)
@@ -734,6 +735,7 @@ fun BoundsProvider.setBoundsInfo(
     actualVirtualBounds.setToBounds(tl.x, tl.y, br.x, br.y)
 }
 
+@ThreadLocal
 var UiApplication.views by Extra.PropertyThis<UiApplication, Views?> { null }
 
 suspend fun views(): Views = injector().get()

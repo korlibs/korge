@@ -14,6 +14,7 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.launchImmediately
+import kotlin.native.concurrent.ThreadLocal
 
 class GamePadEvents(override val view: View) : GamepadComponent {
     @PublishedApi
@@ -124,5 +125,6 @@ class GamePadEvents(override val view: View) : GamepadComponent {
 	}
 }
 
+@ThreadLocal
 val View.gamepad by Extra.PropertyThis<View, GamePadEvents> { this.getOrCreateComponentGamepad<GamePadEvents> { GamePadEvents(this) } }
 inline fun <T> View.gamepad(callback: GamePadEvents.() -> T): T = gamepad.run(callback)

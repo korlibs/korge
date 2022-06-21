@@ -3,6 +3,7 @@ package com.soywiz.korge.scene
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
+import com.soywiz.korge.ReloadEvent
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.ui.UIView
@@ -15,6 +16,7 @@ import com.soywiz.korge.view.findFirstAscendant
 import com.soywiz.korge.view.views
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.async
+import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.launchUnscoped
 import com.soywiz.korio.async.launchUnscopedAndWait
 import com.soywiz.korio.resources.Resources
@@ -75,6 +77,17 @@ class SceneContainer(
 	var currentScene: Scene? = null
     override fun onSizeChanged() {
         currentScene?.sceneView?.setSize(width, height)
+    }
+
+    init {
+        addOnEvent<ReloadEvent> {
+            launchImmediately {
+                val scene = currentScene
+                if (scene != null) {
+                    changeTo(scene::class)
+                }
+            }
+        }
     }
 
     // Async versions
@@ -169,11 +182,22 @@ class SceneContainer(
 		return _changeTo(clazz, *injects, time = time, transition = transition)
 	}
 
-    suspend inline fun <T : Scene> changeTo(
-        gen: (AsyncInjector) -> T,
+    suspend inline fun <reified T : Scene> changeTo(
+        crossinline gen: suspend (AsyncInjector) -> T,
         vararg injects: Any,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
+    ): T {
+        return changeTo(T::class, gen, injects, time, transition, remap = true)
+    }
+
+    suspend inline fun <T : Scene> changeTo(
+        clazz: KClass<T>,
+        crossinline gen: suspend (AsyncInjector) -> T,
+        vararg injects: Any,
+        time: TimeSpan = 0.seconds,
+        transition: Transition = defaultTransition,
+        remap: Boolean = false
     ): T {
         val sceneInjector: AsyncInjector =
             views.injector.child()
@@ -183,10 +207,16 @@ class SceneContainer(
             sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
         }
         val newScene = gen(sceneInjector)
+        if (remap) {
+            newScene.init(sceneInjector)
+            views.injector.mapPrototype(newScene::class as KClass<T>) { gen(sceneInjector) }
+            //println("REMAPPED: $clazz")
+        }
         return _changeTo(newScene, time, transition)
     }
 
-	private suspend fun _changeTo(
+
+    private suspend fun _changeTo(
         entry: VisitEntry,
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
@@ -199,7 +229,7 @@ class SceneContainer(
         time: TimeSpan = 0.seconds,
         transition: Transition = defaultTransition
     ): T {
-        return changeTo({ it.get(clazz) }, *injects, time, transition)
+        return changeTo(clazz, { it.get(clazz) }, *injects, time, transition)
     }
 
     /** Check [Scene] for details of the lifecycle. */

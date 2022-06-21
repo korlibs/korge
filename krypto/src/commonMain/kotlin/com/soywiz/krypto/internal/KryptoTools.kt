@@ -32,12 +32,11 @@ internal fun ByteArray.toIntArray(): IntArray =
 internal fun IntArray.toByteArray(): ByteArray =
     ByteArray(size * 4).also { for (n in indices) it.setInt(n * 4, this[n]) }
 
-internal fun getIV(srcIV: ByteArray?, blockSize: Int): ByteArray = ByteArray(blockSize).also { dstIV ->
-    if (srcIV != null) {
-        arraycopy(srcIV, 0, dstIV, 0, kotlin.math.min(srcIV.size, dstIV.size))
-    } else {
-        TODO("IV not provided")
-    }
+internal fun getIV(srcIV: ByteArray?, blockSize: Int): ByteArray {
+    if (srcIV == null) TODO("IV not provided")
+    if (srcIV.size < blockSize) throw IllegalArgumentException("Wrong IV length: must be $blockSize bytes long")
+    return srcIV.copyOf(blockSize)
+    //return ByteArray(blockSize).also { dstIV -> arraycopy(srcIV, 0, dstIV, 0, kotlin.math.min(srcIV.size, dstIV.size)) }
 }
 
 internal fun arrayxor(data: ByteArray, offset: Int, xor: ByteArray) {

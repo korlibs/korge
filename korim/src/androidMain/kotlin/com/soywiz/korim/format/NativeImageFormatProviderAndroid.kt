@@ -129,6 +129,7 @@ suspend fun androidQuestionAlert(message: String, title: String = "Warning"): Bo
 fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
     if (this is AndroidNativeImage) return this.androidBitmap
     val bmp32 = this.toBMP32()
+    bmp32.updateColors { RGBA(it.toAndroidColor()) }
     return android.graphics.Bitmap.createBitmap(
         bmp32.data.ints,
         0,
@@ -148,15 +149,13 @@ class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
         androidBitmap.getPixels(out.ints, offset, this.width, x, y, width, height)
-        BGRA.bgraToRgba(out.ints, offset, width * height)
+        AndroidColor.androidToRgba(out, offset, width * height)
     }
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        BGRA.rgbaToBgra(out.ints, offset, width * height)
+        AndroidColor.rgbaToAndroid(out, offset, width * height)
         androidBitmap.setPixels(out.ints, offset, this.width, x, y, width, height)
-        BGRA.bgraToRgba(out.ints, offset, width * height)
+        AndroidColor.androidToRgba(out, offset, width * height)
     }
-    override fun setRgba(x: Int, y: Int, v: RGBA) { androidBitmap.setPixel(x, y, v.value) }
-    override fun getRgba(x: Int, y: Int): RGBA = RGBA(androidBitmap.getPixel(x, y))
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AndroidContext2dRenderer(androidBitmap, antialiasing))
 }
@@ -212,12 +211,6 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         CycleMethod.REPEAT -> Shader.TileMode.REPEAT
     }
 
-    // https://developer.android.com/reference/android/graphics/Color
-    fun argb(a: Int, r: Int, g: Int, b: Int): Int =
-        (a and 0xff shl 24) or (r and 0xff shl 16) or (g and 0xff shl 8) or (b and 0xff)
-
-    fun argb(color: RGBA): Int = argb(color.a, color.r, color.g, color.b)
-
     @Suppress("RemoveRedundantQualifierName")
     fun convertPaint(c: com.soywiz.korim.paint.Paint, m: com.soywiz.korma.geom.Matrix, out: Paint, alpha: Double) {
         when (c) {
@@ -225,13 +218,13 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
                 out.shader = null
             }
             is com.soywiz.korim.paint.ColorPaint -> {
-                out.color = argb(c.color.withScaledAlpha(alpha))
+                out.color = c.color.withScaledAlpha(alpha).toAndroidColor()
                 out.shader = null
             }
             is com.soywiz.korim.paint.GradientPaint -> {
                 val colors = c.colors.toColorScaledAlpha(alpha)
                     .apply {
-                        for (n in indices) this[n] = argb(RGBA(this[n]))
+                        for (n in indices) this[n] = RGBA(this[n]).toAndroidColor()
                     }
                 val stops = c.stops.toFloatArray()
                 out.shader = when (c.kind) {

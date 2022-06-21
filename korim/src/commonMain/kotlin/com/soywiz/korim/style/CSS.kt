@@ -25,6 +25,7 @@ import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.radians
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.interpolation.interpolate
+import kotlin.native.concurrent.ThreadLocal
 
 @KorimExperimental
 class CSS(val allRules: List<IRuleSet>, unit: Unit = Unit) {
@@ -419,12 +420,12 @@ class CSSReader(val tokens: ListReader<CSS.Companion.Token>) {
     }
 }
 
-val CSS.Expression.color by extraPropertyThis { CSS.parseColor(exprStr) }
-val CSS.Expression.ratio by extraPropertyThis { CSS.parseRatio(exprStr) }
-val CSS.Expression.matrix by extraPropertyThis { CSS.parseTransform(exprStr) }
-val CSS.Expression.transform by extraPropertyThis { matrix.decompose() }
-val CSS.Expression.easing by extraPropertyThis { CSS.parseEasing(exprStr) }
-val CSS.Declarations.animation by extraPropertyThis {
+@ThreadLocal val CSS.Expression.color by extraPropertyThis { CSS.parseColor(exprStr) }
+@ThreadLocal val CSS.Expression.ratio by extraPropertyThis { CSS.parseRatio(exprStr) }
+@ThreadLocal val CSS.Expression.matrix by extraPropertyThis { CSS.parseTransform(exprStr) }
+@ThreadLocal val CSS.Expression.transform by extraPropertyThis { matrix.decompose() }
+@ThreadLocal val CSS.Expression.easing by extraPropertyThis { CSS.parseEasing(exprStr) }
+@ThreadLocal val CSS.Declarations.animation by extraPropertyThis {
     this["animation"]?.let { CSS.parseAnimation(it.exprStr) }
 }
 

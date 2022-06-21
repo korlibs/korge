@@ -54,7 +54,13 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 batcher.setViewMatrixTemp(mask.globalMatrixInv) {
                     ctx.renderToFrameBuffer(maskFB) {
                         ctx.ag.clear(color = Colors.TRANSPARENT_BLACK)
-                        mask.renderFirstPhase(ctx)
+                        val oldVisible = mask.visible
+                        try {
+                            mask.visible = true
+                            mask.renderFirstPhase(ctx)
+                        } finally {
+                            mask.visible = oldVisible
+                        }
                     }
                     ctx.renderToFrameBuffer(viewFB) {
                         ctx.ag.clear(color = Colors.TRANSPARENT_BLACK)

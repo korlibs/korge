@@ -13,6 +13,7 @@ import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.yaml.*
 import kotlin.coroutines.*
+import kotlin.native.concurrent.ThreadLocal
 
 data class SWFExportConfig(
 	val debug: Boolean = false,
@@ -43,6 +44,7 @@ suspend fun VfsFile.readSWF(context: AnLibrary.Context, config: SWFExportConfig?
 	return if (config != null) this.readSWF(context, config) else this.readSWF(context)
 }
 
+@ThreadLocal
 var AnLibrary.swfExportConfig by Extra.Property { SWFExportConfig() }
 
 suspend fun VfsFile.readSWF(
@@ -79,6 +81,7 @@ inline val TagPlaceObject.depth0: Int get() = this.depth - 1
 inline val TagPlaceObject.clipDepth0: Int get() = this.clipDepth - 1
 inline val TagRemoveObject.depth0: Int get() = this.depth - 1
 
+@ThreadLocal
 val SWF.bitmaps by Extra.Property { hashMapOf<Int, Bitmap>() }
 
 class MySwfFrame(val index0: Int, maxDepths: Int) {
@@ -110,8 +113,12 @@ class MySwfTimeline {
 	val frames = arrayListOf<MySwfFrame>()
 }
 
+@ThreadLocal
 internal val AnSymbolMovieClip.swfTimeline by Extra.Property { MySwfTimeline() }
+@ThreadLocal
 internal val AnSymbolMovieClip.labelsToFrame0 by Extra.Property { hashMapOf<String, Int>() }
 
+@ThreadLocal
 var AnSymbolMorphShape.tagDefineMorphShape by Extra.Property<TagDefineMorphShape?> { null }
+@ThreadLocal
 var AnSymbolShape.tagDefineShape by Extra.Property<TagDefineShape?> { null }

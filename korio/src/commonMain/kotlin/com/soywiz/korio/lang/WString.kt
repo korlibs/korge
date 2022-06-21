@@ -1,5 +1,7 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.kmem.clamp
+
 // @TODO: UTf-8 variant with seeking points?
 // @TODO: trying to be more space efficient for long strings?
 // @TODO: while having a decent performance
@@ -26,11 +28,14 @@ class WString private constructor(private val codePoints: IntArray, private val 
     fun toCodePointIntArray() = codePoints.copyOf()
 
     companion object {
+        private val EMPTY = WString(intArrayOf(), "")
+
         operator fun invoke(codePoints: IntArray) = fromCodePoints(codePoints)
         operator fun invoke(string: String) = fromString(string)
 
         // Decode surrogate pairs
         fun fromString(string: String): WString {
+            if (string == "") return EMPTY
             val codePoints = IntArray(string.length)
             val length = string.forEachCodePoint { index, codePoint, error -> codePoints[index] = codePoint }
             return WString(codePoints.copyOf(length), string)
@@ -39,24 +44,32 @@ class WString private constructor(private val codePoints: IntArray, private val 
         fun fromCodePoints(codePoints: IntArray): WString {
             val surrogateCount = codePoints.count { it >= 0x10000 }
             val out = StringBuilder(codePoints.size + surrogateCount)
-            var n = 0
             for (codePoint in codePoints) {
                 if (codePoint > 0xFFFF) {
                     val U1 = codePoint - 0x10000
                     val W1 = 0xD800 or ((U1 ushr 10) and 0x3FF)
                     val W2 = 0xDC00 or ((U1 ushr 0) and 0x3FF)
-                    out[n++] = W1.toChar()
-                    out[n++] = W2.toChar()
+                    out.append(W1.toChar())
+                    out.append(W2.toChar())
                 } else {
-                    out[n++] = codePoint.toChar()
+                    out.append(codePoint.toChar())
                 }
             }
             return WString(codePoints, out.toString())
         }
     }
 
-    override fun hashCode(): Int = string.hashCode()
-    override fun equals(other: Any?): Boolean = (other is WString) && this.codePoints.contentEquals(other.codePoints)
+    private var cachedHashCodeValue = 0
+    private var cachedHashCode = false
+
+    override fun hashCode(): Int {
+        if (!cachedHashCode) {
+            cachedHashCode = true
+            cachedHashCodeValue = this.codePoints.contentHashCode()
+        }
+        return cachedHashCodeValue
+    }
+    override fun equals(other: Any?): Boolean = (other is WString) && this.codePoints.contentEquals(other.codePoints) //this.string == other.string
 
     // Encode surrogate pairs
     override fun toString(): String = string
@@ -77,7 +90,7 @@ inline fun String.forEachCodePoint(block: (index: Int, codePoint: Int, error: Bo
         var value = string[n++].code
         var error = false
         // High surrogate
-        if ((value and 0xF800) == 0xD800) {
+        if ((value and 0xF800) == 0xD800 && n < string.length) {
             val extra = string[n++].code
             if ((extra and 0xFC00) != 0xDC00) {
                 n--
@@ -96,8 +109,26 @@ inline fun String.forEachCodePoint(block: (index: Int, codePoint: Int, error: Bo
 
 fun String.toWString() = WString(this)
 
+fun WString.substr(start: Int, length: Int = this.length): WString {
+    val low = (if (start >= 0) start else this.length + start).clamp(0, this.length)
+    val high = (if (length >= 0) low + length else this.length + length).clamp(0, this.length)
+    return if (high < low) WString("") else this.substring(low, high)
+}
+
+
 inline class WChar(val codePoint: Int) {
     val code: Int get() = codePoint
     fun toChar(): Char = codePoint.toChar()
     fun toInt(): Int = codePoint
+}
+
+class WStringReader(val str: WString, var position: Int = 0) {
+    val length: Int get() = str.length
+    val available: Int get() = str.length - position
+    val eof: Boolean get() = position >= str.length
+    val hasMore: Boolean get() = !eof
+    fun read(): WChar = str[position++]
+    fun peek(offset: Int = 0): WChar = str.getOrElse(this.position + offset) { WChar(0) }
+    fun skip(count: Int) { position += count }
+    fun substr(offset: Int, len: Int = str.length): WString = str.substr(this.position + offset, len)
 }

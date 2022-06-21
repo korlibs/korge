@@ -70,6 +70,8 @@ fun IPoint.distanceTo(that: IPoint): Double = distanceTo(that.x, that.y)
 fun IPoint.angleTo(other: IPoint): Angle = Angle.between(this.x, this.y, other.x, other.y)
 val IPoint.angle: Angle get() = Angle.between(0.0, 0.0, this.x, this.y)
 fun IPoint.transformed(mat: Matrix, out: Point = Point()): Point = out.setToTransform(mat, this)
+fun IPoint.transformX(m: Matrix?): Double = m?.transformX(this) ?: x
+fun IPoint.transformY(m: Matrix?): Double = m?.transformY(this) ?: y
 operator fun IPoint.get(component: Int) = when (component) {
     0 -> x; 1 -> y
     else -> throw IndexOutOfBoundsException("IPoint doesn't have $component component")
