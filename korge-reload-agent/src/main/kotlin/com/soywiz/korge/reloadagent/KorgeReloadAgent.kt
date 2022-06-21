@@ -74,8 +74,8 @@ object KorgeReloadAgent {
                 }
                 val p = Runtime.getRuntime().exec("$jvmLocation $continuousCommand")
                 //val p = ProcessBuilder(*args, continuousCommand).inheritIO().start()
-                val pID = p.pid()
-                println("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
+                //val pID = p.pid()
+                //println("[KorgeReloadAgent] - Started continuousCommand PID=$pID")
 
                 Runtime.getRuntime().addShutdownHook(Thread {
                     //if (isWindows) {
