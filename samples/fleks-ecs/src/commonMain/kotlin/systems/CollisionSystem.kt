@@ -15,9 +15,6 @@ class CollisionSystem : IteratingSystem(
     private val destructs = Inject.componentMapper<Destruct>()
     private val impulses = Inject.componentMapper<Impulse>()
 
-    override fun onInit() {
-    }
-
     override fun onTickEntity(entity: Entity) {
         val pos = positions[entity]
 

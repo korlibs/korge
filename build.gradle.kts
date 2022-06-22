@@ -1066,8 +1066,10 @@ object BuildVersions {
     const val KORAU = "$projectVersion"
     const val KORGW = "$projectVersion"
     const val KORGE = "$projectVersion"
-
-    val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION) }
+    // https://github.com/Quillraven/Fleks/tree/kmp
+    const val FLEKS = "1.0-KMP-RC1"
+    
+    val ALL_PROPERTIES by lazy { listOf(::GIT, ::KRYPTO, ::KLOCK, ::KDS, ::KMEM, ::KORMA, ::KORIO, ::KORIM, ::KORAU, ::KORGW, ::KORGE, ::KOTLIN, ::JNA, ::COROUTINES, ::ANDROID_BUILD, ::KOTLIN_SERIALIZATION, ::FLEKS) }
     val ALL by lazy { ALL_PROPERTIES.associate { it.name to it.get() } }
 }
 """.trimIndent()

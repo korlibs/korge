@@ -51,7 +51,7 @@ if (!disabledExtraKorgeLibs) {
 
     //include(":samples:parallax-scrolling-aseprite")
     //include(":samples:tiled-background")
-    //include(":samples:fleks-ecs")
+    include(":samples:fleks-ecs")
 
     // This is required because having tons of gradle modules is super slow
     boolean skipKorgeSamples = !includeKorlibsSamples

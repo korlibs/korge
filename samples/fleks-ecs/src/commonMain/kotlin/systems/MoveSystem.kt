@@ -16,8 +16,6 @@ class MoveSystem : IteratingSystem(
     private val positions = Inject.componentMapper<Position>()
     private val rigidbodies = Inject.componentMapper<Rigidbody>()
 
-    override fun onInit() {}
-
     override fun onTickEntity(entity: Entity) {
         val pos = positions[entity]
 
