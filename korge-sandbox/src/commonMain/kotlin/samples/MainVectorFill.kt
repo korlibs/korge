@@ -12,6 +12,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.paint.toPaint
+import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Matrix
@@ -49,17 +50,17 @@ class MainVectorFill : Scene() {
         }
 
         graphics {
-            this.useNativeRendering = true
-            updateShape { buildMyShape() }
+            it.useNativeRendering = true
+            it.updateShape { buildMyShape() }
             scale(0.5)
         }
         graphics {
-            this.useNativeRendering = false
-            updateShape { buildMyShape() }
+            it.useNativeRendering = false
+            it.updateShape { buildMyShape() }
             scale(0.5)
             xy(0, 256)
         }
-        gpuShapeView {
+        gpuShapeView(EmptyShape) {
             updateShape { buildMyShape() }
             scale(0.5)
             xy(256, 0)

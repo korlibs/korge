@@ -5,6 +5,7 @@ import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.transformed
 
@@ -32,7 +33,7 @@ abstract class Renderer {
             flush()
         }
     }
-    open fun render(state: Context2d.State, fill: Boolean): Unit = Unit
+    open fun render(state: Context2d.State, fill: Boolean, winding: Winding? = null): Unit = Unit
 
     open fun drawImage(
         image: Bitmap,
@@ -81,13 +82,13 @@ open class DummyRenderer(override val width: Int, override val height: Int) : Re
 abstract class BufferedRenderer : Renderer() {
     abstract fun flushCommands(commands: List<RenderCommand>)
 
-    data class RenderCommand(val state: Context2d.State, val fill: Boolean) {
+    data class RenderCommand(val state: Context2d.State, val fill: Boolean, val winding: Winding?) {
         val stroke: Boolean get() = !fill
     }
     private val commands = arrayListOf<RenderCommand>()
 
-    final override fun render(state: Context2d.State, fill: Boolean) {
-        commands += RenderCommand(state.clone(), fill)
+    final override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
+        commands += RenderCommand(state.clone(), fill, winding)
         if (!isBuffering()) flush()
     }
 

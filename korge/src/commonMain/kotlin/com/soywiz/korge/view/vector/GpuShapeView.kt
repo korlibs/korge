@@ -55,32 +55,40 @@ inline fun Container.gpuGraphics(
     build: ShapeBuilder.() -> Unit,
     antialiased: Boolean = true,
     callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
-) =
-    GpuGraphics(buildShape { build() }, antialiased).addTo(this, callback)
+): GpuShapeView = gpuShapeView(build, antialiased, callback)
+
+inline fun Container.gpuGraphics(
+    shape: Shape,
+    antialiased: Boolean = true,
+    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
+): GpuShapeView = gpuShapeView(shape, antialiased, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuGraphics(
-    shape: Shape = EmptyShape,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
-) =
-    GpuGraphics(shape, antialiased).addTo(this, callback)
+    callback: @ViewDslMarker ShapeBuilder.(GpuGraphics) -> Unit = {}
+): GpuShapeView = gpuShapeView(antialiased, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuShapeView(
     build: ShapeBuilder.() -> Unit,
     antialiased: Boolean = true,
     callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
-) =
-    GpuShapeView(buildShape { build() }, antialiased).addTo(this, callback)
+): GpuShapeView = GpuShapeView(buildShape { build() }, antialiased).addTo(this, callback)
+
+inline fun Container.gpuShapeView(
+    shape: Shape,
+    antialiased: Boolean = true,
+    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
+): GpuShapeView = GpuShapeView(shape, antialiased).addTo(this, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuShapeView(
-    shape: Shape = EmptyShape,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
-) =
-    GpuShapeView(shape, antialiased).addTo(this, callback)
+    callback: @ViewDslMarker ShapeBuilder.(GpuShapeView) -> Unit = {}
+): GpuShapeView = GpuShapeView(EmptyShape, antialiased)
+    .also { it.updateShape { callback(this, it) } }
+    .addTo(this)
 
 @Deprecated("")
 //typealias GpuShapeView = GpuGraphics

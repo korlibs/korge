@@ -77,20 +77,21 @@ class Polygon(
 
     private fun updateGraphics() {
         val polygon = this
-        clear()
-        fill(Colors.WHITE) {
-            for (n in 0 until polygon.sides) {
-                val angle = ((360.degrees * n) / polygon.sides) - 90.degrees
-                val x = polygon.radius * angle.cosine
-                val y = polygon.radius * angle.sine
-                //println("$x, $y")
-                if (n == 0) {
-                    moveTo(x, y)
-                } else {
-                    lineTo(x, y)
+        updateShape {
+            fill(Colors.WHITE) {
+                for (n in 0 until polygon.sides) {
+                    val angle = ((360.degrees * n) / polygon.sides) - 90.degrees
+                    val x = polygon.radius * angle.cosine
+                    val y = polygon.radius * angle.sine
+                    //println("$x, $y")
+                    if (n == 0) {
+                        moveTo(x, y)
+                    } else {
+                        lineTo(x, y)
+                    }
                 }
+                close()
             }
-            close()
         }
     }
 }

@@ -1,38 +1,24 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.Pool
-import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.kmem.clamp
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.paint.ColorPaint
-import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.vector.CompoundShape
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.PolylineShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.ShapeBuilder
-import com.soywiz.korim.vector.StyledShape
 import com.soywiz.korim.vector.buildShape
+import com.soywiz.korma.annotations.VectorDslMarker
 import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.shape.Shape2d
 import com.soywiz.korma.geom.shape.toShape2d
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.LineScaleMode
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.korma.geom.vector.Winding
 import kotlin.jvm.JvmOverloads
 
-inline fun Container.graphics(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
-inline fun Container.sgraphics(callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling = true).addTo(this, callback).apply { redrawIfRequired() }
-inline fun Container.graphicsView(autoScaling: Boolean = false, callback: @ViewDslMarker Graphics.() -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this, callback).apply { redrawIfRequired() }
+inline fun Container.graphics(autoScaling: Boolean = false, callback: ShapeBuilder.(Graphics) -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).also { graphics ->
+    graphics.updateShape { callback(this, graphics) }
+    graphics.redrawIfRequired()
+}
+inline fun Container.graphicsView(autoScaling: Boolean = false, callback: ShapeBuilder.(Graphics) -> Unit = {}): Graphics = graphics(autoScaling, callback)
+inline fun Container.sgraphics(callback: ShapeBuilder.(Graphics) -> Unit = {}): Graphics = graphics(true, callback)
 
 @KorgeExperimental
 inline fun Container.graphics(
@@ -53,38 +39,36 @@ fun Graphics(
     antialiased: Boolean = true,
 ): Graphics = Graphics().apply {
     this.antialiased = antialiased
-    this.clear()
-    this.shape(shape)
+    this.shape = shape
 }
 
 open class Graphics @JvmOverloads constructor(
     autoScaling: Boolean = false
-) : BaseGraphics(autoScaling), VectorBuilder {
-    internal val vectorPathPool = Pool(reset = { it.clear() }) { VectorPath() }
+) : BaseGraphics(autoScaling) {
+    //internal val vectorPathPool = Pool(reset = { it.clear() }) { VectorPath() }
     private var shapeVersion = 0
-	private val shapes = arrayListOf<Shape>()
-    val allShapes: List<Shape> get() = shapes
-    private val compoundShape: CompoundShape = CompoundShape(shapes)
-	private var fill: Paint? = null
-	private var stroke: Paint? = null
-	@PublishedApi
-	internal var currentPath = vectorPathPool.alloc()
+    var shape: Shape? = null
+        set(value) {
+            field = value
+            shapeVersion++
+            dirty()
+        }
+	//@PublishedApi
+	//internal var currentPath = vectorPathPool.alloc()
 
     // @TODO: Not used but to have same API as GpuShapeView
     var antialiased: Boolean = true
 
-    inline fun updateShape(block: ShapeBuilder.() -> Unit) {
-        //compoundShape = buildShape { block() }
-        this.clear()
-        this.shape(buildShape { block() })
+    inline fun updateShape(redrawNow: Boolean = false, block: ShapeBuilder.() -> Unit): Graphics {
+        this.shape = buildShape { block() }
+        if (redrawNow) this.redrawIfRequired()
+        return this
     }
 
     private var hitShapeVersion = -1
     private var hitShape2dVersion = -1
-    private var hitShapeAnchorVersion = -1
 
     private var tempVectorPaths = arrayListOf<VectorPath>()
-    private val tempMatrix = Matrix()
     private var customHitShape2d: Shape2d? = null
     private var customHitShapes: List<VectorPath>? = null
 
@@ -110,13 +94,10 @@ open class Graphics @JvmOverloads constructor(
                 tempVectorPaths.clear()
 
                 // @TODO: Try to combine polygons on KorGE 2.0 to have a single hitShape
-                for (shape in shapes) {
-                    //when (shape) {
-                        //is StyledShape -> shape.path?.let { tempVectorPaths.add(it) }
-                        //else ->
-                            tempVectorPaths.add(shape.getPath())
-                    //}
-                }
+                //when (shape) {
+                //is StyledShape -> shape.path?.let { tempVectorPaths.add(it) }
+                //else ->
+                tempVectorPaths.add(shape?.getPath() ?: VectorPath())
             }
 
             return tempVectorPaths
@@ -135,191 +116,15 @@ open class Graphics @JvmOverloads constructor(
             return customHitShape2d!!
         }
 
-    /**
-     * Ensure that after this function the [bitmap] property is up-to-date with all the drawings inside [block].
-     */
-    @Deprecated("Use updateShape instead")
-    inline fun lock(block: Graphics.() -> Unit): Graphics {
-        try {
-            block()
-        } finally {
-            redrawIfRequired()
-        }
-        return this
-    }
-
-    @Deprecated("Use updateShape instead")
-	fun clear() {
-        shapes.forEach { (it as? StyledShape)?.path?.let { path -> vectorPathPool.free(path) } }
-		shapes.clear()
-        currentPath.clear()
-	}
-
-	private var thickness: Double = 1.0
-	private var pixelHinting: Boolean = false
-	private var scaleMode: LineScaleMode = LineScaleMode.NORMAL
-	private var startCap: LineCap = LineCap.BUTT
-	private var endCap: LineCap = LineCap.BUTT
-	private var lineJoin: LineJoin = LineJoin.MITER
-	private var miterLimit: Double = 10.0
-    private var lineDash: IDoubleArrayList? = null
-    private var lineDashOffset: Double = 0.0
-
     init {
         hitTestUsingShapes = true
     }
 
-    @Deprecated("Use updateShape instead")
-	override val lastX: Double get() = currentPath.lastX
-    @Deprecated("Use updateShape instead")
-	override val lastY: Double get() = currentPath.lastY
-    @Deprecated("Use updateShape instead")
-	override val totalPoints: Int get() = currentPath.totalPoints
-
-    @Deprecated("Use updateShape instead")
-	override fun close() = currentPath.close()
-    @Deprecated("Use updateShape instead")
-	override fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) { currentPath.cubicTo(cx1, cy1, cx2, cy2, ax, ay) }
-    @Deprecated("Use updateShape instead")
-	override fun lineTo(x: Double, y: Double) { currentPath.lineTo(x, y) }
-    @Deprecated("Use updateShape instead")
-	override fun moveTo(x: Double, y: Double) { currentPath.moveTo(x, y) }
-    @Deprecated("Use updateShape instead")
-	override fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) { currentPath.quadTo(cx, cy, ax, ay) }
-
-    @Deprecated("Use updateShape instead")
-    inline fun fill(color: RGBA, alpha: Double = 1.0, winding: Winding = Winding.NON_ZERO, callback: @ViewDslMarker VectorBuilder.() -> Unit) = fill(toColorFill(color, alpha), winding, callback)
-
-    @Deprecated("Use updateShape instead")
-	inline fun fill(paint: Paint, winding: Winding = Winding.NON_ZERO, callback: @ViewDslMarker VectorBuilder.() -> Unit) {
-		beginFill(paint)
-		try {
-			callback()
-		} finally {
-			endFill(winding)
-		}
-	}
-
-    @Deprecated("Use updateShape instead")
-	inline fun stroke(
-        paint: Paint,
-        info: StrokeInfo,
-        callback: @ViewDslMarker VectorBuilder.() -> Unit
-	) {
-		beginStroke(paint, info)
-		try {
-			callback()
-		} finally {
-			endStroke()
-		}
-	}
-
-    @Deprecated("Use updateShape instead")
-	inline fun fillStroke(
-        fill: Paint,
-        stroke: Paint,
-        strokeInfo: StrokeInfo,
-        callback: @ViewDslMarker VectorBuilder.() -> Unit
-	) {
-		beginFillStroke(fill, stroke, strokeInfo)
-		try {
-			callback()
-		} finally {
-			endFillStroke()
-		}
-	}
-
-    @Deprecated("Use updateShape instead")
-	fun beginFillStroke(
-        fill: Paint,
-        stroke: Paint,
-        strokeInfo: StrokeInfo
-	) {
-		this.fill = fill
-		this.stroke = stroke
-		this.setStrokeInfo(strokeInfo)
-	}
-
-    @Deprecated("Use updateShape instead")
-	fun beginFill(paint: Paint) = dirty {
-		fill = paint
-		currentPath.clear()
-	}
-
-    @Deprecated("Use updateShape instead")
-	private fun setStrokeInfo(info: StrokeInfo) {
-		this.thickness = info.thickness
-		this.pixelHinting = info.pixelHinting
-		this.scaleMode = info.scaleMode
-		this.startCap = info.startCap
-		this.endCap = info.endCap
-		this.lineJoin = info.join
-		this.miterLimit = info.miterLimit
-	}
-
-    @Deprecated("Use updateShape instead")
-	fun beginStroke(paint: Paint, info: StrokeInfo) = dirty {
-		setStrokeInfo(info)
-		stroke = paint
-        currentPath.clear()
-	}
-
-    @PublishedApi
-    @Deprecated("Use updateShape instead")
-    internal fun toColorFill(color: RGBA, alpha: Double): ColorPaint =
-        ColorPaint(RGBA(color.r, color.g, color.b, (color.a * alpha).toInt().clamp(0, 255)))
-
-    @Deprecated("Use updateShape instead")
-	fun beginFill(color: RGBA, alpha: Double) = beginFill(toColorFill(color, alpha))
-
-    @Deprecated("Use updateShape instead")
-    fun shape(shape: Shape) {
-        shapes += shape
-        currentPath = vectorPathPool.alloc()
-        dirtyShape()
-    }
-    @Deprecated("Use updateShape instead")
-	inline fun shape(shape: VectorPath) = dirty { currentPath.write(shape) }
-    @Deprecated("Use updateShape instead")
-    inline fun shape(shape: VectorPath, matrix: Matrix) = dirty { currentPath.write(shape, matrix) }
-
-    private fun dirtyShape() {
-        shapeVersion++
-        dirty()
-    }
-
-    @Deprecated("Use updateShape instead")
-	fun endFill(winding: Winding = Winding.NON_ZERO) = dirty {
-        currentPath.winding = winding
-		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		currentPath = vectorPathPool.alloc()
-        dirtyShape()
-	}
-
-    @Deprecated("Use updateShape instead")
-	fun endStroke() = dirty {
-		shapes += PolylineShape(currentPath, null, stroke ?: ColorPaint(Colors.RED), Matrix(), StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset))
-		//shapes += PolylineShape(currentPath, null, fill ?: Context2d.Color(Colors.RED), Matrix(), thickness, pixelHinting, scaleMode, startCap, endCap, joints, miterLimit)
-		currentPath = vectorPathPool.alloc()
-        dirtyShape()
-	}
-
-    @Deprecated("Use updateShape instead")
-	fun endFillStroke() = dirty {
-		shapes += FillShape(currentPath, null, fill ?: ColorPaint(Colors.RED), Matrix())
-		shapes += PolylineShape(vectorPathPool.alloc().also { it.write(currentPath) }, null, stroke ?: ColorPaint(Colors.RED), Matrix(), StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit, lineDash, lineDashOffset))
-		currentPath = vectorPathPool.alloc()
-        dirtyShape()
-	}
-
     override fun drawShape(ctx: Context2d) {
-        this@Graphics.compoundShape.draw(ctx)
+        shape?.draw(ctx)
     }
 
     override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        shapes.fastForEach {
-            //println("getShapeBounds: $it")
-            it.addBounds(bb, includeStrokes)
-        }
+        shape?.addBounds(bb, includeStrokes)
     }
 }

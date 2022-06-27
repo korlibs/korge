@@ -37,27 +37,25 @@ class MainEasing : Scene() {
         fun renderEasing(easing: Easing): View {
             return Container().apply {
                 val bg = solidRect(64, -64, Colors.BLACK.withAd(0.2))
-                gpuShapeView {
-                    updateShape {
-                        stroke(Colors.RED, lineWidth = 4.0) {
-                            this.line(0.0, 0.0, 0.0, -64.0)
-                            this.line(0.0, 0.0, 64.0, 0.0)
-                        }
-                        stroke(Colors.WHITE, lineWidth = 2.0) {
-                            var first = true
-                            //val overflow = 8
-                            val overflow = 0
-                            for (n in (-overflow)..(64 + overflow)) {
-                                val ratio = n.toDouble() / 64.0
-                                val x = n.toDouble()
-                                val y = easing(ratio) * 64
-                                //println("x=$x, y=$y, ratio=$ratio")
-                                if (first) {
-                                    first = false
-                                    moveTo(x, -y)
-                                } else {
-                                    lineTo(x, -y)
-                                }
+                gpuShapeView { shape ->
+                    stroke(Colors.RED, lineWidth = 4.0) {
+                        this.line(0.0, 0.0, 0.0, -64.0)
+                        this.line(0.0, 0.0, 64.0, 0.0)
+                    }
+                    stroke(Colors.WHITE, lineWidth = 2.0) {
+                        var first = true
+                        //val overflow = 8
+                        val overflow = 0
+                        for (n in (-overflow)..(64 + overflow)) {
+                            val ratio = n.toDouble() / 64.0
+                            val x = n.toDouble()
+                            val y = easing(ratio) * 64
+                            //println("x=$x, y=$y, ratio=$ratio")
+                            if (first) {
+                                first = false
+                                moveTo(x, -y)
+                            } else {
+                                lineTo(x, -y)
                             }
                         }
                     }

@@ -27,11 +27,11 @@ class MainRotateCircle : Scene() {
             //it.preciseAutoScaling = true
             //it.useNativeRendering = false
         }
-        graphics {
+        graphics({
             fill(Colors.PURPLE) {
                 rect(-50, -50, 60, 60)
             }
-        }
+        })
         stage!!.keys {
             downFrame(Key.LEFT) { circle.rotation -= 10.degrees }
             downFrame(Key.RIGHT) { circle.rotation += 10.degrees }

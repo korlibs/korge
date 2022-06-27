@@ -38,6 +38,7 @@ import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.roundRect
 import com.soywiz.korma.geom.vector.LineScaleMode
 import com.soywiz.korma.geom.vector.StrokeInfo
+import com.soywiz.korma.geom.vector.isEmpty
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.ceil
@@ -53,7 +54,7 @@ open class Context2d constructor(
 
     protected open val rendererWidth get() = renderer.width
     protected open val rendererHeight get() = renderer.height
-    protected open fun rendererRender(state: State, fill: Boolean) = renderer.render(state, fill)
+    protected open fun rendererRender(state: State, fill: Boolean, winding: Winding? = null) = renderer.render(state, fill, winding)
     protected open fun rendererDrawImage(image: Bitmap, x: Double, y: Double, width: Double = image.width.toDouble(), height: Double = image.height.toDouble(), transform: Matrix = Matrix()) = renderer.drawImage(image, x, y, width, height, transform)
     protected open fun rendererDispose() = renderer.dispose()
     protected open fun rendererBufferingStart() = renderer.bufferingStart()
@@ -86,7 +87,7 @@ open class Context2d constructor(
 		private inline fun <T> adjustState(state: State, callback: () -> T): T =
 			adjustMatrix(state.transform) { callback() }
 
-		override fun render(state: State, fill: Boolean): Unit = adjustState(state) { parent.render(state, fill) }
+		override fun render(state: State, fill: Boolean, winding: Winding?): Unit = adjustState(state) { parent.render(state, fill, winding) }
 		//override fun renderText(state: State, font: Font, fontSize: Double, text: String, x: Double, y: Double, fill: Boolean): Unit =
 		//	adjustState(state) { parent.renderText(state, font, fontSize, text, x, y, fill) }
 
@@ -369,6 +370,7 @@ open class Context2d constructor(
 	fun strokeDot(x: Double, y: Double) { beginPath(); moveTo(x, y); lineTo(x, y); stroke() }
 
 	fun path(path: VectorPath) {
+        if (this.isEmpty()) this.state.path.winding = path.winding
         this.write(path)
         //this.write(path, state.transform)
     }
@@ -383,11 +385,11 @@ open class Context2d constructor(
 	fun getBounds(out: Rectangle = Rectangle()) = state.path.getBounds(out)
 
 	fun stroke() { if (state.strokeStyle != NonePaint) rendererRender(state, fill = false) }
-    fun fill() { if (state.fillStyle != NonePaint) rendererRender(state, fill = true) }
+    fun fill(winding: Winding? = null) { if (state.fillStyle != NonePaint) rendererRender(state, fill = true, winding = winding) }
 
-    fun fill(paint: Paint) {
+    fun fill(paint: Paint, winding: Winding? = null) {
 		this.fillStyle(paint) {
-			this.fill()
+			this.fill(winding)
 		}
 	}
 
@@ -397,10 +399,14 @@ open class Context2d constructor(
 		}
 	}
 
-    inline fun fill(paint: Paint, begin: Boolean = true, block: () -> Unit) {
+    inline fun fill(paint: Paint, begin: Boolean = true, winding: Winding? = null, block: () -> Unit) {
         if (begin) beginPath()
         block()
-        fill(paint)
+        fill(paint, winding)
+    }
+
+    inline fun fill(color: RGBA, alpha: Double, begin: Boolean = true, winding: Winding? = null, block: () -> Unit) {
+        fill(color.concatAd(alpha), begin, winding, block)
     }
 
     inline fun stroke(

@@ -383,7 +383,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         )
     }
 
-	override fun render(state: Context2d.State, fill: Boolean) {
+	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
 		//println("beginPath")
@@ -396,7 +396,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
             if (clip != null) {
                 ctx.beginPath()
                 doVisit(clip)
-                ctx.clip(clip.winding.toCanvasFillRule())
+                ctx.clip((winding ?: clip.winding).toCanvasFillRule())
             }
 
 			ctx.beginPath()
@@ -407,7 +407,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 			if (fill) {
 				transformPaint(state.fillStyle)
                 //println("       - Gadient: ${}")
-				ctx.fill(state.path.winding.toCanvasFillRule())
+				ctx.fill((winding ?: state.path.winding).toCanvasFillRule())
 				//println("fill: $s")
 			} else {
 				transformPaint(state.strokeStyle)

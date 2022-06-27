@@ -103,26 +103,27 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 
 				this.addChild(this._debugDrawer!!)
 				val boneDrawer = this._debugDrawer?.getChildAt(0) as Graphics
-				boneDrawer.clear()
 
 				val bones = armature.getBones()
 				//for (let i = 0, l = bones.length; i < l; ++i) {
-				for (i in 0 until bones.length) {
-					val bone = bones[i]
-					val boneLength = bone.boneData.length
-					val startX = bone.globalTransformMatrix.txf
-					val startY = bone.globalTransformMatrix.tyf
-					val endX = startX + bone.globalTransformMatrix.af * boneLength
-					val endY = startY + bone.globalTransformMatrix.bf * boneLength
+                boneDrawer.updateShape {
+                    for (i in 0 until bones.length) {
+                        val bone = bones[i]
+                        val boneLength = bone.boneData.length
+                        val startX = bone.globalTransformMatrix.txf
+                        val startY = bone.globalTransformMatrix.tyf
+                        val endX = startX + bone.globalTransformMatrix.af * boneLength
+                        val endY = startY + bone.globalTransformMatrix.bf * boneLength
 
-                    boneDrawer.stroke(Colors.PURPLE.withAd(0.7), StrokeInfo(thickness = 2.0)) {
-                        boneDrawer.moveTo(startX.toDouble(), startY.toDouble())
-                        boneDrawer.lineTo(endX, endY)
+                        stroke(Colors.PURPLE.withAd(0.7), StrokeInfo(thickness = 2.0)) {
+                            moveTo(startX.toDouble(), startY.toDouble())
+                            lineTo(endX, endY)
+                        }
+                        fill(Colors.PURPLE.withAd(0.7)) {
+                            circle(startX.toDouble(), startY.toDouble(), 3.0)
+                        }
                     }
-                    boneDrawer.fill(Colors.PURPLE, 0.7) {
-                        boneDrawer.circle(startX.toDouble(), startY.toDouble(), 3.0)
-                    }
-				}
+                }
 
 				val slots = armature.getSlots()
 				//for (let i = 0, l = slots.length; i < l; ++i) {
@@ -138,46 +139,48 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 							this._debugDrawer?.addChild(child)
 						}
 
-						child.stroke(Colors.RED.withAd(0.7), StrokeInfo(thickness = 2.0)) {
+                        child.updateShape {
+                            stroke(Colors.RED.withAd(0.7), StrokeInfo(thickness = 2.0)) {
 
-                            when (boundingBoxData.type) {
-                                BoundingBoxType.Rectangle -> {
-                                    child.rect(
-                                        -boundingBoxData.width * 0.5,
-                                        -boundingBoxData.height * 0.5,
-                                        boundingBoxData.width,
-                                        boundingBoxData.height
-                                    )
-                                }
-
-                                BoundingBoxType.Ellipse -> {
-                                    child.rect(
-                                        -boundingBoxData.width * 0.5,
-                                        -boundingBoxData.height * 0.5,
-                                        boundingBoxData.width,
-                                        boundingBoxData.height
-                                    )
-                                }
-
-                                BoundingBoxType.Polygon -> {
-                                    val vertices = (boundingBoxData as PolygonBoundingBoxData).vertices
-                                    //for (let i = 0, l = vertices.length; i < l; i += 2) {
-                                    for (i in 0 until vertices.size step 2) {
-                                        val x = vertices[i]
-                                        val y = vertices[i + 1]
-
-                                        if (i == 0) {
-                                            child.moveTo(x, y)
-                                        } else {
-                                            child.lineTo(x, y)
-                                        }
+                                when (boundingBoxData.type) {
+                                    BoundingBoxType.Rectangle -> {
+                                        rect(
+                                            -boundingBoxData.width * 0.5,
+                                            -boundingBoxData.height * 0.5,
+                                            boundingBoxData.width,
+                                            boundingBoxData.height
+                                        )
                                     }
 
-                                    child.lineTo(vertices[0], vertices[1])
-                                }
+                                    BoundingBoxType.Ellipse -> {
+                                        rect(
+                                            -boundingBoxData.width * 0.5,
+                                            -boundingBoxData.height * 0.5,
+                                            boundingBoxData.width,
+                                            boundingBoxData.height
+                                        )
+                                    }
 
-                                else -> {
+                                    BoundingBoxType.Polygon -> {
+                                        val vertices = (boundingBoxData as PolygonBoundingBoxData).vertices
+                                        //for (let i = 0, l = vertices.length; i < l; i += 2) {
+                                        for (i in 0 until vertices.size step 2) {
+                                            val x = vertices[i]
+                                            val y = vertices[i + 1]
 
+                                            if (i == 0) {
+                                                moveTo(x, y)
+                                            } else {
+                                                lineTo(x, y)
+                                            }
+                                        }
+
+                                        lineTo(vertices[0], vertices[1])
+                                    }
+
+                                    else -> {
+
+                                    }
                                 }
                             }
                         }
@@ -194,7 +197,7 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 						}
 					}
 				}
-			} else if (this._debugDrawer !== null && this._debugDrawer?.parent === this) {
+            } else if (this._debugDrawer !== null && this._debugDrawer?.parent === this) {
 				this.removeChild(this._debugDrawer)
 			}
 		}

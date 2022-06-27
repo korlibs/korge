@@ -311,7 +311,7 @@ data class FillShape(
     val isConvex: Boolean get() = pathCurvesList.size == 1 && pathCurvesList.first().isConvex && (clipCurvesList == null)
 
 	override fun drawInternal(c: Context2d) {
-		c.fill(paint)
+		c.fill(paint, path.winding)
 	}
 
 	override fun getSvgXmlAttributes(svg: SvgBuilder) = super.getSvgXmlAttributes(svg) + mapOf(

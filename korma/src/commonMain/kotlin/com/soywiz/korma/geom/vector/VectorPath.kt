@@ -33,7 +33,7 @@ interface IVectorPath : VectorBuilder {
 class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
-    var winding: Winding = Winding.EVEN_ODD
+    var winding: Winding = Winding.DEFAULT,
 ) : IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
@@ -45,7 +45,7 @@ class VectorPath(
     companion object {
         private val identityMatrix = Matrix()
 
-        inline operator fun invoke(winding: Winding = Winding.EVEN_ODD, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
+        inline operator fun invoke(winding: Winding = Winding.DEFAULT, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
 
         fun intersects(left: VectorPath, leftTransform: Matrix, right: VectorPath, rightTransform: Matrix): Boolean =
             left.intersectsWith(leftTransform, right, rightTransform)

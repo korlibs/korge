@@ -78,12 +78,12 @@ class VectorPathTest {
 
     @Test
     fun testContainsPoint() {
-        buildPath { rect(0, 0, 10, 10) }.also {
+        buildVectorPath { rect(0, 0, 10, 10) }.also {
             assertEquals(true, it.containsPoint(5, 5))
             assertEquals(false, it.containsPoint(-1, -1))
             assertEquals(false, it.containsPoint(10, 10))
         }
-        buildPath(winding = Winding.NON_ZERO) {
+        buildVectorPath(winding = Winding.NON_ZERO) {
             rect(0, 0, 10, 10)
             rect(20, 0, 10, 10)
         }.also {
@@ -93,7 +93,7 @@ class VectorPathTest {
             assertEquals(false, it.containsPoint(10, 10))
             assertEquals(false, it.containsPoint(19, 5))
         }
-        buildPath(winding = Winding.EVEN_ODD) {
+        buildVectorPath(winding = Winding.EVEN_ODD) {
             rect(0, 0, 20, 10)
             rect(10, 0, 20, 10)
         }.also {
@@ -103,7 +103,7 @@ class VectorPathTest {
             assertEquals(true, it.containsPoint(25, 5))
         }
 
-        buildPath(winding = Winding.NON_ZERO) {
+        buildVectorPath(winding = Winding.NON_ZERO) {
             rect(0, 0, 20, 10)
             rect(10, 0, 20, 10)
         }.also {
