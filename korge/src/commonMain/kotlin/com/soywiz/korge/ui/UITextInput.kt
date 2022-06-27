@@ -5,6 +5,7 @@ import com.soywiz.kmem.Platform
 import com.soywiz.kmem.clamp
 import com.soywiz.korev.Key
 import com.soywiz.korev.ISoftKeyboardConfig
+import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.onAttachDetach
@@ -24,6 +25,7 @@ import com.soywiz.korge.view.renderableView
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
 import com.soywiz.korgw.GameWindow
+import com.soywiz.korgw.TextClipboardData
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.Font
@@ -99,10 +101,19 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     var text: String
         get() = textView.text
         set(value) {
-            textView.text = value
-            reclampSelection()
-            onTextUpdated(this)
+            if (acceptTextChange(textView.text, value)) {
+                textView.text = value
+                reclampSelection()
+                onTextUpdated(this)
+            }
         }
+
+    fun insertText(substr: String) {
+        text = text
+            .withoutRange(selectionRange)
+            .withInsertion(min(selectionStart, selectionEnd), substr)
+        cursorIndex += substr.length
+    }
 
     var font: Font
         get() = textView.font as Font
@@ -315,6 +326,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         keys {
             this.typed {
                 if (!focused) return@typed
+                if (it.meta) return@typed
                 val code = it.character.code
                 when (code) {
                     8, 127 -> Unit // backspace, backspace (handled by down event)
@@ -327,13 +339,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                         onEscPressed(this@UITextInput)
                     }
                     else -> {
-                        val range = selectionRange
-                        val insertedText = it.characters()
-                        val newText = text.withoutRange(range).withInsertion(min(selectionStart, selectionEnd), insertedText)
-                        if (acceptTextChange(text, newText)) {
-                            text = newText
-                        }
-                        cursorIndex++
+                        insertText(it.characters())
                     }
                 }
                 //println(it.character.toInt())
@@ -342,6 +348,17 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             down {
                 if (!focused) return@down
                 when (it.key) {
+                    Key.C, Key.V -> {
+                        if (it.isNativeCtrl()) {
+                            if (it.key == Key.C) {
+
+                                gameWindow.clipboardWrite(TextClipboardData(selectionText))
+                            } else {
+                                val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
+                                if (rtext != null) insertText(rtext)
+                            }
+                        }
+                    }
                     Key.BACKSPACE, Key.DELETE -> {
                         val range = selectionRange
                         if (range.length > 0) {
@@ -361,17 +378,15 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                         }
                     }
                     Key.LEFT -> {
-                        if (it.meta && Platform.os.isApple) {
-                            moveToIndex(it.shift, 0)
-                        } else {
-                            moveToIndex(it.shift, leftIndex(selectionStart, it.ctrl))
+                        when {
+                            it.isStartFinalSkip() -> moveToIndex(it.shift, 0)
+                            else -> moveToIndex(it.shift, leftIndex(selectionStart, it.ctrl))
                         }
                     }
                     Key.RIGHT -> {
-                        if (it.meta && Platform.os.isApple) {
-                            moveToIndex(it.shift, text.length)
-                        } else {
-                            moveToIndex(it.shift, rightIndex(selectionStart, it.ctrl))
+                        when {
+                            it.isStartFinalSkip() -> moveToIndex(it.shift, text.length)
+                            else -> moveToIndex(it.shift, rightIndex(selectionStart, it.ctrl))
                         }
                     }
                     Key.HOME -> moveToIndex(it.shift, 0)
@@ -429,4 +444,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
         updateCaretPosition()
     }
+
+    fun KeyEvent.isWordSkip(): Boolean = this.alt
+    fun KeyEvent.isStartFinalSkip(): Boolean = this.meta && Platform.os.isApple
+    fun KeyEvent.isNativeCtrl(): Boolean = if (Platform.os.isApple) this.meta else this.ctrl
 }

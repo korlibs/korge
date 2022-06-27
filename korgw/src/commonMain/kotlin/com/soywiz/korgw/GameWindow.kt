@@ -787,9 +787,21 @@ open class GameWindow :
         }
     }
 
+    open suspend fun clipboardWrite(data: ClipboardData) {
+    }
+
+    open suspend fun clipboardRead(): ClipboardData? {
+        return null
+    }
+
     //open fun lockMousePointer() = println("WARNING: lockMousePointer not implemented")
     //open fun unlockMousePointer() = Unit
 }
+
+interface ClipboardData {
+}
+
+data class TextClipboardData(val text: String, val contentType: String? = null) : ClipboardData
 
 open class EventLoopGameWindow : GameWindow() {
     override val coroutineDispatcher: GameWindowCoroutineDispatcherSetNow = GameWindowCoroutineDispatcherSetNow()

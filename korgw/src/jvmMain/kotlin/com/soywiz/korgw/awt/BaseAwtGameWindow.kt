@@ -18,6 +18,11 @@ import com.soywiz.korio.util.*
 import com.sun.jna.*
 import kotlinx.coroutines.*
 import java.awt.*
+import java.awt.datatransfer.Clipboard
+import java.awt.datatransfer.ClipboardOwner
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
+import java.awt.datatransfer.Transferable
 import java.awt.event.*
 import java.awt.event.KeyEvent
 import java.awt.event.MouseEvent
@@ -25,7 +30,7 @@ import java.net.*
 import javax.swing.*
 import kotlin.system.*
 
-abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow() {
+abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWindow(), ClipboardOwner {
     abstract override val ag: AwtAg
 
     //val fvsync get() = vsync
@@ -656,5 +661,35 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
 
     override fun computeDisplayRefreshRate(): Int {
         return window?.getScreenDevice()?.cachedRefreshRate?.takeIf { it > 0 } ?: 60
+    }
+
+    val clipboard: Clipboard by lazy { Toolkit.getDefaultToolkit().systemClipboard }
+
+    suspend fun <T> eventQueueLater(block: () -> T): T {
+        val deferred = CompletableDeferred<T>()
+        EventQueue.invokeLater {
+            deferred.completeWith(runCatching(block))
+        }
+        return deferred.await()
+    }
+
+    override suspend fun clipboardWrite(data: ClipboardData) {
+        eventQueueLater {
+            when (data) {
+                is TextClipboardData -> {
+                    clipboard.setContents(StringSelection(data.text), this)
+                }
+            }
+        }
+    }
+
+    override suspend fun clipboardRead(): ClipboardData? {
+        return eventQueueLater {
+            val str = clipboard.getData(DataFlavor.stringFlavor) as? String?
+            str?.let { TextClipboardData(it) }
+        }
+    }
+
+    override fun lostOwnership(clipboard: Clipboard?, contents: Transferable?) {
     }
 }
