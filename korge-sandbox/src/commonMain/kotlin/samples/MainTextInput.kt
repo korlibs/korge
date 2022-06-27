@@ -64,9 +64,6 @@ class MainTextInput : Scene() {
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
-        println("***********************")
-
-        println("--------------------------------")
         gpuGraphics {
         //graphics { it.useNativeRendering = false
             //gpuGraphics({
@@ -78,7 +75,7 @@ class MainTextInput : Scene() {
                     textSize = 64.0,
                     x = 600.0, y = 200.0,
                     renderer = DefaultStringTextRenderer
-                        //.withSpacing(9.0)
+                        .withSpacing(9.0)
                         .aroundPath(buildVectorPath { circle(0, 0, 100) }),
                     font = DefaultTtfFont
                 )

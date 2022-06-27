@@ -1,5 +1,7 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.Deque
+import com.soywiz.kds.HistoryStack
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.clamp
@@ -98,15 +100,41 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     val onFocused = Signal<UITextInput>()
     val onFocusLost = Signal<UITextInput>()
 
+    data class TextSnapshot(var text: String, var selectionRange: IntRange) {
+        fun apply(out: UITextInput) {
+            out.setTextNoSnapshot(text)
+            out.select(selectionRange)
+        }
+    }
+
+    private val textSnapshots = HistoryStack<TextSnapshot>()
+
+    private fun setTextNoSnapshot(text: String, out: TextSnapshot = TextSnapshot("", 0..0)): TextSnapshot? {
+        if (!acceptTextChange(textView.text, text)) return null
+        out.text = textView.text
+        out.selectionRange = selectionRange
+        textView.text = text
+        reclampSelection()
+        onTextUpdated(this)
+        return out
+    }
+
     var text: String
         get() = textView.text
         set(value) {
-            if (acceptTextChange(textView.text, value)) {
-                textView.text = value
-                reclampSelection()
-                onTextUpdated(this)
+            val snapshot = setTextNoSnapshot(value)
+            if (snapshot != null) {
+                textSnapshots.push(snapshot)
             }
         }
+
+    fun undo() {
+        textSnapshots.undo()?.apply(this)
+    }
+
+    fun redo() {
+        textSnapshots.redo()?.apply(this)
+    }
 
     fun insertText(substr: String) {
         text = text
@@ -174,13 +202,17 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         updateCaretPosition()
     }
 
+    fun select(range: IntRange) {
+        select(range.first, range.endExclusive)
+    }
+
     fun selectAll() {
         select(0, text.length)
     }
 
-    val selectionLength get() = (selectionEnd - selectionStart).absoluteValue
-    val selectionText get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
-    val selectionRange get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
+    val selectionLength: Int get() = (selectionEnd - selectionStart).absoluteValue
+    val selectionText: String get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
+    val selectionRange: IntRange get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
 
     private val gameWindow get() = stage!!.views.gameWindow
 
@@ -348,14 +380,19 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             down {
                 if (!focused) return@down
                 when (it.key) {
-                    Key.C, Key.V -> {
+                    Key.C, Key.V, Key.Z -> {
                         if (it.isNativeCtrl()) {
-                            if (it.key == Key.C) {
-
-                                gameWindow.clipboardWrite(TextClipboardData(selectionText))
-                            } else {
-                                val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
-                                if (rtext != null) insertText(rtext)
+                            when (it.key) {
+                                Key.Z -> {
+                                    if (it.shift) redo() else undo()
+                                }
+                                Key.C -> {
+                                    gameWindow.clipboardWrite(TextClipboardData(selectionText))
+                                }
+                                Key.V -> {
+                                    val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
+                                    if (rtext != null) insertText(rtext)
+                                }
                             }
                         }
                     }
