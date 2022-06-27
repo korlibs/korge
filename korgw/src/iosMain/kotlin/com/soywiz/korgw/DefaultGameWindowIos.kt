@@ -677,7 +677,7 @@ open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
 
     private fun prepareSoftKeyboardOnce() = memScoped {
         if (::textField.isInitialized) return@memScoped
-        val rect = CGRectMake(0.0.cg, 0.0.cg, 128.0.cg, 32.0.cg)
+        val rect = CGRectMake((-1.0).cg, 0.0.cg, 1.0.cg, 32.0.cg)
         textField = MyUITextComponent(this@IosGameWindow, rect)
     }
 
