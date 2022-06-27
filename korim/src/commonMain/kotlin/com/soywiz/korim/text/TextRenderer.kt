@@ -21,6 +21,8 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.angle
 import com.soywiz.korma.geom.bezier.Curve
+import com.soywiz.korma.geom.bezier.Curves
+import com.soywiz.korma.geom.bezier.toVectorPath
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.radians
@@ -28,6 +30,7 @@ import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.path
+import com.soywiz.korma.geom.vector.toCurves
 import kotlin.native.concurrent.SharedImmutable
 
 interface ITextRendererActions {
@@ -244,15 +247,17 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
     }
 }
 
-fun <T> TextRenderer<T>.aroundPath(path: VectorPath): TextRenderer<T> = aroundPath(path.getCurves())
+fun <T> TextRenderer<T>.aroundPath(path: VectorPath): CurveTextRenderer<T> = CurveTextRenderer(this, path, path.getCurves())
+fun <T> TextRenderer<T>.aroundPath(curve: Curve): CurveTextRenderer<T> = CurveTextRenderer(this, curve.toVectorPath(), curve)
 
-fun <T> TextRenderer<T>.aroundPath(curve: Curve): TextRenderer<T> {
-    val original = this
-    return object : TextRenderer<T> {
-        override val version: Int get() = original.version
-        override fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font) =
-            original.invoke(this.aroundPath(curve), text, size, defaultFont)
-    }
+class CurveTextRenderer<T>(
+    val original: TextRenderer<T>,
+    val path: VectorPath,
+    val curve: Curve,
+) : TextRenderer<T> {
+    override val version: Int get() = original.version
+    override fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font) =
+        original.invoke(this.aroundPath(curve), text, size, defaultFont)
 }
 
 inline fun <reified T> DefaultTextRenderer() = when (T::class) {
