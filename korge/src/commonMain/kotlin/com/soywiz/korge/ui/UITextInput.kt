@@ -386,20 +386,26 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 focused = true
                 dragging = false
             }
-            moveAnywhere {
-                //println("UiTextInput.moveAnywhere")
+            downOutside {
+                //println("UiTextInput.downOutside")
+                dragging = false
                 if (focused) {
-                    if (it.pressing) {
-                        dragging = true
-                        selectionEnd = getIndexAtPos(it.currentPosLocal)
-                        it.stopPropagation()
-                    }
+                    focused = false
+                    blur()
+                }
+            }
+            moveAnywhere {
+                //println("UiTextInput.moveAnywhere: focused=$focused, pressing=${it.pressing}")
+                if (focused && it.pressing) {
+                    dragging = true
+                    selectionEnd = getIndexAtPos(it.currentPosLocal)
+                    it.stopPropagation()
                 }
             }
             upOutside {
                 val isFocusedView = stage?.uiFocusedView == this@UITextInput
                 //println("UiTextInput.upOutside: dragging=$dragging, isFocusedView=$isFocusedView, view=${it.view}, stage?.uiFocusedView=${stage?.uiFocusedView}")
-                if (!dragging && isFocusedView) {
+                if (!dragging && focused) {
                     //println(" -- BLUR")
                     blur()
                 }
