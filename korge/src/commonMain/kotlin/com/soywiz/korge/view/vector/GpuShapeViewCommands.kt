@@ -5,7 +5,9 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korag.AG
+import com.soywiz.korag.disableCullFace
 import com.soywiz.korag.disableScissor
+import com.soywiz.korag.enableCullFace
 import com.soywiz.korag.setBlendingState
 import com.soywiz.korag.setColorMaskState
 import com.soywiz.korag.setScissorState
@@ -70,6 +72,7 @@ class GpuShapeViewCommands {
         colorMask: AG.ColorMaskState? = null,
         stencil: AG.StencilState? = null,
         blendMode: AG.Blending? = null,
+        cullFace: AG.CullFace? = null,
         startIndex: Int = this.verticesStartIndex,
         endIndex: Int = this.vertexIndex
     ) {
@@ -81,6 +84,7 @@ class GpuShapeViewCommands {
             colorMask = colorMask,
             stencil = stencil,
             blendMode = blendMode,
+            cullFace = cullFace,
         )
     }
 
@@ -189,6 +193,12 @@ class GpuShapeViewCommands {
                                                 list.setStencilState(cmd.stencil)
                                                 list.setColorMaskState(cmd.colorMask)
                                                 list.setBlendingState(cmd.blendMode)
+                                                if (cmd.cullFace != null) {
+                                                    list.enableCullFace()
+                                                    list.cullFace(cmd.cullFace!!)
+                                                } else {
+                                                    list.disableCullFace()
+                                                }
                                                 //println(ctx.batch.viewMat2D)
                                                 list.draw(cmd.drawType, cmd.vertexCount, cmd.vertexIndex)
                                             }
@@ -201,6 +211,8 @@ class GpuShapeViewCommands {
                             }
                         }
                         //list.finish()
+
+                        list.disableCullFace()
                     }
                 }
             }
@@ -239,6 +251,7 @@ class GpuShapeViewCommands {
         var colorMask: AG.ColorMaskState? = null,
         var stencil: AG.StencilState? = null,
         var blendMode: AG.Blending? = null,
+        var cullFace: AG.CullFace? = null
     ) : ICommand {
         val vertexCount: Int get() = vertexEnd - vertexIndex
     }
