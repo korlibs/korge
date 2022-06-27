@@ -104,15 +104,21 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         get() = textView.font as Font
         set(value) {
             textView.font = value
+            updateCaretSize()
         }
 
     var textSize: Double
         get() = textView.textSize
         set(value) {
             textView.textSize = value
-            caret.height = value
+            updateCaretSize()
         }
     var textColor: RGBA by textView::color
+
+    private fun updateCaretSize() {
+        val metrics = font.getFontMetrics(textSize)
+        caret.scaledHeight = metrics.top.absoluteValue + metrics.bottom.absoluteValue
+    }
 
     private var _selectionStart: Int = initialText.length
     private var _selectionEnd: Int = _selectionStart
