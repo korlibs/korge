@@ -4,6 +4,8 @@ import android.content.*
 import android.view.*
 import android.view.inputmethod.*
 import com.soywiz.korag.*
+import com.soywiz.korev.ISoftKeyboardConfig
+import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korim.bitmap.*
 import kotlin.coroutines.*
 
@@ -21,7 +23,7 @@ abstract class BaseAndroidGameWindow(
     override val dialogInterface = DialogInterfaceAndroid { androidContext }
     override var isSoftKeyboardVisible: Boolean = false
 
-    override fun showSoftKeyboard(force: Boolean) {
+    override fun showSoftKeyboard(force: Boolean, config: ISoftKeyboardConfig?) {
         isSoftKeyboardVisible = true
         println("Korgw.BaseAndroidGameWindow.showSoftKeyboard:force=$force")
         try {

@@ -23,6 +23,7 @@ import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
 import com.soywiz.korev.GameStick
 import com.soywiz.korev.GamepadMapping
+import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
@@ -32,6 +33,7 @@ import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.RenderEvent
 import com.soywiz.korev.ReshapeEvent
 import com.soywiz.korev.ResumeEvent
+import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korev.StopEvent
 import com.soywiz.korev.TouchBuilder
@@ -334,7 +336,7 @@ open class GameWindow :
     open fun setInputRectangle(windowRect: Rectangle) {
     }
 
-    open fun showSoftKeyboard(force: Boolean = true) {
+    open fun showSoftKeyboard(force: Boolean = true, config: ISoftKeyboardConfig? = null) {
     }
 
     open fun hideSoftKeyboard() {

@@ -4,6 +4,8 @@ import com.soywiz.klock.seconds
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.clamp
 import com.soywiz.korev.Key
+import com.soywiz.korev.ISoftKeyboardConfig
+import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.onAttachDetach
 import com.soywiz.korge.input.cursor
@@ -34,7 +36,6 @@ import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.Margin
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bounds
 import com.soywiz.korma.geom.without
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -55,7 +56,10 @@ inline fun Container.uiTextInput(
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) : UIView(width, height), UIFocusable {
+class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) :
+    UIView(width, height),
+    UIFocusable,
+    ISoftKeyboardConfig by SoftKeyboardConfig() {
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
     private val bg = renderableView(width, height, skin)
@@ -252,6 +256,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
     override var tabIndex: Int = 0
 
+    var acceptTextChange: (old: String, new: String) -> Boolean = { old, new -> true }
+
     override var focused: Boolean
         set(value) {
             if (value == focused) return
@@ -322,7 +328,11 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                     }
                     else -> {
                         val range = selectionRange
-                        text = text.withoutRange(range).withInsertion(min(selectionStart, selectionEnd), it.characters())
+                        val insertedText = it.characters()
+                        val newText = text.withoutRange(range).withInsertion(min(selectionStart, selectionEnd), insertedText)
+                        if (acceptTextChange(text, newText)) {
+                            text = newText
+                        }
                         cursorIndex++
                     }
                 }
@@ -403,7 +413,6 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 }
             }
             upOutside {
-                val isFocusedView = stage?.uiFocusedView == this@UITextInput
                 //println("UiTextInput.upOutside: dragging=$dragging, isFocusedView=$isFocusedView, view=${it.view}, stage?.uiFocusedView=${stage?.uiFocusedView}")
                 if (!dragging && focused) {
                     //println(" -- BLUR")

@@ -3,41 +3,39 @@ package com.soywiz.korgw
 import com.soywiz.kds.Pool
 import com.soywiz.klock.measureTime
 import com.soywiz.korag.*
-import com.soywiz.korag.gl.*
 
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.KmemGC
 import com.soywiz.kmem.hasFlags
 import com.soywiz.korev.GameButton
 import com.soywiz.korev.GamePadConnectionEvent
+import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.SoftKeyboardConfig
+import com.soywiz.korev.SoftKeyboardReturnKeyType
+import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korim.format.cg.cg
+import com.soywiz.korim.format.cg.toCG
 import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
 import kotlinx.cinterop.CValue
 import kotlinx.cinterop.ExportObjCClass
 import kotlinx.cinterop.ObjCAction
 import kotlinx.cinterop.UnsafeNumber
-import kotlinx.cinterop.alloc
 import kotlinx.cinterop.memScoped
-import kotlinx.cinterop.ptr
-import kotlinx.cinterop.readValue
 import kotlinx.cinterop.useContents
 import platform.CoreGraphics.CGPoint
 import platform.CoreGraphics.CGRect
 import platform.CoreGraphics.CGRectMake
-import platform.CoreGraphics.CGSize
 import platform.EAGL.EAGLContext
 import platform.EAGL.kEAGLRenderingAPIOpenGLES2
 import platform.Foundation.NSBundle
-import platform.Foundation.NSCoder
 import platform.Foundation.NSComparisonResult
-import platform.Foundation.NSComparisonResultVar
 import platform.Foundation.NSFileManager
 import platform.Foundation.NSNotification
 import platform.Foundation.NSRange
-import platform.Foundation.NSSelectorFromString
 import platform.GLKit.GLKView
 import platform.GLKit.GLKViewController
 import platform.GLKit.GLKViewDrawableDepthFormat24
@@ -48,29 +46,48 @@ import platform.GameController.GCControllerDirectionPad
 import platform.GameController.GCEventViewController
 import platform.UIKit.NSWritingDirection
 import platform.UIKit.NSWritingDirectionNatural
-import platform.UIKit.UIAction
 import platform.UIKit.UIApplication
 import platform.UIKit.UIColor
-import platform.UIKit.UIControlEventEditingChanged
 import platform.UIKit.UIEvent
 import platform.UIKit.UIKeyModifierAlternate
 import platform.UIKit.UIKeyModifierCommand
 import platform.UIKit.UIKeyModifierControl
 import platform.UIKit.UIKeyModifierShift
+import platform.UIKit.UIKeyboardAppearance
+import platform.UIKit.UIKeyboardAppearanceDefault
+import platform.UIKit.UIKeyboardType
+import platform.UIKit.UIKeyboardTypeASCIICapable
+import platform.UIKit.UIKeyboardTypeAlphabet
+import platform.UIKit.UIKeyboardTypeDecimalPad
+import platform.UIKit.UIKeyboardTypeDefault
+import platform.UIKit.UIKeyboardTypeEmailAddress
+import platform.UIKit.UIKeyboardTypeNamePhonePad
+import platform.UIKit.UIKeyboardTypeNumberPad
+import platform.UIKit.UIKeyboardTypeNumbersAndPunctuation
+import platform.UIKit.UIKeyboardTypePhonePad
+import platform.UIKit.UIKeyboardTypeTwitter
+import platform.UIKit.UIKeyboardTypeURL
+import platform.UIKit.UIKeyboardTypeWebSearch
 import platform.UIKit.UIPress
 import platform.UIKit.UIPressesEvent
 import platform.UIKit.UIReturnKeyType
 import platform.UIKit.UIScreen
-import platform.UIKit.UITextAlternativeStyle
-import platform.UIKit.UITextField
+import platform.UIKit.UITextAutocapitalizationType
+import platform.UIKit.UITextAutocorrectionType
+import platform.UIKit.UITextContentType
 import platform.UIKit.UITextInputDelegateProtocol
+import platform.UIKit.UITextInputPasswordRules
 import platform.UIKit.UITextInputProtocol
 import platform.UIKit.UITextInputStringTokenizer
 import platform.UIKit.UITextInputTokenizerProtocol
+import platform.UIKit.UITextInputTraitsProtocol
 import platform.UIKit.UITextLayoutDirection
-import platform.UIKit.UITextPlaceholder
 import platform.UIKit.UITextPosition
 import platform.UIKit.UITextRange
+import platform.UIKit.UITextSmartDashesType
+import platform.UIKit.UITextSmartInsertDeleteType
+import platform.UIKit.UITextSmartQuotesType
+import platform.UIKit.UITextSpellCheckingType
 import platform.UIKit.UITextStorageDirection
 import platform.UIKit.UITouch
 import platform.UIKit.UIView
@@ -80,11 +97,9 @@ import platform.UIKit.backgroundColor
 import platform.UIKit.contentScaleFactor
 import platform.UIKit.multipleTouchEnabled
 import platform.UIKit.removeFromSuperview
-import platform.UIKit.setAlpha
-import platform.UIKit.setFrame
+import platform.UIKit.setBounds
 import platform.UIKit.systemBackgroundColor
 import platform.darwin.NSInteger
-import platform.darwin.NSObject
 
 // @TODO: Do not remove! Called from a generated .kt file : platforms/native-ios/bootstrap.kt
 @Suppress("unused", "UNUSED_PARAMETER")
@@ -521,7 +536,7 @@ open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
     override val isSoftKeyboardVisible: Boolean get() = super.isSoftKeyboardVisible
     lateinit var textField: MyUITextComponent
 
-    class MyUITextComponent(val gw: IosGameWindow,  rect: CValue<CGRect>) : UIView(rect), UITextInputProtocol {
+    class MyUITextComponent(val gw: IosGameWindow,  rect: CValue<CGRect>) : UIView(rect), UITextInputProtocol, UITextInputTraitsProtocol {
         override fun canBecomeFirstResponder(): Boolean = true
         override fun canBecomeFocused(): Boolean = true
         override fun baseWritingDirectionForPosition(
@@ -586,6 +601,78 @@ open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
             //println("insertText=$text")
             gw.dispatchKeyEvent(KeyEvent.Type.TYPE, 0, '\u0000', Key.BACKSPACE, 0, text)
         }
+
+        var _autocapitalizationType: UITextAutocapitalizationType = UITextAutocapitalizationType.UITextAutocapitalizationTypeSentences
+        var _autocorrectionType: UITextAutocorrectionType = UITextAutocorrectionType.UITextAutocorrectionTypeDefault
+        var _isSecureTextEntry: Boolean = false
+        var _keyboardAppearance: UIKeyboardAppearance = UIKeyboardAppearanceDefault
+        //var _keyboardType: UIKeyboardType = UIKeyboardTypeDefault
+        var _keyboardType: UIKeyboardType = UIKeyboardTypeDecimalPad
+        var _returnKeyType: UIReturnKeyType = UIReturnKeyType.UIReturnKeyDefault
+        var _enablesReturnKeyAutomatically: Boolean = false
+        var _passwordRules: UITextInputPasswordRules? = null
+        var _textContentType: UITextContentType? = null
+        var _smartDashesType: UITextSmartDashesType = UITextSmartDashesType.UITextSmartDashesTypeDefault
+        var _smartInsertDeleteType: UITextSmartInsertDeleteType = UITextSmartInsertDeleteType.UITextSmartInsertDeleteTypeDefault
+        var _smartQuotesType: UITextSmartQuotesType = UITextSmartQuotesType.UITextSmartQuotesTypeDefault
+        var _spellCheckingType: UITextSpellCheckingType = UITextSpellCheckingType.UITextSpellCheckingTypeDefault
+
+        override fun autocapitalizationType(): UITextAutocapitalizationType = _autocapitalizationType
+        override fun autocorrectionType(): UITextAutocorrectionType = _autocorrectionType
+        override fun enablesReturnKeyAutomatically(): Boolean = _enablesReturnKeyAutomatically
+        override fun isSecureTextEntry(): Boolean = _isSecureTextEntry
+        override fun keyboardAppearance(): UIKeyboardAppearance = _keyboardAppearance
+        override fun keyboardType(): UIKeyboardType = _keyboardType
+        override fun smartDashesType(): UITextSmartDashesType = _smartDashesType
+        override fun smartInsertDeleteType(): UITextSmartInsertDeleteType = _smartInsertDeleteType
+        override fun smartQuotesType(): UITextSmartQuotesType = _smartQuotesType
+        override fun spellCheckingType(): UITextSpellCheckingType = _spellCheckingType
+        override fun textContentType(): UITextContentType? = _textContentType
+        override fun passwordRules(): UITextInputPasswordRules? = _passwordRules
+        override fun returnKeyType(): UIReturnKeyType = _returnKeyType
+
+        override fun setAutocapitalizationType(autocapitalizationType: UITextAutocapitalizationType) = run { _autocapitalizationType = autocapitalizationType }
+        override fun setAutocorrectionType(autocorrectionType: UITextAutocorrectionType) = run { _autocorrectionType = autocorrectionType }
+        override fun setEnablesReturnKeyAutomatically(enablesReturnKeyAutomatically: Boolean) = run { _enablesReturnKeyAutomatically = enablesReturnKeyAutomatically }
+        override fun setKeyboardAppearance(keyboardAppearance: UIKeyboardAppearance) = run { _keyboardAppearance = keyboardAppearance }
+        override fun setKeyboardType(keyboardType: UIKeyboardType) = run { _keyboardType = keyboardType }
+        override fun setPasswordRules(passwordRules: UITextInputPasswordRules?) = run { _passwordRules = passwordRules }
+        override fun setReturnKeyType(returnKeyType: UIReturnKeyType) = run { _returnKeyType = returnKeyType }
+        override fun setSecureTextEntry(secureTextEntry: Boolean) = run { _isSecureTextEntry = secureTextEntry }
+        override fun setSmartDashesType(smartDashesType: UITextSmartDashesType) = run { _smartDashesType = smartDashesType }
+        override fun setSmartInsertDeleteType(smartInsertDeleteType: UITextSmartInsertDeleteType) = run { _smartInsertDeleteType = smartInsertDeleteType }
+        override fun setSmartQuotesType(smartQuotesType: UITextSmartQuotesType) = run { _smartQuotesType = smartQuotesType }
+        override fun setSpellCheckingType(spellCheckingType: UITextSpellCheckingType) = run { _spellCheckingType = spellCheckingType }
+        override fun setTextContentType(textContentType: UITextContentType?) = run { _textContentType = textContentType }
+
+        /*
+        override fun beginFloatingCursorAtPoint(point: CValue<CGPoint>) = Unit
+        override fun characterOffsetOfPosition(position: UITextPosition, withinRange: UITextRange): NSInteger = 0
+        override fun dictationRecognitionFailed() = Unit
+        override fun dictationRecordingDidEnd() = Unit
+        override fun endFloatingCursor() = Unit
+        override fun frameForDictationResultPlaceholder(placeholder: Any): CValue<CGRect> =
+            CGRectMake(0.cg, 0.cg, 100.cg, 32.cg)
+
+        override fun insertDictationResult(dictationResult: List<*>) = Unit
+        override fun insertDictationResultPlaceholder(): Any = Unit
+        override fun insertText(text: String, alternatives: List<*>, style: UITextAlternativeStyle) = Unit
+        override fun insertTextPlaceholderWithSize(size: CValue<CGSize>): UITextPlaceholder = UITextPlaceholder()
+        override fun removeDictationResultPlaceholder(placeholder: Any, willInsertResult: Boolean) = Unit
+        override fun removeTextPlaceholder(textPlaceholder: UITextPlaceholder) = Unit
+        override fun selectionAffinity(): UITextStorageDirection = UITextStorageDirectionForward
+        override fun setAttributedMarkedText(markedText: NSAttributedString?, selectedRange: CValue<NSRange>) = Unit
+        override fun setSelectionAffinity(selectionAffinity: UITextStorageDirection) = Unit
+        override fun shouldChangeTextInRange(range: UITextRange, replacementText: String): Boolean = false
+        override fun textInputView(): UIView = this
+        override fun textStylingAtPosition(
+            position: UITextPosition,
+            inDirection: UITextStorageDirection
+        ): Map<Any?, *>? = null
+
+        override fun updateFloatingCursorAtPoint(point: CValue<CGPoint>) = Unit
+
+         */
     }
 
     private fun prepareSoftKeyboardOnce() = memScoped {
@@ -597,13 +684,69 @@ open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
     val window: UIWindow get() = app.window
     //val window = UIApplication.sharedApplication.keyWindow ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
 
+    override fun setInputRectangle(windowRect: Rectangle) {
+        println("IosGameWindow.setInputRectangle: windowRect=$windowRect")
+        prepareSoftKeyboardOnce()
+        textField.setBounds(windowRect.toCG())
+
+        super.setInputRectangle(windowRect)
+    }
+
+    private val defaultSoftKeyboardConfig = SoftKeyboardConfig()
+
     // https://developer.apple.com/documentation/uikit/uitextinput
     // https://developer.apple.com/documentation/uikit/uikeyinput
-    override fun showSoftKeyboard(force: Boolean) {
+    override fun showSoftKeyboard(force: Boolean, config: ISoftKeyboardConfig?) {
+        val conf = config ?: defaultSoftKeyboardConfig
         println("IosGameWindow.showSoftKeyboard: force=$force")
         prepareSoftKeyboardOnce()
+        textField.keyboardType = conf.softKeyboardType.toIOS()
+        textField.returnKeyType = conf.softKeyboardReturnKeyType.toIOS()
+        textField.enablesReturnKeyAutomatically = conf.softKeyboardEnablesReturnKeyAutomatically
+        textField.smartDashesType = conf.softKeyboardSmartDashes.toIOS(UITextSmartDashesType.UITextSmartDashesTypeDefault, UITextSmartDashesType.UITextSmartDashesTypeNo, UITextSmartDashesType.UITextSmartDashesTypeYes)
+        textField.smartQuotesType = conf.softKeyboardSmartQuotes.toIOS(UITextSmartQuotesType.UITextSmartQuotesTypeDefault, UITextSmartQuotesType.UITextSmartQuotesTypeNo, UITextSmartQuotesType.UITextSmartQuotesTypeYes)
+        textField.spellCheckingType = conf.softKeyboardSpellChecking.toIOS(UITextSpellCheckingType.UITextSpellCheckingTypeDefault, UITextSpellCheckingType.UITextSpellCheckingTypeNo, UITextSpellCheckingType.UITextSpellCheckingTypeYes)
+        textField.textContentType = conf.softKeyboardTextContentType
+        UIReturnKeyType.UIReturnKeyDefault
         window.addSubview(textField)
         textField.becomeFirstResponder()
+    }
+
+    fun SoftKeyboardReturnKeyType.toIOS(): UIReturnKeyType = when (this) {
+        SoftKeyboardReturnKeyType.DEFAULT -> UIReturnKeyType.UIReturnKeyDefault
+        SoftKeyboardReturnKeyType.GO -> UIReturnKeyType.UIReturnKeyGo
+        SoftKeyboardReturnKeyType.JOIN -> UIReturnKeyType.UIReturnKeyJoin
+        SoftKeyboardReturnKeyType.NEXT -> UIReturnKeyType.UIReturnKeyNext
+        SoftKeyboardReturnKeyType.ROUTE -> UIReturnKeyType.UIReturnKeyRoute
+        SoftKeyboardReturnKeyType.SEARCH -> UIReturnKeyType.UIReturnKeySearch
+        SoftKeyboardReturnKeyType.DONE -> UIReturnKeyType.UIReturnKeyDone
+        SoftKeyboardReturnKeyType.EMERGENCY_CALL -> UIReturnKeyType.UIReturnKeyEmergencyCall
+        SoftKeyboardReturnKeyType.CONTINUE -> UIReturnKeyType.UIReturnKeyContinue
+        else -> UIReturnKeyType.UIReturnKeyDefault
+    }
+
+    @OptIn(UnsafeNumber::class)
+    fun SoftKeyboardType?.toIOS(): UIKeyboardType = when (this) {
+        SoftKeyboardType.DEFAULT -> UIKeyboardTypeDefault
+        SoftKeyboardType.ASCII_CAPABLE -> UIKeyboardTypeASCIICapable
+        SoftKeyboardType.NUMBERS_AND_PUNCTUATION -> UIKeyboardTypeNumbersAndPunctuation
+        SoftKeyboardType.URL -> UIKeyboardTypeURL
+        SoftKeyboardType.NUMBER_PAD -> UIKeyboardTypeNumberPad
+        SoftKeyboardType.PHONE_PAD -> UIKeyboardTypePhonePad
+        SoftKeyboardType.NAME_PHONE_PAD -> UIKeyboardTypeNamePhonePad
+        SoftKeyboardType.EMAIL_ADDRESS -> UIKeyboardTypeEmailAddress
+        SoftKeyboardType.DECIMAL_PAD -> UIKeyboardTypeDecimalPad
+        SoftKeyboardType.TWITTER -> UIKeyboardTypeTwitter
+        SoftKeyboardType.WEB_SEARCH -> UIKeyboardTypeWebSearch
+        SoftKeyboardType.ASCII_CAPABLE_NUMBER_PAD -> UIKeyboardTypeASCIICapable
+        SoftKeyboardType.ALPHABET -> UIKeyboardTypeAlphabet
+        else -> UIKeyboardTypeDefault
+    }
+
+    fun <T> Boolean?.toIOS(default: T, no: T, yes: T): T = when (this) {
+        null -> default
+        false -> no
+        true -> yes
     }
 
     override fun hideSoftKeyboard() {
