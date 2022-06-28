@@ -106,6 +106,12 @@ data class GradientPaint(
         }
 
         fun fillColors(out: RgbaPremultipliedArray, stops: DoubleArrayList, colors: IntArrayList) {
+            _fillColors(out.ints, stops, colors, premultiplied = true)
+        }
+
+        private fun RGBA.colorInt(premultiplied: Boolean): Int = if (premultiplied) this.premultiplied.value else value
+
+        private fun _fillColors(out: IntArray, stops: DoubleArrayList, colors: IntArrayList, premultiplied: Boolean) {
             val numberOfStops = stops.size
             val NCOLORS = out.size
             fun stopN(n: Int): Int = (stops[n] * NCOLORS).toInt()
@@ -113,11 +119,11 @@ data class GradientPaint(
             when (numberOfStops) {
                 0, 1 -> {
                     val color = if (numberOfStops == 0) Colors.FUCHSIA else RGBA(colors.first())
-                    val pcolor = color.premultiplied
+                    val pcolor: Int = color.colorInt(premultiplied)
                     for (n in 0 until NCOLORS) out[n] = pcolor
                 }
                 else -> {
-                    for (n in 0 until stopN(0)) out[n] = RGBA(colors.first()).premultiplied
+                    for (n in 0 until stopN(0)) out[n] = RGBA(colors.first()).colorInt(premultiplied)
                     for (n in 0 until numberOfStops - 1) {
                         val stop0 = stopN(n + 0)
                         val stop1 = stopN(n + 1)
@@ -125,16 +131,17 @@ data class GradientPaint(
                         val color1 = RGBA(colors.getAt(n + 1))
                         for (s in stop0 until stop1) {
                             val ratio = (s - stop0).toDouble() / (stop1 - stop0).toDouble()
-                            out[s] = RGBA.interpolate(color0, color1, ratio).premultiplied
+                            out[s] = RGBA.interpolate(color0, color1, ratio).colorInt(premultiplied)
                         }
                     }
-                    for (n in stopN(numberOfStops - 1) until NCOLORS) out.ints[n] = colors.last()
+                    for (n in stopN(numberOfStops - 1) until NCOLORS) out[n] = RGBA(colors.last()).colorInt(premultiplied)
                 }
             }
         }
     }
 
-    fun fillColors(out: RgbaPremultipliedArray): Unit = fillColors(out, stops, colors)
+    fun fillColors(out: RgbaArray): Unit = _fillColors(out.ints, stops, colors, premultiplied = false)
+    fun fillColors(out: RgbaPremultipliedArray): Unit = _fillColors(out.ints, stops, colors, premultiplied = true)
 
     fun addColorStop(stop: Double, color: RGBA): GradientPaint = add(stop, color)
     inline fun addColorStop(stop: Number, color: RGBA): GradientPaint = add(stop.toDouble(), color)
