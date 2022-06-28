@@ -19,6 +19,10 @@ abstract class BaseGraphics(
     var autoScaling: Boolean = false,
 ) : BaseImage(Bitmaps.transparent) {
     var useNativeRendering = true
+        set(value) {
+            field = value
+            dirty()
+        }
 
     var preciseAutoScaling: Boolean = false
         set(value) {
