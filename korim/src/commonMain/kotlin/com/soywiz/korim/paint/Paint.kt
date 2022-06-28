@@ -67,7 +67,8 @@ data class GradientPaint(
     val cycle: CycleMethod = CycleMethod.NO_CYCLE,
     override val transform: Matrix = Matrix(),
     val interpolationMethod: GradientInterpolationMethod = GradientInterpolationMethod.NORMAL,
-    override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
+    override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX,
+    val startAngle: Angle = Angle.ZERO,
 ) : TransformedPaint {
     @Deprecated("")
     fun x0(m: Matrix) = m.transformX(x0, y0)
