@@ -80,6 +80,7 @@ suspend fun main() = Korge(
             Demo(::MainGpuVectorRendering),
             Demo(::MainGpuVectorRendering2),
             Demo(::MainGpuVectorRendering3),
+            Demo(::MainSound)
         )
     )
 }
