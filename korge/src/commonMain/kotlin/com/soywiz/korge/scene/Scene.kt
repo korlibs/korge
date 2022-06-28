@@ -9,7 +9,7 @@ import com.soywiz.korge.resources.ResourcesRoot
 import com.soywiz.korge.time.delay
 import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.FixedSizeContainer
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.ScaleView
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
@@ -71,13 +71,13 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 
 	protected val cancellables = CancellableGroup()
     override val coroutineContext by lazy { views.coroutineContext + AsyncInjectorContext(injector) + Job(views.coroutineContext[Job.Key]) }
-	val sceneView: Container by lazy {
+	val sceneView: SContainer by lazy {
         createSceneView(sceneContainer.width, sceneContainer.height).apply {
             _sceneViewContainer += this
         }
     }
     override val resources: Resources by lazy { injector.getSync() }
-	protected open fun createSceneView(width: Double, height: Double): Container = FixedSizeContainer(width, height)
+	protected open fun createSceneView(width: Double, height: Double): SContainer = SContainer(width, height)
 
     /**
      * This method will be called by the [SceneContainer] that will display this [Scene].
@@ -96,7 +96,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Here you can read and wait for resources.
      * No need to call super.
      **/
-	open suspend fun Container.sceneInit() {
+	open suspend fun SContainer.sceneInit() {
     }
 
     /**
@@ -106,7 +106,7 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
      * Its underlying job will be automatically closed on the [sceneAfterDestroy].
      * No need to call super.
      */
-    open suspend fun Container.sceneMain() {
+    open suspend fun SContainer.sceneMain() {
 
     }
 
@@ -165,7 +165,7 @@ abstract class ScaledScene : Scene() {
 	open val sceneScale: Double = 2.0
 	open val sceneFiltering: Boolean = false
 
-	override fun createSceneView(width: Double, height: Double): Container = ScaleView(
+	override fun createSceneView(width: Double, height: Double): SContainer = ScaleView(
 		sceneSize.width.toInt(),
 		sceneSize.height.toInt(),
 		scale = sceneScale,
@@ -174,7 +174,7 @@ abstract class ScaledScene : Scene() {
 }
 
 class EmptyScene : Scene() {
-	override suspend fun Container.sceneInit() {
+	override suspend fun SContainer.sceneInit() {
 	}
 }
 
@@ -186,7 +186,7 @@ abstract class LogScene : Scene() {
 		this.log += msg
 	}
 
-	override suspend fun Container.sceneInit() {
+	override suspend fun SContainer.sceneInit() {
 		log("$sceneName.sceneInit")
 	}
 

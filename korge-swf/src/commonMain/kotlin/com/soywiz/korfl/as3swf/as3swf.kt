@@ -1,7 +1,7 @@
 package com.soywiz.korfl.as3swf
 
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
+import com.soywiz.kds.Extra
+import com.soywiz.kmem.Float16
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korio.util.*
@@ -546,6 +546,8 @@ open class SWFTimelineContainer {
 
 	var backgroundColor: Int = 0xffffff
 	var jpegTablesTag: TagJPEGTables? = null
+
+    fun getCharacterIds(): List<Int> = rootTimelineContainer.dictionary.keys.sorted()
 
 	fun getCharacter(characterId: Int): IDefinitionTag? {
 		val tagIndex = rootTimelineContainer.dictionary[characterId] ?: 0

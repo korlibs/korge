@@ -1,10 +1,8 @@
 package com.soywiz.korge.view.vector
 
-import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
-import com.soywiz.kmem.clamp
 import com.soywiz.korag.AG
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.RenderContext
@@ -57,32 +55,40 @@ inline fun Container.gpuGraphics(
     build: ShapeBuilder.() -> Unit,
     antialiased: Boolean = true,
     callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
-) =
-    GpuGraphics(buildShape { build() }, antialiased).addTo(this, callback)
+): GpuShapeView = gpuShapeView(build, antialiased, callback)
+
+inline fun Container.gpuGraphics(
+    shape: Shape,
+    antialiased: Boolean = true,
+    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
+): GpuShapeView = gpuShapeView(shape, antialiased, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuGraphics(
-    shape: Shape = EmptyShape,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuGraphics.() -> Unit = {}
-) =
-    GpuGraphics(shape, antialiased).addTo(this, callback)
+    callback: @ViewDslMarker ShapeBuilder.(GpuGraphics) -> Unit = {}
+): GpuShapeView = gpuShapeView(antialiased, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuShapeView(
     build: ShapeBuilder.() -> Unit,
     antialiased: Boolean = true,
     callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
-) =
-    GpuShapeView(buildShape { build() }, antialiased).addTo(this, callback)
+): GpuShapeView = GpuShapeView(buildShape { build() }, antialiased).addTo(this, callback)
+
+inline fun Container.gpuShapeView(
+    shape: Shape,
+    antialiased: Boolean = true,
+    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
+): GpuShapeView = GpuShapeView(shape, antialiased).addTo(this, callback)
 
 //@KorgeExperimental
 inline fun Container.gpuShapeView(
-    shape: Shape = EmptyShape,
     antialiased: Boolean = true,
-    callback: @ViewDslMarker GpuShapeView.() -> Unit = {}
-) =
-    GpuShapeView(shape, antialiased).addTo(this, callback)
+    callback: @ViewDslMarker ShapeBuilder.(GpuShapeView) -> Unit = {}
+): GpuShapeView = GpuShapeView(EmptyShape, antialiased)
+    .also { it.updateShape { callback(this, it) } }
+    .addTo(this)
 
 @Deprecated("")
 //typealias GpuShapeView = GpuGraphics
@@ -97,6 +103,9 @@ open class GpuShapeView(
     // @TODO: Not used, but to be compatible with Graphics
     var autoScaling: Boolean = true
 ) : View(), Anchorable {
+    /** Use for compatibility with [BaseGraphics] */
+    var useNativeRendering: Boolean = true
+
     private val gpuShapeViewCommands = GpuShapeViewCommands()
     private val bb = BoundsBuilder()
     var bufferWidth = 1000
@@ -104,7 +113,7 @@ open class GpuShapeView(
     private val pointsScope = PointPool(128)
     private val ab = SegmentInfo()
     private val bc = SegmentInfo()
-    private var notifyAboutEvenOdd = false
+    //private var notifyAboutEvenOdd = false
 
     override var anchorX: Double = 0.0 ; set(value) { field = value; invalidate() }
     override var anchorY: Double = 0.0 ; set(value) { field = value; invalidate() }
@@ -471,13 +480,6 @@ open class GpuShapeView(
     private fun renderFill(shape: FillShape) {
         //println("maxRenderCount=$maxRenderCount")
         //println("renderCount=$renderCount")
-        if (shape.path.winding != Winding.EVEN_ODD) {
-            if (!notifyAboutEvenOdd) {
-                notifyAboutEvenOdd = true
-                Console.error("ERROR: Currently only supported EVEN_ODD winding, but used ${shape.path.winding}")
-            }
-        }
-
         val paintShader = GpuShapeViewPrograms.paintToShaderInfo(
             shape.transform, shape.paint, shape.globalAlpha,
             lineWidth = 10000000.0,
@@ -528,28 +530,57 @@ open class GpuShapeView(
             return
         }
 
-        var stencilEqualsValue = 0b00000001
+        val winding = shape.path.winding
+        //if (winding != Winding.EVEN_ODD) {
+        //    if (!notifyAboutEvenOdd) {
+        //        notifyAboutEvenOdd = true
+        //        Console.error("ERROR: Currently only supported EVEN_ODD winding, but used $winding")
+        //    }
+        //}
+
+        var stencilReferenceValue: Int = 0b00000001
+        var stencilCompare: AG.CompareMode = AG.CompareMode.EQUAL
         if (drawFill) {
-            pathDataList.fastForEach { pathData ->
-                writeStencil(
-                    pathData.vertexStart, pathData.vertexEnd, AG.StencilState(
-                        enabled = true,
-                        compareMode = AG.CompareMode.ALWAYS,
-                        writeMask = 0b00000001,
-                        actionOnBothPass = AG.StencilOp.INVERT,
-                    )
-                )
+            when (winding) {
+                Winding.EVEN_ODD -> {
+                    stencilReferenceValue = 0b00000001
+                    stencilCompare = AG.CompareMode.EQUAL
+                    val stencil = AG.StencilState(enabled = true, compareMode = AG.CompareMode.ALWAYS, writeMask = 0b00000001, actionOnBothPass = AG.StencilOp.INVERT)
+                    pathDataList.fastForEach { pathData ->
+                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencil, cullFace = AG.CullFace.BOTH)
+                    }
+                }
+                Winding.NON_ZERO -> {
+                    stencilReferenceValue = 0b00000000
+                    stencilCompare = AG.CompareMode.NOT_EQUAL
+                    val stencil = AG.StencilState(enabled = true, compareMode = AG.CompareMode.ALWAYS, writeMask = 0xFF, actionOnBothPass = AG.StencilOp.INVERT)
+                    pathDataList.fastForEach { pathData ->
+                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencil.copy(actionOnBothPass = AG.StencilOp.INCREMENT_WRAP), cullFace = AG.CullFace.FRONT)
+                        writeStencil(pathData.vertexStart, pathData.vertexEnd, stencil.copy(actionOnBothPass = AG.StencilOp.DECREMENT_WRAP), cullFace = AG.CullFace.BACK)
+                    }
+                }
             }
 
             // @TODO: Should we do clipping other way?
             if (clipData != null) {
+                if (winding == Winding.NON_ZERO) {
+                    writeStencil(clipDataStart, clipDataEnd, AG.StencilState(
+                        enabled = true,
+                        compareMode = AG.CompareMode.NOT_EQUAL,
+                        readMask = 0,
+                        writeMask = 0xFF,
+                        actionOnBothPass = AG.StencilOp.INVERT
+                    ), cullFace = AG.CullFace.FRONT)
+                }
+                // @TODO: This won't work with NON_ZERO filling
+
                 writeStencil(clipDataStart, clipDataEnd, AG.StencilState(
                     enabled = true,
                     compareMode = AG.CompareMode.ALWAYS,
                     writeMask = 0b00000010,
                     actionOnBothPass = AG.StencilOp.INVERT,
-                ))
-                stencilEqualsValue = 0b00000011
+                ), AG.CullFace.BOTH)
+                stencilReferenceValue = 0b00000011
             }
         }
 
@@ -575,22 +606,22 @@ open class GpuShapeView(
                 forceClosed = true,
                 stencil = if (!drawFill) null else AG.StencilState(
                     enabled = true,
-                    compareMode = AG.CompareMode.NOT_EQUAL,
-                    referenceValue = stencilEqualsValue,
+                    compareMode = stencilCompare.inverted(),
+                    referenceValue = stencilReferenceValue,
                     writeMask = 0,
                 )
             )
         }
 
         if (drawFill) {
-            writeFill(paintShader, stencilEqualsValue, pathBounds, pathDataList)
+            writeFill(paintShader, stencilReferenceValue, pathBounds, pathDataList, stencilCompare)
             gpuShapeViewCommands.clearStencil(0)
         }
 
         // renderFill
     }
 
-    private fun writeStencil(pathDataStart: Int, pathDataEnd: Int, stencil: AG.StencilState) {
+    private fun writeStencil(pathDataStart: Int, pathDataEnd: Int, stencil: AG.StencilState, cullFace: AG.CullFace) {
         gpuShapeViewCommands.draw(
             AG.DrawType.TRIANGLE_FAN,
             startIndex = pathDataStart,
@@ -598,7 +629,8 @@ open class GpuShapeView(
             paintShader = GpuShapeViewPrograms.stencilPaintShader,
             colorMask = AG.ColorMaskState(false, false, false, false),
             blendMode = BlendMode.NONE.factors,
-            stencil = stencil
+            stencil = stencil,
+            cullFace = cullFace
         )
     }
 
@@ -606,9 +638,10 @@ open class GpuShapeView(
 
     private fun writeFill(
         paintShader: GpuShapeViewPrograms.PaintShader,
-        stencilEqualsValue: Int,
+        stencilReferenceValue: Int,
         pathBounds: Rectangle,
         pathDataList: List<PointsResult>,
+        stencilCompare: AG.CompareMode, //= AG.CompareMode.EQUAL
     ) {
         val vstart = gpuShapeViewCommands.verticesStart()
         val x0 = pathBounds.left.toFloat()
@@ -629,8 +662,8 @@ open class GpuShapeView(
             colorMask = AG.ColorMaskState(true),
             stencil = AG.StencilState(
                 enabled = true,
-                compareMode = AG.CompareMode.EQUAL,
-                referenceValue = stencilEqualsValue,
+                compareMode = stencilCompare,
+                referenceValue = stencilReferenceValue,
                 writeMask = 0,
             ),
             startIndex = vstart,

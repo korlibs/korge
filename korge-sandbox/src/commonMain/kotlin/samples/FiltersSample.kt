@@ -3,17 +3,15 @@ package samples
 import com.soywiz.klock.*
 import com.soywiz.korge.animate.animateParallel
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.*
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korma.interpolation.Easing
 
 class MainFiltersSample : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val bitmap = resourcesVfs["korge.png"].readBitmap()
 
         val wave = WaveFilter()

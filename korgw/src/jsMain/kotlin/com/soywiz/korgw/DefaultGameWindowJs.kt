@@ -26,9 +26,7 @@ open class JsGameWindow : GameWindow() {
     }
 }
 
-
-open class BrowserGameWindow : JsGameWindow() {
-
+open class BrowserCanvasJsGameWindow : JsGameWindow() {
     override val ag: AGWebgl = AGWebgl(AGConfig())
     val canvas get() = ag.canvas
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
@@ -253,13 +251,16 @@ open class BrowserGameWindow : JsGameWindow() {
                     else -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
                 }
 
-                //println("scrollDeltaMode: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
+                //println("scrollDeltaMode: ${we.deltaMode}: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
+
+                val sensitivity = 0.05
+                //val sensitivity = 0.1
 
                 this.setScrollDelta(
                     mode,
-                    x = we.deltaX,
-                    y = we.deltaY,
-                    z = we.deltaZ,
+                    x = we.deltaX * sensitivity,
+                    y = we.deltaY * sensitivity,
+                    z = we.deltaZ * sensitivity,
                 )
             }
         }
@@ -480,7 +481,7 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserGameWindow()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
 
 /*
 public external open class TouchEvent(type: String, eventInitDict: MouseEventInit = definedExternally) : UIEvent {

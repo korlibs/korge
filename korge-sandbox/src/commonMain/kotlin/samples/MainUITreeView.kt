@@ -7,10 +7,10 @@ import com.soywiz.korge.ui.UITreeViewNode
 import com.soywiz.korge.ui.tooltip
 import com.soywiz.korge.ui.uiTooltipContainer
 import com.soywiz.korge.ui.uiTreeView
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 
 class MainUITreeView : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         uiTooltipContainer { tooltips ->
             uiTreeView(
                 UITreeViewList(listOf(

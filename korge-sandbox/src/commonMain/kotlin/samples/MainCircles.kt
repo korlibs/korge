@@ -5,7 +5,7 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.draggable
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.centered
@@ -15,7 +15,7 @@ import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 
 class MainCircles : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         // @TODO: USe BVH2D to limit collision view checkings
         lateinit var collisionViews: List<View>
         val rect1 = circle(50.0, fill = Colors.RED).xy(300, 300).centered

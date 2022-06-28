@@ -8,7 +8,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 
 class MainFiltersRenderToBitmap : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         println("LOADING IMAGE...")
         val bitmap = resourcesVfs["korge.png"].readBitmap()
         val container = FixedSizeContainer(width, height).apply {

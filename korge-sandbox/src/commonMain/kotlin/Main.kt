@@ -20,6 +20,8 @@ suspend fun main() = Korge(
 ) {
     demoSelector(
         Demo(::MainTextInput),
+        //Demo(::MainEmojiColrv1),
+        //Demo(::MainSWF),
         listOf(
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
@@ -101,7 +103,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    uiComboBox(width = 300.0, items = (listOf(default) + all).distinct().sortedBy { it.name }) {
+    uiComboBox(width = 300.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
             println(it)

@@ -5,8 +5,7 @@ import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.debug.debugVertexView
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.vector.gpuShapeView
@@ -35,7 +34,7 @@ import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.toCurves
 
 class MainGpuVectorRendering3 : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         fun Container.debugPath(desc: String, pos: IPoint, strokeInfo: StrokeInfo, path: VectorPath) {
             val pointsList = path.toCurves().toStrokePointsList(strokeInfo, generateDebug = true, mode = StrokePointsMode.NON_SCALABLE_POS)
 

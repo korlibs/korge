@@ -7,8 +7,9 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform float u_GlobalAlpha;
+uniform float u_Premultiplied;
 uniform vec4 u_ColorMul;
+uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
 varying float v_Dist;
 varying float v_MaxDist;
@@ -61,9 +62,11 @@ void main() {
 			}
 		}
 	}
-	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+	if ((u_Premultiplied == 1.0)) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
-	gl_FragColor.a = (gl_FragColor.a * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	gl_FragColor.a = ((gl_FragColor.a * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
 }
 """)
 compileShader(2001)
@@ -136,15 +139,19 @@ getUniformLocation(1001, "u_Color") = 7009
 uniform4f(7009, 1.0, 1.0, 1.0, 0.49803922)
 getUniformLocation(1001, "u_GlobalAlpha") = 7010
 uniform1f(7010, 1.0)
-getUniformLocation(1001, "u_GlobalPixelScale") = 7011
-uniform1f(7011, 10.0)
+getUniformLocation(1001, "u_Premultiplied") = 7011
+uniform1f(7011, 0.0)
+getUniformLocation(1001, "u_GlobalPixelScale") = 7012
+uniform1f(7012, 10.0)
 disable(2960)
 stencilMask(0)
 colorMask(true, true, true, true)
 enable(3042)
 blendEquationSeparate(32774, 32774)
 blendFuncSeparate(770, 771, 1, 771)
+disable(2884)
 drawArrays(5, 0, 10)
 disableVertexAttribArray(8001)
 disableVertexAttribArray(8002)
 disableVertexAttribArray(8003)
+disable(2884)

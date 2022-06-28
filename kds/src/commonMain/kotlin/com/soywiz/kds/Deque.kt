@@ -152,6 +152,8 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
     operator fun set(index: Int, value: TGen) { data[internalIndex(index)] = value }
     operator fun get(index: Int): TGen = data[internalIndex(index)]
 
+    fun getOrNull(index: Int): TGen? = if (index in indices) get(index) else null
+
     override fun contains(element: TGen): Boolean = (0 until size).any { this[it] == element }
 
     fun indexOf(element: TGen): Int {

@@ -3,6 +3,8 @@ package com.soywiz.korge.ui
 import com.soywiz.kds.getCyclicOrNull
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.SoftKeyboardConfig
+import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.KeyComponent
 import com.soywiz.korge.view.Stage
@@ -34,9 +36,9 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
         //toggleKeyboardTimeout = stage.timeout(1.seconds) {
             if (show) {
                 if (view != null) {
-                    gameWindow.setInputRectangle(view.windowBounds)
+                    gameWindow.setInputRectangle(view.getWindowBounds(stage))
                 }
-                gameWindow.showSoftKeyboard()
+                gameWindow.showSoftKeyboard(config = view as? ISoftKeyboardConfig?)
             } else {
                 gameWindow.hideSoftKeyboard()
             }

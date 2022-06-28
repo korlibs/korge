@@ -1,7 +1,7 @@
 package com.soywiz.korge.ext.swf
 
+import com.soywiz.kds.Extra
 import com.soywiz.korfl.as3swf.*
-import com.soywiz.kds.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.animate.serialization.*
 import com.soywiz.korge.view.*
@@ -30,7 +30,9 @@ data class SWFExportConfig(
 	val exportPaths: Boolean = false,
 	val adaptiveScaling: Boolean = true,
 	val smoothInterpolation: Boolean = true,
-    val atlasPacking: Boolean = true
+    val atlasPacking: Boolean = true,
+    val roundDecimalPlaces: Int = -1,
+    val native: Boolean = true,
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config =

@@ -4,20 +4,15 @@ import com.soywiz.klock.seconds
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Graphics
-import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.addUpdater
-import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korio.async.launch
 import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.circle
-import com.soywiz.korma.geom.vector.cubic
 import com.soywiz.korma.geom.vector.curve
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
@@ -26,7 +21,7 @@ import com.soywiz.korma.random.get
 import kotlin.random.Random
 
 class MainBezier : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val shape = gpuShapeView(EmptyShape)
         fun getRandomPoint() = Point(Random[100..500], Random[100..500])
         class Bez {

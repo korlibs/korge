@@ -34,6 +34,7 @@ fun almostEquals(a: Double, b: Double) = almostZero(a - b)
 fun almostZero(a: Double) = abs(a) <= 0.0000001
 
 fun Double.roundDecimalPlaces(places: Int): Double {
+    if (places < 0) return this
     val placesFactor: Double = 10.0.pow(places.toDouble())
     return kotlin.math.round(this * placesFactor) / placesFactor
 }

@@ -43,11 +43,13 @@ fun StringBuilder.appendNice(value: Float) {
 private fun Double.normalizeZero(): Double = if (this == -0.0) 0.0 else this
 
 private fun Float.roundDecimalPlaces(places: Int): Float {
+    if (places < 0) return this
     val placesFactor: Float = 10f.pow(places.toFloat())
     return round(this * placesFactor) / placesFactor
 }
 
 private fun Double.roundDecimalPlaces(places: Int): Double {
+    if (places < 0) return this
     val placesFactor: Double = 10.0.pow(places.toDouble())
     return round(this * placesFactor) / placesFactor
 }

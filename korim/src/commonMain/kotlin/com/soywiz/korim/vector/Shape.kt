@@ -37,6 +37,7 @@ import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.strokeToFill
 import com.soywiz.korma.geom.vector.toCurves
 import com.soywiz.korma.geom.vector.toCurvesList
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.round
 
@@ -56,20 +57,26 @@ import kotlin.math.round
 </svg>
  */
 
-class SvgBuilder(val bounds: Rectangle, val scale: Double) {
+class SvgBuilder(
+    val bounds: Rectangle,
+    val scale: Double,
+    val roundDecimalPlaces: Int = -1
+) {
 	val defs = arrayListOf<Xml>()
 	val nodes = arrayListOf<Xml>()
 
 	//val tx = -bounds.x
 	//val ty = -bounds.y
 
+    val Double.nice: String get() = niceStr(roundDecimalPlaces)
+
 	fun toXml(): Xml {
 		return Xml.Tag(
 			"svg",
 			linkedMapOf(
-				"width" to "${(bounds.width * scale).niceStr}px",
-				"height" to "${(bounds.height * scale).niceStr}px",
-				"viewBox" to "0 0 ${(bounds.width * scale).niceStr} ${(bounds.height * scale).niceStr}",
+				"width" to "${(bounds.width * scale).nice}px",
+				"height" to "${(bounds.height * scale).nice}px",
+				"viewBox" to "0 0 ${(bounds.width * scale).nice} ${(bounds.height * scale).nice}",
 				"xmlns" to "http://www.w3.org/2000/svg",
 				"xmlns:xlink" to "http://www.w3.org/1999/xlink"
 			),
@@ -77,7 +84,7 @@ class SvgBuilder(val bounds: Rectangle, val scale: Double) {
 				Xml.Tag("defs", mapOf(), defs),
 				Xml.Tag(
 					"g",
-					mapOf("transform" to Matrix().translate(-bounds.x, -bounds.y).scale(scale, scale).toSvg()),
+					mapOf("transform" to Matrix().translate(-bounds.x, -bounds.y).scale(scale, scale).toSvg(roundDecimalPlaces)),
 					nodes
 				)
 			) //+ nodes
@@ -87,18 +94,30 @@ class SvgBuilder(val bounds: Rectangle, val scale: Double) {
 
 fun buildSvgXml(width: Int? = null, height: Int? = null, block: ShapeBuilder.() -> Unit): Xml = buildShape(width, height) { block() }.toSvg()
 
-private fun Matrix.toSvg() = this.run {
-	when (getType()) {
+private fun Matrix.toSvg(roundDecimalPlaces: Int = -1): String {
+    val places = roundDecimalPlaces
+	return when (getType()) {
 		Matrix.Type.IDENTITY -> "translate()"
-		Matrix.Type.TRANSLATE -> "translate(${tx.niceStr}, ${ty.niceStr})"
-		Matrix.Type.SCALE -> "scale(${a.niceStr}, ${d.niceStr})"
-		Matrix.Type.SCALE_TRANSLATE -> "translate(${tx.niceStr}, ${ty.niceStr}) scale(${a.niceStr}, ${d.niceStr})"
-		else -> "matrix(${a.niceStr}, ${b.niceStr}, ${c.niceStr}, ${d.niceStr}, ${tx.niceStr}, ${ty.niceStr})"
+		Matrix.Type.TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)})"
+		Matrix.Type.SCALE -> "scale(${a.niceStr(places)}, ${d.niceStr(places)})"
+		Matrix.Type.SCALE_TRANSLATE -> "translate(${tx.niceStr(places)}, ${ty.niceStr(places)}) scale(${a.niceStr(places)}, ${d.niceStr(places)})"
+		else -> "matrix(${a.niceStr(places)}, ${b.niceStr(places)}, ${c.niceStr(places)}, ${d.niceStr(places)}, ${tx.niceStr(places)}, ${ty.niceStr(places)})"
 	}
 }
 
 fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1): String =
     SvgPath.toSvgPathString(this, separator, decimalPlaces)
+
+fun VectorPath.toContext2dCommands(prefix: String = "ctx.", suffix: String = ";", decimalPlaces: Int = 1): List<String> = buildList {
+    fun Double.round(): String = this.niceStr(decimalPlaces)
+    this@toContext2dCommands.visitCmds(
+        moveTo = { x, y -> add("moveTo(${x.round()}, ${y.round()})") },
+        lineTo = { x, y -> add("lineTo(${x.round()}, ${y.round()})") },
+        quadTo = { cx, cy, ax, ay -> add("quadTo(${cx.round()}, ${cy.round()}, ${ax.round()}, ${ay.round()})") },
+        cubicTo = { cx1, cy1, cx2, cy2, ax, ay -> add("cubicTo(${cx1.round()}, ${cy1.round()}, ${cx2.round()}, ${cy2.round()}, ${ax.round()}, ${ay.round()})") },
+        close = { add("close()") }
+    )
+}.map { "$prefix$it$suffix" }
 
 //fun VectorPath.toSvgPathString(scale: Double, tx: Double, ty: Double): String {
 //	val parts = arrayListOf<String>()
@@ -117,7 +136,7 @@ fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1):
 //	return parts.joinToString("")
 //}
 
-interface Shape : BoundsDrawable {
+sealed interface Shape : BoundsDrawable {
 	fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean = false): Unit
 	fun buildSvg(svg: SvgBuilder): Unit = Unit
     fun getPath(path: VectorPath = VectorPath()): VectorPath = path
@@ -135,7 +154,7 @@ fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuil
 }
 
 fun Shape.toSvgInstance(scale: Double = 1.0): SVG = SVG(toSvg(scale))
-fun Shape.toSvg(scale: Double = 1.0): Xml = SvgBuilder(this.getBounds(), scale).apply { buildSvg(this) }.toXml()
+fun Shape.toSvg(scale: Double = 1.0, roundDecimalPlaces: Int = -1): Xml = SvgBuilder(this.getBounds(), scale, roundDecimalPlaces).apply { buildSvg(this) }.toXml()
 fun Drawable.toShape(width: Int, height: Int): Shape = buildShape(width, height) { draw(this@toShape) }
 fun Drawable.toSvg(width: Int, height: Int, scale: Double = 1.0): Xml = toShape(width, height).toSvg(scale)
 
@@ -184,13 +203,13 @@ interface StyledShape : Shape {
 
 	override fun draw(c: Context2d) {
 		c.keepTransform {
-			//c.transform(transform) // Already applied to the path
 			c.beginPath()
 			path?.draw(c)
 			if (clip != null) {
 				clip!!.draw(c)
 				c.clip()
 			}
+            c.transform(transform)
 			drawInternal(c)
 		}
 	}
@@ -234,7 +253,7 @@ fun Paint.toSvg(svg: SvgBuilder): String {
                             "id" to "def$id",
                             "x1" to "$x0", "y1" to "$y0",
                             "x2" to "$x1", "y2" to "$y1",
-                            "gradientTransform" to transform.toSvg()
+                            "gradientTransform" to transform.toSvg(svg.roundDecimalPlaces)
                         ),
                         stops
                     )
@@ -311,7 +330,7 @@ data class FillShape(
     val isConvex: Boolean get() = pathCurvesList.size == 1 && pathCurvesList.first().isConvex && (clipCurvesList == null)
 
 	override fun drawInternal(c: Context2d) {
-		c.fill(paint)
+		c.fill(paint, path.winding)
 	}
 
 	override fun getSvgXmlAttributes(svg: SvgBuilder) = super.getSvgXmlAttributes(svg) + mapOf(
@@ -385,7 +404,7 @@ data class PolylineShape constructor(
 
 	override fun getSvgXmlAttributes(svg: SvgBuilder) = super.getSvgXmlAttributes(svg) + mapOf(
         "fill" to "none",
-		"stroke-width" to "${strokeInfo.thickness}",
+		"stroke-width" to strokeInfo.thickness.niceStr(svg.roundDecimalPlaces),
 		"stroke" to paint.toSvg(svg)
 	)
 }

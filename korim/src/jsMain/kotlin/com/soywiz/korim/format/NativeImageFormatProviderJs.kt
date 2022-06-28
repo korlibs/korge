@@ -217,38 +217,43 @@ object BrowserImage {
 	}
 }
 
+abstract external class CanvasRenderingContext2DEx : CanvasRenderingContext2D {
+    val createConicGradient: (startAngle: Double, x: Double, y: Double) -> CanvasGradient
+}
+
 class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Renderer() {
 	override val width: Int get() = canvas.width.toInt()
 	override val height: Int get() = canvas.height.toInt()
 
-	val ctx = canvas.getContext("2d").unsafeCast<CanvasRenderingContext2D>()
+	val ctx = canvas.getContext("2d").unsafeCast<CanvasRenderingContext2DEx>()
 
-	fun Paint.toJsStr(): Any? {
+    fun CanvasGradient.addColors(paint: GradientPaint): CanvasGradient {
+        val grad = this
+        for (n in 0 until paint.stops.size) {
+            val stop = paint.stops.getAt(n)
+            val color = paint.colors.getAt(n)
+            grad.addColorStop(stop, RGBA(color).htmlStringSimple)
+        }
+        return this
+    }
+
+    fun Paint.toJsStr(): Any? {
 		return when (this) {
 			is NonePaint -> "none"
 			is ColorPaint -> this.color.htmlColor
 			is GradientPaint -> {
 				when (kind) {
 					GradientKind.LINEAR -> {
-						val grad = ctx.createLinearGradient(this.x0, this.y0, this.x1, this.y1)
-						for (n in 0 until this.stops.size) {
-							val stop = this.stops.getAt(n)
-							val color = this.colors.getAt(n)
-							grad.addColorStop(stop, RGBA(color).htmlStringSimple)
-						}
-						grad
+						ctx.createLinearGradient(this.x0, this.y0, this.x1, this.y1).addColors(this)
 					}
                     GradientKind.RADIAL -> {
-						val grad = ctx.createRadialGradient(this.x0, this.y0, this.r0, this.x1, this.y1, this.r1)
-						for (n in 0 until this.stops.size) {
-							val stop = this.stops.getAt(n)
-							val color = this.colors.getAt(n)
-							grad.addColorStop(stop, RGBA(color).htmlStringSimple)
-						}
-						grad
+						ctx.createRadialGradient(this.x0, this.y0, this.r0, this.x1, this.y1, this.r1).addColors(this)
 					}
                     GradientKind.SWEEP -> {
-                        "fuchsia"
+                        when {
+                            ctx.createConicGradient != undefined -> ctx.createConicGradient(this.startAngle.radians, this.x0, this.y0).unsafeCast<CanvasGradient>().addColors(this)
+                            else -> "fuchsia"
+                        }
                     }
 				}
 			}
@@ -383,7 +388,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
         )
     }
 
-	override fun render(state: Context2d.State, fill: Boolean) {
+	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
 		//println("beginPath")
@@ -396,7 +401,7 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
             if (clip != null) {
                 ctx.beginPath()
                 doVisit(clip)
-                ctx.clip(clip.winding.toCanvasFillRule())
+                ctx.clip((winding ?: clip.winding).toCanvasFillRule())
             }
 
 			ctx.beginPath()
@@ -407,11 +412,16 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 			if (fill) {
 				transformPaint(state.fillStyle)
                 //println("       - Gadient: ${}")
-				ctx.fill(state.path.winding.toCanvasFillRule())
+				ctx.fill((winding ?: state.path.winding).toCanvasFillRule())
 				//println("fill: $s")
 			} else {
 				transformPaint(state.strokeStyle)
-				ctx.stroke()
+                val lineDash = state.lineDash
+                if (lineDash != null) {
+                    ctx.lineDashOffset = state.lineDashOffset
+                    ctx.setLineDash(lineDash.toDoubleArray().toTypedArray())
+                }
+                ctx.stroke()
 				//println("stroke: $s")
 			}
 		}

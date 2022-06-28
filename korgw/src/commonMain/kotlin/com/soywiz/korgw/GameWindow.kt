@@ -23,6 +23,7 @@ import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
 import com.soywiz.korev.GameStick
 import com.soywiz.korev.GamepadMapping
+import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.InitEvent
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
@@ -32,6 +33,7 @@ import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.RenderEvent
 import com.soywiz.korev.ReshapeEvent
 import com.soywiz.korev.ResumeEvent
+import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korev.StopEvent
 import com.soywiz.korev.TouchBuilder
@@ -334,7 +336,7 @@ open class GameWindow :
     open fun setInputRectangle(windowRect: Rectangle) {
     }
 
-    open fun showSoftKeyboard(force: Boolean = true) {
+    open fun showSoftKeyboard(force: Boolean = true, config: ISoftKeyboardConfig? = null) {
     }
 
     open fun hideSoftKeyboard() {
@@ -738,7 +740,8 @@ open class GameWindow :
         type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int = this.mouseButtons,
         scrollDeltaX: Double = this.scrollDeltaX, scrollDeltaY: Double = this.scrollDeltaY, scrollDeltaZ: Double = this.scrollDeltaZ,
         isShiftDown: Boolean = this.shift, isCtrlDown: Boolean = this.ctrl, isAltDown: Boolean = this.alt, isMetaDown: Boolean = this.meta,
-        scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false
+        scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false,
+        scrollDeltaMode: MouseEvent.ScrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
     ) {
         if (type != MouseEvent.Type.DOWN && type != MouseEvent.Type.UP) {
             this.mouseButtons = this.mouseButtons.setBits(if (button != null) 1 shl button.ordinal else 0, type == MouseEvent.Type.DOWN)
@@ -753,6 +756,7 @@ open class GameWindow :
             this.scrollDeltaX = scrollDeltaX
             this.scrollDeltaY = scrollDeltaY
             this.scrollDeltaZ = scrollDeltaZ
+            this.scrollDeltaMode = scrollDeltaMode
             this.isShiftDown = isShiftDown
             this.isCtrlDown = isCtrlDown
             this.isAltDown = isAltDown
@@ -785,9 +789,21 @@ open class GameWindow :
         }
     }
 
+    open suspend fun clipboardWrite(data: ClipboardData) {
+    }
+
+    open suspend fun clipboardRead(): ClipboardData? {
+        return null
+    }
+
     //open fun lockMousePointer() = println("WARNING: lockMousePointer not implemented")
     //open fun unlockMousePointer() = Unit
 }
+
+interface ClipboardData {
+}
+
+data class TextClipboardData(val text: String, val contentType: String? = null) : ClipboardData
 
 open class EventLoopGameWindow : GameWindow() {
     override val coroutineDispatcher: GameWindowCoroutineDispatcherSetNow = GameWindowCoroutineDispatcherSetNow()

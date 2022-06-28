@@ -13,6 +13,7 @@ import com.soywiz.korge.time.delayFrame
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.centered
 import com.soywiz.korge.view.circle
@@ -53,7 +54,7 @@ import com.soywiz.korma.geom.vector.toCurves
 import com.soywiz.korma.interpolation.Easing
 
 class MainStrokesExperiment3 : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         graphics {
             val path = buildVectorPath { circle(200, 200, 100) }
             val points = path.toCurves().toNonCurveSimplePointList()
@@ -98,7 +99,7 @@ class MainStrokesExperiment3 : Scene() {
 }
 
 class MainStrokesExperiment2 : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val path = buildVectorPath {}
         val curves = path.getCurves()
         val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
@@ -222,7 +223,7 @@ class MainStrokesExperiment2 : Scene() {
 }
 
 class MainStrokesExperiment : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         class PathData(
             val path: VectorPath,
             val curves: Curves,

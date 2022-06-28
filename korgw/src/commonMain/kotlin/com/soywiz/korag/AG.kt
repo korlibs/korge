@@ -2,14 +2,12 @@ package com.soywiz.korag
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FastIdentityMap
 import com.soywiz.kds.FloatArray2
 import com.soywiz.kds.FloatArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.Pool
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.fastCastTo
-import com.soywiz.kds.getOrPut
 import com.soywiz.kds.hashCode
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
@@ -267,6 +265,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         companion object {
             val NONE = Blending(BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE, BlendFactor.ZERO)
             val NORMAL = Blending(
+                //GL_ONE, GL_ONE_MINUS_SRC_ALPHA <-- premultiplied
                 BlendFactor.SOURCE_ALPHA, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
                 BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA
             )
@@ -666,6 +665,18 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     enum class CompareMode {
         ALWAYS, EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, NEVER, NOT_EQUAL;
+
+        fun inverted(): CompareMode = when (this) {
+            ALWAYS -> NEVER
+            EQUAL -> NOT_EQUAL
+            GREATER -> LESS_EQUAL
+            GREATER_EQUAL -> LESS
+            LESS -> GREATER_EQUAL
+            LESS_EQUAL -> GREATER
+            NEVER -> ALWAYS
+            NOT_EQUAL -> EQUAL
+        }
+
         companion object {
             val VALUES = values()
         }

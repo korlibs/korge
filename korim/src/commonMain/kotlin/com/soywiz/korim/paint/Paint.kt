@@ -42,8 +42,12 @@ interface TransformedPaint : Paint {
 
 enum class GradientKind {
     LINEAR, RADIAL,
-    @Deprecated("Only available on Android or Bitmap32")
-    SWEEP
+    @Deprecated("Not available in some targets")
+    SWEEP;
+    companion object {
+        @Deprecated("Not available in some targets")
+        val CONIC: GradientKind get() = SWEEP
+    }
 }
 
 enum class GradientUnits {
@@ -67,7 +71,8 @@ data class GradientPaint(
     val cycle: CycleMethod = CycleMethod.NO_CYCLE,
     override val transform: Matrix = Matrix(),
     val interpolationMethod: GradientInterpolationMethod = GradientInterpolationMethod.NORMAL,
-    override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX
+    override val units: GradientUnits = GradientUnits.OBJECT_BOUNDING_BOX,
+    val startAngle: Angle = Angle.ZERO,
 ) : TransformedPaint {
     @Deprecated("")
     fun x0(m: Matrix) = m.transformX(x0, y0)
@@ -101,6 +106,12 @@ data class GradientPaint(
         }
 
         fun fillColors(out: RgbaPremultipliedArray, stops: DoubleArrayList, colors: IntArrayList) {
+            _fillColors(out.ints, stops, colors, premultiplied = true)
+        }
+
+        private fun RGBA.colorInt(premultiplied: Boolean): Int = if (premultiplied) this.premultiplied.value else value
+
+        private fun _fillColors(out: IntArray, stops: DoubleArrayList, colors: IntArrayList, premultiplied: Boolean) {
             val numberOfStops = stops.size
             val NCOLORS = out.size
             fun stopN(n: Int): Int = (stops[n] * NCOLORS).toInt()
@@ -108,11 +119,11 @@ data class GradientPaint(
             when (numberOfStops) {
                 0, 1 -> {
                     val color = if (numberOfStops == 0) Colors.FUCHSIA else RGBA(colors.first())
-                    val pcolor = color.premultiplied
+                    val pcolor: Int = color.colorInt(premultiplied)
                     for (n in 0 until NCOLORS) out[n] = pcolor
                 }
                 else -> {
-                    for (n in 0 until stopN(0)) out[n] = RGBA(colors.first()).premultiplied
+                    for (n in 0 until stopN(0)) out[n] = RGBA(colors.first()).colorInt(premultiplied)
                     for (n in 0 until numberOfStops - 1) {
                         val stop0 = stopN(n + 0)
                         val stop1 = stopN(n + 1)
@@ -120,16 +131,17 @@ data class GradientPaint(
                         val color1 = RGBA(colors.getAt(n + 1))
                         for (s in stop0 until stop1) {
                             val ratio = (s - stop0).toDouble() / (stop1 - stop0).toDouble()
-                            out[s] = RGBA.interpolate(color0, color1, ratio).premultiplied
+                            out[s] = RGBA.interpolate(color0, color1, ratio).colorInt(premultiplied)
                         }
                     }
-                    for (n in stopN(numberOfStops - 1) until NCOLORS) out.ints[n] = colors.last()
+                    for (n in stopN(numberOfStops - 1) until NCOLORS) out[n] = RGBA(colors.last()).colorInt(premultiplied)
                 }
             }
         }
     }
 
-    fun fillColors(out: RgbaPremultipliedArray): Unit = fillColors(out, stops, colors)
+    fun fillColors(out: RgbaArray): Unit = _fillColors(out.ints, stops, colors, premultiplied = false)
+    fun fillColors(out: RgbaPremultipliedArray): Unit = _fillColors(out.ints, stops, colors, premultiplied = true)
 
     fun addColorStop(stop: Double, color: RGBA): GradientPaint = add(stop, color)
     inline fun addColorStop(stop: Number, color: RGBA): GradientPaint = add(stop.toDouble(), color)
@@ -209,22 +221,18 @@ data class GradientPaint(
             append(when (kind) {
                 GradientKind.LINEAR -> "LinearGradient([$x0, $y0], [$x1, $y1]"
                 GradientKind.RADIAL -> "RadialGradient([$x0, $y0, $r0], [$x1, $y1, $r1]"
-                GradientKind.SWEEP -> "SweepGradient([$x0, $y0]"
+                GradientKind.SWEEP -> "ConicGradient([$x0, $y0]"
             })
             append(", stops=$stops, colors=${colorsToString(colors)}, cycle=$cycle, transform=$transform, interpolationMethod=$interpolationMethod, units=$units)")
         }
     }
 }
 
-inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform).also(block)
-inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform).also(block)
+inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform).also(block)
+inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform).also(block)
 @Deprecated("Only available on Android or Bitmap32")
-inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform).also(block)
-
-inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform)
-inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform)
-@Deprecated("Only available on Android or Bitmap32")
-inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix()) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform)
+inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform).also(block)
+inline fun ConicGradientPaint(startAngle: Angle, x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.CONIC, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, startAngle = startAngle, transform = transform).also(block)
 
 fun Bitmap.toPaint(
     transform: Matrix = Matrix(),

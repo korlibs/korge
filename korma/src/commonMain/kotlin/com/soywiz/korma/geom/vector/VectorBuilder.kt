@@ -125,6 +125,11 @@ fun VectorBuilder.circle(x: Float, y: Float, radius: Float) = circle(x.toDouble(
 fun VectorBuilder.circle(x: Int, y: Int, radius: Int) = circle(x.toDouble(), y.toDouble(), radius.toDouble())
 fun VectorBuilder.circle(x: Double, y: Double, radius: Double) = arc(x, y, radius, Angle.ZERO, Angle.FULL)
 
+fun VectorBuilder.circleHole(point: IPoint, radius: Double) = circleHole(point.x, point.y, radius)
+fun VectorBuilder.circleHole(x: Float, y: Float, radius: Float) = circleHole(x.toDouble(), y.toDouble(), radius.toDouble())
+fun VectorBuilder.circleHole(x: Int, y: Int, radius: Int) = circleHole(x.toDouble(), y.toDouble(), radius.toDouble())
+fun VectorBuilder.circleHole(x: Double, y: Double, radius: Double) = arc(x, y, radius, Angle.ZERO, Angle.FULL, counterclockwise = true)
+
 fun VectorBuilder.ellipse(x: Double, y: Double, rw: Double, rh: Double) {
     Arc.ellipsePath(this, x, y, rw, rh)
 }

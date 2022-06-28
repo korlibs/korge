@@ -5,12 +5,17 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.renderer.DummyRenderer
+import com.soywiz.korma.annotations.KorDslMarker
+import com.soywiz.korma.annotations.RootViewDslMarker
+import com.soywiz.korma.annotations.VectorDslMarker
+import com.soywiz.korma.annotations.ViewDslMarker
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.LineScaleMode
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.isEmpty
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.write
@@ -37,23 +42,26 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
 
     val shapes = arrayListOf<Shape>()
 
-    override fun rendererRender(state: State, fill: Boolean) {
+    override fun rendererRender(state: State, fill: Boolean, winding: Winding?) {
         if (state.path.isEmpty()) return
 
+        val path = state.path.clone().also { it.winding = winding ?: it.winding }
+        val clip = state.clip?.clone()?.also { it.winding = winding ?: it.winding }
+        val transform = state.transform.clone()
         if (fill) {
             shapes += FillShape(
-                path = state.path.clone(),
-                clip = state.clip?.clone(),
+                path = path,
+                clip = clip,
                 paint = state.fillStyle.clone(),
-                transform = state.transform.clone(),
+                transform = transform,
                 globalAlpha = state.globalAlpha,
             )
         } else {
             shapes += PolylineShape(
-                path = state.path.clone(),
-                clip = state.clip?.clone(),
+                path = path,
+                clip = clip,
                 paint = state.strokeStyle.clone(),
-                transform = state.transform.clone(),
+                transform = transform,
                 StrokeInfo(
                     thickness = state.lineWidth,
                     pixelHinting = true,
@@ -112,7 +120,12 @@ open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), D
         state.clone()
         shapes.clear()
     }
-    fun buildShape(): Shape = if (shapes.size == 1) shapes.first() else CompoundShape(shapes.toList())
+    fun buildShape(): Shape {
+        return when (shapes.size) {
+            1 -> shapes.first()
+            else -> CompoundShape(shapes.toList())
+        }
+    }
 
     override fun draw(c: Context2d) {
         c.draw(buildShape())

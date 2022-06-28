@@ -19,6 +19,10 @@ abstract class BaseGraphics(
     var autoScaling: Boolean = false,
 ) : BaseImage(Bitmaps.transparent) {
     var useNativeRendering = true
+        set(value) {
+            field = value
+            dirty()
+        }
 
     var preciseAutoScaling: Boolean = false
         set(value) {
@@ -73,8 +77,7 @@ abstract class BaseGraphics(
         super.renderInternal(ctx)
     }
 
-    @PublishedApi
-    internal fun redrawIfRequired(): Boolean {
+    fun redrawIfRequired(): Boolean {
         if (autoscaling.onRender(autoScaling, preciseAutoScaling, globalMatrix)) {
             _dirty = true
         }

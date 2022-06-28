@@ -16,6 +16,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.startCoroutine
 
 @OptIn(InternalCoroutinesApi::class)
+@Deprecated("")
 class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 	//CoroutineDispatcher(), ContinuationInterceptor, Delay, DelayFrame {
 	CoroutineDispatcher(), ContinuationInterceptor, Delay {
@@ -71,6 +72,8 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 			val task = lock { if (tasks.isNotEmpty()) tasks.removeHead() else null } ?: break
 			this.time = task.time
 			//println("RUN: $task")
+
+            // @TODO: This is probably wrong
 			task.callback.startCoroutine(object : Continuation<Unit> {
 				override val context: CoroutineContext = this@TestCoroutineDispatcher
 
@@ -82,6 +85,15 @@ class TestCoroutineDispatcher(val frameTime: TimeSpan = 16.milliseconds) :
 			})
 		}
 	}
+
+    @Deprecated("Use loop instead if possible")
+    suspend fun step(time: TimeSpan) {
+        this.time += time.millisecondsLong
+        while (true) {
+            val task = lock { if (tasks.isNotEmpty() && this.time >= tasks.head.time) tasks.removeHead() else null } ?: break
+            task.callback()
+        }
+    }
 
 	fun loop(entry: suspend () -> Unit) {
 		entry.startCoroutine(object : Continuation<Unit> {

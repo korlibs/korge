@@ -1,13 +1,13 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.circle
 import com.soywiz.korim.color.Colors
 
 class MainCircleColor : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         circle(100.0).also { shape ->
             //roundRect(100.0, 200.0, 50.0, 50.0).also { shape ->
             shape.x = 100.0

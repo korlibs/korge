@@ -23,7 +23,7 @@ import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.geom.vector.StrokeInfo
 
 class MainGpuVectorRendering : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
 
         //return
 

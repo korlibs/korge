@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
@@ -17,7 +17,7 @@ import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.file.std.resourcesVfs
 
 class MainEmoji : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         println("coroutineContext: $coroutineContext")
         image(resourcesVfs["korge.png"].readBitmap())
         //val fontEmojiOther = localVfs("C:/temp/emoji.ttf").takeIfExists()?.readTtfFont()
@@ -46,10 +46,10 @@ class MainEmoji : Scene() {
         text("HELLO　쌍디귿 😃😀😁😂🥰🤩🦍", font = font2, textSize = 90.0).xy(100, 228)
         text("HELLO　あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0).xy(100, 368)
 
-        graphics {
+        graphics({
             fill(Colors.RED) {
                 text("h̷̷̶̨͋ͩ̏ͣ̒̉ͤ͛̓̄͢͡͠͡͏͈̬̜̲̙̤̙̤̯e̷͛̒ͪ́ͤ̒̃͏̶͠͏̞̰̻͙̟̜͕̞̮͟͟͡ļ̸̥͎̼̪̘̜̞͓̩ͧ̈̌ͣͨ́̕͡͞ͅl̡̡̛̦̫͖̞̯̻̓̆͆̑̅ͣ̑̕̕͡ͅǫ̴̸̊͐̈́̈̀͛̾́͏̸̡̡̦̤̦͚̬̯͔͉͇́͞HELLO　зклмн 쌍디귿 あかめ私 😃\uD83D\uDDB9", font = font3, textSize = 90.0, x = 100.0, y = 368.0)
             }
-        }
+        })
     }
 }

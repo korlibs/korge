@@ -175,11 +175,11 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     val matrixValues = FloatArray(9)
     var androidMatrix = android.graphics.Matrix()
 
-    fun VectorPath.toAndroid(out: Path = Path(), winding: Winding = this.winding): Path {
+    fun VectorPath.toAndroid(out: Path = Path(), winding: Winding?): Path {
         //out.reset()
         out.rewind()
 
-        out.fillType = when (winding) {
+        out.fillType = when (winding ?: this.winding) {
             Winding.EVEN_ODD -> Path.FillType.EVEN_ODD
             Winding.NON_ZERO -> Path.FillType.INVERSE_EVEN_ODD
             else -> Path.FillType.EVEN_ODD
@@ -293,12 +293,12 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     private val androidClipPath = Path()
     private val androidPath = Path()
 
-    override fun render(state: Context2d.State, fill: Boolean) {
+    override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
         setState(state, fill)
 
         keep {
             if (state.clip != null) {
-                val clipPath = state.clip!!.toAndroid(androidClipPath)
+                val clipPath = state.clip!!.toAndroid(androidClipPath, winding)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     canvas.clipOutPath(clipPath)
                 } else {
@@ -320,7 +320,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             //println(paint.style)
             //println(paint.color)
 
-            canvas.drawPath(state.path.toAndroid(androidPath), paint)
+            canvas.drawPath(state.path.toAndroid(androidPath, winding), paint)
         }
     }
 }

@@ -1,7 +1,6 @@
 package samples
 
 import com.soywiz.korev.*
-import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.scene.*
 import com.soywiz.korge.ui.korui.*
 import com.soywiz.korge.view.*
@@ -10,7 +9,6 @@ import com.soywiz.korim.bitmap.effect.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.text.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
@@ -20,7 +18,7 @@ import com.soywiz.korui.layout.*
 import kotlin.reflect.*
 
 class MainTextMetrics : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val DEFAULT_BG = Colors["#2b2b2b"]
 
         val font0 = resourcesVfs["clear_sans.fnt"].readFont()
@@ -75,13 +73,14 @@ class MainTextMetrics : Scene() {
                 val currentBounds = text1.getLocalBounds()
                 if (cachedBounds != currentBounds) {
                     cachedBounds = currentBounds
-                    gbounds.clear()
-                    gbounds.stroke(Colors.RED, StrokeInfo(2.0)) {
-                        rect(text1.getLocalBounds())
-                    }
-                    gbounds.stroke(Colors.BLUE, StrokeInfo(2.0)) {
-                        line(-5, 0, +5, 0)
-                        line(0, -5, 0, +5)
+                    gbounds.updateShape {
+                        stroke(Colors.RED, StrokeInfo(2.0)) {
+                            rect(text1.getLocalBounds())
+                        }
+                        stroke(Colors.BLUE, StrokeInfo(2.0)) {
+                            line(-5, 0, +5, 0)
+                            line(0, -5, 0, +5)
+                        }
                     }
                     val metrics = text1.font.getOrNull()!!.getFontMetrics(text1.fontSize)
                     baseLineLine.xy(0.0, -metrics.baseline)

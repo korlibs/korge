@@ -1,9 +1,14 @@
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.Deque
+import com.soywiz.kds.HistoryStack
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.clamp
 import com.soywiz.korev.Key
+import com.soywiz.korev.ISoftKeyboardConfig
+import com.soywiz.korev.KeyEvent
+import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.onAttachDetach
 import com.soywiz.korge.input.cursor
@@ -22,6 +27,7 @@ import com.soywiz.korge.view.renderableView
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
 import com.soywiz.korgw.GameWindow
+import com.soywiz.korgw.TextClipboardData
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.Font
@@ -34,7 +40,6 @@ import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.Margin
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bounds
 import com.soywiz.korma.geom.without
 import kotlin.math.absoluteValue
 import kotlin.math.max
@@ -55,7 +60,10 @@ inline fun Container.uiTextInput(
  * Simple Single Line Text Input
  */
 @KorgeExperimental
-class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) : UIView(width, height), UIFocusable {
+class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) :
+    UIView(width, height),
+    UIFocusable,
+    ISoftKeyboardConfig by SoftKeyboardConfig() {
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
     private val bg = renderableView(width, height, skin)
@@ -92,27 +100,68 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     val onFocused = Signal<UITextInput>()
     val onFocusLost = Signal<UITextInput>()
 
+    data class TextSnapshot(var text: String, var selectionRange: IntRange) {
+        fun apply(out: UITextInput) {
+            out.setTextNoSnapshot(text)
+            out.select(selectionRange)
+        }
+    }
+
+    private val textSnapshots = HistoryStack<TextSnapshot>()
+
+    private fun setTextNoSnapshot(text: String, out: TextSnapshot = TextSnapshot("", 0..0)): TextSnapshot? {
+        if (!acceptTextChange(textView.text, text)) return null
+        out.text = textView.text
+        out.selectionRange = selectionRange
+        textView.text = text
+        reclampSelection()
+        onTextUpdated(this)
+        return out
+    }
+
     var text: String
         get() = textView.text
         set(value) {
-            textView.text = value
-            reclampSelection()
-            onTextUpdated(this)
+            val snapshot = setTextNoSnapshot(value)
+            if (snapshot != null) {
+                textSnapshots.push(snapshot)
+            }
         }
+
+    fun undo() {
+        textSnapshots.undo()?.apply(this)
+    }
+
+    fun redo() {
+        textSnapshots.redo()?.apply(this)
+    }
+
+    fun insertText(substr: String) {
+        text = text
+            .withoutRange(selectionRange)
+            .withInsertion(min(selectionStart, selectionEnd), substr)
+        cursorIndex += substr.length
+    }
 
     var font: Font
         get() = textView.font as Font
         set(value) {
             textView.font = value
+            updateCaretSize()
         }
 
     var textSize: Double
         get() = textView.textSize
         set(value) {
             textView.textSize = value
-            caret.height = value
+            updateCaretSize()
         }
     var textColor: RGBA by textView::color
+
+    private fun updateCaretSize() {
+        val metrics = font.getFontMetrics(textSize)
+        caret.scaledHeight = metrics.top.absoluteValue + metrics.bottom.absoluteValue
+    }
 
     private var _selectionStart: Int = initialText.length
     private var _selectionEnd: Int = _selectionStart
@@ -153,13 +202,17 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         updateCaretPosition()
     }
 
+    fun select(range: IntRange) {
+        select(range.first, range.endExclusive)
+    }
+
     fun selectAll() {
         select(0, text.length)
     }
 
-    val selectionLength get() = (selectionEnd - selectionStart).absoluteValue
-    val selectionText get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
-    val selectionRange get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
+    val selectionLength: Int get() = (selectionEnd - selectionStart).absoluteValue
+    val selectionText: String get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
+    val selectionRange: IntRange get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
 
     private val gameWindow get() = stage!!.views.gameWindow
 
@@ -246,6 +299,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
     override var tabIndex: Int = 0
 
+    var acceptTextChange: (old: String, new: String) -> Boolean = { old, new -> true }
+
     override var focused: Boolean
         set(value) {
             if (value == focused) return
@@ -303,6 +358,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         keys {
             this.typed {
                 if (!focused) return@typed
+                if (it.meta) return@typed
                 val code = it.character.code
                 when (code) {
                     8, 127 -> Unit // backspace, backspace (handled by down event)
@@ -315,9 +371,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                         onEscPressed(this@UITextInput)
                     }
                     else -> {
-                        val range = selectionRange
-                        text = text.withoutRange(range).withInsertion(min(selectionStart, selectionEnd), it.characters())
-                        cursorIndex++
+                        insertText(it.characters())
                     }
                 }
                 //println(it.character.toInt())
@@ -326,6 +380,23 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             down {
                 if (!focused) return@down
                 when (it.key) {
+                    Key.C, Key.V, Key.Z -> {
+                        if (it.isNativeCtrl()) {
+                            when (it.key) {
+                                Key.Z -> {
+                                    if (it.shift) redo() else undo()
+                                }
+                                Key.C -> {
+                                    gameWindow.clipboardWrite(TextClipboardData(selectionText))
+                                }
+                                Key.V -> {
+                                    val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
+                                    if (rtext != null) insertText(rtext)
+                                }
+                                else -> Unit
+                            }
+                        }
+                    }
                     Key.BACKSPACE, Key.DELETE -> {
                         val range = selectionRange
                         if (range.length > 0) {
@@ -345,17 +416,15 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                         }
                     }
                     Key.LEFT -> {
-                        if (it.meta && Platform.os.isApple) {
-                            moveToIndex(it.shift, 0)
-                        } else {
-                            moveToIndex(it.shift, leftIndex(selectionStart, it.ctrl))
+                        when {
+                            it.isStartFinalSkip() -> moveToIndex(it.shift, 0)
+                            else -> moveToIndex(it.shift, leftIndex(selectionStart, it.ctrl))
                         }
                     }
                     Key.RIGHT -> {
-                        if (it.meta && Platform.os.isApple) {
-                            moveToIndex(it.shift, text.length)
-                        } else {
-                            moveToIndex(it.shift, rightIndex(selectionStart, it.ctrl))
+                        when {
+                            it.isStartFinalSkip() -> moveToIndex(it.shift, text.length)
+                            else -> moveToIndex(it.shift, rightIndex(selectionStart, it.ctrl))
                         }
                     }
                     Key.HOME -> moveToIndex(it.shift, 0)
@@ -380,20 +449,25 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                 focused = true
                 dragging = false
             }
-            moveAnywhere {
-                //println("UiTextInput.moveAnywhere")
+            downOutside {
+                //println("UiTextInput.downOutside")
+                dragging = false
                 if (focused) {
-                    if (it.pressing) {
-                        dragging = true
-                        selectionEnd = getIndexAtPos(it.currentPosLocal)
-                        it.stopPropagation()
-                    }
+                    focused = false
+                    blur()
+                }
+            }
+            moveAnywhere {
+                //println("UiTextInput.moveAnywhere: focused=$focused, pressing=${it.pressing}")
+                if (focused && it.pressing) {
+                    dragging = true
+                    selectionEnd = getIndexAtPos(it.currentPosLocal)
+                    it.stopPropagation()
                 }
             }
             upOutside {
-                val isFocusedView = stage?.uiFocusedView == this@UITextInput
                 //println("UiTextInput.upOutside: dragging=$dragging, isFocusedView=$isFocusedView, view=${it.view}, stage?.uiFocusedView=${stage?.uiFocusedView}")
-                if (!dragging && isFocusedView) {
+                if (!dragging && focused) {
                     //println(" -- BLUR")
                     blur()
                 }
@@ -408,4 +482,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
 
         updateCaretPosition()
     }
+
+    fun KeyEvent.isWordSkip(): Boolean = this.alt
+    fun KeyEvent.isStartFinalSkip(): Boolean = this.meta && Platform.os.isApple
+    fun KeyEvent.isNativeCtrl(): Boolean = if (Platform.os.isApple) this.meta else this.ctrl
 }

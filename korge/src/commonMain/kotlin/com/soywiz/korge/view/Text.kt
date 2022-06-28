@@ -23,12 +23,14 @@ import com.soywiz.korim.font.getTextBounds
 import com.soywiz.korim.font.measureTextGlyphs
 import com.soywiz.korim.font.readFont
 import com.soywiz.korim.font.renderTextToBitmap
+import com.soywiz.korim.text.CurveTextRenderer
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.Text2TextRendererActions
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.VerticalAlign
+import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.invoke
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
@@ -36,6 +38,7 @@ import com.soywiz.korio.file.extensionLC
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korui.UiContainer
 
 /*
@@ -394,3 +397,24 @@ fun <T : Text> T.autoSize(value: Boolean): T {
     this.autoSize = value
     return this
 }
+
+fun <T : Text> T.aroundPath(path: VectorPath?): T {
+    aroundPath = path
+    return this
+}
+
+var <T : Text> T.aroundPath: VectorPath?
+    get() {
+        val currentRenderer = renderer
+        return if (currentRenderer is CurveTextRenderer<*>) currentRenderer.path else null
+    }
+    set(value) {
+        val currentRenderer = renderer
+        if (value == null) {
+            if (currentRenderer is CurveTextRenderer<*>) {
+                renderer = (currentRenderer as CurveTextRenderer<String>).original
+            }
+        } else {
+            renderer = currentRenderer.aroundPath(value)
+        }
+    }

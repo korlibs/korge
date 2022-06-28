@@ -1,10 +1,10 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 
 class MainAtlasExperiments : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         //    for (n in 0 until 1000) {
         //        val sw = Stopwatch().start()
         //        val atlas = MutableAtlasUnit(1024, 1024)

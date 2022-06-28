@@ -5,13 +5,12 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.TransitionView
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.BlurFilter
 import com.soywiz.korge.view.filter.DropshadowFilter
 import com.soywiz.korge.view.filter.TransitionFilter
 import com.soywiz.korim.color.Colors
 
 class MainTransition : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val transition = TransitionView().addTo(this).xy(300, 100)
         transition.startNewTransition(SolidRect(100, 100, Colors.RED))
         transition.startNewTransition(SolidRect(100, 100, Colors.BLUE), MaskTransition(

@@ -293,8 +293,8 @@ class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieCli
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	var ninePatch: Rectangle? = null
-	val states = hashMapOf<String, AnSymbolMovieClipState>()
-	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1, hashMapOf()) }
+	val states = LinkedHashMap<String, AnSymbolMovieClipState>()
+	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1, LinkedHashMap()) }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }
@@ -334,7 +334,7 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: RGBA = Colors.WHITE
 	val symbolsById = arrayListOf<AnSymbol>()
-	val symbolsByName = hashMapOf<String, AnSymbol>()
+	val symbolsByName = LinkedHashMap<String, AnSymbol>()
 	var defaultSmoothing = true
 	//var defaultSmoothing = false
 

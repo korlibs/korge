@@ -6,7 +6,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.TransitionView
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.DummyView
-import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.clipContainer
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.filter
@@ -23,7 +23,7 @@ import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.vector.rect
 
 class MainClipping : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         image(resourcesVfs["korge.png"].readBitmap()).xy(-50, 0)
 
         clipContainer(100, 100) {

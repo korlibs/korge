@@ -8,7 +8,7 @@ import com.soywiz.korim.text.*
 import com.soywiz.korio.file.std.*
 
 class MainRenderText : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val font = resourcesVfs["Pacifico.ttf"].readFont()
         val realTextSize = 64.0
         //val text = "WTF is going on\nWTF is going on"

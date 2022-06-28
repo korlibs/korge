@@ -1,9 +1,8 @@
 package com.soywiz.korge.ext.swf
 
+import com.soywiz.kds.BitSet
 import com.soywiz.korfl.as3swf.*
-import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.kmem.*
 import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
@@ -102,7 +101,9 @@ fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale:
         minSide = config.minShapeSide,
         maxSide = config.maxShapeSide,
         path = path,
-        charId = this.characterId
+        charId = this.characterId,
+        roundDecimalPlaces = config.roundDecimalPlaces,
+        native = config.native,
     )
 }
 
@@ -465,7 +466,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					requestScale = config.exportScale,
 					minSide = config.minMorphShapeSide,
 					maxSide = config.maxMorphShapeSide,
-                    charId = morph.id
+                    charId = morph.id,
+                    native = config.native
 				)
 				itemsInAtlas.put(
 					{ texture -> morph.texturesWithBitmap.add(ratio.seconds, texture) },

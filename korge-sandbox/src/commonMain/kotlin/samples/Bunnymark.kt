@@ -2,15 +2,12 @@ package samples
 
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.*
 import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
 import com.soywiz.korge.resources.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.fast.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.bitmap.effect.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.font.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.text.*
@@ -19,29 +16,8 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.resources.*
 import kotlin.random.*
-import com.soywiz.kds.*
-import com.soywiz.kmem.*
-import com.soywiz.korag.*
-import com.soywiz.korag.shader.*
-import com.soywiz.korge.*
-import com.soywiz.korge.input.*
-import com.soywiz.korge.render.*
-import com.soywiz.korge.resources.*
-import com.soywiz.korge.view.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.bitmap.effect.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.resources.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.*
-import kotlin.random.*
-import com.soywiz.klock.*
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.fast.*
 import com.soywiz.korma.random.*
 import kotlin.collections.random
 
@@ -66,7 +42,7 @@ class Bunny(tex: BmpSlice) : FastSprite(tex) {
     // bunnymark ported from PIXI.js
 // https://www.goodboydigital.com/pixijs/bunnymark/
 // https://www.goodboydigital.com/pixijs/bunnymark/js/bunnyBenchMark.js
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         println("currentThreadId=$currentThreadId")
         delay(1.milliseconds)
         println("currentThreadId=$currentThreadId")

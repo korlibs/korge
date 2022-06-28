@@ -164,6 +164,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val over = Signal<MouseEvents>()
     val out = Signal<MouseEvents>()
     val down = Signal<MouseEvents>()
+    val downOutside = Signal<MouseEvents>()
     val downFromOutside = Signal<MouseEvents>()
     val up = Signal<MouseEvents>()
     val upOutside = Signal<MouseEvents>()
@@ -498,9 +499,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             //if (cursor != null) views.gameWindow.cursor = GameWindow.Cursor.DEFAULT
             out(this)
         }
-        if (over && pressingChanged && pressing) {
+        if (pressingChanged && pressing) {
             startedPosGlobal.copyFrom(currentPosGlobal)
-            down(this)
+            if (over) {
+                down(this)
+            }
+            if (!over) {
+                downOutside(this)
+            }
         }
         if (overChanged && pressing) {
             downFromOutside(this)
