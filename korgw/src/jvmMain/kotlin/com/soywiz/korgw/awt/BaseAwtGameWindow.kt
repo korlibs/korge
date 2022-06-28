@@ -437,6 +437,7 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                     scrollDeltaX = 0.0,
                     scrollDeltaY = 0.0,
                     scrollDeltaZ = 0.0,
+                    scrollDeltaMode = com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL,
                     isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
                     isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,
@@ -456,7 +457,8 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 val sy = e.y * factor
                 val modifiers = e.modifiersEx
                 //TODO: check this on linux and macos
-                val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
+                //val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
+                val scrollDelta = e.preciseWheelRotation
                 dispatchMouseEvent(
                     type = ev,
                     id = 0,
@@ -467,6 +469,7 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                     scrollDeltaX = 0.0,
                     scrollDeltaY = scrollDelta,
                     scrollDeltaZ = 0.0,
+                    scrollDeltaMode = com.soywiz.korev.MouseEvent.ScrollDeltaMode.PIXEL,
                     isShiftDown = modifiers hasFlags MouseEvent.SHIFT_DOWN_MASK,
                     isCtrlDown = modifiers hasFlags MouseEvent.CTRL_DOWN_MASK,
                     isAltDown = modifiers hasFlags MouseEvent.ALT_DOWN_MASK,

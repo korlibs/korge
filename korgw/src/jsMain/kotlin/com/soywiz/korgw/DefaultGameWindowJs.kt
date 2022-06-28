@@ -28,7 +28,6 @@ open class JsGameWindow : GameWindow() {
 
 
 open class BrowserGameWindow : JsGameWindow() {
-
     override val ag: AGWebgl = AGWebgl(AGConfig())
     val canvas get() = ag.canvas
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
@@ -253,7 +252,7 @@ open class BrowserGameWindow : JsGameWindow() {
                     else -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
                 }
 
-                //println("scrollDeltaMode: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
+                //println("scrollDeltaMode: ${we.deltaMode}: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
 
                 this.setScrollDelta(
                     mode,

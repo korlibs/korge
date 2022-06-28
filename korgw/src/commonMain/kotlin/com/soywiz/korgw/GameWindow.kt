@@ -740,7 +740,8 @@ open class GameWindow :
         type: MouseEvent.Type, id: Int, x: Int, y: Int, button: MouseButton, buttons: Int = this.mouseButtons,
         scrollDeltaX: Double = this.scrollDeltaX, scrollDeltaY: Double = this.scrollDeltaY, scrollDeltaZ: Double = this.scrollDeltaZ,
         isShiftDown: Boolean = this.shift, isCtrlDown: Boolean = this.ctrl, isAltDown: Boolean = this.alt, isMetaDown: Boolean = this.meta,
-        scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false
+        scaleCoords: Boolean = this.scaleCoords, simulateClickOnUp: Boolean = false,
+        scrollDeltaMode: MouseEvent.ScrollDeltaMode = MouseEvent.ScrollDeltaMode.LINE
     ) {
         if (type != MouseEvent.Type.DOWN && type != MouseEvent.Type.UP) {
             this.mouseButtons = this.mouseButtons.setBits(if (button != null) 1 shl button.ordinal else 0, type == MouseEvent.Type.DOWN)
@@ -755,6 +756,7 @@ open class GameWindow :
             this.scrollDeltaX = scrollDeltaX
             this.scrollDeltaY = scrollDeltaY
             this.scrollDeltaZ = scrollDeltaZ
+            this.scrollDeltaMode = scrollDeltaMode
             this.isShiftDown = isShiftDown
             this.isCtrlDown = isCtrlDown
             this.isAltDown = isAltDown

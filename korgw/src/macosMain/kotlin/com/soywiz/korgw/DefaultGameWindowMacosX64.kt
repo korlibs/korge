@@ -120,6 +120,7 @@ class MyNSOpenGLView(
             },
             scrollDeltaX = -e.deltaX, scrollDeltaY = -e.deltaY, scrollDeltaZ = -e.deltaZ,
             isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
+            scrollDeltaMode = MouseEvent.ScrollDeltaMode.PIXEL
         )
     }
 
