@@ -101,7 +101,8 @@ fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale:
         minSide = config.minShapeSide,
         maxSide = config.maxShapeSide,
         path = path,
-        charId = this.characterId
+        charId = this.characterId,
+        roundDecimalPlaces = config.roundDecimalPlaces,
     )
 }
 

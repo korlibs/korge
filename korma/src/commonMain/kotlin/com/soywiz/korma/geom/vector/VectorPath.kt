@@ -19,6 +19,7 @@ import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.native.concurrent.ThreadLocal
 
 // @TODO: ThreadLocal on JVM
@@ -453,6 +454,12 @@ class VectorPath(
 
     fun round(): VectorPath {
         for (n in 0 until data.size) data[n] = kotlin.math.round(data[n])
+        version++
+        return this
+    }
+
+    fun roundDecimalPlaces(places: Int): VectorPath {
+        for (n in 0 until data.size) data[n] = data[n].roundDecimalPlaces(places)
         version++
         return this
     }

@@ -13,6 +13,7 @@ import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.*
 
 /**
@@ -34,7 +35,8 @@ class SWFShapeExporter(
 	val minSide: Int = 16,
 	val maxSide: Int = 512,
 	val path: VectorPath = VectorPath(),
-    val charId: Int = -1
+    val charId: Int = -1,
+    val roundDecimalPlaces: Int = -1,
 ) : ShapeExporter() {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
 
@@ -299,22 +301,27 @@ class SWFShapeExporter(
 		)
 	}
 
+    private val Double.nice: Double get() = when {
+        roundDecimalPlaces < 0 -> this
+        else -> this.roundDecimalPlaces(roundDecimalPlaces)
+    }
+
 	override fun moveTo(x: Double, y: Double) {
-		apath.moveTo(x, y)
+		apath.moveTo(x.nice, y.nice)
         //println("moveTo($x, $y)")
-		if (drawingFill) path.moveTo(x, y)
+		if (drawingFill) path.moveTo(x.nice, y.nice)
 	}
 
 	override fun lineTo(x: Double, y: Double) {
-		apath.lineTo(x, y)
+		apath.lineTo(x.nice, y.nice)
         //println("lineTo($x, $y)")
-		if (drawingFill) path.lineTo(x, y)
+		if (drawingFill) path.lineTo(x.nice, y.nice)
 	}
 
 	override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
-		apath.quadTo(controlX, controlY, anchorX, anchorY)
+		apath.quadTo(controlX.nice, controlY.nice, anchorX.nice, anchorY.nice)
         //println("curveTo($controlX, $controlY, $anchorX, $anchorY)")
-		if (drawingFill) path.quadTo(controlX, controlY, anchorX, anchorY)
+		if (drawingFill) path.quadTo(controlX.nice, controlY.nice, anchorX.nice, anchorY.nice)
 	}
 
 	override fun closePath() {

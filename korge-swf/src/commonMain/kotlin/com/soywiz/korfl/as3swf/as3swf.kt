@@ -547,6 +547,8 @@ open class SWFTimelineContainer {
 	var backgroundColor: Int = 0xffffff
 	var jpegTablesTag: TagJPEGTables? = null
 
+    fun getCharacterIds(): List<Int> = rootTimelineContainer.dictionary.keys.sorted()
+
 	fun getCharacter(characterId: Int): IDefinitionTag? {
 		val tagIndex = rootTimelineContainer.dictionary[characterId] ?: 0
 		if (tagIndex >= 0 && tagIndex < rootTimelineContainer.tags.size) {
