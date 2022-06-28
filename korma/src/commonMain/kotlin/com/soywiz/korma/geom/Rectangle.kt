@@ -236,7 +236,7 @@ data class Rectangle(
     fun getAnchoredPosition(anchorX: Double, anchorY: Double, out: Point = Point()): Point =
         out.setTo(left + width * anchorX, top + height * anchorY)
 
-    fun toInt() = RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
+    fun toInt(): RectangleInt = RectangleInt(x.toInt(), y.toInt(), width.toInt(), height.toInt())
     fun floor(): Rectangle {
         setTo(
             kotlin.math.floor(x),
