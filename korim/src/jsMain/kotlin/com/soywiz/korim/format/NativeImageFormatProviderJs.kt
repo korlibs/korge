@@ -411,7 +411,12 @@ class CanvasContext2dRenderer(private val canvas: HTMLCanvasElementLike) : Rende
 				//println("fill: $s")
 			} else {
 				transformPaint(state.strokeStyle)
-				ctx.stroke()
+                val lineDash = state.lineDash
+                if (lineDash != null) {
+                    ctx.lineDashOffset = state.lineDashOffset
+                    ctx.setLineDash(lineDash.toDoubleArray().toTypedArray())
+                }
+                ctx.stroke()
 				//println("stroke: $s")
 			}
 		}
