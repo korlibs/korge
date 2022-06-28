@@ -393,6 +393,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                                     val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
                                     if (rtext != null) insertText(rtext)
                                 }
+                                else -> Unit
                             }
                         }
                     }

@@ -334,7 +334,7 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 	val msPerFrame: Int = msPerFrameDouble.toInt()
 	var bgcolor: RGBA = Colors.WHITE
 	val symbolsById = arrayListOf<AnSymbol>()
-	val symbolsByName = hashMapOf<String, AnSymbol>()
+	val symbolsByName = LinkedHashMap<String, AnSymbol>()
 	var defaultSmoothing = true
 	//var defaultSmoothing = false
 

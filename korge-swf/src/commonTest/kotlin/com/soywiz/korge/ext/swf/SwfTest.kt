@@ -190,7 +190,7 @@ class SwfTest {
 	@Test
 	fun exports() = swfTest {
 		val lib = resourcesVfs["exports.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
-		assertEquals(listOf("MainTimeLine", "Graphic1Export", "MC1Export"), lib.symbolsByName.keys.toList())
+		assertEquals(listOf("Graphic1Export", "MC1Export", "MainTimeLine"), lib.symbolsByName.keys.sorted())
 		val sh = lib.createMovieClip("Graphic1Export")
 		val mc = lib.createMovieClip("MC1Export")
 
