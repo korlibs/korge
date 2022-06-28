@@ -37,6 +37,7 @@ import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.strokeToFill
 import com.soywiz.korma.geom.vector.toCurves
 import com.soywiz.korma.geom.vector.toCurvesList
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.round
 
@@ -184,13 +185,13 @@ interface StyledShape : Shape {
 
 	override fun draw(c: Context2d) {
 		c.keepTransform {
-			//c.transform(transform) // Already applied to the path
 			c.beginPath()
 			path?.draw(c)
 			if (clip != null) {
 				clip!!.draw(c)
 				c.clip()
 			}
+            c.transform(transform)
 			drawInternal(c)
 		}
 	}
