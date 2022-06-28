@@ -569,12 +569,12 @@ open class Context2d constructor(
         x: Number,
         y: Number,
         font: Font? = this.font,
-        fontSize: Double = this.fontSize,
+        textSize: Double = this.fontSize,
         halign: HorizontalAlign = this.horizontalAlign,
         valign: VerticalAlign = this.verticalAlign,
         color: Paint? = null
     ) {
-        font(font, halign, valign, fontSize) {
+        font(font, halign, valign, textSize) {
             fillStyle(color ?: fillStyle) {
                 drawText(text, x.toDouble(), y.toDouble(), fill = true)
             }
