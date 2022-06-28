@@ -293,8 +293,8 @@ class AnSymbolMovieClipState(val name: String, val subTimeline: AnSymbolMovieCli
 
 class AnSymbolMovieClip(id: Int, name: String?, val limits: AnSymbolLimits) : AnSymbol(id, name) {
 	var ninePatch: Rectangle? = null
-	val states = hashMapOf<String, AnSymbolMovieClipState>()
-	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1, hashMapOf()) }
+	val states = LinkedHashMap<String, AnSymbolMovieClipState>()
+	val uidInfo = Array(limits.totalUids) { AnSymbolUidDef(-1, LinkedHashMap()) }
 
 	override fun create(library: AnLibrary): AnElement = AnMovieClip(library, this)
 }

@@ -1,6 +1,6 @@
 package com.soywiz.korge.ext.swf
 
-import com.soywiz.kds.*
+import com.soywiz.kds.Extra
 import com.soywiz.korge.animate.*
 import com.soywiz.korim.atlas.AtlasPacker
 import com.soywiz.korge.render.*

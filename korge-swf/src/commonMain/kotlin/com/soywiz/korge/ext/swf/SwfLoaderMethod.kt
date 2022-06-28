@@ -1,9 +1,8 @@
 package com.soywiz.korge.ext.swf
 
+import com.soywiz.kds.BitSet
 import com.soywiz.korfl.as3swf.*
-import com.soywiz.kds.*
 import com.soywiz.klock.*
-import com.soywiz.kmem.*
 import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*

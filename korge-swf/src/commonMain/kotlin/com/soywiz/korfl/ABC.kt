@@ -1,6 +1,6 @@
 package com.soywiz.korfl
 
-import com.soywiz.kds.*
+import com.soywiz.kds.mapWhile
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.stream.*
 
