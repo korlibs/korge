@@ -1,7 +1,7 @@
 package com.soywiz.korge.scene
 
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.SolidRect
 import com.soywiz.korim.color.Colors
 
@@ -31,7 +31,7 @@ class SceneContainerTest : ViewsForTesting() {
 	inner class Scene2 : MyLogScene() {
 		override val sceneName: String get() = "Scene2"
 
-		override suspend fun Container.sceneInit() {
+		override suspend fun SContainer.sceneInit() {
 			log("$sceneName.sceneInit")
 			sceneView += SolidRect(100, 100, Colors.RED).apply {
 				name = "box"

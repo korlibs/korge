@@ -5,8 +5,7 @@ import com.soywiz.klock.timesPerSecond
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.delay
 import com.soywiz.korge.time.frameBlock
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.filter
 import com.soywiz.korge.view.filter.ColorMatrixFilter
@@ -20,7 +19,7 @@ import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class MainFilterSwitch : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val bitmap = resourcesVfs["korge.png"].readBitmap()
         val images = (0 until 128).map {
             val x = it % 16

@@ -3,6 +3,7 @@ package com.soywiz.korge.scene
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korio.async.launchImmediately
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
@@ -15,7 +16,7 @@ abstract class CompletableScene<T>() : Scene() {
 
 	abstract suspend fun process(): T
 
-	final override suspend fun Container.sceneInit() {
+	final override suspend fun SContainer.sceneInit() {
 		setup()
 		launchImmediately {
 			try {

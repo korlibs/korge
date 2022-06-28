@@ -4,6 +4,7 @@ import com.soywiz.korge.input.draggable
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.centered
@@ -29,7 +30,7 @@ import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 
 class BezierSample : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val p0 = Point(109, 135)
         val p1 = Point(25, 190)
         val p2 = Point(210, 250)

@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.alpha
 import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.image
@@ -19,7 +19,7 @@ import com.soywiz.korma.geom.vector.roundRect
 import com.soywiz.korma.geom.vector.write
 
 class MainImageTrace : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val bmp = Bitmap32(300, 200).context2d {
             fill(Colors.WHITE) {
                 rect(Rectangle.fromBounds(2, 2, 18, 18))

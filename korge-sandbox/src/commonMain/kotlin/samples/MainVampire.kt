@@ -9,6 +9,7 @@ import com.soywiz.korge.tiled.TiledMapView
 import com.soywiz.korge.tiled.readTiledMap
 import com.soywiz.korge.tiled.tiledMapView
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.animation.ImageDataView
@@ -34,7 +35,7 @@ import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.star
 
 class MainVampire : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val atlas = MutableAtlasUnit(1024, 512, border = 2)
 
         val sw = Stopwatch().start()

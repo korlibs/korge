@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.text
@@ -17,7 +17,7 @@ import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.file.std.resourcesVfs
 
 class MainEmoji : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         println("coroutineContext: $coroutineContext")
         image(resourcesVfs["korge.png"].readBitmap())
         //val fontEmojiOther = localVfs("C:/temp/emoji.ttf").takeIfExists()?.readTtfFont()

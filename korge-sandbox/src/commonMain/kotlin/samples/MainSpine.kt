@@ -6,7 +6,7 @@ import com.esotericsoftware.spine.Skeleton
 import com.esotericsoftware.spine.korge.skeletonView
 import com.esotericsoftware.spine.readSkeletonBinary
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.centered
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.position
@@ -17,7 +17,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korio.file.std.resourcesVfs
 
 class MainSpine : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas(asumePremultiplied = true)
         //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)
         val skeletonData = resourcesVfs["spineboy/spineboy-pro.skel"].readSkeletonBinary(atlas, 0.6f)

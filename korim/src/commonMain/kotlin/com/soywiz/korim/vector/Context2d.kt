@@ -47,7 +47,7 @@ open class Context2d constructor(
     val renderer: Renderer,
     val defaultFontRegistry: FontRegistry? = null,
     val defaultFont: Font? = null
-) : Disposable, VectorBuilder {
+) : VectorBuilder, Disposable {
     var debug: Boolean
         get() = renderer.debug
         set(value) { renderer.debug = value }

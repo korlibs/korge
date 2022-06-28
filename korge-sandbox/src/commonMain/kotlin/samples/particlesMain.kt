@@ -1,15 +1,12 @@
 package samples
 
-import com.soywiz.klock.*
-import com.soywiz.korge.*
 import com.soywiz.korge.particle.*
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korio.file.std.*
 
 class ParticlesMain : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         //val emitter = resourcesVfs["particle/demo2.pex"].readParticleEmitter()
         container {
             //scale = 0.05

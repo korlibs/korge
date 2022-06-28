@@ -4,9 +4,8 @@ import com.soywiz.klock.seconds
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.anchor
-import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.circle
 import com.soywiz.korge.view.container
@@ -25,7 +24,7 @@ import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.interpolation.Easing
 
 class MainTweenPoint : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val tex = resourcesVfs["korge.png"].readBitmap()
 
         container {

@@ -3,9 +3,7 @@ package samples
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korma.geom.Point
@@ -15,7 +13,7 @@ import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.curves
 
 class MainArc : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         gpuShapeView { shape ->
             val p1 = Point(200, 100)
             val p2 = Point(300, 200)

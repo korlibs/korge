@@ -3,14 +3,12 @@ package samples
 import com.soywiz.klock.seconds
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.timeout
-import com.soywiz.korge.ui.uiGridFill
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.xy
 
 class MainTextureIssue : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         // Press F7 after 1 + 0.3 seconds (so the texture GC has been executed), this will trigger a new program creation
 
         text("HELLO WORLD!").also {

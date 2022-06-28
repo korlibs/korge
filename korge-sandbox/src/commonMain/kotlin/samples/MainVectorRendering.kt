@@ -3,7 +3,6 @@ package samples
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korim.paint.*
 import com.soywiz.korim.vector.*
@@ -11,7 +10,7 @@ import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.*
 
 class MainVectorRendering : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val korgeBitmap = resourcesVfs["korge.png"].readBitmap()
         //val bitmap = korgeBitmap.resized(100, 100, ScaleMode.FILL, Anchor.CENTER)
         //image(bitmap)

@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.rotation
@@ -13,7 +13,7 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.degrees
 
 class MainTrimmedAtlas : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val bmp = BitmapSlice(
             Bitmap32(64, 64) { x, y -> Colors.PURPLE },
             RectangleInt(0, 0, 64, 64),

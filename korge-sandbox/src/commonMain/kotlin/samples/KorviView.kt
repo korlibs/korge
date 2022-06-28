@@ -2,7 +2,6 @@ package samples
 
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
-import com.soywiz.kmem.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
@@ -12,11 +11,10 @@ import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korio.util.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korvi.*
 
 class MainKorviSample : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         //addUpdaterOnce {
         val view = korviView(views, resourcesVfs["video.mp4"])
         if (OS.isJs) {

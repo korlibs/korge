@@ -3,7 +3,7 @@ package com.soywiz.korge
 import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tests.ViewsForTesting
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korinject.AsyncInjector
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -16,7 +16,7 @@ class ViewsForTestingTest : ViewsForTesting() {
 
     class DummyScene(val dependency: Dependency) : Scene() {
         var running = false
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             running = true
         }
     }

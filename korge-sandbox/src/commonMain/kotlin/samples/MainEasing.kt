@@ -5,32 +5,23 @@ import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
-import com.soywiz.korge.tween.tween
 import com.soywiz.korge.tween.tweenAsync
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Graphics
-import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.line
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
-import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
-import com.soywiz.korma.geom.vector.StrokeInfo
-import com.soywiz.korio.lang.Cancellable
-import com.soywiz.korio.lang.textCase
-import com.soywiz.korio.util.StrReader
 import com.soywiz.korma.geom.vector.line
 import com.soywiz.korma.interpolation.Easing
 import kotlinx.coroutines.Job
 
 class MainEasing : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         var ballTween: Job? = null
         val ball = circle(64.0, Colors.PURPLE).xy(64, 64)
 

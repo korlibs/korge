@@ -1,27 +1,17 @@
 package samples
 
 import com.soywiz.klock.*
-import com.soywiz.klogger.*
 import com.soywiz.korev.*
-import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.*
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 
 class MainSvgAnimation : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         var svgScale = 1.4
         val svg = measureTime({ resourcesVfs["sample.svg"].readSVG() }) {
             //var svgScale = 0.9

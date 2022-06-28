@@ -11,7 +11,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 
 class TerminalEmulatorMain : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         container {
             scale(1)
 

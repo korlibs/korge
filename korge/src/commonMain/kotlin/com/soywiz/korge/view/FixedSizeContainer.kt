@@ -24,6 +24,13 @@ inline fun Container.fixedSizeContainer(
     callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
 ) = FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this, callback)
 
+@com.soywiz.korma.annotations.ViewDslMarker
+open class SContainer(
+    width: Double = 100.0,
+    height: Double = 100.0,
+    clip: Boolean = false
+) : FixedSizeContainer(width, height, clip)
+
 open class FixedSizeContainer(
     override var width: Double = 100.0,
     override var height: Double = 100.0,

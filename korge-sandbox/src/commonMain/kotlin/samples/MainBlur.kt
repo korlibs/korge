@@ -10,11 +10,10 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.degrees
-import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty0
 
 class MainBlur : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         solidRect(views.stage.width, views.stage.height, Colors.WHITE)
         val bitmap = resourcesVfs["korim.png"].readBitmap()
 

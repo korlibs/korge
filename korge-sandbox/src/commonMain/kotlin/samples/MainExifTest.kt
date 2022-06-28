@@ -7,7 +7,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 
 class MainExifTest : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         //val file = localVfs("/tmp/Exif5-2x.avif")
         val file = resourcesVfs["Portrait_3.jpg"]
         //val info = resourcesVfs["IMG_5455.HEIC"].readImageInfo(HEICInfo)

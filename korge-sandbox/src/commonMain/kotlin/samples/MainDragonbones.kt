@@ -4,12 +4,10 @@ import com.dragonbones.event.EventObject
 import com.soywiz.kds.WeakPropertyThis
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
-import com.soywiz.korge.Korge
 import com.soywiz.korge.dragonbones.KorgeDbFactory
 import com.soywiz.korge.input.MouseEvents
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.onClick
-import com.soywiz.korge.scene.Module
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.scene.sceneContainer
@@ -18,6 +16,7 @@ import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Graphics
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.TextOld
 import com.soywiz.korge.view.addUpdater
@@ -26,18 +25,15 @@ import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.solidRect
-import com.soywiz.korgw.GameWindow
 import com.soywiz.korim.bitmap.mipmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
-import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.asyncImmediately
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.SizeInt
 import com.soywiz.korma.geom.vector.roundRect
 import com.soywiz.korma.interpolation.Easing
 import com.soywiz.korma.random.get
@@ -50,7 +46,7 @@ import kotlin.math.sin
 import kotlin.random.Random
 
 class MainDragonbones : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         views.injector.mapPrototype { HelloScene() }
         views.injector.mapPrototype { MyScene() }
         views.injector.mapPrototype { ClassicDragonScene() }
@@ -93,7 +89,7 @@ class MainDragonbones : Scene() {
     }
 
     class HelloScene : Scene() {
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             println("HelloScene.sceneInit[0]")
             solidRect(100, 100, Colors.RED) {
                 position(100, 100)
@@ -117,7 +113,7 @@ class MainDragonbones : Scene() {
     class MyScene : MyBaseScene() {
         lateinit var buttonContainer: Container
 
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             //addEventListener<MouseEvent> {
             //	println("MouseEvent: ${views.nativeWidth},${views.nativeHeight} :: ${views.virtualWidth},${views.virtualHeight} :: $it")
             //}
@@ -207,7 +203,7 @@ class MainDragonbones : Scene() {
 
     class HelloWorldScene : BaseDbScene() {
         val SCALE = 1.6
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             val skeDeferred = asyncImmediately { Json.parse(res["mecha_1002_101d_show/mecha_1002_101d_show_ske.json"].readString())!! }
             //val skeDeferred = asyncImmediately { MemBufferWrap(resources["mecha_1002_101d_show/mecha_1002_101d_show_ske.dbbin"].readBytes()) }
             val texDeferred = asyncImmediately { res["mecha_1002_101d_show/mecha_1002_101d_show_tex.json"].readString() }
@@ -229,7 +225,7 @@ class MainDragonbones : Scene() {
     }
 
     class ClassicDragonScene : BaseDbScene() {
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             //val scale = 0.3
             val scale = 0.8
             val ske = asyncImmediately { res["Dragon/Dragon_ske.json"].readString() }
@@ -260,7 +256,7 @@ class MainDragonbones : Scene() {
         val scale = 0.46
         var totalTime = 0.0
 
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             try {
                 println("EyeTrackingScene[0]")
 
@@ -381,7 +377,7 @@ class MainDragonbones : Scene() {
         val SCALE = 0.42
         val random = Random(0)
 
-        override suspend fun Container.sceneInit() {
+        override suspend fun SContainer.sceneInit() {
             val suitConfigs = listOf(
                 listOf(
                     "2010600a", "2010600a_1",

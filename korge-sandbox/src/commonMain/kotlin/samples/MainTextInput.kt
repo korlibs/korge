@@ -1,37 +1,26 @@
 package samples
 
-import com.soywiz.klock.seconds
 import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.time.timeout
-import com.soywiz.korge.ui.DefaultUIBitmapFont
 import com.soywiz.korge.ui.uiTextInput
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.aroundPath
-import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.roundRect
-import com.soywiz.korge.view.text
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.vector.gpuGraphics
-import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.readTtfFont
 import com.soywiz.korim.font.withFallback
 import com.soywiz.korim.text.DefaultStringTextRenderer
-import com.soywiz.korim.text.DefaultTextRenderer
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.text
 import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.circle
 
 class MainTextInput : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         //val bitmap = NativeImage(512, 512, premultiplied = true).context2d {
         //    fill(Colors.RED) {
         //        rect(0, 0, 512, 512)

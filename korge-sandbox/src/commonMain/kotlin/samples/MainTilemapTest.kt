@@ -1,6 +1,5 @@
 package samples
 
-import com.soywiz.korge.*
 import com.soywiz.korge.input.onScroll
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
@@ -15,12 +14,11 @@ import com.soywiz.korim.color.*
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.Point.Companion.Zero
-import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.random.Random
 import kotlin.math.*
 
 class MainTilemapTest : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val tileSize = 200
         val tileSet = makeSimpleTileSet(tileSize)
         //val mapSize = 200
