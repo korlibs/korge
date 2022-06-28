@@ -521,15 +521,11 @@ open class Context2d constructor(
 		}
 	}
 
-    inline fun createLinearGradient(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
-    inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
+    inline fun createLinearGradient(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform, block)
+    inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform, block)
     @Deprecated("Only available on Android or Bitmap32")
-    inline fun createSweepGradient(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = SweepGradientPaint(x0, y0, transform, block)
-
-    inline fun createLinearGradient(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = LinearGradientPaint(x0, y0, x1, y1, cycle, transform)
-    inline fun createRadialGradient(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = RadialGradientPaint(x0, y0, r0, x1, y1, r1, cycle, transform)
-    @Deprecated("Only available on Android or Bitmap32")
-    inline fun createSweepGradient(x0: Number, y0: Number, transform: Matrix = Matrix()) = SweepGradientPaint(x0, y0, transform)
+    inline fun createSweepGradient(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = SweepGradientPaint(x0, y0, transform, block)
+    inline fun createConicGradient(startAngle: Angle, x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = ConicGradientPaint(startAngle, x0, y0, transform, block)
 
     fun createColor(color: RGBA): RGBA = color
 	fun createPattern(

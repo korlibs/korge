@@ -42,8 +42,12 @@ interface TransformedPaint : Paint {
 
 enum class GradientKind {
     LINEAR, RADIAL,
-    @Deprecated("Only available on Android or Bitmap32")
-    SWEEP
+    @Deprecated("Not available in some targets")
+    SWEEP;
+    companion object {
+        @Deprecated("Not available in some targets")
+        val CONIC: GradientKind get() = SWEEP
+    }
 }
 
 enum class GradientUnits {
@@ -210,22 +214,18 @@ data class GradientPaint(
             append(when (kind) {
                 GradientKind.LINEAR -> "LinearGradient([$x0, $y0], [$x1, $y1]"
                 GradientKind.RADIAL -> "RadialGradient([$x0, $y0, $r0], [$x1, $y1, $r1]"
-                GradientKind.SWEEP -> "SweepGradient([$x0, $y0]"
+                GradientKind.SWEEP -> "ConicGradient([$x0, $y0]"
             })
             append(", stops=$stops, colors=${colorsToString(colors)}, cycle=$cycle, transform=$transform, interpolationMethod=$interpolationMethod, units=$units)")
         }
     }
 }
 
-inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform).also(block)
-inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform).also(block)
+inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform).also(block)
+inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform).also(block)
 @Deprecated("Only available on Android or Bitmap32")
-inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform).also(block)
-
-inline fun LinearGradientPaint(x0: Number, y0: Number, x1: Number, y1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = GradientPaint(GradientKind.LINEAR, x0.toDouble(), y0.toDouble(), 0.0, x1.toDouble(), y1.toDouble(), 0.0, cycle = cycle, transform = transform)
-inline fun RadialGradientPaint(x0: Number, y0: Number, r0: Number, x1: Number, y1: Number, r1: Number, cycle: CycleMethod = CycleMethod.NO_CYCLE, transform: Matrix = Matrix()) = GradientPaint(GradientKind.RADIAL, x0.toDouble(), y0.toDouble(), r0.toDouble(), x1.toDouble(), y1.toDouble(), r1.toDouble(), cycle = cycle, transform = transform)
-@Deprecated("Only available on Android or Bitmap32")
-inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix()) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform)
+inline fun SweepGradientPaint(x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.SWEEP, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, transform = transform).also(block)
+inline fun ConicGradientPaint(startAngle: Angle, x0: Number, y0: Number, transform: Matrix = Matrix(), block: GradientPaint.() -> Unit = {}) = GradientPaint(GradientKind.CONIC, x0.toDouble(), y0.toDouble(), 0.0, 0.0, 0.0, 0.0, startAngle = startAngle, transform = transform).also(block)
 
 fun Bitmap.toPaint(
     transform: Matrix = Matrix(),
