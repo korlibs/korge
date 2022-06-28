@@ -73,7 +73,9 @@ class SWFShapeExporter(
             antialiasing = antialiasing,
             width = actualBoundsWidth,
             height = actualBoundsHeight,
-            premultiplied = true
+            premultiplied = true,
+            native = true
+            //native = false
         )
 	}
 	val imageWithScale by lazy {

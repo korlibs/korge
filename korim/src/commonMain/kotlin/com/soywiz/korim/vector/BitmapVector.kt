@@ -3,6 +3,7 @@ package com.soywiz.korim.vector
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
@@ -16,7 +17,8 @@ class BitmapVector(
     val antialiasing: Boolean = true,
     width: Int = (bounds.width * scale).toInt(),
     height: Int = (bounds.height * scale).toInt(),
-    premultiplied: Boolean
+    premultiplied: Boolean,
+    val native: Boolean = true
 )
     : Bitmap(width, height, 32, premultiplied, null)
 {
@@ -30,17 +32,11 @@ class BitmapVector(
     }
 
     val nativeImage: Bitmap by lazy {
-        NativeImage(width, height, premultiplied).context2d(antialiasing) {
-        //Bitmap32(width, height, premultiplied).context2d(antialiasing) {
+        NativeImageOrBitmap32(width, height, native = native, premultiplied = premultiplied).context2d(antialiasing) {
             scale(scale, scale)
             translate(-bounds.x, -bounds.y)
             drawShape(shape, rasterizerMethod)
         }
-        //NativeImage(width, height, premultiplied = false).context2d(antialiasing) {
-        //    scale(scale, scale)
-        //    translate(-left, -top)
-        //    drawShape(shape, rasterizerMethod)
-        //}
     }
 
     private val bmp32: Bitmap32 by lazy {
