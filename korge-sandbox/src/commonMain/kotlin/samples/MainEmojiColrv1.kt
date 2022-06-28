@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.klock.measureTime
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.container
@@ -24,7 +25,9 @@ import com.soywiz.korio.file.std.resourcesVfs
 class MainEmojiColrv1 : Scene() {
     override suspend fun SContainer.sceneMain() {
         val font = resourcesVfs["twemoji-glyf_colr_1.ttf"].readTtfFont(preload = false).asFallbackOf(DefaultTtfFont)
-        val font2 = resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont(preload = false).asFallbackOf(DefaultTtfFont)
+        val font2 = measureTime({resourcesVfs["noto-glyf_colr_1.ttf"].readTtfFont(preload = false).asFallbackOf(DefaultTtfFont)}) {
+            println("Read font in... $it")
+        }
         val font3 = SystemFont.getEmojiFont().asFallbackOf(DefaultTtfFont)
 
         println("font=$font, font2=$font2, font3=$font3")
@@ -49,16 +52,24 @@ class MainEmojiColrv1 : Scene() {
         val shape = buildShape { buildText() }
         //println(shape.toSvg())
 
-        graphics {
-            it.xy(0, 200)
-            it.useNativeRendering = true
-            buildText()
-        }
-        graphics {
-            it.xy(0, 350)
-            it.useNativeRendering = false
-            buildText()
-        }
+        println("native rendered in..." + measureTime {
+            graphics {
+                it.xy(0, 200)
+                it.useNativeRendering = true
+                buildText()
+            }.also {
+                it.redrawIfRequired()
+            }
+        })
+        println("non-native rendered in..." + measureTime {
+            graphics {
+                it.xy(0, 350)
+                it.useNativeRendering = false
+                buildText()
+            }.also {
+                it.redrawIfRequired()
+            }
+        })
         gpuGraphics {
             it.xy(0, 500)
             buildText()

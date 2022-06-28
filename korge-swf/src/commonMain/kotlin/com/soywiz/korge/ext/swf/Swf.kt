@@ -32,6 +32,7 @@ data class SWFExportConfig(
 	val smoothInterpolation: Boolean = true,
     val atlasPacking: Boolean = true,
     val roundDecimalPlaces: Int = -1,
+    val native: Boolean = true,
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config =

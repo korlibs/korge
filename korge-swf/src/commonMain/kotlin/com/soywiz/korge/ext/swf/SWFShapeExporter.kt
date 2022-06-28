@@ -37,6 +37,7 @@ class SWFShapeExporter(
 	val path: VectorPath = VectorPath(),
     val charId: Int = -1,
     val roundDecimalPlaces: Int = -1,
+    val native: Boolean = true,
 ) : ShapeExporter() {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
 
@@ -80,8 +81,7 @@ class SWFShapeExporter(
             width = actualBoundsWidth,
             height = actualBoundsHeight,
             premultiplied = true,
-            native = true
-            //native = false
+            native = native,
         )
 	}
 	val imageWithScale by lazy {

@@ -103,6 +103,7 @@ fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale:
         path = path,
         charId = this.characterId,
         roundDecimalPlaces = config.roundDecimalPlaces,
+        native = config.native,
     )
 }
 
@@ -465,7 +466,8 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					requestScale = config.exportScale,
 					minSide = config.minMorphShapeSide,
 					maxSide = config.maxMorphShapeSide,
-                    charId = morph.id
+                    charId = morph.id,
+                    native = config.native
 				)
 				itemsInAtlas.put(
 					{ texture -> morph.texturesWithBitmap.add(ratio.seconds, texture) },

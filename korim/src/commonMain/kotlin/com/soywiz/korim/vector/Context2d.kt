@@ -489,7 +489,8 @@ open class Context2d constructor(
 
     fun drawShape(
 		shape: Drawable,
-		rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4
+		rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4,
+        native: Boolean = true
 	) {
 		when (rasterizerMethod) {
 			ShapeRasterizerMethod.NONE -> {
@@ -498,7 +499,7 @@ open class Context2d constructor(
 			ShapeRasterizerMethod.X1, ShapeRasterizerMethod.X2, ShapeRasterizerMethod.X4 -> {
 				val scale = rasterizerMethod.scale
                 val oldState = state
-				val newBi = NativeImage(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt(), premultiplied = false).context2d(antialiased = false) {
+				val newBi = NativeImageOrBitmap32(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt(), premultiplied = false, native = native).context2d(antialiased = false) {
                 //val newBi = Bitmap32(ceil(rendererWidth * scale).toInt(), ceil(rendererHeight * scale).toInt(), premultiplied = false).context2d(antialiased = false) {
                     scale(scale)
                     transform(oldState.transform)

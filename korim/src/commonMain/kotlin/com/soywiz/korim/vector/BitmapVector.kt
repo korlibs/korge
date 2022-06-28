@@ -35,7 +35,7 @@ class BitmapVector(
         NativeImageOrBitmap32(width, height, native = native, premultiplied = premultiplied).context2d(antialiasing) {
             scale(scale, scale)
             translate(-bounds.x, -bounds.y)
-            drawShape(shape, rasterizerMethod)
+            drawShape(shape, rasterizerMethod, native = native)
         }
     }
 
