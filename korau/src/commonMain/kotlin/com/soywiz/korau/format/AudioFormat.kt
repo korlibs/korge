@@ -17,7 +17,9 @@ import com.soywiz.korio.stream.AsyncOutputStream
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.MemorySyncStreamToByteArray
 import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.toAsync
+import com.soywiz.krypto.encoding.hex
 import kotlin.coroutines.cancellation.CancellationException
 
 open class AudioFormat(vararg exts: String) {
@@ -115,7 +117,7 @@ class AudioFormats : AudioFormat() {
 
     suspend fun decodeStreamOrError(data: AsyncStream, props: AudioDecodingProps): AudioStream =
         decodeStream(data, props)
-            ?: error("Can't decode audio stream [$formats]")
+            ?: error("Can't decode audio stream [$formats] ${data.duplicate().readBytesUpTo(8).hex}")
 
 	override suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps) {
 		val ext = PathInfo(filename).extensionLC
