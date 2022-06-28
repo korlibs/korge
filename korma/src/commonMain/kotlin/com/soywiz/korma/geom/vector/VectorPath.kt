@@ -39,7 +39,10 @@ class VectorPath(
     var version: Int = 0
 
     fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
-    override fun equals(other: Any?): Boolean = other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
+    }
     override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
     companion object {
@@ -190,7 +193,10 @@ class VectorPath(
     }
 
     override fun lineTo(x: Double, y: Double) {
-        ensureMoveTo(x, y)
+        if (ensureMoveTo(x, y)) return
+        if (x == lastX && y == lastY) {
+            return
+        }
         commands.add(Command.LINE_TO)
         data.add(x, y)
         lastXY(x, y)
@@ -249,8 +255,10 @@ class VectorPath(
 
     override val totalPoints: Int get() = data.size / 2
 
-    private fun ensureMoveTo(x: Double, y: Double) {
-        if (isEmpty()) moveTo(x, y)
+    private fun ensureMoveTo(x: Double, y: Double): Boolean {
+        if (isNotEmpty()) return false
+        moveTo(x, y)
+        return true
     }
 
     fun getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle {
