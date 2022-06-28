@@ -77,8 +77,7 @@ abstract class BaseGraphics(
         super.renderInternal(ctx)
     }
 
-    @PublishedApi
-    internal fun redrawIfRequired(): Boolean {
+    fun redrawIfRequired(): Boolean {
         if (autoscaling.onRender(autoScaling, preciseAutoScaling, globalMatrix)) {
             _dirty = true
         }
