@@ -403,7 +403,7 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		awtTransform.setToMatrix(t)
 		//g.transform = awtTransform
         //g.transform = AffineTransform()
-        if (oldClipState !== state.clip && oldClipState != state.clip) {
+        if (oldClipState != state.clip) {
             oldClipState = state.clip?.clone()
             g.clip = state.clip?.toJava2dPath(winding)
         }
