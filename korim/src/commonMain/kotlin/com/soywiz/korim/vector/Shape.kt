@@ -101,6 +101,17 @@ private fun Matrix.toSvg() = this.run {
 fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1): String =
     SvgPath.toSvgPathString(this, separator, decimalPlaces)
 
+fun VectorPath.toContext2dCommands(prefix: String = "ctx.", suffix: String = ";", decimalPlaces: Int = 1): List<String> = buildList {
+    fun Double.round(): String = this.niceStr(decimalPlaces)
+    this@toContext2dCommands.visitCmds(
+        moveTo = { x, y -> add("moveTo(${x.round()}, ${y.round()})") },
+        lineTo = { x, y -> add("lineTo(${x.round()}, ${y.round()})") },
+        quadTo = { cx, cy, ax, ay -> add("quadTo(${cx.round()}, ${cy.round()}, ${ax.round()}, ${ay.round()})") },
+        cubicTo = { cx1, cy1, cx2, cy2, ax, ay -> add("cubicTo(${cx1.round()}, ${cy1.round()}, ${cx2.round()}, ${cy2.round()}, ${ax.round()}, ${ay.round()})") },
+        close = { add("close()") }
+    )
+}.map { "$prefix$it$suffix" }
+
 //fun VectorPath.toSvgPathString(scale: Double, tx: Double, ty: Double): String {
 //	val parts = arrayListOf<String>()
 //
@@ -118,7 +129,7 @@ fun VectorPath.toSvgPathString(separator: String = " ", decimalPlaces: Int = 1):
 //	return parts.joinToString("")
 //}
 
-interface Shape : BoundsDrawable {
+sealed interface Shape : BoundsDrawable {
 	fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean = false): Unit
 	fun buildSvg(svg: SvgBuilder): Unit = Unit
     fun getPath(path: VectorPath = VectorPath()): VectorPath = path

@@ -144,11 +144,12 @@ fun <T> Font.drawText(
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
 ) {
+    //println("drawText!!: text=$text")
     val actions = object : TextRendererActions() {
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             if (ctx != null) {
                 ctx.keepTransform {
-                    val m = getGlyphMetrics(codePoint)
+                    //val m = getGlyphMetrics(codePoint)
                     ctx.translate(this.x + x, this.y + y)
                     //ctx.translate(-m.width * transformAnchor.sx, +m.height * transformAnchor.sy)
                     ctx.transform(this.transform)

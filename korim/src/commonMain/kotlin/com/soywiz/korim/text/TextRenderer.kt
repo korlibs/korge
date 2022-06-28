@@ -1,6 +1,7 @@
 package com.soywiz.korim.text
 
 import com.soywiz.kds.doubleArrayListOf
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
@@ -12,6 +13,10 @@ import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korim.font.GlyphPath
 import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.vector.CompoundShape
+import com.soywiz.korim.vector.EmptyShape
+import com.soywiz.korim.vector.FillShape
+import com.soywiz.korim.vector.StyledShape
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.util.niceStr
@@ -353,7 +358,12 @@ fun <T> VectorBuilder.text(
                     transform.translate(this.x + x, this.y + y)
                     transform.premultiply(this.transform)
                     //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
-                    path(glyph.path, transform)
+                    val shape = glyph.colorShape
+                    if (shape != null) {
+                        path(shape.getPath(), transform)
+                    } else {
+                        path(glyph.path, transform)
+                    }
                 }
             }
             return glyphMetrics

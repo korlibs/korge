@@ -265,6 +265,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         companion object {
             val NONE = Blending(BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE, BlendFactor.ZERO)
             val NORMAL = Blending(
+                //GL_ONE, GL_ONE_MINUS_SRC_ALPHA <-- premultiplied
                 BlendFactor.SOURCE_ALPHA, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
                 BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA
             )

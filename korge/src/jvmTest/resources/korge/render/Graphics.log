@@ -124,7 +124,7 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 vaoUse: 0
 vaoDelete: 1
 createBuffer():4
-programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_GlobalAlpha, u_ColorMul, u_GlobalPixelScale]), ProgramConfig(externalTextureSampler=false)
+programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_Premultiplied, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -142,8 +142,9 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform float u_GlobalAlpha;
+uniform float u_Premultiplied;
 uniform vec4 u_ColorMul;
+uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
@@ -196,9 +197,11 @@ void main() {
 			}
 		}
 	}
-	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+	if ((u_Premultiplied == 1.0)) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
-	gl_FragColor.a = (gl_FragColor.a * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	gl_FragColor.a = ((gl_FragColor.a * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
 }
 
 programCreate.vertex:#version 100 compatibility
@@ -264,6 +267,7 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
+uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
 uboUse: 2
 disable: STENCIL
@@ -1176,6 +1180,7 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
+uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
 uboUse: 2
 disable: STENCIL

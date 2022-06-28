@@ -1,5 +1,6 @@
 package com.soywiz.korge.view.vector
 
+import com.soywiz.kmem.toInt
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.FragmentShaderDefault
@@ -33,6 +34,7 @@ object GpuShapeViewPrograms {
     val u_Color = Uniform("u_Color", VarType.Float4)
     val u_ColorMul = Uniform("u_ColorMul", VarType.Float4)
     val u_GlobalAlpha = Uniform("u_GlobalAlpha", VarType.Float1)
+    val u_Premultiplied = Uniform("u_Premultiplied", VarType.Float1)
     val u_GlobalPixelScale = Uniform("u_GlobalPixelScale", VarType.Float1)
     val u_Transform = Uniform("u_Transform", VarType.Mat4)
     val u_Gradientp0 = Uniform("u_Gradientp0", VarType.Float3)
@@ -147,12 +149,17 @@ object GpuShapeViewPrograms {
                 }
             }
 
+            // Colors are premultiplied
+            IF (u_Premultiplied eq 1f.lit) {
+                SET(out["rgb"], out["rgb"] / out["a"])
+            }
+
             // Update global alpha
-            SET(out.a, out.a * u_GlobalAlpha)
-            SET(out, out * u_ColorMul)
             val aaAlpha = 1f.lit - smoothstep(v_MaxDist * u_GlobalPixelScale - 1.5f.lit, v_MaxDist * u_GlobalPixelScale, abs(v_Dist * u_GlobalPixelScale))
+            //val finalAlpha = t_Temp0.y
             //val aaAlpha = 1f.lit
-            SET(out["a"], out["a"] * aaAlpha)
+            SET(out, out * u_ColorMul)
+            SET(out["a"], out["a"] * u_GlobalAlpha * aaAlpha)
         },
     )
 
@@ -182,6 +189,7 @@ object GpuShapeViewPrograms {
                 u_ProgramType to PROGRAM_TYPE_COLOR.toFloat(),
                 u_Color to paint.toVector3D(),
                 u_GlobalAlpha to globalAlpha.toFloat(),
+                u_Premultiplied to 0,
                 //u_LineWidth to lineWidth.toFloat(),
             ), AG.UniformValues())
 
@@ -203,6 +211,7 @@ object GpuShapeViewPrograms {
                 u_ProgramType to PROGRAM_TYPE_BITMAP.toFloat(),
                 u_Transform to mat.toMatrix3D(), // @TODO: Why is this transposed???
                 u_GlobalAlpha to globalAlpha.toFloat(),
+                u_Premultiplied to paint.bitmap.premultiplied.toInt(),
                 //u_LineWidth to lineWidth.toFloat(),
                 //}, GpuShapeView.PROGRAM_BITMAP)
             ), AG.UniformValues(
@@ -210,9 +219,9 @@ object GpuShapeViewPrograms {
             ))
         }
         is GradientPaint -> {
-            val gradientBitmap = Bitmap32(256, 1)
+            val gradientBitmap = Bitmap32(256, 1, premultiplied = false)
             gradientBitmap.lock {
-                paint.fillColors(gradientBitmap.dataPremult)
+                paint.fillColors(gradientBitmap.data)
             }
 
             val npaint = paint.copy(transform = Matrix().apply {
@@ -237,6 +246,7 @@ object GpuShapeViewPrograms {
                     u_Gradientp0 to Vector3D(paint.x0.toFloat(), paint.y0.toFloat(), paint.r0.toFloat()),
                     u_Gradientp1 to Vector3D(paint.x1.toFloat(), paint.y1.toFloat(), paint.r1.toFloat()),
                     u_GlobalAlpha to globalAlpha.toFloat(),
+                    u_Premultiplied to 0,
                     //u_LineWidth to lineWidth.toFloat(),
                 ), AG.UniformValues(
                     DefaultShaders.u_Tex to gradientBitmap

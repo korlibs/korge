@@ -14,6 +14,7 @@ import com.soywiz.kmem.extractSigned
 import com.soywiz.kmem.insert16
 import com.soywiz.korim.annotation.KorimInternal
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.Palette
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -28,6 +29,7 @@ import com.soywiz.korim.vector.CycleMethod
 import com.soywiz.korim.vector.FillShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.buildShape
+import com.soywiz.korim.vector.toContext2dCommands
 import com.soywiz.korim.vector.toSvgPathString
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
@@ -120,7 +122,7 @@ class TtfFont(
         val scale = getTextScale(size)
         //println("unitsPerEm = $unitsPerEm")
         path.path = g.path.path
-        path.colorPaths = g.colorEntry?.getColorPaths()
+        path.colorShape = g.colorEntry?.getColorShape()
         val bitmapEntry = g.bitmapEntry
         val bitmap = bitmapEntry?.getBitmap()
         path.bitmap = bitmap
@@ -702,7 +704,13 @@ class TtfFont(
         val ascender get() = info.hori.ascender
 
         fun getBitmap(cache: Boolean = false): Bitmap {
-            val bmp = bitmap ?: PNG.decode(s!!.toSyncStream())
+            val bmp = bitmap ?: try {
+                PNG.decode(s!!.toSyncStream())
+            } catch (e: Throwable) {
+                println("Error in TtfFont.BitmapGlyphInfo: ${e.message}")
+                //e.printStackTrace()
+                Bitmaps.transparent.bmp
+            }
             if (cache) bitmap = bmp
             return bmp
         }
@@ -924,6 +932,9 @@ class TtfFont(
         val isVar = nodeFormat % 2 == 1
         val indent = "  ".repeat(level)
         val debug = false
+        val debugShape = false
+        //val debug = true
+        //val debugShape = true
         if (debug) println("${indent}interpretColrv1[glyphID=$glyphID]: $nodeFormat - ${Colrv1Paint.BY_FORMAT.getOrNull(nodeFormat)}")
         when (nodeFormat) {
             1 -> { // PaintColrLayers
@@ -942,6 +953,10 @@ class TtfFont(
                     TODO()
                 }
                 val color = palettes[pal].colors[paletteIndex].concatAd(alpha)
+                if (debugShape) {
+                    println("ctx.fillStyle = '${color.htmlStringSimple}';")
+                    println("ctx.fill();")
+                }
                 if (debug) println("${indent}$color")
                 c.fill(color)
             }
@@ -976,6 +991,10 @@ class TtfFont(
                 if (isVar) {
                     val varIndexBase = s.readVarIdxBase()
                 }
+                if (debugShape) {
+                    println("ctx.fillStyle = ctx.createRadialGradient($x0, -$y0, $radius0, $x1, -$y1, $radius1);")
+                    println("ctx.fill();")
+                }
                 val paint = RadialGradientPaint(x0, -y0, radius0, x1, -y1, radius1, colorLine.cycle)
                 colorLine.addToPaint(paint, palettes[pal])
                 if (debug) println("${indent}$paint")
@@ -999,6 +1018,9 @@ class TtfFont(
                 val glyph = this.getGlyphByIndex(glyphID)
                 c.keep {
                     if (glyph != null) {
+                        if (debugShape) {
+                            println(glyph.path.path.toContext2dCommands().joinToString("\n"))
+                        }
                         c.path(glyph.path.path)
                         interpretColrv1(glyphID, s.sliceStart(paint), c, pal, level + 1)
                     }
@@ -1322,7 +1344,7 @@ class TtfFont(
                                     }
                                 }
                                 else -> {
-                                    println("TTF: Unsupported lookupType=$lookupType")
+                                    println("TTF.GSUB: Unsupported lookupType=$lookupType")
                                 }
                             }
                         }
@@ -1623,17 +1645,16 @@ class TtfFont(
     inner class ColrLayerInfo(val glyphID: Int, val paletteIndex: Int) {
         fun color(pal: Int) = palettes.getCyclic(pal).colors.getOrElse(paletteIndex) { Colors.FUCHSIA }
         val color: RGBA get() = color(0)
-        fun getColorPath(pal: Int = 0): FillShape? = getGlyphByIndex(glyphID)?.path?.let { FillShape(it.path, null, color(pal)) }
+        fun getShape(pal: Int = 0): FillShape? = getGlyphByIndex(glyphID)?.path?.let { FillShape(it.path, null, color(pal)) }
         override fun toString(): String = "ColrLayerInfo($glyphID, $paletteIndex, $color)"
     }
 
     interface ColrGlyphInfo {
-        fun getColorPaths(pal: Int = 0): List<Shape> = listOf(getColorPath(pal))
-        fun getColorPath(pal: Int = 0): Shape
+        fun getColorShape(pal: Int = 0): Shape
     }
 
     inner class ColrGlyphInfoV1(val glyphID: Int, val paint: Int) : ColrGlyphInfo {
-        override fun getColorPath(pal: Int): Shape {
+        override fun getColorShape(pal: Int): Shape {
             return buildShape {
                 val paintS = colrv1.sBaseOffset.sliceStart(paint)
                 //println(this.state.transform)
@@ -1654,8 +1675,7 @@ class TtfFont(
         operator fun get(index: Int) = colrv0LayerInfos[firstLayerIndex + index]
         fun toList() = Array(numLayers) { this[it] }.toList()
 
-        override fun getColorPaths(pal: Int): List<FillShape> = toList().mapNotNull { it.getColorPath(pal) }
-        override fun getColorPath(pal: Int): Shape = CompoundShape(getColorPaths(pal))
+        override fun getColorShape(pal: Int): Shape = CompoundShape(toList().mapNotNull { it.getShape(pal) })
         override fun toString(): String = "ColrGlyphInfoV0[$glyphID][$numLayers](${toList()})"
     }
 
@@ -1692,7 +1712,7 @@ class TtfFont(
                     val clipOffset = glyphIDToClipOffset[index]
                     sClipOffset.sliceStart(clipOffset).readClipBox()
                 } else {
-                    colorEntry?.getColorPath()?.bounds
+                    colorEntry?.getColorShape()?.bounds
                 }
                 if (bounds != null) {
                     xMin = bounds.left.toInt()
@@ -1766,7 +1786,7 @@ class TtfFont(
 		}
 
         // @TODO: Do not use by lazy, since this causes a crash on Kotlin/Native
-        override val path = run {
+        override val path: GlyphGraphicsPath = run {
             var commandSize = 0
             var dataSize = 0
 
