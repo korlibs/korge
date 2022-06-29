@@ -35,8 +35,8 @@ open class AudioFormat(vararg exts: String) {
 
 	open suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Info? = null
 	open suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioStream? = null
-	suspend fun decode(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data, props)?.toData()
-	suspend fun decode(data: ByteArray, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data.openAsync(), props)?.toData()
+	suspend fun decode(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data, props)?.toData(props.maxSamples)
+	suspend fun decode(data: ByteArray, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data.openAsync(), props)?.toData(props.maxSamples)
 	open suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps = AudioEncodingProps.DEFAULT): Unit = unsupported()
 
 	suspend fun encodeToByteArray(
@@ -52,7 +52,8 @@ open class AudioFormat(vararg exts: String) {
 open class AudioDecodingProps(
     val exactTimings: Boolean? = null,
     val readInMemory: Boolean = true,
-    val formats: AudioFormat? = null
+    val formats: AudioFormat? = null,
+    val maxSamples: Int = 15 * 60 * 44100,
 ) {
     //var readInMemory: Boolean = true
 
