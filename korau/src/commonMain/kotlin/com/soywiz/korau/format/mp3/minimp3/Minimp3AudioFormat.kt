@@ -142,7 +142,7 @@ internal object Minimp3AudioFormat : AudioFormat("mp3") {
                 if (samples > 0) {
                     val buf = ShortArray(samples * nchannels)
                     memRead(pcmData, buf, 0, samples * nchannels)
-                    pcmDeque!!.writeInterleaved(buf, 0, samples)
+                    pcmDeque!!.writeInterleaved(buf, 0, samples * nchannels)
                 }
             }
 
