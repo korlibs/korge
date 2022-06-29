@@ -1,68 +1,93 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.klock.measureTime
+import com.soywiz.klock.measureTimeWithResult
+import com.soywiz.kmem.divCeil
+import com.soywiz.kmem.divRound
+import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormats
+import com.soywiz.korau.format.mp3.FastMP3Decoder
 import com.soywiz.korau.format.mp3.MP3Decoder
+import com.soywiz.korau.format.mp3.javamp3.JavaMp3AudioFormat
 import com.soywiz.korau.format.mp3.minimp3.Minimp3AudioFormat
 import com.soywiz.korau.internal.toByteArrayLE
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.krypto.sha1
 import doIOTest
+import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SoftMp3DecoderTest {
-    val formats = AudioFormats(MP3Decoder)
+    val formats = AudioFormats(FastMP3Decoder)
 
     @Test
+    @Ignore
     fun testMiniMp3Speed() = suspendTest({ doIOTest }) {
         val bytes = resourcesVfs["mp31.mp3"].readBytes()
         //for (n in 0 until 100) {
         for (n in 0 until 10) {
-            val output = Minimp3AudioFormat.decode(bytes)
+            val output = FastMP3Decoder.decode(bytes)
             //val output = JavaMp3AudioFormat.decode(bytes)
         }
     }
 
     @Test
     fun testMiniMp31() = suspendTest({ doIOTest }) {
+        //resourcesVfs["mp31.mp3"].readAudioData(FastMP3Decoder).toSound()
         assertEquals(
-            "1,44100,25344,52910cbfb3d8b1b45e462c296a7d8a9538a7b9c4",
-            resourcesVfs["mp31.mp3"].readAudioData(Minimp3AudioFormat).toFingerprintString()
+            "1,44100,25344,c857ab2749eb3a00cb27f85658ddb38bd48bded9",
+            resourcesVfs["mp31.mp3"].readAudioData(FastMP3Decoder).toFingerprintString()
         )
     }
 
     @Test fun mp3_1() = suspendTest({ doIOTest }) {
         assertEquals(
-            "1,44100,28800,e5571a38ad5ee655136c753e51e8b462b1e807a0",
+            "1,44100,28800,ee797bf9ec5a2b5ed0e3064cc5d091157921be6f",
             resourcesVfs["circle_ok.mp3"].readAudioData(formats).toFingerprintString()
         )
     }
     @Test fun mp3_2() = suspendTest({ doIOTest }) {
         assertEquals(
-            "1,44100,16128,b55cb9a5530bbbf029aede6ec85bb9337d4b3392",
+            "1,44100,16128,e4848a4bd5b3117665dcafc14109fdc677c9ee2f",
             resourcesVfs["line_missed.mp3"].readAudioData(formats).toFingerprintString()
         )
     }
     @Test fun mp3_3() = suspendTest({ doIOTest }) {
         assertEquals(
-            "1,44100,14976,f01d9a73f623923fa62372ffbef9c0a1a376a0bf",
+            "1,44100,14976,f38dc856841ba47afe815d6a64654f29b63b822e",
             resourcesVfs["line_ok.mp3"].readAudioData(formats).toFingerprintString(),
         )
     }
-    @Test fun monkeyDrama() = suspendTest({ doIOTest }) {
+    @Test fun monkeyDramaMiniMp3() = suspendTest({ doIOTest }) {
+        val (mp3Bytes, readTime) = measureTimeWithResult { resourcesVfs["monkey_drama.mp3"].readBytes() }
+        println("Read in $readTime")
+        val (decode, decodeTime) = measureTimeWithResult { formats.decode(mp3Bytes, AudioDecodingProps(maxSamples = 569088)) }
+        println("Decoded in $decodeTime")
+        val (fingerprint, fingerprintTime) = measureTimeWithResult { decode?.toFingerprintString() }
+        println("Fingerprint in in $fingerprintTime")
         assertEquals(
-            "2,44100,3528576,ab95743bf262309fc5b0ed79506e17c558c1ddac",
-            resourcesVfs["monkey_drama.mp3"].readAudioData(formats).toFingerprintString(),
+            "2,44100,569088,f43f395b2029b060f9f6ef06a1a96b2e1e6f3860",
+            fingerprint,
         )
+    }
+    @Ignore
+    @Test
+    fun monkeyDramaJavaMp3() = suspendTest({ doIOTest }) {
+        resourcesVfs["monkey_drama.mp3"].readAudioData(JavaMp3AudioFormat, AudioDecodingProps(maxSamples = 569088)).toFingerprintString()
     }
     @Test fun snowland() = suspendTest({ doIOTest }) {
         assertEquals(
-            "2,48000,569088,7a2f06a8e55135bfa24bcc17eeaab883f5db81c6",
+            "2,48000,569088,e93f683f45e9a604ac75de77c5c7de5ae5f802b1",
             resourcesVfs["Snowland.mp3"].readAudioData(formats).toFingerprintString(),
         )
     }
 
-    fun AudioData.toFingerprintString(): String = "$channels,$rate,$totalSamples,${samplesInterleaved.data.toByteArrayLE().sha1().hex}"
+    fun AudioData.toFingerprintString(): String {
+        val sdata = samplesInterleaved.data
+        val data = ByteArray(sdata.size) { sdata[it].toInt().divRound(256 * 8).toByte() }
+        return "$channels,$rate,$totalSamples,${data.sha1().hex}"
+    }
 
 }
