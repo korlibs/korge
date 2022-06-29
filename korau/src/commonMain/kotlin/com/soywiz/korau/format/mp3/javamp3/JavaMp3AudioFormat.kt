@@ -16,7 +16,7 @@ import com.soywiz.korio.stream.markable
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.stream.readAll
 
-internal open class JavaMp3AudioFormat() : AudioFormat("mp3") {
+open class JavaMp3AudioFormat() : AudioFormat("mp3") {
     companion object : JavaMp3AudioFormat()
 
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? = MP3.tryReadInfo(data, props)

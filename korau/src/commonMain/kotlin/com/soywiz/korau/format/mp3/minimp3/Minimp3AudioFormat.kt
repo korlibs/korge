@@ -44,6 +44,8 @@ internal object Minimp3AudioFormat : AudioFormat("mp3") {
 
         readMoreSamples()
 
+        //println("Minimp3AudioFormat: decoder.hz=${decoder.hz}, decoder.nchannels=${decoder.nchannels}")
+
         return object : AudioStream(decoder.hz, decoder.nchannels) {
             override var finished: Boolean = false
 
@@ -130,6 +132,8 @@ internal object Minimp3AudioFormat : AudioFormat("mp3") {
             nchannels = struct.channels
             hz = struct.hz
             bitrate_kbps = struct.bitrate_kbps
+
+            //println("samples=$samples, nchannels=$nchannels, hz=$hz, bitrate_kbps=$bitrate_kbps")
 
             if (nchannels != 0) {
                 if (pcmDeque == null) {

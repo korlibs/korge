@@ -77,7 +77,7 @@ fun invalidAudioFormat(message: String = "invalid audio format"): Nothing = thro
 val defaultAudioFormats by lazy { standardAudioFormats() }
 
 class AudioFormats : AudioFormat() {
-	val formats = linkedSetOf<AudioFormat>()
+	val formats = arrayListOf<AudioFormat>()
 
     companion object {
         operator fun invoke(vararg formats: AudioFormat) = AudioFormats().register(*formats)
@@ -87,6 +87,8 @@ class AudioFormats : AudioFormat() {
     fun register(formats: AudioFormats): AudioFormats = this.apply { this.formats += formats.formats }
 	fun register(vararg formats: AudioFormat): AudioFormats = this.apply { this.formats += formats }
 	fun register(formats: Iterable<AudioFormat>): AudioFormats = this.apply { this.formats += formats }
+
+    fun registerFirst(vararg formats: AudioFormat): AudioFormats = this.apply { this.formats.addAll(0, formats.toList()) }
 
 	override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? {
 		//println("formats:$formats")
