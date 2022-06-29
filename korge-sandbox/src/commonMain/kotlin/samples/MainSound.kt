@@ -10,7 +10,7 @@ import com.soywiz.korio.file.std.*
 class MainSound : Scene() {
     override suspend fun SContainer.sceneMain() {
 
-        nativeSoundProvider.audioFormats.registerFirst(JavaMp3AudioFormat())
+        //nativeSoundProvider.audioFormats.registerFirst(JavaMp3AudioFormat())
 
         val music = resourcesVfs["sounds/Snowland.mp3"].readMusic()
         //val music = resourcesVfs["sounds/Snowland.mp3"].readSound()
