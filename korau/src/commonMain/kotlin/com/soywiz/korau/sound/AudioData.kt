@@ -4,6 +4,7 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.arraycopy
 import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.defaultAudioFormats
 import com.soywiz.korio.file.VfsFile
@@ -90,5 +91,5 @@ class AudioDataStream(val data: AudioData) : AudioStream(data.rate, data.channel
 
 suspend fun AudioData.toSound() = nativeSoundProvider.createSound(this)
 
-suspend fun VfsFile.readAudioData(formats: AudioFormats = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) =
+suspend fun VfsFile.readAudioData(formats: AudioFormat = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData =
     this.openUse { formats.decode(this, props) ?: invalidOp("Can't decode audio file ${this@readAudioData}") }

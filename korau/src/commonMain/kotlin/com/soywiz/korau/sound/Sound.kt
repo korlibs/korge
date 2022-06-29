@@ -73,7 +73,8 @@ open class NativeSoundProvider : Disposable {
 	protected open fun init(): Unit = Unit
 
 	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
-        val stream = audioFormats.decodeStreamOrError(data.openAsync(), props)
+        val format = if (props.formats != null) AudioFormats(listOf(props.formats, *audioFormats.formats.toTypedArray()).filterNotNull()) else audioFormats
+        val stream = format.decodeStreamOrError(data.openAsync(), props)
         return if (streaming) {
             createStreamingSound(stream, closeStream = true, name = name)
         } else {
