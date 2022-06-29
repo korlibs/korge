@@ -20,6 +20,7 @@ import com.soywiz.korge.view.descendantsWithProp
 import com.soywiz.korge.view.descendantsWithPropDouble
 import com.soywiz.korge.view.dumpToString
 import com.soywiz.korge.view.updateSingleView
+import com.soywiz.korim.vector.ShapeRasterizerMethod
 import com.soywiz.korim.vector.toSvg
 import com.soywiz.korio.async.async
 import com.soywiz.korio.async.suspendTest
@@ -52,10 +53,12 @@ class SwfTest {
 	val viewsLog = ViewsLog(eventLoopTest.dispatcher)
 	val views = viewsLog.views
 
-	suspend fun VfsFile.readSWFDeserializing(views: Views, config: SWFExportConfig? = null): AnLibrary {
+    fun fastSwfExportConfig() = SWFExportConfig(debug = false, mipmaps = false, rasterizerMethod = ShapeRasterizerMethod.NONE)
+
+    suspend fun VfsFile.readSWFDeserializing(views: Views, config: SWFExportConfig? = null): AnLibrary {
 		val mem = MemoryVfs()
 
-		val ani = if (config != null) this.readSWF(views, config) else this.readSWF(views)
+		val ani = this.readSWF(views, config ?: fastSwfExportConfig())
 		ani.writeTo(mem["file.ani"], ani.swfExportConfig.toAnLibrarySerializerConfig(compression = 0.0))
 		//println("ANI size:" + mem["file.ani"].size())
 		return mem["file.ani"].readAni(AnLibrary.Context(views))
@@ -140,13 +143,13 @@ class SwfTest {
 	fun name5() = swfTest {
 		//val lib = ResourcesVfs["test1.swf"].readSWF(views)
 		//val lib = ResourcesVfs["test2.swf"].readSWF(views)
-		val lib = resourcesVfs["test4.swf"].readSWFDeserializing(views, SWFExportConfig(debug = true))
+		val lib = resourcesVfs["test4.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		println(lib)
 	}
 
 	@Test
 	fun name6() = swfTest {
-		val lib = resourcesVfs["as3test.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["as3test.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		assertEquals(6, lib.symbolsById.size)
 		println(lib.symbolsById)
 
@@ -169,13 +172,13 @@ class SwfTest {
 	@Test
     @Ignore
 	fun name7() = swfTest {
-		val lib = resourcesVfs["soundtest.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["soundtest.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		println(lib)
 	}
 
 	@Test
 	fun name8() = swfTest {
-		val lib = resourcesVfs["progressbar.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["progressbar.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		val mc = lib.symbolsById[0] as AnSymbolMovieClip
 		assertEquals("[default, frame0, progressbar]", mc.states.keys.toList().sorted().toString())
 		val progressbarState = mc.states["progressbar"]!!
@@ -189,7 +192,7 @@ class SwfTest {
 
 	@Test
 	fun exports() = swfTest {
-		val lib = resourcesVfs["exports.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["exports.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		assertEquals(listOf("Graphic1Export", "MC1Export", "MainTimeLine"), lib.symbolsByName.keys.sorted())
 		val sh = lib.createMovieClip("Graphic1Export")
 		val mc = lib.createMovieClip("MC1Export")
@@ -201,7 +204,7 @@ class SwfTest {
 
 	@Test
 	fun props() = swfTest {
-		val lib = resourcesVfs["props.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["props.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		//val lib = ResourcesVfs["props.swf"].readSWF(views, debug = false)
 		val mt = lib.createMainTimeLine()
 		views.stage.addChild(mt)
@@ -217,7 +220,7 @@ class SwfTest {
 
 	@Test
 	fun shapes() = swfTest {
-		val lib = resourcesVfs["shapes.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["shapes.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		//val lib = ResourcesVfs["shapes.swf"].readSWF(views, debug = false)
 		val mt = lib.createMainTimeLine()
 		views.stage += mt
@@ -250,21 +253,21 @@ class SwfTest {
 
 	@Test
 	fun morph() = swfTest {
-		val lib = resourcesVfs["morph.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["morph.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["morph.ani"])
 	}
 
 	@Test
 	fun ninepatch() = swfTest {
-		val lib = resourcesVfs["ninepatch.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["ninepatch.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["ninepatch.ani"])
 	}
 
 	@Test
 	fun stopattheend() = swfTest {
-		val lib = resourcesVfs["stop_at_the_end.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["stop_at_the_end.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		val cmt = lib.createMainTimeLine()
 		assertEquals(listOf("box"), cmt.allDescendantNames)
 		for (n in 0 until 10) cmt.update(10)
@@ -284,7 +287,7 @@ class SwfTest {
 
     @Test
 	fun cameraBounds() = swfTest {
-		val lib = resourcesVfs["cameras.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["cameras.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		val root = views.stage
 		root += lib.createMainTimeLine()
 		assertEquals(
@@ -308,7 +311,7 @@ class SwfTest {
 	//("Fix order")
 	fun events() = swfTest {
 		//val lib = ResourcesVfs["cameras.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
-		val lib = resourcesVfs["events.swf"].readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = resourcesVfs["events.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		val root = views.stage
 		val mtl = lib.createMainTimeLine()
 		root += mtl
@@ -331,7 +334,7 @@ class SwfTest {
 	@Test
     @Ignore
 	fun bigexternal1() = swfTest {
-		val lib = localVfs("c:/temp/test29.swf").readSWFDeserializing(views, SWFExportConfig(debug = false))
+		val lib = localVfs("c:/temp/test29.swf").readSWFDeserializing(views, fastSwfExportConfig())
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		lib.writeTo(localVfs("c:/temp")["test29.ani"])
 	}
