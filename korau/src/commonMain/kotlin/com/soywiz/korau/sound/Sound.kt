@@ -73,7 +73,8 @@ open class NativeSoundProvider : Disposable {
 	protected open fun init(): Unit = Unit
 
 	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
-        val stream = audioFormats.decodeStreamOrError(data.openAsync(), props)
+        val format = if (props.formats != null) AudioFormats(listOf(props.formats, *audioFormats.formats.toTypedArray()).filterNotNull()) else audioFormats
+        val stream = format.decodeStreamOrError(data.openAsync(), props)
         return if (streaming) {
             createStreamingSound(stream, closeStream = true, name = name)
         } else {
@@ -357,8 +358,8 @@ inline class PlaybackTimes(val count: Int) {
     override fun toString(): String = if (count >= 0) "$count times" else "Infinite times"
 }
 
-suspend fun VfsFile.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
-suspend fun ByteArray.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
+suspend fun VfsFile.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false): Sound = nativeSoundProvider.createSound(this, streaming, props)
+suspend fun ByteArray.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false): Sound = nativeSoundProvider.createSound(this, streaming, props)
 
-suspend fun ByteArray.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming = true, props = props)
-suspend fun VfsFile.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming = true, props = props)
+suspend fun ByteArray.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = readSound(streaming = true, props = props)
+suspend fun VfsFile.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = readSound(streaming = true, props = props)
