@@ -387,4 +387,3 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 
 	fun createMainTimeLine() = createMovieClip(0)
 }
-
