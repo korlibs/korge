@@ -35,9 +35,9 @@ include(":korvi")
 include(":korge")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
+include(":korge-sandbox")
 
 if (!inCI) {
-    include(":korge-sandbox")
 }
 
 if (!disabledExtraKorgeLibs) {
