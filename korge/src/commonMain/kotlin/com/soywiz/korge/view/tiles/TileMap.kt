@@ -222,10 +222,12 @@ abstract class BaseTileMap(
         val xmin = min(mx0, mx1, mx2, mx3) - 1
         val xmax = max(mx0, mx1, mx2, mx3)
 
-        val ymin2 = ymin.clamp(0, intMap.height)
-        val ymax2 = ymax.clamp(0, intMap.height)
-        val xmin2 = xmin.clamp(0, intMap.height)
-        val xmax2 = xmax.clamp(0, intMap.height)
+        //println("$xmin,$xmax")
+
+        val ymin2 = if (repeatY == Repeat.NONE) ymin.clamp(0, intMap.height) else ymin
+        val ymax2 = if (repeatY == Repeat.NONE) ymax.clamp(0, intMap.height) else ymax
+        val xmin2 = if (repeatX == Repeat.NONE) xmin.clamp(0, intMap.height) else xmin
+        val xmax2 = if (repeatX == Repeat.NONE) xmax.clamp(0, intMap.height) else xmax
 
         val yheight = ymax2 - ymin2
         val xwidth = xmax2 - xmin2
