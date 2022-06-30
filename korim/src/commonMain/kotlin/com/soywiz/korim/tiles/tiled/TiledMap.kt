@@ -1,17 +1,21 @@
-package com.soywiz.korge.tiled
+package com.soywiz.korim.tiles.tiled
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.associateByInt
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klogger.Logger
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.tiles.TileSet
-import com.soywiz.korge.view.tiles.TileSetTileInfo
-import com.soywiz.korge.view.tiles.TileShapeInfo
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.tiles.TileMapObjectAlignment
+import com.soywiz.korim.tiles.TileMapOrientation
+import com.soywiz.korim.tiles.TileMapRenderOrder
+import com.soywiz.korim.tiles.TileMapStaggerAxis
+import com.soywiz.korim.tiles.TileMapStaggerIndex
+import com.soywiz.korim.tiles.TileSet
+import com.soywiz.korim.tiles.TileSetTileInfo
+import com.soywiz.korim.tiles.TileShapeInfo
 import com.soywiz.korio.lang.invalidArgument
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.shape.Shape2d
@@ -24,16 +28,16 @@ import com.soywiz.korma.geom.vector.polygon
 import com.soywiz.korma.geom.vector.rect
 
 class TiledMapData(
-    var orientation: TiledMap.Orientation = TiledMap.Orientation.ORTHOGONAL,
-    var renderOrder: TiledMap.RenderOrder = TiledMap.RenderOrder.RIGHT_DOWN,
+    var orientation: TileMapOrientation = TileMapOrientation.ORTHOGONAL,
+    var renderOrder: TileMapRenderOrder = TileMapRenderOrder.RIGHT_DOWN,
     var compressionLevel: Int = -1,
     var width: Int = 0,
     var height: Int = 0,
     var tilewidth: Int = 0,
     var tileheight: Int = 0,
     var hexSideLength: Int? = null,
-    var staggerAxis: TiledMap.StaggerAxis? = null,
-    var staggerIndex: TiledMap.StaggerIndex? = null,
+    var staggerAxis: TileMapStaggerAxis? = null,
+    var staggerIndex: TileMapStaggerIndex? = null,
     var backgroundColor: RGBA? = null,
     var nextLayerId: Int = 1,
     var nextObjectId: Int = 1,
@@ -46,11 +50,11 @@ class TiledMapData(
     val pixelWidth: Int
         get() {
             return when(orientation) {
-                TiledMap.Orientation.ORTHOGONAL -> width * tilewidth
-                TiledMap.Orientation.STAGGERED -> {
+                TileMapOrientation.ORTHOGONAL -> width * tilewidth
+                TileMapOrientation.STAGGERED -> {
                     when(staggerAxis) {
-                        TiledMap.StaggerAxis.X -> (tilewidth * (width / 2 + 0.5)).toInt()
-                        TiledMap.StaggerAxis.Y -> tilewidth * width + tilewidth / 2
+                        TileMapStaggerAxis.X -> (tilewidth * (width / 2 + 0.5)).toInt()
+                        TileMapStaggerAxis.Y -> tilewidth * width + tilewidth / 2
                         else -> invalidArgument("staggeraxis missing on staggered tiled map")
                     }
                 }
@@ -60,9 +64,9 @@ class TiledMapData(
     val pixelHeight: Int
         get() {
             return when(orientation) {
-                TiledMap.Orientation.ORTHOGONAL -> height * tileheight
-                TiledMap.Orientation.STAGGERED -> {
-                    (tileheight * (height / (if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0) + 0.5)).toInt()
+                TileMapOrientation.ORTHOGONAL -> height * tileheight
+                TileMapOrientation.STAGGERED -> {
+                    (tileheight * (height / (if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0) + 0.5)).toInt()
                 }
                 else -> TODO()
             }
@@ -156,7 +160,7 @@ data class TileSetData(
     val tileOffsetY: Int = 0,
     val grid: TiledMap.Grid? = null,
     val tilesetSource: String? = null,
-    val objectAlignment: TiledMap.ObjectAlignment = TiledMap.ObjectAlignment.UNSPECIFIED,
+    val objectAlignment: TileMapObjectAlignment = TileMapObjectAlignment.UNSPECIFIED,
     val terrains: List<TerrainData> = listOf(),
     val wangsets: List<WangSet> = listOf(),
     val tiles: List<TileData> = listOf(),
@@ -205,41 +209,6 @@ class TiledMap constructor(
     val nextGid get() = tilesets.map { it.firstgid + it.tileset.textures.size }.maxOrNull() ?: 1
 
     fun clone() = TiledMap(data.clone(), tilesets.map { it.clone() }.toMutableList())
-
-    enum class Orientation(val value: String) {
-        ORTHOGONAL("orthogonal"),
-        ISOMETRIC("isometric"),
-        STAGGERED("staggered"),
-        HEXAGONAL("hexagonal")
-    }
-
-    enum class RenderOrder(val value: String) {
-        RIGHT_DOWN("right-down"),
-        RIGHT_UP("right-up"),
-        LEFT_DOWN("left-down"),
-        LEFT_UP("left-up")
-    }
-
-    enum class StaggerAxis(val value: String) {
-        X("x"), Y("y")
-    }
-
-    enum class StaggerIndex(val value: String) {
-        EVEN("even"), ODD("odd")
-    }
-
-    enum class ObjectAlignment(val value: String) {
-        UNSPECIFIED("unspecified"),
-        TOP_LEFT("topleft"),
-        TOP("top"),
-        TOP_RIGHT("topright"),
-        LEFT("left"),
-        CENTER("center"),
-        RIGHT("right"),
-        BOTTOM_LEFT("bottomleft"),
-        BOTTOM("bottom"),
-        BOTTOM_RIGHT("bottomright")
-    }
 
     class Grid(
         val cellWidth: Int,

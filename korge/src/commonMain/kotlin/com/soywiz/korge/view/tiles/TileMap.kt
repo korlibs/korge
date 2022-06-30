@@ -16,7 +16,6 @@ import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.ShrinkableTexturedVertexArray
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
-import com.soywiz.korge.tiled.TiledMap
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.HitTestDirection
 import com.soywiz.korge.view.View
@@ -27,6 +26,9 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.tiles.TileMapOrientation
+import com.soywiz.korim.tiles.TileMapStaggerAxis
+import com.soywiz.korim.tiles.TileMapStaggerIndex
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
@@ -42,9 +44,9 @@ inline fun Container.tileMap(
     repeatX: BaseTileMap.Repeat = BaseTileMap.Repeat.NONE,
     repeatY: BaseTileMap.Repeat = repeatX,
     smoothing: Boolean = true,
-    orientation: TiledMap.Orientation? = null,
-    staggerAxis: TiledMap.StaggerAxis? = null,
-    staggerIndex: TiledMap.StaggerIndex? = null,
+    orientation: TileMapOrientation? = null,
+    staggerAxis: TileMapStaggerAxis? = null,
+    staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map, tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
@@ -55,9 +57,9 @@ inline fun Container.tileMap(
     repeatX: BaseTileMap.Repeat = BaseTileMap.Repeat.NONE,
     repeatY: BaseTileMap.Repeat = repeatX,
     smoothing: Boolean = true,
-    orientation: TiledMap.Orientation? = null,
-    staggerAxis: TiledMap.StaggerAxis? = null,
-    staggerIndex: TiledMap.StaggerIndex? = null,
+    orientation: TileMapOrientation? = null,
+    staggerAxis: TileMapStaggerAxis? = null,
+    staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     callback: @ViewDslMarker TileMap.() -> Unit = {},
 ) = TileMap(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
@@ -68,8 +70,8 @@ internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
 abstract class BaseTileMap(
     val intMap: IntArray2,
     var smoothing: Boolean = true,
-    val staggerAxis: TiledMap.StaggerAxis? = null,
-    val staggerIndex: TiledMap.StaggerIndex? = null,
+    val staggerAxis: TileMapStaggerAxis? = null,
+    val staggerIndex: TileMapStaggerIndex? = null,
     var tileSize: Size = Size()
 ) : View() {
     abstract val tilesetTextures: Array<BitmapCoords?>
@@ -185,10 +187,10 @@ abstract class BaseTileMap(
         } else {
             0.0
         }
-        val nextTileX = (tileSize.width / if (staggerAxis == TiledMap.StaggerAxis.X) 2.0 else 1.0).let { width ->
+        val nextTileX = (tileSize.width / if (staggerAxis == TileMapStaggerAxis.X) 2.0 else 1.0).let { width ->
             min(m.transformX(width, 0.0) - posX, m.transformY(0.0, width) - posY)
         }
-        val nextTileY = (tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0).let { height ->
+        val nextTileY = (tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0).let { height ->
             min(m.transformX(height, 0.0) - posX, m.transformY(0.0, height) - posY)
         }
         val staggerX = (tileWidth / 2.0).let{ width ->
@@ -207,7 +209,7 @@ abstract class BaseTileMap(
         val pp2 = globalToLocal(t0.setTo(currentVirtualRect.right, currentVirtualRect.top), tt2)
         val pp3 = globalToLocal(t0.setTo(currentVirtualRect.left, currentVirtualRect.bottom), tt3)
         val mapTileWidth = tileSize.width
-        val mapTileHeight = tileSize.height / if (staggerAxis == TiledMap.StaggerAxis.Y) 2.0 else 1.0
+        val mapTileHeight = tileSize.height / if (staggerAxis == TileMapStaggerAxis.Y) 2.0 else 1.0
         val mx0 = ((pp0.x / mapTileWidth) + 1).toInt()
         val mx1 = ((pp1.x / mapTileWidth) + 1).toInt()
         val mx2 = ((pp2.x / mapTileWidth) + 1).toInt()
@@ -252,7 +254,7 @@ abstract class BaseTileMap(
         var iterationCount = 0
         var count = 0
         var nblocks = 0
-        val passes = if (staggerAxis == TiledMap.StaggerAxis.X) 2 else 1
+        val passes = if (staggerAxis == TileMapStaggerAxis.X) 2 else 1
 
         val quadIndexData = TexturedVertexArray.quadIndices(allocTilesClamped)
 
@@ -268,16 +270,16 @@ abstract class BaseTileMap(
 
                     if (rx < 0 || rx >= intMap.width) continue
                     if (ry < 0 || ry >= intMap.height) continue
-                    if (staggerAxis == TiledMap.StaggerAxis.X) {
-                        val firstPass = staggerIndex == TiledMap.StaggerIndex.ODD && rx.isEven ||
-                            staggerIndex == TiledMap.StaggerIndex.EVEN && rx.isOdd
-                        val secondPass = staggerIndex == TiledMap.StaggerIndex.ODD && rx.isOdd ||
-                            staggerIndex == TiledMap.StaggerIndex.EVEN && rx.isEven
+                    if (staggerAxis == TileMapStaggerAxis.X) {
+                        val firstPass = staggerIndex == TileMapStaggerIndex.ODD && rx.isEven ||
+                            staggerIndex == TileMapStaggerIndex.EVEN && rx.isOdd
+                        val secondPass = staggerIndex == TileMapStaggerIndex.ODD && rx.isOdd ||
+                            staggerIndex == TileMapStaggerIndex.EVEN && rx.isEven
                         if (pass == 0 && !firstPass) continue
                         if (pass == 1 && !secondPass) continue
                     }
-                    val odd = if (staggerAxis == TiledMap.StaggerAxis.Y) ry.isOdd else rx.isOdd
-                    val staggered = if (odd) staggerIndex == TiledMap.StaggerIndex.ODD else staggerIndex == TiledMap.StaggerIndex.EVEN
+                    val odd = if (staggerAxis == TileMapStaggerAxis.Y) ry.isOdd else rx.isOdd
+                    val staggered = if (odd) staggerIndex == TileMapStaggerIndex.ODD else staggerIndex == TileMapStaggerIndex.EVEN
                     val cell = intMap[rx, ry]
                     val cellData = cell.extract(0, 28)
                     val flipX = cell.extract(31)
@@ -285,13 +287,13 @@ abstract class BaseTileMap(
                     val rotate = cell.extract(29)
 
                     val staggerOffsetX = when (staggerAxis.takeIf { staggered }) {
-                        TiledMap.StaggerAxis.Y -> staggerX
-                        TiledMap.StaggerAxis.X -> 0.0
+                        TileMapStaggerAxis.Y -> staggerX
+                        TileMapStaggerAxis.X -> 0.0
                         else -> 0.0
                     }
                     val staggerOffsetY = when (staggerAxis.takeIf { staggered }) {
-                        TiledMap.StaggerAxis.Y -> 0.0
-                        TiledMap.StaggerAxis.X -> staggerY
+                        TileMapStaggerAxis.Y -> 0.0
+                        TileMapStaggerAxis.X -> staggerY
                         else -> 0.0
                     }
 
@@ -406,9 +408,9 @@ open class TileMap(
     intMap: IntArray2,
     val tileset: TileSet,
     smoothing: Boolean = true,
-    val orientation: TiledMap.Orientation? = null,
-    staggerAxis: TiledMap.StaggerAxis? = null,
-    staggerIndex: TiledMap.StaggerIndex? = null,
+    val orientation: TileMapOrientation? = null,
+    staggerAxis: TileMapStaggerAxis? = null,
+    staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
     override val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
@@ -419,9 +421,9 @@ open class TileMap(
         map: Bitmap32,
         tileset: TileSet,
         smoothing: Boolean = true,
-        orientation: TiledMap.Orientation? = null,
-        staggerAxis: TiledMap.StaggerAxis? = null,
-        staggerIndex: TiledMap.StaggerIndex? = null,
+        orientation: TileMapOrientation? = null,
+        staggerAxis: TileMapStaggerAxis? = null,
+        staggerIndex: TileMapStaggerIndex? = null,
         tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
     ) : this(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize)
 

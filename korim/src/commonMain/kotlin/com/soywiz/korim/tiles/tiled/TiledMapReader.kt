@@ -1,23 +1,33 @@
-package com.soywiz.korge.tiled
+package com.soywiz.korim.tiles.tiled
 
 import com.soywiz.kds.*
 import com.soywiz.kds.iterators.*
 import com.soywiz.klock.*
 import com.soywiz.kmem.*
-import com.soywiz.korge.tiled.TiledMap.*
-import com.soywiz.korge.tiled.TiledMap.Image
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.tiles.*
+import com.soywiz.korim.tiles.tiled.TiledMap.*
+import com.soywiz.korim.tiles.tiled.TiledMap.Image
 import com.soywiz.korim.atlas.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
+import com.soywiz.korim.tiles.TileMapObjectAlignment
+import com.soywiz.korim.tiles.TileMapOrientation
+import com.soywiz.korim.tiles.TileMapRenderOrder
+import com.soywiz.korim.tiles.TileMapStaggerAxis
+import com.soywiz.korim.tiles.TileMapStaggerIndex
+import com.soywiz.korim.tiles.TileSet
+import com.soywiz.korim.tiles.TileSetAnimationFrame
+import com.soywiz.korim.tiles.TileSetTileInfo
+import com.soywiz.korim.tiles.TileShapeInfo
+import com.soywiz.korim.tiles.TileShapeInfoImpl
 import com.soywiz.korio.compression.*
 import com.soywiz.korio.compression.deflate.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.xml.*
 import com.soywiz.korma.geom.*
+import com.soywiz.korma.geom.collider.HitTestDirection
+import com.soywiz.korma.geom.collider.HitTestDirectionFlags
 import com.soywiz.korma.geom.shape.*
 import com.soywiz.krypto.encoding.*
 import kotlin.collections.set
@@ -216,17 +226,17 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	//TODO: Support different orientations
 	val orientation = mapXml.getString("orientation")
 	tiledMap.orientation = when (orientation) {
-		"orthogonal" -> TiledMap.Orientation.ORTHOGONAL
-		"staggered" -> TiledMap.Orientation.STAGGERED
+		"orthogonal" -> TileMapOrientation.ORTHOGONAL
+		"staggered" -> TileMapOrientation.STAGGERED
 		else -> unsupported("Orientation \"$orientation\" is not supported")
 	}
 	val renderOrder = mapXml.getString("renderorder")
 	tiledMap.renderOrder = when (renderOrder) {
-		"right-down" -> RenderOrder.RIGHT_DOWN
-		"right-up" -> RenderOrder.RIGHT_UP
-		"left-down" -> RenderOrder.LEFT_DOWN
-		"left-up" -> RenderOrder.LEFT_UP
-		else -> RenderOrder.RIGHT_DOWN
+		"right-down" -> TileMapRenderOrder.RIGHT_DOWN
+		"right-up" -> TileMapRenderOrder.RIGHT_UP
+		"left-down" -> TileMapRenderOrder.LEFT_DOWN
+		"left-up" -> TileMapRenderOrder.LEFT_UP
+		else -> TileMapRenderOrder.RIGHT_DOWN
 	}
 	tiledMap.compressionLevel = mapXml.getInt("compressionlevel") ?: -1
 	tiledMap.width = mapXml.getInt("width") ?: 0
@@ -236,14 +246,14 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 	tiledMap.hexSideLength = mapXml.getInt("hexsidelength")
 	val staggerAxis = mapXml.getString("staggeraxis")
 	tiledMap.staggerAxis = when (staggerAxis) {
-		"x" -> StaggerAxis.X
-		"y" -> StaggerAxis.Y
+		"x" -> TileMapStaggerAxis.X
+		"y" -> TileMapStaggerAxis.Y
 		else -> null
 	}
 	val staggerIndex = mapXml.getString("staggerindex")
 	tiledMap.staggerIndex = when (staggerIndex) {
-		"even" -> StaggerIndex.EVEN
-		"odd" -> StaggerIndex.ODD
+		"even" -> TileMapStaggerIndex.EVEN
+		"odd" -> TileMapStaggerIndex.ODD
 		else -> null
 	}
 	tiledMap.backgroundColor = mapXml.getString("backgroundcolor")?.let { colorFromARGB(it, Colors.TRANSPARENT_BLACK) }
@@ -320,7 +330,7 @@ suspend fun VfsFile.readTiledMapData(): TiledMapData {
 
 fun parseTileSetData(tileset: Xml, firstgid: Int, tilesetSource: String? = null): TileSetData {
 	val alignment = tileset.str("objectalignment", "unspecified")
-	val objectAlignment = ObjectAlignment.values().find { it.value == alignment } ?: ObjectAlignment.UNSPECIFIED
+	val objectAlignment = TileMapObjectAlignment.values().find { it.value == alignment } ?: TileMapObjectAlignment.UNSPECIFIED
 	val tileOffset = tileset.child("tileoffset")
 
 	return TileSetData(
@@ -374,11 +384,11 @@ private fun Xml.parseWangSet(): WangSet {
 	fun Xml.parseWangColor(): WangSet.WangColor {
 		val wangcolor = this
 		return WangSet.WangColor(
-			name = wangcolor.str("name"),
-			color = Colors[wangcolor.str("color")],
-			tileId = wangcolor.int("tile"),
-			probability = wangcolor.double("probability")
-		)
+            name = wangcolor.str("name"),
+            color = Colors[wangcolor.str("color")],
+            tileId = wangcolor.int("tile"),
+            probability = wangcolor.double("probability")
+        )
 	}
 
 	fun Xml.parseWangTile(): WangSet.WangTile {
@@ -387,12 +397,12 @@ private fun Xml.parseWangSet(): WangSet {
 		val vflip = wangtile.str("vflip")
 		val dflip = wangtile.str("dflip")
 		return WangSet.WangTile(
-			tileId = wangtile.int("tileid"),
-			wangId = wangtile.int("wangid"),
-			hflip = hflip == "1" || hflip == "true",
-			vflip = vflip == "1" || vflip == "true",
-			dflip = dflip == "1" || dflip == "true"
-		)
+            tileId = wangtile.int("tileid"),
+            wangId = wangtile.int("wangid"),
+            hflip = hflip == "1" || hflip == "true",
+            vflip = vflip == "1" || vflip == "true",
+            dflip = dflip == "1" || dflip == "true"
+        )
 	}
 
 	val wangset = this

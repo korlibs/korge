@@ -4,13 +4,13 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.korev.Key
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.tiled.readTiledMap
 import com.soywiz.korge.tiled.tiledMapView
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.camera
 import com.soywiz.korge.view.fixedSizeContainer
 import com.soywiz.korge.view.position
+import com.soywiz.korim.tiles.tiled.readTiledMap
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.math.pow
 

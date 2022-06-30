@@ -30,6 +30,7 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.krypto.encoding.hex
 
 // Aseprite: https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
+// Aseprite 1.3: https://github.com/aseprite/aseprite/blob/4f2eae6b7754f432f960bc6cbacc4e6d26914abf/docs/ase-file-specs.md
 object ASE : ImageFormatWithContainer("ase") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
         val ss = s.clone()

@@ -1,13 +1,13 @@
-package com.soywiz.korge.tiled
+package com.soywiz.korim.tiles.tiled
 
 import com.soywiz.kmem.toInt
-import com.soywiz.korge.tiled.TiledMap.Encoding
-import com.soywiz.korge.tiled.TiledMap.Image
-import com.soywiz.korge.tiled.TiledMap.Layer
-import com.soywiz.korge.tiled.TiledMap.Object
-import com.soywiz.korge.tiled.TiledMap.ObjectAlignment
-import com.soywiz.korge.tiled.TiledMap.Property
+import com.soywiz.korim.tiles.tiled.TiledMap.Encoding
+import com.soywiz.korim.tiles.tiled.TiledMap.Image
+import com.soywiz.korim.tiles.tiled.TiledMap.Layer
+import com.soywiz.korim.tiles.tiled.TiledMap.Object
+import com.soywiz.korim.tiles.tiled.TiledMap.Property
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.format
 import com.soywiz.korio.serialization.xml.Xml
@@ -93,7 +93,7 @@ private fun TileSetData.toXml(): Xml {
 		"margin" to margin.takeIf { it > 0 },
 		"tilecount" to tileCount,
 		"columns" to columns,
-		"objectalignment" to objectAlignment.takeIf { it != ObjectAlignment.UNSPECIFIED }?.value
+		"objectalignment" to objectAlignment.takeIf { it != TileMapObjectAlignment.UNSPECIFIED }?.value
 	) {
 		imageToXml(image)
 		if (tileOffsetX != 0 || tileOffsetY != 0) {

@@ -6,7 +6,6 @@ import com.soywiz.korev.Key
 import com.soywiz.korge.component.docking.keepChildrenSortedByY
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tiled.TiledMapView
-import com.soywiz.korge.tiled.readTiledMap
 import com.soywiz.korge.tiled.tiledMapView
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.SContainer
@@ -27,6 +26,7 @@ import com.soywiz.korim.format.ASE
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korim.format.readImageDataContainer
 import com.soywiz.korim.format.toAtlas
+import com.soywiz.korim.tiles.tiled.readTiledMap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.shape.Shape2d
