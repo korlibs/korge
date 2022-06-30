@@ -26,6 +26,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpCoordsWithT
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapStaggerAxis
 import com.soywiz.korim.tiles.TileMapStaggerIndex
@@ -68,12 +69,34 @@ inline fun Container.tileMap(
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
 
 abstract class BaseTileMap(
-    var intMap: IntArray2,
+    intMap: IntArray2,
     var smoothing: Boolean = true,
     val staggerAxis: TileMapStaggerAxis? = null,
     val staggerIndex: TileMapStaggerIndex? = null,
     var tileSize: Size = Size()
 ) : View() {
+    var intMap: IntArray2 = intMap
+        set(value) {
+            lock {
+                field = value
+            }
+        }
+
+    // Analogous to Bitmap32.locking
+    fun lock() {
+    }
+    fun unlock() {
+        contentVersion++
+    }
+    inline fun <T> lock(block: () -> T): T {
+        lock()
+        try {
+            return block()
+        } finally {
+            unlock()
+        }
+    }
+
     abstract val tilesetTextures: Array<BitmapCoords?>
 
     var tileWidth: Double = 0.0
@@ -413,18 +436,27 @@ open class TileMap(
     staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
-    override var tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
-    var animationIndex = Array(tileset.textures.size) { 0 }
-    var animationElapsed = Array(tileset.textures.size) { 0.0 }
+    override var tilesetTextures: Array<BmpCoordsWithT<Bitmap>?> = emptyArray<BitmapCoords?>()
+    var animationIndex: IntArray = IntArray(0)
+    var animationElapsed: DoubleArray = DoubleArray(0)
 
     var tileset: TileSet = tileset
         set(value) {
             if (field === value) return
-            field = value
-            tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
-            animationIndex = Array(tileset.textures.size) { 0 }
-            animationElapsed = Array(tileset.textures.size) { 0.0 }
+            lock {
+                field = value
+                updatedTileSet()
+            }
         }
+
+    private fun updatedTileSet() {
+        tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+        animationIndex = IntArray(tileset.textures.size) { 0 }
+        animationElapsed = DoubleArray(tileset.textures.size) { 0.0 }
+        tileSize = Size(tileset.width.toDouble(), tileset.height.toDouble())
+        tileWidth = tileset.width.toDouble()
+        tileHeight = tileset.height.toDouble()
+    }
 
     constructor(
         map: Bitmap32,
@@ -453,25 +485,8 @@ open class TileMap(
         return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
     }
 
-    // Analogous to Bitmap32.locking
-    fun lock() {
-    }
-    fun unlock() {
-        contentVersion++
-    }
-    inline fun <T> lock(block: () -> T): T {
-        lock()
-        try {
-            return block()
-        } finally {
-            unlock()
-        }
-    }
-
     init {
-        tileWidth = tileset.width.toDouble()
-        tileHeight = tileset.height.toDouble()
-
+        updatedTileSet()
         addUpdater { dt ->
             tileset.infos.fastForEachWithIndex { tileIndex, info ->
                 if (info != null && info.frames.isNotEmpty()) {
