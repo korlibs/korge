@@ -6,7 +6,9 @@ import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.ui.uiVerticalStack
 import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.text
 import com.soywiz.korio.async.launchImmediately
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.ThreadLocal
@@ -14,11 +16,13 @@ import kotlin.native.concurrent.ThreadLocal
 class MainPolyphonic : Scene() {
     // https://github.com/pspdev/pspsdk/blob/master/src/samples/audio/polyphonic/main.c
     override suspend fun SContainer.sceneMain() {
-        println("Polyphonic sample by Shine")
-        println()
-        println("Soundtrack of the movie")
-        println("\"Le fabuleux destin d'Amelie Poulain\"")
-        println("by Yann Tiersen")
+        uiVerticalStack(adjustSize = false) {
+            text("Polyphonic sample by Shine")
+            text("")
+            text("Soundtrack of the movie")
+            text("\"Le fabuleux destin d'Amelie Poulain\"")
+            text("by Yann Tiersen")
+        }
 
         val maxAt = SAMPLE_COUNT / 16
         for (i in 0 until SAMPLE_COUNT) {

@@ -42,15 +42,20 @@ abstract class UIBaseContainer(width: Double, height: Double) : UIView(width, he
 inline fun Container.uiVerticalStack(
     width: Double = UI_DEFAULT_WIDTH,
     padding: Double = UI_DEFAULT_PADDING,
+    adjustSize: Boolean = true,
     block: @ViewDslMarker UIVerticalStack.() -> Unit = {}
-) = UIVerticalStack(width, padding).addTo(this).apply(block)
+) = UIVerticalStack(width, padding, adjustSize).addTo(this).apply(block)
 
-open class UIVerticalStack(width: Double = UI_DEFAULT_WIDTH, padding: Double = UI_DEFAULT_PADDING) : UIVerticalHorizontalStack(width, 0.0, padding) {
+open class UIVerticalStack(
+    width: Double = UI_DEFAULT_WIDTH,
+    padding: Double = UI_DEFAULT_PADDING,
+    var adjustSize: Boolean = true,
+) : UIVerticalHorizontalStack(width, 0.0, padding) {
     override fun relayout() {
         var y = 0.0
         forEachChild {
             it.y = y
-            it.scaledWidth = width
+            if (adjustSize) it.scaledWidth = width
             y += it.height + padding
         }
         height = y
