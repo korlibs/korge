@@ -14,6 +14,7 @@ import com.soywiz.korim.text.BoundBuilderTextRendererActions
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.TextRendererActions
+import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.invoke
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
@@ -142,6 +143,7 @@ fun <T> Font.drawText(
     x: Double = 0.0, y: Double = 0.0,
     fill: Boolean = true,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
+    valign: VerticalAlign = VerticalAlign.BASELINE,
     placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
 ) {
     //println("drawText!!: text=$text")
@@ -150,7 +152,12 @@ fun <T> Font.drawText(
             if (ctx != null) {
                 ctx.keepTransform {
                     //val m = getGlyphMetrics(codePoint)
-                    ctx.translate(this.x + x, this.y + y)
+                    //println("valign=$valign, glyphMetrics.height=${glyphMetrics.height}")
+                    //println(glyphMetrics)
+                    //println(fontMetrics)
+                    val dy = valign.getOffsetYRespectBaseline(glyphMetrics, fontMetrics)
+                    //println(dy)
+                    ctx.translate(this.x + x, this.y + y + dy)
                     //ctx.translate(-m.width * transformAnchor.sx, +m.height * transformAnchor.sy)
                     ctx.transform(this.transform)
                     //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)

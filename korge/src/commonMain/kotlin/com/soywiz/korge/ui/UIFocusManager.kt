@@ -14,6 +14,7 @@ import com.soywiz.korge.view.descendantsOfType
 
 @KorgeExperimental
 interface UIFocusable {
+    val UIFocusManager.focusView: View
     var tabIndex: Int
     var focused: Boolean
 }
@@ -27,16 +28,18 @@ fun UIFocusable.blur() { focused = false }
 class UIFocusManager(override val view: Stage) : KeyComponent {
     val stage = view
     val gameWindow get() = view.gameWindow
-    var uiFocusedView: UIView? = null
+    var uiFocusedView: UIFocusable? = null
 
     //private var toggleKeyboardTimeout: Closeable? = null
 
-    fun requestToggleSoftKeyboard(show: Boolean, view: View?) {
+    fun requestToggleSoftKeyboard(show: Boolean, view: UIFocusable?) {
         //toggleKeyboardTimeout?.close()
         //toggleKeyboardTimeout = stage.timeout(1.seconds) {
             if (show) {
                 if (view != null) {
-                    gameWindow.setInputRectangle(view.getWindowBounds(stage))
+                    view.apply {
+                        gameWindow.setInputRectangle(this@UIFocusManager.focusView.getWindowBounds(stage))
+                    }
                 }
                 gameWindow.showSoftKeyboard(config = view as? ISoftKeyboardConfig?)
             } else {
@@ -51,7 +54,7 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
             val dir = if (shift) -1 else +1
             val focusables = stage.descendantsOfType<UIFocusable>()
             val sortedFocusables = focusables.sortedBy { it.tabIndex }
-            val index = sortedFocusables.indexOf(uiFocusedView as? UIFocusable?).takeIf { it >= 0 }
+            val index = sortedFocusables.indexOf(uiFocusedView).takeIf { it >= 0 }
             sortedFocusables
                 .getCyclicOrNull(
                     when {
@@ -82,6 +85,6 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
 @KorgeExperimental
 val Stage.uiFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
 @KorgeExperimental
-var Stage.uiFocusedView: UIView?
+var Stage.uiFocusedView: UIFocusable?
     get() = uiFocusManager.uiFocusedView
     set(value) { uiFocusManager.uiFocusedView = value }

@@ -32,6 +32,7 @@ import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.invoke
+import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
@@ -73,7 +74,9 @@ open class Text(
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = DEFAULT_AUTO_SCALING
-) : Container(), ViewLeaf, IText {
+) : Container(), IText
+    //, ViewLeaf
+{
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
         val DEFAULT_AUTO_SCALING = true
@@ -114,7 +117,7 @@ open class Text(
         get() = alignment.vertical
         set(value) { alignment = alignment.withVertical(value) }
 
-    private lateinit var textToBitmapResult: TextToBitmapResult
+    //private lateinit var textToBitmapResult: TextToBitmapResult
     private val container = container()
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
@@ -176,7 +179,15 @@ open class Text(
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        out.copyFrom(_textBounds)
+        if (font !is BitmapFont) {
+            if (_staticGraphics != null) {
+                _staticGraphics!!.getLocalBounds(out)
+            } else {
+                super.getLocalBoundsInternal(out)
+            }
+        } else {
+            out.copyFrom(_textBounds)
+        }
     }
 
     private val tempMatrix = Matrix()
@@ -186,9 +197,6 @@ open class Text(
 
     override fun renderInternal(ctx: RenderContext) {
         _renderInternal(ctx)
-        while (imagesToRemove.isNotEmpty()) {
-            ctx.agBitmapTextureManager.removeBitmap(imagesToRemove.removeLast(), "Text")
-        }
         //val tva: TexturedVertexArray? = null
         val tva = tva
         if (tva != null) {
@@ -254,7 +262,7 @@ open class Text(
                     cachedVersionRenderer = rversion
                     cachedVersion = version
 
-                    _staticImage = null
+                    _staticGraphics = null
                     bitmapFontActions.x = 0.0
                     bitmapFontActions.y = 0.0
 
@@ -315,6 +323,7 @@ open class Text(
                 if (cachedVersion != version) {
                     cachedVersion = version
                     val realTextSize = textSize * autoscaling.renderedAtScaleXY
+                    /*
                     //println("realTextSize=$realTextSize")
                     textToBitmapResult = when {
                         text.isNotEmpty() -> {
@@ -346,8 +355,31 @@ open class Text(
                     val mscale = 1.0 / autoscaling.renderedAtScaleXY
                     _staticImage!!.scale(mscale, mscale)
                     setContainerPosition(x * mscale, y * mscale, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    */
+                    if (_staticGraphics == null) {
+                        container.removeChildren()
+                        _staticGraphics = container.graphics {  }
+                    }
+
+                    _staticGraphics!!.updateShape {
+                        this.drawText(
+                            text = text,
+                            x = 0.0, y = 0.0,
+                            size = realTextSize,
+                            font = font,
+                            paint = color,
+                            renderer = this@Text.renderer,
+                            valign = VerticalAlign.TOP
+                        )
+                        //fillText(
+                        //    //paint = color, fill = true, renderer = renderer,
+                        //    //background = Colors.RED,
+                        //    //nativeRendering = useNativeRendering, drawBorder = true,
+                        //)
+                    }
                 }
-                _staticImage?.smoothing = smoothing
+                //_staticImage?.smoothing = smoothing
+                _staticGraphics?.smoothing = smoothing
             }
         }
     }
@@ -369,14 +401,14 @@ open class Text(
         container.position(x, y)
     }
 
-    private val imagesToRemove = arrayListOf<Bitmap>()
+    //private val imagesToRemove = arrayListOf<Bitmap>()
+    //internal var _staticImage: Image? = null
+    //val staticImage: Image? get() {
+    //    _renderInternal(null)
+    //    return _staticImage
+    //}
 
-    internal var _staticImage: Image? = null
-
-    val staticImage: Image? get() {
-        _renderInternal(null)
-        return _staticImage
-    }
+    internal var _staticGraphics: Graphics? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection("Text") {
@@ -395,6 +427,11 @@ open class Text(
 
 fun <T : Text> T.autoSize(value: Boolean): T {
     this.autoSize = value
+    return this
+}
+
+fun <T : Text> T.textSpacing(spacing: Double): T {
+    renderer = renderer.withSpacing(spacing)
     return this
 }
 

@@ -1,81 +1,81 @@
-package com.soywiz.korge.ui
+package com.soywiz.korge.text
 
-import com.soywiz.kds.Deque
 import com.soywiz.kds.HistoryStack
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.clamp
-import com.soywiz.korev.Key
 import com.soywiz.korev.ISoftKeyboardConfig
+import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.onAttachDetach
+import com.soywiz.korge.component.onNewAttachDetach
 import com.soywiz.korge.input.cursor
 import com.soywiz.korge.input.doubleClick
-import com.soywiz.korge.input.keys
-import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.newKeys
+import com.soywiz.korge.input.newMouse
 import com.soywiz.korge.time.timers
+import com.soywiz.korge.ui.UIFocusManager
+import com.soywiz.korge.ui.UIFocusable
+import com.soywiz.korge.ui.UITextInput
+import com.soywiz.korge.ui.blur
+import com.soywiz.korge.ui.uiFocusManager
+import com.soywiz.korge.ui.uiFocusedView
+import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.View
-import com.soywiz.korge.view.ViewDslMarker
-import com.soywiz.korge.view.ViewRenderer
-import com.soywiz.korge.view.addTo
-import com.soywiz.korge.view.bounds
-import com.soywiz.korge.view.clipContainer
-import com.soywiz.korge.view.renderableView
 import com.soywiz.korge.view.solidRect
-import com.soywiz.korge.view.text
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korgw.TextClipboardData
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.Font
 import com.soywiz.korio.async.Signal
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.cancel
 import com.soywiz.korio.lang.withInsertion
 import com.soywiz.korio.lang.withoutIndex
 import com.soywiz.korio.lang.withoutRange
-import com.soywiz.korio.util.OS
 import com.soywiz.korio.util.endExclusive
 import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.Margin
 import com.soywiz.korma.geom.Point
-import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.without
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sign
 
 @KorgeExperimental
-inline fun Container.uiTextInput(
-    initialText: String = "",
-    width: Double = 128.0,
-    height: Double = 24.0,
-    skin: ViewRenderer = BoxUISkin(),
-    block: @ViewDslMarker UITextInput.() -> Unit = {}
-): UITextInput = UITextInput(initialText, width, height, skin)
-    .addTo(this).also { block(it) }
-
-/**
- * Simple Single Line Text Input
- */
-@KorgeExperimental
-class UITextInput(initialText: String = "", width: Double = 128.0, height: Double = 24.0, skin: ViewRenderer = BoxUISkin()) :
-    UIView(width, height),
-    UIFocusable,
-    ISoftKeyboardConfig by SoftKeyboardConfig() {
-
-    override val UIFocusManager.focusView: View get() = this@UITextInput
+class TextEditController(
+    val textView: Text,
+    val caretContainer: Container = textView,
+) : Closeable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
+    val stage: Stage? get() = textView.stage
+    var initialText: String = textView.text
+    private val closeables = CancellableGroup()
+    override val UIFocusManager.focusView: View get() = this@TextEditController.textView
+    val onEscPressed = Signal<TextEditController>()
+    val onReturnPressed = Signal<TextEditController>()
+    val onTextUpdated = Signal<TextEditController>()
+    val onFocused = Signal<TextEditController>()
+    val onFocusLost = Signal<TextEditController>()
+    val onOver = Signal<TextEditController>()
+    val onOut = Signal<TextEditController>()
+    val onSizeChanged = Signal<TextEditController>()
 
     //private val bg = ninePatch(NinePatchBmpSlice.createSimple(Bitmap32(3, 3) { x, y -> if (x == 1 && y == 1) Colors.WHITE else Colors.BLACK }.slice(), 1, 1, 2, 2), width, height).also { it.smoothing = false }
+    /*
     private val bg = renderableView(width, height, skin)
     var skin by bg::viewRenderer
     private val container = clipContainer(0.0, 0.0)
     //private val container = fixedSizeContainer(width - 4.0, height - 4.0).position(2.0, 3.0)
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
-    private val caret = container.solidRect(2.0, 16.0, Colors.WHITE).also {
+     */
+
+    private val caret = caretContainer.solidRect(2.0, 16.0, Colors.WHITE).also {
         it.blendMode = BlendMode.INVERT
         it.visible = false
     }
@@ -83,29 +83,23 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     var padding: Margin = Margin(3.0, 2.0, 2.0, 2.0)
         set(value) {
             field = value
-            onSizeChanged()
+            onSizeChanged(this)
         }
 
     init {
-        onAttachDetach(onAttach = {
+        closeables += textView.onNewAttachDetach(onAttach = {
             this.stage.uiFocusManager
         })
-        onSizeChanged()
+        onSizeChanged(this)
     }
 
-    override fun onSizeChanged() {
-        bg.setSize(width, height)
-        container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
-    }
-
-    val onEscPressed = Signal<UITextInput>()
-    val onReturnPressed = Signal<UITextInput>()
-    val onTextUpdated = Signal<UITextInput>()
-    val onFocused = Signal<UITextInput>()
-    val onFocusLost = Signal<UITextInput>()
+    //override fun onSizeChanged() {
+    //    bg.setSize(width, height)
+    //    container.bounds(Rectangle(0.0, 0.0, width, height).without(padding))
+    //}
 
     data class TextSnapshot(var text: String, var selectionRange: IntRange) {
-        fun apply(out: UITextInput) {
+        fun apply(out: TextEditController) {
             out.setTextNoSnapshot(text)
             out.select(selectionRange)
         }
@@ -218,7 +212,7 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     val selectionText: String get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
     val selectionRange: IntRange get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
 
-    private val gameWindow get() = stage!!.views.gameWindow
+    private val gameWindow get() = textView.stage!!.views.gameWindow
 
     fun getPosAtIndex(index: Int): Point {
         val glyphPositions = textView.getGlyphMetrics().glyphs
@@ -309,11 +303,11 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
         set(value) {
             if (value == focused) return
 
-            bg.isFocused = value
+            //bg.isFocused = value
 
             if (value) {
                 if (stage?.uiFocusedView != this) {
-                    (stage?.uiFocusedView as? UIFocusable?)?.blur()
+                    stage?.uiFocusedView?.blur()
                     stage?.uiFocusedView = this
                 }
                 caret.visible = true
@@ -340,14 +334,9 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     init {
         //println(metrics)
 
-        cursor = GameWindow.Cursor.TEXT
+        this.textView.cursor = GameWindow.Cursor.TEXT
 
-        mouse {
-            over { bg.isOver = true }
-            out { bg.isOver = false }
-        }
-
-        timers.interval(0.5.seconds) {
+        closeables += this.textView.timers.interval(0.5.seconds) {
             if (!focused) {
                 caret.visible = false
             } else {
@@ -359,8 +348,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             }
         }
 
-        keys {
-            this.typed {
+        closeables += this.textView.newKeys {
+            typed {
                 if (!focused) return@typed
                 if (it.meta) return@typed
                 val code = it.character.code
@@ -368,11 +357,11 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
                     8, 127 -> Unit // backspace, backspace (handled by down event)
                     9, 10, 13 -> { // tab & return: Do nothing in single line text inputs
                         if (code == 10 || code == 13) {
-                            onReturnPressed(this@UITextInput)
+                            onReturnPressed(this@TextEditController)
                         }
                     }
                     27 -> {
-                        onEscPressed(this@UITextInput)
+                        onEscPressed(this@TextEditController)
                     }
                     else -> {
                         insertText(it.characters())
@@ -438,14 +427,21 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
             }
         }
 
-        container.mouse {
+        closeables += this.textView.newMouse {
+        //container.mouse {
             var dragging = false
-            bg.alpha = 0.7
+            //bg.isOver = false
+            //bg.alpha = 0.7
+            onOut(this@TextEditController)
             over {
-                bg.alpha = 1.0
+                onOver(this@TextEditController)
+                //bg.isOver = true
+                //bg.alpha = 1.0
             }
             out {
-                bg.alpha = 0.7
+                onOut(this@TextEditController)
+                //bg.isOver = false
+                //bg.alpha = 0.7
             }
             down {
                 //println("UiTextInput.down")
@@ -490,4 +486,12 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     fun KeyEvent.isWordSkip(): Boolean = if (Platform.os.isApple) this.alt else this.ctrl
     fun KeyEvent.isStartFinalSkip(): Boolean = this.meta && Platform.os.isApple
     fun KeyEvent.isNativeCtrl(): Boolean = if (Platform.os.isApple) this.meta else this.ctrl
+
+    override fun close() {
+        this.textView.cursor = null
+        closeables.cancel()
+    }
 }
+
+fun Text.editText(caretContainer: Container = this): TextEditController =
+    TextEditController(this, caretContainer)

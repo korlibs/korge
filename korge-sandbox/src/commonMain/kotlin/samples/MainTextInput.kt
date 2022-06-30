@@ -3,8 +3,14 @@ package samples
 import com.soywiz.korev.SoftKeyboardReturnKeyType
 import com.soywiz.korev.SoftKeyboardType
 import com.soywiz.korge.scene.Scene
+import com.soywiz.korge.text.editText
 import com.soywiz.korge.ui.uiTextInput
 import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.aroundPath
+import com.soywiz.korge.view.filter.DropshadowFilter
+import com.soywiz.korge.view.filters
+import com.soywiz.korge.view.text
+import com.soywiz.korge.view.textSpacing
 import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
@@ -53,6 +59,17 @@ class MainTextInput : Scene() {
             this.softKeyboardType = SoftKeyboardType.EMAIL_ADDRESS
         }.xy(200, 300)
 
+        val textPath = buildVectorPath { circle(0, 0, 100) }
+
+        val text = text(
+            "HELLO WORLD",
+            textSize = 64.0,
+            color = Colors.RED,
+        ).xy(600, 200).textSpacing(9.0).aroundPath(textPath).filters(DropshadowFilter())
+
+        text.editText()
+
+        /*
         gpuGraphics {
         //graphics { it.useNativeRendering = false
             //gpuGraphics({
@@ -70,6 +87,8 @@ class MainTextInput : Scene() {
                 )
             }
         }
+
+         */
 
         //text("HELLO WORLD", textSize = 64.0, renderer = com.soywiz.korim.text.DefaultStringTextRenderer.aroundPath(buildVectorPath { circle(0, 0, 100) }), font = DefaultTtfFont).xy(700, 200)
         /*

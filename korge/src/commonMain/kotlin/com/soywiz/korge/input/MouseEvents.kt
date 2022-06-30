@@ -34,7 +34,7 @@ import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KProperty1
 
 @OptIn(KorgeInternal::class)
-class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin() {
+class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin(), Closeable {
     init {
         view.mouseEnabled = true
     }
@@ -540,6 +540,10 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         lastPosGlobal.copyFrom(currentPosGlobal)
         clickedCount = 0
     }
+
+    override fun close() {
+        this.detach()
+    }
 }
 
 //var Input.Frame.mouseHitResult by Extra.Property<View?>("mouseHitResult") {
@@ -555,6 +559,13 @@ val View.mouse by Extra.PropertyThis<View, MouseEvents> {
         MouseEvents(
             this
         )
+    }
+}
+
+inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {
+    return MouseEvents(this).also {
+        this.addComponent(it)
+        callback(it)
     }
 }
 
