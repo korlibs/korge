@@ -9,6 +9,7 @@ import com.soywiz.korim.color.mix
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.portableSimpleName
 import samples.*
+import samples.fleks.*
 
 suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
@@ -20,7 +21,7 @@ suspend fun main() = Korge(
 ) {
     demoSelector(
         //Demo(::MainTextInput),
-        Demo(::MainSound),
+        Demo(::MainFleksSample),
         //Demo(::MainEmojiColrv1),
         //Demo(::MainSWF),
         listOf(
@@ -44,7 +45,12 @@ suspend fun main() = Korge(
             Demo(::MainExifTest),
             Demo(::MainColorTransformFilter),
             Demo(::MainMipmaps),
+            Demo(::MainBmpFont),
+            Demo(::MainPolyphonic),
+            Demo(::MainSprites10k),
             Demo(::MainCustomSolidRectShader),
+            Demo(::MainStage3d),
+            Demo(::MainFleksSample),
             Demo(::MainBlur),
             Demo(::MainFiltersRenderToBitmap),
             Demo(::MainColorPicker),

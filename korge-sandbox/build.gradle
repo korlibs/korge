@@ -8,6 +8,7 @@ dependencies {
     add("commonMainApi", project(":korge-dragonbones"))
     add("commonMainApi", project(":korge-spine"))
     add("commonMainApi", project(":korge-swf"))
+    add("commonMainApi", project(":korge-fleks"))
     //add("commonMainApi", project(":luak"))
 }
 
