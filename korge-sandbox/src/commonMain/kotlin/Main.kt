@@ -21,7 +21,7 @@ suspend fun main() = Korge(
 ) {
     demoSelector(
         //Demo(::MainTextInput),
-        Demo(::MainFleksSample),
+        Demo(::MainTiledBackground),
         //Demo(::MainEmojiColrv1),
         //Demo(::MainSWF),
         listOf(
@@ -89,7 +89,9 @@ suspend fun main() = Korge(
             Demo(::MainGpuVectorRendering),
             Demo(::MainGpuVectorRendering2),
             Demo(::MainGpuVectorRendering3),
-            Demo(::MainSound)
+            Demo(::MainSound),
+            Demo(::MainTilemapWithScroll),
+            Demo(::MainTiledBackground),
         )
     )
 }
