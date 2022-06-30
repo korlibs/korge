@@ -34,7 +34,7 @@ open class ImageFrame(
             name: String? = null,
             index: Int = 0,
         ): ImageFrame = ImageFrame(index, time, fastArrayListOf(ImageFrameLayer(
-            ImageLayer(0, null),
+            ImageLayer(0, null, ImageLayer.Type.NORMAL),
             bitmap.slice(name = name),
             targetX,
             targetY,

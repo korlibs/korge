@@ -94,31 +94,16 @@ object ASE : ImageFormatWithContainer("ase") {
         override val bmp: Bitmap = Bitmap32(1, 1)
     }
 
-    enum class AseLayerType {
-        NORMAL, // ordinal=0
-        GROUP,  // ordinal=1
-        TILEMAP,  // ordinal=2
-        ;
-
-        val isNormal: Boolean get() = this == NORMAL
-        val isGroup: Boolean get() = this == GROUP
-        val isTilemap: Boolean get() = this == TILEMAP
-
-        companion object {
-            val BY_ORDINAL = arrayOf(NORMAL, GROUP, TILEMAP)
-        }
-    }
-
     open class AseLayer(
         index: Int,
         name: String,
         val flags: Int,
-        val type: AseLayerType,
+        type: ImageLayer.Type,
         val childLevel: Int,
         val blendModeInt: Int,
         val opacity: Int,
         val tilesetIndex: Int,
-    ) : ImageLayer(index, name), AseEntity by AseEntity() {
+    ) : ImageLayer(index, name, type), AseEntity by AseEntity() {
         val isVisible = flags.hasBitSet(0)
         val isEditable = flags.hasBitSet(1)
         val lockMovement = flags.hasBitSet(2)
@@ -329,7 +314,7 @@ object ASE : ImageFormatWithContainer("ase") {
                     }
                     0x2004 -> { // LAYER
                         val flags = cs.readU16LE()
-                        val type = AseLayerType.BY_ORDINAL[cs.readU16LE()]
+                        val type = ImageLayer.Type.BY_ORDINAL[cs.readU16LE()]
                         val childLevel = cs.readU16LE()
                         val defaultLayerWidth = cs.readU16LE()
                         val defaultLayerHeight = cs.readU16LE()

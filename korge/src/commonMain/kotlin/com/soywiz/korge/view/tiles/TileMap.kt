@@ -68,7 +68,7 @@ inline fun Container.tileMap(
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
 
 abstract class BaseTileMap(
-    val intMap: IntArray2,
+    var intMap: IntArray2,
     var smoothing: Boolean = true,
     val staggerAxis: TileMapStaggerAxis? = null,
     val staggerIndex: TileMapStaggerIndex? = null,
@@ -405,17 +405,26 @@ abstract class BaseTileMap(
 
 @OptIn(KorgeInternal::class)
 open class TileMap(
-    intMap: IntArray2,
-    val tileset: TileSet,
+    intMap: IntArray2 = IntArray2(1, 1, 0),
+    tileset: TileSet = TileSet.EMPTY,
     smoothing: Boolean = true,
     val orientation: TileMapOrientation? = null,
     staggerAxis: TileMapStaggerAxis? = null,
     staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
-    override val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
-    val animationIndex = Array(tileset.textures.size) { 0 }
-    val animationElapsed = Array(tileset.textures.size) { 0.0 }
+    override var tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+    var animationIndex = Array(tileset.textures.size) { 0 }
+    var animationElapsed = Array(tileset.textures.size) { 0.0 }
+
+    var tileset: TileSet = tileset
+        set(value) {
+            if (field === value) return
+            field = value
+            tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+            animationIndex = Array(tileset.textures.size) { 0 }
+            animationElapsed = Array(tileset.textures.size) { 0.0 }
+        }
 
     constructor(
         map: Bitmap32,

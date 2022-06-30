@@ -8,8 +8,7 @@ import com.soywiz.korim.bitmap.BitmapSlice
 data class TileMapData(
     val data: IntArray2,
     val tileSet: TileSet? = null,
-) {
-}
+)
 
 fun TileMapData.renderTo(out: Bitmap32, x: Int, y: Int) {
     val tileSet = this.tileSet ?: return

@@ -34,8 +34,8 @@ data class TileSetTileInfo(
 class TileSet(
     val texturesMap: IntMap<TileSetTileInfo>,
 	//val textures: List<BmpSlice?>,
-    val width: Int = texturesMap.firstValue().slice.width,
-    val height: Int = texturesMap.firstValue().slice.height,
+    val width: Int = if (texturesMap.size == 0) 0 else texturesMap.firstValue().slice.width,
+    val height: Int = if (texturesMap.size == 0) 0 else texturesMap.firstValue().slice.height,
     val collisionsMap: IntMap<TileShapeInfo> = IntMap(),
 ) {
     override fun toString(): String = "TileSet(size=${width}x$height, tiles=${texturesMap.keys.toList()})"
@@ -59,6 +59,8 @@ class TileSet(
     fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
 
 	companion object {
+        val EMPTY = TileSet(IntMap())
+
         @Deprecated("")
         operator fun invoke(
             texturesMap: Map<Int, BmpSlice>,
