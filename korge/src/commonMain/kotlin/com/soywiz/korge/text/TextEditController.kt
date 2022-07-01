@@ -24,6 +24,9 @@ import com.soywiz.korge.ui.uiFocusedView
 import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.NinePatch
+import com.soywiz.korge.view.NinePatchEx
+import com.soywiz.korge.view.RenderableView
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.View
@@ -52,6 +55,8 @@ import kotlin.math.sign
 class TextEditController(
     val textView: Text,
     val caretContainer: Container = textView,
+    val eventHandler: View = textView,
+    val bg: RenderableView? = null,
 ) : Closeable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
     val stage: Stage? get() = textView.stage
     var initialText: String = textView.text
@@ -303,7 +308,7 @@ class TextEditController(
         set(value) {
             if (value == focused) return
 
-            //bg.isFocused = value
+            bg?.isFocused = value
 
             if (value) {
                 if (stage?.uiFocusedView != this) {
@@ -317,7 +322,7 @@ class TextEditController(
                 if (stage?.uiFocusedView == this) {
                     stage?.uiFocusedView = null
                     caret.visible = false
-                    if (stage?.uiFocusedView !is UITextInput) {
+                    if (stage?.uiFocusedView !is ISoftKeyboardConfig) {
                         stage?.uiFocusManager?.requestToggleSoftKeyboard(false, null)
                     }
                 }
@@ -334,9 +339,9 @@ class TextEditController(
     init {
         //println(metrics)
 
-        this.textView.cursor = GameWindow.Cursor.TEXT
+        this.eventHandler.cursor = GameWindow.Cursor.TEXT
 
-        closeables += this.textView.timers.interval(0.5.seconds) {
+        closeables += this.eventHandler.timers.interval(0.5.seconds) {
             if (!focused) {
                 caret.visible = false
             } else {
@@ -348,7 +353,7 @@ class TextEditController(
             }
         }
 
-        closeables += this.textView.newKeys {
+        closeables += this.eventHandler.newKeys {
             typed {
                 if (!focused) return@typed
                 if (it.meta) return@typed
@@ -427,21 +432,18 @@ class TextEditController(
             }
         }
 
-        closeables += this.textView.newMouse {
+        closeables += this.eventHandler.newMouse {
         //container.mouse {
             var dragging = false
-            //bg.isOver = false
-            //bg.alpha = 0.7
+            bg?.isOver = false
             onOut(this@TextEditController)
             over {
                 onOver(this@TextEditController)
-                //bg.isOver = true
-                //bg.alpha = 1.0
+                bg?.isOver = true
             }
             out {
                 onOut(this@TextEditController)
-                //bg.isOver = false
-                //bg.alpha = 0.7
+                bg?.isOver = false
             }
             down {
                 //println("UiTextInput.down")
