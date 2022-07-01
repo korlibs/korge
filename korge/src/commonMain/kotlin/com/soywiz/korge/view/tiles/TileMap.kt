@@ -249,10 +249,13 @@ abstract class BaseTileMap(
 
         //println("$xmin,$xmax")
 
-        val ymin2 = if (repeatY == Repeat.NONE) ymin.clamp(0, intMap.height) else ymin
-        val ymax2 = if (repeatY == Repeat.NONE) ymax.clamp(0, intMap.height) else ymax
-        val xmin2 = if (repeatX == Repeat.NONE) xmin.clamp(0, intMap.height) else xmin
-        val xmax2 = if (repeatX == Repeat.NONE) xmax.clamp(0, intMap.height) else xmax
+        val doRepeatX = repeatX != Repeat.NONE
+        val doRepeatY = repeatY != Repeat.NONE
+        val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
+        val ymin2 = if (doRepeatAny) ymin else ymin.clamp(0, intMap.height)
+        val ymax2 = if (doRepeatAny) ymax else ymax.clamp(0, intMap.height)
+        val xmin2 = if (doRepeatAny) xmin else xmin.clamp(0, intMap.height)
+        val xmax2 = if (doRepeatAny) xmax else xmax.clamp(0, intMap.height)
 
         val yheight = ymax2 - ymin2
         val xwidth = xmax2 - xmin2
