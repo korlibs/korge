@@ -4,6 +4,7 @@ import com.soywiz.kds.IntMap
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kds.toIntMap
+import com.soywiz.kds.toMap
 import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.nextPowerOfTwo
 import com.soywiz.kmem.toIntCeil
@@ -33,10 +34,12 @@ data class TileSetTileInfo(
 class TileSet(
     val texturesMap: IntMap<TileSetTileInfo>,
 	//val textures: List<BmpSlice?>,
-    val width: Int = texturesMap.firstValue().slice.width,
-    val height: Int = texturesMap.firstValue().slice.height,
+    val width: Int = if (texturesMap.size == 0) 0 else texturesMap.firstValue().slice.width,
+    val height: Int = if (texturesMap.size == 0) 0 else texturesMap.firstValue().slice.height,
     val collisionsMap: IntMap<TileShapeInfo> = IntMap(),
 ) {
+    override fun toString(): String = "TileSet(size=${width}x$height, tiles=${texturesMap.keys.toList()})"
+
     val base: Bitmap by lazy { if (texturesMap.size == 0) Bitmaps.transparent.bmpBase else texturesMap.firstValue().slice.bmpBase }
     val hasMultipleBaseBitmaps by lazy { texturesMap.values.any { it !== null && it.slice.bmpBase !== base } }
     val infos by lazy { Array<TileSetTileInfo?>(texturesMap.keys.maxOrNull()?.plus(1) ?: 0) { texturesMap[it] } }
@@ -56,6 +59,8 @@ class TileSet(
     fun clone(): TileSet = TileSet(this.texturesMap.clone(), this.width, this.height)
 
 	companion object {
+        val EMPTY = TileSet(IntMap())
+
         @Deprecated("")
         operator fun invoke(
             texturesMap: Map<Int, BmpSlice>,

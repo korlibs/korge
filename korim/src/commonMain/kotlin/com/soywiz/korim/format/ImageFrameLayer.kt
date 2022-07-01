@@ -4,6 +4,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.extract
+import com.soywiz.korim.tiles.TileMapData
 
 /**
  * This class is used to store the layer image from e.g. an aseprite image file.
@@ -25,6 +26,7 @@ open class ImageFrameLayer constructor(
     val main: Boolean = true,
     val includeInAtlas: Boolean = true,
     val linkedFrameLayer: ImageFrameLayer? = null,
+    val tilemap: TileMapData? = null,
 ) {
     private var _bitmap: Bitmap? = null
     private var _bitmap32: Bitmap32? = null

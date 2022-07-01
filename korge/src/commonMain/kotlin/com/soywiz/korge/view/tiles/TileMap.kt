@@ -26,6 +26,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BitmapCoords
 import com.soywiz.korim.bitmap.Bitmaps
+import com.soywiz.korim.bitmap.BmpCoordsWithT
 import com.soywiz.korim.tiles.TileMapOrientation
 import com.soywiz.korim.tiles.TileMapStaggerAxis
 import com.soywiz.korim.tiles.TileMapStaggerIndex
@@ -68,12 +69,39 @@ inline fun Container.tileMap(
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
 
 abstract class BaseTileMap(
-    val intMap: IntArray2,
+    intMap: IntArray2,
     var smoothing: Boolean = true,
     val staggerAxis: TileMapStaggerAxis? = null,
     val staggerIndex: TileMapStaggerIndex? = null,
     var tileSize: Size = Size()
 ) : View() {
+    var maskData: Int = 0xfffffff
+    var maskFlipX: Int = 1 shl 31
+    var maskFlipY: Int = 1 shl 30
+    var maskRotate: Int = 1 shl 29
+
+    var intMap: IntArray2 = intMap
+        set(value) {
+            lock {
+                field = value
+            }
+        }
+
+    // Analogous to Bitmap32.locking
+    fun lock() {
+    }
+    fun unlock() {
+        contentVersion++
+    }
+    inline fun <T> lock(block: () -> T): T {
+        lock()
+        try {
+            return block()
+        } finally {
+            unlock()
+        }
+    }
+
     abstract val tilesetTextures: Array<BitmapCoords?>
 
     var tileWidth: Double = 0.0
@@ -226,10 +254,13 @@ abstract class BaseTileMap(
 
         //println("$xmin,$xmax")
 
-        val ymin2 = if (repeatY == Repeat.NONE) ymin.clamp(0, intMap.height) else ymin
-        val ymax2 = if (repeatY == Repeat.NONE) ymax.clamp(0, intMap.height) else ymax
-        val xmin2 = if (repeatX == Repeat.NONE) xmin.clamp(0, intMap.height) else xmin
-        val xmax2 = if (repeatX == Repeat.NONE) xmax.clamp(0, intMap.height) else xmax
+        val doRepeatX = repeatX != Repeat.NONE
+        val doRepeatY = repeatY != Repeat.NONE
+        val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
+        val ymin2 = if (doRepeatAny) ymin else ymin.clamp(0, intMap.height)
+        val ymax2 = if (doRepeatAny) ymax else ymax.clamp(0, intMap.height)
+        val xmin2 = if (doRepeatAny) xmin else xmin.clamp(0, intMap.height)
+        val xmax2 = if (doRepeatAny) xmax else xmax.clamp(0, intMap.height)
 
         val yheight = ymax2 - ymin2
         val xwidth = xmax2 - xmin2
@@ -281,10 +312,10 @@ abstract class BaseTileMap(
                     val odd = if (staggerAxis == TileMapStaggerAxis.Y) ry.isOdd else rx.isOdd
                     val staggered = if (odd) staggerIndex == TileMapStaggerIndex.ODD else staggerIndex == TileMapStaggerIndex.EVEN
                     val cell = intMap[rx, ry]
-                    val cellData = cell.extract(0, 28)
-                    val flipX = cell.extract(31)
-                    val flipY = cell.extract(30)
-                    val rotate = cell.extract(29)
+                    val cellData = cell and maskData
+                    val flipX = (cell and maskFlipX) != 0
+                    val flipY = (cell and maskFlipY) != 0
+                    val rotate = (cell and maskRotate) != 0
 
                     val staggerOffsetX = when (staggerAxis.takeIf { staggered }) {
                         TileMapStaggerAxis.Y -> staggerX
@@ -405,17 +436,35 @@ abstract class BaseTileMap(
 
 @OptIn(KorgeInternal::class)
 open class TileMap(
-    intMap: IntArray2,
-    val tileset: TileSet,
+    intMap: IntArray2 = IntArray2(1, 1, 0),
+    tileset: TileSet = TileSet.EMPTY,
     smoothing: Boolean = true,
     val orientation: TileMapOrientation? = null,
     staggerAxis: TileMapStaggerAxis? = null,
     staggerIndex: TileMapStaggerIndex? = null,
     tileSize: Size = Size(tileset.width.toDouble(), tileset.height.toDouble()),
 ) : BaseTileMap(intMap, smoothing, staggerAxis, staggerIndex, tileSize) {
-    override val tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
-    val animationIndex = Array(tileset.textures.size) { 0 }
-    val animationElapsed = Array(tileset.textures.size) { 0.0 }
+    override var tilesetTextures: Array<BmpCoordsWithT<Bitmap>?> = emptyArray<BitmapCoords?>()
+    var animationIndex: IntArray = IntArray(0)
+    var animationElapsed: DoubleArray = DoubleArray(0)
+
+    var tileset: TileSet = tileset
+        set(value) {
+            if (field === value) return
+            lock {
+                field = value
+                updatedTileSet()
+            }
+        }
+
+    private fun updatedTileSet() {
+        tilesetTextures = Array(tileset.textures.size) { tileset.textures[it] }
+        animationIndex = IntArray(tileset.textures.size) { 0 }
+        animationElapsed = DoubleArray(tileset.textures.size) { 0.0 }
+        tileSize = Size(tileset.width.toDouble(), tileset.height.toDouble())
+        tileWidth = tileset.width.toDouble()
+        tileHeight = tileset.height.toDouble()
+    }
 
     constructor(
         map: Bitmap32,
@@ -444,25 +493,8 @@ open class TileMap(
         return collision.hitTestAny(x.toDouble(), y.toDouble(), direction)
     }
 
-    // Analogous to Bitmap32.locking
-    fun lock() {
-    }
-    fun unlock() {
-        contentVersion++
-    }
-    inline fun <T> lock(block: () -> T): T {
-        lock()
-        try {
-            return block()
-        } finally {
-            unlock()
-        }
-    }
-
     init {
-        tileWidth = tileset.width.toDouble()
-        tileHeight = tileset.height.toDouble()
-
+        updatedTileSet()
         addUpdater { dt ->
             tileset.infos.fastForEachWithIndex { tileIndex, info ->
                 if (info != null && info.frames.isNotEmpty()) {

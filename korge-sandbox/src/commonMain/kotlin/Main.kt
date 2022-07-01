@@ -20,10 +20,7 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        //Demo(::MainTextInput),
-        Demo(::MainTiledBackground),
-        //Demo(::MainEmojiColrv1),
-        //Demo(::MainSWF),
+        Demo(::MainAseprite),
         listOf(
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
@@ -92,6 +89,8 @@ suspend fun main() = Korge(
             Demo(::MainSound),
             Demo(::MainTilemapWithScroll),
             Demo(::MainTiledBackground),
+            Demo(::MainAseprite),
+            Demo(::MainAseParallaxSample),
         )
     )
 }

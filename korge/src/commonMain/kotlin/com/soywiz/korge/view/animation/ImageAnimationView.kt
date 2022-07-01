@@ -12,9 +12,12 @@ import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.tiles.SingleTile
+import com.soywiz.korge.view.tiles.TileMap
+import com.soywiz.korge.view.tiles.TileSet
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.format.ImageAnimation
+import com.soywiz.korim.format.ImageLayer
 
 inline fun Container.imageAnimationView(
     animation: ImageAnimation? = null,
@@ -40,8 +43,11 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
 ) : Container() {
     private var nframes: Int = 1
 
+    fun createTilemap(): TileMap = TileMap()
+
     var onPlayFinished: (() -> Unit)? = null
     var onDestroyLayer: ((T) -> Unit)? = null
+    var onDestroyTilemapLayer: ((TileMap) -> Unit)? = null
 
     var animation: ImageAnimation? = animation
         set(value) {
@@ -59,21 +65,21 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
         }
 
     private val computedDirection: ImageAnimation.Direction get() = direction ?: animation?.direction ?: ImageAnimation.Direction.FORWARD
-    private val layers = fastArrayListOf<T>()
-    private val layersByName = FastStringMap<T>()
+    private val layers = fastArrayListOf<View>()
+    private val layersByName = FastStringMap<View>()
     private var nextFrameIn = 0.milliseconds
     private var nextFrameIndex = 0
     private var dir = +1
 
-    fun getLayer(name: String): View? {
-        return layersByName[name] as View?
-    }
+    fun getLayer(name: String): View? = layersByName[name]
 
     var smoothing: Boolean = true
         set(value) {
             if (field != value) {
                 field = value
-                layers.fastForEach { it.smoothing = value }
+                layers.fastForEach {
+                    if (it is SmoothedBmpSlice) it.smoothing = value
+                }
             }
         }
 
@@ -83,8 +89,27 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
         if (frame != null) {
             frame.layerData.fastForEach {
                 val image = layers[it.layer.index]
-                image.bitmap = it.slice
-                (image as View).xy(it.targetX, it.targetY)
+                when (it.layer.type) {
+                    ImageLayer.Type.NORMAL -> {
+                        (image as SmoothedBmpSlice).bitmap = it.slice
+                    }
+                    else -> {
+                        image as TileMap
+                        val tilemap = it.tilemap
+                        if (tilemap == null) {
+                            image.intMap = IntArray2(1, 1, 0)
+                            image.tileset = TileSet.EMPTY
+                        } else {
+                            image.intMap = tilemap.data
+                            image.tileset = tilemap.tileSet ?: TileSet.EMPTY
+                            image.maskData = tilemap.maskData
+                            image.maskFlipX = tilemap.maskFlipX
+                            image.maskFlipY = tilemap.maskFlipY
+                            image.maskRotate = tilemap.maskRotate
+                        }
+                    }
+                }
+                image.xy(it.targetX, it.targetY)
             }
             nextFrameIn = frame.duration
             dir = when (computedDirection) {
@@ -96,7 +121,11 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
             }
             nextFrameIndex = (frameIndex + dir) umod nframes
         } else {
-            layers.fastForEach { it.bitmap = Bitmaps.transparent }
+            layers.fastForEach {
+                if (it is SmoothedBmpSlice) {
+                    it.bitmap = Bitmaps.transparent
+                }
+            }
         }
     }
 
@@ -111,15 +140,26 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
     private fun didSetAnimation() {
         nframes = animation?.frames?.size ?: 1
         // Before clearing layers let parent possibly recycle layer objects (e.g. return to pool, etc.)
-        for (layer in layers) { onDestroyLayer?.invoke(layer) }
+        for (layer in layers) {
+            if (layer is TileMap) {
+                onDestroyTilemapLayer?.invoke(layer)
+            } else {
+                onDestroyLayer?.invoke(layer as T)
+            }
+        }
         layers.clear()
         removeChildren()
         dir = +1
         val animation = this.animation
         if (animation != null) {
             for (layer in animation.layers) {
-                val image = createImage()
-                image.smoothing = smoothing
+                val image: View = when (layer.type) {
+                    ImageLayer.Type.NORMAL -> {
+                        createImage().also { it.smoothing = smoothing } as View
+                    }
+                    ImageLayer.Type.TILEMAP -> createTilemap()
+                    ImageLayer.Type.GROUP -> TODO()
+                }
                 layers.add(image)
                 layersByName[layer.name ?: "default"] = image
                 addChild(image as View)
