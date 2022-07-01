@@ -78,14 +78,14 @@ class ParallaxScene : Scene() {
     private lateinit var resourcesWatcher: Closeable
     private var keyInput: Cancellable? = null
 
-    override suspend fun Container.sceneInit() {
+    override suspend fun SContainer.sceneInit() {
         val sw = Stopwatch().start()
         // Here the Aseprite file will be read by using the above configuration
         parallaxData = resourcesVfs["parallax_background.ase"].readParallaxDataContainer(parallaxBackgroundConfig, atlas = atlas)
         println("loaded resources in ${sw.elapsed}")
     }
 
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         container {
             scale(scaleFactor)
 
