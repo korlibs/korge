@@ -7,6 +7,7 @@ import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract8
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korfl.as3swf.*
+import com.soywiz.korge.view.GraphicsRenderer
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.paint.*
@@ -15,6 +16,17 @@ import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.*
+
+fun TagDefineShape.export(bitmaps: Map<Int, Bitmap>): Shape {
+    val exporter = SWFBaseShapeExporter(bitmaps)
+    export(exporter)
+    return exporter.cshape
+}
+fun TagDefineMorphShape.export(bitmaps: Map<Int, Bitmap>, ratio: Double): Shape {
+    val exporter = SWFBaseShapeExporter(bitmaps)
+    export(exporter, ratio)
+    return exporter.cshape
+}
 
 /**
  * @TODO: Line ScaleMode not supported right now.
@@ -34,11 +46,11 @@ class SWFShapeExporter(
 	val requestScale: Double = 2.0,
 	val minSide: Int = 16,
 	val maxSide: Int = 512,
-	val path: VectorPath = VectorPath(),
+	path: VectorPath = VectorPath(),
     val charId: Int = -1,
-    val roundDecimalPlaces: Int = -1,
-    val native: Boolean = true,
-) : ShapeExporter() {
+    roundDecimalPlaces: Int = -1,
+    val graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
+) : SWFBaseShapeExporter(swf.bitmaps, path, roundDecimalPlaces) {
 	//val bounds: Rectangle = dshape.shapeBounds.rect
 
 	//val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
@@ -62,9 +74,6 @@ class SWFShapeExporter(
 	val actualBoundsWidth = (realBoundsWidth * actualScale).toInt()
 	val actualBoundsHeight = (realBoundsHeight * actualScale).toInt()
 
-	private var cshape = CompoundShape(listOf())
-    private val shapes = arrayListOf<Shape>()
-
 	val actualShape: CompoundShape by lazy {
 		export(if (debug) LoggerShapeExporter(this) else this)
 		//this.dshape.export(if (debug) LoggerShapeExporter(this) else this)
@@ -81,56 +90,72 @@ class SWFShapeExporter(
             width = actualBoundsWidth,
             height = actualBoundsHeight,
             premultiplied = true,
-            native = native,
+            native = graphicsRenderer != GraphicsRenderer.CPU,
         )
 	}
 	val imageWithScale by lazy {
 		BitmapWithScale(image, actualScale, bounds)
 	}
+}
 
-	var drawingFill = true
+open class SWFBaseShapeExporter(
+    val bitmaps: Map<Int, Bitmap>,
+    val path: VectorPath = VectorPath(),
+    val roundDecimalPlaces: Int = -1
+) : ShapeExporter() {
+    //val bounds: Rectangle = dshape.shapeBounds.rect
 
-	var apath = VectorPath()
-	override fun beginShape() {
-		//ctx.beginPath()
-	}
+    //val bmp = Bitmap32(bounds.width.toIntCeil(), bounds.height.toIntCeil())
 
-	override fun endShape() {
-		cshape = CompoundShape(shapes)
-		//ctx.closePath()
-	}
+    var cshape = CompoundShape(listOf())
+        private set
 
-	override fun beginFills() {
-		flush()
-		drawingFill = true
-	}
+    private val shapes = arrayListOf<Shape>()
 
-	override fun endFills() {
-		flush()
-	}
+    var drawingFill = true
 
-	override fun beginLines() {
-		flush()
-		drawingFill = false
-	}
+    var apath = VectorPath()
+    override fun beginShape() {
+        //ctx.beginPath()
+        apath = VectorPath()
+    }
 
-	override fun endLines() {
-		flush()
-	}
+    override fun endShape() {
+        cshape = CompoundShape(shapes)
+        //ctx.closePath()
+    }
 
-	fun GradientSpreadMode.toCtx() = when (this) {
-		GradientSpreadMode.PAD -> CycleMethod.NO_CYCLE
-		GradientSpreadMode.REFLECT -> CycleMethod.REFLECT
-		GradientSpreadMode.REPEAT -> CycleMethod.REPEAT
-	}
+    override fun beginFills() {
+        flush()
+        drawingFill = true
+    }
 
-	var fillStyle: Paint = NonePaint
+    override fun endFills() {
+        flush()
+    }
 
-	override fun beginFill(color: Int, alpha: Double) {
-		flush()
-		drawingFill = true
-		fillStyle = ColorPaint(decodeSWFColor(color, alpha))
-	}
+    override fun beginLines() {
+        flush()
+        drawingFill = false
+    }
+
+    override fun endLines() {
+        flush()
+    }
+
+    fun GradientSpreadMode.toCtx() = when (this) {
+        GradientSpreadMode.PAD -> CycleMethod.NO_CYCLE
+        GradientSpreadMode.REFLECT -> CycleMethod.REFLECT
+        GradientSpreadMode.REPEAT -> CycleMethod.REPEAT
+    }
+
+    var fillStyle: Paint = NonePaint
+
+    override fun beginFill(color: Int, alpha: Double) {
+        flush()
+        drawingFill = true
+        fillStyle = ColorPaint(decodeSWFColor(color, alpha))
+    }
 
     private fun createGradientPaint(
         type: GradientType,
@@ -178,49 +203,49 @@ class SWFShapeExporter(
         }
     }
 
-	override fun beginGradientFill(
-		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
-		matrix: Matrix,
-		spreadMethod: GradientSpreadMode,
-		interpolationMethod: GradientInterpolationMode,
-		focalPointRatio: Double
-	) {
-		flush()
-		drawingFill = true
-		fillStyle = createGradientPaint(
-			type, colors, alphas, ratios,
-			matrix, spreadMethod, interpolationMethod, focalPointRatio
-		)
-	}
+    override fun beginGradientFill(
+        type: GradientType,
+        colors: List<Int>,
+        alphas: List<Double>,
+        ratios: List<Int>,
+        matrix: Matrix,
+        spreadMethod: GradientSpreadMode,
+        interpolationMethod: GradientInterpolationMode,
+        focalPointRatio: Double
+    ) {
+        flush()
+        drawingFill = true
+        fillStyle = createGradientPaint(
+            type, colors, alphas, ratios,
+            matrix, spreadMethod, interpolationMethod, focalPointRatio
+        )
+    }
 
-	override fun beginBitmapFill(bitmapId: Int, matrix: Matrix, repeat: Boolean, smooth: Boolean) {
-		flush()
-		drawingFill = true
-		val bmp = swf.bitmaps[bitmapId] ?: Bitmap32(1, 1)
-		fillStyle = BitmapPaint(
+    override fun beginBitmapFill(bitmapId: Int, matrix: Matrix, repeat: Boolean, smooth: Boolean) {
+        flush()
+        drawingFill = true
+        val bmp = bitmaps[bitmapId] ?: Bitmap32(1, 1)
+        fillStyle = BitmapPaint(
             bmp, matrix.clone(), CycleMethod.fromRepeat(repeat), CycleMethod.fromRepeat(repeat), smooth
         )
-	}
+    }
 
-	override fun endFill() {
-		flush()
-	}
+    override fun endFill() {
+        flush()
+    }
 
-	private fun __flushFill() {
-		if (apath.isEmpty()) return
+    private fun __flushFill() {
+        if (apath.isEmpty()) return
         shapes += FillShape(apath, null, fillStyle, Matrix())
-		apath = VectorPath()
-	}
+        apath = VectorPath()
+    }
 
-	private fun __flushStroke() {
-		if (apath.isEmpty()) return
-		shapes += PolylineShape(
-			apath,
-			null,
-			strokeStyle,
+    private fun __flushStroke() {
+        if (apath.isEmpty()) return
+        shapes += PolylineShape(
+            apath,
+            null,
+            strokeStyle,
             Matrix(),
             StrokeInfo(
                 lineWidth,
@@ -233,101 +258,100 @@ class SWFShapeExporter(
                 lineDash,
                 lineDashOffset
             )
-		)
-		apath = VectorPath()
-	}
+        )
+        apath = VectorPath()
+    }
 
-	private fun flush() {
-		if (drawingFill) {
-			__flushFill()
-		} else {
-			__flushStroke()
-		}
-	}
+    private fun flush() {
+        if (drawingFill) {
+            __flushFill()
+        } else {
+            __flushStroke()
+        }
+    }
 
-	private var lineWidth: Double = 1.0
-	private var lineScaleMode = LineScaleMode.NORMAL
-	private var miterLimit = 1.0
-	private var lineCap: LineCap = LineCap.ROUND
+    private var lineWidth: Double = 1.0
+    private var lineScaleMode = LineScaleMode.NORMAL
+    private var miterLimit = 1.0
+    private var lineCap: LineCap = LineCap.ROUND
     private var lineDash: IDoubleArrayList? = null
     private var lineDashOffset: Double = 0.0
-	private var strokeStyle: Paint = ColorPaint(Colors.BLACK)
+    private var strokeStyle: Paint = ColorPaint(Colors.BLACK)
 
-	override fun lineStyle(
-		thickness: Double,
-		color: Int,
-		alpha: Double,
-		pixelHinting: Boolean,
-		scaleMode: LineScaleMode,
-		startCaps: LineCapsStyle,
-		endCaps: LineCapsStyle,
-		joints: String?,
-		miterLimit: Double
-	) {
-		flush()
-		this.drawingFill = false
+    override fun lineStyle(
+        thickness: Double,
+        color: Int,
+        alpha: Double,
+        pixelHinting: Boolean,
+        scaleMode: LineScaleMode,
+        startCaps: LineCapsStyle,
+        endCaps: LineCapsStyle,
+        joints: String?,
+        miterLimit: Double
+    ) {
+        flush()
+        this.drawingFill = false
         this.lineWidth = thickness
-		this.lineScaleMode = scaleMode
-		this.miterLimit = miterLimit
-		this.strokeStyle = ColorPaint(decodeSWFColor(color, alpha))
-		this.lineCap = when (startCaps) {
-			LineCapsStyle.NO -> LineCap.BUTT
-			LineCapsStyle.ROUND -> LineCap.ROUND
-			LineCapsStyle.SQUARE -> LineCap.SQUARE
-		}
-	}
+        this.lineScaleMode = scaleMode
+        this.miterLimit = miterLimit
+        this.strokeStyle = ColorPaint(decodeSWFColor(color, alpha))
+        this.lineCap = when (startCaps) {
+            LineCapsStyle.NO -> LineCap.BUTT
+            LineCapsStyle.ROUND -> LineCap.ROUND
+            LineCapsStyle.SQUARE -> LineCap.SQUARE
+        }
+    }
 
-	override fun lineGradientStyle(
-		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
-		matrix: Matrix,
-		spreadMethod: GradientSpreadMode,
-		interpolationMethod: GradientInterpolationMode,
-		focalPointRatio: Double
-	) {
-		flush()
-		drawingFill = false
-		strokeStyle = createGradientPaint(
-			type,
-			colors,
-			alphas,
-			ratios,
-			matrix,
-			spreadMethod,
-			interpolationMethod,
-			focalPointRatio
-		)
-	}
+    override fun lineGradientStyle(
+        type: GradientType,
+        colors: List<Int>,
+        alphas: List<Double>,
+        ratios: List<Int>,
+        matrix: Matrix,
+        spreadMethod: GradientSpreadMode,
+        interpolationMethod: GradientInterpolationMode,
+        focalPointRatio: Double
+    ) {
+        flush()
+        drawingFill = false
+        strokeStyle = createGradientPaint(
+            type,
+            colors,
+            alphas,
+            ratios,
+            matrix,
+            spreadMethod,
+            interpolationMethod,
+            focalPointRatio
+        )
+    }
 
     private val Double.nice: Double get() = when {
         roundDecimalPlaces < 0 -> this
         else -> this.roundDecimalPlaces(roundDecimalPlaces)
     }
 
-	override fun moveTo(x: Double, y: Double) {
-		apath.moveTo(x.nice, y.nice)
+    override fun moveTo(x: Double, y: Double) {
+        apath.moveTo(x.nice, y.nice)
         //println("moveTo($x, $y)")
-		if (drawingFill) path.moveTo(x.nice, y.nice)
-	}
+        if (drawingFill) path.moveTo(x.nice, y.nice)
+    }
 
-	override fun lineTo(x: Double, y: Double) {
-		apath.lineTo(x.nice, y.nice)
+    override fun lineTo(x: Double, y: Double) {
+        apath.lineTo(x.nice, y.nice)
         //println("lineTo($x, $y)")
-		if (drawingFill) path.lineTo(x.nice, y.nice)
-	}
+        if (drawingFill) path.lineTo(x.nice, y.nice)
+    }
 
-	override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
-		apath.quadTo(controlX.nice, controlY.nice, anchorX.nice, anchorY.nice)
+    override fun curveTo(controlX: Double, controlY: Double, anchorX: Double, anchorY: Double) {
+        apath.quadTo(controlX.nice, controlY.nice, anchorX.nice, anchorY.nice)
         //println("curveTo($controlX, $controlY, $anchorX, $anchorY)")
-		if (drawingFill) path.quadTo(controlX.nice, controlY.nice, anchorX.nice, anchorY.nice)
-	}
+        if (drawingFill) path.quadTo(controlX.nice, controlY.nice, anchorX.nice, anchorY.nice)
+    }
 
-	override fun closePath() {
-		apath.close()
-		if (drawingFill) path.close()
-	}
+    override fun closePath() {
+        apath.close()
+    }
 }
 
 internal fun SWFColorTransform.toColorTransform() = ColorTransform(rMult, gMult, bMult, aMult, rAdd, gAdd, bAdd, aAdd)

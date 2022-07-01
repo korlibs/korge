@@ -16,6 +16,7 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.GraphicsRenderer
 import com.soywiz.korge.view.KorgeFileLoader
 import com.soywiz.korge.view.KorgeFileLoaderTester
 import com.soywiz.korge.view.View
@@ -27,6 +28,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.RegisteredImageFormats
+import com.soywiz.korim.vector.Shape
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.util.AsyncOnce
 import com.soywiz.korma.geom.Matrix
@@ -81,11 +83,13 @@ open class AnSymbolBaseShape(id: Int, name: String?, var bounds: Rectangle, val 
 }
 
 class AnSymbolShape(
-	id: Int,
-	name: String?,
-	bounds: Rectangle,
-	var textureWithBitmap: TextureWithBitmapSlice?,
-	path: VectorPath? = null
+    id: Int,
+    name: String?,
+    bounds: Rectangle,
+    var textureWithBitmap: TextureWithBitmapSlice?,
+    path: VectorPath? = null,
+    var shapeGen: (() -> Shape)? = null,
+    var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : AnSymbolBaseShape(id, name, bounds, path) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
@@ -95,7 +99,9 @@ class AnSymbolMorphShape(
 	name: String?,
 	bounds: Rectangle,
 	var texturesWithBitmap: Timed<TextureWithBitmapSlice> = Timed(),
-	path: VectorPath? = null
+	path: VectorPath? = null,
+    var shapeGen: ((ratio: Double) -> Shape)? = null,
+    var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : AnSymbolBaseShape(id, name, bounds, path) {
 	override fun create(library: AnLibrary): AnElement = AnMorphShape(library, this)
 }
@@ -385,5 +391,5 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 
     val mainTimeLineInfo: AnSymbolMovieClip get() = symbolsById[0] as AnSymbolMovieClip
 
-	fun createMainTimeLine() = createMovieClip(0)
+	fun createMainTimeLine(): AnMovieClip = createMovieClip(0)
 }

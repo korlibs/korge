@@ -1,9 +1,9 @@
 package com.soywiz.korfl.as3swf
 
-import com.soywiz.korim.vector.*
-import com.soywiz.korio.lang.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.*
+import com.soywiz.korio.lang.format
+import com.soywiz.korma.geom.BoundsBuilder
+import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.vector.LineScaleMode
 
 open class ShapeExporter {

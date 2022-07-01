@@ -1,6 +1,7 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.kds.BitSet
+import com.soywiz.kds.memoize
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.klock.*
 import com.soywiz.korfl.*
@@ -10,7 +11,6 @@ import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
@@ -103,7 +103,29 @@ fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale:
         path = path,
         charId = this.characterId,
         roundDecimalPlaces = config.roundDecimalPlaces,
-        native = config.native,
+        graphicsRenderer = config.graphicsRenderer,
+    )
+}
+
+fun TagDefineMorphShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale: Double, path: VectorPath = VectorPath()): SWFShapeExporter {
+    val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
+    //val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
+    //println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
+    return SWFShapeExporter(
+        swf,
+        config.debug,
+        this.startBounds.rect,
+        { this.export(it) },
+        rasterizerMethod = config.rasterizerMethod,
+        antialiasing = config.antialiasing,
+        //requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
+        requestScale = config.exportScale * adaptiveScaling,
+        minSide = config.minShapeSide,
+        maxSide = config.maxShapeSide,
+        path = path,
+        charId = this.characterId,
+        roundDecimalPlaces = config.roundDecimalPlaces,
+        graphicsRenderer = config.graphicsRenderer,
     )
 }
 
@@ -147,7 +169,11 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
         }
 		generateActualTimelines()
 		lib.processSymbolNames()
-		generateTextures()
+        if (config.generateTextures) {
+            generateTextures()
+        } else {
+            generateShapes()
+        }
 		finalProcessing()
 		return lib
 	}
@@ -425,6 +451,20 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		}
 	}
 
+    private fun generateShapes() {
+        for (shape in shapesToPopulate.keys) {
+            val tag = shape.tagDefineShape!!
+            shape.shapeGen = { tag.export(swf.bitmaps) }.memoize()
+            shape.graphicsRenderer = config.graphicsRenderer
+            //itemsInAtlas.put({ texture -> shape.textureWithBitmap = texture }, rasterizer.imageWithScale)
+        }
+        for (morph in morphShapesToPopulate) {
+            val tag = morph.tagDefineMorphShape!!
+            morph.shapeGen = { ratio ->
+                tag.export(swf.bitmaps, ratio)
+            }
+        }
+    }
 
 	private suspend fun generateTextures() {
 		val itemsInAtlas = LinkedHashMap<(TextureWithBitmapSlice) -> Unit, BitmapWithScale>()
@@ -461,13 +501,13 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 							e.printStackTrace()
 						}
 					},
-					config.rasterizerMethod,
+                    rasterizerMethod = config.rasterizerMethod,
 					antialiasing = config.antialiasing,
 					requestScale = config.exportScale,
 					minSide = config.minMorphShapeSide,
 					maxSide = config.maxMorphShapeSide,
                     charId = morph.id,
-                    native = config.native
+                    graphicsRenderer = config.graphicsRenderer,
 				)
 				itemsInAtlas.put(
 					{ texture -> morph.texturesWithBitmap.add(ratio.seconds, texture) },

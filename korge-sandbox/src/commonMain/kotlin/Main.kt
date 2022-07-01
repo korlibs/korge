@@ -20,7 +20,8 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainAseprite),
+        //Demo(::MainAseprite),
+        Demo(::MainSWF),
         listOf(
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
