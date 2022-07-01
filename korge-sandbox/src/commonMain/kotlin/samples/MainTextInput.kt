@@ -61,13 +61,19 @@ class MainTextInput : Scene() {
 
         val textPath = buildVectorPath { circle(0, 0, 100) }
 
-        val text = text(
+        text(
             "HELLO WORLD",
             textSize = 64.0,
+            font = font,
             color = Colors.RED,
-        ).xy(600, 200).textSpacing(9.0).aroundPath(textPath).filters(DropshadowFilter())
+        ).xy(600, 200).textSpacing(9.0).aroundPath(textPath).filters(DropshadowFilter()).also { it.editText() }
 
-        text.editText()
+        text(
+            "HELLO WORLD",
+            textSize = 64.0,
+            font = font,
+            color = Colors.RED,
+        ).xy(600, 500).textSpacing(9.0).aroundPath(buildVectorPath { moveTo(0.0, 0.0); quadTo(250.0, -100.0, 500.0, 0.0) }).filters(DropshadowFilter()).also { it.editText() }
 
         /*
         gpuGraphics {

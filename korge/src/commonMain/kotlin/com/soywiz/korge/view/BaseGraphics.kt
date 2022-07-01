@@ -98,6 +98,8 @@ abstract class BaseGraphics(
 
             val imageWidth = (boundsWithShapes.width * autoscaling.renderedAtScaleX).toIntCeil().coerceAtLeast(1)
             val imageHeight = (boundsWithShapes.height * autoscaling.renderedAtScaleY).toIntCeil().coerceAtLeast(1)
+            //val imageWidth = boundsWithShapes.width.toIntCeil()
+            //val imageHeight = boundsWithShapes.height.toIntCeil()
             val image = createImage(
                 imageWidth + EXTRA_PIXELS,
                 imageHeight + EXTRA_PIXELS
@@ -105,6 +107,9 @@ abstract class BaseGraphics(
             //println("bounds=$boundsWithShapes, scale=${autoscaling.renderedAtScaleX},${autoscaling.renderedAtScaleY}, image=$image")
             realImageScaleX = imageWidth / boundsWithShapes.width
             realImageScaleY = imageHeight / boundsWithShapes.height
+
+            realImageScaleX = 1.0
+            realImageScaleY = 1.0
 
             image.context2d {
                 scale(realImageScaleX, realImageScaleY)

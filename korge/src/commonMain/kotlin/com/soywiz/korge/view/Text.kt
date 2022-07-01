@@ -7,9 +7,9 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
-import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korge.view.vector.GpuGraphics
+import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
@@ -18,11 +18,9 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.TextMetrics
 import com.soywiz.korim.font.TextMetricsResult
-import com.soywiz.korim.font.TextToBitmapResult
 import com.soywiz.korim.font.getTextBounds
 import com.soywiz.korim.font.measureTextGlyphs
 import com.soywiz.korim.font.readFont
-import com.soywiz.korim.font.renderTextToBitmap
 import com.soywiz.korim.text.CurveTextRenderer
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
@@ -106,7 +104,9 @@ open class Text(
     var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
     var fontSize: Double
         get() = textSize
-        set(value) { textSize = value }
+        set(value) {
+            textSize = value
+        }
     var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; version++ } }
 
     var alignment: TextAlignment = alignment; set(value) { if (field != value) { field = value; version++ } }
@@ -215,6 +215,7 @@ open class Text(
     private var _textMetricsResult: TextMetricsResult? = null
 
     fun getGlyphMetrics(): TextMetricsResult {
+        _renderInternal(null)
         if (cachedVersionGlyphMetrics != version) {
             cachedVersionGlyphMetrics = version
             _textMetricsResult = font.getOrNull()?.measureTextGlyphs(fontSize, text, renderer)
@@ -358,19 +359,33 @@ open class Text(
                     */
                     if (_staticGraphics == null) {
                         container.removeChildren()
+                        //_staticGraphics = container.gpuGraphics {  }
                         _staticGraphics = container.graphics {  }
                     }
 
+                    var textToBitmapResult: TextMetricsResult
+
                     _staticGraphics!!.updateShape {
-                        this.drawText(
+                        val metrics = this.drawText(
                             text = text,
                             x = 0.0, y = 0.0,
                             size = realTextSize,
                             font = font,
                             paint = color,
                             renderer = this@Text.renderer,
-                            valign = VerticalAlign.TOP
+                            valign = VerticalAlign.TOP,
+                            outMetrics = TextMetricsResult()
                         )
+
+                        cachedVersionGlyphMetrics = version
+                        _textMetricsResult = metrics
+
+                        val met = metrics!!.metrics
+                        val x = -horizontalAlign.getOffsetX(met.width) + met.left
+                        val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
+
+                        //it.xy(x, y)
+
                         //fillText(
                         //    //paint = color, fill = true, renderer = renderer,
                         //    //background = Colors.RED,
@@ -409,6 +424,7 @@ open class Text(
     //}
 
     internal var _staticGraphics: Graphics? = null
+    //internal var _staticGraphics: GpuGraphics? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection("Text") {

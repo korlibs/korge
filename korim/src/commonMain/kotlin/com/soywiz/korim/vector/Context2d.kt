@@ -13,6 +13,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.FontRegistry
 import com.soywiz.korim.font.TextMetrics
+import com.soywiz.korim.font.TextMetricsResult
 import com.soywiz.korim.font.drawText
 import com.soywiz.korim.font.getTextBounds
 import com.soywiz.korim.paint.*
@@ -557,12 +558,14 @@ open class Context2d constructor(
     }
 
     @Suppress("NOTHING_TO_INLINE") // Number inlining
-    inline fun fillText(text: String, x: Number, y: Number): Unit =
+    inline fun fillText(text: String, x: Number, y: Number): Unit {
         drawText(text, x.toDouble(), y.toDouble(), fill = true)
+    }
 
     @Suppress("NOTHING_TO_INLINE") // Number inlining
-    inline fun strokeText(text: String, x: Number, y: Number): Unit =
+    inline fun strokeText(text: String, x: Number, y: Number): Unit {
         drawText(text, x.toDouble(), y.toDouble(), fill = false)
+    }
 
     @Suppress("NOTHING_TO_INLINE") // Number inlining
     inline fun fillText(
@@ -592,9 +595,10 @@ open class Context2d constructor(
         size: Double = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
         valign: VerticalAlign = VerticalAlign.BASELINE,
-    ) {
+        outMetrics: TextMetricsResult? = null,
+    ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, valign = valign)
+        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, valign = valign, outMetrics = outMetrics)
     }
 
     // @TODO: Fix this!

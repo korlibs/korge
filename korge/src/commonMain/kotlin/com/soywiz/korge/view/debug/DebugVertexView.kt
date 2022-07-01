@@ -28,7 +28,11 @@ inline fun Container.debugVertexView(
     callback: @ViewDslMarker DebugVertexView.() -> Unit = {}
 ): DebugVertexView = DebugVertexView(pointsList, color, type).addTo(this, callback)
 
-class DebugVertexView(pointsList: List<IVectorArrayList>, var color: RGBA = Colors.WHITE, type: AG.DrawType = AG.DrawType.TRIANGLE_STRIP) : View() {
+class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.WHITE, type: AG.DrawType = AG.DrawType.TRIANGLE_STRIP) : View() {
+    init {
+        colorMul = color
+    }
+    var color: RGBA by this::colorMul
     companion object {
         val u_Col: Uniform = Uniform("u_Col", VarType.Float4)
         val u_Matrix: Uniform = Uniform("u_Matrix", VarType.Mat4)
@@ -100,7 +104,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, var color: RGBA = Colo
         ctx.flush()
         ctx.updateStandardUniforms()
         this.uniforms.put(ctx.uniforms)
-        this.uniforms.put(u_Col, color * renderColorMul)
+        this.uniforms.put(u_Col, renderColorMul)
         this.uniforms.put(u_Matrix, globalMatrix.toMatrix3D())
 
         ctx.dynamicVertexBufferPool.alloc { vb ->
@@ -115,7 +119,8 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, var color: RGBA = Colo
                     program = PROGRAM,
                     uniforms = this.uniforms,
                     vertexCount = batch.count,
-                    offset = batch.offset
+                    offset = batch.offset,
+                    blending = renderBlendMode.factors
                 )
             }
         }

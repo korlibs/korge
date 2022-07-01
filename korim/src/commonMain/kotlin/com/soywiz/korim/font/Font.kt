@@ -19,7 +19,23 @@ import com.soywiz.korim.text.invoke
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.IPoint
+import com.soywiz.korma.geom.Line
 import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.bezier.Bezier.Companion.midX
+import com.soywiz.korma.geom.bezier.Curves
+import com.soywiz.korma.geom.bezier.toBezier
+import com.soywiz.korma.geom.shape.buildVectorPath
+import com.soywiz.korma.geom.topLeft
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.korma.geom.vector.applyTransform
+import com.soywiz.korma.geom.vector.getCurves
+import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.transformed
 
 interface Font : Resourceable<Font> {
     override fun getOrNull() = this
@@ -44,12 +60,39 @@ data class TextToBitmapResult(
 ) : BaseTextMetricsResult
 
 data class TextMetricsResult(
-    override val fmetrics: FontMetrics,
-    override val metrics: TextMetrics,
-    override val glyphs: List<PlacedGlyphMetrics>
+    override var fmetrics: FontMetrics = FontMetrics(),
+    override var metrics: TextMetrics = TextMetrics(),
+    override var glyphs: List<PlacedGlyphMetrics> = emptyList()
 ) : BaseTextMetricsResult
 
-data class PlacedGlyphMetrics(val codePoint: Int, val x: Double, val y: Double, val metrics: GlyphMetrics, val transform: Matrix, val index: Int)
+data class PlacedGlyphMetrics(val codePoint: Int, val x: Double, val y: Double, val metrics: GlyphMetrics, val transform: Matrix, val index: Int) {
+    val boundsPath: VectorPath by lazy {
+        buildVectorPath {
+            this.optimize = false
+            val rect = Rectangle().copyFrom(metrics.bounds)
+            rect.y = -rect.y
+            rect.height = -rect.height
+            rect(rect)
+        }.applyTransform(Matrix().translate(x, y).premultiply(transform))
+    }
+    val boundsPathCurves: Curves by lazy {
+        val curves = boundsPath.getCurves()
+        if (curves.beziers.size != 4) {
+            println("curves=${curves.beziers.size}")
+        }
+        curves
+    }
+    val caretStart: Bezier by lazy { boundsPathCurves.beziers[3].toLine().flipped().toBezier() }
+    val caretEnd: Bezier by lazy { boundsPathCurves.beziers[1] }
+
+    fun distToPath(x: Double, y: Double): Double {
+        if (boundsPath.containsPoint(x, y)) return 0.0
+        val middle = boundsPath.getBounds().getMiddlePoint()
+        return Point.distance(middle.x, middle.y, x, y)
+    }
+
+    fun distToPath(p: IPoint): Double = distToPath(p.x, p.y)
+}
 
 interface BaseTextMetricsResult {
     val fmetrics: FontMetrics
@@ -129,12 +172,9 @@ fun <T> Font.measureTextGlyphs(
     val font = this
     val bounds = getTextBounds(size, text, renderer = renderer)
     //println("BOUNDS: $bounds")
-    val glyphs = arrayListOf<PlacedGlyphMetrics>()
-    var index = 0
-    font.drawText(null, size, text, null, bounds.drawLeft, bounds.ascent, false, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
-        glyphs += PlacedGlyphMetrics(codePoint, x, y, metrics.clone(), transform.clone(), index++)
-    })
-    return TextMetricsResult(bounds.fontMetrics, bounds, glyphs)
+    return TextMetricsResult().also { out ->
+        font.drawText(null, size, text, null, bounds.drawLeft, bounds.ascent, false, renderer = renderer, outMetrics = out)
+    }
 }
 
 fun <T> Font.drawText(
@@ -144,35 +184,45 @@ fun <T> Font.drawText(
     fill: Boolean = true,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     valign: VerticalAlign = VerticalAlign.BASELINE,
+    outMetrics: TextMetricsResult? = null,
     placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
-) {
+): TextMetricsResult? {
     //println("drawText!!: text=$text")
+    val glyphs = if (outMetrics != null) arrayListOf<PlacedGlyphMetrics>() else null
     val actions = object : TextRendererActions() {
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
-            if (ctx != null) {
-                ctx.keepTransform {
-                    //val m = getGlyphMetrics(codePoint)
-                    //println("valign=$valign, glyphMetrics.height=${glyphMetrics.height}")
-                    //println(glyphMetrics)
-                    //println(fontMetrics)
-                    val dy = valign.getOffsetYRespectBaseline(glyphMetrics, fontMetrics)
-                    //println(dy)
-                    ctx.translate(this.x + x, this.y + y + dy)
-                    //ctx.translate(-m.width * transformAnchor.sx, +m.height * transformAnchor.sy)
-                    ctx.transform(this.transform)
-                    //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
-                    ctx.fillStyle = this.paint ?: paint ?: NonePaint
-                    font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics, reader)
-                    placed?.invoke(codePoint, this.x + x, this.y + y, size, glyphMetrics, this.transform)
-                    if (fill) ctx.fill() else ctx.stroke()
-                }
-            } else {
-                placed?.invoke(codePoint, this.x + x, this.y + y, size, glyphMetrics, this.transform)
+            val dy = valign.getOffsetYRespectBaseline(glyphMetrics, fontMetrics)
+            val px = this.x + x
+            val py = this.y + y + dy
+            ctx?.keepTransform {
+                //val m = getGlyphMetrics(codePoint)
+                //println("valign=$valign, glyphMetrics.height=${glyphMetrics.height}")
+                //println(glyphMetrics)
+                //println(fontMetrics)
+                //println(dy)
+                ctx.translate(px, py)
+                //ctx.translate(-m.width * transformAnchor.sx, +m.height * transformAnchor.sy)
+                ctx.transform(this.transform)
+                //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
+                ctx.fillStyle = this.paint ?: paint ?: NonePaint
+                font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics, reader)
+                if (fill) ctx.fill() else ctx.stroke()
             }
+            if (glyphs != null) {
+                glyphs += PlacedGlyphMetrics(codePoint, px, py, glyphMetrics.clone(), transform.clone(), glyphs.size)
+            }
+            placed?.invoke(codePoint, px, py, size, glyphMetrics, this.transform)
             return glyphMetrics
         }
     }
     renderer.invoke(actions, text, size, this)
+    if (outMetrics != null) {
+        val metrics = getTextBounds(size, text, renderer = renderer)
+        outMetrics.fmetrics = metrics.fontMetrics
+        outMetrics.metrics = metrics
+        outMetrics.glyphs = glyphs ?: emptyList()
+    }
+    return outMetrics
 }
 fun <T> Font.getTextBounds(size: Double, text: T, out: TextMetrics = TextMetrics(), renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>): TextMetrics {
     val actions = BoundBuilderTextRendererActions()

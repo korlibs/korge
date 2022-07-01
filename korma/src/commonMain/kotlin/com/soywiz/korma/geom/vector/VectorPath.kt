@@ -35,6 +35,7 @@ class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
     var winding: Winding = Winding.DEFAULT,
+    var optimize: Boolean = true,
 ) : IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
@@ -90,7 +91,8 @@ class VectorPath(
         cubic: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
         close: () -> Unit = {},
         move: (x: Double, y: Double) -> Unit = { x, y -> },
-        dummy: Unit = Unit // Prevents tailing lambda
+        dummy: Unit = Unit, // Prevents tailing lambda
+        optimizeClose: Boolean = true
     ) {
         var mx = 0.0
         var my = 0.0
@@ -115,7 +117,7 @@ class VectorPath(
                 lx = x3; ly = y3
             },
             close = {
-                if (!lx.isAlmostEquals(mx) || !ly.isAlmostEquals(my)) {
+                if (!optimizeClose || !lx.isAlmostEquals(mx) || !ly.isAlmostEquals(my)) {
                     line(lx, ly, mx, my)
                 }
                 close()
@@ -194,10 +196,8 @@ class VectorPath(
     }
 
     override fun lineTo(x: Double, y: Double) {
-        if (ensureMoveTo(x, y)) return
-        if (x == lastX && y == lastY) {
-            return
-        }
+        if (ensureMoveTo(x, y) && optimize) return
+        if (x == lastX && y == lastY && optimize) return
         commands.add(Command.LINE_TO)
         data.add(x, y)
         lastXY(x, y)
@@ -570,7 +570,8 @@ fun VectorPath.getCurvesList(): List<Curves> {
                 close = {
                     currentClosed = true
                     flush()
-                }
+                },
+                optimizeClose = false
             )
             flush()
         }

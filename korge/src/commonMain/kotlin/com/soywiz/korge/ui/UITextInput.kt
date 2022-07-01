@@ -46,6 +46,8 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
     val controller = TextEditController(textView, textView, this, bg)
 
+    //init { uiScrollable {  } }
+
     var text: String by controller::text
     var textSize: Double by controller::textSize
     var font: Font by controller::font

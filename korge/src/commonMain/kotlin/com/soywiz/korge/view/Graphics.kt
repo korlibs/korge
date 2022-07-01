@@ -59,8 +59,8 @@ open class Graphics @JvmOverloads constructor(
     // @TODO: Not used but to have same API as GpuShapeView
     var antialiased: Boolean = true
 
-    inline fun updateShape(redrawNow: Boolean = false, block: ShapeBuilder.() -> Unit): Graphics {
-        this.shape = buildShape { block() }
+    inline fun updateShape(redrawNow: Boolean = false, block: ShapeBuilder.(Graphics) -> Unit): Graphics {
+        this.shape = buildShape { block(this@Graphics) }
         if (redrawNow) this.redrawIfRequired()
         return this
     }

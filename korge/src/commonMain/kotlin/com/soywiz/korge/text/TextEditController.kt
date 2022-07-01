@@ -17,20 +17,17 @@ import com.soywiz.korge.input.newMouse
 import com.soywiz.korge.time.timers
 import com.soywiz.korge.ui.UIFocusManager
 import com.soywiz.korge.ui.UIFocusable
-import com.soywiz.korge.ui.UITextInput
 import com.soywiz.korge.ui.blur
 import com.soywiz.korge.ui.uiFocusManager
 import com.soywiz.korge.ui.uiFocusedView
 import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.NinePatch
-import com.soywiz.korge.view.NinePatchEx
 import com.soywiz.korge.view.RenderableView
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.View
-import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.debug.debugVertexView
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korgw.TextClipboardData
 import com.soywiz.korim.color.Colors
@@ -46,6 +43,10 @@ import com.soywiz.korio.util.endExclusive
 import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.Margin
 import com.soywiz.korma.geom.Point
+import com.soywiz.korma.geom.PointArrayList
+import com.soywiz.korma.geom.bezier.Bezier
+import com.soywiz.korma.geom.firstPoint
+import com.soywiz.korma.geom.lastPoint
 import kotlin.math.absoluteValue
 import kotlin.math.max
 import kotlin.math.min
@@ -80,7 +81,7 @@ class TextEditController(
     private val textView = container.text(initialText, 16.0, color = Colors.BLACK)
      */
 
-    private val caret = caretContainer.solidRect(2.0, 16.0, Colors.WHITE).also {
+    private val caret = caretContainer.debugVertexView().also {
         it.blendMode = BlendMode.INVERT
         it.visible = false
     }
@@ -150,21 +151,16 @@ class TextEditController(
         get() = textView.font as Font
         set(value) {
             textView.font = value
-            updateCaretSize()
+            updateCaretPosition()
         }
 
     var textSize: Double
         get() = textView.textSize
         set(value) {
             textView.textSize = value
-            updateCaretSize()
+            updateCaretPosition()
         }
     var textColor: RGBA by textView::color
-
-    private fun updateCaretSize() {
-        val metrics = font.getFontMetrics(textSize)
-        caret.scaledHeight = metrics.top.absoluteValue + metrics.bottom.absoluteValue
-    }
 
     private var _selectionStart: Int = initialText.length
     private var _selectionEnd: Int = _selectionStart
@@ -219,16 +215,27 @@ class TextEditController(
 
     private val gameWindow get() = textView.stage!!.views.gameWindow
 
-    fun getPosAtIndex(index: Int): Point {
+    fun getCaretAtIndex(index: Int): Bezier {
         val glyphPositions = textView.getGlyphMetrics().glyphs
-        if (glyphPositions.isEmpty()) return Point(0, 0)
+        if (glyphPositions.isEmpty()) return Bezier(Point(), Point())
         val glyph = glyphPositions[min(index, glyphPositions.size - 1)]
-        var x = glyph.x
-        if (index >= glyphPositions.size) {
-            x += glyph.metrics.xadvance
+        return when {
+            index < glyphPositions.size -> glyph.caretStart
+            else -> glyph.caretEnd
         }
-        return Point(x, glyph.y)
     }
+
+    /*
+    init {
+        caretContainer.gpuShapeView {
+            for (g in textView.getGlyphMetrics().glyphs) {
+                fill(Colors.WHITE) {
+                    write(g.boundsPath)
+                }
+            }
+        }
+    }
+    */
 
     fun getIndexAtPos(pos: Point): Int {
         val glyphPositions = textView.getGlyphMetrics().glyphs
@@ -237,14 +244,16 @@ class TextEditController(
         var minDist = Double.POSITIVE_INFINITY
 
         if (glyphPositions.isNotEmpty()) {
-            for (n in 0 until glyphPositions.size + 1) {
+            for (n in 0..glyphPositions.size) {
                 val glyph = glyphPositions[min(glyphPositions.size - 1, n)]
-                var x = glyph.x
-                if (n == glyphPositions.size) x += glyph.metrics.xadvance
-                val dist = (pos.x - x).absoluteValue
+                val dist = glyph.distToPath(pos)
                 if (minDist > dist) {
                     minDist = dist
-                    index = n
+                    //println("[$n] dist=$dist")
+                    index = when {
+                        n >= glyphPositions.size - 1 && dist != 0.0 -> n + 1
+                        else -> n
+                    }
                 }
             }
         }
@@ -252,17 +261,37 @@ class TextEditController(
         return index
     }
 
-    fun getXAtIndex(index: Int): Double {
-        return getPosAtIndex(index).x
-    }
-
     fun updateCaretPosition() {
         val range = selectionRange
-        val startX = getXAtIndex(range.start)
-        val endX = getXAtIndex(range.endExclusive)
+        //val startX = getCaretAtIndex(range.start)
+        //val endX = getCaretAtIndex(range.endExclusive)
 
-        caret.x = startX
+        val array = PointArrayList(2)
+        if (range.isEmpty()) {
+            val caret = getCaretAtIndex(range.start)
+            val normal = caret.normal(0.0) * -2.0
+            val p0 = caret.points.firstPoint()
+            val p1 = caret.points.lastPoint()
+            array.add(p0)
+            array.add(p1)
+            array.add(p0 + normal)
+            array.add(p1 + normal)
+        } else {
+            for (n in range.start..range.endExclusive) {
+                val caret = getCaretAtIndex(n)
+                val p0 = caret.points.firstPoint()
+                val p1 = caret.points.lastPoint()
+                array.add(p0)
+                array.add(p1)
+                //println("caret[$n]=$caret")
+            }
+        }
+        caret.colorMul = Colors.WHITE
+        caret.pointsList = listOf(array)
+        /*
+        caret.x = startX.x0
         caret.scaledWidth = endX - startX + (if (range.isEmpty()) 2.0 else 0.0)
+        */
         caret.visible = focused
     }
 
