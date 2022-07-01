@@ -76,7 +76,7 @@ object ASE : ImageFormatWithContainer("ase") {
         override val bmp: Bitmap,
         override val x: Int, override val y: Int, override val opacity: Int,
     ) : AseEntity by AseEntity(), AseCell
-    open class AstLinkedCell(
+    open class AseLinkedCell(
         val linkedCell: AseCell,
         override val x: Int, override val y: Int, override val opacity: Int,
     ) : AseEntity by AseEntity(), AseCell {
@@ -357,7 +357,7 @@ object ASE : ImageFormatWithContainer("ase") {
                             1 -> { // 1=Linked Cel
                                 val linkFrame = cs.readU16LE()
                                 val aseCell: AseCell = image.frames[linkFrame].celsByLayer[layerIndex]!!
-                                AstLinkedCell(aseCell, x, y, opacity)
+                                AseLinkedCell(aseCell, x, y, opacity)
                             }
                             3 -> { // 3=Compressed Tilemap
                                 val tilesWidth = cs.readU16LE()
