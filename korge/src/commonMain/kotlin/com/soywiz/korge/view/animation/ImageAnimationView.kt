@@ -96,11 +96,20 @@ open class ImageAnimationView<T: SmoothedBmpSlice>(
                     else -> {
                         image as TileMap
                         val tilemap = it.tilemap
-                        image.intMap = tilemap?.data ?: IntArray2(1, 1, 0)
-                        image.tileset = tilemap?.tileSet ?: TileSet.EMPTY
+                        if (tilemap == null) {
+                            image.intMap = IntArray2(1, 1, 0)
+                            image.tileset = TileSet.EMPTY
+                        } else {
+                            image.intMap = tilemap.data
+                            image.tileset = tilemap.tileSet ?: TileSet.EMPTY
+                            image.maskData = tilemap.maskData
+                            image.maskFlipX = tilemap.maskFlipX
+                            image.maskFlipY = tilemap.maskFlipY
+                            image.maskRotate = tilemap.maskRotate
+                        }
                     }
                 }
-                (image as View).xy(it.targetX, it.targetY)
+                image.xy(it.targetX, it.targetY)
             }
             nextFrameIn = frame.duration
             dir = when (computedDirection) {

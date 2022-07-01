@@ -75,6 +75,11 @@ abstract class BaseTileMap(
     val staggerIndex: TileMapStaggerIndex? = null,
     var tileSize: Size = Size()
 ) : View() {
+    var maskData: Int = 0xfffffff
+    var maskFlipX: Int = 1 shl 31
+    var maskFlipY: Int = 1 shl 30
+    var maskRotate: Int = 1 shl 29
+
     var intMap: IntArray2 = intMap
         set(value) {
             lock {
@@ -307,10 +312,10 @@ abstract class BaseTileMap(
                     val odd = if (staggerAxis == TileMapStaggerAxis.Y) ry.isOdd else rx.isOdd
                     val staggered = if (odd) staggerIndex == TileMapStaggerIndex.ODD else staggerIndex == TileMapStaggerIndex.EVEN
                     val cell = intMap[rx, ry]
-                    val cellData = cell.extract(0, 28)
-                    val flipX = cell.extract(31)
-                    val flipY = cell.extract(30)
-                    val rotate = cell.extract(29)
+                    val cellData = cell and maskData
+                    val flipX = (cell and maskFlipX) != 0
+                    val flipY = (cell and maskFlipY) != 0
+                    val rotate = (cell and maskRotate) != 0
 
                     val staggerOffsetX = when (staggerAxis.takeIf { staggered }) {
                         TileMapStaggerAxis.Y -> staggerX

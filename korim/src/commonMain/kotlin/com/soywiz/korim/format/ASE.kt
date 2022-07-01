@@ -554,7 +554,11 @@ object ASE : ImageFormatWithContainer("ase") {
                 val tileset = image.tilesets[layer.tilesetIndex]
                 tilemap = TileMapData(
                     resolved.data,
-                    tileset?.tileSet
+                    tileset?.tileSet,
+                    maskData = resolved.tileBitmask,
+                    maskFlipX = resolved.bitmaskXFlip,
+                    maskFlipY = resolved.bitmaskYFlip,
+                    maskRotate = resolved.bitmask90CWFlip,
                 )
             }
             return ImageFrameLayer(layer, resolved.bmp.slice(), resolved.x, resolved.y, main = false, includeInAtlas = true, tilemap = tilemap)
