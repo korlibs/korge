@@ -2,6 +2,7 @@ package com.dragonbones.parser
 
 import com.soywiz.korge.dragonbones.*
 import com.soywiz.korge.view.*
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
@@ -24,4 +25,17 @@ class KorgeDbViewsTestJvm {
 		//println("--------------------")
 		//armatureDisplay.dump()
 	}
+
+    @Test
+    fun testOutOfBoundsSample() = suspendTest {
+        val factory = KorgeDbFactory()
+        val skeJsonData = resourcesVfs["503/503_ske.json"].readString()
+        val texJsonData = resourcesVfs["503/503_tex.json"].readString()
+
+        val dragonBonesData = Json.parse(skeJsonData) ?: throw Exception("Parse ske data error!")
+        factory.parseDragonBonesData(dragonBonesData)
+
+        val textureAtlasData = Json.parse(texJsonData) ?: throw Exception("Parse tex data error!")
+        factory.parseTextureAtlasData(textureAtlasData, Bitmap32(1, 1))
+    }
 }
