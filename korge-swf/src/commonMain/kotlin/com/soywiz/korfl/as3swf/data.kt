@@ -1,5 +1,8 @@
 package com.soywiz.korfl.as3swf
 
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -1040,18 +1043,18 @@ class SWFScene(var offset: Int, var name: String) {
 }
 
 open class SWFShape(var unitDivisor: Double = 20.0) {
-	var records = ArrayList<SWFShapeRecord>()
+	var records = FastArrayList<SWFShapeRecord>()
 
-	var fillStyles = ArrayList<SWFFillStyle>()
-	var lineStyles = ArrayList<SWFLineStyle>()
+	var fillStyles = FastArrayList<SWFFillStyle>()
+	var lineStyles = FastArrayList<SWFLineStyle>()
 	var referencePoint = Point(0, 0)
 
-	private var fillEdgeMaps = ArrayList<HashMap<Int, ArrayList<IEdge>>>()
-	private var lineEdgeMaps = ArrayList<HashMap<Int, ArrayList<IEdge>>>()
-	private var currentFillEdgeMap = hashMapOf<Int, ArrayList<IEdge>>()
-	private var currentLineEdgeMap = hashMapOf<Int, ArrayList<IEdge>>()
+	private var fillEdgeMaps = FastArrayList<IntMap<FastArrayList<IEdge>>>()
+	private var lineEdgeMaps = FastArrayList<IntMap<FastArrayList<IEdge>>>()
+	private var currentFillEdgeMap = IntMap<FastArrayList<IEdge>>()
+	private var currentLineEdgeMap = IntMap<FastArrayList<IEdge>>()
 	private var numGroups: Int = 0
-	private var coordMap = hashMapOf<String, ArrayList<IEdge>>()
+	private var coordMap = HashMap<IPoint, FastArrayList<IEdge>>()
 
 	private var edgeMapsCreated: Boolean = false
 
@@ -1067,7 +1070,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		var fillBits: Int = _fillBits
 		var lineBits: Int = _lineBits
 		var shapeRecord: SWFShapeRecord? = null
-		while (!(shapeRecord is SWFShapeRecordEnd)) {
+		while (shapeRecord !is SWFShapeRecordEnd) {
 			// The SWF10 spec says that shape records are byte aligned.
 			// In reality they seem not to be?
 			// bitsPending = 0;
@@ -1129,117 +1132,116 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun createEdgeMaps() {
-		if (!edgeMapsCreated) {
-			var xPos = 0.0
-			var yPos = 0.0
-			var from: IPoint
-			var to: IPoint
-			var control: IPoint
-			var fillStyleIdxOffset = 0
-			var lineStyleIdxOffset = 0
-			var currentFillStyleIdx0 = 0
-			var currentFillStyleIdx1 = 0
-			var currentLineStyleIdx = 0
-			var subPath: ArrayList<IEdge> = ArrayList<IEdge>()
-			numGroups = 0
-			fillEdgeMaps = arrayListOf<HashMap<Int, ArrayList<IEdge>>>()
-			lineEdgeMaps = arrayListOf<HashMap<Int, ArrayList<IEdge>>>()
-			currentFillEdgeMap = HashMap<Int, ArrayList<IEdge>>()
-			currentLineEdgeMap = HashMap<Int, ArrayList<IEdge>>()
-			for (i in 0 until records.size) {
-				val shapeRecord: SWFShapeRecord = records[i]
-				when (shapeRecord.type) {
-					SWFShapeRecord.TYPE_STYLECHANGE -> {
-						val styleChangeRecord: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
-						if (styleChangeRecord.stateLineStyle || styleChangeRecord.stateFillStyle0 || styleChangeRecord.stateFillStyle1) {
-							processSubPath(subPath, currentLineStyleIdx, currentFillStyleIdx0, currentFillStyleIdx1)
-							subPath = ArrayList<IEdge>()
-						}
-						if (styleChangeRecord.stateNewStyles) {
-							fillStyleIdxOffset = fillStyles.size
-							lineStyleIdxOffset = lineStyles.size
-							fillStyles.addAll(styleChangeRecord.fillStyles)
-							lineStyles.addAll(styleChangeRecord.lineStyles)
-						}
-						// Check if all styles are reset to 0.
-						// This (probably) means that a group starts with the next record
-						if (styleChangeRecord.stateLineStyle && styleChangeRecord.lineStyle == 0 &&
-							styleChangeRecord.stateFillStyle0 && styleChangeRecord.fillStyle0 == 0 &&
-							styleChangeRecord.stateFillStyle1 && styleChangeRecord.fillStyle1 == 0
-						) {
-							cleanEdgeMap(currentFillEdgeMap)
-							cleanEdgeMap(currentLineEdgeMap)
-							fillEdgeMaps.add(currentFillEdgeMap)
-							lineEdgeMaps.add(currentLineEdgeMap)
-							currentFillEdgeMap = hashMapOf()
-							currentLineEdgeMap = hashMapOf()
-							currentLineStyleIdx = 0
-							currentFillStyleIdx0 = 0
-							currentFillStyleIdx1 = 0
-							numGroups++
-						} else {
-							if (styleChangeRecord.stateLineStyle) {
-								currentLineStyleIdx = styleChangeRecord.lineStyle
-								if (currentLineStyleIdx > 0) currentLineStyleIdx += lineStyleIdxOffset
-							}
-							if (styleChangeRecord.stateFillStyle0) {
-								currentFillStyleIdx0 = styleChangeRecord.fillStyle0
-								if (currentFillStyleIdx0 > 0) currentFillStyleIdx0 += fillStyleIdxOffset
-							}
-							if (styleChangeRecord.stateFillStyle1) {
-								currentFillStyleIdx1 = styleChangeRecord.fillStyle1
-								if (currentFillStyleIdx1 > 0) currentFillStyleIdx1 += fillStyleIdxOffset
-							}
-						}
-						if (styleChangeRecord.stateMoveTo) {
-							xPos = styleChangeRecord.moveDeltaX / unitDivisor
-							yPos = styleChangeRecord.moveDeltaY / unitDivisor
-						}
-					}
-					SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
-						val straightEdgeRecord: SWFShapeRecordStraightEdge = shapeRecord as SWFShapeRecordStraightEdge
-						from = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
-						if (straightEdgeRecord.generalLineFlag) {
-							xPos += straightEdgeRecord.deltaX / unitDivisor
-							yPos += straightEdgeRecord.deltaY / unitDivisor
-						} else {
-							if (straightEdgeRecord.vertLineFlag) {
-								yPos += straightEdgeRecord.deltaY / unitDivisor
-							} else {
-								xPos += straightEdgeRecord.deltaX / unitDivisor
-							}
-						}
-						to = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
-						subPath.add(StraightEdge(from, to, currentLineStyleIdx, currentFillStyleIdx1))
-					}
-					SWFShapeRecord.TYPE_CURVEDEDGE -> {
-						val curvedEdgeRecord: SWFShapeRecordCurvedEdge = shapeRecord as SWFShapeRecordCurvedEdge
-						from = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
-						val xPosControl: Double = xPos + curvedEdgeRecord.controlDeltaX / unitDivisor
-						val yPosControl: Double = yPos + curvedEdgeRecord.controlDeltaY / unitDivisor
-						xPos = xPosControl + curvedEdgeRecord.anchorDeltaX / unitDivisor
-						yPos = yPosControl + curvedEdgeRecord.anchorDeltaY / unitDivisor
-						control = IPoint(xPosControl, yPosControl)
-						to = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
-						subPath.add(CurvedEdge(from, control, to, currentLineStyleIdx, currentFillStyleIdx1))
-					}
-					SWFShapeRecord.TYPE_END -> {
-						// We're done. Process the last subpath, if any
-						processSubPath(subPath, currentLineStyleIdx, currentFillStyleIdx0, currentFillStyleIdx1)
-						cleanEdgeMap(currentFillEdgeMap)
-						cleanEdgeMap(currentLineEdgeMap)
-						fillEdgeMaps.add(currentFillEdgeMap)
-						lineEdgeMaps.add(currentLineEdgeMap)
-						numGroups++
-					}
-				}
-			}
-			edgeMapsCreated = true
-		}
-	}
+        if (edgeMapsCreated) return
+        edgeMapsCreated = true
+        var xPos = 0.0
+        var yPos = 0.0
+        var from: IPoint
+        var to: IPoint
+        var control: IPoint
+        var fillStyleIdxOffset = 0
+        var lineStyleIdxOffset = 0
+        var currentFillStyleIdx0 = 0
+        var currentFillStyleIdx1 = 0
+        var currentLineStyleIdx = 0
+        var subPath: FastArrayList<IEdge> = FastArrayList()
+        numGroups = 0
+        fillEdgeMaps = FastArrayList()
+        lineEdgeMaps = FastArrayList()
+        currentFillEdgeMap = IntMap()
+        currentLineEdgeMap = IntMap()
+        for (i in 0 until records.size) {
+            val shapeRecord: SWFShapeRecord = records[i]
+            when (shapeRecord.type) {
+                SWFShapeRecord.TYPE_STYLECHANGE -> {
+                    val styleChangeRecord: SWFShapeRecordStyleChange = shapeRecord as SWFShapeRecordStyleChange
+                    if (styleChangeRecord.stateLineStyle || styleChangeRecord.stateFillStyle0 || styleChangeRecord.stateFillStyle1) {
+                        processSubPath(subPath, currentLineStyleIdx, currentFillStyleIdx0, currentFillStyleIdx1)
+                        subPath = FastArrayList<IEdge>()
+                    }
+                    if (styleChangeRecord.stateNewStyles) {
+                        fillStyleIdxOffset = fillStyles.size
+                        lineStyleIdxOffset = lineStyles.size
+                        fillStyles.addAll(styleChangeRecord.fillStyles)
+                        lineStyles.addAll(styleChangeRecord.lineStyles)
+                    }
+                    // Check if all styles are reset to 0.
+                    // This (probably) means that a group starts with the next record
+                    if (styleChangeRecord.stateLineStyle && styleChangeRecord.lineStyle == 0 &&
+                        styleChangeRecord.stateFillStyle0 && styleChangeRecord.fillStyle0 == 0 &&
+                        styleChangeRecord.stateFillStyle1 && styleChangeRecord.fillStyle1 == 0
+                    ) {
+                        cleanEdgeMap(currentFillEdgeMap)
+                        cleanEdgeMap(currentLineEdgeMap)
+                        fillEdgeMaps.add(currentFillEdgeMap)
+                        lineEdgeMaps.add(currentLineEdgeMap)
+                        currentFillEdgeMap = IntMap()
+                        currentLineEdgeMap = IntMap()
+                        currentLineStyleIdx = 0
+                        currentFillStyleIdx0 = 0
+                        currentFillStyleIdx1 = 0
+                        numGroups++
+                    } else {
+                        if (styleChangeRecord.stateLineStyle) {
+                            currentLineStyleIdx = styleChangeRecord.lineStyle
+                            if (currentLineStyleIdx > 0) currentLineStyleIdx += lineStyleIdxOffset
+                        }
+                        if (styleChangeRecord.stateFillStyle0) {
+                            currentFillStyleIdx0 = styleChangeRecord.fillStyle0
+                            if (currentFillStyleIdx0 > 0) currentFillStyleIdx0 += fillStyleIdxOffset
+                        }
+                        if (styleChangeRecord.stateFillStyle1) {
+                            currentFillStyleIdx1 = styleChangeRecord.fillStyle1
+                            if (currentFillStyleIdx1 > 0) currentFillStyleIdx1 += fillStyleIdxOffset
+                        }
+                    }
+                    if (styleChangeRecord.stateMoveTo) {
+                        xPos = styleChangeRecord.moveDeltaX / unitDivisor
+                        yPos = styleChangeRecord.moveDeltaY / unitDivisor
+                    }
+                }
+                SWFShapeRecord.TYPE_STRAIGHTEDGE -> {
+                    val straightEdgeRecord: SWFShapeRecordStraightEdge = shapeRecord as SWFShapeRecordStraightEdge
+                    from = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+                    if (straightEdgeRecord.generalLineFlag) {
+                        xPos += straightEdgeRecord.deltaX / unitDivisor
+                        yPos += straightEdgeRecord.deltaY / unitDivisor
+                    } else {
+                        if (straightEdgeRecord.vertLineFlag) {
+                            yPos += straightEdgeRecord.deltaY / unitDivisor
+                        } else {
+                            xPos += straightEdgeRecord.deltaX / unitDivisor
+                        }
+                    }
+                    to = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+                    subPath.add(StraightEdge(from, to, currentLineStyleIdx, currentFillStyleIdx1))
+                }
+                SWFShapeRecord.TYPE_CURVEDEDGE -> {
+                    val curvedEdgeRecord: SWFShapeRecordCurvedEdge = shapeRecord as SWFShapeRecordCurvedEdge
+                    from = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+                    val xPosControl: Double = xPos + curvedEdgeRecord.controlDeltaX / unitDivisor
+                    val yPosControl: Double = yPos + curvedEdgeRecord.controlDeltaY / unitDivisor
+                    xPos = xPosControl + curvedEdgeRecord.anchorDeltaX / unitDivisor
+                    yPos = yPosControl + curvedEdgeRecord.anchorDeltaY / unitDivisor
+                    control = IPoint(xPosControl, yPosControl)
+                    to = IPoint(NumberUtils.roundPixels400(xPos), NumberUtils.roundPixels400(yPos))
+                    subPath.add(CurvedEdge(from, control, to, currentLineStyleIdx, currentFillStyleIdx1))
+                }
+                SWFShapeRecord.TYPE_END -> {
+                    // We're done. Process the last subpath, if any
+                    processSubPath(subPath, currentLineStyleIdx, currentFillStyleIdx0, currentFillStyleIdx1)
+                    cleanEdgeMap(currentFillEdgeMap)
+                    cleanEdgeMap(currentLineEdgeMap)
+                    fillEdgeMaps.add(currentFillEdgeMap)
+                    lineEdgeMaps.add(currentLineEdgeMap)
+                    numGroups++
+                }
+            }
+        }
+    }
 
 	protected fun processSubPath(
-		subPath: ArrayList<IEdge>,
+		subPath: FastArrayList<IEdge>,
 		lineStyleIdx: Int,
 		fillStyleIdx0: Int,
 		fillStyleIdx1: Int
@@ -1247,7 +1249,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		if (fillStyleIdx0 != 0) {
 			var path = currentFillEdgeMap[fillStyleIdx0]
 			if (path == null) {
-				path = ArrayList<IEdge>()
+				path = FastArrayList<IEdge>()
 				currentFillEdgeMap[fillStyleIdx0] = path
 			}
 			for (_j in 0 until subPath.size) {
@@ -1258,7 +1260,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		if (fillStyleIdx1 != 0) {
 			var path = currentFillEdgeMap[fillStyleIdx1]
 			if (path == null) {
-				path = ArrayList<IEdge>()
+				path = FastArrayList<IEdge>()
 				currentFillEdgeMap[fillStyleIdx1] = path
 			}
 			path.addAll(subPath)
@@ -1266,7 +1268,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		if (lineStyleIdx != 0) {
 			var path = currentLineEdgeMap[lineStyleIdx]
 			if (path == null) {
-				path = ArrayList<IEdge>()
+				path = FastArrayList<IEdge>()
 				currentLineEdgeMap[lineStyleIdx] = path
 			}
 			path.addAll(subPath)
@@ -1274,7 +1276,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun exportFillPath(handler: ShapeExporter, groupIndex: Int) {
-		val path: ArrayList<IEdge> = createPathFromEdgeMap(fillEdgeMaps[groupIndex])
+		val path: FastArrayList<IEdge> = createPathFromEdgeMap(fillEdgeMaps[groupIndex])
 		var pos = IPoint(Int.MAX_VALUE, Int.MAX_VALUE)
 		var fillStyleIdx: Int = Int.MAX_VALUE
 		if (path.size > 0) {
@@ -1446,9 +1448,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 	}
 
-	protected fun createPathFromEdgeMap(edgeMap: HashMap<Int, ArrayList<IEdge>>): ArrayList<IEdge> {
-		val newPath: ArrayList<IEdge> = ArrayList<IEdge>()
-		val styleIdxArray = arrayListOf<Int>()
+	protected fun createPathFromEdgeMap(edgeMap: IntMap<FastArrayList<IEdge>>): FastArrayList<IEdge> {
+		val newPath: FastArrayList<IEdge> = FastArrayList<IEdge>()
+		val styleIdxArray = FastArrayList<Int>()
 		for (styleIdx in edgeMap.keys) {
 			styleIdxArray.add(styleIdx)
 		}
@@ -1459,12 +1461,12 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		return newPath
 	}
 
-	protected fun cleanEdgeMap(edgeMap: HashMap<Int, ArrayList<IEdge>>) {
+	protected fun cleanEdgeMap(edgeMap: IntMap<FastArrayList<IEdge>>) {
 		for (styleIdx in edgeMap.keys) {
 			val subPath = edgeMap[styleIdx]
 			if (subPath != null && subPath.size > 0) {
 				var prevEdge: IEdge? = null
-				val tmpPath = ArrayList<IEdge>()
+				val tmpPath = FastArrayList<IEdge>()
 				createCoordMap(subPath)
 				while (subPath.size > 0) {
 					var idx = 0
@@ -1490,14 +1492,14 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 		}
 	}
 
-	protected fun createCoordMap(path: ArrayList<IEdge>) {
+	protected fun createCoordMap(path: FastArrayList<IEdge>) {
 		coordMap = hashMapOf()
 		for (i in 0 until path.size) {
 			val from: IPoint = path[i].from
-			val key = "${from.x}_${from.y}"
-			val coordMapArray = coordMap[key]
+			val key = from
+			val coordMapArray = coordMap[from]
 			if (coordMapArray == null) {
-				coordMap[key] = arrayListOf(path[i])
+				coordMap[key] = fastArrayListOf(path[i])
 			} else {
 				coordMapArray.add(path[i])
 			}
@@ -1505,7 +1507,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun removeEdgeFromCoordMap(edge: IEdge) {
-		val key: String = "" + edge.from.x + "_" + edge.from.y
+		val key: IPoint = edge.from
 		val coordMapArray = coordMap[key]
 		if (coordMapArray != null) {
 			if (coordMapArray.size == 1) {
@@ -1518,7 +1520,7 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 	}
 
 	protected fun findNextEdgeInCoordMap(edge: IEdge): IEdge? {
-		val coordMapArray = coordMap["${edge.to.x}_${edge.to.y}"]
+		val coordMapArray = coordMap[edge.to]
 		return if (coordMapArray != null && coordMapArray.isNotEmpty()) coordMapArray[0] else null
 	}
 
@@ -1711,8 +1713,8 @@ class SWFShapeWithStyle(unitDivisor: Double = 20.0) : SWFShape(unitDivisor) {
 	}
 
 	override fun export(_handler: ShapeExporter) {
-		fillStyles = ArrayList(initialFillStyles)
-		lineStyles = ArrayList(initialLineStyles)
+		fillStyles = FastArrayList(initialFillStyles)
+		lineStyles = FastArrayList(initialLineStyles)
 		super.export(_handler)
 	}
 
