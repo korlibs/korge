@@ -13,7 +13,21 @@ annotation class Singleton
 annotation class Optional
 
 fun AsyncInjector.jvmAutomapping(): AsyncInjector = this.apply {
-	this.fallbackProvider = { kclazz, ctx -> fallback(this, kclazz, ctx) }
+	this.fallbackProvider = { kclazz, ctx -> AsyncInjector.jvmFallback(this, kclazz, ctx) }
+}
+
+suspend fun AsyncInjector.Companion.jvmFallback(
+    injector: AsyncInjector,
+    kclazz: KClass<*>,
+    ctx: AsyncInjector.RequestContext
+): AsyncObjectProvider<*> {
+    return fallback(injector, kclazz, ctx)
+}
+
+fun AsyncInjector.jvmRemoveMappingsByClassName(classNames: Set<String>) {
+    val classes = providersByClass.keys.filter { it.qualifiedName in classNames }
+    for (clazz in classes) providersByClass.remove(clazz)
+    parent?.jvmRemoveMappingsByClassName(classNames)
 }
 
 private suspend fun fallback(

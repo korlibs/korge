@@ -80,11 +80,15 @@ class SceneContainer(
     }
 
     init {
-        addOnEvent<ReloadEvent> {
+        addOnEvent<ReloadEvent> { event ->
             launchImmediately {
                 val scene = currentScene
                 if (scene != null) {
-                    changeTo(scene::class)
+                    if (event.reloadSuccess) {
+                        changeTo(scene::class)
+                    } else {
+                        changeTo(event.getReloadedClass(scene::class, scene.injector))
+                    }
                 }
             }
         }
@@ -207,6 +211,7 @@ class SceneContainer(
             sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
         }
         val newScene = gen(sceneInjector)
+        println("Changing scene to... $clazz ... $newScene")
         if (remap) {
             newScene.init(sceneInjector)
             views.injector.mapPrototype(newScene::class as KClass<T>) { gen(sceneInjector) }
