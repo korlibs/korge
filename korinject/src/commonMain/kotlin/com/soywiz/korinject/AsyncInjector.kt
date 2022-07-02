@@ -60,12 +60,6 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
         parent?.removeMapping(clazz)
     }
 
-    fun removeMappingsByClassName(classNames: Set<String>) {
-        val classes = providersByClass.keys.filter { it.qualifiedName in classNames }
-        for (clazz in classes) providersByClass.remove(clazz)
-        parent?.removeMappingsByClassName(classNames)
-    }
-
     var fallbackProvider: (suspend (clazz: kotlin.reflect.KClass<*>, ctx: RequestContext) -> AsyncObjectProvider<*>)? = null
     val providersByClass = LinkedHashMap<kotlin.reflect.KClass<*>, AsyncObjectProvider<*>>()
 

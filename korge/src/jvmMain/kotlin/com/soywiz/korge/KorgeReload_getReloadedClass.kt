@@ -1,6 +1,7 @@
 package com.soywiz.korge
 
 import com.soywiz.korinject.jvmAutomapping
+import com.soywiz.korinject.jvmRemoveMappingsByClassName
 import java.io.File
 import kotlin.reflect.*
 
@@ -8,7 +9,7 @@ internal actual fun <T : Any> KorgeReload_getReloadedClass(clazz: KClass<T>, con
     println("### KorgeReload_getReloadedClass: $clazz")
     val oldClass = clazz
     val newClass = KorgeReloadClassLoader().loadClass(oldClass.qualifiedName).kotlin as KClass<T>
-    context.injector.removeMappingsByClassName(context.refreshedClasses)
+    context.injector.jvmRemoveMappingsByClassName(context.refreshedClasses)
     context.injector.removeMapping(oldClass)
     context.injector.root.jvmAutomapping()
     return newClass

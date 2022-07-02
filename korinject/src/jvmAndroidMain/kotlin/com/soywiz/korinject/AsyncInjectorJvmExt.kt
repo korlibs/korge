@@ -24,6 +24,12 @@ suspend fun AsyncInjector.Companion.jvmFallback(
     return fallback(injector, kclazz, ctx)
 }
 
+fun AsyncInjector.jvmRemoveMappingsByClassName(classNames: Set<String>) {
+    val classes = providersByClass.keys.filter { it.qualifiedName in classNames }
+    for (clazz in classes) providersByClass.remove(clazz)
+    parent?.jvmRemoveMappingsByClassName(classNames)
+}
+
 private suspend fun fallback(
 	injector: AsyncInjector,
 	kclazz: KClass<*>,
