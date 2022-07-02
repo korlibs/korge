@@ -44,6 +44,7 @@ class InstanceAsyncObjectProvider<T>(val instance: T) : AsyncObjectProvider<T> {
 }
 
 class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
+    companion object {}
     suspend inline fun <reified T : Any> getWith(vararg instances: Any): T = getWith(T::class, *instances)
     suspend inline fun <reified T : Any> get(): T = get<T>(T::class)
     suspend inline fun <reified T : Any> getOrNull(): T? = getOrNull<T>(T::class)
@@ -53,6 +54,17 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
 
     inline fun <reified T : Any> mapSingleton(noinline gen: suspend AsyncInjector.() -> T) = mapSingleton(T::class, gen)
     inline fun <reified T : Any> mapPrototype(noinline gen: suspend AsyncInjector.() -> T) = mapPrototype(T::class, gen)
+
+    fun removeMapping(clazz: KClass<*>) {
+        providersByClass.remove(clazz)
+        parent?.removeMapping(clazz)
+    }
+
+    fun removeMappingsByClassName(classNames: Set<String>) {
+        val classes = providersByClass.keys.filter { it.qualifiedName in classNames }
+        for (clazz in classes) providersByClass.remove(clazz)
+        parent?.removeMappingsByClassName(classNames)
+    }
 
     var fallbackProvider: (suspend (clazz: kotlin.reflect.KClass<*>, ctx: RequestContext) -> AsyncObjectProvider<*>)? = null
     val providersByClass = LinkedHashMap<kotlin.reflect.KClass<*>, AsyncObjectProvider<*>>()
@@ -101,6 +113,11 @@ class AsyncInjector(val parent: AsyncInjector? = null, val level: Int = 0) {
     }
 
     data class RequestContext(val initialClazz: KClass<*>)
+
+    fun getClassDefiner(clazz: KClass<*>): AsyncInjector? {
+        if (clazz in providersByClass) return this
+        return parent?.getClassDefiner(clazz)
+    }
 
     suspend fun <T : Any> getProviderOrNull(
         clazz: KClass<T>,

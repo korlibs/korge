@@ -159,16 +159,21 @@ class KorgeReloaderProcessor(val rootFolders: List<String>, val inst: Instrument
                 }
                 //inst.redefineClasses(*definitions.toTypedArray())
                 val workedDefinitions = arrayListOf<ClassDefinition>()
+                var success = true
                 for (def in definitions) {
                     try {
                         inst.redefineClasses(def)
                         workedDefinitions += def
+                    } catch (e: java.lang.UnsupportedOperationException) {
+                        success = false
                     } catch (e: Throwable) {
                         e.printStackTrace()
+                        success = false
                     }
                 }
-                val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java)
-                triggerReload.invoke(null, workedDefinitions.map { it.definitionClass.name })
+                println("[KorgeReloadAgent] reload success=$success")
+                val triggerReload = Class.forName("com.soywiz.korge.KorgeReload").getMethod("triggerReload", java.util.List::class.java, java.lang.Boolean.TYPE)
+                triggerReload.invoke(null, workedDefinitions.map { it.definitionClass.name }, success)
             } catch (e: Throwable) {
                 e.printStackTrace()
             }
