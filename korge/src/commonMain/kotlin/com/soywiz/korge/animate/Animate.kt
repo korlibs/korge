@@ -94,8 +94,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 
     private var cachedShape: Shape? = null
 
-	override fun renderInternal(ctx: RenderContext) {
-		if (!visible) return
+    private fun ensureShape(): Shape? {
         if (shape != null) {
             if (graphics == null) {
                 graphics = newGraphics(EmptyShape, graphicsRenderer)
@@ -105,6 +104,13 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
                 cachedShape = shape
                 graphics?.shape = shape!!
             }
+        }
+        return shape
+    }
+
+	override fun renderInternal(ctx: RenderContext) {
+		if (!visible) return
+        if (ensureShape() != null) {
             super.renderInternal(ctx)
             return
         }
@@ -180,6 +186,9 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	//}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
+        if (ensureShape() != null) {
+            return super.getLocalBoundsInternal(out)
+        }
 		out.setTo(dx, dy, texWidth, texHeight)
 	}
 

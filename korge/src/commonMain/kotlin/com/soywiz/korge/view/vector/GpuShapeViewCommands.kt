@@ -50,7 +50,7 @@ class GpuShapeViewCommands {
 
     fun addVertex(x: Float, y: Float, len: Float = 0f, maxLen: Float = len): Int {
         if (maxLen <= 0f) {
-            error("Invalid maxLen=$maxLen")
+            println("Invalid maxLen=$maxLen")
         }
         bufferVertexData.add(x, y, len, maxLen)
         return vertexIndex++
