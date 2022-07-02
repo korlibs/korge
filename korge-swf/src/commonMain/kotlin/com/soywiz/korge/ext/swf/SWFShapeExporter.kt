@@ -6,6 +6,7 @@ import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.mapDouble
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract8
+import com.soywiz.kmem.insert8
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.korge.view.GraphicsRenderer
@@ -252,7 +253,7 @@ open class SWFBaseShapeExporter(
             StrokeInfo(
                 lineWidth,
                 true,
-                LineScaleMode.NORMAL,
+                lineScaleMode,
                 lineCap,
                 lineCap,
                 LineJoin.MITER,
@@ -357,6 +358,8 @@ open class SWFBaseShapeExporter(
 }
 
 internal fun SWFColorTransform.toColorTransform() = ColorTransform(rMult, gMult, bMult, aMult, rAdd, gAdd, bAdd, aAdd)
+
+fun encodeSWFColor(color: RGBA): Int = 0.insert8(color.r, 16).insert8(color.g, 8).insert8(color.b, 0)
 
 internal fun decodeSWFColor(color: Int, alpha: Double = 1.0): RGBA =
 	RGBA(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())

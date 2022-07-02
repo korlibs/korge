@@ -5,6 +5,8 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.fastArrayListOf
+import com.soywiz.korge.ext.swf.encodeSWFColor
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korma.geom.*
@@ -1304,20 +1306,26 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 								val colors = IntArrayList()
 								val alphas = DoubleArrayList()
 								val ratios = IntArrayList()
-								matrix = fillStyle.gradientMatrix!!.matrix.clone()
-								for (gri in 0 until fillStyle.gradient!!.records.size) {
-									val gradientRecord = fillStyle.gradient!!.records[gri]
-									colors.add(ColorUtils.rgb(gradientRecord.color))
-									alphas.add(ColorUtils.alpha(gradientRecord.color))
-									ratios.add(gradientRecord.ratio)
-								}
-								handler.beginGradientFill(
-									if (fillStyle.type == 0x10) GradientType.LINEAR else GradientType.RADIAL,
-									colors, alphas, ratios, matrix,
-									fillStyle.gradient!!.spreadMode,
-									fillStyle.gradient!!.interpolationMode,
-									fillStyle.gradient!!.focalPoint
-								)
+                                val gradientMatrix = fillStyle.gradientMatrix
+                                if (gradientMatrix != null) {
+                                    matrix = gradientMatrix.matrix.clone()
+                                    for (gri in 0 until fillStyle.gradient!!.records.size) {
+                                        val gradientRecord = fillStyle.gradient!!.records[gri]
+                                        colors.add(ColorUtils.rgb(gradientRecord.color))
+                                        alphas.add(ColorUtils.alpha(gradientRecord.color))
+                                        ratios.add(gradientRecord.ratio)
+                                    }
+                                    handler.beginGradientFill(
+                                        if (fillStyle.type == 0x10) GradientType.LINEAR else GradientType.RADIAL,
+                                        colors, alphas, ratios, matrix,
+                                        fillStyle.gradient!!.spreadMode,
+                                        fillStyle.gradient!!.interpolationMode,
+                                        fillStyle.gradient!!.focalPoint
+                                    )
+                                } else {
+                                    println("SWF.gradientMatrix=null")
+                                    handler.beginFill(encodeSWFColor(Colors.FUCHSIA), 1.0)
+                                }
 							}
 							0x40,
 							0x41,

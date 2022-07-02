@@ -21,6 +21,10 @@ import com.soywiz.korge.view.KorgeFileLoader
 import com.soywiz.korge.view.KorgeFileLoaderTester
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.filter
+import com.soywiz.korge.view.filter.ComposedFilter
+import com.soywiz.korge.view.filter.Filter
+import com.soywiz.korge.view.filters
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.ColorTransform
@@ -123,7 +127,8 @@ data class AnSymbolTimelineFrame(
 	var transform: Matrix = Matrix(),
 	var name: String? = null,
 	var colorTransform: ColorTransform = ColorTransform(),
-	var blendMode: BlendMode = BlendMode.INHERIT
+	var blendMode: BlendMode = BlendMode.INHERIT,
+    var filter: Filter? = null
 ) {
 	fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
 		this.transform.setToInterpolated(ratio, l.transform, r.transform)
@@ -131,6 +136,7 @@ data class AnSymbolTimelineFrame(
 		this.ratio = ratio.interpolate(l.ratio, r.ratio)
 		this.name = l.name
 		this.blendMode = l.blendMode
+        this.filter = l.filter
 	}
 
 	companion object {
@@ -140,6 +146,7 @@ data class AnSymbolTimelineFrame(
 			view.ratio = ratio.interpolate(l.ratio, r.ratio)
 			view.name = l.name
 			view.blendMode = l.blendMode
+            view.filter = l.filter
 		}
 	}
 
@@ -149,6 +156,7 @@ data class AnSymbolTimelineFrame(
 		view.name = name
 		view.colorTransform = colorTransform
 		view.blendMode = blendMode
+        view.filter = filter
 	}
 
 	fun copyFrom(other: AnSymbolTimelineFrame) {
@@ -160,6 +168,7 @@ data class AnSymbolTimelineFrame(
 		this.name = other.name
 		this.colorTransform.copyFrom(other.colorTransform)
 		this.blendMode = other.blendMode
+        this.filter = other.filter
 	}
 
 	//fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {

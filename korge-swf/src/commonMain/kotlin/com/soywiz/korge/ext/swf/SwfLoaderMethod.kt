@@ -8,6 +8,10 @@ import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.composedOrNull
+import com.soywiz.korge.view.filter.BlurFilter
+import com.soywiz.korge.view.filter.ComposedFilter
+import com.soywiz.korge.view.filter.DropshadowFilter
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -564,7 +568,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
         try {
             parseMovieClipInternal(tags, mc)
         } catch (e: Throwable) {
-
+            e.printStackTrace()
         }
     }
 
@@ -576,15 +580,16 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		val uniqueIds = hashMapOf<Pair<Int, Int>, Int>()
 
 		data class DepthInfo(
-			val depth: Int,
-			var uid: Int = -1,
-			var charId: Int = -1,
-			var clipDepth: Int = -1,
-			var name: String? = null,
-			var colorTransform: ColorTransform = ColorTransform(),
-			var ratio: Double = 0.0,
-			var matrix: Matrix = Matrix(),
-			var blendMode: BlendMode = BlendMode.INHERIT
+            val depth: Int,
+            var uid: Int = -1,
+            var charId: Int = -1,
+            var clipDepth: Int = -1,
+            var name: String? = null,
+            var colorTransform: ColorTransform = ColorTransform(),
+            var ratio: Double = 0.0,
+            var matrix: Matrix = Matrix(),
+            var blendMode: BlendMode = BlendMode.INHERIT,
+            var filterList: List<IFilter> = emptyList(),
 		) {
 			fun reset() {
 				uid = -1
@@ -611,7 +616,23 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				name = name,
 				transform = matrix,
 				colorTransform = colorTransform,
-				blendMode = blendMode
+				blendMode = blendMode,
+                filter = filterList.mapNotNull { when (it) {
+                    is FilterBlur -> {
+                        //val blurAmount = ((it.blurX + it.blurY) * 0.5) / 16.0
+                        val blurAmount = ((it.blurX + it.blurY) * 0.5) / 4.0
+                        //BlurFilter(log(blurAmount, 2.0))
+                        //println("blurAmount=$blurAmount, blurX=${it.blurX}, blurY=${it.blurY}, passes=${it.passes}")
+                        ComposedFilter((0 until it.passes).map { BlurFilter(blurAmount) })
+                    }
+                    is FilterDropShadow -> {
+                        DropshadowFilter(sqrt(it.blurX), sqrt(it.blurY), decodeSWFColor(it.dropShadowColor), blurRadius = it.distance)
+                    }
+                    else -> {
+                        println("Unimplemented SWF filter: $it")
+                        null
+                    }
+                } }.composedOrNull()
 			)
 		}
 
@@ -748,6 +769,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 							val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
 							funcompressedData.uncompressInWorker("zlib")
 							val uncompressedData = funcompressedData.cloneToNewByteArray()
+                            println("LOSSLESS: ${it.bitmapWidth}, ${it.bitmapHeight} : ${it.bitmapFormat}, it.hasAlpha=${it.hasAlpha}")
 							when (it.bitmapFormat) {
 								BitmapFormat.BIT_8 -> {
 									val ncolors = it.bitmapColorTableSize
@@ -879,6 +901,10 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 						com.soywiz.korfl.as3swf.BlendMode.HARDLIGHT -> BlendMode.HARDLIGHT
 						else -> BlendMode.INHERIT
 					}
+                    depth.filterList = when {
+                        it.hasFilterList -> it.surfaceFilterList.toList()
+                        else -> emptyList()
+                    }
 					val uid = getUid(depthId)
 					val metaData = it.metaData
 					if (metaData != null && metaData is Map<*, *> && "props" in metaData) {

@@ -122,3 +122,13 @@ inline fun <T : View> T.filters(vararg filters: Filter): T {
     filters.fastForEach { addFilter(it) }
     return this
 }
+
+inline fun <T : View> T.filters(filters: List<Filter>): T {
+    filters.fastForEach { addFilter(it) }
+    return this
+}
+
+fun List<Filter?>.composedOrNull(): Filter? {
+    val items = this.filterNotNull()
+    return if (items.isEmpty()) null else ComposedFilter(items)
+}

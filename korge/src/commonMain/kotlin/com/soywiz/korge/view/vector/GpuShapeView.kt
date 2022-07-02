@@ -523,8 +523,7 @@ open class GpuShapeView(
                     endIndex = pathData.vertexEnd,
                     paintShader = paintShader,
                     colorMask = AG.ColorMaskState(true),
-                    //blendMode = BlendMode.NONE.factors,
-                    blendMode = BlendMode.NORMAL.factors,
+                    blendMode = renderBlendMode.factors,
                 )
             }
             return
@@ -668,6 +667,7 @@ open class GpuShapeView(
             ),
             startIndex = vstart,
             endIndex = vend,
+            blendMode = renderBlendMode.factors,
             //startIndex = pathDataStart,
             //endIndex = pathDataEnd,
         )
