@@ -1,6 +1,8 @@
 package com.soywiz.korfl.as3swf
 
+import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.korim.vector.*
@@ -1299,9 +1301,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 							0x12,
 							0x13 -> {
 								// Gradient fill
-								val colors = arrayListOf<Int>()
-								val alphas = arrayListOf<Double>()
-								val ratios = arrayListOf<Int>()
+								val colors = IntArrayList()
+								val alphas = DoubleArrayList()
+								val ratios = IntArrayList()
 								matrix = fillStyle.gradientMatrix!!.matrix.clone()
 								for (gri in 0 until fillStyle.gradient!!.records.size) {
 									val gradientRecord = fillStyle.gradient!!.records[gri]
@@ -1403,9 +1405,9 @@ open class SWFShape(var unitDivisor: Double = 20.0) {
 							when (fillStyle.type) {
 								0x10, 0x12, 0x13 -> {
 									// Gradient fill
-									val colors = arrayListOf<Int>()
-									val alphas = arrayListOf<Double>()
-									val ratios = arrayListOf<Int>()
+									val colors = IntArrayList()
+									val alphas = DoubleArrayList()
+									val ratios = IntArrayList()
 									var gradientRecord: SWFGradientRecord
 									val matrix = fillStyle.gradientMatrix!!.matrix.clone()
 									for (gri in 0 until fillStyle.gradient!!.records.size) {

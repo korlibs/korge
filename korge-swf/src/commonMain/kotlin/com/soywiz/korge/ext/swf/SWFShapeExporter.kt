@@ -3,6 +3,7 @@ package com.soywiz.korge.ext.swf
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.IntArrayList
+import com.soywiz.kds.mapDouble
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract8
 import com.soywiz.kmem.toIntCeil
@@ -159,16 +160,17 @@ open class SWFBaseShapeExporter(
 
     private fun createGradientPaint(
         type: GradientType,
-        colors: List<Int>,
-        alphas: List<Double>,
-        ratios: List<Int>,
+        colors: IntArrayList,
+        alphas: DoubleArrayList,
+        ratios: IntArrayList,
         matrix: Matrix,
         spreadMethod: GradientSpreadMode,
         interpolationMethod: GradientInterpolationMode,
         focalPointRatio: Double
     ): GradientPaint {
-        val aratios = DoubleArrayList(*ratios.map { it.toDouble() / 255.0 }.toDoubleArray())
-        val acolors = IntArrayList(*colors.zip(alphas).map { decodeSWFColor(it.first, it.second).value }.toIntArray())
+        val aratios = ratios.mapDouble { it.toDouble() / 255.0 }
+        val acolors = IntArrayList(colors.size)
+        for (n in colors.indices) acolors.add(decodeSWFColor(colors[n], alphas[n]).value)
 
         val m2 = Matrix()
         m2.copyFrom(matrix)
@@ -205,9 +207,9 @@ open class SWFBaseShapeExporter(
 
     override fun beginGradientFill(
         type: GradientType,
-        colors: List<Int>,
-        alphas: List<Double>,
-        ratios: List<Int>,
+        colors: IntArrayList,
+        alphas: DoubleArrayList,
+        ratios: IntArrayList,
         matrix: Matrix,
         spreadMethod: GradientSpreadMode,
         interpolationMethod: GradientInterpolationMode,
@@ -304,9 +306,9 @@ open class SWFBaseShapeExporter(
 
     override fun lineGradientStyle(
         type: GradientType,
-        colors: List<Int>,
-        alphas: List<Double>,
-        ratios: List<Int>,
+        colors: IntArrayList,
+        alphas: DoubleArrayList,
+        ratios: IntArrayList,
         matrix: Matrix,
         spreadMethod: GradientSpreadMode,
         interpolationMethod: GradientInterpolationMode,
@@ -356,6 +358,6 @@ open class SWFBaseShapeExporter(
 
 internal fun SWFColorTransform.toColorTransform() = ColorTransform(rMult, gMult, bMult, aMult, rAdd, gAdd, bAdd, aAdd)
 
-internal fun decodeSWFColor(color: Int, alpha: Double = 1.0) =
+internal fun decodeSWFColor(color: Int, alpha: Double = 1.0): RGBA =
 	RGBA(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())
 

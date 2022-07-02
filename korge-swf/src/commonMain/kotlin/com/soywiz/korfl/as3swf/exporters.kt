@@ -1,5 +1,7 @@
 package com.soywiz.korfl.as3swf
 
+import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IntArrayList
 import com.soywiz.korio.lang.format
 import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.Matrix
@@ -14,9 +16,9 @@ open class ShapeExporter {
 	open fun beginFill(color: Int, alpha: Double = 1.0) = Unit
 	open fun beginGradientFill(
 		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
+		colors: IntArrayList,
+		alphas: DoubleArrayList,
+		ratios: IntArrayList,
 		matrix: Matrix = Matrix(),
 		spreadMethod: GradientSpreadMode = GradientSpreadMode.PAD,
 		interpolationMethod: GradientInterpolationMode = GradientInterpolationMode.NORMAL,
@@ -48,9 +50,9 @@ open class ShapeExporter {
 
 	open fun lineGradientStyle(
 		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
+		colors: IntArrayList,
+		alphas: DoubleArrayList,
+		ratios: IntArrayList,
 		matrix: Matrix = Matrix(),
 		spreadMethod: GradientSpreadMode = GradientSpreadMode.PAD,
 		interpolationMethod: GradientInterpolationMode = GradientInterpolationMode.NORMAL,
@@ -81,9 +83,9 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 
 	override fun beginGradientFill(
 		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
+		colors: IntArrayList,
+		alphas: DoubleArrayList,
+		ratios: IntArrayList,
 		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
@@ -137,9 +139,9 @@ open class LoggerShapeExporter(val parent: ShapeExporter, val logger: (String) -
 
 	override fun lineGradientStyle(
 		type: GradientType,
-		colors: List<Int>,
-		alphas: List<Double>,
-		ratios: List<Int>,
+		colors: IntArrayList,
+		alphas: DoubleArrayList,
+		ratios: IntArrayList,
 		matrix: Matrix,
 		spreadMethod: GradientSpreadMode,
 		interpolationMethod: GradientInterpolationMode,
