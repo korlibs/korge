@@ -256,8 +256,8 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             eq, eq
         )
 
-        val disabled: Boolean get() = srcRGB == BlendFactor.ONE && dstRGB == BlendFactor.ZERO && srcA == BlendFactor.ONE && dstA == BlendFactor.ZERO
-        val enabled: Boolean get() = !disabled
+        val disabled: Boolean = srcRGB == BlendFactor.ONE && dstRGB == BlendFactor.ZERO && srcA == BlendFactor.ONE && dstA == BlendFactor.ZERO
+        val enabled: Boolean = !disabled
 
         private val cachedHashCode: Int = hashCode(srcRGB, dstRGB, srcA, dstA, eqRGB, eqA)
         override fun hashCode(): Int = cachedHashCode
