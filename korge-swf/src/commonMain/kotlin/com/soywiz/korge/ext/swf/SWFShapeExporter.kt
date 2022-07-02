@@ -156,7 +156,7 @@ open class SWFBaseShapeExporter(
     override fun beginFill(color: Int, alpha: Double) {
         flush()
         drawingFill = true
-        fillStyle = ColorPaint(decodeSWFColor(color, alpha))
+        fillStyle = decodeSWFColor(color, alpha)
     }
 
     private fun createGradientPaint(
@@ -362,5 +362,5 @@ internal fun SWFColorTransform.toColorTransform() = ColorTransform(rMult, gMult,
 fun encodeSWFColor(color: RGBA): Int = 0.insert8(color.r, 16).insert8(color.g, 8).insert8(color.b, 0)
 
 internal fun decodeSWFColor(color: Int, alpha: Double = 1.0): RGBA =
-	RGBA(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt())
+	RGBA(color.extract8(16), color.extract8(8), color.extract8(0), (alpha * 255).toInt().clamp(0, 255))
 

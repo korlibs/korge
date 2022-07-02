@@ -6,7 +6,11 @@ import com.soywiz.korma.geom.degrees
 import com.soywiz.korui.UiContainer
 import kotlin.math.log2
 
-class BlurFilter(radius: Double = 4.0, expandBorder: Boolean = true) : ComposedFilter() {
+class BlurFilter(
+    radius: Double = 4.0,
+    expandBorder: Boolean = true,
+    var optimize: Boolean = true
+) : ComposedFilter() {
     companion object {
         @Deprecated("", ReplaceWith("BlurFilter(radius = initialRadius)"))
         operator fun invoke(initialRadius: Double, dummy: Unit = Unit): BlurFilter = BlurFilter(radius = initialRadius)
@@ -25,8 +29,7 @@ class BlurFilter(radius: Double = 4.0, expandBorder: Boolean = true) : ComposedF
             horizontal.radius = radius
             vertical.radius = radius
         }
-    override val recommendedFilterScale: Double get() = if (radius <= 2.0) 1.0 else 1.0 / log2(radius * 0.5)
-    //override val recommendedFilterScale: Double get() = 1.0
+    override val recommendedFilterScale: Double get() = if (!optimize || radius <= 2.0) 1.0 else 1.0 / log2(radius * 0.5)
 
     override val isIdentity: Boolean get() = radius == 0.0
 

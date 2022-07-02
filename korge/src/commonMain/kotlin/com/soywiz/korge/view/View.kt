@@ -646,6 +646,7 @@ abstract class View internal constructor(
         get() = _colorTransform
         set(v) {
             if (v != _colorTransform) {
+                //println("colorTransform=$_colorTransform")
                 _colorTransform.copyFrom(v)
                 invalidate()
             }

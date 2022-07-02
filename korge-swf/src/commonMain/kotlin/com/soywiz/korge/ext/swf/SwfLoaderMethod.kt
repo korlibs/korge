@@ -619,11 +619,16 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				blendMode = blendMode,
                 filter = filterList.mapNotNull { when (it) {
                     is FilterBlur -> {
-                        //val blurAmount = ((it.blurX + it.blurY) * 0.5) / 16.0
-                        val blurAmount = ((it.blurX + it.blurY) * 0.5) / 4.0
+                        val blurAvg = (it.blurX + it.blurY) * 0.5
+                        //val blurAmount = blurAvg / 16.0
+                        //val blurAmount = blurAvg / 6.0
+                        val blurAmount = blurAvg / 4.0
+                        //val blurAmount = sqrt(blurAvg)
+                        //val blurAmount = log(blurAvg, 2.0)
                         //BlurFilter(log(blurAmount, 2.0))
                         //println("blurAmount=$blurAmount, blurX=${it.blurX}, blurY=${it.blurY}, passes=${it.passes}")
-                        ComposedFilter((0 until it.passes).map { BlurFilter(blurAmount) })
+                        ComposedFilter((0 until it.passes).map { BlurFilter(blurAmount, optimize = false) })
+                        //ComposedFilter(BlurFilter(blurAmount, optimize = false))
                     }
                     is FilterDropShadow -> {
                         DropshadowFilter(sqrt(it.blurX), sqrt(it.blurY), decodeSWFColor(it.dropShadowColor), blurRadius = it.distance)
@@ -704,8 +709,6 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 						}
 					}
 				}
-				is TagSoundStreamHead -> {
-				}
 				is TagDefineSound -> {
 					val soundBytes = it.soundData.cloneToNewByteArray()
 					symbols += AnSymbolSound(it.characterId, null, null, soundBytes)
@@ -716,6 +719,17 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				is TagJPEGTables -> {
 					println("Unhandled tag: $it")
 				}
+                is TagSoundStreamHead -> {
+                    println("Unhandled tag: $it")
+                }
+                is TagSoundStreamBlock -> {
+                }
+                is TagDefineText -> {
+                    println("Unhandled tag: TagDefineText")
+                }
+                is TagDefineButton -> {
+                    println("Unhandled tag: TagDefineButton")
+                }
                 /*
                 is TagPathsArePostScript -> {
                     pathsArePostScript = true
@@ -769,7 +783,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 							val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
 							funcompressedData.uncompressInWorker("zlib")
 							val uncompressedData = funcompressedData.cloneToNewByteArray()
-                            println("LOSSLESS: ${it.bitmapWidth}, ${it.bitmapHeight} : ${it.bitmapFormat}, it.hasAlpha=${it.hasAlpha}")
+                            //println("LOSSLESS: ${it.bitmapWidth}, ${it.bitmapHeight} : ${it.bitmapFormat}, it.hasAlpha=${it.hasAlpha}")
 							when (it.bitmapFormat) {
 								BitmapFormat.BIT_8 -> {
 									val ncolors = it.bitmapColorTableSize
@@ -873,10 +887,13 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					//if (it.hasBlendMode) depth.blendMode = it.blendMode
 					if (it.hasColorTransform) {
 						val ct = it.colorTransform!!.toColorTransform()
+                        //println("colorTransform=$ct")
 						depth.colorTransform = ct
 						//allColorTransforms += ct
 						//println(depth.colorTransform)
-					}
+					} else {
+                        depth.colorTransform = ColorTransform()
+                    }
 					if (it.hasMatrix) {
 						val m = it.matrix!!.matrix
 						depth.matrix = m
