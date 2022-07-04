@@ -10,6 +10,7 @@ import com.soywiz.klogger.Logger
 import com.soywiz.korag.log.PrintAG
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korev.DestroyEvent
+import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
@@ -418,6 +419,8 @@ object Korge {
             views.dispatch(e)
         }
 
+
+        eventDispatcher.addEventListener<DropFileEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<ResumeEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<PauseEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<StopEvent> { e -> views.dispatch(e) }
