@@ -34,5 +34,6 @@ data class ReloadEvent(
     /** Was able to reload all classes successfully in the existing class loader */
     val reloadSuccess: Boolean
 ) : Event() {
+    val doFullReload: Boolean get() = !reloadSuccess
     fun <T : Any> getReloadedClass(clazz: KClass<T>, injector: AsyncInjector): KClass<T> = KorgeReload_getReloadedClass(clazz, ReloadClassContext(injector, refreshedClasses))
 }
