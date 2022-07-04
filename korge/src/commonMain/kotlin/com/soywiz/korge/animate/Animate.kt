@@ -468,7 +468,15 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		this@apply.copyPropsFrom(this)
 	}
 
-	override fun createInstance(): View = symbol.create(library) as View
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        if (symbol.id == 0) {
+            out.setTo(0, 0, library.width, library.height)
+        } else {
+            super.getLocalBoundsInternal(out)
+        }
+    }
+
+    override fun createInstance(): View = symbol.create(library) as View
 
 	private val tempTimedResult = Timed.Result<AnSymbolTimelineFrame>()
 	val totalDepths = symbol.limits.totalDepths
