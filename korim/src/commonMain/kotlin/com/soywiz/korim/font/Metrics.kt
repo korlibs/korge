@@ -63,6 +63,8 @@ data class FontMetrics(
 
     fun clear() {
     }
+
+    fun clone(): FontMetrics = copy()
 }
 
 data class GlyphMetrics(
@@ -70,7 +72,7 @@ data class GlyphMetrics(
     var existing: Boolean = false,
     var codePoint: Int = 0,
     val bounds: Rectangle = Rectangle(),
-    var xadvance: Double = 0.0
+    var xadvance: Double = 0.0,
 ) {
     val right: Double get() = bounds.right
     val bottom: Double get() = bounds.bottom

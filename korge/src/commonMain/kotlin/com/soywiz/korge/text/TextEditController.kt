@@ -268,8 +268,10 @@ class TextEditController(
 
         val array = PointArrayList(2)
         if (range.isEmpty()) {
+            val last = (range.start >= this.text.length)
             val caret = getCaretAtIndex(range.start)
-            val normal = caret.normal(0.0) * -2.0
+            val sign = if (last) -1.0 else +1.0
+            val normal = caret.normal(0.0) * (4.0 * sign)
             val p0 = caret.points.firstPoint()
             val p1 = caret.points.lastPoint()
             array.add(p0)

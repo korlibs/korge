@@ -73,7 +73,11 @@ class MainTextInput : Scene() {
             textSize = 64.0,
             font = font,
             color = Colors.RED,
-        ).xy(600, 500).textSpacing(9.0).aroundPath(buildVectorPath { moveTo(0.0, 0.0); quadTo(250.0, -100.0, 500.0, 0.0) }).filters(DropshadowFilter()).also { it.editText() }
+        ).xy(600, 500)
+            .textSpacing(9.0)
+            .aroundPath(buildVectorPath { moveTo(0.0, 0.0); quadTo(250.0, -100.0, 500.0, 0.0) })
+            .filters(DropshadowFilter())
+            .also { it.editText() }
 
         /*
         gpuGraphics {

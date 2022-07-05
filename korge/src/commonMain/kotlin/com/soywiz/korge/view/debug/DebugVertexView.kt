@@ -16,7 +16,9 @@ import com.soywiz.korge.view.ViewDslMarker
 import com.soywiz.korge.view.addTo
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korma.geom.BoundsBuilder
 import com.soywiz.korma.geom.IVectorArrayList
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.VectorArrayList
 import com.soywiz.korma.geom.fastForEachGeneric
 import com.soywiz.korma.geom.toMatrix3D
@@ -63,12 +65,14 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
     class Batch(val offset: Int, val count: Int)
     var buffer: FloatArray = floatArrayOf(0f, 0f, 100f, 0f, 0f, 100f, 100f, 100f)
     val batches = arrayListOf<Batch>()
+    private val bb = BoundsBuilder()
 
     private fun updatedPoints() {
         this.buffer = FloatArray(pointsList.sumOf { it.size } * 2)
         val buffer = this.buffer
         var n = 0
         batches.clear()
+        bb.reset()
         pointsList.fastForEach { points ->
             batches.add(Batch(n / 2, points.size))
             if (points.dimensions >= 5) {
@@ -82,6 +86,7 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     val py = y + dy * scale
                     buffer[n++] = px
                     buffer[n++] = py
+                    bb.add(px, py)
                 }
             } else {
                 points.fastForEachGeneric {
@@ -89,16 +94,18 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                     val y = this.get(it, 1).toFloat()
                     buffer[n++] = x
                     buffer[n++] = y
+                    bb.add(x, y)
                 }
             }
         }
     }
 
-    init {
-        updatedPoints()
-    }
-
     private val uniforms: AG.UniformValues = AG.UniformValues()
+
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        bb.getBounds(out)
+        //println("DebugVertexView.getLocalBoundsInternal:$out")
+    }
 
     override fun renderInternal(ctx: RenderContext) {
         ctx.flush()
@@ -124,5 +131,9 @@ class DebugVertexView(pointsList: List<IVectorArrayList>, color: RGBA = Colors.W
                 )
             }
         }
+    }
+
+    init {
+        updatedPoints()
     }
 }

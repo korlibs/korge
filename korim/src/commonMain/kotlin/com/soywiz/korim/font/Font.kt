@@ -65,13 +65,20 @@ data class TextMetricsResult(
     override var glyphs: List<PlacedGlyphMetrics> = emptyList()
 ) : BaseTextMetricsResult
 
-data class PlacedGlyphMetrics(val codePoint: Int, val x: Double, val y: Double, val metrics: GlyphMetrics, val transform: Matrix, val index: Int) {
+data class PlacedGlyphMetrics(val codePoint: Int, val x: Double, val y: Double, val metrics: GlyphMetrics, val fontMetrics: FontMetrics, val transform: Matrix, val index: Int) {
     val boundsPath: VectorPath by lazy {
         buildVectorPath {
             this.optimize = false
             val rect = Rectangle().copyFrom(metrics.bounds)
-            rect.y = -rect.y
-            rect.height = -rect.height
+            rect.y = -fontMetrics.ascent
+            rect.height = fontMetrics.ascent - fontMetrics.descent
+
+            //println("rect=$rect, ascent=${fontMetrics.ascent}, descent=${fontMetrics.descent}")
+
+            //rect.y = -rect.y
+            //rect.height = -rect.height
+            //rect.y = -rect.y
+            //rect.height = -rect.height
             rect(rect)
         }.applyTransform(Matrix().translate(x, y).premultiply(transform))
     }
@@ -121,7 +128,7 @@ fun Font.renderGlyphToBitmap(
     }
     val imageOut = image.toBMP32IfRequired().applyEffect(effect)
     return TextToBitmapResult(imageOut, fmetrics, TextMetrics(), listOf(
-        PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, Matrix(), 0)
+        PlacedGlyphMetrics(codePoint, gx + border, gy + border, gmetrics, fmetrics, Matrix(), 0)
     ))
 }
 
@@ -155,9 +162,9 @@ fun <T> Font.renderTextToBitmap(
         }
         //font.drawText(this, size, text, paint, bounds.drawLeft, bounds.drawTop, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
         var index = 0
-        font.drawText(this, size, text, paint, bounds.drawLeft, bounds.ascent, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, transform ->
+        font.drawText(this, size, text, paint, bounds.drawLeft, bounds.ascent, fill, renderer = renderer, placed = { codePoint, x, y, size, metrics, fmetrics, transform ->
             if (returnGlyphs) {
-                glyphs += PlacedGlyphMetrics(codePoint, x, y, metrics.clone(), transform.clone(), index++)
+                glyphs += PlacedGlyphMetrics(codePoint, x, y, metrics.clone(), fmetrics, transform.clone(), index++)
             }
         })
     }
@@ -185,7 +192,7 @@ fun <T> Font.drawText(
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     valign: VerticalAlign = VerticalAlign.BASELINE,
     outMetrics: TextMetricsResult? = null,
-    placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, transform: Matrix) -> Unit)? = null
+    placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
 ): TextMetricsResult? {
     //println("drawText!!: text=$text")
     val glyphs = if (outMetrics != null) arrayListOf<PlacedGlyphMetrics>() else null
@@ -209,9 +216,9 @@ fun <T> Font.drawText(
                 if (fill) ctx.fill() else ctx.stroke()
             }
             if (glyphs != null) {
-                glyphs += PlacedGlyphMetrics(codePoint, px, py, glyphMetrics.clone(), transform.clone(), glyphs.size)
+                glyphs += PlacedGlyphMetrics(codePoint, px, py, glyphMetrics.clone(), fontMetrics.clone(), transform.clone(), glyphs.size)
             }
-            placed?.invoke(codePoint, px, py, size, glyphMetrics, this.transform)
+            placed?.invoke(codePoint, px, py, size, glyphMetrics, fontMetrics, this.transform)
             return glyphMetrics
         }
     }
