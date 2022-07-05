@@ -92,13 +92,18 @@ data class PlacedGlyphMetrics(val codePoint: Int, val x: Double, val y: Double, 
     val caretStart: Bezier by lazy { boundsPathCurves.beziers[3].toLine().flipped().toBezier() }
     val caretEnd: Bezier by lazy { boundsPathCurves.beziers[1] }
 
-    fun distToPath(x: Double, y: Double): Double {
+    fun distToPath(x: Double, y: Double, startEnd: Boolean? = null): Double {
         if (boundsPath.containsPoint(x, y)) return 0.0
-        val middle = boundsPath.getBounds().getMiddlePoint()
+
+        val middle = when (startEnd) {
+            true -> caretStart.get(0.5)
+            false -> caretEnd.get(0.5)
+            null -> Point.middle(caretStart.get(0.5), caretEnd.get(0.5))
+        }
         return Point.distance(middle.x, middle.y, x, y)
     }
 
-    fun distToPath(p: IPoint): Double = distToPath(p.x, p.y)
+    fun distToPath(p: IPoint, startEnd: Boolean? = null): Double = distToPath(p.x, p.y, startEnd)
 }
 
 interface BaseTextMetricsResult {

@@ -251,7 +251,7 @@ class TextEditController(
                     minDist = dist
                     //println("[$n] dist=$dist")
                     index = when {
-                        n >= glyphPositions.size - 1 && dist != 0.0 -> n + 1
+                        n >= glyphPositions.size - 1 && dist != 0.0 && glyph.distToPath(pos, startEnd = false) < glyph.distToPath(pos, startEnd = true)  -> n + 1
                         else -> n
                     }
                 }
