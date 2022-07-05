@@ -20,6 +20,8 @@ import com.soywiz.korge.view.visible
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.tiles.tiled.TiledMap
+import com.soywiz.korim.tiles.tiled.toTileSet
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Size

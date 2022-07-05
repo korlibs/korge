@@ -129,6 +129,10 @@ class IntArrayList(capacity: Int = 7) : Collection<Int> {
 
     @Suppress("ReplaceSizeZeroCheckWithIsEmpty")
     override fun isEmpty(): Boolean = this.size == 0
+    fun isNotEmpty(): Boolean = this.size != 0
+
+    fun first(): Int = if (isEmpty()) throw IndexOutOfBoundsException() else data[0]
+    fun last(): Int = if (isEmpty()) throw IndexOutOfBoundsException() else data[length - 1]
 
     fun indexOf(value: Int, start: Int = 0, end: Int = this.size): Int {
         for (n in start until end) if (data[n] == value) return n

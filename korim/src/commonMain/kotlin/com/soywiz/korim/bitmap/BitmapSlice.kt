@@ -57,6 +57,11 @@ interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpC
     override fun close() = Unit
     val sizeString: String get() = "${width}x${height}"
 
+    fun getRectInt(out: RectangleInt = RectangleInt()): RectangleInt {
+        out.setTo(left, top, width, height)
+        return out
+    }
+
     fun subCoords(bounds: RectangleInt, imageOrientation: ImageOrientation): BmpCoordsWithT<T> {
         // Assure bounds are inside this slide
         if (bounds.x < 0) {

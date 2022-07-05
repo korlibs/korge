@@ -10,29 +10,30 @@ import com.soywiz.korim.vector.*
 import com.soywiz.korio.dynamic.mapper.*
 import com.soywiz.korio.dynamic.serialization.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.yaml.*
 import kotlin.coroutines.*
 import kotlin.native.concurrent.ThreadLocal
 
 data class SWFExportConfig(
-	val debug: Boolean = false,
-	val mipmaps: Boolean = true,
-	val antialiasing: Boolean = true,
-	val rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4,
-	val exportScale: Double = 1.0,
+    val debug: Boolean = false,
+    val mipmaps: Boolean = true,
+    val antialiasing: Boolean = true,
+    val rasterizerMethod: ShapeRasterizerMethod = ShapeRasterizerMethod.X4,
+    val exportScale: Double = 1.0,
 	//val exportScale: Double = 1.1,
-	val minShapeSide: Int = 64,
-	val maxShapeSide: Int = 512,
-	val minMorphShapeSide: Int = 16,
-	val maxMorphShapeSide: Int = 128,
-	val maxTextureSide: Int = 4096,
-	val exportPaths: Boolean = false,
-	val adaptiveScaling: Boolean = true,
-	val smoothInterpolation: Boolean = true,
+    val minShapeSide: Int = 64,
+    val maxShapeSide: Int = 512,
+    val minMorphShapeSide: Int = 16,
+    val maxMorphShapeSide: Int = 128,
+    val maxTextureSide: Int = 4096,
+    val exportPaths: Boolean = false,
+    val adaptiveScaling: Boolean = true,
+    val smoothInterpolation: Boolean = true,
     val atlasPacking: Boolean = true,
     val roundDecimalPlaces: Int = -1,
-    val native: Boolean = true,
+    val generateTextures: Boolean = false,
+    //val generateTextures: Boolean = true,
+    val graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
 )
 
 fun SWFExportConfig.toAnLibrarySerializerConfig(compression: Double = 1.0): AnLibrarySerializer.Config =

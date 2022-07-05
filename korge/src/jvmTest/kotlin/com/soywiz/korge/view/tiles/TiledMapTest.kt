@@ -1,9 +1,10 @@
 package com.soywiz.korge.view.tiles
 
-import com.soywiz.korge.tiled.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.file.std.*
-import kotlin.test.*
+import com.soywiz.korim.tiles.tiled.readTiledMap
+import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.std.localCurrentDirVfs
+import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.test.Test
 
 class TiledMapTest {
     val vfs = localCurrentDirVfs["src/commonTest/resources"]

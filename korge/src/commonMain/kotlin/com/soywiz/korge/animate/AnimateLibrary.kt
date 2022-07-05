@@ -16,10 +16,15 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.GraphicsRenderer
 import com.soywiz.korge.view.KorgeFileLoader
 import com.soywiz.korge.view.KorgeFileLoaderTester
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.filter
+import com.soywiz.korge.view.filter.ComposedFilter
+import com.soywiz.korge.view.filter.Filter
+import com.soywiz.korge.view.filters
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.ColorTransform
@@ -27,6 +32,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.RegisteredImageFormats
+import com.soywiz.korim.vector.Shape
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.util.AsyncOnce
 import com.soywiz.korma.geom.Matrix
@@ -81,11 +87,13 @@ open class AnSymbolBaseShape(id: Int, name: String?, var bounds: Rectangle, val 
 }
 
 class AnSymbolShape(
-	id: Int,
-	name: String?,
-	bounds: Rectangle,
-	var textureWithBitmap: TextureWithBitmapSlice?,
-	path: VectorPath? = null
+    id: Int,
+    name: String?,
+    bounds: Rectangle,
+    var textureWithBitmap: TextureWithBitmapSlice?,
+    path: VectorPath? = null,
+    var shapeGen: (() -> Shape)? = null,
+    var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : AnSymbolBaseShape(id, name, bounds, path) {
 	override fun create(library: AnLibrary): AnElement = AnShape(library, this)
 }
@@ -95,7 +103,9 @@ class AnSymbolMorphShape(
 	name: String?,
 	bounds: Rectangle,
 	var texturesWithBitmap: Timed<TextureWithBitmapSlice> = Timed(),
-	path: VectorPath? = null
+	path: VectorPath? = null,
+    var shapeGen: ((ratio: Double) -> Shape)? = null,
+    var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.GPU,
 ) : AnSymbolBaseShape(id, name, bounds, path) {
 	override fun create(library: AnLibrary): AnElement = AnMorphShape(library, this)
 }
@@ -117,7 +127,8 @@ data class AnSymbolTimelineFrame(
 	var transform: Matrix = Matrix(),
 	var name: String? = null,
 	var colorTransform: ColorTransform = ColorTransform(),
-	var blendMode: BlendMode = BlendMode.INHERIT
+	var blendMode: BlendMode = BlendMode.INHERIT,
+    var filter: Filter? = null
 ) {
 	fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
 		this.transform.setToInterpolated(ratio, l.transform, r.transform)
@@ -125,6 +136,7 @@ data class AnSymbolTimelineFrame(
 		this.ratio = ratio.interpolate(l.ratio, r.ratio)
 		this.name = l.name
 		this.blendMode = l.blendMode
+        this.filter = l.filter
 	}
 
 	companion object {
@@ -134,6 +146,7 @@ data class AnSymbolTimelineFrame(
 			view.ratio = ratio.interpolate(l.ratio, r.ratio)
 			view.name = l.name
 			view.blendMode = l.blendMode
+            view.filter = l.filter
 		}
 	}
 
@@ -143,6 +156,7 @@ data class AnSymbolTimelineFrame(
 		view.name = name
 		view.colorTransform = colorTransform
 		view.blendMode = blendMode
+        view.filter = filter
 	}
 
 	fun copyFrom(other: AnSymbolTimelineFrame) {
@@ -154,6 +168,7 @@ data class AnSymbolTimelineFrame(
 		this.name = other.name
 		this.colorTransform.copyFrom(other.colorTransform)
 		this.blendMode = other.blendMode
+        this.filter = other.filter
 	}
 
 	//fun setToInterpolated(l: AnSymbolTimelineFrame, r: AnSymbolTimelineFrame, ratio: Double) {
@@ -385,5 +400,5 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 
     val mainTimeLineInfo: AnSymbolMovieClip get() = symbolsById[0] as AnSymbolMovieClip
 
-	fun createMainTimeLine() = createMovieClip(0)
+	fun createMainTimeLine(): AnMovieClip = createMovieClip(0)
 }

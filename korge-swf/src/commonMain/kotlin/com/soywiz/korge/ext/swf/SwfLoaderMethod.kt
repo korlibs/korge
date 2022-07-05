@@ -1,16 +1,20 @@
 package com.soywiz.korge.ext.swf
 
 import com.soywiz.kds.BitSet
+import com.soywiz.kds.memoize
 import com.soywiz.korfl.as3swf.*
 import com.soywiz.klock.*
 import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.composedOrNull
+import com.soywiz.korge.view.filter.BlurFilter
+import com.soywiz.korge.view.filter.ComposedFilter
+import com.soywiz.korge.view.filter.DropshadowFilter
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
@@ -103,7 +107,29 @@ fun TagDefineShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale:
         path = path,
         charId = this.characterId,
         roundDecimalPlaces = config.roundDecimalPlaces,
-        native = config.native,
+        graphicsRenderer = config.graphicsRenderer,
+    )
+}
+
+fun TagDefineMorphShape.getShapeExporter(swf: SWF, config: SWFExportConfig, maxScale: Double, path: VectorPath = VectorPath()): SWFShapeExporter {
+    val adaptiveScaling = if (config.adaptiveScaling) maxScale else 1.0
+    //val maxScale = if (maxScale != 0.0) 1.0 / maxScale else 1.0
+    //println("SWFShapeRasterizerRequest: $charId: $adaptiveScaling : $config")
+    return SWFShapeExporter(
+        swf,
+        config.debug,
+        this.startBounds.rect,
+        { this.export(it) },
+        rasterizerMethod = config.rasterizerMethod,
+        antialiasing = config.antialiasing,
+        //requestScale = config.exportScale / maxScale.clamp(0.0001, 4.0),
+        requestScale = config.exportScale * adaptiveScaling,
+        minSide = config.minShapeSide,
+        maxSide = config.maxShapeSide,
+        path = path,
+        charId = this.characterId,
+        roundDecimalPlaces = config.roundDecimalPlaces,
+        graphicsRenderer = config.graphicsRenderer,
     )
 }
 
@@ -147,7 +173,11 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
         }
 		generateActualTimelines()
 		lib.processSymbolNames()
-		generateTextures()
+        if (config.generateTextures) {
+            generateTextures()
+        } else {
+            generateShapes()
+        }
 		finalProcessing()
 		return lib
 	}
@@ -425,6 +455,20 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		}
 	}
 
+    private fun generateShapes() {
+        for (shape in shapesToPopulate.keys) {
+            val tag = shape.tagDefineShape!!
+            shape.shapeGen = { tag.export(swf.bitmaps) }.memoize()
+            shape.graphicsRenderer = config.graphicsRenderer
+            //itemsInAtlas.put({ texture -> shape.textureWithBitmap = texture }, rasterizer.imageWithScale)
+        }
+        for (morph in morphShapesToPopulate) {
+            val tag = morph.tagDefineMorphShape!!
+            morph.shapeGen = { ratio ->
+                tag.export(swf.bitmaps, ratio)
+            }
+        }
+    }
 
 	private suspend fun generateTextures() {
 		val itemsInAtlas = LinkedHashMap<(TextureWithBitmapSlice) -> Unit, BitmapWithScale>()
@@ -461,13 +505,13 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 							e.printStackTrace()
 						}
 					},
-					config.rasterizerMethod,
+                    rasterizerMethod = config.rasterizerMethod,
 					antialiasing = config.antialiasing,
 					requestScale = config.exportScale,
 					minSide = config.minMorphShapeSide,
 					maxSide = config.maxMorphShapeSide,
                     charId = morph.id,
-                    native = config.native
+                    graphicsRenderer = config.graphicsRenderer,
 				)
 				itemsInAtlas.put(
 					{ texture -> morph.texturesWithBitmap.add(ratio.seconds, texture) },
@@ -524,7 +568,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
         try {
             parseMovieClipInternal(tags, mc)
         } catch (e: Throwable) {
-
+            e.printStackTrace()
         }
     }
 
@@ -536,15 +580,16 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 		val uniqueIds = hashMapOf<Pair<Int, Int>, Int>()
 
 		data class DepthInfo(
-			val depth: Int,
-			var uid: Int = -1,
-			var charId: Int = -1,
-			var clipDepth: Int = -1,
-			var name: String? = null,
-			var colorTransform: ColorTransform = ColorTransform(),
-			var ratio: Double = 0.0,
-			var matrix: Matrix = Matrix(),
-			var blendMode: BlendMode = BlendMode.INHERIT
+            val depth: Int,
+            var uid: Int = -1,
+            var charId: Int = -1,
+            var clipDepth: Int = -1,
+            var name: String? = null,
+            var colorTransform: ColorTransform = ColorTransform(),
+            var ratio: Double = 0.0,
+            var matrix: Matrix = Matrix(),
+            var blendMode: BlendMode = BlendMode.INHERIT,
+            var filterList: List<IFilter> = emptyList(),
 		) {
 			fun reset() {
 				uid = -1
@@ -571,7 +616,28 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				name = name,
 				transform = matrix,
 				colorTransform = colorTransform,
-				blendMode = blendMode
+				blendMode = blendMode,
+                filter = filterList.mapNotNull { when (it) {
+                    is FilterBlur -> {
+                        val blurAvg = (it.blurX + it.blurY) * 0.5
+                        //val blurAmount = blurAvg / 16.0
+                        //val blurAmount = blurAvg / 6.0
+                        val blurAmount = blurAvg / 4.0
+                        //val blurAmount = sqrt(blurAvg)
+                        //val blurAmount = log(blurAvg, 2.0)
+                        //BlurFilter(log(blurAmount, 2.0))
+                        //println("blurAmount=$blurAmount, blurX=${it.blurX}, blurY=${it.blurY}, passes=${it.passes}")
+                        ComposedFilter((0 until it.passes).map { BlurFilter(blurAmount, optimize = false) })
+                        //ComposedFilter(BlurFilter(blurAmount, optimize = false))
+                    }
+                    is FilterDropShadow -> {
+                        DropshadowFilter(sqrt(it.blurX), sqrt(it.blurY), decodeSWFColor(it.dropShadowColor), blurRadius = it.distance)
+                    }
+                    else -> {
+                        println("Unimplemented SWF filter: $it")
+                        null
+                    }
+                } }.composedOrNull()
 			)
 		}
 
@@ -643,8 +709,6 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 						}
 					}
 				}
-				is TagSoundStreamHead -> {
-				}
 				is TagDefineSound -> {
 					val soundBytes = it.soundData.cloneToNewByteArray()
 					symbols += AnSymbolSound(it.characterId, null, null, soundBytes)
@@ -655,6 +719,17 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				is TagJPEGTables -> {
 					println("Unhandled tag: $it")
 				}
+                is TagSoundStreamHead -> {
+                    println("Unhandled tag: $it")
+                }
+                is TagSoundStreamBlock -> {
+                }
+                is TagDefineText -> {
+                    println("Unhandled tag: TagDefineText")
+                }
+                is TagDefineButton -> {
+                    println("Unhandled tag: TagDefineButton")
+                }
                 /*
                 is TagPathsArePostScript -> {
                     pathsArePostScript = true
@@ -708,6 +783,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 							val funcompressedData = it.zlibBitmapData.cloneToNewFlashByteArray()
 							funcompressedData.uncompressInWorker("zlib")
 							val uncompressedData = funcompressedData.cloneToNewByteArray()
+                            //println("LOSSLESS: ${it.bitmapWidth}, ${it.bitmapHeight} : ${it.bitmapFormat}, it.hasAlpha=${it.hasAlpha}")
 							when (it.bitmapFormat) {
 								BitmapFormat.BIT_8 -> {
 									val ncolors = it.bitmapColorTableSize
@@ -811,10 +887,13 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					//if (it.hasBlendMode) depth.blendMode = it.blendMode
 					if (it.hasColorTransform) {
 						val ct = it.colorTransform!!.toColorTransform()
+                        //println("colorTransform=$ct")
 						depth.colorTransform = ct
 						//allColorTransforms += ct
 						//println(depth.colorTransform)
-					}
+					} else {
+                        depth.colorTransform = ColorTransform()
+                    }
 					if (it.hasMatrix) {
 						val m = it.matrix!!.matrix
 						depth.matrix = m
@@ -839,6 +918,10 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 						com.soywiz.korfl.as3swf.BlendMode.HARDLIGHT -> BlendMode.HARDLIGHT
 						else -> BlendMode.INHERIT
 					}
+                    depth.filterList = when {
+                        it.hasFilterList -> it.surfaceFilterList.toList()
+                        else -> emptyList()
+                    }
 					val uid = getUid(depthId)
 					val metaData = it.metaData
 					if (metaData != null && metaData is Map<*, *> && "props" in metaData) {

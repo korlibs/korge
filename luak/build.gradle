@@ -1,0 +1,13 @@
+description = "Multiplatform Kotlin LuaJ port (LUA interpreter)"
+
+project.ext.props = [
+    "project.scm.url" : "https://github.com/korlibs/korge/main/luak",
+    "project.license.name" : "MIT License",
+    "project.license.url" : "https://raw.githubusercontent.com/korlibs/korge/main/kbignum/LICENSE",
+    "project.author.id" : "soywiz",
+    "project.author.name" : "Carlos Ballesteros Velasco",
+    "project.author.email" : "soywiz@gmail.com",
+]
+
+dependencies {
+}

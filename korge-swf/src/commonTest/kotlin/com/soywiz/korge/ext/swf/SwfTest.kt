@@ -53,7 +53,11 @@ class SwfTest {
 	val viewsLog = ViewsLog(eventLoopTest.dispatcher)
 	val views = viewsLog.views
 
-    fun fastSwfExportConfig() = SWFExportConfig(debug = false, mipmaps = false, rasterizerMethod = ShapeRasterizerMethod.NONE)
+    fun fastSwfExportConfig() = SWFExportConfig(
+        debug = false, mipmaps = false,
+        rasterizerMethod = ShapeRasterizerMethod.NONE,
+        generateTextures = true
+    )
 
     suspend fun VfsFile.readSWFDeserializing(views: Views, config: SWFExportConfig? = null): AnLibrary {
 		val mem = MemoryVfs()

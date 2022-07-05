@@ -256,7 +256,7 @@ open class TagDefineBitsLossless(
 }
 
 class TagDefineBitsLossless2 : TagDefineBitsLossless(36, "DefineBitsLossless2", 3, 2) {
-	override fun toString(indent: Int, flags: Int): String = "${Tag.toStringCommon(type, name, indent)}ID: $characterId, Format: $bitmapFormat, Size: ($bitmapWidth,$bitmapHeight)"
+    override val hasAlpha = true
 }
 
 open class TagDefineButton : _BaseDefinitionTag(7, "DefineButton", 1) {
