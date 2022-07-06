@@ -181,8 +181,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
 
         out.fillType = when (winding ?: this.winding) {
             Winding.EVEN_ODD -> Path.FillType.EVEN_ODD
-            Winding.NON_ZERO -> Path.FillType.INVERSE_EVEN_ODD
-            else -> Path.FillType.EVEN_ODD
+            Winding.NON_ZERO -> Path.FillType.WINDING
         }
         //kotlin.io.println("Path:")
         this.visitCmds(
@@ -300,6 +299,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             if (state.clip != null) {
                 val clipPath = state.clip!!.toAndroid(androidClipPath, winding)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                //if (false) {
                     canvas.clipOutPath(clipPath)
                 } else {
                     canvas.clipPath(clipPath, Region.Op.DIFFERENCE)
