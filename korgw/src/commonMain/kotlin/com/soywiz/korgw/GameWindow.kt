@@ -9,6 +9,7 @@ import com.soywiz.klock.max
 import com.soywiz.klock.measureTime
 import com.soywiz.klock.microseconds
 import com.soywiz.klock.milliseconds
+import com.soywiz.klock.roundMilliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.setBits
@@ -197,8 +198,9 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                         item.continuation?.resume(Unit)
                         item.callback?.run()
                     }
-                    if ((now() - startTime) >= availableTime) {
-                        informTooMuchCallbacksToHandleInThisFrame()
+                    val elapsedTime = now() - startTime
+                    if (elapsedTime >= availableTime) {
+                        informTooMuchCallbacksToHandleInThisFrame(elapsedTime, availableTime)
                         break
                     }
                 }
@@ -210,8 +212,9 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                         task?.run()
                     }
                     //println("task=$time, task=$task")
-                    if ((now() - startTime) >= availableTime) {
-                        informTooMuchCallbacksToHandleInThisFrame()
+                    val elapsed = now() - startTime
+                    if (elapsed >= availableTime) {
+                        informTooMuchCallbacksToHandleInThisFrame(elapsed, availableTime)
                         break
                     }
                 }
@@ -222,8 +225,8 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         }
     }
 
-    open fun informTooMuchCallbacksToHandleInThisFrame() {
-        Console.warn("Too many callbacks to handle in this frame")
+    open fun informTooMuchCallbacksToHandleInThisFrame(elapsedTime: TimeSpan, availableTime: TimeSpan) {
+        Console.warn("Too many callbacks to handle in this frame elapsedTime=${elapsedTime.roundMilliseconds()}, availableTime=${availableTime.roundMilliseconds()} pending timedTasks=${timedTasks.size}, tasks=${tasks.size}")
     }
 
     override fun close() {
