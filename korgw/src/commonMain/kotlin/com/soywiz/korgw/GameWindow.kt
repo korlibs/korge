@@ -148,6 +148,13 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     var timedTasksTime = 0.milliseconds
     var tasksTime = 0.milliseconds
 
+    /**
+     * Allows to configure how much time per frame is available to execute pending tasks.
+     * You can increase this time if you have sometimes tasks not being executed frequently
+     * at the cost of not being able to render at 60fps.
+     **/
+    var tasksAllocatedTimePerFrame: TimeSpan = 16.milliseconds
+
     /** On JS this cannot work, because it requires the real event loop to be reached */
     @KoragExperimental
     open fun <T> runBlockingNoJs(coroutineContext: CoroutineContext, block: suspend () -> T): T {
@@ -164,7 +171,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             }
         })
         while (!completed) {
-            executePending(16.milliseconds)
+            executePending(tasksAllocatedTimePerFrame)
             if (completed) break
             blockingSleep(1.milliseconds)
         }
