@@ -224,8 +224,10 @@ class WindowsGameWindow : EventLoopGameWindow() {
     }
 
     fun resized(width: Int, height: Int) {
-        dispatchReshapeEvent(0, 0, width, height)
-        render(doUpdate = false)
+        render(doUpdate = false) {
+            dispatchReshapeEvent(0, 0, width, height)
+            true
+        }
     }
 
     override fun doInitRender() {

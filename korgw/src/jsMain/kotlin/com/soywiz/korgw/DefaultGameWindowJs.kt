@@ -44,7 +44,7 @@ open class BrowserCanvasJsGameWindow : JsGameWindow() {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun updateGamepad() {
+    override fun updateGamepads() {
         try {
             if (navigator.getGamepads != null) {
                 val gamepads = navigator.getGamepads().unsafeCast<JsArray<JsGamePad?>>()
@@ -113,10 +113,6 @@ open class BrowserCanvasJsGameWindow : JsGameWindow() {
         //canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
 
         dispatchReshapeEvent(0, 0, canvas.width, canvas.height)
-    }
-
-    private fun doRender() {
-        dispatch(renderEvent)
     }
 
     inline fun transformEventX(x: Double): Double = x * canvasRatio
@@ -439,16 +435,8 @@ open class BrowserCanvasJsGameWindow : JsGameWindow() {
         onResized()
 
         jsFrame = { step: Double ->
-            val startTime = PerformanceCounter.reference
-            window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop
-            updateGamepad()
-            try {
-                doRender()
-            } finally {
-                val elapsed = PerformanceCounter.reference - startTime
-                val available = counterTimePerFrame - elapsed
-                coroutineDispatcher.executePending(available)
-            }
+            window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop, not triggering again
+            frame()
         }
     }
 }

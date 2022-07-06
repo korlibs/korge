@@ -246,9 +246,6 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
             var frameTime: TimeSpan = 0.milliseconds
             var finishTime: TimeSpan = 0.milliseconds
             val totalTime = measureTime {
-                gamePadTime = measureTime {
-                    updateGamepads()
-                }
                 frameTime = measureTime {
                     frame()
                 }
@@ -262,7 +259,7 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
         }
     }
 
-    private fun updateGamepads() {
+    override fun updateGamepads() {
         when {
             OS.isWindows -> {
                 xinputEventAdapter.updateGamepadsWin32(this)

@@ -5,10 +5,12 @@ import com.soywiz.kds.lock.Lock
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.blockingSleep
+import com.soywiz.klock.max
 import com.soywiz.klock.measureTime
 import com.soywiz.klock.microseconds
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
+import com.soywiz.klogger.Console
 import com.soywiz.kmem.setBits
 import com.soywiz.korag.AG
 import com.soywiz.korag.AGWindow
@@ -21,7 +23,6 @@ import com.soywiz.korev.EventDispatcher
 import com.soywiz.korev.FullScreenEvent
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
-import com.soywiz.korev.GameStick
 import com.soywiz.korev.GamepadMapping
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.InitEvent
@@ -33,8 +34,6 @@ import com.soywiz.korev.PauseEvent
 import com.soywiz.korev.RenderEvent
 import com.soywiz.korev.ReshapeEvent
 import com.soywiz.korev.ResumeEvent
-import com.soywiz.korev.SoftKeyboardConfig
-import com.soywiz.korev.StandardGamepadMapping
 import com.soywiz.korev.StopEvent
 import com.soywiz.korev.TouchBuilder
 import com.soywiz.korev.TouchEvent
@@ -44,7 +43,6 @@ import com.soywiz.korgw.GameWindow.Quality.PERFORMANCE
 import com.soywiz.korgw.GameWindow.Quality.QUALITY
 import com.soywiz.korgw.internal.IntTimedCache
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.vector.Shape
@@ -149,11 +147,11 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     var tasksTime = 0.milliseconds
 
     /**
-     * Allows to configure how much time per frame is available to execute pending tasks.
-     * You can increase this time if you have sometimes tasks not being executed frequently
-     * at the cost of not being able to render at 60fps.
+     * Allows to configure how much time per frame is available to execute pending tasks,
+     * despite time available in the frame.
+     * When not set it uses the remaining available time in frame
      **/
-    var tasksAllocatedTimePerFrame: TimeSpan = 16.milliseconds
+    var maxAllocatedTimeForTasksPerFrame: TimeSpan? = null
 
     /** On JS this cannot work, because it requires the real event loop to be reached */
     @KoragExperimental
@@ -171,7 +169,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
             }
         })
         while (!completed) {
-            executePending(tasksAllocatedTimePerFrame)
+            executePending(128.milliseconds)
             if (completed) break
             blockingSleep(1.milliseconds)
         }
@@ -225,11 +223,11 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
     }
 
     open fun informTooMuchCallbacksToHandleInThisFrame() {
-        //Console.warn("Too much callbacks to handle in this frame")
+        Console.warn("Too many callbacks to handle in this frame")
     }
 
     override fun close() {
-        executePending(1.seconds)
+        executePending(2.seconds)
         println("GameWindowCoroutineDispatcher.close")
         while (timedTasks.isNotEmpty()) {
             timedTasks.removeHead().continuation?.resume(Unit)
@@ -516,33 +514,30 @@ open class GameWindow :
             entry()
         }
         while (running) {
-            val start = PerformanceCounter.reference
-            frame()
-            val elapsed = PerformanceCounter.reference - start
+            val elapsed = frame()
             val available = counterTimePerFrame - elapsed
-            delay(available)
+            if (available > TimeSpan.ZERO) delay(available)
         }
     }
 
     // Referenced from korge-plugins repo
-    fun frame() {
-        frame(true)
-    }
-
     var renderTime = 0.milliseconds
     var updateTime = 0.milliseconds
 
-    fun frame(doUpdate: Boolean, startTime: TimeSpan = PerformanceCounter.reference) {
+    fun frame(doUpdate: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
+        val startTime = PerformanceCounter.reference
         renderTime = measureTime {
             frameRender()
         }
         //println("renderTime=$renderTime")
         if (doUpdate) {
             updateTime = measureTime {
-                frameUpdate(startTime)
+                frameUpdate(frameStartTime)
             }
             //println("updateTime=$updateTime")
         }
+        val endTime = PerformanceCounter.reference
+        return endTime - startTime
     }
 
     fun frameRender() {
@@ -601,22 +596,29 @@ open class GameWindow :
         surfaceHeight = height
     }
 
-    private var lastTime = PerformanceCounter.reference
-    fun frameUpdate(startTime: TimeSpan = lastTime) {
+    var gamePadTime: TimeSpan = TimeSpan.ZERO
+    fun frameUpdate(startTime: TimeSpan) {
+        gamePadTime = measureTime {
+            updateGamepads()
+        }
         try {
             val now = PerformanceCounter.reference
-            val elapsed = now - startTime
-            lastTime = now
-            val available = counterTimePerFrame - elapsed
-            coroutineDispatcher.executePending(available)
+            val consumed = now - startTime
+            val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
+            val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: remaining
+            val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
+            coroutineDispatcher.executePending(finalTimeForTasks)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
         }
     }
 
-    fun executePending() {
-        coroutineDispatcher.executePending(1.seconds)
+    open fun updateGamepads() {
+    }
+
+    fun executePending(availableTime: TimeSpan) {
+        coroutineDispatcher.executePending(availableTime)
     }
 
     fun dispatchInitEvent() = dispatch(initEvent)
@@ -625,8 +627,7 @@ open class GameWindow :
     fun dispatchStopEvent() = dispatch(stopEvent)
     fun dispatchDestroyEvent() = dispatch(destroyEvent)
     fun dispatchDisposeEvent() = dispatch(disposeEvent)
-    fun dispatchRenderEvent() = dispatchRenderEvent(true)
-    fun dispatchRenderEvent(update: Boolean) = dispatch(renderEvent.also { it.update = update })
+    fun dispatchRenderEvent(update: Boolean = true) = dispatch(renderEvent.also { it.update = update })
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also {
         it.type = type
         it.files = files
@@ -832,10 +833,9 @@ open class EventLoopGameWindow : GameWindow() {
             dispatchInitEvent()
 
             while (running) {
-                doHandleEvents()
-                if (mustPerformRender()) {
-                    coroutineDispatcher.currentTime = PerformanceCounter.reference
-                    render(doUpdate = true)
+                render(doUpdate = true) {
+                    doHandleEvents()
+                    mustPerformRender()
                 }
                 // Here we can trigger a GC if we have enough time, and we can try to disable GC all the other times.
                 if (!vsync) {
@@ -856,15 +856,20 @@ open class EventLoopGameWindow : GameWindow() {
 
     var lastRenderTime = PerformanceCounter.reference
     fun elapsedSinceLastRenderTime() = PerformanceCounter.reference - lastRenderTime
-    fun render(doUpdate: Boolean) {
-        lastRenderTime = PerformanceCounter.reference
-        doInitRender()
-        frame(doUpdate, lastRenderTime)
-        doSwapBuffers()
+
+    inline fun render(doUpdate: Boolean, doRender: () -> Boolean = { true }) {
+        val frameStartTime: TimeSpan = PerformanceCounter.reference
+        val mustRender = doRender()
+        if (mustRender) renderInternal(doUpdate = doUpdate, frameStartTime = frameStartTime)
     }
-    fun update() {
+
+    @PublishedApi
+    internal fun renderInternal(doUpdate: Boolean, frameStartTime: TimeSpan = PerformanceCounter.reference) {
+        coroutineDispatcher.currentTime = PerformanceCounter.reference
+        doInitRender()
+        frame(doUpdate, frameStartTime = frameStartTime)
         lastRenderTime = PerformanceCounter.reference
-        frameUpdate(lastRenderTime)
+        doSwapBuffers()
     }
 
     fun sleepNextFrame() {
