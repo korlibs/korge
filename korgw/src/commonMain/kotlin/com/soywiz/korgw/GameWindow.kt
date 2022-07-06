@@ -184,23 +184,32 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
         try {
             val startTime = now()
 
+            var processedTimedTasks = 0
+            var processedTasks = 0
+
             timedTasksTime = measureTime {
                 while (true) {
                     val item = lock {
                         if (timedTasks.isNotEmpty() && startTime >= timedTasks.head.time) timedTasks.removeHead() else null
                     } ?: break
-                    if (item.exception != null) {
-                        item.continuation?.resumeWithException(item.exception!!)
-                        if (item.callback != null) {
-                            item.exception?.printStackTrace()
+                    try {
+                        if (item.exception != null) {
+                            item.continuation?.resumeWithException(item.exception!!)
+                            if (item.callback != null) {
+                                item.exception?.printStackTrace()
+                            }
+                        } else {
+                            item.continuation?.resume(Unit)
+                            item.callback?.run()
                         }
-                    } else {
-                        item.continuation?.resume(Unit)
-                        item.callback?.run()
+                    } catch (e: Throwable) {
+                        e.printStackTrace()
+                    } finally {
+                        processedTimedTasks++
                     }
                     val elapsedTime = now() - startTime
                     if (elapsedTime >= availableTime) {
-                        informTooManyCallbacksToHandleInThisFrame(elapsedTime, availableTime)
+                        informTooManyCallbacksToHandleInThisFrame(elapsedTime, availableTime, processedTimedTasks, processedTasks)
                         break
                     }
                 }
@@ -209,12 +218,18 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
                 while (true) {
                     val task = lock { (if (tasks.isNotEmpty()) tasks.dequeue() else null) } ?: break
                     val time = measureTime {
-                        task?.run()
+                        try {
+                            task?.run()
+                        } catch (e: Throwable) {
+                            e.printStackTrace()
+                        } finally {
+                            processedTasks++
+                        }
                     }
                     //println("task=$time, task=$task")
                     val elapsed = now() - startTime
                     if (elapsed >= availableTime) {
-                        informTooManyCallbacksToHandleInThisFrame(elapsed, availableTime)
+                        informTooManyCallbacksToHandleInThisFrame(elapsed, availableTime, processedTimedTasks, processedTasks)
                         break
                     }
                 }
@@ -227,8 +242,8 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     val tooManyCallbacksLogger = Logger("Korgw.GameWindow.TooManyCallbacks")
 
-    open fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: TimeSpan, availableTime: TimeSpan) {
-        tooManyCallbacksLogger.warn { "Too many callbacks to handle in this frame elapsedTime=${elapsedTime.roundMilliseconds()}, availableTime=${availableTime.roundMilliseconds()} pending timedTasks=${timedTasks.size}, tasks=${tasks.size}" }
+    open fun informTooManyCallbacksToHandleInThisFrame(elapsedTime: TimeSpan, availableTime: TimeSpan, processedTimedTasks: Int, processedTasks: Int) {
+        tooManyCallbacksLogger.warn { "Too many callbacks to handle in this frame elapsedTime=${elapsedTime.roundMilliseconds()}, availableTime=${availableTime.roundMilliseconds()} pending timedTasks=${timedTasks.size}, tasks=${tasks.size}, processedTimedTasks=$processedTimedTasks, processedTasks=$processedTasks" }
     }
 
     override fun close() {
