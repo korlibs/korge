@@ -30,9 +30,6 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider by lazy {
     }
 }
 
-// @TODO: Maybe we can figure out the number of cpu hardware threads available, and allocate the number of threads - 2 for that
-private val dispatcherCpuBound by lazy { newFixedThreadPoolContext(nThreads = 2, name = "Image decoding") }
-
 object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
     override suspend fun display(bitmap: Bitmap, kind: Int) {
         val ctx = androidContext()
@@ -71,7 +68,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
         val options = BitmapFactory.Options().also { it.inJustDecodeBounds = true }
-        dispatcherCpuBound { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
+        Dispatchers.Default { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
         return ImageInfo().also {
             it.width = options.outWidth
             it.height = options.outHeight
@@ -84,7 +81,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
         return NativeImageResult(
             image = AndroidNativeImage(
-                dispatcherCpuBound { BitmapFactory.decodeByteArray(
+                Dispatchers.Default { BitmapFactory.decodeByteArray(
                     data, 0, data.size,
                     BitmapFactory.Options().also {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
