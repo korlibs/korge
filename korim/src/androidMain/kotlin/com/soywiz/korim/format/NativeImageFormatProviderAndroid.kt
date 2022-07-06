@@ -68,7 +68,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
         val options = BitmapFactory.Options().also { it.inJustDecodeBounds = true }
-        Dispatchers.IO { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
+        Dispatchers.Default { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
         return ImageInfo().also {
             it.width = options.outWidth
             it.height = options.outHeight
@@ -81,7 +81,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
         return NativeImageResult(
             image = AndroidNativeImage(
-                Dispatchers.IO { BitmapFactory.decodeByteArray(
+                Dispatchers.Default { BitmapFactory.decodeByteArray(
                     data, 0, data.size,
                     BitmapFactory.Options().also {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
