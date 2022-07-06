@@ -392,7 +392,7 @@ class MyDefaultGameWindow : GameWindow() {
 
     fun doRender() {
         //println("doRender[0]")
-        val startTime = PerformanceCounter.reference
+        val frameStartTime = PerformanceCounter.reference
         //macTrace("render")
         val context = openglView.openGLContext
 
@@ -413,13 +413,10 @@ class MyDefaultGameWindow : GameWindow() {
         //ag.clear(Colors.BLACK)
         //ag.onRender(ag)
         //dispatch(renderEvent)
-        frame()
+        frame(frameStartTime = frameStartTime)
         context?.flushBuffer()
 
         //println("doRender[3]")
-        val elapsed = PerformanceCounter.reference - startTime
-        val available = counterTimePerFrame - elapsed
-        coroutineDispatcher.executePending(available)
         //println("doRender[4]")
     }
 

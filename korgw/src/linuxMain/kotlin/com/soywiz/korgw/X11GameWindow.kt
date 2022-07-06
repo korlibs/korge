@@ -16,6 +16,8 @@ import com.soywiz.kgl.KeySym
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.NativeBaseKmlGl
 import com.soywiz.kgl.XVisualInfo
+import com.soywiz.klock.PerformanceCounter
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.Platform
 import com.soywiz.kmem.dyn.DynamicLibrary
@@ -386,13 +388,13 @@ class X11GameWindow : EventLoopGameWindow() {
                 Expose -> if (e.xexpose.count == 0) render(doUpdate = false)
                 ClientMessage, DestroyNotify -> close()
                 ConfigureNotify -> {
-                    val conf = e.xconfigure
-                    width = conf.width
-                    height = conf.height
-                    //dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
-                    dispatchReshapeEvent(0, 0, conf.width, conf.height)
-                    if (!doubleBuffered) {
-                        render(doUpdate = false)
+                    render(doUpdate = false) {
+                        val conf = e.xconfigure
+                        width = conf.width
+                        height = conf.height
+                        //dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
+                        dispatchReshapeEvent(0, 0, conf.width, conf.height)
+                        !doubleBuffered
                     }
                     //println("RESIZED! ${conf.width} ${conf.height}")
                 }

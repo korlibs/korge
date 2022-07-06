@@ -32,6 +32,8 @@ import com.soywiz.kds.IntMap
 import com.soywiz.kds.buildIntArray
 import com.soywiz.kds.toIntArrayList
 import com.soywiz.kds.toMap
+import com.soywiz.klock.PerformanceCounter
+import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.hasBits
 import com.soywiz.kmem.setBits
 import com.soywiz.korev.GameButton
@@ -82,6 +84,7 @@ open class KorgwSurfaceView constructor(
             }
 
             override fun onDrawFrame(unused: GL10) {
+                val frameStartTime = PerformanceCounter.reference
                 gameWindow.handleInitEventIfRequired()
                 gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
                 try {
@@ -115,7 +118,7 @@ open class KorgwSurfaceView constructor(
                 } catch (e: Throwable) {
                     e.printStackTrace()
                 }
-                gameWindow.frame()
+                gameWindow.frame(frameStartTime = frameStartTime)
                 onDraw(Unit)
             }
 

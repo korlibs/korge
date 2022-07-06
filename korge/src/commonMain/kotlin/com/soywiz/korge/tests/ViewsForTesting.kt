@@ -303,7 +303,7 @@ open class ViewsForTesting(
 			while (!completed) {
                 //println("FRAME")
 				simulateFrame()
-				dispatcher.executePending(1.seconds)
+				dispatcher.executePending(availableTime = 1.seconds)
 			}
 
             //println("[a2]")
