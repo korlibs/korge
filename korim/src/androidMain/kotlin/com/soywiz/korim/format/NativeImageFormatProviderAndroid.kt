@@ -148,12 +148,12 @@ class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
     override val name: String = "AndroidNativeImage"
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        androidBitmap.getPixels(out.ints, offset, this.width, x, y, width, height)
+        androidBitmap.getPixels(out.ints, offset, width, x, y, width, height)
         AndroidColor.androidToRgba(out, offset, width * height)
     }
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
         AndroidColor.rgbaToAndroid(out, offset, width * height)
-        androidBitmap.setPixels(out.ints, offset, this.width, x, y, width, height)
+        androidBitmap.setPixels(out.ints, offset, width, x, y, width, height)
         AndroidColor.androidToRgba(out, offset, width * height)
     }
 
@@ -182,6 +182,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
         out.fillType = when (winding ?: this.winding) {
             Winding.EVEN_ODD -> Path.FillType.EVEN_ODD
             Winding.NON_ZERO -> Path.FillType.WINDING
+            //Winding.NON_ZERO -> Path.FillType.INVERSE_EVEN_ODD
         }
         //kotlin.io.println("Path:")
         this.visitCmds(

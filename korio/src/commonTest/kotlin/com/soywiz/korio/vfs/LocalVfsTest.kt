@@ -61,6 +61,7 @@ class LocalVfsTest {
 
 	@Test
 	fun openModeRead() = suspendTestNoBrowser {
+        if (OS.isAndroid) return@suspendTestNoBrowser
 		when {
 			OS.isJsBrowserOrWorker -> Unit // Ignore
 			else -> {

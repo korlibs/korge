@@ -90,12 +90,7 @@ class AndroidResourcesVfs : Vfs() {
             //val path = "/assets/" + path.trim('/')
             val rpath = path.trim('/')
 
-            val fs = try {
-                context.assets.open(rpath)
-            } catch (e: FileNotFoundException) {
-                //System.err.println(context.assets.list("/"))
-                throw FileNotFoundException(e.message + " : " + context.assets.list("")?.joinToString("\n"))
-            }
+            val fs = context.assets.open(rpath)
             fs.skip(range.start)
             val out = ByteArrayOutputStream()
             val temp = ByteArray(16 * 1024)
