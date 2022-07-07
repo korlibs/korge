@@ -262,6 +262,7 @@ object ASE : ImageFormatWithContainer("ase") {
         val imageWidth = s.readU16LE()
         val imageHeight = s.readU16LE()
         val bitsPerPixel = s.readU16LE()
+        val bytesPerPixel = bitsPerPixel / 8
         val flags = s.readU32LE()
         val speed = s.readU16LE()
         s.skip(4)
@@ -344,7 +345,8 @@ object ASE : ImageFormatWithContainer("ase") {
                                 val height = cs.readU16LE()
                                 //cs.skip(6)
                                 val data = cs.readAvailable()
-                                val udata = if (celType == 2) data.uncompress(ZLib) else data
+                                //println("size=${width * height * bytesPerPixel} width=$width, height=$height, bytesPerPixel=$bytesPerPixel, props=$props")
+                                val udata = if (celType == 2) data.uncompress(ZLib, width * height * bytesPerPixel) else data
                                 //val udata = if (celType == 2) data.uncompress(ZLib.Portable) else data
                                 //println("celType = $celType, width=$width, height=$height, data=${data.size}, udata=${udata.size}")
                                 val bmp = when (bitsPerPixel) {
@@ -367,8 +369,9 @@ object ASE : ImageFormatWithContainer("ase") {
                                 val bitmaskXFlip = cs.readS32LE()
                                 val bitmaskYFlip = cs.readS32LE()
                                 val bitmask90CWFlip = cs.readS32LE()
+                                val bytesPerTile = bitsPerTile / 8
                                 cs.skip(10) // Reserved
-                                val compressedData = cs.readAvailable().uncompress(ZLib)
+                                val compressedData = cs.readAvailable().uncompress(ZLib, tilesWidth * tilesHeight * bytesPerTile)
                                 val data = when (bitsPerTile) {
                                     32 -> compressedData.readIntArrayLE(0, tilesWidth * tilesHeight)
                                     else -> TODO("Only supported 32-bits per tile")
