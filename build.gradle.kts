@@ -412,7 +412,7 @@ subprojects {
 
                     // Copy test resources
                     afterEvaluate {
-                        for (targetV in nativeTargets) {
+                        for (targetV in (nativeTargets + listOf(iosX64(), iosSimulatorArm64()))) {
                             val target = targetV.name
                             val taskName = "copyResourcesToExecutable_$target"
                             val targetTestTask = tasks.findByName("${target}Test") as? org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest? ?: continue
