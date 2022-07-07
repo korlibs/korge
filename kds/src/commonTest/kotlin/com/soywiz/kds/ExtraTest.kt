@@ -17,6 +17,6 @@ class ExtraTest {
 		assertEquals(9, demo.demo2)
 		demo.demo = 7
 		assertEquals(7, demo.demo)
-		assertEquals("{demo=7, demo2=9}", demo.extra?.toMap().toString())
+		assertEquals(mapOf("demo" to 7, "demo2" to 9), demo.extra?.toMap())
 	}
 }

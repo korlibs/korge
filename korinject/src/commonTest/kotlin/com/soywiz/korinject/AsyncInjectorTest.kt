@@ -226,7 +226,7 @@ class AsyncInjectorTest {
 		//@Singleton
 		class MySingleton(val unmapped: Unmapped)
 
-		expectException<AsyncInjector.NotMappedException> {
+		assertFailsWith<AsyncInjector.NotMappedException> {
 
 			// @TODO: kotlin-native bug
 			////error: compilation failed: org.jetbrains.kotlin.ir.declarations.impl.IrFunctionImpl@5b34e7bd

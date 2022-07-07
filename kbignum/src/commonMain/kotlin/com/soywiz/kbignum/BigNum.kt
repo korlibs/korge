@@ -16,7 +16,7 @@ class BigNum(val int: BigInt, val scale: Int) : Comparable<BigNum> {
         operator fun invoke(str: String): BigNum {
             val str = str.lowercase()
             //val ss = if (str.contains('.')) str.trimEnd('0') else str
-            val exponentPartStr = str.substringAfter('e', "").takeIf { it.isNotEmpty() }
+            val exponentPartStr = str.substringAfter('e', "").takeIf { it.isNotEmpty() }?.trimStart('+')
             val ss = str.substringBefore('e')
             val point = ss.indexOf('.')
             val strBase = ss.replace(".", "")

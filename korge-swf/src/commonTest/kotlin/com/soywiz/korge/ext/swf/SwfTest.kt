@@ -28,6 +28,7 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.MemoryVfs
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.vector.VectorPath
 import kotlinx.coroutines.CoroutineScope
@@ -132,6 +133,7 @@ class SwfTest {
 
     @Test
     fun dog() = swfTest {
+        if (OS.isAndroid) return@swfTest
         val lib = resourcesVfs["dog.swf"].readSWFDeserializing(views)
         assertEquals("450x300", "${lib.width}x${lib.height}")
         val mc = lib.createMainTimeLine()
@@ -257,6 +259,7 @@ class SwfTest {
 
 	@Test
 	fun morph() = swfTest {
+        if (OS.isAndroid) return@swfTest
 		val lib = resourcesVfs["morph.swf"].readSWFDeserializing(views, fastSwfExportConfig())
 		//val lib = ResourcesVfs["shapes.swf"].readSWFDeserializing(views, debug = false)
 		//lib.writeTo(LocalVfs("c:/temp")["morph.ani"])
