@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -89,7 +90,12 @@ class AndroidResourcesVfs : Vfs() {
             //val path = "/assets/" + path.trim('/')
             val rpath = path.trim('/')
 
-            val fs = context.assets.open(rpath)
+            val fs = try {
+                context.assets.open(rpath)
+            } catch (e: FileNotFoundException) {
+                //System.err.println(context.assets.list("/"))
+                throw FileNotFoundException(e.message + " : " + context.assets.list("")?.joinToString("\n"))
+            }
             fs.skip(range.start)
             val out = ByteArrayOutputStream()
             val temp = ByteArray(16 * 1024)

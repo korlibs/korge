@@ -7,6 +7,7 @@ android {
     buildToolsVersion(project.findProperty("android.buildtools.version")?.toString() ?: "30.0.2")
 
     defaultConfig {
+        multiDexEnabled true
         minSdkVersion(project.findProperty("android.min.sdk.version")?.toString()?.toIntOrNull() ?: 16) // Previously 18
         targetSdkVersion(project.findProperty("android.target.sdk.version")?.toString()?.toIntOrNull() ?: 30)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -19,4 +20,15 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     //androidTestImplementation 'com.android.support.test:runner:1.0.2'
+}
+
+android {
+    sourceSets {
+        main {
+            assets.srcDirs = [
+                'src/commonMain/resources',
+                'src/commonTest/resources',
+            ]
+        }
+    }
 }
