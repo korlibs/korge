@@ -12,7 +12,8 @@ android-build-gradle = "7.0.4"
 #android-build-gradle = "7.2.1"
 #android-build-gradle = "7.3.0-beta04"
 gson = "2.8.6"
-gradle-publish-plugin = "1.0.0"
+#gradle-publish-plugin = "1.0.0"
+gradle-publish-plugin = "0.14.0"
 closure-compiler = "v20210808"
 
 [libraries]
