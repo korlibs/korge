@@ -10,7 +10,7 @@ runs:
           ~/.gradle/caches
           ~/.gradle/wrapper
           ~/.konan
-        key: ${{ runner.os }}-gradle-${{ hashFiles('gradle.properties', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
+        key: ${{ runner.os }}-gradle-v2-${{ hashFiles('gradle.properties', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
     - uses: webiny/action-post-run@2.0.1
