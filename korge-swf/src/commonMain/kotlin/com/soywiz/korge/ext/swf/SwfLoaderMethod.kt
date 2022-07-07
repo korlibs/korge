@@ -20,6 +20,8 @@ import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.krypto.encoding.hex
+import com.soywiz.krypto.encoding.hexLower
 import kotlinx.coroutines.*
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -608,6 +610,17 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				//frameElement = toFrameElement()
 			}
 
+            fun computeBlur(value: Double, passes: Int): Double {
+                val passesFactor = when (passes) {
+                    1 -> 2.5
+                    2 -> 3.0
+                    3 -> 8.3290429691304455
+                    else -> 1.0
+                }
+                //println("value=$value, passes=$passes")
+                return value / passesFactor
+            }
+
 			fun toFrameElement() = AnSymbolTimelineFrame(
 				depth = depth,
 				clipDepth = clipDepth,
@@ -619,19 +632,30 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 				blendMode = blendMode,
                 filter = filterList.mapNotNull { when (it) {
                     is FilterBlur -> {
+                        // passes=1=LOW, passes=2=MED, passes=3=HIGH
                         val blurAvg = (it.blurX + it.blurY) * 0.5
                         //val blurAmount = blurAvg / 16.0
                         //val blurAmount = blurAvg / 6.0
-                        val blurAmount = blurAvg / 4.0
-                        //val blurAmount = sqrt(blurAvg)
+                        //val blurAmount = blurAvg / 4.0
+                        //val blurAmount = sqrt(sqrt(blurAvg)) * it.passes
+                        //val blurAmount = ln(sqrt(blurAvg) * it.passes)
+                        //val blurAmount = sqrt(blurAvg * ln(it.passes.toDouble()))
+                        val blurAmount = computeBlur(blurAvg, it.passes)
+                        //val blurAmount = log(blurAvg, 1.2)
+                        //val blurAmount = blurAvg.pow(0.75)
+                        //val blurAmount = ln(blurAvg)
                         //val blurAmount = log(blurAvg, 2.0)
                         //BlurFilter(log(blurAmount, 2.0))
                         //println("blurAmount=$blurAmount, blurX=${it.blurX}, blurY=${it.blurY}, passes=${it.passes}")
-                        ComposedFilter((0 until it.passes).map { BlurFilter(blurAmount, optimize = false) })
+                        //ComposedFilter((0 until it.passes).map { BlurFilter(blurAmount, optimize = false) })
+                        //ComposedFilter(BlurFilter(blurAmount, optimize = it.passes <= 2))
+                        ComposedFilter(BlurFilter(blurAmount, optimize = false))
+                        //ComposedFilter(BlurFilter(blurAmount, optimize = true))
+                        //ComposedFilter(BlurFilter(blurAmount, optimize = true))
                         //ComposedFilter(BlurFilter(blurAmount, optimize = false))
                     }
                     is FilterDropShadow -> {
-                        DropshadowFilter(sqrt(it.blurX), sqrt(it.blurY), decodeSWFColor(it.dropShadowColor), blurRadius = it.distance)
+                        DropshadowFilter(it.blurX, it.blurY, decodeSWFColor(it.dropShadowColor), blurRadius = computeBlur(it.distance, it.passes))
                     }
                     else -> {
                         println("Unimplemented SWF filter: $it")
@@ -749,10 +773,15 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 					it as IDefinitionTag
 
 					when (it) {
-						is TagDefineBitsJPEG2 -> {
-							val bitsData = it.bitmapData.cloneToNewByteArray()
+						is TagDefineBits -> {
+                        //is TagDefineBitsJPEG2 -> {
+							var bitsData = it.bitmapData.cloneToNewByteArray()
 							val nativeBitmap = try {
-								bitsData.openAsync().readBitmap(context.imageFormats)
+								//bitsData.openAsync().readBitmapListNoNative(JPEG + PNG).first()
+                                if (bitsData.size >= 4 && bitsData.sliceArray(0 until 4).hexLower == "ffd9ffd8") {
+                                    bitsData = bitsData.sliceArray(4 until bitsData.size)
+                                }
+                                bitsData.openAsync().readBitmap(context.imageFormats)
 							} catch (e: Throwable) {
 								e.printStackTrace()
 								Bitmap32(1, 1)
