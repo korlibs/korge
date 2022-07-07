@@ -51,7 +51,7 @@ jobs:
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 19
-          script: ./gradlew connectedCheck -x :korge-sandbox:connectedCheck -x :korge-sandbox:connectedDebugAndroidTest -x :korinject:connectedDebugAndroidTest
+          script: ./gradlew connectedCheck -x :korge-sandbox:connectedCheck
 
   test-native-linux:
     timeout-minutes: 120
