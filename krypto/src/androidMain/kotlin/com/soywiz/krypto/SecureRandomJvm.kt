@@ -3,9 +3,7 @@ package com.soywiz.krypto
 import java.security.SecureRandom
 
 private val jrandom by lazy {
-    if (!randomUnittesting) {
-        PRNGFixes.apply()
-    }
+    PRNGFixes.apply()
     SecureRandom()
 }
 
