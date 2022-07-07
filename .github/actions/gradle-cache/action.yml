@@ -12,7 +12,7 @@ runs:
           ~/.konan
         key: ${{ runner.os }}-gradle-v2-${{ hashFiles('gradle.properties', 'gradle/libs.versions.toml', 'gradle/wrapper/gradle-wrapper.properties') }}
         restore-keys: |
-          ${{ runner.os }}-gradle-
+          ${{ runner.os }}-gradle-v2-
     - uses: webiny/action-post-run@2.0.1
       id: gradle-cache-cleanup
       with:
