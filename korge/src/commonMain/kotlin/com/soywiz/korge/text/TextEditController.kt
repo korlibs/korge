@@ -18,6 +18,7 @@ import com.soywiz.korge.time.timers
 import com.soywiz.korge.ui.UIFocusManager
 import com.soywiz.korge.ui.UIFocusable
 import com.soywiz.korge.ui.blur
+import com.soywiz.korge.ui.focusable
 import com.soywiz.korge.ui.uiFocusManager
 import com.soywiz.korge.ui.uiFocusedView
 import com.soywiz.korge.util.CancellableGroup
@@ -59,6 +60,10 @@ class TextEditController(
     val eventHandler: View = textView,
     val bg: RenderableView? = null,
 ) : Closeable, UIFocusable, ISoftKeyboardConfig by SoftKeyboardConfig() {
+    init {
+        textView.focusable = this
+    }
+
     val stage: Stage? get() = textView.stage
     var initialText: String = textView.text
     private val closeables = CancellableGroup()
@@ -523,6 +528,7 @@ class TextEditController(
     override fun close() {
         this.textView.cursor = null
         closeables.cancel()
+        textView.focusable = null
     }
 }
 

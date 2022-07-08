@@ -22,7 +22,9 @@ interface Extra {
             val res = (thisRef.extra?.get(name ?: property.name).fastCastTo<T?>())
             if (res == null) {
                 val r = defaultGen()
-                setValue(thisRef, property, r)
+                if (r != null || thisRef.hasExtra(name ?: property.name)) {
+                    setValue(thisRef, property, r)
+                }
                 return r
             }
             return res
@@ -63,6 +65,7 @@ interface Extra {
 fun <T> Extra.extraCache(name: String, block: () -> T): T =
     (getExtra(name) as? T?) ?: block().also { setExtra(name, it) }
 fun <T : Any?> Extra.getExtraTyped(name: String): T? = extra?.get(name).fastCastTo<T?>()
+fun Extra.hasExtra(name: String): Boolean = extra?.contains(name) == true
 fun Extra.getExtra(name: String): Any? = extra?.get(name)
 fun Extra.setExtra(name: String, value: Any?) {
     if (extra == null) {
