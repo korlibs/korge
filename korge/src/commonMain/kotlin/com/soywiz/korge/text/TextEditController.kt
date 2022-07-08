@@ -414,7 +414,7 @@ class TextEditController(
             down {
                 if (!focused) return@down
                 when (it.key) {
-                    Key.C, Key.V, Key.Z -> {
+                    Key.C, Key.V, Key.Z, Key.A -> {
                         if (it.isNativeCtrl()) {
                             when (it.key) {
                                 Key.Z -> {
@@ -426,6 +426,9 @@ class TextEditController(
                                 Key.V -> {
                                     val rtext = (gameWindow.clipboardRead() as? TextClipboardData?)?.text
                                     if (rtext != null) insertText(rtext)
+                                }
+                                Key.A -> {
+                                    selectAll()
                                 }
                                 else -> Unit
                             }
