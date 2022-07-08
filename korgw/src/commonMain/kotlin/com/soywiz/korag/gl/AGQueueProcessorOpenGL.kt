@@ -673,7 +673,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
         // Context lost
         if (tex.cachedVersion != contextVersion) {
-            println("Texture context lost")
+            println("Texture context lost, recreating: texId=${tex.texId}, source=${tex.source}")
             tex.cachedVersion = contextVersion
             tex.invalidate()
             textureCreate(tex.texId)

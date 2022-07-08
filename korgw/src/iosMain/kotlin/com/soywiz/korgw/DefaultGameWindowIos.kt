@@ -506,7 +506,9 @@ class MyGLKViewController(val entry: suspend () -> Unit)  : GLKViewController(nu
     }
 }
 
-open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
+open class IosGameWindow(
+    val windowProvider: (() -> UIWindow?)? = null,
+) : GameWindow() {
     override val dialogInterface = DialogInterfaceIos()
 
     override val ag: AG = IosAGNative()
@@ -681,8 +683,9 @@ open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
         textField = MyUITextComponent(this@IosGameWindow, rect)
     }
 
-    val window: UIWindow get() = app.window
-    //val window = UIApplication.sharedApplication.keyWindow ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
+    val window: UIWindow get() = windowProvider?.invoke()
+        ?: UIApplication.sharedApplication.keyWindow
+        ?: (UIApplication.sharedApplication.windows.first() as UIWindow)
 
     override fun setInputRectangle(windowRect: Rectangle) {
         println("IosGameWindow.setInputRectangle: windowRect=$windowRect")
@@ -759,7 +762,7 @@ open class IosGameWindow(val app: KorgwBaseNewAppDelegate) : GameWindow() {
 
 private lateinit var MyIosGameWindow: IosGameWindow // Creates instance everytime
 private fun CreateInitialIosGameWindow(app: KorgwBaseNewAppDelegate): IosGameWindow {
-    MyIosGameWindow = IosGameWindow(app)
+    MyIosGameWindow = IosGameWindow { app.window }
     return MyIosGameWindow
 }
 

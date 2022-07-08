@@ -1,6 +1,8 @@
 package samples
 
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korev.DropFileEvent
+import com.soywiz.korge.animate.AnBaseShape
 import com.soywiz.korge.ext.swf.SWFExportConfig
 import com.soywiz.korge.ext.swf.readSWF
 import com.soywiz.korge.scene.Scene
@@ -8,9 +10,11 @@ import com.soywiz.korge.ui.UI_DEFAULT_WIDTH
 import com.soywiz.korge.ui.clicked
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiComboBox
+import com.soywiz.korge.ui.uiHorizontalStack
 import com.soywiz.korge.view.GraphicsRenderer
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.container
+import com.soywiz.korge.view.descendantsOfType
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.xy
@@ -32,7 +36,7 @@ class MainSWF : Scene() {
     //val rastMethod = ShapeRasterizerMethod.X4 // Fails on native
     val rastMethod = ShapeRasterizerMethod.NONE
     //val rastMethod = ShapeRasterizerMethod.X1
-    val graphicsRenderer = GraphicsRenderer.SYSTEM
+    var graphicsRenderer = GraphicsRenderer.SYSTEM
     //val graphicsRenderer = GraphicsRenderer.GPU
 
     val config = SWFExportConfig(
@@ -43,15 +47,11 @@ class MainSWF : Scene() {
     )
 
     override suspend fun SContainer.sceneMain() {
-        this += resourcesVfs["morph.swf"].readSWF(views, config, false).createMainTimeLine()
-        this += resourcesVfs["dog.swf"].readSWF(views, config, false).createMainTimeLine()
-        demo()
-    }
-
-    suspend fun SContainer.demo() {
-        this += resourcesVfs["test1.swf"].readSWF(views, config, false).createMainTimeLine().position(400, 0)
-        this += resourcesVfs["demo3.swf"].readSWF(views, config, false).createMainTimeLine()
         val extraSwfContainer = container {
+            this += resourcesVfs["morph.swf"].readSWF(views, config, false).createMainTimeLine()
+            this += resourcesVfs["dog.swf"].readSWF(views, config, false).createMainTimeLine()
+            this += resourcesVfs["test1.swf"].readSWF(views, config, false).createMainTimeLine().position(400, 0)
+            this += resourcesVfs["demo3.swf"].readSWF(views, config, false).createMainTimeLine()
         }
 
         fun loadSwf(files: List<VfsFile>) {
@@ -60,15 +60,27 @@ class MainSWF : Scene() {
                 extraSwfContainer.removeChildren()
                 for (file in files) {
                     val swf = file.readSWF(views, config, false)
+                    swf.graphicsRenderer = graphicsRenderer
                     val timeline = swf.createMainTimeLine()
                     extraSwfContainer += timeline
-                    val realBounds = Rectangle(0, 0, swf.width, swf.height).applyScaleMode(this@demo.getLocalBounds(), ScaleMode.FIT, Anchor.CENTER)
+                    val realBounds = Rectangle(0, 0, swf.width, swf.height).applyScaleMode(this@sceneMain.getLocalBounds(), ScaleMode.FIT, Anchor.CENTER)
                     //timeline.xy(realBounds.x, realBounds.y).scale(realBounds.width / swf.width, realBounds.height / swf.height)
                     //println("realBounds=$realBounds")
                     timeline.xy(realBounds.x, realBounds.y).setSizeScaled(realBounds.width, realBounds.height)
-                    extraSwfContainer.uiComboBox(items = timeline.stateNames).also {
-                        it.onSelectionUpdate {
-                            it.selectedItem?.let { timeline.play(it) }
+                    extraSwfContainer.uiHorizontalStack {
+                        uiComboBox(items = timeline.stateNames).also {
+                            it.onSelectionUpdate {
+                                it.selectedItem?.let { timeline.play(it) }
+                            }
+                        }
+                        uiComboBox(items = GraphicsRenderer.values().toList()).also {
+                            it.selectedItem = graphicsRenderer
+                            it.onSelectionUpdate {
+                                it.selectedItem?.let { renderer ->
+                                    graphicsRenderer = renderer
+                                    swf.graphicsRenderer = renderer
+                                }
+                            }
                         }
                     }
                     //println("swf=${swf.width}x${swf.height}, timeline.getLocalBounds()=${timeline.getLocalBounds()}, this@demo.getLocalBounds()=${this@demo.getLocalBounds()}, realBounds=$realBounds")

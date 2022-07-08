@@ -2,7 +2,12 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.vector.buildShape
+import com.soywiz.korim.vector.render
 import com.soywiz.korio.async.suspendTest
+import com.soywiz.korma.geom.Size
+import com.soywiz.korma.geom.vector.Winding
+import com.soywiz.korma.geom.vector.circle
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -58,5 +63,31 @@ class NativeImageTest {
             "#0000ff,#ffc0cb,#ff0000,#00ff00",
             flippedY.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
         )
+    }
+
+    @Test
+    fun testNativeVectorRenderingEvenOdd() {
+        val image = buildShape {
+            fill(Colors.RED, winding = Winding.EVEN_ODD) {
+                circle(50, 50, 50)
+                circle(50, 50, 25)
+            }
+        }.render()
+        assertEquals(Size(100, 100), image.size)
+        assertEquals(1.0, image.getRgba(10, 50).ad)
+        assertEquals(0.0, image.getRgba(50, 50).ad)
+    }
+
+    @Test
+    fun testNativeVectorRenderingNonZero() {
+        val image = buildShape {
+            fill(Colors.RED, winding = Winding.NON_ZERO) {
+                circle(50, 50, 50)
+                circle(50, 50, 25)
+            }
+        }.render()
+        assertEquals(Size(100, 100), image.size)
+        assertEquals(1.0, image.getRgba(10, 50).ad)
+        assertEquals(1.0, image.getRgba(50, 50).ad)
     }
 }

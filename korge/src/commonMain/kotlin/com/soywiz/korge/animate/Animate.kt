@@ -77,8 +77,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	abstract val texWidth: Float
 	abstract val texHeight: Float
 	abstract val smoothing: Boolean
-
-    private var graphics: NewGraphics? = null
+    var graphics: NewGraphics? = null
     //private var graphics: Graphics? = null
 
     var dxDouble: Double
@@ -97,7 +96,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
     private fun ensureShape(): Shape? {
         if (shape != null) {
             if (graphics == null) {
-                graphics = newGraphics(EmptyShape, graphicsRenderer)
+                graphics = newGraphics(EmptyShape, library.graphicsRenderer ?: graphicsRenderer)
                 //graphics = graphics(shape!!)
             }
             if (cachedShape !== shape) {
@@ -111,6 +110,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
         if (ensureShape() != null) {
+            graphics?.renderer = library.graphicsRenderer ?: graphicsRenderer
             super.renderInternal(ctx)
             return
         }

@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -105,11 +106,7 @@ class AndroidResourcesVfs : Vfs() {
     }
 }
 
-
-//private val IOContext by lazy { newSingleThreadContext("IO") }
-private val IOContext by lazy { Dispatchers.Unconfined }
-
-private suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(IOContext, callback)
+private suspend fun <T> executeIo(callback: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, callback)
 
 private class LocalVfsJvm : LocalVfsV2() {
 	val that = this
@@ -271,7 +268,7 @@ private class LocalVfsJvm : LocalVfsV2() {
         for (it in (File(path).listFiles() ?: emptyArray<File>())) {
             emit(that.file("$path/${it.name}"))
         }
-    }.flowOn(IOContext)
+    }.flowOn(Dispatchers.IO)
 
     override suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean =
 		executeIo { resolveFile(path).mkdirs() }

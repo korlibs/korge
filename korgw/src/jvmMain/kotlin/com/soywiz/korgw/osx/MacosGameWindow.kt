@@ -3,7 +3,6 @@ package com.soywiz.korgw.osx
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
 import com.soywiz.kgl.logIf
-import com.soywiz.klock.PerformanceCounter
 import com.soywiz.korag.gl.AGOpengl
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
@@ -195,7 +194,6 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
     private var lastBackingScaleFactor = 0.0
 
     fun renderOpengl(update: Boolean = false) {
-        val startTime = PerformanceCounter.reference
         // This allows to detect a change in the scale factor of the window without having to resize (changing resolution)
         if (lastBackingScaleFactor != backingScaleFactor) {
             lastBackingScaleFactor = backingScaleFactor
@@ -212,7 +210,7 @@ class MacGameWindow(val checkGl: Boolean, val logGl: Boolean) : GameWindow() {
 
         //println("RENDER")
 
-        frame(update, startTime)
+        frame(update)
 
         glCtx?.swapBuffers()
     }

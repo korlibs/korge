@@ -840,7 +840,7 @@ fun SyncInputStream.toAsyncInputStream() = object : AsyncInputStreamWithLength {
 	override suspend fun read(buffer: ByteArray, offset: Int, len: Int): Int = sync.read(buffer, offset, len)
 	override suspend fun close() { (sync as? Closeable)?.close() }
 	override suspend fun getPosition(): Long = (sync as? SyncPositionStream)?.position ?: super.getPosition()
-	override suspend fun getLength(): Long = (sync as? SyncLengthStream)?.length ?: super.getLength()
+    override suspend fun getLength(): Long = (sync as? SyncLengthStream)?.length ?: super.getLength()
 }
 
 fun SyncOutputStream.toAsyncOutputStream() = object : AsyncOutputStream {

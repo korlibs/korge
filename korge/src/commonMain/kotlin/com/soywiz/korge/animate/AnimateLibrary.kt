@@ -34,6 +34,7 @@ import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.RegisteredImageFormats
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.util.AsyncOnce
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
@@ -334,6 +335,7 @@ val Views.animateLibraryLoaders get() = extraCache("animateLibraryLoaders") {
 //e: java.lang.UnsupportedOperationException: Class literal annotation arguments are not yet supported: Factory
 //@AsyncFactoryClass(AnLibrary.Factory::class)
 class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: Double) : Extra by Extra.Mixin() {
+    var graphicsRenderer: GraphicsRenderer? = null
     val fontsCatalog = Html.FontsCatalog(null)
 
     data class Context(
@@ -385,7 +387,14 @@ class AnLibrary(val context: Context, val width: Int, val height: Int, val fps: 
 
 	fun AnElement.findFirstTexture(): BmpSlice? = this.symbol.findFirstTexture()
 
-	fun create(id: Int) = if (id < 0) TODO("id=$id") else symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
+	fun create(id: Int): AnElement = when {
+        id < 0 -> {
+            printStackTrace("ERROR invalid id=$id")
+            AnSymbolEmpty.create(this)
+            //TODO("ERROR invalid id=$id")
+        }
+        else -> symbolsById.getOrElse(id) { AnSymbolEmpty }.create(this)
+    }
 	fun createShape(id: Int) = create(id) as AnShape
 	fun createMovieClip(id: Int) = create(id) as AnMovieClip
 	fun getTexture(id: Int) = create(id).findFirstTexture()

@@ -119,15 +119,17 @@ class SdlGameWindowJvm(checkGl: Boolean) : EventLoopGameWindow() {
                     SDL_WindowEventID.MOVED,
                     SDL_WindowEventID.RESIZED,
                     SDL_WindowEventID.SIZE_CHANGED -> {
-                        if (windowEventType == SDL_WindowEventID.MOVED) {
-                            winX = event.window.data1
-                            winY = event.window.data2
-                        } else if (windowEventType == SDL_WindowEventID.RESIZED) {
-                            width = event.window.data1
-                            height = event.window.data2
+                        render(doUpdate = false) {
+                            if (windowEventType == SDL_WindowEventID.MOVED) {
+                                winX = event.window.data1
+                                winY = event.window.data2
+                            } else if (windowEventType == SDL_WindowEventID.RESIZED) {
+                                width = event.window.data1
+                                height = event.window.data2
+                            }
+                            dispatchReshapeEvent(0, 0, width, height)
+                            true
                         }
-                        dispatchReshapeEvent(0, 0, width, height)
-                        render(doUpdate = false)
                     }
                     SDL_WindowEventID.CLOSE -> close()
                     else -> {

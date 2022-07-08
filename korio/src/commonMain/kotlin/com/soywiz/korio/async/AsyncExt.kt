@@ -64,10 +64,11 @@ fun <T> asyncImmediately(context: CoroutineContext, callback: suspend () -> T) =
 fun <T> asyncAsap(context: CoroutineContext, callback: suspend () -> T) = CoroutineScope(context).asyncAsap(callback)
 
 expect fun asyncEntryPoint(callback: suspend () -> Unit)
+expect fun asyncTestEntryPoint(callback: suspend () -> Unit)
 
 val DEFAULT_SUSPEND_TEST_TIMEOUT = 20.seconds
 
-fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncEntryPoint { if (timeout != null) withTimeout(timeout) { callback() } else coroutineScope { callback() } }
+fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncTestEntryPoint { if (timeout != null) withTimeout(timeout) { callback() } else coroutineScope { callback() } }
 //fun suspendTest(timeout: TimeSpan?, callback: suspend CoroutineScope.() -> Unit) = asyncEntryPoint { coroutineScope { callback() } }
 fun suspendTest(callback: suspend CoroutineScope.() -> Unit) = suspendTest(DEFAULT_SUSPEND_TEST_TIMEOUT, callback)
 fun suspendTest(cond: () -> Boolean, timeout: TimeSpan? = DEFAULT_SUSPEND_TEST_TIMEOUT, callback: suspend CoroutineScope.() -> Unit) = suspendTest(timeout) { if (cond()) callback() }

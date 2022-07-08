@@ -5,7 +5,6 @@ import kotlin.random.Random
 
 expect fun fillRandomBytes(array: ByteArray)
 expect fun seedExtraRandomBytes(array: ByteArray)
-var randomUnittesting = false
 
 object SecureRandom : Random() {
     fun addSeed(array: ByteArray) {

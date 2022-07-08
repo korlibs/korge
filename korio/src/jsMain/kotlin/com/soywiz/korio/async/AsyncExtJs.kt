@@ -21,3 +21,4 @@ actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = kotlin.js.Pr
 }
 */
 actual fun asyncEntryPoint(callback: suspend () -> Unit): dynamic = GlobalScope.promise { callback() }
+actual fun asyncTestEntryPoint(callback: suspend () -> Unit): dynamic = GlobalScope.promise { callback() }

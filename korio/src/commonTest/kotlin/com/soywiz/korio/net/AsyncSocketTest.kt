@@ -15,6 +15,7 @@ class AsyncSocketTest {
 		if (OS.isJsBrowser) return@suspendTestNoBrowser
 		if (OS.isJs) return@suspendTestNoBrowser
 		if (OS.isWindows && OS.isNative) return@suspendTestNoBrowser
+        if (OS.isAndroid) return@suspendTestNoBrowser
 
 		var port = 0
 		val connected = CompletableDeferred<Unit>()

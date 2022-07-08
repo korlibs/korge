@@ -20,7 +20,7 @@ class AsyncInjectorSuspendContextTest {
         val injector = AsyncInjector()
         val string = "hello"
         injector.mapInstance(string)
-        expectException<IllegalStateException> {
+        assertFailsWith<IllegalStateException> {
             otherFunction()
         }
     }

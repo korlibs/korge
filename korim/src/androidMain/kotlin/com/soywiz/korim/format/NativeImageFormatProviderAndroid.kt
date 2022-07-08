@@ -68,7 +68,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
         val options = BitmapFactory.Options().also { it.inJustDecodeBounds = true }
-        Dispatchers.IO { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
+        Dispatchers.Default { BitmapFactory.decodeByteArray(data, 0, data.size, options) }
         return ImageInfo().also {
             it.width = options.outWidth
             it.height = options.outHeight
@@ -81,7 +81,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
         return NativeImageResult(
             image = AndroidNativeImage(
-                Dispatchers.IO { BitmapFactory.decodeByteArray(
+                Dispatchers.Default { BitmapFactory.decodeByteArray(
                     data, 0, data.size,
                     BitmapFactory.Options().also {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -148,12 +148,12 @@ class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
     override val name: String = "AndroidNativeImage"
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        androidBitmap.getPixels(out.ints, offset, this.width, x, y, width, height)
+        androidBitmap.getPixels(out.ints, offset, width, x, y, width, height)
         AndroidColor.androidToRgba(out, offset, width * height)
     }
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
         AndroidColor.rgbaToAndroid(out, offset, width * height)
-        androidBitmap.setPixels(out.ints, offset, this.width, x, y, width, height)
+        androidBitmap.setPixels(out.ints, offset, width, x, y, width, height)
         AndroidColor.androidToRgba(out, offset, width * height)
     }
 
@@ -181,8 +181,8 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
 
         out.fillType = when (winding ?: this.winding) {
             Winding.EVEN_ODD -> Path.FillType.EVEN_ODD
-            Winding.NON_ZERO -> Path.FillType.INVERSE_EVEN_ODD
-            else -> Path.FillType.EVEN_ODD
+            Winding.NON_ZERO -> Path.FillType.WINDING
+            //Winding.NON_ZERO -> Path.FillType.INVERSE_EVEN_ODD
         }
         //kotlin.io.println("Path:")
         this.visitCmds(
@@ -300,6 +300,7 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             if (state.clip != null) {
                 val clipPath = state.clip!!.toAndroid(androidClipPath, winding)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                //if (false) {
                     canvas.clipOutPath(clipPath)
                 } else {
                     canvas.clipPath(clipPath, Region.Op.DIFFERENCE)

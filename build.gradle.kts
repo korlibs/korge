@@ -412,7 +412,7 @@ subprojects {
 
                     // Copy test resources
                     afterEvaluate {
-                        for (targetV in nativeTargets) {
+                        for (targetV in (nativeTargets + listOf(iosX64(), iosSimulatorArm64()))) {
                             val target = targetV.name
                             val taskName = "copyResourcesToExecutable_$target"
                             val targetTestTask = tasks.findByName("${target}Test") as? org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest? ?: continue
@@ -437,6 +437,17 @@ subprojects {
                             )
 
                             targetTestTask.dependsOn(taskName)
+                            //println(".target=$target")
+                            if (target == "mingwX64") {
+                                afterEvaluate {
+                                    afterEvaluate {
+                                        tasks.findByName("mingwX64WineTest")?.let {
+                                            //println("***************++")
+                                            it?.dependsOn(taskName)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -1212,6 +1223,28 @@ subprojects {
                 //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
                 setEvents(setOf("skipped", "failed", "standardError"))
                 exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+        }
+        tasks {
+            if (!com.soywiz.korge.gradle.targets.isWindows) {
+                afterEvaluate {
+                    val linkDebugTestMingwX64 = project.tasks.findByName("linkDebugTestMingwX64") as? KotlinNativeLink?
+                    if (linkDebugTestMingwX64 != null) {
+                        fun Exec.configureLink(link: KotlinNativeLink) {
+                            dependsOn(link)
+                            commandLine("wine64", link.binary.outputFile)
+                            workingDir = link.binary.outputDirectory
+                        }
+
+                        val mingwX64WineTest by creating(Exec::class) {
+                            val link = linkDebugTestMingwX64
+                            group = "verification"
+                            dependsOn(link)
+                            commandLine("wine64", link.binary.outputFile)
+                            workingDir = link.binary.outputDirectory
+                        }
+                    }
+                }
             }
         }
     }
