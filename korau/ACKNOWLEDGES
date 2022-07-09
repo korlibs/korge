@@ -1,0 +1,2 @@
+mp3 decoding on native targets use minimp3 from the public domain: https://github.com/lieff/minimp3
+ogg vorbis decoding on native targets use stb_vorbis from MIT/public domain: http://nothings.org/stb_vorbis/

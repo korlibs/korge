@@ -9,7 +9,7 @@ include specialized versions for primitives like <code>Int</code> or <code>Doubl
 
 <!-- BADGES -->
 <p align="center">
-	<a href="https://github.com/korlibs/kds/actions"><img alt="Build Status" src="https://github.com/korlibs/kds/workflows/CI/badge.svg" /></a>
+	<a href="https://github.com/korlibs/korge/actions"><img alt="Build Status" src="https://github.com/korlibs/korge/workflows/CI/badge.svg" /></a>
     <a href="https://search.maven.org/artifact/com.soywiz.korlibs.kds/kds"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.soywiz.korlibs.kds/kds"></a>
 	<a href="https://discord.korge.org/"><img alt="Discord" src="https://img.shields.io/discord/728582275884908604?logo=discord" /></a>
 </p>
