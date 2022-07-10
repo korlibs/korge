@@ -1,3 +1,5 @@
+package samples.connect4
+
 import kotlin.test.*
 
 class Connect4ModelTest {
