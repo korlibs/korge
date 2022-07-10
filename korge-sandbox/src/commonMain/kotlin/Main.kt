@@ -10,6 +10,7 @@ import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.portableSimpleName
 import samples.*
 import samples.fleks.*
+import samples.connect4.*
 
 suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
@@ -21,10 +22,11 @@ suspend fun main() = Korge(
 ) {
     demoSelector(
         //Demo(::MainAseprite),
-        Demo(::MainSWF),
+        Demo(::MainConnect4),
         listOf(
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
+            Demo(::MainConnect4),
             Demo(::MainSWF),
             Demo(::MainSpine),
             Demo(::MainDragonbones),

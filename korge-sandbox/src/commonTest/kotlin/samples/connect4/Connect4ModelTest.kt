@@ -1,6 +1,6 @@
 import kotlin.test.*
 
-class ModelTest {
+class Connect4ModelTest {
     @Test
     fun testBoardGet() {
         val board = Board(
