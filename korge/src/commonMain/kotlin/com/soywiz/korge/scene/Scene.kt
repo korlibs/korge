@@ -15,7 +15,12 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
+import com.soywiz.korge.view.filter
+import com.soywiz.korge.view.filter.IdentityFilter
+import com.soywiz.korge.view.scale
+import com.soywiz.korge.view.size
 import com.soywiz.korge.view.views
+import com.soywiz.korge.view.xy
 import com.soywiz.korgw.GameWindow
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
@@ -23,7 +28,11 @@ import com.soywiz.korinject.InjectorAsyncDependency
 import com.soywiz.korio.lang.cancel
 import com.soywiz.korio.resources.Resources
 import com.soywiz.korio.resources.ResourcesContainer
+import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ISize
+import com.soywiz.korma.geom.Rectangle
+import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.Size
 import com.soywiz.korui.UiContainer
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -158,9 +167,14 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
     }
+
+    open fun onSizeChanged(width: Double, height: Double) {
+        sceneView.setSize(width, height)
+    }
 }
 
-abstract class ScaledScene : Scene() {
+@Deprecated("")
+abstract class OldScaledScene : Scene() {
 	open val sceneSize: ISize = ISize(320, 240)
 	open val sceneScale: Double = 2.0
 	open val sceneFiltering: Boolean = false
@@ -171,6 +185,68 @@ abstract class ScaledScene : Scene() {
 		scale = sceneScale,
 		filtering = sceneFiltering
 	)
+}
+
+/**
+ * A Scene where the effective container has a fixed size [sceneWidth] and [sceneHeight],
+ * and scales and positions its SceneContainer based on [sceneScaleMode] and [sceneAnchor].
+ * Performs a linear or nearest neighborhood interpolation based [sceneSmoothing].
+ *
+ * This allows to have different scenes with different effective sizes.
+ */
+abstract class ScaledScene(
+    sceneWidth: Int,
+    sceneHeight: Int,
+    sceneScaleMode: ScaleMode = ScaleMode.SHOW_ALL,
+    sceneAnchor: Anchor = Anchor.CENTER,
+    sceneSmoothing: Boolean = true,
+) : Scene() {
+    var sceneWidth: Int = sceneWidth
+        set(value) {
+            field = value
+            onSizeChanged()
+        }
+    var sceneHeight: Int = sceneHeight
+        set(value) {
+            field = value
+            onSizeChanged()
+        }
+    var sceneScaleMode: ScaleMode = sceneScaleMode
+        set(value) {
+            field = value
+            onSizeChanged()
+        }
+    var sceneAnchor: Anchor = sceneAnchor
+        set(value) {
+            field = value
+            onSizeChanged()
+        }
+    var sceneSmoothing: Boolean = sceneSmoothing
+        set(value) {
+            field = value
+            onSizeChanged()
+        }
+
+    private fun onSizeChanged() {
+        onSizeChanged(sceneView, sceneContainer.width, sceneContainer.height)
+    }
+
+    override fun onSizeChanged(width: Double, height: Double) {
+        onSizeChanged(sceneView, width, height)
+    }
+
+    private fun onSizeChanged(sceneView: SContainer, width: Double, height: Double) {
+        val out = Rectangle(0.0, 0.0, width, height).place(Size(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
+        sceneView
+            .size(out.width, out.height)
+            .xy(out.x, out.y)
+            .scale(out.width / sceneWidth, out.height / sceneHeight)
+            .also { it.filter = if (sceneSmoothing) IdentityFilter.Linear else IdentityFilter.Nearest }
+    }
+
+    override fun createSceneView(width: Double, height: Double): SContainer {
+        return SContainer(width, height).also { onSizeChanged(it, width, height) }
+    }
 }
 
 class EmptyScene : Scene() {
