@@ -47,6 +47,13 @@ class NewGraphics(shape: Shape = EmptyShape, renderer: GraphicsRenderer = Graphi
             softGraphics?.antialiased = true
             gpuGraphics?.antialiased = true
         }
+    var smoothing: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            softGraphics?.smoothing = true
+            gpuGraphics?.smoothing = true
+        }
     var autoScaling: Boolean = true
         set(value) {
             if (field == value) return
@@ -70,8 +77,10 @@ class NewGraphics(shape: Shape = EmptyShape, renderer: GraphicsRenderer = Graphi
             ensure()
         }
 
-    inline fun updateShape(block: ShapeBuilder.(NewGraphics) -> Unit) {
-        this.shape = buildShape { block(this@NewGraphics) }
+    inline fun <T> updateShape(block: ShapeBuilder.(NewGraphics) -> T): T {
+        var result: T
+        this.shape = buildShape { result = block(this@NewGraphics) }
+        return result
     }
 
     fun redrawIfRequired() {
@@ -90,6 +99,7 @@ class NewGraphics(shape: Shape = EmptyShape, renderer: GraphicsRenderer = Graphi
                     gpuGraphics = gpuGraphics()
                     gpuGraphics?.antialiased = antialiased
                     gpuGraphics?.autoScaling = autoScaling
+                    gpuGraphics?.smoothing = smoothing
                 }
             }
             else -> {
@@ -101,6 +111,7 @@ class NewGraphics(shape: Shape = EmptyShape, renderer: GraphicsRenderer = Graphi
                     softGraphics = graphics()
                     softGraphics?.antialiased = antialiased
                     softGraphics?.autoScaling = autoScaling
+                    softGraphics?.smoothing = smoothing
                 }
                 softGraphics?.useNativeRendering = (renderer == GraphicsRenderer.SYSTEM)
             }

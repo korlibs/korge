@@ -7,8 +7,6 @@ import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
-import com.soywiz.korge.view.vector.GpuGraphics
-import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -109,7 +107,13 @@ open class Text(
         }
     var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; version++ } }
 
-    var alignment: TextAlignment = alignment; set(value) { if (field != value) { field = value; version++ } }
+    var alignment: TextAlignment = alignment
+        set(value) {
+            if (field == value) return
+            field = value
+            //println("Text.alignment=$field")
+            version++
+        }
     var horizontalAlign: HorizontalAlign
         get() = alignment.horizontal
         set(value) { alignment = alignment.withHorizontal(value) }
@@ -324,49 +328,16 @@ open class Text(
                 if (cachedVersion != version) {
                     cachedVersion = version
                     val realTextSize = textSize * autoscaling.renderedAtScaleXY
-                    /*
-                    //println("realTextSize=$realTextSize")
-                    textToBitmapResult = when {
-                        text.isNotEmpty() -> {
-                            font.renderTextToBitmap(
-                                realTextSize, text,
-                                paint = color, fill = true, renderer = renderer,
-                                //background = Colors.RED,
-                                nativeRendering = useNativeRendering, drawBorder = true,
-                            )
-                        }
-                        else -> {
-                            TextToBitmapResult(Bitmaps.transparent.bmp, FontMetrics(), TextMetrics(), emptyList())
-                        }
-                    }
 
-                    //println("RENDER TEXT: '$text'")
 
-                    val met = textToBitmapResult.metrics
-                    val x = -horizontalAlign.getOffsetX(met.width) + met.left
-                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
-
-                    if (_staticImage == null) {
-                        container.removeChildren()
-                        _staticImage = container.image(textToBitmapResult.bmp)
-                    } else {
-                        imagesToRemove.add(_staticImage!!.bitmap.base)
-                        _staticImage!!.bitmap = textToBitmapResult.bmp.slice()
-                    }
-                    val mscale = 1.0 / autoscaling.renderedAtScaleXY
-                    _staticImage!!.scale(mscale, mscale)
-                    setContainerPosition(x * mscale, y * mscale, font.getFontMetrics(fontSize, fontMetrics).baseline)
-                    */
                     if (_staticGraphics == null) {
                         container.removeChildren()
                         //_staticGraphics = container.gpuGraphics {  }
-                        _staticGraphics = container.graphics {  }
+                        _staticGraphics = container.newGraphics(renderer = GraphicsRenderer.SYSTEM) { }
                     }
 
-                    var textToBitmapResult: TextMetricsResult
-
-                    _staticGraphics!!.updateShape {
-                        val metrics = this.drawText(
+                    val metrics = _staticGraphics!!.updateShape {
+                        drawText(
                             text = text,
                             x = 0.0, y = 0.0,
                             size = realTextSize,
@@ -376,22 +347,16 @@ open class Text(
                             valign = VerticalAlign.TOP,
                             outMetrics = TextMetricsResult()
                         )
-
-                        cachedVersionGlyphMetrics = version
-                        _textMetricsResult = metrics
-
-                        val met = metrics!!.metrics
-                        val x = -horizontalAlign.getOffsetX(met.width) + met.left
-                        val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
-
-                        //it.xy(x, y)
-
-                        //fillText(
-                        //    //paint = color, fill = true, renderer = renderer,
-                        //    //background = Colors.RED,
-                        //    //nativeRendering = useNativeRendering, drawBorder = true,
-                        //)
                     }
+                    cachedVersionGlyphMetrics = version
+                    _textMetricsResult = metrics
+
+                    val met = metrics!!.metrics
+                    val x = -horizontalAlign.getOffsetX(met.width)// + met.left
+                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
+                    //setContainerPosition(x * 1.0, y * 1.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    //println("alignment=$alignment, horizontalAlign=$horizontalAlign, verticalAlign=$verticalAlign")
+                    setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
                 }
                 //_staticImage?.smoothing = smoothing
                 _staticGraphics?.smoothing = smoothing
@@ -416,15 +381,7 @@ open class Text(
         container.position(x, y)
     }
 
-    //private val imagesToRemove = arrayListOf<Bitmap>()
-    //internal var _staticImage: Image? = null
-    //val staticImage: Image? get() {
-    //    _renderInternal(null)
-    //    return _staticImage
-    //}
-
-    internal var _staticGraphics: Graphics? = null
-    //internal var _staticGraphics: GpuGraphics? = null
+    internal var _staticGraphics: NewGraphics? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection("Text") {
