@@ -1,4 +1,4 @@
-package com.soywiz.korio.net
+package com.soywiz.korio.util
 
 import kotlinx.coroutines.*
 import java.nio.channels.CompletionHandler

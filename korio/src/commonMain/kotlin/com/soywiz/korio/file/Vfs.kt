@@ -7,6 +7,8 @@ import com.soywiz.korio.async.AsyncCloseable
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.toChannel
 import com.soywiz.korio.async.use
+
+import com.soywiz.korio.async.useIt
 import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.lang.Closeable
@@ -83,16 +85,10 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun openInputStream(path: String): AsyncInputStream = open(path, VfsOpenMode.READ)
 
-	open suspend fun readRange(path: String, range: LongRange): ByteArray {
-		val s = open(path, VfsOpenMode.READ)
-		try {
-			s.position = range.start
-			val readCount = min(Int.MAX_VALUE.toLong() - 1, (range.endInclusive - range.start)).toInt() + 1
-			return s.readBytesUpTo(readCount)
-		} finally {
-			s.close()
-		}
-	}
+	open suspend fun readRange(path: String, range: LongRange): ByteArray = open(path, VfsOpenMode.READ).useIt { s ->
+        s.position = range.start
+        s.readBytesUpTo(min(Int.MAX_VALUE.toLong() - 1, (range.endInclusive - range.start)).toInt() + 1)
+    }
 
 	interface Attribute
 
@@ -143,7 +139,7 @@ abstract class Vfs : AsyncCloseable {
 	}
 
 	open suspend fun setSize(path: String, size: Long) {
-		open(path, mode = VfsOpenMode.WRITE).use { this.setLength(size) }
+		open(path, mode = VfsOpenMode.CREATE).use { this.setLength(size) }
 	}
 
 	open suspend fun setAttributes(path: String, attributes: List<Attribute>): Unit = Unit

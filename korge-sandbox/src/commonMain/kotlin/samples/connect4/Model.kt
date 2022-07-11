@@ -1,3 +1,5 @@
+package samples.connect4
+
 // Input
 
 sealed class Operation {

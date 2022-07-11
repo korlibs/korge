@@ -77,7 +77,7 @@ class SceneContainer(
     /** The [Scene] that is currently set or null */
 	var currentScene: Scene? = null
     override fun onSizeChanged() {
-        currentScene?.sceneView?.setSize(width, height)
+        currentScene?.onSizeChanged(width, height)
     }
 
     init {

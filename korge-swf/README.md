@@ -1,4 +1,4 @@
-### korge-ext-swf
+### korge-swf
 
 Loader of SWF animations (from Adobe Flash and Adobe Animate)
 
