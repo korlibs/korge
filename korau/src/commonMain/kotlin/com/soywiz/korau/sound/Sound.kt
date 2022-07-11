@@ -134,6 +134,8 @@ open class LogNativeSoundProvider(
         override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
             data.write(samples, offset, size)
         }
+        fun consumeToData(): AudioData = data.consumeToData(frequency)
+        fun toData(): AudioData = data.toData(frequency)
     }
 
     val streams = arrayListOf<PlatformLogAudioOutput>()

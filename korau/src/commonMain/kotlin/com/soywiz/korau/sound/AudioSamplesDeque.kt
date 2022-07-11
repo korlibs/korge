@@ -5,10 +5,9 @@ import com.soywiz.korau.internal.SampleConvert
 import kotlin.math.min
 
 class AudioSamplesDeque(val channels: Int) {
-    var totalSize: Long = 0L
     val buffer = Array(channels) { ShortArrayDeque() }
     val availableRead get() = buffer.getOrNull(0)?.availableRead ?: 0
-    val availableReadMax: Int get() = buffer.map { it.availableRead }.maxOrNull() ?: 0
+    val availableReadMax: Int get() = buffer.maxOfOrNull { it.availableRead } ?: 0
 
     fun createTempSamples(size: Int = 1024) = AudioSamples(channels, size)
 
@@ -94,8 +93,11 @@ class AudioSamplesDeque(val channels: Int) {
         for (c in buffer.indices) buffer[c].clear()
     }
 
-    //fun clone(): AudioSamplesDeque = AudioSamplesDeque(channels)
-
+    fun clone(): AudioSamplesDeque {
+        return AudioSamplesDeque(channels).also {
+            for (n in buffer.indices) it.buffer[n] = buffer[n].clone()
+        }
+    }
     override fun toString(): String = "AudioSamplesDeque(channels=$channels, availableRead=$availableRead)"
 }
 
@@ -105,3 +107,5 @@ fun AudioSamplesDeque.consumeToData(rate: Int): AudioData {
     read(samples)
     return AudioData(rate, samples)
 }
+
+fun AudioSamplesDeque.toData(rate: Int): AudioData = clone().consumeToData(rate)

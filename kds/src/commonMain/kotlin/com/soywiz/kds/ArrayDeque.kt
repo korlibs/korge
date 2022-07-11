@@ -91,6 +91,14 @@ class ShortArrayDeque(val initialBits: Int = 10) {
     val availableWriteWithoutAllocating get() = ring.availableWrite
     val availableRead get() = ring.availableRead
 
+    fun clone(): ShortArrayDeque {
+        return ShortArrayDeque(initialBits).also { out ->
+            out.ring = ring.clone()
+            out.written = written
+            out.read = read
+        }
+    }
+
     @JvmOverloads
     fun writeHead(buffer: ShortArray, offset: Int = 0, size: Int = buffer.size - offset): Int {
         val out = ensureWrite(size).ring.writeHead(buffer, offset, size)

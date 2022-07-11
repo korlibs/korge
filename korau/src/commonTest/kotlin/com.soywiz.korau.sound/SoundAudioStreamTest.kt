@@ -18,8 +18,9 @@ class SoundAudioStreamTest {
         sound.playAndWait(2.playbackTimes)
         assertEquals(1, soundProvider.streams.size)
         val stream = soundProvider.streams[0]
+        val dataOut = stream.toData()
         assertEquals("2304/1", "${data.totalSamples}/${data.channels}")
         assertEquals("4608/2", "${stream.data.availableRead}/${stream.data.channels}")
-        //stream.data.consumeToData(stream.frequency).toSound().playAndWait()
+        //dataOut.toSound().playAndWait()
     }
 }
