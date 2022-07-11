@@ -2,10 +2,12 @@ package com.soywiz.korge.util
 
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.CloseableCancellable
 import com.soywiz.korio.lang.cancel
 import com.soywiz.korio.lang.cancellable
+import kotlin.coroutines.cancellation.CancellationException
 
-class CancellableGroup : Cancellable {
+class CancellableGroup : CloseableCancellable {
 	private val cancellables = arrayListOf<Cancellable>()
 
 	operator fun plusAssign(c: Cancellable) {
@@ -24,7 +26,11 @@ class CancellableGroup : Cancellable {
 		cancellables += c.cancellable()
 	}
 
-	override fun cancel(e: Throwable) {
+    override fun close() {
+        cancel(CancellationException())
+    }
+
+    override fun cancel(e: Throwable) {
 		cancellables.cancel(e)
 	}
 }

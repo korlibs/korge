@@ -19,6 +19,8 @@ import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.isEmpty
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.write
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.contract
 
 fun VectorPath.toFillShape(paint: Paint): Shape = buildShape { fill(paint) { write(this@toFillShape) } }
 fun VectorPath.toStrokeShape(paint: Paint, info: StrokeInfo = StrokeInfo()): Shape = buildShape { stroke(paint, info) { write(this@toStrokeShape) } }
@@ -33,8 +35,11 @@ fun VectorPath.toStrokeShape(
     miterLimit: Double = 20.0
 ): Shape = buildShape { stroke(paint, StrokeInfo(thickness, pixelHinting, scaleMode, startCap, endCap, lineJoin, miterLimit)) { write(this@toStrokeShape) } }
 
-inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape =
-    ShapeBuilder(width, height).apply(builder).buildShape()
+@OptIn(ExperimentalContracts::class)
+inline fun buildShape(width: Int? = null, height: Int? = null, builder: ShapeBuilder.() -> Unit): Shape {
+    contract { callsInPlace(builder, kotlin.contracts.InvocationKind.EXACTLY_ONCE) }
+    return ShapeBuilder(width, height).apply(builder).buildShape()
+}
 
 open class ShapeBuilder(width: Int?, height: Int?) : Context2d(DummyRenderer), Drawable {
     override val rendererWidth: Int = width ?: 256

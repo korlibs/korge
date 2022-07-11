@@ -14,6 +14,7 @@ data class Line(override val a: Point, override val b: Point) : ILine {
     private val temp = Point()
 
     fun clone(): Line = Line(a.copy(), b.copy())
+    fun flipped(): Line = Line(b.copy(), a.copy())
 
     val minX: Double get() = kotlin.math.min(a.x, b.x)
     val maxX: Double get() = kotlin.math.max(a.x, b.x)

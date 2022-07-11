@@ -105,6 +105,8 @@ open class GpuShapeView(
 ) : View(), Anchorable {
     /** Use for compatibility with [BaseGraphics] */
     var useNativeRendering: Boolean = true
+    /** Use for compatibility with [BaseGraphics] */
+    var smoothing: Boolean = true
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
     private val bb = BoundsBuilder()

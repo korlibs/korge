@@ -1,6 +1,11 @@
+@file:OptIn(KorgeExperimental::class)
+
 package com.soywiz.korge.ui
 
+import com.soywiz.kds.extraProperty
 import com.soywiz.kds.getCyclicOrNull
+import com.soywiz.kds.getExtra
+import com.soywiz.kds.hasExtra
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.SoftKeyboardConfig
@@ -11,12 +16,24 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.descendantsOfType
+import com.soywiz.korge.view.descendantsWith
+import kotlin.native.concurrent.ThreadLocal
 
 @KorgeExperimental
 interface UIFocusable {
+    val UIFocusManager.focusView: View
     var tabIndex: Int
     var focused: Boolean
 }
+
+@ThreadLocal
+private var View._focusable: UIFocusable? by extraProperty { null }
+
+var View.focusable: UIFocusable?
+    get() = (this as? UIFocusable?) ?: _focusable
+    set(value) {
+        _focusable = value
+    }
 
 @KorgeExperimental
 fun UIFocusable.focus() { focused = true }
@@ -27,16 +44,18 @@ fun UIFocusable.blur() { focused = false }
 class UIFocusManager(override val view: Stage) : KeyComponent {
     val stage = view
     val gameWindow get() = view.gameWindow
-    var uiFocusedView: UIView? = null
+    var uiFocusedView: UIFocusable? = null
 
     //private var toggleKeyboardTimeout: Closeable? = null
 
-    fun requestToggleSoftKeyboard(show: Boolean, view: View?) {
+    fun requestToggleSoftKeyboard(show: Boolean, view: UIFocusable?) {
         //toggleKeyboardTimeout?.close()
         //toggleKeyboardTimeout = stage.timeout(1.seconds) {
             if (show) {
                 if (view != null) {
-                    gameWindow.setInputRectangle(view.getWindowBounds(stage))
+                    view.apply {
+                        gameWindow.setInputRectangle(this@UIFocusManager.focusView.getWindowBounds(stage))
+                    }
                 }
                 gameWindow.showSoftKeyboard(config = view as? ISoftKeyboardConfig?)
             } else {
@@ -49,9 +68,12 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
         if (event.type == KeyEvent.Type.DOWN && event.key == Key.TAB) {
             val shift = event.shift
             val dir = if (shift) -1 else +1
-            val focusables = stage.descendantsOfType<UIFocusable>()
+            //val focusables = stage.descendantsOfType<UIFocusable>()
+            val focusables = stage
+                .descendantsWith { it.focusable != null }
+                .mapNotNull { it.focusable }
             val sortedFocusables = focusables.sortedBy { it.tabIndex }
-            val index = sortedFocusables.indexOf(uiFocusedView as? UIFocusable?).takeIf { it >= 0 }
+            val index = sortedFocusables.indexOf(uiFocusedView).takeIf { it >= 0 }
             sortedFocusables
                 .getCyclicOrNull(
                     when {
@@ -82,6 +104,6 @@ class UIFocusManager(override val view: Stage) : KeyComponent {
 @KorgeExperimental
 val Stage.uiFocusManager get() = this.getOrCreateComponentKey { UIFocusManager(this) }
 @KorgeExperimental
-var Stage.uiFocusedView: UIView?
+var Stage.uiFocusedView: UIFocusable?
     get() = uiFocusManager.uiFocusedView
     set(value) { uiFocusManager.uiFocusedView = value }

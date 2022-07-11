@@ -15,6 +15,7 @@ import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korio.lang.Cancellable
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CloseableCancellable
 import kotlin.collections.List
 import kotlin.collections.MutableList
@@ -29,8 +30,12 @@ import kotlin.reflect.KClass
  * An interface that allows to control the behaviour of a [View] after some events.
  * The most common case of Component is the [UpdateComponent]
  */
-interface Component {
+interface Component : Closeable {
     val view: BaseView
+
+    override fun close() {
+        this.view.removeComponent(this)
+    }
 }
 
 fun Component.cancellable(): CloseableCancellable = CloseableCancellable { detach() }

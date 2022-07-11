@@ -94,7 +94,8 @@ interface IBezier : Curve {
     fun splitLeft(t: Double): SubBezier
     fun splitRight(t: Double): SubBezier
 
-    fun toLine(out: Bezier = Bezier()): Bezier
+    fun toLine(out: Line = Line()): Line
+    fun toLineBezier(out: Bezier = Bezier()): Bezier
     fun toCubic(out: Bezier = Bezier()): Bezier
     fun toQuad(out: Bezier = Bezier()): Bezier
     fun toQuadList(): List<Bezier>
@@ -769,7 +770,15 @@ class Bezier(
         val adk: Double = 0.0,
     )
 
-    override fun toLine(out: Bezier): Bezier {
+    override fun toLine(out: Line): Line {
+        val x0 = points.getX(0)
+        val y0 = points.getY(0)
+        val x1 = points.getX(order)
+        val y1 = points.getY(order)
+        return out.setTo(x0, y0, x1, y1)
+    }
+
+    override fun toLineBezier(out: Bezier): Bezier {
         val x0 = points.getX(0)
         val y0 = points.getY(0)
         val x1 = points.getX(order)
@@ -1535,3 +1544,5 @@ class Bezier(
         }
     }
 }
+
+fun Line.toBezier(): Bezier = Bezier(x0, y0, x1, y1)

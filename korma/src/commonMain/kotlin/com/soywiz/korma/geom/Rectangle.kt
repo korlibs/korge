@@ -230,6 +230,8 @@ data class Rectangle(
             ratio.interpolate(l.height, r.height)
         )
 
+    fun getMiddlePoint(out: Point = Point()): Point = getAnchoredPosition(Anchor.CENTER, out)
+
     fun getAnchoredPosition(anchor: Anchor, out: Point = Point()): Point =
         getAnchoredPosition(anchor.sx, anchor.sy, out)
 

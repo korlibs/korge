@@ -98,19 +98,23 @@ abstract class BaseGraphics(
 
             val imageWidth = (boundsWithShapes.width * autoscaling.renderedAtScaleX).toIntCeil().coerceAtLeast(1)
             val imageHeight = (boundsWithShapes.height * autoscaling.renderedAtScaleY).toIntCeil().coerceAtLeast(1)
+            //val imageWidth = boundsWithShapes.width.toIntCeil()
+            //val imageHeight = boundsWithShapes.height.toIntCeil()
             val image = createImage(
                 imageWidth + EXTRA_PIXELS,
                 imageHeight + EXTRA_PIXELS
             )
             //println("bounds=$boundsWithShapes, scale=${autoscaling.renderedAtScaleX},${autoscaling.renderedAtScaleY}, image=$image")
-            realImageScaleX = imageWidth / boundsWithShapes.width
-            realImageScaleY = imageHeight / boundsWithShapes.height
+            realImageScaleX = imageWidth / imageWidth.toDouble()
+            realImageScaleY = imageHeight / imageHeight.toDouble()
+
+            //realImageScaleX = 1.0
+            //realImageScaleY = 1.0
 
             image.context2d {
                 scale(realImageScaleX, realImageScaleY)
                 translate(-boundsWithShapes.x, -boundsWithShapes.y)
                 drawShape(this)
-                //this@BaseGraphics.compoundShape.draw(this)
             }
             this.bitmap = image.slice()
         }
@@ -128,33 +132,34 @@ abstract class BaseGraphics(
 
     //val fillWidth get() = (bitmap.width - EXTRA_PIXELS).toDouble() / realImageScaleX
     //val fillHeight get() = (bitmap.height - EXTRA_PIXELS).toDouble() / realImageScaleY
-    val fillWidth get() = boundsUnsafe(strokes = false).width
-    val fillHeight get() = boundsUnsafe(strokes = false).height
+    val fillWidth get() = _getLocalBoundsInternal().width
+    val fillHeight get() = _getLocalBoundsInternal().height
 
-    //private val bitmapWidth get() = bitmap.width.toDouble() - EXTRA_PIXELS
-    //private val bitmapHeight get() = bitmap.height.toDouble() - EXTRA_PIXELS
+    private val bitmapWidth: Double get() = bitmap.width.toDouble()
+    private val bitmapHeight: Double get() = bitmap.height.toDouble()
 
-    final override val bwidth: Double get() = fillWidth
-    final override val bheight: Double get() = fillHeight
-
-    final override val frameWidth: Double get() = fillWidth
-    final override val frameHeight: Double get() = fillHeight
-
-    //final override val anchorDispX: Double get() = -boundsUnsafe(strokes = false).x + (anchorX * bwidth)
-    //final override val anchorDispY: Double get() = -boundsUnsafe(strokes = false).y + (anchorY * bheight)
-    //override val sLeft: Double get() = super.sLeft
-    //override val sTop: Double get() = super.sTop
+    final override val bwidth: Double get() = bitmapWidth
+    final override val bheight: Double get() = bitmapHeight
+    final override val frameWidth: Double get() = bitmapWidth
+    final override val frameHeight: Double get() = bitmapHeight
 
     final override val anchorDispX: Double get() = (anchorX * bwidth)
     final override val anchorDispY: Double get() = (anchorY * bheight)
-    override val sLeft: Double get() = +boundsUnsafe(strokes = false).x - anchorDispX
-    override val sTop: Double get() = +boundsUnsafe(strokes = false).y - anchorDispY
+    override val sLeft: Double get() = _getLocalBoundsInternal().x
+    override val sTop: Double get() = _getLocalBoundsInternal().y
 
-    final internal val _sLeft get() = sLeft
-    final internal val _sTop get() = sTop
+    internal val _sLeft get() = sLeft
+    internal val _sTop get() = sTop
 
     override fun getLocalBoundsInternal(out: Rectangle) {
-        out.setTo(sLeft, sTop, bwidth, bheight)
+        _getLocalBoundsInternal(out)
+    }
+
+    private val __localBounds: Rectangle = Rectangle()
+    private fun _getLocalBoundsInternal(out: Rectangle = __localBounds): Rectangle {
+        val bounds = boundsUnsafe(strokes = false)
+        out.setTo(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
+        return out
     }
 
     private val _localBoundsWithStrokes = Rectangle()
