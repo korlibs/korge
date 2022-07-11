@@ -8,7 +8,7 @@ import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korim.vector.buildShape
 
 inline fun Container.newGraphics(
-    renderer: GraphicsRenderer = GraphicsRenderer.GPU,
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
     callback: ShapeBuilder.(NewGraphics) -> Unit = {}
 ): NewGraphics = NewGraphics(EmptyShape, renderer).addTo(this).also { graphics ->
     graphics.updateShape { callback(this, graphics) }
@@ -17,13 +17,13 @@ inline fun Container.newGraphics(
 
 inline fun Container.newGraphics(
     build: ShapeBuilder.() -> Unit,
-    renderer: GraphicsRenderer = GraphicsRenderer.GPU,
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
     callback: @ViewDslMarker NewGraphics.() -> Unit = {}
 ) = NewGraphics(buildShape { build() }, renderer).addTo(this, callback)
 
 inline fun Container.newGraphics(
     shape: Shape,
-    renderer: GraphicsRenderer = GraphicsRenderer.GPU,
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
     callback: @ViewDslMarker NewGraphics.() -> Unit = {}
 ) = NewGraphics(shape, renderer).addTo(this, callback)
 

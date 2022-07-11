@@ -216,7 +216,11 @@ class TextEditController(
 
     val selectionLength: Int get() = (selectionEnd - selectionStart).absoluteValue
     val selectionText: String get() = text.substring(min(selectionStart, selectionEnd), max(selectionStart, selectionEnd))
-    val selectionRange: IntRange get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
+    var selectionRange: IntRange
+        get() = min(selectionStart, selectionEnd) until max(selectionStart, selectionEnd)
+        set(value) {
+            select(value)
+        }
 
     private val gameWindow get() = textView.stage!!.views.gameWindow
 

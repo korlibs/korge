@@ -54,6 +54,10 @@ class UITextInput(initialText: String = "", width: Double = 128.0, height: Doubl
     val onReturnPressed: Signal<TextEditController> by controller::onReturnPressed
     val onEscPressed: Signal<TextEditController> by controller::onEscPressed
     val onFocusLost: Signal<TextEditController> by controller::onFocusLost
+    var selectionRange: IntRange by controller::selectionRange
+    var selectionStart: Int by controller::selectionStart
+    var selectionEnd: Int by controller::selectionEnd
+    val selectionLength: Int by controller::selectionLength
     fun focus() = controller.focus()
     fun blur() = controller.blur()
     fun selectAll() = controller.selectAll()

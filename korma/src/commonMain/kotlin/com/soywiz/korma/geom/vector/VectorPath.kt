@@ -117,7 +117,11 @@ class VectorPath(
                 lx = x3; ly = y3
             },
             close = {
-                if (!optimizeClose || !lx.isAlmostEquals(mx) || !ly.isAlmostEquals(my)) {
+                val equal = when {
+                    optimizeClose -> lx.isAlmostEquals(mx) && ly.isAlmostEquals(my)
+                    else -> lx == mx && ly == my
+                }
+                if (!equal) {
                     line(lx, ly, mx, my)
                 }
                 close()
@@ -571,7 +575,7 @@ fun VectorPath.getCurvesList(): List<Curves> {
                     currentClosed = true
                     flush()
                 },
-                optimizeClose = false
+                optimizeClose = true
             )
             flush()
         }

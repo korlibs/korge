@@ -236,6 +236,12 @@ open class Text(
     private var tva: TexturedVertexArray? = null
     private val identityMat = Matrix()
 
+    var graphicsRenderer: GraphicsRenderer = GraphicsRenderer.SYSTEM
+        set(value) {
+            field = value
+            _staticGraphics?.renderer = value
+        }
+
     fun _renderInternal(ctx: RenderContext?) {
         if (ctx != null) {
             val fontSource = fontSource
@@ -333,7 +339,7 @@ open class Text(
                     if (_staticGraphics == null) {
                         container.removeChildren()
                         //_staticGraphics = container.gpuGraphics {  }
-                        _staticGraphics = container.newGraphics(renderer = GraphicsRenderer.SYSTEM) { }
+                        _staticGraphics = container.newGraphics(renderer = graphicsRenderer) { }
                     }
 
                     val metrics = _staticGraphics!!.updateShape {
