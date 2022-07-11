@@ -1,8 +1,10 @@
 package com.soywiz.korio.lang
 
+import com.soywiz.kmem.ByteArrayBuilder
 import com.soywiz.krypto.encoding.unhex
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class CharsetTest {
     @Test
@@ -45,5 +47,37 @@ class CharsetTest {
     fun testUTF16() {
         assertEquals("emoji", "0065006d006f006a0069".unhex.toString(UTF16_BE))
         assertEquals("emoji", "65006d006f006a006900".unhex.toString(UTF16_LE))
+    }
+
+    @Test
+    fun testCharsetForName() {
+        assertEquals(
+            """
+                UTF-8
+                UTF-16-LE
+                UTF-16-LE
+                UTF-16-BE
+                ISO-8859-1
+                ISO-8859-1
+            """.trimIndent(),
+            listOf("UTF-8", "UTF-16", "UTF-16-LE", "UTF-16-BE", "LATIN-1", "ISO-8859-1")
+                .joinToString("\n") { Charset.forName(it).name }
+        )
+        assertFailsWith<InvalidArgumentException> { Charset.forName("MY-UNKNOWN-CHARSET") }
+    }
+
+    @Test
+    fun testCharsetForNameCustomProvider() {
+        val MYDEMOCharsetName = "MYDEMO"
+
+        val charset = object : Charset(MYDEMOCharsetName) {
+            override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int): Unit = TODO()
+            override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int): Unit = TODO()
+        }
+        Charset.registerProvider({ normalizedName, _ -> if (normalizedName == "DEMO") charset else null }) {
+            assertEquals(MYDEMOCharsetName, Charset.forName("DEMO").name)
+            assertEquals(MYDEMOCharsetName, Charset.forName("DE-_mo").name)
+            assertFailsWith<InvalidArgumentException> { Charset.forName("MY-UNKNOWN-CHARSET") }
+        }
     }
 }
