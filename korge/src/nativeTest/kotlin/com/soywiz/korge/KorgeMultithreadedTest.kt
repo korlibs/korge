@@ -8,12 +8,10 @@ import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.touch
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.BlurFilter
-import com.soywiz.korge.view.filter.ColorMatrixFilter
-import com.soywiz.korge.view.filter.renderToTextureWithBorder
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.mask.mask
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.shape.buildVectorPath
@@ -25,7 +23,6 @@ import com.soywiz.korma.geom.vector.moveTo
 import com.soywiz.korma.geom.vector.roundRect
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
-import kotlin.native.internal.test.*
 import kotlin.test.*
 
 class KorgeMultithreadedTest {
@@ -60,8 +57,7 @@ class KorgeMultithreadedTest {
             val viewsForTesting = ViewsForTesting()
             viewsForTesting.viewsTest(timeout = 5.seconds, cond = { true }) {
                 val rect = solidRect(10, 10)
-                    .filters(BlurFilter())
-                    .filterScale(0.1)
+                    .filters(BlurFilter(), filterScale = 1.0)
                     .mask(solidRect(5, 5))
                 val gpuShapeView = gpuShapeView({ roundRect(0, 0, 200, 100, 10, 10) })
                 this.views.render()

@@ -25,6 +25,16 @@ open class ComposedFilter private constructor(val filters: FastArrayList<Filter>
             right is ComposedFilter -> ComposedFilter(listOf(left) + right)
             else -> ComposedFilter(left, right)
         }
+
+        fun combine(left: Filter?, right: List<Filter>): Filter? = when {
+            left == null -> when {
+                right.isEmpty() -> null
+                right.size == 1 -> right.first()
+                else -> ComposedFilter(right)
+            }
+            left is ComposedFilter -> ComposedFilter(left.filters + right)
+            else -> ComposedFilter(listOf(left) + right)
+        }
     }
 
     constructor() : this(mutableListOf())

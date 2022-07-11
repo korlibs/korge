@@ -9,7 +9,7 @@ import com.soywiz.korge.view.DummyView
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.clipContainer
 import com.soywiz.korge.view.container
-import com.soywiz.korge.view.filter
+import com.soywiz.korge.view.filter.filter
 import com.soywiz.korge.view.filter.IdentityFilter
 import com.soywiz.korge.view.filter.TransitionFilter
 import com.soywiz.korge.view.image

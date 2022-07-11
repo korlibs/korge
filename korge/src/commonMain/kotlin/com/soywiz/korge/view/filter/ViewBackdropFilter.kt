@@ -1,4 +1,4 @@
-package com.soywiz.korge.view
+package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
@@ -6,8 +6,9 @@ import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.Program
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.Texture
-import com.soywiz.korge.view.filter.ComposedFilter
-import com.soywiz.korge.view.filter.Filter
+import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewRenderPhase
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 
@@ -69,7 +70,8 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                 }
             }
         }) {
-            filter.render(ctx, view.parent!!.globalMatrix, it, it.width, it.height, ColorAdd.NEUTRAL, Colors.WHITE, BlendMode.NORMAL, filter.recommendedFilterScale)
+            filter.render(ctx, view.parent!!.globalMatrix, it, it.width, it.height, ColorAdd.NEUTRAL, Colors.WHITE,
+                BlendMode.NORMAL, filter.recommendedFilterScale)
         }
     }
 

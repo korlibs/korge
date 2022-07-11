@@ -21,10 +21,8 @@ import com.soywiz.korge.view.KorgeFileLoader
 import com.soywiz.korge.view.KorgeFileLoaderTester
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
-import com.soywiz.korge.view.filter
-import com.soywiz.korge.view.filter.ComposedFilter
+import com.soywiz.korge.view.filter.filter
 import com.soywiz.korge.view.filter.Filter
-import com.soywiz.korge.view.filters
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.ColorTransform

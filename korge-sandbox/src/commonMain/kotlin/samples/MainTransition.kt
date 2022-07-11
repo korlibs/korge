@@ -5,8 +5,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.TransitionView
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.DropshadowFilter
-import com.soywiz.korge.view.filter.TransitionFilter
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.color.Colors
 
 class MainTransition : Scene() {

@@ -4,9 +4,6 @@ import com.soywiz.kds.Extra
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
-import com.soywiz.korge.view.addFilter
-import com.soywiz.korge.view.filter
-import com.soywiz.korge.view.removeFilter
 import com.soywiz.korui.UiMenuItem
 import com.soywiz.korui.button
 import com.soywiz.korui.container

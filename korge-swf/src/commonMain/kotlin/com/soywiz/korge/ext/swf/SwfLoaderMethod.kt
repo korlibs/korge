@@ -8,7 +8,7 @@ import com.soywiz.korfl.*
 import com.soywiz.korge.animate.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.view.BlendMode
-import com.soywiz.korge.view.composedOrNull
+import com.soywiz.korge.view.filter.composedOrNull
 import com.soywiz.korge.view.filter.BlurFilter
 import com.soywiz.korge.view.filter.ComposedFilter
 import com.soywiz.korge.view.filter.DropshadowFilter
@@ -20,7 +20,6 @@ import com.soywiz.korio.serialization.json.*
 import com.soywiz.korio.stream.*
 import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.VectorPath
-import com.soywiz.krypto.encoding.hex
 import com.soywiz.krypto.encoding.hexLower
 import kotlinx.coroutines.*
 import kotlin.collections.component1

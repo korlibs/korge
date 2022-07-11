@@ -20,8 +20,10 @@ class ViewsRetinaFilterTest : ViewsForTesting(
         val container = container {
             image(Bitmap32(512, 512, Colors.RED))
             //solidRect(512, 512, Colors.RED)
-                .filters(SwizzleColorsFilter("rrra"))
-                .filters(ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX))
+                .filters(
+                    SwizzleColorsFilter("rrra"),
+                    ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX),
+                )
         }
         delayFrame()
         container.renderToBitmap(views)

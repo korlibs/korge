@@ -1,11 +1,11 @@
-package com.soywiz.korge.view
+package com.soywiz.korge.view.filter
 
 import com.soywiz.kds.extraPropertyThis
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.clamp
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.filter.ComposedFilter
-import com.soywiz.korge.view.filter.Filter
+import com.soywiz.korge.view.View
+import com.soywiz.korge.view.ViewRenderPhase
 import kotlin.native.concurrent.ThreadLocal
 
 /**
@@ -35,18 +35,6 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
         } else {
             super.render(view, ctx)
         }
-    }
-}
-
-fun <T : View> T.addFilter(filter: Filter): T {
-    this.filter = ComposedFilter.combine(this.filter, filter)
-    return this
-}
-
-fun View.removeFilter(filter: Filter) {
-    when (this.filter) {
-        filter -> this.filter = null
-        is ComposedFilter -> this.filter = ComposedFilter((this.filter as ComposedFilter).filters.filter { it != filter })
     }
 }
 
@@ -118,15 +106,31 @@ inline fun <T : View> T.filterScale(scale: Double): T {
     return this
 }
 
-inline fun <T : View> T.filters(vararg filters: Filter): T {
-    filters.fastForEach { addFilter(it) }
+inline fun <T : View> T.filters(vararg filters: Filter, filterScale: Double = this.filterScale): T = filters(filters.toList(), filterScale)
+inline fun <T : View> T.filters(filters: List<Filter>, filterScale: Double = this.filterScale): T {
+    this.filter = ComposedFilter.combine(null, filters)
+    this.filterScale = filterScale
     return this
 }
 
-inline fun <T : View> T.filters(filters: List<Filter>): T {
-    filters.fastForEach { addFilter(it) }
+fun <T : View> T.addFilters(vararg filters: Filter): T = addFilters(filters.toList())
+fun <T : View> T.addFilters(filters: List<Filter>): T {
+    this.filter = ComposedFilter.combine(this.filter, filters)
     return this
 }
+
+fun <T : View> T.addFilter(filter: Filter): T {
+    this.filter = ComposedFilter.combine(this.filter, filter)
+    return this
+}
+
+fun View.removeFilter(filter: Filter) {
+    when (this.filter) {
+        filter -> this.filter = null
+        is ComposedFilter -> this.filter = ComposedFilter((this.filter as ComposedFilter).filters.filter { it != filter })
+    }
+}
+
 
 fun List<Filter?>.composedOrNull(): Filter? {
     val items = this.filterNotNull()

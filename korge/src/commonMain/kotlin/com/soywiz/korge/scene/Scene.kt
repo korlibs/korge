@@ -15,7 +15,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.ViewsContainer
-import com.soywiz.korge.view.filter
+import com.soywiz.korge.view.filter.filter
 import com.soywiz.korge.view.filter.IdentityFilter
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.size

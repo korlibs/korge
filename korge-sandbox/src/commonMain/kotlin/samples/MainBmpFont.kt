@@ -2,11 +2,9 @@ package samples
 
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
-import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.Convolute3Filter
-import com.soywiz.korim.color.Colors
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korim.font.readBitmapFont
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately
