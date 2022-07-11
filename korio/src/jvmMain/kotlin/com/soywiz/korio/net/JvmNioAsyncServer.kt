@@ -1,16 +1,12 @@
 package com.soywiz.korio.net
 
-import com.soywiz.korio.async.*
+import com.soywiz.korio.util.nioSuspendCompletion
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.suspendCancellableCoroutine
 import java.net.*
 import java.nio.channels.AsynchronousCloseException
 import java.nio.channels.AsynchronousServerSocketChannel
 import java.nio.channels.AsynchronousSocketChannel
-import java.nio.channels.CompletionHandler
 import kotlin.coroutines.cancellation.*
-import kotlin.coroutines.resume
-import kotlin.coroutines.resumeWithException
 
 class JvmNioAsyncServer(override val requestPort: Int, override val host: String, override val backlog: Int = -1) :
     AsyncServer {
