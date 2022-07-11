@@ -10,7 +10,6 @@ import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.AsyncStreamBase
 import com.soywiz.korio.stream.toAsyncStream
 import com.soywiz.korio.util.isAliveJre7
-import com.sun.nio.file.SensitivityWatchEventModifier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
@@ -30,7 +29,7 @@ import java.nio.file.FileSystems
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.StandardWatchEventKinds
-import kotlin.math.min
+import java.nio.file.WatchEvent
 
 internal open class BaseLocalVfsJvm : LocalVfsV2() {
     val that = this
@@ -214,6 +213,8 @@ internal open class BaseLocalVfsJvm : LocalVfsV2() {
     override suspend fun rename(src: String, dst: String): Boolean =
         executeIo { resolveFile(src).renameTo(resolveFile(dst)) }
 
+    protected open fun watchModifiers(path: String): Array<WatchEvent.Modifier> = emptyArray()
+
     override suspend fun watch(path: String, handler: (FileEvent) -> Unit): Closeable {
         var running = true
         val fs = FileSystems.getDefault()
@@ -226,7 +227,7 @@ internal open class BaseLocalVfsJvm : LocalVfsV2() {
                 StandardWatchEventKinds.ENTRY_DELETE,
                 StandardWatchEventKinds.ENTRY_MODIFY,
             ),
-            SensitivityWatchEventModifier.HIGH
+            *watchModifiers(path)
         )
 
         GlobalScope.launch(Dispatchers.IO) {

@@ -210,4 +210,7 @@ class MergedVfsDecorator(val classLoader: ClassLoader, val merged: MergedVfs = M
 }
 
 internal class LocalVfsJvm : AsynchronousFileChannelVfs() {
+    override fun watchModifiers(path: String): Array<WatchEvent.Modifier> {
+        return arrayOf(SensitivityWatchEventModifier.HIGH)
+    }
 }
