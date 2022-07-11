@@ -19,13 +19,12 @@ import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
-import kotlin.test.assertNotSame
 import kotlin.test.assertTrue
 
 class GraphicsTest {
 	@Test
 	fun test() = suspendTest({ !OS.isAndroid }) {
-		val g = Graphics().updateShape(redrawNow = true) {
+		val g = CpuGraphics().updateShape(redrawNow = true) {
 			fill(Colors.RED) {
 				rect(-50, -50, 100, 100)
 			}
@@ -42,7 +41,7 @@ class GraphicsTest {
 
     @Test
     fun testEmptyGraphics() = suspendTest({ !OS.isAndroid }) {
-        val g = Graphics().apply {
+        val g = CpuGraphics().apply {
         }
         val rc = TestRenderContext()
         g.render(rc)
@@ -54,7 +53,7 @@ class GraphicsTest {
 
     @Test
     fun testGraphicsSize() {
-        Graphics().updateShape {
+        CpuGraphics().updateShape {
             fill(Colors.RED) {
                 rect(0, 0, 100, 100)
             }
@@ -62,7 +61,7 @@ class GraphicsTest {
             assertEquals(100.0, g.width)
             assertEquals(100.0, g.height)
         }
-        Graphics().updateShape {
+        CpuGraphics().updateShape {
             fill(Colors.RED) {
                 rect(10, 10, 100, 100)
             }
@@ -111,7 +110,7 @@ class GraphicsTest {
 
     @Test
     fun testMultiShapeHitTesting() {
-        val graphics = Graphics().updateShape {
+        val graphics = CpuGraphics().updateShape {
             fill(Colors.RED) {
                 circle(0.0, 0.0, 32.0)
             }
@@ -128,7 +127,7 @@ class GraphicsTest {
 
     @Test
     fun testGraphicsTextureSize() {
-        val bitmap = Graphics().updateShape(redrawNow = true) {
+        val bitmap = CpuGraphics().updateShape(redrawNow = true) {
             stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
         }.bitmap
         assertEquals("153x103", "${bitmap.width}x${bitmap.height}")
@@ -136,7 +135,7 @@ class GraphicsTest {
 
     @Test
     fun testUpdatingTheGraphicsBitmapAndRenderingRemovesThePreviousBitmapFromActiveTextures() {
-        val g = Graphics()
+        val g = CpuGraphics()
         assertEquals(0, g.bitmapsToRemove.size)
         g.updateShape {
             stroke(Colors["#f0f0f0"], StrokeInfo(thickness = 2.0)) { rect(-75.0, -50.0, 150.0, 100.0) }
@@ -157,7 +156,7 @@ class GraphicsTest {
         val p1 = Point(25, 190)
         val p2 = Point(210, 250)
         val p3 = Point(234, 49)
-        val g = Graphics()
+        val g = CpuGraphics()
         assertEquals(Rectangle(), g.getLocalBounds())
         g.updateShape {
             clear()

@@ -30,11 +30,9 @@ import com.dragonbones.event.*
 import com.dragonbones.model.*
 import com.dragonbones.util.*
 import com.soywiz.kds.*
-import com.soywiz.kds.iterators.*
 import com.soywiz.korge.debug.*
 import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.*
 import com.soywiz.korma.geom.vector.*
 import com.soywiz.korui.*
 
@@ -97,12 +95,12 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 				if (this._debugDrawer === null) {
 					//this._debugDrawer = Image(Bitmaps.transparent)
                     this._debugDrawer = Container()
-					val boneDrawer = Graphics()
+					val boneDrawer = CpuGraphics()
 					this._debugDrawer?.addChild(boneDrawer)
 				}
 
 				this.addChild(this._debugDrawer!!)
-				val boneDrawer = this._debugDrawer?.getChildAt(0) as Graphics
+				val boneDrawer = this._debugDrawer?.getChildAt(0) as CpuGraphics
 
 				val bones = armature.getBones()
 				//for (let i = 0, l = bones.length; i < l; ++i) {
@@ -132,9 +130,9 @@ class KorgeDbArmatureDisplay : Container(), IArmatureProxy {
 					val boundingBoxData = slot.boundingBoxData
 
 					if (boundingBoxData != null) {
-						var child = this._debugDrawer?.getChildByName(slot.name) as? Graphics?
+						var child = this._debugDrawer?.getChildByName(slot.name) as? CpuGraphics?
 						if (child == null) {
-							child = Graphics()
+							child = CpuGraphics()
 							child.name = slot.name
 							this._debugDrawer?.addChild(child)
 						}

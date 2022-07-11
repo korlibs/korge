@@ -2,7 +2,7 @@ package samples
 
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
@@ -47,12 +47,12 @@ class MainVectorFill : Scene() {
             }
         }
 
-        graphics {
+        cpuGraphics {
             it.useNativeRendering = true
             buildMyShape()
             it.scale(0.5)
         }
-        graphics {
+        cpuGraphics {
             it.useNativeRendering = false
             buildMyShape()
             it.scale(0.5)

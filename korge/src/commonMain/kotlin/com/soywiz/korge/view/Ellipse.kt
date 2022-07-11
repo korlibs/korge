@@ -26,7 +26,7 @@ inline fun Container.ellipse(
 ): Ellipse = Ellipse(radiusX, radiusY, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
- * A [Graphics] class that automatically keeps a ellipse shape with [radiusX], [radiusY] and [color].
+ * A [CpuGraphics] class that automatically keeps a ellipse shape with [radiusX], [radiusY] and [color].
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Ellipse(

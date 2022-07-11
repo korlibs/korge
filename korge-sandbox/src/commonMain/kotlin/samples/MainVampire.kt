@@ -14,7 +14,7 @@ import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.animation.ImageDataView
 import com.soywiz.korge.view.animation.imageDataView
 import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.moveWithCollisions
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.xy
@@ -80,7 +80,7 @@ class MainVampire : Scene() {
         //    //star(400, 400, 50)
         //}
 
-        val gg = graphics {
+        val gg = cpuGraphics {
             fill(Colors.RED) {
                 rect(300, 0, 100, 100)
             }

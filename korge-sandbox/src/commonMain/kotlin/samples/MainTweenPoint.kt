@@ -9,7 +9,7 @@ import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.circle
 import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.xy
@@ -38,7 +38,7 @@ class MainTweenPoint : Scene() {
                 quadTo(400.0, 400.0, 200.0, 200.0)
             }
             val curves = path.getCurves()
-            graphics(path.toStrokeShape(Colors.RED, thickness = 2.0))
+            cpuGraphics(path.toStrokeShape(Colors.RED, thickness = 2.0))
             image(tex).scale(0.2)
             launch {
                 while (true) {

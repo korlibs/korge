@@ -3,7 +3,7 @@ package samples
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.alpha
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.xy
@@ -35,7 +35,7 @@ class MainImageTrace : Scene() {
         }
         val path = bmp.trace()
         image(bmp)
-        graphics { fill(Colors.RED) { write(path) } }.xy(50, 50).scale(3).alpha(0.5)
+        cpuGraphics { fill(Colors.RED) { write(path) } }.xy(50, 50).scale(3).alpha(0.5)
         //image(bmp)
         /*
         Bitmap2(bmp.width, bmp.height).also {

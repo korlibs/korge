@@ -62,7 +62,7 @@ class MainTextMetrics : Scene() {
             xy(0, 500)
             val leftPadding = 50
             text1 = text(textStrs["simple"]!!, 175.0, Colors.WHITE, font2, alignment = TextAlignment.BASELINE_LEFT, autoScaling = true).xy(leftPadding, 0)
-            val gbounds = graphics {}.xy(leftPadding, 0)
+            val gbounds = cpuGraphics {}.xy(leftPadding, 0)
 
             val baseLineLine = solidRect(960 + 1200, 1, Colors.ORANGE)
             val baseAscent = solidRect(960 + 1200, 1, Colors.BLUE)

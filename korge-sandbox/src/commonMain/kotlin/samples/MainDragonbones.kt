@@ -15,7 +15,7 @@ import com.soywiz.korge.time.delay
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Graphics
+import com.soywiz.korge.view.CpuGraphics
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.TextOld
@@ -158,7 +158,7 @@ class MainDragonbones : Scene() {
     class Button(text: String, handler: suspend () -> Unit) : Container() {
         val textField = TextOld(text, textSize = 32.0).apply { filtering = false }
         private val bounds = textField.textBounds
-        val g = Graphics().updateShape {
+        val g = CpuGraphics().updateShape {
             fill(Colors.DARKGREY, 0.7) {
                 roundRect(bounds.x, bounds.y, bounds.width + 16, bounds.height + 16, 8.0, 8.0)
             }

@@ -10,10 +10,10 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.centered
 import com.soywiz.korge.view.circle
 import com.soywiz.korge.view.container
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.filter
 import com.soywiz.korge.view.filter.ColorTransformFilter
 import com.soywiz.korge.view.position
-import com.soywiz.korge.view.sgraphics
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
@@ -36,7 +36,7 @@ class BezierSample : Scene() {
         val p2 = Point(210, 250)
         val p3 = Point(234, 49)
 
-        val graphics = sgraphics()
+        val graphics = cpuGraphics(autoScaling = true)
         val graphics2 = gpuShapeView().xy(0, 300)
 
         fun ShapeBuilder.updateBezier() {

@@ -20,24 +20,18 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.DummyView
-import com.soywiz.korge.view.Graphics
 import com.soywiz.korge.view.GraphicsRenderer
 import com.soywiz.korge.view.IHtml
 import com.soywiz.korge.view.IText
 import com.soywiz.korge.view.Image
-import com.soywiz.korge.view.NewGraphics
+import com.soywiz.korge.view.Graphics
 import com.soywiz.korge.view.TextOld
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewLeaf
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.graphics
-import com.soywiz.korge.view.newGraphics
 import com.soywiz.korge.view.replaceWith
-import com.soywiz.korge.view.vector.GpuGraphics
-import com.soywiz.korge.view.vector.GpuShapeView
-import com.soywiz.korge.view.vector.gpuGraphics
-import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.vector.EmptyShape
@@ -77,7 +71,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	abstract val texWidth: Float
 	abstract val texHeight: Float
 	abstract val smoothing: Boolean
-    var graphics: NewGraphics? = null
+    var graphics: Graphics? = null
     //private var graphics: Graphics? = null
 
     var dxDouble: Double
@@ -96,7 +90,7 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
     private fun ensureShape(): Shape? {
         if (shape != null) {
             if (graphics == null) {
-                graphics = newGraphics(EmptyShape, library.graphicsRenderer ?: graphicsRenderer)
+                graphics = graphics(EmptyShape, library.graphicsRenderer ?: graphicsRenderer)
                 //graphics = graphics(shape!!)
             }
             if (cachedShape !== shape) {

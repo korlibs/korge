@@ -4,22 +4,17 @@ import com.soywiz.klock.measureTime
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.text
 import com.soywiz.korge.view.vector.gpuGraphics
-import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
 import com.soywiz.korim.font.SystemFont
 import com.soywiz.korim.font.asFallbackOf
 import com.soywiz.korim.font.readTtfFont
-import com.soywiz.korim.font.withFallback
-import com.soywiz.korim.text.text
 import com.soywiz.korim.vector.Context2d
-import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korim.vector.buildShape
-import com.soywiz.korim.vector.toSvg
 import com.soywiz.korio.file.std.resourcesVfs
 
 class MainEmojiColrv1 : Scene() {
@@ -53,7 +48,7 @@ class MainEmojiColrv1 : Scene() {
         //println(shape.toSvg())
 
         println("native rendered in..." + measureTime {
-            graphics {
+            cpuGraphics {
                 it.xy(0, 200)
                 it.useNativeRendering = true
                 buildText()
@@ -62,7 +57,7 @@ class MainEmojiColrv1 : Scene() {
             }
         })
         println("non-native rendered in..." + measureTime {
-            graphics {
+            cpuGraphics {
                 it.xy(0, 350)
                 it.useNativeRendering = false
                 buildText()

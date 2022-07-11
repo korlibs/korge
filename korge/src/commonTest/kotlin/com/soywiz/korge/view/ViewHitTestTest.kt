@@ -55,7 +55,7 @@ class Polygon(
     sides: Int = 5,
     color: RGBA = Colors.WHITE,
     autoScaling: Boolean = true
-) : Graphics(autoScaling = autoScaling) {
+) : CpuGraphics(autoScaling = autoScaling) {
     /** Radius of the circle */
     var radius: Double by uiObservable(radius) { updateGraphics() }
 

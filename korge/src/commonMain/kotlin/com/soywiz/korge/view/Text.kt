@@ -339,7 +339,7 @@ open class Text(
                     if (_staticGraphics == null) {
                         container.removeChildren()
                         //_staticGraphics = container.gpuGraphics {  }
-                        _staticGraphics = container.newGraphics(renderer = graphicsRenderer) { }
+                        _staticGraphics = container.graphics(renderer = graphicsRenderer) { }
                     }
 
                     val metrics = _staticGraphics!!.updateShape {
@@ -387,7 +387,7 @@ open class Text(
         container.position(x, y)
     }
 
-    internal var _staticGraphics: NewGraphics? = null
+    internal var _staticGraphics: Graphics? = null
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiCollapsibleSection("Text") {

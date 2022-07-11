@@ -6,7 +6,7 @@ import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.centered
 import com.soywiz.korge.view.circle
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
@@ -27,7 +27,7 @@ class MainRotateCircle : Scene() {
             //it.preciseAutoScaling = true
             //it.useNativeRendering = false
         }
-        graphics({
+        cpuGraphics({
             fill(Colors.PURPLE) {
                 rect(-50, -50, 60, 60)
             }

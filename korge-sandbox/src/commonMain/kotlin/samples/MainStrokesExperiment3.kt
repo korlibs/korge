@@ -20,7 +20,7 @@ import com.soywiz.korge.view.circle
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.debug.DebugVertexView
 import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
@@ -55,7 +55,7 @@ import com.soywiz.korma.interpolation.Easing
 
 class MainStrokesExperiment3 : Scene() {
     override suspend fun SContainer.sceneMain() {
-        graphics {
+        cpuGraphics {
             val path = buildVectorPath { circle(200, 200, 100) }
             val points = path.toCurves().toNonCurveSimplePointList()
             val path2 = points?.toPolygon()
@@ -286,7 +286,7 @@ class MainStrokesExperiment : Scene() {
 
         if (true) {
             //if (false) {
-            graphics {
+            cpuGraphics {
                 //stroke(Colors.RED, StrokeInfo(thickness = 3.0)) {
                 //    forEachRatio01(200) { ratio ->
                 //        val p = curves.calc(ratio)

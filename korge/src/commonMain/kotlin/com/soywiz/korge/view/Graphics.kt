@@ -1,130 +1,124 @@
 package com.soywiz.korge.view
 
-import com.soywiz.kds.Pool
-import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korim.vector.Context2d
+import com.soywiz.korge.view.vector.GpuShapeView
+import com.soywiz.korge.view.vector.gpuGraphics
+import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korim.vector.buildShape
-import com.soywiz.korma.annotations.VectorDslMarker
-import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.shape.toShape2d
-import com.soywiz.korma.geom.vector.VectorPath
-import kotlin.jvm.JvmOverloads
 
-inline fun Container.graphics(autoScaling: Boolean = false, callback: ShapeBuilder.(Graphics) -> Unit = {}): Graphics = Graphics(autoScaling).addTo(this).also { graphics ->
+inline fun Container.graphics(
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
+    callback: ShapeBuilder.(Graphics) -> Unit = {}
+): Graphics = Graphics(EmptyShape, renderer).addTo(this).also { graphics ->
     graphics.updateShape { callback(this, graphics) }
     graphics.redrawIfRequired()
 }
-inline fun Container.graphicsView(autoScaling: Boolean = false, callback: ShapeBuilder.(Graphics) -> Unit = {}): Graphics = graphics(autoScaling, callback)
-inline fun Container.sgraphics(callback: ShapeBuilder.(Graphics) -> Unit = {}): Graphics = graphics(true, callback)
 
-@KorgeExperimental
 inline fun Container.graphics(
     build: ShapeBuilder.() -> Unit,
-    antialiased: Boolean = true,
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
     callback: @ViewDslMarker Graphics.() -> Unit = {}
-) = Graphics(buildShape { build() }, antialiased).addTo(this, callback)
+) = Graphics(buildShape { build() }, renderer).addTo(this, callback)
 
-@KorgeExperimental
 inline fun Container.graphics(
     shape: Shape,
-    antialiased: Boolean = true,
+    renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
     callback: @ViewDslMarker Graphics.() -> Unit = {}
-) = Graphics(shape, antialiased).addTo(this, callback)
+) = Graphics(shape, renderer).addTo(this, callback)
 
-fun Graphics(
-    shape: Shape,
-    antialiased: Boolean = true,
-): Graphics = Graphics().apply {
-    this.antialiased = antialiased
-    this.shape = shape
+enum class GraphicsRenderer {
+    /** Uses software system renderer (fast) */
+    SYSTEM,
+    /** Uses software kotlin renderer (slow) */
+    CPU,
+    /** Uses GPU renderer */
+    GPU
 }
 
-open class Graphics @JvmOverloads constructor(
-    autoScaling: Boolean = false
-) : BaseGraphics(autoScaling) {
-    //internal val vectorPathPool = Pool(reset = { it.clear() }) { VectorPath() }
-    private var shapeVersion = 0
-    var shape: Shape? = null
-        set(value) {
-            field = value
-            shapeVersion++
-            dirty()
-        }
-	//@PublishedApi
-	//internal var currentPath = vectorPathPool.alloc()
+class Graphics(shape: Shape = EmptyShape, renderer: GraphicsRenderer = GraphicsRenderer.GPU) : Container(), ViewLeaf {
+    private var softGraphics: CpuGraphics? = null
+    private var gpuGraphics: GpuShapeView? = null
 
-    // @TODO: Not used but to have same API as GpuShapeView
     var antialiased: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            softGraphics?.antialiased = true
+            gpuGraphics?.antialiased = true
+        }
+    var smoothing: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            softGraphics?.smoothing = true
+            gpuGraphics?.smoothing = true
+        }
+    var autoScaling: Boolean = true
+        set(value) {
+            if (field == value) return
+            field = value
+            softGraphics?.autoScaling = true
+            gpuGraphics?.autoScaling = true
+        }
 
-    inline fun updateShape(redrawNow: Boolean = false, block: ShapeBuilder.(Graphics) -> Unit): Graphics {
-        this.shape = buildShape { block(this@Graphics) }
-        if (redrawNow) this.redrawIfRequired()
-        return this
+    var shape: Shape = EmptyShape
+        set(value) {
+            if (field === value) return
+            field = value
+            ensure()
+            softGraphics?.shape = value
+            gpuGraphics?.shape = value
+        }
+    var renderer: GraphicsRenderer = renderer
+        set(value) {
+            if (field === value) return
+            field = value
+            ensure()
+        }
+
+    inline fun <T> updateShape(block: ShapeBuilder.(Graphics) -> T): T {
+        var result: T
+        this.shape = buildShape { result = block(this@Graphics) }
+        return result
     }
 
-    private var hitShapeVersion = -1
-    private var hitShape2dVersion = -1
-
-    private var tempVectorPaths = arrayListOf<VectorPath>()
-    private var customHitShape2d: Shape2d? = null
-    private var customHitShapes: List<VectorPath>? = null
-
-    override var hitShape: VectorPath?
-        set(value) { customHitShapes = value?.let { listOf(it) } }
-        get() = hitShapes?.firstOrNull()
-
-    @PublishedApi
-    internal inline fun dirty(callback: () -> Unit): Graphics {
-        dirty()
-        callback()
-        return this
+    fun redrawIfRequired() {
+        ensure()
+        softGraphics?.redrawIfRequired()
     }
 
-    override var hitShapes: List<VectorPath>?
-        set(value) {
-            customHitShapes = value
-        }
-        get() {
-            if (customHitShapes != null) return customHitShapes
-            if (hitShapeVersion != shapeVersion) {
-                hitShapeVersion = shapeVersion
-                tempVectorPaths.clear()
-
-                // @TODO: Try to combine polygons on KorGE 2.0 to have a single hitShape
-                //when (shape) {
-                //is StyledShape -> shape.path?.let { tempVectorPaths.add(it) }
-                //else ->
-                tempVectorPaths.add(shape?.getPath() ?: VectorPath())
+    private fun ensure() {
+        when (renderer) {
+            GraphicsRenderer.GPU -> {
+                if (softGraphics != null) {
+                    softGraphics?.removeFromParent()
+                    softGraphics = null
+                }
+                if (gpuGraphics == null) {
+                    gpuGraphics = gpuGraphics()
+                    gpuGraphics?.antialiased = antialiased
+                    gpuGraphics?.autoScaling = autoScaling
+                    gpuGraphics?.smoothing = smoothing
+                }
             }
-
-            return tempVectorPaths
-        }
-
-    override var hitShape2d: Shape2d
-        set(value) {
-            customHitShape2d = value
-        }
-        get() {
-            if (customHitShape2d != null) return customHitShape2d!!
-            if (hitShape2dVersion != shapeVersion) {
-                hitShape2dVersion = shapeVersion
-                customHitShape2d = hitShapes!!.toShape2d()
+            else -> {
+                if (gpuGraphics != null) {
+                    gpuGraphics?.removeFromParent()
+                    gpuGraphics = null
+                }
+                if (softGraphics == null) {
+                    softGraphics = cpuGraphics()
+                    softGraphics?.antialiased = antialiased
+                    softGraphics?.autoScaling = autoScaling
+                    softGraphics?.smoothing = smoothing
+                }
+                softGraphics?.useNativeRendering = (renderer == GraphicsRenderer.SYSTEM)
             }
-            return customHitShape2d!!
         }
+    }
 
     init {
-        hitTestUsingShapes = true
-    }
-
-    override fun drawShape(ctx: Context2d) {
-        shape?.draw(ctx)
-    }
-
-    override fun getShapeBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
-        shape?.addBounds(bb, includeStrokes)
+        this.shape = shape
     }
 }

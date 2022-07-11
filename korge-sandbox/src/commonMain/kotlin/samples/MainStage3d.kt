@@ -4,17 +4,15 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.values
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.korge.Korge
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.onClick
-import com.soywiz.korge.scene.KorgeModule
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.SceneContainer
 import com.soywiz.korge.scene.sceneContainer
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Graphics
+import com.soywiz.korge.view.CpuGraphics
 import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.Text
 import com.soywiz.korge.view.addUpdater
@@ -43,12 +41,9 @@ import com.soywiz.korge3d.scale
 import com.soywiz.korge3d.scene3D
 import com.soywiz.korim.bitmap.mipmaps
 import com.soywiz.korim.color.Colors
-import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.readNativeImage
-import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korma.geom.SizeInt
 import com.soywiz.korma.geom.cos
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.rotate
@@ -216,7 +211,7 @@ class MainStage3d : Scene() {
     class Button(text: String, handler: suspend () -> Unit) : Container() {
         val textField = Text(text, textSize = 32.0).apply { smoothing = false }
         private val bounds = textField.textBounds
-        val g = Graphics().updateShape {
+        val g = CpuGraphics().updateShape {
             fill(Colors.DARKGREY, 0.7) {
                 roundRect(bounds.x, bounds.y, bounds.width + 16, bounds.height + 16, 8.0, 8.0)
             }

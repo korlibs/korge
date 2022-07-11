@@ -33,7 +33,7 @@ class ReferenceGraphicsTest : ViewsForTesting(
 
     @Test
     fun testGraphics() = viewsTest {
-        graphics {
+        cpuGraphics {
             fill(Colors.RED) {
                 rect(-60, -60, 70, 70)
             }
