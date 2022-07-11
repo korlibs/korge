@@ -10,6 +10,7 @@ import kotlin.coroutines.cancellation.CancellationException
 class SoundAudioStream(
     coroutineContext: CoroutineContext,
     val stream: AudioStream,
+    var soundProvider: NativeSoundProvider,
     val closeStream: Boolean = false,
     override val name: String = "Unknown",
     val onComplete: (suspend () -> Unit)? = null
@@ -22,7 +23,7 @@ class SoundAudioStream(
 
     @OptIn(ExperimentalStdlibApi::class)
     override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
-        val nas: PlatformAudioOutput = nativeSoundProvider.createAudioStream(coroutineContext, stream.rate)
+        val nas: PlatformAudioOutput = soundProvider.createAudioStream(coroutineContext, stream.rate)
         nas.copySoundPropsFrom(params)
         var playing = true
         var paused = false
@@ -40,12 +41,19 @@ class SoundAudioStream(
                 while (times.hasMore) {
                     while (!stream.finished) {
                         //println("STREAM")
-                        while (paused) delay(2.milliseconds)
+                        while (paused) {
+                            delay(2.milliseconds)
+                            //println("PAUSED")
+                        }
                         val read = stream.read(temp, 0, temp.totalSamples)
                         nas.add(temp, 0, read)
                         while (nas.availableSamples in minBuf..minBuf * 2) {
                             delay(2.milliseconds) // 100ms of buffering, and 1s as much
                             //println("STREAM.WAIT: ${nas.availableSamples}")
+                        }
+                        if (nas.availableSamples !in minBuf..minBuf * 2 && !stream.finished) {
+                            //println("BUSY LOOP!")
+                            delay(2.milliseconds)
                         }
                     }
                     times = times.oneLess

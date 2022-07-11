@@ -22,6 +22,7 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
     }
 
     private suspend fun createDecoderStream(data: AsyncStream, props: AudioDecodingProps, table: MP3Base.SeekingTable? = null): AudioStream {
+        val dataStartPosition = data.position
         val decoder = createMp3Decoder()
         val mp3SeekingTable: MP3Base.SeekingTable? = when (props.exactTimings) {
             true -> table ?: (if (data.hasLength()) MP3Base.Parser(data, data.getLength()).getSeekingTable(44100) else null)
@@ -51,6 +52,7 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
             override var currentPositionInSamples: Long
                 get() = _currentPositionInSamples
                 set(value) {
+                    finished = false
                     if (mp3SeekingTable != null) {
                         decoder.pcmDeque!!.clear()
                         decoder.compressedData!!.clear()
@@ -76,14 +78,15 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
                     }
                 }
                 //println("audioSamplesDeque!!.availableRead=${audioSamplesDeque!!.availableRead}")
-                if (noMoreSamples && decoder.pcmDeque!!.availableRead == 0) {
+                return if (noMoreSamples && decoder.pcmDeque!!.availableRead == 0) {
                     finished = true
-                    return 0
-                }
-
-                return decoder.pcmDeque!!.read(out, offset, length).also {
-                    _currentPositionInSamples += length
+                    0
+                } else {
+                    decoder.pcmDeque!!.read(out, offset, length)
+                }.also {
+                    _currentPositionInSamples += it
                     //println(" -> $it")
+                    //println("MP3.read: offset=$offset, length=$length, noMoreSamples=$noMoreSamples, finished=$finished")
                 }
             }
 
@@ -91,7 +94,7 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
                 decoder.close()
             }
 
-            override suspend fun clone(): AudioStream = createDecoderStream(data, props, table)
+            override suspend fun clone(): AudioStream = createDecoderStream(data.duplicate().also { it.position = dataStartPosition }, props, table)
         }
     }
 
