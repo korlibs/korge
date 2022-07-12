@@ -7,7 +7,7 @@ import kotlin.math.min
 class AudioSamplesDeque(val channels: Int) {
     val buffer = Array(channels) { ShortArrayDeque() }
     val availableRead get() = buffer.getOrNull(0)?.availableRead ?: 0
-    val availableReadMax: Int get() = buffer.map { it.availableRead }.maxOrNull() ?: 0
+    val availableReadMax: Int get() = buffer.maxOfOrNull { it.availableRead } ?: 0
 
     fun createTempSamples(size: Int = 1024) = AudioSamples(channels, size)
 
@@ -28,7 +28,7 @@ class AudioSamplesDeque(val channels: Int) {
 
     // Write samples
     fun write(samples: AudioSamples, offset: Int = 0, len: Int = samples.totalSamples - offset) {
-        for (channel in 0 until samples.channels) write(channel, samples[channel], offset, len)
+        for (channel in 0 until this.channels) write(channel, samples[channel % samples.channels], offset, len)
     }
 
     fun write(samples: AudioSamplesInterleaved, offset: Int = 0, len: Int = samples.totalSamples - offset) {
@@ -68,15 +68,15 @@ class AudioSamplesDeque(val channels: Int) {
     }
 
     fun read(out: AudioSamples, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min(len, availableRead)
-        for (channel in 0 until out.channels) this.buffer[channel].read(out[channel], offset, len)
-        return result
+        val rlen = min(len, availableRead)
+        for (channel in 0 until out.channels) this.buffer[channel % this.channels].read(out[channel], offset, rlen)
+        return rlen
     }
 
     fun read(out: AudioSamplesInterleaved, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
-        val result = min(len, availableRead)
-        for (channel in 0 until out.channels) for (n in 0 until len) out[channel, offset + n] = this.read(channel)
-        return result
+        val rlen = min(len, availableRead)
+        for (channel in 0 until out.channels) for (n in 0 until rlen) out[channel, offset + n] = this.read(channel)
+        return rlen
     }
 
     fun read(out: IAudioSamples, offset: Int = 0, len: Int = out.totalSamples - offset): Int {
@@ -93,5 +93,19 @@ class AudioSamplesDeque(val channels: Int) {
         for (c in buffer.indices) buffer[c].clear()
     }
 
+    fun clone(): AudioSamplesDeque {
+        return AudioSamplesDeque(channels).also {
+            for (n in buffer.indices) it.buffer[n] = buffer[n].clone()
+        }
+    }
     override fun toString(): String = "AudioSamplesDeque(channels=$channels, availableRead=$availableRead)"
 }
+
+// @TODO: Cloning...
+fun AudioSamplesDeque.consumeToData(rate: Int): AudioData {
+    val samples = AudioSamples(channels, availableRead)
+    read(samples)
+    return AudioData(rate, samples)
+}
+
+fun AudioSamplesDeque.toData(rate: Int): AudioData = clone().consumeToData(rate)

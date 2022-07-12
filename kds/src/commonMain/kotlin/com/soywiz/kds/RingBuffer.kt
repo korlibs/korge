@@ -168,6 +168,16 @@ class ShortRingBuffer(val bits: Int) {
     var availableWrite = totalSize; private set
     var availableRead = 0; private set
 
+    fun clone(): ShortRingBuffer {
+        return ShortRingBuffer(bits).also { out ->
+            arraycopy(buffer, 0, out.buffer, 0, buffer.size)
+            out.readPos = readPos
+            out.writePos = writePos
+            out.availableWrite = availableWrite
+            out.availableRead = availableRead
+        }
+    }
+
     @JvmOverloads
     fun writeHead(data: ShortArray, offset: Int = 0, size: Int = data.size - offset): Int {
         val toWrite = min(availableWrite, size)

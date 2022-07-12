@@ -127,7 +127,7 @@ class AudioSamplesInterleaved(override val channels: Int, override val totalSamp
     //val separared by lazy { separated() }
     internal val fastShortTransfer = FastShortTransfer()
 
-    private fun index(channel: Int, sample: Int) = (sample * channels) + channel
+    private fun index(channel: Int, sample: Int): Int = (sample * channels) + channel
     override operator fun get(channel: Int, sample: Int): Short = data[index(channel, sample)]
     override operator fun set(channel: Int, sample: Int, value: Short) { data[index(channel, sample)] = value }
 

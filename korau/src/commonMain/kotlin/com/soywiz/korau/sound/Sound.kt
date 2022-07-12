@@ -22,6 +22,7 @@ import com.soywiz.korio.stream.openAsync
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.coroutineContext
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
@@ -115,11 +116,32 @@ open class NativeSoundProvider : Disposable {
 	): Sound = createSound(WAV.encodeToByteArray(data), streaming, name = name)
 
     suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): Sound =
-        SoundAudioStream(kotlin.coroutines.coroutineContext, stream, closeStream, name, onComplete)
+        SoundAudioStream(kotlin.coroutines.coroutineContext, stream, this, closeStream, name, onComplete)
 
     suspend fun playAndWait(stream: AudioStream, params: PlaybackParameters = PlaybackParameters.DEFAULT) = createStreamingSound(stream).playAndWait(params)
 
     override fun dispose() {
+    }
+}
+
+open class LogNativeSoundProvider(
+    override val audioFormats: AudioFormats
+) : NativeSoundProvider() {
+    class PlatformLogAudioOutput(
+        coroutineContext: CoroutineContext, frequency: Int
+    ) : PlatformAudioOutput(coroutineContext, frequency) {
+        val data = AudioSamplesDeque(2)
+        override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+            data.write(samples, offset, size)
+        }
+        fun consumeToData(): AudioData = data.consumeToData(frequency)
+        fun toData(): AudioData = data.toData(frequency)
+    }
+
+    val streams = arrayListOf<PlatformLogAudioOutput>()
+
+    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+        return PlatformLogAudioOutput(coroutineContext, freq).also { streams.add(it) }
     }
 }
 

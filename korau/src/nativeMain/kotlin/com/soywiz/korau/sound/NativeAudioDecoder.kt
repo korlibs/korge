@@ -193,6 +193,9 @@ internal object NativeMp3DecoderAudioFormat : BaseMinimp3AudioFormat() {
         override var nchannels = 0
         override var samples: Int = 0
         override var frame_bytes: Int = 0
+        override var skipRemaining: Int = 0
+        override var samplesAvailable: Int = 0
+        override var samplesRead: Int = 0
 
         override fun decodeFrame(availablePeek: Int): ShortArray? {
             samples = tempBuffer.usePinned { tempBufferPin ->
