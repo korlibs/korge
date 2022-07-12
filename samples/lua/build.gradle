@@ -1,5 +1,0 @@
-dependencies {
-    add("commonMainApi", project(":korge"))
-    //add("commonMainApi", project(":luak"))
-    add("commonMainApi", "com.soywiz.korlibs.luak:luak:2.4.12")
-}

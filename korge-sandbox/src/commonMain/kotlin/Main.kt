@@ -9,8 +9,12 @@ import com.soywiz.korim.color.mix
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.portableSimpleName
 import samples.*
+import samples.asteroids.MainAsteroids
 import samples.fleks.*
 import samples.connect4.*
+import samples.minesweeper.MainMineSweeper
+import samples.pong.MainPong
+import samples.tictactoeswf.MainTicTacToeSwf
 
 suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
@@ -21,8 +25,24 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainTextInput),
+        Demo(::MainVideo),
         listOf(
+            Demo(::MainVideo),
+            Demo(::MainTicTacToeSwf),
+            Demo(::MainPong),
+            Demo(::MainUI),
+            Demo(::MainLua),
+            Demo(::MainOldMask),
+            Demo(::MainNinePatch),
+            Demo(::MainTweens),
+            Demo(::MainTriangulation),
+            Demo(::MainShapes),
+            Demo(::MainSpriteAnim),
+            Demo(::MainMineSweeper),
+            Demo(::MainHelloWorld),
+            Demo(::MainFlag),
+            Demo(::MainAsteroids),
+            Demo(::MainBox2d),
             Demo(::MainEmojiColrv1),
             Demo(::MainRotatedAtlas),
             Demo(::MainConnect4),
@@ -30,11 +50,12 @@ suspend fun main() = Korge(
             Demo(::MainSpine),
             Demo(::MainDragonbones),
             Demo(::MainMutableAtlasTest),
-            Demo(::TerminalEmulatorMain),
-            Demo(::ParticlesMain),
-            Demo(::BezierSample),
+            Demo(::MainTerminalEmulator),
+            Demo(::MainParticles),
+            Demo(::MainBezierSample),
             Demo(::MainEditor),
-            Demo(::Bunnymark),
+            Demo(::MainAnimations),
+            Demo(::MainBunnymark),
             Demo(::MainKorviSample),
             Demo(::MainFiltersSample),
             Demo(::MainTextMetrics),
