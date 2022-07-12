@@ -180,25 +180,15 @@ internal object NativeMp3DecoderAudioFormat : BaseMinimp3AudioFormat() {
         val mp3dec = scope.alloc<mp3dec_t>()
         val mp3decFrameInfo = scope.alloc<mp3dec_frame_info_t>()
         private val pcmData = ShortArray(1152 * 2 * 2)
-        override val tempBuffer = ByteArray(1152 * 2 * 2)
 
         init {
             mp3dec_init(mp3dec.ptr)
         }
 
-        override val compressedData = ByteArrayDeque()
-        override var pcmDeque: AudioSamplesDeque? = null
-        override var hz = 0
-        var bitrate_kbps = 0
-        override var nchannels = 0
-        override var samples: Int = 0
-        override var frame_bytes: Int = 0
-        override var skipRemaining: Int = 0
-        override var samplesAvailable: Int = 0
-        override var samplesRead: Int = 0
+        override val info: BaseMp3DecoderInfo = BaseMp3DecoderInfo()
 
         override fun decodeFrame(availablePeek: Int): ShortArray? {
-            samples = tempBuffer.usePinned { tempBufferPin ->
+            info.samples = info.tempBuffer.usePinned { tempBufferPin ->
                 pcmData.usePinned { pcmDataPin ->
                     mp3dec_decode_frame(
                         mp3dec.ptr,
@@ -209,16 +199,16 @@ internal object NativeMp3DecoderAudioFormat : BaseMinimp3AudioFormat() {
                     )
                 }
             }
-            nchannels = mp3decFrameInfo.channels
-            hz = mp3decFrameInfo.hz
-            bitrate_kbps = mp3decFrameInfo.bitrate_kbps
-            frame_bytes = mp3decFrameInfo.frame_bytes
+            info.nchannels = mp3decFrameInfo.channels
+            info.hz = mp3decFrameInfo.hz
+            info.bitrate_kbps = mp3decFrameInfo.bitrate_kbps
+            info.frame_bytes = mp3decFrameInfo.frame_bytes
 
             //println("hz=$hz, nchannels=$nchannels, bitrate_kbps=$bitrate_kbps, frame_bytes=$frame_bytes, samples=$samples")
 
-            if (nchannels == 0 || samples <= 0) return null
+            if (info.nchannels == 0 || info.samples <= 0) return null
 
-            return pcmData.copyOf(samples * nchannels)
+            return pcmData.copyOf(info.samples * info.nchannels)
         }
 
         override fun close() {

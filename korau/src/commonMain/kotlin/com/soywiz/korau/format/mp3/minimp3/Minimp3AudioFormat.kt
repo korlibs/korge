@@ -26,25 +26,15 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
         private val pcmData = alloca(1152 * 2 * 2 * 2).reinterpret<Short>()
         private val mp3dec = alloca(mp3dec_t__SIZE_BYTES).reinterpret<mp3dec_t>()
         private val mp3decFrameInfo = alloca(mp3dec_frame_info_t__SIZE_BYTES).reinterpret<mp3dec_frame_info_t>()
-        override val tempBuffer = ByteArray(1152 * 2 * 2)
 
         init {
             mp3dec_init(mp3dec)
         }
 
-        override val compressedData = ByteArrayDeque()
-        override var pcmDeque: AudioSamplesDeque? = null
-        override var hz = 0
-        var bitrate_kbps = 0
-        override var nchannels = 0
-        override var samples: Int = 0
-        override var frame_bytes: Int = 0
-        override var skipRemaining: Int = 0
-        override var samplesAvailable: Int = 0
-        override var samplesRead: Int = 0
+        override val info: BaseMp3DecoderInfo = BaseMp3DecoderInfo()
 
         override fun decodeFrame(availablePeek: Int): ShortArray? {
-            memWrite(inputData, tempBuffer, 0, availablePeek)
+            memWrite(inputData, info.tempBuffer, 0, availablePeek)
             val samples = mp3dec_decode_frame(
                 mp3dec,
                 inputData.reinterpret<UByte>().plus(0),
@@ -53,17 +43,17 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
                 mp3decFrameInfo
             )
             val struct = mp3dec_frame_info_t(mp3decFrameInfo.ptr)
-            nchannels = struct.channels
-            hz = struct.hz
-            bitrate_kbps = struct.bitrate_kbps
-            frame_bytes = struct.frame_bytes
-            this.samples = samples
+            info.nchannels = struct.channels
+            info.hz = struct.hz
+            info.bitrate_kbps = struct.bitrate_kbps
+            info.frame_bytes = struct.frame_bytes
+            info.samples = samples
             //println("samples=$samples, hz=$hz, nchannels=$nchannels, bitrate_kbps=$bitrate_kbps, frameBytes=$frame_bytes")
 
-            if (nchannels == 0 || samples <= 0) return null
+            if (info.nchannels == 0 || samples <= 0) return null
 
-            val buf = ShortArray(samples * nchannels)
-            memRead(pcmData, buf, 0, samples * nchannels)
+            val buf = ShortArray(samples * info.nchannels)
+            memRead(pcmData, buf, 0, samples * info.nchannels)
             return buf
         }
 

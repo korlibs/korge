@@ -6,6 +6,7 @@ import com.soywiz.korau.format.mp3.FastMP3Decoder
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import doIOTest
+import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,6 +30,21 @@ class SoundAudioStreamTest {
         assertEquals("936/2", "${stream.data.availableRead}/${stream.data.channels}")
         assertEquals("936/2", "${dataOut.totalSamples}/${dataOut.channels}")
         assertEquals("936/2", "${dataOut2.totalSamples}/${dataOut2.channels}")
+    }
 
+    @Test
+    fun testChannelCurrentLength() = suspendTest({ doIOTest }) {
+        val soundProvider = LogNativeSoundProvider(AudioFormats(WAV, FastMP3Decoder))
+        for (fileName in listOf("click.wav", "click.mp3")) {
+            val sound2 = soundProvider.createSound(resourcesVfs[fileName], streaming = true)
+            val channel = sound2.play()
+            assertEquals("0ms/58.5ms", "${channel.current}/${channel.total}")
+            val wait = CompletableDeferred<Unit>()
+            soundProvider.onAfterAdd.once {
+                wait.complete(Unit)
+            }
+            wait.await()
+            assertEquals("58.5ms/58.5ms", "${channel.current}/${channel.total}")
+        }
     }
 }
