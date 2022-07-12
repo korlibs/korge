@@ -61,7 +61,7 @@ android {
         }
         release {
             minifyEnabled true
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), new File(((Project)rootProject).rootDir, 'proguard-rules.pro')
             signingConfig signingConfigs.release
         }
     }
