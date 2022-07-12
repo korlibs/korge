@@ -69,9 +69,9 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() {
+    fun readOne(): Byte {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Byte) {
         tempBuffer[0] = value
@@ -204,9 +204,9 @@ class IntArrayDeque(val initialBits: Int = 10) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() {
+    fun readOne(): Int {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Int) {
         tempBuffer[0] = value
@@ -268,9 +268,9 @@ class FloatArrayDeque(val initialBits: Int = 10) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() {
+    fun readOne(): Float {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Float) {
         tempBuffer[0] = value
