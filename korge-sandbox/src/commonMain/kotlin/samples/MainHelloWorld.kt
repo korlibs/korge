@@ -1,23 +1,24 @@
-import com.soywiz.klock.*
-import com.soywiz.korge.*
-//import com.soywiz.korge.component.length.bindLength
-import com.soywiz.korge.resources.*
-import com.soywiz.korge.tween.*
-import com.soywiz.korge.view.*
-import com.soywiz.korgw.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.format.*
-import com.soywiz.korio.file.std.*
-import com.soywiz.korio.resources.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.interpolation.*
+package samples
 
-// @TODO: We could autogenerate this via gradle
-val ResourcesContainer.korge_png by resourceBitmap("korge.png")
+import com.soywiz.klock.seconds
+import com.soywiz.korge.resources.resourceBitmap
+import com.soywiz.korge.scene.ScaledScene
+import com.soywiz.korge.tween.get
+import com.soywiz.korge.tween.tween
+import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.anchor
+import com.soywiz.korge.view.image
+import com.soywiz.korge.view.position
+import com.soywiz.korge.view.scale
+import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.interpolation.Easing
 
-suspend fun main() {
-    //GLOBAL_CHECK_GL = true
-    Korge(width = 512, height = 512, bgcolor = Colors["#2b2b2b"], clipBorders = false) {
+class MainHelloWorld : ScaledScene(512, 512) {
+    // @TODO: We could autogenerate this via gradle
+    val com.soywiz.korio.resources.ResourcesContainer.korge_png by resourceBitmap("korge.png")
+
+    override suspend fun SContainer.sceneMain() {
+
         gameWindow.icon = korge_png.get().bmp.toBMP32().scaled(32, 32)
 
         val minDegrees = (-16).degrees
