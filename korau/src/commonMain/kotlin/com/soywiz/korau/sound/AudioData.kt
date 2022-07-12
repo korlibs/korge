@@ -21,11 +21,11 @@ class AudioData(
         val DUMMY by lazy { AudioData(44100, AudioSamples(2, 0)) }
     }
 
-    val stereo get() = channels > 1
-    val channels get() = samples.channels
-    val totalSamples get() = samples.totalSamples
+    val stereo: Boolean get() = channels > 1
+    val channels: Int get() = samples.channels
+    val totalSamples: Int get() = samples.totalSamples
     val totalTime: TimeSpan get() = timeAtSample(totalSamples)
-    fun timeAtSample(sample: Int) = ((sample).toDouble() / rate.toDouble()).seconds
+    fun timeAtSample(sample: Int): TimeSpan = ((sample).toDouble() / rate.toDouble()).seconds
 
     operator fun get(channel: Int): ShortArray = samples.data[channel]
     operator fun get(channel: Int, sample: Int): Short = samples.data[channel][sample]
@@ -89,7 +89,7 @@ class AudioDataStream(val data: AudioData) : AudioStream(data.rate, data.channel
 }
 
 
-suspend fun AudioData.toSound() = nativeSoundProvider.createSound(this)
+suspend fun AudioData.toSound(): Sound = nativeSoundProvider.createSound(this)
 
 suspend fun VfsFile.readAudioData(formats: AudioFormat = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData =
     this.openUse { formats.decode(this, props) ?: invalidOp("Can't decode audio file ${this@readAudioData}") }

@@ -1,6 +1,9 @@
 package com.soywiz.korau.format.mp3.minimp3
 
 import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.klock.min
+import com.soywiz.kmem.hasFlags
+import com.soywiz.kmem.indexOf
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.format.MP3
@@ -10,6 +13,7 @@ import com.soywiz.korau.sound.AudioSamplesDeque
 import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.readBytesUpTo
 
 abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
@@ -24,6 +28,7 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
     private suspend fun createDecoderStream(data: AsyncStream, props: AudioDecodingProps, table: MP3Base.SeekingTable? = null): AudioStream {
         val dataStartPosition = data.position
         val decoder = createMp3Decoder()
+        decoder.reset()
         val mp3SeekingTable: MP3Base.SeekingTable? = when (props.exactTimings) {
             true -> table ?: (if (data.hasLength()) MP3Base.Parser(data, data.getLength()).getSeekingTable(44100) else null)
             else -> null
@@ -54,18 +59,15 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
                 set(value) {
                     finished = false
                     if (mp3SeekingTable != null) {
-                        decoder.pcmDeque!!.clear()
-                        decoder.compressedData!!.clear()
                         data.position = mp3SeekingTable.locateSample(value)
                         _currentPositionInSamples = value
                     } else {
                         // @TODO: We should try to estimate by using decoder.bitrate_kbps
 
-                        decoder.pcmDeque!!.clear()
-                        decoder.compressedData!!.clear()
                         data.position = 0L
                         _currentPositionInSamples = 0L
                     }
+                    decoder.reset()
                 }
 
             override suspend fun read(out: AudioSamples, offset: Int, length: Int): Int {
@@ -108,19 +110,98 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
         var pcmDeque: AudioSamplesDeque?
         val samples: Int
         val frame_bytes: Int
+        var skipRemaining: Int
+        var samplesAvailable: Int
+        var samplesRead: Int
         fun decodeFrame(availablePeek: Int): ShortArray?
+        fun reset() {
+            pcmDeque?.clear()
+            compressedData.clear()
+            skipRemaining = 0
+            samplesAvailable = -1
+            samplesRead = 0
+        }
         fun step(): Boolean {
             val availablePeek = compressedData.peek(tempBuffer, 0, tempBuffer.size)
+            val xingIndex = tempBuffer.indexOf(XingTag).takeIf { it >= 0 } ?: tempBuffer.size
+            val infoIndex = tempBuffer.indexOf(InfoTag).takeIf { it >= 0 } ?: tempBuffer.size
+            var frames = 0
+            var delay = 0
+            var padding = 0
+
+            if (xingIndex < tempBuffer.size || infoIndex < tempBuffer.size) {
+                try {
+                    val index = kotlin.math.min(xingIndex, infoIndex)
+                    val data = FastByteArrayInputStream(tempBuffer, index)
+                    data.skip(7)
+                    if (data.available >= 1) {
+                        val flags = data.readU8()
+                        //println("xing=$xingIndex, infoIndex=$infoIndex, index=$index, flags=$flags")
+                        val FRAMES_FLAG = 1
+                        val BYTES_FLAG = 2
+                        val TOC_FLAG = 4
+                        val VBR_SCALE_FLAG = 8
+                        if (flags.hasFlags(FRAMES_FLAG) && data.available >= 4) {
+                            frames = data.readS32BE()
+                            if (flags.hasFlags(BYTES_FLAG)) data.skip(4)
+                            if (flags.hasFlags(TOC_FLAG)) data.skip(100)
+                            if (flags.hasFlags(VBR_SCALE_FLAG)) data.skip(4)
+                            if (data.available >= 1) {
+                                val info = data.readU8()
+                                if (info != 0) {
+                                    data.skip(20)
+                                    if (data.available >= 3) {
+                                        val t0 = data.readU8()
+                                        val t1 = data.readU8()
+                                        val t2 = data.readU8()
+                                        delay = ((t0 shl 4) or (t1 ushr 4)) + (528 + 1)
+                                        padding = (((t1 and 0xF) shl 8) or (t2)) - (528 + 1)
+                                    }
+                                    //println("frames=$frames, flags=$flags, delay=$delay, padding=$padding, $t0,$t1,$t2")
+                                }
+                            }
+                        }
+                    }
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+            }
             val buf = decodeFrame(availablePeek)
 
-            //println("samples=$samples, nchannels=$nchannels, hz=$hz, bitrate_kbps=$bitrate_kbps")
+            if (frames != 0 || delay != 0 || padding != 0) {
+                val rpadding = padding * nchannels
+                val to_skip = delay * nchannels
+                var detected_samples = samples * frames * nchannels
+                if (detected_samples >= to_skip) detected_samples -= to_skip
+                if (rpadding in 1..detected_samples) detected_samples -= rpadding
+                skipRemaining = to_skip + (samples * nchannels)
+                samplesAvailable = detected_samples
+                //println("frames=$frames, delay=$delay, padding=$padding :: rpadding=$rpadding, to_skip=$to_skip, detected_samples=$detected_samples")
+            }
+
+            //println("availablePeek=$availablePeek, frame_bytes=$frame_bytes, samples=$samples, nchannels=$nchannels, hz=$hz, bitrate_kbps=")
 
             if (nchannels != 0 && pcmDeque == null) {
                 pcmDeque = AudioSamplesDeque(nchannels)
             }
 
             if (samples > 0) {
-                pcmDeque!!.writeInterleaved(buf!!, 0, samples * nchannels)
+                var offset = 0
+                var toRead = samples * nchannels
+
+                if (skipRemaining > 0) {
+                    val skipNow = kotlin.math.min(skipRemaining, toRead)
+                    offset += skipNow
+                    toRead -= skipNow
+                    skipRemaining -= skipNow
+                }
+                if (samplesAvailable >= 0) {
+                    toRead = kotlin.math.min(toRead, samplesAvailable)
+                    samplesAvailable -= toRead
+                }
+
+                //println("writeInterleaved. offset=$offset, toRead=$toRead")
+                pcmDeque!!.writeInterleaved(buf!!, offset, toRead)
             }
 
             //println("mp3decFrameInfo: samples=$samples, channels=${struct.channels}, frame_bytes=${struct.frame_bytes}, frame_offset=${struct.frame_offset}, bitrate_kbps=${struct.bitrate_kbps}, hz=${struct.hz}, layer=${struct.layer}")
@@ -137,5 +218,10 @@ abstract class BaseMinimp3AudioFormat : AudioFormat("mp3") {
 
             return true
         }
+    }
+
+    companion object {
+        val XingTag = byteArrayOf('X'.code.toByte(), 'i'.code.toByte(), 'n'.code.toByte(), 'g'.code.toByte())
+        val InfoTag = byteArrayOf('I'.code.toByte(), 'n'.code.toByte(), 'f'.code.toByte(), 'o'.code.toByte())
     }
 }

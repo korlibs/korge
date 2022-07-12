@@ -39,6 +39,9 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
         override var nchannels = 0
         override var samples: Int = 0
         override var frame_bytes: Int = 0
+        override var skipRemaining: Int = 0
+        override var samplesAvailable: Int = 0
+        override var samplesRead: Int = 0
 
         override fun decodeFrame(availablePeek: Int): ShortArray? {
             memWrite(inputData, tempBuffer, 0, availablePeek)
@@ -55,6 +58,7 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
             bitrate_kbps = struct.bitrate_kbps
             frame_bytes = struct.frame_bytes
             this.samples = samples
+            //println("samples=$samples, hz=$hz, nchannels=$nchannels, bitrate_kbps=$bitrate_kbps, frameBytes=$frame_bytes")
 
             if (nchannels == 0 || samples <= 0) return null
 
