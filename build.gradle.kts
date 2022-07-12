@@ -10,6 +10,7 @@ import java.nio.file.Files
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import com.soywiz.korge.gradle.KorgeDefaults
 import java.net.URL
+import java.net.URLClassLoader
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -83,6 +84,7 @@ allprojects {
 }
 
 val hasAndroidSdk by lazy { AndroidSdk.hasAndroidSdk(project) }
+val enabledSandboxResourceProcessor: Boolean by lazy { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
 
 // Required by RC
 kotlin {
@@ -974,26 +976,35 @@ samples {
                     //dependsOn(prepareResourceProcessingClasses)
                     dependsOn("jvmMainClasses")
 
-                    doLast {
-                        processedResourcesFolder.mkdirs()
-                        //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                    if (enabledSandboxResourceProcessor) {
+                        doLast {
+                            processedResourcesFolder.mkdirs()
+                            //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-
-                        /*
-                        URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-                            val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                            val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
-                            //println(folders)
-                            try {
-                                clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
-                            } catch (e: java.lang.reflect.InvocationTargetException) {
-                                val re = (e.targetException ?: e)
-                                re.printStackTrace()
-                                System.err.println(re.toString())
+                            URLClassLoader(
+                                runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(),
+                                ClassLoader.getSystemClassLoader()
+                            ).use { classLoader ->
+                                val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                                val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
+                                    .filter { it != processedResourcesFolder }.map { it.toString() }
+                                //println(folders)
+                                try {
+                                    clazz.methods.first { it.name == "run" }.invoke(
+                                        null,
+                                        classLoader,
+                                        folders,
+                                        processedResourcesFolder.toString(),
+                                        compilation.name
+                                    )
+                                } catch (e: java.lang.reflect.InvocationTargetException) {
+                                    val re = (e.targetException ?: e)
+                                    re.printStackTrace()
+                                    System.err.println(re.toString())
+                                }
                             }
+                            System.gc()
                         }
-                        System.gc()
-                         */
                     }
                 }
                 //println(compilation.compileKotlinTask.name)
