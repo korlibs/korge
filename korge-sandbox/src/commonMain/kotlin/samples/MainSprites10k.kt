@@ -14,6 +14,7 @@ import com.soywiz.korge.view.xy
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
+import kotlin.random.Random
 
 class MainSprites10k : Scene() {
     override suspend fun SContainer.sceneMain() {
@@ -42,14 +43,17 @@ class MainSprites10k : Scene() {
             sprite.playAnimationLooped(redAnimations[index % redAnimations.size])
         }
 
+        val random = Random(0)
+        val randoms = DoubleArray(greenSprites.size) { random.nextDouble(0.5, 1.1) }
+
         addUpdater {
-            val scale = if (it == 0.0.milliseconds) 0.0 else (it / 16.666666.milliseconds)
+            val scale = (if (it == 0.0.milliseconds) 0.0 else (it / 16.666666.milliseconds))
 
             greenSprites.forEachIndexed { index, sprite ->
-                sprite.walkDirection(index % greenAnimations.size, scale)
+                sprite.walkDirection(index % greenAnimations.size, scale * randoms[index])
             }
             redSprites.forEachIndexed { index, sprite ->
-                sprite.walkDirection(index % redAnimations.size, scale)
+                sprite.walkDirection(index % redAnimations.size, scale * randoms[index])
             }
         }
     }
