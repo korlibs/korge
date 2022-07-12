@@ -9,6 +9,7 @@ import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.WAV
 import com.soywiz.korau.format.defaultAudioFormats
+import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.file.FinalVfsFile
@@ -22,7 +23,6 @@ import com.soywiz.korio.stream.openAsync
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.SupervisorJob
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.native.concurrent.ThreadLocal
 import kotlin.coroutines.coroutineContext as coroutineContextKt
 
@@ -127,12 +127,19 @@ open class NativeSoundProvider : Disposable {
 open class LogNativeSoundProvider(
     override val audioFormats: AudioFormats
 ) : NativeSoundProvider() {
-    class PlatformLogAudioOutput(
+    data class AddInfo(val samples: AudioSamples, val offset: Int, val size: Int)
+    val onBeforeAdd = Signal<AddInfo>()
+    val onAfterAdd = Signal<AddInfo>()
+
+    inner class PlatformLogAudioOutput(
         coroutineContext: CoroutineContext, frequency: Int
     ) : PlatformAudioOutput(coroutineContext, frequency) {
         val data = AudioSamplesDeque(2)
         override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+            val addInfo = AddInfo(samples, offset, size)
+            onBeforeAdd(addInfo)
             data.write(samples, offset, size)
+            onAfterAdd(addInfo)
         }
         fun consumeToData(): AudioData = data.consumeToData(frequency)
         fun toData(): AudioData = data.toData(frequency)
