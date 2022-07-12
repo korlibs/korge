@@ -12,14 +12,17 @@ import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.ThreadLocal
 
+fun interface CharsetProvider {
+    operator fun invoke(normalizedName: String, name: String): Charset?
+}
+
+expect val platformCharsetProvider: CharsetProvider
+
 @ThreadLocal
 private val CHARSET_PROVIDERS = arrayListOf<CharsetProvider>()
 @ThreadLocal
 private val CHARSET_PROVIDERS_LOCK = Lock()
 
-fun interface CharsetProvider {
-    operator fun invoke(normalizedName: String, name: String): Charset?
-}
 
 abstract class Charset(val name: String) {
     // Just an estimation, might not be accurate, but hopefully will help setting StringBuilder and ByteArrayBuilder to a better initial capacity
@@ -64,6 +67,7 @@ abstract class Charset(val name: String) {
                     provider(normalizedName, name)?.let { return it }
                 }
             }
+            platformCharsetProvider(normalizedName, name)?.let { return it }
             invalidArg("Unknown charset '$name'")
 		}
 
