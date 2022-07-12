@@ -57,7 +57,7 @@ class KorgeMultithreadedTest {
             val viewsForTesting = ViewsForTesting()
             viewsForTesting.viewsTest(timeout = 5.seconds, cond = { true }) {
                 val rect = solidRect(10, 10)
-                    .filters(BlurFilter(), filterScale = 1.0)
+                    .filters(BlurFilter(), filterScale = 0.1)
                     .mask(solidRect(5, 5))
                 val gpuShapeView = gpuShapeView({ roundRect(0, 0, 200, 100, 10, 10) })
                 this.views.render()
