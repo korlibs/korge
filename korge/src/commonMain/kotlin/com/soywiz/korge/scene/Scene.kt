@@ -86,6 +86,10 @@ abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, 
             _sceneViewContainer += this
         }
     }
+
+    open val sceneWidth: Int get() = sceneView.width.toInt()
+    open val sceneHeight: Int get() = sceneView.height.toInt()
+
     override val resources: Resources by lazy { injector.getSync() }
 	protected open fun createSceneView(width: Double, height: Double): SContainer = SContainer(width, height)
 
@@ -202,12 +206,12 @@ abstract class ScaledScene(
     sceneAnchor: Anchor = Anchor.CENTER,
     sceneSmoothing: Boolean = true,
 ) : Scene() {
-    var sceneWidth: Int = sceneWidth
+    override var sceneWidth: Int = sceneWidth
         set(value) {
             field = value
             onSizeChanged()
         }
-    var sceneHeight: Int = sceneHeight
+    override var sceneHeight: Int = sceneHeight
         set(value) {
             field = value
             onSizeChanged()
