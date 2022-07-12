@@ -4,6 +4,8 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
 import com.soywiz.korag.AG
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Anchorable
@@ -11,6 +13,7 @@ import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
+import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addTo
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.vector.CompoundShape
@@ -48,6 +51,8 @@ import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.Winding
 import com.soywiz.korma.geom.vector.toCurvesList
+import com.soywiz.korui.UiContainer
+import com.soywiz.korui.button
 import kotlin.math.absoluteValue
 
 //@KorgeExperimental
@@ -678,5 +683,23 @@ open class GpuShapeView(
     init {
         invalidateShape()
     }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsibleSection("GpuShapeView") {
+            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
+            button("Center").onClick {
+                views.undoable("Change anchor", view) {
+                    view.anchorX = 0.5
+                    view.anchorY = 0.5
+                }
+            }
+            uiEditableValue(view::antialiased)
+            uiEditableValue(view::debugDrawOnlyAntialiasedBorder)
+            uiEditableValue(view::maxRenderCount, min = 1, max = 10, clamp = false, name = "maxRenderCount")
+        }
+        super.buildDebugComponent(views, container)
+    }
+
 }
 
