@@ -1,6 +1,7 @@
 package com.soywiz.korge.lipsync
 
 import com.soywiz.korau.format.*
+import com.soywiz.korau.format.mp3.FastMP3Decoder
 import com.soywiz.korau.sound.AudioData
 import com.soywiz.korau.sound.readAudioData
 import com.soywiz.korge.resources.ResourceProcessor
@@ -24,7 +25,8 @@ import java.util.*
 open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3", "voice.ogg") {
 	companion object : LipsyncResourceProcessor() {
 		private val nativeAudioFormats = AudioFormats().register(
-			ServiceLoader.load(com.soywiz.korau.format.AudioFormat::class.java).toList()
+            WAV, FastMP3Decoder,
+			//ServiceLoader.load(com.soywiz.korau.format.AudioFormat::class.java).toList()
 		)
 	}
 
@@ -39,25 +41,16 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
 	data class Config(val url: URL, val folder: String, val sha1: ByteArray, val exe: String)
 
 	val config by lazy {
+        val base = Config(
+            URL("https://github.com/korlibs/korge-tools/releases/download/rhubarb-lip-sync-1.13/Rhubarb-Lip-Sync-1.13.0-all.zip"),
+            "rhubarb-lip-sync-1.13.0-all",
+            "6A1850D829D361E36C09D7561C817C47C2D16FD0".unhex,
+            "rhubarb"
+        )
 		when {
-			OS.isMac -> Config(
-				URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-osx.zip"),
-				"rhubarb-lip-sync-1.9.0-osx",
-				"72aa476490ce3bafef09a3a1c452db326f5e9aad".unhex,
-				"rhubarb"
-			)
-			OS.isLinux -> Config(
-				URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-linux.zip"),
-				"rhubarb-lip-sync-1.9.0-linux",
-				"191c935b31f56e990291acfe07e39feca3b9a701".unhex,
-				"rhubarb"
-			)
-			OS.isWindows -> Config(
-				URL("https://github.com/korlibs/korge-tools/releases/download/binaries-1.9/rhubarb-lip-sync-1.9.0-win32.zip"),
-				"rhubarb-lip-sync-1.9.0-win32",
-				"a28b77a1d5239a154b288ddcff18737e354c68b8".unhex,
-				"rhubarb.exe"
-			)
+			OS.isMac -> base.copy(exe = "rhubarb-mac")
+			OS.isLinux -> base.copy(exe = "rhubarb-linux")
+			OS.isWindows -> base.copy(exe = "rhubarb-win.exe")
 			else -> error("Operating system '${OS.rawName}', '${OS.platformName}' not supported")
 		}
 	}

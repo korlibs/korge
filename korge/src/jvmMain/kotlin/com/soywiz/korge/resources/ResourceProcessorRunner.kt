@@ -72,7 +72,7 @@ object ResourceProcessorRunner {
 			logger.info("- $folder")
 			if (folder.exists()) {
 				for (file in folder.walkTopDown()) {
-					val ext = file.extension.toLowerCase()
+                    val ext = file.fullExtension.lowercase()
                     val processorsForEntry = when {
                         file.isDirectory -> processors.folderProcessors
                         else -> listOfNotNull(processors.fileProcessorsByExt[ext])
@@ -93,3 +93,6 @@ object ResourceProcessorRunner {
 		}
 	}
 }
+
+public val File.fullExtension: String
+    get() = name.substringAfter('.', "")
