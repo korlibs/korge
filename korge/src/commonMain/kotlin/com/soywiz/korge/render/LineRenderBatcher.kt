@@ -127,14 +127,15 @@ class LineRenderBatcher(
     /** Prepares for drawing a set of lines with the specified [matrix]. It flushes all other contexts, and the set [matrix]. */
     inline fun <T> draw(matrix: Matrix, body: () -> T): T {
         ctx.flush()
-        val temp = tempViewMat.alloc()
-        temp.copyFrom(viewMat)
-        matrix.toMatrix3D(viewMat)
-        try {
-            return body()
-        } finally {
-            flush()
-            viewMat.copyFrom(temp)
+        return tempViewMat.alloc { temp ->
+            temp.copyFrom(viewMat)
+            matrix.toMatrix3D(viewMat)
+            try {
+                body()
+            } finally {
+                flush()
+                viewMat.copyFrom(temp)
+            }
         }
     }
 
