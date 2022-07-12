@@ -37,7 +37,7 @@ class SoftMp3DecoderTest {
     fun testMiniMp31() = suspendTest({ doIOTest }) {
         //resourcesVfs["mp31.mp3"].readAudioData(FastMP3Decoder).toSound()
         assertEquals(
-            "1,44100,25344,c857ab2749eb3a00cb27f85658ddb38bd48bded9",
+            "1,44100,22050,c82a407c8353c9d47c6f499a5195f85809bbbf8a",
             resourcesVfs["mp31.mp3"].readAudioData(FastMP3Decoder).toFingerprintString()
         )
     }
@@ -79,7 +79,7 @@ class SoftMp3DecoderTest {
     }
     @Test fun snowland() = suspendTest({ doIOTest }) {
         assertEquals(
-            "2,48000,569088,e93f683f45e9a604ac75de77c5c7de5ae5f802b1",
+            "2,48000,565920,36945a5c28a37e4f860b951fe397f03ba1bd187d",
             resourcesVfs["Snowland.mp3"].readAudioData(formats).toFingerprintString(),
         )
     }
