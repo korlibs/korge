@@ -273,7 +273,10 @@ open class Text(
                     cachedVersionRenderer = rversion
                     cachedVersion = version
 
-                    _staticGraphics = null
+                    if (_staticGraphics != null) {
+                        _staticGraphics = null
+                        container.removeChildren()
+                    }
                     bitmapFontActions.x = 0.0
                     bitmapFontActions.y = 0.0
 
@@ -334,7 +337,6 @@ open class Text(
                 if (cachedVersion != version) {
                     cachedVersion = version
                     val realTextSize = textSize * autoscaling.renderedAtScaleXY
-
 
                     if (_staticGraphics == null) {
                         container.removeChildren()
