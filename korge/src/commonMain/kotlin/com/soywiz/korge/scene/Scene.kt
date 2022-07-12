@@ -1,5 +1,6 @@
 package com.soywiz.korge.scene
 
+import com.soywiz.kds.Extra
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korag.AG
 import com.soywiz.korge.debug.KorgeDebugNode
@@ -56,7 +57,7 @@ import kotlin.coroutines.coroutineContext
  * - NEW: [sceneAfterInit] - DO NOT BLOCK - Similar to [sceneMain] but after the transition.
  * - ## New scene is returned
  */
-abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, KorgeDebugNode, ResourcesContainer {
+abstract class Scene : InjectorAsyncDependency, ViewsContainer, CoroutineScope, KorgeDebugNode, ResourcesContainer, Extra by Extra.Mixin() {
     /** A child [AsyncInjector] for this instance. Set by the [init] method. */
 	lateinit var injector: AsyncInjector
     /** The [Views] singleton of the application. Set by the [init] method. */
@@ -238,7 +239,7 @@ abstract class ScaledScene(
     private fun onSizeChanged(sceneView: SContainer, width: Double, height: Double) {
         val out = Rectangle(0.0, 0.0, width, height).place(Size(sceneWidth, sceneHeight), sceneAnchor, sceneScaleMode)
         sceneView
-            .size(out.width, out.height)
+            .size(sceneWidth, sceneHeight)
             .xy(out.x, out.y)
             .scale(out.width / sceneWidth, out.height / sceneHeight)
             .also { it.filter = if (sceneSmoothing) IdentityFilter.Linear else IdentityFilter.Nearest }
