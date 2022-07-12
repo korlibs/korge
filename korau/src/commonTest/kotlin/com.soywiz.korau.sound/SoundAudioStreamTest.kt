@@ -5,12 +5,13 @@ import com.soywiz.korau.format.WAV
 import com.soywiz.korau.format.mp3.FastMP3Decoder
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
+import doIOTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class SoundAudioStreamTest {
     @Test
-    fun testPlaySeveralTimes() = suspendTest {
+    fun testPlaySeveralTimes() = suspendTest({ doIOTest }) {
         val soundProvider = LogNativeSoundProvider(AudioFormats(WAV, FastMP3Decoder))
 
         val sound = soundProvider.createSound(resourcesVfs["click.mp3"], streaming = true)
