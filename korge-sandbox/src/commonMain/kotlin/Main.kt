@@ -6,6 +6,7 @@ import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.mix
+import com.soywiz.korio.annotations.Keep
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.portableSimpleName
 import samples.*
@@ -25,8 +26,20 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainVideo),
+        Demo(::MainVector),
         listOf(
+            Demo(::MainVector),
+            Demo(::MainText),
+            Demo(::MainAtlas),
+            Demo(::MainBunnysSlow),
+            Demo(::MainOnScreenController),
+            Demo(::MainScenes),
+            Demo(::MainKTree),
+            Demo(::MainLipSync),
+            Demo(::MainInput),
+            Demo(::MainGestures),
+            Demo(::MainFilters),
+            Demo(::MainCoroutine),
             Demo(::MainVideo),
             Demo(::MainTicTacToeSwf),
             Demo(::MainPong),
