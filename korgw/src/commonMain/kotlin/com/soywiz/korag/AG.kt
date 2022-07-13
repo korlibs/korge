@@ -34,6 +34,7 @@ import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.lang.Closeable
@@ -171,24 +172,32 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
-    enum class BlendEquation {
-        ADD, SUBTRACT, REVERSE_SUBTRACT;
+    enum class BlendEquation(val apply: (l: Float, r: Float) -> Float) {
+        ADD({ l, r -> l + r }),
+        SUBTRACT({ l, r -> l - r }),
+        REVERSE_SUBTRACT({ l, r -> r - l }),
+        ;
+
         companion object {
             val VALUES = values()
         }
     }
 
-    enum class BlendFactor {
-        DESTINATION_ALPHA,
-        DESTINATION_COLOR,
-        ONE,
-        ONE_MINUS_DESTINATION_ALPHA,
-        ONE_MINUS_DESTINATION_COLOR,
-        ONE_MINUS_SOURCE_ALPHA,
-        ONE_MINUS_SOURCE_COLOR,
-        SOURCE_ALPHA,
-        SOURCE_COLOR,
-        ZERO;
+    enum class BlendFactor(
+        val get: (srcC: Float, srcA: Float, dstC: Float, dstA: Float) -> Float
+    ) {
+        DESTINATION_ALPHA({ _, _, _, dstA -> dstA }),
+        DESTINATION_COLOR({ _, _, dstC, _ -> dstC }),
+        ONE({ _, _, _, _ -> 1f }),
+        ONE_MINUS_DESTINATION_ALPHA({ _, _, _, dstA -> 1f - dstA }),
+        ONE_MINUS_DESTINATION_COLOR({ _, _, dstC, _ -> 1f - dstC }),
+        ONE_MINUS_SOURCE_ALPHA({ _, srcA, _, _ -> 1f - srcA }),
+        ONE_MINUS_SOURCE_COLOR({ srcC, _, _, _ -> 1f - srcC }),
+        SOURCE_ALPHA({ _, srcA, _, _ -> srcA }),
+        SOURCE_COLOR({ srcC, _, _, _ -> srcC }),
+        ZERO({ _, _, _, _ -> 0f }),
+        ;
+
         companion object {
             val VALUES = values()
         }
@@ -261,6 +270,32 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             src, dst,
             eq, eq
         )
+
+        private fun applyColorComponent(srcC: Float, dstC: Float, srcA: Float, dstA: Float): Float {
+            return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
+        }
+
+        private fun applyAlphaComponent(srcA: Float, dstA: Float): Float {
+            return eqRGB.apply(srcA * this.srcA.get(0f, srcA, 0f, dstA), dstA * this.dstA.get(0f, srcA, 0f, dstA))
+        }
+
+        fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
+            out.r = applyColorComponent(src.r, dst.r, src.a, dst.a)
+            out.g = applyColorComponent(src.g, dst.g, src.a, dst.a)
+            out.b = applyColorComponent(src.b, dst.b, src.a, dst.a)
+            out.a = applyAlphaComponent(src.a, dst.a)
+            return out
+        }
+
+        fun apply(src: RGBA, dst: RGBA): RGBA {
+            val srcA = src.af
+            val dstA = dst.af
+            val r = applyColorComponent(src.rf, dst.rf, srcA, dstA)
+            val g = applyColorComponent(src.gf, dst.gf, srcA, dstA)
+            val b = applyColorComponent(src.bf, dst.bf, srcA, dstA)
+            val a = applyAlphaComponent(srcA, dstA)
+            return RGBA.float(r, g, b, a)
+        }
 
         val disabled: Boolean = srcRGB == BlendFactor.ONE && dstRGB == BlendFactor.ZERO && srcA == BlendFactor.ONE && dstA == BlendFactor.ZERO
         val enabled: Boolean = !disabled

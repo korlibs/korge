@@ -1,6 +1,8 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.AG
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAf
 
 /**
  * Determines how pixels should be blended. The most common blend modes are: [NORMAL] (normal mix) and [ADD] (additive blending) along with [MULTIPLY] and others.
@@ -23,6 +25,16 @@ data class BlendMode(
     override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && nonPremultipliedFactors == other.nonPremultipliedFactors && name == other.name)
 
     fun factors(premultiplied: Boolean): AG.Blending = if (premultiplied) factors else nonPremultipliedFactors
+
+    fun apply(premultiplied: Boolean, src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
+        val factors = factors(premultiplied)
+        return factors.apply(src, dst, out)
+    }
+
+    fun apply(premultiplied: Boolean, src: RGBA, dst: RGBA): RGBA {
+        val factors = factors(premultiplied)
+        return factors.apply(src, dst)
+    }
 
     companion object {
         /** Mixes the source and destination colors using the source alpha value */
