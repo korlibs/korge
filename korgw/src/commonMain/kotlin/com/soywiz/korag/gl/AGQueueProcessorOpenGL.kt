@@ -89,7 +89,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
     }
 
     override fun finish() {
-        //gl.flush()
+        gl.flush()
         //gl.finish()
 
        //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
