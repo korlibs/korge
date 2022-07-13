@@ -36,8 +36,8 @@ abstract class BaseGraphics(
             field = value
         }
 
-    private fun createImage(width: Int, height: Int): Bitmap {
-        return if (useNativeRendering) NativeImage(width, height) else Bitmap32(width, height, premultiplied = true)
+    private fun createImage(width: Int, height: Int, premultiplied: Boolean? = null): Bitmap {
+        return if (useNativeRendering) NativeImage(width, height, premultiplied) else Bitmap32(width, height, premultiplied = premultiplied ?: true)
     }
 
     @PublishedApi
@@ -116,6 +116,7 @@ abstract class BaseGraphics(
                 translate(-boundsWithShapes.x, -boundsWithShapes.y)
                 drawShape(this)
             }
+            //println("image=${image.premultiplied}")
             this.bitmap = image.slice()
         }
 

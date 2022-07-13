@@ -1,8 +1,11 @@
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiComboBox
+import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.position
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.mix
@@ -25,6 +28,8 @@ suspend fun main() = Korge(
     multithreaded = true,
     //debugAg = true,
 ) {
+    //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
+
     demoSelector(
         //Demo(::MainVector),
         Demo(::MainSpine),

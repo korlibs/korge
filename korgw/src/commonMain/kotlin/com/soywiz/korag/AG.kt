@@ -449,7 +449,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             }
         }
 
-        override fun toString(): String = "AGOpengl.GlTexture($texId)"
+        override fun toString(): String = "AGOpengl.GlTexture($texId, pre=$premultiplied)"
         fun manualUpload(): Texture {
             uploaded = true
             return this

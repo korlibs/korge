@@ -51,7 +51,7 @@ open class DropshadowFilter(
                     colorAdd = ColorAdd(+255, +255, +255, 0),
                     colorMul = shadowColor,
                     blendMode = blendMode,
-                    program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, add = BatchBuilder2D.AddType.PRE_ADD)
+                    program = BatchBuilder2D.getTextureLookupProgram(add = BatchBuilder2D.AddType.PRE_ADD)
                 )
             }
         }
@@ -64,7 +64,7 @@ open class DropshadowFilter(
                 colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
                 blendMode = blendMode,
-                program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, add = BatchBuilder2D.AddType.NO_ADD)
+                program = BatchBuilder2D.getTextureLookupProgram(add = BatchBuilder2D.AddType.NO_ADD)
             )
         }
     }

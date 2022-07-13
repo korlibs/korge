@@ -8,9 +8,11 @@ import com.soywiz.klogger.Logger
 import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.VertexShaderDefault
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Precision
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Uniform
@@ -698,7 +700,27 @@ class BatchBuilder2D constructor(
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
         //val u_Tex0 = Uniform("u_Tex0", VarType.TextureUnit)
 
+        val u_DoWrap: Uniform = Uniform("u_DoWrap", VarType.Bool1)
+        val u_InputPre: Uniform = Uniform("u_InputPre", VarType.Bool1)
+        val u_OutputPre: Uniform = Uniform("u_OutputPre", VarType.Bool1)
         val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
+
+        fun DO_INPUT_PREMULTIPLIED(builder: Program.Builder, out: Operand) {
+            builder.apply {
+                IF(u_InputPre.not()) {
+                    SET(out["rgb"], out["rgb"] * out["a"])
+                }
+            }
+        }
+
+        fun DO_OUTPUT_PREMULTIPLIED(builder: Program.Builder, out: Operand) {
+            builder.apply {
+                IF(u_OutputPre.not()) {
+                    SET(out["rgb"], out["rgb"] / out["a"])
+                }
+            }
+        }
+
         //val u_Tex0 = DefaultShaders.u_Tex
         //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
 
@@ -711,59 +733,44 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		val VERTEX = VertexShaderDefault {
             SET(v_Tex, a_Tex)
-
             SET(v_TexIndex, a_TexIndex)
-            SET(v_ColMul, a_ColMul)
-            SET(v_ColAdd, a_ColAdd)
+            SET(v_ColMul, vec4(a_ColMul["rgb"] * a_ColMul["a"], a_ColMul["a"])) // premultiplied colorMul
+            SET(v_ColAdd, vec4(a_ColAdd["rgb"] * a_ColAdd["a"], a_ColAdd["a"])) // premultiplied v_ColAdd
             SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
 		}
 
 		init { logger.trace { "BatchBuilder2D.Companion[3]" } }
 
-        private fun getShaderProgramIndex(premultiplied: Boolean, add: AddType, wrap: Boolean): Int = 0
-            .insert(premultiplied, 0)
-            .insert(wrap, 1)
-            .insert(add.index, 2, 2)
+        private fun getShaderProgramIndex(add: AddType): Int = 0
+            .insert(add.index, 0, 2)
 
-        private fun getOrCreateStandardProgram(premultiplied: Boolean, preaddType: AddType, wrap: Boolean): Program {
-            val index = getShaderProgramIndex(premultiplied, preaddType, wrap)
-            if (BATCH_BUILDER2D_PROGRAMS[index] == null) BATCH_BUILDER2D_PROGRAMS[index] = _createProgramUncached(premultiplied, preaddType, wrap)
+        private fun getOrCreateStandardProgram(preaddType: AddType): Program {
+            val index = getShaderProgramIndex(preaddType)
+            if (BATCH_BUILDER2D_PROGRAMS[index] == null) BATCH_BUILDER2D_PROGRAMS[index] = _createProgramUncached(preaddType)
             return BATCH_BUILDER2D_PROGRAMS[index]!!
         }
 
-        private fun _createProgramUncached(premultiplied: Boolean, addType: AddType, wrap: Boolean): Program {
-            val fragment = buildTextureLookupFragment(premultiplied = premultiplied, add = addType, wrap = wrap)
-            val premultString = if (premultiplied) "Premultiplied" else "NoPremultiplied"
+        private fun _createProgramUncached(addType: AddType): Program {
+            val fragment = buildTextureLookupFragment(add = addType)
             val addString = when (addType) {
                 AddType.NO_ADD -> ".NoAdd"
                 AddType.PRE_ADD -> ".PreAdd"
                 AddType.POST_ADD -> ".PostAdd"
             }
-            val addWrap = if (wrap) "Wrap" else "NoWrap"
             return Program(
                 vertex = VERTEX,
                 fragment = fragment,
-                name = "BatchBuilder2D.${premultString}.Tinted${addString}$addWrap"
+                name = "BatchBuilder2D.Tinted${addString}"
             )
         }
 
-        private val defaultAddType = AddType.NO_ADD
-        //private val defaultAddType = AddType.PRE_ADD
-
         @KorgeInternal
-		val PROGRAM_PRE: Program = getOrCreateStandardProgram(true, defaultAddType, wrap = false)
-        @KorgeInternal
-		val PROGRAM_NOPRE: Program = getOrCreateStandardProgram(false, defaultAddType, wrap = false)
-
-        @KorgeInternal
-        val PROGRAM_PRE_WRAP: Program = getOrCreateStandardProgram(true, defaultAddType, wrap = true)
-        @KorgeInternal
-        val PROGRAM_NOPRE_WRAP: Program = getOrCreateStandardProgram(false, defaultAddType, wrap = true)
+		val PROGRAM: Program = getOrCreateStandardProgram(AddType.NO_ADD)
 
         init { logger.trace { "BatchBuilder2D.Companion[4]" } }
 
         @KorgeInternal
-        fun getTextureLookupProgram(premultiplied: Boolean, add: AddType = AddType.POST_ADD, wrap: Boolean = false): Program = getOrCreateStandardProgram(premultiplied, add, wrap)
+        fun getTextureLookupProgram(add: AddType = AddType.POST_ADD): Program = getOrCreateStandardProgram(add)
 
 		//val PROGRAM_NORMAL = Program(
 		//	vertex = VERTEX,
@@ -782,50 +789,31 @@ class BatchBuilder2D constructor(
          * Shader is expected to return a premultiplied alpha color.
          */
         @KorgeInternal
-		internal fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType, wrap: Boolean) = FragmentShader {
-			DefaultShaders.apply {
-                // @TODO: Due to some android device shader compiler bugs, can't use samplerExternalOES as a parameter of a custom function
-                // @TODO: So disabled this functionality, and keep fract() as the standard
-                // @TODO: https://stackoverflow.com/questions/40662936/compile-time-failure-when-reading-texels-from-samplerexternaloes
-                // THIS CAN BE OVERRIDED. Check `testGlslFragmentGenerationNewCustomFuncUpdated` for an example
-                //val stexture2D = FUNC("stexture2D", Float4, "sampler" to Sampler2D, "coord" to Float2) {
-                //    val sampler = ARG("sampler", Sampler2D)
-                //    val coord = ARG("coord", Float2)
-                //    RETURN(texture2D(sampler, fract(coord)))
-                //}
+		internal fun buildTextureLookupFragment(add: AddType) = FragmentShaderDefault {
+            IF (u_DoWrap) {
+                SET(t_Temp0["xy"], fract(v_Tex["xy"]))
+            } ELSE {
+                SET(t_Temp0["xy"], v_Tex["xy"])
+            }
 
-                IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
-                    //SET(out, texture2D(u_TexN[n], fract(v_Tex["xy"])))
-                    SET(out, texture2D(u_TexN[n], if (wrap) fract(v_Tex["xy"]) else v_Tex["xy"]))
+            IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
+                SET(out, texture2D(u_TexN[n], t_Temp0["xy"]))
+            }
+            DO_INPUT_PREMULTIPLIED(this, out)
+            when (add) {
+                AddType.NO_ADD -> {
+                    SET(out, out["rgba"] * v_ColMul["rgba"])
                 }
-                //for (n in 0 until BB_MAX_TEXTURES) {
-                //    IF(v_TexIndex eq (n.toFloat()).lit) {
-                //        SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
-                //    }
-                //}
-				if (!premultiplied) {
-					SET(out["rgb"], out["rgb"] * out["a"])
-				}
-
-				// @TODO: Kotlin.JS bug?
-				//SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
-                when (add) {
-                    AddType.NO_ADD -> {
-                        SET(out, out["rgba"] * v_ColMul["rgba"])
-                    }
-                    AddType.POST_ADD -> {
-                        SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
-                    }
-                    AddType.PRE_ADD -> {
-                        SET(out, (clamp(out["rgba"] + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit), 0f.lit, 1f.lit) * v_ColMul["rgba"]))
-                    }
+                AddType.POST_ADD -> {
+                    SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
                 }
-
-				//SET(out, t_Temp1)
-				// Required for shape masks:
-                IF(out["a"] le 0f.lit) { DISCARD() }
-			}
-		}
+                AddType.PRE_ADD -> {
+                    SET(out, (clamp(out["rgba"] + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit), 0f.lit, 1f.lit) * v_ColMul["rgba"]))
+                }
+            }
+            IF(out["a"] le 0f.lit) { DISCARD() }
+            DO_OUTPUT_PREMULTIPLIED(this, out)
+        }
 
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
 	}
@@ -858,11 +846,8 @@ class BatchBuilder2D constructor(
     }
 
     fun getIsPremultiplied(texture: AG.Texture?): Boolean = texture?.premultiplied == true
-    fun getDefaultProgram(premultiplied: Boolean, wrap: Boolean = false): Program = when {
-        premultiplied -> if (wrap) PROGRAM_PRE_WRAP else PROGRAM_PRE
-        else -> if (wrap) PROGRAM_NOPRE_WRAP else PROGRAM_NOPRE
-    }
-    fun getDefaultProgramForTexture(texture: AG.Texture?, wrap: Boolean = false): Program = getDefaultProgram(getIsPremultiplied(texture), wrap)
+    fun getDefaultProgram(): Program = PROGRAM
+    fun getDefaultProgramForTexture(): Program = getDefaultProgram()
 
     /** When there are vertices pending, this performs a [AG.draw] call flushing all the buffered geometry pending to draw */
 	fun flush(uploadVertices: Boolean = true, uploadIndices: Boolean = true) {
@@ -882,10 +867,15 @@ class BatchBuilder2D constructor(
 			//println("RENDER: $realFactors")
             //println("DRAW: $uniforms")
 
+            uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
+            uniforms[u_OutputPre] = ag.isRenderingToTexture
+
+            val program = currentProgram ?: PROGRAM
+            //println("program=$program, currentTexN[0]=${currentTexN[0]}")
             ag.drawV2(
                 vertexData = vertexData,
                 indices = indexBuffer,
-                program = currentProgram ?: getDefaultProgramForTexture(currentTexN[0]),
+                program = program,
                 //program = PROGRAM_PRE,
                 type = AG.DrawType.TRIANGLES,
                 vertexCount = indexPos,
