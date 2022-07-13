@@ -764,9 +764,6 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         } else {
 
             if (bmp is NativeImage) {
-                if (gl.webgl) {
-                    gl.pixelStorei(KmlGl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, bmp.premultiplied.toInt())
-                }
                 if (bmp.area != 0) {
                     prepareTexImage2D()
                     gl.texImage2D(texTarget, 0, type, type, KmlGl.UNSIGNED_BYTE, bmp)

@@ -30,6 +30,9 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             ?: canvas.getContext("webgl", glOpts)
             ?: canvas.getContext("experimental-webgl", glOpts)
         ).unsafeCast<WebGLRenderingContext?>()
+        ?.also {
+            println("Created WebGL version=$webglVersion, opts=${JSON.stringify(glOpts)}")
+        }
         ?: run {
             try {
                 document.body?.prepend((document.createElement("div") as HTMLElement).apply {
