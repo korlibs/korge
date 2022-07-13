@@ -1493,7 +1493,7 @@ abstract class View internal constructor(
             addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
             uiEditableValue(view::name)
             uiEditableValue(view::colorMul)
-            uiEditableValue(view::blendMode, values = { BlendMode.values().toList() })
+            uiEditableValue(view::blendMode, values = { BlendMode.STANDARD_LIST })
             uiEditableValue(view::alpha, min = 0.0, max = 1.0, clamp = true)
             uiEditableValue(view::speed, min = -1.0, max = 1.0, clamp = false)
             uiEditableValue(view::ratio, min = 0.0, max = 1.0, clamp = false)
