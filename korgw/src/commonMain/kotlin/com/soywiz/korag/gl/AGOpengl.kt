@@ -22,6 +22,8 @@ abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
         RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     open var isGlAvailable = true
+
+    @Deprecated("Do not use directly")
     abstract val gl: KmlGl
 
     override val parentFeatures: AGFeatures get() = gl

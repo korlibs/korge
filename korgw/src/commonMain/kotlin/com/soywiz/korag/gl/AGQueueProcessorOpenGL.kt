@@ -55,7 +55,10 @@ import com.soywiz.korma.geom.copyToFloatWxH
 import kotlin.math.min
 
 @OptIn(KorIncomplete::class, KorInternal::class)
-class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AGQueueProcessor {
+class AGQueueProcessorOpenGL(
+    private val gl: KmlGl,
+    val globalState: AGGlobalState
+) : AGQueueProcessor {
     class FastResources<T : Any>(val create: (id: Int) -> T) {
         private val resources = arrayListOf<T?>()
         operator fun get(id: Int): T? = getOrNull(id)
