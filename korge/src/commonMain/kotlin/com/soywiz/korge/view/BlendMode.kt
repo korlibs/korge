@@ -18,6 +18,10 @@ data class BlendMode(
     val nonPremultipliedFactors: AG.Blending = factors,
     val name: String? = null,
 ) {
+    val _hashCode: Int = factors.hashCode() + nonPremultipliedFactors.hashCode() * 7 + name.hashCode() * 17
+    override fun hashCode(): Int = _hashCode
+    override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && nonPremultipliedFactors == other.nonPremultipliedFactors && name == other.name)
+
     fun factors(premultiplied: Boolean): AG.Blending = if (premultiplied) factors else nonPremultipliedFactors
 
     companion object {

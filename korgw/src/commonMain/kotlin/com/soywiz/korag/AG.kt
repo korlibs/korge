@@ -242,6 +242,12 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
+    /**
+     * color(RGB) = (sourceColor * [srcRGB]) + (destinationColor * [dstRGB])
+     * color(A) = (sourceAlpha * [srcA]) + (destinationAlpha * [dstA])
+     *
+     * Instead of + [eqRGB] and [eqA] determines the operation to use (+, - or reversed -)
+     */
     data class Blending(
         val srcRGB: BlendFactor,
         val dstRGB: BlendFactor,
@@ -261,6 +267,13 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         private val cachedHashCode: Int = hashCode(srcRGB, dstRGB, srcA, dstA, eqRGB, eqA)
         override fun hashCode(): Int = cachedHashCode
+        override fun equals(other: Any?): Boolean = (this === other) || (other is Blending &&
+            srcRGB == other.srcRGB &&
+            dstRGB == other.dstRGB &&
+            srcA == other.srcA &&
+            dstA == other.dstA &&
+            eqRGB == other.eqRGB &&
+            eqA == other.eqA)
 
         companion object {
             val NONE = Blending(BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE, BlendFactor.ZERO)

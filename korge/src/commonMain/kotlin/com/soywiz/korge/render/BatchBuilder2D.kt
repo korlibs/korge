@@ -694,7 +694,7 @@ class BatchBuilder2D constructor(
         @KorgeInternal
 		val v_ColMul: Varying get() = DefaultShaders.v_Col
         @KorgeInternal
-		val v_ColAdd: Varying = Varying("v_Col2", VarType.Byte4)
+		val v_ColAdd: Varying = Varying("v_Col2", VarType.Float4)
 
         val a_TexIndex: Attribute = Attribute("a_TexIndex", VarType.UByte1, normalized = false, precision = Precision.LOW)
         val v_TexIndex: Varying = Varying("v_TexIndex", VarType.Float1, precision = Precision.LOW)
@@ -735,7 +735,7 @@ class BatchBuilder2D constructor(
             SET(v_Tex, a_Tex)
             SET(v_TexIndex, a_TexIndex)
             SET(v_ColMul, vec4(a_ColMul["rgb"] * a_ColMul["a"], a_ColMul["a"])) // premultiplied colorMul
-            SET(v_ColAdd, vec4(a_ColAdd["rgb"] * a_ColAdd["a"], a_ColAdd["a"])) // premultiplied v_ColAdd
+            SET(v_ColAdd, a_ColAdd)
             SET(out, (u_ProjMat * u_ViewMat) * vec4(a_Pos, 0f.lit, 1f.lit))
 		}
 
@@ -800,15 +800,13 @@ class BatchBuilder2D constructor(
                 SET(out, texture2D(u_TexN[n], t_Temp0["xy"]))
             }
             DO_INPUT_PREMULTIPLIED(this, out)
-            when (add) {
-                AddType.NO_ADD -> {
-                    SET(out, out["rgba"] * v_ColMul["rgba"])
-                }
-                AddType.POST_ADD -> {
-                    SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
-                }
-                AddType.PRE_ADD -> {
-                    SET(out, (clamp(out["rgba"] + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit), 0f.lit, 1f.lit) * v_ColMul["rgba"]))
+            if (add == AddType.NO_ADD) {
+                SET(out, out * v_ColMul)
+            } else {
+                SET(t_Temp0, (v_ColAdd - vec4(.5f.lit)) * 2f.lit)
+                when (add) {
+                    AddType.POST_ADD -> SET(out, (out * v_ColMul) + t_Temp0)
+                    else -> SET(out, clamp(out + t_Temp0, 0f.lit, 1f.lit) * v_ColMul)
                 }
             }
             IF(out["a"] le 0f.lit) { DISCARD() }
