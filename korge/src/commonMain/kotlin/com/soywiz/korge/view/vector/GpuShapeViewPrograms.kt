@@ -150,8 +150,8 @@ object GpuShapeViewPrograms {
             }
 
             // Colors are premultiplied
-            IF (u_Premultiplied eq 1f.lit) {
-                SET(out["rgb"], out["rgb"] / out["a"])
+            IF (u_Premultiplied ne 1f.lit) {
+                SET(out["rgb"], out["rgb"] * out["a"])
             }
 
             // Update global alpha
@@ -159,7 +159,7 @@ object GpuShapeViewPrograms {
             //val finalAlpha = t_Temp0.y
             //val aaAlpha = 1f.lit
             SET(out, out * u_ColorMul)
-            SET(out["a"], out["a"] * u_GlobalAlpha * aaAlpha)
+            SET(out["rgba"], out["rgba"] * u_GlobalAlpha * aaAlpha)
         },
     )
 

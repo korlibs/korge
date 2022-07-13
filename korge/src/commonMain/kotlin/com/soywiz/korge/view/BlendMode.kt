@@ -18,13 +18,15 @@ data class BlendMode(
     val nonPremultipliedFactors: AG.Blending = factors,
     val name: String? = null,
 ) {
+    fun factors(premultiplied: Boolean): AG.Blending = if (premultiplied) factors else nonPremultipliedFactors
+
     companion object {
+        /** Mixes the source and destination colors using the source alpha value */
+        val NORMAL = BlendMode(name = "NORMAL", factors = AG.Blending.NORMAL_PRE, nonPremultipliedFactors = AG.Blending.NORMAL)
         /** Not an actual blending. It is used to indicate that the next non-inherit BlendMode from its ancestors will be used. */
-        val INHERIT = BlendMode(name = "INHERIT", factors = AG.Blending.NORMAL)
+        val INHERIT = NORMAL.copy(name = "INHERIT")
         /** Doesn't blend at all. Just replaces the colors. */
         val NONE = BlendMode(name = "NONE", factors = AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)) // REPLACE
-        /** Mixes the source and destination colors using the source alpha value */
-        val NORMAL = BlendMode(name = "NORMAL", factors = AG.Blending.NORMAL)
         /** Additive mixing for lighting effects */
         val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD)
 

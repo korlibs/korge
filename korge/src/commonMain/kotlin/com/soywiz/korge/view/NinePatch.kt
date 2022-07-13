@@ -74,7 +74,7 @@ class NinePatch(
                 colorMul = renderColorMul,
                 colorAdd = renderColorAdd,
                 filtering = smoothing,
-                blendFactors = renderBlendMode.factors
+                blendMode = renderBlendMode
             )
         }
 	}

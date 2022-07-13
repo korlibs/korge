@@ -16,7 +16,7 @@ abstract class CustomContextRenderizableView(width: Double, height: Double) : Re
             this.ctx = ctx
             ctx2d = context
             context.keep {
-                context.blendFactors = blendMode.factors
+                context.blendMode = blendMode
                 context.setMatrix(globalMatrix)
                 renderer(context, width, height)
             }

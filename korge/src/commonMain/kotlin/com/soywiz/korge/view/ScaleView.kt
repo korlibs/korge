@@ -32,7 +32,7 @@ class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boo
                     colorMul = renderColorMul,
                     colorAdd = renderColorAdd,
                     filtering = filtering,
-                    blendFactors = renderBlendMode.factors
+                    blendMode = renderBlendMode
                 )
             }
 		})

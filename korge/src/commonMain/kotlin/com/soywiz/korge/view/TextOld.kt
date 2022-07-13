@@ -12,8 +12,6 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.font.Font
 import com.soywiz.korma.geom.Rectangle
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 
 @KorgeDeprecated
 inline fun Container.textOld(
@@ -166,7 +164,7 @@ class TextOld : View(), IText, IHtml {
                         filtering = false,
                         colorMul = RGBA.multiply(bgcolor, renderColorMul),
                         colorAdd = colorAdd,
-                        blendFactors = renderBlendMode.factors
+                        blendMode = renderBlendMode
                     )
                 }
 			}

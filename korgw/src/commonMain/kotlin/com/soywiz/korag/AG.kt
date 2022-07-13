@@ -269,6 +269,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
                 BlendFactor.SOURCE_ALPHA, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
                 BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA
             )
+            val NORMAL_PRE = Blending(
+                BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
+            )
             val ADD = Blending(
                 BlendFactor.SOURCE_ALPHA, BlendFactor.DESTINATION_ALPHA,
                 BlendFactor.ONE, BlendFactor.ONE

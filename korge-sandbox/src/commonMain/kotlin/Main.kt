@@ -26,7 +26,8 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     demoSelector(
-        Demo(::MainVector),
+        //Demo(::MainVector),
+        Demo(::MainSpine),
         listOf(
             Demo(::MainVector),
             Demo(::MainText),

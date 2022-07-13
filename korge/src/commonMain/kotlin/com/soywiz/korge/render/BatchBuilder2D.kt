@@ -17,8 +17,6 @@ import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.Varying
 import com.soywiz.korag.shader.VertexLayout
-import com.soywiz.korag.toRenderFboIntoBack
-import com.soywiz.korag.toRenderImageIntoFbo
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.Bitmap
@@ -124,7 +122,7 @@ class BatchBuilder2D constructor(
 
     @PublishedApi internal var currentSmoothing: Boolean = false
 
-    @PublishedApi internal var currentBlendFactors: AG.Blending = BlendMode.NORMAL.factors
+    @PublishedApi internal var currentBlendMode: BlendMode = BlendMode.NORMAL
     @PublishedApi internal var currentProgram: Program? = null
 
 	init { logger.trace { "BatchBuilder2D[3]" } }
@@ -423,10 +421,10 @@ class BatchBuilder2D constructor(
      * Draws/buffers a set of textured and colorized array of vertices [array] with the specified texture [tex] and optionally [smoothing] it and an optional [program].
      */
     inline fun drawVertices(
-        array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending,
+        array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendMode: BlendMode,
         vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: Matrix? = null,
     ) {
-        setStateFast(tex.base, smoothing, blendFactors, program, icount, vcount)
+        setStateFast(tex.base, smoothing, blendMode, program, icount, vcount)
         drawVertices(array, matrix, vcount, icount)
 	}
 
@@ -443,30 +441,30 @@ class BatchBuilder2D constructor(
 	}
 
     /**
-     * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
+     * Sets the current texture [tex], [smoothing], [blendMode] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
 	fun setStateFast(
-        tex: TextureBase, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int,
+        tex: TextureBase, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int,
     ) {
-        setStateFast(tex.base, smoothing, blendFactors, program, icount, vcount)
+        setStateFast(tex.base, smoothing, blendMode, program, icount, vcount)
     }
 
     /**
-     * Sets the current texture [tex], [smoothing], [blendFactors] and [program] that will be used by the following drawing calls not specifying these attributes.
+     * Sets the current texture [tex], [smoothing], [blendMode] and [program] that will be used by the following drawing calls not specifying these attributes.
      */
     inline fun setStateFast(
-        tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int,
+        tex: AG.Texture?, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int,
     ) {
         ensure(icount, vcount)
 
-        val isCurrentStateFast = isCurrentStateFast(tex, smoothing, blendFactors, program)
+        val isCurrentStateFast = isCurrentStateFast(tex, smoothing, blendMode, program)
         //println("isCurrentStateFast=$isCurrentStateFast, tex=$tex, currentTex=$currentTex, currentTex2=$currentTex2")
         if (isCurrentStateFast) return
         flush()
         currentTexIndex = 0
         currentTexN[0] = tex
         currentSmoothing = smoothing
-        currentBlendFactors = if (tex != null && tex.isFbo) blendFactors.toRenderFboIntoBack() else blendFactors
+        currentBlendMode = blendMode
         currentProgram = program
     }
 
@@ -481,12 +479,12 @@ class BatchBuilder2D constructor(
     //    }
     //    currentTexIndex = 0
     //    currentSmoothing = false
-    //    currentBlendFactors = BlendMode.NORMAL.factors
+    //    currentBlendMode = BlendMode.NORMAL
     //    currentProgram = null
     //}
 
     @PublishedApi internal fun isCurrentStateFast(
-        tex: AG.Texture?, smoothing: Boolean, blendFactors: AG.Blending, program: Program?,
+        tex: AG.Texture?, smoothing: Boolean, blendMode: BlendMode, program: Program?,
     ): Boolean {
         var hasTex = hasTex(tex)
         if (currentTexN[0] !== null && !hasTex) {
@@ -508,16 +506,16 @@ class BatchBuilder2D constructor(
 
         return hasTex
             && (currentSmoothing == smoothing)
-            && (currentBlendFactors === blendFactors)
+            && (currentBlendMode === blendMode)
             && (currentProgram === program)
     }
 
-    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int) {
-        setStateFast(texManager.getTextureBase(tex), smoothing, blendFactors, program, icount, vcount)
+    fun setStateFast(tex: Bitmap, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int) {
+        setStateFast(texManager.getTextureBase(tex), smoothing, blendMode, program, icount, vcount)
     }
 
-    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendFactors: AG.Blending, program: Program?, icount: Int, vcount: Int) {
-        setStateFast(texManager.getTexture(tex).base, smoothing, blendFactors, program, icount, vcount)
+    fun setStateFast(tex: BmpSlice, smoothing: Boolean, blendMode: BlendMode, program: Program?, icount: Int, vcount: Int) {
+        setStateFast(texManager.getTexture(tex).base, smoothing, blendMode, program, icount, vcount)
     }
 
     /**
@@ -544,24 +542,24 @@ class BatchBuilder2D constructor(
      *
      * S: Is the part that is scaled. The other regions are not scaled.
      *
-     * It uses the transform [m] matrix, with an optional [filtering] and [colorMul]/[colorAdd], [blendFactors] and [program]
+     * It uses the transform [m] matrix, with an optional [filtering] and [colorMul]/[colorAdd], [blendMode] and [program]
      */
 	fun drawNinePatch(
-		tex: TextureCoords,
-		x: Float,
-		y: Float,
-		width: Float,
-		height: Float,
-		posCuts: Array<Point>,
-		texCuts: Array<Point>,
-		m: Matrix = identity,
-		filtering: Boolean = true,
-		colorMul: RGBA = Colors.WHITE,
-		colorAdd: ColorAdd = ColorAdd.NEUTRAL,
-		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
-		program: Program? = null,
+        tex: TextureCoords,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        posCuts: Array<Point>,
+        texCuts: Array<Point>,
+        m: Matrix = identity,
+        filtering: Boolean = true,
+        colorMul: RGBA = Colors.WHITE,
+        colorAdd: ColorAdd = ColorAdd.NEUTRAL,
+        blendMode: BlendMode = BlendMode.NORMAL,
+        program: Program? = null,
 	) {
-		setStateFast(tex.base, filtering, blendFactors, program, icount = 6 * 9, vcount = 4 * 4)
+		setStateFast(tex.base, filtering, blendMode, program, icount = 6 * 9, vcount = 4 * 4)
         val texIndex: Int = currentTexIndex
 
 		val p_o = pt1.setToTransform(m, ptt1.setTo(x, y))
@@ -632,36 +630,36 @@ class BatchBuilder2D constructor(
         filtering: Boolean = true,
         colorMul: RGBA = Colors.WHITE,
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
-        blendFactors: AG.Blending = BlendMode.NORMAL.factors,
+        blendMode: BlendMode = BlendMode.NORMAL,
         program: Program? = null,
-    ): Unit = drawQuad(tex, x, y, width, height, m, filtering, colorMul, colorAdd, blendFactors, program, Unit)
+    ): Unit = drawQuad(tex, x, y, width, height, m, filtering, colorMul, colorAdd, blendMode, program, Unit)
 
     /**
      * Draws a textured [tex] quad at [x], [y] and size [width]x[height].
      *
-     * It uses [m] transform matrix, an optional [filtering] and [colorMul], [colorAdd], [blendFactors] and [program] as state for drawing it.
+     * It uses [m] transform matrix, an optional [filtering] and [colorMul], [colorAdd], [blendMode] and [program] as state for drawing it.
      *
      * Note: To draw solid quads, you can use [Bitmaps.white] + [AgBitmapTextureManager] as texture and the [colorMul] as quad color.
      */
 	fun drawQuad(
-		tex: TextureCoords,
-		x: Float,
-		y: Float,
-		width: Float,
-		height: Float,
-		m: Matrix = identity,
-		filtering: Boolean = true,
-		colorMul: RGBA = Colors.WHITE,
-		colorAdd: ColorAdd = ColorAdd.NEUTRAL,
-		blendFactors: AG.Blending = BlendMode.NORMAL.factors,
-		program: Program? = null,
+        tex: TextureCoords,
+        x: Float,
+        y: Float,
+        width: Float,
+        height: Float,
+        m: Matrix = identity,
+        filtering: Boolean = true,
+        colorMul: RGBA = Colors.WHITE,
+        colorAdd: ColorAdd = ColorAdd.NEUTRAL,
+        blendMode: BlendMode = BlendMode.NORMAL,
+        program: Program? = null,
         unit: Unit = Unit,
 	) {
         val x0 = x
         val x1 = (x + width)
         val y0 = y
         val y1 = (y + height)
-        setStateFast(tex.base, filtering, blendFactors, program, icount = 6, vcount = 4)
+        setStateFast(tex.base, filtering, blendMode, program, icount = 6, vcount = 4)
         drawQuadFast(
             m.transformXf(x0, y0), m.transformYf(x0, y0),
             m.transformXf(x1, y0), m.transformYf(x1, y0),
@@ -780,6 +778,8 @@ class BatchBuilder2D constructor(
 
         /**
          * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
+         *
+         * Shader is expected to return a premultiplied alpha color.
          */
         @KorgeInternal
 		internal fun buildTextureLookupFragment(premultiplied: Boolean, add: AddType, wrap: Boolean) = FragmentShader {
@@ -803,8 +803,8 @@ class BatchBuilder2D constructor(
                 //        SET(out, texture2D(u_TexN[n], v_Tex["xy"]))
                 //    }
                 //}
-				if (premultiplied) {
-					SET(out["rgb"], out["rgb"] / out["a"])
+				if (!premultiplied) {
+					SET(out["rgb"], out["rgb"] * out["a"])
 				}
 
 				// @TODO: Kotlin.JS bug?
@@ -823,9 +823,7 @@ class BatchBuilder2D constructor(
 
 				//SET(out, t_Temp1)
 				// Required for shape masks:
-				if (premultiplied) {
-					IF(out["a"] le 0f.lit) { DISCARD() }
-				}
+                IF(out["a"] le 0f.lit) { DISCARD() }
 			}
 		}
 
@@ -874,14 +872,12 @@ class BatchBuilder2D constructor(
 
 			//println("ORTHO: ${ag.backHeight.toFloat()}, ${ag.backWidth.toFloat()}")
 
-			val factors = currentBlendFactors
+			val factors = currentBlendMode
 
 			if (uploadVertices) uploadVertices()
             if (uploadIndices) uploadIndices()
 
 			//println("MyUniforms: $uniforms")
-
-			val realFactors = if (ag.renderingToTexture) factors.toRenderImageIntoFbo() else factors
 
 			//println("RENDER: $realFactors")
             //println("DRAW: $uniforms")
@@ -893,7 +889,7 @@ class BatchBuilder2D constructor(
                 //program = PROGRAM_PRE,
                 type = AG.DrawType.TRIANGLES,
                 vertexCount = indexPos,
-                blending = realFactors,
+                blending = factors.factors(ag.isRenderingToTexture),
                 uniforms = uniforms,
                 stencil = stencil,
                 colorMask = colorMask,
