@@ -406,6 +406,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         /** The fractional part of v. This is calculated as v - floor(v). */
         fun fract(v: Operand): Operand = Func("fract", v)
 
+        fun clamp01(v: Operand): Operand = clamp(v, 0f.lit, 1f.lit)
         fun clamp(v: Operand, min: Operand, max: Operand): Operand =
             Func("clamp", v, min, max)
         fun min(a: Operand, b: Operand): Operand = Func("min", a, b)

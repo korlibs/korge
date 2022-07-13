@@ -30,7 +30,7 @@ class MainFiltersSample : Scene() {
 
         //val color = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
         //val color = TransitionFilter(TransitionFilter.Transition.DIAGONAL1, reversed = false)
-        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, smooth = true)
+        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0)
         //val color = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false)
         //val color = TransitionFilter(time = 1.0)
         image(bitmap) {
