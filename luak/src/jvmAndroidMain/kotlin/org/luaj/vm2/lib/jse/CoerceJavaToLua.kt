@@ -79,7 +79,7 @@ object CoerceJavaToLua {
     private class BoolCoercion : Coercion {
         override fun coerce(javaValue: Any): LuaValue {
             val b = javaValue as Boolean
-            return if (b) LuaValue.TRUE else LuaValue.FALSE
+            return if (b) LuaValue.BTRUE else LuaValue.BFALSE
         }
     }
 

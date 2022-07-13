@@ -155,20 +155,20 @@ private constructor(
     override fun modFrom(lhs: Double): LuaValue = LuaDouble.dmod(lhs, checkarith())
 
     // relational operators, these only work with other strings
-    override fun lt(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) > 0) LuaValue.TRUE else LuaValue.FALSE
+    override fun lt(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) > 0) LuaValue.BTRUE else LuaValue.BFALSE
     override fun lt_b(rhs: LuaValue): Boolean = rhs.strcmp(this) > 0
 
     override fun lt_b(rhs: Int): Boolean = typerror("attempt to compare string with number")
     override fun lt_b(rhs: Double): Boolean = typerror("attempt to compare string with number")
-    override fun lteq(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) >= 0) LuaValue.TRUE else LuaValue.FALSE
+    override fun lteq(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) >= 0) LuaValue.BTRUE else LuaValue.BFALSE
     override fun lteq_b(rhs: LuaValue): Boolean = rhs.strcmp(this) >= 0
     override fun lteq_b(rhs: Int): Boolean = typerror("attempt to compare string with number")
     override fun lteq_b(rhs: Double): Boolean = typerror("attempt to compare string with number")
-    override fun gt(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) < 0) LuaValue.TRUE else LuaValue.FALSE
+    override fun gt(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) < 0) LuaValue.BTRUE else LuaValue.BFALSE
     override fun gt_b(rhs: LuaValue): Boolean = rhs.strcmp(this) < 0
     override fun gt_b(rhs: Int): Boolean = typerror("attempt to compare string with number")
     override fun gt_b(rhs: Double): Boolean = typerror("attempt to compare string with number")
-    override fun gteq(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) <= 0) LuaValue.TRUE else LuaValue.FALSE
+    override fun gteq(rhs: LuaValue): LuaValue = if (rhs.strcmp(this) <= 0) LuaValue.BTRUE else LuaValue.BFALSE
     override fun gteq_b(rhs: LuaValue): Boolean = rhs.strcmp(this) <= 0
     override fun gteq_b(rhs: Int): Boolean = typerror("attempt to compare string with number")
     override fun gteq_b(rhs: Double): Boolean = typerror("attempt to compare string with number")
@@ -279,7 +279,7 @@ private constructor(
     override fun equals(o: Any?): Boolean = if (o is LuaString) raweq(o) else false
 
     // equality w/ metatable processing
-    override fun eq(`val`: LuaValue): LuaValue = if (`val`.raweq(this)) LuaValue.TRUE else LuaValue.FALSE
+    override fun eq(`val`: LuaValue): LuaValue = if (`val`.raweq(this)) LuaValue.BTRUE else LuaValue.BFALSE
     override fun eq_b(`val`: LuaValue): Boolean = `val`.raweq(this)
 
     // equality w/o metatable processing

@@ -143,7 +143,7 @@ class LuaThread : LuaValue {
     fun resume(args: Varargs): Varargs {
         val s = this.state
         return if (s.status > LuaThread.STATUS_SUSPENDED) LuaValue.varargsOf(
-            LuaValue.FALSE,
+            LuaValue.BFALSE,
             LuaValue.valueOf("cannot resume " + (if (s.status == LuaThread.STATUS_DEAD) "dead" else "non-suspended") + " coroutine")
         ) else s.lua_resume(this, args)
     }
@@ -216,9 +216,9 @@ class LuaThread : LuaValue {
                 this.status = STATUS_RUNNING
                 (this )._wait()
                 return if (this.error != null)
-                    LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf(this.error!!))
+                    LuaValue.varargsOf(LuaValue.BFALSE, LuaValue.valueOf(this.error!!))
                 else
-                    LuaValue.varargsOf(LuaValue.TRUE, this.result)
+                    LuaValue.varargsOf(LuaValue.BTRUE, this.result)
             } catch (ie: InterruptedException) {
                 throw OrphanedThread()
             } finally {

@@ -42,7 +42,7 @@ class MetatableTest {
     @Test
     fun testGetMetatable() {
         assertEquals(null, LuaValue.NIL.getmetatable())
-        assertEquals(null, LuaValue.TRUE.getmetatable())
+        assertEquals(null, LuaValue.BTRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
         //assertEquals( null, string.getmetatable() );
         assertEquals(null, table.getmetatable())
@@ -68,7 +68,7 @@ class MetatableTest {
 
         // these all get metatable behind-the-scenes
         assertEquals(null, LuaValue.NIL.getmetatable())
-        assertEquals(null, LuaValue.TRUE.getmetatable())
+        assertEquals(null, LuaValue.BTRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
         assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
@@ -76,14 +76,14 @@ class MetatableTest {
         assertEquals(null, closure.getmetatable())
         LuaNil.s_metatable = mt
         assertEquals(mt, LuaValue.NIL.getmetatable())
-        assertEquals(null, LuaValue.TRUE.getmetatable())
+        assertEquals(null, LuaValue.BTRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
         assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
         assertEquals(null, thread.getmetatable())
         assertEquals(null, closure.getmetatable())
         LuaBoolean.s_metatable = mt
-        assertEquals(mt, LuaValue.TRUE.getmetatable())
+        assertEquals(mt, LuaValue.BTRUE.getmetatable())
         assertEquals(null, LuaValue.ONE.getmetatable())
         assertEquals( null, string.getmetatable() );
         assertEquals(null, function.getmetatable())
@@ -130,7 +130,7 @@ class MetatableTest {
         assertEquals(mt, table.getmetatable())
         assertEquals(mt, userdata.getmetatable())
         assertEquals(mt, LuaValue.NIL.getmetatable())
-        assertEquals(mt, LuaValue.TRUE.getmetatable())
+        assertEquals(mt, LuaValue.BTRUE.getmetatable())
         assertEquals(mt, LuaValue.ONE.getmetatable())
         assertEquals(mt, string.getmetatable() );
         assertEquals(mt, function.getmetatable())
@@ -142,7 +142,7 @@ class MetatableTest {
         assertEquals(abc, table.get(1))
         assertEquals(abc, userdata.get(1))
         assertEquals(abc, LuaValue.NIL.get(1))
-        assertEquals(abc, LuaValue.TRUE.get(1))
+        assertEquals(abc, LuaValue.BTRUE.get(1))
         assertEquals(abc, LuaValue.ONE.get(1))
         assertEquals( abc, string.get(1) );
         assertEquals(abc, function.get(1))
@@ -158,7 +158,7 @@ class MetatableTest {
         assertEquals("table[1]=xyz", table.get(1).tojstring())
         assertEquals("userdata[1]=xyz", userdata.get(1).tojstring())
         assertEquals("nil[1]=xyz", LuaValue.NIL.get(1).tojstring())
-        assertEquals("boolean[1]=xyz", LuaValue.TRUE.get(1).tojstring())
+        assertEquals("boolean[1]=xyz", LuaValue.BTRUE.get(1).tojstring())
         assertEquals("number[1]=xyz", LuaValue.ONE.get(1).tojstring())
         //	assertEquals( "string[1]=xyz",   string.get(1).tojstring() );
         assertEquals("function[1]=xyz", function.get(1).tojstring())
@@ -186,7 +186,7 @@ class MetatableTest {
         table.set(2, abc)
         userdata.set(3, abc)
         LuaValue.NIL.set(4, abc)
-        LuaValue.TRUE.set(5, abc)
+        LuaValue.BTRUE.set(5, abc)
         LuaValue.ONE.set(6, abc)
         // 		string.set(7,abc);
         function.set(8, abc)
@@ -211,7 +211,7 @@ class MetatableTest {
         table.set(12, abc)
         userdata.set(13, abc)
         LuaValue.NIL.set(14, abc)
-        LuaValue.TRUE.set(15, abc)
+        LuaValue.BTRUE.set(15, abc)
         LuaValue.ONE.set(16, abc)
         //string.set(17,abc);
         function.set(18, abc)

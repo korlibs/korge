@@ -36,30 +36,30 @@ class UnaryBinaryOperatorsTest {
 
     @Test
     fun testEqualsBool() {
-        assertEquals(LuaValue.FALSE, LuaValue.FALSE)
-        assertEquals(LuaValue.TRUE, LuaValue.TRUE)
-        assertTrue(LuaValue.FALSE == LuaValue.FALSE)
-        assertTrue(LuaValue.TRUE == LuaValue.TRUE)
-        assertTrue(LuaValue.FALSE != LuaValue.TRUE)
-        assertTrue(LuaValue.TRUE != LuaValue.FALSE)
-        assertTrue(LuaValue.FALSE.eq_b(LuaValue.FALSE))
-        assertTrue(LuaValue.TRUE.eq_b(LuaValue.TRUE))
-        assertFalse(LuaValue.FALSE.eq_b(LuaValue.TRUE))
-        assertFalse(LuaValue.TRUE.eq_b(LuaValue.FALSE))
-        assertEquals(LuaValue.TRUE, LuaValue.FALSE.eq(LuaValue.FALSE))
-        assertEquals(LuaValue.TRUE, LuaValue.TRUE.eq(LuaValue.TRUE))
-        assertEquals(LuaValue.FALSE, LuaValue.FALSE.eq(LuaValue.TRUE))
-        assertEquals(LuaValue.FALSE, LuaValue.TRUE.eq(LuaValue.FALSE))
-        assertFalse(LuaValue.FALSE.neq_b(LuaValue.FALSE))
-        assertFalse(LuaValue.TRUE.neq_b(LuaValue.TRUE))
-        assertTrue(LuaValue.FALSE.neq_b(LuaValue.TRUE))
-        assertTrue(LuaValue.TRUE.neq_b(LuaValue.FALSE))
-        assertEquals(LuaValue.FALSE, LuaValue.FALSE.neq(LuaValue.FALSE))
-        assertEquals(LuaValue.FALSE, LuaValue.TRUE.neq(LuaValue.TRUE))
-        assertEquals(LuaValue.TRUE, LuaValue.FALSE.neq(LuaValue.TRUE))
-        assertEquals(LuaValue.TRUE, LuaValue.TRUE.neq(LuaValue.FALSE))
-        assertTrue(LuaValue.TRUE.toboolean())
-        assertFalse(LuaValue.FALSE.toboolean())
+        assertEquals(LuaValue.BFALSE, LuaValue.BFALSE)
+        assertEquals(LuaValue.BTRUE, LuaValue.BTRUE)
+        assertTrue(LuaValue.BFALSE == LuaValue.BFALSE)
+        assertTrue(LuaValue.BTRUE == LuaValue.BTRUE)
+        assertTrue(LuaValue.BFALSE != LuaValue.BTRUE)
+        assertTrue(LuaValue.BTRUE != LuaValue.BFALSE)
+        assertTrue(LuaValue.BFALSE.eq_b(LuaValue.BFALSE))
+        assertTrue(LuaValue.BTRUE.eq_b(LuaValue.BTRUE))
+        assertFalse(LuaValue.BFALSE.eq_b(LuaValue.BTRUE))
+        assertFalse(LuaValue.BTRUE.eq_b(LuaValue.BFALSE))
+        assertEquals(LuaValue.BTRUE, LuaValue.BFALSE.eq(LuaValue.BFALSE))
+        assertEquals(LuaValue.BTRUE, LuaValue.BTRUE.eq(LuaValue.BTRUE))
+        assertEquals(LuaValue.BFALSE, LuaValue.BFALSE.eq(LuaValue.BTRUE))
+        assertEquals(LuaValue.BFALSE, LuaValue.BTRUE.eq(LuaValue.BFALSE))
+        assertFalse(LuaValue.BFALSE.neq_b(LuaValue.BFALSE))
+        assertFalse(LuaValue.BTRUE.neq_b(LuaValue.BTRUE))
+        assertTrue(LuaValue.BFALSE.neq_b(LuaValue.BTRUE))
+        assertTrue(LuaValue.BTRUE.neq_b(LuaValue.BFALSE))
+        assertEquals(LuaValue.BFALSE, LuaValue.BFALSE.neq(LuaValue.BFALSE))
+        assertEquals(LuaValue.BFALSE, LuaValue.BTRUE.neq(LuaValue.BTRUE))
+        assertEquals(LuaValue.BTRUE, LuaValue.BFALSE.neq(LuaValue.BTRUE))
+        assertEquals(LuaValue.BTRUE, LuaValue.BTRUE.neq(LuaValue.BFALSE))
+        assertTrue(LuaValue.BTRUE.toboolean())
+        assertFalse(LuaValue.BFALSE.toboolean())
     }
 
     @Test
@@ -67,15 +67,15 @@ class UnaryBinaryOperatorsTest {
         val ia = LuaValue.valueOf(3)
         val da = LuaValue.valueOf(.25)
         val sa = LuaValue.valueOf("1.5")
-        val ba = LuaValue.TRUE
-        val bb = LuaValue.FALSE
+        val ba = LuaValue.BTRUE
+        val bb = LuaValue.BFALSE
 
         // like kinds
-        assertEquals(LuaValue.FALSE, ia.not())
-        assertEquals(LuaValue.FALSE, da.not())
-        assertEquals(LuaValue.FALSE, sa.not())
-        assertEquals(LuaValue.FALSE, ba.not())
-        assertEquals(LuaValue.TRUE, bb.not())
+        assertEquals(LuaValue.BFALSE, ia.not())
+        assertEquals(LuaValue.BFALSE, da.not())
+        assertEquals(LuaValue.BFALSE, sa.not())
+        assertEquals(LuaValue.BFALSE, ba.not())
+        assertEquals(LuaValue.BTRUE, bb.not())
     }
 
     @Test
@@ -189,23 +189,23 @@ class UnaryBinaryOperatorsTest {
         val sc = LuaString.valueOf("-345")
 
         // check arithmetic equality among same types
-        assertEquals(ia.eq(ib), LuaValue.TRUE)
-        assertEquals(sa.eq(sb), LuaValue.TRUE)
-        assertEquals(ia.eq(ic), LuaValue.FALSE)
-        assertEquals(sa.eq(sc), LuaValue.FALSE)
+        assertEquals(ia.eq(ib), LuaValue.BTRUE)
+        assertEquals(sa.eq(sb), LuaValue.BTRUE)
+        assertEquals(ia.eq(ic), LuaValue.BFALSE)
+        assertEquals(sa.eq(sc), LuaValue.BFALSE)
 
         // check arithmetic equality among different types
-        assertEquals(ia.eq(sa), LuaValue.FALSE)
-        assertEquals(sa.eq(ia), LuaValue.FALSE)
+        assertEquals(ia.eq(sa), LuaValue.BFALSE)
+        assertEquals(sa.eq(ia), LuaValue.BFALSE)
 
         // equals with mismatched types
         val t = LuaTable()
-        assertEquals(ia.eq(t), LuaValue.FALSE)
-        assertEquals(t.eq(ia), LuaValue.FALSE)
-        assertEquals(ia.eq(LuaValue.FALSE), LuaValue.FALSE)
-        assertEquals(LuaValue.FALSE.eq(ia), LuaValue.FALSE)
-        assertEquals(ia.eq(LuaValue.NIL), LuaValue.FALSE)
-        assertEquals(LuaValue.NIL.eq(ia), LuaValue.FALSE)
+        assertEquals(ia.eq(t), LuaValue.BFALSE)
+        assertEquals(t.eq(ia), LuaValue.BFALSE)
+        assertEquals(ia.eq(LuaValue.BFALSE), LuaValue.BFALSE)
+        assertEquals(LuaValue.BFALSE.eq(ia), LuaValue.BFALSE)
+        assertEquals(ia.eq(LuaValue.NIL), LuaValue.BFALSE)
+        assertEquals(LuaValue.NIL.eq(ia), LuaValue.BFALSE)
     }
 
     @Test
@@ -218,29 +218,29 @@ class UnaryBinaryOperatorsTest {
         val sc = LuaString.valueOf("-345.5")
 
         // check arithmetic equality among same types
-        assertEquals(da.eq(db), LuaValue.TRUE)
-        assertEquals(sa.eq(sb), LuaValue.TRUE)
-        assertEquals(da.eq(dc), LuaValue.FALSE)
-        assertEquals(sa.eq(sc), LuaValue.FALSE)
+        assertEquals(da.eq(db), LuaValue.BTRUE)
+        assertEquals(sa.eq(sb), LuaValue.BTRUE)
+        assertEquals(da.eq(dc), LuaValue.BFALSE)
+        assertEquals(sa.eq(sc), LuaValue.BFALSE)
 
         // check arithmetic equality among different types
-        assertEquals(da.eq(sa), LuaValue.FALSE)
-        assertEquals(sa.eq(da), LuaValue.FALSE)
+        assertEquals(da.eq(sa), LuaValue.BFALSE)
+        assertEquals(sa.eq(da), LuaValue.BFALSE)
 
         // equals with mismatched types
         val t = LuaTable()
-        assertEquals(da.eq(t), LuaValue.FALSE)
-        assertEquals(t.eq(da), LuaValue.FALSE)
-        assertEquals(da.eq(LuaValue.FALSE), LuaValue.FALSE)
-        assertEquals(LuaValue.FALSE.eq(da), LuaValue.FALSE)
-        assertEquals(da.eq(LuaValue.NIL), LuaValue.FALSE)
-        assertEquals(LuaValue.NIL.eq(da), LuaValue.FALSE)
+        assertEquals(da.eq(t), LuaValue.BFALSE)
+        assertEquals(t.eq(da), LuaValue.BFALSE)
+        assertEquals(da.eq(LuaValue.BFALSE), LuaValue.BFALSE)
+        assertEquals(LuaValue.BFALSE.eq(da), LuaValue.BFALSE)
+        assertEquals(da.eq(LuaValue.NIL), LuaValue.BFALSE)
+        assertEquals(LuaValue.NIL.eq(da), LuaValue.BFALSE)
     }
 
     @Test
     fun testEqualsMetatag() {
-        val tru = LuaValue.TRUE
-        val fal = LuaValue.FALSE
+        val tru = LuaValue.BTRUE
+        val fal = LuaValue.BFALSE
         val zer = LuaValue.ZERO
         val one = LuaValue.ONE
         val abc = LuaValue.valueOf("abcdef").substring(0, 3)
@@ -256,8 +256,8 @@ class UnaryBinaryOperatorsTest {
         val uda3 = LuaUserdata(uda.touserdata())
         val nilb = LuaValue.valueOf(LuaValue.NIL.toboolean())
         val oneb = LuaValue.valueOf(LuaValue.ONE.toboolean())
-        assertEquals(LuaValue.FALSE, nilb)
-        assertEquals(LuaValue.TRUE, oneb)
+        assertEquals(LuaValue.BFALSE, nilb)
+        assertEquals(LuaValue.BTRUE, oneb)
         val smt = LuaString.s_metatable
         try {
             // always return nil0
@@ -531,7 +531,7 @@ class UnaryBinaryOperatorsTest {
         val sb = LuaValue.valueOf("7.25")
 
         val ops = arrayOf("add", "sub", "mul", "div", "mod", "pow")
-        val vals = arrayOf(LuaValue.NIL, LuaValue.TRUE, LuaValue.tableOf())
+        val vals = arrayOf(LuaValue.NIL, LuaValue.BTRUE, LuaValue.tableOf())
         val numerics = arrayOf(LuaValue.valueOf(111), LuaValue.valueOf(55.25), LuaValue.valueOf("22.125"))
         for (i in ops.indices) {
             for (j in vals.indices) {
@@ -558,8 +558,8 @@ class UnaryBinaryOperatorsTest {
 
     @Test
     fun testArithMetatag() {
-        val tru = LuaValue.TRUE
-        val fal = LuaValue.FALSE
+        val tru = LuaValue.BTRUE
+        val fal = LuaValue.BFALSE
         val tbl = LuaTable()
         val tbl2 = LuaTable()
         try {
@@ -911,22 +911,22 @@ class UnaryBinaryOperatorsTest {
         val sc = LuaValue.valueOf("1.5")
         val sd = LuaValue.valueOf("2.0")
 
-        assertEquals(LuaValue.FALSE, sa.lt(sa))
-        assertEquals(LuaValue.TRUE, sa.lt(sb))
-        assertEquals(LuaValue.TRUE, sa.lt(sc))
-        assertEquals(LuaValue.TRUE, sa.lt(sd))
-        assertEquals(LuaValue.FALSE, sb.lt(sa))
-        assertEquals(LuaValue.FALSE, sb.lt(sb))
-        assertEquals(LuaValue.TRUE, sb.lt(sc))
-        assertEquals(LuaValue.TRUE, sb.lt(sd))
-        assertEquals(LuaValue.FALSE, sc.lt(sa))
-        assertEquals(LuaValue.FALSE, sc.lt(sb))
-        assertEquals(LuaValue.FALSE, sc.lt(sc))
-        assertEquals(LuaValue.TRUE, sc.lt(sd))
-        assertEquals(LuaValue.FALSE, sd.lt(sa))
-        assertEquals(LuaValue.FALSE, sd.lt(sb))
-        assertEquals(LuaValue.FALSE, sd.lt(sc))
-        assertEquals(LuaValue.FALSE, sd.lt(sd))
+        assertEquals(LuaValue.BFALSE, sa.lt(sa))
+        assertEquals(LuaValue.BTRUE, sa.lt(sb))
+        assertEquals(LuaValue.BTRUE, sa.lt(sc))
+        assertEquals(LuaValue.BTRUE, sa.lt(sd))
+        assertEquals(LuaValue.BFALSE, sb.lt(sa))
+        assertEquals(LuaValue.BFALSE, sb.lt(sb))
+        assertEquals(LuaValue.BTRUE, sb.lt(sc))
+        assertEquals(LuaValue.BTRUE, sb.lt(sd))
+        assertEquals(LuaValue.BFALSE, sc.lt(sa))
+        assertEquals(LuaValue.BFALSE, sc.lt(sb))
+        assertEquals(LuaValue.BFALSE, sc.lt(sc))
+        assertEquals(LuaValue.BTRUE, sc.lt(sd))
+        assertEquals(LuaValue.BFALSE, sd.lt(sa))
+        assertEquals(LuaValue.BFALSE, sd.lt(sb))
+        assertEquals(LuaValue.BFALSE, sd.lt(sc))
+        assertEquals(LuaValue.BFALSE, sd.lt(sd))
     }
 
     @Test
@@ -1051,7 +1051,7 @@ class UnaryBinaryOperatorsTest {
         val sb = LuaValue.valueOf("7.25")
 
         val ops = arrayOf("lt", "lteq")
-        val vals = arrayOf(LuaValue.NIL, LuaValue.TRUE, LuaValue.tableOf())
+        val vals = arrayOf(LuaValue.NIL, LuaValue.BTRUE, LuaValue.tableOf())
         val numerics = arrayOf(LuaValue.valueOf(111), LuaValue.valueOf(55.25), LuaValue.valueOf("22.125"))
         for (i in ops.indices) {
             for (j in vals.indices) {
@@ -1078,8 +1078,8 @@ class UnaryBinaryOperatorsTest {
 
     @Test
     fun testCompareMetatag() {
-        val tru = LuaValue.TRUE
-        val fal = LuaValue.FALSE
+        val tru = LuaValue.BTRUE
+        val fal = LuaValue.BFALSE
         val tbl = LuaTable()
         val tbl2 = LuaTable()
         val tbl3 = LuaTable()
@@ -1133,8 +1133,8 @@ class UnaryBinaryOperatorsTest {
         val db = LuaValue.valueOf(.5)
         val sa = LuaValue.valueOf("1.5")
         val sb = LuaValue.valueOf("2.0")
-        val ba = LuaValue.TRUE
-        val bb = LuaValue.FALSE
+        val ba = LuaValue.BTRUE
+        val bb = LuaValue.BFALSE
 
         // like kinds
         assertSame(ib, ia.and(ib))
@@ -1164,8 +1164,8 @@ class UnaryBinaryOperatorsTest {
         val db = LuaValue.valueOf(.5)
         val sa = LuaValue.valueOf("1.5")
         val sb = LuaValue.valueOf("2.0")
-        val ba = LuaValue.TRUE
-        val bb = LuaValue.FALSE
+        val ba = LuaValue.BTRUE
+        val bb = LuaValue.BFALSE
 
         // like kinds
         assertSame(ia, ia.or(ib))
@@ -1194,8 +1194,8 @@ class UnaryBinaryOperatorsTest {
         val Aaa = LuaValue.valueOf("Aaa")
         val aba = LuaValue.valueOf("aba")
         val aaaa = LuaValue.valueOf("aaaa")
-        val t = LuaValue.TRUE
-        val f = LuaValue.FALSE
+        val t = LuaValue.BTRUE
+        val f = LuaValue.BFALSE
 
         // basics
         assertEquals(t, aaa.eq(aaa))
@@ -1362,8 +1362,8 @@ class UnaryBinaryOperatorsTest {
     fun testConcatMetatag() {
         val def = LuaValue.valueOf("abcdefghi").substring(3, 6)
         val ghi = LuaValue.valueOf("abcdefghi").substring(6, 9)
-        val tru = LuaValue.TRUE
-        val fal = LuaValue.FALSE
+        val tru = LuaValue.BTRUE
+        val fal = LuaValue.BFALSE
         val tbl = LuaTable()
         val uda = LuaUserdata(Any())
         try {
@@ -1472,7 +1472,7 @@ class UnaryBinaryOperatorsTest {
         val sb = LuaValue.valueOf("7.25")
 
         val ops = arrayOf("concat")
-        val vals = arrayOf(LuaValue.NIL, LuaValue.TRUE, LuaValue.tableOf())
+        val vals = arrayOf(LuaValue.NIL, LuaValue.BTRUE, LuaValue.tableOf())
         val numerics = arrayOf(LuaValue.valueOf(111), LuaValue.valueOf(55.25), LuaValue.valueOf("22.125"))
         for (i in ops.indices) {
             for (j in vals.indices) {

@@ -49,7 +49,7 @@ open class LuaNil internal constructor() : LuaValue() {
     override fun toString(): String = "nil"
     override fun typename(): String = "nil"
     override fun tojstring(): String = "nil"
-    override fun not(): LuaValue = LuaValue.TRUE
+    override fun not(): LuaValue = LuaValue.BTRUE
     override fun toboolean(): Boolean = false
     override fun isnil(): Boolean = true
     override fun getmetatable(): LuaValue? = s_metatable

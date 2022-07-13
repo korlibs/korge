@@ -94,7 +94,7 @@ class JseOsLib : OsLib() {
         }
 
         return if (exitValue == 0) LuaValue.varargsOf(
-            LuaValue.TRUE,
+            LuaValue.BTRUE,
             LuaValue.valueOf("exit"),
             LuaValue.ZERO
         ) else LuaValue.varargsOf(LuaValue.NIL, LuaValue.valueOf("signal"), LuaValue.valueOf(exitValue))

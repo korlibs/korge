@@ -296,7 +296,7 @@ abstract class IoLib : TwoArgFunction() {
     fun _io_flush(): Varargs {
         checkopen(output())
         outfile!!.flush()
-        return TRUE
+        return BTRUE
     }
 
     //	io.tmpfile() -> file
@@ -387,13 +387,13 @@ abstract class IoLib : TwoArgFunction() {
 
     fun _file_flush(file: LuaValue): Varargs {
         checkfile(file).flush()
-        return TRUE
+        return BTRUE
     }
 
     // file:setvbuf(mode,[size]) -> void
     fun _file_setvbuf(file: LuaValue, mode: String?, size: Int): Varargs {
         checkfile(file).setvbuf(mode, size)
-        return TRUE
+        return BTRUE
     }
 
     // file:lines() -> iterator
@@ -576,7 +576,7 @@ abstract class IoLib : TwoArgFunction() {
         }
 
          private fun successresult(): Varargs {
-            return TRUE
+            return BTRUE
         }
 
          private fun errorresult(ioe: Exception): Varargs {

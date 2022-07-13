@@ -644,13 +644,13 @@ class LuaParser : LuaParserConstants {
             }
             LuaParserConstants.TRUE -> {
                 jj_consume_token(LuaParserConstants.TRUE)
-                e = Exp.constant(LuaValue.TRUE)
+                e = Exp.constant(LuaValue.BTRUE)
                 L(e, i)
                 run { if (true) return e }
             }
             LuaParserConstants.FALSE -> {
                 jj_consume_token(LuaParserConstants.FALSE)
-                e = Exp.constant(LuaValue.FALSE)
+                e = Exp.constant(LuaValue.BFALSE)
                 L(e, i)
                 run { if (true) return e }
             }

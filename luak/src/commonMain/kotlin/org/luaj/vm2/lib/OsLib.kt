@@ -152,11 +152,11 @@ open class OsLib : TwoArgFunction() {
                     }
                     REMOVE -> {
                         remove(args.checkjstring(1))
-                        return LuaValue.TRUE
+                        return LuaValue.BTRUE
                     }
                     RENAME -> {
                         rename(args.checkjstring(1), args.checkjstring(2))
-                        return LuaValue.TRUE
+                        return LuaValue.BTRUE
                     }
                     SETLOCALE -> {
                         val s = setlocale(args.optjstring(1, null!!), args.optjstring(2, "all"))

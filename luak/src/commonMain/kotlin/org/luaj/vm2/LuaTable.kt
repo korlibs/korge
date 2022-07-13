@@ -21,7 +21,6 @@
  */
 package org.luaj.vm2
 
-import org.luaj.vm2.LuaTable.Companion.log2
 import org.luaj.vm2.internal.*
 import kotlin.jvm.*
 import kotlin.math.*
@@ -820,7 +819,7 @@ open class LuaTable : LuaValue, Metatable {
 
     // equality w/ metatable processing
     override fun eq(`val`: LuaValue): LuaValue {
-        return if (eq_b(`val`)) LuaValue.TRUE else LuaValue.FALSE
+        return if (eq_b(`val`)) LuaValue.BTRUE else LuaValue.BFALSE
     }
 
     override fun eq_b(`val`: LuaValue): Boolean {

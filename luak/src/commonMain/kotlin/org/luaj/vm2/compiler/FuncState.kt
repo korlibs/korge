@@ -502,7 +502,7 @@ class FuncState constructor() : Constants() {
     }
 
     fun boolK(b: Boolean): Int {
-        return this.addk(if (b) LuaValue.TRUE else LuaValue.FALSE)
+        return this.addk(if (b) LuaValue.BTRUE else LuaValue.BFALSE)
     }
 
     fun nilK(): Int {

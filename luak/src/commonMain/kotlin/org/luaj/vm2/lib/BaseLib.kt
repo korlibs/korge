@@ -153,7 +153,7 @@ open class BaseLib : TwoArgFunction(), ResourceFinder {
                 }
                 "step" -> {
                     JSystem.gc()
-                    return LuaValue.TRUE
+                    return LuaValue.BTRUE
                 }
                 else -> this.argerror("gc op")
             }
@@ -232,13 +232,13 @@ open class BaseLib : TwoArgFunction(), ResourceFinder {
             if (globals != null && globals!!.debuglib != null)
                 globals!!.debuglib!!.onCall(this)
             try {
-                return LuaValue.varargsOf(LuaValue.TRUE, func.invoke(args.subargs(2)))
+                return LuaValue.varargsOf(LuaValue.BTRUE, func.invoke(args.subargs(2)))
             } catch (le: LuaError) {
                 val m = le.messageObject
-                return LuaValue.varargsOf(LuaValue.FALSE, m ?: LuaValue.NIL)
+                return LuaValue.varargsOf(LuaValue.BFALSE, m ?: LuaValue.NIL)
             } catch (e: Exception) {
                 val m = e.message
-                return LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf(m ?: e.toString()))
+                return LuaValue.varargsOf(LuaValue.BFALSE, LuaValue.valueOf(m ?: e.toString()))
             } finally {
                 if (globals != null && globals!!.debuglib != null)
                     globals!!.debuglib!!.onReturn()
@@ -390,13 +390,13 @@ open class BaseLib : TwoArgFunction(), ResourceFinder {
                 if (globals != null && globals!!.debuglib != null)
                     globals!!.debuglib!!.onCall(this)
                 try {
-                    return LuaValue.varargsOf(LuaValue.TRUE, args.arg1().invoke(args.subargs(3)))
+                    return LuaValue.varargsOf(LuaValue.BTRUE, args.arg1().invoke(args.subargs(3)))
                 } catch (le: LuaError) {
                     val m = le.messageObject
-                    return LuaValue.varargsOf(LuaValue.FALSE, m ?: LuaValue.NIL)
+                    return LuaValue.varargsOf(LuaValue.BFALSE, m ?: LuaValue.NIL)
                 } catch (e: Exception) {
                     val m = e.message
-                    return LuaValue.varargsOf(LuaValue.FALSE, LuaValue.valueOf(m ?: e.toString()))
+                    return LuaValue.varargsOf(LuaValue.BFALSE, LuaValue.valueOf(m ?: e.toString()))
                 } finally {
                     if (globals != null && globals!!.debuglib != null)
                         globals!!.debuglib!!.onReturn()

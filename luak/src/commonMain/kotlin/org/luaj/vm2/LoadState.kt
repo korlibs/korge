@@ -210,7 +210,7 @@ private constructor(
         for (i in 0 until n) {
             when (`is`.readByte().toInt()) {
                 LUA_TNIL -> values[i] = LuaValue.NIL
-                LUA_TBOOLEAN -> values[i] = (if (0 != `is`.readUnsignedByte()) LuaValue.TRUE else LuaValue.FALSE)
+                LUA_TBOOLEAN -> values[i] = (if (0 != `is`.readUnsignedByte()) LuaValue.BTRUE else LuaValue.BFALSE)
                 LUA_TINT -> values[i] = LuaInteger.valueOf(loadInt())
                 LUA_TNUMBER -> values[i] = loadNumber()
                 LUA_TSTRING -> values[i] = loadString()

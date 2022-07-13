@@ -23,7 +23,6 @@ package org.luaj.vm2
 
 import org.luaj.vm2.lib.MathLib
 import kotlin.jvm.*
-import kotlin.math.floor
 
 /**
  * Extension of [LuaNumber] which can hold a Java double as its value.
@@ -90,7 +89,7 @@ private constructor(
     override fun equals(o: Any?): Boolean = if (o is LuaDouble) o.v == v else false
 
     // equality w/ metatable processing
-    override fun eq(`val`: LuaValue): LuaValue = if (`val`.raweq(v)) LuaValue.TRUE else LuaValue.FALSE
+    override fun eq(`val`: LuaValue): LuaValue = if (`val`.raweq(v)) LuaValue.BTRUE else LuaValue.BFALSE
     override fun eq_b(`val`: LuaValue): Boolean = `val`.raweq(v)
 
     // equality w/o metatable processing
@@ -123,27 +122,27 @@ private constructor(
     override fun modFrom(lhs: Double): LuaValue = LuaDouble.dmod(lhs, v)
 
     // relational operators
-    override fun lt(rhs: LuaValue): LuaValue = if (rhs.gt_b(v)) LuaValue.TRUE else LuaValue.FALSE
-    override fun lt(rhs: Double): LuaValue = if (v < rhs) LuaValue.TRUE else LuaValue.FALSE
-    override fun lt(rhs: Int): LuaValue = if (v < rhs) LuaValue.TRUE else LuaValue.FALSE
+    override fun lt(rhs: LuaValue): LuaValue = if (rhs.gt_b(v)) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun lt(rhs: Double): LuaValue = if (v < rhs) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun lt(rhs: Int): LuaValue = if (v < rhs) LuaValue.BTRUE else LuaValue.BFALSE
     override fun lt_b(rhs: LuaValue): Boolean = rhs.gt_b(v)
     override fun lt_b(rhs: Int): Boolean = v < rhs
     override fun lt_b(rhs: Double): Boolean = v < rhs
-    override fun lteq(rhs: LuaValue): LuaValue = if (rhs.gteq_b(v)) LuaValue.TRUE else LuaValue.FALSE
-    override fun lteq(rhs: Double): LuaValue = if (v <= rhs) LuaValue.TRUE else LuaValue.FALSE
-    override fun lteq(rhs: Int): LuaValue = if (v <= rhs) LuaValue.TRUE else LuaValue.FALSE
+    override fun lteq(rhs: LuaValue): LuaValue = if (rhs.gteq_b(v)) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun lteq(rhs: Double): LuaValue = if (v <= rhs) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun lteq(rhs: Int): LuaValue = if (v <= rhs) LuaValue.BTRUE else LuaValue.BFALSE
     override fun lteq_b(rhs: LuaValue): Boolean = rhs.gteq_b(v)
     override fun lteq_b(rhs: Int): Boolean = v <= rhs
     override fun lteq_b(rhs: Double): Boolean = v <= rhs
-    override fun gt(rhs: LuaValue): LuaValue = if (rhs.lt_b(v)) LuaValue.TRUE else LuaValue.FALSE
-    override fun gt(rhs: Double): LuaValue = if (v > rhs) LuaValue.TRUE else LuaValue.FALSE
-    override fun gt(rhs: Int): LuaValue = if (v > rhs) LuaValue.TRUE else LuaValue.FALSE
+    override fun gt(rhs: LuaValue): LuaValue = if (rhs.lt_b(v)) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun gt(rhs: Double): LuaValue = if (v > rhs) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun gt(rhs: Int): LuaValue = if (v > rhs) LuaValue.BTRUE else LuaValue.BFALSE
     override fun gt_b(rhs: LuaValue): Boolean = rhs.lt_b(v)
     override fun gt_b(rhs: Int): Boolean = v > rhs
     override fun gt_b(rhs: Double): Boolean = v > rhs
-    override fun gteq(rhs: LuaValue): LuaValue = if (rhs.lteq_b(v)) LuaValue.TRUE else LuaValue.FALSE
-    override fun gteq(rhs: Double): LuaValue = if (v >= rhs) LuaValue.TRUE else LuaValue.FALSE
-    override fun gteq(rhs: Int): LuaValue = if (v >= rhs) LuaValue.TRUE else LuaValue.FALSE
+    override fun gteq(rhs: LuaValue): LuaValue = if (rhs.lteq_b(v)) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun gteq(rhs: Double): LuaValue = if (v >= rhs) LuaValue.BTRUE else LuaValue.BFALSE
+    override fun gteq(rhs: Int): LuaValue = if (v >= rhs) LuaValue.BTRUE else LuaValue.BFALSE
     override fun gteq_b(rhs: LuaValue): Boolean = rhs.lteq_b(v)
     override fun gteq_b(rhs: Int): Boolean = v >= rhs
     override fun gteq_b(rhs: Double): Boolean = v >= rhs

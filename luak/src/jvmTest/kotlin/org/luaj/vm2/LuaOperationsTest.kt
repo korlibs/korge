@@ -24,7 +24,6 @@ package org.luaj.vm2
 import org.luaj.vm2.TypeTest.*
 import org.luaj.vm2.io.*
 import org.luaj.vm2.lib.*
-import java.io.*
 import java.lang.reflect.*
 import kotlin.test.*
 
@@ -41,8 +40,8 @@ class LuaOperationsTest {
     private val sampledata = MyData()
 
     private val somenil = LuaValue.NIL
-    private val sometrue = LuaValue.TRUE
-    private val somefalse = LuaValue.FALSE
+    private val sometrue = LuaValue.BTRUE
+    private val somefalse = LuaValue.BFALSE
     private val zero = LuaValue.ZERO
     private val intint = LuaValue.valueOf(sampleint)
     private val longdouble = LuaValue.valueOf(samplelong.toDouble())

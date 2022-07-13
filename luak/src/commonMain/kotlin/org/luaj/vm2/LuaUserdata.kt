@@ -124,7 +124,7 @@ open class LuaUserdata : LuaValue {
 
     // equality w/ metatable processing
     override fun eq(`val`: LuaValue): LuaValue {
-        return if (eq_b(`val`)) LuaValue.TRUE else LuaValue.FALSE
+        return if (eq_b(`val`)) LuaValue.BTRUE else LuaValue.BFALSE
     }
 
     override fun eq_b(`val`: LuaValue): Boolean {

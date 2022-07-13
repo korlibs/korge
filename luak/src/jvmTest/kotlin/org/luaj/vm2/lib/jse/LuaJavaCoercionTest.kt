@@ -1,7 +1,6 @@
 package org.luaj.vm2.lib.jse
 
 import org.luaj.vm2.*
-import org.luaj.vm2.lib.MathLib
 import kotlin.test.*
 
 class LuaJavaCoercionTest {
@@ -219,7 +218,7 @@ class LuaJavaCoercionTest {
         val vresult = globals!!.get("load").call(LuaValue.valueOf(script)).invoke(LuaValue.NONE)
         val status = vresult.arg1()
         val message = vresult.arg(2)
-        assertEquals(LuaValue.FALSE, status)
+        assertEquals(LuaValue.BFALSE, status)
         val index = message.toString().indexOf("this is some message")
         assertTrue(index >= 0, "bad message: $message")
     }

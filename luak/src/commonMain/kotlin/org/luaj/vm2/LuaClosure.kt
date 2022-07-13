@@ -225,7 +225,7 @@ class LuaClosure
                     }
 
                     Lua.OP_LOADBOOL/*	A B C	R(A):= (Bool)B: if (C) pc++			*/ -> {
-                        stack[a] = if (i.ushr(23) != 0) LuaValue.TRUE else LuaValue.FALSE
+                        stack[a] = if (i.ushr(23) != 0) LuaValue.BTRUE else LuaValue.BFALSE
                         if (i and (0x1ff shl 14) != 0)
                             ++pc /* skip next instruction (if C) */
                         ++pc

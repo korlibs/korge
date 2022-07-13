@@ -49,19 +49,19 @@ class OrphanedThreadTest {
     @Test
     fun testCollectOrphanedNormalThread() {
         function = NormalFunction(globals)
-        doTest(LuaValue.TRUE, LuaValue.ZERO)
+        doTest(LuaValue.BTRUE, LuaValue.ZERO)
     }
 
     @Test
     fun testCollectOrphanedEarlyCompletionThread() {
         function = EarlyCompletionFunction(globals)
-        doTest(LuaValue.TRUE, LuaValue.ZERO)
+        doTest(LuaValue.BTRUE, LuaValue.ZERO)
     }
 
     @Test
     fun testCollectOrphanedAbnormalThread() {
         function = AbnormalFunction(globals)
-        doTest(LuaValue.FALSE, LuaValue.valueOf("abnormal condition"))
+        doTest(LuaValue.BFALSE, LuaValue.valueOf("abnormal condition"))
     }
 
     @Test
@@ -73,7 +73,7 @@ class OrphanedThreadTest {
             "print('leakage in closure.3, arg is '..arg)\n" +
             "return 'done'\n"
         function = globals.load(script, "script")
-        doTest(LuaValue.TRUE, LuaValue.ZERO)
+        doTest(LuaValue.BTRUE, LuaValue.ZERO)
     }
 
     @Test
@@ -88,7 +88,7 @@ class OrphanedThreadTest {
             "end\n" +
             "print( 'pcall-closre.result:', pcall( f, ... ) )\n"
         function = globals.load(script, "script")
-        doTest(LuaValue.TRUE, LuaValue.ZERO)
+        doTest(LuaValue.BTRUE, LuaValue.ZERO)
     }
 
     @Test
@@ -104,7 +104,7 @@ class OrphanedThreadTest {
             "end\n" +
             "load(f)()\n"
         function = globals.load(script, "script")
-        doTest(LuaValue.TRUE, LuaValue.ONE)
+        doTest(LuaValue.BTRUE, LuaValue.ONE)
     }
 
     private fun doTest(status2: LuaValue, value2: LuaValue) {
@@ -116,7 +116,7 @@ class OrphanedThreadTest {
         // resume two times
         var a = luathread!!.resume(LuaValue.valueOf("foo"))
         assertEquals(LuaValue.ONE, a.arg(2))
-        assertEquals(LuaValue.TRUE, a.arg1())
+        assertEquals(LuaValue.BTRUE, a.arg1())
         a = luathread!!.resume(LuaValue.valueOf("bar"))
         assertEquals(value2, a.arg(2))
         assertEquals(status2, a.arg1())

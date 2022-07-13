@@ -29,7 +29,7 @@ import kotlin.native.concurrent.*
  *
  * These instance are not instantiated directly by clients.
  * Instead, there are exactly twon instances of this class,
- * [LuaValue.TRUE] and [LuaValue.FALSE]
+ * [LuaValue.BTRUE] and [LuaValue.BFALSE]
  * representing the lua values `true` and `false`.
  * The function [LuaValue.valueOf] will always
  * return one of these two values.
@@ -42,9 +42,9 @@ import kotlin.native.concurrent.*
  * @see LuaValue
  *
  * @see LuaValue.valueOf
- * @see LuaValue.TRUE
+ * @see LuaValue.BTRUE
  *
- * @see LuaValue.FALSE
+ * @see LuaValue.BFALSE
  */
 class LuaBoolean internal constructor(
     /** The value of the boolean  */
@@ -54,7 +54,7 @@ class LuaBoolean internal constructor(
     override fun type(): Int = LuaValue.TBOOLEAN
     override fun typename(): String = "boolean"
     override fun isboolean(): Boolean = true
-    override fun not(): LuaValue = if (v) LuaValue.FALSE else LuaValue.TRUE
+    override fun not(): LuaValue = if (v) LuaValue.BFALSE else LuaValue.BTRUE
 
     /**
      * Return the boolean value for this boolean

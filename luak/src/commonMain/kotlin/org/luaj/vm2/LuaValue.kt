@@ -2195,7 +2195,7 @@ abstract class LuaValue : Varargs() {
      * @return [.TRUE] if [.NIL] or [.FALSE], otherwise [.FALSE]
      */
     open operator fun not(): LuaValue {
-        return FALSE
+        return BFALSE
     }
 
     /** Unary minus: return negative value `(-this)` as defined by lua unary minus operator
@@ -2253,7 +2253,7 @@ abstract class LuaValue : Varargs() {
      * @see .EQ
      */
     open fun eq(`val`: LuaValue): LuaValue {
-        return if (this === `val`) TRUE else FALSE
+        return if (this === `val`) BTRUE else BFALSE
     }
 
     /** Equals: Perform equality comparison with another value
@@ -2282,7 +2282,7 @@ abstract class LuaValue : Varargs() {
      * @see .eqmtcall
      * @see .EQ
      */
-    fun neq(`val`: LuaValue): LuaValue = if (eq_b(`val`)) FALSE else TRUE
+    fun neq(`val`: LuaValue): LuaValue = if (eq_b(`val`)) BFALSE else BTRUE
 
     /** Notquals: Perform inequality comparison with another value
      * including metatag processing using [.EQ].
@@ -3734,10 +3734,10 @@ abstract class LuaValue : Varargs() {
         val NIL: LuaValue = LuaNil._NIL
 
         /** LuaBoolean constant corresponding to lua `true`  */
-        val TRUE = LuaBoolean._TRUE
+        val BTRUE = LuaBoolean._TRUE
 
         /** LuaBoolean constant corresponding to lua `false`  */
-        val FALSE = LuaBoolean._FALSE
+        val BFALSE = LuaBoolean._FALSE
 
         /** LuaValue constant corresponding to a [Varargs] list of no values  */
         val NONE: LuaValue = None2._NONE
@@ -3876,7 +3876,7 @@ abstract class LuaValue : Varargs() {
          * @return [.TRUE] if not  or [.FALSE] if false
          */
          fun valueOf(b: Boolean): LuaBoolean {
-            return if (b) LuaValue.TRUE else FALSE
+            return if (b) LuaValue.BTRUE else BFALSE
         }
 
         /** Convert java int to a [LuaValue].

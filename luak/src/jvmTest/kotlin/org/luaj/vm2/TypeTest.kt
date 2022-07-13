@@ -40,8 +40,8 @@ class TypeTest {
     private val sampledata = MyData()
 
     private val somenil = LuaValue.NIL
-    private val sometrue = LuaValue.TRUE
-    private val somefalse = LuaValue.FALSE
+    private val sometrue = LuaValue.BTRUE
+    private val somefalse = LuaValue.BFALSE
     private val zero = LuaValue.ZERO
     private val intint = LuaValue.valueOf(sampleint)
     private val longdouble = LuaValue.valueOf(samplelong.toDouble())
@@ -916,21 +916,21 @@ class TypeTest {
     fun testOptValue() {
         assertEquals(zero, somenil.optvalue(zero))
         assertEquals(stringstring, somenil.optvalue(stringstring))
-        assertEquals(sometrue, sometrue.optvalue(LuaValue.TRUE))
-        assertEquals(somefalse, somefalse.optvalue(LuaValue.TRUE))
-        assertEquals(zero, zero.optvalue(LuaValue.TRUE))
-        assertEquals(intint, intint.optvalue(LuaValue.TRUE))
-        assertEquals(longdouble, longdouble.optvalue(LuaValue.TRUE))
-        assertEquals(somefunc, somefunc.optvalue(LuaValue.TRUE))
-        assertEquals(someclosure, someclosure.optvalue(LuaValue.TRUE))
-        assertEquals(stringstring, stringstring.optvalue(LuaValue.TRUE))
-        assertEquals(stringint, stringint.optvalue(LuaValue.TRUE))
-        assertEquals(stringlong, stringlong.optvalue(LuaValue.TRUE))
-        assertEquals(stringdouble, stringdouble.optvalue(LuaValue.TRUE))
-        assertEquals(thread, thread.optvalue(LuaValue.TRUE))
-        assertEquals(table, table.optvalue(LuaValue.TRUE))
-        assertEquals(userdataobj, userdataobj.optvalue(LuaValue.TRUE))
-        assertEquals(userdatacls, userdatacls.optvalue(LuaValue.TRUE))
+        assertEquals(sometrue, sometrue.optvalue(LuaValue.BTRUE))
+        assertEquals(somefalse, somefalse.optvalue(LuaValue.BTRUE))
+        assertEquals(zero, zero.optvalue(LuaValue.BTRUE))
+        assertEquals(intint, intint.optvalue(LuaValue.BTRUE))
+        assertEquals(longdouble, longdouble.optvalue(LuaValue.BTRUE))
+        assertEquals(somefunc, somefunc.optvalue(LuaValue.BTRUE))
+        assertEquals(someclosure, someclosure.optvalue(LuaValue.BTRUE))
+        assertEquals(stringstring, stringstring.optvalue(LuaValue.BTRUE))
+        assertEquals(stringint, stringint.optvalue(LuaValue.BTRUE))
+        assertEquals(stringlong, stringlong.optvalue(LuaValue.BTRUE))
+        assertEquals(stringdouble, stringdouble.optvalue(LuaValue.BTRUE))
+        assertEquals(thread, thread.optvalue(LuaValue.BTRUE))
+        assertEquals(table, table.optvalue(LuaValue.BTRUE))
+        assertEquals(userdataobj, userdataobj.optvalue(LuaValue.BTRUE))
+        assertEquals(userdatacls, userdatacls.optvalue(LuaValue.BTRUE))
     }
 
 

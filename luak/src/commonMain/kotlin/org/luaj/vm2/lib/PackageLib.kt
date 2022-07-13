@@ -209,7 +209,7 @@ class PackageLib : TwoArgFunction() {
             if (!result.isnil())
                 loaded[name] = result
             else if ((run { result = loaded[name]; result }) === _SENTINEL)
-                loaded.set(name, run { result = LuaValue.TRUE; result!! })
+                loaded.set(name, run { result = LuaValue.BTRUE; result!! })
             return result
         }
     }
