@@ -84,6 +84,9 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     //var doPrintTimer = Stopwatch().also { it.start() }
     //var doPrint = false
+    override fun flush() {
+        gl.flush()
+    }
 
     override fun finish() {
         //gl.flush()

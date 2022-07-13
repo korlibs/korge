@@ -144,6 +144,9 @@ class AGList(val globalState: AGGlobalState) {
             val data = read()
             val cmd = data.extract8(24)
             when (cmd) {
+                CMD_FLUSH -> {
+                    processor.flush()
+                }
                 CMD_FINISH -> {
                     processor.finish()
                     completed.complete(Unit)
@@ -284,6 +287,10 @@ class AGList(val globalState: AGGlobalState) {
         } else {
             disable(kind)
         }
+    }
+
+    fun flush() {
+        add(CMD(CMD_FLUSH))
     }
 
     fun contextLost() {
@@ -547,6 +554,7 @@ class AGList(val globalState: AGGlobalState) {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
         // Special
+        private const val CMD_FLUSH = 0xF9
         private const val CMD_CONTEXT_LOST = 0xFA
         private const val CMD_READ_PIXELS = 0xFB
         private const val CMD_READ_PIXELS_TO_TEXTURE = 0xFC

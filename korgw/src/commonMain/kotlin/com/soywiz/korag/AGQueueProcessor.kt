@@ -12,6 +12,7 @@ interface AGQueueProcessor {
     // EXTRA
     fun contextLost()
     // SYNC
+    fun flush()
     fun finish()
     // ENABLE / DISABLE
     fun enableDisable(kind: AGEnable, enable: Boolean)
