@@ -721,6 +721,20 @@ class BatchBuilder2D constructor(
             }
         }
 
+        fun DO_INPUT_OUTPUT_PREMULTIPLIED(builder: Program.Builder, out: Operand) {
+            //DO_INPUT_PREMULTIPLIED(builder, out)
+            //DO_OUTPUT_PREMULTIPLIED(builder, out)
+            builder.apply {
+                IF(u_InputPre ne u_OutputPre) {
+                    IF(u_OutputPre) {
+                        SET(out["rgb"], out["rgb"] * out["a"])
+                    } ELSE {
+                        SET(out["rgb"], out["rgb"] / out["a"])
+                    }
+                }
+            }
+        }
+
         //val u_Tex0 = DefaultShaders.u_Tex
         //val u_Tex1 = Uniform("u_Tex1", VarType.TextureUnit)
 

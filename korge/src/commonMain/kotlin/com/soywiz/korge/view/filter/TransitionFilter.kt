@@ -9,6 +9,7 @@ import com.soywiz.korag.shader.appending
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korag.shader.storageForTextureUnit
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
@@ -74,6 +75,7 @@ class TransitionFilter(
                 }
             }
             SET(out, (out * alpha))
+            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
             //SET(out, texture2D(u_Mask, v_Tex01))
             //SET(out, vec4(1.lit, 0.lit, 1.lit, 1.lit))
         }

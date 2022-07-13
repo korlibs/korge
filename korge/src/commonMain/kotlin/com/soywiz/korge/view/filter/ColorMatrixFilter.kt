@@ -1,11 +1,13 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korag.shader.storageForMatrix3D
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.view.Views
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.fromColumns
@@ -54,9 +56,10 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
             "GRAYSCALE" to GRAYSCALE_MATRIX,
         )
 
-        override val fragment: FragmentShader = FragmentShader {
+        override val fragment: FragmentShader = FragmentShaderDefault {
             SET(out, tex(fragmentCoords))
             SET(out, mix(out, (u_ColorMatrix * out), u_BlendRatio))
+            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
         }
     }
 
