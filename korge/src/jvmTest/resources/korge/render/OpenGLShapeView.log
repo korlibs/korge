@@ -62,11 +62,11 @@ void main() {
 			}
 		}
 	}
-	if ((u_Premultiplied == 1.0)) {
-		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	if ((u_Premultiplied != 1.0)) {
+		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
-	gl_FragColor.a = ((gl_FragColor.a * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	gl_FragColor.rgba = ((gl_FragColor.rgba * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
 }
 """)
 compileShader(2001)

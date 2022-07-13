@@ -35,7 +35,6 @@ uniform sampler2D u_Tex2;
 uniform sampler2D u_Tex3;
 varying lowp float v_TexId;
 varying mediump vec2 v_Tex;
-varying vec4 v_Col;
 void main() {
 	if ((v_TexId <= 1.0)) {
 		if ((v_TexId == 0.0)) {
@@ -56,8 +55,6 @@ void main() {
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
 	}
-	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
-	gl_FragColor.rgba = (gl_FragColor.rgba * v_Col);
 }
 
 programCreate.vertex:#version 100 compatibility
@@ -150,7 +147,7 @@ uboSet.uniform: Uniform(u_texSize3) = [0.03125, 0.03125]
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0

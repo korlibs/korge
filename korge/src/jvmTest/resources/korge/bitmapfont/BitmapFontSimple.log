@@ -33,6 +33,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD

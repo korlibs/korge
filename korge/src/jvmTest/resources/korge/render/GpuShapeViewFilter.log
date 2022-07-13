@@ -52,6 +52,8 @@ uboSet.uniform: Uniform(u_radius) = 13.316171876521782
 uboSet.uniform: Uniform(u_constant1) = 0.09292256665774537
 uboSet.uniform: Uniform(u_constant2) = 0.027036781940271457
 uboSet.uniform: Uniform(u_direction) = (1, 0, 0)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -78,6 +80,8 @@ uboSet.uniform: Uniform(u_radius) = 13.316171876521782
 uboSet.uniform: Uniform(u_constant1) = 0.09292256665774537
 uboSet.uniform: Uniform(u_constant2) = 0.027036781940271457
 uboSet.uniform: Uniform(u_direction) = (0, 1, 0)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -96,6 +100,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -114,6 +120,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -132,4 +140,6 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
