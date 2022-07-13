@@ -190,10 +190,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         DESTINATION_ALPHA("dstA", { _, _, _, dstA -> dstA }),
         DESTINATION_COLOR("dstRGB", { _, _, dstC, _ -> dstC }),
         ONE("1", { _, _, _, _ -> 1f }),
-        ONE_MINUS_DESTINATION_ALPHA("1 - dstA", { _, _, _, dstA -> 1f - dstA }),
-        ONE_MINUS_DESTINATION_COLOR("1 - dstRGB", { _, _, dstC, _ -> 1f - dstC }),
-        ONE_MINUS_SOURCE_ALPHA("1 - srcA", { _, srcA, _, _ -> 1f - srcA }),
-        ONE_MINUS_SOURCE_COLOR("1 - srcRGB", { srcC, _, _, _ -> 1f - srcC }),
+        ONE_MINUS_DESTINATION_ALPHA("(1 - dstA(", { _, _, _, dstA -> 1f - dstA }),
+        ONE_MINUS_DESTINATION_COLOR("(1 - dstRGB(", { _, _, dstC, _ -> 1f - dstC }),
+        ONE_MINUS_SOURCE_ALPHA("(1 - srcA)", { _, srcA, _, _ -> 1f - srcA }),
+        ONE_MINUS_SOURCE_COLOR("(1 - srcRGB)", { srcC, _, _, _ -> 1f - srcC }),
         SOURCE_ALPHA("srcA", { _, srcA, _, _ -> srcA }),
         SOURCE_COLOR("srcRGB", { srcC, _, _, _ -> srcC }),
         ZERO("0", { _, _, _, _ -> 0f }),
@@ -272,7 +272,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             eq, eq
         )
 
-        override fun toString(): String = "Blending(color(RGB) = (sourceColor * ${srcRGB.op}) ${eqRGB.op} (destinationColor * ${dstRGB.op}), color(A) = (sourceAlpha * ${srcA.op}) ${eqA.op} (destinationAlpha * ${dstA.op}))"
+        override fun toString(): String = "Blending(outRGB = (srcRGB * ${srcRGB.op}) ${eqRGB.op} (dstRGB * ${dstRGB.op}), outA = (srcA * ${srcA.op}) ${eqA.op} (dstA * ${dstA.op}))"
 
         private fun applyColorComponent(srcC: Float, dstC: Float, srcA: Float, dstA: Float): Float {
             return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))

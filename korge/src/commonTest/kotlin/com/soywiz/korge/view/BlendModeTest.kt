@@ -13,11 +13,11 @@ class BlendModeTest {
             message = "Normal full opacity replaces the color"
         )
         assertEquals(
-            "Blending(color(RGB) = (sourceColor * 1) + (destinationColor * 1 - srcA), color(A) = (sourceAlpha * 1) + (destinationAlpha * 1 - srcA))",
+            "Blending(outRGB = (srcRGB * 1) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA)))",
             BlendMode.NORMAL.factors.toString()
         )
         assertEquals(
-            "Blending(color(RGB) = (sourceColor * srcA) + (destinationColor * 1 - srcA), color(A) = (sourceAlpha * 1) + (destinationAlpha * 1 - srcA))",
+            "Blending(outRGB = (srcRGB * srcA) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA)))",
             BlendMode.NORMAL.nonPremultipliedFactors.toString()
         )
     }
