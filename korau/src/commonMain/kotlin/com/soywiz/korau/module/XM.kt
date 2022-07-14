@@ -1,15 +1,23 @@
-package com.soywiz.korau.mod
+/*
+package com.soywiz.korau.module
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
 import com.soywiz.korau.format.*
-import com.soywiz.korio.error.*
+import com.soywiz.korau.internal.coerceToShort
+import com.soywiz.korau.sound.AudioSamples
+import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korio.file.*
+import com.soywiz.korio.lang.invalidOp
 import kotlin.math.*
 import kotlin.random.Random
 
 /*
   fast tracker 2 module player for web audio api
+  https://github.com/a1k0n/jsxm/
+
+  Copyright (c) 2015 Andy Sloane <andy@a1k0n.net>
+
   (c) 2015-2017 firehawk/tda  (firehawk@haxor.fi)
   reading material:
   - ftp://ftp.modland.com/pub/documents/format_documentation/FastTracker%202%20v2.04%20(.xm).html
@@ -19,7 +27,7 @@ import kotlin.random.Random
   greets to guru, alfred and ccr for their work figuring out the .xm format. :)
 */
 
-suspend fun VfsFile.readXM() = Fasttracker().apply { parse(UByteArrayInt(readAll())) }
+suspend fun VfsFile.readXM(): Fasttracker = Fasttracker().apply { parse(UByteArrayInt(readAll())) }
 
 @Suppress("UNUSED_PARAMETER", "MemberVisibilityCanBePrivate", "FunctionName")
 class Fasttracker {
@@ -721,11 +729,11 @@ class Fasttracker {
 							ins.sample[n].data[m] = (c / 32768.0).toFloat()
 						}
 					} else {
-						for (n in 0 until ins.sample[n].length) {
+						for (m in 0 until ins.sample[n].length) {
 							c += s_byte(buffer, offset + n)
 							if (c < -128) c += 256
 							if (c > 127) c -= 256
-							ins.sample[n].data[n] = (c / 128.0).toFloat()
+							ins.sample[n].data[m] = (c / 128.0).toFloat()
 						}
 					}
 					offset += ins.sample[n].length * ins.sample[n].bps
@@ -1574,31 +1582,36 @@ class Fasttracker {
 	fun createAudioStream(): AudioStream {
 		play()
 		return object : AudioStream(samplerate, 2) {
-			override suspend fun read(out: ShortArray, offset: Int, length: Int): Int {
-				val len = length / 2
+            override suspend fun read(out: AudioSamples, offset: Int, length: Int): Int {
+                if (this@Fasttracker.endofsong) {
+                    return 0
+                }
 
-				val lbuf = DoubleArray(len)
-				val rbuf = DoubleArray(len)
-				mix(lbuf, rbuf, len)
+                val lbuf = DoubleArray(length)
+                val rbuf = DoubleArray(length)
+                mix(lbuf, rbuf, length)
 
-				var m = offset
-				for (n in 0 until len) {
-					out[m++] = lbuf[n].toShortSample(mixval)
-					out[m++] = rbuf[n].toShortSample(mixval)
-				}
+                for (n in 0 until length) {
+                    out.setStereo(n, lbuf[n].toShortSample(mixval), rbuf[n].toShortSample(mixval))
+                }
 
-				//println(bufs.map { it.toList() })
+                //println(bufs.map { it.toList() })
 
-				//return super.read(out, offset, length)
-				return length
-			}
-		}
+                //return super.read(out, offset, length)
+                return length
+            }
+
+            override suspend fun clone(): AudioStream {
+                return createAudioStream()
+            }
+        }
 	}
 
 	fun Double.toShortSample(mixval: Double): Short {
 		val rr = this / mixval
 		val r = (abs(rr + 0.975) - abs(rr - 0.975))
-		return (r * Short.MAX_VALUE).clamp(Short.MIN_VALUE.toDouble(), Short.MAX_VALUE.toDouble()).toShort()
+		//return (r * Short.MAX_VALUE).toInt().coerceToShort()
+        return (r.toFloat() * Short.MAX_VALUE).coerceToShort()
 	}
 
 	fun rewind() {
@@ -1767,3 +1780,4 @@ private fun abs(a: Double) = if (a >= 0.0) a else -a
 private fun min(a: Double, b: Double) = if (a < b) a else b
 private fun max(a: Double, b: Double) = if (a > b) a else b
 private fun max(a: Int, b: Int) = if (a > b) a else b
+*/

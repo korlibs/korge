@@ -95,6 +95,11 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
     override operator fun set(channel: Int, sample: Int, value: Short) { data[channel][sample] = value }
 
+    fun setStereo(sample: Int, valueLeft: Short, valueRight: Short) {
+        this[0, sample] = valueLeft
+        this[1, sample] = valueRight
+    }
+
     fun scaleVolume(scale: Double): AudioSamples = scaleVolume(scale.toFloat())
 
     fun scaleVolume(scale: Float): AudioSamples {
