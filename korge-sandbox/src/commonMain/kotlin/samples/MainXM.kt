@@ -3,7 +3,7 @@ package samples
 import com.soywiz.klock.milliseconds
 import com.soywiz.klock.seconds
 import com.soywiz.klock.toTimeString
-import com.soywiz.korau.module.new.readMOD
+import com.soywiz.korau.mod.readMOD
 import com.soywiz.korau.sound.infinitePlaybackTimes
 import com.soywiz.korev.Key
 import com.soywiz.korge.input.keys

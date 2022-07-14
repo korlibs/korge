@@ -1,6 +1,6 @@
 @file:Suppress("UNUSED_PARAMETER", "MemberVisibilityCanBePrivate", "FunctionName")
 
-package com.soywiz.korau.module.new
+package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
 import com.soywiz.klock.measureTime

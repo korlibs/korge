@@ -1,10 +1,8 @@
-package com.soywiz.korau.module.new
+package com.soywiz.korau.mod
 
-import com.soywiz.korau.format.WAV
-import com.soywiz.korau.sound.toData
+import com.soywiz.korau.mod.readMOD
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
-import com.soywiz.korio.file.writeToFile
 import doIOTest
 import kotlin.test.Test
 

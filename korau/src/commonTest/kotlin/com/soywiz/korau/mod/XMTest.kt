@@ -1,10 +1,10 @@
 /*
-package com.soywiz.korau.module.xm
+package com.soywiz.korau.mod
 
 import com.soywiz.korau.format.WAV
 import com.soywiz.korau.internal.coerceToShort
 import com.soywiz.korau.internal.toSampleShort
-import com.soywiz.korau.module.new.readMOD
+import com.soywiz.korau.mod.readMOD
 import com.soywiz.korau.sound.AudioData
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioSamplesInterleaved
