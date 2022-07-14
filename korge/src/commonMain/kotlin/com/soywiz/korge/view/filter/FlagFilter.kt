@@ -3,11 +3,13 @@ package com.soywiz.korge.view.filter
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.toIntCeil
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.view.Views
 import com.soywiz.korma.geom.MutableMarginInt
 import com.soywiz.korui.UiContainer
@@ -36,12 +38,13 @@ class FlagFilter(
         val u_cyclesPerSecond = Uniform("cyclesPerSecond", VarType.Float1)
         val u_Time = Uniform("time", VarType.Float1)
 
-        override val fragment: FragmentShader = FragmentShader {
+        override val fragment: FragmentShader = FragmentShaderDefault {
             //val x01 = fragmentCoords01.x - (ceil(abs(u_amplitude)) / u_TextureSize.x)
             val x01 = createTemp(Float1)
             SET(x01, v_Tex01.x)
             val offsetY = sin((x01 * u_crestCount - u_Time * u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
             SET(out, tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY)))
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

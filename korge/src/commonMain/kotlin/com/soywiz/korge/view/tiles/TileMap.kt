@@ -426,7 +426,7 @@ abstract class BaseTileMap(
             infos.fastForEach { info ->
                 info.verticesList.fastForEach { vertices ->
                     //println("VERTICES: $vertices")
-                    batch.drawVertices(vertices.vertices, ctx.getTex(info.tex), smoothing, renderBlendMode.factors, vertices.vcount, vertices.icount)
+                    batch.drawVertices(vertices.vertices, ctx.getTex(info.tex), smoothing, renderBlendMode, vertices.vcount, vertices.icount)
                 }
             }
             //batch.flush()

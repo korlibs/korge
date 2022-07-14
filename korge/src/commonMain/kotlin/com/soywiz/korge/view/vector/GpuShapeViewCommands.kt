@@ -5,6 +5,7 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korag.AG
+import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.disableCullFace
 import com.soywiz.korag.disableScissor
 import com.soywiz.korag.enableCullFace
@@ -18,7 +19,9 @@ import com.soywiz.korag.useProgram
 import com.soywiz.korag.vertexArrayObjectSet
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.AgCachedBuffer
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.writeFloat
@@ -73,7 +76,7 @@ class GpuShapeViewCommands {
         paintShader: GpuShapeViewPrograms.PaintShader?,
         colorMask: AG.ColorMaskState? = null,
         stencil: AG.StencilState? = null,
-        blendMode: AG.Blending? = null,
+        blendMode: BlendMode? = null,
         cullFace: AG.CullFace? = null,
         startIndex: Int = this.verticesStartIndex,
         endIndex: Int = this.vertexIndex
@@ -189,12 +192,22 @@ class GpuShapeViewCommands {
                                                 //val pixelScale = 1f
                                                 tempUniforms.put(GpuShapeViewPrograms.u_GlobalPixelScale, pixelScale)
 
+                                                val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AG.TextureUnit?
+                                                //val premultiplied = texUnit?.texture?.premultiplied ?: false
+                                                val premultiplied = false
+                                                val outPremultiplied = ag.isRenderingToTexture
+
+                                                //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
+
+                                                tempUniforms[BatchBuilder2D.u_InputPre] = premultiplied
+                                                tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
+
                                                 list.uboSet(ubo, tempUniforms)
                                                 list.uboUse(ubo)
 
                                                 list.setStencilState(cmd.stencil)
                                                 list.setColorMaskState(cmd.colorMask)
-                                                list.setBlendingState(cmd.blendMode)
+                                                list.setBlendingState((cmd.blendMode ?: BlendMode.NORMAL)?.factors(outPremultiplied))
                                                 if (cmd.cullFace != null) {
                                                     list.enableCullFace()
                                                     list.cullFace(cmd.cullFace!!)
@@ -252,7 +265,7 @@ class GpuShapeViewCommands {
         var program: Program? = null,
         var colorMask: AG.ColorMaskState? = null,
         var stencil: AG.StencilState? = null,
-        var blendMode: AG.Blending? = null,
+        var blendMode: BlendMode? = null,
         var cullFace: AG.CullFace? = null
     ) : ICommand {
         val vertexCount: Int get() = vertexEnd - vertexIndex

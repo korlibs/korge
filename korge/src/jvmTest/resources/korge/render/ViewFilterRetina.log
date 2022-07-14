@@ -48,10 +48,12 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -100,6 +102,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [512.0, 512.0]
 uboSet.uniform: Uniform(u_MaxTexCoords) = [1.0, 1.0]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
@@ -107,7 +111,7 @@ uboSet.uniform: Uniform(u_filterScale) = 1.0
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -156,6 +160,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [512.0, 512.0]
 uboSet.uniform: Uniform(u_MaxTexCoords) = [1.0, 1.0]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
@@ -170,7 +176,7 @@ uboSet.uniform: Uniform(u_filterScale) = 1.0
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -215,6 +221,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
@@ -272,10 +280,12 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -321,6 +331,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [512.0, 512.0]
 uboSet.uniform: Uniform(u_MaxTexCoords) = [1.0, 1.0]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
@@ -328,7 +340,7 @@ uboSet.uniform: Uniform(u_filterScale) = 1.0
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -375,6 +387,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [512.0, 512.0]
 uboSet.uniform: Uniform(u_MaxTexCoords) = [1.0, 1.0]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
@@ -389,7 +403,7 @@ uboSet.uniform: Uniform(u_filterScale) = 1.0
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -433,10 +447,12 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[4], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -483,10 +499,12 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -532,6 +550,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [512.0, 512.0]
 uboSet.uniform: Uniform(u_MaxTexCoords) = [1.0, 1.0]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
@@ -539,7 +559,7 @@ uboSet.uniform: Uniform(u_filterScale) = 1.0
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -585,6 +605,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [512.0, 512.0]
 uboSet.uniform: Uniform(u_MaxTexCoords) = [1.0, 1.0]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.001953125, 0.001953125]
@@ -599,7 +621,7 @@ uboSet.uniform: Uniform(u_filterScale) = 1.0
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -642,6 +664,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD

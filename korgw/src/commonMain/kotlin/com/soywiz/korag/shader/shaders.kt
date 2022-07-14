@@ -15,7 +15,7 @@ import com.soywiz.korio.lang.invalidOp
 
 enum class VarKind(val bytesSize: Int) {
     //BYTE(1), UNSIGNED_BYTE(1), SHORT(2), UNSIGNED_SHORT(2), INT(4), FLOAT(4) // @TODO: This cause problems on Kotlin/Native Objective-C header.h
-    TBYTE(1), TUNSIGNED_BYTE(1), TSHORT(2), TUNSIGNED_SHORT(2), TINT(4), TFLOAT(4)
+    TBOOL(1), TBYTE(1), TUNSIGNED_BYTE(1), TSHORT(2), TUNSIGNED_SHORT(2), TINT(4), TFLOAT(4)
 }
 
 data class FuncDecl(val name: String, val rettype: VarType, val args: List<Pair<String, VarType>>, val stm: Program.Stm) {
@@ -79,7 +79,7 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
 
 	Int1(VarKind.TINT, elementCount = 1),
 
-	Float1(VarKind.TFLOAT, elementCount = 1),
+    Float1(VarKind.TFLOAT, elementCount = 1),
 	Float2(VarKind.TFLOAT, elementCount = 2),
 	Float3(VarKind.TFLOAT, elementCount = 3),
 	Float4(VarKind.TFLOAT, elementCount = 4),
@@ -89,9 +89,12 @@ enum class VarType(val kind: VarKind, val elementCount: Int, val isMatrix: Boole
 	Short3(VarKind.TSHORT, elementCount = 3),
 	Short4(VarKind.TSHORT, elementCount = 4),
 
-	Bool1(VarKind.TUNSIGNED_BYTE, elementCount = 1),
+	Bool1(VarKind.TBOOL, elementCount = 1),
+    Bool2(VarKind.TBOOL, elementCount = 2),
+    Bool3(VarKind.TBOOL, elementCount = 3),
+    Bool4(VarKind.TBOOL, elementCount = 4),
 
-	Byte4(VarKind.TUNSIGNED_BYTE, elementCount = 4), // OLD: Is this right?
+    Byte4(VarKind.TUNSIGNED_BYTE, elementCount = 4), // OLD: Is this right?
 
 	SByte1(VarKind.TBYTE, elementCount = 1),
 	SByte2(VarKind.TBYTE, elementCount = 2),
@@ -470,6 +473,7 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
         val Operand.a: Operand get() = this["w"]
 
         operator fun Operand.unaryMinus(): Operand = Unop("-", this)
+        fun Operand.not(): Operand = Unop("!", this)
 
         operator fun Operand.minus(that: Operand): Operand = Binop(this, "-", that)
         operator fun Operand.plus(that: Operand): Operand = Binop(this, "+", that)

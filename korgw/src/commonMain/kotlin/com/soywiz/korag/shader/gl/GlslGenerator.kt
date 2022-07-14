@@ -342,6 +342,15 @@ interface BaseGlslGenerator {
         VarType.SamplerCube -> "samplerCube"
         else -> {
             when (type.kind) {
+                VarKind.TBOOL -> {
+                    when (type.elementCount) {
+                        1 -> "bool"
+                        2 -> "bvec2"
+                        3 -> "bvec3"
+                        4 -> "bvec4"
+                        else -> errorType(type)
+                    }
+                }
                 VarKind.TBYTE, VarKind.TUNSIGNED_BYTE, VarKind.TSHORT, VarKind.TUNSIGNED_SHORT, VarKind.TFLOAT -> {
                     when (type.elementCount) {
                         1 -> "float"

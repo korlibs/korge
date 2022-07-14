@@ -83,7 +83,7 @@ fun BitmapFont.drawText(
                 m = m2,
                 colorMul = colMul,
                 colorAdd = colAdd,
-                blendFactors = blendMode.factors,
+                blendMode = blendMode,
                 filtering = filtering
             )
             val kerningOffset = kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0

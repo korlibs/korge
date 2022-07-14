@@ -31,14 +31,11 @@ programCreate.fragment:#version 100 compatibility
 #endif
 uniform sampler2D u_Tex0;
 varying mediump vec2 v_Tex;
-varying vec4 v_Col;
 void main() {
 	gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
 	}
-	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
-	gl_FragColor.rgba = (gl_FragColor.rgba * v_Col);
 }
 
 programCreate.vertex:#version 100 compatibility
@@ -106,11 +103,13 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboSet.uniform: Uniform(u_texSize0) = [0.03125, 0.03125]
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0

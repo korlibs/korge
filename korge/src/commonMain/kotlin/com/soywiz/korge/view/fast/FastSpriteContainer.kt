@@ -61,7 +61,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
             bb.setViewMatrixTemp(globalMatrix) {
                 ////////////////////////////
 
-                bb.setStateFast(bmp, smoothing, blendMode.factors, null, icount = 0, vcount = 0)
+                bb.setStateFast(bmp, smoothing, blendMode, null, icount = 0, vcount = 0)
 
                 ////////////////////////////
 

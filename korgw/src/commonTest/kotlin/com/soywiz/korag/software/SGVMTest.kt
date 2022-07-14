@@ -1,6 +1,7 @@
 package com.soywiz.korag.software
 
 import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Program
@@ -205,22 +206,18 @@ object ShaderTest {
     /**
      * Builds a [FragmentShader] for textured and colored drawing that works matching if the texture is [premultiplied]
      */
-    fun buildTextureLookupFragment(premultiplied: Boolean) = FragmentShader {
-        DefaultShaders.apply {
-            SET(out, texture2D(u_Tex, v_Tex["xy"]))
-            if (premultiplied) {
-                SET(out["rgb"], out["rgb"] / out["a"])
-            }
-
-            // @TODO: Kotlin.JS bug?
-            //SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
-            SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
-
-            //SET(out, t_Temp1)
-            // Required for shape masks:
-            if (premultiplied) {
-                IF(out["a"] le 0f.lit) { DISCARD() }
-            }
+    fun buildTextureLookupFragment(premultiplied: Boolean) = FragmentShaderDefault {
+        SET(out, texture2D(u_Tex, v_Tex["xy"]))
+        if (!premultiplied) {
+            SET(out["rgb"], out["rgb"] * out["a"])
         }
+
+        // @TODO: Kotlin.JS bug?
+        //SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f, .5f, .5f, .5f)) * 2f))
+        SET(out, (out["rgba"] * v_ColMul["rgba"]) + ((v_ColAdd["rgba"] - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
+
+        //SET(out, t_Temp1)
+        // Required for shape masks:
+        IF(out["a"] le 0f.lit) { DISCARD() }
     }
 }

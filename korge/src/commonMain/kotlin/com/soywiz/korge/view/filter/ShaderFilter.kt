@@ -22,7 +22,6 @@ import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.MutableMarginInt
-import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Abstract class for [View] [Filter]s that paints the [Texture] using a [FragmentShader] ([fragment]).
@@ -57,8 +56,8 @@ abstract class ShaderFilter : Filter {
         protected fun createProgram(vertex: VertexShader, fragment: FragmentShader, premultiplied: Boolean): Program {
             return Program(vertex, fragment.appending {
                 // Premultiplied
-                if (premultiplied) {
-                    SET(out["rgb"], out["rgb"] / out["a"])
+                if (!premultiplied) {
+                    SET(out["rgb"], out["rgb"] * out["a"])
                 }
 
                 // Color multiply and addition
@@ -67,16 +66,14 @@ abstract class ShaderFilter : Filter {
                 SET(out, (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
 
                 // Required for shape masks:
-                if (premultiplied) {
-                    IF(out["a"] le 0f.lit) { DISCARD() }
-                }
+                IF(out["a"] le 0f.lit) { DISCARD() }
             })
         }
 
-        /** The [VertexShader] used this this [Filter] */
+        /** The [VertexShader] used this [Filter] */
         protected open val vertex: VertexShader = BatchBuilder2D.VERTEX
 
-        /** The [FragmentShader] used this this [Filter]. This is usually overriden. */
+        /** The [FragmentShader] used this [Filter]. This is usually overriden. */
         protected open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
 
         private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
@@ -193,7 +190,7 @@ abstract class ShaderFilter : Filter {
                     filtering = filtering,
                     colorAdd = renderColorAdd,
                     colorMul = renderColorMul,
-                    blendFactors = blendMode.factors,
+                    blendMode = blendMode,
                     //program = if (texture.premultiplied) programPremult else programNormal
                     program = programProvider.getProgram(texture.premultiplied)
                 )

@@ -17,7 +17,7 @@ createMainRenderBuffer():0
 Buffer[3].afterSetMem(mem[393216])
 Buffer[4].afterSetMem(mem[4])
 Buffer[5].afterSetMem(mem[49152])
-programCreate: 1, Program(name=BatchBuilder2D.Premultiplied.Tinted.NoAddNoWrap, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_DoWrap, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_InputPre, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -29,34 +29,49 @@ programCreate.fragment:#version 100 compatibility
 	  #define mediump 
 	  #define lowp 
 #endif
+uniform bool u_DoWrap;
 uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
 uniform sampler2D u_Tex2;
 uniform sampler2D u_Tex3;
-varying lowp float v_TexIndex;
+uniform bool u_InputPre;
+uniform bool u_OutputPre;
 varying mediump vec2 v_Tex;
+varying lowp float v_TexIndex;
 varying vec4 v_Col;
 void main() {
+	vec4 temp0;
+	if (u_DoWrap) {
+		temp0.xy = fract(v_Tex.xy);
+	}
+	else {
+		temp0.xy = v_Tex.xy;
+	}
 	if ((v_TexIndex <= 1.0)) {
 		if ((v_TexIndex == 0.0)) {
-			gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex0, temp0.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex1, temp0.xy);
 		}
 	}
 	else {
 		if ((v_TexIndex == 2.0)) {
-			gl_FragColor = texture2D(u_Tex2, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex2, temp0.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex3, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
-	gl_FragColor = (gl_FragColor.rgba * v_Col.rgba);
+	if ((!(u_InputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
+	}
+	gl_FragColor = (gl_FragColor * v_Col);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
+	}
+	if ((!(u_OutputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
 	}
 }
 
@@ -85,7 +100,7 @@ varying vec4 v_Col2;
 void main() {
 	v_Tex = a_Tex;
 	v_TexIndex = a_TexIndex;
-	v_Col = a_Col;
+	v_Col = vec4((a_Col.rgb * a_Col.a), a_Col.a);
 	v_Col2 = a_Col2;
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
 }
@@ -112,6 +127,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = true
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD

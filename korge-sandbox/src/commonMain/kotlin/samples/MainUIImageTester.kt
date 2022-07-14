@@ -17,6 +17,7 @@ import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.size
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.xy
+import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.ASE
@@ -35,7 +36,10 @@ class MainUIImageTester : Scene() {
 
         val korimPng = resourcesVfs["korim.png"].readBitmapSlice()
         val bunnysPng = resourcesVfs["bunnys.png"].readBitmapSlice()
+        //val vampireAse = resourcesVfs["vampire.ase"].readBitmap(ASE).toBMP32().premultipliedIfRequired().slice()
         val vampireAse = resourcesVfs["vampire.ase"].readBitmap(ASE).slice()
+
+        //println("vampireAse.premultiplied=${vampireAse.premultiplied}")
 
         val image = uiImage(300, 170, korimPng, scaleMode = ScaleMode.COVER, contentAnchor = Anchor.MIDDLE_CENTER).xy(200, 200)
         image.bgcolor = Colors["#17334f"]

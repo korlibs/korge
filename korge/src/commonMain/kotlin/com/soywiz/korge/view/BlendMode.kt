@@ -1,6 +1,8 @@
 package com.soywiz.korge.view
 
 import com.soywiz.korag.AG
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAf
 
 /**
  * Determines how pixels should be blended. The most common blend modes are: [NORMAL] (normal mix) and [ADD] (additive blending) along with [MULTIPLY] and others.
@@ -18,13 +20,29 @@ data class BlendMode(
     val nonPremultipliedFactors: AG.Blending = factors,
     val name: String? = null,
 ) {
+    val _hashCode: Int = factors.hashCode() + nonPremultipliedFactors.hashCode() * 7 + name.hashCode() * 17
+    override fun hashCode(): Int = _hashCode
+    override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && nonPremultipliedFactors == other.nonPremultipliedFactors && name == other.name)
+
+    fun factors(premultiplied: Boolean): AG.Blending = if (premultiplied) factors else nonPremultipliedFactors
+
+    fun apply(premultiplied: Boolean, src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
+        val factors = factors(premultiplied)
+        return factors.apply(src, dst, out)
+    }
+
+    fun apply(premultiplied: Boolean, src: RGBA, dst: RGBA): RGBA {
+        val factors = factors(premultiplied)
+        return factors.apply(src, dst)
+    }
+
     companion object {
+        /** Mixes the source and destination colors using the source alpha value */
+        val NORMAL = BlendMode(name = "NORMAL", factors = AG.Blending.NORMAL_PRE, nonPremultipliedFactors = AG.Blending.NORMAL)
         /** Not an actual blending. It is used to indicate that the next non-inherit BlendMode from its ancestors will be used. */
-        val INHERIT = BlendMode(name = "INHERIT", factors = AG.Blending.NORMAL)
+        val INHERIT = NORMAL.copy(name = "INHERIT")
         /** Doesn't blend at all. Just replaces the colors. */
         val NONE = BlendMode(name = "NONE", factors = AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)) // REPLACE
-        /** Mixes the source and destination colors using the source alpha value */
-        val NORMAL = BlendMode(name = "NORMAL", factors = AG.Blending.NORMAL)
         /** Additive mixing for lighting effects */
         val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD)
 

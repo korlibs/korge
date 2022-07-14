@@ -1,13 +1,13 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korag.shader.storageForMatrix3D
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.view.Views
 import com.soywiz.korma.geom.Matrix3D
 import com.soywiz.korma.geom.MutableMarginInt
@@ -74,7 +74,7 @@ class Convolute3Filter(
             "SHARPEN" to KERNEL_SHARPEN,
         )
 
-        override val fragment = FragmentShader {
+        override val fragment = FragmentShaderDefault {
             SET(out, vec4(0f.lit, 0f.lit, 0f.lit, 0f.lit))
 
             for (y in 0 until 3) {
@@ -91,6 +91,7 @@ class Convolute3Filter(
             IF(u_ApplyAlpha ne 1f.lit) {
                 SET(out["a"], tex(fragmentCoords)["a"])
             }
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

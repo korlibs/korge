@@ -509,6 +509,21 @@ class AGQueueProcessorOpenGL(
                         }
                     }
                 }
+                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4 -> {
+                    when (value) {
+                        is Boolean -> gl.uniform1i(location, value.toInt())
+                        is BooleanArray -> {
+                            when (uniformType.elementCount) {
+                                1 -> gl.uniform1i(location, value[0].toInt())
+                                2 -> gl.uniform2i(location, value[0].toInt(), value[1].toInt())
+                                3 -> gl.uniform3i(location, value[0].toInt(), value[1].toInt(), value[2].toInt())
+                                4 -> gl.uniform4i(location, value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt())
+                            }
+                        }
+                        else -> TODO()
+                    }
+
+                }
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
                     var arrayCount = declArrayCount
                     when (value) {

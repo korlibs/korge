@@ -2,13 +2,13 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders.t_Temp1
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.appending
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korag.shader.storageForTextureUnit
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Views
 import com.soywiz.korim.bitmap.Bitmap
@@ -74,6 +74,7 @@ class TransitionFilter(
                 }
             }
             SET(out, (out * alpha))
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             //SET(out, texture2D(u_Mask, v_Tex01))
             //SET(out, vec4(1.lit, 0.lit, 1.lit, 1.lit))
         }

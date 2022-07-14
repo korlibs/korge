@@ -70,8 +70,8 @@ class LineRenderBatcher(
     @KorgeInternal
     val FRAGMENT = FragmentShader {
         DefaultShaders.apply {
-            //out set vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit)
-            out set v_Col
+            //SET(out, vec4(1f.lit, 1f.lit, 0f.lit, 1f.lit))
+            SET(out, v_Col)
         }
     }
 

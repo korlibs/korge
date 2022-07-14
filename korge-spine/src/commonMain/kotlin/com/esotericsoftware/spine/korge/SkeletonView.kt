@@ -294,7 +294,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                 null -> this.blendMode
             }
 
-            batch.setStateFast(texture, true, viewBlendMode.factors, null, icount = trianglesCount, vcount = vertexCount)
+            batch.setStateFast(texture, true, viewBlendMode, null, icount = trianglesCount, vcount = vertexCount)
 
             val transform = this.globalMatrix
 
