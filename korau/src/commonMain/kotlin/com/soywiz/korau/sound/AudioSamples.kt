@@ -22,6 +22,10 @@ interface IAudioSamples {
     operator fun set(channel: Int, sample: Int, value: Short): Unit
     fun getFloat(channel: Int, sample: Int): Float = SampleConvert.shortToFloat(this[channel, sample])
     fun setFloat(channel: Int, sample: Int, value: Float) { this[channel, sample] = SampleConvert.floatToShort(value) }
+    fun setFloatStereo(sample: Int, l: Float, r: Float) {
+        setFloat(0, sample, l)
+        setFloat(1, sample, r)
+    }
 }
 
 internal fun AudioSamples.resample(scale: Double, totalSamples: Int = (this.totalSamples * scale).toInt(), out: AudioSamples = AudioSamples(channels, totalSamples)): AudioSamples {

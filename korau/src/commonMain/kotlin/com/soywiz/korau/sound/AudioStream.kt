@@ -62,7 +62,9 @@ abstract class AudioStream(
 }
 
 // default maxSamples is 15 minutes of data at 44100hz
-suspend fun AudioStream.toData(maxSamples: Int = 15 * 60 * 44100): AudioData {
+val DEFAULT_MAX_SAMPLES = 15 * 60 * 44100
+
+suspend fun AudioStream.toData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData {
     val out = AudioSamplesDeque(channels)
     val buffer = AudioSamples(channels, 16 * 4096)
     try {

@@ -3,9 +3,11 @@ package com.soywiz.korau.module.xm
 import com.soywiz.korau.format.WAV
 import com.soywiz.korau.internal.coerceToShort
 import com.soywiz.korau.internal.toSampleShort
+import com.soywiz.korau.module.new.readMOD
 import com.soywiz.korau.sound.AudioData
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioSamplesInterleaved
+import com.soywiz.korau.sound.infinitePlaybackTimes
 import com.soywiz.korau.sound.toData
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
@@ -16,6 +18,8 @@ import kotlin.test.Test
 class XMTest {
     @Test
     fun test() = suspendTest({ doIOTest }) {
+        //val sound = resourcesVfs["GUITAROU.MOD"].readMOD()
+        //sound.playAndWait(times = infinitePlaybackTimes)
         val bytes = resourcesVfs["transatlantic.xm"].readBytes()
         //val bytes = resourcesVfs["poliamber.xm"].readBytes()
         val xm = XM()
