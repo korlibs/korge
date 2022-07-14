@@ -240,6 +240,7 @@ flipInternal()
 finish
 RenderBuffer[0].set()
 clear(#00000000, 1.0, 0, true, true, true)
+flush
 RenderBuffer[1].setSize(512, 512)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
