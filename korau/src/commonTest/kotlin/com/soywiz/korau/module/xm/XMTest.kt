@@ -20,9 +20,16 @@ class XMTest {
         //val bytes = resourcesVfs["poliamber.xm"].readBytes()
         val xm = XM()
         xm.load(bytes)
+
+        val NSAMPLES = 16
         //val NSAMPLES = 128
         //val NSAMPLES = 16000
-        WAV.encodeToByteArray(xm.createAudioStream().toData(44100 * 24)).writeToFile("/tmp/lol2.wav")
+        //val NSAMPLES = 44100 * 24
+
+        val e = XM.AudioEvent(44100, 0.0, XM.AudioBuffer(NSAMPLES))
+        xm.audio_cb(e)
+
+        //WAV.encodeToByteArray(xm.createAudioStream().toData(NSAMPLES)).writeToFile("/tmp/lol2.wav")
         //println(ev.outputBuffer.channels[0].toList())
         //println(ev)
     }
