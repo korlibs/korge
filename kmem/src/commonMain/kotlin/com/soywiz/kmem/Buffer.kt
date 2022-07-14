@@ -183,3 +183,8 @@ public fun NewInt16Buffer(mem: MemBuffer, offset: Int, len: Int): Int16Buffer = 
 public fun NewInt32Buffer(mem: MemBuffer, offset: Int, len: Int): Int32Buffer = mem.sliceInt32Buffer(offset, len)
 public fun NewFloat32Buffer(mem: MemBuffer, offset: Int, len: Int): Float32Buffer = mem.sliceFloat32Buffer(offset, len)
 public fun NewFloat64Buffer(mem: MemBuffer, offset: Int, len: Int): Float64Buffer = mem.sliceFloat64Buffer(offset, len)
+
+fun ByteArray.toMemBuffer(): MemBuffer = MemBufferWrap(this)
+fun ByteArray.toInt8Buffer(): Int8Buffer = this.toMemBuffer().asInt8Buffer()
+fun ByteArray.toUint8Buffer(): Uint8Buffer = Uint8Buffer(this.toInt8Buffer())
+//val Uint8Buffer.bytes get() = this.b.mem.getData()

@@ -18,6 +18,8 @@ import kotlin.math.min
 import kotlin.math.pow
 
 /*
+  https://github.com/electronoora/webaudio-mod-player
+
   (c) 2012-2021 Noora Halme et al. (see AUTHORS)
 
   This code is licensed under the MIT license:
@@ -30,15 +32,16 @@ import kotlin.math.pow
   - properly test EEx delay pattern
 */
 
+suspend fun VfsFile.readMOD(soundProvider: NativeSoundProvider = nativeSoundProvider): Sound =
+    Protracker().createSoundFromFile(this)
+
 // constructor for protracker player object
-class Protracker {
-    var playing = false
+class Protracker : BaseModuleTracker() {
     var paused = false
     var repeat = false
     var filter = false
     var mixval = 4.0
     var syncqueue = IntDeque()
-    var samplerate = 44100
 
     // paula period values
     val baseperiodtable = floatArrayOf(
@@ -165,11 +168,10 @@ class Protracker {
     var bpm = 125
     var breakrow = 0
     var patternjump = 0
-    var endofsong = false
     var channel = emptyArray<Channel>()
 
     // initialize all player variables
-    fun initialize() {
+    override fun initialize() {
         syncqueue = IntDeque()
 
         tick = 0
@@ -195,8 +197,8 @@ class Protracker {
     }
 
     // parse the module from local buffer
-    fun parse(buffer: Uint8Buffer): Boolean {
-        signature = (0 until 4).map { buffer[1080 + it].toChar() }.joinToString("")
+    override fun parse(buffer: Uint8Buffer): Boolean {
+        signature = CharArray(4) { buffer[1080 + it].toChar() }.concatToString()
         when (signature) {
             "M.K.", "M!K!", "4CHN", "FLT4" -> Unit
             "6CHN" -> channels = 6
@@ -318,6 +320,7 @@ class Protracker {
             songlenInTicks = computeTime()
         }
         println("Computed song length in...$computeTime")
+        totalLengthInSamples = songlenInTicks.toLong() * spd.toLong() / 2
         //println("timeInTicks=$timeInTicks")
 
         return true
@@ -403,7 +406,7 @@ class Protracker {
     }
 
     // mix an audio buffer with data
-    fun mix(bufs: Array<FloatArray>, buflen: Int = bufs[0].size) {
+    override fun mix(bufs: Array<FloatArray>, buflen: Int) {
         var f: Double
         var p: Int
         var pp: Int
@@ -892,71 +895,4 @@ class Protracker {
 
     fun effect_t1_ef(mod: Protracker, ch: Int) { // ef
     }
-
-    suspend fun createSound(soundProvider: NativeSoundProvider = nativeSoundProvider): Sound {
-        return soundProvider.createStreamingSound(createAudioStream())
-    }
-
-    fun createAudioStream(): AudioStream {
-        playing = true
-        var fch = Array(2) { FloatArray(1024) }
-        return object : AudioStream(44100, 2) {
-            override val finished: Boolean get() = endofsong
-
-            // @TODO: we should figure out how to compute the length in samples/time
-            override val totalLengthInSamples: Long?
-                get() = songlenInTicks.toLong() * spd.toLong() / 2
-
-            var _currentPositionInSamples: Long = 0L
-
-            private fun skipUntil(newPosition: Long) {
-                while (_currentPositionInSamples < newPosition) {
-                    val available = newPosition - _currentPositionInSamples
-                    val skip = min(available.toInt(), fch[0].size)
-                    mix(fch, skip)
-                    _currentPositionInSamples += skip
-                }
-            }
-
-            override var currentPositionInSamples: Long
-                get() = _currentPositionInSamples
-                set(value) {
-                    if (_currentPositionInSamples == value) return
-                    if (value > _currentPositionInSamples) {
-                        skipUntil(value)
-                    } else {
-                        //if (value != 0L) error("only supported rewind in MOD value=$value")
-                        _currentPositionInSamples = 0L
-                        initialize()
-                        if (value != 0L) {
-                            println("SLOW SEEK")
-                            skipUntil(value)
-                        }
-                    }
-                }
-
-            override suspend fun read(out: AudioSamples, offset: Int, length: Int): Int {
-                if (fch[0].size < length) fch = Array(2) { FloatArray(length) }
-                mix(fch, length)
-                _currentPositionInSamples += length
-                val l = fch[0]
-                val r = fch[1]
-                for (n in 0 until length) out.setFloatStereo(offset + n, l[n], r[n])
-                return length
-            }
-
-            override suspend fun clone(): AudioStream {
-                return createAudioStream()
-            }
-
-        }
-    }
-}
-
-suspend fun VfsFile.readMOD(soundProvider: NativeSoundProvider = nativeSoundProvider): Sound {
-    val tracker = Protracker()
-    val bytes = readBytes()
-    val buf = Uint8Buffer(NewInt8Buffer(MemBufferWrap(bytes), 0, bytes.size))
-    tracker.parse(buf)
-    return tracker.createSound(soundProvider)
 }

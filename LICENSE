@@ -1,5 +1,41 @@
-Each library has its own licenses typically MIT or Public Domain,
-dual licensed with Apache 2.0.
+Each library has its own licenses typically MIT or Public Domain, dual licensed with Apache 2.0.
+
+Ported libraries from other languages into Kotlin:
+
+MP3 decoding use minimp3 from the public domain: https://github.com/lieff/minimp3
+JavaMP3 alternate MP3 decoder released under MIT: https://github.com/kevinstadler/JavaMP3/blob/master/LICENSE
+OGG vorbis decoding on native targets use stb_vorbis from MIT/public domain: http://nothings.org/stb_vorbis/
+stb_image on native targets for image decoding from public domain: https://github.com/nothings/stb/blob/master/stb_image.h
+webaudio-mod-player to decode XM, ST3 & MOD audio tracks from MIT license: Copyright (c) 2012-2021 Noora Halme et al. (see AUTHORS) https://github.com/electronoora/webaudio-mod-player/blob/master/LICENSE
+
+
+--------------------
+
+MIT License
+
+Copyright (c) 2017-2019 Carlos Ballesteros Velasco and contributors
+* https://github.com/korlibs/korge/graphs/contributors
+* https://github.com/korlibs-archive/
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--------------------
 
                                  Apache License
                            Version 2.0, January 2004
@@ -202,3 +238,54 @@ dual licensed with Apache 2.0.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+------------------------------------------------------------------------------------------------------------
+- webaudio-mod-player - MOD, XM and ST3 audio decoding
+------------------------------------------------------------------------------------------------------------
+
+The MIT License (MIT)
+
+Copyright (c) 2012-2021 Noora Halme et al. (see AUTHORS)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+------------------------------------------------------------------------------------------------------------
+- JavaMP3 - Alternate mp3 decoding
+------------------------------------------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2017 delthas
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
