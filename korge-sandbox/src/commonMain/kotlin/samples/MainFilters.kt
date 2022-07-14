@@ -1,7 +1,6 @@
 package samples
 
 import com.soywiz.klock.seconds
-import com.soywiz.korge.Korge
 import com.soywiz.korge.animate.animateParallel
 import com.soywiz.korge.scene.ScaledScene
 import com.soywiz.korge.tween.get
@@ -16,7 +15,6 @@ import com.soywiz.korge.view.filter.filter
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
-import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.interpolation.Easing
@@ -41,7 +39,7 @@ class MainFilters : ScaledScene(768, 512) {
 
         //val color = ColorMatrixFilter(ColorMatrixFilter.GRAYSCALE_MATRIX)
         //val color = TransitionFilter(TransitionFilter.Transition.DIAGONAL1, reversed = false)
-        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, smooth = true)
+        val color = TransitionFilter(TransitionFilter.Transition.SWEEP, reversed = false, spread = 1.0)
         //val color = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false)
         //val color = TransitionFilter(time = 1.0)
         image(bitmap) {
