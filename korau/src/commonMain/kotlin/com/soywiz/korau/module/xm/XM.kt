@@ -1,4 +1,6 @@
-@file:Suppress("LocalVariableName", "NAME_SHADOWING", "UNUSED_VARIABLE")
+@file:Suppress("LocalVariableName", "NAME_SHADOWING", "UNUSED_VARIABLE", "PropertyName", "MemberVisibilityCanBePrivate",
+    "FunctionName", "UNUSED_PARAMETER", "ControlFlowWithEmptyBody", "ObjectPropertyName"
+)
 
 package com.soywiz.korau.module.xm
 
@@ -23,7 +25,7 @@ import kotlin.math.pow
 class XM {
     val player = XMPlayer()
 
-    var f_smp = 44100  // updated by play callback, default value here
+    var f_smp = 44100.0  // updated by play callback, default value here
 
     companion object {
         // for pretty-printing notes
@@ -33,7 +35,7 @@ class XM {
 
         // per-sample exponential moving average for volume changes (to prevent pops
         // and clicks); evaluated every 8 samples
-        val popfilter_alpha = 0.9837
+        const val popfilter_alpha = 0.9837
 
         fun prettify_note(note: Int): String {
             if (note < 0) return "---"
@@ -43,8 +45,7 @@ class XM {
 
         fun prettify_number(num: Int): String {
             if (num == -1) return "--"
-            if (num < 10) return "0" + num
-            return "$num"
+            return "0$num".substr(-2)
         }
 
         fun prettify_volume(num: Int): String {
@@ -93,16 +94,20 @@ class XM {
 
     // Return 2-pole Butterworth lowpass filter coefficients for
 // center frequncy f_c (relative to sampling frequency)
-    fun filterCoeffs(f_c: Float): FloatArray {
+    fun filterCoeffs(f_c: Double): DoubleArray {
         var f_c = f_c
-        if (f_c > 0.5f) {  // we can't lowpass above the nyquist frequency...
-            f_c = 0.5f
+        if (f_c > 0.5) {  // we can't lowpass above the nyquist frequency...
+            f_c = 0.5
         }
-        val wct = kotlin.math.sqrt(2f) * kotlin.math.PI.toFloat() * f_c
+        val wct = kotlin.math.sqrt(2.0) * kotlin.math.PI * f_c
         val e = kotlin.math.exp(-wct)
         val c = e * kotlin.math.cos(wct)
-        val gain = (1 - 2*c + e*e) / 2
-        return floatArrayOf(gain, 2*c, -e*e)
+        //val gain = (1 - 2*c + e*e) / 2
+        //return doubleArrayOf(gain, 2*c, -e*e)
+        val s = e * kotlin.math.sin(wct);
+        val gain = (1.0 - 2*c + c*c + s*s) / 2.0;
+        return doubleArrayOf(gain, 2*c, -c*c - s*s)
+
     }
 
     fun updateChannelPeriod(ch: XMChannelInfo, period: Double) {
@@ -112,7 +117,8 @@ class XM {
             return
         }
         ch.doff = freq / f_smp
-        ch.filter = filterCoeffs(ch.doff.toFloat() / 2)
+        ch.filter = filterCoeffs(ch.doff / 2)
+        //println("ch.doff=${ch.doff}, ch.filter=${ch.filter.toList().joinToString(",")}")
     }
 
     fun setCurrentPattern() {
@@ -141,15 +147,16 @@ class XM {
 
 
     fun nextRow() {
-        if (player.next_row < 0) {
-            player.next_row = player.cur_row + 1
-        }
-        player.cur_row = player.next_row
-        player.next_row++
+        //if (player.next_row < 0) {
+        //    player.next_row = player.cur_row + 1
+        //}
+        //player.cur_row = player.next_row
+        //player.next_row++
+        player.cur_row++
 
         if (player.cur_pat == -1 || player.cur_row >= player.xm.patterns[player.cur_pat].size) {
             player.cur_row = 0
-            player.next_row = 1
+            //player.next_row = 1
             player.cur_songpos++
             if (player.cur_songpos >= player.xm.songpats.size)
                 player.cur_songpos = player.xm.song_looppos
@@ -157,7 +164,7 @@ class XM {
         }
         val p = player.xm.patterns[player.cur_pat]
         val r = p[player.cur_row]
-        for (i in 0 until r.size) {
+        for (i in r.indices) {
             val ch = player.xm.channelinfo[i]
             var inst = ch.inst
             var triggernote = false
@@ -318,14 +325,14 @@ class XM {
             // or even do binary search here
             var y0 = 0
             val env = this.points
-            for (i in 0 until env.size step 2) {
+            for (i in env.indices step 2) {
                 y0 = env[i+1]
                 if (ticks < env[i]) {
                     val x0 = env[i-2]
                     y0 = env[i-1]
-                    val dx = env[i] - x0
-                    val dy = env[i+1] - y0
-                    return y0 + (ticks - x0) * dy.toDouble() / dx
+                    val dx: Int = env[i] - x0
+                    val dy: Int = env[i+1] - y0
+                    return y0 + (ticks - x0) * dy.toDouble() / dx.toDouble()
                 }
             }
             return y0.toDouble()
@@ -339,6 +346,7 @@ class XM {
 
         fun Tick(release: Boolean): Double {
             val value = this.env.Get(this.tick)
+            //println("value=$value")
 
             // if we're sustaining a note, stop advancing the tick counter
             //println("this.env.sustain=${this.env.sustain}, this.env.points=${this.env.points.size}")
@@ -348,8 +356,7 @@ class XM {
 
             this.tick++
             if ((this.env.type and 4) != 0) {  // envelope loop?
-                if (!release &&
-                    this.tick >= this.env.loopend) {
+                if (!release && this.tick >= this.env.loopend) {
                     this.tick -= this.env.loopend - this.env.loopstart
                 }
             }
@@ -388,6 +395,7 @@ class XM {
             }
             ch.volE = ch.env_vol!!.Tick(ch.release)
             ch.panE = ch.env_pan!!.Tick(ch.release)
+            //println("volE=${ch.volE}, panE=${ch.panE}")
             updateChannelPeriod(ch, ch.period + ch.periodoffset)
         }
     }
@@ -432,6 +440,8 @@ class XM {
             return MixSilenceIntoBuf(ch, start, end, dataL, dataR)
         }
 
+        //println("inst=$inst, instsamp=$instsamp")
+
         val samp: FloatArray = instsamp.sampledata
         var sample_end: Int = instsamp.len
         if ((instsamp.type and 3) == 1 && instsamp.looplen > 0) {
@@ -440,7 +450,7 @@ class XM {
             looplen = instsamp.looplen
             sample_end = loopstart + looplen
         }
-        var samplen: Int = instsamp.len.toInt()
+        var samplen: Int = instsamp.len
         val volE: Double = ch.volE / 64.0    // current volume envelope
         val panE: Double = 4*(ch.panE - 32)  // current panning envelope
         val p: Double = panE + ch.pan - 128  // final pan
@@ -457,9 +467,9 @@ class XM {
         var k: Double = ch.off
         val dk: Double = ch.doff
         var Vrms = 0.0
-        val f0: Float = ch.filter[0]
-        val f1: Float = ch.filter[1]
-        val f2: Float = ch.filter[2]
+        val f0: Double = ch.filter[0]
+        val f1: Double = ch.filter[1]
+        val f2: Double = ch.filter[2]
         var fs0: Float = ch.filterstate[0]
         var fs1: Float = ch.filterstate[1]
         var fs2: Float = ch.filterstate[2]
@@ -475,15 +485,17 @@ class XM {
         // we can mix up to this many bytes before running into a sample end/loop
         var i: Int = start
         var failsafe = 100
+        if (start == 1067220) {
+
+        }
         while (i < end) {
             if (failsafe-- == 0) {
-                Console.log("failsafe in mixing loop! channel", ch.number, k, sample_end,
-                    loopstart, looplen, dk)
+                Console.log("failsafe in mixing loop! channel", ch.number, k, sample_end, loopstart, looplen, dk)
                 break
             }
             if (k >= sample_end) {  // TODO: implement pingpong looping
                 if (loop) {
-                    k = loopstart + (k - loopstart) % looplen
+                    k = loopstart + ((k - loopstart) % looplen)
                 } else {
                     // kill sample
                     ch.inst = null
@@ -491,28 +503,30 @@ class XM {
                     return (Vrms + MixSilenceIntoBuf(ch, i, end, dataL, dataR)).toFloat()
                 }
             }
-            val next_event: Float = kotlin.math.max(1.0, kotlin.math.min(end.toDouble(), i + (sample_end - k).toDouble() / dk)).toFloat()
+            val next_event: Double = kotlin.math.max(1.0, kotlin.math.min(end.toDouble(), i + (sample_end - k) / dk)).toDouble()
             // this is the inner loop of the player
 
-            var s: Float
-            var y: Float
             // unrolled 8x (removed the unroll)
             while (i < next_event) {
-                s = samp[k.toInt()]
+                val s = samp[k.toInt()]
                 // we low-pass filter here since we are resampling some arbitrary
                 // frequency to f_smp; this is an anti-aliasing filter and is
                 // implemented as an IIR butterworth filter (usually we'd use an FIR
                 // brick wall filter, but this is much simpler computationally and
                 // sounds fine)
-                y = f0 * (s + fs0) + f1 * fs1 + f2 * fs2
-                fs2 = fs1; fs1 = y; fs0 = s
+                val y = f0 * (s + fs0) + f1 * fs1 + f2 * fs2
+                fs2 = fs1
+                fs1 = y.toFloat()
+                fs0 = s
                 dataL[i] += (vL * y).toFloat()
                 dataR[i] += (vR * y).toFloat()
                 Vrms += (vL + vR) * y * y
                 k += dk
+                //println("dataL[$i]=${dataL[i]}, vL=$vL, y=$y, s=$s, f0=$f0, f1=$f1, f2=$f2")
                 i++
             }
         }
+        //println("steps: ${i}, failsafe: ${failsafe}, Vrms: ${(Vrms * 1000).toInt()}")
         ch.off = k
         ch.filterstate[0] = fs0
         ch.filterstate[1] = fs1
@@ -536,7 +550,7 @@ class XM {
     )
 
     fun audio_cb(e: AudioEvent) {
-        f_smp = e.sampleRate
+        f_smp = e.sampleRate.toDouble()
         var buflen: Int = e.outputBuffer.size
         val dataL: FloatArray = e.outputBuffer.getChannelData(0)
         val dataR: FloatArray = e.outputBuffer.getChannelData(1)
@@ -550,8 +564,8 @@ class XM {
         val ticklen = 0 or (f_smp.toDouble() * 2.5 / player.xm.bpm.toDouble()).toInt()
         val scopewidth = player.scope_width
 
-        println("ticklen=$ticklen")
-        println("scopewidth=$scopewidth")
+        //println("ticklen=$ticklen")
+        //println("scopewidth=$scopewidth")
 
         while (buflen > 0) {
             if (player.cur_pat == -1 || player.cur_ticksamp >= ticklen) {
@@ -570,9 +584,12 @@ class XM {
                     }
                 }
 
+
+                //val sum0 = dataL.sum()
                 VU[j] = MixChannelIntoBuf(
                     player.xm.channelinfo[j], offset, offset + tickduration, dataL, dataR
                 ) / tickduration
+                //println("VU[$j]=${(VU[j].toDouble() * 1000).toInt()}, offset=$offset, tickduration=$tickduration, dataLsum0=${sum0.toInt()}, dataLsum1=${dataL.sum().toInt()}")
 
                 if (tickduration >= 4*scopewidth) {
                     for (k in 0 until scopewidth) {
@@ -584,7 +601,7 @@ class XM {
             }
             val playbackTime: Double = e.playbackTime
             player.pushEvent(
-                t = e.playbackTime + (0.0 + offset).toDouble() / f_smp.toDouble(),
+                t = e.playbackTime + (0.0 + offset) / f_smp.toDouble(),
                 vu = VU,
                 scopes = scopes,
                 songpos = player.cur_songpos,
@@ -926,33 +943,6 @@ class XM {
         //init();
     }
 
-    fun createAudioStream(): AudioStream {
-        val RATE = 44100
-        val ev = AudioEvent(
-            RATE, 0.0, AudioBuffer(arrayOf(FloatArray(RATE), FloatArray(RATE)))
-        )
-        return object : AudioStream(RATE, 2) {
-            override suspend fun read(out: AudioSamples, offset: Int, length: Int): Int {
-                ev.outputBuffer.size = length
-                audio_cb(ev)
-                for (nchannel in 0 until 2) {
-                    val fchannel = ev.outputBuffer.channels[nchannel]
-                    for (n in 0 until length) {
-                        out.setFloat(nchannel, n, fchannel[n])
-                    }
-                }
-
-                return length
-            }
-
-            override suspend fun clone(): AudioStream {
-                return createAudioStream()
-            }
-
-        }
-    }
-
-
     class XMPlayer(val xm: XMData = XMData()) {
         val filters = XMFilters(this)
         //val view = XMView()
@@ -1000,9 +990,8 @@ class XM {
     }
 
     class XMInst(val name: String, val number: Int) {
-        var env_vol: XM.Envelope? = null
-        var env_pan: XM.Envelope? = null
-        var env: XM.Envelope? = null
+        var env_vol: Envelope? = null
+        var env_pan: Envelope? = null
         var samplemap: Uint8Buffer? = null
         var samples = arrayListOf<XMSamp>()
     }
@@ -1040,7 +1029,7 @@ class XM {
         var off: Double = 0.0
         var doff: Double = 0.0
         var fine: Int = 0
-        var filter: FloatArray = FloatArray(3)
+        var filter: DoubleArray = DoubleArray(3)
         var samp: XMSamp? = null
         var loopstart: Int? = null
         var loopend: Int? = null
@@ -1054,11 +1043,11 @@ class XM {
         var finevoldown: Int? = null
         var release: Boolean = false
         var envtick: Boolean = false
-        var env_vol: XM.EnvelopeFollower? = null
-        var env_pan: XM.EnvelopeFollower? = null
+        var env_vol: EnvelopeFollower? = null
+        var env_pan: EnvelopeFollower? = null
 
         fun periodForNote(note: Int = this.note): Double {
-            return 1920.0 - (note.toDouble() + samp!!.note)*16 - fine.toDouble() / 8.0;
+            return 1920.0 - (note.toDouble() + samp!!.note)*16 - fine.toDouble() / 8.0
         }
     }
 
@@ -1259,11 +1248,14 @@ class XM {
             }
         }
 
-        fun eff_t0_b(ch: XMChannelInfo, data: Int) {  // song jump
+        fun eff_t0_b(ch: XMChannelInfo, data: Int) {  // song jump (untested)
             if (data < player.xm.songpats.size) {
-                player.cur_songpos = data - 1
-                player.cur_pat = -1
-                player.cur_row = -1
+                //player.cur_songpos = data - 1
+                //player.cur_pat = -1
+                //player.cur_row = -1
+                player.cur_songpos = data;
+                player.cur_pat = player.xm.songpats[player.cur_songpos];
+                player.cur_row = -1;
             }
         }
 
@@ -1276,7 +1268,8 @@ class XM {
             if (player.cur_songpos >= player.xm.songpats.size)
                 player.cur_songpos = player.xm.song_looppos
             player.cur_pat = player.xm.songpats[player.cur_songpos]
-            player.next_row = (data ushr 4) * 10 + (data and 0x0f)
+            //player.next_row = (data ushr 4) * 10 + (data and 0x0f)
+            player.cur_row = (data ushr 4) * 10 + (data and 0x0f) - 1;
         }
 
         fun eff_t0_e(ch: XMChannelInfo, data: Int) {  // extended effects!
@@ -1287,23 +1280,23 @@ class XM {
                 2 -> ch.period += data // fine porta down
                 4 -> ch.vibratotype = data and 0x07 // set vibrato waveform
                 5 -> ch.fine = (data shl 4) + data - 128 // finetune
-                6 -> {  // pattern loop
-                    if (data == 0) {
-                        ch.loopstart = player.cur_row
-                    } else {
-                        if (ch.loopend == null) {
-                            ch.loopend = player.cur_row
-                            ch.loopremaining = data
-                        }
-                        if (ch.loopremaining != 0) {
-                            ch.loopremaining--
-                            player.next_row = ch.loopstart ?: 0
-                        } else {
-                            ch.loopend = null
-                            ch.loopstart = null
-                        }
-                    }
-                }
+                //6 -> {  // pattern loop
+                //    if (data == 0) {
+                //        ch.loopstart = player.cur_row
+                //    } else {
+                //        if (ch.loopend == null) {
+                //            ch.loopend = player.cur_row
+                //            ch.loopremaining = data
+                //        }
+                //        if (ch.loopremaining != 0) {
+                //            ch.loopremaining--
+                //            player.next_row = ch.loopstart ?: 0
+                //        } else {
+                //            ch.loopend = null
+                //            ch.loopstart = null
+                //        }
+                //    }
+                //}
                 8 -> ch.pan = data * 0x11 // panning
                 0x0a -> {  // fine vol slide up (with memory)
                     if (data == 0 && ch.finevolup != null) data = ch.finevolup!!
@@ -1398,7 +1391,37 @@ class XM {
 
         fun eff_unimplemented(ch: XMChannelInfo, data: Int) {}
         fun eff_unimplemented_t0(ch: XMChannelInfo, data: Int) {
-            Console.log("unimplemented effect", XM.prettify_effect(ch.effect, data))
+            Console.log("unimplemented effect", prettify_effect(ch.effect, data))
+        }
+    }
+
+
+    fun createAudioStream(): AudioStream {
+        val RATE = 44100
+        var ev: AudioEvent? = null
+        return object : AudioStream(RATE, 2) {
+            override suspend fun read(out: AudioSamples, offset: Int, length: Int): Int {
+                if (ev == null || ev!!.outputBuffer.size < length) {
+                    ev = AudioEvent(
+                        RATE, 0.0, AudioBuffer(arrayOf(FloatArray(length), FloatArray(length)))
+                    )
+                }
+                val ev = ev!!
+                ev.outputBuffer.size = length
+                audio_cb(ev)
+                for (nchannel in 0 until 2) {
+                    val fchannel = ev.outputBuffer.channels[nchannel]
+                    for (n in 0 until length) {
+                        out.setFloat(nchannel, n, fchannel[n] * 0.5f)
+                    }
+                }
+
+                return length
+            }
+
+            override suspend fun clone(): AudioStream {
+                return createAudioStream()
+            }
         }
     }
 }
