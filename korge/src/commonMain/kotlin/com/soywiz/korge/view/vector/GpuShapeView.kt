@@ -417,7 +417,7 @@ open class GpuShapeView(
             )
 
             //gpuShapeViewCommands.setScissor(null)
-            gpuShapeViewCommands.draw(AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil, startIndex = startIndex, endIndex = endIndex)
+            gpuShapeViewCommands.draw(AG.DrawType.TRIANGLE_STRIP, info, stencil = stencil, startIndex = startIndex, endIndex = endIndex, blendMode = BlendMode.NORMAL)
         }
     }
 
@@ -530,7 +530,7 @@ open class GpuShapeView(
                     endIndex = pathData.vertexEnd,
                     paintShader = paintShader,
                     colorMask = AG.ColorMaskState(true),
-                    blendMode = renderBlendMode.factors,
+                    blendMode = renderBlendMode,
                 )
             }
             return
@@ -634,7 +634,7 @@ open class GpuShapeView(
             endIndex = pathDataEnd,
             paintShader = GpuShapeViewPrograms.stencilPaintShader,
             colorMask = AG.ColorMaskState(false, false, false, false),
-            blendMode = BlendMode.NONE.factors,
+            blendMode = BlendMode.NONE,
             stencil = stencil,
             cullFace = cullFace
         )
@@ -674,7 +674,7 @@ open class GpuShapeView(
             ),
             startIndex = vstart,
             endIndex = vend,
-            blendMode = renderBlendMode.factors,
+            blendMode = renderBlendMode,
             //startIndex = pathDataStart,
             //endIndex = pathDataEnd,
         )

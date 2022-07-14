@@ -1,9 +1,7 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
@@ -93,7 +91,7 @@ class Convolute3Filter(
             IF(u_ApplyAlpha ne 1f.lit) {
                 SET(out["a"], tex(fragmentCoords)["a"])
             }
-            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

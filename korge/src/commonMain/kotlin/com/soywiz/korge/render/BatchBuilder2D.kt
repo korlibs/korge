@@ -705,23 +705,39 @@ class BatchBuilder2D constructor(
         val u_OutputPre: Uniform = Uniform("u_OutputPre", VarType.Bool1)
         val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
 
-        fun DO_INPUT_PREMULTIPLIED(builder: Program.Builder, out: Operand) {
+        fun DO_INPUT_ENSURE_TO(builder: Program.Builder, out: Operand, premultiplied: Boolean) {
             builder.apply {
-                IF(u_InputPre.not()) {
-                    SET(out["rgb"], out["rgb"] * out["a"])
+                if (premultiplied) {
+                    // We want premultiplied, but input was straight
+                    IF(u_InputPre.not()) {
+                        SET(out["rgb"], out["rgb"] * out["a"])
+                    }
+                } else {
+                    // We want straight, but input was premultiplied
+                    IF(u_InputPre) {
+                        SET(out["rgb"], out["rgb"] / out["a"])
+                    }
                 }
             }
         }
 
-        fun DO_OUTPUT_PREMULTIPLIED(builder: Program.Builder, out: Operand) {
+        fun DO_OUTPUT_FROM(builder: Program.Builder, out: Operand, premultiplied: Boolean) {
             builder.apply {
-                IF(u_OutputPre.not()) {
-                    SET(out["rgb"], out["rgb"] / out["a"])
+                if (premultiplied) {
+                    // We come from premultiplied, but output wants straight
+                    IF(u_OutputPre.not()) {
+                        SET(out["rgb"], out["rgb"] / out["a"])
+                    }
+                } else {
+                    // We come from straight, but output wants premultiplied
+                    IF(u_OutputPre) {
+                        SET(out["rgb"], out["rgb"] * out["a"])
+                    }
                 }
             }
         }
 
-        fun DO_INPUT_OUTPUT_PREMULTIPLIED(builder: Program.Builder, out: Operand) {
+        fun DO_INPUT_OUTPUT(builder: Program.Builder, out: Operand) {
             //DO_INPUT_PREMULTIPLIED(builder, out)
             //DO_OUTPUT_PREMULTIPLIED(builder, out)
             builder.apply {
@@ -813,7 +829,7 @@ class BatchBuilder2D constructor(
             IF_ELSE_BINARY_LOOKUP(v_TexIndex, 0, BB_MAX_TEXTURES - 1) { n ->
                 SET(out, texture2D(u_TexN[n], t_Temp0["xy"]))
             }
-            DO_INPUT_PREMULTIPLIED(this, out)
+            DO_INPUT_ENSURE_TO(this, out, premultiplied = true)
             if (add == AddType.NO_ADD) {
                 SET(out, out * v_ColMul)
             } else {
@@ -824,7 +840,7 @@ class BatchBuilder2D constructor(
                 }
             }
             IF(out["a"] le 0f.lit) { DISCARD() }
-            DO_OUTPUT_PREMULTIPLIED(this, out)
+            DO_OUTPUT_FROM(this, out, premultiplied = true)
         }
 
 		//init { println(PROGRAM_PRE.fragment.toGlSl()) }
@@ -855,6 +871,13 @@ class BatchBuilder2D constructor(
             val textureUnit = textureUnitN[n]
             textureUnit.set(currentTexN[n], currentSmoothing)
         }
+
+        updateStandardUniformsPre()
+    }
+
+    fun updateStandardUniformsPre() {
+        uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
+        uniforms[u_OutputPre] = ag.isRenderingToTexture
     }
 
     fun getIsPremultiplied(texture: AG.Texture?): Boolean = texture?.premultiplied == true
@@ -878,9 +901,6 @@ class BatchBuilder2D constructor(
 
 			//println("RENDER: $realFactors")
             //println("DRAW: $uniforms")
-
-            uniforms[u_InputPre] = currentTexN[0]?.premultiplied == true
-            uniforms[u_OutputPre] = ag.isRenderingToTexture
 
             val program = currentProgram ?: PROGRAM
             //println("program=$program, currentTexN[0]=${currentTexN[0]}")

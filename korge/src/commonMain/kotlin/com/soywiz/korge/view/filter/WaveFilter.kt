@@ -2,9 +2,7 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.korag.DefaultShaders.t_Temp0
 import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
@@ -47,7 +45,7 @@ class WaveFilter(
             SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
             SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
             //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
-            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
 	}
 

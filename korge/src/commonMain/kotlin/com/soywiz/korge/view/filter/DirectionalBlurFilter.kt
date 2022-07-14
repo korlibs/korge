@@ -1,9 +1,7 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.kmem.toIntCeil
-import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korge.debug.uiEditableValue
@@ -55,7 +53,7 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
                 }
 
             }
-            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             //SET(out["ba"], vec2(1f.lit, 1f.lit))
             //SET(out["a"], 1f.lit)
         }.also {

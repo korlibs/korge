@@ -3,7 +3,6 @@ package com.soywiz.korge.view.filter
 import com.soywiz.kmem.toIntCeil
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Uniform
@@ -55,7 +54,7 @@ class PageFilter(
                 }
             }
             SET(out, tex(fragmentCoords + DefaultShaders.t_Temp0["yx"]))
-            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

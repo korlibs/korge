@@ -1,7 +1,6 @@
 package com.soywiz.korge.view.filter
 
 import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
@@ -24,7 +23,7 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
         override val fragment = FragmentShaderDefault {
             SET(out, tex(fragmentCoords))
             SET(out, ((out * u_ColorMul) + u_ColorAdd))
-            BatchBuilder2D.DO_INPUT_OUTPUT_PREMULTIPLIED(this, out)
+            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             //out setTo (tex(fragmentCoords) + u_ColorAdd)
             //out setTo vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit)
         }
