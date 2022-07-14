@@ -1,4 +1,3 @@
-/*
 package com.soywiz.korau.module
 
 import com.soywiz.kds.*
@@ -13,12 +12,11 @@ import kotlin.math.*
 import kotlin.random.Random
 
 /*
-  fast tracker 2 module player for web audio api
-  https://github.com/a1k0n/jsxm/
-
-  Copyright (c) 2015 Andy Sloane <andy@a1k0n.net>
-
   (c) 2015-2017 firehawk/tda  (firehawk@haxor.fi)
+
+  https://mod.haxor.fi/Purple_Motion/2nd_pm.s3m
+  https://github.com/electronoora/webaudio-mod-player
+
   reading material:
   - ftp://ftp.modland.com/pub/documents/format_documentation/FastTracker%202%20v2.04%20(.xm).html
   - http://sid.ethz.ch/debian/milkytracker/milkytracker-0.90.85%2Bdfsg/resources/reference/xm-form.txt
@@ -27,7 +25,7 @@ import kotlin.random.Random
   greets to guru, alfred and ccr for their work figuring out the .xm format. :)
 */
 
-suspend fun VfsFile.readXM(): Fasttracker = Fasttracker().apply { parse(UByteArrayInt(readAll())) }
+suspend fun VfsFile.readXMOld(): Fasttracker = Fasttracker().apply { parse(UByteArrayInt(readAll())) }
 
 @Suppress("UNUSED_PARAMETER", "MemberVisibilityCanBePrivate", "FunctionName")
 class Fasttracker {
@@ -1780,4 +1778,3 @@ private fun abs(a: Double) = if (a >= 0.0) a else -a
 private fun min(a: Double, b: Double) = if (a < b) a else b
 private fun max(a: Double, b: Double) = if (a > b) a else b
 private fun max(a: Int, b: Int) = if (a > b) a else b
-*/
