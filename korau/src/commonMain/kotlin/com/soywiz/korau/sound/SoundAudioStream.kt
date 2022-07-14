@@ -18,7 +18,7 @@ class SoundAudioStream(
 ) : Sound(coroutineContext) {
     val nativeSound = this
     override val length: TimeSpan get() = stream.totalLength
-    override suspend fun decode(): AudioData = stream.toData()
+    override suspend fun decode(maxSamples: Int): AudioData = stream.toData(maxSamples)
     override suspend fun toStream(): AudioStream = stream.clone()
     override val nchannels: Int get() = stream.channels
 

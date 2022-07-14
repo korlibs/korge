@@ -1312,6 +1312,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
         use: (tex: Texture, texWidth: Int, texHeight: Int) -> Unit
     ) {
+        commandsNoWait { list ->
+            list.flush()
+        }
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setRenderBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent

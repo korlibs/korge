@@ -33,9 +33,9 @@ suspend fun main() = Korge(
     demoSelector(
         //Demo(::MainVector),
         //Demo(::MainSpine),
-        //Demo(::MainBlur),
         Demo(::MainSvgAnimation),
         listOf(
+            Demo(::MainXM),
             Demo(::MainVector),
             Demo(::MainText),
             Demo(::MainAtlas),

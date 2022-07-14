@@ -51,7 +51,7 @@ class HtmlElementAudio(
 ) : Sound(coroutineContext) {
     override val length: TimeSpan get() = audio.duration.seconds
 
-    override suspend fun decode(): AudioData =
+    override suspend fun decode(maxSamples: Int): AudioData =
         AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(audio.src)), audio.src, defaultCoroutineContext).decode()
 
     companion object {
@@ -130,7 +130,7 @@ class AudioBufferSound(
 
     override val nchannels: Int get() = buffer.numberOfChannels ?: 1
 
-    override suspend fun decode(): AudioData {
+    override suspend fun decode(maxSamples: Int): AudioData {
         if (this.buffer.isNull) return AudioData.DUMMY
         val buffer = this.buffer.audioBuffer
             ?: return AudioBufferSound(AudioBufferOrHTMLMediaElement(HtmlSimpleSound.loadSound(url)), url, defaultCoroutineContext).decode()

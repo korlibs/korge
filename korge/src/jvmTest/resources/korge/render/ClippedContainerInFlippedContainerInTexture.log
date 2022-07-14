@@ -70,6 +70,7 @@ disposeTemporalPerFrameStuff()
 flipInternal()
 finish
 ---------
+flush
 createRenderBuffer():1
 RenderBuffer[1].setSize(150, 100)
 RenderBuffer[1].set()
