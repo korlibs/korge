@@ -5,7 +5,7 @@ RenderBuffer[1].setSize(200, 200)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createBuffer():4
-programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_Premultiplied, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_InputPre, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -23,10 +23,11 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform float u_Premultiplied;
+uniform bool u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
+uniform bool u_OutputPre;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
 varying mediump vec2 v_Tex;
@@ -78,11 +79,14 @@ void main() {
 			}
 		}
 	}
-	if ((u_Premultiplied != 1.0)) {
+	if ((!(u_InputPre))) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
 	gl_FragColor.rgba = ((gl_FragColor.rgba * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	if ((!(u_OutputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	}
 }
 
 programCreate.vertex:#version 100 compatibility
@@ -135,6 +139,8 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=null, linear=false, trilin
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=false, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(u_ColorMul) = [1.0, 1.0, 1.0, 1.0]
 uboUse: 1
 uboCreate: 2
@@ -147,6 +153,8 @@ scissor: -788, -1188, 536, 536
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -169,6 +177,8 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -191,6 +201,8 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -213,6 +225,8 @@ draw: TRIANGLE_FAN, offset=7, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -237,8 +251,9 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: EQUAL, 0, 255
@@ -247,7 +262,7 @@ stencilMask: 0
 colorMask: true, true, true, true
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 draw: TRIANGLE_STRIP, offset=14, count=10, instances=1, indexType=null
 ::draw.indices: [14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
@@ -266,8 +281,9 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: EQUAL, 0, 255
@@ -276,7 +292,7 @@ stencilMask: 0
 colorMask: true, true, true, true
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 draw: TRIANGLE_STRIP, offset=24, count=10, instances=1, indexType=null
 ::draw.indices: [24, 25, 26, 27, 28, 29, 30, 31, 32, 33]
@@ -295,8 +311,9 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: NOT_EQUAL, 0, 255
@@ -322,8 +339,9 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 1, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
 stencilMask: 0
@@ -897,8 +915,9 @@ uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
 stencilMask: 0
@@ -938,9 +957,10 @@ uboSet.uniform: Uniform(u_Transform) = Matrix3D(
   [ 0, 0, 0, 1 ],
 )
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.75
-uboSet.uniform: Uniform(u_Premultiplied) = 1
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
 stencilMask: 0
@@ -969,6 +989,8 @@ scissor: -1900, -780, 808, 800
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -991,6 +1013,8 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -1013,6 +1037,8 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: NOT_EQUAL, 0, 0
@@ -1729,6 +1755,8 @@ draw: TRIANGLE_FAN, offset=631, count=701, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: ALWAYS, 0, 255
@@ -2456,9 +2484,10 @@ uboSet.uniform: Uniform(u_Transform) = Matrix3D(
 uboSet.uniform: Uniform(u_Gradientp0) = (0, 0, 0)
 uboSet.uniform: Uniform(u_Gradientp1) = (100, 100, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
 stencilFunction: NOT_EQUAL, 3, 255
@@ -2494,9 +2523,10 @@ uboSet.uniform: Uniform(u_Transform) = Matrix3D(
 uboSet.uniform: Uniform(u_Gradientp0) = (150, 150, 30)
 uboSet.uniform: Uniform(u_Gradientp1) = (130, 180, 70)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
 stencilMask: 0
@@ -2534,9 +2564,10 @@ uboSet.uniform: Uniform(u_Transform) = Matrix3D(
 uboSet.uniform: Uniform(u_Gradientp0) = (175, 100, 0)
 uboSet.uniform: Uniform(u_Gradientp1) = (0, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
-uboSet.uniform: Uniform(u_Premultiplied) = 0
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = false
+uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
 stencilMask: 0

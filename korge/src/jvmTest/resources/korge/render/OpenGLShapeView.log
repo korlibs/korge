@@ -7,10 +7,11 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform float u_Premultiplied;
+uniform bool u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
+uniform bool u_OutputPre;
 varying float v_Dist;
 varying float v_MaxDist;
 varying vec2 v_Tex;
@@ -62,11 +63,14 @@ void main() {
 			}
 		}
 	}
-	if ((u_Premultiplied != 1.0)) {
+	if ((!(u_InputPre))) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
 	gl_FragColor.rgba = ((gl_FragColor.rgba * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	if ((!(u_OutputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	}
 }
 """)
 compileShader(2001)
@@ -128,21 +132,25 @@ getUniformLocation(1001, "u_Tex3") = 7006
 activeTexture(33987)
 bindTexture(3553, 0)
 uniform1i(7006, 3)
-getUniformLocation(1001, "u_ColorMul") = 7007
-uniform4f(7007, 1.0, 1.0, 1.0, 1.0)
+getUniformLocation(1001, "u_InputPre") = 7007
+uniform1i(7007, 0)
+getUniformLocation(1001, "u_OutputPre") = 7008
+uniform1i(7008, 0)
+getUniformLocation(1001, "u_ColorMul") = 7009
+uniform4f(7009, 1.0, 1.0, 1.0, 1.0)
 clearStencil(0)
 stencilMask(255)
 clear(1024)
-getUniformLocation(1001, "u_ProgramType") = 7008
-uniform1f(7008, 0.0)
-getUniformLocation(1001, "u_Color") = 7009
-uniform4f(7009, 1.0, 1.0, 1.0, 0.49803922)
-getUniformLocation(1001, "u_GlobalAlpha") = 7010
-uniform1f(7010, 1.0)
-getUniformLocation(1001, "u_Premultiplied") = 7011
-uniform1f(7011, 0.0)
-getUniformLocation(1001, "u_GlobalPixelScale") = 7012
-uniform1f(7012, 10.0)
+getUniformLocation(1001, "u_ProgramType") = 7010
+uniform1f(7010, 0.0)
+getUniformLocation(1001, "u_Color") = 7011
+uniform4f(7011, 1.0, 1.0, 1.0, 0.49803922)
+getUniformLocation(1001, "u_GlobalAlpha") = 7012
+uniform1f(7012, 1.0)
+getUniformLocation(1001, "u_GlobalPixelScale") = 7013
+uniform1f(7013, 10.0)
+uniform1i(7007, 0)
+uniform1i(7008, 0)
 disable(2960)
 stencilMask(0)
 colorMask(true, true, true, true)
