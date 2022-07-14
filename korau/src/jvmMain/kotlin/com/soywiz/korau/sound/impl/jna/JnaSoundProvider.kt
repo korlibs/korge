@@ -233,7 +233,7 @@ class OpenALSoundNoStream(
     val data: AudioData?,
     override val name: String = "Unknown"
 ) : Sound(coroutineContext), SoundProps {
-    override suspend fun decode(): AudioData = data ?: AudioData.DUMMY
+    override suspend fun decode(maxSamples: Int): AudioData = data ?: AudioData.DUMMY
 
     override var volume: Double = 1.0
     override var pitch: Double = 1.0
