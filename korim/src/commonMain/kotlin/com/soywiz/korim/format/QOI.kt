@@ -9,6 +9,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korio.lang.ASCII
+import com.soywiz.korio.lang.LATIN1
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.readAvailable
 import com.soywiz.korio.stream.readS32BE
@@ -18,7 +19,7 @@ import com.soywiz.korio.stream.writeBytes
 
 object QOI : ImageFormat("qoi") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
-        if (s.readStringz(4, ASCII) != "qoif") return null
+        if (s.readStringz(4, LATIN1) != "qoif") return null
         val width = s.readS32BE()
         val height = s.readS32BE()
         val channels = s.readU8()

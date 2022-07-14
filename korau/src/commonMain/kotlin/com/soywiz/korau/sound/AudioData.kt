@@ -4,11 +4,15 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.arraycopy
 import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioEncodingProps
 import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.defaultAudioFormats
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.baseName
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.openUse
 import kotlin.math.min
 
 class AudioData(
@@ -39,6 +43,12 @@ enum class AudioConversionQuality { FAST }
 
 /** Change the rate, changing the pitch and the duration of the sound. */
 fun AudioData.withRate(rate: Int) = AudioData(rate, samples)
+
+suspend fun AudioData.encodeToFile(file: VfsFile, format: AudioFormats = defaultAudioFormats, props: AudioEncodingProps = AudioEncodingProps.DEFAULT) {
+    file.openUse(mode = VfsOpenMode.CREATE) {
+        format.encode(this@encodeToFile, this, file.baseName, props)
+    }
+}
 
 // @TODO: Use FFT
 //fun AudioData.withAdjustedPitch(pitch: Double = 1.0): AudioData {
