@@ -17,11 +17,9 @@ import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
-import com.soywiz.korau.sound.SoundAudioStream
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.substr
-import kotlin.coroutines.coroutineContext
 import kotlin.math.pow
 
 /**

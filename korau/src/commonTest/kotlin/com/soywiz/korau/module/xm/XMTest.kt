@@ -1,3 +1,4 @@
+/*
 package com.soywiz.korau.module.xm
 
 import com.soywiz.korau.format.WAV
@@ -38,3 +39,4 @@ class XMTest {
         //println(ev)
     }
 }
+*/

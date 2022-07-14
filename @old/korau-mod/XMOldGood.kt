@@ -2,7 +2,6 @@ package com.soywiz.korau.module
 
 import com.soywiz.kds.*
 import com.soywiz.kmem.*
-import com.soywiz.korau.format.*
 import com.soywiz.korau.internal.coerceToShort
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioStream
