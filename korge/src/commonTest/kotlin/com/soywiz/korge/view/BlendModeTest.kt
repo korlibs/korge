@@ -6,6 +6,14 @@ import kotlin.test.assertEquals
 
 class BlendModeTest {
     @Test
+    fun testToString() {
+        assertEquals("INHERIT", BlendMode.INHERIT.toString())
+        assertEquals("NONE", BlendMode.NONE.toString())
+        assertEquals("NORMAL", BlendMode.NORMAL.toString())
+        assertEquals("ADD", BlendMode.ADD.toString())
+    }
+
+    @Test
     fun testNormalOpaqueOut() {
         assertEquals(
             RGBA.float(.5f, 0f, 0f, 1f),
