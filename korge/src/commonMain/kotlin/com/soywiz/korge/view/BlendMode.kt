@@ -45,7 +45,7 @@ data class BlendMode(
         /** Doesn't blend at all. Just replaces the colors. */
         val NONE = BlendMode(name = "NONE", factors = AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)) // REPLACE
         /** Additive mixing for lighting effects */
-        val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD)
+        val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD_PRE, nonPremultipliedFactors = AG.Blending.ADD)
 
         // Unchecked
         val MULTIPLY = BlendMode(name = "MULTIPLY", factors = AG.Blending(AG.BlendFactor.DESTINATION_COLOR, AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA))
