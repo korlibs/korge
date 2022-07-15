@@ -172,11 +172,29 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
-    enum class BlendEquation(val op: String, val apply: (l: Float, r: Float) -> Float) {
-        ADD("+", { l, r -> l + r }),
-        SUBTRACT("-", { l, r -> l - r }),
-        REVERSE_SUBTRACT("r-", { l, r -> r - l }),
+    enum class BlendEquation(val op: String) {
+        ADD("+"),
+        SUBTRACT("-"),
+        REVERSE_SUBTRACT("r-"),
         ;
+
+        fun apply(l: Double, r: Double): Double = when (this) {
+            ADD -> l + r
+            SUBTRACT -> l - r
+            REVERSE_SUBTRACT -> r - l
+        }
+
+        fun apply(l: Float, r: Float): Float = when (this) {
+            ADD -> l + r
+            SUBTRACT -> l - r
+            REVERSE_SUBTRACT -> r - l
+        }
+
+        fun apply(l: Int, r: Int): Int = when (this) {
+            ADD -> l + r
+            SUBTRACT -> l - r
+            REVERSE_SUBTRACT -> r - l
+        }
 
         companion object {
             val VALUES = values()
@@ -185,19 +203,31 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     enum class BlendFactor(
         val op: String,
-        val get: (srcC: Float, srcA: Float, dstC: Float, dstA: Float) -> Float
     ) {
-        DESTINATION_ALPHA("dstA", { _, _, _, dstA -> dstA }),
-        DESTINATION_COLOR("dstRGB", { _, _, dstC, _ -> dstC }),
-        ONE("1", { _, _, _, _ -> 1f }),
-        ONE_MINUS_DESTINATION_ALPHA("(1 - dstA(", { _, _, _, dstA -> 1f - dstA }),
-        ONE_MINUS_DESTINATION_COLOR("(1 - dstRGB(", { _, _, dstC, _ -> 1f - dstC }),
-        ONE_MINUS_SOURCE_ALPHA("(1 - srcA)", { _, srcA, _, _ -> 1f - srcA }),
-        ONE_MINUS_SOURCE_COLOR("(1 - srcRGB)", { srcC, _, _, _ -> 1f - srcC }),
-        SOURCE_ALPHA("srcA", { _, srcA, _, _ -> srcA }),
-        SOURCE_COLOR("srcRGB", { srcC, _, _, _ -> srcC }),
-        ZERO("0", { _, _, _, _ -> 0f }),
+        DESTINATION_ALPHA("dstA"),
+        DESTINATION_COLOR("dstRGB"),
+        ONE("1"),
+        ONE_MINUS_DESTINATION_ALPHA("(1 - dstA)"),
+        ONE_MINUS_DESTINATION_COLOR("(1 - dstRGB)"),
+        ONE_MINUS_SOURCE_ALPHA("(1 - srcA)"),
+        ONE_MINUS_SOURCE_COLOR("(1 - srcRGB)"),
+        SOURCE_ALPHA("srcA"),
+        SOURCE_COLOR("srcRGB"),
+        ZERO("0"),
         ;
+
+        fun get(srcC: Double, srcA: Double, dstC: Double, dstA: Double): Double = when (this) {
+            DESTINATION_ALPHA -> dstA
+            DESTINATION_COLOR -> dstC
+            ONE -> 1.0
+            ONE_MINUS_DESTINATION_ALPHA -> 1.0 - dstA
+            ONE_MINUS_DESTINATION_COLOR -> 1.0 - dstC
+            ONE_MINUS_SOURCE_ALPHA -> 1.0 - srcA
+            ONE_MINUS_SOURCE_COLOR -> 1.0 - srcC
+            SOURCE_ALPHA -> srcA
+            SOURCE_COLOR -> srcC
+            ZERO -> 0.0
+        }
 
         companion object {
             val VALUES = values()
@@ -274,28 +304,28 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
         override fun toString(): String = "Blending(outRGB = (srcRGB * ${srcRGB.op}) ${eqRGB.op} (dstRGB * ${dstRGB.op}), outA = (srcA * ${srcA.op}) ${eqA.op} (dstA * ${dstA.op}))"
 
-        private fun applyColorComponent(srcC: Float, dstC: Float, srcA: Float, dstA: Float): Float {
+        private fun applyColorComponent(srcC: Double, dstC: Double, srcA: Double, dstA: Double): Double {
             return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
         }
 
-        private fun applyAlphaComponent(srcA: Float, dstA: Float): Float {
-            return eqRGB.apply(srcA * this.srcA.get(0f, srcA, 0f, dstA), dstA * this.dstA.get(0f, srcA, 0f, dstA))
+        private fun applyAlphaComponent(srcA: Double, dstA: Double): Double {
+            return eqRGB.apply(srcA * this.srcA.get(0.0, srcA, 0.0, dstA), dstA * this.dstA.get(0.0, srcA, 0.0, dstA))
         }
 
         fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
-            out.r = applyColorComponent(src.r, dst.r, src.a, dst.a)
-            out.g = applyColorComponent(src.g, dst.g, src.a, dst.a)
-            out.b = applyColorComponent(src.b, dst.b, src.a, dst.a)
-            out.a = applyAlphaComponent(src.a, dst.a)
+            out.rd = applyColorComponent(src.rd, dst.rd, src.ad, dst.ad)
+            out.gd = applyColorComponent(src.gd, dst.gd, src.ad, dst.ad)
+            out.bd = applyColorComponent(src.bd, dst.bd, src.ad, dst.ad)
+            out.ad = applyAlphaComponent(src.ad, dst.ad)
             return out
         }
 
         fun apply(src: RGBA, dst: RGBA): RGBA {
-            val srcA = src.af
-            val dstA = dst.af
-            val r = applyColorComponent(src.rf, dst.rf, srcA, dstA)
-            val g = applyColorComponent(src.gf, dst.gf, srcA, dstA)
-            val b = applyColorComponent(src.bf, dst.bf, srcA, dstA)
+            val srcA = src.ad
+            val dstA = dst.ad
+            val r = applyColorComponent(src.rd, dst.rd, srcA, dstA)
+            val g = applyColorComponent(src.gd, dst.gd, srcA, dstA)
+            val b = applyColorComponent(src.bd, dst.bd, srcA, dstA)
             val a = applyAlphaComponent(srcA, dstA)
             return RGBA.float(r, g, b, a)
         }
@@ -325,6 +355,10 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             )
             val ADD = Blending(
                 BlendFactor.SOURCE_ALPHA, BlendFactor.DESTINATION_ALPHA,
+                BlendFactor.ONE, BlendFactor.ONE
+            )
+            val ADD_PRE = Blending(
+                BlendFactor.ONE, BlendFactor.ONE,
                 BlendFactor.ONE, BlendFactor.ONE
             )
         }

@@ -23,6 +23,7 @@ data class BlendMode(
     val _hashCode: Int = factors.hashCode() + nonPremultipliedFactors.hashCode() * 7 + name.hashCode() * 17
     override fun hashCode(): Int = _hashCode
     override fun equals(other: Any?): Boolean = (this === other) || (other is BlendMode && this.factors == other.factors && nonPremultipliedFactors == other.nonPremultipliedFactors && name == other.name)
+    override fun toString(): String = name ?: super.toString()
 
     fun factors(premultiplied: Boolean): AG.Blending = if (premultiplied) factors else nonPremultipliedFactors
 
@@ -44,7 +45,7 @@ data class BlendMode(
         /** Doesn't blend at all. Just replaces the colors. */
         val NONE = BlendMode(name = "NONE", factors = AG.Blending(AG.BlendFactor.ONE, AG.BlendFactor.ZERO)) // REPLACE
         /** Additive mixing for lighting effects */
-        val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD)
+        val ADD = BlendMode(name = "ADD", factors = AG.Blending.ADD_PRE, nonPremultipliedFactors = AG.Blending.ADD)
 
         // Unchecked
         val MULTIPLY = BlendMode(name = "MULTIPLY", factors = AG.Blending(AG.BlendFactor.DESTINATION_COLOR, AG.BlendFactor.ONE_MINUS_SOURCE_ALPHA))
