@@ -130,6 +130,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 
         fun float(array: FloatArray, index: Int = 0): RGBA = float(array[index + 0], array[index + 1], array[index + 2], array[index + 3])
         fun float(r: Float, g: Float, b: Float, a: Float): RGBA = unclamped(f2i(r), f2i(g), f2i(b), f2i(a))
+        fun float(r: Double, g: Double, b: Double, a: Double): RGBA = unclamped(d2i(r), d2i(g), d2i(b), d2i(a))
+        @Deprecated("")
         inline fun float(r: Number, g: Number, b: Number, a: Number = 1f): RGBA = float(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
         fun unclamped(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntUnchecked(r, g, b, a))
 		operator fun invoke(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntClamped(r, g, b, a))

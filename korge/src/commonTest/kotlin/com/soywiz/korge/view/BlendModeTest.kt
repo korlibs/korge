@@ -17,8 +17,8 @@ class BlendModeTest {
     fun testNormal() {
         assertEquals(Colors["#7f0000ff"], BlendMode.NORMAL.apply(false, Colors["#7f0000ff"], Colors["#ffffffff"]))
         assertEquals(Colors["#7f0000ff"], BlendMode.NORMAL.apply(true, Colors["#7f0000ff"], Colors["#ffffffff"]))
-        assertEquals(Colors["#bf7f7fff"], BlendMode.NORMAL.apply(false, Colors["#7f00007f"], Colors["#ffffffff"]))
-        assertEquals(Colors["#ff7f7fff"], BlendMode.NORMAL.apply(true, Colors["#7f00007f"], Colors["#ffffffff"]))
+        assertEquals(Colors["#bf8080ff"], BlendMode.NORMAL.apply(false, Colors["#7f00007f"], Colors["#ffffffff"]))
+        assertEquals(Colors["#ff8080ff"], BlendMode.NORMAL.apply(true, Colors["#7f00007f"], Colors["#ffffffff"]))
 
         assertEquals("Blending(outRGB = (srcRGB * 1) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA)))", BlendMode.NORMAL.factors.toString())
         assertEquals("Blending(outRGB = (srcRGB * srcA) + (dstRGB * (1 - srcA)), outA = (srcA * 1) + (dstA * (1 - srcA)))", BlendMode.NORMAL.nonPremultipliedFactors.toString())
