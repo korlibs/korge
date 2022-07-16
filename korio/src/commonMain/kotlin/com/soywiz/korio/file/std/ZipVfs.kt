@@ -82,7 +82,7 @@ suspend fun ZipVfs(
                             8 -> if (useNativeDecompression) Deflate else DeflatePortable
                             else -> TODO("Not implemented zip method ${entry.compressionMethod}")
                         }
-                        compressedData.uncompressed(method).withLength(uncompressedSize.toLong()).toAsyncStream()
+                        compressedData.uncompressed(method).withLength(entry.uncompressedSize).toAsyncStream()
                         //val compressed = compressedData.uncompressed(method).readAll()
                         //val compressed = compressedData.readAll().uncompress(method)
                         //if (crc != 0) {
