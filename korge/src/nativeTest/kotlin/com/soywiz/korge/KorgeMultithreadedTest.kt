@@ -51,7 +51,7 @@ class KorgeMultithreadedTest {
 
     @Test
     fun test2() {
-        ColorMatrixFilter.getProgram(true)
+        ColorMatrixFilter.getProgram()
         val log = runInWorker {
             val log = arrayListOf<String>()
             val viewsForTesting = ViewsForTesting()
@@ -72,8 +72,7 @@ class KorgeMultithreadedTest {
                     start { }
                     end { }
                 }
-                ColorMatrixFilter.getProgram(true)
-                ColorMatrixFilter.getProgram(false)
+                ColorMatrixFilter.getProgram()
                 this.views.render()
                 val path = buildVectorPath { circle(0, 0, 100) }
                 path.getCurvesList()
@@ -84,13 +83,13 @@ class KorgeMultithreadedTest {
 
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"
-                log += "program=${ColorMatrixFilter.getProgram(true).fragment.type == ShaderType.FRAGMENT}"
+                log += "program=${ColorMatrixFilter.getProgram().fragment.type == ShaderType.FRAGMENT}"
                 log += "curves=${curves.beziers.size}"
                 log += "convex=${curves.isConvex}"
             }
             log
         }
-        ColorMatrixFilter.getProgram(false)
+        ColorMatrixFilter.getProgram()
         assertEquals(
             """
                 rect.filterScale=0.125
