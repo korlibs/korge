@@ -20,6 +20,12 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
     abstract override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int)
     abstract override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int)
 
+    fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int): RgbaArray {
+        val out = RgbaArray(width * height)
+        readPixelsUnsafe(x, y, width, height, out)
+        return out
+    }
+
     override fun setRgba(x: Int, y: Int, v: RGBA) {
         this.tempRgba[0] = v
         writePixelsUnsafe(x, y, 1, 1, tempRgba, 0)
