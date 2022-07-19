@@ -164,7 +164,9 @@ class TextOld : View(), IText, IHtml {
                         filtering = false,
                         colorMul = RGBA.multiply(bgcolor, renderColorMul),
                         colorAdd = colorAdd,
-                        blendMode = renderBlendMode
+                        blendMode = renderBlendMode,
+                        premultiplied = Bitmaps.white.premultiplied,
+                        wrap = false
                     )
                 }
 			}

@@ -192,7 +192,8 @@ abstract class ShaderFilter : Filter {
                     colorMul = renderColorMul,
                     blendMode = blendMode,
                     //program = if (texture.premultiplied) programPremult else programNormal
-                    program = programProvider.getProgram(texture.premultiplied)
+                    program = programProvider.getProgram(texture.premultiplied),
+                    premultiplied = slice.premultiplied, wrap = false,
                 )
                 //ctx.batch.flush()
             }

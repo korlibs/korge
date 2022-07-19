@@ -297,6 +297,7 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
             batch.setStateFast(texture, true, viewBlendMode, null, icount = trianglesCount, vcount = vertexCount)
 
             val transform = this.globalMatrix
+            val premultiplied = texture.premultiplied
 
             for (n in 0 until trianglesCount) {
                 batch.addIndexRelative(triangle[trianglesOffset + n].toInt())
@@ -310,7 +311,10 @@ class SkeletonView(val skeleton: Skeleton, val animationState: AnimationState?) 
                 val v = verticesData[verticesOffset + n * vertexSize + 4]
                 val realX = transform.transformXf(x, y)
                 val realY = transform.transformYf(x, y)
-                batch.addVertex(realX, realY, u, v, colorMul, colorAdd)
+                batch.addVertex(
+                    realX, realY, u, v, colorMul, colorAdd,
+                    premultiplied = premultiplied, wrap = false
+                )
             }
 
             //batch.flush()

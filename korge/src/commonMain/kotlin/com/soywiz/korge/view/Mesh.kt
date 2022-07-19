@@ -68,7 +68,7 @@ open class Mesh(
 	override fun renderInternal(ctx: RenderContext) {
 		recomputeVerticesIfRequired()
         ctx.useBatcher { batch ->
-            batch.drawVertices(tva, ctx.getTex(textureNN).base, true, renderBlendMode)
+            batch.drawVertices(tva, ctx.getTex(textureNN).base, true, renderBlendMode, premultiplied = textureNN.base.premultiplied, wrap = false)
         }
 	}
 

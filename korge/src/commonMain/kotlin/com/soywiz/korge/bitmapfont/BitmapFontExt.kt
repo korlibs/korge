@@ -84,7 +84,9 @@ fun BitmapFont.drawText(
                 colorMul = colMul,
                 colorAdd = colAdd,
                 blendMode = blendMode,
-                filtering = filtering
+                filtering = filtering,
+                premultiplied = tex.base.premultiplied,
+                wrap = false,
             )
             val kerningOffset = kernings[BitmapFont.Kerning.buildKey(c1, c2)]?.amount ?: 0
             dx += glyph.xadvance + kerningOffset

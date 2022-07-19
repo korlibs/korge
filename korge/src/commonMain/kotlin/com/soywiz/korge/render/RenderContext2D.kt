@@ -157,7 +157,9 @@ class RenderContext2D(
             filtering = filtering,
             m = m,
             colorMul = color,
-            blendMode = blendMode
+            blendMode = blendMode,
+            premultiplied = Bitmaps.white.premultiplied,
+            wrap = false,
         )
     }
 
@@ -198,12 +200,12 @@ class RenderContext2D(
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: Matrix? = null) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, matrix)
+        batch.drawVertices(texturedVertexArray, matrix, premultiplied = Bitmaps.white.premultiplied, wrap = false)
     }
 
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
         batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, m)
+        batch.drawVertices(texturedVertexArray, m, premultiplied = Bitmaps.white.premultiplied, wrap = false)
     }
 
     /** Renders a [texture] with the [blendMode] at [x], [y] scaling it by [scale].
@@ -219,7 +221,9 @@ class RenderContext2D(
             filtering = filtering,
 			m = m,
 			colorMul = multiplyColor,
-			blendMode = blendMode
+			blendMode = blendMode,
+            premultiplied = texture.premultiplied,
+            wrap = false,
 		)
 	}
 
