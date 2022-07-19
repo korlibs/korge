@@ -45,7 +45,7 @@ class WaveFilter(
             SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
             SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
             //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
 	}
 

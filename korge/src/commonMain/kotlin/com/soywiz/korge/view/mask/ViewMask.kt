@@ -74,7 +74,6 @@ class ViewRenderPhaseMask(var mask: View) : ViewRenderPhase {
                 batcher.setTemporalUniform(DefaultShaders.u_Tex2, AG.TextureUnit(maskFB.tex), flush = true) {
                     batcher.drawQuad(
                         Texture(viewFB), m = mask.globalMatrix, program = MERGE_ALPHA_PROGRAM,
-                        premultiplied = viewFB.tex.premultiplied, wrap = false,
                     )
                 }
             }

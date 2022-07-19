@@ -44,7 +44,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
                    }
                 }, hasStencil = true) { tex ->
                     ctx.useBatcher { batcher ->
-                        batcher.drawQuad(tex, premultiplied = tex.premultiplied, wrap = false)
+                        batcher.drawQuad(tex)
                     }
                 }
                 ctx.renderToTexture(100, 100, render = {
@@ -53,7 +53,7 @@ class ViewsOpenglJvmTest : ViewsForTesting(log = true) {
                     }
                 }, hasDepth = true, hasStencil = true) { tex ->
                     ctx.useBatcher { batcher ->
-                        batcher.drawQuad(tex, 100f, 0f, premultiplied = tex.premultiplied, wrap = false)
+                        batcher.drawQuad(tex, 100f, 0f)
                     }
                 }
             }

@@ -91,7 +91,7 @@ class Convolute3Filter(
             IF(u_ApplyAlpha ne 1f.lit) {
                 SET(out["a"], tex(fragmentCoords)["a"])
             }
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

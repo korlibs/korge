@@ -19,7 +19,7 @@ class SwizzleColorsFilter(initialSwizzle: String = "rgba") : ShaderFilter() {
         class SwizzleProgram(val swizzle: String) : BaseProgramProvider() {
             override val fragment = Filter.DEFAULT_FRAGMENT.appending {
                 SET(out, out[swizzle])
-                BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+                //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             }
         }
 

@@ -72,7 +72,7 @@ class TransitionFilter(
             SET(alpha, smoothstep(clamp01(u_Ratio - spread), clamp01(u_Ratio + spread), alpha))
 
             SET(out, (out * alpha))
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             //SET(out, texture2D(u_Mask, v_Tex01))
             //SET(out, vec4(1.lit, 0.lit, 1.lit, 1.lit))
         }

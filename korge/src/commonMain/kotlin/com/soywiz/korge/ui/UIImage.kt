@@ -80,7 +80,7 @@ class UIImage(
             )
         }
         ctx.useBatcher { batch ->
-            if (bgcolor.a != 0) batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = bgcolor, premultiplied = Bitmaps.white.premultiplied, wrap = false)
+            if (bgcolor.a != 0) batch.drawQuad(ctx.getTex(Bitmaps.white), 0f, 0f, width.toFloat(), height.toFloat(), globalMatrix, colorMul = bgcolor)
             batch.drawVertices(vertices, ctx.getTex(bitmap).base, smoothing, renderBlendMode, premultiplied = bitmap.base.premultiplied, wrap = false)
         }
     }

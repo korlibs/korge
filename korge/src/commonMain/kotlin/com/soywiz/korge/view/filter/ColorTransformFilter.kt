@@ -23,7 +23,7 @@ class ColorTransformFilter(colorTransform: ColorTransform) : ShaderFilter() {
         override val fragment = FragmentShaderDefault {
             SET(out, tex(fragmentCoords))
             SET(out, ((out * u_ColorMul) + u_ColorAdd))
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             //out setTo (tex(fragmentCoords) + u_ColorAdd)
             //out setTo vec4(1f.lit, 1f.lit, 1f.lit, 1f.lit)
         }
