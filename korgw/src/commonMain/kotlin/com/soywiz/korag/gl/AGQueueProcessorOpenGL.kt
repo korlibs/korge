@@ -165,7 +165,7 @@ class AGQueueProcessorOpenGL(
         programs.getOrCreate(programId).glProgramInfo = GLShaderCompiler.programCreate(
             gl,
             this.config.copy(programConfig = config ?: this.config.programConfig),
-            program
+            program, debugName = program.name
         )
     }
 
