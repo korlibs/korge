@@ -23,6 +23,7 @@ import com.soywiz.korev.ReshapeEvent
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korev.dispatch
 import com.soywiz.korge.Korge
+import com.soywiz.korge.KorgeReload
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.Components
@@ -206,6 +207,7 @@ class Views constructor(
 	}
 
     suspend fun closeSuspend() {
+        KorgeReload.unregisterEventDispatcher()
         closeables.fastForEach { it.close() }
         closeables.clear()
         coroutineContext.cancel()

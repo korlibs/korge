@@ -129,6 +129,7 @@ open class KorgeJavaExecWithAutoreload : KorgeJavaExec() {
         //val outputJar = agentJarTask.outputs.files.files.first()
         //println("agentJarTask=$outputJar")
         jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
+        environment("KORGE_AUTORELOAD", "true")
 
         super.exec()
     }
