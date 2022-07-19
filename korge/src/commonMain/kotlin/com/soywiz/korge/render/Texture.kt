@@ -56,7 +56,7 @@ class Texture(
     /** Bottom position of the region of the texture in pixels */
 	val bottom: Int = base.height
 ) : Closeable, TextureCoords {
-    /** Wether the texture is multiplied or not */
+    /** Whether the texture is multiplied or not */
 	override val premultiplied get() = base.premultiplied
     /** Left position of the region of the texture in pixels */
 	val x: Int get() = left
