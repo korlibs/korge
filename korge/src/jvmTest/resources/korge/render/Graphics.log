@@ -5,10 +5,12 @@ createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=71, height=71), 71, 71)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[49152])
+Buffer[2].afterSetMem(mem[4])
+Buffer[3].afterSetMem(mem[4])
+Buffer[4].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 1, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_DoWrap, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_InputPre, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_InputPre, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -20,19 +22,19 @@ programCreate.fragment:#version 100 compatibility
 	  #define mediump 
 	  #define lowp 
 #endif
-uniform bool u_DoWrap;
 uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
 uniform sampler2D u_Tex2;
 uniform sampler2D u_Tex3;
-uniform bool u_InputPre;
 uniform bool u_OutputPre;
+varying lowp float v_Wrap;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
+varying lowp float v_InputPre;
 varying vec4 v_Col;
 void main() {
 	vec4 temp0;
-	if (u_DoWrap) {
+	if ((v_Wrap != 0.0)) {
 		temp0.xy = fract(v_Tex.xy);
 	}
 	else {
@@ -54,7 +56,7 @@ void main() {
 			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	if ((!(u_InputPre))) {
+	if ((v_InputPre == 0.0)) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * v_Col);
@@ -79,6 +81,8 @@ programCreate.vertex:#version 100 compatibility
 #endif
 attribute mediump vec2 a_Tex;
 attribute lowp float a_TexIndex;
+attribute lowp float a_InputPre;
+attribute lowp float a_Wrap;
 attribute lowp vec4 a_Col;
 attribute vec4 a_Col2;
 attribute highp vec2 a_Pos;
@@ -86,11 +90,15 @@ uniform mat4 u_ProjMat;
 uniform mat4 u_ViewMat;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
+varying lowp float v_InputPre;
+varying lowp float v_Wrap;
 varying vec4 v_Col;
 varying vec4 v_Col2;
 void main() {
 	v_Tex = a_Tex;
 	v_TexIndex = a_TexIndex;
+	v_InputPre = a_InputPre;
+	v_Wrap = a_Wrap;
 	v_Col = vec4((a_Col.rgb * a_Col.a), a_Col.a);
 	v_Col2 = a_Col2;
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
@@ -98,7 +106,7 @@ void main() {
 
 programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_InputPre]), VertexData(_buffer=Buffer[3], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -118,7 +126,6 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_InputPre) = true
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
@@ -133,15 +140,15 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
-::draw.vertex[0]: a_Pos[-60,-60], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[11,-60], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[11,11], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[-60,11], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.attributes[4]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_InputPre), Attribute(a_Wrap)]
+::draw.vertex[0]: a_Pos[-60,-60], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.vertex[1]: a_Pos[11,-60], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.vertex[2]: a_Pos[11,11], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.vertex[3]: a_Pos[-60,11], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
-createBuffer():4
-programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_InputPre, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
+createBuffer():6
+programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -159,7 +166,6 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform bool u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
@@ -167,6 +173,7 @@ uniform bool u_OutputPre;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
 varying mediump vec2 v_Tex;
+varying lowp float v_InputPre;
 void main() {
 	vec2 temp3;
 	vec4 temp0;
@@ -215,7 +222,7 @@ void main() {
 			}
 		}
 	}
-	if ((!(u_InputPre))) {
+	if ((v_InputPre == 0.0)) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
@@ -252,10 +259,10 @@ void main() {
 }
 
 programUse: 2
-bufferCreate: 5
-Buffer[4].afterSetMem(mem[16384])
+bufferCreate: 7
+Buffer[6].afterSetMem(mem[16384])
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[4], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[6], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
 vaoUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -274,7 +281,6 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=null, linear=true, triline
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_InputPre) = false
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboSet.uniform: Uniform(u_ColorMul) = [1.0, 1.0, 1.0, 1.0]
 uboUse: 1
@@ -291,7 +297,6 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
-uboSet.uniform: Uniform(u_InputPre) = false
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 2
 disable: STENCIL
@@ -1205,7 +1210,6 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
-uboSet.uniform: Uniform(u_InputPre) = false
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 2
 disable: STENCIL
@@ -1301,12 +1305,14 @@ createTexture():1
 Texture[1].uploadedBitmap(SyncBitmapSource(rgba=true, width=64, height=64), 64, 64)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[49152])
+Buffer[2].afterSetMem(mem[4])
+Buffer[3].afterSetMem(mem[4])
+Buffer[4].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
 programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_InputPre]), VertexData(_buffer=Buffer[3], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -1325,7 +1331,6 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
-uboSet.uniform: Uniform(u_InputPre) = false
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
@@ -1340,11 +1345,11 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
-::draw.vertex[0]: a_Pos[236.55515,68.68465], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[291.98077,100.68465], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[259.98077,156.11028], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[204.55515,124.110275], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.attributes[4]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_InputPre), Attribute(a_Wrap)]
+::draw.vertex[0]: a_Pos[236.55515,68.68465], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[291.98077,100.68465], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[259.98077,156.11028], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[204.55515,124.110275], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()

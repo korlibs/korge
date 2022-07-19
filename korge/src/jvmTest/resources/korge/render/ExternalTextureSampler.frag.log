@@ -10,20 +10,20 @@
 	  #define mediump 
 	  #define lowp 
 #endif
-uniform bool u_DoWrap;
 uniform samplerExternalOES u_Tex0;
 uniform samplerExternalOES u_Tex1;
 uniform samplerExternalOES u_Tex2;
 uniform samplerExternalOES u_Tex3;
-uniform bool u_InputPre;
 uniform bool u_OutputPre;
+varying lowp float v_Wrap;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
+varying lowp float v_InputPre;
 varying vec4 v_Col2;
 varying vec4 v_Col;
 void main() {
 	vec4 temp0;
-	if (u_DoWrap) {
+	if ((v_Wrap != 0.0)) {
 		temp0.xy = fract(v_Tex.xy);
 	}
 	else {
@@ -45,7 +45,7 @@ void main() {
 			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	if ((!(u_InputPre))) {
+	if ((v_InputPre == 0.0)) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	temp0 = ((v_Col2 - vec4(0.5)) * 2.0);
