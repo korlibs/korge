@@ -10,6 +10,7 @@ import com.soywiz.korio.annotations.KorInternal
 @KorInternal
 interface AGQueueProcessor {
     // EXTRA
+    fun listStart(): Unit = Unit
     fun contextLost()
     // SYNC
     fun flush()

@@ -702,7 +702,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture =
         Texture(premultiplied, targetKind)
 
-    open fun createBuffer(): Buffer = commandsNoWait { Buffer(it) }
+    open fun createBuffer(): Buffer = commandsNoWaitNoExecute { Buffer(it) }
     @Deprecated("")
     fun createIndexBuffer() = createBuffer()
     @Deprecated("")
@@ -1564,6 +1564,15 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val result = block(_list)
         if (!multithreadedRendering) _executeList(_list)
         return result
+    }
+
+    /**
+     * Queues commands without waiting. In non-multithreaded mode, not even executing
+     */
+    @OptIn(ExperimentalContracts::class)
+    inline fun <T> commandsNoWaitNoExecute(block: (AGList) -> T): T {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        return block(_list)
     }
 
     /**
