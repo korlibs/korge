@@ -31,7 +31,8 @@ object KorgeReload {
     }
 
     fun unregisterEventDispatcher() {
-        KorgeReload_eventDispatcher = null
+        if (!Platform.runtime.isJvm) return // Prevent mutation in K/N
+        if (KorgeReload_eventDispatcher != null) KorgeReload_eventDispatcher = null
     }
 
     //fun <T : Any> getReloadedClass(clazz: KClass<T>): KClass<T> = KorgeReload_getReloadedClass(clazz)
