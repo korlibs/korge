@@ -207,8 +207,9 @@ open class Text(
             tempMatrix.copyFrom(globalMatrix)
             tempMatrix.pretranslate(container.x, container.y)
             ctx.useBatcher { batch ->
-                batch.setStateFast((font as BitmapFont).baseBmp, smoothing, renderBlendMode, null, icount = tva.icount, vcount = tva.vcount)
-                batch.drawVertices(tva, tempMatrix)
+                val tex = (font as BitmapFont).baseBmp
+                batch.setStateFast(tex, smoothing, renderBlendMode, null, icount = tva.icount, vcount = tva.vcount)
+                batch.drawVertices(tva, tempMatrix, premultiplied = tex.premultiplied, wrap = false)
             }
         } else {
             super.renderInternal(ctx)

@@ -111,6 +111,7 @@ import samples.fleks.MainFleksSample
 import samples.minesweeper.MainMineSweeper
 import samples.pong.MainPong
 import samples.tictactoeswf.MainTicTacToeSwf
+import samples.*
 
 suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
@@ -124,9 +125,10 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainVector),
-        //Demo(::MainSpine),
-        Demo(::MainSvgAnimation),
+        Demo(::MainSpine),
+        //Demo(::MainBlending),
         listOf(
+            Demo(::MainBlending),
             Demo(::MainXM),
             Demo(::MainVector),
             Demo(::MainText),

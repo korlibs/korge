@@ -59,7 +59,7 @@ class ColorMatrixFilter(colorMatrix: Matrix3D, blendRatio: Double = 1.0) : Shade
         override val fragment: FragmentShader = FragmentShaderDefault {
             SET(out, tex(fragmentCoords))
             SET(out, mix(out, (u_ColorMatrix * out), u_BlendRatio))
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

@@ -54,7 +54,7 @@ class PageFilter(
                 }
             }
             SET(out, tex(fragmentCoords + DefaultShaders.t_Temp0["yx"]))
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

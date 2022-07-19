@@ -146,7 +146,9 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
                     filtering = smoothing,
                     colorMul = renderColorMul,
                     colorAdd = renderColorAdd,
-                    blendMode = renderBlendMode
+                    blendMode = renderBlendMode,
+                    premultiplied = tex.base.premultiplied,
+                    wrap = false,
                 )
             } else {
                 batch.drawQuad(
@@ -159,7 +161,9 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
                     filtering = smoothing,
                     colorMul = renderColorMul,
                     colorAdd = renderColorAdd,
-                    blendMode = renderBlendMode
+                    blendMode = renderBlendMode,
+                    premultiplied = tex.base.premultiplied,
+                    wrap = false,
                 )
             }
         }

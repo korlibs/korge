@@ -64,7 +64,9 @@ class ViewRenderPhaseBackdropFilter(var filter: Filter) : ViewRenderPhase {
                         flush = true
                     ) {
                         //batcher.drawQuad(bgrtex, x = 0f, y = 0f, program = MERGE_ALPHA)
-                        batcher.drawQuad(bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA)
+                        batcher.drawQuad(
+                            bgrtex!!, x = 0f, y = 0f, m = view.parent!!.globalMatrix, program = MERGE_ALPHA,
+                        )
                         //batcher.drawQuad(mask, x = 0f, y = 0f, m = view.globalMatrix, program = MERGE_ALPHA)
                     }
                 }

@@ -651,6 +651,7 @@ samples {
                 //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
                 val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
                 jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
+                environment("KORGE_AUTORELOAD", "true")
             }
         }
 

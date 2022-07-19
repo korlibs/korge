@@ -46,7 +46,10 @@ import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.lang.currentThreadId
+import com.soywiz.korio.lang.currentThreadName
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.unsupported
 import com.soywiz.korma.geom.MajorOrder
 import com.soywiz.korma.geom.Matrix3D
@@ -79,6 +82,20 @@ class AGQueueProcessorOpenGL(
     )
 
     val contextVersion: Int get() = globalState.contextVersion
+
+    override fun listStart() {
+        if (globalState.renderThreadId == -1L) {
+            globalState.renderThreadId = currentThreadId
+            globalState.renderThreadName = currentThreadName
+            if (currentThreadName?.contains("DefaultDispatcher-worker") == true) {
+                println("DefaultDispatcher-worker!")
+                printStackTrace()
+            }
+        }
+        if (globalState.renderThreadId != currentThreadId) {
+            println("AGQueueProcessorOpenGL.listStart: CALLED FROM DIFFERENT THREAD! ${globalState.renderThreadName}:${globalState.renderThreadId} != $currentThreadName:$currentThreadId")
+        }
+    }
 
     override fun contextLost() {
         globalState.contextVersion++
@@ -148,7 +165,7 @@ class AGQueueProcessorOpenGL(
         programs.getOrCreate(programId).glProgramInfo = GLShaderCompiler.programCreate(
             gl,
             this.config.copy(programConfig = config ?: this.config.programConfig),
-            program
+            program, debugName = program.name
         )
     }
 

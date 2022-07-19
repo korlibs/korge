@@ -69,6 +69,7 @@ open class RectBase(
         //super.renderInternal(ctx)
 	}
 
+    var wrapTexture: Boolean = false
     var program: Program? = null
     private var _programUniforms: AG.UniformValues? = null
     var programUniforms: AG.UniformValues
@@ -84,7 +85,8 @@ open class RectBase(
             batch.setTemporalUniforms(_programUniforms) {
                 batch.drawVertices(
                     vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
-                    program = program
+                    program = program,
+                    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
                 )
             }
         }

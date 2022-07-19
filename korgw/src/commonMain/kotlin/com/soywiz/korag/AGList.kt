@@ -75,6 +75,8 @@ class AGManagedObjectPool(val name: String, val checked: Boolean = true) {
 //@KorIncomplete
 class AGGlobalState(val checked: Boolean = false) {
     internal var contextVersion = 0
+    internal var renderThreadId: Long = -1L
+    internal var renderThreadName: String? = null
     internal val vaoIndices = AGManagedObjectPool("vao", checked = checked)
     internal val uboIndices = AGManagedObjectPool("ubo", checked = checked)
     internal val bufferIndices = AGManagedObjectPool("buffer", checked = checked)
@@ -137,11 +139,17 @@ class AGList(val globalState: AGGlobalState) {
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
         var pending = maxCount
         val processor = this@processBlocking
+
+        processor.listStart()
+
         while (true) {
             if (pending-- == 0) break
             // @TODO: Wait for more data
-            if (_data.size < 1) break
-            val data = read()
+            val data: Int = _lock {
+                if (_data.size <= 0) return@processBlocking false
+                _data.removeFirst()
+            }
+
             val cmd = data.extract8(24)
             when (cmd) {
                 CMD_FLUSH -> {

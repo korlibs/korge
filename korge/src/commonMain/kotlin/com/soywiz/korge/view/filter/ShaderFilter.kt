@@ -41,29 +41,31 @@ abstract class ShaderFilter : Filter {
 
         val Program.ExpressionBuilder.v_Tex01: Operand get() = (DefaultShaders.v_Tex["xy"] / u_MaxTexCoords)
 
-        val Program.ExpressionBuilder.fragmentCoords01 get() = DefaultShaders.v_Tex["xy"]
-        val Program.ExpressionBuilder.fragmentCoords get() = fragmentCoords01 * u_TextureSize
-        fun Program.ExpressionBuilder.tex(coords: Operand) = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
+        val Program.ExpressionBuilder.fragmentCoords01: Operand get() = DefaultShaders.v_Tex["xy"]
+        val Program.ExpressionBuilder.fragmentCoords: Operand get() = fragmentCoords01 * u_TextureSize
+        // @TODO: Here it should premultiply if required
+        fun Program.ExpressionBuilder.tex(coords: Operand): Operand = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
     }
 
     interface ProgramProvider {
-        fun getProgram(premultiplied: Boolean): Program
+        fun getProgram(): Program
     }
 
     open class BaseProgramProvider : ProgramProvider {
         companion object : BaseProgramProvider()
 
-        protected fun createProgram(vertex: VertexShader, fragment: FragmentShader, premultiplied: Boolean): Program {
+        protected fun createProgram(vertex: VertexShader, fragment: FragmentShader): Program {
             return Program(vertex, fragment.appending {
-                // Premultiplied
-                if (!premultiplied) {
-                    SET(out["rgb"], out["rgb"] * out["a"])
-                }
+                BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+                //// Premultiplied
+                //if (!premultiplied) {
+                //    SET(out["rgb"], out["rgb"] * out["a"])
+                //}
 
                 // Color multiply and addition
                 // @TODO: Kotlin.JS BUG
                 //out setTo (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f, .5f, .5f, .5f)) * 2f)
-                SET(out, (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
+                //SET(out, (out * BatchBuilder2D.v_ColMul) + ((BatchBuilder2D.v_ColAdd - vec4(.5f.lit, .5f.lit, .5f.lit, .5f.lit)) * 2f.lit))
 
                 // Required for shape masks:
                 IF(out["a"] le 0f.lit) { DISCARD() }
@@ -76,10 +78,9 @@ abstract class ShaderFilter : Filter {
         /** The [FragmentShader] used this [Filter]. This is usually overriden. */
         protected open val fragment: FragmentShader = Filter.DEFAULT_FRAGMENT
 
-        private val programPremult: Program by lazy { createProgram(vertex, fragment, true) }
-        private val programNormal: Program by lazy { createProgram(vertex, fragment, false) }
+        private val _program: Program by lazy { createProgram(vertex, fragment) }
 
-        override fun getProgram(premultiplied: Boolean): Program = if (premultiplied) programPremult else programNormal
+        override fun getProgram(): Program = _program
     }
 
     var filtering = true
@@ -192,7 +193,7 @@ abstract class ShaderFilter : Filter {
                     colorMul = renderColorMul,
                     blendMode = blendMode,
                     //program = if (texture.premultiplied) programPremult else programNormal
-                    program = programProvider.getProgram(texture.premultiplied)
+                    program = programProvider.getProgram(),
                 )
                 //ctx.batch.flush()
             }

@@ -53,7 +53,7 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
                 }
 
             }
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
             //SET(out["ba"], vec2(1f.lit, 1f.lit))
             //SET(out["a"], 1f.lit)
         }.also {

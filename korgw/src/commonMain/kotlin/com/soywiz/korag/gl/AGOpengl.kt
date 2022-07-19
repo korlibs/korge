@@ -18,8 +18,8 @@ open class SimpleAGOpengl<TKmlGl : KmlGl>(override val gl: TKmlGl, override val 
 
 @OptIn(KorIncomplete::class, KorInternal::class)
 abstract class AGOpengl(checked: Boolean = false) : AG(checked) {
-    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl) :
-        RuntimeException("Error Compiling Shader : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
+    class ShaderException(val str: String, val error: String, val errorInt: Int, val gl: KmlGl, val debugName: String?, val type: Int) :
+        RuntimeException("Error Compiling Shader : $debugName type=$type : ${errorInt.hex} : '$error' : source='$str', gl.versionInt=${gl.versionInt}, gl.versionString='${gl.versionString}', gl=$gl")
 
     open var isGlAvailable = true
 

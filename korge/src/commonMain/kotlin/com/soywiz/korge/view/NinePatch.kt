@@ -74,7 +74,9 @@ class NinePatch(
                 colorMul = renderColorMul,
                 colorAdd = renderColorAdd,
                 filtering = smoothing,
-                blendMode = renderBlendMode
+                blendMode = renderBlendMode,
+                premultiplied = tex.base.premultiplied,
+                wrap = false
             )
         }
 	}

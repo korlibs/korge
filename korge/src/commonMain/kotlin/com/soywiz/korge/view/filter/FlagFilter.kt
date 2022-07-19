@@ -44,7 +44,7 @@ class FlagFilter(
             SET(x01, v_Tex01.x)
             val offsetY = sin((x01 * u_crestCount - u_Time * u_cyclesPerSecond) * PI.lit) * u_amplitude * x01
             SET(out, tex(vec2(fragmentCoords.x, fragmentCoords.y - offsetY)))
-            BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
     }
 

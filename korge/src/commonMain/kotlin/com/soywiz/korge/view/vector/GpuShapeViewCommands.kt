@@ -194,12 +194,12 @@ class GpuShapeViewCommands {
 
                                                 val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AG.TextureUnit?
                                                 //val premultiplied = texUnit?.texture?.premultiplied ?: false
-                                                val premultiplied = false
+                                                //val premultiplied = false
                                                 val outPremultiplied = ag.isRenderingToTexture
 
                                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
-                                                tempUniforms[BatchBuilder2D.u_InputPre] = premultiplied
+                                                //tempUniforms[BatchBuilder2D.u_InputPre] = premultiplied
                                                 tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
 
                                                 list.uboSet(ubo, tempUniforms)

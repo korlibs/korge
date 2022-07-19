@@ -17,14 +17,35 @@ import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korim.atlas.readAtlas
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.asumePremultiplied
+import com.soywiz.korim.bitmap.computePsnr
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.PNG
+import com.soywiz.korim.format.readBitmap
+import com.soywiz.korim.format.writeTo
+import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.file.std.resourcesVfs
 
 class MainSpine : ScaledScene(1280, 720) {
     override suspend fun SContainer.sceneMain() {
         val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas(asumePremultiplied = true)
+        //val atlas = resourcesVfs["spineboy/spineboy-straight.atlas"].readAtlas(asumePremultiplied = true)
         //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)
         val skeletonData = resourcesVfs["spineboy/spineboy-pro.skel"].readSkeletonBinary(atlas, 0.6f)
+
+        /*
+        val pma = resourcesVfs["spineboy/spineboy-pma.png"].readBitmap().asumePremultiplied().toBMP32()
+        //val sta = pma.depremultiplied()
+        //sta.writeTo(localVfs("/tmp/spineboy-straight.png"), PNG)
+        pma.writeTo(localVfs("/tmp/spineboy-straight.png"), PNG)
+        val pma2 = localVfs("/tmp/spineboy-straight.png").readBitmap().asumePremultiplied().toBMP32()
+        pma2.writeTo(localVfs("/tmp/spineboy-straight2.png"), PNG)
+        val pma3 = localVfs("/tmp/spineboy-straight2.png").readBitmap().asumePremultiplied().toBMP32()
+        val result = Bitmap32.Companion.computePsnr(pma, pma2)
+        println("result=$result")
+        */
+
 
         fun createSkel(): Pair<Skeleton, AnimationState> {
             val skeleton =
