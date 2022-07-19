@@ -263,7 +263,8 @@ class BatchBuilder2D constructor(
 		tex: TextureCoords,
 		colorMul: RGBA, colorAdd: ColorAdd,
         texIndex: Int = currentTexIndex,
-        premultiplied: Boolean, wrap: Boolean
+        premultiplied: Boolean = tex.premultiplied,
+        wrap: Boolean = false
 	) {
         //println("drawQuadFast[${ag.currentRenderBuffer}, renderingToTexture=${ag.renderingToTexture}]: ($x0,$y0)-($x2,$y2) tex=$tex")
         //println("viewMat=$viewMat, projMat=$projMat")
@@ -290,7 +291,8 @@ class BatchBuilder2D constructor(
         colorMul: RGBA,
         colorAdd: ColorAdd,
         texIndex: Int = currentTexIndex,
-        premultiplied: Boolean, wrap: Boolean,
+        premultiplied: Boolean,
+        wrap: Boolean,
     ) {
         ensure(6, 4)
         addQuadIndices()
@@ -324,7 +326,8 @@ class BatchBuilder2D constructor(
         colorMul: Int,
         colorAdd: Int,
         texIndex: Int = currentTexIndex,
-        premultiplied: Boolean, wrap: Boolean
+        premultiplied: Boolean,
+        wrap: Boolean
     ) {
         vertexPos = _addQuadVerticesFastNormal(vertexPos, verticesFast32, x0, y0, x1, y1, x2, y2, x3, y3, tx0, ty0, tx1, ty1, colorMul, colorAdd, texIndex, premultiplied, wrap)
         vertexCount += 4
@@ -342,7 +345,8 @@ class BatchBuilder2D constructor(
         colorMul: Int,
         colorAdd: Int,
         texIndex: Int = currentTexIndex,
-        premultiplied: Boolean, wrap: Boolean,
+        premultiplied: Boolean,
+        wrap: Boolean,
     ): Int {
         var vp = vp
         vp += _addVertex(vd, vp, x0, y0, tx0, ty0, colorMul, colorAdd, texIndex, premultiplied, wrap)
@@ -445,7 +449,7 @@ class BatchBuilder2D constructor(
     inline fun drawVertices(
         array: TexturedVertexArray, tex: TextureBase, smoothing: Boolean, blendMode: BlendMode,
         vcount: Int = array.vcount, icount: Int = array.icount, program: Program? = null, matrix: Matrix? = null,
-        premultiplied: Boolean, wrap: Boolean
+        premultiplied: Boolean = tex.premultiplied, wrap: Boolean = false
     ) {
         setStateFast(tex.base, smoothing, blendMode, program, icount, vcount)
         drawVertices(array, matrix, vcount, icount, premultiplied = premultiplied, wrap = wrap)
@@ -581,7 +585,8 @@ class BatchBuilder2D constructor(
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
         blendMode: BlendMode = BlendMode.NORMAL,
         program: Program? = null,
-        premultiplied: Boolean, wrap: Boolean
+        premultiplied: Boolean = tex.premultiplied,
+        wrap: Boolean = false
 	) {
 		setStateFast(tex.base, filtering, blendMode, program, icount = 6 * 9, vcount = 4 * 4)
         val texIndex: Int = currentTexIndex
@@ -656,8 +661,8 @@ class BatchBuilder2D constructor(
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
         blendMode: BlendMode = BlendMode.NORMAL,
         program: Program? = null,
-        premultiplied: Boolean,
-        wrap: Boolean
+        premultiplied: Boolean = tex.premultiplied,
+        wrap: Boolean = false
     ): Unit = drawQuad(tex, x, y, width, height, m, filtering, colorMul, colorAdd, blendMode, program, premultiplied, wrap ,Unit)
 
     /**
@@ -679,7 +684,8 @@ class BatchBuilder2D constructor(
         colorAdd: ColorAdd = ColorAdd.NEUTRAL,
         blendMode: BlendMode = BlendMode.NORMAL,
         program: Program? = null,
-        premultiplied: Boolean, wrap: Boolean,
+        premultiplied: Boolean = tex.premultiplied,
+        wrap: Boolean = false,
         unit: Unit = Unit,
 	) {
         val x0 = x
