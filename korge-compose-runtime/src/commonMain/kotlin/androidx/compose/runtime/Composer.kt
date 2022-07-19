@@ -423,6 +423,17 @@ sealed interface Composer {
     val recomposeScope: RecomposeScope?
 
     /**
+     * A Compose compiler plugin API. DO NOT call directly.
+     *
+     * Return an object that can be used to uniquely identity of the current recomposition scope.
+     * This identity will be the same even if the recompose scope instance changes.
+     *
+     * This is used internally by tooling track composable function invocations.
+     */
+    @ComposeCompilerApi
+    val recomposeScopeIdentity: Any?
+
+    /**
      * A Compose internal property. DO NOT call directly. Use [currentCompositeKeyHash] instead.
      *
      * This a hash value used to coordinate map externally stored state to the composition. For
@@ -1041,7 +1052,7 @@ sealed interface Composer {
  * [remember] when it determines these optimizations are safe.
  */
 @ComposeCompilerApi
-inline fun <T> Composer.cache(invalid: Boolean, block: () -> T): T {
+inline fun <T> Composer.cache(invalid: Boolean, block: @DisallowComposableCalls () -> T): T {
     @Suppress("UNCHECKED_CAST")
     return rememberedValue().let {
         if (invalid || it === Composer.Empty) {
@@ -1090,6 +1101,7 @@ fun sourceInformationMarkerStart(composer: Composer, key: Int, sourceInformation
 interface CompositionTracer {
     fun traceEventStart(key: Int, dirty1: Int, dirty2: Int, info: String): Unit
     fun traceEventEnd(): Unit
+    fun isTraceInProgress(): Boolean
 }
 
 @OptIn(InternalComposeTracingApi::class)
@@ -1102,7 +1114,7 @@ private var compositionTracer: CompositionTracer? = null
  */
 @OptIn(InternalComposeTracingApi::class)
 @ComposeCompilerApi
-fun isTraceInProgress(): Boolean = compositionTracer != null
+fun isTraceInProgress(): Boolean = compositionTracer.let { it != null && it.isTraceInProgress() }
 
 /**
  * Internal tracing API.
@@ -1194,6 +1206,7 @@ internal class ComposerImpl(
     private var reusingGroup = -1
     private var childrenComposing: Int = 0
     private var snapshot = currentSnapshot()
+    private var compositionToken: Int = 0
 
     private val invalidateStack = Stack<RecomposeScopeImpl>()
 
@@ -1211,6 +1224,8 @@ internal class ComposerImpl(
 
     private var writer: SlotWriter = insertTable.openWriter().also { it.close() }
     private var writerHasAProvider = false
+    private var providerCache: CompositionLocalMap? = null
+
     private var insertAnchor: Anchor = insertTable.read { it.anchor(0) }
     private val insertFixups = mutableListOf<Change>()
 
@@ -1351,6 +1366,7 @@ internal class ComposerImpl(
         parentProvider = parentContext.getCompositionLocalScope()
         providersInvalidStack.push(providersInvalid.asInt())
         providersInvalid = changed(parentProvider)
+        providerCache = null
         if (!forceRecomposeScopes) {
             forceRecomposeScopes = parentContext.collectingParameterInformation
         }
@@ -1793,6 +1809,8 @@ internal class ComposerImpl(
      * Return the current [CompositionLocal] scope which was provided by a parent group.
      */
     private fun currentCompositionLocalScope(group: Int? = null): CompositionLocalMap {
+        if (group == null)
+            providerCache?.let { return it }
         if (inserting && writerHasAProvider) {
             var current = writer.parent
             while (current > 0) {
@@ -1800,7 +1818,9 @@ internal class ComposerImpl(
                     writer.groupObjectKey(current) == compositionLocalMap
                 ) {
                     @Suppress("UNCHECKED_CAST")
-                    return writer.groupAux(current) as CompositionLocalMap
+                    val providers = writer.groupAux(current) as CompositionLocalMap
+                    providerCache = providers
+                    return providers
                 }
                 current = writer.parent(current)
             }
@@ -1812,12 +1832,15 @@ internal class ComposerImpl(
                     reader.groupObjectKey(current) == compositionLocalMap
                 ) {
                     @Suppress("UNCHECKED_CAST")
-                    return providerUpdates[current]
+                    val providers = providerUpdates[current]
                         ?: reader.groupAux(current) as CompositionLocalMap
+                    providerCache = providers
+                    return providers
                 }
                 current = reader.parent(current)
             }
         }
+        providerCache = parentProvider
         return parentProvider
     }
 
@@ -1887,6 +1910,7 @@ internal class ComposerImpl(
         }
         providersInvalidStack.push(providersInvalid.asInt())
         providersInvalid = invalid
+        providerCache = providers
         start(compositionLocalMapKey, compositionLocalMap, false, providers)
     }
 
@@ -1895,6 +1919,7 @@ internal class ComposerImpl(
         endGroup()
         endGroup()
         providersInvalid = providersInvalidStack.pop().asBool()
+        providerCache = null
     }
 
     @InternalComposeApi
@@ -1952,6 +1977,7 @@ internal class ComposerImpl(
             // Append to the end of the table
             writer.skipToGroupEnd()
             writerHasAProvider = false
+            providerCache = null
         }
     }
 
@@ -2057,6 +2083,7 @@ internal class ComposerImpl(
                 // inserted into in the table.
                 reader.beginEmpty()
                 inserting = true
+                providerCache = null
                 ensureWriter()
                 writer.beginInsert()
                 val startIndex = writer.currentGroup
@@ -2317,7 +2344,14 @@ internal class ComposerImpl(
                     recomposeCompoundKey
                 )
 
+                // We have moved so the cached lookup of the provider is invalid
+                providerCache = null
+
+                // Invoke the scope's composition function
                 firstInRange.scope.compose(this)
+
+                // We could have moved out of a provider so the provider cache is invalid.
+                providerCache = null
 
                 // Restore the parent of the reader to the previous parent
                 reader.restoreParent(parent)
@@ -2533,7 +2567,11 @@ internal class ComposerImpl(
     private fun SlotReader.groupCompoundKeyPart(group: Int) =
         if (hasObjectKey(group)) {
             groupObjectKey(group)?.let {
-                if (it is Enum<*>) it.ordinal else it.hashCode()
+                when (it) {
+                    is Enum<*> -> it.ordinal
+                    is MovableContent<*> -> movableContentKey
+                    else -> it.hashCode()
+                }
             } ?: 0
         } else groupKey(group).let {
             if (it == reuseKey) groupAux(group)?.let { aux ->
@@ -2670,7 +2708,7 @@ internal class ComposerImpl(
             val scope = RecomposeScopeImpl(composition as CompositionImpl)
             invalidateStack.push(scope)
             updateValue(scope)
-            scope.start(snapshot.id)
+            scope.start(compositionToken)
         } else {
             val invalidation = invalidations.removeLocation(reader.parent)
             val slot = reader.next()
@@ -2683,7 +2721,7 @@ internal class ComposerImpl(
             } else slot as RecomposeScopeImpl
             scope.requiresRecompose = invalidation != null
             invalidateStack.push(scope)
-            scope.start(snapshot.id)
+            scope.start(compositionToken)
         }
     }
 
@@ -2701,7 +2739,7 @@ internal class ComposerImpl(
         val scope = if (invalidateStack.isNotEmpty()) invalidateStack.pop()
         else null
         scope?.requiresRecompose = false
-        scope?.end(snapshot.id)?.let {
+        scope?.end(compositionToken)?.let {
             record { _, _, _ -> it(composition) }
         }
         val result = if (scope != null &&
@@ -2745,6 +2783,11 @@ internal class ComposerImpl(
         startMovableGroup(movableContentKey, content)
         changed(parameter)
 
+        // All movable content has a compound hash value rooted at the content itself so the hash
+        // value doesn't change as the content moves in the tree.
+        val savedCompoundKeyHash = compoundKeyHash
+        compoundKeyHash = movableContentKey
+
         if (inserting) writer.markGroup()
 
         // Capture the local providers at the point of the invocation. This allows detecting
@@ -2754,16 +2797,13 @@ internal class ComposerImpl(
         if (providersChanged) providerUpdates[reader.currentGroup] = locals
         start(compositionLocalMapKey, compositionLocalMap, false, locals)
 
-        // All movable content has a compound hash value rooted at the content itself so the hash
-        // value doesn't change as the content moves in the tree.
-        val savedCompoundKeyHash = compoundKeyHash
-        compoundKeyHash = movableContentKey
-
         // Either insert a place-holder to be inserted later (either created new or moved from
         // another location) or (re)compose the movable content. This is forced if a new value
         // needs to be created as a late change.
         if (inserting && !force) {
             writerHasAProvider = true
+            providerCache = null
+
             // Create an anchor to the movable group
             val anchor = writer.anchor(writer.parent(writer.parent))
             val reference = MovableContentStateReference(
@@ -2784,8 +2824,8 @@ internal class ComposerImpl(
         }
 
         // Restore the state back to what is expected by the caller.
-        compoundKeyHash = savedCompoundKeyHash
         endGroup()
+        compoundKeyHash = savedCompoundKeyHash
         endMovableGroup()
     }
 
@@ -3118,6 +3158,7 @@ internal class ComposerImpl(
         runtimeCheck(!isComposing) { "Reentrant composition is not supported" }
         trace("Compose:recompose") {
             snapshot = currentSnapshot()
+            compositionToken = snapshot.id
             providerUpdates.clear()
             invalidationsRequested.forEach { scope, set ->
                 val location = scope.anchor?.location ?: return
@@ -3772,6 +3813,7 @@ internal class ComposerImpl(
     }
 
     override val recomposeScope: RecomposeScope? get() = currentRecomposeScope
+    override val recomposeScopeIdentity: Any? get() = currentRecomposeScope?.anchor
     override fun rememberedValue(): Any? = nextSlot()
     override fun updateRememberedValue(value: Any?) = updateValue(value)
     override fun recordUsed(scope: RecomposeScope) { (scope as? RecomposeScopeImpl)?.used = true }

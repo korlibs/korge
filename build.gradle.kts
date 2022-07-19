@@ -172,8 +172,18 @@ subprojects {
             apply(plugin = "maven-publish")
         }
 
-        tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
-            kotlinOptions.suppressWarnings = true
+        fun configKotlinCompile(compile: org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>) {
+            //println("task=$compile")
+            compile.kotlinOptions.suppressWarnings = true
+            compile.kotlinOptions.freeCompilerArgs += listOf(
+                "-Xjvm-default=all",
+                "-P",
+                "plugin:androidx.compose.compiler.plugins.kotlin:suppressKotlinVersionCompatibilityCheck=true"
+            )
+        }
+
+        tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinCompile<*>>().configureEach {
+            configKotlinCompile(this)
         }
 
         afterEvaluate {

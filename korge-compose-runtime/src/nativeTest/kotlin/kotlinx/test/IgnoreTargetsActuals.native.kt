@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package androidx.compose.runtime
+package kotlinx.test
 
-actual internal fun invokeComposable(composer: Composer, composable: @Composable () -> Unit) {
-    composable.unsafeCast<Function2<Any, Int, Unit>>().invoke(composer, 1)
-}
-
-actual internal fun <T> invokeComposableForResult(
-    composer: Composer,
-    composable: @Composable () -> T
-): T {
-    return composable.unsafeCast<Function2<Any, Int, T>>()
-        .invoke(composer, 1)
-        .unsafeCast<T>()
-}
+actual typealias IgnoreJsTarget = DoNothing
+actual typealias IgnoreNativeTarget = kotlin.test.Ignore
+actual typealias IgnoreJsAndNative = kotlin.test.Ignore

@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The Android Open Source Project
+ * Copyright 2022 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,8 @@
  * limitations under the License.
  */
 
-package androidx.compose.runtime
+package androidx.compose.runtime.internal
 
-actual internal fun invokeComposable(composer: Composer, composable: @Composable () -> Unit) {
-    composable.unsafeCast<Function2<Any, Int, Unit>>().invoke(composer, 1)
-}
-
-actual internal fun <T> invokeComposableForResult(
-    composer: Composer,
-    composable: @Composable () -> T
-): T {
-    return composable.unsafeCast<Function2<Any, Int, T>>()
-        .invoke(composer, 1)
-        .unsafeCast<T>()
-}
+// TODO: this actual is not needed after https://youtrack.jetbrains.com/issue/KT-53149 is implemented
+internal annotation class NoOp
+internal actual typealias JvmDefaultWithCompatibility = NoOp

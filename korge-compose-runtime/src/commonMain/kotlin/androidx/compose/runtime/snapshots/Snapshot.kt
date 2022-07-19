@@ -21,6 +21,7 @@ package androidx.compose.runtime.snapshots
 import androidx.compose.runtime.AtomicReference
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisallowComposableCalls
+import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.InternalComposeApi
 import androidx.compose.runtime.SnapshotThreadLocal
 import androidx.compose.runtime.synchronized
@@ -28,6 +29,7 @@ import androidx.compose.runtime.createSynchronizedObject
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
+import androidx.compose.runtime.internal.JvmDefaultWithCompatibility
 
 /**
  * A snapshot of the values return by mutable states and other state objects. All state object
@@ -105,7 +107,7 @@ sealed class Snapshot(
      * or a nested call to [enter] is called. When [block] returns, the previous current snapshot
      * is restored if there was one.
      *
-     * All changes to state object inside [block] are isolated to this snapshot and are not
+     * All changes to state objects inside [block] are isolated to this snapshot and are not
      * visible to other snapshot or as global state. If this is a [readOnly] snapshot, any
      * changes to state objects will throw an [IllegalStateException].
      *
@@ -136,6 +138,40 @@ sealed class Snapshot(
     @PublishedApi
     internal open fun restoreCurrent(snapshot: Snapshot?) {
         threadSnapshot.set(snapshot)
+    }
+
+    /**
+     * Enter the snapshot, returning the previous [Snapshot] for leaving this snapshot later
+     * using [unsafeLeave]. Prefer [enter] or [asContextElement] instead of using [unsafeEnter]
+     * directly to prevent mismatched [unsafeEnter]/[unsafeLeave] calls.
+     *
+     * After returning all state objects have the value associated with this snapshot.
+     * The value of [currentSnapshot] will be this snapshot until [unsafeLeave] is called
+     * with the returned [Snapshot] or another call to [unsafeEnter] or [enter]
+     * is made.
+     *
+     * All changes to state objects until another snapshot is entered or this snapshot is left
+     * are isolated to this snapshot and are not visible to other snapshot or as global state.
+     * If this is a [readOnly] snapshot, any changes to state objects will throw an
+     * [IllegalStateException].
+     *
+     * For a [MutableSnapshot], changes made to a snapshot can be applied
+     * atomically to the global state (or to its parent snapshot if it is a nested snapshot) by
+     * calling [MutableSnapshot.apply].
+     */
+    @ExperimentalComposeApi
+    fun unsafeEnter(): Snapshot? = makeCurrent()
+
+    /**
+     * Leave the snapshot, restoring the [oldSnapshot] before returning.
+     * See [unsafeEnter].
+     */
+    @ExperimentalComposeApi
+    fun unsafeLeave(oldSnapshot: Snapshot?) {
+        check(threadSnapshot.get() === this) {
+            "Cannot leave snapshot; $this is not the current snapshot"
+        }
+        restoreCurrent(oldSnapshot)
     }
 
     internal var disposed = false
@@ -993,9 +1029,10 @@ open class MutableSnapshot internal constructor(
 
 /**
  * The result of a applying a mutable snapshot. [Success] indicates that the snapshot was
- * successfully applied and is not visible as the global state of the state object (or visible
+ * successfully applied and is now visible as the global state of the state object (or visible
  * in the parent snapshot for a nested snapshot). [Failure] indicates one or more state objects
- * were modified by both this snapshot and in the global (or parent) snapshot.
+ * were modified by both this snapshot and in the global (or parent) snapshot, and the changes from
+ * this snapshot are **not** visible in the global or parent snapshot.
  */
 sealed class SnapshotApplyResult {
     /**
@@ -1100,6 +1137,7 @@ abstract class StateRecord {
  * Interface implemented by all snapshot aware state objects. Used by this module to maintain the
  * state records of a state object.
  */
+@JvmDefaultWithCompatibility
 interface StateObject {
     /**
      * The first state record in a linked list of state records.
@@ -1697,8 +1735,9 @@ private fun <T> takeNewGlobalSnapshot(
 }
 
 private fun <T> advanceGlobalSnapshot(block: (invalid: SnapshotIdSet) -> T): T {
-    val previousGlobalSnapshot = currentGlobalSnapshot.get()
+    var previousGlobalSnapshot = snapshotInitializer as GlobalSnapshot
     val result = sync {
+        previousGlobalSnapshot = currentGlobalSnapshot.get()
         takeNewGlobalSnapshot(previousGlobalSnapshot, block)
     }
 
