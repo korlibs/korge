@@ -90,9 +90,9 @@ open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult = wrapNative(formats.decode(data, props), props)
 
-    protected open fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp)
+    protected open fun createBitmapNativeImage(bmp: Bitmap): BitmapNativeImage = BitmapNativeImage(bmp)
     protected open fun wrapNative(bmp: Bitmap, props: ImageDecodingProps): NativeImageResult {
-        val bmp32: Bitmap32 = bmp.toBMP32()
+        val bmp32: Bitmap32 = bmp.toBMP32IfRequired()
         //bmp32.premultiplyInPlace()
         //return BitmapNativeImage(bmp32)
         return NativeImageResult(createBitmapNativeImage(if (props.premultiplied) bmp32.premultipliedIfRequired() else bmp32.depremultipliedIfRequired()))
@@ -111,7 +111,7 @@ open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
 open class BitmapNativeImage(val bitmap: Bitmap32) : NativeImage(bitmap.width, bitmap.height, bitmap, bitmap.premultiplied) {
     @Suppress("unused")
     val intData: IntArray = bitmap.data.ints
-    constructor(bitmap: Bitmap) : this(bitmap.toBMP32())
+    constructor(bitmap: Bitmap) : this(bitmap.toBMP32IfRequired())
     override fun getContext2d(antialiasing: Boolean): Context2d = bitmap.getContext2d(antialiasing)
     override fun toBMP32(): Bitmap32 = bitmap
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.readPixelsUnsafe(x, y, width, height, out, offset)
