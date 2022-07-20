@@ -82,10 +82,11 @@ open class UIButton(
 
 	var forcePressed = false
     protected val rect: NinePatchEx = ninePatch(null, width, height)
-    protected val textShadowView = text("", 16.0)
+    //protected val textShadowView = text("", 16.0)
     protected val textView = text("", 16.0)
     protected val iconView = image(Bitmaps.transparent)
-    private val textAndShadow = fastArrayListOf(textView, textShadowView)
+    //private val textAndShadow = fastArrayListOf(textView, textShadowView)
+    private val textAndShadow = fastArrayListOf(textView)
 	protected var bover = false
 	protected var bpressing = false
 
@@ -124,11 +125,11 @@ open class UIButton(
             }
 
             textView.color = skin.textColor
-            textShadowView.color = skin.shadowColor
-            textShadowView.position(skin.shadowPosition)
+            //textShadowView.color = skin.shadowColor
+            //textShadowView.position(skin.shadowPosition)
         } else {
             textView.visible = false
-            textShadowView.visible = false
+            //textShadowView.visible = false
         }
         super.renderInternal(ctx)
     }

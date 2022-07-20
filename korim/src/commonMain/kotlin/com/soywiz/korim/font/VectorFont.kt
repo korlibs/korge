@@ -29,10 +29,14 @@ interface VectorFont : Font {
     }
 }
 
+/** When getting glyphs, it first tries to resolve with [this], then in order [other] */
 fun VectorFont.withFallback(vararg other: VectorFont?): VectorFontList = when (this) {
     is VectorFontList -> VectorFontList((list + other).filterNotNull())
     else -> VectorFontList(listOfNotNull(this, *other))
 }
+
+/** When getting glyphs, it first tries to resolve with [first], then this [this] */
+fun VectorFont.asFallbackOf(first: VectorFont): VectorFontList = first.withFallback(this)
 
 data class VectorFontList(val list: List<VectorFont>) : VectorFont {
     constructor(vararg fonts: VectorFont?) : this(fonts.filterNotNull())

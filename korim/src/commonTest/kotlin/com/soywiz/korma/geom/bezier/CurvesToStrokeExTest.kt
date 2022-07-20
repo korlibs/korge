@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 class CurvesToStrokeExTest {
     val path = buildVectorPath {
         pathSvg("m262.15-119.2s2.05-8-2.35-3.6c0,0-6.4,5.2-13.2,5.2,0,0-13.2,2-17.2,14,0,0-3.6,24.4,3.6,29.6,0,0,4.4,6.8,10.8,0.8s20.35-33.6,18.35-46z")
-    }
+    }.roundDecimalPlaces(2)
     val curvesList = path.toCurvesList()
     val curves = curvesList.first()
 
@@ -26,7 +26,6 @@ class CurvesToStrokeExTest {
     @Test
     fun testShape() {
         assertEquals(1, curvesList.size)
-        assertEquals(6, curves.beziers.size)
         assertEquals(true, curves.contiguous)
         assertEquals(true, curves.closed)
         assertEquals(
@@ -38,7 +37,7 @@ class CurvesToStrokeExTest {
                 Bezier([(233, -74), (233, -74), (237.4, -67.2), (243.8, -73.2)])
                 Bezier([(243.8, -73.2), (250.2, -79.2), (264.15, -106.8), (262.15, -119.2)])
             """.trimIndent(),
-            curves.roundDecimalPlaces(2).beziers.joinToString("\n")
+            curves.beziers.joinToString("\n")
         )
     }
 

@@ -407,10 +407,10 @@ fun VectorPath.getPoints2List(): List<PointArrayList> {
 @Deprecated("", ReplaceWith("buildVectorPath(out, block)"))
 inline fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, block)
 @Deprecated("", ReplaceWith("buildVectorPath(out, winding, block)"))
-inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, winding, block)
+inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, winding, block)
 
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
-inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.EVEN_ODD, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
+inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)
 
 fun IPointArrayList.toPolygon(out: VectorPath = VectorPath()): VectorPath = buildVectorPath(out) { polygon(this@toPolygon) }
 

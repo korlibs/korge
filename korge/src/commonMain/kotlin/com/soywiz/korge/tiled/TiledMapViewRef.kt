@@ -8,6 +8,7 @@ import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ViewFileRef
 import com.soywiz.korge.view.ViewLeaf
 import com.soywiz.korge.view.Views
+import com.soywiz.korim.tiles.tiled.readTiledMap
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
 import com.soywiz.korui.UiContainer

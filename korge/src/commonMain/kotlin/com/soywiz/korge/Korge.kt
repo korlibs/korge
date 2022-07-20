@@ -10,6 +10,7 @@ import com.soywiz.klogger.Logger
 import com.soywiz.korag.log.PrintAG
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korev.DestroyEvent
+import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
@@ -418,6 +419,8 @@ object Korge {
             views.dispatch(e)
         }
 
+
+        eventDispatcher.addEventListener<DropFileEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<ResumeEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<PauseEvent> { e -> views.dispatch(e) }
         eventDispatcher.addEventListener<StopEvent> { e -> views.dispatch(e) }
@@ -452,30 +455,30 @@ object Korge {
                 val x = t.x
                 val y = t.y
                 val button = MouseButton.LEFT
-                touchMouseEvent.id = 0
-                touchMouseEvent.button = button
-                touchMouseEvent.buttons = if (end) 0 else 1 shl button.id
-                touchMouseEvent.x = x.toInt()
-                touchMouseEvent.y = y.toInt()
-                touchMouseEvent.scaleCoords = false
-                touchMouseEvent.emulated = true
+
                 //updateTouch(t.id, x, y, start, end)
                 when {
-                    start -> {
-                        mouseDown("onTouchStart", x, y, button)
-                        touchMouseEvent.type = MouseEvent.Type.DOWN
-                    }
-                    end -> {
-                        mouseUp("onTouchEnd", x, y, button)
-                        moveMouseOutsideInNextFrame = true
-                        touchMouseEvent.type = MouseEvent.Type.UP
-                    }
-                    else -> {
-                        mouseMove("onTouchMove", x, y, inside = true)
-                        touchMouseEvent.type = MouseEvent.Type.DRAG
-                    }
+                    start -> mouseDown("onTouchStart", x, y, button)
+                    end -> mouseUp("onTouchEnd", x, y, button)
+                    else -> mouseMove("onTouchMove", x, y, inside = true)
                 }
-                views.dispatch(touchMouseEvent)
+                views.dispatch(touchMouseEvent.also {
+                    it.id = 0
+                    it.button = button
+                    it.buttons = if (end) 0 else 1 shl button.id
+                    it.x = x.toInt()
+                    it.y = y.toInt()
+                    it.scaleCoords = false
+                    it.emulated = true
+                    it.type = when {
+                        start -> MouseEvent.Type.DOWN
+                        end -> MouseEvent.Type.UP
+                        else -> MouseEvent.Type.DRAG
+                    }
+                })
+                if (end) {
+                    moveMouseOutsideInNextFrame = true
+                }
             }
 
         }

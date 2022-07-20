@@ -189,7 +189,10 @@ class CoreGraphicsRenderer(val bmp: Bitmap32, val antialiasing: Boolean) : com.s
                                                     ctx,
                                                     style.color.toCgColor(releases, colorSpace)
                                                 )
-                                                CGContextFillPath(ctx)
+                                                when (command.winding ?: state.path.winding) {
+                                                    Winding.EVEN_ODD -> CGContextEOFillPath(ctx)
+                                                    Winding.NON_ZERO -> CGContextFillPath(ctx)
+                                                }
                                             }
                                             is GradientPaint -> {
                                                 val nelements = style.colors.size

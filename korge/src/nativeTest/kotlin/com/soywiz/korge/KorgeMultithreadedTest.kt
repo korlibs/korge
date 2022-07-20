@@ -8,12 +8,10 @@ import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.touch
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.BlurFilter
-import com.soywiz.korge.view.filter.ColorMatrixFilter
-import com.soywiz.korge.view.filter.renderToTextureWithBorder
+import com.soywiz.korge.view.filter.*
+import com.soywiz.korge.view.mask.mask
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.format.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
 import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.shape.buildVectorPath
@@ -25,7 +23,6 @@ import com.soywiz.korma.geom.vector.moveTo
 import com.soywiz.korma.geom.vector.roundRect
 import kotlinx.coroutines.*
 import kotlin.native.concurrent.*
-import kotlin.native.internal.test.*
 import kotlin.test.*
 
 class KorgeMultithreadedTest {
@@ -54,14 +51,13 @@ class KorgeMultithreadedTest {
 
     @Test
     fun test2() {
-        ColorMatrixFilter.getProgram(true)
+        ColorMatrixFilter.getProgram()
         val log = runInWorker {
             val log = arrayListOf<String>()
             val viewsForTesting = ViewsForTesting()
             viewsForTesting.viewsTest(timeout = 5.seconds, cond = { true }) {
                 val rect = solidRect(10, 10)
-                    .filters(BlurFilter())
-                    .filterScale(0.1)
+                    .filters(BlurFilter(), filterScale = 0.1)
                     .mask(solidRect(5, 5))
                 val gpuShapeView = gpuShapeView({ roundRect(0, 0, 200, 100, 10, 10) })
                 this.views.render()
@@ -76,8 +72,7 @@ class KorgeMultithreadedTest {
                     start { }
                     end { }
                 }
-                ColorMatrixFilter.getProgram(true)
-                ColorMatrixFilter.getProgram(false)
+                ColorMatrixFilter.getProgram()
                 this.views.render()
                 val path = buildVectorPath { circle(0, 0, 100) }
                 path.getCurvesList()
@@ -88,13 +83,13 @@ class KorgeMultithreadedTest {
 
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"
-                log += "program=${ColorMatrixFilter.getProgram(true).fragment.type == ShaderType.FRAGMENT}"
+                log += "program=${ColorMatrixFilter.getProgram().fragment.type == ShaderType.FRAGMENT}"
                 log += "curves=${curves.beziers.size}"
                 log += "convex=${curves.isConvex}"
             }
             log
         }
-        ColorMatrixFilter.getProgram(false)
+        ColorMatrixFilter.getProgram()
         assertEquals(
             """
                 rect.filterScale=0.125

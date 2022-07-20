@@ -2,12 +2,12 @@ package com.soywiz.korge.view.filter
 
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
-import com.soywiz.korag.DefaultShaders.t_Temp0
-import com.soywiz.korag.shader.FragmentShader
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korag.shader.storageFor
 import com.soywiz.korge.debug.uiEditableValue
+import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.view.Views
 import com.soywiz.korma.geom.MutableMarginInt
 import com.soywiz.korui.UiContainer
@@ -36,7 +36,7 @@ class WaveFilter(
 		val u_Amplitude = Uniform("amplitude", VarType.Float2)
 		val u_crestCount = Uniform("crestCount", VarType.Float2)
 		val u_cyclesPerSecond = Uniform("cyclesPerSecond", VarType.Float2)
-        override val fragment = FragmentShader {
+        override val fragment = FragmentShaderDefault {
             val tmpx = t_Temp0.x
             val tmpy = t_Temp0.y
             val tmpxy = t_Temp0["zw"]
@@ -45,6 +45,7 @@ class WaveFilter(
             SET(tmpy, sin(PI.lit * ((tmpxy.y * u_crestCount.y) + u_Time * u_cyclesPerSecond.y)))
             SET(out, tex(fragmentCoords - vec2(tmpy * u_Amplitude.x, tmpx * u_Amplitude.y)))
             //out["b"] setTo ((sin(u_Time * PI) + 1.0) / 2.0)
+            //BatchBuilder2D.DO_INPUT_OUTPUT(this, out)
         }
 	}
 

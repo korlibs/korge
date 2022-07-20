@@ -10,6 +10,7 @@ import java.nio.file.Files
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import com.soywiz.korge.gradle.KorgeDefaults
 import java.net.URL
+import java.net.URLClassLoader
 
 buildscript {
     val kotlinVersion: String = libs.versions.kotlin.get()
@@ -85,6 +86,7 @@ allprojects {
 }
 
 val hasAndroidSdk by lazy { AndroidSdk.hasAndroidSdk(project) }
+val enabledSandboxResourceProcessor: Boolean by lazy { rootProject.findProperty("enabledSandboxResourceProcessor") == "true" }
 
 // Required by RC
 kotlin {
@@ -424,7 +426,7 @@ subprojects {
 
                     // Copy test resources
                     afterEvaluate {
-                        for (targetV in nativeTargets) {
+                        for (targetV in (nativeTargets + listOf(iosX64(), iosSimulatorArm64()))) {
                             val target = targetV.name
                             val taskName = "copyResourcesToExecutable_$target"
                             val targetTestTask = tasks.findByName("${target}Test") as? org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest? ?: continue
@@ -449,6 +451,17 @@ subprojects {
                             )
 
                             targetTestTask.dependsOn(taskName)
+                            //println(".target=$target")
+                            if (target == "mingwX64") {
+                                afterEvaluate {
+                                    afterEvaluate {
+                                        tasks.findByName("mingwX64WineTest")?.let {
+                                            //println("***************++")
+                                            it?.dependsOn(taskName)
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -650,6 +663,7 @@ samples {
                 //val continuousCommand = "${rootProject.rootDir}/$gradlewCommand --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
                 val continuousCommand = "-classpath ${rootProject.rootDir}/gradle/wrapper/gradle-wrapper.jar org.gradle.wrapper.GradleWrapperMain --no-daemon --warn --project-dir=${rootProject.rootDir} --configuration-cache -t ${project.path}:compileKotlinJvmAndNotify"
                 jvmArgs("-javaagent:$outputJar=$httpPort:::$continuousCommand:::$args")
+                environment("KORGE_AUTORELOAD", "true")
             }
         }
 
@@ -975,26 +989,35 @@ samples {
                     //dependsOn(prepareResourceProcessingClasses)
                     dependsOn("jvmMainClasses")
 
-                    doLast {
-                        processedResourcesFolder.mkdirs()
-                        //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
+                    if (enabledSandboxResourceProcessor) {
+                        doLast {
+                            processedResourcesFolder.mkdirs()
+                            //URLClassLoader(prepareResourceProcessingClasses.outputs.files.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
 
-
-                        /*
-                        URLClassLoader(runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(), ClassLoader.getSystemClassLoader()).use { classLoader ->
-                            val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
-                            val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }.filter { it != processedResourcesFolder }.map { it.toString() }
-                            //println(folders)
-                            try {
-                                clazz.methods.first { it.name == "run" }.invoke(null, classLoader, folders, processedResourcesFolder.toString(), compilation.name)
-                            } catch (e: java.lang.reflect.InvocationTargetException) {
-                                val re = (e.targetException ?: e)
-                                re.printStackTrace()
-                                System.err.println(re.toString())
+                            URLClassLoader(
+                                runJvm.korgeClassPath.toList().map { it.toURL() }.toTypedArray(),
+                                ClassLoader.getSystemClassLoader()
+                            ).use { classLoader ->
+                                val clazz = classLoader.loadClass("com.soywiz.korge.resources.ResourceProcessorRunner")
+                                val folders = compilation.allKotlinSourceSets.flatMap { it.resources.srcDirs }
+                                    .filter { it != processedResourcesFolder }.map { it.toString() }
+                                //println(folders)
+                                try {
+                                    clazz.methods.first { it.name == "run" }.invoke(
+                                        null,
+                                        classLoader,
+                                        folders,
+                                        processedResourcesFolder.toString(),
+                                        compilation.name
+                                    )
+                                } catch (e: java.lang.reflect.InvocationTargetException) {
+                                    val re = (e.targetException ?: e)
+                                    re.printStackTrace()
+                                    System.err.println(re.toString())
+                                }
                             }
+                            System.gc()
                         }
-                        System.gc()
-                         */
                     }
                 }
                 //println(compilation.compileKotlinTask.name)
@@ -1224,6 +1247,28 @@ subprojects {
                 //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
                 setEvents(setOf("skipped", "failed", "standardError"))
                 exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+            }
+        }
+        tasks {
+            if (!com.soywiz.korge.gradle.targets.isWindows) {
+                afterEvaluate {
+                    val linkDebugTestMingwX64 = project.tasks.findByName("linkDebugTestMingwX64") as? KotlinNativeLink?
+                    if (linkDebugTestMingwX64 != null) {
+                        fun Exec.configureLink(link: KotlinNativeLink) {
+                            dependsOn(link)
+                            commandLine("wine64", link.binary.outputFile)
+                            workingDir = link.binary.outputDirectory
+                        }
+
+                        val mingwX64WineTest by creating(Exec::class) {
+                            val link = linkDebugTestMingwX64
+                            group = "verification"
+                            dependsOn(link)
+                            commandLine("wine64", link.binary.outputFile)
+                            workingDir = link.binary.outputDirectory
+                        }
+                    }
+                }
             }
         }
     }

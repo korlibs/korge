@@ -3,18 +3,18 @@ clear(#00000000, 1.0, 0, true, true, true)
 textureCreate: 1
 createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=32, height=32), 32, 32)
-createBuffer():4
-bufferCreate: 5
-Buffer[4].afterSetMem(mem[512])
-createBuffer():5
-bufferCreate: 6
-Buffer[5].afterSetMem(mem[64])
 createBuffer():6
 bufferCreate: 7
-Buffer[6].afterSetMem(mem[4])
+Buffer[6].afterSetMem(mem[512])
 createBuffer():7
 bufferCreate: 8
-Buffer[7].afterSetMem(mem[32])
+Buffer[7].afterSetMem(mem[64])
+createBuffer():8
+bufferCreate: 9
+Buffer[8].afterSetMem(mem[4])
+createBuffer():9
+bufferCreate: 10
+Buffer[9].afterSetMem(mem[32])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
 programCreate: 1, Program(name=FSprites3, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_texSize2, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2]), ProgramConfig(externalTextureSampler=false)
@@ -34,7 +34,6 @@ uniform sampler2D u_Tex1;
 uniform sampler2D u_Tex2;
 varying lowp float v_TexId;
 varying mediump vec2 v_Tex;
-varying vec4 v_Col;
 void main() {
 	if ((v_TexId <= 1.0)) {
 		if ((v_TexId == 0.0)) {
@@ -50,8 +49,6 @@ void main() {
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
 	}
-	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
-	gl_FragColor.rgba = (gl_FragColor.rgba * v_Col);
 }
 
 programCreate.vertex:#version 100 compatibility
@@ -111,7 +108,7 @@ void main() {
 
 programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[7], layout=VertexLayout[a_xy]), VertexData(_buffer=Buffer[4], layout=VertexLayout[a_rxy, a_scale, a_rangle, a_axy, a_uv0, a_uv1]), VertexData(_buffer=Buffer[5], layout=VertexLayout[a_colMul]), VertexData(_buffer=Buffer[6], layout=VertexLayout[a_texId])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[9], layout=VertexLayout[a_xy]), VertexData(_buffer=Buffer[6], layout=VertexLayout[a_rxy, a_scale, a_rangle, a_axy, a_uv0, a_uv1]), VertexData(_buffer=Buffer[7], layout=VertexLayout[a_colMul]), VertexData(_buffer=Buffer[8], layout=VertexLayout[a_texId])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -131,13 +128,14 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=false, trilinear=null)
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboSet.uniform: Uniform(u_texSize0) = [0.03125, 0.03125]
 uboSet.uniform: Uniform(u_texSize1) = [0.03125, 0.03125]
 uboSet.uniform: Uniform(u_texSize2) = [0.03125, 0.03125]
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
@@ -158,7 +156,7 @@ draw: TRIANGLE_FAN, offset=0, count=4, instances=4, indexType=null
 ::draw.instance[3]: a_rxy[400,100], a_scale[1,1], a_rangle[0], a_axy[0,1], a_uv0[0,0], a_uv1[32,32], a_colMul[1,1,1,0.49803922], a_texId[0]
 vaoUse: 0
 vaoDelete: 1
-Buffer[4].afterSetMem(mem[512])
+Buffer[6].afterSetMem(mem[512])
 disposeTemporalPerFrameStuff()
 flipInternal()
 finish

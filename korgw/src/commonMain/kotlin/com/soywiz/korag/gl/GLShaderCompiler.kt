@@ -41,7 +41,7 @@ internal object GLShaderCompiler {
     private fun String.replaceVersion(version: Int) = this.replace("#version 100", "#version $version")
 
     // @TODO: Prevent leaks if we throw exceptions, we should free resources
-    fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, glSlVersion: Int? = null): GLProgramInfo {
+    fun programCreate(gl: KmlGl, config: GlslConfig, program: Program, glSlVersion: Int? = null, debugName: String?): GLProgramInfo {
         val id = gl.createProgram()
 
         //println("GL_SHADING_LANGUAGE_VERSION: $glslVersionInt : $glslVersionString")
@@ -58,10 +58,10 @@ internal object GLShaderCompiler {
             Console.trace("GLSL version: requested=$glSlVersion, guessed=$guessedGlSlVersion, forced=${GlslGenerator.FORCE_GLSL_VERSION}. used=$usedGlSlVersion")
         }
 
-        val fragmentShaderId = createShaderCompat(gl, gl.FRAGMENT_SHADER) { compatibility ->
+        val fragmentShaderId = createShaderCompat(gl, gl.FRAGMENT_SHADER, debugName) { compatibility ->
             program.fragment.toNewGlslString(config.copy(version = usedGlSlVersion, compatibility = compatibility))
         }
-        val vertexShaderId = createShaderCompat(gl, gl.VERTEX_SHADER) { compatibility ->
+        val vertexShaderId = createShaderCompat(gl, gl.VERTEX_SHADER, debugName) { compatibility ->
             program.vertex.toNewGlslString(config.copy(version = usedGlSlVersion, compatibility = compatibility))
         }
         gl.attachShader(id, fragmentShaderId)
@@ -71,21 +71,21 @@ internal object GLShaderCompiler {
         return GLProgramInfo(id, vertexShaderId, fragmentShaderId)
     }
 
-    private fun createShaderCompat(gl: KmlGl, config: GlslConfig, type: Int, shader: Shader): Int {
-        return createShaderCompat(gl, type) { compatibility ->
+    private fun createShaderCompat(gl: KmlGl, config: GlslConfig, type: Int, shader: Shader, debugName: String?): Int {
+        return createShaderCompat(gl, type, debugName) { compatibility ->
             shader.toNewGlslString(config.copy(compatibility = compatibility))
         }
     }
 
-    private inline fun createShaderCompat(gl: KmlGl, type: Int, gen: (compat: Boolean) -> String): Int {
+    private inline fun createShaderCompat(gl: KmlGl, type: Int, debugName: String?, gen: (compat: Boolean) -> String): Int {
         return try {
-            createShader(gl, type, gen(true))
+            createShader(gl, type, gen(true), debugName)
         } catch (e: AGOpengl.ShaderException) {
-            createShader(gl, type, gen(false))
+            createShader(gl, type, gen(false), debugName)
         }
     }
 
-    private fun createShader(gl: KmlGl, type: Int, str: String): Int {
+    private fun createShader(gl: KmlGl, type: Int, str: String, debugName: String?): Int {
         val shaderId = gl.createShader(type)
 
         gl.shaderSource(shaderId, str)
@@ -95,7 +95,7 @@ internal object GLShaderCompiler {
         val errorInt = gl.getError()
         if (out != gl.GTRUE) {
             val error = gl.getShaderInfoLog(shaderId)
-            throw AGOpengl.ShaderException(str, error, errorInt, gl)
+            throw AGOpengl.ShaderException(str, error, errorInt, gl, debugName, type)
         }
         return shaderId
     }

@@ -26,9 +26,7 @@ open class JsGameWindow : GameWindow() {
     }
 }
 
-
-open class BrowserGameWindow : JsGameWindow() {
-
+open class BrowserCanvasJsGameWindow : JsGameWindow() {
     override val ag: AGWebgl = AGWebgl(AGConfig())
     val canvas get() = ag.canvas
     override val dialogInterface: DialogInterfaceJs = DialogInterfaceJs()
@@ -46,7 +44,7 @@ open class BrowserGameWindow : JsGameWindow() {
     }
 
     @Suppress("UNUSED_PARAMETER")
-    private fun updateGamepad() {
+    override fun updateGamepads() {
         try {
             if (navigator.getGamepads != null) {
                 val gamepads = navigator.getGamepads().unsafeCast<JsArray<JsGamePad?>>()
@@ -115,10 +113,6 @@ open class BrowserGameWindow : JsGameWindow() {
         //canvasRatio = (canvas.width.toDouble() / canvas.clientWidth.toDouble())
 
         dispatchReshapeEvent(0, 0, canvas.width, canvas.height)
-    }
-
-    private fun doRender() {
-        dispatch(renderEvent)
     }
 
     inline fun transformEventX(x: Double): Double = x * canvasRatio
@@ -253,13 +247,16 @@ open class BrowserGameWindow : JsGameWindow() {
                     else -> com.soywiz.korev.MouseEvent.ScrollDeltaMode.LINE
                 }
 
-                //println("scrollDeltaMode: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
+                //println("scrollDeltaMode: ${we.deltaMode}: $mode, ${we.deltaX}, ${we.deltaY}, ${we.deltaZ}")
+
+                val sensitivity = 0.05
+                //val sensitivity = 0.1
 
                 this.setScrollDelta(
                     mode,
-                    x = we.deltaX,
-                    y = we.deltaY,
-                    z = we.deltaZ,
+                    x = we.deltaX * sensitivity,
+                    y = we.deltaY * sensitivity,
+                    z = we.deltaZ * sensitivity,
                 )
             }
         }
@@ -438,16 +435,8 @@ open class BrowserGameWindow : JsGameWindow() {
         onResized()
 
         jsFrame = { step: Double ->
-            val startTime = PerformanceCounter.reference
-            window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop
-            updateGamepad()
-            try {
-                doRender()
-            } finally {
-                val elapsed = PerformanceCounter.reference - startTime
-                val available = counterTimePerFrame - elapsed
-                coroutineDispatcher.executePending(available)
-            }
+            window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop, not triggering again
+            frame()
         }
     }
 }
@@ -480,7 +469,7 @@ private external interface JsGamepadEvent {
 
 class NodeJsGameWindow : JsGameWindow()
 
-actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserGameWindow()
+actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = if (OS.isJsNodeJs) NodeJsGameWindow() else BrowserCanvasJsGameWindow()
 
 /*
 public external open class TouchEvent(type: String, eventInitDict: MouseEventInit = definedExternally) : UIEvent {

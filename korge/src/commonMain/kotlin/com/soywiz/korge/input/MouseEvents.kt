@@ -34,7 +34,7 @@ import kotlin.native.concurrent.ThreadLocal
 import kotlin.reflect.KProperty1
 
 @OptIn(KorgeInternal::class)
-class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin() {
+class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixin(), Closeable {
     init {
         view.mouseEnabled = true
     }
@@ -96,7 +96,9 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 width = bounds.width.toFloat(),
                                 height = bounds.height.toFloat(),
                                 colorMul = RGBA(0xFF, 0, 0, 0x3F),
-                                m = mouseHit.globalMatrix
+                                m = mouseHit.globalMatrix,
+                                premultiplied = Bitmaps.white.premultiplied,
+                                wrap = false,
                             )
                             renderContext.drawText(
                                 debugBmpFont,
@@ -125,7 +127,8 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
                                 width = bounds.width.toFloat(),
                                 height = bounds.height.toFloat(),
                                 colorMul = RGBA(0x00, 0, 0xFF, 0x3F),
-                                m = mouseHitResultUsed.globalMatrix
+                                m = mouseHitResultUsed.globalMatrix,
+                                premultiplied = Bitmaps.white.premultiplied, wrap = false,
                             )
                             var vview = mouseHitResultUsed
                             while (vview != null) {
@@ -164,6 +167,7 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
     val over = Signal<MouseEvents>()
     val out = Signal<MouseEvents>()
     val down = Signal<MouseEvents>()
+    val downOutside = Signal<MouseEvents>()
     val downFromOutside = Signal<MouseEvents>()
     val up = Signal<MouseEvents>()
     val upOutside = Signal<MouseEvents>()
@@ -498,9 +502,14 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
             //if (cursor != null) views.gameWindow.cursor = GameWindow.Cursor.DEFAULT
             out(this)
         }
-        if (over && pressingChanged && pressing) {
+        if (pressingChanged && pressing) {
             startedPosGlobal.copyFrom(currentPosGlobal)
-            down(this)
+            if (over) {
+                down(this)
+            }
+            if (!over) {
+                downOutside(this)
+            }
         }
         if (overChanged && pressing) {
             downFromOutside(this)
@@ -534,6 +543,10 @@ class MouseEvents(override val view: View) : MouseComponent, Extra by Extra.Mixi
         lastPosGlobal.copyFrom(currentPosGlobal)
         clickedCount = 0
     }
+
+    override fun close() {
+        this.detach()
+    }
 }
 
 //var Input.Frame.mouseHitResult by Extra.Property<View?>("mouseHitResult") {
@@ -549,6 +562,13 @@ val View.mouse by Extra.PropertyThis<View, MouseEvents> {
         MouseEvents(
             this
         )
+    }
+}
+
+inline fun View.newMouse(callback: MouseEvents.() -> Unit): MouseEvents {
+    return MouseEvents(this).also {
+        this.addComponent(it)
+        callback(it)
     }
 }
 

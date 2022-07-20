@@ -103,9 +103,11 @@ open class WAV : AudioFormat("wav") {
 	}
 
 	override suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps) {
+        val bytesPerSample = 2
+
 		// HEADER
 		out.writeString("RIFF")
-		out.write32LE(0x24 + data.samples.totalSamples * 2) // length
+		out.write32LE(0x24 + data.samples.totalSamples * bytesPerSample * data.channels) // length
 		out.writeString("WAVE")
 
 		// FMT
@@ -114,14 +116,15 @@ open class WAV : AudioFormat("wav") {
 		out.write16LE(1) // PCM
 		out.write16LE(data.channels) // Channels
 		out.write32LE(data.rate) // SamplesPerSec
-		out.write32LE(data.rate * data.channels * 2) // AvgBytesPerSec
-		out.write16LE(2) // BlockAlign
-		out.write16LE(16) // BitsPerSample
+		out.write32LE(data.rate * data.channels * bytesPerSample) // AvgBytesPerSec
+		out.write16LE(bytesPerSample) // BlockAlign
+		out.write16LE(bytesPerSample * 8) // BitsPerSample
 
 		// DATA
 		out.writeString("data")
-		out.write32LE(data.samples.totalSamples * 2)
-		out.writeShortArrayLE(data.samples.interleaved().data)
+		out.write32LE(data.samples.totalSamples * bytesPerSample * data.channels)
+        val array = data.samples.interleaved().data
+        out.writeShortArrayLE(array)
 	}
 
 	data class Fmt(

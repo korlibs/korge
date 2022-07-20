@@ -75,6 +75,8 @@ class AGManagedObjectPool(val name: String, val checked: Boolean = true) {
 //@KorIncomplete
 class AGGlobalState(val checked: Boolean = false) {
     internal var contextVersion = 0
+    internal var renderThreadId: Long = -1L
+    internal var renderThreadName: String? = null
     internal val vaoIndices = AGManagedObjectPool("vao", checked = checked)
     internal val uboIndices = AGManagedObjectPool("ubo", checked = checked)
     internal val bufferIndices = AGManagedObjectPool("buffer", checked = checked)
@@ -137,13 +139,22 @@ class AGList(val globalState: AGGlobalState) {
     fun AGQueueProcessor.processBlocking(maxCount: Int = 1): Boolean {
         var pending = maxCount
         val processor = this@processBlocking
+
+        processor.listStart()
+
         while (true) {
             if (pending-- == 0) break
             // @TODO: Wait for more data
-            if (_data.size < 1) break
-            val data = read()
+            val data: Int = _lock {
+                if (_data.size <= 0) return@processBlocking false
+                _data.removeFirst()
+            }
+
             val cmd = data.extract8(24)
             when (cmd) {
+                CMD_FLUSH -> {
+                    processor.flush()
+                }
                 CMD_FINISH -> {
                     processor.finish()
                     completed.complete(Unit)
@@ -284,6 +295,10 @@ class AGList(val globalState: AGGlobalState) {
         } else {
             disable(kind)
         }
+    }
+
+    fun flush() {
+        add(CMD(CMD_FLUSH))
     }
 
     fun contextLost() {
@@ -547,6 +562,7 @@ class AGList(val globalState: AGGlobalState) {
         private fun CMD(cmd: Int): Int = 0.finsert8(cmd, 24)
 
         // Special
+        private const val CMD_FLUSH = 0xF9
         private const val CMD_CONTEXT_LOST = 0xFA
         private const val CMD_READ_PIXELS = 0xFB
         private const val CMD_READ_PIXELS_TO_TEXTURE = 0xFC

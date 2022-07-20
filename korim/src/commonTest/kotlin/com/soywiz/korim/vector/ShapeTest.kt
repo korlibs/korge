@@ -5,6 +5,7 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.geom.vector.rect
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -29,4 +30,25 @@ class ShapeTest {
 			shape.toSvg().outerXml
 		)
 	}
+
+    @Test
+    fun testShapeTransform() {
+        val shape1 = buildShape {
+            keepTransform {
+                scale(2, 2)
+                translate(200, 100)
+                fill(createLinearGradient(50, 50, 75, 120, transform = Matrix(2, 0, 0, 2)).addColorStop(0.0, Colors.RED).addColorStop(1.0, Colors.BLUE)) {
+                    rect(50, 10, 300, 200)
+                }
+            }
+        }
+        val shape2 = buildShape {
+            draw(shape1)
+        }
+        val shape3 = buildShape {
+            draw(shape2)
+        }
+        assertEquals(shape1, shape2)
+        assertEquals(shape1, shape3)
+    }
 }

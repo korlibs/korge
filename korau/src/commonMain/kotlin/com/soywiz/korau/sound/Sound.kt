@@ -9,6 +9,7 @@ import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.WAV
 import com.soywiz.korau.format.defaultAudioFormats
+import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.concurrent.atomic.korAtomic
 import com.soywiz.korio.file.FinalVfsFile
@@ -73,7 +74,8 @@ open class NativeSoundProvider : Disposable {
 	protected open fun init(): Unit = Unit
 
 	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
-        val stream = audioFormats.decodeStreamOrError(data.openAsync(), props)
+        val format = if (props.formats != null) AudioFormats(listOf(props.formats, *audioFormats.formats.toTypedArray()).filterNotNull()) else audioFormats
+        val stream = format.decodeStreamOrError(data.openAsync(), props)
         return if (streaming) {
             createStreamingSound(stream, closeStream = true, name = name)
         } else {
@@ -114,11 +116,39 @@ open class NativeSoundProvider : Disposable {
 	): Sound = createSound(WAV.encodeToByteArray(data), streaming, name = name)
 
     suspend fun createStreamingSound(stream: AudioStream, closeStream: Boolean = false, name: String = "Unknown", onComplete: (suspend () -> Unit)? = null): Sound =
-        SoundAudioStream(kotlin.coroutines.coroutineContext, stream, closeStream, name, onComplete)
+        SoundAudioStream(kotlin.coroutines.coroutineContext, stream, this, closeStream, name, onComplete)
 
     suspend fun playAndWait(stream: AudioStream, params: PlaybackParameters = PlaybackParameters.DEFAULT) = createStreamingSound(stream).playAndWait(params)
 
     override fun dispose() {
+    }
+}
+
+open class LogNativeSoundProvider(
+    override val audioFormats: AudioFormats
+) : NativeSoundProvider() {
+    data class AddInfo(val samples: AudioSamples, val offset: Int, val size: Int)
+    val onBeforeAdd = Signal<AddInfo>()
+    val onAfterAdd = Signal<AddInfo>()
+
+    inner class PlatformLogAudioOutput(
+        coroutineContext: CoroutineContext, frequency: Int
+    ) : PlatformAudioOutput(coroutineContext, frequency) {
+        val data = AudioSamplesDeque(2)
+        override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
+            val addInfo = AddInfo(samples, offset, size)
+            onBeforeAdd(addInfo)
+            data.write(samples, offset, size)
+            onAfterAdd(addInfo)
+        }
+        fun consumeToData(): AudioData = data.consumeToData(frequency)
+        fun toData(): AudioData = data.toData(frequency)
+    }
+
+    val streams = arrayListOf<PlatformLogAudioOutput>()
+
+    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+        return PlatformLogAudioOutput(coroutineContext, freq).also { streams.add(it) }
     }
 }
 
@@ -322,8 +352,10 @@ abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProp
     suspend fun playAndWait(params: PlaybackParameters, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(params).await(progress)
     suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
 
-    abstract suspend fun decode(): AudioData
-    suspend fun toData(): AudioData = decode()
+    abstract suspend fun decode(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData
+    @Deprecated("", ReplaceWith("toAudioData(maxSamples)"))
+    suspend fun toData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData = toAudioData(maxSamples)
+    suspend fun toAudioData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData = decode(maxSamples)
     override suspend fun toStream(): AudioStream = decode().toStream()
     override fun toString(): String = "NativeSound('$name')"
 }
@@ -357,8 +389,8 @@ inline class PlaybackTimes(val count: Int) {
     override fun toString(): String = if (count >= 0) "$count times" else "Infinite times"
 }
 
-suspend fun VfsFile.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
-suspend fun ByteArray.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false) = nativeSoundProvider.createSound(this, streaming, props)
+suspend fun VfsFile.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false): Sound = nativeSoundProvider.createSound(this, streaming, props)
+suspend fun ByteArray.readSound(props: AudioDecodingProps = AudioDecodingProps.DEFAULT, streaming: Boolean = false): Sound = nativeSoundProvider.createSound(this, streaming, props)
 
-suspend fun ByteArray.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming = true, props = props)
-suspend fun VfsFile.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT) = readSound(streaming = true, props = props)
+suspend fun ByteArray.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = readSound(streaming = true, props = props)
+suspend fun VfsFile.readMusic(props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound = readSound(streaming = true, props = props)

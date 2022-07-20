@@ -2,14 +2,12 @@ package com.soywiz.korag
 
 import com.soywiz.kds.Extra
 import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.FastIdentityMap
 import com.soywiz.kds.FloatArray2
 import com.soywiz.kds.FloatArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kds.Pool
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.fastCastTo
-import com.soywiz.kds.getOrPut
 import com.soywiz.kds.hashCode
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
@@ -36,6 +34,7 @@ import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.ForcedTexId
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAf
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.lang.Closeable
@@ -173,24 +172,63 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     //protected fun setViewport(v: IntArray) = setViewport(v[0], v[1], v[2], v[3])
 
-    enum class BlendEquation {
-        ADD, SUBTRACT, REVERSE_SUBTRACT;
+    enum class BlendEquation(val op: String) {
+        ADD("+"),
+        SUBTRACT("-"),
+        REVERSE_SUBTRACT("r-"),
+        ;
+
+        fun apply(l: Double, r: Double): Double = when (this) {
+            ADD -> l + r
+            SUBTRACT -> l - r
+            REVERSE_SUBTRACT -> r - l
+        }
+
+        fun apply(l: Float, r: Float): Float = when (this) {
+            ADD -> l + r
+            SUBTRACT -> l - r
+            REVERSE_SUBTRACT -> r - l
+        }
+
+        fun apply(l: Int, r: Int): Int = when (this) {
+            ADD -> l + r
+            SUBTRACT -> l - r
+            REVERSE_SUBTRACT -> r - l
+        }
+
         companion object {
             val VALUES = values()
         }
     }
 
-    enum class BlendFactor {
-        DESTINATION_ALPHA,
-        DESTINATION_COLOR,
-        ONE,
-        ONE_MINUS_DESTINATION_ALPHA,
-        ONE_MINUS_DESTINATION_COLOR,
-        ONE_MINUS_SOURCE_ALPHA,
-        ONE_MINUS_SOURCE_COLOR,
-        SOURCE_ALPHA,
-        SOURCE_COLOR,
-        ZERO;
+    enum class BlendFactor(
+        val op: String,
+    ) {
+        DESTINATION_ALPHA("dstA"),
+        DESTINATION_COLOR("dstRGB"),
+        ONE("1"),
+        ONE_MINUS_DESTINATION_ALPHA("(1 - dstA)"),
+        ONE_MINUS_DESTINATION_COLOR("(1 - dstRGB)"),
+        ONE_MINUS_SOURCE_ALPHA("(1 - srcA)"),
+        ONE_MINUS_SOURCE_COLOR("(1 - srcRGB)"),
+        SOURCE_ALPHA("srcA"),
+        SOURCE_COLOR("srcRGB"),
+        ZERO("0"),
+        ;
+
+        fun get(srcC: Double, srcA: Double, dstC: Double, dstA: Double): Double = when (this) {
+            DESTINATION_ALPHA -> dstA
+            DESTINATION_COLOR -> dstC
+            ONE -> 1.0
+            ONE_MINUS_DESTINATION_ALPHA -> 1.0 - dstA
+            ONE_MINUS_DESTINATION_COLOR -> 1.0 - dstC
+            ONE_MINUS_SOURCE_ALPHA -> 1.0 - srcA
+            ONE_MINUS_SOURCE_COLOR -> 1.0 - srcC
+            SOURCE_ALPHA -> srcA
+            SOURCE_COLOR -> srcC
+            ZERO -> 0.0
+        }
+
         companion object {
             val VALUES = values()
         }
@@ -244,6 +282,12 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         }
     }
 
+    /**
+     * color(RGB) = (sourceColor * [srcRGB]) + (destinationColor * [dstRGB])
+     * color(A) = (sourceAlpha * [srcA]) + (destinationAlpha * [dstA])
+     *
+     * Instead of + [eqRGB] and [eqA] determines the operation to use (+, - or reversed -)
+     */
     data class Blending(
         val srcRGB: BlendFactor,
         val dstRGB: BlendFactor,
@@ -258,20 +302,63 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             eq, eq
         )
 
-        val disabled: Boolean get() = srcRGB == BlendFactor.ONE && dstRGB == BlendFactor.ZERO && srcA == BlendFactor.ONE && dstA == BlendFactor.ZERO
-        val enabled: Boolean get() = !disabled
+        override fun toString(): String = "Blending(outRGB = (srcRGB * ${srcRGB.op}) ${eqRGB.op} (dstRGB * ${dstRGB.op}), outA = (srcA * ${srcA.op}) ${eqA.op} (dstA * ${dstA.op}))"
+
+        private fun applyColorComponent(srcC: Double, dstC: Double, srcA: Double, dstA: Double): Double {
+            return this.eqRGB.apply(srcC * this.srcRGB.get(srcC, srcA, dstC, dstA), dstC * this.dstRGB.get(srcC, srcA, dstC, dstA))
+        }
+
+        private fun applyAlphaComponent(srcA: Double, dstA: Double): Double {
+            return eqRGB.apply(srcA * this.srcA.get(0.0, srcA, 0.0, dstA), dstA * this.dstA.get(0.0, srcA, 0.0, dstA))
+        }
+
+        fun apply(src: RGBAf, dst: RGBAf, out: RGBAf = RGBAf()): RGBAf {
+            out.rd = applyColorComponent(src.rd, dst.rd, src.ad, dst.ad)
+            out.gd = applyColorComponent(src.gd, dst.gd, src.ad, dst.ad)
+            out.bd = applyColorComponent(src.bd, dst.bd, src.ad, dst.ad)
+            out.ad = applyAlphaComponent(src.ad, dst.ad)
+            return out
+        }
+
+        fun apply(src: RGBA, dst: RGBA): RGBA {
+            val srcA = src.ad
+            val dstA = dst.ad
+            val r = applyColorComponent(src.rd, dst.rd, srcA, dstA)
+            val g = applyColorComponent(src.gd, dst.gd, srcA, dstA)
+            val b = applyColorComponent(src.bd, dst.bd, srcA, dstA)
+            val a = applyAlphaComponent(srcA, dstA)
+            return RGBA.float(r, g, b, a)
+        }
+
+        val disabled: Boolean = srcRGB == BlendFactor.ONE && dstRGB == BlendFactor.ZERO && srcA == BlendFactor.ONE && dstA == BlendFactor.ZERO
+        val enabled: Boolean = !disabled
 
         private val cachedHashCode: Int = hashCode(srcRGB, dstRGB, srcA, dstA, eqRGB, eqA)
         override fun hashCode(): Int = cachedHashCode
+        override fun equals(other: Any?): Boolean = (this === other) || (other is Blending &&
+            srcRGB == other.srcRGB &&
+            dstRGB == other.dstRGB &&
+            srcA == other.srcA &&
+            dstA == other.dstA &&
+            eqRGB == other.eqRGB &&
+            eqA == other.eqA)
 
         companion object {
             val NONE = Blending(BlendFactor.ONE, BlendFactor.ZERO, BlendFactor.ONE, BlendFactor.ZERO)
             val NORMAL = Blending(
+                //GL_ONE, GL_ONE_MINUS_SRC_ALPHA <-- premultiplied
                 BlendFactor.SOURCE_ALPHA, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
                 BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA
             )
+            val NORMAL_PRE = Blending(
+                BlendFactor.ONE, BlendFactor.ONE_MINUS_SOURCE_ALPHA,
+            )
             val ADD = Blending(
                 BlendFactor.SOURCE_ALPHA, BlendFactor.DESTINATION_ALPHA,
+                BlendFactor.ONE, BlendFactor.ONE
+            )
+            val ADD_PRE = Blending(
+                BlendFactor.ONE, BlendFactor.ONE,
                 BlendFactor.ONE, BlendFactor.ONE
             )
         }
@@ -447,7 +534,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             }
         }
 
-        override fun toString(): String = "AGOpengl.GlTexture($texId)"
+        override fun toString(): String = "AGOpengl.GlTexture($texId, pre=$premultiplied)"
         fun manualUpload(): Texture {
             uploaded = true
             return this
@@ -615,7 +702,7 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
     open fun createTexture(premultiplied: Boolean, targetKind: TextureTargetKind = TextureTargetKind.TEXTURE_2D): Texture =
         Texture(premultiplied, targetKind)
 
-    open fun createBuffer(): Buffer = commandsNoWait { Buffer(it) }
+    open fun createBuffer(): Buffer = commandsNoWaitNoExecute { Buffer(it) }
     @Deprecated("")
     fun createIndexBuffer() = createBuffer()
     @Deprecated("")
@@ -666,6 +753,18 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
 
     enum class CompareMode {
         ALWAYS, EQUAL, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL, NEVER, NOT_EQUAL;
+
+        fun inverted(): CompareMode = when (this) {
+            ALWAYS -> NEVER
+            EQUAL -> NOT_EQUAL
+            GREATER -> LESS_EQUAL
+            GREATER_EQUAL -> LESS
+            LESS -> GREATER_EQUAL
+            LESS_EQUAL -> GREATER
+            NEVER -> ALWAYS
+            NOT_EQUAL -> EQUAL
+        }
+
         companion object {
             val VALUES = values()
         }
@@ -1247,6 +1346,9 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         hasDepth: Boolean = false, hasStencil: Boolean = false, msamples: Int = 1,
         use: (tex: Texture, texWidth: Int, texHeight: Int) -> Unit
     ) {
+        commandsNoWait { list ->
+            list.flush()
+        }
         tempAllocateFrameBuffer(width, height, hasDepth, hasStencil, msamples) { rb ->
             setRenderBufferTemporally(rb) {
                 clear(Colors.TRANSPARENT_BLACK) // transparent
@@ -1462,6 +1564,15 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
         val result = block(_list)
         if (!multithreadedRendering) _executeList(_list)
         return result
+    }
+
+    /**
+     * Queues commands without waiting. In non-multithreaded mode, not even executing
+     */
+    @OptIn(ExperimentalContracts::class)
+    inline fun <T> commandsNoWaitNoExecute(block: (AGList) -> T): T {
+        contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
+        return block(_list)
     }
 
     /**

@@ -34,11 +34,3 @@ actual val UTF8: Charset = object : UTC8CharsetBase("UTF-8") {
 		}
 	}
 }
-
-external class TextDecoder(charset: String) {
-	fun decode(data: ArrayBufferView): String
-}
-
-external class TextEncoder(charset: String) {
-	fun encode(data: String): Uint8Array
-}

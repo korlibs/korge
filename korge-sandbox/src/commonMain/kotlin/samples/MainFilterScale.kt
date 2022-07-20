@@ -1,18 +1,15 @@
 package samples
 
-import com.soywiz.klock.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.time.*
-import com.soywiz.korge.tween.*
 import com.soywiz.korge.ui.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
 
 class MainFilterScale : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val image = image(resourcesVfs["korge.png"].readBitmap()).xy(100, 100)
             .filterScale(1.0)
             .filters(Convolute3Filter(Convolute3Filter.KERNEL_EDGE_DETECTION))

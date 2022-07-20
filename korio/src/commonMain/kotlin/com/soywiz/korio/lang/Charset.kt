@@ -1,13 +1,28 @@
 package com.soywiz.korio.lang
 
 import com.soywiz.kds.IntIntMap
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.ByteArrayBuilder
 import com.soywiz.kmem.extract
 import com.soywiz.kmem.insert
 import com.soywiz.kmem.readS16
 import com.soywiz.kmem.write16
+import com.soywiz.korio.concurrent.lock.Lock
 import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
+import kotlin.native.concurrent.ThreadLocal
+
+fun interface CharsetProvider {
+    operator fun invoke(normalizedName: String, name: String): Charset?
+}
+
+expect val platformCharsetProvider: CharsetProvider
+
+@ThreadLocal
+private val CHARSET_PROVIDERS = arrayListOf<CharsetProvider>()
+@ThreadLocal
+private val CHARSET_PROVIDERS_LOCK = Lock()
+
 
 abstract class Charset(val name: String) {
     // Just an estimation, might not be accurate, but hopefully will help setting StringBuilder and ByteArrayBuilder to a better initial capacity
@@ -18,8 +33,42 @@ abstract class Charset(val name: String) {
 	abstract fun decode(out: StringBuilder, src: ByteArray, start: Int = 0, end: Int = src.size)
 
 	companion object {
-		fun forName(name: String): Charset {
-			return UTF8
+        inline fun <T> registerProvider(provider: CharsetProvider, block: () -> T): T {
+            registerProvider(provider)
+            return try {
+                block()
+            } finally {
+                unregisterProvider(provider)
+            }
+        }
+
+        fun registerProvider(provider: CharsetProvider) {
+            CHARSET_PROVIDERS_LOCK {
+                CHARSET_PROVIDERS.add(provider)
+            }
+        }
+
+        fun unregisterProvider(provider: CharsetProvider) {
+            CHARSET_PROVIDERS_LOCK {
+                CHARSET_PROVIDERS.remove(provider)
+            }
+        }
+
+        fun forName(name: String): Charset {
+            val normalizedName = name.uppercase().replace("_", "").replace("-", "")
+            when (normalizedName) {
+                "UTF8" -> return UTF8
+                "UTF16", "UTF16LE" -> return UTF16_LE
+                "UTF16BE" -> return UTF16_BE
+                "ISO88591", "LATIN1" -> return ISO_8859_1
+            }
+            CHARSET_PROVIDERS_LOCK {
+                CHARSET_PROVIDERS.fastForEach { provider ->
+                    provider(normalizedName, name)?.let { return it }
+                }
+            }
+            platformCharsetProvider(normalizedName, name)?.let { return it }
+            invalidArg("Unknown charset '$name'")
 		}
 
         fun StringBuilder.appendCodePointV(codePoint: Int) {
@@ -179,15 +228,7 @@ class UTF16Charset(val le: Boolean) : Charset("UTF-16-" + (if (le) "LE" else "BE
 	}
 }
 
-object ASCII : BaseSingleByteCharset("ASCII") {
-	override fun encode(out: ByteArrayBuilder, src: CharSequence, start: Int, end: Int) {
-		for (n in start until end) out.append(src[n].toByte())
-	}
-
-	override fun decode(out: StringBuilder, src: ByteArray, start: Int, end: Int) {
-		for (n in start until end) out.append(src[n].toChar())
-	}
-}
+object ASCII : SingleByteCharset("ASCII", CharArray(128) { it.toChar() }.concatToString() + "\u00c7\u00fc\u00e9\u00e2\u00e4\u00e0\u00e5\u00e7\u00ea\u00eb\u00e8\u00ef\u00ee\u00ec\u00c4\u00c5\u00c9\u00e6\u00c6\u00f4\u00f6\u00f2\u00fb\u00f9\u00ff\u00d6\u00dc\u00f8\u00a3\u00d8\u00d7\u0192\u00e1\u00ed\u00f3\u00fa\u00f1\u00d1\u00aa\u00ba\u00bf\u00ae\u00ac\u00bd\u00bc\u00a1\u00ab\u00bb\u2591\u2592\u2593\u2502\u2524\u00c1\u00c2\u00c0\u00a9\u2563\u2551\u2557\u255d\u00a2\u00a5\u2510\u2514\u2534\u252c\u251c\u2500\u253c\u00e3\u00c3\u255a\u2554\u2569\u2566\u2560\u2550\u256c\u00a4\u00f0\u00d0\u00ca\u00cb\u00c8\u0131\u00cd\u00ce\u00cf\u2518\u250c\u2588\u2584\u00a6\u00cc\u2580\u00d3\u00df\u00d4\u00d2\u00f5\u00d5\u00b5\u00fe\u00de\u00da\u00db\u00d9\u00fd\u00dd\u00af\u00b4\u00ad\u00b1\u2017\u00be\u00b6\u00a7\u00f7\u00b8\u00b0\u00a8\u00b7\u00b9\u00b3\u00b2\u25a0\u00a0")
 
 @SharedImmutable
 val LATIN1 = ISO_8859_1

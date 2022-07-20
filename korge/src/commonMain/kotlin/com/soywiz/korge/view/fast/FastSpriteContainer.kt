@@ -61,7 +61,7 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
             bb.setViewMatrixTemp(globalMatrix) {
                 ////////////////////////////
 
-                bb.setStateFast(bmp, smoothing, blendMode.factors, null, icount = 0, vcount = 0)
+                bb.setStateFast(bmp, smoothing, blendMode, null, icount = 0, vcount = 0)
 
                 ////////////////////////////
 
@@ -99,6 +99,9 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
         val vd = bb.verticesFast32
         val mMax = min(sprites.size, m + batchSize)
         var count = mMax - m
+        val fsprite = sprites.first()
+        val bmp = fsprite.tex.bmpBase
+        val premultiplied = bmp.premultiplied
         for (n in m until mMax) {
             //spriteCount++
             val sprite = sprites[n]
@@ -108,19 +111,22 @@ class FastSpriteContainer(val useRotation: Boolean = false, var smoothing: Boole
             }
 
             if (useRotation) {
+
                 vp = bb._addQuadVerticesFastNormal(
                     vp, vd,
                     sprite.x0, sprite.y0, sprite.x1, sprite.y1,
                     sprite.x2, sprite.y2, sprite.x3, sprite.y3,
                     sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                    sprite.color.value, colorAdd
+                    sprite.color.value, colorAdd,
+                    premultiplied = premultiplied, wrap = false,
                 )
             } else {
                 vp = bb._addQuadVerticesFastNormalNonRotated(
                     vp, vd,
                     sprite.x0, sprite.y0, sprite.x1, sprite.y1,
                     sprite.tx0, sprite.ty0, sprite.tx1, sprite.ty1,
-                    sprite.color.value, colorAdd
+                    sprite.color.value, colorAdd,
+                    premultiplied = premultiplied, wrap = false,
                 )
             }
         }

@@ -127,10 +127,10 @@ val AlphaTransition = Transition { ctx, prev, next, ratio ->
 fun MaskTransition(
     transition: TransitionFilter.Transition = TransitionFilter.Transition.CIRCULAR,
     reversed: Boolean = false,
-    smooth: Boolean = true,
+    spread: Double = 1.0,
     filtering: Boolean = true,
 ) = TransitionCreate {
-    val filter = TransitionFilter(transition, reversed, smooth, filtering = filtering)
+    val filter = TransitionFilter(transition, reversed, spread, filtering = filtering)
     TransitionProcess { ctx, prev, next, ratio ->
             filter.ratio = ratio
             prev.render(ctx)

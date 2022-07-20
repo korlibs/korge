@@ -1,0 +1,6 @@
+This API is heavily influenced by the .NET Date and Time classes but adapted to best
+
+Initially some parts of the api and date algorithms from .NET DateTime implementation released under MIT license were used:
+- https://github.com/dotnet/coreclr/blob/d780f9a1327344bfc8e06737497b703cdbfba804/src/mscorlib/shared/System/DateTime.cs
+
+As for 1.0, all the relevant code has been rewritten from scratch.

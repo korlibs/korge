@@ -8,7 +8,7 @@ import com.soywiz.korge.view.*
 import com.soywiz.korim.color.*
 
 class MainCustomSolidRectShader : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val solidRect = solidRect(200, 200, Colors.RED).xy(100, 100)
         val timeUniform = Uniform("u_time", VarType.Float1)
 

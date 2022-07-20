@@ -40,6 +40,9 @@ inline fun Container.uiScrollable(
 // @TODO: Horizontal. And to be able to toggle vertical/horizontal
 @KorgeExperimental
 open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
+    @PublishedApi
+    internal var overflowEnabled: Boolean = true
+
     class MyScrollbarInfo(val scrollable: UIScrollable, val direction: UIDirection, val view: SolidRect) {
         val isHorizontal get() = direction.isHorizontal
         val isVertical get() = direction.isVertical
@@ -73,7 +76,10 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
             get() = -containerPos
             set(value) {
                 val oldValue = -containerPos
-                val newValue = -(value.clamp(-overflowPixelsBegin, scrollArea + overflowPixelsEnd))
+                val newValue = when {
+                    scrollable.overflowEnabled -> -(value.clamp(-overflowPixelsBegin, scrollArea + overflowPixelsEnd))
+                    else -> -(value.clamp(0.0, scrollArea))
+                }
                 if (newValue != oldValue) {
                     containerPos = newValue
                     onScrollPosChange(scrollable)
@@ -162,6 +168,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         onSizeChanged()
         mouse {
             scroll {
+                overflowEnabled = false
                 showScrollBar()
                 val info = when {
                     !horizontal.shouldBeVisible -> vertical
@@ -169,10 +176,11 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
                     it.isAltDown -> horizontal
                     else -> vertical
                 }
+                //println(it.lastEvent.scrollDeltaMode)
                 //val infoAlt = if (it.isAltDown) vertical else horizontal
-                info.position = (info.position + it.scrollDeltaY * (info.size / 16.0))
+                info.position = (info.position + it.scrollDeltaYPixels * (info.size / 16.0))
                 //infoAlt.position = (info.position + it.scrollDeltaX * (info.size / 16.0))
-                if (it.scrollDeltaY != 0.0) info.pixelSpeed = 0.0
+                if (it.scrollDeltaYPixels != 0.0) info.pixelSpeed = 0.0
                 //if (it.scrollDeltaX != 0.0) infoAlt.pixelSpeed = 0.0
                 it.stopPropagation()
             }
@@ -198,6 +206,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         }
 
         contentContainer.onMouseDrag {
+            overflowEnabled = true
             if (it.start) {
                 showScrollBar()
                 dragging = true

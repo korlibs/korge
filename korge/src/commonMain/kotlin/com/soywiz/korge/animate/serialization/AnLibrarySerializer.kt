@@ -14,6 +14,7 @@ import com.soywiz.korge.animate.AnSymbolShape
 import com.soywiz.korge.animate.AnSymbolSound
 import com.soywiz.korge.animate.AnTextFieldSymbol
 import com.soywiz.korge.view.BlendMode
+import com.soywiz.korge.view.ordinal
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.ColorTransform
 import com.soywiz.korim.format.ImageEncodingProps

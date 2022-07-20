@@ -55,6 +55,7 @@ inline fun <TCloseable : Closeable, T : Any> TCloseable.use(callback: (TCloseabl
 
 fun interface Cancellable {
 	fun cancel(e: Throwable): Unit
+    //fun close() = this.cancel(CancellationException(""))
 
 	interface Listener {
 		fun onCancel(handler: (Throwable) -> Unit): Unit

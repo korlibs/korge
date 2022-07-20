@@ -1,7 +1,6 @@
 package samples
 
 import com.soywiz.korev.*
-import com.soywiz.korge.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
@@ -11,7 +10,7 @@ import com.soywiz.korma.geom.*
 
 @OptIn(Korge3DExperimental::class)
 class MainSkybox : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         scene3D {
             val stage3D = this
             skyBox(resourcesVfs["skybox"].readCubeMap("jpg"))

@@ -2,6 +2,7 @@ package com.soywiz.korio.net
 
 import com.soywiz.korio.async.AsyncThread2
 import com.soywiz.korio.concurrent.atomic.incrementAndGet
+import com.soywiz.korio.util.nioSuspendCompletion
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.nio.ByteBuffer

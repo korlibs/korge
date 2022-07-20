@@ -10,8 +10,10 @@ import com.soywiz.korio.annotations.KorInternal
 @KorInternal
 interface AGQueueProcessor {
     // EXTRA
+    fun listStart(): Unit = Unit
     fun contextLost()
     // SYNC
+    fun flush()
     fun finish()
     // ENABLE / DISABLE
     fun enableDisable(kind: AGEnable, enable: Boolean)

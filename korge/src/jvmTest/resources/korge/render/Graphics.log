@@ -5,10 +5,12 @@ createTexture():0
 Texture[0].uploadedBitmap(SyncBitmapSource(rgba=true, width=71, height=71), 71, 71)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[49152])
+Buffer[2].afterSetMem(mem[4])
+Buffer[3].afterSetMem(mem[4])
+Buffer[4].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 1, Program(name=BatchBuilder2D.Premultiplied.Tinted.NoAddNoWrap, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=BatchBuilder2D.Tinted.NoAdd, attributes=[a_Tex, a_TexIndex, a_InputPre, a_Wrap, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -24,30 +26,45 @@ uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
 uniform sampler2D u_Tex2;
 uniform sampler2D u_Tex3;
-varying lowp float v_TexIndex;
+uniform bool u_OutputPre;
+varying lowp float v_Wrap;
 varying mediump vec2 v_Tex;
+varying lowp float v_TexIndex;
+varying lowp float v_InputPre;
 varying vec4 v_Col;
 void main() {
+	vec4 temp0;
+	if ((v_Wrap != 0.0)) {
+		temp0.xy = fract(v_Tex.xy);
+	}
+	else {
+		temp0.xy = v_Tex.xy;
+	}
 	if ((v_TexIndex <= 1.0)) {
 		if ((v_TexIndex == 0.0)) {
-			gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex0, temp0.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex1, temp0.xy);
 		}
 	}
 	else {
 		if ((v_TexIndex == 2.0)) {
-			gl_FragColor = texture2D(u_Tex2, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex2, temp0.xy);
 		}
 		else {
-			gl_FragColor = texture2D(u_Tex3, v_Tex.xy);
+			gl_FragColor = texture2D(u_Tex3, temp0.xy);
 		}
 	}
-	gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
-	gl_FragColor = (gl_FragColor.rgba * v_Col.rgba);
+	if ((v_InputPre == 0.0)) {
+		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
+	}
+	gl_FragColor = (gl_FragColor * v_Col);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
+	}
+	if ((!(u_OutputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
 	}
 }
 
@@ -64,6 +81,8 @@ programCreate.vertex:#version 100 compatibility
 #endif
 attribute mediump vec2 a_Tex;
 attribute lowp float a_TexIndex;
+attribute lowp float a_InputPre;
+attribute lowp float a_Wrap;
 attribute lowp vec4 a_Col;
 attribute vec4 a_Col2;
 attribute highp vec2 a_Pos;
@@ -71,19 +90,23 @@ uniform mat4 u_ProjMat;
 uniform mat4 u_ViewMat;
 varying mediump vec2 v_Tex;
 varying lowp float v_TexIndex;
+varying lowp float v_InputPre;
+varying lowp float v_Wrap;
 varying vec4 v_Col;
 varying vec4 v_Col2;
 void main() {
 	v_Tex = a_Tex;
 	v_TexIndex = a_TexIndex;
-	v_Col = a_Col;
+	v_InputPre = a_InputPre;
+	v_Wrap = a_Wrap;
+	v_Col = vec4((a_Col.rgb * a_Col.a), a_Col.a);
 	v_Col2 = a_Col2;
 	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
 }
 
 programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_InputPre]), VertexData(_buffer=Buffer[3], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboCreate: 1
 uboSet: 1
@@ -103,6 +126,7 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[0], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
@@ -116,15 +140,15 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
-::draw.vertex[0]: a_Pos[-60,-60], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[10,-60], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[10,10], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[-60,10], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.attributes[4]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_InputPre), Attribute(a_Wrap)]
+::draw.vertex[0]: a_Pos[-60,-60], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.vertex[1]: a_Pos[11,-60], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.vertex[2]: a_Pos[11,11], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
+::draw.vertex[3]: a_Pos[-60,11], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[1], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
-createBuffer():4
-programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_GlobalAlpha, u_ColorMul, u_GlobalPixelScale]), ProgramConfig(externalTextureSampler=false)
+createBuffer():6
+programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -142,12 +166,14 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform float u_GlobalAlpha;
 uniform vec4 u_ColorMul;
+uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
+uniform bool u_OutputPre;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
 varying mediump vec2 v_Tex;
+varying lowp float v_InputPre;
 void main() {
 	vec2 temp3;
 	vec4 temp0;
@@ -196,9 +222,14 @@ void main() {
 			}
 		}
 	}
-	gl_FragColor.w = (gl_FragColor.w * u_GlobalAlpha);
+	if ((v_InputPre == 0.0)) {
+		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
+	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
-	gl_FragColor.a = (gl_FragColor.a * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	gl_FragColor.rgba = ((gl_FragColor.rgba * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	if ((!(u_OutputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
+	}
 }
 
 programCreate.vertex:#version 100 compatibility
@@ -228,10 +259,10 @@ void main() {
 }
 
 programUse: 2
-bufferCreate: 5
-Buffer[4].afterSetMem(mem[16384])
+bufferCreate: 7
+Buffer[6].afterSetMem(mem[16384])
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[4], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[6], layout=VertexLayout[a_Pos, a_Dist, a_MaxDist])])
 vaoUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -250,6 +281,7 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=null, linear=true, triline
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboSet.uniform: Uniform(u_ColorMul) = [1.0, 1.0, 1.0, 1.0]
 uboUse: 1
 uboCreate: 2
@@ -265,6 +297,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 2
 disable: STENCIL
 stencilMask: 0
@@ -272,6 +305,7 @@ colorMask: true, true, true, true
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+disable: CULL_FACE
 draw: TRIANGLE_STRIP, offset=0, count=894, instances=1, indexType=null
 ::draw.indices: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336, 337, 338, 339, 340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360, 361, 362, 363, 364, 365, 366, 367, 368, 369, 370, 371, 372, 373, 374, 375, 376, 377, 378, 379, 380, 381, 382, 383, 384, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 396, 397, 398, 399, 400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415, 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469, 470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505, 506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523, 524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541, 542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559, 560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577, 578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595, 596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611, 612, 613, 614, 615, 616, 617, 618, 619, 620, 621, 622, 623, 624, 625, 626, 627, 628, 629, 630, 631, 632, 633, 634, 635, 636, 637, 638, 639, 640, 641, 642, 643, 644, 645, 646, 647, 648, 649, 650, 651, 652, 653, 654, 655, 656, 657, 658, 659, 660, 661, 662, 663, 664, 665, 666, 667, 668, 669, 670, 671, 672, 673, 674, 675, 676, 677, 678, 679, 680, 681, 682, 683, 684, 685, 686, 687, 688, 689, 690, 691, 692, 693, 694, 695, 696, 697, 698, 699, 700, 701, 702, 703, 704, 705, 706, 707, 708, 709, 710, 711, 712, 713, 714, 715, 716, 717, 718, 719, 720, 721, 722, 723, 724, 725, 726, 727, 728, 729, 730, 731, 732, 733, 734, 735, 736, 737, 738, 739, 740, 741, 742, 743, 744, 745, 746, 747, 748, 749, 750, 751, 752, 753, 754, 755, 756, 757, 758, 759, 760, 761, 762, 763, 764, 765, 766, 767, 768, 769, 770, 771, 772, 773, 774, 775, 776, 777, 778, 779, 780, 781, 782, 783, 784, 785, 786, 787, 788, 789, 790, 791, 792, 793, 794, 795, 796, 797, 798, 799, 800, 801, 802, 803, 804, 805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 817, 818, 819, 820, 821, 822, 823, 824, 825, 826, 827, 828, 829, 830, 831, 832, 833, 834, 835, 836, 837, 838, 839, 840, 841, 842, 843, 844, 845, 846, 847, 848, 849, 850, 851, 852, 853, 854, 855, 856, 857, 858, 859, 860, 861, 862, 863, 864, 865, 866, 867, 868, 869, 870, 871, 872, 873, 874, 875, 876, 877, 878, 879, 880, 881, 882, 883, 884, 885, 886, 887, 888, 889, 890, 891, 892, 893]
 ::draw.attributes[1]: [Attribute(a_Pos), Attribute(a_Dist), Attribute(a_MaxDist)]
@@ -1176,6 +1210,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 2
 disable: STENCIL
 stencilMask: 0
@@ -1183,6 +1218,7 @@ colorMask: true, true, true, true
 enable: BLEND
 blendEquation: ADD, ADD
 blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+disable: CULL_FACE
 draw: TRIANGLE_STRIP, offset=894, count=74, instances=1, indexType=null
 ::draw.indices: [894, 895, 896, 897, 898, 899, 900, 901, 902, 903, 904, 905, 906, 907, 908, 909, 910, 911, 912, 913, 914, 915, 916, 917, 918, 919, 920, 921, 922, 923, 924, 925, 926, 927, 928, 929, 930, 931, 932, 933, 934, 935, 936, 937, 938, 939, 940, 941, 942, 943, 944, 945, 946, 947, 948, 949, 950, 951, 952, 953, 954, 955, 956, 957, 958, 959, 960, 961, 962, 963, 964, 965, 966, 967]
 ::draw.attributes[1]: [Attribute(a_Pos), Attribute(a_Dist), Attribute(a_MaxDist)]
@@ -1263,86 +1299,20 @@ draw: TRIANGLE_STRIP, offset=894, count=74, instances=1, indexType=null
 uboDelete: 2
 vaoUse: 0
 vaoDelete: 1
+disable: CULL_FACE
 textureCreate: 2
 createTexture():1
 Texture[1].uploadedBitmap(SyncBitmapSource(rgba=true, width=64, height=64), 64, 64)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
-Buffer[2].afterSetMem(mem[49152])
+Buffer[2].afterSetMem(mem[4])
+Buffer[3].afterSetMem(mem[4])
+Buffer[4].afterSetMem(mem[49152])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 3, Program(name=BatchBuilder2D.NoPremultiplied.Tinted.NoAddNoWrap, attributes=[a_Tex, a_TexIndex, a_Col, a_Col2, a_Pos], uniforms=[u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_Tex2, u_Tex3]), ProgramConfig(externalTextureSampler=false)
-programCreate.fragment:#version 100 compatibility
-#ifdef GL_ES
-	precision highp float;
-	precision highp int;
-	precision lowp sampler2D;
-	precision lowp samplerCube;
-#else
-	  #define highp 
-	  #define mediump 
-	  #define lowp 
-#endif
-uniform sampler2D u_Tex0;
-uniform sampler2D u_Tex1;
-uniform sampler2D u_Tex2;
-uniform sampler2D u_Tex3;
-varying lowp float v_TexIndex;
-varying mediump vec2 v_Tex;
-varying vec4 v_Col;
-void main() {
-	if ((v_TexIndex <= 1.0)) {
-		if ((v_TexIndex == 0.0)) {
-			gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
-		}
-		else {
-			gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
-		}
-	}
-	else {
-		if ((v_TexIndex == 2.0)) {
-			gl_FragColor = texture2D(u_Tex2, v_Tex.xy);
-		}
-		else {
-			gl_FragColor = texture2D(u_Tex3, v_Tex.xy);
-		}
-	}
-	gl_FragColor = (gl_FragColor.rgba * v_Col.rgba);
-}
-
-programCreate.vertex:#version 100 compatibility
-#ifdef GL_ES
-	precision highp float;
-	precision highp int;
-	precision lowp sampler2D;
-	precision lowp samplerCube;
-#else
-	  #define highp 
-	  #define mediump 
-	  #define lowp 
-#endif
-attribute mediump vec2 a_Tex;
-attribute lowp float a_TexIndex;
-attribute lowp vec4 a_Col;
-attribute vec4 a_Col2;
-attribute highp vec2 a_Pos;
-uniform mat4 u_ProjMat;
-uniform mat4 u_ViewMat;
-varying mediump vec2 v_Tex;
-varying lowp float v_TexIndex;
-varying vec4 v_Col;
-varying vec4 v_Col2;
-void main() {
-	v_Tex = a_Tex;
-	v_TexIndex = a_TexIndex;
-	v_Col = a_Col;
-	v_Col2 = a_Col2;
-	gl_Position = ((u_ProjMat * u_ViewMat) * vec4(a_Pos, 0.0, 1.0));
-}
-
-programUse: 3
+programUse: 1
 vaoCreate: 1
-vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex])])
+vaoSet: 1, VertexArrayObject(list=[VertexData(_buffer=Buffer[0], layout=VertexLayout[a_Pos, a_Tex, a_Col, a_Col2]), VertexData(_buffer=Buffer[1], layout=VertexLayout[a_TexIndex]), VertexData(_buffer=Buffer[2], layout=VertexLayout[a_InputPre]), VertexData(_buffer=Buffer[3], layout=VertexLayout[a_Wrap])])
 vaoUse: 1
 uboSet: 1
 uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
@@ -1361,6 +1331,7 @@ uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[1], linear=true, t
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
@@ -1374,11 +1345,11 @@ disable: STENCIL
 stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
-::draw.attributes[2]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex)]
-::draw.vertex[0]: a_Pos[236.55515,68.68465], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[1]: a_Pos[291.98077,100.68465], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[2]: a_Pos[259.98077,156.11028], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
-::draw.vertex[3]: a_Pos[204.55515,124.110275], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0]
+::draw.attributes[4]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_InputPre), Attribute(a_Wrap)]
+::draw.vertex[0]: a_Pos[236.55515,68.68465], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[291.98077,100.68465], a_Tex[1,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[259.98077,156.11028], a_Tex[1,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[204.55515,124.110275], a_Tex[0,1], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_InputPre[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()

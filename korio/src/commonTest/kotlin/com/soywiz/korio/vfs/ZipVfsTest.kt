@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.toList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
 
 @Suppress("EXPERIMENTAL_FEATURE_WARNING")
 class ZipVfsTest {
@@ -180,6 +181,27 @@ class ZipVfsTest {
 		resourcesVfs["simple1.fla.zip"].openAsZip { zip ->
 			val xml = zip["DOMDocument.xml"].readXml()
 			assertEquals(1, xml.descendants.filter { it.nameLC == "frames" }.count())
+		}
+	}
+
+	@Test
+	fun testSizeNotInHeader() = suspendTestNoBrowser {
+		val sizes = mutableMapOf<String, Long>()
+		resourcesVfs["android200-sqlite.cblite2.zip"].openAsZip { cblZip ->
+			cblZip.listRecursive().collect {
+				if (!it.isDirectory()) {
+					assertNotEquals(0, it.size())
+					sizes[it.fullName] = it.size()
+				}
+			}
+
+			val mem = MemoryVfs()
+			cblZip.copyToTree(mem)
+			mem.listRecursive().collect {
+				if (!it.isDirectory()) {
+					assertEquals(sizes[it.fullName], it.size())
+				}
+			}
 		}
 	}
 }

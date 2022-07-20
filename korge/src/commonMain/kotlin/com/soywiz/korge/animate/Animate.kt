@@ -20,17 +20,22 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TextureWithBitmapSlice
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.DummyView
+import com.soywiz.korge.view.GraphicsRenderer
 import com.soywiz.korge.view.IHtml
 import com.soywiz.korge.view.IText
 import com.soywiz.korge.view.Image
+import com.soywiz.korge.view.Graphics
 import com.soywiz.korge.view.TextOld
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewLeaf
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addUpdater
+import com.soywiz.korge.view.graphics
 import com.soywiz.korge.view.replaceWith
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
+import com.soywiz.korim.vector.EmptyShape
+import com.soywiz.korim.vector.Shape
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.lang.Closeable
@@ -54,16 +59,20 @@ fun AnElement.createDuplicated() = symbol.create(library)
 fun AnElement.createDuplicatedView() = symbol.create(library) as View
 
 abstract class AnBaseShape(final override val library: AnLibrary, final override val symbol: AnSymbolBaseShape) :
-	View(), AnElement {
+	Container(), AnElement {
 	var ninePatch: Rectangle? = null
 
 	abstract var dx: Float
 	abstract var dy: Float
 	abstract val tex: BmpSlice
+    abstract val shape: Shape?
+    abstract val graphicsRenderer: GraphicsRenderer
 	abstract val texScale: Double
 	abstract val texWidth: Float
 	abstract val texHeight: Float
 	abstract val smoothing: Boolean
+    var graphics: Graphics? = null
+    //private var graphics: Graphics? = null
 
     var dxDouble: Double
         get() = dx.toDouble()
@@ -76,8 +85,29 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
     val posCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
 	val texCuts = arrayOf(Point(0.0, 0.0), Point(0.25, 0.25), Point(0.75, 0.75), Point(1.0, 1.0))
 
+    private var cachedShape: Shape? = null
+
+    private fun ensureShape(): Shape? {
+        if (shape != null) {
+            if (graphics == null) {
+                graphics = graphics(EmptyShape, library.graphicsRenderer ?: graphicsRenderer)
+                //graphics = graphics(shape!!)
+            }
+            if (cachedShape !== shape) {
+                cachedShape = shape
+                graphics?.shape = shape!!
+            }
+        }
+        return shape
+    }
+
 	override fun renderInternal(ctx: RenderContext) {
 		if (!visible) return
+        if (ensureShape() != null) {
+            graphics?.renderer = library.graphicsRenderer ?: graphicsRenderer
+            super.renderInternal(ctx)
+            return
+        }
         ctx.useBatcher { batch ->
             //println("%08X".format(globalColor))
             //println("$id: " + globalColorTransform + " : " + colorTransform + " : " + parent?.colorTransform)
@@ -116,7 +146,9 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
                     filtering = smoothing,
                     colorMul = renderColorMul,
                     colorAdd = renderColorAdd,
-                    blendFactors = renderBlendMode.factors
+                    blendMode = renderBlendMode,
+                    premultiplied = tex.base.premultiplied,
+                    wrap = false,
                 )
             } else {
                 batch.drawQuad(
@@ -129,7 +161,9 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
                     filtering = smoothing,
                     colorMul = renderColorMul,
                     colorAdd = renderColorAdd,
-                    blendFactors = renderBlendMode.factors
+                    blendMode = renderBlendMode,
+                    premultiplied = tex.base.premultiplied,
+                    wrap = false,
                 )
             }
         }
@@ -150,6 +184,9 @@ abstract class AnBaseShape(final override val library: AnLibrary, final override
 	//}
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
+        if (ensureShape() != null) {
+            return super.getLocalBoundsInternal(out)
+        }
 		out.setTo(dx, dy, texWidth, texHeight)
 	}
 
@@ -174,6 +211,8 @@ class AnShape(library: AnLibrary, val shapeSymbol: AnSymbolShape) : AnBaseShape(
 	override var dx = shapeSymbol.bounds.x.toFloat()
 	override var dy = shapeSymbol.bounds.y.toFloat()
 	override val tex = shapeSymbol.textureWithBitmap?.texture ?: Bitmaps.transparent
+    override val shape: Shape? = shapeSymbol.shapeGen?.invoke()
+    override val graphicsRenderer: GraphicsRenderer get() = shapeSymbol.graphicsRenderer
 	override val texScale = shapeSymbol.textureWithBitmap?.scale ?: 1.0
 	override val texWidth = (tex.width / texScale).toFloat()
 	override val texHeight = (tex.height / texScale).toFloat()
@@ -188,12 +227,18 @@ class AnMorphShape(library: AnLibrary, val morphSymbol: AnSymbolMorphShape) : An
 	override var dx: Float = 0f
 	override var dy: Float = 0f
 	override var tex: BmpSlice = Bitmaps.transparent
+    override var shape: Shape? = null
+    override var graphicsRenderer: GraphicsRenderer = morphSymbol.graphicsRenderer
 	override var texScale = 1.0
 	override var texWidth = 0f
 	override var texHeight = 0f
 	override var smoothing = true
 
 	private fun updatedRatio() {
+        if (morphSymbol.shapeGen != null) {
+            shape = morphSymbol.shapeGen!!.invoke(ratio)
+            return
+        }
 		val result = morphSymbol.texturesWithBitmap.find(ratio.seconds, timedResult)
 		texWBS = result.left ?: result.right
 
@@ -421,7 +466,15 @@ class AnMovieClip(override val library: AnLibrary, override val symbol: AnSymbol
 		this@apply.copyPropsFrom(this)
 	}
 
-	override fun createInstance(): View = symbol.create(library) as View
+    override fun getLocalBoundsInternal(out: Rectangle) {
+        if (symbol.id == 0) {
+            out.setTo(0, 0, library.width, library.height)
+        } else {
+            super.getLocalBoundsInternal(out)
+        }
+    }
+
+    override fun createInstance(): View = symbol.create(library) as View
 
 	private val tempTimedResult = Timed.Result<AnSymbolTimelineFrame>()
 	val totalDepths = symbol.limits.totalDepths

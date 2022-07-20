@@ -184,7 +184,7 @@ class OpenALNativeSoundNoStream(
     val sourceProvider: SourceProvider = SourceProvider(0.convert()),
     override val name: String = "Unknown"
 ) : Sound(coroutineContext), SoundProps by JnaSoundPropsProvider(sourceProvider) {
-    override suspend fun decode(): AudioData = data ?: AudioData.DUMMY
+    override suspend fun decode(maxSamples: Int): AudioData = data ?: AudioData.DUMMY
 
     var source: ALuint
         get() = sourceProvider.source

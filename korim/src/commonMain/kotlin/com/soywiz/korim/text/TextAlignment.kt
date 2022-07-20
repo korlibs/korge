@@ -1,5 +1,7 @@
 package com.soywiz.korim.text
 
+import com.soywiz.korim.font.FontMetrics
+import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korma.geom.Anchor
 
 data class TextAlignment(
@@ -88,6 +90,13 @@ inline class VerticalAlign(val ratio: Double) {
     fun getOffsetY(height: Double, baseline: Double): Double = when (this) {
         BASELINE -> baseline
         else -> -height * ratio
+    }
+
+    fun getOffsetYRespectBaseline(glyph: GlyphMetrics, font: FontMetrics): Double = when (this) {
+        TOP -> font.top
+        BOTTOM -> font.bottom
+        BASELINE -> 0.0
+        else -> (font.top * ratio + font.bottom * (1.0 - ratio))
     }
 
     override fun toString(): String = when (this) {

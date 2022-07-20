@@ -127,7 +127,13 @@ fun Project.configureAndroidIndirect() {
                     line("buildscript") {
                         //line("repositories { google(); jcenter(); }")
                         line("repositories { mavenLocal(); google(); mavenCentral() }")
-                        line("dependencies { classpath 'com.android.tools.build:gradle:$androidBuildGradleVersion'; classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion' }")
+                        line("dependencies") {
+                            line("classpath 'com.android.tools.build:gradle:$androidBuildGradleVersion'")
+                            line("classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'")
+                            for (name in korge.androidGradleClasspaths) {
+                                line("classpath ${name.quoted}")
+                            }
+                        }
                     }
                     line("repositories") {
                         line("mavenLocal()")
@@ -147,6 +153,11 @@ fun Project.configureAndroidIndirect() {
                         line("apply plugin: 'com.android.application'")
                     }
                     line("apply plugin: 'kotlin-android'")
+                    //line("apply plugin: 'kotlinx-serialization'")
+                    for (name in korge.androidGradlePlugins) {
+                        line("apply plugin: '$name'")
+                    }
+
                     //line("apply plugin: 'kotlin-android-extensions'") // This was deprecated
 
                     line("android") {
@@ -265,6 +276,10 @@ fun Project.configureAndroidIndirect() {
                                 //println("  DEPENDENCY: $dependency")
                                 line("implementation ${dependency.artifactPath.quoted}")
                             }
+                        }
+
+                        for (dependency in korge.androidGradleDependencies) {
+                            line("implementation ${dependency.quoted}")
                         }
 
                         line("implementation 'com.android.support:appcompat-v7:28.0.0'")

@@ -46,7 +46,10 @@ import com.soywiz.korim.vector.BitmapVector
 import com.soywiz.korio.annotations.KorIncomplete
 import com.soywiz.korio.annotations.KorInternal
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.lang.currentThreadId
+import com.soywiz.korio.lang.currentThreadName
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.unsupported
 import com.soywiz.korma.geom.MajorOrder
 import com.soywiz.korma.geom.Matrix3D
@@ -55,7 +58,10 @@ import com.soywiz.korma.geom.copyToFloatWxH
 import kotlin.math.min
 
 @OptIn(KorIncomplete::class, KorInternal::class)
-class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AGQueueProcessor {
+class AGQueueProcessorOpenGL(
+    private val gl: KmlGl,
+    val globalState: AGGlobalState
+) : AGQueueProcessor {
     class FastResources<T : Any>(val create: (id: Int) -> T) {
         private val resources = arrayListOf<T?>()
         operator fun get(id: Int): T? = getOrNull(id)
@@ -77,6 +83,20 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     val contextVersion: Int get() = globalState.contextVersion
 
+    override fun listStart() {
+        if (globalState.renderThreadId == -1L) {
+            globalState.renderThreadId = currentThreadId
+            globalState.renderThreadName = currentThreadName
+            if (currentThreadName?.contains("DefaultDispatcher-worker") == true) {
+                println("DefaultDispatcher-worker!")
+                printStackTrace()
+            }
+        }
+        if (globalState.renderThreadId != currentThreadId) {
+            println("AGQueueProcessorOpenGL.listStart: CALLED FROM DIFFERENT THREAD! ${globalState.renderThreadName}:${globalState.renderThreadId} != $currentThreadName:$currentThreadId")
+        }
+    }
+
     override fun contextLost() {
         globalState.contextVersion++
         gl.handleContextLost()
@@ -84,9 +104,12 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
     //var doPrintTimer = Stopwatch().also { it.start() }
     //var doPrint = false
+    override fun flush() {
+        gl.flush()
+    }
 
     override fun finish() {
-        //gl.flush()
+        gl.flush()
         //gl.finish()
 
        //doPrint = if (doPrintTimer.elapsed >= 1.seconds) {
@@ -142,7 +165,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         programs.getOrCreate(programId).glProgramInfo = GLShaderCompiler.programCreate(
             gl,
             this.config.copy(programConfig = config ?: this.config.programConfig),
-            program
+            program, debugName = program.name
         )
     }
 
@@ -503,6 +526,21 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
                         }
                     }
                 }
+                VarType.Bool1, VarType.Bool2, VarType.Bool3, VarType.Bool4 -> {
+                    when (value) {
+                        is Boolean -> gl.uniform1i(location, value.toInt())
+                        is BooleanArray -> {
+                            when (uniformType.elementCount) {
+                                1 -> gl.uniform1i(location, value[0].toInt())
+                                2 -> gl.uniform2i(location, value[0].toInt(), value[1].toInt())
+                                3 -> gl.uniform3i(location, value[0].toInt(), value[1].toInt(), value[2].toInt())
+                                4 -> gl.uniform4i(location, value[0].toInt(), value[1].toInt(), value[2].toInt(), value[3].toInt())
+                            }
+                        }
+                        else -> TODO()
+                    }
+
+                }
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
                     var arrayCount = declArrayCount
                     when (value) {
@@ -673,7 +711,7 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
 
         // Context lost
         if (tex.cachedVersion != contextVersion) {
-            println("Texture context lost")
+            println("Texture context lost, recreating: texId=${tex.texId}, source=${tex.source}")
             tex.cachedVersion = contextVersion
             tex.invalidate()
             textureCreate(tex.texId)
@@ -764,9 +802,6 @@ class AGQueueProcessorOpenGL(val gl: KmlGl, val globalState: AGGlobalState) : AG
         } else {
 
             if (bmp is NativeImage) {
-                if (gl.webgl) {
-                    gl.pixelStorei(KmlGl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, bmp.premultiplied.toInt())
-                }
                 if (bmp.area != 0) {
                     prepareTexImage2D()
                     gl.texImage2D(texTarget, 0, type, type, KmlGl.UNSIGNED_BYTE, bmp)

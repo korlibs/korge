@@ -1659,6 +1659,10 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 					}
 
 					val index = originalIndex + zOrderOffset
+                    if (index < 0 || index >= zOrders.size) {
+                        originalIndex++
+                        continue
+                    }
 					zOrders[index] = originalIndex++
 				}
 
@@ -1672,7 +1676,7 @@ open class ObjectDataParser(pool: BaseObjectPool = BaseObjectPool()) : DataParse
 				var i = slotCount
 				while (i-- > 0) {
 					if (zOrders[i] == -1) {
-						this._frameArray[frameOffset + 2 + i] = unchanged[--unchangedIndex].toDouble()
+                        this._frameArray[frameOffset + 2 + i] = if (unchangedIndex > 0) unchanged[--unchangedIndex].toDouble() else 0.0
 					} else {
 						this._frameArray[frameOffset + 2 + i] = zOrders[i].toDouble()
 					}

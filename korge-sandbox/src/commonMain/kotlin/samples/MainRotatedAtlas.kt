@@ -1,7 +1,7 @@
 package samples
 
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.xy
@@ -18,7 +18,7 @@ import kotlin.math.max
 import kotlin.native.concurrent.ThreadLocal
 
 class MainRotatedAtlas : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         var y = 0
 
         fun generateImages(atlas: Atlas, ext: String = "") {

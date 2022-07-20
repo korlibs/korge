@@ -112,12 +112,14 @@ fun ViewsContainer.registerBox2dSupportOnce() {
             physicsContainer.removeChildren()
             val body = view.body
             if (body != null) {
-                physicsContainer.uiCollapsableSection("Box2D Physics") {
+                physicsContainer.uiCollapsibleSection("Box2D Physics") {
                     button("Remove") {
-                        body.destroyBody()
-                        view.body = null
-                        body.view = null
-                        physicsContainer()
+                        onClick {
+                            body.destroyBody()
+                            view.body = null
+                            body.view = null
+                            physicsContainer()
+                        }
                     }
                     uiEditableValue(body::type, values = { listOf(BodyType.STATIC, BodyType.DYNAMIC, BodyType.KINEMATIC) })
                     val fixture = body.m_fixtureList
@@ -139,9 +141,11 @@ fun ViewsContainer.registerBox2dSupportOnce() {
                 }
             } else {
                 physicsContainer.button("Add box2d physics") {
-                    view.registerBodyWithFixture(type = BodyType.STATIC)
-                    views.debugSaveView("Add physics", view)
-                    physicsContainer()
+                    onClick {
+                        view.registerBodyWithFixture(type = BodyType.STATIC)
+                        views.debugSaveView("Add physics", view)
+                        physicsContainer()
+                    }
                 }
             }
             physicsContainer.root?.relayout()

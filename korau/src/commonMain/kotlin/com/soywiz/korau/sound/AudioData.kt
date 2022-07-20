@@ -4,10 +4,15 @@ import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.arraycopy
 import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioEncodingProps
+import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.defaultAudioFormats
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.file.VfsOpenMode
+import com.soywiz.korio.file.baseName
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.stream.openUse
 import kotlin.math.min
 
 class AudioData(
@@ -20,11 +25,11 @@ class AudioData(
         val DUMMY by lazy { AudioData(44100, AudioSamples(2, 0)) }
     }
 
-    val stereo get() = channels > 1
-    val channels get() = samples.channels
-    val totalSamples get() = samples.totalSamples
+    val stereo: Boolean get() = channels > 1
+    val channels: Int get() = samples.channels
+    val totalSamples: Int get() = samples.totalSamples
     val totalTime: TimeSpan get() = timeAtSample(totalSamples)
-    fun timeAtSample(sample: Int) = ((sample).toDouble() / rate.toDouble()).seconds
+    fun timeAtSample(sample: Int): TimeSpan = ((sample).toDouble() / rate.toDouble()).seconds
 
     operator fun get(channel: Int): ShortArray = samples.data[channel]
     operator fun get(channel: Int, sample: Int): Short = samples.data[channel][sample]
@@ -38,6 +43,12 @@ enum class AudioConversionQuality { FAST }
 
 /** Change the rate, changing the pitch and the duration of the sound. */
 fun AudioData.withRate(rate: Int) = AudioData(rate, samples)
+
+suspend fun AudioData.encodeToFile(file: VfsFile, format: AudioFormats = defaultAudioFormats, props: AudioEncodingProps = AudioEncodingProps.DEFAULT) {
+    file.openUse(mode = VfsOpenMode.CREATE) {
+        format.encode(this@encodeToFile, this, file.baseName, props)
+    }
+}
 
 // @TODO: Use FFT
 //fun AudioData.withAdjustedPitch(pitch: Double = 1.0): AudioData {
@@ -88,7 +99,7 @@ class AudioDataStream(val data: AudioData) : AudioStream(data.rate, data.channel
 }
 
 
-suspend fun AudioData.toSound() = nativeSoundProvider.createSound(this)
+suspend fun AudioData.toSound(): Sound = nativeSoundProvider.createSound(this)
 
-suspend fun VfsFile.readAudioData(formats: AudioFormats = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT) =
+suspend fun VfsFile.readAudioData(formats: AudioFormat = defaultAudioFormats, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData =
     this.openUse { formats.decode(this, props) ?: invalidOp("Can't decode audio file ${this@readAudioData}") }

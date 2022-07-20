@@ -5,6 +5,7 @@ import com.soywiz.kds.Pool
 import com.soywiz.klogger.Logger
 import com.soywiz.korag.AG
 import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.ColorTransform
@@ -25,10 +26,10 @@ import kotlin.native.concurrent.SharedImmutable
 private val logger = Logger("RenderContext2D")
 
 /**
- * Helper class using [BatchBuilder2D] that keeps a chain of affine transforms [Matrix], [ColorTransform] and [blendFactors]
+ * Helper class using [BatchBuilder2D] that keeps a chain of affine transforms [Matrix], [ColorTransform] and [blendMode]
  * and allows to draw images and scissors with that transform.
  *
- * [keepMatrix], [keepBlendFactors], [keepColor] and [keep] block methods allow to do transformations inside its blocks
+ * [keepMatrix], [keepBlendMode], [keepColor] and [keep] block methods allow to do transformations inside its blocks
  * while restoring its initial state at the end of the block.
  *
  * [setMatrix], [translate], [scale], and [rotate] allows to control the transform matrix.
@@ -60,7 +61,7 @@ class RenderContext2D(
 	val m = Matrix()
 
     /** Blending mode to be used in the renders */
-	var blendFactors = AG.Blending.NORMAL
+	var blendMode = BlendMode.NORMAL
     /** Multiplicative color to be used in the renders */
 	var multiplyColor = Colors.WHITE
     var filtering: Boolean = true
@@ -78,12 +79,12 @@ class RenderContext2D(
 	}
 
     /** Executes [callback] restoring the initial [blendFactors] at the end */
-	inline fun <T> keepBlendFactors(crossinline callback: () -> T): T {
-		val oldBlendFactors = this.blendFactors
+	inline fun <T> keepBlendMode(crossinline callback: () -> T): T {
+		val oldBlendFactors = this.blendMode
 		try {
 			return callback()
 		} finally {
-			this.blendFactors = oldBlendFactors
+			this.blendMode = oldBlendFactors
 		}
 	}
 
@@ -107,10 +108,10 @@ class RenderContext2D(
         }
     }
 
-    /** Executes [callback] restoring the transform matrix, the [blendFactors] and the [multiplyColor] at the end */
+    /** Executes [callback] restoring the transform matrix, the [blendMode] and the [multiplyColor] at the end */
 	inline fun <T> keep(crossinline callback: () -> T): T {
 		return keepMatrix {
-			keepBlendFactors {
+			keepBlendMode {
 				keepColor {
                     keepFiltering {
                         callback()
@@ -145,7 +146,7 @@ class RenderContext2D(
 		m.prerotate(angle)
 	}
 
-    /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
+    /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
     fun rect(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         batch.drawQuad(
             getTexture(Bitmaps.white),
@@ -156,11 +157,13 @@ class RenderContext2D(
             filtering = filtering,
             m = m,
             colorMul = color,
-            blendFactors = blendFactors
+            blendMode = blendMode,
+            premultiplied = Bitmaps.white.premultiplied,
+            wrap = false,
         )
     }
 
-    /** Renders a colored rectangle with the [multiplyColor] with the [blendFactors] at [x], [y] of size [width]x[height] */
+    /** Renders a colored rectangle with the [multiplyColor] with the [blendMode] at [x], [y] of size [width]x[height] */
     fun rectOutline(x: Double, y: Double, width: Double, height: Double, border: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
         rect(x, y, width, border, color, filtering)
         rect(x, y, border, height, color, filtering)
@@ -196,16 +199,16 @@ class RenderContext2D(
     }
 
     fun texturedVertexArrayNoTransform(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering, matrix: Matrix? = null) {
-        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, matrix)
+        batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
+        batch.drawVertices(texturedVertexArray, matrix, premultiplied = Bitmaps.white.premultiplied, wrap = false)
     }
 
     fun texturedVertexArray(texturedVertexArray: TexturedVertexArray, filtering: Boolean = this.filtering) {
-        batch.setStateFast(Bitmaps.white, filtering, blendFactors, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
-        batch.drawVertices(texturedVertexArray, m)
+        batch.setStateFast(Bitmaps.white, filtering, blendMode, null, icount = texturedVertexArray.icount, vcount = texturedVertexArray.vcount)
+        batch.drawVertices(texturedVertexArray, m, premultiplied = Bitmaps.white.premultiplied, wrap = false)
     }
 
-    /** Renders a [texture] with the [blendFactors] at [x], [y] scaling it by [scale].
+    /** Renders a [texture] with the [blendMode] at [x], [y] scaling it by [scale].
      * The texture colors will be multiplied by [multiplyColor]. Since it is multiplicative, white won't cause any effect. */
 	fun imageScale(texture: Texture, x: Double, y: Double, scale: Double = 1.0, filtering: Boolean = this.filtering) {
 		//println(m)
@@ -218,7 +221,9 @@ class RenderContext2D(
             filtering = filtering,
 			m = m,
 			colorMul = multiplyColor,
-			blendFactors = blendFactors
+			blendMode = blendMode,
+            premultiplied = texture.premultiplied,
+            wrap = false,
 		)
 	}
 

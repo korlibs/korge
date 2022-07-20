@@ -214,7 +214,7 @@ class ViewsTest : ViewsForTesting() {
         container.x = 100.0
         container.y = 100.0
         this.addChild(container)
-        val contents = Graphics().apply {
+        val contents = CpuGraphics().updateShape {
             fill(Colors.RED) { circle(0.0,0.0,100.0) }
         }
         container.addChild(contents)
@@ -254,7 +254,7 @@ class ViewsTest : ViewsForTesting() {
             assertEquals(Rectangle(0, 0, 64, 64).toString(), rect3.globalBounds.toString(), "rect5")
         }
 
-        Graphics().also { addChild(it) }.apply { fill(Colors.RED) { rect(0, 0, 100, 100) } }.also { rect4 ->
+        CpuGraphics().also { addChild(it) }.updateShape { fill(Colors.RED) { rect(0, 0, 100, 100) } }.also { rect4 ->
             assertEquals(Rectangle(0, 0, 100, 100), rect4.globalBounds, "rect6")
             rect4.render(views.renderContext)
             assertEquals(Rectangle(0, 0, 100, 100), rect4.globalBounds, "rect7")

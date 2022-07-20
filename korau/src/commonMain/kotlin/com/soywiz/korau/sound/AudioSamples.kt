@@ -22,6 +22,10 @@ interface IAudioSamples {
     operator fun set(channel: Int, sample: Int, value: Short): Unit
     fun getFloat(channel: Int, sample: Int): Float = SampleConvert.shortToFloat(this[channel, sample])
     fun setFloat(channel: Int, sample: Int, value: Float) { this[channel, sample] = SampleConvert.floatToShort(value) }
+    fun setFloatStereo(sample: Int, l: Float, r: Float) {
+        setFloat(0, sample, l)
+        setFloat(1, sample, r)
+    }
 }
 
 internal fun AudioSamples.resample(scale: Double, totalSamples: Int = (this.totalSamples * scale).toInt(), out: AudioSamples = AudioSamples(channels, totalSamples)): AudioSamples {
@@ -95,6 +99,11 @@ class AudioSamples(override val channels: Int, override val totalSamples: Int, v
     override operator fun get(channel: Int, sample: Int): Short = data[channel][sample]
     override operator fun set(channel: Int, sample: Int, value: Short) { data[channel][sample] = value }
 
+    fun setStereo(sample: Int, valueLeft: Short, valueRight: Short) {
+        this[0, sample] = valueLeft
+        this[1, sample] = valueRight
+    }
+
     fun scaleVolume(scale: Double): AudioSamples = scaleVolume(scale.toFloat())
 
     fun scaleVolume(scale: Float): AudioSamples {
@@ -127,7 +136,7 @@ class AudioSamplesInterleaved(override val channels: Int, override val totalSamp
     //val separared by lazy { separated() }
     internal val fastShortTransfer = FastShortTransfer()
 
-    private fun index(channel: Int, sample: Int) = (sample * channels) + channel
+    private fun index(channel: Int, sample: Int): Int = (sample * channels) + channel
     override operator fun get(channel: Int, sample: Int): Short = data[index(channel, sample)]
     override operator fun set(channel: Int, sample: Int, value: Short) { data[index(channel, sample)] = value }
 

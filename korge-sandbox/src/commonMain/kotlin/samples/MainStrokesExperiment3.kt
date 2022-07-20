@@ -13,13 +13,14 @@ import com.soywiz.korge.time.delayFrame
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.tween.tween
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.centered
 import com.soywiz.korge.view.circle
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.debug.DebugVertexView
 import com.soywiz.korge.view.debug.debugVertexView
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
@@ -53,8 +54,8 @@ import com.soywiz.korma.geom.vector.toCurves
 import com.soywiz.korma.interpolation.Easing
 
 class MainStrokesExperiment3 : Scene() {
-    override suspend fun Container.sceneMain() {
-        graphics {
+    override suspend fun SContainer.sceneMain() {
+        cpuGraphics {
             val path = buildVectorPath { circle(200, 200, 100) }
             val points = path.toCurves().toNonCurveSimplePointList()
             val path2 = points?.toPolygon()
@@ -98,7 +99,7 @@ class MainStrokesExperiment3 : Scene() {
 }
 
 class MainStrokesExperiment2 : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val path = buildVectorPath {}
         val curves = path.getCurves()
         val points = curves.toStrokePointsList(10.0, mode = StrokePointsMode.SCALABLE_POS_NORMAL_WIDTH)
@@ -222,7 +223,7 @@ class MainStrokesExperiment2 : Scene() {
 }
 
 class MainStrokesExperiment : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         class PathData(
             val path: VectorPath,
             val curves: Curves,
@@ -285,7 +286,7 @@ class MainStrokesExperiment : Scene() {
 
         if (true) {
             //if (false) {
-            graphics {
+            cpuGraphics {
                 //stroke(Colors.RED, StrokeInfo(thickness = 3.0)) {
                 //    forEachRatio01(200) { ratio ->
                 //        val p = curves.calc(ratio)

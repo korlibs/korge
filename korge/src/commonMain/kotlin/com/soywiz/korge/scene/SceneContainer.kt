@@ -12,6 +12,7 @@ import com.soywiz.korge.view.FixedSizeContainer
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.addTo
+import com.soywiz.korge.view.descendantsWith
 import com.soywiz.korge.view.findFirstAscendant
 import com.soywiz.korge.view.views
 import com.soywiz.korinject.AsyncInjector
@@ -76,15 +77,25 @@ class SceneContainer(
     /** The [Scene] that is currently set or null */
 	var currentScene: Scene? = null
     override fun onSizeChanged() {
-        currentScene?.sceneView?.setSize(width, height)
+        currentScene?.onSizeChanged(width, height)
     }
 
     init {
-        addOnEvent<ReloadEvent> {
+        addOnEvent<ReloadEvent> { event ->
+            val hasChildScenes = descendantsWith { it is SceneContainer && it != this }.isNotEmpty()
+            if (hasChildScenes) {
+                println("[ReloadEvent] Scene $currentScene not reloaded because has child scenes...")
+                return@addOnEvent
+            }
             launchImmediately {
                 val scene = currentScene
                 if (scene != null) {
-                    changeTo(scene::class)
+                    println("[ReloadEvent] Reloading $currentScene . doFullReload=${event.doFullReload}")
+                    if (event.doFullReload) {
+                        changeTo(event.getReloadedClass(scene::class, scene.injector))
+                    } else {
+                        changeTo(scene::class)
+                    }
                 }
             }
         }
@@ -207,6 +218,7 @@ class SceneContainer(
             sceneInjector.mapInstance(inject::class as KClass<Any>, inject)
         }
         val newScene = gen(sceneInjector)
+        println("Changing scene to... $clazz ... $newScene")
         if (remap) {
             newScene.init(sceneInjector)
             views.injector.mapPrototype(newScene::class as KClass<T>) { gen(sceneInjector) }

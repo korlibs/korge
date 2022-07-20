@@ -11,9 +11,9 @@ import java.util.zip.Inflater
 @OptIn(KorioExperimentalApi::class)
 actual fun Deflate(windowBits: Int): CompressionMethod = object : CompressionMethod {
 	override suspend fun uncompress(i: BitReader, o: AsyncOutputStream) {
-		val tempInput = ByteArray(1024)
+		val tempInput = ByteArray(0x10000)
 		var tempInputSize = 0
-		val tempOutput = ByteArray(1024)
+		val tempOutput = ByteArray(0x10000)
 		val inflater = Inflater(true)
 		try {
 			do {
@@ -37,8 +37,8 @@ actual fun Deflate(windowBits: Int): CompressionMethod = object : CompressionMet
 	}
 
 	override suspend fun compress(i: BitReader, o: AsyncOutputStream, context: CompressionContext) {
-		val tempInput = ByteArray(1024)
-		val tempOutput = ByteArray(1024)
+		val tempInput = ByteArray(0x10000)
+		val tempOutput = ByteArray(0x10000)
 		val deflater = Deflater(context.level, true)
 		try {
 			do {

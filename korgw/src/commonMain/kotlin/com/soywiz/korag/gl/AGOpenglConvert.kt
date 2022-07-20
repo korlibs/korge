@@ -121,6 +121,7 @@ fun AG.TextureTargetKind.Companion.fromGl(value: Int): AG.TextureTargetKind = wh
 }
 
 fun VarType.toGl(): Int = when (this.kind) {
+    VarKind.TBOOL -> KmlGl.BOOL
     VarKind.TBYTE -> KmlGl.BYTE
     VarKind.TUNSIGNED_BYTE -> KmlGl.UNSIGNED_BYTE
     VarKind.TSHORT -> KmlGl.SHORT

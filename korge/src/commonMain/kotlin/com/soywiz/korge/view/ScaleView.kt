@@ -8,10 +8,8 @@ inline fun Container.scaleView(
 ) = ScaleView(width, height, scale, filtering).addTo(this, callback)
 
 class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boolean = false) :
-	FixedSizeContainer(), View.Reference {
+    SContainer(width.toDouble(), height.toDouble(), clip = false), View.Reference {
 	init {
-		this.width = width.toDouble()
-		this.height = height.toDouble()
 		this.scale = scale
 	}
 
@@ -34,7 +32,9 @@ class ScaleView(width: Int, height: Int, scale: Double = 2.0, var filtering: Boo
                     colorMul = renderColorMul,
                     colorAdd = renderColorAdd,
                     filtering = filtering,
-                    blendFactors = renderBlendMode.factors
+                    blendMode = renderBlendMode,
+                    premultiplied = renderTexture.premultiplied,
+                    wrap = false
                 )
             }
 		})

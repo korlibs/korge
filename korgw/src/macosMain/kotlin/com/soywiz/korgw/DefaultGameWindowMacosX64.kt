@@ -120,6 +120,7 @@ class MyNSOpenGLView(
             },
             scrollDeltaX = -e.deltaX, scrollDeltaY = -e.deltaY, scrollDeltaZ = -e.deltaZ,
             isShiftDown = e.shift, isCtrlDown = e.ctrl, isAltDown = e.alt, isMetaDown = e.meta,
+            scrollDeltaMode = MouseEvent.ScrollDeltaMode.PIXEL
         )
     }
 
@@ -391,7 +392,7 @@ class MyDefaultGameWindow : GameWindow() {
 
     fun doRender() {
         //println("doRender[0]")
-        val startTime = PerformanceCounter.reference
+        val frameStartTime = PerformanceCounter.reference
         //macTrace("render")
         val context = openglView.openGLContext
 
@@ -412,13 +413,10 @@ class MyDefaultGameWindow : GameWindow() {
         //ag.clear(Colors.BLACK)
         //ag.onRender(ag)
         //dispatch(renderEvent)
-        frame()
+        frame(frameStartTime = frameStartTime)
         context?.flushBuffer()
 
         //println("doRender[3]")
-        val elapsed = PerformanceCounter.reference - startTime
-        val available = counterTimePerFrame - elapsed
-        coroutineDispatcher.executePending(available)
         //println("doRender[4]")
     }
 
@@ -582,6 +580,22 @@ class MyDefaultGameWindow : GameWindow() {
 
         coroutineDispatcher.executePending(1.seconds)
         app.run()
+    }
+
+    override suspend fun clipboardWrite(data: ClipboardData) {
+        val pasteboard = NSPasteboard.generalPasteboard
+
+        pasteboard.declareTypes(listOf(NSPasteboardTypeString), null)
+        when (data) {
+            is TextClipboardData -> pasteboard.setString(data.text, NSPasteboardTypeString)
+        }
+    }
+
+    override suspend fun clipboardRead(): ClipboardData? {
+        val pasteboard = NSPasteboard.generalPasteboard
+        val items = pasteboard.pasteboardItems as? List<NSPasteboardItem>?
+        if (items == null || items.isEmpty()) return null
+        return items.last().stringForType(NSPasteboardTypeString)?.let { TextClipboardData(it) }
     }
 }
 

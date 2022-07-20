@@ -25,8 +25,8 @@ inline fun forEachRatio01(steps: Int, include0: Boolean = true, include1: Boolea
     }
 }
 
-fun <T> List<T>.getCyclic(index: Int) = this[index umod this.size]
-fun <T> List<T>.getCyclicOrNull(index: Int) = this.getOrNull(index umod this.size)
+fun <T> List<T>.getCyclic(index: Int): T = this[index umod this.size]
+fun <T> List<T>.getCyclicOrNull(index: Int): T? = if (this.isEmpty()) null else this.getOrNull(index umod this.size)
 fun <T> Array<T>.getCyclic(index: Int) = this[index umod this.size]
 fun IntArray.getCyclic(index: Int) = this[index umod this.size]
 fun FloatArray.getCyclic(index: Int) = this[index umod this.size]

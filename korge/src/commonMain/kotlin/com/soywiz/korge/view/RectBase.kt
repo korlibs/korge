@@ -70,6 +70,7 @@ open class RectBase(
         //super.renderInternal(ctx)
 	}
 
+    var wrapTexture: Boolean = false
     var program: Program? = null
     private var _programUniforms: AG.UniformValues? = null
     var programUniforms: AG.UniformValues
@@ -81,10 +82,12 @@ open class RectBase(
 
     protected open fun drawVertices(ctx: RenderContext) {
         ctx.useBatcher { batch ->
+            //batch.texture1212
             batch.setTemporalUniforms(_programUniforms) {
                 batch.drawVertices(
-                    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode.factors,
-                    program = program
+                    vertices, ctx.getTex(baseBitmap).base, smoothing, renderBlendMode,
+                    program = program,
+                    premultiplied = baseBitmap.base.premultiplied, wrap = wrapTexture
                 )
             }
         }

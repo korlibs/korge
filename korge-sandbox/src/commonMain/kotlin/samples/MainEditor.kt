@@ -9,7 +9,7 @@ import com.soywiz.korim.text.*
 import com.soywiz.korma.geom.*
 
 class MainEditor : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
 
         val font2 = DefaultTtfFont.toBitmapFont(16.0, CharacterSet.LATIN_ALL + CharacterSet.CYRILLIC)
 

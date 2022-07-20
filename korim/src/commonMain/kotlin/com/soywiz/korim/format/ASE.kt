@@ -3,16 +3,22 @@ package com.soywiz.korim.format
 import com.soywiz.kds.*
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
+import com.soywiz.kmem.extract
 import com.soywiz.kmem.hasBitSet
 import com.soywiz.kmem.readIntArray
+import com.soywiz.kmem.readIntArrayLE
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
+import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.Palette
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.tiles.TileMapData
+import com.soywiz.korim.tiles.TileSet
+import com.soywiz.korim.tiles.TileSetTileInfo
 import com.soywiz.korim.vector.BlendMode
 import com.soywiz.korio.compression.deflate.ZLib
 import com.soywiz.korio.compression.uncompress
@@ -30,6 +36,7 @@ import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.krypto.encoding.hex
 
 // Aseprite: https://github.com/aseprite/aseprite/blob/main/docs/ase-file-specs.md
+// Aseprite 1.3: https://github.com/aseprite/aseprite/blob/4f2eae6b7754f432f960bc6cbacc4e6d26914abf/docs/ase-file-specs.md
 object ASE : ImageFormatWithContainer("ase") {
     override fun decodeHeader(s: SyncStream, props: ImageDecodingProps): ImageInfo? {
         val ss = s.clone()
@@ -58,16 +65,45 @@ object ASE : ImageFormatWithContainer("ase") {
         }
     }
 
-    open class AseCell(val bmp: Bitmap, val x: Int, val y: Int, val opacity: Int, val linkedCell: AseCell? = null) : AseEntity by AseEntity()
+    interface AseCell : AseEntity {
+        val bmp: Bitmap
+        val x: Int
+        val y: Int
+        val opacity: Int
+        fun resolve(): AseCell = this
+    }
+    open class AseBitmapCell(
+        override val bmp: Bitmap,
+        override val x: Int, override val y: Int, override val opacity: Int,
+    ) : AseEntity by AseEntity(), AseCell
+    open class AseLinkedCell(
+        val linkedCell: AseCell,
+        override val x: Int, override val y: Int, override val opacity: Int,
+    ) : AseEntity by AseEntity(), AseCell {
+        override val bmp: Bitmap get() = linkedCell.bmp
+        override fun resolve(): AseCell = linkedCell.resolve()
+    }
+    open class AseTilemapCell(
+        val data: IntArray2,
+        val tileBitmask: Int,
+        val bitmaskXFlip: Int,
+        val bitmaskYFlip: Int,
+        val bitmask90CWFlip: Int,
+        override val x: Int, override val y: Int, override val opacity: Int,
+    ) : AseEntity by AseEntity(), AseCell {
+        override val bmp: Bitmap = Bitmap32(1, 1)
+    }
+
     open class AseLayer(
         index: Int,
         name: String,
         val flags: Int,
-        val type: Int,
+        type: ImageLayer.Type,
         val childLevel: Int,
         val blendModeInt: Int,
-        val opacity: Int
-    ) : ImageLayer(index, name), AseEntity by AseEntity() {
+        val opacity: Int,
+        val tilesetIndex: Int,
+    ) : ImageLayer(index, name, type), AseEntity by AseEntity() {
         val isVisible = flags.hasBitSet(0)
         val isEditable = flags.hasBitSet(1)
         val lockMovement = flags.hasBitSet(2)
@@ -75,7 +111,8 @@ object ASE : ImageFormatWithContainer("ase") {
         val preferredLinkedCels = flags.hasBitSet(4)
         val collapsed = flags.hasBitSet(5)
         val isReferenceLayer = flags.hasBitSet(6)
-        val isGroup = type == 1
+        val isGroup get() = type.isGroup
+        val isTilemap get() = type.isTilemap
         val blendMode = when (blendModeInt) {
             0 -> BlendMode.NORMAL
             1 -> BlendMode.MULTIPLY
@@ -110,6 +147,24 @@ object ASE : ImageFormatWithContainer("ase") {
         changeStart: Int = 0,
         changeEnd: Int = 0
     ) : Palette(colors, names, changeStart, changeEnd), AseEntity by AseEntity()
+
+    data class AseTileset(
+        val tilesetId: Int,
+        val ntiles: Int,
+        val tileWidth: Int,
+        val tileHeight: Int,
+        val baseIndex: Int,
+        val tilesetName: String,
+        val tiles: List<BmpSlice>,
+    ) {
+        val tileSet = TileSet(IntMap<TileSetTileInfo>().also { map ->
+            for (n in tiles.indices) {
+                //val id = baseIndex + n
+                val id = n
+                map[id] = TileSetTileInfo(id, tiles[n])
+            }
+        })
+    }
 
     open class AseSliceKey(
         val frameIndex: Int,
@@ -167,6 +222,8 @@ object ASE : ImageFormatWithContainer("ase") {
         val frames = FastArrayList<AseFrame>()
         val tags = FastArrayList<AseTag>()
         val slices = FastArrayList<AseSlice>()
+        val externalFiles = IntMap<String>()
+        val tilesets = IntMap<AseTileset>()
     }
 
     /**
@@ -205,6 +262,7 @@ object ASE : ImageFormatWithContainer("ase") {
         val imageWidth = s.readU16LE()
         val imageHeight = s.readU16LE()
         val bitsPerPixel = s.readU16LE()
+        val bytesPerPixel = bitsPerPixel / 8
         val flags = s.readU32LE()
         val speed = s.readU16LE()
         s.skip(4)
@@ -257,7 +315,7 @@ object ASE : ImageFormatWithContainer("ase") {
                     }
                     0x2004 -> { // LAYER
                         val flags = cs.readU16LE()
-                        val type = cs.readU16LE()
+                        val type = ImageLayer.Type.BY_ORDINAL[cs.readU16LE()]
                         val childLevel = cs.readU16LE()
                         val defaultLayerWidth = cs.readU16LE()
                         val defaultLayerHeight = cs.readU16LE()
@@ -265,8 +323,12 @@ object ASE : ImageFormatWithContainer("ase") {
                         val opacity = cs.readU8()
                         cs.skip(3)
                         val name = cs.readAseString()
+                        val tilesetIndex = when {
+                            type.isTilemap -> cs.readS32LE()
+                            else -> 0
+                        }
                         //println("- layer = $name, childLevel = $childLevel, blendMode = $blendMode")
-                        val layer = AseLayer(image.layers.size, name, flags, type, childLevel, blendModeInt, opacity)
+                        val layer = AseLayer(image.layers.size, name, flags, type, childLevel, blendModeInt, opacity, tilesetIndex)
                         image.layers.add(layer)
                         lastEntity = layer
                     }
@@ -278,12 +340,13 @@ object ASE : ImageFormatWithContainer("ase") {
                         val celType = cs.readU16LE()
                         cs.skip(7)
                         val cel: AseCell? = when (celType) {
-                            0, 2 -> {
+                            0, 2 -> { // 0=Raw Image Data, 2=Compressed Image
                                 val width = cs.readU16LE()
                                 val height = cs.readU16LE()
                                 //cs.skip(6)
                                 val data = cs.readAvailable()
-                                val udata = if (celType == 2) data.uncompress(ZLib) else data
+                                //println("size=${width * height * bytesPerPixel} width=$width, height=$height, bytesPerPixel=$bytesPerPixel, props=$props")
+                                val udata = if (celType == 2) data.uncompress(ZLib, width * height * bytesPerPixel) else data
                                 //val udata = if (celType == 2) data.uncompress(ZLib.Portable) else data
                                 //println("celType = $celType, width=$width, height=$height, data=${data.size}, udata=${udata.size}")
                                 val bmp = when (bitsPerPixel) {
@@ -291,12 +354,36 @@ object ASE : ImageFormatWithContainer("ase") {
                                     8 -> Bitmap8(width, height, udata, image.palette!!.colors)
                                     else -> error("Unsupported ASE mode")
                                 }
-                                AseCell(bmp, x, y, opacity, null)
+                                AseBitmapCell(bmp, x, y, opacity)
                             }
-                            1 -> {
+                            1 -> { // 1=Linked Cel
                                 val linkFrame = cs.readU16LE()
-                                val aseCell = image.frames[linkFrame].celsByLayer[layerIndex]!!
-                                AseCell(aseCell.bmp, x, y, opacity, aseCell)
+                                val aseCell: AseCell = image.frames[linkFrame].celsByLayer[layerIndex]!!
+                                AseLinkedCell(aseCell, x, y, opacity)
+                            }
+                            3 -> { // 3=Compressed Tilemap
+                                val tilesWidth = cs.readU16LE()
+                                val tilesHeight = cs.readU16LE()
+                                val bitsPerTile = cs.readU16LE()
+                                val tileBitmask = cs.readS32LE() // Bitmask for tile ID (e.g. 0x1fffffff for 32-bit tiles)
+                                val bitmaskXFlip = cs.readS32LE()
+                                val bitmaskYFlip = cs.readS32LE()
+                                val bitmask90CWFlip = cs.readS32LE()
+                                val bytesPerTile = bitsPerTile / 8
+                                cs.skip(10) // Reserved
+                                val compressedData = cs.readAvailable().uncompress(ZLib, tilesWidth * tilesHeight * bytesPerTile)
+                                val data = when (bitsPerTile) {
+                                    32 -> compressedData.readIntArrayLE(0, tilesWidth * tilesHeight)
+                                    else -> TODO("Only supported 32-bits per tile")
+                                }
+                                AseTilemapCell(
+                                    IntArray2(tilesWidth, tilesHeight, data),
+                                    tileBitmask,
+                                    bitmaskXFlip,
+                                    bitmaskYFlip,
+                                    bitmask90CWFlip,
+                                    x, y, opacity
+                                )
                             }
                             else -> error("Aseprite: Unknown celType=$celType")
                         }
@@ -320,6 +407,16 @@ object ASE : ImageFormatWithContainer("ase") {
                         val flags = cs.readU16LE()
                         val gamma = cs.readFixedLE()
                         cs.skip(8)
+                    }
+                    0x2008 -> { // External Files Chunk
+                        val nentries = cs.readS32LE()
+                        cs.skip(8) // Reserved
+                        for (n in 0 until nentries) {
+                            val entryId = cs.readS32LE()
+                            cs.skip(8) // Reserved
+                            val externalFileName = cs.readAseString()
+                            image.externalFiles[entryId] = externalFileName
+                        }
                     }
                     0x2016 -> { // MASK (deprecated)
                         // Ignored
@@ -409,6 +506,41 @@ object ASE : ImageFormatWithContainer("ase") {
                             ))
                         }
                     }
+                    0x2023 -> { // Tileset Chunk
+                        val tilesetId = cs.readS32LE()
+                        val tilesetFlags = cs.readS32LE()
+                        val includeLinkToExternalFile = tilesetFlags.extract(0)
+                        val includeTilesInsideThisFile = tilesetFlags.extract(1)
+                        val tile0IsEmpty = tilesetFlags.extract(2) // Usually always true
+                        val ntiles = cs.readS32LE()
+                        val tileWidth = cs.readU16LE()
+                        val tileHeight = cs.readU16LE()
+                        val baseIndex = cs.readS16LE()
+                        cs.skip(14) // Reserved
+                        val tilesetName = cs.readAseString()
+                        var tiles = listOf<BmpSlice>()
+                        if (includeLinkToExternalFile) {
+                            val externalFileId = cs.readS32LE()
+                            val externalTilesetId = cs.readS32LE()
+                        }
+                        if (includeTilesInsideThisFile) {
+                            val compressedDataLength = cs.readS32LE()
+                            val compressedData = cs.readBytesExact(compressedDataLength) // (Tile Width) x (Tile Height x Number of Tiles)
+                            val data = compressedData.uncompress(ZLib)
+                            val ints = data.readIntArrayLE(0, tileWidth * tileHeight * ntiles)
+                            val bitmap = Bitmap32(tileWidth, tileHeight * ntiles, RgbaArray(ints))
+                            tiles = bitmap.slice().split(tileWidth, tileHeight)
+                        }
+                        image.tilesets[tilesetId] = AseTileset(
+                            tilesetId,
+                            ntiles,
+                            tileWidth,
+                            tileHeight,
+                            baseIndex,
+                            tilesetName,
+                            tiles
+                        )
+                    }
                     else -> println("WARNING: Aseprite: Not implemented chunkType=${chunkType.hex}")
                 }
             }
@@ -417,13 +549,31 @@ object ASE : ImageFormatWithContainer("ase") {
         val imageLayers = image.layers
         val imageVisibleLayers = imageLayers.filter { it.isVisible && props.takeLayersByName(it.name as String) }
 
+        fun createImageFrameLayer(key: Int, value: AseCell): ImageFrameLayer {
+            val resolved = value.resolve()
+            val layer = imageLayers[key]
+            var tilemap: TileMapData? = null
+            if (resolved is AseTilemapCell) {
+                val tileset = image.tilesets[layer.tilesetIndex]
+                tilemap = TileMapData(
+                    resolved.data,
+                    tileset?.tileSet,
+                    maskData = resolved.tileBitmask,
+                    maskFlipX = resolved.bitmaskXFlip,
+                    maskFlipY = resolved.bitmaskYFlip,
+                    maskRotate = resolved.bitmask90CWFlip,
+                )
+            }
+            return ImageFrameLayer(layer, resolved.bmp.slice(), resolved.x, resolved.y, main = false, includeInAtlas = true, tilemap = tilemap)
+        }
+
         val frames = image.frames.mapNotNull { frame ->
             // First collect within a frame only cells which are on a visible layer
             val cells = frame.celsByLayer.toLinkedMap().filter {
                 imageLayers[it.key].isVisible && props.takeLayersByName(imageLayers[it.key].name as String) }
             // Then create list of layer data from those cells and their corresponding visible layers
             val layerData = cells.map { (key, value) ->
-                ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y, main = false, includeInAtlas = true)
+                createImageFrameLayer(key, value)
             }
             if (layerData.isNotEmpty()) {
                 ImageFrame(frame.index, frame.time.milliseconds, layerData)
@@ -459,9 +609,7 @@ object ASE : ImageFormatWithContainer("ase") {
                 }
                 // Create list of layer data from found cells and slice them
                 val layerData = cells.map { (key, value) ->
-                    ImageFrameLayer(imageLayers[key], value.bmp.slice(), value.x, value.y,
-                        main = false, includeInAtlas = true
-                    )
+                    createImageFrameLayer(key, value)
                 }.map {
                     val sliceFrame = RectangleInt(
                         sliceKey.sliceFrame.x - it.targetX, sliceKey.sliceFrame.y - it.targetY,

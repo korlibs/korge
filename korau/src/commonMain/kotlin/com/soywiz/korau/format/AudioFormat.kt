@@ -17,7 +17,9 @@ import com.soywiz.korio.stream.AsyncOutputStream
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.MemorySyncStreamToByteArray
 import com.soywiz.korio.stream.openAsync
+import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.toAsync
+import com.soywiz.krypto.encoding.hex
 import kotlin.coroutines.cancellation.CancellationException
 
 open class AudioFormat(vararg exts: String) {
@@ -33,8 +35,8 @@ open class AudioFormat(vararg exts: String) {
 
 	open suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Info? = null
 	open suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioStream? = null
-	suspend fun decode(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data, props)?.toData()
-	suspend fun decode(data: ByteArray, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data.openAsync(), props)?.toData()
+	suspend fun decode(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data, props)?.toData(props.maxSamples)
+	suspend fun decode(data: ByteArray, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): AudioData? = decodeStream(data.openAsync(), props)?.toData(props.maxSamples)
 	open suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps = AudioEncodingProps.DEFAULT): Unit = unsupported()
 
 	suspend fun encodeToByteArray(
@@ -50,6 +52,8 @@ open class AudioFormat(vararg exts: String) {
 open class AudioDecodingProps(
     val exactTimings: Boolean? = null,
     val readInMemory: Boolean = true,
+    val formats: AudioFormat? = null,
+    val maxSamples: Int = 15 * 60 * 44100,
 ) {
     //var readInMemory: Boolean = true
 
@@ -75,7 +79,7 @@ fun invalidAudioFormat(message: String = "invalid audio format"): Nothing = thro
 val defaultAudioFormats by lazy { standardAudioFormats() }
 
 class AudioFormats : AudioFormat() {
-	val formats = linkedSetOf<AudioFormat>()
+	val formats = arrayListOf<AudioFormat>()
 
     companion object {
         operator fun invoke(vararg formats: AudioFormat) = AudioFormats().register(*formats)
@@ -85,6 +89,8 @@ class AudioFormats : AudioFormat() {
     fun register(formats: AudioFormats): AudioFormats = this.apply { this.formats += formats.formats }
 	fun register(vararg formats: AudioFormat): AudioFormats = this.apply { this.formats += formats }
 	fun register(formats: Iterable<AudioFormat>): AudioFormats = this.apply { this.formats += formats }
+
+    fun registerFirst(vararg formats: AudioFormat): AudioFormats = this.apply { this.formats.addAll(0, formats.toList()) }
 
 	override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? {
 		//println("formats:$formats")
@@ -115,7 +121,7 @@ class AudioFormats : AudioFormat() {
 
     suspend fun decodeStreamOrError(data: AsyncStream, props: AudioDecodingProps): AudioStream =
         decodeStream(data, props)
-            ?: error("Can't decode audio stream [$formats]")
+            ?: error("Can't decode audio stream [$formats] ${data.duplicate().readBytesUpTo(8).hex}")
 
 	override suspend fun encode(data: AudioData, out: AsyncOutputStream, filename: String, props: AudioEncodingProps) {
 		val ext = PathInfo(filename).extensionLC

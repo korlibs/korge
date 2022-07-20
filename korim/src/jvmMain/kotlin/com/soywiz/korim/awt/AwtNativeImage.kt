@@ -166,10 +166,12 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 
 	val hints = createRenderingHints(antialiasing)
 
-	fun VectorPath.toJava2dPaths(): List<java.awt.geom.Path2D.Double> {
+	fun VectorPath.toJava2dPaths(winding: Winding?): List<java.awt.geom.Path2D.Double> {
 		if (this.isEmpty()) return listOf()
-		val winding =
-			if (winding == Winding.EVEN_ODD) java.awt.geom.GeneralPath.WIND_EVEN_ODD else java.awt.geom.GeneralPath.WIND_NON_ZERO
+		val winding = when (winding ?: this.winding) {
+            Winding.EVEN_ODD -> java.awt.geom.GeneralPath.WIND_EVEN_ODD
+            else -> java.awt.geom.GeneralPath.WIND_NON_ZERO
+        }
 		//val winding = java.awt.geom.GeneralPath.WIND_NON_ZERO
 		//val winding = java.awt.geom.GeneralPath.WIND_EVEN_ODD
 		val polylines = ArrayList<java.awt.geom.Path2D.Double>()
@@ -214,8 +216,8 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 		return polylines
 	}
 
-	fun VectorPath.toJava2dPath(): java.awt.geom.Path2D.Double? {
-		return toJava2dPaths().firstOrNull()
+	fun VectorPath.toJava2dPath(winding: Winding?): java.awt.geom.Path2D.Double? {
+		return toJava2dPaths(winding).firstOrNull()
 	}
 
 	//override fun renderShape(shape: Shape, transform: Matrix, shapeRasterizerMethod: ShapeRasterizerMethod) {
@@ -396,14 +398,14 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
 
     private var oldClipState: VectorPath? = null
 
-	fun applyState(state: Context2d.State, fill: Boolean) {
+	fun applyState(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		val t = state.transform
 		awtTransform.setToMatrix(t)
 		//g.transform = awtTransform
         //g.transform = AffineTransform()
-        if (oldClipState !== state.clip && oldClipState != state.clip) {
+        if (oldClipState != state.clip) {
             oldClipState = state.clip?.clone()
-            g.clip = state.clip?.toJava2dPath()
+            g.clip = state.clip?.toJava2dPath(winding)
         }
 		if (fill) {
 			g.paint = state.fillStyle.toAwt(awtTransform)
@@ -425,12 +427,14 @@ class AwtContext2dRender(val awtImage: BufferedImage, val antialiasing: Boolean 
         )
 	}
 
-	override fun render(state: Context2d.State, fill: Boolean) {
+	override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		if (state.path.isEmpty()) return
 
-		applyState(state, fill)
+        //println("AwtNativeImage.render: winding=$winding, state.path.winding=${state.path.winding}: ${state.path}")
 
-		val awtPaths = state.path.toJava2dPaths()
+		applyState(state, fill, winding)
+
+		val awtPaths = state.path.toJava2dPaths(winding)
 		for (awtPath in awtPaths) {
 			g.setRenderingHints(hints)
 			if (fill) {

@@ -23,7 +23,7 @@ inline fun Container.circle(
 ): Circle = Circle(radius, fill, stroke, strokeThickness, autoScaling).addTo(this, callback)
 
 /**
- * A [Graphics] class that automatically keeps a circle shape with [radius] and [color].
+ * A [CpuGraphics] class that automatically keeps a circle shape with [radius] and [color].
  * The [autoScaling] property determines if the underlying texture will be updated when the hierarchy is scaled.
  */
 open class Circle(

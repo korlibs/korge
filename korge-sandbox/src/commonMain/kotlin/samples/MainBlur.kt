@@ -10,11 +10,10 @@ import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.degrees
-import kotlin.reflect.KMutableProperty
 import kotlin.reflect.KMutableProperty0
 
 class MainBlur : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         solidRect(views.stage.width, views.stage.height, Colors.WHITE)
         val bitmap = resourcesVfs["korim.png"].readBitmap()
 
@@ -72,7 +71,7 @@ class MainBlur : Scene() {
         val colorMatrixFilter = ColorMatrixFilter(ColorMatrixFilter.SEPIA_MATRIX, blendRatio = 0.5)
         image(bitmap).xy(500, 250).filters(colorMatrixFilter).bindScale()
 
-        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5)
+        val transitionFilter = TransitionFilter(TransitionFilter.Transition.CIRCULAR, reversed = false, ratio = 0.5, spread = 0.2)
         image(bitmap).xy(370, 250).filters(transitionFilter).bindScale()
 
         val pageFilter = PageFilter()
@@ -128,7 +127,7 @@ class MainBlur : Scene() {
             }
             uiHorizontalFill {
                 uiText("Blend").apply { textColor = Colors.BLACK }
-                uiSlider(value = 0.5, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
+                uiSlider(value = transitionFilter.ratio, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
                     colorMatrixFilter.blendRatio = it
                     pageFilter.hamplitude0 = it
                     transitionFilter.ratio = it
@@ -138,8 +137,14 @@ class MainBlur : Scene() {
                 }
             }
             uiHorizontalFill {
+                uiText("Spread").apply { textColor = Colors.BLACK }
+                uiSlider(value = transitionFilter.spread, min = 0.0, max = 1.0, step = 0.0, decimalPlaces = 2).changed {
+                    transitionFilter.spread = it
+                }
+            }
+            uiHorizontalFill {
                 uiText("Filter Scale").apply { textColor = Colors.BLACK }
-                uiSlider(value = 1.0, min = 0.2, max = 2.0, step = 0.1).changed {
+                uiSlider(value = filterScale, min = 0.2, max = 2.0, step = 0.1).changed {
                     filterScale = it
                 }
             }

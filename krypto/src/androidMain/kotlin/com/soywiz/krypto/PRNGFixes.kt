@@ -10,6 +10,7 @@ package com.soywiz.krypto
  * freely, as long as the origin is not misrepresented.
  */
 
+import android.graphics.Bitmap
 import android.os.Build
 import android.os.Process
 import android.util.Log
@@ -68,8 +69,11 @@ object PRNGFixes {
      * @throws SecurityException if a fix is needed but could not be applied.
      */
     fun apply() {
-        applyOpenSSLFix()
-        installLinuxPRNGSecureRandom()
+        val notMockedUnittests = kotlin.runCatching { Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888) }.isSuccess
+        if (notMockedUnittests) {
+            applyOpenSSLFix()
+            installLinuxPRNGSecureRandom()
+        }
     }
 
     /**

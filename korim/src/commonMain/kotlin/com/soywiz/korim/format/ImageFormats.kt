@@ -68,8 +68,13 @@ class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
 	}
 }
 
-operator fun ImageFormat.plus(format: ImageFormat) = ImageFormats(this, format)
-operator fun ImageFormat.plus(format: Iterable<ImageFormat>) = ImageFormats(listOf(this) + format)
+fun ImageFormat.listFormats(): Set<ImageFormat> = when (this) {
+    is ImageFormats -> this.formats
+    else -> setOf(this)
+}
+
+operator fun ImageFormat.plus(format: ImageFormat): ImageFormats = ImageFormats(this.listFormats() + format.listFormats())
+operator fun ImageFormat.plus(formats: Iterable<ImageFormat>) = ImageFormats(this.listFormats() + formats.flatMap { it.listFormats() })
 
 @Suppress("unused")
 suspend fun Bitmap.writeTo(

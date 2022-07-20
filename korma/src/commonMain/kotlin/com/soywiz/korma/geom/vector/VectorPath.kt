@@ -19,6 +19,7 @@ import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toCurves
 import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.math.isAlmostEquals
+import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.native.concurrent.ThreadLocal
 
 // @TODO: ThreadLocal on JVM
@@ -33,19 +34,23 @@ interface IVectorPath : VectorBuilder {
 class VectorPath(
     val commands: IntArrayList = IntArrayList(),
     val data: DoubleArrayList = DoubleArrayList(),
-    var winding: Winding = Winding.EVEN_ODD
+    var winding: Winding = Winding.DEFAULT,
+    var optimize: Boolean = true,
 ) : IVectorPath, Extra by Extra.Mixin() {
     var assumeConvex: Boolean = false
     var version: Int = 0
 
     fun clone(): VectorPath = VectorPath(IntArrayList(commands), DoubleArrayList(data), winding)
-    override fun equals(other: Any?): Boolean = other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        return other is VectorPath && this.commands == other.commands && this.data == other.data && this.winding == other.winding
+    }
     override fun hashCode(): Int = commands.hashCode() + (data.hashCode() * 13) + (winding.ordinal * 111)
 
     companion object {
         private val identityMatrix = Matrix()
 
-        inline operator fun invoke(winding: Winding = Winding.EVEN_ODD, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
+        inline operator fun invoke(winding: Winding = Winding.DEFAULT, callback: VectorPath.() -> Unit): VectorPath = VectorPath(winding = winding).apply(callback)
 
         fun intersects(left: VectorPath, leftTransform: Matrix, right: VectorPath, rightTransform: Matrix): Boolean =
             left.intersectsWith(leftTransform, right, rightTransform)
@@ -86,7 +91,8 @@ class VectorPath(
         cubic: (x0: Double, y0: Double, x1: Double, y1: Double, x2: Double, y2: Double, x3: Double, y3: Double) -> Unit,
         close: () -> Unit = {},
         move: (x: Double, y: Double) -> Unit = { x, y -> },
-        dummy: Unit = Unit // Prevents tailing lambda
+        dummy: Unit = Unit, // Prevents tailing lambda
+        optimizeClose: Boolean = true
     ) {
         var mx = 0.0
         var my = 0.0
@@ -111,7 +117,11 @@ class VectorPath(
                 lx = x3; ly = y3
             },
             close = {
-                if (!lx.isAlmostEquals(mx) || !ly.isAlmostEquals(my)) {
+                val equal = when {
+                    optimizeClose -> lx.isAlmostEquals(mx) && ly.isAlmostEquals(my)
+                    else -> lx == mx && ly == my
+                }
+                if (!equal) {
                     line(lx, ly, mx, my)
                 }
                 close()
@@ -190,7 +200,8 @@ class VectorPath(
     }
 
     override fun lineTo(x: Double, y: Double) {
-        ensureMoveTo(x, y)
+        if (ensureMoveTo(x, y) && optimize) return
+        if (x == lastX && y == lastY && optimize) return
         commands.add(Command.LINE_TO)
         data.add(x, y)
         lastXY(x, y)
@@ -249,8 +260,10 @@ class VectorPath(
 
     override val totalPoints: Int get() = data.size / 2
 
-    private fun ensureMoveTo(x: Double, y: Double) {
-        if (isEmpty()) moveTo(x, y)
+    private fun ensureMoveTo(x: Double, y: Double): Boolean {
+        if (isNotEmpty()) return false
+        moveTo(x, y)
+        return true
     }
 
     fun getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder()): Rectangle {
@@ -449,6 +462,12 @@ class VectorPath(
         return this
     }
 
+    fun roundDecimalPlaces(places: Int): VectorPath {
+        for (n in 0 until data.size) data[n] = data[n].roundDecimalPlaces(places)
+        version++
+        return this
+    }
+
     fun ceil(): VectorPath {
         for (n in 0 until data.size) data[n] = kotlin.math.ceil(data[n])
         version++
@@ -555,7 +574,8 @@ fun VectorPath.getCurvesList(): List<Curves> {
                 close = {
                     currentClosed = true
                     flush()
-                }
+                },
+                optimizeClose = true
             )
             flush()
         }

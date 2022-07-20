@@ -1,28 +1,21 @@
 package samples
 
 import com.soywiz.klock.*
-import com.soywiz.klogger.*
 import com.soywiz.korev.*
-import com.soywiz.korge.annotations.*
 import com.soywiz.korge.input.*
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.view.*
+import com.soywiz.korge.view.filter.DropshadowFilter
+import com.soywiz.korge.view.filter.filter
 import com.soywiz.korge.view.vector.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.color.*
-import com.soywiz.korim.font.*
-import com.soywiz.korim.format.*
-import com.soywiz.korim.paint.*
-import com.soywiz.korim.text.*
+import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.*
 import com.soywiz.korim.vector.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.vector.*
 
 class MainSvgAnimation : Scene() {
-    override suspend fun Container.sceneMain() {
-        var svgScale = 1.4
+    override suspend fun SContainer.sceneMain() {
+        var svgScale = 1.4 * 1.4 * 3.0
         val svg = measureTime({ resourcesVfs["sample.svg"].readSVG() }) {
             //var svgScale = 0.9
             //val svg = measureTime({ resourcesVfs["sample_no_css_strip.svg"].readSVG() }) {
@@ -39,7 +32,7 @@ class MainSvgAnimation : Scene() {
         val gpuTigger = measureTime({
             gpuShapeView({ }) {
                 xy(0, 0)
-                scale(3.0 * svgScale)
+                //scale(3.0 * svgScale)
                 //rotation(15.degrees)
                 keys {
                     down(Key.N9) { debugDrawOnlyAntialiasedBorder = !debugDrawOnlyAntialiasedBorder }
@@ -48,6 +41,7 @@ class MainSvgAnimation : Scene() {
                     down(Key.UP) { svgScale *= 1.1 }
                     down(Key.DOWN) { svgScale *= 0.9 }
                 }
+                filter = DropshadowFilter(shadowColor = Colors.RED)
             }
         }) {
             println("GPU SHAPE: $it")

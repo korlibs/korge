@@ -249,7 +249,7 @@ fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {
 }
 
 fun Bitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): Bitmap32 {
-    return Bitmap32(width, height).context2d(doLock = false) { block() }
+    return Bitmap32(width, height).context2d(antialiased = antialiased, doLock = false) { block() }
 }
 
 inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, doLock: Boolean = true, callback: Context2d.() -> Unit): T {

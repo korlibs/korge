@@ -3,11 +3,15 @@ package com.soywiz.korim.format
 import com.soywiz.kds.ExtraTypeCreate
 import com.soywiz.kds.setExtra
 import com.soywiz.korim.atlas.MutableAtlasUnit
+import com.soywiz.korim.tiles.render
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
+import com.soywiz.korma.geom.RectangleInt
+import com.soywiz.korma.geom.Size
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 
 class ASETest {
     @Test
@@ -57,6 +61,13 @@ class ASETest {
         assertEquals(48, sliceExample4.imageDatasByName["coin"]!!.frames[0].targetX, "X position of coin set to slice X position")
         assertEquals(80, sliceExample4.imageDatasByName["coin"]!!.frames[0].targetY, "Y position of coin set to slice Y position")
 
+        //println(sliceExample)
+        //atlas.allBitmaps.showImagesAndWait()
+    }
+
+    @Test
+    fun testBigAseImage() = suspendTest({ !OS.isJs && !OS.isAndroid }) {
+        val atlas = MutableAtlasUnit(2048)
         // complex example (empty cells within frames of an ase file with animations tags)
         val props3 = ImageDecodingProps(extra = ExtraTypeCreate())
         props3.setExtra("layers", "shield")
@@ -66,8 +77,36 @@ class ASETest {
         assertEquals(61, complexLayersAndTags.default.frames[5].width, "First frame of animation tag \"shield_loop\" is not a valid image (width == 61)")
         assertEquals(62, complexLayersAndTags.default.frames[10].width, "Last frame of animation tag \"shield_loop\" is not a valid image (width == 62)")
         assertEquals(6, complexLayersAndTags.default.animationsByName["shield_loop"]?.frames?.size ?: 0, "Animation \"shield_loop\" was not found in ase file.")
+    }
 
-        //println(sliceExample)
-        //atlas.allBitmaps.showImagesAndWait()
+    @Test
+    fun testTilemap() = suspendTest({ !OS.isJs }) {
+        val ase = resourcesVfs["asepritetilemap.aseprite"].readImageData(ASE)
+        val tilemap = ase.frames[0].layerData[1].tilemap
+        assertNotNull(tilemap)
+        val tilemapStr = tilemap.data.toStringList({ it.digitToChar() }).joinToString("\n")
+        assertEquals(
+            """
+                12121212
+                34343434
+                56565656
+                78787878
+                12121212
+                34343434
+                56565656
+                78787878
+            """.trimIndent(),
+            tilemapStr
+        )
+        val tileSet = tilemap.tileSet
+        assertNotNull(tileSet)
+        assertEquals(
+            listOf(0, 1, 2, 3, 4, 5, 6, 7, 8),
+            tileSet.texturesMap.keys.toList().sorted()
+        )
+        assertEquals(Size(16, 144), tileSet.base.size)
+        for (n in 0..8) {
+            assertEquals(RectangleInt(0, (n * 16), 16, 16), tileSet.texturesMap[n]!!.slice.bmpCoords.getRectInt())
+        }
     }
 }

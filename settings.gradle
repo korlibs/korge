@@ -18,9 +18,10 @@ boolean isPropertyTrue(String name) {
 }
 
 boolean inCI = isPropertyTrue("CI")
-boolean includeKorlibsSamples = isPropertyTrue("INCLUDE_KORLIBS_SAMPLES")
 boolean disabledExtraKorgeLibs = isPropertyTrue("DISABLED_EXTRA_KORGE_LIBS")
 
+include(":kbignum")
+include(":luak")
 include(":klock")
 include(":klogger")
 include(":korinject")
@@ -37,9 +38,9 @@ include(":korvi")
 include(":korge")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
+include(":korge-sandbox")
 
 if (!inCI) {
-    include(":korge-sandbox")
 }
 
 if (!disabledExtraKorgeLibs) {
@@ -52,27 +53,4 @@ if (!disabledExtraKorgeLibs) {
     include(":korge-swf")
     include(":korge-box2d")
     include(":korge-fleks")
-
-    //include(":samples:parallax-scrolling-aseprite")
-    //include(":samples:tiled-background")
-    //include(":samples:fleks-ecs")
-
-    // This is required because having tons of gradle modules is super slow
-    boolean skipKorgeSamples = !includeKorlibsSamples
-
-    if (!skipKorgeSamples && !inCI) {
-        fileTree(new File(rootProject.projectDir, "samples")) {
-            include("**" + "/build.gradle.kts")
-            include("**" + "/build.gradle")
-            exclude("**" + "/build/**")
-        }.forEach {
-            String sample = moduleName(it.parentFile)
-            include(":$sample")
-            //project(":$sample").projectDir = File(relativePath(it.parent))
-        }
-    }
-}
-
-String moduleName(File f) {
-    return (f.parentFile == rootDir) ? f.name : "${moduleName(f.parentFile)}:${f.name}"
 }

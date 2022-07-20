@@ -2,7 +2,7 @@ package com.soywiz.korge.view
 
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.view.filter.IdentityFilter
+import com.soywiz.korge.view.filter.*
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.applyTransform
@@ -23,6 +23,13 @@ inline fun Container.fixedSizeContainer(
     clip: Boolean = false,
     callback: @ViewDslMarker FixedSizeContainer.() -> Unit = {}
 ) = FixedSizeContainer(width.toDouble(), height.toDouble(), clip).addTo(this, callback)
+
+@com.soywiz.korma.annotations.ViewDslMarker
+open class SContainer(
+    width: Double = 100.0,
+    height: Double = 100.0,
+    clip: Boolean = false
+) : FixedSizeContainer(width, height, clip)
 
 open class FixedSizeContainer(
     override var width: Double = 100.0,

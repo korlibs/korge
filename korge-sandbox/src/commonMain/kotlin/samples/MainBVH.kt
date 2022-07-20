@@ -5,7 +5,7 @@ import com.soywiz.klock.measureTime
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.onMouseDrag
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.SolidRect
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.addUpdater
@@ -30,7 +30,7 @@ import kotlin.random.Random
 class MainBVH : Scene() {
     var SolidRect.movingDirection by extraProperty { -1 }
 
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val bvh = BVH2D<View>()
         val rand = Random(0)
         val rects = arrayListOf<SolidRect>()

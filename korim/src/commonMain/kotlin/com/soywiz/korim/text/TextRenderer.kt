@@ -1,6 +1,7 @@
 package com.soywiz.korim.text
 
 import com.soywiz.kds.doubleArrayListOf
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
@@ -12,6 +13,10 @@ import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korim.font.GlyphPath
 import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.vector.CompoundShape
+import com.soywiz.korim.vector.EmptyShape
+import com.soywiz.korim.vector.FillShape
+import com.soywiz.korim.vector.StyledShape
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.util.niceStr
@@ -21,6 +26,7 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.angle
 import com.soywiz.korma.geom.bezier.Curve
+import com.soywiz.korma.geom.bezier.toVectorPath
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.minus
 import com.soywiz.korma.geom.radians
@@ -244,16 +250,33 @@ fun ITextRendererActions.aroundPath(curve: Curve): ITextRendererActions {
     }
 }
 
-fun <T> TextRenderer<T>.aroundPath(path: VectorPath): TextRenderer<T> = aroundPath(path.getCurves())
+fun <T> TextRenderer<T>.transformed(transformation: (ITextRendererActions) -> ITextRendererActions): TransformedTextRenderer<T> =
+    TransformedTextRenderer(this, transformation)
 
-fun <T> TextRenderer<T>.aroundPath(curve: Curve): TextRenderer<T> {
-    val original = this
-    return object : TextRenderer<T> {
-        override val version: Int get() = original.version
-        override fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font) =
-            original.invoke(this.aroundPath(curve), text, size, defaultFont)
-    }
+fun <T> TextRenderer<T>.withSpacing(spacing: Double): TransformedTextRenderer<T> =
+    transformed { original -> object : ITextRendererActions by original {
+        override fun advance(x: Double) {
+            super.advance(x + spacing)
+        }
+    } }
+
+open class TransformedTextRenderer<T>(
+    val original: TextRenderer<T>,
+    val transformation: (ITextRendererActions) -> ITextRendererActions
+) : TextRenderer<T> {
+    override val version: Int get() = original.version
+    override fun ITextRendererActions.run(text: T, size: Double, defaultFont: Font) =
+        original.invoke(transformation(this), text, size, defaultFont)
 }
+
+fun <T> TextRenderer<T>.aroundPath(path: VectorPath): CurveTextRenderer<T> = CurveTextRenderer(this, path, path.getCurves())
+fun <T> TextRenderer<T>.aroundPath(curve: Curve): CurveTextRenderer<T> = CurveTextRenderer(this, curve.toVectorPath(), curve)
+
+class CurveTextRenderer<T>(
+    original: TextRenderer<T>,
+    val path: VectorPath,
+    val curve: Curve,
+) : TransformedTextRenderer<T>(original, { it.aroundPath(curve) })
 
 inline fun <reified T> DefaultTextRenderer() = when (T::class) {
     String::class -> DefaultStringTextRenderer
@@ -335,7 +358,12 @@ fun <T> VectorBuilder.text(
                     transform.translate(this.x + x, this.y + y)
                     transform.premultiply(this.transform)
                     //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
-                    path(glyph.path, transform)
+                    val shape = glyph.colorShape
+                    if (shape != null) {
+                        path(shape.getPath(), transform)
+                    } else {
+                        path(glyph.path, transform)
+                    }
                 }
             }
             return glyphMetrics

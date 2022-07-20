@@ -2,6 +2,8 @@ package com.soywiz.korgw.x11
 
 import com.soywiz.kgl.KmlGl
 import com.soywiz.kgl.checkedIf
+import com.soywiz.klock.PerformanceCounter
+import com.soywiz.klock.TimeSpan
 import com.soywiz.kmem.toInt
 import com.soywiz.kmem.write32LE
 import com.soywiz.korag.gl.AGOpengl
@@ -219,12 +221,12 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
                 Expose -> if (e.xexpose.count == 0) render(doUpdate = false)
                 ClientMessage, DestroyNotify -> close()
                 ConfigureNotify -> {
-                    val conf = XConfigureEvent(e.pointer)
-                    width = conf.width
-                    height = conf.height
-                    dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
-                    if (!doubleBuffered) {
-                        render(doUpdate = false)
+                    render(doUpdate = false) {
+                        val conf = XConfigureEvent(e.pointer)
+                        width = conf.width
+                        height = conf.height
+                        dispatchReshapeEvent(conf.x, conf.y, conf.width, conf.height)
+                        !doubleBuffered
                     }
                     //println("RESIZED! ${conf.width} ${conf.height}")
                 }

@@ -47,7 +47,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
     private val tempPath = VectorPath(winding = Winding.EVEN_ODD)
     private val tempFillStrokeTemp = StrokeToFill()
 
-    override fun render(state: Context2d.State, fill: Boolean) {
+    override fun render(state: Context2d.State, fill: Boolean, winding: Winding?) {
 		//println("RENDER")
 		val style = if (fill) state.fillStyle else state.strokeStyle
 		val filler = when (style) {
@@ -89,7 +89,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 scanlineWriter.filler = filler
                 scanlineWriter.globalAlpha = state.globalAlpha
                 scanlineWriter.reset()
-                rasterizer.rasterizeFill(bounds, winding = fillPath.winding) { x0, x1, y ->
+                rasterizer.rasterizeFill(bounds, winding = winding ?: fillPath.winding) { x0, x1, y ->
                     scanlineWriter.select(x0, x1, y)
                 }
                 scanlineWriter.flush()
@@ -106,7 +106,7 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
             })
         }
 
-        rasterizer.path.winding = state.path!!.winding
+        rasterizer.path.winding = winding ?: state.path!!.winding
         //rasterizer.path.winding = Winding.NON_ZERO
         //println("------------- $bmp : ${state.path!!.winding}")
         fillPath.emitPoints2(flush = {

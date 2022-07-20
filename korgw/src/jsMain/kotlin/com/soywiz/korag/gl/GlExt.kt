@@ -38,7 +38,7 @@ open class AGWebgl(val config: AGConfig, val glDecorator: (KmlGl) -> KmlGl = { i
 	val canvas by lazy { getCanvas() }
 
 	val glOpts = jsObject(
-		"premultipliedAlpha" to true,
+        "premultipliedAlpha" to false, // To be like the other targets
 		"alpha" to false,
 		"stencil" to true,
         "antialias" to config.antialiasHint

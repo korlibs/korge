@@ -1,10 +1,8 @@
 package samples
 
-import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
-import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.vector.gpuShapeView
 import com.soywiz.korge.view.xy
@@ -12,13 +10,14 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.paint.toPaint
+import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.vector.rect
 
 class MainVectorFill : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val bitmap = resourcesVfs["korge.png"].readBitmap()
         fun ShapeBuilder.buildMyShape() {
             fill(
@@ -26,8 +25,8 @@ class MainVectorFill : Scene() {
                     x0 = 0, 0,
                     x1 = 512, 512,
                 ) {
-                    addColorStop(0.3, Colors.RED)
-                    addColorStop(1, Colors.GREEN)
+                    addColorStop(0.3, Colors["#5eff98"])
+                    addColorStop(1, Colors["#ff284f"])
                 }
             ) {
                 rect(0, 0, 512, 512)
@@ -48,19 +47,21 @@ class MainVectorFill : Scene() {
             }
         }
 
-        graphics {
-            this.useNativeRendering = true
-            updateShape { buildMyShape() }
-            scale(0.5)
+        cpuGraphics {
+            it.useNativeRendering = true
+            buildMyShape()
+            it.scale(0.5)
         }
-        graphics {
-            this.useNativeRendering = false
-            updateShape { buildMyShape() }
-            scale(0.5)
-            xy(0, 256)
+        cpuGraphics {
+            it.useNativeRendering = false
+            buildMyShape()
+            it.scale(0.5)
+            it.xy(0, 256)
         }
-        gpuShapeView {
-            updateShape { buildMyShape() }
+        gpuShapeView(EmptyShape) {
+            updateShape {
+                buildMyShape()
+            }
             scale(0.5)
             xy(256, 0)
         }

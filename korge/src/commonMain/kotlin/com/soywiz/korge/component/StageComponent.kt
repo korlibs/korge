@@ -5,9 +5,11 @@ import com.soywiz.kds.getExtra
 import com.soywiz.kds.setExtra
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korge.baseview.BaseView
+import com.soywiz.korge.util.CancellableGroup
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.getAllDescendantViews
+import com.soywiz.korio.lang.Closeable
 
 /**
  * **Important**: To use this component you have to call the [Views.registerStageComponent] extension method at the start of the APP.
@@ -18,6 +20,32 @@ import com.soywiz.korge.view.getAllDescendantViews
 interface StageComponent : Component {
     fun added(views: Views)
     fun removed(views: Views)
+}
+
+fun <T : View> T.onNewAttachDetach(views: Views? = null, onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): Closeable {
+    val view = this
+    val closeable = CancellableGroup()
+    if (views != null) {
+        views.registerStageComponent()
+    } else {
+        closeable += view.addComponent(object : UpdateComponentWithViews {
+            override val view: BaseView = this@onNewAttachDetach
+            override fun update(views: Views, dt: TimeSpan) {
+                this.removeFromView()
+                views.registerStageComponent()
+            }
+        })
+    }
+    closeable += view.addComponent(object : StageComponent {
+        override val view: BaseView get() = view
+        override fun added(views: Views) {
+            onAttach(views, view)
+        }
+        override fun removed(views: Views) {
+            onDetach(views, view)
+        }
+    })
+    return closeable
 }
 
 fun <T : View> T.onAttachDetach(views: Views? = null, onAttach: Views.(T) -> Unit = {}, onDetach: Views.(T) -> Unit = {}): T {

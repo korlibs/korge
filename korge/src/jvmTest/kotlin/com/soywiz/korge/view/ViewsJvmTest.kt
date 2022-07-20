@@ -69,7 +69,8 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
         val font = resourcesVfs["Pacifico.ttf"].readFont()
         run {
             val text = text("WTF is going on", 64.0)
-            assertEquals(RectangleInt(0, 0, 417, 71), text.globalBounds.toInt())
+            //assertEquals(RectangleInt(0, 0, 417, 71), text.globalBounds.toInt())
+            assertEquals(RectangleInt(0, 15, 417, 56), text.globalBounds.toInt())
         }
 
         run {

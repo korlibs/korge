@@ -2,7 +2,7 @@ package samples
 
 import com.soywiz.klock.measureTime
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korio.file.std.MemoryVfsMix
 import com.soywiz.korio.file.std.localVfs
 import com.soywiz.korio.file.std.openAsZip
@@ -12,7 +12,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class MainCompression : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         //run {
         withContext(Dispatchers.Unconfined) {
             val mem = MemoryVfsMix()

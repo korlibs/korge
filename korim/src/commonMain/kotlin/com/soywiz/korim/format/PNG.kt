@@ -188,7 +188,8 @@ object PNG : ImageFormat("png") {
 					out.write8(pos++, 0) // no filter
 					val index = bmp.index(0, y)
                     for (x in 0 until width) {
-                        val c = if (bmp.premultiplied) bmp.data[index + x].asPremultiplied().depremultiplied else bmp.data[index + x]
+                        val rgba = bmp.data[index + x]
+                        val c = if (bmp.premultiplied) rgba.asPremultiplied().depremultiplied else rgba
                         out.write8(pos++, c.r)
                         out.write8(pos++, c.g)
                         out.write8(pos++, c.b)

@@ -225,12 +225,15 @@ class KorgeExtension(val project: Project) {
     /** Enables kotlinx.serialization */
     fun serialization() {
         project.plugins.apply("kotlinx-serialization")
+        androidGradlePlugin("kotlinx-serialization")
+        androidGradleClasspath("org.jetbrains.kotlin:kotlin-serialization:${BuildVersions.KOTLIN}")
     }
 
     /** Enables kotlinx.serialization and includes `org.jetbrains.kotlinx:kotlinx-serialization-json` */
     fun serializationJson() {
         serialization()
         project.dependencies.add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
+        androidGradleDependency("org.jetbrains.kotlinx:kotlinx-serialization-json:${BuildVersions.KOTLIN_SERIALIZATION}")
     }
 
     val bundles = KorgeBundles(project)
@@ -371,6 +374,9 @@ class KorgeExtension(val project: Project) {
 	}
 
 	val plugins = KorgePluginsContainer(project)
+    val androidGradlePlugins = LinkedHashSet<String>()
+    val androidGradleDependencies = LinkedHashSet<String>()
+    val androidGradleClasspaths = LinkedHashSet<String>()
 	val androidManifestApplicationChunks = LinkedHashSet<String>()
 	val androidManifestChunks = LinkedHashSet<String>()
 
@@ -403,7 +409,19 @@ class KorgeExtension(val project: Project) {
 		androidManifestApplicationChunks += text
 	}
 
-	fun androidManifestChunk(text: String) {
+    fun androidGradlePlugin(name: String) {
+        androidGradlePlugins += name
+    }
+
+    fun androidGradleClasspath(name: String) {
+        androidGradleClasspaths += name
+    }
+
+    fun androidGradleDependency(dependency: String) {
+        androidGradleDependencies += dependency
+    }
+
+    fun androidManifestChunk(text: String) {
 		androidManifestChunks += text
 	}
 

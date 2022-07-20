@@ -9,7 +9,7 @@ import com.soywiz.korge.view.alpha
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.dummyView
 import com.soywiz.korge.view.ellipse
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.image
 import com.soywiz.korge.view.name
 import com.soywiz.korge.view.rotation
@@ -20,6 +20,8 @@ import com.soywiz.korge.view.visible
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.tiles.tiled.TiledMap
+import com.soywiz.korim.tiles.tiled.toTileSet
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Size
@@ -109,7 +111,7 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true, smoothing
                                         solidRect(bounds.width, bounds.height, Colors.WHITE)
                                     }
                                 }
-                                is TiledMap.Object.Shape.Polygon -> graphics {
+                                is TiledMap.Object.Shape.Polygon -> cpuGraphics {
                                     fill(Colors.WHITE) {
                                         var first = true
                                         var firstPoint: Point? = null
@@ -126,7 +128,7 @@ class TiledMapView(val tiledMap: TiledMap, showShapes: Boolean = true, smoothing
                                         close()
                                     }
                                 }
-                                is TiledMap.Object.Shape.Polyline -> graphics {
+                                is TiledMap.Object.Shape.Polyline -> cpuGraphics {
                                     fill(Colors.WHITE) {
                                         var first = true
                                         for (point in type.points) {

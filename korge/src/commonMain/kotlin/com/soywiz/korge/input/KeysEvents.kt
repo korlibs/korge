@@ -7,6 +7,7 @@ import com.soywiz.kmem.clamp01
 import com.soywiz.korev.Key
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korge.component.KeyComponent
+import com.soywiz.korge.component.detach
 import com.soywiz.korge.time.interpolate
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
@@ -19,7 +20,7 @@ import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.Closeable
 import kotlin.native.concurrent.ThreadLocal
 
-class KeysEvents(override val view: View) : KeyComponent {
+class KeysEvents(override val view: View) : KeyComponent, Closeable {
     @PublishedApi
     internal lateinit var views: Views
     @PublishedApi
@@ -112,10 +113,19 @@ class KeysEvents(override val view: View) : KeyComponent {
 			KeyEvent.Type.UP -> launchImmediately(views.coroutineContext) { onKeyUp.invoke(event) }
 		}
 	}
+
+    override fun close() {
+        this.detach()
+    }
 }
 
 @ThreadLocal
 val View.keys by Extra.PropertyThis<View, KeysEvents> { this.getOrCreateComponentKey<KeysEvents> { KeysEvents(this) } }
+
+inline fun View.newKeys(callback: KeysEvents.() -> Unit): KeysEvents = KeysEvents(this).also {
+    addComponent(it)
+    callback(it)
+}
 
 inline fun <T> View.keys(callback: KeysEvents.() -> T): T = keys.run(callback)
 

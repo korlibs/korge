@@ -9,10 +9,13 @@ import com.soywiz.kmem.Float32Buffer
 import com.soywiz.kmem.get
 import com.soywiz.kmem.set
 import com.soywiz.kmem.size
+import com.soywiz.kmem.toInt
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.format.HtmlNativeImage
 import kotlinx.browser.document
 import org.khronos.webgl.Float32Array
+import org.khronos.webgl.Int32Array
 import org.khronos.webgl.Uint8Array
 import org.khronos.webgl.WebGLProgram
 import org.khronos.webgl.WebGLRenderingContext
@@ -30,6 +33,9 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
             ?: canvas.getContext("webgl", glOpts)
             ?: canvas.getContext("experimental-webgl", glOpts)
         ).unsafeCast<WebGLRenderingContext?>()
+        ?.also {
+            println("Created WebGL version=$webglVersion, opts=${JSON.stringify(glOpts)}")
+        }
         ?: run {
             try {
                 document.body?.prepend((document.createElement("div") as HTMLElement).apply {
@@ -188,7 +194,15 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
         }
         gl.texImage2D(target, level, internalformat, width, height, border, format, type, vpixels)
     }
-    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit = gl.texImage2D(target, level, internalformat, format, type, (data as HtmlNativeImage).texSource)
+    override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
+        gl.texImage2D(target, level, internalformat, format, type, (data as HtmlNativeImage).texSource)
+
+        //val pixels = data.readPixelsUnsafe(0, 0, data.width, data.height)
+        //gl.pixelStorei(KmlGl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premultiplied.toInt())
+        //gl.texImage2D(target, level, internalformat, data.width, data.height, 0, format, type, Uint8Array(pixels.ints.unsafeCast<Int32Array>().buffer))
+        //gl.pixelStorei(KmlGl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0)
+        //pixels.ints.unsafeCast<Int32Array>()
+    }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.texParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: FBuffer): Unit = gl.texParameterf(target, pname, params.arrayFloat[0])
     override fun texParameteri(target: Int, pname: Int, param: Int): Unit = gl.texParameteri(target, pname, param)

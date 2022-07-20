@@ -1,28 +1,21 @@
 package samples
 
 import com.soywiz.klock.seconds
-import com.soywiz.korag.AG
-import com.soywiz.korag.DefaultShaders
-import com.soywiz.korag.FragmentShaderDefault
-import com.soywiz.korag.shader.Program
 import com.soywiz.korge.animate.animate
-import com.soywiz.korge.render.RenderContext
-import com.soywiz.korge.render.Texture
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
-import com.soywiz.korim.color.ColorAdd
+import com.soywiz.korge.view.mask.*
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.shape.buildPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.interpolation.Easing
 
 class MainMasks : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         filter = IdentityFilter
         scale = 0.9
         //y -= 32.0

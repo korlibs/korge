@@ -6,7 +6,7 @@ import com.soywiz.korev.Key
 import com.soywiz.korge.input.gamepad
 import com.soywiz.korge.input.keys
 import com.soywiz.korge.scene.Scene
-import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuShapeView
@@ -23,7 +23,7 @@ import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.rect
 
 class MainGpuVectorRendering2 : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val mainStrokePaint = LinearGradientPaint(0, 0, 0, 300).addColorStop(0.0, Colors.GREEN).addColorStop(0.5,
             Colors.RED
         ).addColorStop(1.0, Colors.BLUE)

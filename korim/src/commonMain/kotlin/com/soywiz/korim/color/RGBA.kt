@@ -130,6 +130,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 
         fun float(array: FloatArray, index: Int = 0): RGBA = float(array[index + 0], array[index + 1], array[index + 2], array[index + 3])
         fun float(r: Float, g: Float, b: Float, a: Float): RGBA = unclamped(f2i(r), f2i(g), f2i(b), f2i(a))
+        fun float(r: Double, g: Double, b: Double, a: Double): RGBA = unclamped(d2i(r), d2i(g), d2i(b), d2i(a))
+        @Deprecated("")
         inline fun float(r: Number, g: Number, b: Number, a: Number = 1f): RGBA = float(r.toFloat(), g.toFloat(), b.toFloat(), a.toFloat())
         fun unclamped(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntUnchecked(r, g, b, a))
 		operator fun invoke(r: Int, g: Int, b: Int, a: Int): RGBA = RGBA(packIntClamped(r, g, b, a))
@@ -222,6 +224,7 @@ inline class RGBAPremultiplied(val value: Int) {
 
     // @TODO: Use SIMD
     val depremultiplied: RGBA get() {
+        //return depremultipliedAccurate
         //val A = (value ushr 24) + 1
         //val R = (((value and 0x0000FF) shl 8) / A) and 0x0000F0
         //val G = (((value and 0x00FF00) shl 8) / A) and 0x00FF00
@@ -242,11 +245,17 @@ inline class RGBAPremultiplied(val value: Int) {
         //return RGBA(R, G, B, A)
 
         val A = a
-        val Af = (255f / A.toFloat())
-        val R = (r * Af).toInt()
-        val G = (g * Af).toInt()
-        val B = (b * Af).toInt()
-        return RGBA(R, G, B, A)
+        if (A == 0x00) return RGBA(0)
+        if (A == 0xFF) return RGBA(this.value)
+        //val Af = A.toFloat() / 255f
+        val iAf = (255f / A.toFloat())
+        val Rp = r
+        val Gp = g
+        val Bp = b
+        val R = (Rp * iAf).toInt()
+        val G = (Gp * iAf).toInt()
+        val B = (Bp * iAf).toInt()
+        return RGBA.invoke(R, G, B, A)
     }
 
     val depremultipliedFast: RGBA get() {

@@ -1,11 +1,16 @@
 package com.soywiz.korau.sound
 
 import com.soywiz.kds.ByteArrayDeque
+import com.soywiz.kmem.startAddressOf
 import com.soywiz.korau.format.AudioDecodingProps
 import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.format.MP3
 import com.soywiz.korau.format.MP3Base
 import com.soywiz.korau.format.OGG
+import com.soywiz.korau.format.mp3.minimp3.BaseMinimp3AudioFormat
+import com.soywiz.korau.format.mp3.minimp3.MiniMp3Program
+import com.soywiz.korau.format.mp3.minimp3.mp3dec_frame_info_t__SIZE_BYTES
+import com.soywiz.korau.format.mp3.minimp3.mp3dec_t__SIZE_BYTES
 import com.soywiz.korau.internal.SampleConvert
 import com.soywiz.korio.lang.portableSimpleName
 import com.soywiz.korio.stream.AsyncStream
@@ -54,7 +59,6 @@ open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val ma
     val nchannels: Int get() = info.nchannels
     val hz: Int get() = info.hz
     val totalLengthInSamples: Long? get() = info.totalLengthInSamples
-
 
     suspend fun decodeFrame() {
         var n = 0
@@ -167,6 +171,54 @@ open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val ma
     override fun toString(): String = this::class.portableSimpleName
 }
 
+
+internal object NativeMp3DecoderAudioFormat : BaseMinimp3AudioFormat() {
+    override fun createMp3Decoder(): BaseMp3Decoder = Minimp3Decoder()
+
+    internal class Minimp3Decoder : BaseMp3Decoder {
+        val scope = Arena()
+        val mp3dec = scope.alloc<mp3dec_t>()
+        val mp3decFrameInfo = scope.alloc<mp3dec_frame_info_t>()
+        private val pcmData = ShortArray(1152 * 2 * 2)
+
+        init {
+            mp3dec_init(mp3dec.ptr)
+        }
+
+        override val info: BaseMp3DecoderInfo = BaseMp3DecoderInfo()
+
+        override fun decodeFrame(availablePeek: Int): ShortArray? {
+            info.samples = info.tempBuffer.usePinned { tempBufferPin ->
+                pcmData.usePinned { pcmDataPin ->
+                    mp3dec_decode_frame(
+                        mp3dec.ptr,
+                        tempBufferPin.startAddressOf.reinterpret(),
+                        availablePeek,
+                        pcmDataPin.startAddressOf,
+                        mp3decFrameInfo.ptr
+                    )
+                }
+            }
+            info.nchannels = mp3decFrameInfo.channels
+            info.hz = mp3decFrameInfo.hz
+            info.bitrate_kbps = mp3decFrameInfo.bitrate_kbps
+            info.frame_bytes = mp3decFrameInfo.frame_bytes
+
+            //println("hz=$hz, nchannels=$nchannels, bitrate_kbps=$bitrate_kbps, frame_bytes=$frame_bytes, samples=$samples")
+
+            if (info.nchannels == 0 || info.samples <= 0) return null
+
+            return pcmData.copyOf(info.samples * info.nchannels)
+        }
+
+        override fun close() {
+            scope.clear()
+        }
+    }
+}
+
+
+/*
 object NativeMp3DecoderAudioFormat : AudioFormat("mp3") {
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info?
         = MP3.tryReadInfo(data, props)
@@ -217,6 +269,8 @@ object NativeMp3DecoderAudioFormat : AudioFormat("mp3") {
 
     override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? = Mp3AudioDecoder(data, props).createAudioStream()
 }
+
+ */
 
 object NativeOggVorbisDecoderFormat : AudioFormat("ogg") {
     override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info?

@@ -1,10 +1,13 @@
 package com.soywiz.korge.view.tiles
 
 import com.soywiz.korge.tiled.*
-import com.soywiz.korge.view.*
+import com.soywiz.korim.tiles.tiled.readTiledMap
+import com.soywiz.korim.tiles.tiled.readTiledSet
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.collider.hitTestAny
 import kotlin.test.*
+import com.soywiz.korma.geom.collider.HitTestDirection
 
 class TiledMapCollisionTest {
     @Test

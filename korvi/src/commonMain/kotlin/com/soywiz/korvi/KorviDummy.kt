@@ -64,7 +64,7 @@ class DummyKorviVideoLL(
                     base.height * 0.5,
                     color = Colors.WHITE,
                     font = SystemFont("Arial"),
-                    fontSize = 32.0,
+                    textSize = 32.0,
                     halign = HorizontalAlign.CENTER,
                     valign = VerticalAlign.MIDDLE
                 )

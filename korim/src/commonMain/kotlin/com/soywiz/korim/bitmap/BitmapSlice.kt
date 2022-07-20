@@ -23,6 +23,8 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 interface BmpCoords {
+    val premultiplied: Boolean
+
     val tl_x: Float
     val tl_y: Float
 
@@ -56,6 +58,11 @@ interface BmpCoordsWithT<T : ISizeInt> : BmpCoords, Closeable, Resourceable<BmpC
     val isRotatedInBaseDeg90 get() = (width > 1 && tl_x == tr_x) || (height > 1 && tl_y == bl_y)
     override fun close() = Unit
     val sizeString: String get() = "${width}x${height}"
+
+    fun getRectInt(out: RectangleInt = RectangleInt()): RectangleInt {
+        out.setTo(left, top, width, height)
+        return out
+    }
 
     fun subCoords(bounds: RectangleInt, imageOrientation: ImageOrientation): BmpCoordsWithT<T> {
         // Assure bounds are inside this slide
@@ -144,8 +151,9 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
     override val br_x: Float = 1f, override val br_y: Float = 1f,
     override val bl_x: Float = 0f, override val bl_y: Float = 1f,
     override val name: String? = null,
-    override val virtFrame: RectangleInt? = null
-) : BmpCoordsWithInstanceBase<T>(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name, virtFrame) {
+    override val virtFrame: RectangleInt? = null,
+    override val premultiplied: Boolean,
+) : BmpCoordsWithInstanceBase<T>(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name, virtFrame, premultiplied) {
     constructor(base: T, coords: BmpCoords, name: String? = null, virtFrame: RectangleInt? = null) : this(
         base,
         coords.tl_x, coords.tl_y,
@@ -153,7 +161,8 @@ data class BmpCoordsWithInstance<T : ISizeInt>(
         coords.br_x, coords.br_y,
         coords.bl_x, coords.bl_y,
         name,
-        virtFrame
+        virtFrame,
+        coords.premultiplied
     )
 }
 
@@ -164,7 +173,8 @@ open class BmpCoordsWithInstanceBase<T : ISizeInt>(
     override val br_x: Float = 1f, override val br_y: Float = 1f,
     override val bl_x: Float = 0f, override val bl_y: Float = 1f,
     override val name: String? = null,
-    override val virtFrame: RectangleInt? = null
+    override val virtFrame: RectangleInt? = null,
+    override val premultiplied: Boolean,
 ) : BmpCoordsWithT<T> {
     constructor(base: T, coords: BmpCoords, name: String? = null, virtFrame: RectangleInt? = null) : this(
         base,
@@ -173,7 +183,8 @@ open class BmpCoordsWithInstanceBase<T : ISizeInt>(
         coords.br_x, coords.br_y,
         coords.bl_x, coords.bl_y,
         name,
-        virtFrame
+        virtFrame,
+        coords.premultiplied
     )
     constructor(base: BmpCoordsWithT<T>, name: String? = null, virtFrame: RectangleInt? = null) : this(base.base, base, name ?: base.name, virtFrame)
 
@@ -189,7 +200,8 @@ open class MutableBmpCoordsWithInstanceBase<T : ISizeInt>(
     override var br_x: Float, override var br_y: Float,
     override var bl_x: Float, override var bl_y: Float,
     override var name: String? = null,
-    override var virtFrame: RectangleInt? = null
+    override var virtFrame: RectangleInt? = null,
+    override var premultiplied: Boolean
 ) : BmpCoordsWithT<T> {
     constructor(base: T, coords: BmpCoords, name: String? = null, virtFrame: RectangleInt? = null) : this(
         base,
@@ -198,7 +210,8 @@ open class MutableBmpCoordsWithInstanceBase<T : ISizeInt>(
         coords.br_x, coords.br_y,
         coords.bl_x, coords.bl_y,
         name,
-        virtFrame
+        virtFrame,
+        coords.premultiplied
     )
     constructor(base: BmpCoordsWithT<T>, name: String? = null, virtFrame: RectangleInt? = null) : this(base.base, base, name ?: base.name, virtFrame)
 
@@ -272,8 +285,9 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.copy(
     br_x: Float = this.br_x, br_y: Float = this.br_y,
     bl_x: Float = this.bl_x, bl_y: Float = this.bl_y,
     name: String? = this.name,
-    virtFrame: RectangleInt? = null
-): BmpCoordsWithInstance<T> = BmpCoordsWithInstance(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name, virtFrame)
+    virtFrame: RectangleInt? = null,
+    premultiplied: Boolean = this.premultiplied,
+): BmpCoordsWithInstance<T> = BmpCoordsWithInstance(base, tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y, name, virtFrame, premultiplied)
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedLeft(): BmpCoordsWithInstance<T> =
     copy(base, tr_x, tr_y, br_x, br_y, bl_x, bl_y, tl_x, tl_y,
@@ -281,7 +295,7 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedLeft(): BmpCoordsWithInstance<T> =
             RectangleInt(frameOffsetY, frameWidth - width - frameOffsetX, frameHeight, frameWidth)
         } else {
             null
-        }
+        },
     )
 
 fun <T : ISizeInt> BmpCoordsWithT<T>.rotatedRight(): BmpCoordsWithInstance<T> =
@@ -341,7 +355,7 @@ abstract class BmpSlice(
     val bounds: RectangleInt,
     override val name: String? = null,
     final override val virtFrame: RectangleInt? = null,
-    bmpCoords: BmpCoordsWithT<*> = BmpCoordsWithInstance(bmpBase),
+    bmpCoords: BmpCoordsWithT<*> = BmpCoordsWithInstance(bmpBase, premultiplied = bmpBase.premultiplied),
 ) : Extra, BitmapCoords {
 
     @Deprecated("Use bmpCoords")
@@ -351,7 +365,7 @@ abstract class BmpSlice(
         name: String? = null,
         rotated: Boolean = false,
         virtFrame: RectangleInt? = null,
-        bmpCoords: BmpCoordsWithT<*> = BmpCoordsWithInstance(bmpBase).subCoords(bounds, if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL),
+        bmpCoords: BmpCoordsWithT<*> = BmpCoordsWithInstance(bmpBase, premultiplied = bmpBase.premultiplied).subCoords(bounds, if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL),
     ): this(bmpBase, bounds, name, virtFrame, bmpCoords) {
         this.rotated = rotated
     }
@@ -478,7 +492,8 @@ abstract class BmpSlice(
                 bounds.setBoundsTo(0, 0, bmpBase.width, bmpBase.height)
                 virtFrame?.setBoundsTo(0, 0, bmpBase.width, bmpBase.height)
                 bmpCoords = BmpCoordsWithInstanceBase(
-                    SizeInt(bmpBase.width, bmpBase.height)
+                    SizeInt(bmpBase.width, bmpBase.height),
+                    premultiplied = bmpBase.premultiplied
                 )
                 intArrayOf(0, 0, 1, 0, 1, 0).copyInto(pixelOffsets)
                 bmpBase.setRgba(x, y, value)
@@ -537,7 +552,7 @@ class BitmapSlice<out T : Bitmap>(
     bounds: RectangleInt,
     name: String? = null,
     virtFrame: RectangleInt? = null,
-    bmpCoords: BmpCoordsWithT<*> = BmpCoordsWithInstance(bmp),
+    bmpCoords: BmpCoordsWithT<*> = BmpCoordsWithInstance(bmp, premultiplied = bmp.premultiplied),
 ) : BmpSlice(bmp, bounds, name, virtFrame, bmpCoords), Extra by Extra.Mixin() {
 
     @Deprecated("Use bmpCoords")
@@ -547,9 +562,9 @@ class BitmapSlice<out T : Bitmap>(
         name: String? = null,
         rotated: Boolean = false,
         virtFrame: RectangleInt? = null,
-    ): this(bmp, bounds, name, virtFrame, BmpCoordsWithInstance(bmp).subCoords(bounds, if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL))
+    ): this(bmp, bounds, name, virtFrame, BmpCoordsWithInstance(bmp, premultiplied = bmp.premultiplied).subCoords(bounds, if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL))
 
-    val premultiplied get() = bmp.premultiplied
+    override val premultiplied get() = bmp.premultiplied
 
     fun extract(): T = extractWithBase(bmp)
 
@@ -613,7 +628,7 @@ fun BitmapSliceCompat(
 	name: String = "unknown"
 ) = bmp.sliceWithSize(frame.toInt(), name, if (rotated) ImageOrientation.ROTATE_90 else ImageOrientation.ORIGINAL)
 
-fun <T : Bitmap> T.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String? = null, imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL): BitmapSlice<T> = BitmapSlice(this, RectangleInt(0, 0, width, height), name, bmpCoords = BmpCoordsWithInstance(this))
+fun <T : Bitmap> T.slice(bounds: RectangleInt = RectangleInt(0, 0, width, height), name: String? = null, imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL): BitmapSlice<T> = BitmapSlice(this, RectangleInt(0, 0, width, height), name, bmpCoords = BmpCoordsWithInstance(this, premultiplied = premultiplied))
     .let {
         if (bounds != it.bounds || imageOrientation != ImageOrientation.ORIGINAL) {
             it.slice(bounds, name, imageOrientation)

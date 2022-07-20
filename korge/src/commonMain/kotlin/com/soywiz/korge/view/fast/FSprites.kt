@@ -6,6 +6,7 @@ import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.*
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.Attribute
 import com.soywiz.korag.shader.FragmentShader
 import com.soywiz.korag.shader.Operand
@@ -264,13 +265,9 @@ open class FSprites(val maxSize: Int) {
                     SET(localPos, t_TempMat2 * ((a_xy - a_anchor) * size))
                     SET(out, (u_ProjMat * u_ViewMat) * vec4(localPos + vec2(a_pos.x, a_pos.y), 0f.lit, 1f.lit))
                 }
-            }, FragmentShader {
-                DefaultShaders.apply {
-                    blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
-                    IF(out["a"] le 0f.lit) { DISCARD() }
-                    SET(out["rgb"], out["rgb"] / out["a"])
-                    SET(out["rgba"], out["rgba"] * v_Col)
-                }
+            }, FragmentShaderDefault {
+                blockN(v_TexId) { SET(out, texture2D(BatchBuilder2D.u_TexN[it], v_Tex["xy"])) }
+                IF(out["a"] le 0f.lit) { DISCARD() }
             }, name = "FSprites$maxTexs")
         }
 

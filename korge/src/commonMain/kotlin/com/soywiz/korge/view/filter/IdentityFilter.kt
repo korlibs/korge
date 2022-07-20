@@ -34,8 +34,9 @@ open class IdentityFilter(val smoothing: Boolean) : Filter {
                 filtering = smoothing,
                 colorAdd = renderColorAdd,
                 colorMul = renderColorMul,
-                blendFactors = blendMode.factors,
-                program = BatchBuilder2D.getTextureLookupProgram(texture.premultiplied, BatchBuilder2D.AddType.NO_ADD)
+                blendMode = blendMode,
+                program = BatchBuilder2D.getTextureLookupProgram(BatchBuilder2D.AddType.NO_ADD),
+                premultiplied = texture.premultiplied, wrap = false,
             )
         }
     }

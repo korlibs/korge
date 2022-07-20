@@ -179,7 +179,7 @@ open class LogBaseAG(
 	width: Int = 640,
 	height: Int = 480,
 ) : DummyAG(width, height) {
-    enum class Kind { DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST }
+    enum class Kind { DRAW, DRAW_DETAILS, CLEAR, METRICS, FLIP, READ, REPAINT, DISPOSE, TEXTURE_UPLOAD, CLOSE, FRAME_BUFFER, BUFFER, TEXTURE, SHADER, OTHER, UNIFORM, UNIFORM_VALUES, SCISSORS, VIEWPORT, VERTEX, ENABLE_DISABLE, CONTEXT_LOST, FLUSH }
 
 	open fun log(str: String, kind: Kind) {
 	}
@@ -273,6 +273,8 @@ open class LogBaseAG(
     }
 
     val agProcessor = object : AGQueueProcessor {
+        override fun flush() = log("flush", Kind.FLUSH)
+
         override fun finish() = log("finish", Kind.CLOSE)
 
         override fun contextLost() { log("contextLost", Kind.CONTEXT_LOST) }
@@ -333,6 +335,7 @@ open class LogBaseAG(
                         val acount = attributeType.elementCount
 
                         val info: List<Number> = when (attributeType.kind) {
+                            VarKind.TBOOL -> (0 until acount).map { vm.getUnalignedInt8(o + it * 1) }.map { if (attribute.normalized) it.toFloat() / Byte.MAX_VALUE else it }
                             VarKind.TBYTE -> (0 until acount).map { vm.getUnalignedInt8(o + it * 1) }.map { if (attribute.normalized) it.toFloat() / Byte.MAX_VALUE else it }
                             VarKind.TUNSIGNED_BYTE -> (0 until acount).map { vm.getUnalignedUInt8(o + it * 1) }.map { if (attribute.normalized) it.toFloat() / 0xFF else it }
                             VarKind.TSHORT -> (0 until acount).map { vm.getUnalignedInt16(o + it * 2) }.map { if (attribute.normalized) it.toFloat() / Short.MAX_VALUE else it }

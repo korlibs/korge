@@ -10,6 +10,7 @@ import com.soywiz.korge.view.tiles.TileSetTileInfo
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.tiles.tiled.readTiledMapData
 import com.soywiz.korio.async.suspendTestNoJs
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.test.Test

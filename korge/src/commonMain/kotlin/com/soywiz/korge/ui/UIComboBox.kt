@@ -6,6 +6,7 @@ import com.soywiz.korge.input.onDown
 import com.soywiz.korge.input.onOut
 import com.soywiz.korge.input.onOver
 import com.soywiz.korge.input.onUp
+import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewDslMarker
@@ -57,11 +58,13 @@ open class UIComboBox<T>(
         override val numItems: Int = items.size
         override val fixedHeight: Double = itemHeight
         override fun getItemHeight(index: Int): Double = fixedHeight
-        override fun getItemView(index: Int, vlist: UIVerticalList): View = UIButton(text = items[index].toString(), width = width, height = itemHeight).also {
+        override fun getItemView(index: Int, vlist: UIVerticalList): View {
+            val it = UIButton(text = items[index].toString(), width = width, height = itemHeight)
             it.onClick {
                 this@UIComboBox.selectedIndex = index
                 this@UIComboBox.close()
             }
+            return it
         }
     }, width = width)
     private val selectedButton = uiButton(width - height, height, "")
@@ -135,24 +138,19 @@ open class UIComboBox<T>(
         }
     }
 
+    var itemsDirty = false
+
+    override fun renderInternal(ctx: RenderContext) {
+        if (itemsDirty && showItems) {
+            itemsDirty = false
+            verticalList.updateList()
+            updateState()
+        }
+        super.renderInternal(ctx)
+    }
+
     private fun updateItems() {
-        verticalList.updateList()
-        //itemsView.container.removeChildren()
-        //for ((index, item) in items.withIndex()) {
-        //    itemsView.container.uiButton(
-        //        width - 32.0,
-        //        itemHeight.toDouble(),
-        //        item.toString()
-        //    ) {
-        //        position(0, index * this@UIComboBox.itemHeight)
-        //        onClick {
-        //            this@UIComboBox.showItems = false
-        //            this@UIComboBox.selectedIndex = index
-        //        }
-        //    }
-        //}
-        //itemsView.contentHeight = (items.size * itemHeight).toDouble()
-        updateState()
+        itemsDirty = true
     }
 
     override fun updateState() {

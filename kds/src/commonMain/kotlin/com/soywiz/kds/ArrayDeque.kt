@@ -69,9 +69,9 @@ class ByteArrayDeque(val initialBits: Int = 10, val allowGrow: Boolean = true) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() {
+    fun readOne(): Byte {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Byte) {
         tempBuffer[0] = value
@@ -90,6 +90,14 @@ class ShortArrayDeque(val initialBits: Int = 10) {
     var read: Long = 0; private set
     val availableWriteWithoutAllocating get() = ring.availableWrite
     val availableRead get() = ring.availableRead
+
+    fun clone(): ShortArrayDeque {
+        return ShortArrayDeque(initialBits).also { out ->
+            out.ring = ring.clone()
+            out.written = written
+            out.read = read
+        }
+    }
 
     @JvmOverloads
     fun writeHead(buffer: ShortArray, offset: Int = 0, size: Int = buffer.size - offset): Int {
@@ -196,9 +204,9 @@ class IntArrayDeque(val initialBits: Int = 10) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() {
+    fun readOne(): Int {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Int) {
         tempBuffer[0] = value
@@ -260,9 +268,9 @@ class FloatArrayDeque(val initialBits: Int = 10) {
 
     val hasMoreToWrite get() = ring.availableWrite > 0
     val hasMoreToRead get() = ring.availableRead > 0
-    fun readOne() {
+    fun readOne(): Float {
         read(tempBuffer, 0, 1)
-        tempBuffer[0]
+        return tempBuffer[0]
     }
     fun writeOne(value: Float) {
         tempBuffer[0] = value

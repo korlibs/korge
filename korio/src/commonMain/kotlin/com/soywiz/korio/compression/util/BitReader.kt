@@ -30,7 +30,7 @@ open class BitReader constructor(
 
     companion object {
         const val BIG_CHUNK_SIZE = 8 * 1024 * 1024 // 8 MB
-        //const val BIG_CHUNK_SIZE = 128 * 1024
+        //const val BIG_CHUNK_SIZE = 128 * 1024 // 128 KB
         //const val BIG_CHUNK_SIZE = 8 * 1024
         const val READ_WHEN_LESS_THAN = 32 * 1024
 
@@ -38,6 +38,7 @@ open class BitReader constructor(
             if (s is AsyncGetLengthStream && s.hasLength()) {
                 val bigChunkSize = max(READ_WHEN_LESS_THAN, min(s.getLength(), BIG_CHUNK_SIZE.toLong()).toInt())
                 val readWithSize = max(bigChunkSize / 2, READ_WHEN_LESS_THAN)
+                //println("BitReader: bigChunkSize=$bigChunkSize, readWithSize=$readWithSize")
                 return BitReader(s, bigChunkSize, readWithSize)
             }
             return BitReader(s)
@@ -218,6 +219,6 @@ open class BitReader constructor(
 	//suspend fun readBytesExact(count: Int): ByteArray = abytes(count)
 
 	override suspend fun getPosition(): Long = sbuffersReadPos.toLong()
-    override suspend fun hasLength(): Boolean =  (s as? AsyncGetLengthStream)?.hasLength() ?: false
+    override suspend fun hasLength(): Boolean = (s as? AsyncGetLengthStream)?.hasLength() ?: false
     override suspend fun getLength(): Long = (s as? AsyncGetLengthStream)?.getLength() ?: error("Length not available on Stream")
 }

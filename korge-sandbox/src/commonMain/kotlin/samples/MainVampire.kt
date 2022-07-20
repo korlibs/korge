@@ -6,15 +6,15 @@ import com.soywiz.korev.Key
 import com.soywiz.korge.component.docking.keepChildrenSortedByY
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tiled.TiledMapView
-import com.soywiz.korge.tiled.readTiledMap
 import com.soywiz.korge.tiled.tiledMapView
 import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.SContainer
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.animation.ImageDataView
 import com.soywiz.korge.view.animation.imageDataView
 import com.soywiz.korge.view.container
-import com.soywiz.korge.view.graphics
+import com.soywiz.korge.view.cpuGraphics
 import com.soywiz.korge.view.moveWithCollisions
 import com.soywiz.korge.view.scale
 import com.soywiz.korge.view.xy
@@ -26,6 +26,7 @@ import com.soywiz.korim.format.ASE
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korim.format.readImageDataContainer
 import com.soywiz.korim.format.toAtlas
+import com.soywiz.korim.tiles.tiled.readTiledMap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.shape.Shape2d
@@ -34,7 +35,7 @@ import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.geom.vector.star
 
 class MainVampire : Scene() {
-    override suspend fun Container.sceneMain() {
+    override suspend fun SContainer.sceneMain() {
         val atlas = MutableAtlasUnit(1024, 512, border = 2)
 
         val sw = Stopwatch().start()
@@ -79,7 +80,7 @@ class MainVampire : Scene() {
         //    //star(400, 400, 50)
         //}
 
-        val gg = graphics {
+        val gg = cpuGraphics {
             fill(Colors.RED) {
                 rect(300, 0, 100, 100)
             }
