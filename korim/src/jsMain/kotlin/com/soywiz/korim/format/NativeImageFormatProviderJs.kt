@@ -54,7 +54,7 @@ private fun bswap32(v: IntArray, offset: Int, size: Int) {
 }
 
 open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height: Int) :
-	NativeImage(width, height, texSourceBase, true) {
+	NativeImage(width, height, texSourceBase, premultiplied = false) {
 	override val name: String = "HtmlNativeImage"
     var texSource: TexImageSource = texSourceBase
         private set
@@ -114,7 +114,6 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
     }
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
-        //println("HtmlNativeImageFormatProvider.decode($vfs, '$path')")
         return NativeImageResult(when (vfs) {
             is LocalVfs -> {
                 //println("LOCAL: HtmlNativeImageFormatProvider: $vfs, $path")

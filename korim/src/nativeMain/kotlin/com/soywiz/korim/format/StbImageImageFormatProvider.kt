@@ -1,14 +1,22 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korio.async.*
-import com.soywiz.korio.lang.*
-import kotlinx.cinterop.*
-import platform.posix.*
-import kotlin.native.concurrent.*
+import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korio.lang.IOException
+import kotlinx.cinterop.IntVar
+import kotlinx.cinterop.addressOf
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.usePinned
+import kotlinx.cinterop.value
+import platform.posix.memcpy
+import kotlin.native.concurrent.TransferMode
+import kotlin.native.concurrent.freeze
+import kotlin.native.concurrent.isFrozen
 
-@ThreadLocal
-actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
+object StbImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
         val premultiplied = props.premultiplied
         //ImageIOWorker.execute(
@@ -27,7 +35,7 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseN
 
                             val pixelsPtr = stb_image.stbi_load_from_memory(dataPin.addressOf(0).reinterpret(), data.size, width.ptr, height.ptr, comp.ptr, 4)
                             if (pixelsPtr != null) {
-                                val bmp = Bitmap32(width.value, height.value)
+                                val bmp = Bitmap32(width.value, height.value, premultiplied = false)
                                 //println("IMAGE: ${width.value}, ${height.value}, ${comp.value}")
                                 bmp.data.ints.usePinned { pixelsPin ->
                                     //val components = comp.value

@@ -97,7 +97,11 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
     }
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
-		val bmp = android.graphics.Bitmap.createBitmap(width.coerceAtLeast(1), height.coerceAtLeast(1), android.graphics.Bitmap.Config.ARGB_8888)
+		val bmp = android.graphics.Bitmap.createBitmap(
+            width.coerceAtLeast(1),
+            height.coerceAtLeast(1),
+            android.graphics.Bitmap.Config.ARGB_8888,
+        )
 		//bmp.setPixels()
 		return AndroidNativeImage(bmp)
 	}
@@ -126,6 +130,7 @@ suspend fun androidQuestionAlert(message: String, title: String = "Warning"): Bo
 
  */
 
+// @TODO: PRemultiplied
 fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
     if (this is AndroidNativeImage) return this.androidBitmap
     val bmp32 = this.toBMP32()
@@ -140,21 +145,33 @@ fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
     )
 }
 
+private fun android.graphics.Bitmap.isPremultipliedSafe(): Boolean = when {
+    Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 -> isPremultiplied
+    else -> true
+}
+
 class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
-    NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 -> androidBitmap.isPremultiplied
-        else -> false
-    }) {
+    NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = androidBitmap.isPremultipliedSafe()) {
+    val originalPremultiplied = premultiplied
+
     override val name: String = "AndroidNativeImage"
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        androidBitmap.getPixels(out.ints, offset, width, x, y, width, height)
-        AndroidColor.androidToRgba(out, offset, width * height)
+        androidBitmap.getPixels(out.ints, offset, width, x, y, width, height) // This returns values in straight alpha
+        val count = width * height
+        AndroidColor.androidToRgba(out, offset, count)
+        if (premultiplied) {
+            for (n in offset until offset + count) out.ints[n] = out[n].premultiplied.value
+        }
     }
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        AndroidColor.rgbaToAndroid(out, offset, width * height)
-        androidBitmap.setPixels(out.ints, offset, width, x, y, width, height)
-        AndroidColor.androidToRgba(out, offset, width * height)
+        val count = width * height
+        val temp = RgbaArray(IntArray(count + offset))
+        AndroidColor.rgbaToAndroid(out, offset, count, temp)
+        if (premultiplied) {
+            for (n in offset until offset + count) out.ints[n] = out[n].asPremultiplied().depremultiplied.value
+        }
+        androidBitmap.setPixels(temp.ints, 0, width, x, y, width, height) // This expects values in straight alpha
     }
 
     override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AndroidContext2dRenderer(androidBitmap, antialiasing))

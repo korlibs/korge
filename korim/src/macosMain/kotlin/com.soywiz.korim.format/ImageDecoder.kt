@@ -1,22 +1,10 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kmem.*
-import com.soywiz.korim.bitmap.*
-import com.soywiz.korim.format.cg.*
-import com.soywiz.korio.async.*
-import kotlinx.cinterop.*
-import platform.AppKit.*
-import platform.CoreFoundation.*
-import platform.CoreGraphics.*
-import platform.Foundation.*
-import platform.ImageIO.*
-import platform.OpenGLCommon.*
-import platform.posix.*
-import kotlin.native.concurrent.*
-
 // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_context/dq_context.html#//apple_ref/doc/uid/TP30001066-CH203-BCIBHHBB
-@ThreadLocal
-actual val nativeImageFormatProvider: NativeImageFormatProvider = CGNativeImageFormatProvider
+//@ThreadLocal
+//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = StbImageNativeImageFormatProvider
+
 //actual val nativeImageFormatProvider: NativeImageFormatProvider = NSNativeImageFormatProvider
 
 /*
