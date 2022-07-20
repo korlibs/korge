@@ -17,6 +17,7 @@ import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.krypto.encoding.appendHexByte
+import kotlin.math.roundToInt
 
 inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
     override fun clone(): Paint = this
@@ -252,9 +253,12 @@ inline class RGBAPremultiplied(val value: Int) {
         val Rp = r
         val Gp = g
         val Bp = b
-        val R = (Rp * iAf).toInt()
-        val G = (Gp * iAf).toInt()
-        val B = (Bp * iAf).toInt()
+        //val R = (Rp * iAf).toInt()
+        //val G = (Gp * iAf).toInt()
+        //val B = (Bp * iAf).toInt()
+        val R = (Rp * iAf).roundToInt()
+        val G = (Gp * iAf).roundToInt()
+        val B = (Bp * iAf).roundToInt()
         return RGBA.invoke(R, G, B, A)
     }
 
