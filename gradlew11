@@ -1,0 +1,1 @@
+JAVA_HOME=`/usr/libexec/java_home -v11` `dirname $0`/gradlew $*
