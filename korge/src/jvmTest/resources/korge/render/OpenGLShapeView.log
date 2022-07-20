@@ -7,6 +7,7 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
+uniform float u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
@@ -14,7 +15,6 @@ uniform bool u_OutputPre;
 varying float v_Dist;
 varying float v_MaxDist;
 varying vec2 v_Tex;
-varying float v_InputPre;
 void main() {
 	vec2 temp3;
 	vec4 temp0;
@@ -63,7 +63,7 @@ void main() {
 			}
 		}
 	}
-	if ((v_InputPre == 0.0)) {
+	if ((u_InputPre == 0.0)) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
@@ -147,6 +147,8 @@ getUniformLocation(1001, "u_GlobalAlpha") = 7011
 uniform1f(7011, 1.0)
 getUniformLocation(1001, "u_GlobalPixelScale") = 7012
 uniform1f(7012, 10.0)
+getUniformLocation(1001, "u_InputPre") = 7013
+uniform1f(7013, 0.0)
 uniform1i(7007, 0)
 disable(2960)
 stencilMask(0)

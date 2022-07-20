@@ -5,7 +5,7 @@ RenderBuffer[1].setSize(200, 200)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
 createBuffer():6
-programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_InputPre, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -23,6 +23,7 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
+uniform float u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
@@ -30,7 +31,6 @@ uniform bool u_OutputPre;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
 varying mediump vec2 v_Tex;
-varying lowp float v_InputPre;
 void main() {
 	vec2 temp3;
 	vec4 temp0;
@@ -79,7 +79,7 @@ void main() {
 			}
 		}
 	}
-	if ((v_InputPre == 0.0)) {
+	if ((u_InputPre == 0.0)) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
@@ -152,6 +152,7 @@ scissor: -788, -1188, 536, 536
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -175,6 +176,7 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -198,6 +200,7 @@ draw: TRIANGLE_FAN, offset=0, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -221,6 +224,7 @@ draw: TRIANGLE_FAN, offset=7, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -247,6 +251,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -276,6 +281,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -305,6 +311,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -332,6 +339,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 1, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -907,6 +915,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -949,6 +958,7 @@ uboSet.uniform: Uniform(u_Transform) = Matrix3D(
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.75
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[0], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -978,6 +988,7 @@ scissor: -1900, -780, 808, 800
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -1001,6 +1012,7 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -1024,6 +1036,7 @@ draw: TRIANGLE_FAN, offset=624, count=7, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -1741,6 +1754,7 @@ draw: TRIANGLE_FAN, offset=631, count=701, instances=1, indexType=null
 uboSet: 2
 uboSet.uniform: Uniform(u_ProgramType) = 5.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -2471,6 +2485,7 @@ uboSet.uniform: Uniform(u_Gradientp1) = (100, 100, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[1], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 enable: STENCIL
@@ -2509,6 +2524,7 @@ uboSet.uniform: Uniform(u_Gradientp1) = (130, 180, 70)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
@@ -2549,6 +2565,7 @@ uboSet.uniform: Uniform(u_Gradientp1) = (0, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 0.9
 uboSet.uniform: Uniform(u_Tex) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 2.0
+uboSet.uniform: Uniform(u_InputPre) = 1.0
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboUse: 2
 disable: STENCIL
