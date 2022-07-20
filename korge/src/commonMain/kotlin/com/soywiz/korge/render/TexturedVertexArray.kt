@@ -30,9 +30,23 @@ import kotlin.native.concurrent.SharedImmutable
  *
  * [vcount] and [icount] could be decreased later, but not increased since the buffer is created at the beginning.
  */
-class TexturedVertexArray(var vcount: Int, val indices: ShortArray, var icount: Int = indices.size) {
+class TexturedVertexArray(vcount: Int, val indices: ShortArray, icount: Int = indices.size) {
     /** The initial/maximum number of vertices */
     val initialVcount = vcount
+    var vcount: Int = vcount
+        set(value) {
+            if (field == value) return // Avoid mutating in K/N
+            //if (initialVcount == 0) error("trying to change TexturedVertexArray.EMPTY")
+            if (value > initialVcount) error("value($value) > initialVcount($initialVcount)")
+            field = value
+        }
+    var icount: Int = icount
+        set(value) {
+            if (field == value) return // Avoid mutating in K/N
+            //if (indices.isEmpty()) error("trying to change TexturedVertexArray.EMPTY")
+            if (value > indices.size) error("value($value) > indices.size(${indices.size})")
+            field = value
+        }
     //internal val data = IntArray(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * vcount)
     //internal val _data = FBuffer(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4, direct = false)
     @PublishedApi internal val _data = FBuffer.allocNoDirect(TEXTURED_ARRAY_COMPONENTS_PER_VERTEX * initialVcount * 4)
