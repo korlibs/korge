@@ -16,11 +16,11 @@ private fun java.nio.Buffer.checkSliceBounds(offset: Int, size: Int) {
 	//if (end !in 0 until this.capacity()) error("offset=$offset, size=$size not inside ${this.capacity()}")
 }
 
-fun ByteBuffer.slice(offset: Int, size: Int): ByteBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun ShortBuffer.slice(offset: Int, size: Int): ShortBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun IntBuffer.slice(offset: Int, size: Int): IntBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
-fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); (out as java.nio.Buffer).position(this.position() + offset); (out as java.nio.Buffer).limit(out.position() + size); return out }
+fun ByteBuffer.slice(offset: Int, size: Int): ByteBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); out.positionLimitSafe(this.position() + offset, out.position() + size); return out }
+fun ShortBuffer.slice(offset: Int, size: Int): ShortBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); out.positionLimitSafe(this.position() + offset, out.position() + size); return out }
+fun IntBuffer.slice(offset: Int, size: Int): IntBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); out.positionLimitSafe(this.position() + offset, out.position() + size); return out }
+fun FloatBuffer.slice(offset: Int, size: Int): FloatBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); out.positionLimitSafe(this.position() + offset, out.position() + size); return out }
+fun DoubleBuffer.slice(offset: Int, size: Int): DoubleBuffer { checkSliceBounds(offset, size); val out = this.duplicate(); out.positionLimitSafe(this.position() + offset, out.position() + size); return out }
 public actual class MemBuffer(val buffer: ByteBuffer, val size: Int) {
     val sbuffer = buffer.order(ByteOrder.nativeOrder()).asShortBuffer()
     val ibuffer = buffer.order(ByteOrder.nativeOrder()).asIntBuffer()
@@ -100,6 +100,27 @@ inline operator fun DoubleBuffer.set(index: Int, value: Double) = this.put(index
 inline operator fun MemBuffer.set(index: Int, value: Byte) = this.buffer.put(index, value)
 inline operator fun MemBuffer.get(index: Int): Byte = this.buffer.get(index)
 
+fun java.nio.Buffer.positionSafe(newPosition: Int) {
+    position(newPosition)
+}
+
+fun java.nio.Buffer.limitSafe(newLimit: Int) {
+    limit(newLimit)
+}
+
+fun java.nio.Buffer.positionLimitSafe(newPosition: Int, newLimit: Int) {
+    position(newPosition)
+    limit(newLimit)
+}
+
+fun java.nio.Buffer.clearSafe() {
+    clear()
+}
+
+fun java.nio.Buffer.flipSafe() {
+    flip()
+}
+
 private inline fun <T> arraycopy(size: Int, src: Any?, srcPos: Int, dst: Any?, dstPos: Int, setDst: (Int, T) -> Unit, getSrc: (Int) -> T) {
     val overlapping = src === dst && dstPos > srcPos
     if (overlapping) {
@@ -129,32 +150,30 @@ public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos:
     val oldSrcPos = srcBuf.position()
     val oldSrcLimit = srcBuf.limit()
     run {
-        dstBuf.position(dstPos)
-        srcBuf.position(srcPos)
-        srcBuf.limit(size)
+        dstBuf.positionSafe(dstPos)
+        srcBuf.positionLimitSafe(srcPos, size)
         dstBuf.put(srcBuf)
     }
-    dstBuf.position(oldDstPos)
-    srcBuf.position(oldSrcPos)
-    srcBuf.limit(oldSrcLimit)
+    dstBuf.positionSafe(oldDstPos)
+    srcBuf.positionLimitSafe(oldSrcPos, oldSrcLimit)
 }
 public actual fun arraycopy(src: ByteArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
     val dstBuf = dst.buffer
     val oldPos = dstBuf.position()
     run {
-        dstBuf.position(dstPos)
+        dstBuf.positionSafe(dstPos)
         dstBuf.put(src, srcPos, size)
     }
-    dstBuf.position(oldPos)
+    dstBuf.positionSafe(oldPos)
 }
 public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int) {
     val srcBuf = src.buffer
     val oldPos = srcBuf.position()
     run {
-        srcBuf.position(srcPos)
+        srcBuf.positionSafe(srcPos)
         srcBuf.get(dst, dstPos, size)
     }
-    srcBuf.position(oldPos)
+    srcBuf.positionSafe(oldPos)
     //arraycopy(size, src, srcPos, dst, dstPos, { it, value -> dst[it] = value }, { src[it] })
 }
 public actual fun arraycopy(src: ShortArray, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int) {
