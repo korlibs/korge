@@ -7,6 +7,7 @@ import kotlinx.cinterop.*
 import platform.CoreFoundation.*
 import platform.CoreGraphics.*
 import platform.ImageIO.*
+import platform.posix.memcpy
 import kotlin.native.concurrent.*
 
 object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
@@ -63,9 +64,10 @@ object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
                             CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailWithTransform, kCFBooleanFalse)
                             CFDictionaryAddValue(dict, kCGImageSourceCreateThumbnailFromImageAlways, kCFBooleanTrue)
 
-                            val cgImage = if (maxSize != null) {
+                            val cgImage: CPointer<CGImage>? = if (maxSize != null) {
                                 maxSizePtr.value = maxSize
 
+                                // kCGImageSourceSubsampleFactor
                                 CFDictionaryAddValue(
                                     dict,
                                     kCGImageSourceThumbnailMaxPixelSize,
@@ -75,23 +77,43 @@ object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
                             } else {
                                 CGImageSourceCreateImageAtIndex(imgSource, 0, dict)
                             }
+                            val iwidth = CGImageGetWidth(cgImage).toInt()
+                            val iheight = CGImageGetHeight(cgImage).toInt()
 
+                            run {
+                                val data = CGDataProviderCopyData(CGImageGetDataProvider(cgImage))
+                                try {
+                                    val pixels = CFDataGetBytePtr(data);
+                                    Bitmap32(iwidth, iheight, premultiplied = false).also { bmp ->
+                                        bmp.data.ints.usePinned { pin ->
+                                            memcpy(pin.startAddressOf, pixels, (iwidth * iheight * 4).convert())
+                                        }
+                                    }
+                                } finally {
+                                    CFRelease(data)
+                                }
+                            }
+
+                            /*
                             //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
                             val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
                             //val colorSpace = CGColorSpaceCreateDeviceRGB()
                             try {
-                                val iwidth = CGImageGetWidth(cgImage).toInt()
-                                val iheight = CGImageGetHeight(cgImage).toInt()
+                                val realPremultiplied = true
+                                //val realPremultiplied = premultiplied
 
-                                Bitmap32(iwidth, iheight).also { bmp ->
+                                val alphaInfo = when (realPremultiplied) {
+                                    true -> CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
+                                    false -> CGImageAlphaInfo.kCGImageAlphaLast.value
+                                }
+
+                                Bitmap32(iwidth, iheight, realPremultiplied).also { bmp ->
                                     bmp.data.ints.usePinned { pin ->
                                         val context = CGBitmapContextCreate(
                                             pin.startAddressOf, iwidth.convert(), iheight.convert(), 8,
-                                            (iwidth * 4).convert(), colorSpace, when (premultiplied) {
-                                                true -> CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
-                                                false -> CGImageAlphaInfo.kCGImageAlphaLast.value
-                                            }
-                                        )
+                                            (iwidth * 4).convert(), colorSpace, alphaInfo
+                                        ) ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
+
                                         try {
                                             val rect = CGRectMake(0.cg, 0.cg, iwidth.cg, iheight.cg)
                                             CGContextDrawImage(context, rect, cgImage)
@@ -104,6 +126,8 @@ object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
                             } finally {
                                 CGColorSpaceRelease(colorSpace)
                             }
+
+                             */
                         }
                     }
                 })

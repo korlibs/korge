@@ -1,6 +1,5 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korio.async.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korio.concurrent.atomic.korAtomic
@@ -11,8 +10,10 @@ import platform.gdiplus.*
 import platform.windows.*
 import kotlin.native.concurrent.*
 
-@ThreadLocal
-actual val nativeImageFormatProvider: NativeImageFormatProvider = object : BaseNativeImageFormatProvider() {
+//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = Win32NativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = StbImageNativeImageFormatProvider
+
+object Win32NativeImageFormatProvider : BaseNativeImageFormatProvider() {
     override fun createBitmapNativeImage(bmp: Bitmap) = GdiNativeImage(bmp.toBMP32())
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
