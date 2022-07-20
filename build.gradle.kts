@@ -225,6 +225,7 @@ subprojects {
                     testTask {
                         useKarma {
                             useChromeHeadless()
+                            useConfigDirectory(File(rootDir, "karma.config.d"))
                         }
                     }
                 }
