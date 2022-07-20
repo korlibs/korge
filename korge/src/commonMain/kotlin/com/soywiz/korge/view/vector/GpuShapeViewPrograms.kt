@@ -30,6 +30,7 @@ import kotlin.math.PI
 
 @KorgeInternal
 object GpuShapeViewPrograms {
+    val u_InputPre = Uniform("u_InputPre", VarType.Float1)
     val u_ProgramType = Uniform("u_ProgramType", VarType.Float1)
     //val u_LineWidth = Uniform("u_LineWidth", VarType.Float1)
     val u_Color = Uniform("u_Color", VarType.Float4)
@@ -150,7 +151,7 @@ object GpuShapeViewPrograms {
             }
 
             // Colors are premultiplied
-            BatchBuilder2D.DO_INPUT_ENSURE_TO(this, out, premultiplied = true)
+            BatchBuilder2D.DO_INPUT_ENSURE_TO(this, out, premultiplied = true, v_InputPre = u_InputPre)
 
             // Update global alpha
             val aaAlpha = 1f.lit - smoothstep(v_MaxDist * u_GlobalPixelScale - 1.5f.lit, v_MaxDist * u_GlobalPixelScale, abs(v_Dist * u_GlobalPixelScale))

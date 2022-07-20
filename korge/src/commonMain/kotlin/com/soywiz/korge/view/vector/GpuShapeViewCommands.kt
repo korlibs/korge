@@ -4,6 +4,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.floatArrayListOf
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.kmem.toInt
 import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
 import com.soywiz.korag.disableCullFace
@@ -193,13 +194,13 @@ class GpuShapeViewCommands {
                                                 tempUniforms.put(GpuShapeViewPrograms.u_GlobalPixelScale, pixelScale)
 
                                                 val texUnit = tempUniforms[DefaultShaders.u_Tex] as? AG.TextureUnit?
-                                                //val premultiplied = texUnit?.texture?.premultiplied ?: false
+                                                val premultiplied = texUnit?.texture?.premultiplied ?: false
                                                 //val premultiplied = false
                                                 val outPremultiplied = ag.isRenderingToTexture
 
                                                 //println("outPremultiplied=$outPremultiplied, blendMode=${cmd.blendMode?.name}")
 
-                                                //tempUniforms[BatchBuilder2D.u_InputPre] = premultiplied
+                                                tempUniforms[GpuShapeViewPrograms.u_InputPre] = premultiplied.toInt().toFloat()
                                                 tempUniforms[BatchBuilder2D.u_OutputPre] = outPremultiplied
 
                                                 list.uboSet(ubo, tempUniforms)
