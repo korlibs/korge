@@ -151,8 +151,6 @@ abstract class BaseTileMap(
     private val infos = arrayListOf<Info>()
 
     companion object {
-        private val dummyTexturedVertexArray = TexturedVertexArray.EMPTY
-
         fun computeIndices(flipX: Boolean, flipY: Boolean, rotate: Boolean, indices: IntArray = IntArray(4)): IntArray {
             // @TODO: const val optimization issue in Kotlin/Native: https://youtrack.jetbrains.com/issue/KT-46425
             indices[0] = 0 // 0/*TL*/
@@ -186,7 +184,7 @@ abstract class BaseTileMap(
         //private const val BL = 3
     }
 
-    private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmpBase, ShrinkableTexturedVertexArray(dummyTexturedVertexArray)) }
+    private val infosPool = Pool(reset = { it.reset() }) { Info(Bitmaps.transparent.bmpBase, ShrinkableTexturedVertexArray(TexturedVertexArray.EMPTY)) }
     private var lastVirtualRect = Rectangle(-1, -1, -1, -1)
     private var currentVirtualRect = Rectangle(-1, -1, -1, -1)
 

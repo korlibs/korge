@@ -81,6 +81,8 @@ class KorgeMultithreadedTest {
                 path.getCurvesList()
                 val curves = path.getCurves()
 
+                assertEquals(Unit, Mesh().getLocalBoundsInternal(), "Doesn't throw with mutability exception")
+
                 log += "rect.filterScale=${rect.filterScale}"
                 log += "rect.mask=${rect.mask != null}"
                 log += "program=${ColorMatrixFilter.getProgram().fragment.type == ShaderType.FRAGMENT}"
