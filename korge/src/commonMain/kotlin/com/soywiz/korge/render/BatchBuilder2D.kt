@@ -742,7 +742,7 @@ class BatchBuilder2D constructor(
         val u_OutputPre: Uniform = Uniform("u_OutputPre", VarType.Bool1)
         val u_TexN: Array<Uniform> = Array(BB_MAX_TEXTURES) { Uniform("u_Tex$it", VarType.Sampler2D) }
 
-        fun DO_INPUT_ENSURE_TO(builder: Program.Builder, out: Operand, premultiplied: Boolean) {
+        fun DO_INPUT_ENSURE_TO(builder: Program.Builder, out: Operand, premultiplied: Boolean, v_InputPre: Operand = BatchBuilder2D.v_InputPre) {
             builder.apply {
                 if (premultiplied) {
                     // We want premultiplied, but input was straight
@@ -758,7 +758,7 @@ class BatchBuilder2D constructor(
             }
         }
 
-        fun DO_OUTPUT_FROM(builder: Program.Builder, out: Operand, premultiplied: Boolean) {
+        fun DO_OUTPUT_FROM(builder: Program.Builder, out: Operand, premultiplied: Boolean, u_OutputPre: Operand = BatchBuilder2D.u_OutputPre) {
             builder.apply {
                 if (premultiplied) {
                     // We come from premultiplied, but output wants straight

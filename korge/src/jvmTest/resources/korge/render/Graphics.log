@@ -148,7 +148,7 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 vaoUse: 0
 vaoDelete: 1
 createBuffer():6
-programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
+programCreate: 2, Program(name=GpuShapeViewPrograms.Combined, attributes=[a_Pos, a_Dist, a_MaxDist], uniforms=[u_ProjMat, u_ViewMat, u_ProgramType, u_Color, u_Tex, u_Transform, u_Gradientp0, u_Gradientp1, u_InputPre, u_ColorMul, u_GlobalAlpha, u_GlobalPixelScale, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -166,6 +166,7 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
+uniform float u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
@@ -173,7 +174,6 @@ uniform bool u_OutputPre;
 varying mediump float v_Dist;
 varying mediump float v_MaxDist;
 varying mediump vec2 v_Tex;
-varying lowp float v_InputPre;
 void main() {
 	vec2 temp3;
 	vec4 temp0;
@@ -222,7 +222,7 @@ void main() {
 			}
 		}
 	}
-	if ((v_InputPre == 0.0)) {
+	if ((u_InputPre == 0.0)) {
 		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
 	}
 	gl_FragColor = (gl_FragColor * u_ColorMul);
@@ -297,6 +297,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (1, 0, 0)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 2
 disable: STENCIL
@@ -1210,6 +1211,7 @@ uboSet.uniform: Uniform(u_ProgramType) = 0.0
 uboSet.uniform: Uniform(u_Color) = (0, 0, 1)
 uboSet.uniform: Uniform(u_GlobalAlpha) = 1.0
 uboSet.uniform: Uniform(u_GlobalPixelScale) = 0.5
+uboSet.uniform: Uniform(u_InputPre) = 0.0
 uboSet.uniform: Uniform(u_OutputPre) = false
 uboUse: 2
 disable: STENCIL

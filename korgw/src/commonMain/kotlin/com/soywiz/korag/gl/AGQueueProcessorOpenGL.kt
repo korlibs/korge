@@ -544,6 +544,7 @@ class AGQueueProcessorOpenGL(
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
                     var arrayCount = declArrayCount
                     when (value) {
+                        is Boolean ->tempBuffer.setFloat(0, value.toInt().toFloat())
                         is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
                         is Vector3D -> tempBuffer.setFloats(0, value.data, 0, stride)
                         is FloatArray -> {
