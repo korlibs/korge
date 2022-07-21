@@ -436,7 +436,7 @@ suspend fun AsyncStream.slice(range: IntRange, closeParent: Boolean = false): As
 suspend fun AsyncStream.slice(range: LongRange, closeParent: Boolean = false): AsyncStream = sliceWithBounds(range.start, (range.endInclusive + 1), closeParent)
 
 suspend fun AsyncStream.sliceWithBounds(start: Long, end: Long, closeParent: Boolean = false): AsyncStream {
-	val len = this.getLength()
+	val len = if (this.hasLength()) this.getLength() else end
 	val clampedStart = start.clamp(0, len)
 	val clampedEnd = end.clamp(0, len)
 
