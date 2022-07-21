@@ -1148,26 +1148,60 @@ enum class CrossExecType(val cname: String, val interp: String) {
     val nameWithArch = "${cname}X64"
     val nameWithArchCapital = nameWithArch.capitalized()
 
+    fun commands(vararg args: String): Array<String> {
+        return ArrayList<String>().apply {
+            when (this@CrossExecType) {
+                WINDOWS -> {
+                    if (isArm) add("box64")
+                    add("wine64")
+                }
+                LINUX -> {
+                    // @TODO: WSL
+                    if (isWindows) add("wsl") else add("lima")
+                    if (isArm) add("box64")
+                }
+            }
+            addAll(args)
+        }.toTypedArray()
+    }
+
     companion object {
         val VALID_LIST: List<CrossExecType> = values().filter { it.valid }
     }
 }
 
+open class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
+    @Input
+    @Option(option = "type", description = "Sets the executable cross type")
+    lateinit var type: CrossExecType
+
+    @Internal
+    var debugMode = false
+
+    @get:Internal
+    override val testCommand: TestCommand = object : TestCommand() {
+        val commands get() = type.commands()
+
+        override val executable: String
+            get() = commands.first()
+
+        override fun cliArgs(
+            testLogger: String?,
+            checkExitCode: Boolean,
+            testGradleFilter: Set<String>,
+            testNegativeGradleFilter: Set<String>,
+            userArgs: List<String>
+        ): List<String> =
+            listOfNotNull(
+                *commands.drop(1).toTypedArray(),
+                this@KotlinNativeCrossTest.executable.absolutePath,
+            ) +
+                testArgs(testLogger, checkExitCode, testGradleFilter, testNegativeGradleFilter, userArgs)
+    }
+}
+
 fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
-    commandLine(*ArrayList<String>().apply {
-        when (type) {
-            CrossExecType.WINDOWS -> {
-                if (isArm) add("box64")
-                add("wine64")
-            }
-            CrossExecType.LINUX -> {
-                // @TODO: WSL
-                if (isWindows) add("wsl") else add("lima")
-                if (isArm) add("box64")
-            }
-        }
-        this.addAll(args)
-    }.toTypedArray())
+    commandLine(type.commands(*args))
 }
 
 subprojects {
@@ -1282,13 +1316,24 @@ subprojects {
                 for (type in CrossExecType.VALID_LIST) {
                     val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
                     if (linkDebugTest != null) {
-                        tasks.create("${type.nameWithArch}Test${type.interpCapital}", Exec::class.java) {
+                        tasks.create("${type.nameWithArch}Test${type.interpCapital}", KotlinNativeCrossTest::class.java, Action {
                             val link = linkDebugTest
+                            val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
+                            val testReportsDir = project.extensions.getByType(ReportingExtension::class.java).baseDir.resolve(TestingBasePlugin.TESTS_DIR_NAME)
+                            //this.configureConventions()
+
+                            val htmlReport = org.gradle.api.internal.plugins.DslObject(reports.html)
+                            val xmlReport = org.gradle.api.internal.plugins.DslObject(reports.junitXml)
+                            xmlReport.conventionMapping.map("destination") { testResultsDir.resolve(name) }
+                            htmlReport.conventionMapping.map("destination") { testReportsDir.resolve(name) }
+
+                            this.type = type
+                            this.executable = link.binary.outputFile
+                            this.workingDir = link.binary.outputDirectory.absolutePath
+                            this.binaryResultsDirectory.set(testResultsDir.resolve("$name/binary"))
                             group = "verification"
                             dependsOn(link)
-                            commandLineCross(link.binary.outputFile.absolutePath, type = type)
-                            workingDir = link.binary.outputDirectory
-                        }
+                        })
                     }
                 }
             }
@@ -1335,5 +1380,3 @@ afterEvaluate {
 //} catch (e: Throwable) {
 //    e.printStackTrace()
 //}
-
-// println(tasks.findByPath(":korim:macosArm64Test")!!::class)
