@@ -34,7 +34,8 @@ jobs:
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
-      - { name: Testing Node JS, run: ./gradlew jsNodeTest -i }
+      - { name: Testing NodeJS, run: ./gradlew jsNodeTest }
+      - { name: Testing Browser, run: ./gradlew jsBrowserTest }
 
   test-android:
     timeout-minutes: 120
