@@ -2,6 +2,9 @@ package com.soywiz.korim.awt
 
 import com.soywiz.kds.mapFloat
 import com.soywiz.kmem.MemBufferAlloc
+import com.soywiz.kmem.clearSafe
+import com.soywiz.kmem.flipSafe
+import com.soywiz.kmem.positionSafe
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.ensureNative
@@ -151,12 +154,12 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Uni
         if (rbufferVersion != contentVersion) {
             rbufferVersion = contentVersion
             rbufferData.also { buf ->
-                buf.clear()
+                buf.clearSafe()
                 val ib = buf.asIntBuffer()
                 ib.put(dataBuffer.data)
                 for (n in 0 until area) ib.put(n, argb2rgba(ib.get(n)))
-                buf.position(width * height * 4)
-                buf.flip()
+                buf.positionSafe(width * height * 4)
+                buf.flipSafe()
             }
         }
         return rbufferData
