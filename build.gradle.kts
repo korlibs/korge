@@ -9,7 +9,7 @@ import java.io.File
 import java.nio.file.Files
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeLink
 import com.soywiz.korge.gradle.KorgeDefaults
-import java.net.URL
+import org.gradle.configurationcache.extensions.capitalized
 import java.net.URLClassLoader
 
 buildscript {
@@ -50,7 +50,8 @@ plugins {
 }
 
 //val headlessTests = true
-val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
+//val headlessTests = System.getenv("NON_HEADLESS_TESTS") != "true"
+val headlessTests = false
 val useMimalloc = true
 //val useMimalloc = false
 
@@ -444,7 +445,17 @@ subprojects {
                             if (target == "mingwX64") {
                                 afterEvaluate {
                                     afterEvaluate {
-                                        tasks.findByName("mingwX64WineTest")?.let {
+                                        tasks.findByName("mingwX64TestWine")?.let {
+                                            //println("***************++")
+                                            it?.dependsOn(taskName)
+                                        }
+                                    }
+                                }
+                            }
+                            if (target == "linuxX64") {
+                                afterEvaluate {
+                                    afterEvaluate {
+                                        tasks.findByName("linuxX64TestLima")?.let {
                                             //println("***************++")
                                             it?.dependsOn(taskName)
                                         }
@@ -802,25 +813,17 @@ samples {
             group = "run"
             dependsOnNativeTask("Release")
         }
-        if (!com.soywiz.korge.gradle.targets.isWindows) {
+        if (!isWindows) {
             afterEvaluate {
-                if (project.tasks.findByName("linkReleaseExecutableMingwX64") != null) {
-                    val linkReleaseExecutableMingwX64 by getting(KotlinNativeLink::class)
-                    val linkDebugExecutableMingwX64 by getting(KotlinNativeLink::class)
-
-                    fun Exec.configureLink(link: KotlinNativeLink) {
-                        dependsOn(link)
-                        commandLine("wine64", link.binary.outputFile)
-                        workingDir = link.binary.outputDirectory
-                    }
-
-                    val runNativeWineDebug by creating(Exec::class) {
-                        group = "run"
-                        configureLink(linkDebugExecutableMingwX64)
-                    }
-                    val runNativeWineRelease by creating(Exec::class) {
-                        group = "run"
-                        configureLink(linkReleaseExecutableMingwX64)
+                for (type in CrossExecType.VALID_LIST) {
+                    for (deb in listOf("Debug", "Release")) {
+                        val linkTask = project.tasks.findByName("link${deb}Executable${type.nameWithArchCapital}") as? KotlinNativeLink? ?: continue
+                        tasks.create("runNative${deb}${type.interp}", Exec::class.java) {
+                            group = "run"
+                            dependsOn(linkTask)
+                            commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                            workingDir = linkTask.binary.outputDirectory
+                        }
                     }
                 }
             }
@@ -1132,6 +1135,41 @@ allprojects {
 
 val currentJavaVersion = com.soywiz.korlibs.currentJavaVersion()
 
+enum class CrossExecType(val cname: String, val interp: String) {
+    WINDOWS("mingw", "wine"),
+    LINUX("linux", "lima");
+
+    val valid: Boolean get() = when (this) {
+        WINDOWS -> !isWindows
+        LINUX -> !com.soywiz.korge.gradle.targets.isLinux
+    }
+
+    val interpCapital = interp.capitalized()
+    val nameWithArch = "${cname}X64"
+    val nameWithArchCapital = nameWithArch.capitalized()
+
+    companion object {
+        val VALID_LIST: List<CrossExecType> = values().filter { it.valid }
+    }
+}
+
+fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
+    commandLine(*ArrayList<String>().apply {
+        when (type) {
+            CrossExecType.WINDOWS -> {
+                if (isArm) add("box64")
+                add("wine64")
+            }
+            CrossExecType.LINUX -> {
+                // @TODO: WSL
+                if (isWindows) add("wsl") else add("lima")
+                if (isArm) add("box64")
+            }
+        }
+        this.addAll(args)
+    }.toTypedArray())
+}
+
 subprojects {
     afterEvaluate {
         tasks {
@@ -1239,21 +1277,15 @@ subprojects {
             }
         }
         tasks {
-            if (!com.soywiz.korge.gradle.targets.isWindows) {
-                afterEvaluate {
-                    val linkDebugTestMingwX64 = project.tasks.findByName("linkDebugTestMingwX64") as? KotlinNativeLink?
-                    if (linkDebugTestMingwX64 != null) {
-                        fun Exec.configureLink(link: KotlinNativeLink) {
-                            dependsOn(link)
-                            commandLine("wine64", link.binary.outputFile)
-                            workingDir = link.binary.outputDirectory
-                        }
-
-                        val mingwX64WineTest by creating(Exec::class) {
-                            val link = linkDebugTestMingwX64
+            afterEvaluate {
+                for (type in CrossExecType.VALID_LIST) {
+                    val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
+                    if (linkDebugTest != null) {
+                        tasks.create("${type.nameWithArch}Test${type.interpCapital}", Exec::class.java) {
+                            val link = linkDebugTest
                             group = "verification"
                             dependsOn(link)
-                            commandLine("wine64", link.binary.outputFile)
+                            commandLineCross(link.binary.outputFile.absolutePath, type = type)
                             workingDir = link.binary.outputDirectory
                         }
                     }
