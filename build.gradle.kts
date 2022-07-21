@@ -146,7 +146,7 @@ subprojects {
             }
         }
 
-        if (isSample && doEnableKotlinNative && com.soywiz.korge.gradle.targets.isMacos) {
+        if (isSample && doEnableKotlinNative && isMacos) {
             configureNativeIos()
         }
 
@@ -822,6 +822,7 @@ samples {
                             group = "run"
                             dependsOn(linkTask)
                             commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
+                            this.environment("WINEDEBUG", "-all")
                             workingDir = linkTask.binary.outputDirectory
                         }
                     }
@@ -1152,7 +1153,7 @@ enum class CrossExecType(val cname: String, val interp: String) {
         return ArrayList<String>().apply {
             when (this@CrossExecType) {
                 WINDOWS -> {
-                    if (isArm) add("box64")
+                    if (isArm && !isMacos) add("box64") // wine on macos can run x64 apps via rosetta, but linux needs box64 emulator
                     add("wine64")
                 }
                 LINUX -> {
@@ -1331,6 +1332,7 @@ subprojects {
                             this.executable = link.binary.outputFile
                             this.workingDir = link.binary.outputDirectory.absolutePath
                             this.binaryResultsDirectory.set(testResultsDir.resolve("$name/binary"))
+                            this.environment("WINEDEBUG", "-all")
                             group = "verification"
                             dependsOn(link)
                         })
