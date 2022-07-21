@@ -1269,7 +1269,8 @@ subprojects {
                 }
             }
         }
-        tasks.withType(Test::class.java).all {
+        //tasks.withType(Test::class.java).all {
+        tasks.withType(AbstractTestTask::class.java).all {
             testLogging {
                 //setEvents(setOf("passed", "skipped", "failed", "standardOut", "standardError"))
                 setEvents(setOf("skipped", "failed", "standardError"))
@@ -1334,3 +1335,5 @@ afterEvaluate {
 //} catch (e: Throwable) {
 //    e.printStackTrace()
 //}
+
+// println(tasks.findByPath(":korim:macosArm64Test")!!::class)
