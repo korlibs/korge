@@ -6,6 +6,7 @@ import com.soywiz.kds.iterators.fastForEachWithIndex
 import com.soywiz.kds.toFastList
 import com.soywiz.kmem.clamp
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.RegisteredImageFormats
 import com.soywiz.korim.format.readBitmap
@@ -278,7 +279,8 @@ fun BmpSlice.asNinePatchSimpleRatio(left: Double, top: Double, right: Double, bo
 fun BmpSlice.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = NinePatchBmpSlice.createSimple(this, left, top, right, bottom)
 fun Bitmap.asNinePatchSimple(left: Int, top: Int, right: Int, bottom: Int) = this.slice().asNinePatchSimple(left, top, right, bottom)
 
-suspend fun VfsFile.readNinePatch(format: ImageFormat = RegisteredImageFormats) = NinePatchBitmap32(readBitmap(format).toBMP32())
+suspend fun VfsFile.readNinePatch(props: ImageDecodingProps = ImageDecodingProps.DEFAULT): NinePatchBmpSlice = NinePatchBitmap32(readBitmap(props).toBMP32())
+suspend fun VfsFile.readNinePatch(format: ImageFormat): NinePatchBmpSlice = readNinePatch(ImageDecodingProps.DEFAULT.copy(format = format))
 
 private inline fun <T, R : Any> Iterable<T>.computeRle(callback: (T) -> R): List<Pair<R, IntRange>> {
     var first = true

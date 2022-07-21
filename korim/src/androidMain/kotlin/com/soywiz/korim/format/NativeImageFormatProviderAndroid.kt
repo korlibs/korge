@@ -85,12 +85,18 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
                     data, 0, data.size,
                     BitmapFactory.Options().also {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            it.inPremultiplied = props.premultiplied
+                            it.inPremultiplied = when {
+                                props.asumePremultiplied -> false
+                                props.premultipliedSure -> true
+                                else -> false
+                            }
                         }
                         it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
                     }
                 ) }
-            ),
+            ).also {
+               if (props.asumePremultiplied) it.asumePremultiplied()
+            },
             originalWidth = info.width,
             originalHeight = info.height
         )
@@ -150,17 +156,17 @@ private fun android.graphics.Bitmap.isPremultipliedSafe(): Boolean = when {
     else -> true
 }
 
-class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
-    NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = androidBitmap.isPremultipliedSafe()) {
-    val originalPremultiplied = premultiplied
-
+class AndroidNativeImage(
+    val androidBitmap: android.graphics.Bitmap,
+    val originalPremultiplied: Boolean = androidBitmap.isPremultipliedSafe()
+) : NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = originalPremultiplied) {
     override val name: String = "AndroidNativeImage"
 
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
         androidBitmap.getPixels(out.ints, offset, width, x, y, width, height) // This returns values in straight alpha
         val count = width * height
         AndroidColor.androidToRgba(out, offset, count)
-        if (premultiplied) {
+        if (originalPremultiplied) {
             for (n in offset until offset + count) out.ints[n] = out[n].premultiplied.value
         }
     }
@@ -168,7 +174,7 @@ class AndroidNativeImage(val androidBitmap: android.graphics.Bitmap) :
         val count = width * height
         val temp = RgbaArray(IntArray(count + offset))
         AndroidColor.rgbaToAndroid(out, offset, count, temp)
-        if (premultiplied) {
+        if (originalPremultiplied) {
             for (n in offset until offset + count) out.ints[n] = out[n].asPremultiplied().depremultiplied.value
         }
         androidBitmap.setPixels(temp.ints, 0, width, x, y, width, height) // This expects values in straight alpha

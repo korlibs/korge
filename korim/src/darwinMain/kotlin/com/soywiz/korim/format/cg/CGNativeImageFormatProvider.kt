@@ -10,9 +10,13 @@ import platform.ImageIO.*
 import platform.posix.memcpy
 import kotlin.native.concurrent.*
 
-object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
-    override fun createBitmapNativeImage(bmp: Bitmap) = CoreGraphicsNativeImage(bmp.toBMP32().premultipliedIfRequired())
+open class CGBaseNativeImageFormatProvider : StbImageNativeImageFormatProvider() {
+    companion object : CGBaseNativeImageFormatProvider()
+    override fun createBitmapNativeImage(bmp: Bitmap): CoreGraphicsNativeImage = CoreGraphicsNativeImage(bmp.toBMP32().premultipliedIfRequired())
+}
 
+open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
+    companion object : CGNativeImageFormatProvider()
     override suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
         memScoped {
             autoreleasepool {
@@ -38,7 +42,7 @@ object CGNativeImageFormatProvider : BaseNativeImageFormatProvider() {
 
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        val premultiplied = props.premultiplied
+        val premultiplied = props.premultipliedSure
 
         data class Info(val data: ByteArray, val premultiplied: Boolean, val maxSize: Int?)
         return executeInImageIOWorker { worker ->

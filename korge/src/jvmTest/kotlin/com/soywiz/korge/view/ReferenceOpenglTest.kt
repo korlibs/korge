@@ -3,17 +3,13 @@ package com.soywiz.korge.view
 import com.soywiz.kgl.*
 import com.soywiz.korag.*
 import com.soywiz.korag.gl.*
-import com.soywiz.korev.*
-import com.soywiz.korge.input.*
 import com.soywiz.korge.test.*
 import com.soywiz.korge.tests.*
 import com.soywiz.korge.view.vector.*
-import com.soywiz.korgw.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
 import com.soywiz.korio.file.std.*
-import com.soywiz.korma.geom.*
 import com.soywiz.korma.geom.vector.*
 import org.junit.*
 
@@ -23,7 +19,7 @@ class ReferenceOpenglTest : ViewsForTesting() {
 
     @Test
     fun testOpengl() = viewsTest {
-        image(resourcesVfs["texture.png"].readBitmapOptimized().mipmaps())
+        image(resourcesVfs["texture.png"].readBitmap().mipmaps())
         gl.clearLog()
         render(views.renderContext)
         assertEqualsFileReference("korge/render/OpenGL.log", gl.getLogAsString())

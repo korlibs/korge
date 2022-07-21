@@ -9,7 +9,7 @@ import kotlin.test.assertNotNull
 // https://zpl.fi/exif-orientation-in-different-formats/
 class EXIFInfoTest {
     //val formats = ImageFormats(AVIFInfo, JPEGInfo, PNG, WEBPInfo)
-    val formats = ImageFormats(AVIFInfo, JPEGInfo, PNG)
+    val formats = ImageDecodingProps.DEFAULT.copy(format = ImageFormats(AVIFInfo, JPEGInfo, PNG))
 
     suspend fun testBase(file: String) {
         val header = resourcesVfs[file].readImageInfo(formats)

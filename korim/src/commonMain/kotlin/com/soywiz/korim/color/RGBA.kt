@@ -17,6 +17,7 @@ import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
 import com.soywiz.krypto.encoding.appendHexByte
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint {
@@ -113,15 +114,29 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     override operator fun compareTo(other: RGBA): Int = this.value.compareTo(other.value)
     override fun interpolateWith(ratio: Double, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
 
-    val premultiplied: RGBAPremultiplied get() {
+    val premultiplied: RGBAPremultiplied get() = premultipliedSlow
+
+    val premultipliedFast: RGBAPremultiplied get() {
         val A = a + 1
         val RB = (((value and 0x00FF00FF) * A) ushr 8) and 0x00FF00FF
         val G = (((value and 0x0000FF00) * A) ushr 8) and 0x0000FF00
         return RGBAPremultiplied((value and 0x00FFFFFF.inv()) or RB or G)
     }
 
+    val premultipliedSlow: RGBAPremultiplied get() {
+        val A = a
+        val R = (r * A) / 255
+        val G = (g * A) / 255
+        val B = (b * A) / 255
+        return RGBAPremultiplied(R, G, B, A)
+    }
+
     infix fun mix(dst: RGBA): RGBA = RGBA.mix(this, dst)
     operator fun times(other: RGBA): RGBA = RGBA.multiply(this, other)
+
+    fun applyGamma(d: Float): RGBA = RGBA.float(rf.pow(d), gf.pow(d), bf.pow(d), af)
+    fun linearRGBToSRGB(): RGBA = applyGamma(1.0f / 2.2f)
+    fun SRGBtoLinearRGB(): RGBA = applyGamma(2.2f)
 
     companion object : ColorFormat32() {
         internal const val RED_OFFSET = 0

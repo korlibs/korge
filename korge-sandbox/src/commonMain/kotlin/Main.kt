@@ -124,7 +124,8 @@ suspend fun main() = Korge(
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
 
     demoSelector(
-        //Demo(::MainVector),
+        //Demo(::MainSvgAnimation),
+        //Demo(::MainGpuVectorRendering),
         Demo(::MainSpine),
         //Demo(::MainBlending),
         listOf(

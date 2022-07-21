@@ -16,9 +16,11 @@ import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.freeze
 import kotlin.native.concurrent.isFrozen
 
-object StbImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
+open class StbImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
+    companion object : StbImageNativeImageFormatProvider()
+
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        val premultiplied = props.premultiplied
+        val premultiplied = props.premultipliedSure
         //ImageIOWorker.execute(
         //            TransferMode.SAFE,
         return executeInImageIOWorker { worker ->

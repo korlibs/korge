@@ -10,14 +10,18 @@ import platform.gdiplus.*
 import platform.windows.*
 import kotlin.native.concurrent.*
 
-//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = Win32NativeImageFormatProvider
-actual val nativeImageFormatProvider: NativeImageFormatProvider get() = StbImageNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = Win32BaseNativeImageFormatProvider
 
-object Win32NativeImageFormatProvider : BaseNativeImageFormatProvider() {
+open class Win32BaseNativeImageFormatProvider : StbImageNativeImageFormatProvider() {
+    companion object : Win32BaseNativeImageFormatProvider()
     override fun createBitmapNativeImage(bmp: Bitmap) = GdiNativeImage(bmp.toBMP32())
+}
+
+open class Win32NativeImageFormatProvider : BaseNativeImageFormatProvider() {
+    companion object : Win32NativeImageFormatProvider()
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        val premultiplied = props.premultiplied
+        val premultiplied = props.premultipliedSure
         data class Info(val data: ByteArray, val premultiplied: Boolean)
         initGdiPlusOnce()
         return wrapNative(

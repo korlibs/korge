@@ -26,6 +26,7 @@ import com.soywiz.korim.format.ASE
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korim.format.readImageDataContainer
 import com.soywiz.korim.format.toAtlas
+import com.soywiz.korim.format.toProps
 import com.soywiz.korim.tiles.tiled.readTiledMap
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Point
@@ -42,8 +43,8 @@ class MainVampire : Scene() {
 
         resourcesVfs["korim.png"].readBitmapSlice().split(32, 32).toAtlas(atlas = atlas)
         val korim = resourcesVfs["korim.png"].readBitmapSlice(atlas = atlas)
-        val characters = resourcesVfs["characters.ase"].readImageDataContainer(ASE, atlas = atlas)
-        val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE, atlas = atlas)
+        val characters = resourcesVfs["characters.ase"].readImageDataContainer(ASE.toProps(), atlas = atlas)
+        val slices = resourcesVfs["slice-example.ase"].readImageDataContainer(ASE.toProps(), atlas = atlas)
         val tiledMap = resourcesVfs["Tilemap/untitled.tmx"].readTiledMap(atlas = atlas)
 
         println(sw.elapsed)

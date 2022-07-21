@@ -49,7 +49,7 @@ import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.ImageFormats
 import com.soywiz.korim.format.RegisteredImageFormats
 import com.soywiz.korim.format.plus
-import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korinject.AsyncInjector
 import com.soywiz.korinject.AsyncInjectorContext
 import com.soywiz.korio.async.delay
@@ -69,7 +69,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.coroutineScope
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
-import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
 
 /**
@@ -189,7 +188,7 @@ object Korge {
                     // Do nothing
                     when {
                         //iconDrawable != null -> this.icon = iconDrawable.render()
-                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmapOptimized(imageFormats)
+                        iconPath != null -> this.icon = resourcesVfs[iconPath!!].readBitmap(imageFormats)
                         else -> Unit
                     }
                 } catch (e: Throwable) {

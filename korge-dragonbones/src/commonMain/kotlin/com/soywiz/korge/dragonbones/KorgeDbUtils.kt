@@ -13,7 +13,7 @@ suspend fun VfsFile.readDbAtlas(factory: KorgeDbFactory): TextureAtlasData? {
 	val tex = jsonFile.readString()
 	val texInfo = Json.parse(tex, Json.Context(optimizedNumericLists = true))!!
 	val imageFile = jsonFile.parent[KDynamic { texInfo["imagePath"].str }].takeIfExists() ?: return null
-	val image = imageFile.readBitmapOptimized().mipmaps()
+	val image = imageFile.readBitmap().mipmaps()
 	return factory.parseTextureAtlasData(Json.parse(tex, Json.Context(optimizedNumericLists = true))!!, image)
 }
 
@@ -32,7 +32,7 @@ suspend fun VfsFile.readDbSkeleton(factory: KorgeDbFactory): DragonBonesData {
                 val imagePath = textureAtlas["imagePath"].str
                 val imageFile = file.parent[imagePath].takeIfExists()
                 if (imageFile != null) {
-                    val image = imageFile.readBitmapOptimized().mipmaps()
+                    val image = imageFile.readBitmap().mipmaps()
                     factory.parseTextureAtlasData(textureAtlas!!, image)
                 }
             }

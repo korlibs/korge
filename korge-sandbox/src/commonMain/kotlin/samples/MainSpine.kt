@@ -21,6 +21,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.computePsnr
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.format.writeTo
@@ -29,7 +30,7 @@ import com.soywiz.korio.file.std.resourcesVfs
 
 class MainSpine : ScaledScene(1280, 720) {
     override suspend fun SContainer.sceneMain() {
-        val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas(asumePremultiplied = true)
+        val atlas = resourcesVfs["spineboy/spineboy-pma.atlas"].readAtlas(ImageDecodingProps(asumePremultiplied = true))
         //val atlas = resourcesVfs["spineboy/spineboy-straight.atlas"].readAtlas(asumePremultiplied = true)
         //val skeletonData = resourcesVfs["spineboy/spineboy-pro.json"].readSkeletonJson(atlas, 0.6f)
         val skeletonData = resourcesVfs["spineboy/spineboy-pro.skel"].readSkeletonBinary(atlas, 0.6f)
@@ -76,7 +77,7 @@ class MainSpine : ScaledScene(1280, 720) {
             speed = 0.5
             scale(2.0)
             position(200, 700)
-            skeletonView(skeleton, state)
+            skeletonView(skeleton, state).also { it.debugAnnotate = true }
             solidRect(10.0, 10.0, Colors.RED).centered
             filters(DropshadowFilter(shadowColor = Colors.RED))
         }
@@ -87,7 +88,7 @@ class MainSpine : ScaledScene(1280, 720) {
             speed = 1.0
             scale(2.0)
             position(900, 700)
-            skeletonView(skeleton, state)
+            skeletonView(skeleton, state).also { it.debugAnnotate = true }
             solidRect(10.0, 10.0, Colors.RED).centered
             //filters(DropshadowFilter(shadowColor = Colors.RED))
         }
