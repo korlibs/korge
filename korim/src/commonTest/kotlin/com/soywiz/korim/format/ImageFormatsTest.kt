@@ -1,13 +1,15 @@
 package com.soywiz.korim.format
 
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.bitmap.matchContentsDistinctCount
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class ImageFormatsTest {
-	val props = ImageDecodingProps(format = ImageFormats(PNG, SVG, ICO, TGA, BMP))
+	val props = ImageDecodingProps(format = ImageFormats(PNG, SVG, ICO, TGA, BMP), premultiplied = false)
 
 	//@Test
 	//fun demo1() = imageTest {
@@ -64,16 +66,17 @@ class ImageFormatsTest {
 
 	@Test
 	fun png32EncoderPremultiplied() = suspendTestNoBrowser {
-		val bitmapOriginal = resourcesVfs["kotlin32.png"].readBitmapNoNative(props).toBMP32()
+		val bitmapOriginal = resourcesVfs["kotlin32.png"].readBitmapNoNative(props.copy(premultiplied = false)).toBMP32()
+        //assertEquals(false, bitmapOriginal.premultiplied)
 		val bitmap = bitmapOriginal.premultiplied()
-		//showImageAndWait(bitmap)
-		val data = PNG.encode(bitmap)
-		val bitmap2 = PNG.decode(data)
+        assertEquals(true, bitmap.premultiplied)
+        //showImageAndWait(bitmap)
+		val bitmap2 = PNG.decode(PNG.encode(bitmap))
 		//showImageAndWait(bitmap2)
 		assertEquals("Bitmap32(190, 190)", bitmap.toString())
 		assertEquals("Bitmap32(190, 190)", bitmap2.toString())
 		//showImageAndWait(Bitmap32.diff(bitmap, bitmap2))
-		assertEquals(true, Bitmap32.matches(bitmapOriginal, bitmap2))
+        assertTrue { bitmapOriginal.matchContentsDistinctCount(bitmap2) < 500 }
 	}
 
 	@Test

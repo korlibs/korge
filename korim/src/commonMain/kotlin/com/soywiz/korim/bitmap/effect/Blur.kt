@@ -17,7 +17,7 @@ fun Bitmap32.blur(r: Int): Bitmap32 {
     out.premultiplyInplaceIfRequired()
     out.blurInplace(r)
     if (!this.premultiplied) {
-        out.depremultiplyInplace()
+        out.depremultiplyInplaceIfRequired()
     }
     return out
 }

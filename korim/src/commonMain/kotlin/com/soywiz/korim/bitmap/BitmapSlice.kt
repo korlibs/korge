@@ -466,7 +466,7 @@ abstract class BmpSlice(
         val p = PointInt()
         for (y0 in 0 until height) for (x0 in 0 until width) {
             if (basePixelPosUnsafe(x0 + x, y0 + y, p) != null) {
-                out[n++] = bmpBase.getRgba(p.x, p.y)
+                out[n++] = bmpBase.getRgbaRaw(p.x, p.y)
             } else {
                 out[n++] = Colors.TRANSPARENT_BLACK
             }
@@ -475,7 +475,7 @@ abstract class BmpSlice(
 
     fun getRgba(x: Int, y: Int): RGBA {
         basePixelPos(x, y)?.let {
-            return bmpBase.getRgba(it.x, it.y)
+            return bmpBase.getRgbaRaw(it.x, it.y)
         }
         return Colors.TRANSPARENT_BLACK
     }
@@ -483,7 +483,7 @@ abstract class BmpSlice(
     fun setRgba(x: Int, y: Int, value: RGBA) {
         basePixelPos(x, y).also {
             if (it != null) {
-                bmpBase.setRgba(it.x, it.y, value)
+                bmpBase.setRgbaRaw(it.x, it.y, value)
             } else {
                 if (x < 0 || y < 0 || x >= frameWidth || y >= frameHeight) {
                     throw IllegalArgumentException("Point $x,$y is not in bounds of slice")
@@ -496,7 +496,7 @@ abstract class BmpSlice(
                     premultiplied = bmpBase.premultiplied
                 )
                 intArrayOf(0, 0, 1, 0, 1, 0).copyInto(pixelOffsets)
-                bmpBase.setRgba(x, y, value)
+                bmpBase.setRgbaRaw(x, y, value)
             }
         }
     }

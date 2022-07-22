@@ -144,8 +144,8 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Uni
         }
     }
 
-    override fun setRgba(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
-    override fun getRgba(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
 
     private val rbufferData: ByteBuffer by lazy { ByteBuffer.allocateDirect(width * height * 4) }
 

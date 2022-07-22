@@ -129,6 +129,6 @@ open class BitmapNativeImage(val bitmap: Bitmap32) : NativeImage(bitmap.width, b
     override fun toBMP32(): Bitmap32 = bitmap
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.readPixelsUnsafe(x, y, width, height, out, offset)
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.writePixelsUnsafe(x, y, width, height, out, offset)
-    override fun setRgba(x: Int, y: Int, v: RGBA) = bitmap.setRgba(x, y, v)
-    override fun getRgba(x: Int, y: Int): RGBA = bitmap.getRgba(x, y)
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) = bitmap.setRgbaRaw(x, y, v)
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = bitmap.getRgbaRaw(x, y)
 }

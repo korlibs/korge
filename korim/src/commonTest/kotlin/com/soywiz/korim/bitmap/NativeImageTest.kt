@@ -15,20 +15,20 @@ class NativeImageTest {
     @Test
     fun test() = suspendTest {
         val bmp = NativeImage(4, 4)
-        bmp.setRgba(0, 0, Colors.RED)
-        assertEquals(Colors.RED, bmp.getRgba(0, 0))
-        bmp.setRgba(1, 0, Colors.BLUE)
-        bmp.setRgba(1, 1, Colors.GREEN)
+        bmp.setRgbaRaw(0, 0, Colors.RED)
+        assertEquals(Colors.RED, bmp.getRgbaRaw(0, 0))
+        bmp.setRgbaRaw(1, 0, Colors.BLUE)
+        bmp.setRgbaRaw(1, 1, Colors.GREEN)
         //bmp.setRgba(0, 1, Colors.PINK)
         bmp.context2d {
             fillStyle = Colors.PINK
             fillRect(0, 1, 1, 1)
         }
         bmp.copy(0, 0, bmp, 2, 2, 2, 2)
-        assertEquals(Colors.RED, bmp.getRgba(2, 2))
-        assertEquals(Colors.BLUE, bmp.getRgba(3, 2))
-        assertEquals(Colors.GREEN, bmp.getRgba(3, 3))
-        assertEquals(Colors.PINK, bmp.getRgba(2, 3))
+        assertEquals(Colors.RED, bmp.getRgbaRaw(2, 2))
+        assertEquals(Colors.BLUE, bmp.getRgbaRaw(3, 2))
+        assertEquals(Colors.GREEN, bmp.getRgbaRaw(3, 3))
+        assertEquals(Colors.PINK, bmp.getRgbaRaw(2, 3))
         //bmp.showImageAndWait()
     }
 
@@ -74,8 +74,8 @@ class NativeImageTest {
             }
         }.render()
         assertEquals(Size(100, 100), image.size)
-        assertEquals(1.0, image.getRgba(10, 50).ad)
-        assertEquals(0.0, image.getRgba(50, 50).ad)
+        assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
+        assertEquals(0.0, image.getRgbaRaw(50, 50).ad)
     }
 
     @Test
@@ -87,7 +87,7 @@ class NativeImageTest {
             }
         }.render()
         assertEquals(Size(100, 100), image.size)
-        assertEquals(1.0, image.getRgba(10, 50).ad)
-        assertEquals(1.0, image.getRgba(50, 50).ad)
+        assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
+        assertEquals(1.0, image.getRgbaRaw(50, 50).ad)
     }
 }

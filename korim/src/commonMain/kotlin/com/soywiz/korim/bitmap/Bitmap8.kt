@@ -13,7 +13,7 @@ class Bitmap8(
 
 	override fun setInt(x: Int, y: Int, color: Int) = setIntIndex(index(x, y), color)
 	override fun getInt(x: Int, y: Int): Int = datau[index(x, y)]
-	override fun getRgba(x: Int, y: Int): RGBA = palette[get(x, y)]
+	override fun getRgbaRaw(x: Int, y: Int): RGBA = palette[get(x, y)]
     override fun getIntIndex(n: Int): Int = datau[n]
     override fun setIntIndex(n: Int, color: Int) { datau[n] = color }
 

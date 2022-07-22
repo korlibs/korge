@@ -7,7 +7,6 @@ uniform sampler2D u_Tex;
 uniform mat4 u_Transform;
 uniform vec3 u_Gradientp0;
 uniform vec3 u_Gradientp1;
-uniform float u_InputPre;
 uniform vec4 u_ColorMul;
 uniform float u_GlobalAlpha;
 uniform float u_GlobalPixelScale;
@@ -63,11 +62,7 @@ void main() {
 			}
 		}
 	}
-	if ((u_InputPre == 0.0)) {
-		gl_FragColor.rgb = (gl_FragColor.rgb * gl_FragColor.a);
-	}
-	gl_FragColor = (gl_FragColor * u_ColorMul);
-	gl_FragColor.rgba = ((gl_FragColor.rgba * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
+	gl_FragColor = (((gl_FragColor * u_ColorMul) * u_GlobalAlpha) * (1.0 - smoothstep(((v_MaxDist * u_GlobalPixelScale) - 1.5), (v_MaxDist * u_GlobalPixelScale), abs((v_Dist * u_GlobalPixelScale)))));
 	if ((!(u_OutputPre))) {
 		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
 	}

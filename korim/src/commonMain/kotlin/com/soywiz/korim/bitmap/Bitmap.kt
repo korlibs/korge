@@ -89,32 +89,40 @@ abstract class Bitmap(
 
     open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
         var n = offset
-        for (y0 in 0 until height) for (x0 in 0 until width) out[n++] = getRgba(x0 + x, y0 + y)
+        for (y0 in 0 until height) for (x0 in 0 until width) out[n++] = getRgbaRaw(x0 + x, y0 + y)
     }
     open fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
         var n = offset
-        for (y0 in 0 until height) for (x0 in 0 until width) setRgba(x0 + x, y0 + y, out[n++])
+        for (y0 in 0 until height) for (x0 in 0 until width) setRgbaRaw(x0 + x, y0 + y, out[n++])
     }
 
-    open fun setRgba(x: Int, y: Int, v: RGBA): Unit = TODO()
-    open fun getRgba(x: Int, y: Int): RGBA = Colors.TRANSPARENT_BLACK
+    /** UNSAFE: Sets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
+    open fun setRgbaRaw(x: Int, y: Int, v: RGBA): Unit = TODO()
+    /** UNSAFE: Gets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
+    open fun getRgbaRaw(x: Int, y: Int): RGBA = Colors.TRANSPARENT_BLACK
 
-    fun setRgbaStraight(x: Int, y: Int, v: RGBA): Unit {
-        if (premultiplied) setRgba(x, y, v.premultiplied.asNonPremultiplied()) else setRgba(x, y, v)
+    /** Sets the color [v] in the [x], [y] coordinates in [RGBA] non-premultiplied */
+    open fun setRgba(x: Int, y: Int, v: RGBA): Unit {
+        if (premultiplied) setRgbaRaw(x, y, v.premultiplied.asNonPremultiplied()) else setRgbaRaw(x, y, v)
     }
-    fun setRgbaPremultiplied(x: Int, y: Int, v: RGBAPremultiplied): Unit {
-        if (premultiplied) setRgba(x, y, v.asNonPremultiplied()) else setRgba(x, y, v.depremultiplied)
+    /** Sets the color [v] in the [x], [y] coordinates in [RGBAPremultiplied] */
+    open fun setRgba(x: Int, y: Int, v: RGBAPremultiplied): Unit {
+        if (premultiplied) setRgbaRaw(x, y, v.asNonPremultiplied()) else setRgbaRaw(x, y, v.depremultiplied)
     }
 
-    fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied = if (premultiplied) getRgba(x, y).asPremultiplied() else getRgba(x, y).premultiplied
-    fun getRgbaStraight(x: Int, y: Int): RGBA = if (premultiplied) getRgba(x, y).asPremultiplied().depremultiplied else getRgba(x, y)
+    /** Gets the color [v] in the [x], [y] coordinates in [RGBA] non-premultiplied */
+    open fun getRgba(x: Int, y: Int): RGBA = if (premultiplied) getRgbaRaw(x, y).asPremultiplied().depremultiplied else getRgbaRaw(x, y)
+    /** Gets the color [v] in the [x], [y] coordinates in [RGBAPremultiplied] */
+    open fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied = if (premultiplied) getRgbaRaw(x, y).asPremultiplied() else getRgbaRaw(x, y).premultiplied
 
+    /** UNSAFE: Sets the color [color] in the [x], [y] coordinates in the internal format of this Bitmap */
 	open fun setInt(x: Int, y: Int, color: Int): Unit = Unit
+    /** UNSAFE: Gets the color in the [x], [y] coordinates in the internal format of this Bitmap */
 	open fun getInt(x: Int, y: Int): Int = 0
 
-	fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgba(x, y) else Colors.TRANSPARENT_BLACK
+	fun getRgbaClamped(x: Int, y: Int): RGBA = if (inBounds(x, y)) getRgbaRaw(x, y) else Colors.TRANSPARENT_BLACK
 
-    fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgba(x.clamp(0, width - 1), y.clamp(0, height - 1))
+    fun getRgbaClampedBorder(x: Int, y: Int): RGBA = getRgbaRaw(x.clamp(0, width - 1), y.clamp(0, height - 1))
 
     @Deprecated("Use float version")
     fun getRgbaSampled(x: Double, y: Double): RGBA = getRgbaSampled(x.toFloat(), y.toFloat())
@@ -129,10 +137,10 @@ abstract class Bitmap(
         val y1Inside = y1 < height - 1
         val xratio = fract(x)
 		val yratio = fract(y)
-		val c00 = getRgba(x0, y0)
-		val c10 = if (x1Inside) getRgba(x1, y0) else c00
-		val c01 = if (y1Inside) getRgba(x0, y1) else c00
-		val c11 = if (x1Inside && y1Inside) getRgba(x1, y1) else c01
+		val c00 = getRgbaRaw(x0, y0)
+		val c10 = if (x1Inside) getRgbaRaw(x1, y0) else c00
+		val c01 = if (y1Inside) getRgbaRaw(x0, y1) else c00
+		val c11 = if (x1Inside && y1Inside) getRgbaRaw(x1, y1) else c01
 		return RGBA.mixRgba4(c00, c10, c01, c11, xratio, yratio)
 	}
 
@@ -236,7 +244,7 @@ abstract class Bitmap(
         if (this.width != other.width) return false
         if (this.height != other.height) return false
         for (y in 0 until height) for (x in 0 until width) {
-            if (this.getRgba(x, y) != other.getRgba(x, y)) return false
+            if (this.getRgbaRaw(x, y) != other.getRgbaRaw(x, y)) return false
         }
         return true
     }

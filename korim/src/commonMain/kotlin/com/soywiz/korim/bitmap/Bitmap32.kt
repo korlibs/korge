@@ -7,7 +7,6 @@ import com.soywiz.kmem.toInt
 import com.soywiz.korim.annotation.KorimInternal
 import com.soywiz.korim.color.ColorFormat
 import com.soywiz.korim.color.ColorTransform
-import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaArray
@@ -32,6 +31,7 @@ import com.soywiz.korma.geom.left
 import com.soywiz.korma.geom.right
 import com.soywiz.korma.geom.top
 import kotlin.js.JsName
+import kotlin.jvm.JvmName
 import kotlin.jvm.JvmOverloads
 import kotlin.math.abs
 import kotlin.math.max
@@ -42,10 +42,10 @@ import kotlin.math.min
 class Bitmap32(
     width: Int,
     height: Int,
-    //val data: RgbaArray = kotlin.run { println("width=$width,height=$height"); RgbaArray(width * height) },
-    val data: RgbaArray = RgbaArray(width * height),
-    premultiplied: Boolean = false
-) : Bitmap(width, height, 32, premultiplied, data), Iterable<RGBA> {
+    val ints: IntArray = IntArray(width * height),
+    premultiplied: Boolean = true
+) : Bitmap(width, height, 32, premultiplied, ints), Iterable<RGBA> {
+    val data = RgbaArray(ints)
     val dataPremult = RgbaPremultipliedArray(data.ints)
 
 	init {
@@ -57,10 +57,11 @@ class Bitmap32(
 	private val temp = RgbaArray(max(width, height))
     val bounds: IRectangleInt = RectangleInt(0, 0, width, height)
 
-	constructor(width: Int, height: Int, value: RGBA, premultiplied: Boolean = false) : this(width, height, premultiplied = premultiplied) { data.fill(value) }
-	constructor(width: Int, height: Int, premultiplied: Boolean = false, generator: (x: Int, y: Int) -> RGBA) : this(width, height, premultiplied = premultiplied) { setEach(callback = generator) }
+	constructor(width: Int, height: Int, value: RGBA) : this(width, height, premultiplied = false) { data.fill(value) }
+    constructor(width: Int, height: Int, value: RgbaArray) : this(width, height, value.ints, premultiplied = false)
+	constructor(width: Int, height: Int, generator: (x: Int, y: Int) -> RGBA) : this(width, height, premultiplied = false) { setEach(callback = generator) }
 
-	override fun createWithThisFormat(width: Int, height: Int): Bitmap = Bitmap32(width, height, premultiplied = premultiplied)
+    override fun createWithThisFormat(width: Int, height: Int): Bitmap = Bitmap32(width, height, premultiplied = premultiplied)
 
     fun copyTo(other: Bitmap32): Bitmap32 = checkMatchDimensions(other).also { arraycopy(this.data, 0, other.data, 0, this.data.size) }
 
@@ -74,16 +75,33 @@ class Bitmap32(
         }
     }
 
-    operator fun set(x: Int, y: Int, color: RGBA) { data[index(x, y)] = color }
-	operator fun get(x: Int, y: Int): RGBA = data[index(x, y)]
+    operator fun set(x: Int, y: Int, color: RGBA) { setRgba(x, y, color) }
+	operator fun get(x: Int, y: Int): RGBA = getRgba(x, y)
 
-	override fun setInt(x: Int, y: Int, color: Int) { data[index(x, y)] = RGBA(color) }
-	override fun getInt(x: Int, y: Int): Int = data.ints[index(x, y)]
+	override fun setInt(x: Int, y: Int, color: Int) = setRgbaRaw(x, y, RGBA(color))
+	override fun getInt(x: Int, y: Int): Int = getRgbaRaw(x, y).value
 
-    override fun getRgba(x: Int, y: Int): RGBA = data[index(x, y)]
-	override fun setRgba(x: Int, y: Int, v: RGBA) { data[index(x, y)] = v }
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = data[index(x, y)]
+	override fun setRgbaRaw(x: Int, y: Int, v: RGBA) { data[index(x, y)] = v }
 
-	fun setRow(y: Int, row: IntArray) {
+    override fun setRgba(x: Int, y: Int, v: RGBA): Unit = setIndexedRGBA(index(x, y), v)
+    override fun setRgba(x: Int, y: Int, v: RGBAPremultiplied): Unit = setIndexedRGBA(index(x, y), v)
+
+    override fun getRgba(x: Int, y: Int): RGBA = getIndexedRGBA(index(x, y))
+    override fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied = getIndexedRGBAPremultiplied(index(x, y))
+
+    fun setIndexedRGBA(n: Int, color: RGBA) {
+        if (premultiplied) this.dataPremult[n] = color.premultiplied else this.data[n] = color
+    }
+
+    fun setIndexedRGBA(n: Int, color: RGBAPremultiplied) {
+        if (premultiplied) this.dataPremult[n] = color else this.data[n] = color.depremultiplied
+    }
+
+    fun getIndexedRGBA(n: Int): RGBA = if (premultiplied) this.dataPremult[n].depremultiplied else this.data[n]
+    fun getIndexedRGBAPremultiplied(n: Int): RGBAPremultiplied = if (premultiplied) this.dataPremult[n] else this.data[n].premultiplied
+
+    fun setRow(y: Int, row: IntArray) {
 		arraycopy(row, 0, data.ints, index(0, y), width)
 	}
 
@@ -195,9 +213,9 @@ class Bitmap32(
 		for (y in 0 until height) {
 			val dstOffset = dst.index(dx, dy + y)
 			if (mix) {
-				for (x in 0 until width) dstData[dstOffset + x] = RGBA.mix(dstData[dstOffset + x], src.getRgba(sleft + x, stop + y))
+				for (x in 0 until width) dstData[dstOffset + x] = RGBA.mix(dstData[dstOffset + x], src.getRgbaRaw(sleft + x, stop + y))
 			} else {
-				for (x in 0 until width) dstData[dstOffset + x] = src.getRgba(sleft + x, stop + y)
+				for (x in 0 until width) dstData[dstOffset + x] = src.getRgbaRaw(sleft + x, stop + y)
 			}
 		}
 	}
@@ -205,7 +223,7 @@ class Bitmap32(
 	fun copySliceWithBounds(left: Int, top: Int, right: Int, bottom: Int): Bitmap32 =
 		copySliceWithSize(left, top, right - left, bottom - top)
 
-	fun copySliceWithSize(x: Int, y: Int, width: Int, height: Int): Bitmap32 = Bitmap32(width, height, this[0, 0], premultiplied).also { out ->
+	fun copySliceWithSize(x: Int, y: Int, width: Int, height: Int): Bitmap32 = Bitmap32(width, height, premultiplied).also { out ->
         for (yy in 0 until height) {
             arraycopy(this.data, this.index(x, y + yy), out.data, out.index(0, yy), width)
         }
@@ -214,8 +232,9 @@ class Bitmap32(
     inline fun any(callback: (RGBA) -> Boolean): Boolean = (0 until area).any { callback(data[it]) }
 	inline fun all(callback: (RGBA) -> Boolean): Boolean = (0 until area).all { callback(data[it]) }
 
-	inline fun setEach(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (x: Int, y: Int) -> RGBA) = forEach(sx, sy, width, height) { n, x, y -> this.data[n] = callback(x, y) }
-	inline fun updateColors(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (rgba: RGBA) -> RGBA) = forEach(sx, sy, width, height) { n, x, y -> this.data[n] = callback(this.data[n]) }
+	inline fun setEach(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (x: Int, y: Int) -> RGBA) = forEach(sx, sy, width, height) { n, x, y -> setIndexedRGBA(n, callback(x, y)) }
+    inline fun setEachPremultiplied(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (x: Int, y: Int) -> RGBAPremultiplied) = forEach(sx, sy, width, height) { n, x, y -> setIndexedRGBA(n, callback(x, y)) }
+	inline fun updateColors(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (rgba: RGBA) -> RGBA) = forEach(sx, sy, width, height) { n, x, y -> setIndexedRGBA(n, callback(this.data[n])) }
     inline fun updateColorsXY(sx: Int = 0, sy: Int = 0, width: Int = this.width - sx, height: Int = this.height - sy, callback: (x: Int, y: Int, rgba: RGBA) -> RGBA) = forEach(sx, sy, width, height) { n, x, y -> this.data[n] = callback(x, y, this.data[n]) }
 
 	fun writeChannel(destination: BitmapChannel, input: Bitmap32, source: BitmapChannel) = Bitmap32.copyChannel(input, source, this, destination)
@@ -243,7 +262,7 @@ class Bitmap32(
 			color.decode(data, offset, this.data, 0, this.area, littleEndian = littleEndian)
 		}
 
-    override fun clone() = Bitmap32(width, height, RgbaArray(this.data.ints.copyOf()), premultiplied)
+    override fun clone(): Bitmap32 = Bitmap32(width, height, this.data.ints.copyOf(), premultiplied)
 
 	override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(Bitmap32Context2d(this, antialiasing))
 
@@ -252,7 +271,7 @@ class Bitmap32(
 
     @JsName("copyPremultiplied")
 	fun premultiplied(): Bitmap32 = this.clone().apply { premultiplyInplaceIfRequired() }
-	fun depremultiplied(): Bitmap32 = this.clone().apply { depremultiplyInplace() }
+	fun depremultiplied(): Bitmap32 = this.clone().apply { depremultiplyInplaceIfRequired() }
 
 	fun premultiplyInplaceIfRequired() {
 		if (premultiplied) return
@@ -260,7 +279,7 @@ class Bitmap32(
         updateColors { it.premultiplied.asNonPremultiplied() }
 	}
 
-	fun depremultiplyInplace() {
+	fun depremultiplyInplaceIfRequired() {
 		if (!premultiplied) return
 		premultiplied = false
         updateColors { it.asPremultiplied().depremultiplied }
@@ -403,13 +422,18 @@ class Bitmap32(
     //override fun hashCode(): Int = (width * 31 + height) + data.ints.contentHashCode() + premultiplied.toInt()
 
     companion object {
-        operator fun invoke(width: Int, height: Int, premultiplied: Boolean) = Bitmap32(width, height, Colors.TRANSPARENT_BLACK, premultiplied)
-        operator fun invoke(width: Int, height: Int, premultiplied: Boolean = false, generator: (x: Int, y: Int) -> RGBA): Bitmap32 {
-            return Bitmap32(width, height, RgbaArray(width * height).also {
-                var n = 0
-                for (y in 0 until height) for (x in 0 until width) it[n++] = generator(x, y)
-            }, premultiplied)
-        }
+        operator fun invoke(width: Int, height: Int, value: RgbaPremultipliedArray): Bitmap32 = Bitmap32(width, height, value.ints, premultiplied = false)
+        operator fun invoke(width: Int, height: Int, value: RGBAPremultiplied): Bitmap32 = Bitmap32(width, height, premultiplied = true).apply { data.fill(value.asNonPremultiplied()) }
+
+        operator fun invoke(width: Int, height: Int, premultiplied: Boolean) = Bitmap32(width, height, IntArray(width * height), premultiplied)
+        @JvmName("invokeRGBA")
+        operator fun invoke(width: Int, height: Int, generator: (x: Int, y: Int) -> RGBA): Bitmap32 = Bitmap32(width, height, IntArray(width * height).also {
+            var n = 0; for (y in 0 until height) for (x in 0 until width) it[n++] = generator(x, y).value
+        }, premultiplied = false)
+        @JvmName("invokeRGBAPremultiplied")
+        operator fun invoke(width: Int, height: Int, generator: (x: Int, y: Int) -> RGBAPremultiplied): Bitmap32 = Bitmap32(width, height, IntArray(width * height).also {
+            var n = 0; for (y in 0 until height) for (x in 0 until width) it[n++] = generator(x, y).value
+        }, premultiplied = true)
 
         fun copyChannel(
             src: Bitmap32,

@@ -114,7 +114,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     override operator fun compareTo(other: RGBA): Int = this.value.compareTo(other.value)
     override fun interpolateWith(ratio: Double, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
 
-    val premultiplied: RGBAPremultiplied get() = premultipliedSlow
+    val premultiplied: RGBAPremultiplied get() = premultipliedFast
 
     val premultipliedFast: RGBAPremultiplied get() {
         val A = a + 1

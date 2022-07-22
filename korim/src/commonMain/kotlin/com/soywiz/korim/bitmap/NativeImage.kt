@@ -15,7 +15,7 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
     open fun toUri(): String = "data:image/png;base64," + PNG.encode(this, ImageEncodingProps("out.png")).toBase64()
 
 	fun toNonNativeBmp(): Bitmap = toBMP32()
-    override fun toBMP32(): Bitmap32 = Bitmap32(width, height, Colors.TRANSPARENT_BLACK, premultiplied).also { readPixelsUnsafe(0, 0, width, height, it.data, 0) }
+    override fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied).also { readPixelsUnsafe(0, 0, width, height, it.data, 0) }
 
     abstract override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int)
     abstract override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int)
@@ -26,18 +26,18 @@ abstract class NativeImage(width: Int, height: Int, val data: Any?, premultiplie
         return out
     }
 
-    override fun setRgba(x: Int, y: Int, v: RGBA) {
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) {
         this.tempRgba[0] = v
         writePixelsUnsafe(x, y, 1, 1, tempRgba, 0)
     }
 
-    override fun getRgba(x: Int, y: Int): RGBA {
+    override fun getRgbaRaw(x: Int, y: Int): RGBA {
         readPixelsUnsafe(x, y, 1, 1, tempRgba, 0)
         return tempRgba[0]
     }
 
-    override fun setInt(x: Int, y: Int, color: Int) = setRgba(x, y, RGBA(color))
-    override fun getInt(x: Int, y: Int): Int = getRgba(x, y).value
+    override fun setInt(x: Int, y: Int, color: Int) = setRgbaRaw(x, y, RGBA(color))
+    override fun getInt(x: Int, y: Int): Int = getRgbaRaw(x, y).value
 
     override fun flipY(): Bitmap {
         writePixelsUnsafe(0, 0, width, height, (toBMP32().flipY() as Bitmap32).data)

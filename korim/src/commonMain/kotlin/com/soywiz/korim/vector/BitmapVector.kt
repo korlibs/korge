@@ -2,7 +2,6 @@ package com.soywiz.korim.vector
 
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.RGBA
@@ -47,8 +46,8 @@ class BitmapVector(
     override fun unlock(rect: Rectangle?): Int = nativeImage.unlock(rect)
     override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int): Unit = nativeImage.readPixelsUnsafe(x, y, width, height, out, offset)
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = nativeImage.writePixelsUnsafe(x, y, width, height, out, offset)
-    override fun setRgba(x: Int, y: Int, v: RGBA) = nativeImage.setRgba(x, y, v)
-    override fun getRgba(x: Int, y: Int): RGBA = nativeImage.getRgba(x, y)
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) = nativeImage.setRgbaRaw(x, y, v)
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = nativeImage.getRgbaRaw(x, y)
     override fun setInt(x: Int, y: Int, color: Int) = nativeImage.setInt(x, y, color)
     override fun getInt(x: Int, y: Int): Int = nativeImage.getInt(x, y)
     override fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) = nativeImage.copyUnchecked(srcX, srcY, dst, dstX, dstY, width, height)

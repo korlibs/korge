@@ -8,8 +8,8 @@ import com.soywiz.korma.geom.ScaleMode
 // -1 if dimensions do not match
 fun Bitmap.matchContentsDistinctCount(that: Bitmap): Int {
 	if (this.width != that.width || this.height != that.height) return -1
-	val l = this.toBMP32().depremultipliedIfRequired()
-	val r = that.toBMP32().depremultipliedIfRequired()
+	val l = this.toBMP32()
+	val r = that.toBMP32()
 	val width = l.width
 	val height = l.height
 	var count = 0
