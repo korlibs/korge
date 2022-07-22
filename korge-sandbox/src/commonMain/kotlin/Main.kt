@@ -129,6 +129,7 @@ suspend fun main() = Korge(
         Demo(::MainSpine),
         //Demo(::MainBlending),
         listOf(
+            Demo(::MainTextInput),
             Demo(::MainBlending),
             Demo(::MainXM),
             Demo(::MainVector),
