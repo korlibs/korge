@@ -11,16 +11,16 @@ import com.soywiz.korio.serialization.json.*
 suspend fun VfsFile.readDbAtlas(factory: KorgeDbFactory): TextureAtlasData? {
 	val jsonFile = this
 	val tex = jsonFile.readString()
-	val texInfo = Json.parse(tex, Json.Context(optimizedNumericLists = true))!!
+	val texInfo = Json.parseFast(tex)!!
 	val imageFile = jsonFile.parent[KDynamic { texInfo["imagePath"].str }].takeIfExists() ?: return null
 	val image = imageFile.readBitmap().mipmaps()
-	return factory.parseTextureAtlasData(Json.parse(tex, Json.Context(optimizedNumericLists = true))!!, image)
+	return factory.parseTextureAtlasData(Json.parseFast(tex)!!, image)
 }
 
 suspend fun VfsFile.readDbSkeleton(factory: KorgeDbFactory): DragonBonesData {
     val file = this
     val ske = when {
-        this.extensionLC.endsWith("json") -> Json.parse(this.readString(), Json.Context(optimizedNumericLists = true))!!
+        this.extensionLC.endsWith("json") -> Json.parseFast(this.readString())!!
         this.extensionLC.endsWith("dbbin") -> MemBufferWrap(this.readBytes())
         else -> error("Unsupported DragonBones skeleton ${this.baseName} : ${this.extension}")
     }
