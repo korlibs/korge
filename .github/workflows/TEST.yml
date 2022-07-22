@@ -11,7 +11,89 @@ env:
   SKIP_KORGE_SAMPLES: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      testJvm: ${{ steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testJs: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.all == 'true' }}
+      testAndroid: ${{ steps.filter.outputs.android == 'true' || steps.filter.outputs.all == 'true' }}
+      testWindows: ${{ steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testWindowsE2e: ${{ steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testLinux: ${{ steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testLinuxE2e: ${{ steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testMacos: ${{ steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testMacosE2e: ${{ steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testIos: ${{ steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testIosE2e: ${{ steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+    steps:
+      - uses: actions/checkout@v3
+        if: ${{ github.event_name != 'pull_request' }}
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          base: ${{ github.ref }}
+          filters: |
+            all:
+              - '**/build.gradle'
+              - '**/build.gradle.kts'
+              - '**/settings.gradle'
+              - '**/settings.gradle.kts'
+              - '**/buildSrc/**'
+              - '**/gradle/**'
+              - '**/src/common*Main/**'
+              - '**/src/common*Test/**'
+            android:
+              - '**/AndroidManifest.xml'
+              - '**/src/android*Main/**'
+              - '**/src/android*Test/**'
+              - '**/src/jvmAndroidMain/**'
+              - '**/src/jvmAndroidTest/**'
+              - '**/src/concurrent*Main/**'
+              - '**/src/concurrent*Test/**'
+              - '**/src/main/**'
+            jvm:
+              - '**/src/jvm*Main/**'
+              - '**/src/jvm*Test/**'
+              - '**/src/concurrent*Main/**'
+              - '**/src/concurrent*Test/**'
+            js:
+              - '**/src/js*Main/**'
+              - '**/src/js*Test/**'
+            native:
+              - '**/src/native*Main/*.kt'
+              - '**/src/native*Test/*.kt'
+              - '**/src/concurrent*Main/**'
+              - '**/src/concurrent*Test/**'
+            windows:
+              - '**/src/mingw*Main/*.kt'
+              - '**/src/mingw*Test/*.kt'
+            linux:
+              - '**/src/linux*Main/*.kt'
+              - '**/src/linux*Test/*.kt'
+              - '**/src/posix*Main/*.kt'
+              - '**/src/posix*Test/*.kt'
+            macos:
+              - '**/src/macos*Main/*.kt'
+              - '**/src/macos*Test/*.kt'
+              - '**/src/darwin*Main/*.kt'
+              - '**/src/darwin*Test/*.kt'
+              - '**/src/posix*Main/*.kt'
+              - '**/src/posix*Test/*.kt'
+            ios:
+              - '**/src/ios*Main/*.kt'
+              - '**/src/ios*Test/*.kt'
+              - '**/src/tvos*Main/*.kt'
+              - '**/src/tvos*Test/*.kt'
+              - '**/src/watchos*Main/*.kt'
+              - '**/src/watchos*Test/*.kt'
+              - '**/src/darwin*Main/*.kt'
+              - '**/src/darwin*Test/*.kt'
+              - '**/src/posix*Main/*.kt'
+              - '**/src/posix*Test/*.kt'
+
   test-jvm:
+    needs: changes
+    if: ${{ needs.changes.outputs.testJvm == 'true' }}
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
@@ -25,6 +107,8 @@ jobs:
     - { name: Check sandbox compiles, run: "./gradlew :korge-sandbox:jvmJar" }
 
   test-js:
+    needs: changes
+    if: ${{ needs.changes.outputs.testJs == 'true' }}
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
@@ -38,6 +122,8 @@ jobs:
       - { name: Testing Browser, run: ./gradlew jsBrowserTest }
 
   test-android:
+    needs: changes
+    if: ${{ needs.changes.outputs.testAndroid == 'true' }}
     timeout-minutes: 120
     runs-on: macos-11
     steps:
@@ -55,6 +141,8 @@ jobs:
           script: ./gradlew connectedCheck
 
   test-native-linux:
+    needs: changes
+    if: ${{ needs.changes.outputs.testLinux == 'true' }}
     timeout-minutes: 120
     runs-on: ubuntu-latest
     steps:
@@ -67,6 +155,8 @@ jobs:
       - { name: Testing Kotlin/Native Linux, run: ./gradlew --no-daemon linuxX64Test }
 
   test-native-macos:
+    needs: changes
+    if: ${{ needs.changes.outputs.testMacos == 'true' }}
     timeout-minutes: 120
     runs-on: macos-11
     steps:
@@ -78,6 +168,8 @@ jobs:
       - { name: Testing Kotlin/Native MacosX64, run: ./gradlew macosX64Test publishMacosArm64PublicationToMavenLocal }
 
   test-native-ios:
+    needs: changes
+    if: ${{ needs.changes.outputs.testIos == 'true' }}
     timeout-minutes: 120
     runs-on: macos-11
     steps:
@@ -89,6 +181,8 @@ jobs:
       - { name: Check compilation of iOS targets, run: ./gradlew publishIosArm64PublicationToMavenLocal publishIosArm32PublicationToMavenLocal publishIosX64PublicationToMavenLocal }
 
   test-native-ios-simulator:
+    needs: changes
+    if: ${{ needs.changes.outputs.testIosE2e == 'true' }}
     timeout-minutes: 120
     runs-on: macos-11
     steps:
@@ -101,6 +195,8 @@ jobs:
       - { name: Run ios simulator tests, run: ./gradlew iosX64Test }
 
   test-native-macos-e2e:
+    needs: changes
+    if: ${{ needs.changes.outputs.testMacosE2e == 'true' }}
     timeout-minutes: 120
     runs-on: macos-11
     steps:
@@ -113,6 +209,8 @@ jobs:
       - { name: e2e test, working-directory: e2e-test, run: ./gradlew runJvmCheckReferences }
 
   test-native-windows:
+    needs: changes
+    if: ${{ needs.changes.outputs.testWindows == 'true' }}
     timeout-minutes: 120
     runs-on: windows-latest
     env:
@@ -125,6 +223,8 @@ jobs:
       - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat --no-daemon mingwX64Test }
 
   test-native-windows-e2e:
+    needs: changes
+    if: ${{ needs.changes.outputs.testWindowsE2e == 'true' }}
     timeout-minutes: 120
     runs-on: windows-latest
     env:
