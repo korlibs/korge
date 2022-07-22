@@ -142,7 +142,7 @@ open class KorgwSurfaceView constructor(
         val key = AndroidKeyMap.KEY_MAP[keyCode] ?: Key.UNKNOWN
 
         //if (event.source.hasBits(InputDevice.SOURCE_GAMEPAD)) {
-        if (event.device.sources.hasBits(InputDevice.SOURCE_GAMEPAD)) {
+        if (event.device?.sources?.hasBits(InputDevice.SOURCE_GAMEPAD) == true) {
             //println("GAMEPAD: $key")
             val info = getGamepadInfo(event.deviceId)
             val press = type == com.soywiz.korev.KeyEvent.Type.DOWN
