@@ -3,11 +3,12 @@
 package com.soywiz.korio.file
 
 import com.soywiz.klock.DateTime
+import com.soywiz.klogger.Console
 import com.soywiz.korio.async.AsyncCloseable
+import com.soywiz.korio.async.async
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.toChannel
 import com.soywiz.korio.async.use
-
 import com.soywiz.korio.async.useIt
 import com.soywiz.korio.experimental.KorioExperimentalApi
 import com.soywiz.korio.file.std.localVfs
@@ -23,6 +24,7 @@ import com.soywiz.korio.stream.copyTo
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.stream.readBytesUpTo
 import com.soywiz.korio.stream.writeBytes
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.emptyFlow
@@ -189,16 +191,23 @@ abstract class Vfs : AsyncCloseable {
 		protected open suspend fun init() {
 		}
 
-		var initialized = false
-		private suspend fun initOnce(): Proxy {
-			if (!initialized) {
-				initialized = true
-				init()
+        private var initialized: Deferred<Unit>? = null
+		protected suspend fun initOnce(): Proxy {
+			if (initialized == null) {
+                initialized = async(coroutineContext) {
+                    try {
+                        init()
+                    } catch (e: Throwable) {
+                        Console.error("Error initializing $this")
+                        e.printStackTrace()
+                    }
+                }
 			}
+            initialized!!.await()
 			return this
 		}
 
-		override suspend fun exec(
+        override suspend fun exec(
 			path: String,
 			cmdAndArgs: List<String>,
 			env: Map<String, String>,
