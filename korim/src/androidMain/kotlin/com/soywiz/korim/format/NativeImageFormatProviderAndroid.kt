@@ -81,19 +81,29 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
 
         return NativeImageResult(
             image = AndroidNativeImage(
-                Dispatchers.Default { BitmapFactory.decodeByteArray(
-                    data, 0, data.size,
-                    BitmapFactory.Options().also {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                            it.inPremultiplied = when {
-                                props.asumePremultiplied -> false
-                                props.premultipliedSure -> true
-                                else -> false
+                Dispatchers.Default {
+                    for (setPremult in listOf(true, false)) {
+                        val bmp = BitmapFactory.decodeByteArray(
+                            data, 0, data.size,
+                            BitmapFactory.Options().also {
+                                if (setPremult) {
+                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                                        it.inPremultiplied = when {
+                                            props.asumePremultiplied -> false
+                                            props.premultipliedSure -> true
+                                            else -> false
+                                        }
+                                    }
+                                }
+                                it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
                             }
+                        )
+                        if (bmp != null) {
+                            return@Default bmp
                         }
-                        it.inSampleSize = props.getSampleSize(originalSize.width, originalSize.height)
                     }
-                ) }
+                    error("Couldn't decode image")
+                }
             ).also {
                if (props.asumePremultiplied) it.asumePremultiplied()
             },
