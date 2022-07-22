@@ -15,16 +15,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       testJvm: ${{ steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
-      testJs: ${{ (steps.filter.outputs.js == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testAndroid: ${{ (steps.filter.outputs.android == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testWindows: ${{ (steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testWindowsE2e: ${{ (steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testLinux: ${{ (steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testLinuxE2e: ${{ (steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testMacos: ${{ (steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testMacosE2e: ${{ (steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testIos: ${{ (steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
-      testIosE2e: ${{ (steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true') && steps.filter.outputs.onlyjvm == 'false' }}
+      testJs: ${{ steps.filter.outputs.js == 'true' || steps.filter.outputs.all == 'true' }}
+      testAndroid: ${{ steps.filter.outputs.android == 'true' || steps.filter.outputs.all == 'true' }}
+      testWindows: ${{ steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testWindowsE2e: ${{ steps.filter.outputs.windows == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testLinux: ${{ steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testLinuxE2e: ${{ steps.filter.outputs.linux == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testMacos: ${{ steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testMacosE2e: ${{ steps.filter.outputs.macos == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
+      testIos: ${{ steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.all == 'true' }}
+      testIosE2e: ${{ steps.filter.outputs.ios == 'true' || steps.filter.outputs.native == 'true' || steps.filter.outputs.jvm == 'true' || steps.filter.outputs.all == 'true' }}
     steps:
       - uses: actions/checkout@v3
         if: ${{ github.event_name != 'pull_request' }}
@@ -43,7 +43,12 @@ jobs:
               - '**/gradle/**'
               - '**/src/common*Main/**'
               - '**/src/common*Test/**'
-            onlyjvm:
+              - '!(korge-sandbox)/**'
+            jvm:
+              - '**/src/jvm*Main/**'
+              - '**/src/jvm*Test/**'
+              - '**/src/concurrent*Main/**'
+              - '**/src/concurrent*Test/**'
               - 'korge-sandbox/**'
             android:
               - '**/AndroidManifest.xml'
@@ -54,27 +59,27 @@ jobs:
               - '**/src/concurrent*Main/**'
               - '**/src/concurrent*Test/**'
               - '**/src/main/**'
-            jvm:
-              - '**/src/jvm*Main/**'
-              - '**/src/jvm*Test/**'
-              - '**/src/concurrent*Main/**'
-              - '**/src/concurrent*Test/**'
+              - '!(korge-sandbox)/**'
             js:
               - '**/src/js*Main/**'
               - '**/src/js*Test/**'
+              - '!(korge-sandbox)/**'
             native:
               - '**/src/native*Main/*.kt'
               - '**/src/native*Test/*.kt'
               - '**/src/concurrent*Main/**'
               - '**/src/concurrent*Test/**'
+              - '!(korge-sandbox)/**'
             windows:
               - '**/src/mingw*Main/*.kt'
               - '**/src/mingw*Test/*.kt'
+              - '!(korge-sandbox)/**'
             linux:
               - '**/src/linux*Main/*.kt'
               - '**/src/linux*Test/*.kt'
               - '**/src/posix*Main/*.kt'
               - '**/src/posix*Test/*.kt'
+              - '!(korge-sandbox)/**'
             macos:
               - '**/src/macos*Main/*.kt'
               - '**/src/macos*Test/*.kt'
@@ -82,6 +87,7 @@ jobs:
               - '**/src/darwin*Test/*.kt'
               - '**/src/posix*Main/*.kt'
               - '**/src/posix*Test/*.kt'
+              - '!(korge-sandbox)/**'
             ios:
               - '**/src/ios*Main/*.kt'
               - '**/src/ios*Test/*.kt'
@@ -93,6 +99,7 @@ jobs:
               - '**/src/darwin*Test/*.kt'
               - '**/src/posix*Main/*.kt'
               - '**/src/posix*Test/*.kt'
+              - '!(korge-sandbox)/**'
 
   test-jvm:
     needs: changes

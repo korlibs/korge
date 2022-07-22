@@ -28,6 +28,7 @@ abstract class Bitmap(
     var premultiplied: Boolean,
     val backingArray: Any?
 ) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
+    var asumePremultiplied: Boolean = false
     //override fun getOrNull() = this
     //override suspend fun get() = this
 
@@ -288,5 +289,6 @@ fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmap
 
 fun <T : Bitmap> T.asumePremultiplied(): T {
     this.premultiplied = true
+    this.asumePremultiplied = true
     return this
 }

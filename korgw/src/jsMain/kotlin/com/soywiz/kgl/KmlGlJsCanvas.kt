@@ -195,13 +195,9 @@ class KmlGlJsCanvas(val canvas: HTMLCanvasElement, val glOpts: dynamic) : KmlGlW
         gl.texImage2D(target, level, internalformat, width, height, border, format, type, vpixels)
     }
     override fun texImage2D(target: Int, level: Int, internalformat: Int, format: Int, type: Int, data: NativeImage): Unit {
+        gl.pixelStorei(UNPACK_PREMULTIPLY_ALPHA_WEBGL, (!data.asumePremultiplied && data.premultiplied).toInt())
         gl.texImage2D(target, level, internalformat, format, type, (data as HtmlNativeImage).texSource)
-
-        //val pixels = data.readPixelsUnsafe(0, 0, data.width, data.height)
-        //gl.pixelStorei(KmlGl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, data.premultiplied.toInt())
-        //gl.texImage2D(target, level, internalformat, data.width, data.height, 0, format, type, Uint8Array(pixels.ints.unsafeCast<Int32Array>().buffer))
-        //gl.pixelStorei(KmlGl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0)
-        //pixels.ints.unsafeCast<Int32Array>()
+        gl.pixelStorei(UNPACK_PREMULTIPLY_ALPHA_WEBGL, 0)
     }
     override fun texParameterf(target: Int, pname: Int, param: Float): Unit = gl.texParameterf(target, pname, param)
     override fun texParameterfv(target: Int, pname: Int, params: FBuffer): Unit = gl.texParameterf(target, pname, params.arrayFloat[0])

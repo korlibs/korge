@@ -126,7 +126,8 @@ suspend fun main() = Korge(
     demoSelector(
         //Demo(::MainSvgAnimation),
         //Demo(::MainGpuVectorRendering),
-        Demo(::MainSpine),
+        //Demo(::MainSpine),
+        Demo(::MainDragonbones),
         //Demo(::MainBlending),
         listOf(
             Demo(::MainTextInput),
