@@ -165,6 +165,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
 
             override suspend fun add(samples: AudioSamples, offset: Int, size: Int) {
                 while (thread == null) delay(10.milliseconds)
+                while (threadDeque!!.availableRead >= 44100) delay(1.milliseconds)
                 threadDeque!!.write(samples, offset, size)
             }
 
