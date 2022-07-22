@@ -142,9 +142,11 @@ data class ImageDecodingProps constructor(
     }
 
     companion object {
+        val DEFAULT: ImageDecodingProps = ImageDecodingProps(premultiplied = true)
+        //val DEFAULT: ImageDecodingProps = ImageDecodingProps(premultiplied = false)
         val DEFAULT_PREMULT: ImageDecodingProps = ImageDecodingProps(premultiplied = true)
-        val DEFAULT: ImageDecodingProps = ImageDecodingProps(premultiplied = false)
-        fun DEFAULT(premultiplied: Boolean): ImageDecodingProps = if (premultiplied) DEFAULT_PREMULT else DEFAULT
+        val DEFAULT_STRAIGHT: ImageDecodingProps = ImageDecodingProps(premultiplied = false)
+        fun DEFAULT(premultiplied: Boolean): ImageDecodingProps = if (premultiplied) DEFAULT_PREMULT else DEFAULT_STRAIGHT
     }
 }
 

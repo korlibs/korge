@@ -112,7 +112,7 @@ open class KorgeDbFactory(pool: BaseObjectPool = BaseObjectPool(), dataParser: D
 		return slot
 	}
 	/**
-	 * - Create a armature from cached DragonBonesData instances and TextureAtlasData instances, then use the {@link #clock} to update it.
+	 * - Create an armature from cached DragonBonesData instances and TextureAtlasData instances, then use the {@link #clock} to update it.
 	 * The difference is that the armature created by {@link #buildArmature} is not WorldClock instance update.
 	 * @param armatureName - The armature data name.
 	 * @param dragonBonesName - The cached name of the DragonBonesData instance. (If not set, all DragonBonesData instances are retrieved, and when multiple DragonBonesData instances contain a the same name armature data, it may not be possible to accurately create a specific armature)

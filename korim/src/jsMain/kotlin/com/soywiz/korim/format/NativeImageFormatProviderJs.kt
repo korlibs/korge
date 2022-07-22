@@ -53,8 +53,8 @@ private fun bswap32(v: IntArray, offset: Int, size: Int) {
     for (n in offset until offset + size) v[n] = bswap32(v[n])
 }
 
-open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height: Int) :
-	NativeImage(width, height, texSourceBase, premultiplied = false) {
+open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height: Int)
+    : NativeImage(width, height, texSourceBase, premultiplied = true) {
 	override val name: String = "HtmlNativeImage"
     var texSource: TexImageSource = texSourceBase
         private set
@@ -92,6 +92,9 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
         val data = idata.data.buffer.asInt32Buffer().unsafeCast<IntArray>()
         arraycopy(data, 0, out.ints, offset, size)
         if (isBigEndian) bswap32(out.ints, offset, size)
+        if (!asumePremultiplied) {
+            premultiply(out, offset, out.asPremultiplied(), offset, width * height)
+        }
     }
 
     override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
@@ -100,6 +103,9 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
         val data = idata.data.buffer.asInt32Buffer().unsafeCast<IntArray>()
         arraycopy(out.ints, offset, data, 0, size)
+        if (!asumePremultiplied) {
+            depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
+        }
         if (isBigEndian) bswap32(data, 0, size)
         ctx.putImageData(idata, x.toDouble(), y.toDouble())
     }
@@ -117,7 +123,7 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
         return NativeImageResult(when (vfs) {
             is LocalVfs -> {
                 //println("LOCAL: HtmlNativeImageFormatProvider: $vfs, $path")
-                HtmlNativeImage(BrowserImage.loadImage(path))
+                HtmlNativeImage(BrowserImage.loadImage(path, props))
             }
             is UrlVfs -> {
                 val jsUrl = vfs.getFullUrl(path)

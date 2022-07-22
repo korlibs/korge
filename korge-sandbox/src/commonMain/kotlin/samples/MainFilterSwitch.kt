@@ -13,9 +13,9 @@ import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.scale
 import com.soywiz.korim.format.readBitmap
+import com.soywiz.korio.async.launch
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.std.resourcesVfs
-import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 class MainFilterSwitch : Scene() {

@@ -79,7 +79,8 @@ open class Mesh(
 		recomputeVerticesIfRequired()
         tva?.let { tva ->
             ctx.useBatcher { batch ->
-                batch.drawVertices(tva, ctx.getTex(textureNN).base, true, renderBlendMode, premultiplied = textureNN.base.premultiplied, wrap = false)
+                //println("premultiplied=${textureNN.base.premultiplied}, renderBlendMode=$renderBlendMode")
+                batch.drawVertices(tva, ctx.getTex(textureNN).base, true, renderBlendMode)
             }
         }
 	}
