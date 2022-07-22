@@ -9,6 +9,7 @@ import com.soywiz.kds.Pool
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kds.fastCastTo
 import com.soywiz.kds.hashCode
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.measureTime
 import com.soywiz.klogger.Console
 import com.soywiz.kmem.FBuffer
@@ -460,11 +461,19 @@ abstract class AG(val checked: Boolean = false) : AGFeatures, Extra by Extra.Mix
             generated = false
         }
 
+        private fun checkBitmaps(bmp: Bitmap) {
+            if (!bmp.premultiplied) {
+                Console.error("Trying to upload a non-premultiplied bitmap: $bmp. This will cause rendering artifacts")
+            }
+        }
+
         fun upload(list: List<Bitmap>, width: Int, height: Int): Texture {
+            list.fastForEach { checkBitmaps(it) }
             return upload(SyncBitmapSourceList(rgba = true, width = width, height = height, depth = list.size) { list })
         }
 
         fun upload(bmp: Bitmap?, mipmaps: Boolean = false): Texture {
+            bmp?.let { checkBitmaps(it) }
             this.forcedTexId = (bmp as? ForcedTexId?)
             return upload(
                 if (bmp != null) SyncBitmapSource(
