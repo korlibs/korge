@@ -1382,3 +1382,14 @@ afterEvaluate {
 //} catch (e: Throwable) {
 //    e.printStackTrace()
 //}
+
+// @TODO: $catalog.json
+//afterEvaluate {
+//    val jsTestTestDevelopmentExecutableCompileSync = tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")
+//    if (jsTestTestDevelopmentExecutableCompileSync != null) {
+//        val copy = jsTestTestDevelopmentExecutableCompileSync as Copy
+//        //copy.from(File(""))
+//    }
+//}
+
+//println(tasks.findByPath(":korim:jsTestTestDevelopmentExecutableCompileSync")!!::class)

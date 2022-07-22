@@ -32,6 +32,7 @@ open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
         for (format in formats) return try {
             format.decodeHeaderSuspend(s.sliceStart(), props) ?: continue
         } catch (e: Throwable) {
+            e.printStackTrace()
             if (e is CancellationException) throw e
             continue
         }
