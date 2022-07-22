@@ -110,7 +110,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
 
 object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        return NativeImageResult(HtmlNativeImage(BrowserImage.decodeToCanvas(data, props.premultiplied)))
+        return NativeImageResult(HtmlNativeImage(BrowserImage.decodeToCanvas(data, props)))
     }
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult {
@@ -122,11 +122,11 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
             is UrlVfs -> {
                 val jsUrl = vfs.getFullUrl(path)
                 //println("URL: HtmlNativeImageFormatProvider: $vfs, $path : $jsUrl")
-                HtmlNativeImage(BrowserImage.loadImage(jsUrl, props.premultiplied))
+                HtmlNativeImage(BrowserImage.loadImage(jsUrl, props))
             }
             else -> {
                 //println("OTHER: HtmlNativeImageFormatProvider: $vfs, $path")
-                HtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props.premultiplied))
+                HtmlNativeImage(BrowserImage.decodeToCanvas(vfs[path].readAll(), props))
             }
         })
     }
@@ -170,7 +170,7 @@ object HtmlNativeImageFormatProvider : NativeImageFormatProvider() {
 object BrowserImage {
     private fun toNodeJsBuffer(@Suppress("UNUSED_PARAMETER") ba: ByteArray): dynamic = js("(Buffer.from(ba.buffer))")
 
-	suspend fun decodeToCanvas(bytes: ByteArray, premultiplied: Boolean = true): HTMLCanvasElementLike {
+	suspend fun decodeToCanvas(bytes: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): HTMLCanvasElementLike {
         if (OS.isJsNodeJs) error("Canvas not available on NodeJS")
         val blob = Blob(arrayOf(bytes), BlobPropertyBag(type = "image/png"))
         val blobURL = URL.createObjectURL(blob)
@@ -194,7 +194,7 @@ object BrowserImage {
         return canvas
     }
 
-	suspend fun loadImage(jsUrl: String, premultiplied: Boolean = true): HTMLImageElementLike = suspendCancellableCoroutine { c ->
+	suspend fun loadImage(jsUrl: String, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): HTMLImageElementLike = suspendCancellableCoroutine { c ->
 		// Doesn't work with Kotlin.JS
 		//val img = document.createElement("img") as HTMLImageElement
 		//println("[1]")

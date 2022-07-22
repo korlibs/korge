@@ -1,9 +1,11 @@
 package com.soywiz.korim.format
 
+import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.format.cg.*
+
 // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_context/dq_context.html#//apple_ref/doc/uid/TP30001066-CH203-BCIBHHBB
 //@ThreadLocal
-//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
-actual val nativeImageFormatProvider: NativeImageFormatProvider get() = StbImageNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
 
 //actual val nativeImageFormatProvider: NativeImageFormatProvider = NSNativeImageFormatProvider
 
@@ -13,7 +15,7 @@ object NSNativeImageFormatProvider : BaseNativeImageFormatProvider() {
 
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        val premultiplied = props.premultiplied
+        val premultiplied = props.premultipliedSure
 
         data class Info(val data: ByteArray, val premultiplied: Boolean)
         return executeInImageIOWorker { worker ->

@@ -22,6 +22,7 @@ import com.soywiz.korim.bitmap.mipmaps
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.RegisteredImageFormats
@@ -220,7 +221,7 @@ class BitmapFont(
 }
 
 suspend fun VfsFile.readBitmapFont(
-    imageFormat: ImageFormat = RegisteredImageFormats,
+    props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
     mipmaps: Boolean = true,
     atlas: MutableAtlasUnit? = null
 ) : BitmapFont {
@@ -229,8 +230,8 @@ suspend fun VfsFile.readBitmapFont(
 	val textures = hashMapOf<Int, BitmapSlice<Bitmap>>()
 
     return when {
-        content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, imageFormat, mipmaps, atlas)
-        content.startsWith("info") -> readBitmapFontTxt(content, fntFile, textures, imageFormat, mipmaps, atlas)
+        content.startsWith('<') -> readBitmapFontXml(content, fntFile, textures, props, mipmaps, atlas)
+        content.startsWith("info") -> readBitmapFontTxt(content, fntFile, textures, props, mipmaps, atlas)
         else -> TODO("Unsupported font type starting with ${content.substr(0, 16)}")
     }
 }
@@ -239,7 +240,7 @@ private suspend fun readBitmapFontTxt(
 	content: String,
 	fntFile: VfsFile,
 	textures: HashMap<Int, BitmapSlice<Bitmap>>,
-	imageFormat: ImageFormat = RegisteredImageFormats,
+	props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
     mipmaps: Boolean = true,
     atlas: MutableAtlasUnit? = null
 ): BitmapFont {
@@ -262,7 +263,7 @@ private suspend fun readBitmapFontTxt(
 			line.startsWith("page") -> {
 				val id = map["id"]?.toInt() ?: 0
 				val file = map["file"]?.unquote() ?: error("page without file")
-				textures[id] = fntFile.parent[file].readBitmap(imageFormat).mipmaps(mipmaps).slice()
+				textures[id] = fntFile.parent[file].readBitmap(props).mipmaps(mipmaps).slice()
 			}
 			line.startsWith("common ") -> {
 				lineHeight = map["lineHeight"]?.toDoubleOrNull() ?: 16.0
@@ -310,7 +311,7 @@ private suspend fun readBitmapFontXml(
 	content: String,
 	fntFile: VfsFile,
 	textures: MutableMap<Int, BitmapSlice<Bitmap>>,
-    imageFormat: ImageFormat = RegisteredImageFormats,
+    props: ImageDecodingProps = ImageDecodingProps.DEFAULT,
     mipmaps: Boolean = true,
     atlas: MutableAtlasUnit? = null
 ): BitmapFont {
@@ -324,7 +325,7 @@ private suspend fun readBitmapFontXml(
 		val id = page.int("id")
 		val file = page.str("file")
 		val texFile = fntFile.parent[file]
-		val tex = texFile.readBitmap(imageFormat).mipmaps(mipmaps).slice()
+		val tex = texFile.readBitmap(props).mipmaps(mipmaps).slice()
 		textures[id] = tex
 	}
 

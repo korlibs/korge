@@ -780,7 +780,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
                                 if (bitsData.size >= 4 && bitsData.sliceArray(0 until 4).hexLower == "ffd9ffd8") {
                                     bitsData = bitsData.sliceArray(4 until bitsData.size)
                                 }
-                                bitsData.openAsync().readBitmap(context.imageFormats)
+                                bitsData.openAsync().readBitmap(ImageDecodingProps(format = context.imageFormats))
 							} catch (e: Throwable) {
 								e.printStackTrace()
 								Bitmap32(1, 1)

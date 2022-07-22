@@ -27,6 +27,7 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Matrix
+import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.radians
 
 @PublishedApi

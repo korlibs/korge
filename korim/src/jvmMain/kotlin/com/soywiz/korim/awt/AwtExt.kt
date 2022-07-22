@@ -3,7 +3,8 @@ package com.soywiz.korim.awt
 import com.soywiz.kmem.*
 import com.soywiz.korim.bitmap.*
 import com.soywiz.korim.color.*
-import com.soywiz.korim.vector.Context2d
+import com.soywiz.korim.format.ImageDecoderNotFoundException
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korio.async.*
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
@@ -17,6 +18,7 @@ import java.io.*
 import javax.imageio.*
 import javax.swing.*
 import kotlin.coroutines.*
+
 
 fun Bitmap32.toAwt(
 	out: BufferedImage = BufferedImage(
@@ -118,40 +120,39 @@ val BufferedImage.premultiplied: Boolean get() = this.isAlphaPremultiplied
 
 fun BufferedImage.toBMP32(): Bitmap32 = AwtNativeImage(this).toBMP32()
 
-fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): BufferedImage {
-	return ImageIO.read(s)?.clone(type = type) ?: error("Can't read image using AWT")
-	//return ImageIO.createImageInputStream(s).use { i ->
-	//	// Get the reader
-	//	val readers = ImageIO.getImageReaders(i)
-//
-	//	if (!readers.hasNext()) {
-	//		throw IllegalArgumentException("No reader for: " + s) // Or simply return null
-	//	}
-//
-	//	val reader = readers.next()
-//
-	//	try {
-	//		// Set input
-	//		reader.input = i
-//
-	//		// Configure the param to use the destination type you want
-	//		val param = reader.defaultReadParam
-	//		//param.destinationType = ImageTypeSpecifier.createFromBufferedImageType(type)
-//
-	//		// Finally read the image, using settings from param
-	//		reader.read(0, param).clone(type = type)
-	//	} finally {
-	//		// Dispose reader in finally block to avoid memory leaks
-	//		reader.dispose()
-	//	}
-	//}
+fun ImageIOReadFormat(s: InputStream, props: ImageDecodingProps): BufferedImage {
+    return ImageIOReadFormat(s, when {
+        props.asumePremultiplied -> AWT_INTERNAL_IMAGE_TYPE
+        props.premultipliedSure -> AWT_INTERNAL_IMAGE_TYPE_PRE
+        else -> AWT_INTERNAL_IMAGE_TYPE
+    })
 }
 
-fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
-suspend fun awtReadImageInWorker(data: ByteArray, premultiplied: Boolean): BufferedImage =
-    executeInWorkerJVM {  ImageIOReadFormat(ByteArrayInputStream(data), if (premultiplied) AWT_INTERNAL_IMAGE_TYPE_PRE else AWT_INTERNAL_IMAGE_TYPE) }
+fun ImageIOReadFormat(s: InputStream, type: Int = AWT_INTERNAL_IMAGE_TYPE_PRE): BufferedImage =
+    ImageIO.createImageInputStream(s).use { input ->
+        val readers = ImageIO.getImageReaders(input)
+        if (!readers.hasNext()) throw ImageDecoderNotFoundException()
+        val reader = readers.next()
+        try {
+            reader.input = input
 
-suspend fun awtReadImageInWorker(file: File, premultiplied: Boolean): BufferedImage =
-    executeInWorkerJVM { FileInputStream(file).use { ImageIOReadFormat(it, if (premultiplied) AWT_INTERNAL_IMAGE_TYPE_PRE else AWT_INTERNAL_IMAGE_TYPE) } }
+            val availableTypes = reader.getImageTypes(0).asSequence().toList()
+            val dtype = ImageTypeSpecifier.createFromBufferedImageType(type).takeIf { it in availableTypes }
+                ?: ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_4BYTE_ABGR).takeIf { it in availableTypes }
+                ?: availableTypes.first()
+
+            return@use reader.read(0, reader.defaultReadParam.also { it.destinationType = dtype })
+        } finally {
+            reader.dispose()
+        }
+    }.cloneIfRequired(type = type) // Clone is not required since just read directly in the right format
+
+fun awtReadImage(data: ByteArray): BufferedImage = ImageIOReadFormat(ByteArrayInputStream(data))
+
+suspend fun awtReadImageInWorker(data: ByteArray, props: ImageDecodingProps): BufferedImage =
+    executeInWorkerJVM { ImageIOReadFormat(ByteArrayInputStream(data), props) }
+
+suspend fun awtReadImageInWorker(file: File, props: ImageDecodingProps): BufferedImage =
+    executeInWorkerJVM { FileInputStream(file).use { ImageIOReadFormat(it, props) } }
 
 //var image = ImageIO.read(File("/Users/al/some-picture.jpg"))

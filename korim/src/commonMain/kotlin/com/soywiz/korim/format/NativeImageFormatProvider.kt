@@ -4,6 +4,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.ensureNative
 import com.soywiz.korim.bitmap.extract
@@ -28,9 +29,9 @@ data class NativeImageResult(
     val originalHeight: Int = image.height,
 )
 
-abstract class NativeImageFormatProvider {
+abstract class NativeImageFormatProvider : ImageFormatDecoder {
     protected open suspend fun decodeHeaderInternal(data: ByteArray): ImageInfo {
-        val result = decodeInternal(data, ImageDecodingProps())
+        val result = decodeInternal(data, ImageDecodingProps.DEFAULT)
         return ImageInfo().also {
             it.width = result.originalWidth
             it.height = result.originalHeight
@@ -40,7 +41,12 @@ abstract class NativeImageFormatProvider {
     protected abstract suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult
     protected open suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = decodeInternal(vfs.file(path).readBytes(), props)
 
-    protected fun NativeImage.result() = NativeImageResult(this)
+    protected fun NativeImage.result(props: ImageDecodingProps): NativeImageResult {
+        return NativeImageResult(when {
+            props.asumePremultiplied -> this.asumePremultiplied()
+            else -> this
+        })
+    }
 
     suspend fun decodeHeader(data: ByteArray): ImageInfo = decodeHeaderInternal(data)
     suspend fun decodeHeaderOrNull(data: ByteArray): ImageInfo? = try {
@@ -51,14 +57,15 @@ abstract class NativeImageFormatProvider {
     }
 
     suspend fun decode(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImage = decodeInternal(vfs, path, props).image
-    suspend fun decode(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
+    suspend fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): NativeImage = decodeInternal(data, props).image
+    override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): NativeImage = decodeInternal(data, props).image
     suspend fun decode(file: FinalVfsFile, props: ImageDecodingProps): Bitmap = decodeInternal(file.vfs, file.path, props).image
-    suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap = decode(file.getUnderlyingUnscapedFile(), props)
+    override suspend fun decode(file: VfsFile, props: ImageDecodingProps): Bitmap = decode(file.getUnderlyingUnscapedFile(), props)
 
     suspend fun decode(vfs: Vfs, path: String, premultiplied: Boolean = true): NativeImage = decode(vfs, path, ImageDecodingProps.DEFAULT(premultiplied))
-    suspend fun decode(data: ByteArray, premultiplied: Boolean = true): NativeImage = decode(data, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(data: ByteArray, premultiplied: Boolean): NativeImage = decode(data, ImageDecodingProps.DEFAULT(premultiplied))
     suspend fun decode(file: FinalVfsFile, premultiplied: Boolean = true): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
-    suspend fun decode(file: VfsFile, premultiplied: Boolean = true): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
+    suspend fun decode(file: VfsFile, premultiplied: Boolean): Bitmap = decode(file, ImageDecodingProps.DEFAULT(premultiplied))
 
     abstract suspend fun display(bitmap: Bitmap, kind: Int): Unit
     abstract fun create(width: Int, height: Int, premultiplied: Boolean? = null): NativeImage
@@ -95,7 +102,13 @@ open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
         val bmp32: Bitmap32 = bmp.toBMP32IfRequired()
         //bmp32.premultiplyInPlace()
         //return BitmapNativeImage(bmp32)
-        return NativeImageResult(createBitmapNativeImage(if (props.premultiplied) bmp32.premultipliedIfRequired() else bmp32.depremultipliedIfRequired()))
+        return NativeImageResult(createBitmapNativeImage(
+            when {
+                props.asumePremultiplied -> bmp32.asumePremultiplied()
+                props.premultipliedSure -> bmp32.premultipliedIfRequired()
+                else -> bmp32.depremultipliedIfRequired()
+            }
+        ))
     }
     protected fun Bitmap.wrapNativeExt(props: ImageDecodingProps = ImageDecodingProps.DEFAULT_PREMULT) = wrapNative(this, props)
 

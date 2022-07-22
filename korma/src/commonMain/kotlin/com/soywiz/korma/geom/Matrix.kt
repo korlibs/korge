@@ -281,7 +281,7 @@ data class Matrix(
     fun setTransform(x: Float = 0f, y: Float = 0f, scaleX: Float = 1f, scaleY: Float = 1f, rotation: Angle = Angle.ZERO, skewX: Angle = Angle.ZERO, skewY: Angle = Angle.ZERO): Matrix =
         setTransform(x.toDouble(), y.toDouble(), scaleX.toDouble(), scaleY.toDouble(), rotation, skewX, skewY)
 
-    fun clone() = Matrix(a, b, c, d, tx, ty)
+    fun clone(): Matrix = Matrix(a, b, c, d, tx, ty)
 
     operator fun times(that: Matrix): Matrix = Matrix().multiply(this, that)
     operator fun times(scale: Double): Matrix = Matrix().copyFrom(this).scale(scale)

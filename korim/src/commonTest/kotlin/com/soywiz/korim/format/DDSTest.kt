@@ -7,27 +7,27 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class DDSTest {
-    val formats = ImageFormats(PNG, DDS)
+    val props = ImageDecodingProps(format = ImageFormats(PNG, DDS))
 
     @Test
     fun dxt1() = suspendTestNoBrowser {
-        val output = resourcesVfs["dxt1.dds"].readBitmapNoNative(formats)
-        val expected = resourcesVfs["dxt1.png"].readBitmapNoNative(formats)
+        val output = resourcesVfs["dxt1.dds"].readBitmapNoNative(props)
+        val expected = resourcesVfs["dxt1.png"].readBitmapNoNative(props)
         assertEquals(0, output.matchContentsDistinctCount(expected))
     }
 
     @Test
     fun dxt3() = suspendTestNoBrowser {
-        val output = resourcesVfs["dxt3.dds"].readBitmapNoNative(formats)
-        val expected = resourcesVfs["dxt3.png"].readBitmapNoNative(formats)
+        val output = resourcesVfs["dxt3.dds"].readBitmapNoNative(props)
+        val expected = resourcesVfs["dxt3.png"].readBitmapNoNative(props)
         assertEquals(0, output.matchContentsDistinctCount(expected))
         //output.writeTo(LocalVfs("c:/temp/dxt3.png"))
     }
 
     @Test
     fun dxt5() = suspendTestNoBrowser {
-        val output = resourcesVfs["dxt5.dds"].readBitmapNoNative(formats)
-        val expected = resourcesVfs["dxt5.png"].readBitmapNoNative(formats)
+        val output = resourcesVfs["dxt5.dds"].readBitmapNoNative(props)
+        val expected = resourcesVfs["dxt5.png"].readBitmapNoNative(props)
         assertEquals(0, output.matchContentsDistinctCount(expected))
         //output.writeTo(LocalVfs("c:/temp/dxt5.png"))
     }

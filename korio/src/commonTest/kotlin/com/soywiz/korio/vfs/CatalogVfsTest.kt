@@ -33,4 +33,15 @@ class CatalogVfsTest {
         assertEquals(11L, vfs["/test.txt"].size())
         assertEquals(12L, vfs["/demo/test.txt"].size())
     }
+
+    // When catalog not found, it should fallback to a normal file stat check
+    @Test
+    fun testFallbackStat() = suspendTest {
+        val vfs = MemoryVfsMix(
+            "/hello.txt" to "world",
+        ).withCatalog()
+
+        val stat = vfs["hello.txt"].stat()
+        assertEquals("5/true", "${stat.size}/${stat.exists}")
+    }
 }

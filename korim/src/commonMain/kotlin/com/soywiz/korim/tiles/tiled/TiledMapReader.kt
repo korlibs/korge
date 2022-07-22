@@ -84,7 +84,7 @@ suspend fun TileSetData.toTiledSet(
 	var bmp = try {
 		when (tileset.image) {
 			is Image.Embedded -> TODO()
-			is Image.External -> folder[tileset.image.source].readBitmapOptimized()
+			is Image.External -> folder[tileset.image.source].readBitmap()
                 .let { if (atlas != null) it.toBMP32IfRequired() else it }
 			null -> Bitmap32(0, 0)
 		}

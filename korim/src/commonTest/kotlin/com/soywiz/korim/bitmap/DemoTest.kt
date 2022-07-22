@@ -6,7 +6,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.font.BitmapFont
 import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.readBitmapOptimized
+import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.MemoryVfs
@@ -25,7 +25,7 @@ class DemoTest {
     @Test
     fun test() = suspendTestNoBrowser {
         val bmp1 = PNG.decode(DebugBitmapFont.DEBUG_FONT_BYTES).toBMP32().premultipliedIfRequired()
-        val bmp2 = MemoryVfs(mapOf("image.png" to DebugBitmapFont.DEBUG_FONT_BYTES.openAsync()))["image.png"].readBitmapOptimized(PNG).toBMP32().premultipliedIfRequired()
+        val bmp2 = MemoryVfs(mapOf("image.png" to DebugBitmapFont.DEBUG_FONT_BYTES.openAsync()))["image.png"].readBitmap(PNG).toBMP32().premultipliedIfRequired()
         assertEquals(bmp1.size, bmp2.size)
         val result = Bitmap32.matchesWithResult(bmp1, bmp2)
         assertEquals(Bitmap32.Companion.MatchResult(sizeMatches = true, differentPixels = 0, samePixels = bmp1.area), result)

@@ -23,19 +23,19 @@ actual val nativeImageFormatProvider: NativeImageFormatProvider = AwtNativeImage
 object AwtNativeImageFormatProvider : NativeImageFormatProvider() {
 	init {
 		// Try to detect junit and run then in headless mode
-		if (Thread.currentThread()!!.stackTrace!!.contentDeepToString().contains("org.junit")) {
+		if (Thread.currentThread().stackTrace.contentDeepToString().contains("org.junit")) {
 			System.setProperty("java.awt.headless", "true")
 		}
 	}
 
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
-        return AwtNativeImage(awtReadImageInWorker(data, props.premultiplied)).result()
+        return AwtNativeImage(awtReadImageInWorker(data, props)).result(props)
     }
 
     override suspend fun decodeInternal(vfs: Vfs, path: String, props: ImageDecodingProps): NativeImageResult = when (vfs) {
-        is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props.premultiplied))
-        else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), props.premultiplied))
-    }.result()
+        is LocalVfs -> AwtNativeImage(awtReadImageInWorker(File(path), props))
+        else -> AwtNativeImage(awtReadImageInWorker(vfs[path].readAll(), props))
+    }.result(props)
 
 	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage =
 		AwtNativeImage(BufferedImage(max(width, 1), max(height, 1), if (premultiplied == false) BufferedImage.TYPE_INT_ARGB else BufferedImage.TYPE_INT_ARGB_PRE))

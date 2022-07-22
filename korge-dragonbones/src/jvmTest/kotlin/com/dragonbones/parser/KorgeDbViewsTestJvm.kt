@@ -16,7 +16,7 @@ class KorgeDbViewsTestJvm {
 		val data = factory.parseDragonBonesData(Json.parse(resourcesVfs["Dragon/Dragon_ske.json"].readString())!!)
 		val atlas = factory.parseTextureAtlasData(
 			Json.parse(resourcesVfs["Dragon/Dragon_tex.json"].readString())!!,
-			resourcesVfs["Dragon/Dragon_tex.png"].readBitmapOptimized().toBMP32()
+			resourcesVfs["Dragon/Dragon_tex.png"].readBitmap().toBMP32()
 		)
 		val armatureDisplay = factory.buildArmatureDisplay("Dragon", "Dragon")!!.position(100, 100)
 		armatureDisplay.dbUpdate()

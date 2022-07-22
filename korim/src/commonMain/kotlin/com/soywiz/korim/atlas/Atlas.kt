@@ -5,6 +5,7 @@ import com.soywiz.korim.bitmap.BitmapSlice
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.bitmap.asumePremultiplied
 import com.soywiz.korim.bitmap.virtFrame
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.readBitmapSlice
 import com.soywiz.korio.file.VfsFile
 
@@ -41,7 +42,9 @@ interface AtlasLookup {
         ?: error("Can't find '$name' it atlas")
 }
 
-suspend fun VfsFile.readAtlas(asumePremultiplied: Boolean = false): Atlas {
+suspend fun VfsFile.readAtlas(
+    props: ImageDecodingProps = ImageDecodingProps.DEFAULT
+): Atlas {
     val content = this.readString()
     val info = when {
         content.startsWith("{") -> AtlasInfo.loadJsonSpriter(content)
@@ -52,9 +55,7 @@ suspend fun VfsFile.readAtlas(asumePremultiplied: Boolean = false): Atlas {
     }
     val folder = this.parent
     val textures = info.pages.associate {
-        it.fileName to folder[it.fileName].readBitmapSlice(premultiplied = !asumePremultiplied).also {
-            if (asumePremultiplied) it.bmpBase.asumePremultiplied()
-        }
+        it.fileName to folder[it.fileName].readBitmapSlice(props = props)
     }
     return Atlas(textures, info)
 }

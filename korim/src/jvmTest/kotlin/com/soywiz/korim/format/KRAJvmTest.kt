@@ -7,7 +7,7 @@ import kotlin.test.*
 class KRAJvmTest {
     @Test
     fun test() = suspendTest {
-        val output = resourcesVfs["krita.kra"].readImageData(KRA, ImageDecodingProps().also {
+        val output = resourcesVfs["krita.kra"].readImageData(ImageDecodingProps(format = KRA).also {
             //it.kritaPartialImageLayers = true
             it.kritaPartialImageLayers = false
             it.kritaLoadLayers = true

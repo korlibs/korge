@@ -29,7 +29,7 @@ class Assets {
     suspend fun load(config: Config) {
         val sw = Stopwatch().start()
         println("start resources loading...")
-        images = config.images.associate { it.first to resourcesVfs[it.second].readImageDataContainer(ASE, atlas = atlas) }
+        images = config.images.associate { it.first to resourcesVfs[it.second].readImageDataContainer(ASE.toProps(), atlas = atlas) }
         println("loaded resources in ${sw.elapsed}")
     }
 

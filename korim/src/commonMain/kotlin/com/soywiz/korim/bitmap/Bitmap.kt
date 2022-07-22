@@ -9,7 +9,10 @@ import com.soywiz.kmem.toIntCeil
 import com.soywiz.kmem.toIntFloor
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.RgbaArray
+import com.soywiz.korim.color.asNonPremultiplied
+import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korma.geom.ISizeInt
@@ -94,6 +97,16 @@ abstract class Bitmap(
 
     open fun setRgba(x: Int, y: Int, v: RGBA): Unit = TODO()
     open fun getRgba(x: Int, y: Int): RGBA = Colors.TRANSPARENT_BLACK
+
+    fun setRgbaStraight(x: Int, y: Int, v: RGBA): Unit {
+        if (premultiplied) setRgba(x, y, v.premultiplied.asNonPremultiplied()) else setRgba(x, y, v)
+    }
+    fun setRgbaPremultiplied(x: Int, y: Int, v: RGBAPremultiplied): Unit {
+        if (premultiplied) setRgba(x, y, v.asNonPremultiplied()) else setRgba(x, y, v.depremultiplied)
+    }
+
+    fun getRgbaPremultiplied(x: Int, y: Int): RGBAPremultiplied = if (premultiplied) getRgba(x, y).asPremultiplied() else getRgba(x, y).premultiplied
+    fun getRgbaStraight(x: Int, y: Int): RGBA = if (premultiplied) getRgba(x, y).asPremultiplied().depremultiplied else getRgba(x, y)
 
 	open fun setInt(x: Int, y: Int, color: Int): Unit = Unit
 	open fun getInt(x: Int, y: Int): Int = 0
@@ -273,6 +286,7 @@ fun <T : Bitmap> T.checkMatchDimensions(other: T): T {
 fun <T : Bitmap> T.mipmaps(enable: Boolean = true): T = this.apply { this.mipmaps = enable }
 
 
-fun <T : Bitmap> T.asumePremultiplied(): T = this.apply {
+fun <T : Bitmap> T.asumePremultiplied(): T {
     this.premultiplied = true
+    return this
 }

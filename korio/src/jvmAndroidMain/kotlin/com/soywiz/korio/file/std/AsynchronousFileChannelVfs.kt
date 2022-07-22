@@ -37,7 +37,7 @@ internal open class AsynchronousFileChannelVfs : BaseLocalVfsJvm() {
                 nioSuspendCompletion { raf.write(ByteBuffer.wrap(buffer, offset, len), position, Unit, it) }
             }
 
-            override suspend fun hasLength(): Boolean = true
+            override suspend fun hasLength(): Boolean = getLength() >= 0L
             override suspend fun setLength(value: Long): Unit = raf.truncateSuspend(value)
             override suspend fun getLength(): Long = raf.sizeSuspend()
             override suspend fun close() = raf.close()

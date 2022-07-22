@@ -6,7 +6,10 @@ object JPEGInfo : ImageFormatSuspend("jpeg") {
     override suspend fun decodeHeaderSuspend(s: AsyncStream, props: ImageDecodingProps): ImageInfo? {
         return kotlin.runCatching { EXIF.readExifFromJpeg(s) }
             .also {
-                //it.exceptionOrNull()?.printStackTrace()
+                //if (it.isFailure) {
+                //    println("FAILED! EXIF.readExifFromJpeg")
+                //    it.exceptionOrNull()?.printStackTrace()
+                //}
             }
             .getOrNull()
     }
