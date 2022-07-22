@@ -112,7 +112,7 @@ object AndroidNativeImageFormatProvider : NativeImageFormatProvider() {
         )
     }
 
-	override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
+    override fun create(width: Int, height: Int, premultiplied: Boolean?): NativeImage {
 		val bmp = android.graphics.Bitmap.createBitmap(
             width.coerceAtLeast(1),
             height.coerceAtLeast(1),
@@ -341,6 +341,8 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
             }
 
             paint.style = if (fill) Paint.Style.FILL else android.graphics.Paint.Style.STROKE
+            paint.strokeCap = state.lineCap.toAndroid()
+            paint.strokeJoin = state.lineJoin.toAndroid()
             convertPaint(state.fillOrStrokeStyle(fill), state.transform, paint, state.globalAlpha.clamp01())
             paint.pathEffect = when {
                 state.lineDash != null -> DashPathEffect(state.lineDash!!.mapFloat { it.toFloat() }.toFloatArray(), state.lineDashOffset.toFloat())
@@ -359,3 +361,14 @@ class AndroidContext2dRenderer(val bmp: android.graphics.Bitmap, val antialiasin
     }
 }
 
+fun LineCap.toAndroid(): Paint.Cap = when (this) {
+    LineCap.BUTT -> Paint.Cap.BUTT
+    LineCap.SQUARE -> Paint.Cap.SQUARE
+    LineCap.ROUND -> Paint.Cap.ROUND
+}
+
+fun LineJoin.toAndroid(): Paint.Join = when (this) {
+    LineJoin.BEVEL -> Paint.Join.BEVEL
+    LineJoin.ROUND -> Paint.Join.ROUND
+    LineJoin.MITER -> Paint.Join.MITER
+}
