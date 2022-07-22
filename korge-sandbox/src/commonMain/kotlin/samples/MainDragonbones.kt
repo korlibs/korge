@@ -143,13 +143,13 @@ class MainDragonbones : Scene() {
     class HelloWorldScene : BaseDbScene() {
         val SCALE = 1.6
         override suspend fun SContainer.sceneInit() {
-            val skeDeferred = async { Json.parse(res["mecha_1002_101d_show/mecha_1002_101d_show_ske.json"].readString())!! }
+            val skeDeferred = async { Json.parseFast(res["mecha_1002_101d_show/mecha_1002_101d_show_ske.json"].readString())!! }
             //val skeDeferred = async { MemBufferWrap(resources["mecha_1002_101d_show/mecha_1002_101d_show_ske.dbbin"].readBytes()) }
             val texDeferred = async { res["mecha_1002_101d_show/mecha_1002_101d_show_tex.json"].readString() }
             val imgDeferred = async { res["mecha_1002_101d_show/mecha_1002_101d_show_tex.png"].readBitmap().mipmaps() }
 
             val data = factory.parseDragonBonesData(skeDeferred.await())
-            val atlas = factory.parseTextureAtlasData(Json.parse(texDeferred.await())!!, imgDeferred.await())
+            val atlas = factory.parseTextureAtlasData(Json.parseFast(texDeferred.await())!!, imgDeferred.await())
 
             val armatureDisplay = factory.buildArmatureDisplay("mecha_1002_101d")!!.position(0, 300).scale(SCALE)
 
@@ -171,10 +171,10 @@ class MainDragonbones : Scene() {
             val tex = async { res["Dragon/Dragon_tex.json"].readString() }
             val img = async { res["Dragon/Dragon_tex.png"].readBitmap() }
 
-            val data = factory.parseDragonBonesData(Json.parse(ske.await())!!)
+            val data = factory.parseDragonBonesData(Json.parseFast(ske.await())!!)
 
             val atlas = factory.parseTextureAtlasData(
-                Json.parse(tex.await())!!,
+                Json.parseFast(tex.await())!!,
                 img.await()
             )
             val armatureDisplay = factory.buildArmatureDisplay("Dragon", "Dragon")!!.position(0, 200).scale(scale)
@@ -216,7 +216,7 @@ class MainDragonbones : Scene() {
                 println("EyeTrackingScene[1]")
 
                 factory.parseDragonBonesData(
-                    Json.parse(skeDeferred.await())!!,
+                    Json.parseFast(skeDeferred.await())!!,
                     "shizuku"
                 )
                 println("EyeTrackingScene[2]")
@@ -351,12 +351,12 @@ class MainDragonbones : Scene() {
 
             deferreds += asyncImmediately {
                 factory.parseDragonBonesData(
-                    Json.parse(res["you_xin/body/body_ske.json"].readString())!!
+                    Json.parseFast(res["you_xin/body/body_ske.json"].readString())!!
                 )
             }
             deferreds += asyncImmediately {
                 val atlas = factory.parseTextureAtlasData(
-                    Json.parse(res["you_xin/body/body_tex.json"].readString())!!,
+                    Json.parseFast(res["you_xin/body/body_tex.json"].readString())!!,
                     res["you_xin/body/body_tex.png"].readBitmap().mipmaps()
                 )
             }
@@ -370,9 +370,9 @@ class MainDragonbones : Scene() {
                     val textureAtlasPath = path + "_tex.png"
                     //
                     deferreds += asyncImmediately {
-                        factory.parseDragonBonesData(Json.parse(res[dragonBonesJSONPath].readString())!!)
+                        factory.parseDragonBonesData(Json.parseFast(res[dragonBonesJSONPath].readString())!!)
                         factory.parseTextureAtlasData(
-                            Json.parse(res[textureAtlasJSONPath].readString())!!,
+                            Json.parseFast(res[textureAtlasJSONPath].readString())!!,
                             res[textureAtlasPath].readBitmap().mipmaps()
                         )
                     }
