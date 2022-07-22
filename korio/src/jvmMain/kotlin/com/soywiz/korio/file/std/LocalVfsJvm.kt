@@ -1,28 +1,13 @@
 package com.soywiz.korio.file.std
 
-import com.soywiz.klock.*
-import com.soywiz.korio.async.*
 import com.soywiz.korio.dynamic.*
 import com.soywiz.korio.file.*
-import com.soywiz.korio.internal.*
 import com.soywiz.korio.lang.*
-import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.stream.*
-import com.soywiz.korio.util.*
 import com.sun.nio.file.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.*
 import java.io.*
-import java.io.FileNotFoundException
-import java.io.IOException
 import java.net.*
-import java.nio.channels.CompletionHandler
 import java.nio.file.*
-import java.nio.file.Path
-import java.util.concurrent.*
-import kotlin.coroutines.*
-import kotlin.math.*
 
 private val absoluteCwd by lazy { File(".").absolutePath }
 val tmpdir: String by lazy { System.getProperty("java.io.tmpdir") }
@@ -65,11 +50,11 @@ fun ClassLoader.tryGetURLs(): List<URL> = try {
 
 private class ResourcesVfsProviderJvm {
 	operator fun invoke(): Vfs = invoke(ClassLoader.getSystemClassLoader())
-	operator fun invoke(classLoader: ClassLoader): Vfs = MergedVfsDecorator(classLoader)
+	operator fun invoke(classLoader: ClassLoader): Vfs = JvmClassLoaderResourcesVfs(classLoader)
 }
 
 
-class MergedVfsDecorator(val classLoader: ClassLoader, val merged: MergedVfs = MergedVfs()) : Vfs.Decorator(merged.root) {
+class JvmClassLoaderResourcesVfs(val classLoader: ClassLoader) : MergedVfs(name = "MergedVfsDecorator") {
     override suspend fun init() {
         val currentDir = localCurrentDirVfs.absolutePath
         val urls = classLoader.tryGetURLs()
@@ -117,7 +102,7 @@ class MergedVfsDecorator(val classLoader: ClassLoader, val merged: MergedVfs = M
                 localCurrentDirVfs["src/jvmTest/resources"]
             )) {
                 if (folder.exists() && folder.isDirectory()) {
-                    merged += folder.jail()
+                    this += folder.jail()
                 }
             }
 
@@ -132,7 +117,7 @@ class MergedVfsDecorator(val classLoader: ClassLoader, val merged: MergedVfs = M
                     srcDir["../build/genTestResources"]
                 )) {
                     if (folder.exists() && folder.isDirectory()) {
-                        merged += folder.jail()
+                        this += folder.jail()
                     }
                 }
             }
@@ -152,14 +137,14 @@ class MergedVfsDecorator(val classLoader: ClassLoader, val merged: MergedVfs = M
                 vfs.extension in setOf("jar", "zip") -> {
                     //merged.vfsList += vfs.openAsZip()
                 }
-                else -> merged += vfs.jail()
+                else -> this += vfs.jail()
             }
         }
         //println(merged.options)
 
         //println("ResourcesVfsProviderJvm:classLoader:$classLoader")
 
-        merged += object : Vfs() {
+        this += object : Vfs() {
             private fun normalize(path: String): String = path.trim('/')
 
             private fun getResourceAsStream(npath: String) = classLoader.getResourceAsStream(npath)
