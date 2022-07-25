@@ -43,7 +43,7 @@ open class LipsyncResourceProcessor : ResourceProcessor("voice.wav", "voice.mp3"
 	val config by lazy {
         val base = Config(
             URL("https://github.com/korlibs/korge-tools/releases/download/rhubarb-lip-sync-1.13/Rhubarb-Lip-Sync-1.13.0-all.zip"),
-            "rhubarb-lip-sync-1.13.0-all",
+            "Rhubarb-lip-sync-1.13.0-all",
             "6A1850D829D361E36C09D7561C817C47C2D16FD0".unhex,
             "rhubarb"
         )
