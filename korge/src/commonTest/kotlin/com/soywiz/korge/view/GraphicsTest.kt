@@ -5,6 +5,7 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.OS
+import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
@@ -182,6 +183,37 @@ class GraphicsTest {
             }
         }
         assertEquals(Rectangle(25, 49, 209, 201), g.getLocalBounds())
+    }
+
+    @Test
+    fun testScale() {
+        val container = Container()
+        container.scale = 2.0
+        val graphics = CpuGraphics(autoScaling = true).addTo(container)
+        graphics.updateShape(redrawNow = true) { fill(Colors.RED) { rect(50, 50, 100, 100) } }
+        graphics.anchor(Anchor(0.75, 0.5))
+        assertEquals(
+            """
+                sLeft,sTop=-25.375,-0.25
+                fillWidth,fillHeight=100,100
+                frameWH=100.5,100.5
+                frameOffsetXY=0,0
+                anchorDispXY=75.375,50.25
+                anchorDispXYNoOffset=75.375,50.25
+                bounds=Rectangle(x=-25.375, y=-0.25, width=100, height=100)
+                size=201x201
+            """.trimIndent(),
+            """
+                sLeft,sTop=${graphics._sLeft.niceStr},${graphics._sTop.niceStr}
+                fillWidth,fillHeight=${graphics.fillWidth.niceStr},${graphics.fillHeight.niceStr}
+                frameWH=${graphics.frameWidth.niceStr},${graphics.frameHeight.niceStr}
+                frameOffsetXY=${graphics.frameOffsetX.niceStr},${graphics.frameOffsetY.niceStr}
+                anchorDispXY=${graphics.anchorDispX.niceStr},${graphics.anchorDispY.niceStr}
+                anchorDispXYNoOffset=${graphics.anchorDispXNoOffset.niceStr},${graphics.anchorDispYNoOffset.niceStr}
+                bounds=${graphics.getLocalBounds()}
+                size=${graphics.bitmap.sizeString}
+            """.trimIndent()
+        )
     }
 }
 
