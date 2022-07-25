@@ -79,7 +79,7 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
         bytes.write32LE(VSIZE, bmp.height)
         for (n in 0 until bmp.area) {
             val pos = VSIZE * (2 + n)
-            val c = RGBA(bmp.ints[n])
+            val c = bmp.getRgbaAtIndex(n)
             bytes[pos + 0] = c.r.toByte()
             bytes[pos + 1] = c.g.toByte()
             bytes[pos + 2] = c.b.toByte()
