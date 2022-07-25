@@ -17,7 +17,7 @@ bufferCreate: 9
 Buffer[8].afterSetMem(mem[32])
 enable: SCISSOR
 scissor: 0, 0, 200, 200
-programCreate: 1, Program(name=FSprites2, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1]), ProgramConfig(externalTextureSampler=false)
+programCreate: 1, Program(name=FSprites2, attributes=[a_uv1, a_uv0, a_colMul, a_texId, a_xy, a_rangle, a_scale, a_axy, a_rxy], uniforms=[u_texSize0, u_texSize1, u_ProjMat, u_ViewMat, u_Tex0, u_Tex1, u_OutputPre]), ProgramConfig(externalTextureSampler=false)
 programCreate.fragment:#version 100 compatibility
 #ifdef GL_ES
 	precision highp float;
@@ -31,8 +31,10 @@ programCreate.fragment:#version 100 compatibility
 #endif
 uniform sampler2D u_Tex0;
 uniform sampler2D u_Tex1;
+uniform bool u_OutputPre;
 varying lowp float v_TexId;
 varying mediump vec2 v_Tex;
+varying vec4 v_Col;
 void main() {
 	if ((v_TexId == 0.0)) {
 		gl_FragColor = texture2D(u_Tex0, v_Tex.xy);
@@ -40,8 +42,12 @@ void main() {
 	else {
 		gl_FragColor = texture2D(u_Tex1, v_Tex.xy);
 	}
+	gl_FragColor = (gl_FragColor * v_Col);
 	if ((gl_FragColor.a <= 0.0)) {
 		discard;
+	}
+	if ((!(u_OutputPre))) {
+		gl_FragColor.rgb = (gl_FragColor.rgb / gl_FragColor.a);
 	}
 }
 
@@ -122,7 +128,7 @@ uboSet.uniform: Uniform(u_texSize1) = [0.03125, 0.03125]
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0
