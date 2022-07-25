@@ -9,6 +9,7 @@ import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.NativeImage
+import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.vector.Context2d
@@ -35,10 +36,6 @@ abstract class BaseGraphics(
             if (value) TODO()
             field = value
         }
-
-    private fun createImage(width: Int, height: Int, premultiplied: Boolean? = null): Bitmap {
-        return if (useNativeRendering) NativeImage(width, height, premultiplied) else Bitmap32(width, height, premultiplied = premultiplied ?: true)
-    }
 
     @PublishedApi
     internal val bitmapsToRemove = arrayListOf<Bitmap>()
@@ -96,17 +93,21 @@ abstract class BaseGraphics(
         run {
             //println("Regenerate image: bounds=${bounds}, renderedAtScale=${renderedAtScaleX},${renderedAtScaleY}, sLeft=$sLeft, sTop=$sTop, bwidth=$bwidth, bheight=$bheight")
 
+            //println("autoscaling.renderedAtScaleX=${autoscaling.renderedAtScaleX}")
+
             val imageWidth = (boundsWithShapes.width * autoscaling.renderedAtScaleX).toIntCeil().coerceAtLeast(1)
             val imageHeight = (boundsWithShapes.height * autoscaling.renderedAtScaleY).toIntCeil().coerceAtLeast(1)
             //val imageWidth = boundsWithShapes.width.toIntCeil()
             //val imageHeight = boundsWithShapes.height.toIntCeil()
-            val image = createImage(
+
+            val image = NativeImageOrBitmap32(
                 imageWidth + EXTRA_PIXELS,
-                imageHeight + EXTRA_PIXELS
+                imageHeight + EXTRA_PIXELS,
+                useNativeRendering, premultiplied = true
             )
             //println("bounds=$boundsWithShapes, scale=${autoscaling.renderedAtScaleX},${autoscaling.renderedAtScaleY}, image=$image")
-            realImageScaleX = imageWidth / imageWidth.toDouble()
-            realImageScaleY = imageHeight / imageHeight.toDouble()
+            realImageScaleX = autoscaling.renderedAtScaleX
+            realImageScaleY = autoscaling.renderedAtScaleY
 
             //realImageScaleX = 1.0
             //realImageScaleY = 1.0
@@ -139,10 +140,10 @@ abstract class BaseGraphics(
     private val bitmapWidth: Double get() = bitmap.width.toDouble()
     private val bitmapHeight: Double get() = bitmap.height.toDouble()
 
-    final override val bwidth: Double get() = bitmapWidth
-    final override val bheight: Double get() = bitmapHeight
-    final override val frameWidth: Double get() = bitmapWidth
-    final override val frameHeight: Double get() = bitmapHeight
+    final override val bwidth: Double get() = bitmapWidth / realImageScaleX
+    final override val bheight: Double get() = bitmapHeight / realImageScaleY
+    final override val frameWidth: Double get() = bwidth
+    final override val frameHeight: Double get() = bheight
 
     final override val anchorDispX: Double get() = (anchorX * bwidth)
     final override val anchorDispY: Double get() = (anchorY * bheight)

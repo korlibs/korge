@@ -58,6 +58,7 @@ open class CpuGraphics @JvmOverloads constructor(
     inline fun updateShape(redrawNow: Boolean = false, block: ShapeBuilder.(CpuGraphics) -> Unit): CpuGraphics {
         this.shape = buildShape { block(this@CpuGraphics) }
         if (redrawNow) this.redrawIfRequired()
+        _dirtyBounds = true
         return this
     }
 

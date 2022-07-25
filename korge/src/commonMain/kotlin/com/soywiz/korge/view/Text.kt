@@ -6,7 +6,6 @@ import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
-import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -32,6 +31,7 @@ import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
+import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
@@ -98,7 +98,10 @@ open class Text(
         updateLineCount()
     }
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
-    var font: Resourceable<out Font> = font; set(value) { if (field != value) { field = value; version++ } }
+    var font: Resourceable<out Font> = font; set(value) {
+        if (field != value) { field = value; version++ }
+        //printStackTrace("setfont=$field")
+    }
     var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
     var fontSize: Double
         get() = textSize
@@ -256,6 +259,8 @@ open class Text(
         //container.colorMul = color
         val font = this.font.getOrNull()
 
+        //println("font=$font")
+
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
             val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
@@ -325,9 +330,7 @@ open class Text(
                 }
             }
             else -> {
-                val onRenderResult = autoscaling.onRender(autoScaling, preciseAutoscaling, this.globalMatrix)
-                val lastAutoScalingResult = lastAutoScaling != autoScaling
-                if (onRenderResult || lastAutoScalingResult || lastSmoothing != smoothing || lastNativeRendering != useNativeRendering) {
+                if (lastSmoothing != smoothing || lastNativeRendering != useNativeRendering) {
                     version++
                     //println("UPDATED VERSION[$this] lastAutoScaling=$lastAutoScaling, autoScaling=$autoScaling, onRenderResult=$onRenderResult, lastAutoScalingResult=$lastAutoScalingResult")
                     lastNativeRendering = useNativeRendering
@@ -336,13 +339,15 @@ open class Text(
                 }
 
                 if (cachedVersion != version) {
+                    //println("UPDATED VERSION: $cachedVersion!=$version")
                     cachedVersion = version
-                    val realTextSize = textSize * autoscaling.renderedAtScaleXY
+                    val realTextSize = textSize
 
                     if (_staticGraphics == null) {
                         container.removeChildren()
                         //_staticGraphics = container.gpuGraphics {  }
                         _staticGraphics = container.graphics(renderer = graphicsRenderer) { }
+                        _staticGraphics?.autoScaling = true
                     }
 
                     val metrics = _staticGraphics!!.updateShape {
@@ -375,8 +380,6 @@ open class Text(
 
     var useNativeRendering: Boolean = true
 
-    private val autoscaling = InternalViewAutoscaling()
-
     private fun setContainerPosition(x: Double, y: Double, baseline: Double) {
         if (autoSize) {
             setRealContainerPosition(x, y)
@@ -396,7 +399,6 @@ open class Text(
         container.uiCollapsibleSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min= 1.0, max = 300.0)
-            uiEditableValue(::autoScaling)
             uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
             uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
