@@ -214,7 +214,7 @@ private fun XmlBuilder.tileLayerToXml(
 		propertiesToXml(layer.properties)
 		node("data", "encoding" to layer.encoding.value, "compression" to layer.compression.value) {
 			if (infinite) {
-				val chunks = divideIntoChunks(layer.map.data.ints, chunkWidth, chunkHeight, layer.width)
+				val chunks = divideIntoChunks(layer.map.ints, chunkWidth, chunkHeight, layer.width)
 				chunks.forEach { chunk ->
 					node(
 						"chunk",
@@ -250,7 +250,7 @@ private fun XmlBuilder.tileLayerToXml(
 			} else {
 				when (layer.encoding) {
 					Encoding.XML -> {
-						layer.map.data.ints.forEach { gid ->
+						layer.map.ints.forEach { gid ->
 							node("tile", "gid" to gid.toUInt().takeIf { it != 0u })
 						}
 					}

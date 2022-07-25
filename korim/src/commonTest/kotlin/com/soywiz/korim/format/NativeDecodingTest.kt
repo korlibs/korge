@@ -5,6 +5,8 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.color.RGBAPremultiplied
 import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
@@ -17,8 +19,8 @@ import kotlin.test.assertTrue
 
 class NativeDecodingTest {
     val file = resourcesVfs["bubble-chat.9.png"]
-    val colorPremult = Colors["#01010181"]
-    val colorStraight = Colors["#02020281"]
+    val colorPremult: RGBAPremultiplied = Colors["#01010181"].asPremultiplied()
+    val colorStraight: RGBA = Colors["#02020281"]
 
     init {
         if (OS.isJsNodeJs) RegisteredImageFormats.register(PNG)
@@ -27,8 +29,8 @@ class NativeDecodingTest {
     @Test
     fun testNativePNGDecoding() = suspendTest {
         val file = resourcesVfs["pma/spineboy-pma.png"]
-        val bmp1 = file.readBitmapNative(props = ImageDecodingProps(asumePremultiplied = true))
-        val bmp2 = file.readBitmapNoNative(props = ImageDecodingProps(asumePremultiplied = true, format = PNG))
+        val bmp1 = file.readBitmapNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true))
+        val bmp2 = file.readBitmapNoNative(props = ImageDecodingProps(premultiplied = false, asumePremultiplied = true, format = PNG))
         val diff = Bitmap32.diff(bmp1, bmp2).sumOf { it.a + it.r + it.g + it.b }
         if (OS.isJsBrowserOrWorker) {
             // In JS has some small dis-adjustments because, to native read image pixels on JS we need Canvas,
@@ -43,7 +45,7 @@ class NativeDecodingTest {
     fun testReadAsumePremultiplied() = suspendTest {
         for (preferKotlinDecoder in listOf(false, true)) {
             val atlas = resourcesVfs["pma/spineboy-pma.atlas"]
-                .readAtlas(ImageDecodingProps(asumePremultiplied = true, preferKotlinDecoder = preferKotlinDecoder))
+                .readAtlas(ImageDecodingProps(premultiplied = false, asumePremultiplied = true, preferKotlinDecoder = preferKotlinDecoder))
             val bitmaps = atlas.textures.map { it.value.bmp }.distinct()
             assertEquals(1, bitmaps.size)
             val bitmap = bitmaps[0]
@@ -58,8 +60,9 @@ class NativeDecodingTest {
     @Test
     fun testReadPremultiplied() = suspendTest {
         val image = file.readBitmapNative(ImageDecodingProps(premultiplied = true))
+        //println((image as BitmapNativeImage).bitmap.premultiplied)
         if (image.premultiplied) {
-            assertEquals(colorPremult to true, image.getRgbaRaw(34, 15) to image.premultiplied)
+            assertEquals(colorPremult to true, image.getRgbaPremultiplied(34, 15) to image.premultiplied)
         }
     }
 
@@ -84,11 +87,11 @@ class NativeDecodingTest {
             val x = 34; val y = 15
             assertNotEquals(0, image.getRgbaRaw(x, y).a)
             if (image.premultiplied) {
-                assertEquals(colorPremult to true, image.getRgbaRaw(x, y) to image.premultiplied)
+                assertEquals(colorPremult to true, image.getRgbaRaw(x, y).asPremultiplied() to image.premultiplied)
             } else {
                 assertEquals(colorStraight to false, image.getRgbaRaw(x, y) to image.premultiplied)
             }
-            assertEquals(colorPremult.asPremultiplied(), image.getRgbaPremultiplied(x, y))
+            assertEquals(colorPremult, image.getRgbaPremultiplied(x, y))
         }
     }
 

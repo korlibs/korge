@@ -32,7 +32,7 @@ class Bitmap32Context2dTest {
         //if (OS.isMac) return@suspendTest // Ignore on MAC since this fails on travis on K/N?
         //if (OS.isTvos) return@suspendTest // Ignore on MAC since this fails on travis on K/N?
 
-        val bitmaps = listOf(Bitmap32(128, 128), NativeImage(128, 128))
+        val bitmaps = listOf(Bitmap32(128, 128, premultiplied = false), NativeImage(128, 128))
         for (bmp in bitmaps) {
             bmp.context2d {
             //bmp.getContext2d().apply {
@@ -70,7 +70,7 @@ class Bitmap32Context2dTest {
                 }
             }
         }
-        val out = Bitmap32(256, 128)
+        val out = Bitmap32(256, 128, premultiplied = false)
         out.put(bitmaps[0].toBMP32(), 0, 0)
         out.put(bitmaps[1].toBMP32(), 128, 0)
 
@@ -106,7 +106,7 @@ class Bitmap32Context2dTest {
         val color = Colors.RED
         run {
             //val bmp = NativeImage(20, 200).context2d {
-            val bmp = Bitmap32(20, 200).context2d {
+            val bmp = Bitmap32(20, 200, premultiplied = false).context2d {
                 fillStyle = ColorPaint(color)
                 beginPath()
                 //rect(0, 20, 20, 180)
@@ -120,7 +120,7 @@ class Bitmap32Context2dTest {
         }
         run {
             //val bmp = NativeImage(200, 20).context2d {
-            val bmp = Bitmap32(200, 20).context2d {
+            val bmp = Bitmap32(200, 20, premultiplied = false).context2d {
                 fillStyle = ColorPaint(color)
                 beginPath()
                 rect(20, 0, 160, 20)

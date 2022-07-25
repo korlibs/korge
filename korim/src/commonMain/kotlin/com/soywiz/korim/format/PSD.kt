@@ -30,7 +30,7 @@ object PSD : ImageFormat("psd") {
 
     private fun packChannels(width: Int, height: Int, channels: Array<ByteArray>): Bitmap32 {
         var pos = 0
-        val out = Bitmap32(width, height)
+        val out = Bitmap32(width, height, premultiplied = false)
 
         val dummyChannel = ByteArray(width * height) { -1 }
         val rchannel = channels.getOrNull(0) ?: dummyChannel
@@ -44,7 +44,7 @@ object PSD : ImageFormat("psd") {
                 val g = gchannel[pos].unsigned
                 val b = bchannel[pos].unsigned
                 val a = achannel[pos].unsigned
-                out.data[pos] = RGBA(r, g, b, a)
+                out.ints[pos] = RGBA(r, g, b, a).value
                 pos++
             }
         }

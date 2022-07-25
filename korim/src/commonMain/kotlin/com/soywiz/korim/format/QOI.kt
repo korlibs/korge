@@ -35,8 +35,8 @@ object QOI : ImageFormat("qoi") {
         val header = decodeHeader(s, props) ?: error("Not a QOI image")
         val bytes = UByteArrayInt(s.readAvailable())
         val index = RgbaArray(64)
-        val out = Bitmap32(header.width, header.height)
-        val outp = out.data
+        val out = Bitmap32(header.width, header.height, premultiplied = false)
+        val outp = RgbaArray(out.ints)
         val totalPixels = out.area
         var o = 0
         var p = 0
@@ -101,7 +101,7 @@ object QOI : ImageFormat("qoi") {
 
     override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) {
         val bitmap = image.mainBitmap.toBMP32IfRequired()
-        val pixels = bitmap.data
+        val pixels = RgbaArray(bitmap.ints)
         val index = RgbaArray(64)
         val maxSize = QOI_HEADER_SIZE + (bitmap.width * bitmap.height * (4 + 1)) + QOI_PADDING_SIZE
         val bytes = UByteArrayInt(maxSize)

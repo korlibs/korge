@@ -13,7 +13,6 @@ import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.color.RGB
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korim.color.asPremultiplied
 import com.soywiz.korim.color.decode
 import com.soywiz.korio.async.runBlockingNoSuspensions
 import com.soywiz.korio.compression.CompressionContext
@@ -188,7 +187,7 @@ object PNG : ImageFormat("png") {
 					out.write8(pos++, 0) // no filter
 					val index = bmp.index(0, y)
                     for (x in 0 until width) {
-                        val c = bmp.getIndexedRGBA(index + x)
+                        val c = bmp.getRgbaAtIndex(index + x)
                         out.write8(pos++, c.r)
                         out.write8(pos++, c.g)
                         out.write8(pos++, c.b)
@@ -298,7 +297,7 @@ object PNG : ImageFormat("png") {
 					).value
 				}.toIntArray())
 			)
-			else -> Bitmap32(width, height)
+			else -> Bitmap32(width, height, premultiplied = false)
 		}
 		val bmp8 = bmp as? Bitmap8?
 		val bmp32 = bmp as? Bitmap32?

@@ -4,6 +4,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.ScaleMode
+import kotlin.math.absoluteValue
 
 // -1 if dimensions do not match
 fun Bitmap.matchContentsDistinctCount(that: Bitmap): Int {
@@ -12,19 +13,27 @@ fun Bitmap.matchContentsDistinctCount(that: Bitmap): Int {
 	val r = that.toBMP32()
 	val width = l.width
 	val height = l.height
-	var count = 0
+    var rdiff = 0
+    var gdiff = 0
+    var bdiff = 0
+    var adiff = 0
 	for (y in 0 until height) {
 		for (x in 0 until width) {
-			if (l.getRgba(x, y) != r.getRgba(x, y)) count++
+            val rgba1 = l.getRgbaPremultiplied(x, y)
+            val rgba2 = r.getRgbaPremultiplied(x, y)
+            rdiff += (rgba1.r - rgba2.r).absoluteValue
+            gdiff += (rgba1.g - rgba2.g).absoluteValue
+            bdiff += (rgba1.b - rgba2.b).absoluteValue
+            adiff += (rgba1.a - rgba2.a).absoluteValue
 		}
 	}
-	return count
+	return rdiff + gdiff + bdiff + adiff
 }
 
 fun Bitmap.matchContents(that: Bitmap): Boolean = matchContentsDistinctCount(that) == 0
 
 fun Bitmap32.setAlpha(value: Int) {
-	for (n in 0 until this.data.size) this.data[n] = RGBA(this.data[n].rgb, value)
+	for (n in 0 until this.ints.size) this.ints[n] = RGBA(RGBA(this.ints[n]).rgb, value).value
 }
 
 fun <T : Bitmap> T.putWithBorder(x: Int, y: Int, bmp: T, border: Int = 1) {

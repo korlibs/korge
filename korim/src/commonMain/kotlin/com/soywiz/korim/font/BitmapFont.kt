@@ -108,7 +108,7 @@ class BitmapFont(
         val bmp = if (ctx.fillStyle == DefaultPaint) {
             g.bmp
         } else {
-            val bmpFill = Bitmap32(g.bmp.width, g.bmp.height).context2d {
+            val bmpFill = Bitmap32(g.bmp.width, g.bmp.height, premultiplied = true).context2d {
                 this.keepTransform {
                     this.scale(1.0 / scale)
                     this.fillStyle = ctx.fillStyle

@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.vector.rect
@@ -22,7 +23,7 @@ class Context2DCommonTest {
     @Test
     fun testFillAlpha2() = suspendTest({ !OS.isAndroid }) {
         //val image = NativeImage(3, 3).context2d {
-        val image = Bitmap32(3, 3).context2d {
+        val image = Bitmap32(3, 3, premultiplied = true).context2d {
             fill(Colors.WHITE) {
                 rect(1, 1, 1, 1)
             }
@@ -31,6 +32,6 @@ class Context2DCommonTest {
             Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK,
             Colors.TRANSPARENT_BLACK, Colors.WHITE, Colors.TRANSPARENT_BLACK,
             Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK, Colors.TRANSPARENT_BLACK
-        ), image.data.toList())
+        ), RgbaArray(image.ints).toList())
     }
 }

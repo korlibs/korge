@@ -189,8 +189,8 @@ private fun Bitmap32.toWin32Icon(): HICON? {
     Win32.ReleaseDC(null, hdc);
 
     val bitsPtr = lpBits.value
-    for (n in 0 until bmp.data.size) {
-        bitsPtr.setInt((n * 4).toLong(), bmp.data[n].value)
+    for (n in 0 until bmp.ints.size) {
+        bitsPtr.setInt((n * 4).toLong(), bmp.ints[n])
     }
 
     val hMonoBitmap = Win32.CreateBitmap(bmp.width, bmp.height, 1, 1, null)

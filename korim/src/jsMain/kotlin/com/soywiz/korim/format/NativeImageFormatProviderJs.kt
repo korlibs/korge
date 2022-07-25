@@ -55,7 +55,7 @@ private fun bswap32(v: IntArray, offset: Int, size: Int) {
 
 open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height: Int)
     : NativeImage(width, height, texSourceBase, premultiplied = true) {
-	override val name: String = "HtmlNativeImage"
+	override val name: String get() = "HtmlNativeImage"
     var texSource: TexImageSource = texSourceBase
         private set
 	val element: HTMLElement get() = texSource.unsafeCast<HTMLElement>()
@@ -74,7 +74,7 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
     val ctx: CanvasRenderingContext2D by lazy { lazyCanvasElement.getContext("2d").unsafeCast<CanvasRenderingContext2D>() }
 
     private var lastRefresh = 0.0.milliseconds
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         if (width <= 0 || height <= 0) return
         val size = width * height
 
@@ -90,19 +90,19 @@ open class HtmlNativeImage(val texSourceBase: TexImageSource, width: Int, height
         }
         val idata = ctx.getImageData(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
         val data = idata.data.buffer.asInt32Buffer().unsafeCast<IntArray>()
-        arraycopy(data, 0, out.ints, offset, size)
-        if (isBigEndian) bswap32(out.ints, offset, size)
+        arraycopy(data, 0, out, offset, size)
+        if (isBigEndian) bswap32(out, offset, size)
         if (!asumePremultiplied) {
-            premultiply(out, offset, out.asPremultiplied(), offset, width * height)
+            premultiply(RgbaArray(out), offset, RgbaPremultipliedArray(out), offset, width * height)
         }
     }
 
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         if (width <= 0 || height <= 0) return
         val size = width * height
         val idata = ctx.createImageData(width.toDouble(), height.toDouble())
         val data = idata.data.buffer.asInt32Buffer().unsafeCast<IntArray>()
-        arraycopy(out.ints, offset, data, 0, size)
+        arraycopy(out, offset, data, 0, size)
         if (!asumePremultiplied) {
             depremultiply(RgbaPremultipliedArray(data), 0, RgbaArray(data), 0, width * height)
         }

@@ -89,7 +89,7 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                                 try {
                                     val pixels = CFDataGetBytePtr(data);
                                     Bitmap32(iwidth, iheight, premultiplied = false).also { bmp ->
-                                        bmp.data.ints.usePinned { pin ->
+                                        bmp.ints.usePinned { pin ->
                                             memcpy(pin.startAddressOf, pixels, (iwidth * iheight * 4).convert())
                                         }
                                     }

@@ -16,6 +16,7 @@ import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.color.toVector3D
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.paint.ColorPaint
@@ -214,7 +215,7 @@ object GpuShapeViewPrograms {
         is GradientPaint -> {
             val gradientBitmap = Bitmap32(256, 1, premultiplied = true)
             gradientBitmap.lock {
-                paint.fillColors(gradientBitmap.dataPremult)
+                paint.fillColors(RgbaPremultipliedArray(gradientBitmap.ints))
             }
 
             val npaint = paint.copy(transform = Matrix().apply {

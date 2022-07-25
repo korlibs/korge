@@ -69,7 +69,7 @@ abstract class NativeImageFormatProvider : ImageFormatDecoder {
 
     abstract suspend fun display(bitmap: Bitmap, kind: Int): Unit
     abstract fun create(width: Int, height: Int, premultiplied: Boolean? = null): NativeImage
-    open fun create(width: Int, height: Int, pixels: RgbaArray, premultiplied: Boolean? = null): NativeImage {
+    open fun create(width: Int, height: Int, pixels: IntArray, premultiplied: Boolean? = null): NativeImage {
         val image = create(width, height, premultiplied)
         image.writePixelsUnsafe(0, 0, width, height, pixels)
         return image
@@ -122,13 +122,14 @@ open class BaseNativeImageFormatProvider : NativeImageFormatProvider() {
 }
 
 open class BitmapNativeImage(val bitmap: Bitmap32) : NativeImage(bitmap.width, bitmap.height, bitmap, bitmap.premultiplied) {
+    override val name: String get() = "BitmapNativeImage"
     @Suppress("unused")
-    val intData: IntArray = bitmap.data.ints
+    val intData: IntArray = bitmap.ints
     constructor(bitmap: Bitmap) : this(bitmap.toBMP32IfRequired())
     override fun getContext2d(antialiasing: Boolean): Context2d = bitmap.getContext2d(antialiasing)
     override fun toBMP32(): Bitmap32 = bitmap
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.readPixelsUnsafe(x, y, width, height, out, offset)
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) = bitmap.writePixelsUnsafe(x, y, width, height, out, offset)
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) = bitmap.readPixelsUnsafe(x, y, width, height, out, offset)
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) = bitmap.writePixelsUnsafe(x, y, width, height, out, offset)
     override fun setRgbaRaw(x: Int, y: Int, v: RGBA) = bitmap.setRgbaRaw(x, y, v)
     override fun getRgbaRaw(x: Int, y: Int): RGBA = bitmap.getRgbaRaw(x, y)
 }

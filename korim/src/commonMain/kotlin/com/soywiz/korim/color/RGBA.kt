@@ -114,6 +114,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
     override operator fun compareTo(other: RGBA): Int = this.value.compareTo(other.value)
     override fun interpolateWith(ratio: Double, other: RGBA): RGBA = RGBA.interpolate(this, other, ratio)
 
+    fun premultipliedValue(premultiplied: Boolean): Int = if (premultiplied) this.premultiplied.value else this.value
+
     val premultiplied: RGBAPremultiplied get() = premultipliedFast
 
     val premultipliedFast: RGBAPremultiplied get() {
@@ -342,9 +344,11 @@ inline class RGBAPremultiplied(val value: Int) {
 
 fun RGBA.asPremultiplied() = RGBAPremultiplied(value)
 fun RGBAPremultiplied.asNonPremultiplied() = RGBA(value)
+fun RGBAPremultiplied.asStraight() = RGBA(value)
 
 fun RgbaArray.asPremultiplied() = RgbaPremultipliedArray(ints)
 fun RgbaPremultipliedArray.asNonPremultiplied() = RgbaArray(ints)
+fun RgbaPremultipliedArray.asStraight() = RgbaArray(ints)
 
 inline class RgbaPremultipliedArray(val ints: IntArray) {
     companion object {
@@ -359,8 +363,8 @@ inline class RgbaPremultipliedArray(val ints: IntArray) {
 
     fun fill(value: RGBAPremultiplied, start: Int = 0, end: Int = this.size): Unit = ints.fill(value.value, start, end)
 
-    fun premultiply(start: Int = 0, end: Int = size): RgbaArray {
-        for (n in start until end) this[n] = this[n].asNonPremultiplied().premultiplied
+    fun depremultiplyInplace(start: Int = 0, end: Int = size): RgbaArray {
+        for (n in start until end) this.ints[n] = this[n].depremultiplied.value
         return this.asNonPremultiplied()
     }
 
@@ -439,8 +443,8 @@ inline class RgbaArray(val ints: IntArray) : List<RGBA> {
 	operator fun set(index: Int, color: RGBA) { ints[index] = color.value }
 	fun fill(value: RGBA, start: Int = 0, end: Int = this.size): Unit = ints.fill(value.value, start, end)
 
-    fun depremultiply(start: Int = 0, end: Int = size): RgbaPremultipliedArray {
-        for (n in start until end) this[n] = this[n].asPremultiplied().depremultiplied
+    fun premultiplyInplace(start: Int = 0, end: Int = size): RgbaPremultipliedArray {
+        for (n in start until end) this.ints[n] = this[n].premultiplied.value
         return this.asPremultiplied()
     }
 

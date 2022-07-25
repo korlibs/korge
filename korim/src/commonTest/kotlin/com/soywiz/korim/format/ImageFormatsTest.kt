@@ -68,15 +68,16 @@ class ImageFormatsTest {
 	fun png32EncoderPremultiplied() = suspendTestNoBrowser {
 		val bitmapOriginal = resourcesVfs["kotlin32.png"].readBitmapNoNative(props.copy(premultiplied = false)).toBMP32()
         //assertEquals(false, bitmapOriginal.premultiplied)
-		val bitmap = bitmapOriginal.premultiplied()
-        assertEquals(true, bitmap.premultiplied)
-        //showImageAndWait(bitmap)
-		val bitmap2 = PNG.decode(PNG.encode(bitmap))
-		//showImageAndWait(bitmap2)
-		assertEquals("Bitmap32(190, 190)", bitmap.toString())
+		val bitmap1 = bitmapOriginal.premultiplied()
+        assertEquals(true, bitmap1.premultiplied)
+		val bitmap2 = PNG.decode(PNG.encode(bitmap1))
+        //bitmap1.showImageAndWait()
+		//bitmap2.showImageAndWait()
+		assertEquals("Bitmap32(190, 190)", bitmap1.toString())
 		assertEquals("Bitmap32(190, 190)", bitmap2.toString())
 		//showImageAndWait(Bitmap32.diff(bitmap, bitmap2))
-        assertTrue { bitmapOriginal.matchContentsDistinctCount(bitmap2) < 500 }
+        val dist = bitmapOriginal.matchContentsDistinctCount(bitmap2)
+        assertTrue(message = "$dist < 500") { dist < 500 }
 	}
 
 	@Test

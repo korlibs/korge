@@ -523,7 +523,7 @@ abstract class BmpSlice(
             if (!rotated) {
                 bmp.copyUnchecked(x, y, out, frameOffsetX, frameOffsetY, width, height)
             } else {
-                val rgbaArray = RgbaArray(width)
+                val rgbaArray = IntArray(width)
                 for (x0 in 0 until height) {
                     bmp.readPixelsUnsafe(x + x0, y, 1, width, rgbaArray)
                     out.writePixelsUnsafe(frameOffsetX, frameOffsetY + x0, width, 1, rgbaArray)

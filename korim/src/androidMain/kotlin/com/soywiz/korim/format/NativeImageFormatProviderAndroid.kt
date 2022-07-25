@@ -152,7 +152,7 @@ fun Bitmap.toAndroidBitmap(): android.graphics.Bitmap {
     val bmp32 = this.toBMP32()
     bmp32.updateColors { RGBA(it.toAndroidColor()) }
     return android.graphics.Bitmap.createBitmap(
-        bmp32.data.ints,
+        bmp32.ints,
         0,
         bmp32.width,
         bmp32.width,
@@ -170,22 +170,24 @@ class AndroidNativeImage(
     val androidBitmap: android.graphics.Bitmap,
     val originalPremultiplied: Boolean = androidBitmap.isPremultipliedSafe()
 ) : NativeImage(androidBitmap.width, androidBitmap.height, androidBitmap, premultiplied = originalPremultiplied) {
-    override val name: String = "AndroidNativeImage"
+    override val name: String get() = "AndroidNativeImage"
 
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
-        androidBitmap.getPixels(out.ints, offset, width, x, y, width, height) // This returns values in straight alpha
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
+        val outRgba = RgbaArray(out)
+        androidBitmap.getPixels(out, offset, width, x, y, width, height) // This returns values in straight alpha
         val count = width * height
-        AndroidColor.androidToRgba(out, offset, count)
+        AndroidColor.androidToRgba(RgbaArray(out), offset, count)
         if (originalPremultiplied) {
-            for (n in offset until offset + count) out.ints[n] = out[n].premultiplied.value
+            for (n in offset until offset + count) out[n] = outRgba[n].premultiplied.value
         }
     }
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
+        val outRgba = RgbaArray(out)
         val count = width * height
         val temp = RgbaArray(IntArray(count + offset))
-        AndroidColor.rgbaToAndroid(out, offset, count, temp)
+        AndroidColor.rgbaToAndroid(outRgba, offset, count, temp)
         if (originalPremultiplied) {
-            for (n in offset until offset + count) out.ints[n] = out[n].asPremultiplied().depremultiplied.value
+            for (n in offset until offset + count) out[n] = outRgba[n].asPremultiplied().depremultiplied.value
         }
         androidBitmap.setPixels(temp.ints, 0, width, x, y, width, height) // This expects values in straight alpha
     }

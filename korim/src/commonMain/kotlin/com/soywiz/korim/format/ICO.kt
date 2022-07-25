@@ -93,7 +93,7 @@ object ICO : ImageFormat("ico") {
 			return when (bitCount) {
 				4 -> Bitmap4(e.width, e.height, data, palette)
 				8 -> Bitmap8(e.width, e.height, data, palette)
-				32 -> Bitmap32(e.width, e.height).writeDecoded(BGRA, data)
+				32 -> Bitmap32(e.width, e.height, premultiplied = false).writeDecoded(BGRA, data)
 				else -> throw UnsupportedOperationException("Unsupported bitCount: $bitCount")
 			}
 		}

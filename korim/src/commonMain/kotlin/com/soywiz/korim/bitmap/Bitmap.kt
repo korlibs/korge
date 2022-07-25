@@ -25,15 +25,23 @@ abstract class Bitmap(
     override val width: Int,
     override val height: Int,
     val bpp: Int,
-    var premultiplied: Boolean,
+    premultiplied: Boolean,
     val backingArray: Any?
 ) : Sizeable, ISizeInt, Extra by Extra.Mixin() {
+
+    var premultiplied: Boolean = premultiplied
+        set(value) {
+            field = value
+            //printStackTrace("Changed premultiplied! $value")
+        }
+
     var asumePremultiplied: Boolean = false
     //override fun getOrNull() = this
     //override suspend fun get() = this
 
     //@ThreadLocal
-    protected val tempRgba: RgbaArray by lazy { RgbaArray(width * 2) }
+    protected val tempInts: IntArray by lazy { IntArray(width * 2) }
+    protected val tempRgba: RgbaArray get() = RgbaArray(tempInts)
 
     /** Version of the content. lock+unlock mutates this version to allow for example to re-upload the bitmap to the GPU when synchronizing bitmaps into textures */
     var contentVersion: Int = 0
@@ -87,13 +95,13 @@ abstract class Bitmap(
         }
     }
 
-    open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    open fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int = 0) {
         var n = offset
-        for (y0 in 0 until height) for (x0 in 0 until width) out[n++] = getRgbaRaw(x0 + x, y0 + y)
+        for (y0 in 0 until height) for (x0 in 0 until width) out[n++] = getRgbaRaw(x0 + x, y0 + y).value
     }
-    open fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    open fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int = 0) {
         var n = offset
-        for (y0 in 0 until height) for (x0 in 0 until width) setRgbaRaw(x0 + x, y0 + y, out[n++])
+        for (y0 in 0 until height) for (x0 in 0 until width) setRgbaRaw(x0 + x, y0 + y, RGBA(out[n++]))
     }
 
     /** UNSAFE: Sets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
@@ -176,8 +184,8 @@ abstract class Bitmap(
 
 	open fun copyUnchecked(srcX: Int, srcY: Int, dst: Bitmap, dstX: Int, dstY: Int, width: Int, height: Int) {
 		for (y in 0 until height) {
-            readPixelsUnsafe(srcX, srcY + y, width, 1, tempRgba, 0)
-            dst.writePixelsUnsafe(dstX, dstY + y, width, 1, tempRgba, 0)
+            readPixelsUnsafe(srcX, srcY + y, width, 1, tempInts, 0)
+            dst.writePixelsUnsafe(dstX, dstY + y, width, 1, tempInts, 0)
 		}
 	}
 
@@ -235,7 +243,7 @@ abstract class Bitmap(
 	open fun createWithThisFormat(width: Int, height: Int): Bitmap = invalidOp("Unsupported createWithThisFormat ($this)")
 
 	open fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { out ->
-        this.readPixelsUnsafe(0, 0, width, height, out.data, 0)
+        this.readPixelsUnsafe(0, 0, width, height, out.ints, 0)
     }
 
     fun toBMP32IfRequired(): Bitmap32 = if (this is Bitmap32) this else this.toBMP32()
@@ -256,8 +264,8 @@ abstract class Bitmap(
     }
 }
 
-fun Bitmap.readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int): RgbaArray {
-    val out = RgbaArray(width * height)
+fun Bitmap.readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int): IntArray {
+    val out = IntArray(width * height)
     readPixelsUnsafe(x, y, width, height, out, 0)
     return out
 }
@@ -271,7 +279,7 @@ fun <T : Bitmap> T.extract(x: Int, y: Int, width: Int, height: Int): T {
 }
 
 fun Bitmap32Context2d(width: Int, height: Int, antialiased: Boolean = true, block: Context2d.() -> Unit): Bitmap32 {
-    return Bitmap32(width, height).context2d(antialiased = antialiased, doLock = false) { block() }
+    return Bitmap32(width, height, premultiplied = true).context2d(antialiased = antialiased, doLock = false) { block() }
 }
 
 inline fun <T : Bitmap> T.context2d(antialiased: Boolean = true, doLock: Boolean = true, callback: Context2d.() -> Unit): T {

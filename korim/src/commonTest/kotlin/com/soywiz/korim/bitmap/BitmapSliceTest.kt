@@ -13,7 +13,7 @@ import kotlin.test.assertNotEquals
 class BitmapSliceTest {
     @Test
     fun test() {
-        val bmp = Bitmap32(64, 64)
+        val bmp = Bitmap32(64, 64, premultiplied = false)
         assertEquals("Rectangle(x=0, y=0, width=32, height=32)", bmp.sliceWithSize(0, 0, 32, 32).bounds.toString())
         assertEquals("Rectangle(x=32, y=32, width=32, height=32)", bmp.sliceWithSize(32, 32, 32, 32).bounds.toString())
         assertEquals("Rectangle(x=48, y=48, width=16, height=16)", bmp.sliceWithSize(48, 48, 32, 32).bounds.toString())
@@ -24,7 +24,7 @@ class BitmapSliceTest {
 
     @Test
     fun testBmpSize() {
-        val slice = Bitmap32(128, 64).sliceWithSize(24, 16, 31, 17)
+        val slice = Bitmap32(128, 64, premultiplied = false).sliceWithSize(24, 16, 31, 17)
         assertEquals(
             """
                 bmpSize=128,64
@@ -47,7 +47,7 @@ class BitmapSliceTest {
 
     @Test
     fun testRotate() {
-        val bmp = Bitmap32(128, 64).slice()
+        val bmp = Bitmap32(128, 64, premultiplied = false).slice()
         val bmp2 = bmp.rotatedRight()
         assertEquals("128x64", bmp.sizeString)
         assertEquals("64x128", bmp2.sizeString)
@@ -56,7 +56,7 @@ class BitmapSliceTest {
     @Test
     fun testTransformed() {
         if (OS.isJvm) {
-            val bmp = Bitmap32(20, 10)
+            val bmp = Bitmap32(20, 10, premultiplied = false)
             val slice = bmp.sliceWithSize(1, 1, 8, 18, imageOrientation = ImageOrientation.ROTATE_90)
 
             slice.setRgba(0, 0, Colors.RED)
@@ -89,7 +89,7 @@ class BitmapSliceTest {
     @Test
     fun testDeprecatedConstructors() {
         if (OS.isJvm) {
-            val bmp = Bitmap32(20, 20)
+            val bmp = Bitmap32(20, 20, premultiplied = false)
             bmp.setRgbaRaw(1, 1, Colors.RED)
             bmp.setRgbaRaw(18, 8, Colors.GREEN)
 
@@ -121,7 +121,7 @@ class BitmapSliceTest {
     @Test
     fun testReadPixels() {
         if (OS.isJvm) {
-            val bmp = Bitmap32(20, 10)
+            val bmp = Bitmap32(20, 10, premultiplied = false)
             val slice = bmp.sliceWithSize(1, 1, 8, 18, imageOrientation = ImageOrientation.ROTATE_90)
 
             slice.setRgba(0, 0, Colors.RED)
@@ -156,7 +156,7 @@ class BitmapSliceTest {
 
     @Test
     fun testTransformFrame() {
-        val baseSlice = Bitmap32(5, 10).slice().virtFrame(2, 2, 10, 20)
+        val baseSlice = Bitmap32(5, 10, premultiplied = false).slice().virtFrame(2, 2, 10, 20)
 
         var slice: BmpCoordsWithT<Bitmap> = baseSlice
         assertEquals(2, slice.frameOffsetX)
@@ -217,8 +217,8 @@ class BitmapSliceTest {
 
     @Test
     fun textExtractBitmap32() {
-        testExtract90(Bitmap32(20, 10))
-        testExtract270(Bitmap32(20, 10))
+        testExtract90(Bitmap32(20, 10, premultiplied = false))
+        testExtract270(Bitmap32(20, 10, premultiplied = false))
     }
 
     @Test

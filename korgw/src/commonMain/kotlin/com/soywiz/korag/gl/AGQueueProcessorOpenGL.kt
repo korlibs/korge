@@ -839,7 +839,7 @@ class AGQueueProcessorOpenGL(
         is FloatBitmap32 -> FBuffer(bmp.area * 4 * 4).also { mem -> arraycopy(bmp.data, 0, mem.arrayFloat, 0, bmp.area * 4) }
         else -> FBuffer(bmp.area * 4).also { mem ->
             val abmp: Bitmap32 = if (premultiplied) bmp.toBMP32IfRequired().premultipliedIfRequired() else bmp.toBMP32IfRequired().depremultipliedIfRequired()
-            arraycopy(abmp.data.ints, 0, mem.arrayInt, 0, abmp.area)
+            arraycopy(abmp.ints, 0, mem.arrayInt, 0, abmp.area)
         }
     }
 

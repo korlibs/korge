@@ -12,11 +12,14 @@ import kotlin.math.max
 abstract class BitmapIndexed(
 	bpp: Int,
 	width: Int, height: Int,
-	var data: ByteArray = ByteArray(width * height / (8 / bpp)),
+	var bytes: ByteArray = ByteArray(width * height / (8 / bpp)),
 	var palette: RgbaArray = RgbaArray(1 shl bpp)
-) : Bitmap(width, height, bpp, false, data) {
+) : Bitmap(width, height, bpp, false, bytes) {
+
+    val data: ByteArray get() = bytes
+
 	init {
-		if (data.size < width * height / (8 / bpp)) throw RuntimeException("Bitmap data is too short: width=$width, height=$height, data=ByteArray(${data.size}), area=${width * height}")
+		if (bytes.size < width * height / (8 / bpp)) throw RuntimeException("Bitmap data is too short: width=$width, height=$height, data=ByteArray(${data.size}), area=${width * height}")
 	}
 
 	override fun toString() = "BitmapIndexed(bpp=$bpp, width=$width, height=$height, clut=${palette.size})"
@@ -95,7 +98,7 @@ abstract class BitmapIndexed(
 	}
 
 	override fun toBMP32(): Bitmap32 = Bitmap32(width, height, premultiplied = premultiplied).also { outBmp ->
-        val out = outBmp.data.ints
+        val out = outBmp.ints
         val pal = this@BitmapIndexed.palette.ints
         for (n in 0 until area) out[n] = pal[getIntIndex(n)]
 	}

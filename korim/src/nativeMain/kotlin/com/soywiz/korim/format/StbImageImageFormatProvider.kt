@@ -39,7 +39,7 @@ open class StbImageNativeImageFormatProvider : BaseNativeImageFormatProvider() {
                             if (pixelsPtr != null) {
                                 val bmp = Bitmap32(width.value, height.value, premultiplied = false)
                                 //println("IMAGE: ${width.value}, ${height.value}, ${comp.value}")
-                                bmp.data.ints.usePinned { pixelsPin ->
+                                bmp.ints.usePinned { pixelsPin ->
                                     //val components = comp.value
                                     val components = 4 // comp.value might be 3, but it is still packed on 32-bits
                                     memcpy(pixelsPin.addressOf(0), pixelsPtr, (width.value * height.value * components).convert())

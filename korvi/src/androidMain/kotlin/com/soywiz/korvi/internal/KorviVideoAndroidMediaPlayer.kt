@@ -122,6 +122,7 @@ data class SurfaceTextureInfo(val surface: Surface, val texture: SurfaceTexture,
 
 class SurfaceNativeImage constructor(width: Int, height: Int, val info: SurfaceTextureInfo) :
     ForcedTexNativeImage(width, height, true), Disposable {
+    override val name: String get() = "SurfaceNativeImage"
     val surface get() = info.surface
     val surfaceTexture get() = info.texture
 
@@ -151,12 +152,12 @@ class SurfaceNativeImage constructor(width: Int, height: Int, val info: SurfaceT
     }
 
     // @TODO: Not required just for rendering, since ForcedTexId is set. But we might want to read its pixels at some point.
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         TODO("Unsupported")
     }
 
     // @TODO: Not required just for rendering, since ForcedTexId is set. But we might want to read its pixels at some point.
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         TODO("Unsupported")
     }
 }

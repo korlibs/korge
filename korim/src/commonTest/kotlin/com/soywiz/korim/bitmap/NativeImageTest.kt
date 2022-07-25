@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.buildShape
 import com.soywiz.korim.vector.render
@@ -34,7 +35,7 @@ class NativeImageTest {
 
     @Test
     fun testEmptyNativeImage() {
-        val array = RgbaArray(0)
+        val array = IntArray(0)
         val image = NativeImage(0, 0)
         image.writePixelsUnsafe(0, 0, 0, 0, array, 0)
         image.readPixelsUnsafe(0, 0, 0, 0, array, 0)
@@ -53,15 +54,15 @@ class NativeImageTest {
 
         assertEquals(
             "#ff0000,#00ff00,#0000ff,#ffc0cb",
-            original.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+            original.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { RGBA(it).hexStringNoAlpha }
         )
         assertEquals(
             "#00ff00,#ff0000,#ffc0cb,#0000ff",
-            flippedX.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+            flippedX.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { RGBA(it).hexStringNoAlpha }
         )
         assertEquals(
             "#0000ff,#ffc0cb,#ff0000,#00ff00",
-            flippedY.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+            flippedY.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { RGBA(it).hexStringNoAlpha }
         )
     }
 
