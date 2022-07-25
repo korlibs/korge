@@ -3,7 +3,7 @@ package com.soywiz.kds
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.lock.Lock
 
-open class ConcurrentPool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
+open class ConcurrentPool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T)
     : Pool<T>(reset, preallocate, gen) {
     private val lock = Lock()
 
@@ -26,7 +26,7 @@ open class ConcurrentPool<T>(private val reset: (T) -> Unit = {}, preallocate: I
  * The method [alloc] retrieves from the pool or allocates a new object,
  * while the [free] method pushes back one element to the pool and resets it to reuse it.
  */
-open class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T) {
+open class Pool<T : Any>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, private val gen: (Int) -> T) {
     companion object {
         fun <T : Poolable> fromPoolable(preallocate: Int = 0, gen: (Int) -> T): Pool<T> =
             Pool(reset = { it.reset() }, preallocate = preallocate, gen = gen)
@@ -61,6 +61,11 @@ open class Pool<T>(private val reset: (T) -> Unit = {}, preallocate: Int = 0, pr
     open fun free(element: T) {
         reset(element)
         items.push(element)
+    }
+
+    fun freeNotNull(element: T?) {
+        if (element == null) return
+        free(element)
     }
 
     fun free(vararg elements: T) { elements.fastForEach { free(it) } }

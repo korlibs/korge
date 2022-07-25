@@ -86,8 +86,7 @@ open class ComposedFilter private constructor(val filters: FastArrayList<Filter>
         var filterScale = filterScale
         val resultPool = ctx.renderToTextureResultPool
         if (!isIdentity) {
-            for (n in 0 until filters.size) {
-                val filter = filters[n]
+            filters.fastForEach { filter ->
                 //if (n != 0) filterScale = filter.recommendedFilterScale
                 val result = resultPool.alloc()
                 stepBefore()
@@ -95,7 +94,7 @@ open class ComposedFilter private constructor(val filters: FastArrayList<Filter>
                 filter.renderToTextureWithBorderUnsafe(ctx, mat, tex, texWidth, texHeight, filterScale, result)
                 result.render()
                 ctx.flush()
-                last?.let { resultPool.free(it) }
+                resultPool.freeNotNull(last)
                 last = result
                 mat = result.matrix
                 tex = result.newtex!!
@@ -104,7 +103,7 @@ open class ComposedFilter private constructor(val filters: FastArrayList<Filter>
             }
         }
         IdentityFilter.render(ctx, mat, tex, texWidth, texHeight, renderColorAdd, renderColorMul, blendMode, filterScale)
-        last?.let { resultPool.free(it) }
+        resultPool.freeNotNull(last)
 	}
 
     /*
