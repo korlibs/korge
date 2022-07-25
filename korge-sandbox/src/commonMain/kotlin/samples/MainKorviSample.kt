@@ -2,6 +2,7 @@ package samples
 
 import com.soywiz.klock.*
 import com.soywiz.klock.hr.*
+import com.soywiz.kmem.arraycopy
 import com.soywiz.korge.input.*
 import com.soywiz.korge.render.*
 import com.soywiz.korge.scene.Scene
@@ -101,9 +102,9 @@ class MainKorviSample : Scene() {
                         bmp = Bitmap32(itData.width, itData.height)
                     }
 
-                    if (!itData.data.ints.contentEquals(bmp.data.ints)) {
+                    if (!itData.ints.contentEquals(bmp.ints)) {
                         bmp.lock {
-                            com.soywiz.korim.color.arraycopy(itData.data, 0, bmp.data, 0, bmp.area)
+                            arraycopy(itData.ints, 0, bmp.ints, 0, bmp.area)
                         }
                     }
                     bitmap = BmpCoordsWithInstance(bmp, rcoords)

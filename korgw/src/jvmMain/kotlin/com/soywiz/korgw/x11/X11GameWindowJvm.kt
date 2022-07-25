@@ -14,6 +14,7 @@ import com.soywiz.korgw.DialogInterface
 import com.soywiz.korgw.EventLoopGameWindow
 import com.soywiz.korgw.ZenityDialogs
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.color.RGBA
 import com.sun.jna.*
 import com.sun.jna.platform.unix.X11.*
 
@@ -78,7 +79,7 @@ class X11GameWindow(val checkGl: Boolean) : EventLoopGameWindow() {
         bytes.write32LE(VSIZE, bmp.height)
         for (n in 0 until bmp.area) {
             val pos = VSIZE * (2 + n)
-            val c = bmp.data[n]
+            val c = RGBA(bmp.ints[n])
             bytes[pos + 0] = c.r.toByte()
             bytes[pos + 1] = c.g.toByte()
             bytes[pos + 2] = c.b.toByte()

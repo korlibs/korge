@@ -768,7 +768,7 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
                 }
                 */
 				is TagDefineBits, is TagDefineBitsLossless -> {
-					var fbmp: Bitmap = Bitmap32(1, 1)
+					var fbmp: Bitmap = Bitmap32(1, 1, premultiplied = false)
 					it as IDefinitionTag
 
 					when (it) {
@@ -836,13 +836,16 @@ class SwfLoaderMethod(val context: AnLibrary.Context, val config: SWFExportConfi
 									val components = uncompressedData.size / (it.bitmapWidth * it.bitmapHeight)
 									val colorFormat = BGRA
 									//fbmp = Bitmap32(it.bitmapWidth, it.bitmapHeight, colorFormat.decode(uncompressedData, littleEndian = false))
-									fbmp = Bitmap32(
+									val bmp = Bitmap32(
 										it.bitmapWidth,
 										it.bitmapHeight,
 										colorFormat.decode(uncompressedData, littleEndian = false)
 									)
-									if (!it.hasAlpha) {
-										for (n in 0 until fbmp.data.size) fbmp.data[n] = RGBA(fbmp.data[n].rgb, 0xFF)
+                                    fbmp = bmp
+                                    if (!it.hasAlpha) {
+										for (n in 0 until fbmp.ints.size) {
+                                            bmp.setRgbaAtIndex(n, RGBA(bmp.getRgbaAtIndex(n).rgb, 0xFF))
+                                        }
 									}
 								}
 								else -> Unit
