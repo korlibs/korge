@@ -43,13 +43,11 @@ jobs:
               - '**/gradle/**'
               - '**/src/common*Main/**'
               - '**/src/common*Test/**'
-              - '!(korge-sandbox)/**'
             jvm:
               - '**/src/jvm*Main/**'
               - '**/src/jvm*Test/**'
               - '**/src/concurrent*Main/**'
               - '**/src/concurrent*Test/**'
-              - 'korge-sandbox/**'
             android:
               - '**/AndroidManifest.xml'
               - '**/src/android*Main/**'
@@ -59,27 +57,22 @@ jobs:
               - '**/src/concurrent*Main/**'
               - '**/src/concurrent*Test/**'
               - '**/src/main/**'
-              - '!(korge-sandbox)/**'
             js:
               - '**/src/js*Main/**'
               - '**/src/js*Test/**'
-              - '!(korge-sandbox)/**'
             native:
               - '**/src/native*Main/*.kt'
               - '**/src/native*Test/*.kt'
               - '**/src/concurrent*Main/**'
               - '**/src/concurrent*Test/**'
-              - '!(korge-sandbox)/**'
             windows:
               - '**/src/mingw*Main/*.kt'
               - '**/src/mingw*Test/*.kt'
-              - '!(korge-sandbox)/**'
             linux:
               - '**/src/linux*Main/*.kt'
               - '**/src/linux*Test/*.kt'
               - '**/src/posix*Main/*.kt'
               - '**/src/posix*Test/*.kt'
-              - '!(korge-sandbox)/**'
             macos:
               - '**/src/macos*Main/*.kt'
               - '**/src/macos*Test/*.kt'
@@ -87,7 +80,6 @@ jobs:
               - '**/src/darwin*Test/*.kt'
               - '**/src/posix*Main/*.kt'
               - '**/src/posix*Test/*.kt'
-              - '!(korge-sandbox)/**'
             ios:
               - '**/src/ios*Main/*.kt'
               - '**/src/ios*Test/*.kt'
@@ -99,7 +91,6 @@ jobs:
               - '**/src/darwin*Test/*.kt'
               - '**/src/posix*Main/*.kt'
               - '**/src/posix*Test/*.kt'
-              - '!(korge-sandbox)/**'
 
   test-jvm:
     needs: changes
