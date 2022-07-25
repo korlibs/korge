@@ -104,6 +104,14 @@ abstract class Bitmap(
         for (y0 in 0 until height) for (x0 in 0 until width) setRgbaRaw(x0 + x, y0 + y, RGBA(out[n++]))
     }
 
+    //open fun readRgbaUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    //    readPixelsUnsafe(x, y, width, height, out.ints, offset)
+    //    if (premultiplied) RgbaPremultipliedArray(out.ints).depremultiplyInplace(offset, offset + width * height)
+    //}
+    //open fun writeRgbaUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int = 0) {
+    //    TODO()
+    //}
+
     /** UNSAFE: Sets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
     open fun setRgbaRaw(x: Int, y: Int, v: RGBA): Unit = TODO()
     /** UNSAFE: Gets the color [v] in the [x], [y] coordinates in the internal format of this Bitmap (either premultiplied or not) */
