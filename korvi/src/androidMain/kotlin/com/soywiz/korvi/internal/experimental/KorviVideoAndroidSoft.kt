@@ -63,7 +63,7 @@ class AndroidKorviVideoSoft(val file: VfsFile, val androidContext: Context, val 
 
                 val bmp = Bitmap32(image.width, image.height, premultiplied = true)
 
-                val bmpData = bmp.data
+                val bmpData = RgbaArray(bmp.ints)
                 for (y in 0 until image.height) {
                     val yPos = y * py.rowStride
                     val uvPos = (y / 2) * pu.rowStride

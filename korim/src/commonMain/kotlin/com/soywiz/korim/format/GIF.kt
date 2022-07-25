@@ -35,10 +35,10 @@ object GIF : ImageFormat("gif") {
         val gif = GifDec.gd_open_gif(s.clone())
         val frames = arrayListOf<ImageFrame>()
         while (GifDec.gd_get_frame(gif) >= 1) {
-            val out = Bitmap32(gif.width, gif.height)
+            val out = Bitmap32(gif.width, gif.height, premultiplied = false)
             val time = (max(gif.gce.delay, 1) * 10).milliseconds
             try {
-                GifDec.gd_render_frame(gif, out.data)
+                GifDec.gd_render_frame(gif, RgbaArray(out.ints))
                 frames.add(ImageFrame(out, time = time, main = (frames.size == 0)))
             } catch (e: Throwable) {
                 e.printStackTrace()

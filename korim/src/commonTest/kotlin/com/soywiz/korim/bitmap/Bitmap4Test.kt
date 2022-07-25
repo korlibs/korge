@@ -18,14 +18,14 @@ class Bitmap4Test {
         assertEquals(1, bmp[1, 0])
         assertEquals(2, bmp[2, 0])
 
-        assertEquals(Colors.RED, bmp.getRgba(0, 0))
-        assertEquals(Colors.GREEN, bmp.getRgba(1, 0))
-        assertEquals(Colors.BLUE, bmp.getRgba(2, 0))
+        assertEquals(Colors.RED, bmp.getRgbaRaw(0, 0))
+        assertEquals(Colors.GREEN, bmp.getRgbaRaw(1, 0))
+        assertEquals(Colors.BLUE, bmp.getRgbaRaw(2, 0))
 
         val bmp32 = bmp.toBMP32()
 
-        assertEquals(Colors.RED, bmp32.getRgba(0, 0))
-        assertEquals(Colors.GREEN, bmp32.getRgba(1, 0))
-        assertEquals(Colors.BLUE, bmp32.getRgba(2, 0))
+        assertEquals(Colors.RED, bmp32.getRgbaRaw(0, 0))
+        assertEquals(Colors.GREEN, bmp32.getRgbaRaw(1, 0))
+        assertEquals(Colors.BLUE, bmp32.getRgbaRaw(2, 0))
     }
 }

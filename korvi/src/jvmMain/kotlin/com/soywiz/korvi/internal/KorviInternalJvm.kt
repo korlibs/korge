@@ -158,14 +158,14 @@ internal fun Picture.toBmp(): Bitmap32 {
     val pic = Picture.createCropped(width, height, ColorSpace.BGR, crop)
     val transform = ColorUtil.getTransform(color, ColorSpace.RGB)
     transform.transform(this, pic)
-    val bmp = Bitmap32(pic.width, pic.height)
+    val bmp = Bitmap32(pic.width, pic.height, premultiplied = false)
     //RgbToBgr().transform(bgr, bgr)
     val p = pic.getPlaneData(0)
     for (n in 0 until width * height) {
         val r = p[n * 3 + 0].toInt() + 128
         val g = p[n * 3 + 1].toInt() + 128
         val b = p[n * 3 + 2].toInt() + 128
-        bmp.data[n] = RGBA(r, g, b, 0xFF)
+        bmp.ints[n] = RGBA(r, g, b, 0xFF).value
     }
     return bmp
 }

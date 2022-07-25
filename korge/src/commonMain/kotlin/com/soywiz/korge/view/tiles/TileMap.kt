@@ -66,7 +66,7 @@ inline fun Container.tileMap(
 ) = TileMap(map.toIntArray2(), tileset, smoothing, orientation, staggerAxis, staggerIndex, tileSize).repeat(repeatX, repeatY).addTo(this, callback)
 
 @PublishedApi
-internal fun Bitmap32.toIntArray2() = IntArray2(width, height, data.ints)
+internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
 
 abstract class BaseTileMap(
     intMap: IntArray2,

@@ -1,12 +1,12 @@
 package com.soywiz.korma.geom.binpack
 
 import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.Sizeable
 import kotlin.collections.Iterable
 import kotlin.collections.List
-import kotlin.collections.any
 import kotlin.collections.filterNotNull
 import kotlin.collections.hashMapOf
 import kotlin.collections.map
@@ -40,7 +40,7 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
     }
 
     fun add(width: Double, height: Double): Rectangle = addOrNull(width, height)
-        ?: throw IllegalStateException("Size '${this.width}x${this.height}' doesn't fit in '${this.width}x${this.height}'")
+        ?: throw ImageDoNotFitException(width, height, this)
     fun add(width: Int, height: Int): Rectangle = add(width.toDouble(), height.toDouble())
     fun add(width: Float, height: Float): Rectangle = add(width.toDouble(), height.toDouble())
 
@@ -78,8 +78,11 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
             var currentBinPacker = BinPacker(maxWidth, maxHeight)
             var currentPairs = FastArrayList<Pair<T, Rectangle>>()
             val sortedItems = items.sortedByDescending { getSize(it).area }
-            if (sortedItems.any { getSize(it).let { size -> size.width > maxWidth || size.height > maxHeight } }) {
-                throw IllegalArgumentException("Item is bigger than max size")
+            sortedItems.fastForEach {
+                val size = getSize(it)
+                if (size.width > maxWidth || size.height > maxHeight) {
+                    throw ImageDoNotFitException(size.width, size.height, currentBinPacker)
+                }
             }
 
             val out = FastArrayList<Result<T>>()
@@ -124,6 +127,9 @@ class BinPacker(val width: Double, val height: Double, val algo: Algo = MaxRects
         }
         fun <T : Sizeable> packSeveral(maxWidth: Int, maxHeight: Int, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
         fun <T : Sizeable> packSeveral(maxWidth: Float, maxHeight: Float, items: Iterable<T>): List<Result<T>> = packSeveral(maxWidth.toDouble(), maxHeight.toDouble(), items) { it.size }
-
     }
+
+    class ImageDoNotFitException(val width: Double, val height: Double, val packer: BinPacker) : Throwable(
+        "Size '${width}x${height}' doesn't fit in '${packer.width}x${packer.height}'"
+    )
 }

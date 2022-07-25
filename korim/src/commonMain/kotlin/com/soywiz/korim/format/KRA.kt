@@ -92,7 +92,7 @@ object KRA : ImageFormat("kra") {
                     val result = lzfDecompress(UByteArrayInt(data), data.size, tileUData, tileData.size)
                     if (result >= 0) {
                         //println("tileData.size=${tileData.size} --- result=$result")
-                        val bmp = Bitmap32(tileWidth, tileHeight)
+                        val bmp = Bitmap32(tileWidth, tileHeight, premultiplied = false)
                         run {
                             val tileOffset = 1
                             val tileSize = tileWidth * tileHeight
@@ -137,7 +137,7 @@ object KRA : ImageFormat("kra") {
             }
         }
 
-        val bmp = Bitmap32(imageWidth, imageHeight)
+        val bmp = Bitmap32(imageWidth, imageHeight, premultiplied = false)
 
         tiles.fastForEach {
             bmp.put(it.data, it.x, it.y)
@@ -230,7 +230,7 @@ object KRA : ImageFormat("kra") {
                             } else {
                                 frames.add(
                                     ImageFrame(
-                                        Bitmap32(width, height).also { it.put(layerPartialBitmap, layerX, layerY) },
+                                        Bitmap32(width, height, premultiplied = true).also { it.put(layerPartialBitmap, layerX, layerY) },
                                         name = layerName, main = false
                                     )
                                 )

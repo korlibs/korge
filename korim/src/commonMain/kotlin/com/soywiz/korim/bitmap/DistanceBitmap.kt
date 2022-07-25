@@ -68,7 +68,7 @@ class DistanceBitmap(
         val thresoldInt = (thresold.clamp01() * 255).toInt()
 
         fun Bitmap.getAlpha(x: Int, y: Int, min: Int): Boolean {
-            return if (inBounds(x, y)) this.getRgba(x, y).a >= min else false
+            return if (inBounds(x, y)) this.getRgbaRaw(x, y).a >= min else false
         }
 
         fun pass(x: Int, y: Int, dx: Int, dy: Int, d: Float) {

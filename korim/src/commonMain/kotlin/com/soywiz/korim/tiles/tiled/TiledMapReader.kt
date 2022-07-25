@@ -86,18 +86,19 @@ suspend fun TileSetData.toTiledSet(
 			is Image.Embedded -> TODO()
 			is Image.External -> folder[tileset.image.source].readBitmap()
                 .let { if (atlas != null) it.toBMP32IfRequired() else it }
-			null -> Bitmap32(0, 0)
+			null -> Bitmap32.EMPTY
 		}
 	} catch (e: Throwable) {
 		e.printStackTrace()
-		Bitmap32(tileset.width, tileset.height)
+		Bitmap32(tileset.width, tileset.height, premultiplied = true)
 	}
 
 	// @TODO: Preprocess this, so in JS we don't have to do anything!
 	if (hasTransparentColor) {
 		bmp = bmp.toBMP32()
+        val bmp: Bitmap32 = bmp
 		for (n in 0 until bmp.area) {
-			if (bmp.data[n] == transparentColor) bmp.data[n] = Colors.TRANSPARENT_BLACK
+			if (bmp.getRgbaAtIndex(n) == transparentColor) bmp.ints[n] = 0
 		}
 	}
 
@@ -456,7 +457,7 @@ private fun Xml.parseTileLayer(infinite: Boolean): Layer.Tiles {
 	val compression: Compression
 
 	if (data == null) {
-		map = Bitmap32(width, height)
+		map = Bitmap32(width, height, premultiplied = true)
 		encoding = Encoding.CSV
 		compression = Compression.NO
 	} else {
@@ -645,7 +646,7 @@ private fun Xml.parseImage(): Image? {
 		val encoding = Encoding.values().find { it.value == enc } ?: Encoding.XML
 		val compression = Compression.values().find { it.value == com } ?: Compression.NO
 		//TODO: read embedded image (png, jpg, etc.) and convert to bitmap
-		val bitmap = Bitmap32(width, height)
+		val bitmap = Bitmap32(width, height, premultiplied = true)
 		Image.Embedded(
 			format = image.str("format"),
 			image = bitmap,

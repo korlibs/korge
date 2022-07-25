@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 class BitmapLockingTest {
     @Test
     fun testDirtyRegions() {
-        val bmp = Bitmap32(16, 16)
+        val bmp = Bitmap32(16, 16, premultiplied = false)
 
         assertEquals(null, bmp.dirtyRegion)
         assertEquals(0, bmp.contentVersion)

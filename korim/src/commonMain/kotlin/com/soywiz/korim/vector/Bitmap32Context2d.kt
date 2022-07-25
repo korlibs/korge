@@ -3,6 +3,7 @@ package com.soywiz.korim.vector
 import com.soywiz.kds.intArrayListOf
 import com.soywiz.kmem.clamp01
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.color.depremultiply
 import com.soywiz.korim.color.premultiply
@@ -34,6 +35,10 @@ import kotlin.math.min
 // - https://nothings.org/gamedev/rasterize/
 // - https://www.mathematik.uni-marburg.de/~thormae/lectures/graphics1/code_v2/RasterPoly/index.html
 class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soywiz.korim.vector.renderer.Renderer() {
+    init {
+        //check(bmp.premultiplied) { error("Can't get a context2d from a non-premultiplied Bitmap32") }
+    }
+
 	override val width: Int get() = bmp.width
 	override val height: Int get() = bmp.height
 
@@ -251,10 +256,16 @@ class Bitmap32Context2d(val bmp: Bitmap32, val antialiasing: Boolean) : com.soyw
                 for (n in xmin..xmax) alpha[n] *= scale
                 scale(color, xmin, alpha, xmin, count)
                 val index = bmp.index(0, ny) + x
-                if (bmp.premultiplied) com.soywiz.kmem.arraycopy(bmp.dataPremult.ints, index, origin.ints, x, count) else premultiply(bmp.data, index, origin, x, count)
+                when {
+                    bmp.premultiplied -> com.soywiz.kmem.arraycopy(bmp.ints, index, origin.ints, x, count)
+                    else -> premultiply(RgbaArray(bmp.ints), index, origin, x, count)
+                }
                 //for (n in xmin..xmax) color[n] = color[n].scaled(galpha)
                 compositeMode.blend(origin, x, color, x, count)
-                if (bmp.premultiplied) com.soywiz.kmem.arraycopy(origin.ints, x, bmp.dataPremult.ints, index, count) else depremultiply(origin, x, bmp.data, index, count)
+                when {
+                    bmp.premultiplied -> com.soywiz.kmem.arraycopy(origin.ints, x, bmp.ints, index, count)
+                    else -> depremultiply(origin, x, RgbaArray(bmp.ints), index, count)
+                }
             }
         }
     }

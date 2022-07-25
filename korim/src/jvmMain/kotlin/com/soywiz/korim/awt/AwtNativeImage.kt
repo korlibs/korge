@@ -122,30 +122,30 @@ class AwtNativeImage private constructor(val awtImage: BufferedImage, dummy: Uni
     val dataBuffer = awtImage.raster.dataBuffer as DataBufferInt
     val awtData = dataBuffer.data
     constructor(awtImage: BufferedImage) : this(awtConvertImageIfRequired(awtImage), Unit)
-	override val name: String = "AwtNativeImage"
+	override val name: String get() = "AwtNativeImage"
 
 	override fun getContext2d(antialiasing: Boolean): Context2d = Context2d(AwtContext2dRender(awtImage, antialiasing))
 
-    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun readPixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
-            com.soywiz.kmem.arraycopy(awtData, iindex, out.ints, oindex, width)
-            conv(out.ints, oindex, width)
+            com.soywiz.kmem.arraycopy(awtData, iindex, out, oindex, width)
+            conv(out, oindex, width)
         }
     }
 
-    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: RgbaArray, offset: Int) {
+    override fun writePixelsUnsafe(x: Int, y: Int, width: Int, height: Int, out: IntArray, offset: Int) {
         for (y0 in 0 until height) {
             val iindex = index(x, y0 + y)
             val oindex = offset + (y0 * width)
-            com.soywiz.kmem.arraycopy(out.ints, oindex, awtData, iindex, width)
+            com.soywiz.kmem.arraycopy(out, oindex, awtData, iindex, width)
             conv(awtData, iindex, width)
         }
     }
 
-    override fun setRgba(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
-    override fun getRgba(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
+    override fun setRgbaRaw(x: Int, y: Int, v: RGBA) { awtData[index(x, y)] = conv(v.value) }
+    override fun getRgbaRaw(x: Int, y: Int): RGBA = RGBA(conv(awtData[index(x, y)]))
 
     private val rbufferData: ByteBuffer by lazy { ByteBuffer.allocateDirect(width * height * 4) }
 

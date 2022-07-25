@@ -172,7 +172,7 @@ class StrReader(val str: String, val file: String = "file", var pos: Int = 0) {
     fun clone(): StrReader = StrReader(str, file, pos)
 
     fun tryRead(str: String): Boolean {
-        if (peek(str.length) == str) {
+        if (String.substringEquals(this.str, pos, str, 0, str.length)) {
             skip(str.length)
             return true
         }

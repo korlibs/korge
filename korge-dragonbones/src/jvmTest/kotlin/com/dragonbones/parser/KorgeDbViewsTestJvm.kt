@@ -13,9 +13,9 @@ class KorgeDbViewsTestJvm {
 	@Test
 	fun test() = suspendTest {
 		val factory = KorgeDbFactory()
-		val data = factory.parseDragonBonesData(Json.parse(resourcesVfs["Dragon/Dragon_ske.json"].readString())!!)
+		val data = factory.parseDragonBonesData(Json.parseFast(resourcesVfs["Dragon/Dragon_ske.json"].readString())!!)
 		val atlas = factory.parseTextureAtlasData(
-			Json.parse(resourcesVfs["Dragon/Dragon_tex.json"].readString())!!,
+			Json.parseFast(resourcesVfs["Dragon/Dragon_tex.json"].readString())!!,
 			resourcesVfs["Dragon/Dragon_tex.png"].readBitmap().toBMP32()
 		)
 		val armatureDisplay = factory.buildArmatureDisplay("Dragon", "Dragon")!!.position(100, 100)
@@ -32,10 +32,10 @@ class KorgeDbViewsTestJvm {
         val skeJsonData = resourcesVfs["503/503_ske.json"].readString()
         val texJsonData = resourcesVfs["503/503_tex.json"].readString()
 
-        val dragonBonesData = Json.parse(skeJsonData) ?: throw Exception("Parse ske data error!")
+        val dragonBonesData = Json.parseFast(skeJsonData) ?: throw Exception("Parse ske data error!")
         factory.parseDragonBonesData(dragonBonesData)
 
-        val textureAtlasData = Json.parse(texJsonData) ?: throw Exception("Parse tex data error!")
+        val textureAtlasData = Json.parseFast(texJsonData) ?: throw Exception("Parse tex data error!")
         factory.parseTextureAtlasData(textureAtlasData, Bitmap32(1, 1))
     }
 }

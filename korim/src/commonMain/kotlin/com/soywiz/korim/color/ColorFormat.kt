@@ -144,7 +144,10 @@ fun ColorFormat.decodeToBitmap32(
     dataOffset: Int = 0,
     littleEndian: Boolean = true
 ): Bitmap32 {
-    return bmp.apply { decode(data, dataOffset, this.data, 0, bmp.area) }
+    val array = RgbaArray(bmp.ints)
+    decode(data, dataOffset, array, 0, bmp.area)
+    if (bmp.premultiplied) array.premultiplyInplace()
+    return bmp
 }
 
 fun ColorFormat.encode(

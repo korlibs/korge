@@ -91,7 +91,7 @@ object ASE : ImageFormatWithContainer("ase") {
         val bitmask90CWFlip: Int,
         override val x: Int, override val y: Int, override val opacity: Int,
     ) : AseEntity by AseEntity(), AseCell {
-        override val bmp: Bitmap = Bitmap32(1, 1)
+        override val bmp: Bitmap = Bitmap32(1, 1, premultiplied = true)
     }
 
     open class AseLayer(

@@ -48,8 +48,8 @@ private fun Bitmap32.toWin32Icon(): HICON? {
         ReleaseDC(null, hdc);
 
         val bitsPtr = lpBits.reinterpret<CPointerVar<IntVar>>().value!!
-        for (n in 0 until bmp.data.size) {
-            bitsPtr[n] = bmp.data[n].value
+        for (n in 0 until bmp.ints.size) {
+            bitsPtr[n] = bmp.ints[n]
         }
 
         // Create an empty mask bitmap.

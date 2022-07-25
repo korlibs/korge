@@ -31,8 +31,8 @@ fun TileMapData.renderTo(out: Bitmap32, x: Int, y: Int) {
 }
 
 fun TileMapData.render(): Bitmap32 {
-    val tileSet = this.tileSet ?: return Bitmap32(1, 1)
-    val out = Bitmap32(data.width * tileSet.width, data.height * tileSet.height)
+    val tileSet = this.tileSet ?: return Bitmap32(1, 1, premultiplied = true)
+    val out = Bitmap32(data.width * tileSet.width, data.height * tileSet.height, premultiplied = true)
     renderTo(out, 0, 0)
     return out
 }

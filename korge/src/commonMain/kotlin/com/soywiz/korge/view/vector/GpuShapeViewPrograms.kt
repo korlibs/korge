@@ -16,6 +16,7 @@ import com.soywiz.korag.shader.VertexLayout
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.color.RgbaPremultipliedArray
 import com.soywiz.korim.color.toVector3D
 import com.soywiz.korim.paint.BitmapPaint
 import com.soywiz.korim.paint.ColorPaint
@@ -150,19 +151,11 @@ object GpuShapeViewPrograms {
                 }
             }
 
-            // Colors are premultiplied
-            BatchBuilder2D.DO_INPUT_ENSURE_TO(this, out, premultiplied = true, v_InputPre = u_InputPre)
-
             // Update global alpha
             val aaAlpha = 1f.lit - smoothstep(v_MaxDist * u_GlobalPixelScale - 1.5f.lit, v_MaxDist * u_GlobalPixelScale, abs(v_Dist * u_GlobalPixelScale))
-            //val finalAlpha = t_Temp0.y
-            //val aaAlpha = 1f.lit
-            SET(out, out * u_ColorMul)
-            SET(out["rgba"], out["rgba"] * u_GlobalAlpha * aaAlpha)
-            //SET(out["a"], out["a"] * u_GlobalAlpha * aaAlpha)
+            SET(out, out * u_ColorMul * u_GlobalAlpha * aaAlpha)
 
-            //SET(out["rgb"], out["rgb"] / out["a"])
-            BatchBuilder2D.DO_OUTPUT_FROM(this, out, premultiplied = true)
+            BatchBuilder2D.DO_OUTPUT_FROM(this, out)
         },
     )
 
@@ -220,9 +213,9 @@ object GpuShapeViewPrograms {
             ))
         }
         is GradientPaint -> {
-            val gradientBitmap = Bitmap32(256, 1, premultiplied = false)
+            val gradientBitmap = Bitmap32(256, 1, premultiplied = true)
             gradientBitmap.lock {
-                paint.fillColors(gradientBitmap.data)
+                paint.fillColors(RgbaPremultipliedArray(gradientBitmap.ints))
             }
 
             val npaint = paint.copy(transform = Matrix().apply {

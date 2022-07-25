@@ -4,6 +4,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.color.BGR
 import com.soywiz.korim.color.BGRA
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.readBytes
 import com.soywiz.korio.stream.readS16LE
@@ -79,7 +80,7 @@ object TGA : ImageFormat("tga") {
             32 -> BGRA
 			else -> TODO("Not a RGB/RGBA tga")
 		}
-		val out = Bitmap32(info.width, info.height).writeDecoded(format, s.readBytes(info.area * info.bytes))
+		val out = Bitmap32(info.width, info.height, premultiplied = false).writeDecoded(format, s.readBytes(info.area * info.bytes))
 		if (info.flipY) out.flipY()
 		return ImageData(listOf(ImageFrame(out)))
 	}
@@ -94,7 +95,8 @@ object TGA : ImageFormat("tga") {
                 val bmp = bitmap.toBMP32()
 				val data = ByteArray(bmp.area * 4)
 				var m = 0
-				for (c in bmp.data) {
+				for (cc in bmp.ints) {
+                    val c = RGBA(cc)
 					data[m++] = c.b.toByte()
 					data[m++] = c.g.toByte()
 					data[m++] = c.r.toByte()

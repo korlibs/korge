@@ -15,7 +15,7 @@ import kotlin.test.assertEquals
 class BitmapTracerTest {
     @Test
     fun testSmokeTrace() {
-        val bmp = Bitmap32(300, 200).context2d {
+        val bmp = Bitmap32(300, 200, premultiplied = true).context2d {
             fill(Colors.WHITE, winding = Winding.EVEN_ODD) {
                 rect(Rectangle.fromBounds(2, 2, 18, 18))
                 rectHole(Rectangle.fromBounds(6, 6, 9, 12))

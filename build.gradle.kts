@@ -818,7 +818,7 @@ samples {
                 for (type in CrossExecType.VALID_LIST) {
                     for (deb in listOf("Debug", "Release")) {
                         val linkTask = project.tasks.findByName("link${deb}Executable${type.nameWithArchCapital}") as? KotlinNativeLink? ?: continue
-                        tasks.create("runNative${deb}${type.interp}", Exec::class.java) {
+                        tasks.create("runNative${deb}${type.interpCapital}", Exec::class.java) {
                             group = "run"
                             dependsOn(linkTask)
                             commandLineCross(linkTask.binary.outputFile.absolutePath, type = type)
@@ -1202,7 +1202,7 @@ open class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.ta
 }
 
 fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
-    commandLine(type.commands(*args))
+    commandLine(*type.commands(*args))
 }
 
 subprojects {

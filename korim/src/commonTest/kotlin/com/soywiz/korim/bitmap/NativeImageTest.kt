@@ -1,6 +1,7 @@
 package com.soywiz.korim.bitmap
 
 import com.soywiz.korim.color.Colors
+import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.buildShape
 import com.soywiz.korim.vector.render
@@ -15,26 +16,26 @@ class NativeImageTest {
     @Test
     fun test() = suspendTest {
         val bmp = NativeImage(4, 4)
-        bmp.setRgba(0, 0, Colors.RED)
-        assertEquals(Colors.RED, bmp.getRgba(0, 0))
-        bmp.setRgba(1, 0, Colors.BLUE)
-        bmp.setRgba(1, 1, Colors.GREEN)
+        bmp.setRgbaRaw(0, 0, Colors.RED)
+        assertEquals(Colors.RED, bmp.getRgbaRaw(0, 0))
+        bmp.setRgbaRaw(1, 0, Colors.BLUE)
+        bmp.setRgbaRaw(1, 1, Colors.GREEN)
         //bmp.setRgba(0, 1, Colors.PINK)
         bmp.context2d {
             fillStyle = Colors.PINK
             fillRect(0, 1, 1, 1)
         }
         bmp.copy(0, 0, bmp, 2, 2, 2, 2)
-        assertEquals(Colors.RED, bmp.getRgba(2, 2))
-        assertEquals(Colors.BLUE, bmp.getRgba(3, 2))
-        assertEquals(Colors.GREEN, bmp.getRgba(3, 3))
-        assertEquals(Colors.PINK, bmp.getRgba(2, 3))
+        assertEquals(Colors.RED, bmp.getRgbaRaw(2, 2))
+        assertEquals(Colors.BLUE, bmp.getRgbaRaw(3, 2))
+        assertEquals(Colors.GREEN, bmp.getRgbaRaw(3, 3))
+        assertEquals(Colors.PINK, bmp.getRgbaRaw(2, 3))
         //bmp.showImageAndWait()
     }
 
     @Test
     fun testEmptyNativeImage() {
-        val array = RgbaArray(0)
+        val array = IntArray(0)
         val image = NativeImage(0, 0)
         image.writePixelsUnsafe(0, 0, 0, 0, array, 0)
         image.readPixelsUnsafe(0, 0, 0, 0, array, 0)
@@ -53,15 +54,15 @@ class NativeImageTest {
 
         assertEquals(
             "#ff0000,#00ff00,#0000ff,#ffc0cb",
-            original.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+            original.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { RGBA(it).hexStringNoAlpha }
         )
         assertEquals(
             "#00ff00,#ff0000,#ffc0cb,#0000ff",
-            flippedX.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+            flippedX.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { RGBA(it).hexStringNoAlpha }
         )
         assertEquals(
             "#0000ff,#ffc0cb,#ff0000,#00ff00",
-            flippedY.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { it.hexStringNoAlpha }
+            flippedY.readPixelsUnsafe(0, 0, 2, 2).joinToString(",") { RGBA(it).hexStringNoAlpha }
         )
     }
 
@@ -74,8 +75,8 @@ class NativeImageTest {
             }
         }.render()
         assertEquals(Size(100, 100), image.size)
-        assertEquals(1.0, image.getRgba(10, 50).ad)
-        assertEquals(0.0, image.getRgba(50, 50).ad)
+        assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
+        assertEquals(0.0, image.getRgbaRaw(50, 50).ad)
     }
 
     @Test
@@ -87,7 +88,7 @@ class NativeImageTest {
             }
         }.render()
         assertEquals(Size(100, 100), image.size)
-        assertEquals(1.0, image.getRgba(10, 50).ad)
-        assertEquals(1.0, image.getRgba(50, 50).ad)
+        assertEquals(1.0, image.getRgbaRaw(10, 50).ad)
+        assertEquals(1.0, image.getRgbaRaw(50, 50).ad)
     }
 }

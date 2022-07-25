@@ -411,7 +411,7 @@ class TiledMap constructor(
         abstract fun clone(): Layer
 
         class Tiles(
-            var map: Bitmap32 = Bitmap32(0, 0),
+            var map: Bitmap32 = Bitmap32(0, 0, premultiplied = true),
             var encoding: Encoding = Encoding.XML,
             var compression: Compression = Compression.NO
         ) : Layer() {

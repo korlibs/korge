@@ -50,7 +50,7 @@ class FontTest {
         //val font = SystemFont("Arial", 24)
         //val image = NativeImage(512, 512).context2d {
         //val image = Bitmap32(512, 512).context2d(antialiased = false) {
-        val image = Bitmap32(512, 512).context2d(antialiased = true) {
+        val image = Bitmap32(512, 512, premultiplied = false).context2d(antialiased = true) {
             this.fillStyle = createLinearGradient(0, 0, 0, 48).add(0.0, Colors.BLUE).add(1.0, Colors.GREEN)
             //this.fillStyle = createColor(Colors.BLACK)
             this.fontName = "Arial"
@@ -82,7 +82,7 @@ class FontTest {
         //BitmapFont(DefaultTtfFont, 64.0, paint = ColorPaint(Colors.RED)).atlas.showImageAndWait()
         //BitmapFont(SystemFont("Arial"), 64.0, paint = ColorPaint(Colors.RED)).atlas.showImageAndWait()
 
-        val img1 = Bitmap32(128, 128).context2d {
+        val img1 = Bitmap32(128, 128, premultiplied = false).context2d {
             //rect(0, 0, 50, 50)
             circle(25, 50, 30)
             clip()
