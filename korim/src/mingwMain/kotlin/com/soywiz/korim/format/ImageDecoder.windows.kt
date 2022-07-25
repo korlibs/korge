@@ -79,7 +79,7 @@ open class Win32NativeImageFormatProvider : BaseNativeImageFormatProvider() {
                             GdipDisposeImage(pimage[0])
 
                             //println(out.toList())
-                            Bitmap32(bmpWidth, bmpHeight, RgbaArray(out), premultiplied = premultiplied)
+                            Bitmap32(bmpWidth, bmpHeight, RgbaArray(out))
                         }
                     }
                 )
