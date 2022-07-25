@@ -455,7 +455,12 @@ abstract class BaseAwtGameWindow(val config: GameWindowCreationConfig) : GameWin
                 val modifiers = e.modifiersEx
                 //TODO: check this on linux and macos
                 //val scrollDelta = e.scrollAmount * e.preciseWheelRotation // * e.unitsToScroll
-                val scrollDelta = e.preciseWheelRotation
+                val osfactor = when {
+                    OS.isMac -> 0.25
+                    else -> 1.0
+                }
+                val scrollDelta = e.preciseWheelRotation * osfactor
+
                 dispatchMouseEvent(
                     type = ev,
                     id = 0,
