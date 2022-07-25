@@ -254,8 +254,8 @@ flush
 RenderBuffer[1].setSize(512, 512)
 RenderBuffer[1].set()
 clear(#00000000, 1.0, 0, true, true, true)
-RenderBuffer[2].setSize(512, 512)
-RenderBuffer[2].set()
+RenderBuffer[3].setSize(512, 512)
+RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
@@ -305,8 +305,8 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 vaoUse: 0
 vaoDelete: 1
 RenderBuffer[1].set()
-RenderBuffer[3].setSize(512, 512)
-RenderBuffer[3].set()
+RenderBuffer[2].setSize(512, 512)
+RenderBuffer[2].set()
 clear(#00000000, 1.0, 0, true, true, true)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
@@ -330,7 +330,7 @@ uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
@@ -386,7 +386,7 @@ uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
@@ -524,8 +524,8 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 vaoUse: 0
 vaoDelete: 1
 RenderBuffer[0].set()
-RenderBuffer[2].setSize(512, 512)
-RenderBuffer[2].set()
+RenderBuffer[3].setSize(512, 512)
+RenderBuffer[3].set()
 clear(#00000000, 1.0, 0, true, true, true)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
@@ -579,8 +579,8 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 vaoUse: 0
 vaoDelete: 1
 RenderBuffer[0].set()
-RenderBuffer[3].setSize(512, 512)
-RenderBuffer[3].set()
+RenderBuffer[4].setSize(512, 512)
+RenderBuffer[4].set()
 clear(#00000000, 1.0, 0, true, true, true)
 Buffer[0].afterSetMem(mem[393216])
 Buffer[1].afterSetMem(mem[4])
@@ -604,7 +604,7 @@ uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[2], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
@@ -663,7 +663,7 @@ uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
-uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[3], linear=true, trilinear=null)
+uboSet.uniform: Uniform(u_Tex0) = TextureUnit(texture=Texture[4], linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex1) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)

@@ -1,11 +1,8 @@
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
-import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiComboBox
-import com.soywiz.korge.ui.uiText
 import com.soywiz.korge.view.Stage
-import com.soywiz.korge.view.position
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.mix
@@ -19,6 +16,7 @@ import samples.MainAtlas
 import samples.MainBVH
 import samples.MainBezier
 import samples.MainBezierSample
+import samples.MainBlending
 import samples.MainBlur
 import samples.MainBmpFont
 import samples.MainBox2d
@@ -85,6 +83,7 @@ import samples.MainStrokesExperiment3
 import samples.MainSvgAnimation
 import samples.MainTerminalEmulator
 import samples.MainText
+import samples.MainTextInput
 import samples.MainTextMetrics
 import samples.MainTextureIssue
 import samples.MainTiledBackground
@@ -111,7 +110,6 @@ import samples.fleks.MainFleksSample
 import samples.minesweeper.MainMineSweeper
 import samples.pong.MainPong
 import samples.tictactoeswf.MainTicTacToeSwf
-import samples.*
 
 suspend fun main() = Korge(
     bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
@@ -122,12 +120,14 @@ suspend fun main() = Korge(
     //debugAg = true,
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
+    //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
         //Demo(::MainSvgAnimation),
         //Demo(::MainGpuVectorRendering),
         //Demo(::MainSpine),
-        Demo(::MainDragonbones),
+        //Demo(::MainDragonbones),
+        Demo(::MainBlur),
         //Demo(::MainBlending),
         listOf(
             Demo(::MainTextInput),

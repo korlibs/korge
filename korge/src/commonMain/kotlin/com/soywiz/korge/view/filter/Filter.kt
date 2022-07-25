@@ -1,7 +1,11 @@
 package com.soywiz.korge.view.filter
 
+import com.soywiz.kds.Extra
+import com.soywiz.kds.Pool
 import com.soywiz.kmem.toIntCeil
+import com.soywiz.korag.AG
 import com.soywiz.korag.DefaultShaders
+import com.soywiz.korag.annotation.KoragExperimental
 import com.soywiz.korag.shader.Operand
 import com.soywiz.korag.shader.Program
 import com.soywiz.korag.shader.Uniform
@@ -16,6 +20,7 @@ import com.soywiz.korge.view.Views
 import com.soywiz.korim.color.ColorAdd
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korio.lang.Disposable
 import com.soywiz.korma.geom.MarginInt
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.MutableMarginInt
@@ -97,6 +102,7 @@ fun Filter.getBorder(texWidth: Int, texHeight: Int, out: MutableMarginInt = Muta
     return out
 }
 
+@Deprecated("")
 fun Filter.renderToTextureWithBorder(
     ctx: RenderContext,
     matrix: Matrix,
@@ -134,6 +140,84 @@ fun Filter.renderToTextureWithBorder(
     }
 }
 
+class RenderToTextureResult() : Disposable {
+    var filter: Filter? = null
+    var newTexWidth: Int = 0
+    var newTexHeight: Int = 0
+    var borderLeft: Int = 0
+    var borderTop: Int = 0
+    var filterScale: Double = 1.0
+    val matrix = Matrix()
+    var texture: Texture? = null
+    var fb: AG.RenderBuffer? = null
+    var newtex: Texture? = null
+    var ctx: RenderContext? = null
+    private val tempMat = Matrix()
+
+    fun render() {
+        val fb = fb ?: return
+        val ctx = ctx ?: return
+        ctx.renderToFrameBuffer(fb) {
+            tempMat.identity()
+            tempMat.translate(borderLeft, borderTop)
+            ctx.batch.setViewMatrixTemp(ctx.identityMatrix) {
+                texture?.let {
+                    filter?.render(ctx, tempMat, it, newTexWidth, newTexHeight, ColorAdd.NEUTRAL, Colors.WHITE, BlendMode.NORMAL, filterScale)
+                }
+            }
+        }
+        newtex = Texture(fb).slice(0, 0, newTexWidth, newTexHeight)
+    }
+
+    override fun dispose() {
+        if (fb == null || ctx == null) return
+        fb?.let { ctx?.ag?.unsafeFreeFrameRenderBuffer(it) }
+        filter = null
+        texture = null
+        fb = null
+        ctx = null
+        newtex = null
+    }
+}
+
+@KoragExperimental
+fun Filter.renderToTextureWithBorderUnsafe(
+    ctx: RenderContext,
+    matrix: Matrix,
+    texture: Texture,
+    texWidth: Int,
+    texHeight: Int,
+    filterScale: Double,
+    result: RenderToTextureResult = RenderToTextureResult()
+): RenderToTextureResult {
+    val filter = this
+    val margin = filter.getBorder(texWidth, texHeight, ctx.tempMargin)
+
+    val borderLeft = (margin.left * filterScale).toIntCeil()
+    val borderTop = (margin.top * filterScale).toIntCeil()
+    val newTexWidth = texWidth + (margin.leftPlusRight * filterScale).toIntCeil()
+    val newTexHeight = texHeight + (margin.topPlusBottom * filterScale).toIntCeil()
+
+    //println("texWidth=$newTexWidth,$newTexHeight")
+
+    ctx.flush()
+    val fb: AG.RenderBuffer = ctx.ag.unsafeAllocateFrameRenderBuffer(newTexWidth, newTexHeight)
+    result.borderLeft = borderLeft
+    result.borderTop = borderTop
+    result.newTexWidth = newTexWidth
+    result.newTexHeight = newTexHeight
+    result.texture = texture
+    result.filter = filter
+    result.filterScale = filterScale
+    result.matrix.copyFrom(matrix)
+    result.matrix.pretranslate(-borderLeft, -borderTop)
+    result.ctx = ctx
+    result.fb = fb
+    return result
+}
+
 fun Filter.expandBorderRectangle(out: Rectangle, temp: MutableMarginInt = MutableMarginInt()) {
     out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp))
 }
+
+val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.dispose() }) { RenderToTextureResult() } }
