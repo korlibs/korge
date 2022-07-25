@@ -30,6 +30,7 @@ import com.soywiz.korma.geom.leftPlusRight
 import com.soywiz.korma.geom.topPlusBottom
 import com.soywiz.korui.UiContainer
 import kotlin.math.absoluteValue
+import kotlin.native.concurrent.ThreadLocal
 
 /**
  * Interface for [View] filters.
@@ -220,4 +221,5 @@ fun Filter.expandBorderRectangle(out: Rectangle, temp: MutableMarginInt = Mutabl
     out.expand(getBorder(out.width.toIntCeil(), out.height.toIntCeil(), temp))
 }
 
+@ThreadLocal
 val RenderContext.renderToTextureResultPool by Extra.Property { Pool({ it.dispose() }) { RenderToTextureResult() } }
