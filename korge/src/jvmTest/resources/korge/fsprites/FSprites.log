@@ -60,7 +60,7 @@ uboSet.uniform: Uniform(u_texSize0) = [1.0, 1.0]
 uboUse: 1
 enable: BLEND
 blendEquation: ADD, ADD
-blendFunction: ONE, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
+blendFunction: SOURCE_ALPHA, ONE_MINUS_SOURCE_ALPHA, ONE, ONE_MINUS_SOURCE_ALPHA
 disable: CULL_FACE
 depthMask: true
 depthRange: 0.0, 1.0

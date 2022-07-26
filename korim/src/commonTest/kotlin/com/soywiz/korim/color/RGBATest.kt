@@ -1,5 +1,6 @@
 package com.soywiz.korim.color
 
+import com.soywiz.korim.bitmap.Bitmap32
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -70,5 +71,16 @@ class RGBATest {
         //val out = dst mix src
         assertEquals("#1f9f1fff", (dst mix src).toString())
         assertEquals("#1f9f1fff", (dst.premultiplied mix src.premultiplied).depremultiplied.toString())
+    }
+
+    @Test
+    fun testPremult() {
+        assertEquals("#00000000", Colors.TRANSPARENT_BLACK.premultipliedFast.toString())
+        assertEquals("#00000000", Colors.TRANSPARENT_WHITE.premultipliedFast.toString())
+        val black = Colors.WHITE.value
+        val white = Colors.BLACK.value
+        val bmp = Bitmap32(2, 2, RgbaArray(intArrayOf(black, white, white, black))).premultiplied()
+        bmp.updateColors { if (it == Colors.BLACK) Colors.TRANSPARENT_BLACK else it }
+        //println(bmp)
     }
 }

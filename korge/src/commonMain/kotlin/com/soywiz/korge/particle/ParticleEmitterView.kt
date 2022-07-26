@@ -8,6 +8,7 @@ import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.time.delayFrame
+import com.soywiz.korge.view.BlendMode
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewFileRef
@@ -129,7 +130,7 @@ class ParticleEmitterView(
         while (anyAlive) delayFrame()
     }
 
-    private var cachedBlending = AG.Blending.NORMAL
+    private var cachedBlending = BlendMode.NORMAL
 
     // @TODO: Make ultra-fast rendering flushing ctx and using a custom shader + vertices + indices
     override fun renderInternal(ctx: RenderContext) {
@@ -144,8 +145,8 @@ class ParticleEmitterView(
             lazyLoadRenderInternal(ctx, this)
         }
 
-        if (cachedBlending.srcRGB != emitter.blendFuncSource || cachedBlending.dstRGB != emitter.blendFuncDestination) {
-            cachedBlending = AG.Blending(emitter.blendFuncSource, emitter.blendFuncDestination)
+        if (cachedBlending.factors.srcRGB != emitter.blendFuncSource || cachedBlending.factors.dstRGB != emitter.blendFuncDestination) {
+            cachedBlending = BlendMode(AG.Blending(emitter.blendFuncSource, emitter.blendFuncDestination))
         }
 
         if (fsprites == null || fsprites!!.maxSize < simulator.particles.max) {
