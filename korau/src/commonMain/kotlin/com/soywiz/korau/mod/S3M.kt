@@ -74,7 +74,7 @@ class Screamtracker : BaseModuleTracker() {
     var stt: Double = 0.0
     var breakrow: Int = 0
     var patternjump: Int = 0
-    
+
     val mod = this
 
     val periodtable = floatArrayOf(
@@ -282,10 +282,7 @@ class Screamtracker : BaseModuleTracker() {
             }
         }
 
-        run {
-            var i = 0
-            while (buffer[i] != 0 && i < 0x1c) this.title += dos2utf(buffer[i++])
-        }
+        this.title = CharArray(0x1c) { dos2utf(buffer[it]) }.concatToString().trimEnd('\u0000')
 
         this.ordNum = buffer[0x0020] or (buffer[0x0021] shl 8)
         this.insNum = buffer[0x0022] or (buffer[0x0023] shl 8)
@@ -322,14 +319,13 @@ class Screamtracker : BaseModuleTracker() {
         }
 
         // calculate master mix scaling factor
-        this.mixval = 128.0 / kotlin.math.max(0x10, this.mixval.toInt() and 0x7f).toDouble() // (8.0 when mastervol is 0x10, 1.0 when mastervol is 0x7f)
+        this.mixval = 128.0 / kotlin.math.max(0x10, this.mixval.toInt() and 0x7f)
+            .toDouble() // (8.0 when mastervol is 0x10, 1.0 when mastervol is 0x7f)
 
         // load orders
         for (i in 0 until this.ordNum) this.patterntable[i] = buffer[0x0060 + i]
         this.songlen = 0
-        for (i in 0 until this.ordNum) {
-            if (this.patterntable[i] != 255) this.songlen++
-        }
+        for (i in 0 until this.ordNum) if (this.patterntable[i] != 255) this.songlen++
 
         // load instruments
         this.sample = Array(this.insNum) { Sample() }
@@ -338,11 +334,7 @@ class Screamtracker : BaseModuleTracker() {
             val offset = (buffer[0x0060 + this.ordNum + i * 2] or (buffer[0x0060 + this.ordNum + i * 2 + 1] shl 8)) * 16
             var j = 0
             val sample = this.sample[i]
-            sample.name = ""
-            while (buffer[offset + 0x0030 + j] != 0 && j < 28) {
-                sample.name += dos2utf(buffer[offset + 0x0030 + j])
-                j++
-            }
+            sample.name = CharArray(28) { dos2utf(buffer[offset + 0x0030 + it]) }.concatToString().trimEnd('\u0000')
             sample.length = buffer[offset + 0x10] or (buffer[offset + 0x11] shl 8)
             sample.loopstart = buffer[offset + 0x14] or (buffer[offset + 0x15] shl 8)
             sample.loopend = buffer[offset + 0x18] or (buffer[offset + 0x19] shl 8)
@@ -367,7 +359,8 @@ class Screamtracker : BaseModuleTracker() {
         var max_ch = 0
         this.pattern = Array(this.patNum) { Uint8BufferAlloc(this.channels * 64 * 5) }
         for (i in 0 until this.patNum) {
-            var offset = (buffer[0x0060 + this.ordNum + this.insNum * 2 + i * 2] or (buffer[0x0060 + this.ordNum + this.insNum * 2 + i * 2 + 1] shl 8)) * 16
+            val boffset = 0x0060 + this.ordNum + this.insNum * 2 + i * 2
+            var offset = (buffer[boffset] or (buffer[boffset + 1] shl 8)) * 16
             var patlen = buffer[offset] or (buffer[offset + 1] shl 8)
             var row = 0
             var pos = 0
@@ -376,11 +369,12 @@ class Screamtracker : BaseModuleTracker() {
             val pattern = this.pattern[i]
             for (row in 0 until 64) {
                 for (ch in 0 until this.channels) {
-                    pattern[row * this.channels * 5 + ch * 5 + 0] = 255
-                    pattern[row * this.channels * 5 + ch * 5 + 1] = 0
-                    pattern[row * this.channels * 5 + ch * 5 + 2] = 255
-                    pattern[row * this.channels * 5 + ch * 5 + 3] = 255
-                    pattern[row * this.channels * 5 + ch * 5 + 4] = 0
+                    val opattern = row * this.channels * 5 + ch * 5
+                    pattern[opattern + 0] = 255
+                    pattern[opattern + 1] = 0
+                    pattern[opattern + 2] = 255
+                    pattern[opattern + 3] = 255
+                    pattern[opattern + 4] = 0
                 }
             }
 
@@ -394,21 +388,23 @@ class Screamtracker : BaseModuleTracker() {
                     ch = c and 31
                     if (ch < this.channels) {
                         if (ch > max_ch) {
-                            for (j in 0 until this.songlen) if (this.patterntable[j] == i)
-                                max_ch = ch // only if pattern is actually used
+                            for (j in 0 until this.songlen) {
+                                if (this.patterntable[j] == i) max_ch = ch
+                            } // only if pattern is actually used
                         }
+                        val opattern = row * this.channels * 5 + ch * 5
                         if ((c and 32) != 0) {
-                            pattern[row * this.channels * 5 + ch * 5 + 0] = buffer[offset + pos++] // note
-                            pattern[row * this.channels * 5 + ch * 5 + 1] =
-                                buffer[offset + pos++] // instrument
+                            pattern[opattern + 0] = buffer[offset + pos++] // note
+                            pattern[opattern + 1] = buffer[offset + pos++] // instrument
                         }
-                        if ((c and 64) != 0)
-                            pattern[row * this.channels * 5 + ch * 5 + 2] = buffer[offset + pos++] // volume
+                        if ((c and 64) != 0) {
+                            pattern[opattern + 2] = buffer[offset + pos++]
+                        } // volume
                         if ((c and 128) != 0) {
-                            pattern[row * this.channels * 5 + ch * 5 + 3] = buffer[offset + pos++] // command
-                            pattern[row * this.channels * 5 + ch * 5 + 4] = buffer[offset + pos++] // parameter
-                            if (pattern[row * this.channels * 5 + ch * 5 + 3] == 0 || pattern[row * this.channels * 5 + ch * 5 + 3] > 26) {
-                                pattern[row * this.channels * 5 + ch * 5 + 3] = 255
+                            pattern[opattern + 3] = buffer[offset + pos++] // command
+                            pattern[opattern + 4] = buffer[offset + pos++] // parameter
+                            if (pattern[opattern + 3] == 0 || pattern[opattern + 3] > 26) {
+                                pattern[opattern + 3] = 255
                             }
                         }
                     } else {
@@ -428,13 +424,16 @@ class Screamtracker : BaseModuleTracker() {
             val oldpat = Uint8BufferAlloc(this.pattern[i].size)
             arraycopy(this.pattern[i].b.mem, 0, oldpat.b.mem, 0, this.pattern[i].size)
             this.pattern[i] = Uint8BufferAlloc(this.channels * 64 * 5)
+            val pattern = this.pattern[i]
             for (j in 0 until 64) {
                 for (c in 0 until this.channels) {
-                    this.pattern[i][j * this.channels * 5 + c * 5 + 0] = oldpat[j * oldch * 5 + c * 5 + 0]
-                    this.pattern[i][j * this.channels * 5 + c * 5 + 1] = oldpat[j * oldch * 5 + c * 5 + 1]
-                    this.pattern[i][j * this.channels * 5 + c * 5 + 2] = oldpat[j * oldch * 5 + c * 5 + 2]
-                    this.pattern[i][j * this.channels * 5 + c * 5 + 3] = oldpat[j * oldch * 5 + c * 5 + 3]
-                    this.pattern[i][j * this.channels * 5 + c * 5 + 4] = oldpat[j * oldch * 5 + c * 5 + 4]
+                    val offsetpat = j * this.channels * 5 + c * 5
+                    val offsetoldpat = j * oldch * 5 + c * 5
+                    pattern[offsetpat + 0] = oldpat[offsetoldpat + 0]
+                    pattern[offsetpat + 1] = oldpat[offsetoldpat + 1]
+                    pattern[offsetpat + 2] = oldpat[offsetoldpat + 2]
+                    pattern[offsetpat + 3] = oldpat[offsetoldpat + 3]
+                    pattern[offsetpat + 4] = oldpat[offsetoldpat + 4]
                 }
             }
         }
@@ -679,17 +678,23 @@ class Screamtracker : BaseModuleTracker() {
 
                     val oldpos = channel.samplepos
                     channel.samplepos += channel.samplespeed
-                    if (kotlin.math.floor(channel.samplepos) > kotlin.math.floor(oldpos)) channel.lastsample =
-                        fs
+                    if (kotlin.math.floor(channel.samplepos) > kotlin.math.floor(oldpos)) {
+                        channel.lastsample = fs
+                    }
 
                     // loop or stop sample?
-                    if (this.sample[channel.sample].loop != 0) {
-                        if (channel.samplepos >= this.sample[channel.sample].loopend) {
-                            channel.samplepos -= this.sample[channel.sample].looplength
-                            channel.lastsample = channel.currentsample
+                    val sample = this.sample[channel.sample]
+                    when {
+                        sample.loop != 0 -> {
+                            if (channel.samplepos >= sample.loopend) {
+                                channel.samplepos -= sample.looplength
+                                channel.lastsample = channel.currentsample
+                            }
                         }
-                    } else if (channel.samplepos >= this.sample[channel.sample].length) channel.noteon =
-                        0
+                        channel.samplepos >= sample.length -> {
+                            channel.noteon = 0
+                        }
+                    }
                 }
                 this.chvu[ch] = kotlin.math.max(this.chvu[ch].toDouble(), kotlin.math.abs(fl + fr)).toFloat()
             }
@@ -720,8 +725,8 @@ class Screamtracker : BaseModuleTracker() {
 
     fun effect_t0_c(ch: Int) { // pattern break
         val channel = this.channel[ch]
-        this.breakrow = ((channel.data and 0xf0) ushr 4)*10+(channel.data and 0x0f)
-        if ((this.flags and 16) == 0) this.patternjump = this.position+1
+        this.breakrow = ((channel.data and 0xf0) ushr 4) * 10 + (channel.data and 0x0f)
+        if ((this.flags and 16) == 0) this.patternjump = this.position + 1
         this.flags = this.flags or 16
     }
 
@@ -742,14 +747,18 @@ class Screamtracker : BaseModuleTracker() {
 
     fun effect_t0_e(ch: Int) { // slide down
         val channel = this.channel[ch]
-        if (channel.data != 0) channel.slidespeed = channel.data
+        if (channel.data != 0) {
+            channel.slidespeed = channel.data
+        }
         if ((channel.slidespeed and 0xf0) == 0xf0) {
             channel.voiceperiod += (channel.slidespeed and 0x0f) shl 2
         }
         if ((channel.slidespeed and 0xf0) == 0xe0) {
             channel.voiceperiod += (channel.slidespeed and 0x0f)
         }
-        if (channel.voiceperiod > 27392) channel.noteon = 0
+        if (channel.voiceperiod > 27392) {
+            channel.noteon = 0
+        }
         channel.flags = channel.flags or 3 // recalc speed
     }
 
@@ -762,13 +771,15 @@ class Screamtracker : BaseModuleTracker() {
         if ((channel.slidespeed and 0xf0) == 0xe0) {
             channel.voiceperiod -= (channel.slidespeed and 0x0f)
         }
-        if (channel.voiceperiod < 56) channel.noteon = 0
+        if (channel.voiceperiod < 56) {
+            channel.noteon = 0
+        }
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t0_g(ch: Int) { // slide to note
-//  if (this.channel[ch].data) this.channel[ch].slidetospeed=this.channel[ch].data;
         val channel = this.channel[ch]
+        //  if (channel.data) channel.slidetospeed=channel.data;
         if (channel.data != 0) channel.slidespeed = channel.data
     }
 
@@ -856,7 +867,8 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_z(ch: Int) { // sync for FMOD (was: unused)
-        this.syncqueue.addFirst(this.channel[ch].data and 0x0f)
+        val channel = this.channel[ch]
+        this.syncqueue.addFirst(channel.data and 0x0f)
     }
 
 
@@ -870,11 +882,13 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_s2(ch: Int) { // sync for BASS (was: set finetune)
-        this.syncqueue.addFirst(this.channel[ch].data and 0x0f)
+        val channel = this.channel[ch]
+        this.syncqueue.addFirst(channel.data and 0x0f)
     }
 
     fun effect_t0_s3(ch: Int) { // set vibrato waveform
-        this.channel[ch].vibratowave = this.channel[ch].data and 0x07
+        val channel = this.channel[ch]
+        channel.vibratowave = channel.data and 0x07
     }
 
     fun effect_t0_s4(ch: Int) { // set tremolo waveform
@@ -890,7 +904,8 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_s8(ch: Int) { // set panning position
-        this.pan_r[ch] = ((this.channel[ch].data and 0x0f)/15.0).toFloat()
+        val channel = this.channel[ch]
+        this.pan_r[ch] = ((channel.data and 0x0f) / 15.0).toFloat()
         this.pan_l[ch] = (1.0 - this.pan_r[ch]).toFloat()
     }
 
@@ -901,11 +916,12 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_sb(ch: Int) { // loop pattern
-        if ((this.channel[ch].data and 0x0f) != 0) {
+        val channel = this.channel[ch]
+        if ((channel.data and 0x0f) != 0) {
             if (this.loopcount != 0) {
                 this.loopcount--
             } else {
-                this.loopcount = this.channel[ch].data and 0x0f
+                this.loopcount = channel.data and 0x0f
             }
             if (this.loopcount != 0) this.flags = this.flags or 64
         } else {
@@ -917,13 +933,15 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_sd(ch: Int) { // note delay
-        if (this.tick == (this.channel[ch].data and 0x0f)) {
+        val channel = this.channel[ch]
+        if (this.tick == (channel.data and 0x0f)) {
             this.process_note(this.patterntable[this.position], ch)
         }
     }
 
     fun effect_t0_se(ch: Int) { // pattern delay
-        this.patterndelay = this.channel[ch].data and 0x0f
+        val channel = this.channel[ch]
+        this.patterndelay = channel.data and 0x0f
         this.patternwait = 0
     }
 
@@ -966,45 +984,46 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_f(ch: Int) { // slide up
-        if (this.channel[ch].slidespeed < 0xe0) {
-            this.channel[ch].voiceperiod -= this.channel[ch].slidespeed * 4
+        val channel = this.channel[ch]
+        if (channel.slidespeed < 0xe0) {
+            channel.voiceperiod -= channel.slidespeed * 4
         }
-        if (this.channel[ch].voiceperiod < 56) this.channel[ch].noteon = 0
-        this.channel[ch].flags = this.channel[ch].flags or 3 // recalc speed
+        if (channel.voiceperiod < 56) channel.noteon = 0
+        channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t1_g(ch: Int) { // slide to note
-        if (this.channel[ch].voiceperiod < this.channel[ch].slideto) {
-//    this.channel[ch].voiceperiod+=4*this.channel[ch].slidetospeed;
-            this.channel[ch].voiceperiod += 4 * this.channel[ch].slidespeed
-            if (this.channel[ch].voiceperiod > this.channel[ch].slideto)
-                this.channel[ch].voiceperiod = this.channel[ch].slideto
-        } else
-            if (this.channel[ch].voiceperiod > this.channel[ch].slideto) {
-//    this.channel[ch].voiceperiod-=4*this.channel[ch].slidetospeed;
-                this.channel[ch].voiceperiod -= 4 * this.channel[ch].slidespeed
-                if (this.channel[ch].voiceperiod < this.channel[ch].slideto)
-                    this.channel[ch].voiceperiod = this.channel[ch].slideto
-            }
-        this.channel[ch].flags = this.channel[ch].flags or 3 // recalc speed
+        val channel = this.channel[ch]
+        if (channel.voiceperiod < channel.slideto) {
+            //    channelvoiceperiod+=4*channel.slidetospeed;
+            channel.voiceperiod += 4 * channel.slidespeed
+            if (channel.voiceperiod > channel.slideto) channel.voiceperiod = channel.slideto
+        } else if (channel.voiceperiod > channel.slideto) {
+            //    channel.voiceperiod-=4*channel.slidetospeed;
+            channel.voiceperiod -= 4 * channel.slidespeed
+            if (channel.voiceperiod < channel.slideto) channel.voiceperiod = channel.slideto
+        }
+        channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t1_h(ch: Int) { // vibrato
-        this.channel[ch].voiceperiod += this.vibratotable[this.channel[ch].vibratowave and 3][this.channel[ch].vibratopos]*this.channel[ch].vibratodepth/128.0
-        if (this.channel[ch].voiceperiod > 27392) this.channel[ch].voiceperiod = 27392.0
-        if (this.channel[ch].voiceperiod < 56) this.channel[ch].voiceperiod = 56.0
-        this.channel[ch].flags = this.channel[ch].flags or 1
+        val channel = this.channel[ch]
+        channel.voiceperiod += this.vibratotable[channel.vibratowave and 3][channel.vibratopos] * channel.vibratodepth / 128.0
+        if (channel.voiceperiod > 27392) channel.voiceperiod = 27392.0
+        if (channel.voiceperiod < 56) channel.voiceperiod = 56.0
+        channel.flags = channel.flags or 1
     }
 
     fun effect_t1_i(ch: Int) { // tremor
     }
 
     fun effect_t1_j(ch: Int) { // arpeggio
-        var n = this.channel[ch].note
-        if ((this.tick and 3) == 1) n += this.channel[ch].arpeggio ushr 4
-        if ((this.tick and 3) == 2) n += this.channel[ch].arpeggio and 0x0f
-        this.channel[ch].voiceperiod = (8363.0 * this.periodtable[n]) / this.sample[this.channel[ch].sample].c2spd.toDouble()
-        this.channel[ch].flags = this.channel[ch].flags or 3 // recalc speed
+        val channel = this.channel[ch]
+        var n = channel.note
+        if ((this.tick and 3) == 1) n += channel.arpeggio ushr 4
+        if ((this.tick and 3) == 2) n += channel.arpeggio and 0x0f
+        channel.voiceperiod = (8363.0 * this.periodtable[n]) / this.sample[channel.sample].c2spd.toDouble()
+        channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t1_k(ch: Int) { // vibrato + volslide
@@ -1030,18 +1049,20 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_q(ch: Int) { // retrig note
-        if ((this.tick % (this.channel[ch].lastretrig and 0x0f)) == 0) {
-            this.channel[ch].samplepos = 0.0
-            this.channel[ch].trigramp = 0.0
-            this.channel[ch].trigrampfrom = this.channel[ch].currentsample
-            val v = this.channel[ch].lastretrig ushr 4
+        val channel = this.channel[ch]
+        if ((this.tick % (channel.lastretrig and 0x0f)) == 0) {
+            channel.samplepos = 0.0
+            channel.trigramp = 0.0
+            channel.trigrampfrom = channel.currentsample
+            val v = channel.lastretrig ushr 4
             if ((v and 7) >= 6) {
-                this.channel[ch].voicevolume = kotlin.math.floor(this.channel[ch].voicevolume * this.retrigvoltab[v]).toInt()
+                channel.voicevolume =
+                    kotlin.math.floor(channel.voicevolume * this.retrigvoltab[v]).toInt()
             } else {
-                this.channel[ch].voicevolume += this.retrigvoltab[v].toInt()
+                channel.voicevolume += this.retrigvoltab[v].toInt()
             }
-            if (this.channel[ch].voicevolume < 0) this.channel[ch].voicevolume = 0
-            if (this.channel[ch].voicevolume > 64) this.channel[ch].voicevolume = 64
+            if (channel.voicevolume < 0) channel.voicevolume = 0
+            if (channel.voicevolume > 64) channel.voicevolume = 64
         }
     }
 
@@ -1049,7 +1070,8 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_s(ch: Int) { // special effects
-        val i = (this.channel[ch].data and 0xf0) ushr 4
+        val channel = this.channel[ch]
+        val i = (channel.data and 0xf0) ushr 4
         this.effects_t1_s[i](ch)
     }
 
@@ -1115,9 +1137,10 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_sc(ch: Int) { // note cut
-        if (this.tick == (this.channel[ch].data and 0x0f)) {
-            this.channel[ch].volume = 0
-            this.channel[ch].voicevolume = 0
+        val channel = this.channel[ch]
+        if (this.tick == (channel.data and 0x0f)) {
+            channel.volume = 0
+            channel.voicevolume = 0
         }
     }
 
