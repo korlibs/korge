@@ -703,6 +703,9 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param angleRadians the world rotation in radians.
      */
     fun setTransformRadians(position: Vec2, angleRadians: Float) {
+        require(position.isValid) { "Invalid position $position" }
+        require(angleRadians.isFinite()) { "Invalid angleRadians $angleRadians" }
+
         assert(!world.isLocked)
         if (world.isLocked) {
             return
@@ -754,6 +757,8 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param point the world position of the point of application.
      */
     fun applyForce(force: Vec2, point: Vec2) {
+        require(force.isValid) { "Invalid force $force" }
+        require(point.isValid) { "Invalid point $point" }
         if (_type !== BodyType.DYNAMIC) {
             return
         }
@@ -779,6 +784,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param force the world force vector, usually in Newtons (N).
      */
     fun applyForceToCenter(force: Vec2) {
+        require(force.isValid) { "Invalid force $force" }
         if (_type !== BodyType.DYNAMIC) {
             return
         }
@@ -798,6 +804,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param torque about the z-axis (out of the screen), usually in N-m.
      */
     fun applyTorque(torque: Float) {
+        require(torque.isFinite()) { "Invalid torque $torque" }
         if (_type !== BodyType.DYNAMIC) {
             return
         }
@@ -820,6 +827,8 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param wake also wake up the body
      */
     fun applyLinearImpulse(impulse: Vec2, point: Vec2, wake: Boolean) {
+        require(point.isValid) { "Invalid point $point" }
+        require(impulse.isValid) { "Invalid impulse $impulse" }
         if (_type !== BodyType.DYNAMIC) {
             return
         }
@@ -844,6 +853,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
      * @param impulse the angular impulse in units of kg*m*m/s
      */
     fun applyAngularImpulse(impulse: Float) {
+        require(impulse.isFinite()) { "Invalid impulse $impulse" }
         if (_type !== BodyType.DYNAMIC) {
             return
         }
