@@ -305,8 +305,8 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
             var type: BodyType
             get() = _type
             set(type) {
-                assert(world.isLocked == false)
-                if (world.isLocked == true) {
+                assert(!world.isLocked)
+                if (world.isLocked) {
                     return
                 }
 
@@ -430,7 +430,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
             var isActive: Boolean
             get() = flags and e_activeFlag == e_activeFlag
             set(flag) {
-                assert(world.isLocked == false)
+                assert(!world.isLocked)
 
                 if (flag == isActive) {
                     return
@@ -569,9 +569,9 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
              * @warning This function is locked during callbacks.
              */
             fun createFixture(def: FixtureDef): Fixture? {
-                assert(world.isLocked == false)
+                assert(!world.isLocked)
 
-                if (world.isLocked == true) {
+                if (world.isLocked) {
                     return null
                 }
 
@@ -628,8 +628,8 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
              */
             fun destroyFixture(fixture: Fixture?) {
                 var fixture = fixture
-                assert(world.isLocked == false)
-                if (world.isLocked == true) {
+                assert(!world.isLocked)
+                if (world.isLocked) {
                     return
                 }
 
@@ -701,8 +701,8 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
              * @param angleRadians the world rotation in radians.
              */
             fun setTransformRadians(position: Vec2, angleRadians: Float) {
-                assert(world.isLocked == false)
-                if (world.isLocked == true) {
+                assert(!world.isLocked)
+                if (world.isLocked) {
                     return
                 }
 
@@ -756,7 +756,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
                     return
                 }
 
-                if (isAwake == false) {
+                if (!isAwake) {
                     isAwake = true
                 }
 
@@ -781,7 +781,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
                     return
                 }
 
-                if (isAwake == false) {
+                if (!isAwake) {
                     isAwake = true
                 }
 
@@ -800,7 +800,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
                     return
                 }
 
-                if (isAwake == false) {
+                if (!isAwake) {
                     isAwake = true
                 }
 
@@ -846,7 +846,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
                     return
                 }
 
-                if (isAwake == false) {
+                if (!isAwake) {
                     isAwake = true
                 }
                 _angularVelocity += m_invI * impulse
@@ -877,8 +877,8 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
              */
             fun setMassData(massData: MassData) {
                 // TODO_ERIN adjust linear velocity and torque to account for movement of center.
-                assert(world.isLocked == false)
-                if (world.isLocked == true) {
+                assert(!world.isLocked)
+                if (world.isLocked) {
                     return
                 }
 
@@ -1165,7 +1165,7 @@ class Body(bd: BodyDef, var world: World) : Box2dTypedUserData by Box2dTypedUser
                 var jn = m_jointList
                 while (jn != null) {
                     if (jn.other === other) {
-                        if (jn.joint!!.getCollideConnected() == false) {
+                        if (!jn.joint!!.getCollideConnected()) {
                             return false
                         }
                     }

@@ -90,12 +90,12 @@ class ContactManager(private val pool: World, var m_broadPhase: BroadPhase) : Pa
         }
 
         // Does a joint override collision? is at least one body dynamic?
-        if (bodyB.shouldCollide(bodyA!!) == false) {
+        if (!bodyB.shouldCollide(bodyA!!)) {
             return
         }
 
         // Check user filtering.
-        if (m_contactFilter != null && m_contactFilter!!.shouldCollide(fixtureA, fixtureB) == false) {
+        if (m_contactFilter != null && !m_contactFilter!!.shouldCollide(fixtureA, fixtureB)) {
             return
         }
 
@@ -227,7 +227,7 @@ class ContactManager(private val pool: World, var m_broadPhase: BroadPhase) : Pa
             // is this contact flagged for filtering?
             if (c.m_flags and Contact.FILTER_FLAG == Contact.FILTER_FLAG) {
                 // Should these bodies collide?
-                if (bodyB!!.shouldCollide(bodyA!!) == false) {
+                if (!bodyB!!.shouldCollide(bodyA!!)) {
                     val cNuke = c
                     c = cNuke.getNext()
                     destroy(cNuke)
@@ -235,7 +235,7 @@ class ContactManager(private val pool: World, var m_broadPhase: BroadPhase) : Pa
                 }
 
                 // Check user filtering.
-                if (m_contactFilter != null && m_contactFilter!!.shouldCollide(fixtureA, fixtureB) == false) {
+                if (m_contactFilter != null && !m_contactFilter!!.shouldCollide(fixtureA, fixtureB)) {
                     val cNuke = c
                     c = cNuke.getNext()
                     destroy(cNuke)
@@ -250,7 +250,7 @@ class ContactManager(private val pool: World, var m_broadPhase: BroadPhase) : Pa
             val activeB = bodyB!!.isAwake && bodyB._type !== BodyType.STATIC
 
             // At least one body must be awake and it must be dynamic or kinematic.
-            if (activeA == false && activeB == false) {
+            if (!activeA && !activeB) {
                 c = c.getNext()
                 continue
             }
@@ -260,7 +260,7 @@ class ContactManager(private val pool: World, var m_broadPhase: BroadPhase) : Pa
             val overlap = m_broadPhase.testOverlap(proxyIdA, proxyIdB)
 
             // Here we destroy contacts that cease to overlap in the broad-phase.
-            if (overlap == false) {
+            if (!overlap) {
                 val cNuke = c
                 c = cNuke.getNext()
                 destroy(cNuke)

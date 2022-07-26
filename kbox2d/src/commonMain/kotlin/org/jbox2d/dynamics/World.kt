@@ -160,7 +160,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             }
 
             isSleepingAllowed = flag
-            if (isSleepingAllowed == false) {
+            if (!isSleepingAllowed) {
                 var b = bodyList
                 while (b != null) {
                     b.isAwake = true
@@ -557,7 +557,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      * @return
      */
     fun createBody(def: BodyDef): Body {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             error("World is locked")
         }
@@ -586,7 +586,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      */
     fun destroyBody(body: Body) {
         assert(bodyCount > 0)
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return
         }
@@ -659,7 +659,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      * @return
      */
     fun createJoint(def: JointDef): Joint? {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return null
         }
@@ -698,7 +698,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         val bodyB = def.bodyB
 
         // If the joint prevents collisions, then flag any contacts for filtering.
-        if (def.collideConnected == false) {
+        if (!def.collideConnected) {
             var edge = bodyB!!.getContactList()
             while (edge != null) {
                 if (edge.other == bodyA) {
@@ -723,7 +723,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      * @param joint
      */
     fun destroyJoint(j: Joint?) {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return
         }
@@ -789,7 +789,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
         --jointCount
 
         // If the joint prevents collisions, then flag any contacts for filtering.
-        if (collideConnected == false) {
+        if (!collideConnected) {
             var edge = bodyB.getContactList()
             while (edge != null) {
                 if (edge.other == bodyA) {
@@ -1133,7 +1133,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                 continue
             }
 
-            if (seed.isAwake == false || seed.isActive == false) {
+            if (!seed.isAwake || !seed.isActive) {
                 seed = seed.m_next
                 continue
             }
@@ -1154,7 +1154,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             while (stackCount > 0) {
                 // Grab the next body off the stack and add it to the island.
                 val b = stack[--stackCount]!!
-                assert(b.isActive == true)
+                assert(b.isActive)
                 island.add(b)
 
                 // Make sure the body is awake.
@@ -1178,7 +1178,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     }
 
                     // Is this contact solid and touching?
-                    if (contact.isEnabled == false || contact.isTouching == false) {
+                    if (!contact.isEnabled || !contact.isTouching) {
                         ce = ce.next
                         continue
                     }
@@ -1211,7 +1211,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                 // Search all joints connect to this body.
                 var je = b.m_jointList
                 while (je != null) {
-                    if (je.joint!!.islandFlag == true) {
+                    if (je.joint!!.islandFlag) {
                         je = je.next
                         continue
                     }
@@ -1219,7 +1219,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     val other = je.other
 
                     // Don't simulate joints connected to inactive bodies.
-                    if (other!!.isActive == false) {
+                    if (!other!!.isActive) {
                         je = je.next
                         continue
                     }
@@ -1310,7 +1310,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             var c: Contact? = m_contactManager.m_contactList
             while (c != null) {
                 // Is this contact disabled?
-                if (c.isEnabled == false) {
+                if (!c.isEnabled) {
                     c = c.m_next
                     continue
                 }
@@ -1346,7 +1346,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     val activeB = bB.isAwake && typeB !== BodyType.STATIC
 
                     // Is at least one body active (awake and dynamic or kinematic)?
-                    if (activeA == false && activeB == false) {
+                    if (!activeA && !activeB) {
                         c = c.m_next
                         continue
                     }
@@ -1355,7 +1355,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                     val collideB = bB.isBullet || typeB !== BodyType.DYNAMIC
 
                     // Are these two non-bullet dynamic bodies?
-                    if (collideA == false && collideB == false) {
+                    if (!collideA && !collideB) {
                         c = c.m_next
                         continue
                     }
@@ -1431,7 +1431,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
             ++minContact.m_toiCount
 
             // Is the contact solid?
-            if (minContact.isEnabled == false || minContact.isTouching == false) {
+            if (!minContact.isEnabled || !minContact.isTouching) {
                 // Restore the sweeps.
                 minContact.isEnabled = false
                 bA.sweep.set(backup1)
@@ -1480,7 +1480,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
 
                         // Only add static, kinematic, or bullet bodies.
                         val other = ce.other
-                        if (other!!._type === BodyType.DYNAMIC && body.isBullet == false && other!!.isBullet == false) {
+                        if (other!!._type === BodyType.DYNAMIC && !body.isBullet && !other!!.isBullet) {
                             ce = ce.next
                             continue
                         }
@@ -1503,7 +1503,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                         contact.update(m_contactManager.m_contactListener)
 
                         // Was the contact disabled by the user?
-                        if (contact.isEnabled == false) {
+                        if (!contact.isEnabled) {
                             other.sweep.set(backup1)
                             other.synchronizeTransform()
                             ce = ce.next
@@ -1511,7 +1511,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
                         }
 
                         // Are there contact points?
-                        if (contact.isTouching == false) {
+                        if (!contact.isTouching) {
                             other.sweep.set(backup1)
                             other.synchronizeTransform()
                             ce = ce.next
@@ -1716,7 +1716,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      * @return the index of the particle.
      */
     fun createParticle(def: ParticleDef): Int {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return 0
         }
@@ -1748,7 +1748,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      */
 
     fun destroyParticlesInShape(shape: Shape, xf: Transform, callDestructionListener: Boolean = false): Int {
-        assert(isLocked == false)
+        assert(!isLocked)
         return if (isLocked) {
             0
         } else m_particleSystem.destroyParticlesInShape(shape, xf, callDestructionListener)
@@ -1761,7 +1761,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      * @warning This function is locked during callbacks.
      */
     fun createParticleGroup(def: ParticleGroupDef): ParticleGroup? {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return null
         }
@@ -1777,7 +1777,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      * @warning This function is locked during callbacks.
      */
     fun joinParticleGroups(groupA: ParticleGroup, groupB: ParticleGroup) {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return
         }
@@ -1793,7 +1793,7 @@ open class World(gravity: Vec2, val pool: IWorldPool, broadPhase: BroadPhase) : 
      */
 
     fun destroyParticlesInGroup(group: ParticleGroup, callDestructionListener: Boolean = false) {
-        assert(isLocked == false)
+        assert(!isLocked)
         if (isLocked) {
             return
         }

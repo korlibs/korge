@@ -467,7 +467,7 @@ class PrismaticJoint(argWorld: IWorldPool, def: PrismaticJointDef) : Joint(argWo
             m_impulse.z = 0.0f
         }
 
-        if (isMotorEnabled == false) {
+        if (!isMotorEnabled) {
             m_motorImpulse = 0.0f
         }
 
