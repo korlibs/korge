@@ -19,7 +19,6 @@ import com.soywiz.korau.sound.SoundChannelState
 import com.soywiz.korau.sound.SoundProps
 import com.soywiz.korau.sound.copyOfRange
 import com.soywiz.korau.sound.copySoundPropsFromCombined
-import com.soywiz.korau.sound.nativeAudioFormats
 import com.soywiz.korau.sound.playingOrPaused
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchImmediately

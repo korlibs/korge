@@ -7,7 +7,7 @@ import doIOTest
 import kotlin.test.assertEquals
 
 class AudioFormatTest {
-	val formats = standardAudioFormats()
+	val formats = standardAudioFormats() + OGG
 
 	@kotlin.test.Test
 	fun wav() = suspendTest({ doIOTest }) {
