@@ -148,7 +148,7 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun stat(path: String): VfsStat = createNonExistsStat(path)
 
-	open suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
+	open suspend fun listSimple(path: String): List<VfsFile> = unsupported()
     open suspend fun listFlow(path: String): Flow<VfsFile> = flow { emitAll(listSimple(path).toChannel()) }
 
 	open suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = unsupported()
