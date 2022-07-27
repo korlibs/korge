@@ -13,6 +13,9 @@ class S3MTest {
     fun test() = suspendTest({ doIOTest }) {
         val sound = resourcesVfs["12oz.s3m"].readS3M()
         val data = sound.toData(maxSamples = 44100 * 4)
+        //val data = sound.toData(maxSamples = 44100 * 16)
+        //val data = sound.toData(maxSamples = 5300)
+        //val data = sound.toData(maxSamples = 16384)
         //data.toSound().playAndWait()
         //WAV.encodeToByteArray(data).writeToFile("/tmp/12oz.s3m.wav")
         //sound.playAndWait()

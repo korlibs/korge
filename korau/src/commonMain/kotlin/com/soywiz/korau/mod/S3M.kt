@@ -6,11 +6,13 @@ import com.soywiz.kds.IntDeque
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8BufferAlloc
 import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.clamp
 import com.soywiz.kmem.mem
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.util.niceStr
 import kotlin.random.Random
 
 /*
@@ -68,9 +70,9 @@ class Screamtracker : BaseModuleTracker() {
 
     var chvu: FloatArray = FloatArray(0)
 
-    var volume: Int = this.globalVol
-    var speed: Int = this.initSpeed
-    var bpm: Int = this.initBPM
+    var volume: Int = globalVol
+    var speed: Int = initSpeed
+    var bpm: Int = initBPM
     var stt: Double = 0.0
     var breakrow: Int = 0
     var patternjump: Int = 0
@@ -99,10 +101,10 @@ class Screamtracker : BaseModuleTracker() {
 
     // calc tables for vibrato waveforms
     val vibratotable = arrayOf(
-        FloatArray(256) { 127f * kotlin.math.sin(kotlin.math.PI * 2 * (it / 256f)).toFloat() },
+        FloatArray(256) { 127f * kotlin.math.sin(kotlin.math.PI * 2f * (it / 256f)).toFloat() },
         FloatArray(256) { 127f - it },
         FloatArray(256) { if (it < 128) 127f else -128f },
-        FloatArray(256) { Random.nextFloat() * 255 - 128 },
+        FloatArray(256) { Random.nextFloat() * 255f - 128f },
     )
 
     // effect jumptables for tick 0 and tick 1+
@@ -138,8 +140,8 @@ class Screamtracker : BaseModuleTracker() {
     )
 
     init {
-        this.clearsong()
-        this.initialize()
+        clearsong()
+        initialize()
     }
 
     class Sample(
@@ -158,36 +160,36 @@ class Screamtracker : BaseModuleTracker() {
 
     // clear song data
     fun clearsong() {
-        this.title = ""
-        this.signature = ""
+        title = ""
+        signature = ""
 
-        this.songlen = 1
-        this.repeatpos = 0
-        this.patterntable = Uint8BufferAlloc(256)
+        songlen = 1
+        repeatpos = 0
+        patterntable = Uint8BufferAlloc(256)
 
-        this.channels = 0
-        this.ordNum = 0
-        this.insNum = 0
-        this.patNum = 0
+        channels = 0
+        ordNum = 0
+        insNum = 0
+        patNum = 0
 
-        this.globalVol = 64
-        this.initSpeed = 6
-        this.initBPM = 125
+        globalVol = 64
+        initSpeed = 6
+        initBPM = 125
 
-        this.fastslide = 0
+        fastslide = 0
 
-        this.mixval = 8.0
+        mixval = 8.0
 
-        this.sample = Array(256) { Sample() }
+        sample = Array(256) { Sample() }
 
-        this.pattern = emptyArray()
+        pattern = emptyArray()
 
-        this.looprow = 0
-        this.loopstart = 0
-        this.loopcount = 0
+        looprow = 0
+        loopstart = 0
+        loopcount = 0
 
-        this.patterndelay = 0
-        this.patternwait = 0
+        patterndelay = 0
+        patternwait = 0
     }
 
     class Channel(
@@ -234,142 +236,129 @@ class Screamtracker : BaseModuleTracker() {
 
     // initialize all player variables to defaults prior to starting playback
     override fun initialize() {
-        this.syncqueue = IntDeque()
+        syncqueue = IntDeque()
 
-        this.tick = -1
-        this.position = 0
-        this.row = 0
-        this.flags = 0
+        tick = -1
+        position = 0
+        row = 0
+        flags = 0
 
-        this.volume = this.globalVol
-        this.speed = this.initSpeed
-        this.bpm = this.initBPM
-        this.stt = 0.0
-        this.breakrow = 0
-        this.patternjump = 0
-        this.patterndelay = 0
-        this.patternwait = 0
-        this.endofsong = false
+        volume = globalVol
+        speed = initSpeed
+        bpm = initBPM
+        stt = 0.0
+        breakrow = 0
+        patternjump = 0
+        patterndelay = 0
+        patternwait = 0
+        endofsong = false
 
-        this.channel = Array(this.channels) { Channel() }
+        channel = Array(channels) { Channel() }
     }
 
     // parse the module from local buffer
     override fun parse(buffer: Uint8Buffer): Boolean {
         // check s3m signature and type
-        this.signature = CharArray(4) { buffer[0x002c + it].toChar() }.concatToString()
-        if (this.signature != "SCRM") return false
+        signature = CharArray(4) { buffer[0x002c + it].toChar() }.concatToString()
+        if (signature != "SCRM") return false
         if (buffer[0x001d] != 0x10) return false
 
         // get channel count
-        this.channels = 0
+        channels = 0
         for (i in 0 until 32) {
             if ((buffer[0x0040 + i] and 0x80) != 0) break
-            this.channels++
+            channels++
         }
 
         // default panning 3/C/3/...
         for (i in 0 until 32) {
             if ((buffer[0x0040 + i] and 0x80) == 0) {
                 val c = buffer[0x0040 + i] and 15
-                if (c < 8) {
-                    this.pan_r[i] = 0.2f
-                    this.pan_l[i] = 0.8f
-                } else {
-                    this.pan_r[i] = 0.8f
-                    this.pan_l[i] = 0.2f
-                }
+                pan_r[i] = if (c < 8) 0.2f else 0.8f
+                pan_l[i] = if (c < 8) 0.8f else 0.2f
             }
         }
 
-        this.title = CharArray(0x1c) { dos2utf(buffer[it]) }.concatToString().trimEnd('\u0000')
+        title = CharArray(0x1c) { dos2utf(buffer[it]) }.concatToString().trimEnd('\u0000')
 
-        this.ordNum = buffer[0x0020] or (buffer[0x0021] shl 8)
-        this.insNum = buffer[0x0022] or (buffer[0x0023] shl 8)
-        this.patNum = buffer[0x0024] or (buffer[0x0025] shl 8)
+        ordNum = buffer[0x0020] or (buffer[0x0021] shl 8)
+        insNum = buffer[0x0022] or (buffer[0x0023] shl 8)
+        patNum = buffer[0x0024] or (buffer[0x0025] shl 8)
 
-        this.globalVol = buffer[0x0030]
-        this.initSpeed = buffer[0x0031]
-        this.initBPM = buffer[0x0032]
+        globalVol = buffer[0x0030]
+        initSpeed = buffer[0x0031]
+        initBPM = buffer[0x0032]
 
-        this.fastslide = if ((buffer[0x0026] and 64) != 0) 1 else 0
+        fastslide = if ((buffer[0x0026] and 64) != 0) 1 else 0
 
-        this.speed = this.initSpeed
-        this.bpm = this.initBPM
+        speed = initSpeed
+        bpm = initBPM
 
         // check for additional panning info
         if (buffer[0x0035] == 0xfc) {
             for (i in 0 until 32) {
-                var c = buffer[0x0070 + this.ordNum + this.insNum * 2 + this.patNum * 2 + i]
+                var c = buffer[0x0070 + ordNum + insNum * 2 + patNum * 2 + i]
                 if ((c and 0x10) != 0) {
                     c = c and 0x0f
-                    this.pan_r[i] = (c / 15.0).toFloat()
-                    this.pan_l[i] = (1.0 - this.pan_r[i]).toFloat()
+                    pan_r[i] = c / 15f
+                    pan_l[i] = 1f - pan_r[i]
                 }
             }
         }
 
         // check for mono panning
-        this.mixval = buffer[0x0033].toDouble()
-        if ((this.mixval.toInt() and 0x80) == 0x80) {
+        mixval = buffer[0x0033].toDouble()
+        if ((mixval.toInt() and 0x80) == 0x80) {
             for (i in 0 until 32) {
-                this.pan_r[i] = 0.5f
-                this.pan_l[i] = 0.5f
+                pan_r[i] = 0.5f
+                pan_l[i] = 0.5f
             }
         }
 
         // calculate master mix scaling factor
-        this.mixval = 128.0 / kotlin.math.max(0x10, this.mixval.toInt() and 0x7f)
-            .toDouble() // (8.0 when mastervol is 0x10, 1.0 when mastervol is 0x7f)
+        mixval = 128.0 / kotlin.math.max(0x10, mixval.toInt() and 0x7f).toDouble() // (8.0 when mastervol is 0x10, 1.0 when mastervol is 0x7f)
 
         // load orders
-        for (i in 0 until this.ordNum) this.patterntable[i] = buffer[0x0060 + i]
-        this.songlen = 0
-        for (i in 0 until this.ordNum) if (this.patterntable[i] != 255) this.songlen++
+        for (i in 0 until ordNum) patterntable[i] = buffer[0x0060 + i]
+        songlen = 0
+        for (i in 0 until ordNum) if (patterntable[i] != 255) songlen++
 
         // load instruments
-        this.sample = Array(this.insNum) { Sample() }
-        for (i in 0 until this.insNum) {
-
-            val offset = (buffer[0x0060 + this.ordNum + i * 2] or (buffer[0x0060 + this.ordNum + i * 2 + 1] shl 8)) * 16
-            var j = 0
-            val sample = this.sample[i]
-            sample.name = CharArray(28) { dos2utf(buffer[offset + 0x0030 + it]) }.concatToString().trimEnd('\u0000')
-            sample.length = buffer[offset + 0x10] or (buffer[offset + 0x11] shl 8)
-            sample.loopstart = buffer[offset + 0x14] or (buffer[offset + 0x15] shl 8)
-            sample.loopend = buffer[offset + 0x18] or (buffer[offset + 0x19] shl 8)
-            sample.looplength = sample.loopend - sample.loopstart
-            sample.volume = buffer[offset + 0x1c]
-            sample.loop = buffer[offset + 0x1f] and 1
-            sample.stereo = (buffer[offset + 0x1f] and 2) ushr 1
-            sample.bits = if ((buffer[offset + 0x1f] and 4) != 0) 16 else 8
-            sample.c2spd = buffer[offset + 0x20] or (buffer[offset + 0x21] shl 8)
-
+        sample = Array(insNum) { i ->
+            val offset = (buffer[0x0060 + ordNum + i * 2] or (buffer[0x0060 + ordNum + i * 2 + 1] shl 8)) * 16
             // sample data
-            val smpoffset =
-                ((buffer[offset + 0x0d] shl 16) or (buffer[offset + 0x0e]) or (buffer[offset + 0x0f] shl 8) * 16)
-            sample.data = FloatArray(sample.length)
-            for (j in 0 until sample.length) {
-                sample.data[j] =
-                    (buffer[smpoffset + j] - 128).toFloat() / 128f
-            } // convert to mono float signed
+            val smpoffset = (((buffer[offset + 0x0d] shl 16) or (buffer[offset + 0x0e]) or (buffer[offset + 0x0f] shl 8)) * 16)
+            val loopstart = buffer[offset + 0x14] or (buffer[offset + 0x15] shl 8)
+            val loopend = buffer[offset + 0x18] or (buffer[offset + 0x19] shl 8)
+            val length = buffer[offset + 0x10] or (buffer[offset + 0x11] shl 8)
+            //println("SAMPLE:offset=${offset},smpoffset=$smpoffset,loopstart=$loopstart,loopend=$loopend,length=$length")
+            Sample(
+                name = CharArray(28) { dos2utf(buffer[offset + 0x0030 + it]) }.concatToString().trimEnd('\u0000'),
+                length = length,
+                loopstart = loopstart,
+                loopend = loopend,
+                looplength = loopend - loopstart,
+                volume = buffer[offset + 0x1c],
+                loop = buffer[offset + 0x1f] and 1,
+                stereo = (buffer[offset + 0x1f] and 2) ushr 1,
+                bits = if ((buffer[offset + 0x1f] and 4) != 0) 16 else 8,
+                c2spd = buffer[offset + 0x20] or (buffer[offset + 0x21] shl 8),
+                data = FloatArray(length) { (buffer[smpoffset + it] - 128).toFloat() / 128f } // convert to mono float signed,
+            )
         }
 
         // load and unpack patterns
         var max_ch = 0
-        this.pattern = Array(this.patNum) { Uint8BufferAlloc(this.channels * 64 * 5) }
-        for (i in 0 until this.patNum) {
-            val boffset = 0x0060 + this.ordNum + this.insNum * 2 + i * 2
+        pattern = Array(patNum) { Uint8BufferAlloc(channels * 64 * 5) }
+        for (i in 0 until patNum) {
+            val boffset = 0x0060 + ordNum + insNum * 2 + i * 2
             var offset = (buffer[boffset] or (buffer[boffset + 1] shl 8)) * 16
             var patlen = buffer[offset] or (buffer[offset + 1] shl 8)
-            var row = 0
-            var pos = 0
-            var ch = 0
 
-            val pattern = this.pattern[i]
+            val pattern = pattern[i]
             for (row in 0 until 64) {
-                for (ch in 0 until this.channels) {
-                    val opattern = row * this.channels * 5 + ch * 5
+                for (ch in 0 until channels) {
+                    val opattern = row * channels * 5 + ch * 5
                     pattern[opattern + 0] = 255
                     pattern[opattern + 1] = 0
                     pattern[opattern + 2] = 255
@@ -379,66 +368,68 @@ class Screamtracker : BaseModuleTracker() {
             }
 
             if (offset == 0) continue // fix for control_e.s3m
-            row = 0
-            ch = 0
+            var row = 0
+            var pos = 0
             offset += 2
             while (row < 64) {
                 val c = buffer[offset + pos++]
-                if (c != 0) {
-                    ch = c and 31
-                    if (ch < this.channels) {
-                        if (ch > max_ch) {
-                            for (j in 0 until this.songlen) {
-                                if (this.patterntable[j] == i) max_ch = ch
-                            } // only if pattern is actually used
-                        }
-                        val opattern = row * this.channels * 5 + ch * 5
-                        if ((c and 32) != 0) {
-                            pattern[opattern + 0] = buffer[offset + pos++] // note
-                            pattern[opattern + 1] = buffer[offset + pos++] // instrument
-                        }
-                        if ((c and 64) != 0) {
-                            pattern[opattern + 2] = buffer[offset + pos++]
-                        } // volume
-                        if ((c and 128) != 0) {
-                            pattern[opattern + 3] = buffer[offset + pos++] // command
-                            pattern[opattern + 4] = buffer[offset + pos++] // parameter
-                            if (pattern[opattern + 3] == 0 || pattern[opattern + 3] > 26) {
-                                pattern[opattern + 3] = 255
-                            }
-                        }
-                    } else {
-                        if ((c and 32) != 0) pos += 2
-                        if ((c and 64) != 0) pos++
-                        if ((c and 128) != 0) pos += 2
+                if (c == 0) {
+                    row++
+                    continue
+                }
+                val ch = c and 31
+                if (ch < channels) {
+                    if (ch > max_ch) {
+                        for (j in 0 until songlen) {
+                            if (patterntable[j] == i) max_ch = ch
+                        } // only if pattern is actually used
                     }
-                } else row++
+                    val opattern = row * channels * 5 + ch * 5
+                    if ((c and 32) != 0) {
+                        pattern[opattern + 0] = buffer[offset + pos++] // note
+                        pattern[opattern + 1] = buffer[offset + pos++] // instrument
+                    }
+                    if ((c and 64) != 0) {
+                        pattern[opattern + 2] = buffer[offset + pos++]
+                    } // volume
+                    if ((c and 128) != 0) {
+                        pattern[opattern + 3] = buffer[offset + pos++] // command
+                        pattern[opattern + 4] = buffer[offset + pos++] // parameter
+                        if (pattern[opattern + 3] == 0 || pattern[opattern + 3] > 26) {
+                            pattern[opattern + 3] = 255
+                        }
+                    }
+                } else {
+                    if ((c and 32) != 0) pos += 2
+                    if ((c and 64) != 0) pos++
+                    if ((c and 128) != 0) pos += 2
+                }
             }
         }
-        this.patterns = this.patNum
+        patterns = patNum
 
         // how many channels had actually pattern data on them? trim off the extra channels
-        val oldch = this.channels
-        this.channels = max_ch + 1
-        for (i in 0 until this.patNum) {
-            val oldpat = Uint8BufferAlloc(this.pattern[i].size)
-            arraycopy(this.pattern[i].b.mem, 0, oldpat.b.mem, 0, this.pattern[i].size)
-            this.pattern[i] = Uint8BufferAlloc(this.channels * 64 * 5)
-            val pattern = this.pattern[i]
+        val oldch = channels
+        channels = max_ch + 1
+        for (i in 0 until patNum) {
+            val oldpat = Uint8BufferAlloc(pattern[i].size)
+            arraycopy(pattern[i].b.mem, 0, oldpat.b.mem, 0, pattern[i].size)
+            pattern[i] = Uint8BufferAlloc(channels * 64 * 5)
+            val pattern = pattern[i]
             for (j in 0 until 64) {
-                for (c in 0 until this.channels) {
-                    val offsetpat = j * this.channels * 5 + c * 5
-                    val offsetoldpat = j * oldch * 5 + c * 5
-                    pattern[offsetpat + 0] = oldpat[offsetoldpat + 0]
-                    pattern[offsetpat + 1] = oldpat[offsetoldpat + 1]
-                    pattern[offsetpat + 2] = oldpat[offsetoldpat + 2]
-                    pattern[offsetpat + 3] = oldpat[offsetoldpat + 3]
-                    pattern[offsetpat + 4] = oldpat[offsetoldpat + 4]
+                for (c in 0 until channels) {
+                    val op = j * channels * 5 + c * 5
+                    val oop = j * oldch * 5 + c * 5
+                    pattern[op + 0] = oldpat[oop + 0]
+                    pattern[op + 1] = oldpat[oop + 1]
+                    pattern[op + 2] = oldpat[oop + 2]
+                    pattern[op + 3] = oldpat[oop + 3]
+                    pattern[op + 4] = oldpat[oop + 4]
                 }
             }
         }
 
-        this.chvu = FloatArray(this.channels) { 0f }
+        chvu = FloatArray(channels) { 0f }
 
         return true
     }
@@ -446,76 +437,76 @@ class Screamtracker : BaseModuleTracker() {
 
     // advance player
     fun advance(mod: Screamtracker) {
-        this.stt = (((this.samplerate * 60) / this.bpm.toDouble()) / 4.0) / 6.0 // samples to tick
+        stt = (((samplerate * 60).toDouble() / bpm.toDouble()) / 4.0) / 6.0 // samples to tick
 
         // advance player
-        this.tick++
-        this.flags = this.flags or 1
+        tick++
+        flags = flags or 1
 
         // new row on this tick?
-        if (this.tick >= this.speed) {
-            if (this.patterndelay != 0) { // delay pattern
-                if (this.tick < ((this.patternwait + 1) * this.speed)) {
-                    this.patternwait++
+        if (tick >= speed) {
+            if (patterndelay != 0) { // delay pattern
+                if (tick < ((patternwait + 1) * speed)) {
+                    patternwait++
                 } else {
-                    this.row++; this.tick = 0; this.flags = this.flags or 2; this.patterndelay = 0
+                    row++; tick = 0; flags = flags or 2; patterndelay = 0
                 }
             } else {
-                if ((this.flags and (16 + 32 + 64)) != 0) {
-                    if ((this.flags and 64) != 0) { // loop pattern?
-                        this.row = this.looprow
-                        this.flags = this.flags and 0xa1
-                        this.flags = this.flags or 2
+                if ((flags and (16 + 32 + 64)) != 0) {
+                    if ((flags and 64) != 0) { // loop pattern?
+                        row = looprow
+                        flags = flags and 0xa1
+                        flags = flags or 2
                     } else {
-                        if ((this.flags and 16) != 0) { // pattern jump/break?
-                            this.position = this.patternjump
-                            this.row = this.breakrow
-                            this.patternjump = 0
-                            this.breakrow = 0
-                            this.flags = this.flags and 0xe1
-                            this.flags = this.flags or 2
+                        if ((flags and 16) != 0) { // pattern jump/break?
+                            position = patternjump
+                            row = breakrow
+                            patternjump = 0
+                            breakrow = 0
+                            flags = flags and 0xe1
+                            flags = flags or 2
                         }
                     }
-                    this.tick = 0
+                    tick = 0
                 } else {
-                    this.row++; this.tick = 0; this.flags = this.flags or 2
+                    row++
+                    tick = 0
+                    flags = flags or 2
                 }
             }
         }
 
         // step to new pattern?
-        if (this.row >= 64) {
-            this.position++
-            this.row = 0
-            this.flags = this.flags or 4
-            while (this.patterntable[this.position] == 254) this.position++ // skip markers
+        if (row >= 64) {
+            position++
+            row = 0
+            flags = flags or 4
+            while (patterntable[position] == 254) position++ // skip markers
         }
 
         // end of song?
-        if (this.position >= this.songlen || this.patterntable[this.position] == 255) {
-            if (this.repeat) {
-                this.position = 0
+        if (position >= songlen || patterntable[position] == 255) {
+            if (repeat) {
+                position = 0
             } else {
-                this.endofsong = true
+                endofsong = true
             }
             return
         }
     }
 
-
     // process one channel on a row in pattern p, pp is an offset to pattern data
     fun process_note(p: Int, ch: Int) {
+        val pp: Int = row * 5 * channels + ch * 5
 
-        val pp: Int = this.row * 5 * this.channels + ch * 5
-
-        val n = this.pattern[p][pp]
-        val s = this.pattern[p][pp + 1]
-        val channel = this.channel[ch]
+        val n = pattern[p][pp]
+        val s = pattern[p][pp + 1]
+        val channel = channel[ch]
         if (s != 0) {
             channel.sample = s - 1
-            channel.volume = this.sample[s - 1].volume
+            channel.volume = sample[s - 1].volume
             channel.voicevolume = channel.volume
-            if (n == 255 && (channel.samplepos > this.sample[s - 1].length)) {
+            if (n == 255 && (channel.samplepos > sample[s - 1].length)) {
                 channel.trigramp = 0.0
                 channel.trigrampfrom = channel.currentsample
                 channel.samplepos = 0.0
@@ -525,7 +516,7 @@ class Screamtracker : BaseModuleTracker() {
         if (n < 254) {
             // calc period for note
             val n = (n and 0x0f) + (n ushr 4) * 12
-            val pv = (8363.0 * this.periodtable[n]) / this.sample[channel.sample].c2spd.toDouble()
+            val pv = (8363.0 * periodtable[n]) / sample[channel.sample].c2spd.toDouble()
 
             // noteon, except if command=0x07 ('G') (porta to note) or 0x0c ('L') (porta+volslide)
             if ((channel.command != 0x07) && (channel.command != 0x0c)) {
@@ -548,8 +539,8 @@ class Screamtracker : BaseModuleTracker() {
             channel.voicevolume = 0
         }
 
-        if (this.pattern[p][pp + 2] <= 64) {
-            channel.volume = this.pattern[p][pp + 2]
+        if (pattern[p][pp + 2] <= 64) {
+            channel.volume = pattern[p][pp + 2]
             channel.voicevolume = channel.volume
         }
     }
@@ -559,36 +550,36 @@ class Screamtracker : BaseModuleTracker() {
     fun process_tick(mod: Screamtracker) {
 
         // advance global player state by a tick
-        this.advance(mod)
+        advance(mod)
 
         // advance all channels
-        for (ch in 0 until this.channels) {
+        for (ch in 0 until channels) {
 
             // calculate playback position
-            val p = this.patterntable[this.position]
-            val pp = this.row * 5 * this.channels + ch * 5
+            val p = patterntable[position]
+            val pp = row * 5 * channels + ch * 5
 
-            val channel = this.channel[ch]
+            val channel = channel[ch]
             channel.oldvoicevolume = channel.voicevolume
 
-            if ((this.flags and 2) != 0) { // new row
-                channel.command = this.pattern[p][pp + 3]
-                channel.data = this.pattern[p][pp + 4]
+            if ((flags and 2) != 0) { // new row
+                channel.command = pattern[p][pp + 3]
+                channel.data = pattern[p][pp + 4]
                 if (!(channel.command == 0x13 && (channel.data and 0xf0) == 0xd0)) { // note delay?
-                    this.process_note(p, ch)
+                    process_note(p, ch)
                 }
             }
 
             // kill empty samples
-            if (this.sample[channel.sample].length == 0) channel.noteon = 0
+            if (sample[channel.sample].length == 0) channel.noteon = 0
 
             // run effects on each new tick
             if (channel.command < 27) {
-                if (this.tick == 0) {
+                if (tick == 0) {
                     // process only on tick 0 effects
-                    this.effects_t0[channel.command]?.invoke(ch)
+                    effects_t0[channel.command]?.invoke(ch)
                 } else {
-                    this.effects_t1[channel.command]?.invoke(ch)
+                    effects_t1[channel.command]?.invoke(ch)
                 }
             }
 
@@ -602,28 +593,28 @@ class Screamtracker : BaseModuleTracker() {
             }
 
             // recalc sample speed if voiceperiod has changed
-            if (((channel.flags and 1) != 0 || (this.flags and 2) != 0) && channel.voiceperiod != 0.0)
-                channel.samplespeed = (14317056.0 / channel.voiceperiod) / this.samplerate.toDouble()
+            if (((channel.flags and 1) != 0 || (flags and 2) != 0) && channel.voiceperiod != 0.0) {
+                channel.samplespeed = (14317056.0 / channel.voiceperiod) / samplerate.toDouble()
+            }
 
             // clear channel flags
             channel.flags = 0
         }
 
         // clear global flags after all channels are processed
-        this.flags = this.flags and 0x70
+        flags = flags and 0x70
     }
-
 
     // mix an audio buffer with data
     override fun mix(bufs: Array<FloatArray>, buflen: Int) {
         val outp = FloatArray(2)
 
         // return a buffer of silence if not playing
-        if (this.paused || this.endofsong || !this.playing) {
+        if (paused || endofsong || !playing) {
             for (s in 0 until buflen) {
                 bufs[0][s] = 0f
                 bufs[1][s] = 0f
-                for (ch in 0 until this.chvu.size) this.chvu[ch] = 0f
+                chvu.fill(0f)
             }
             return
         }
@@ -634,26 +625,35 @@ class Screamtracker : BaseModuleTracker() {
             outp[1] = 0f
 
             // if STT has run out, step player forward by tick
-            if (this.stt <= 0) this.process_tick(mod)
+            if (stt <= 0) process_tick(mod)
 
             // mix channels
-            for (ch in 0 until this.channels) {
+            //var count = 0
+            //var line = ""
+            //sampleCount++
+            //val doLog = sampleCount >= 5294;
+            for (ch in 0 until channels) {
                 var fl = 0.0
                 var fr = 0.0
                 var fs = 0.0
-                val channel = this.channel[ch]
+                val channel = channel[ch]
                 val si = channel.sample
 
                 // add channel output to left/right master outputs
                 channel.currentsample = 0.0 // assume note is off
                 if (channel.noteon != 0 || (channel.noteon == 0 && channel.volramp < 1.0)) {
-                    if (this.sample[si].length > channel.samplepos) {
+                    if (sample[si].length > channel.samplepos) {
                         fl = channel.lastsample
 
                         // interpolate towards current sample
                         var f = channel.samplepos - kotlin.math.floor(channel.samplepos)
-                        fs = this.sample[si].data[kotlin.math.floor(channel.samplepos).toInt()].toDouble()
+                        fs = sample[si].data[kotlin.math.floor(channel.samplepos).toInt()].toDouble()
                         fl = f * fs + (1.0 - f) * fl
+                        //if (doLog) {
+                        //    count++
+                        //    line += "${fl.niceStr},"
+                        //}
+                        //println(fl)
 
                         // smooth out discontinuities from retrig and sample offset
                         f = channel.trigramp
@@ -663,15 +663,15 @@ class Screamtracker : BaseModuleTracker() {
                         channel.currentsample = fl
 
                         // ramp volume changes over 64 samples to avoid clicks
-                        fr = fl * (channel.voicevolume / 64.0)
+                        fr = fl * (channel.voicevolume.toDouble() / 64.0)
                         f = channel.volramp
                         fl = f * fr + (1.0 - f) * (fl * (channel.volrampfrom / 64.0))
                         f += (1.0 / 64.0)
                         channel.volramp = kotlin.math.min(1.0, f)
 
                         // pan samples
-                        fr = fl * this.pan_r[ch]
-                        fl *= this.pan_l[ch]
+                        fr = fl * pan_r[ch]
+                        fl *= pan_l[ch]
                     }
                     outp[0] = (outp[0] + fl).toFloat()
                     outp[1] = (outp[1] + fr).toFloat()
@@ -683,7 +683,7 @@ class Screamtracker : BaseModuleTracker() {
                     }
 
                     // loop or stop sample?
-                    val sample = this.sample[channel.sample]
+                    val sample = sample[channel.sample]
                     when {
                         sample.loop != 0 -> {
                             if (channel.samplepos >= sample.loopend) {
@@ -691,54 +691,54 @@ class Screamtracker : BaseModuleTracker() {
                                 channel.lastsample = channel.currentsample
                             }
                         }
-                        channel.samplepos >= sample.length -> {
-                            channel.noteon = 0
-                        }
+                        channel.samplepos >= sample.length -> channel.noteon = 0
                     }
                 }
-                this.chvu[ch] = kotlin.math.max(this.chvu[ch].toDouble(), kotlin.math.abs(fl + fr)).toFloat()
+                chvu[ch] = kotlin.math.max(chvu[ch].toDouble(), kotlin.math.abs(fl + fr)).toFloat()
+                //print("${chvu[ch].niceStr},")
             }
+            //if (doLog) println("$sampleCount:$count:${line}channels=$channels")
 
             // done - store to output buffer
-            val t = this.volume / 64.0
+            val t = volume / 64.0
             bufs[0][s] = (outp[0] * t).toFloat()
             bufs[1][s] = (outp[1] * t).toFloat()
-            this.stt--
+            stt--
         }
     }
-
+    var sampleCount = 0
 
     //
     // tick 0 effect functions
     //
     fun effect_t0_a(ch: Int) { // set speed
-        val channel = this.channel[ch]
-        if (channel.data > 0) this.speed = channel.data
+        val channel = channel[ch]
+        if (channel.data > 0) speed = channel.data
     }
 
     fun effect_t0_b(ch: Int) { // pattern jump
-        val channel = this.channel[ch]
-        this.breakrow = 0
-        this.patternjump = channel.data
-        this.flags = this.flags or 16
+        val channel = channel[ch]
+        breakrow = 0
+        patternjump = channel.data
+        flags = flags or 16
     }
 
     fun effect_t0_c(ch: Int) { // pattern break
-        val channel = this.channel[ch]
-        this.breakrow = ((channel.data and 0xf0) ushr 4) * 10 + (channel.data and 0x0f)
-        if ((this.flags and 16) == 0) this.patternjump = this.position + 1
-        this.flags = this.flags or 16
+        val channel = channel[ch]
+        breakrow = ((channel.data and 0xf0) ushr 4) * 10 + (channel.data and 0x0f)
+        if ((flags and 16) == 0) patternjump = position + 1
+        flags = flags or 16
     }
 
     fun effect_t0_d(ch: Int) { // volume slide
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if (channel.data != 0) channel.volslide = channel.data
         // DxF fine up
         // DFx fine down
         when {
             (channel.volslide and 0x0f) == 0x0f -> channel.voicevolume += channel.volslide ushr 4
             (channel.volslide ushr 4) == 0x0f -> channel.voicevolume -= channel.volslide and 0x0f
-            else -> if (this.fastslide != 0) this.effect_t1_d(ch)
+            else -> if (fastslide != 0) effect_t1_d(ch)
         }
 
         if (channel.voicevolume < 0) channel.voicevolume = 0
@@ -746,45 +746,31 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_e(ch: Int) { // slide down
-        val channel = this.channel[ch]
-        if (channel.data != 0) {
-            channel.slidespeed = channel.data
-        }
-        if ((channel.slidespeed and 0xf0) == 0xf0) {
-            channel.voiceperiod += (channel.slidespeed and 0x0f) shl 2
-        }
-        if ((channel.slidespeed and 0xf0) == 0xe0) {
-            channel.voiceperiod += (channel.slidespeed and 0x0f)
-        }
-        if (channel.voiceperiod > 27392) {
-            channel.noteon = 0
-        }
+        val channel = channel[ch]
+        if (channel.data != 0) channel.slidespeed = channel.data
+        if ((channel.slidespeed and 0xf0) == 0xf0) channel.voiceperiod += (channel.slidespeed and 0x0f) shl 2
+        if ((channel.slidespeed and 0xf0) == 0xe0) channel.voiceperiod += (channel.slidespeed and 0x0f)
+        if (channel.voiceperiod > 27392) channel.noteon = 0
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t0_f(ch: Int) { // slide up
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if (channel.data != 0) channel.slidespeed = channel.data
-        if ((channel.slidespeed and 0xf0) == 0xf0) {
-            channel.voiceperiod -= (channel.slidespeed and 0x0f) shl 2
-        }
-        if ((channel.slidespeed and 0xf0) == 0xe0) {
-            channel.voiceperiod -= (channel.slidespeed and 0x0f)
-        }
-        if (channel.voiceperiod < 56) {
-            channel.noteon = 0
-        }
+        if ((channel.slidespeed and 0xf0) == 0xf0) channel.voiceperiod -= (channel.slidespeed and 0x0f) shl 2
+        if ((channel.slidespeed and 0xf0) == 0xe0) channel.voiceperiod -= (channel.slidespeed and 0x0f)
+        if (channel.voiceperiod < 56) channel.noteon = 0
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t0_g(ch: Int) { // slide to note
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         //  if (channel.data) channel.slidetospeed=channel.data;
         if (channel.data != 0) channel.slidespeed = channel.data
     }
 
     fun effect_t0_h(ch: Int) { // vibrato
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if ((channel.data and 0x0f) != 0 && (channel.data and 0xf0) != 0) {
             channel.vibratodepth = (channel.data and 0x0f)
             channel.vibratospeed = (channel.data and 0xf0) ushr 4
@@ -795,18 +781,18 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_j(ch: Int) { // arpeggio
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if (channel.data != 0) channel.arpeggio = channel.data
         channel.voiceperiod = channel.period
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t0_k(ch: Int) { // vibrato + volslide
-        this.effect_t0_d(ch)
+        effect_t0_d(ch)
     }
 
     fun effect_t0_l(ch: Int) { // slide to note + volslide
-        this.effect_t0_d(ch)
+        effect_t0_d(ch)
     }
 
     fun effect_t0_m(ch: Int) { // -
@@ -816,10 +802,10 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_o(ch: Int) { // set sample offset
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if (channel.data != 0) channel.lastoffset = channel.data
 
-        if (channel.lastoffset * 256 < this.sample[channel.sample].length) {
+        if (channel.lastoffset * 256 < sample[channel.sample].length) {
             channel.samplepos = (channel.lastoffset * 256).toDouble()
             channel.trigramp = 0.0
             channel.trigrampfrom = channel.currentsample
@@ -830,31 +816,31 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_q(ch: Int) { // retrig note
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if (channel.data != 0) channel.lastretrig = channel.data
-        this.effect_t1_q(ch) // to retrig also on lines with no note but Qxy command
+        effect_t1_q(ch) // to retrig also on lines with no note but Qxy command
     }
 
     fun effect_t0_r(ch: Int) { // tremolo
     }
 
     fun effect_t0_s(ch: Int) { // Sxy effects
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         val i = (channel.data and 0xf0) ushr 4
-        this.effects_t0_s[i](ch)
+        effects_t0_s[i](ch)
     }
 
     fun effect_t0_t(ch: Int) { // set tempo
-        val channel = this.channel[ch]
-        if (channel.data > 32) this.bpm = channel.data
+        val channel = channel[ch]
+        if (channel.data > 32) bpm = channel.data
     }
 
     fun effect_t0_u(ch: Int) { // fine vibrato
     }
 
     fun effect_t0_v(ch: Int) { // set global volume
-        val channel = this.channel[ch]
-        this.volume = channel.data
+        val channel = channel[ch]
+        volume = channel.data
     }
 
     fun effect_t0_w(ch: Int) { // -
@@ -867,14 +853,14 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_z(ch: Int) { // sync for FMOD (was: unused)
-        val channel = this.channel[ch]
-        this.syncqueue.addFirst(channel.data and 0x0f)
+        val channel = channel[ch]
+        syncqueue.addFirst(channel.data and 0x0f)
     }
 
 
     //
-// tick 0 special Sxy effect functions
-//
+    // tick 0 special Sxy effect functions
+    //
     fun effect_t0_s0(ch: Int) { // set filter (not implemented)
     }
 
@@ -882,12 +868,12 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_s2(ch: Int) { // sync for BASS (was: set finetune)
-        val channel = this.channel[ch]
-        this.syncqueue.addFirst(channel.data and 0x0f)
+        val channel = channel[ch]
+        syncqueue.addFirst(channel.data and 0x0f)
     }
 
     fun effect_t0_s3(ch: Int) { // set vibrato waveform
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         channel.vibratowave = channel.data and 0x07
     }
 
@@ -904,9 +890,9 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_s8(ch: Int) { // set panning position
-        val channel = this.channel[ch]
-        this.pan_r[ch] = ((channel.data and 0x0f) / 15.0).toFloat()
-        this.pan_l[ch] = (1.0 - this.pan_r[ch]).toFloat()
+        val channel = channel[ch]
+        pan_r[ch] = ((channel.data and 0x0f) / 15.0).toFloat()
+        pan_l[ch] = (1.0 - pan_r[ch]).toFloat()
     }
 
     fun effect_t0_s9(ch: Int) { // -
@@ -916,16 +902,20 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_sb(ch: Int) { // loop pattern
-        val channel = this.channel[ch]
-        if ((channel.data and 0x0f) != 0) {
-            if (this.loopcount != 0) {
-                this.loopcount--
-            } else {
-                this.loopcount = channel.data and 0x0f
+        val channel = channel[ch]
+        when {
+            (channel.data and 0x0f) != 0 -> {
+                when {
+                    loopcount != 0 -> loopcount--
+                    else -> loopcount = channel.data and 0x0f
+                }
+                if (loopcount != 0) {
+                    flags = flags or 64
+                }
             }
-            if (this.loopcount != 0) this.flags = this.flags or 64
-        } else {
-            this.looprow = this.row
+            else -> {
+                looprow = row
+            }
         }
     }
 
@@ -933,21 +923,20 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t0_sd(ch: Int) { // note delay
-        val channel = this.channel[ch]
-        if (this.tick == (channel.data and 0x0f)) {
-            this.process_note(this.patterntable[this.position], ch)
+        val channel = channel[ch]
+        if (tick == (channel.data and 0x0f)) {
+            process_note(patterntable[position], ch)
         }
     }
 
     fun effect_t0_se(ch: Int) { // pattern delay
-        val channel = this.channel[ch]
-        this.patterndelay = channel.data and 0x0f
-        this.patternwait = 0
+        val channel = channel[ch]
+        patterndelay = channel.data and 0x0f
+        patternwait = 0
     }
 
     fun effect_t0_sf(ch: Int) {  // funkrepeat (not implemented)
     }
-
 
     //
     // tick 1+ effect functions
@@ -962,7 +951,7 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_d(ch: Int) { // volume slide
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if ((channel.volslide and 0x0f) == 0) {
             // slide up
             channel.voicevolume += channel.volslide ushr 4
@@ -970,36 +959,31 @@ class Screamtracker : BaseModuleTracker() {
             // slide down
             channel.voicevolume -= channel.volslide and 0x0f
         }
-        if (channel.voicevolume < 0) channel.voicevolume = 0
-        if (channel.voicevolume > 64) channel.voicevolume = 64
+        channel.voicevolume = channel.voicevolume.clamp(0, 64)
     }
 
     fun effect_t1_e(ch: Int) { // slide down
-        val channel = this.channel[ch]
-        if (channel.slidespeed < 0xe0) {
-            channel.voiceperiod += channel.slidespeed * 4
-        }
+        val channel = channel[ch]
+        if (channel.slidespeed < 0xe0) channel.voiceperiod += channel.slidespeed * 4
         if (channel.voiceperiod > 27392) channel.noteon = 0
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t1_f(ch: Int) { // slide up
-        val channel = this.channel[ch]
-        if (channel.slidespeed < 0xe0) {
-            channel.voiceperiod -= channel.slidespeed * 4
-        }
+        val channel = channel[ch]
+        if (channel.slidespeed < 0xe0) channel.voiceperiod -= channel.slidespeed * 4
         if (channel.voiceperiod < 56) channel.noteon = 0
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t1_g(ch: Int) { // slide to note
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         if (channel.voiceperiod < channel.slideto) {
-            //    channelvoiceperiod+=4*channel.slidetospeed;
+            //channelvoiceperiod+=4*channel.slidetospeed;
             channel.voiceperiod += 4 * channel.slidespeed
             if (channel.voiceperiod > channel.slideto) channel.voiceperiod = channel.slideto
         } else if (channel.voiceperiod > channel.slideto) {
-            //    channel.voiceperiod-=4*channel.slidetospeed;
+            //channel.voiceperiod-=4*channel.slidetospeed;
             channel.voiceperiod -= 4 * channel.slidespeed
             if (channel.voiceperiod < channel.slideto) channel.voiceperiod = channel.slideto
         }
@@ -1007,10 +991,8 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_h(ch: Int) { // vibrato
-        val channel = this.channel[ch]
-        channel.voiceperiod += this.vibratotable[channel.vibratowave and 3][channel.vibratopos] * channel.vibratodepth / 128.0
-        if (channel.voiceperiod > 27392) channel.voiceperiod = 27392.0
-        if (channel.voiceperiod < 56) channel.voiceperiod = 56.0
+        val channel = channel[ch]
+        channel.voiceperiod = (channel.voiceperiod + vibratotable[channel.vibratowave and 3][channel.vibratopos] * channel.vibratodepth / 128.0).clamp(56.0, 27392.0)
         channel.flags = channel.flags or 1
     }
 
@@ -1018,22 +1000,22 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_j(ch: Int) { // arpeggio
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         var n = channel.note
-        if ((this.tick and 3) == 1) n += channel.arpeggio ushr 4
-        if ((this.tick and 3) == 2) n += channel.arpeggio and 0x0f
-        channel.voiceperiod = (8363.0 * this.periodtable[n]) / this.sample[channel.sample].c2spd.toDouble()
+        if ((tick and 3) == 1) n += channel.arpeggio ushr 4
+        if ((tick and 3) == 2) n += channel.arpeggio and 0x0f
+        channel.voiceperiod = (8363.0 * periodtable[n]) / sample[channel.sample].c2spd.toDouble()
         channel.flags = channel.flags or 3 // recalc speed
     }
 
     fun effect_t1_k(ch: Int) { // vibrato + volslide
-        this.effect_t1_h(ch)
-        this.effect_t1_d(ch)
+        effect_t1_h(ch)
+        effect_t1_d(ch)
     }
 
     fun effect_t1_l(ch: Int) { // slide to note + volslide
-        this.effect_t1_g(ch)
-        this.effect_t1_d(ch)
+        effect_t1_g(ch)
+        effect_t1_d(ch)
     }
 
     fun effect_t1_m(ch: Int) { // -
@@ -1049,20 +1031,18 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_q(ch: Int) { // retrig note
-        val channel = this.channel[ch]
-        if ((this.tick % (channel.lastretrig and 0x0f)) == 0) {
+        val channel = channel[ch]
+        if ((tick % (channel.lastretrig and 0x0f)) == 0) {
             channel.samplepos = 0.0
             channel.trigramp = 0.0
             channel.trigrampfrom = channel.currentsample
             val v = channel.lastretrig ushr 4
             if ((v and 7) >= 6) {
-                channel.voicevolume =
-                    kotlin.math.floor(channel.voicevolume * this.retrigvoltab[v]).toInt()
+                channel.voicevolume = kotlin.math.floor(channel.voicevolume * retrigvoltab[v]).toInt()
             } else {
-                channel.voicevolume += this.retrigvoltab[v].toInt()
+                channel.voicevolume += retrigvoltab[v].toInt()
             }
-            if (channel.voicevolume < 0) channel.voicevolume = 0
-            if (channel.voicevolume > 64) channel.voicevolume = 64
+            channel.voicevolume = channel.voicevolume.clamp(0, 64)
         }
     }
 
@@ -1070,9 +1050,9 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_s(ch: Int) { // special effects
-        val channel = this.channel[ch]
+        val channel = channel[ch]
         val i = (channel.data and 0xf0) ushr 4
-        this.effects_t1_s[i](ch)
+        effects_t1_s[i](ch)
     }
 
     fun effect_t1_t(ch: Int) { // set tempo
@@ -1098,8 +1078,8 @@ class Screamtracker : BaseModuleTracker() {
 
 
     //
-// tick 1+ special Sxy effect functions
-//
+    // tick 1+ special Sxy effect functions
+    //
     fun effect_t1_s0(ch: Int) { // set filter (not implemented)
     }
 
@@ -1137,15 +1117,15 @@ class Screamtracker : BaseModuleTracker() {
     }
 
     fun effect_t1_sc(ch: Int) { // note cut
-        val channel = this.channel[ch]
-        if (this.tick == (channel.data and 0x0f)) {
+        val channel = channel[ch]
+        if (tick == (channel.data and 0x0f)) {
             channel.volume = 0
             channel.voicevolume = 0
         }
     }
 
     fun effect_t1_sd(ch: Int) { // note delay
-        this.effect_t0_sd(ch)
+        effect_t0_sd(ch)
     }
 
     fun effect_t1_se(ch: Int) { // pattern delay
