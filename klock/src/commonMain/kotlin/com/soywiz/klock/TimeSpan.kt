@@ -8,6 +8,7 @@ import com.soywiz.klock.internal.MILLIS_PER_WEEK
 import com.soywiz.klock.internal.Serializable
 import com.soywiz.klock.internal.niceStr
 import com.soywiz.klock.internal.padded
+import com.soywiz.klock.internal.umod
 import kotlin.jvm.JvmInline
 import kotlin.math.floor
 import kotlin.math.max
@@ -139,6 +140,7 @@ value class TimeSpan(
 
     operator fun div(other: TimeSpan): Double = this.milliseconds / other.milliseconds
     operator fun rem(other: TimeSpan): TimeSpan = (this.milliseconds % other.milliseconds).milliseconds
+    infix fun umod(other: TimeSpan): TimeSpan = (this.milliseconds umod other.milliseconds).milliseconds
 
     companion object {
         @Suppress("MayBeConstant", "unused")
