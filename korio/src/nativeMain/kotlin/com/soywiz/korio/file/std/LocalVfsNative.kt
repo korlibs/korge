@@ -62,7 +62,7 @@ internal val IOWorker by lazy { Worker.start().also { kotlin.native.Platform.isM
 
 expect open class LocalVfsNative(async: Boolean = true) : LocalVfsNativeBase
 
-open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfsV2() {
+open class LocalVfsNativeBase(val async: Boolean = true) : LocalVfs() {
 	val that get() = this
 	override val absolutePath: String get() = ""
 

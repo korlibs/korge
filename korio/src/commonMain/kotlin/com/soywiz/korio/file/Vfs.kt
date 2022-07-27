@@ -148,8 +148,8 @@ abstract class Vfs : AsyncCloseable {
 
 	open suspend fun stat(path: String): VfsStat = createNonExistsStat(path)
 
-	open suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
-    open suspend fun listFlow(path: String): Flow<VfsFile> = flow { emitAll(listSimple(path).toChannel()) }
+	suspend fun listSimple(path: String): List<VfsFile> = this.listFlow(path).toList()
+    open suspend fun listFlow(path: String): Flow<VfsFile> = unsupported()
 
 	open suspend fun mkdir(path: String, attributes: List<Attribute>): Boolean = unsupported()
     open suspend fun mkdirs(path: String, attributes: List<Attribute>): Boolean {
@@ -224,7 +224,6 @@ abstract class Vfs : AsyncCloseable {
 
 		override suspend fun setSize(path: String, size: Long): Unit = initOnce().access(path).setSize(size)
 		override suspend fun stat(path: String): VfsStat = initOnce().access(path).stat().copy(file = file(path))
-		override suspend fun listSimple(path: String) = initOnce().access(path).listSimple()
         override suspend fun listFlow(path: String): Flow<VfsFile> = flow {
             initOnce()
             access(path).list().collect { emit(it.transform()) }
@@ -272,10 +271,6 @@ abstract class Vfs : AsyncCloseable {
 	}
 
 	override fun toString(): String = this::class.portableSimpleName
-}
-
-abstract class VfsV2 : Vfs() {
-    override suspend fun listFlow(path: String): Flow<VfsFile> = emptyFlow()
 }
 
 enum class VfsOpenMode(

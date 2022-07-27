@@ -64,10 +64,7 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
 
     private val cacheSingle = LinkedHashMap<String, VfsStat>()
 
-    override suspend fun listFlow(path: String): Flow<VfsFile> = listSimple(path).asFlow()
-
-    override suspend fun listSimple(path: String): List<VfsFile> =
-        cachedListSimpleStats(path).map { it.value.enrichedFile }
+    override suspend fun listFlow(path: String): Flow<VfsFile> = cachedListSimpleStats(path).map { it.value.enrichedFile }.asFlow()
 
     private val catalogCache = FastStringMap<Map<String, VfsStat>?>()
 

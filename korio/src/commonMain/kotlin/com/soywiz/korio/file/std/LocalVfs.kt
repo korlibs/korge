@@ -18,11 +18,6 @@ abstract class LocalVfs : Vfs() {
 	override fun toString(): String = "LocalVfs"
 }
 
-abstract class LocalVfsV2 : LocalVfs() {
-	override suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
-    override suspend fun listFlow(path: String): Flow<VfsFile> = emptyFlow()
-}
-
 var resourcesVfsDebug = false
 
 open class StandardVfs {

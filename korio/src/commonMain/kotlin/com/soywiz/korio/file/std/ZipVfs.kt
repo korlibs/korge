@@ -6,10 +6,10 @@ import com.soywiz.korio.compression.uncompressed
 import com.soywiz.korio.compression.zip.ZipBuilder
 import com.soywiz.korio.compression.zip.ZipEntry2
 import com.soywiz.korio.compression.zip.ZipFile
+import com.soywiz.korio.file.Vfs
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.VfsOpenMode
 import com.soywiz.korio.file.VfsStat
-import com.soywiz.korio.file.VfsV2
 import com.soywiz.korio.file.fullName
 import com.soywiz.korio.lang.FileNotFoundException
 import com.soywiz.korio.lang.IOException
@@ -38,7 +38,7 @@ suspend fun ZipVfs(
     //val s = zipFile.open(VfsOpenMode.READ)
     val zipFile = ZipFile(s, caseSensitive, fullName ?: vfsFile?.fullName)
 
-    class Impl : VfsV2() {
+    class Impl : Vfs() {
         val vfs = this
 
         override suspend fun close() {

@@ -47,8 +47,6 @@ open class MergedVfs(vfsList: List<VfsFile> = listOf(), val name: String = "unkn
 		return createNonExistsStat(path)
 	}
 
-    override suspend fun listSimple(path: String): List<VfsFile> = listFlow(path).toList()
-
     override suspend fun listFlow(path: String): Flow<VfsFile> {
         initOnce()
         return flow {
