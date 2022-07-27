@@ -333,7 +333,7 @@ class OpenALSoundNoStream(
             var times = params.times
             var startTime = params.startTime
             try {
-                while (times.hasMore) {
+                while (times.hasMore && !stopped) {
                     times = times.oneLess
                     channel.reset()
                     AL.alSourcef(source, AL.AL_SEC_OFFSET, startTime.seconds.toFloat())
