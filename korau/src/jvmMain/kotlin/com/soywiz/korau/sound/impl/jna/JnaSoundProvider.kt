@@ -76,8 +76,6 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         })
     }
 
-    override val audioFormats = nativeAudioFormats
-
     override suspend fun createNonStreamingSound(data: AudioData, name: String): Sound {
         if (!AL.loaded) return super.createNonStreamingSound(data, name)
         return OpenALSoundNoStream(this, coroutineContext, data, name = name)
