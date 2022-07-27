@@ -1,16 +1,51 @@
 package com.soywiz.korau.mod
 
+import com.soywiz.klock.TimeSpan
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readAll
 import kotlin.math.min
 
 abstract class BaseModuleTracker {
+    abstract class Format(vararg exts: String) : AudioFormat(*exts) {
+        abstract fun createTracker(): BaseModuleTracker
+        open suspend fun fastValidate(data: AsyncStream): Boolean = true
+
+        override suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps): Info? {
+            try {
+                if (!fastValidate(data)) return null
+                val time: TimeSpan? = when (props.exactTimings) {
+                    true -> {
+                        val mod = createTracker()
+                        if (!mod.parse(data.readAll().toUint8Buffer())) return null
+                        mod.totalLengthInSamples?.let { samples -> (samples.toDouble() / mod.samplerate.toDouble()).seconds }
+                    }
+                    else -> null
+                }
+                return Info(duration = time, channels = 2)
+            } catch (e: Throwable) {
+                e.printStackTrace()
+                return null
+            }
+        }
+
+        override suspend fun decodeStream(data: AsyncStream, props: AudioDecodingProps): AudioStream? {
+            val mod = createTracker()
+            if (!mod.parse(data.readAll().toUint8Buffer())) return null
+            return mod.createAudioStream()
+        }
+    }
+
     var samplerate = 44100
     var playing = false
     var endofsong = false

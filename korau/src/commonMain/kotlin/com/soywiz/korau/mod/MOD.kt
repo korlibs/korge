@@ -3,17 +3,27 @@
 package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
+import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.measureTime
+import com.soywiz.klock.seconds
 import com.soywiz.kmem.MemBufferWrap
 import com.soywiz.kmem.NewInt8Buffer
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8BufferAlloc
+import com.soywiz.kmem.toUint8Buffer
+import com.soywiz.korau.format.AudioDecodingProps
+import com.soywiz.korau.format.AudioFormat
 import com.soywiz.korau.sound.AudioSamples
 import com.soywiz.korau.sound.AudioStream
 import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readAll
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.slice
+import com.soywiz.korio.stream.sliceStart
 import kotlin.math.min
 import kotlin.math.pow
 
@@ -31,6 +41,22 @@ import kotlin.math.pow
   - pattern looping is broken (see mod.black_queen)
   - properly test EEx delay pattern
 */
+
+object MOD : BaseModuleTracker.Format("mod") {
+    override fun createTracker(): BaseModuleTracker = Protracker()
+    override suspend fun fastValidate(data: AsyncStream): Boolean {
+        val bytes = data.sliceStart(1080).readBytesExact(4)
+        val signature = CharArray(4) { bytes[it].toChar() }.concatToString()
+        val channels = when (signature) {
+            "M.K.", "M!K!", "4CHN", "FLT4" -> 4
+            "6CHN" -> 6
+            "8CHN", "FLT8" -> 8
+            "28CH" -> 28
+            else -> return false
+        }
+        return true
+    }
+}
 
 suspend fun VfsFile.readMOD(soundProvider: NativeSoundProvider = nativeSoundProvider): Sound =
     Protracker().createSoundFromFile(this)
@@ -317,32 +343,70 @@ class Protracker : BaseModuleTracker() {
         chvu = FloatArray(channels)
 
         val computeTime = measureTime {
-            songlenInTicks = computeTime()
+            totalLengthInSamples = computeTime().toLong()
         }
-        println("Computed song length in...$computeTime")
-        totalLengthInSamples = songlenInTicks.toLong() * spd.toLong() / 2
+        println("Computed song length in...$computeTime, totalLengthInSamples=$totalLengthInSamples")
+        //totalLengthInSamples = songlenInTicks.toLong() * spd.toLong() / 2
         //println("timeInTicks=$timeInTicks")
 
         return true
     }
 
-    var songlenInTicks: Int = 0
-
     val spd get() = (((samplerate * 60) / bpm.toDouble()) / 4) / 6
 
+    // 4:13
     fun computeTime(): Int {
-        var ticks = 0
-        val spd = this.spd
-        while (!endofsong) {
-            advance()
-            //println("tick=$tick, offset=$offset, row=$row, position=$position, songlen=$songlen")
-            ticks++
-            offset += spd.toInt()
-        }
-        //playing = false
         initialize()
-        return ticks
+
+        var samples = 0
+        var position = 0
+        var row = 0
+        val samplerate = this.samplerate
+        val songlen = this.songlen
+        val channels = this.channels
+        var bpm = this.bpm
+        var speed = this.speed
+        while (position < songlen) {
+            val pat = pattern[patterntable[position]]
+            for (ch in 0 until channels) {
+                // calculate playback position
+                val pp = row * 4 * channels + ch * 4
+                val command = pat[pp + 2] and 0x0f
+                val data = pat[pp + 3]
+                if (command == 15) {
+                    when {
+                        data > 32 -> bpm = data
+                        data != 0 -> speed = data
+                    }
+                }
+            }
+            val stt = samplerate * 60 / bpm / 4 / 6
+            //println("tick=$tick, speed=$speed, bpm=$bpm, stt=$stt offset=$offset, row=$row, position=$position, songlen=$songlen, samples=$samples")
+            samples += (stt * speed)
+            row++
+            if (row >= 64) {
+                row = 0
+                position++
+            }
+        }
+
+        initialize()
+        return samples
     }
+    //fun computeTime(): Int {
+    //    var ticks = 0
+    //    val spd = this.spd
+    //    while (!endofsong) {
+    //        advance()
+    //        val stt = spd
+    //        println("tick=$tick, speed=$speed, bpm=$bpm, stt=$stt offset=$offset, row=$row, position=$position, songlen=$songlen, samples=$samples")
+    //        ticks++
+    //        offset += spd.toInt()
+    //    }
+    //    //playing = false
+    //    initialize()
+    //    return ticks
+    //}
 
     // advance player
     fun advance() {

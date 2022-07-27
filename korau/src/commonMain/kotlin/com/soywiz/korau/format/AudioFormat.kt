@@ -28,12 +28,11 @@ open class AudioFormat(vararg exts: String) {
 	open val extensions: Set<String> = exts.map { it.lowercase().trim() }.toSet()
 
 	data class Info(
-        var duration: TimeSpan? = 0.seconds,
-        var channels: Int = 2,
-        var decodingTime: TimeSpan? = null
+    var duration: TimeSpan? = 0.seconds,
+    var channels: Int = 2,
+    var decodingTime: TimeSpan? = null
 	) : Extra by Extra.Mixin() {
-        val durationNotNull: TimeSpan get() = duration ?: 0.seconds
-
+    val durationNotNull: TimeSpan get() = duration ?: 0.seconds
 		override fun toString(): String = "Info(duration=${durationNotNull.milliseconds.niceStr}ms, channels=$channels)"
 	}
 

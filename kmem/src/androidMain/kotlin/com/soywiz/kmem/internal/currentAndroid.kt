@@ -9,6 +9,8 @@ import java.nio.ByteOrder
 
 internal actual val currentOs: Os = Os.ANDROID
 internal actual val currentRuntime: Runtime = Runtime.ANDROID
+internal actual val multithreadedSharedHeap: Boolean = true
+
 // @TODO:
 //System.getProperty("os.arch")
 internal actual val currentArch: Arch by lazy {

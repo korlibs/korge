@@ -20,6 +20,7 @@ internal actual val currentArch: Arch = Arch.UNKNOWN
 internal actual val currentRuntime: Runtime = Runtime.JS
 internal actual val currentIsDebug: Boolean = false
 internal actual val currentIsLittleEndian: Boolean = Uint8Array(Uint32Array(arrayOf(0x11223344)).buffer)[0].toInt() == 0x44
+internal actual val multithreadedSharedHeap: Boolean = false // Workers have different heaps
 
 internal actual val currentRawPlatformName: String = when {
     isDenoJs -> "js-deno"

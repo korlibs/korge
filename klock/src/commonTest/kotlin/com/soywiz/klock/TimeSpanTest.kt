@@ -75,6 +75,15 @@ class TimeSpanTest {
         assertEquals(0.5.seconds, 0.5.seconds % 1.seconds)
         assertEquals(0.seconds, 1.seconds % 1.seconds)
         assertEquals(0.5.seconds, 1.5.seconds % 1.seconds)
+        assertEquals((-0.5).seconds, ((-1.5).seconds) % 1.seconds)
+    }
+
+    @Test
+    fun umod() {
+        assertEquals(0.5.seconds, 0.5.seconds umod 1.seconds)
+        assertEquals(0.seconds, 1.seconds umod 1.seconds)
+        assertEquals(0.5.seconds, 1.5.seconds umod 1.seconds)
+        assertEquals(0.5.seconds, (-1.5).seconds umod 1.seconds)
     }
 
     @Test
