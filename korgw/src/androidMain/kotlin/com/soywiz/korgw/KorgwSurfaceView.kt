@@ -118,8 +118,12 @@ open class KorgwSurfaceView constructor(
                 } catch (e: Throwable) {
                     e.printStackTrace()
                 }
-                gameWindow.frame(frameStartTime = frameStartTime)
-                onDraw(Unit)
+                try {
+                    gameWindow.frame(frameStartTime = frameStartTime)
+                    onDraw(Unit)
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
             }
 
             override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
