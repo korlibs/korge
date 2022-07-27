@@ -82,11 +82,6 @@ class LogVfs(val parent: VfsFile) : Vfs.Proxy() {
 		return super.stat(path)
 	}
 
-	override suspend fun listSimple(path: String): List<VfsFile> {
-		log += "listSimple($path)"
-		return super.listSimple(path)
-	}
-
 	override suspend fun listFlow(path: String): Flow<VfsFile> {
         log += "listFlow($path)"
         return super.listFlow(path)
