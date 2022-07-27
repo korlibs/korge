@@ -3,6 +3,7 @@
 package com.soywiz.korau.mod
 
 import com.soywiz.kds.IntDeque
+import com.soywiz.klock.measureTime
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8BufferAlloc
 import com.soywiz.kmem.arraycopy
@@ -12,7 +13,9 @@ import com.soywiz.korau.sound.NativeSoundProvider
 import com.soywiz.korau.sound.Sound
 import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.util.niceStr
+import com.soywiz.korio.stream.AsyncStream
+import com.soywiz.korio.stream.readBytesExact
+import com.soywiz.korio.stream.sliceStart
 import kotlin.random.Random
 
 /*
@@ -27,6 +30,16 @@ import kotlin.random.Random
   - are Exx, Fxx and Gxx supposed to share a single
     command data memory?
 */
+
+object S3M : BaseModuleTracker.Format("s3m") {
+    override fun createTracker(): BaseModuleTracker = Screamtracker()
+    override suspend fun fastValidate(data: AsyncStream): Boolean {
+        val buffer = data.sliceStart(0x2c).readBytesExact(4)
+        val signature = CharArray(4) { buffer[it].toChar() }.concatToString()
+        return signature == "SCRM"
+    }
+}
+
 suspend fun VfsFile.readS3M(soundProvider: NativeSoundProvider = nativeSoundProvider): Sound =
     Screamtracker().createSoundFromFile(this)
 
@@ -431,12 +444,49 @@ class Screamtracker : BaseModuleTracker() {
 
         chvu = FloatArray(channels) { 0f }
 
+        val computeTime = measureTime {
+            totalLengthInSamples = computeTime().toLong()
+        }
+        println("COMPUTED LENGTH IN: $computeTime, totalLengthInSamples=$totalLengthInSamples")
+
         return true
+    }
+
+    fun computeTime(): Int {
+        initialize()
+        var samples = 0
+        var speed = this.speed
+        var bpm = this.bpm
+        var row = 0
+        var position = 0
+        val channels = this.channels
+        val samplerate = this.samplerate
+        while (position < songlen) {
+            val pat = pattern.getOrNull(patterntable[position]) ?: continue
+            for (ch in 0 until channels) {
+                val pp = row * 5 * channels + ch * 5
+                val command = pat[pp + 3]
+                val data = pat[pp + 4]
+                if (command == 1) speed = data
+                if (command == 20 && data > 32) bpm = data
+                // @TODO: Pattern Delay/patternwait
+                // @TODO: Loops?
+            }
+            val stt = samplerate * 60 / bpm / 4 / 6 // samples to tick
+            samples += (stt * speed)
+            row++
+            if (row >= 64) {
+                row = 0
+                position++
+            }
+            //println("tick=$tick, speed=$speed, row=$row, position=$position, songlen=$songlen, loopstart=$loopstart,looprow=$looprow,loopcount=$loopcount, stt=$stt, samples=$samples")
+        }
+        return samples
     }
 
 
     // advance player
-    fun advance(mod: Screamtracker) {
+    fun advance() {
         stt = (((samplerate * 60).toDouble() / bpm.toDouble()) / 4.0) / 6.0 // samples to tick
 
         // advance player
@@ -499,8 +549,9 @@ class Screamtracker : BaseModuleTracker() {
     fun process_note(p: Int, ch: Int) {
         val pp: Int = row * 5 * channels + ch * 5
 
-        val n = pattern[p][pp]
-        val s = pattern[p][pp + 1]
+        val pat = pattern[p]
+        val n = pat[pp]
+        val s = pat[pp + 1]
         val channel = channel[ch]
         if (s != 0) {
             channel.sample = s - 1
@@ -539,18 +590,18 @@ class Screamtracker : BaseModuleTracker() {
             channel.voicevolume = 0
         }
 
-        if (pattern[p][pp + 2] <= 64) {
-            channel.volume = pattern[p][pp + 2]
+        if (pat[pp + 2] <= 64) {
+            channel.volume = pat[pp + 2]
             channel.voicevolume = channel.volume
         }
     }
 
 
     // advance player and all channels by a tick
-    fun process_tick(mod: Screamtracker) {
+    fun process_tick() {
 
         // advance global player state by a tick
-        advance(mod)
+        advance()
 
         // advance all channels
         for (ch in 0 until channels) {
@@ -563,8 +614,9 @@ class Screamtracker : BaseModuleTracker() {
             channel.oldvoicevolume = channel.voicevolume
 
             if ((flags and 2) != 0) { // new row
-                channel.command = pattern[p][pp + 3]
-                channel.data = pattern[p][pp + 4]
+                val pat = pattern.getOrNull(p) ?: continue
+                channel.command = pat[pp + 3]
+                channel.data = pat[pp + 4]
                 if (!(channel.command == 0x13 && (channel.data and 0xf0) == 0xd0)) { // note delay?
                     process_note(p, ch)
                 }
@@ -625,7 +677,7 @@ class Screamtracker : BaseModuleTracker() {
             outp[1] = 0f
 
             // if STT has run out, step player forward by tick
-            if (stt <= 0) process_tick(mod)
+            if (stt <= 0) process_tick()
 
             // mix channels
             //var count = 0

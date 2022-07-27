@@ -26,11 +26,12 @@ open class AudioFormat(vararg exts: String) {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
 
 	data class Info(
-		var duration: TimeSpan = 0.seconds,
+		var duration: TimeSpan? = 0.seconds,
 		var channels: Int = 2,
         var decodingTime: TimeSpan? = null
 	) : Extra by Extra.Mixin() {
-		override fun toString(): String = "Info(duration=${duration.milliseconds.niceStr}ms, channels=$channels)"
+        val durationNotNull: TimeSpan get() = duration ?: 0.seconds
+		override fun toString(): String = "Info(duration=${durationNotNull.milliseconds.niceStr}ms, channels=$channels)"
 	}
 
 	open suspend fun tryReadInfo(data: AsyncStream, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Info? = null
