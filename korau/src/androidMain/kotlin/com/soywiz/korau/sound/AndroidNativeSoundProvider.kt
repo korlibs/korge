@@ -24,8 +24,6 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
 
     override val target: String = "android"
 
-    override val audioFormats: AudioFormats = AudioFormats(MP3Decoder) + defaultAudioFormats
-
     private var audioManager: AudioManager? = null
     val audioSessionId: Int by lazy {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP)

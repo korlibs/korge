@@ -29,10 +29,6 @@ import stb_vorbis.stb_vorbis_get_info
 import stb_vorbis.stb_vorbis_open_pushdata
 import stb_vorbis.stb_vorbis_stream_length_in_samples
 
-@kotlin.native.concurrent.ThreadLocal
-actual val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
-//val knNativeAudioFormats: List<AudioFormat> = listOf(NativeOggVorbisDecoderFormat, NativeMp3DecoderAudioFormat)
-
 open class NativeAudioDecoder(val data: AsyncStream, val maxSamples: Int, val maxChannels: Int = 2) {
     val scope = Arena()
 

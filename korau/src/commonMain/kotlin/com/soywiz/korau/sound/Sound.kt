@@ -41,8 +41,7 @@ open class LazyNativeSoundProvider(val prepareInit: () -> Unit = {}, val gen: ()
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         parent.createSound(data, streaming, props, name)
 
-    override val audioFormats: AudioFormats
-        get() = parent.audioFormats
+    override val audioFormats: AudioFormats get() = parent.audioFormats
 
     override suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean, props: AudioDecodingProps): Sound =
         parent.createSound(vfs, path, streaming, props)
@@ -74,7 +73,7 @@ open class NativeSoundProvider : Disposable {
 	protected open fun init(): Unit = Unit
 
 	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
-        val format = if (props.formats != null) AudioFormats(listOf(props.formats, *audioFormats.formats.toTypedArray()).filterNotNull()) else audioFormats
+        val format = props.formats ?: audioFormats
         val stream = format.decodeStreamOrError(data.openAsync(), props)
         return if (streaming) {
             createStreamingSound(stream, closeStream = true, name = name)
@@ -83,7 +82,7 @@ open class NativeSoundProvider : Disposable {
         }
 	}
 
-    open val audioFormats: AudioFormats = AudioFormats(WAV)
+    open val audioFormats: AudioFormats by lazy { defaultAudioFormats }
     //open val audioFormats: AudioFormats = AudioFormats(WAV, MP3Decoder, OGG)
 
     open suspend fun createSound(vfs: Vfs, path: String, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT): Sound {
@@ -92,7 +91,8 @@ open class NativeSoundProvider : Disposable {
             //createStreamingSound(audioFormats.decodeStreamOrError(stream, props)) {
             val vfsFile = vfs.file(path)
             val stream: AsyncStream = if (props.readInMemory) vfsFile.readAll().openAsync() else vfsFile.open()
-            createStreamingSound(audioFormats.decodeStreamOrError(stream, props), name = vfsFile.baseName) {
+
+            createStreamingSound((props.formats ?: audioFormats).decodeStreamOrError(stream, props), name = vfsFile.baseName) {
                 stream.close()
             }
         } else {
@@ -124,9 +124,7 @@ open class NativeSoundProvider : Disposable {
     }
 }
 
-open class LogNativeSoundProvider(
-    override val audioFormats: AudioFormats
-) : NativeSoundProvider() {
+open class LogNativeSoundProvider : NativeSoundProvider() {
     data class AddInfo(val samples: AudioSamples, val offset: Int, val size: Int)
     val onBeforeAdd = Signal<AddInfo>()
     val onAfterAdd = Signal<AddInfo>()
@@ -152,10 +150,8 @@ open class LogNativeSoundProvider(
     }
 }
 
-open class DummyNativeSoundProvider(
-    override val audioFormats: AudioFormats
-) : NativeSoundProvider() {
-    companion object : DummyNativeSoundProvider(AudioFormats(WAV))
+open class DummyNativeSoundProvider : NativeSoundProvider() {
+    companion object : DummyNativeSoundProvider()
 }
 
 class DummySoundChannel(sound: Sound, val data: AudioData? = null) : SoundChannel(sound) {

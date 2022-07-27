@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 class SoundAudioStreamTest {
     @Test
     fun testPlaySeveralTimes() = suspendTest({ doIOTest }) {
-        val soundProvider = LogNativeSoundProvider(AudioFormats(WAV, FastMP3Decoder))
+        val soundProvider = LogNativeSoundProvider()
 
         val sound = soundProvider.createSound(resourcesVfs["click.mp3"], streaming = true)
         val data = sound.toData()
@@ -34,7 +34,7 @@ class SoundAudioStreamTest {
 
     @Test
     fun testChannelCurrentLength() = suspendTest({ doIOTest }) {
-        val soundProvider = LogNativeSoundProvider(AudioFormats(WAV, FastMP3Decoder))
+        val soundProvider = LogNativeSoundProvider()
         for (fileName in listOf("click.wav", "click.mp3")) {
             val sound2 = soundProvider.createSound(resourcesVfs[fileName], streaming = true)
             val channel = sound2.play()

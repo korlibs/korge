@@ -46,8 +46,6 @@ class OpenALNativeSoundProvider : NativeSoundProvider() {
         AL.alcMakeContextCurrent(context)
     }
 
-    override val audioFormats: AudioFormats = AudioFormats(WAV, com.soywiz.korau.format.mp3.MP3Decoder, NativeOggVorbisDecoderFormat)
-
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound {
         return if (streaming) {
             super.createSound(data, streaming, props, name)
