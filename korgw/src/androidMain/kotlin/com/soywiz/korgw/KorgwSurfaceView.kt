@@ -192,7 +192,18 @@ open class KorgwSurfaceView constructor(
                 meta = event.isMetaPressed,
             )
         }
-        return true
+
+        when (keyCode) {
+            // Not handled. Let the device turn up/down the volume
+            KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_MUTE -> {
+                return false
+            }
+            // Mark as not handled, just in case the OS wants to do something with this
+            else -> {
+                //return true
+                return false
+            }
+        }
     }
 
     private fun Double.withoutDeadRange(): Double {
