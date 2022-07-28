@@ -213,11 +213,11 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
             m_motorMass = 1.0f / m_motorMass
         }
 
-        if (isMotorEnabled == false || fixedRotation) {
+        if (!isMotorEnabled || fixedRotation) {
             m_motorImpulse = 0.0f
         }
 
-        if (isLimitEnabled && fixedRotation == false) {
+        if (isLimitEnabled && !fixedRotation) {
             val jointAngle = aB - aA - m_referenceAngleRadians
             if (MathUtils.abs(upperLimit - lowerLimit) < 2.0f * Settings.angularSlop) {
                 m_limitState = LimitState.EQUAL
@@ -284,7 +284,7 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
         val fixedRotation = iA + iB == 0.0f
 
         // Solve motor constraint.
-        if (isMotorEnabled && m_limitState !== LimitState.EQUAL && fixedRotation == false) {
+        if (isMotorEnabled && m_limitState !== LimitState.EQUAL && !fixedRotation) {
             val Cdot = wB - wA - m_motorSpeed
             var impulse = -m_motorMass * Cdot
             val oldImpulse = m_motorImpulse
@@ -298,7 +298,7 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
         val temp = pool.popVec2()
 
         // Solve limit constraint.
-        if (isLimitEnabled && m_limitState !== LimitState.INACTIVE && fixedRotation == false) {
+        if (isLimitEnabled && m_limitState !== LimitState.INACTIVE && !fixedRotation) {
 
             val Cdot1 = pool.popVec2()
             val Cdot = pool.popVec3()
@@ -413,7 +413,7 @@ class RevoluteJoint(argWorld: IWorldPool, def: RevoluteJointDef) : Joint(argWorl
         val fixedRotation = m_invIA + m_invIB == 0.0f
 
         // Solve angular limit constraint.
-        if (isLimitEnabled && m_limitState !== LimitState.INACTIVE && fixedRotation == false) {
+        if (isLimitEnabled && m_limitState !== LimitState.INACTIVE && !fixedRotation) {
             val angle = aB - aA - m_referenceAngleRadians
             var limitImpulse = 0.0f
 

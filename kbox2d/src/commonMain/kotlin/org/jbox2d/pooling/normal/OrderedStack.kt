@@ -35,7 +35,7 @@ import org.jbox2d.internal.assert
 abstract class OrderedStack<E>(private val size: Int, argContainerSize: Int) {
     private val pool: Array<Any> by lazy { Array(size) { newInstance() as Any } }
     private var index: Int = 0
-    private val container: Array<Any> = Array(argContainerSize) { Unit }
+    private val container: Array<Any> = Array(argContainerSize) { }
 
     fun pop(): E {
         assert(index < size) { "End of stack reached, there is probably a leak somewhere" }

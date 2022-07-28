@@ -43,9 +43,7 @@ import org.jbox2d.internal.arraycopy
 class DefaultBroadPhaseBuffer(private val m_tree: BroadPhaseStrategy) : TreeCallback, BroadPhase {
 
     override var proxyCount: Int = 0
-        private set(value: Int) {
-            field = value
-        }
+        private set
 
     private var m_moveBuffer: IntArray? = null
     private var m_moveCapacity: Int = 0
@@ -120,9 +118,7 @@ class DefaultBroadPhaseBuffer(private val m_tree: BroadPhaseStrategy) : TreeCall
             return false
         }
 
-        return if (a.lowerBound.x - b.upperBound.x > 0.0f || a.lowerBound.y - b.upperBound.y > 0.0f) {
-            false
-        } else true
+        return !(a.lowerBound.x - b.upperBound.x > 0.0f || a.lowerBound.y - b.upperBound.y > 0.0f)
 
     }
 

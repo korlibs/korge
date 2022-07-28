@@ -3,7 +3,6 @@ package org.jbox2d.utests
 import org.jbox2d.collision.shapes.PolygonShape
 import org.jbox2d.common.Vec2
 import kotlin.test.Test
-import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
