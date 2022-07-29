@@ -94,7 +94,8 @@ class MainTriangulation : Scene() {
                     if (points.size >= 3) {
                         points.triangulate()
                     }
-                } catch (e: Poly2Tri.PointError) {
+                //} catch (e: Poly2Tri.PointError) {
+                } catch (e: Throwable) {
                     e.printStackTrace()
                     points.removeLast()
                 }
