@@ -1,13 +1,30 @@
 import com.soywiz.korge.Korge
+import com.soywiz.korge.input.MouseEvents
+import com.soywiz.korge.input.mouse
+import com.soywiz.korge.input.onClick
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.ui.UIButton
+import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiComboBox
+import com.soywiz.korge.ui.uiHorizontalStack
+import com.soywiz.korge.ui.uiText
+import com.soywiz.korge.ui.uiVerticalStack
+import com.soywiz.korge.util.CancellableGroup
+import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.text
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.mix
+import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.async.waitOneAsync
+import com.soywiz.korio.lang.Closeable
+import com.soywiz.korio.lang.cancel
 import com.soywiz.korio.lang.portableSimpleName
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.awaitAll
 import samples.MainAnimations
 import samples.MainArc
 import samples.MainAseParallaxSample
@@ -105,6 +122,7 @@ import samples.MainVectorRendering
 import samples.MainVideo
 import samples.MainXM
 import samples.MainZIndex
+import samples.MainSuspendUserInput
 import samples.asteroids.MainAsteroids
 import samples.connect4.MainConnect4
 import samples.fleks.MainFleksSample
@@ -124,16 +142,9 @@ suspend fun main() = Korge(
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
-        //Demo(::MainSvgAnimation),
-        //Demo(::MainGpuVectorRendering),
-        //Demo(::MainSpine),
-        //Demo(::MainDragonbones),
-        //Demo(::MainBlur),
-        //Demo(::MainXM),
-        //Demo(::MainTriangulation),
         Demo(::MainSDF),
-        //Demo(::MainBlending),
         listOf(
+            Demo(::MainSDF),
             Demo(::MainTextInput),
             Demo(::MainBlending),
             Demo(::MainXM),
