@@ -186,15 +186,7 @@ open class Text(
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        if (font !is BitmapFont) {
-            //if (_staticGraphics != null) {
-            //    _staticGraphics!!.getLocalBounds(out)
-            //} else {
-                super.getLocalBoundsInternal(out)
-            //}
-        } else {
-            out.copyFrom(_textBounds)
-        }
+        out.copyFrom(_textBounds)
     }
 
     private val tempMatrix = Matrix()
