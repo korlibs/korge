@@ -54,7 +54,10 @@ class BoundsBuilder {
         return this
     }
 
-    inline fun add(rect: IRectangle): BoundsBuilder = addNonEmpty(rect)
+    inline fun add(rect: IRectangle?): BoundsBuilder {
+        rect?.let { addNonEmpty(rect) }
+        return this
+    }
 
     fun addNonEmpty(rect: IRectangle): BoundsBuilder {
         if (rect.isNotEmpty) {
@@ -62,7 +65,8 @@ class BoundsBuilder {
         }
         return this
     }
-    fun addEvenEmpty(rect: IRectangle): BoundsBuilder {
+    fun addEvenEmpty(rect: IRectangle?): BoundsBuilder {
+        if (rect == null) return this
         add(rect.left, rect.top)
         add(rect.right, rect.bottom)
         return this
