@@ -64,7 +64,8 @@ public actual fun DataBuffer.setFloat(index: Int, value: Float) { buffer.putFloa
 public actual fun DataBuffer.getDouble(index: Int): Double = buffer.getDouble(index)
 public actual fun DataBuffer.setDouble(index: Int, value: Double) { buffer.putDouble(index, value) }
 
-public actual class Int8Buffer(val mbuffer: MemBuffer, val jbuffer: ByteBuffer)
+public actual class Int8Buffer(val mbuffer: MemBuffer, val jbuffer: ByteBuffer) {
+}
 
 public actual val Int8Buffer.mem: MemBuffer get() = mbuffer
 public actual val Int8Buffer.offset: Int get() = (jbuffer as java.nio.Buffer).position()
@@ -157,7 +158,7 @@ public actual fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos:
         srcBuf.keepPositionLimit {
             dstBuf.positionSafe(dstPos)
             srcBuf.positionSafe(srcPos)
-            srcBuf.limitSafe(size)
+            srcBuf.limitSafe(srcPos + size)
             dstBuf.put(srcBuf)
         }
     }

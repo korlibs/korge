@@ -2,6 +2,8 @@
 @file:Suppress("NOTHING_TO_INLINE", "EXTENSION_SHADOWED_BY_MEMBER", "RedundantUnitReturnType", "FunctionName")
 package com.soywiz.kmem
 
+import kotlin.js.JsName
+
 public expect class MemBuffer
 public expect fun MemBufferAlloc(size: Int): MemBuffer
 public expect fun MemBufferAllocNoDirect(size: Int): MemBuffer
@@ -78,7 +80,10 @@ public fun DataBuffer.getAlignedInt(index: Int): Int = getInt(index shl 2)
 public fun DataBuffer.getAlignedFloat(index: Int): Float = getFloat(index shl 2)
 
 public expect class Int8Buffer
-public inline fun Int8BufferAlloc(size: Int): Int8Buffer = MemBufferAlloc(size * 1).sliceInt8Buffer() // @TODO: Can't use class name directly (it fails in JS)
+@Deprecated("", ReplaceWith("Int8BufferAlloc(size)"))
+public inline fun Int8BufferAlloc(size: Int): Int8Buffer = Int8Buffer(size)
+@JsName("NewInt8Buffer")
+public inline fun Int8Buffer(size: Int, dummy: Unit = Unit): Int8Buffer = MemBufferAlloc(size * 1).sliceInt8Buffer()
 public expect val Int8Buffer.mem: MemBuffer
 public expect val Int8Buffer.offset: Int
 public expect val Int8Buffer.size: Int
@@ -87,7 +92,10 @@ public expect operator fun Int8Buffer.set(index: Int, value: Byte): Unit
 public fun Int8Buffer.subarray(begin: Int, end: Int = this.size): Int8Buffer = this.mem.sliceInt8Buffer(this.offset + begin, end - begin)
 
 public expect class Int16Buffer
-public inline fun Int16BufferAlloc(size: Int): Int16Buffer = MemBufferAlloc(size * 2).sliceInt16Buffer() // @TODO: Can't use class name directly (it fails in JS)
+@Deprecated("", ReplaceWith("Int16Buffer(size)"))
+public inline fun Int16BufferAlloc(size: Int): Int16Buffer = Int16Buffer(size)
+@JsName("NewInt16Buffer")
+public inline fun Int16Buffer(size: Int, dummy: Unit = Unit): Int16Buffer = MemBufferAlloc(size * 2).sliceInt16Buffer()
 public expect val Int16Buffer.mem: MemBuffer
 public expect val Int16Buffer.offset: Int
 public expect val Int16Buffer.size: Int
@@ -96,7 +104,10 @@ public expect operator fun Int16Buffer.set(index: Int, value: Short): Unit
 public fun Int16Buffer.subarray(begin: Int, end: Int = this.size): Int16Buffer = this.mem.sliceInt16Buffer(this.offset + begin, end - begin)
 
 public expect class Int32Buffer
-public inline fun Int32BufferAlloc(size: Int): Int32Buffer = MemBufferAlloc(size * 4).sliceInt32Buffer() // @TODO: Can't use class name directly (it fails in JS)
+@Deprecated("", ReplaceWith("Int32Buffer(size)"))
+public inline fun Int32BufferAlloc(size: Int): Int32Buffer = Int32Buffer(size)
+@JsName("NewInt32Buffer")
+public inline fun Int32Buffer(size: Int, dummy: Unit = Unit): Int32Buffer = MemBufferAlloc(size * 4).sliceInt32Buffer()
 public expect val Int32Buffer.mem: MemBuffer
 public expect val Int32Buffer.offset: Int
 public expect val Int32Buffer.size: Int
@@ -105,7 +116,10 @@ public expect operator fun Int32Buffer.set(index: Int, value: Int): Unit
 public fun Int32Buffer.subarray(begin: Int, end: Int = this.size): Int32Buffer = this.mem.sliceInt32Buffer(this.offset + begin, end - begin)
 
 public expect class Float32Buffer
-public inline fun Float32BufferAlloc(size: Int): Float32Buffer = MemBufferAlloc(size * 4).sliceFloat32Buffer() // @TODO: Can't use class name directly (it fails in JS)
+@Deprecated("", ReplaceWith("Float32Buffer(size)"))
+public inline fun Float32BufferAlloc(size: Int): Float32Buffer = Float32Buffer(size)
+@JsName("NewFloat32Buffer")
+public inline fun Float32Buffer(size: Int, dummy: Unit = Unit): Float32Buffer = MemBufferAlloc(size * 4).sliceFloat32Buffer()
 public expect val Float32Buffer.mem: MemBuffer
 public expect val Float32Buffer.offset: Int
 public expect val Float32Buffer.size: Int
@@ -114,7 +128,10 @@ public expect operator fun Float32Buffer.set(index: Int, value: Float): Unit
 public fun Float32Buffer.subarray(begin: Int, end: Int = this.size): Float32Buffer = this.mem.sliceFloat32Buffer(this.offset + begin, end - begin)
 
 public expect class Float64Buffer
-public inline fun Float64BufferAlloc(size: Int): Float64Buffer = MemBufferAlloc(size * 8).sliceFloat64Buffer() // @TODO: Can't use class name directly (it fails in JS)
+@Deprecated("", ReplaceWith("Float64Buffer(size)"))
+public inline fun Float64BufferAlloc(size: Int): Float64Buffer = Float64Buffer(size)
+@JsName("NewFloat64Buffer")
+public inline fun Float64Buffer(size: Int, dummy: Unit = Unit): Float64Buffer = MemBufferAlloc(size * 8).sliceFloat64Buffer()
 public expect val Float64Buffer.mem: MemBuffer
 public expect val Float64Buffer.offset: Int
 public expect val Float64Buffer.size: Int
@@ -123,35 +140,39 @@ public expect operator fun Float64Buffer.set(index: Int, value: Double): Unit
 public fun Float64Buffer.subarray(begin: Int, end: Int = this.size): Float64Buffer = this.mem.sliceFloat64Buffer(this.offset + begin, end - begin)
 
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Int8Buffer, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos) * 1, dst.mem, (dst.offset + dstPos) * 1, size * 1)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: ByteArray, srcPos: Int, dst: Int8Buffer, dstPos: Int, size: Int): Unit = arraycopy(src, srcPos, dst.mem, (dst.offset + dstPos), size)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Int8Buffer, srcPos: Int, dst: ByteArray, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos), dst, dstPos, size)
+
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Int16Buffer, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos) * 2, dst.mem, (dst.offset + dstPos) * 2, size * 2)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: ShortArray, srcPos: Int, dst: Int16Buffer, dstPos: Int, size: Int): Unit = arraycopy(src, srcPos, dst.mem, (dst.offset + dstPos), size)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Int16Buffer, srcPos: Int, dst: ShortArray, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos), dst, dstPos, size)
+
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Int32Buffer, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos) * 4, dst.mem, (dst.offset + dstPos) * 4, size * 4)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: IntArray, srcPos: Int, dst: Int32Buffer, dstPos: Int, size: Int): Unit = arraycopy(src, srcPos, dst.mem, (dst.offset + dstPos), size)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Int32Buffer, srcPos: Int, dst: IntArray, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos), dst, dstPos, size)
+
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Float32Buffer, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos) * 4, dst.mem, (dst.offset + dstPos) * 4, size * 4)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: FloatArray, srcPos: Int, dst: Float32Buffer, dstPos: Int, size: Int): Unit = arraycopy(src, srcPos, dst.mem, (dst.offset + dstPos), size)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Float32Buffer, srcPos: Int, dst: FloatArray, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos), dst, dstPos, size)
+
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Float64Buffer, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos) * 8, dst.mem, (dst.offset + dstPos) * 8, size * 8)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: DoubleArray, srcPos: Int, dst: Float64Buffer, dstPos: Int, size: Int): Unit = arraycopy(src, srcPos, dst.mem, (dst.offset + dstPos), size)
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
-public expect fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit
+public fun arraycopy(src: Float64Buffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit = arraycopy(src.mem, (src.offset + srcPos), dst, dstPos, size)
 
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
 public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: MemBuffer, dstPos: Int, size: Int): Unit
@@ -176,15 +197,46 @@ public expect fun arraycopy(src: DoubleArray, srcPos: Int, dst: MemBuffer, dstPo
 /** Copies [size] elements of [src] starting at [srcPos] into [dst] at [dstPos]  */
 public expect fun arraycopy(src: MemBuffer, srcPos: Int, dst: DoubleArray, dstPos: Int, size: Int): Unit
 
-public fun NewUint8Buffer(mem: MemBuffer, offset: Int, len: Int): Uint8Buffer = mem.sliceUint8Buffer(offset, len)
-public fun NewUint16Buffer(mem: MemBuffer, offset: Int, len: Int): Uint16Buffer = mem.sliceUint16Buffer(offset, len)
-public fun NewInt8Buffer(mem: MemBuffer, offset: Int, len: Int): Int8Buffer = mem.sliceInt8Buffer(offset, len)
-public fun NewInt16Buffer(mem: MemBuffer, offset: Int, len: Int): Int16Buffer = mem.sliceInt16Buffer(offset, len)
-public fun NewInt32Buffer(mem: MemBuffer, offset: Int, len: Int): Int32Buffer = mem.sliceInt32Buffer(offset, len)
-public fun NewFloat32Buffer(mem: MemBuffer, offset: Int, len: Int): Float32Buffer = mem.sliceFloat32Buffer(offset, len)
-public fun NewFloat64Buffer(mem: MemBuffer, offset: Int, len: Int): Float64Buffer = mem.sliceFloat64Buffer(offset, len)
+@Deprecated("", ReplaceWith("Int16Buffer(mem, offset, len)"))
+public fun NewInt16Buffer(mem: MemBuffer, offset: Int, len: Int): Int16Buffer = com.soywiz.kmem.buffer.Int16Buffer(mem, offset, len)
+@Deprecated("", ReplaceWith("Int32Buffer(mem, offset, len)"))
+public fun NewInt32Buffer(mem: MemBuffer, offset: Int, len: Int): Int32Buffer = com.soywiz.kmem.buffer.Int32Buffer(mem, offset, len)
+@Deprecated("", ReplaceWith("Float32Buffer(mem, offset, len)"))
+public fun NewFloat32Buffer(mem: MemBuffer, offset: Int, len: Int): Float32Buffer = com.soywiz.kmem.buffer.Float32Buffer(mem, offset, len)
+@Deprecated("", ReplaceWith("Float64Buffer(mem, offset, len)"))
+public fun NewFloat64Buffer(mem: MemBuffer, offset: Int, len: Int): Float64Buffer = com.soywiz.kmem.buffer.Float64Buffer(mem, offset, len)
 
 fun ByteArray.toMemBuffer(): MemBuffer = MemBufferWrap(this)
 fun ByteArray.toInt8Buffer(): Int8Buffer = this.toMemBuffer().asInt8Buffer()
 fun ByteArray.toUint8Buffer(): Uint8Buffer = Uint8Buffer(this.toInt8Buffer())
 //val Uint8Buffer.bytes get() = this.b.mem.getData()
+
+fun Int8Buffer(data: ByteArray): Int8Buffer {
+    val out = Int8Buffer(data.size)
+    for (n in data.indices) out[n] = data[n]
+    return out
+}
+
+fun Int16Buffer(data: ShortArray): Int16Buffer {
+    val out = Int16Buffer(data.size)
+    for (n in data.indices) out[n] = data[n]
+    return out
+}
+
+fun Int32Buffer(data: IntArray): Int32Buffer {
+    val out = Int32Buffer(data.size)
+    for (n in data.indices) out[n] = data[n]
+    return out
+}
+
+fun Float32Buffer(data: FloatArray): Float32Buffer {
+    val out = Float32Buffer(data.size)
+    for (n in data.indices) out[n] = data[n]
+    return out
+}
+
+fun Float64Buffer(data: DoubleArray): Float64Buffer {
+    val out = Float64Buffer(data.size)
+    for (n in data.indices) out[n] = data[n]
+    return out
+}
