@@ -68,6 +68,7 @@ import samples.MainRenderText
 import samples.MainRotateCircle
 import samples.MainRotatedAtlas
 import samples.MainRotatedTexture
+import samples.MainSDF
 import samples.MainSWF
 import samples.MainScenes
 import samples.MainShapes
@@ -128,7 +129,9 @@ suspend fun main() = Korge(
         //Demo(::MainSpine),
         //Demo(::MainDragonbones),
         //Demo(::MainBlur),
-        Demo(::MainXM),
+        //Demo(::MainXM),
+        //Demo(::MainTriangulation),
+        Demo(::MainSDF),
         //Demo(::MainBlending),
         listOf(
             Demo(::MainTextInput),
