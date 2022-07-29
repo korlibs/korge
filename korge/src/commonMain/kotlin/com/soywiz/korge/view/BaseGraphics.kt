@@ -85,6 +85,8 @@ abstract class BaseGraphics(
 
         val boundsWithShapes = boundsUnsafe(strokes = true)
 
+        //println("boundsWithShapes=$boundsWithShapes")
+
         // Removes old image
         run {
             bitmapsToRemove.add(this.bitmap.base)

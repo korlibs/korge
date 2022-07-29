@@ -1941,7 +1941,7 @@ object Poly2Tri {
                     this.triangles_.add(t)
                     for (i in 0 until 3) {
                         if (!t.constrained_edge[i]) {
-                            triangles.add(t.getNeighbor(i)!!)
+                            triangles.add(t.getNeighbor(i) ?: throw PointError("Null pointer", points_))
                         }
                     }
                 }
