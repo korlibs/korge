@@ -12,12 +12,17 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.line
+import com.soywiz.korma.geom.vector.lineTo
+import com.soywiz.korma.geom.vector.moveTo
+import com.soywiz.korma.triangle.poly2tri.Poly2Tri
 import com.soywiz.korma.triangle.triangulate.triangulate
 
 class MainTriangulation : Scene() {
     override suspend fun SContainer.sceneMain() {
         textOld("Add Points by clicking with the mouse", 14.0).position(5.0, 5.0)
         val g = graphics(renderer = GraphicsRenderer.SYSTEM)
+        //val g = graphics(renderer = GraphicsRenderer.GPU)
+        //val g = cpuGraphics()
         g.position(100, 100)
 
         val points = arrayListOf<Point>()
@@ -47,6 +52,17 @@ class MainTriangulation : Scene() {
                 }
 
                 if (points.size >= 3) {
+                    for (triangle in points.triangulate()) {
+                        fill(Colors.GREEN.withAd(0.2)) {
+                            val p0 = Point(triangle.p0)
+                            val p1 = Point(triangle.p1)
+                            val p2 = Point(triangle.p2)
+                            moveTo(p0)
+                            lineTo(p1)
+                            lineTo(p2)
+                            close()
+                        }
+                    }
                     stroke(Colors.GREEN, StrokeInfo(thickness = 1.0)) {
                         for (triangle in points.triangulate()) {
                             val p0 = Point(triangle.p0)
@@ -72,7 +88,16 @@ class MainTriangulation : Scene() {
 
         mouse {
             onClick {
-                points.add(g.localMouseXY(views))
+                //additionalPoint = null
+                try {
+                    points.add(g.localMouseXY(views))
+                    if (points.size >= 3) {
+                        points.triangulate()
+                    }
+                } catch (e: Poly2Tri.PointError) {
+                    e.printStackTrace()
+                    points.removeLast()
+                }
                 repaint(finished = true)
                 //println("CLICK")
             }
