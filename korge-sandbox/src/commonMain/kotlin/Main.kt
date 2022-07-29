@@ -69,6 +69,7 @@ import samples.MainHaptic
 import samples.MainHelloWorld
 import samples.MainImageTrace
 import samples.MainInput
+import samples.MainJSMpeg
 import samples.MainKTree
 import samples.MainKorviSample
 import samples.MainLipSync
@@ -142,8 +143,9 @@ suspend fun main() = Korge(
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
-        Demo(::MainSDF),
+        Demo(::MainJSMpeg),
         listOf(
+            Demo(::MainJSMpeg),
             Demo(::MainSDF),
             Demo(::MainTextInput),
             Demo(::MainBlending),
