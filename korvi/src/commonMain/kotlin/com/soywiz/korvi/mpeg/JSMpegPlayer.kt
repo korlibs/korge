@@ -16,19 +16,14 @@ class JSMpegPlayer {
     var bitmap: Bitmap32 = Bitmap32(0, 0)
 
     val video = MPEG1(false, onDecodeCallback = { video, time ->
-        println("mpeg1.onDecodeCallback")
+        //println("mpeg1.onDecodeCallback")
     }).also {
         it.connect(object : VideoDestination {
             val width: Int get() = bitmap.width
             val height: Int get() = bitmap.height
+            var frameN = 0
 
-            override fun render(Y: Uint8ClampedBuffer, Cr: Uint8ClampedBuffer, Cb: Uint8ClampedBuffer, rgba: Boolean) {
-                println("video.render: ${Y.size}, ${Cr.size}, ${Cb.size}")
-
-                println(Historiogram.values(Y.toIntArray()).toMap())
-                println(Historiogram.values(Cr.toIntArray()).toMap())
-                println(Historiogram.values(Cb.toIntArray()).toMap())
-
+            override fun render(Y: Uint8ClampedBuffer, Cr: Uint8ClampedBuffer, Cb: Uint8ClampedBuffer, v: Boolean) {
                 // Chroma values are the same for each block of 4 pixels, so we proccess
                 // 2 lines at a time, 2 neighboring pixels each.
                 // I wish we could use 32bit writes to the RGBA buffer instead of writing
@@ -68,9 +63,9 @@ class JSMpegPlayer {
                         ccb = Cb[cIndex]
                         ccr = Cr[cIndex]
                         cIndex++
-                        r = ccb + ((ccb * 103) ushr 8) - 179
+                        b = ccb + ((ccb * 103) ushr 8) - 179
                         g = ((ccr * 88) ushr 8) - 44 + ((ccb * 183) ushr 8) - 91
-                        b = ccr + ((ccr * 198) ushr 8) - 227
+                        r = ccr + ((ccr * 198) ushr 8) - 227
 
                         // Line 1
                         val y1 = Y[yIndex1++]
@@ -99,6 +94,8 @@ class JSMpegPlayer {
                     rgbaIndex2 += rgbaNext2Lines
                     cIndex += cNextLine
                 }
+
+                println("frame[${frameN++}] ${hashArray(Y)} ${hashArray(Cr)} ${hashArray(Cb)}")
             }
 
             override fun resize(width: Int, height: Int) {
@@ -108,7 +105,7 @@ class JSMpegPlayer {
         })
     }
     val audio = MP2(false, onDecodeCallback = { audio, time ->
-        println("mp2.onDecodeCallback")
+        //println("mp2.onDecodeCallback")
     }).also {
         it.connect(object : AudioDestination {
             override fun play(rate: Int, left: FloatArray, right: FloatArray) {
@@ -130,7 +127,10 @@ class JSMpegPlayer {
     fun frame() {
         //println(demuxer.parsePacket())
         //println(video.decode())
-        for (n in 0 until 7) println(video.decode())
-        println(audio.decode())
+        //for (n in 0 until 7) println(video.decode())
+        for (n in 0 until 7) {
+            println(video.decode())
+        }
+        //println(audio.decode())
     }
 }

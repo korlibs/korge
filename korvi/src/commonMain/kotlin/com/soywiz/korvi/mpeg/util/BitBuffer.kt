@@ -97,7 +97,7 @@ class BitBuffer(var bytes: Uint8Buffer, val mode: MODE = MODE.EXPAND) {
     fun findNextStartCode(): Int {
         for (i in ((this.index + 7) ushr 3) until this.byteLength) {
             if (i < 128) {
-                println("CHECK: $i, this.bytes[i + 0..3]=${this.bytes[i + 0]},${this.bytes[i + 1]},${this.bytes[i + 2]},${this.bytes[i + 3]}, byteLength=$byteLength")
+                //println("CHECK: $i, this.bytes[i + 0..3]=${this.bytes[i + 0]},${this.bytes[i + 1]},${this.bytes[i + 2]},${this.bytes[i + 3]}, byteLength=$byteLength")
             }
             if (
                 this.bytes[i + 0] == 0x00 &&
@@ -107,7 +107,7 @@ class BitBuffer(var bytes: Uint8Buffer, val mode: MODE = MODE.EXPAND) {
                 //println("SYNC")
                 this.index = (i + 4) shl 3
                 val code = this.bytes[i + 3]
-                println("findNextStartCode $i $code")
+                //println("findNextStartCode $i $code")
                 return code
             }
         }

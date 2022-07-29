@@ -2,11 +2,15 @@ package com.soywiz.korvi.mpeg
 
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.kmem.BaseIntBuffer
+import com.soywiz.kmem.Int32Buffer
 import com.soywiz.kmem.Int8Buffer
 import com.soywiz.kmem.MemBufferWrap
 import com.soywiz.kmem.NewInt8Buffer
+import com.soywiz.kmem.Uint32Buffer
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.arraycopy
+import com.soywiz.kmem.get
+import com.soywiz.kmem.size
 import com.soywiz.krypto.encoding.fromBase64
 
 // This sets up the JSMpeg "Namespace". The object is empty apart from the Now()
@@ -95,4 +99,28 @@ internal val Uint8Buffer.byteLength: Int get() = size
 internal fun Uint8Buffer.set(other: Uint8Buffer, targetOffset: Int = 0) {
     //for (n in 0 until other.size) this[targetOffset + n] = other[n]
     arraycopy(other.b, 0, this.b, targetOffset, other.size)
+}
+
+internal fun hashArray(array: IntArray): Int {
+    var hash = 0;
+    for (n in array.indices) hash = (hash + (array[n] * (n + 1)))
+    return hash
+}
+
+internal fun hashArray(array: Int32Buffer): Int {
+    var hash = 0;
+    for (n in 0 until array.size) hash = (hash + (array[n] * (n + 1)))
+    return hash
+}
+
+internal fun hashArray(array: Uint32Buffer): Int {
+    var hash = 0;
+    for (n in 0 until array.size) hash = (hash + ((array[n].toInt() and 0x7fffffff) * (n + 1)))
+    return hash
+}
+
+internal fun hashArray(array: BaseIntBuffer): Int {
+    var hash = 0;
+    for (n in 0 until array.size) hash = (hash + (array[n] * (n + 1)))
+    return hash
 }

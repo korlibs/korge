@@ -1,4 +1,5 @@
-@file:Suppress("unused", "NAME_SHADOWING", "MemberVisibilityCanBePrivate", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER",
+@file:Suppress(
+    "unused", "NAME_SHADOWING", "MemberVisibilityCanBePrivate", "ClassName", "FunctionName", "UNUSED_VARIABLE", "UNUSED_PARAMETER",
     "LocalVariableName", "DuplicatedCode", "SpellCheckingInspection"
 )
 
@@ -6,14 +7,20 @@ package com.soywiz.korvi.mpeg.stream.video
 
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kmem.BaseIntBuffer
+import com.soywiz.kmem.Int32Buffer
 import com.soywiz.kmem.IntArrayIntBuffer
 import com.soywiz.kmem.Uint32Buffer
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8ClampedBuffer
+import com.soywiz.kmem.size
 import com.soywiz.korvi.mpeg.util.BitBuffer
 import com.soywiz.korvi.mpeg.stream.DecoderBase
 import com.soywiz.korvi.mpeg.JSMpeg
+import com.soywiz.korvi.mpeg.hashArray
 import com.soywiz.korvi.mpeg.stream.VideoDestination
+import kotlin.reflect.KProperty
+import kotlin.reflect.KProperty0
+import kotlin.reflect.KProperty1
 
 // Inspired by Java MPEG-1 Video Decoder and Player by Zoltan Korandi
 // https://sourceforge.net/projects/javampeg1video/
@@ -25,7 +32,7 @@ class MPEG1(
 ) : DecoderBase<VideoDestination>(streaming) {
     var bufferMode = if (streaming) BitBuffer.MODE.EVICT else BitBuffer.MODE.EXPAND
 
-    override val bits: BitBuffer = BitBuffer (bufferSize, bufferMode)
+    override val bits: BitBuffer = BitBuffer(bufferSize, bufferMode)
     val customIntraQuantMatrix = Uint8Buffer(64)
     val customNonIntraQuantMatrix = Uint8Buffer(64)
     var intraQuantMatrix: BaseIntBuffer = IntArrayIntBuffer(IntArray(64))
@@ -71,11 +78,12 @@ class MPEG1(
         }
 
         if (this.bits.findStartCode(START.PICTURE) == -1) {
-            var bufferedBytes = this.bits.byteLength - (this.bits.index ushr 3)
+            var bufferedBytes = this.bits.byteLength - (this.bits.index shr 3)
             return false
         }
 
         this.decodePicture()
+        //debug("decodePicture")
         this.advanceDecodedTime(1 / this.frameRate)
 
         val elapsedTime = JSMpeg.Now() - startTime
@@ -93,7 +101,6 @@ class MPEG1(
 
 // Sequence Layer
 
-    var frameRate = 30.0
     fun decodeSequenceHeader() {
         val newWidth = this.bits.read(12)
         val newHeight = this.bits.read(12)
@@ -137,8 +144,8 @@ class MPEG1(
         this.intraQuantMatrix = IntArrayIntBuffer(DEFAULT_INTRA_QUANT_MATRIX)
         this.nonIntraQuantMatrix = IntArrayIntBuffer(DEFAULT_NON_INTRA_QUANT_MATRIX)
 
-        this.mbWidth = (this.width + 15) ushr 4
-        this.mbHeight = (this.height + 15) ushr 4
+        this.mbWidth = (this.width + 15) shr 4
+        this.mbHeight = (this.height + 15) shr 4
         this.mbSize = this.mbWidth * this.mbHeight
 
         this.codedWidth = this.mbWidth shl 4
@@ -149,27 +156,28 @@ class MPEG1(
         this.halfHeight = this.mbHeight shl 3
 
         // Allocated buffers and resize the canvas
-        this.currentY = Uint8ClampedBuffer (this.codedSize)
-        this.currentY32 = Uint32Buffer (this.currentY!!.buffer)
+        this.currentY = Uint8ClampedBuffer(this.codedSize)
+        this.currentY32 = Uint32Buffer(this.currentY!!.buffer)
 
-        this.currentCr = Uint8ClampedBuffer (this.codedSize ushr 2)
-        this.currentCr32 = Uint32Buffer (this.currentCr!!.buffer)
+        this.currentCr = Uint8ClampedBuffer(this.codedSize shr 2)
+        this.currentCr32 = Uint32Buffer(this.currentCr!!.buffer)
 
-        this.currentCb = Uint8ClampedBuffer (this.codedSize ushr 2)
-        this.currentCb32 = Uint32Buffer (this.currentCb!!.buffer)
+        this.currentCb = Uint8ClampedBuffer(this.codedSize shr 2)
+        this.currentCb32 = Uint32Buffer(this.currentCb!!.buffer)
 
 
-        this.forwardY = Uint8ClampedBuffer (this.codedSize)
-        this.forwardY32 = Uint32Buffer (this.forwardY!!.buffer)
+        this.forwardY = Uint8ClampedBuffer(this.codedSize)
+        this.forwardY32 = Uint32Buffer(this.forwardY!!.buffer)
 
-        this.forwardCr = Uint8ClampedBuffer (this.codedSize ushr 2)
-        this.forwardCr32 = Uint32Buffer (this.forwardCr!!.buffer)
+        this.forwardCr = Uint8ClampedBuffer(this.codedSize shr 2)
+        this.forwardCr32 = Uint32Buffer(this.forwardCr!!.buffer)
 
-        this.forwardCb = Uint8ClampedBuffer (this.codedSize ushr 2)
-        this.forwardCb32 = Uint32Buffer (this.forwardCb!!.buffer)
+        this.forwardCb = Uint8ClampedBuffer(this.codedSize shr 2)
+        this.forwardCb32 = Uint32Buffer(this.forwardCb!!.buffer)
     }
 
-// Picture Layer
+    // Picture Layer
+    var frameRate = 30.0
 
     var currentY: Uint8ClampedBuffer? = null
     var currentCr: Uint8ClampedBuffer? = null
@@ -192,6 +200,40 @@ class MPEG1(
     var forwardFCode = 0
     var forwardRSize = 0
     var forwardF = 0
+
+    fun debug(pass: String, vararg values: Any?) {
+        println(buildString {
+            append("$pass ")
+            for (value in values) {
+                //append("\n  ")
+                var rvalue = value
+                if (rvalue is KProperty<*>) append(rvalue.name + "=")
+                if (rvalue is KProperty0<*>) rvalue = rvalue.get()
+
+                //if (rvalue is BaseIntBuffer) rvalue = "Array[${rvalue.size}]=hash:${hashArray(rvalue)}"
+                //if (rvalue is IntArray) rvalue = "Array[${rvalue.size}]=hash:${hashArray(rvalue)}"
+                //if (rvalue is Int32Buffer) rvalue = "Array[${rvalue.size}]=hash:${hashArray(rvalue)}"
+                //if (rvalue is Uint32Buffer) rvalue = "Array[${rvalue.size}]=hash:${hashArray(rvalue)}"
+
+                if (rvalue is BaseIntBuffer) rvalue = "${hashArray(rvalue)}"
+                if (rvalue is IntArray) rvalue = "${hashArray(rvalue)}"
+                if (rvalue is Int32Buffer) rvalue = "${hashArray(rvalue)}"
+                if (rvalue is Uint32Buffer) rvalue = "${hashArray(rvalue)}"
+
+
+                append(rvalue)
+                append(", ")
+            }
+        })
+    }
+
+    fun debug(pass: String) {
+        debug(
+            "MPEG1.debug[$pass]", ::currentY, customIntraQuantMatrix, customNonIntraQuantMatrix,
+            intraQuantMatrix, nonIntraQuantMatrix, blockData,
+
+        )
+    }
 
     fun decodePicture(skipOutput: Boolean = false) {
         this.currentFrame++
@@ -290,10 +332,23 @@ class MPEG1(
             this.bits.skip(8)
         }
 
+        //var macroBlockCount = 0
+        //var line = ""
         do {
             this.decodeMacroblock()
+            //line += "${hashArray(currentY!!)}, "
+
+            //macroBlockCount++
         } while (!this.bits.nextBytesAreStartCode())
+        if (this.decodeSliceCount == 63) {
+            //println("decodeSlice[${decodeSliceCount}]($macroBlockCount) : $line")
+        }
+
+        //debug("decodeSlice[${decodeSliceCount}]: macroBlockCount=$macroBlockCount")
+        decodeSliceCount++
     }
+
+    var decodeSliceCount = 0
 
 // Macroblock Layer
 
@@ -311,6 +366,9 @@ class MPEG1(
     var motionFwVPrev = 0
 
     fun decodeMacroblock() {
+        if (this.decodeSliceCount == 63) {
+            //println("------------")
+        }
         // Decode macroblock_address_increment
         var increment = 0
         var t = this.readHuffman(MACROBLOCK_ADDRESS_INCREMENT)
@@ -410,7 +468,7 @@ class MPEG1(
             if ((cbp and mask) != 0) {
                 this.decodeBlock(block)
             }
-            mask = mask ushr 1
+            mask = mask shr 1
         }
     }
 
@@ -424,7 +482,7 @@ class MPEG1(
             var code = this.readHuffman(MOTION)
             if ((code != 0) && (this.forwardF != 1)) {
                 r = this.bits.read(this.forwardRSize)
-                d = ((kotlin.math.abs(code) - 1) shl this.forwardRSize)+r+1
+                d = ((kotlin.math.abs(code) - 1) shl this.forwardRSize) + r + 1
                 if (code < 0) {
                     d = -d
                 }
@@ -433,10 +491,9 @@ class MPEG1(
             }
 
             this.motionFwHPrev += d
-            if (this.motionFwHPrev > (this.forwardF shl 4)-1) {
+            if (this.motionFwHPrev > (this.forwardF shl 4) - 1) {
                 this.motionFwHPrev -= this.forwardF shl 5
-            }
-            else if (this.motionFwHPrev < ((-this.forwardF) shl 4)) {
+            } else if (this.motionFwHPrev < ((-this.forwardF) shl 4)) {
                 this.motionFwHPrev += this.forwardF shl 5
             }
 
@@ -449,7 +506,7 @@ class MPEG1(
             code = this.readHuffman(MOTION)
             if ((code != 0) && (this.forwardF != 1)) {
                 r = this.bits.read(this.forwardRSize)
-                d = ((kotlin.math.abs(code) - 1) shl this.forwardRSize)+r+1
+                d = ((kotlin.math.abs(code) - 1) shl this.forwardRSize) + r + 1
                 if (code < 0) {
                     d = -d
                 }
@@ -458,10 +515,9 @@ class MPEG1(
             }
 
             this.motionFwVPrev += d
-            if (this.motionFwVPrev > (this.forwardF shl 4)-1) {
+            if (this.motionFwVPrev > (this.forwardF shl 4) - 1) {
                 this.motionFwVPrev -= this.forwardF shl 5
-            }
-            else if (this.motionFwVPrev < ((-this.forwardF) shl 4)) {
+            } else if (this.motionFwVPrev < ((-this.forwardF) shl 4)) {
                 this.motionFwVPrev += this.forwardF shl 5
             }
 
@@ -489,8 +545,8 @@ class MPEG1(
             val width = this.codedWidth
             val scan = width - 16
 
-            val H = motionH ushr 1
-            val V = motionV ushr 1
+            val H = motionH shr 1
+            val V = motionV shr 1
             val oddH = (motionH and 1) == 1
             val oddV = (motionV and 1) == 1
 
@@ -504,7 +560,7 @@ class MPEG1(
                         var y1 = sY[src] + sY[src + width]; src++
                         for (x in 0 until 4) {
                             var y2 = sY[src] + sY[src + width]; src++
-                            var y = (((y1 + y2 + 2) ushr 2) and 0xff)
+                            var y = (((y1 + y2 + 2) shr 2) and 0xff)
 
                             y1 = sY[src] + sY[src + width]; src++
                             y = y or (((y1 + y2 + 2) shl 6) and 0xff00)
@@ -517,7 +573,7 @@ class MPEG1(
 
                             dY[dest++] = y
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan - 1
                     }
                 } else {
@@ -525,7 +581,7 @@ class MPEG1(
                         var y1 = sY[src++]
                         for (x in 0 until 4) {
                             var y2 = sY[src++]
-                            var y = (((y1 + y2 + 1) ushr 1) and 0xff)
+                            var y = (((y1 + y2 + 1) shr 1) and 0xff)
 
                             y1 = sY[src++]
                             y = y or (((y1 + y2 + 1) shl 7) and 0xff00)
@@ -538,7 +594,7 @@ class MPEG1(
 
                             dY[dest++] = y
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan - 1
                     }
                 }
@@ -546,14 +602,14 @@ class MPEG1(
                 if (oddV) {
                     while (dest < last) {
                         for (x in 0 until 4) {
-                            var y = (((sY[src] + sY[src + width] + 1) ushr 1) and 0xff); src++
+                            var y = (((sY[src] + sY[src + width] + 1) shr 1) and 0xff); src++
                             y = y or (((sY[src] + sY[src + width] + 1) shl 7) and 0xff00); src++
                             y = y or (((sY[src] + sY[src + width] + 1) shl 15) and 0xff0000); src++
                             y = y or (((sY[src] + sY[src + width] + 1) shl 23) and 0xff000000.toInt()); src++
 
                             dY[dest++] = y
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan
                     }
                 } else {
@@ -566,7 +622,7 @@ class MPEG1(
 
                             dY[dest++] = y
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan
                     }
                 }
@@ -578,8 +634,8 @@ class MPEG1(
             val width = this.halfWidth
             val scan = width - 8
 
-            val H = (motionH / 2) ushr 1
-            val V = (motionV / 2) ushr 1
+            val H = (motionH / 2) shr 1
+            val V = (motionV / 2) shr 1
             val oddH = ((motionH / 2) and 1) == 1
             val oddV = ((motionV / 2) and 1) == 1
 
@@ -596,8 +652,8 @@ class MPEG1(
                         for (x in 0 until 2) {
                             var cr2 = sCr[src] + sCr[src + width]
                             var cb2 = sCb[src] + sCb[src + width]; src++
-                            var cr = (((cr1 + cr2 + 2) ushr 2) and 0xff)
-                            var cb = (((cb1 + cb2 + 2) ushr 2) and 0xff)
+                            var cr = (((cr1 + cr2 + 2) shr 2) and 0xff)
+                            var cb = (((cb1 + cb2 + 2) shr 2) and 0xff)
 
                             cr1 = sCr[src] + sCr[src + width]
                             cb1 = sCb[src] + sCb[src + width]; src++
@@ -618,7 +674,7 @@ class MPEG1(
                             dCb[dest] = cb
                             dest++
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan - 1
                     }
                 } else {
@@ -629,8 +685,8 @@ class MPEG1(
                         for (x in 0 until 2) {
                             var cr2 = sCr[src]
                             var cb2 = sCb[src++]
-                            var cr = (((cr1 + cr2 + 1) ushr 1) and 0xff)
-                            var cb = (((cb1 + cb2 + 1) ushr 1) and 0xff)
+                            var cr = (((cr1 + cr2 + 1) shr 1) and 0xff)
+                            var cb = (((cb1 + cb2 + 1) shr 1) and 0xff)
 
                             cr1 = sCr[src]
                             cb1 = sCb[src++]
@@ -651,7 +707,7 @@ class MPEG1(
                             dCb[dest] = cb
                             dest++
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan - 1
                     }
                 }
@@ -659,8 +715,8 @@ class MPEG1(
                 if (oddV) {
                     while (dest < last) {
                         for (x in 0 until 2) {
-                            var cr = (((sCr[src] + sCr[src + width] + 1) ushr 1) and 0xff)
-                            var cb = (((sCb[src] + sCb[src + width] + 1) ushr 1) and 0xff); src++
+                            var cr = (((sCr[src] + sCr[src + width] + 1) shr 1) and 0xff)
+                            var cb = (((sCb[src] + sCb[src + width] + 1) shr 1) and 0xff); src++
 
                             cr = cr or (((sCr[src] + sCr[src + width] + 1) shl 7) and 0xff00)
                             cb = cb or (((sCb[src] + sCb[src + width] + 1) shl 7) and 0xff00); src++
@@ -675,7 +731,7 @@ class MPEG1(
                             dCb[dest] = cb
                             dest++
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan
                     }
                 } else {
@@ -695,12 +751,13 @@ class MPEG1(
                             dCb[dest] = cb
                             dest++
                         }
-                        dest += scan ushr 2
+                        dest += scan shr 2
                         src += scan
                     }
                 }
             }
         }
+        //debug("copyMacroblock")
     }
 
     // Block layer
@@ -710,6 +767,10 @@ class MPEG1(
     var dcPredictorCb = 0
 
     fun decodeBlock(block: Int) {
+        if (this.decodeSliceCount == 63) {
+            //println("------------")
+        }
+
         var n = 0
 
         // Decode DC coefficient of intra-coded blocks
@@ -730,11 +791,10 @@ class MPEG1(
             // Read DC coeff
             if (dctSize > 0) {
                 val differential = this.bits.read(dctSize)
-                if ((differential and (1 shl (dctSize-1))) != 0) {
+                if ((differential and (1 shl (dctSize - 1))) != 0) {
                     this.blockData[0] = predictor + differential
-                }
-                else {
-                    this.blockData[0] = predictor + ((-1 shl dctSize) or (differential+1))
+                } else {
+                    this.blockData[0] = predictor + (((-1) shl dctSize) or (differential + 1))
                 }
             } else {
                 this.blockData[0] = predictor
@@ -779,7 +839,7 @@ class MPEG1(
                     else -> level
                 }
             } else {
-                run = coeff ushr 8
+                run = coeff shr 8
                 level = coeff and 0xff
                 if (this.bits.readBool()) {
                     level = -level
@@ -795,7 +855,10 @@ class MPEG1(
             if (!this.macroblockIntra) {
                 level += if (level < 0) -1 else 1
             }
-            level = (level * this.quantizerScale * quantMatrix[dezigZagged]) ushr 4
+            if (this.decodeSliceCount >= 63) {
+                //println("---------")
+            }
+            level = (level * this.quantizerScale * quantMatrix[dezigZagged]) shr 4
             if ((level and 1) == 0) {
                 level -= if (level > 0) 1 else -1
             }
@@ -826,14 +889,14 @@ class MPEG1(
             }
         } else {
             destArray = if (block == 4) this.currentCb!! else this.currentCr!!
-            scan = (this.codedWidth ushr 1)-8
-            destIndex = ((this.mbRow * this.codedWidth) shl 2)+(this.mbCol shl 3)
+            scan = (this.codedWidth shr 1) - 8
+            destIndex = ((this.mbRow * this.codedWidth) shl 2) + (this.mbCol shl 3)
         }
 
         if (this.macroblockIntra) {
             // Overwrite (no prediction)
             if (n == 1) {
-                CopyValueToDestination((this.blockData[0] + 128) ushr 8, destArray, destIndex, scan)
+                CopyValueToDestination((this.blockData[0] + 128) shr 8, destArray, destIndex, scan)
                 this.blockData[0] = 0
             } else {
                 IDCT(this.blockData)
@@ -843,7 +906,7 @@ class MPEG1(
         } else {
             // Add data to the predicted macroblock
             if (n == 1) {
-                AddValueToDestination((this.blockData[0] + 128) ushr 8, destArray, destIndex, scan)
+                AddValueToDestination((this.blockData[0] + 128) shr 8, destArray, destIndex, scan)
                 this.blockData[0] = 0
             } else {
                 IDCT(this.blockData)
@@ -865,7 +928,7 @@ class MPEG1(
                 dest[index + 5] = block[n + 5]
                 dest[index + 6] = block[n + 6]
                 dest[index + 7] = block[n + 7]
-                index += scan+8
+                index += scan + 8
             }
         }
 
@@ -880,7 +943,7 @@ class MPEG1(
                 dest[index + 5] += block[n + 5]
                 dest[index + 6] += block[n + 6]
                 dest[index + 7] += block[n + 7]
-                index += scan+8
+                index += scan + 8
             }
         }
 
@@ -895,7 +958,7 @@ class MPEG1(
                 dest[index + 5] = value
                 dest[index + 6] = value
                 dest[index + 7] = value
-                index += scan+8
+                index += scan + 8
             }
         }
 
@@ -910,7 +973,7 @@ class MPEG1(
                 dest[index + 5] += value
                 dest[index + 6] += value
                 dest[index + 7] += value
-                index += scan+8
+                index += scan + 8
             }
         }
 
@@ -928,16 +991,16 @@ class MPEG1(
                 val b6 = block[1 * 8 + i] - block[7 * 8 + i]
                 val b7 = tmp1 + tmp2
                 val m0 = block[0 * 8 + i]
-                val x4 = ((b6 * 473 - b4 * 196 + 128) ushr 8)-b7
-                val x0 = x4 - (((tmp1 - tmp2) * 362 + 128) ushr 8)
+                val x4 = ((b6 * 473 - b4 * 196 + 128) shr 8) - b7
+                val x0 = x4 - (((tmp1 - tmp2) * 362 + 128) shr 8)
                 val x1 = m0 - b1
-                val x2 = (((block[2 * 8 + i] - block[6 * 8 + i]) * 362 + 128) ushr 8)-b3
+                val x2 = (((block[2 * 8 + i] - block[6 * 8 + i]) * 362 + 128) shr 8) - b3
                 val x3 = m0 + b1
                 val y3 = x1 + x2
                 val y4 = x3 + b3
                 val y5 = x1 - x2
                 val y6 = x3 - b3
-                val y7 = -x0 - ((b4 * 473 + b6 * 196 + 128) ushr 8)
+                val y7 = -x0 - ((b4 * 473 + b6 * 196 + 128) shr 8)
                 block[0 * 8 + i] = b7 + y4
                 block[1 * 8 + i] = x4 + y3
                 block[2 * 8 + i] = y5 - x0
@@ -958,24 +1021,24 @@ class MPEG1(
                 val b6 = block[1 + i] - block[7 + i]
                 val b7 = tmp1 + tmp2
                 val m0 = block[0 + i]
-                val x4 = ((b6 * 473 - b4 * 196 + 128) ushr 8)-b7
-                val x0 = x4 - (((tmp1 - tmp2) * 362 + 128) ushr 8)
+                val x4 = ((b6 * 473 - b4 * 196 + 128) shr 8) - b7
+                val x0 = x4 - (((tmp1 - tmp2) * 362 + 128) shr 8)
                 val x1 = m0 - b1
-                val x2 = (((block[2 + i] - block[6 + i]) * 362 + 128) ushr 8)-b3
+                val x2 = (((block[2 + i] - block[6 + i]) * 362 + 128) shr 8) - b3
                 val x3 = m0 + b1
                 val y3 = x1 + x2
                 val y4 = x3 + b3
                 val y5 = x1 - x2
                 val y6 = x3 - b3
-                val y7 = -x0 - ((b4 * 473 + b6 * 196 + 128) ushr 8)
-                block[0 + i] = (b7 + y4 + 128) ushr 8
-                block[1 + i] = (x4 + y3 + 128) ushr 8
-                block[2 + i] = (y5 - x0 + 128) ushr 8
-                block[3 + i] = (y6 - y7 + 128) ushr 8
-                block[4 + i] = (y6 + y7 + 128) ushr 8
-                block[5 + i] = (x0 + y5 + 128) ushr 8
-                block[6 + i] = (y3 - x4 + 128) ushr 8
-                block[7 + i] = (y4 - b7 + 128) ushr 8
+                val y7 = -x0 - ((b4 * 473 + b6 * 196 + 128) shr 8)
+                block[0 + i] = (b7 + y4 + 128) shr 8
+                block[1 + i] = (x4 + y3 + 128) shr 8
+                block[2 + i] = (y5 - x0 + 128) shr 8
+                block[3 + i] = (y6 - y7 + 128) shr 8
+                block[4 + i] = (y6 + y7 + 128) shr 8
+                block[5 + i] = (x0 + y5 + 128) shr 8
+                block[6 + i] = (y3 - x4 + 128) shr 8
+                block[7 + i] = (y4 - b7 + 128) shr 8
             }
         }
 

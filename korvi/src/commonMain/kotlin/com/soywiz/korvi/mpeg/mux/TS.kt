@@ -57,7 +57,7 @@ class TS : Demuxer {
 
     var parsePacketCount = 0
     fun parsePacket(): Boolean {
-        println("parsePacket ${parsePacketCount++}")
+        //println("parsePacket ${parsePacketCount++}")
         // Check if we're in sync with packet boundaries; attempt to resync if not.
         if (this.bits.read(8) != 0x47) {
             if (!this.resync()) {
