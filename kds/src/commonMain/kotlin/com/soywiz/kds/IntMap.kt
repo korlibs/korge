@@ -401,6 +401,11 @@ class IntIntMap internal constructor(private var nbits: Int, private val loadFac
     private var growSize: Int = (capacity * loadFactor).toInt()
     var size: Int = 0; private set
 
+    fun toMap(out: MutableMap<Int, Int> = linkedHashMapOf()): Map<Int, Int> {
+        fastForEach { key, value -> out[key] = value }
+        return out
+    }
+
     private fun grow() {
         val inc = if (nbits < 20) 3 else 1
         val newnbits = nbits + inc

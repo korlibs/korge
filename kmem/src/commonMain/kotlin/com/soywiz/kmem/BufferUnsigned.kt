@@ -9,13 +9,13 @@ interface BaseIntBuffer {
 }
 
 @JvmInline
-value class IntArrayIntBuffer(val array: IntArray) : BaseIntBuffer {
+value class IntArrayIntBuffer(val array: IntArray) : BaseIntBuffer, StandardList<Int> {
     override val size: Int get() = array.size
     override operator fun get(index: Int): Int = array[index]
     override operator fun set(index: Int, value: Int) { array[index] = value }
 }
 
-public inline class Uint8Buffer(public val b: Int8Buffer) : BaseIntBuffer {
+public inline class Uint8Buffer(public val b: Int8Buffer) : BaseIntBuffer, StandardList<Int> {
     public companion object;
     val buffer: MemBuffer get() = b.mem
     override val size: Int get() = b.size
@@ -28,25 +28,26 @@ public inline class Uint8Buffer(public val b: Int8Buffer) : BaseIntBuffer {
 }
 public fun Uint8Buffer.subarray(begin: Int, end: Int = this.size): Uint8Buffer = Uint8Buffer(this.b.subarray(begin, end))
 
-public inline class Uint8ClampedBuffer(public val b: Int8Buffer) : BaseIntBuffer {
+public inline class Uint8ClampedBuffer(public val b: Int8Buffer) : BaseIntBuffer, StandardList<Int> {
     public companion object;
     val buffer: MemBuffer get() = b.mem
     override val size: Int get() = b.size
     val offset: Int get() = b.offset
     val mem: MemBuffer get() = b.mem
     override operator fun get(index: Int): Int = b[index].toInt() and 0xFF
+
     override operator fun set(index: Int, value: Int) { b[index] = value.clamp(0, 255).toByte() }
 }
 public fun Uint8ClampedBuffer.subarray(begin: Int, end: Int = this.size): Uint8ClampedBuffer = Uint8ClampedBuffer(this.b.subarray(begin, end))
 
-public inline class Uint16Buffer(public val b: Int16Buffer) {
+public inline class Uint16Buffer(public val b: Int16Buffer) : BaseIntBuffer, StandardList<Int> {
     public companion object;
     val buffer: MemBuffer get() = b.mem
-    public val size: Int get() = b.size
+    public override val size: Int get() = b.size
     val offset: Int get() = b.offset
     val mem: MemBuffer get() = b.mem
-    public operator fun get(index: Int): Int = b[index].toInt() and 0xFFFF
-    public operator fun set(index: Int, value: Int) { b[index] = value.toShort() }
+    override operator fun get(index: Int): Int = b[index].toInt() and 0xFFFF
+    override operator fun set(index: Int, value: Int) { b[index] = value.toShort() }
 }
 public fun Uint16Buffer.subarray(begin: Int, end: Int = this.size): Uint16Buffer = Uint16Buffer(this.b.subarray(begin, end))
 

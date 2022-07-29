@@ -11,6 +11,6 @@ interface AudioDestination : Destination {
 }
 
 interface VideoDestination : Destination {
-    fun render(y: Uint8ClampedBuffer?, Cr: Uint8ClampedBuffer?, Cb: Uint8ClampedBuffer?, v: Boolean)
+    fun render(Y: Uint8ClampedBuffer, Cr: Uint8ClampedBuffer, Cb: Uint8ClampedBuffer, v: Boolean)
     fun resize(width: Int, height: Int)
 }

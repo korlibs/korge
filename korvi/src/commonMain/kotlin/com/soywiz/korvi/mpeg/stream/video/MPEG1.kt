@@ -235,7 +235,7 @@ class MPEG1(
         }
 
         // Invoke decode callbacks
-        this.destination?.render(this.currentY, this.currentCr, this.currentCb, true)
+        this.destination?.render(this.currentY!!, this.currentCr!!, this.currentCb!!, true)
 
         // If this is a reference picutre then rotate the prediction pointers
         if (
