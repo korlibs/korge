@@ -85,6 +85,7 @@ import samples.MainRenderText
 import samples.MainRotateCircle
 import samples.MainRotatedAtlas
 import samples.MainRotatedTexture
+import samples.MainSDF
 import samples.MainSWF
 import samples.MainScenes
 import samples.MainShapes
@@ -141,15 +142,9 @@ suspend fun main() = Korge(
     //solidRect(100, 100, Colors.RED).xy(300, 300).filters(BlurFilter()); return@Korge
 
     demoSelector(
-        //Demo(::MainSvgAnimation),
-        //Demo(::MainGpuVectorRendering),
-        //Demo(::MainSpine),
-        //Demo(::MainDragonbones),
-        //Demo(::MainBlur),
-        //Demo(::MainXM),
-        Demo(::MainTriangulation),
-        //Demo(::MainBlending),
+        Demo(::MainSDF),
         listOf(
+            Demo(::MainSDF),
             Demo(::MainTextInput),
             Demo(::MainBlending),
             Demo(::MainXM),

@@ -53,6 +53,7 @@ import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.lang.unsupported
 import com.soywiz.korma.geom.MajorOrder
 import com.soywiz.korma.geom.Matrix3D
+import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Vector3D
 import com.soywiz.korma.geom.copyToFloatWxH
 import kotlin.math.min
@@ -544,12 +545,16 @@ class AGQueueProcessorOpenGL(
                 VarType.Float1, VarType.Float2, VarType.Float3, VarType.Float4 -> {
                     var arrayCount = declArrayCount
                     when (value) {
-                        is Boolean ->tempBuffer.setFloat(0, value.toInt().toFloat())
+                        is Boolean -> tempBuffer.setFloat(0, value.toInt().toFloat())
                         is Number -> tempBuffer.setAlignedFloat32(0, value.toFloat())
                         is Vector3D -> tempBuffer.setFloats(0, value.data, 0, stride)
                         is FloatArray -> {
                             arrayCount = min(declArrayCount, value.size / stride)
                             tempBuffer.setFloats(0, value, 0, stride * arrayCount)
+                        }
+                        is Point -> {
+                            tempBuffer.setFloat(0, value.xf)
+                            tempBuffer.setFloat(1, value.yf)
                         }
                         is RGBAf -> tempBuffer.setFloats(0, value.data, 0, stride)
                         is RGBA -> {
