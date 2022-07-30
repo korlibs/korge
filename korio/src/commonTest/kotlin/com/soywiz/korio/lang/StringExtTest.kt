@@ -51,4 +51,8 @@ class StringExtTest {
         assertEquals(false, String.substringEquals("hola", -1, "caracola", 9, 6))
     }
 
+    @Test
+    fun testWithoutRange() {
+        assertEquals("hlo", "hello".withoutRange(1..2))
+    }
 }
