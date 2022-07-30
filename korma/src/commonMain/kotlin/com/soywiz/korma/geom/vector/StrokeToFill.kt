@@ -18,7 +18,7 @@ import com.soywiz.korma.geom.shape.emitPoints2
 import com.soywiz.korma.geom.sine
 import com.soywiz.korma.geom.unaryMinus
 import com.soywiz.korma.geom.unaryPlus
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 
 // @TODO: Implement LineCap + LineJoin
 // @TODO: Use Curves and reuse code from [CurvesToStrokes]

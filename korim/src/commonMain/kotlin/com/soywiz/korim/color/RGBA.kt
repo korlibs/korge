@@ -6,7 +6,6 @@ import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp01
 import com.soywiz.kmem.extract8
 import com.soywiz.kmem.fill
-import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.internal.packIntClamped
@@ -16,6 +15,7 @@ import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.interpolate
+import com.soywiz.kmem.clampUByte
 import com.soywiz.krypto.encoding.appendHexByte
 import kotlin.math.pow
 import kotlin.math.roundToInt
@@ -48,13 +48,13 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         out[index + 3] = af
     }
 
-	fun withR(v: Int): RGBA = RGBA((value and (0xFF shl 0).inv()) or (v.clamp0_255() shl RED_OFFSET))
-	fun withG(v: Int): RGBA = RGBA((value and (0xFF shl 8).inv()) or (v.clamp0_255() shl GREEN_OFFSET))
-	fun withB(v: Int): RGBA = RGBA((value and (0xFF shl 16).inv()) or (v.clamp0_255() shl BLUE_OFFSET))
-	fun withA(v: Int): RGBA = RGBA((value and (0xFF shl 24).inv()) or (v.clamp0_255() shl ALPHA_OFFSET))
+	fun withR(v: Int): RGBA = RGBA((value and (0xFF shl 0).inv()) or (v.clampUByte() shl RED_OFFSET))
+	fun withG(v: Int): RGBA = RGBA((value and (0xFF shl 8).inv()) or (v.clampUByte() shl GREEN_OFFSET))
+	fun withB(v: Int): RGBA = RGBA((value and (0xFF shl 16).inv()) or (v.clampUByte() shl BLUE_OFFSET))
+	fun withA(v: Int): RGBA = RGBA((value and (0xFF shl 24).inv()) or (v.clampUByte() shl ALPHA_OFFSET))
     //fun withRGB(r: Int, g: Int, b: Int) = withR(r).withG(g).withB(b)
     fun withRGB(r: Int, g: Int, b: Int): RGBA =
-        RGBA((value and 0x00FFFFFF.inv()) or (r.clamp0_255() shl RED_OFFSET) or (g.clamp0_255() shl GREEN_OFFSET) or (b.clamp0_255() shl BLUE_OFFSET))
+        RGBA((value and 0x00FFFFFF.inv()) or (r.clampUByte() shl RED_OFFSET) or (g.clampUByte() shl GREEN_OFFSET) or (b.clampUByte() shl BLUE_OFFSET))
 	fun withRGB(rgb: Int): RGBA = RGBA(rgb, a)
 
     fun withRGBUnclamped(r: Int, g: Int, b: Int): RGBA =
@@ -80,7 +80,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
         else -> r
     }
 
-    fun getComponent(c: Char): Int = when (c.toLowerCase()) {
+    fun getComponent(c: Char): Int = when (c.lowercaseChar()) {
         'r' -> r
         'g' -> g
         'b' -> b
@@ -199,7 +199,7 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
             return when (srcA) {
                 0x000 -> dst
                 0xFF -> src
-                else -> RGBA(mixRgbFactor256(dst, src, srcA + 1).rgb, (srcA + (dst.a * iSrcA) / 255).clamp0_255())
+                else -> RGBA(mixRgbFactor256(dst, src, srcA + 1).rgb, (srcA + (dst.a * iSrcA) / 255).clampUByte())
             }
         }
 

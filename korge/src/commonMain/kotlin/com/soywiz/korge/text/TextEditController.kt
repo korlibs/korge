@@ -487,7 +487,7 @@ class TextEditController(
                 onOut(this@TextEditController)
                 bg?.isOver = false
             }
-            down {
+            click {
                 //println("UiTextInput.down")
                 cursorIndex = getIndexAtPos(it.currentPosLocal)
                 focused = true

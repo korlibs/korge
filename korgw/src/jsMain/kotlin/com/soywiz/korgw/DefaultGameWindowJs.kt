@@ -10,6 +10,7 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.async.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.util.*
+import com.soywiz.korma.geom.Rectangle
 import kotlinx.coroutines.*
 import org.w3c.dom.events.*
 import org.w3c.dom.events.MouseEvent
@@ -438,6 +439,70 @@ open class BrowserCanvasJsGameWindow : JsGameWindow() {
             window.requestAnimationFrame(jsFrame) // Execute first to prevent exceptions breaking the loop, not triggering again
             frame()
         }
+    }
+
+
+    override val isSoftKeyboardVisible: Boolean
+        get() = super.isSoftKeyboardVisible
+
+    private var softKeyboardInput: HTMLInputElement? = null
+    private fun ensureSoftKeyboardInput() {
+        if (softKeyboardInput == null) {
+            softKeyboardInput = document.createElement("input").unsafeCast<HTMLInputElement>()
+            softKeyboardInput?.id = "softKeyboardInput"
+            softKeyboardInput?.type = "input"
+            softKeyboardInput?.style?.let { style ->
+                style.zIndex = "10000000"
+                style.position = "absolute"
+                style.top = "0"
+                style.left = "0"
+                style.width = "200px"
+                style.height = "24px"
+                style.background = "transparent"
+                //style.visibility = "hidden"
+            }
+
+            //val softKeyboardInput2 = document.createElement("input").unsafeCast<HTMLInputElement>()
+            //softKeyboardInput2?.id = "softKeyboardInput"
+            //softKeyboardInput2?.type = "input"
+            //softKeyboardInput2?.style?.zIndex = "10000000"
+            //softKeyboardInput2?.style?.position = "absolute"
+            //softKeyboardInput2?.style?.top = "0"
+            //softKeyboardInput2?.style?.left = "24px"
+            //softKeyboardInput2?.style?.width = "200px"
+            //softKeyboardInput2?.style?.height = "24px"
+            //softKeyboardInput2?.style?.background = "white"
+            //document.body?.appendChild(softKeyboardInput2!!)
+            //enterDebugger()
+        }
+    }
+
+    override fun setInputRectangle(windowRect: Rectangle) {
+        ensureSoftKeyboardInput()
+        softKeyboardInput?.style?.let { style ->
+            style.left = "${(windowRect.left / canvasRatio)}px"
+            style.top = "${(windowRect.top / canvasRatio) - 16}px"
+            style.width = "${(windowRect.width / canvasRatio)}px"
+            style.font = "32px Arial"
+            //style.height = "${windowRect.height / canvasRatio}px"
+            style.height = "1px"
+            style.opacity = "0"
+            style.background = "transparent"
+            style.color = "transparent"
+            //style.visibility = "hidden"
+            println("BOUNDS.setInputRectangle:${style.left},${style.top},${style.width},${style.height}")
+        }
+    }
+
+    override fun showSoftKeyboard(force: Boolean, config: ISoftKeyboardConfig?) {
+        document.body?.appendChild(softKeyboardInput!!)
+        softKeyboardInput?.focus()
+    }
+
+    override fun hideSoftKeyboard() {
+        softKeyboardInput?.blur()
+        document.body?.removeChild(softKeyboardInput!!)
+        //canvas.focus()
     }
 }
 
