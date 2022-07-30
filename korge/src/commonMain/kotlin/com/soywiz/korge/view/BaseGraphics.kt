@@ -160,8 +160,9 @@ abstract class BaseGraphics(
     }
 
     private val __localBounds: Rectangle = Rectangle()
+    var boundsIncludeStrokes = false
     private fun _getLocalBoundsInternal(out: Rectangle = __localBounds): Rectangle {
-        val bounds = boundsUnsafe(strokes = false)
+        val bounds = boundsUnsafe(strokes = boundsIncludeStrokes)
         out.setTo(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
         return out
     }
