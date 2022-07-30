@@ -1,7 +1,7 @@
 package com.soywiz.korim.color
 
+import com.soywiz.kmem.clampUByte
 import com.soywiz.kmem.extract8
-import com.soywiz.korim.internal.clamp0_255
 import com.soywiz.korim.internal.packIntClamped
 
 // https://en.wikipedia.org/wiki/YUV
@@ -29,13 +29,13 @@ inline class YUVA(val value: Int) {
         //val G = (1.164f * (Y - 16) - 0.813f * (V - 128) - 0.391f * (U - 128)).toInt()
         //val B = (1.164f * (Y - 16) + 2.018f * (U - 128)).toInt()
 
-        fun getY(r: Int, g: Int, b: Int): Int = (((0.299 * r) + (0.587 * g) + (0.114 * b)).toInt()).clamp0_255()
-        fun getU(r: Int, g: Int, b: Int): Int = ((0.492 * (b * getY(r, g, b))).toInt()).clamp0_255()
-        fun getV(r: Int, g: Int, b: Int): Int = ((0.877 * (r * getY(r, g, b))).toInt()).clamp0_255()
+        fun getY(r: Int, g: Int, b: Int): Int = (((0.299 * r) + (0.587 * g) + (0.114 * b)).toInt()).clampUByte()
+        fun getU(r: Int, g: Int, b: Int): Int = ((0.492 * (b * getY(r, g, b))).toInt()).clampUByte()
+        fun getV(r: Int, g: Int, b: Int): Int = ((0.877 * (r * getY(r, g, b))).toInt()).clampUByte()
 
-        fun getR(y: Int, u: Int, v: Int): Int = ((y + 1.14 * v).toInt()).clamp0_255()
-        fun getG(y: Int, u: Int, v: Int): Int = ((y - 0.395 * u - 0.581 * v).toInt()).clamp0_255()
-        fun getB(y: Int, u: Int, v: Int): Int = ((y + 2.033 * u).toInt()).clamp0_255()
+        fun getR(y: Int, u: Int, v: Int): Int = ((y + 1.14 * v).toInt()).clampUByte()
+        fun getG(y: Int, u: Int, v: Int): Int = ((y - 0.395 * u - 0.581 * v).toInt()).clampUByte()
+        fun getB(y: Int, u: Int, v: Int): Int = ((y + 2.033 * u).toInt()).clampUByte()
 
         fun YUVtoRGB(out: RgbaArray, outPos: Int, inY: ByteArray, inU: ByteArray, inV: ByteArray, inPos: Int, count: Int) {
             for (n in 0 until count) {

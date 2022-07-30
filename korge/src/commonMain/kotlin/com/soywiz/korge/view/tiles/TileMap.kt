@@ -34,7 +34,7 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.setTo
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import kotlin.math.min
 import com.soywiz.korma.math.min
 import com.soywiz.korma.math.max

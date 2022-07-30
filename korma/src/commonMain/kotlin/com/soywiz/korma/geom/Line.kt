@@ -2,7 +2,7 @@ package com.soywiz.korma.geom
 
 import com.soywiz.korma.annotations.KormaExperimental
 import com.soywiz.korma.math.almostEquals
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import com.soywiz.korma.math.isAlmostZero
 
 interface ILine {
