@@ -120,6 +120,8 @@ inline class RGBA(val value: Int) : Comparable<RGBA>, Interpolable<RGBA>, Paint 
 
     val premultipliedFast: RGBAPremultiplied get() {
         val A = a + 1
+        if (A >= 0xFF) return RGBAPremultiplied(value)
+        if (A <= 1) return RGBAPremultiplied(0)
         val RB = (((value and 0x00FF00FF) * A) ushr 8) and 0x00FF00FF
         val G = (((value and 0x0000FF00) * A) ushr 8) and 0x0000FF00
         return RGBAPremultiplied((value and 0x00FFFFFF.inv()) or RB or G)
