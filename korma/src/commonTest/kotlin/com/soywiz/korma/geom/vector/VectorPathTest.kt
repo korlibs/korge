@@ -3,7 +3,6 @@ package com.soywiz.korma.geom.vector
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.shape.buildPath
 import com.soywiz.korma.geom.shape.buildVectorPath
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -116,13 +115,13 @@ class VectorPathTest {
 
     @Test
     fun testContainsPoint2() {
-        buildPath(winding = Winding.NON_ZERO) {
+        buildVectorPath(winding = Winding.NON_ZERO, block = fun VectorPath.() {
             moveTo(1, 1)
             lineTo(2, 1)
             lineTo(2, 2)
             lineTo(1, 2)
             close()
-        }.also {
+        }).also {
             assertEquals(false, it.containsPoint(0.99, 0.99))
             assertEquals(false, it.containsPoint(0.9999, 0.9999))
             assertEquals(true, it.containsPoint(1, 1))
@@ -134,7 +133,7 @@ class VectorPathTest {
             assertEquals(false, it.containsPoint(0, 0))
         }
 
-        buildPath(winding = Winding.EVEN_ODD) {
+        buildVectorPath(winding = Winding.EVEN_ODD, block = fun VectorPath.() {
             moveTo(-1, -1)
             lineTo(+1, -1)
             lineTo(+1, 0)
@@ -142,7 +141,7 @@ class VectorPathTest {
             lineTo(-1, +1)
             lineTo(-1, 0)
             close()
-        }.also {
+        }).also {
             assertEquals(true, it.containsPoint(0, 0))
         }
 
@@ -167,9 +166,15 @@ class VectorPathTest {
         //console.log(ctx.isPointInPath(path, 0, 0)) // false
     }
 
-    val path1 = buildPath { rect(0, 0, 100, 100) }
-    val path2 = buildPath { rect(10, 10, 150, 80) }
-    val path3 = buildPath { rect(110, 0, 100, 100) }
+    val path1 = buildVectorPath(VectorPath()) {
+        rect(0, 0, 100, 100)
+    }
+    val path2 = buildVectorPath(VectorPath()) {
+        rect(10, 10, 150, 80)
+    }
+    val path3 = buildVectorPath(VectorPath()) {
+        rect(110, 0, 100, 100)
+    }
 
     val path2b = path2.clone().applyTransform(Matrix().scale(2.0))
 
@@ -192,9 +197,15 @@ class VectorPathTest {
 
     @Test
     fun testCollidesTransformed() {
-        assertEquals(false, buildPath { rect(0, 0, 15, 15) }.intersectsWith(Matrix(), path2, Matrix().scale(2.0)))
-        assertEquals(true, buildPath { rect(0, 0, 15, 15) }.intersectsWith(Matrix().scale(2.0, 2.0), path2, Matrix().scale(2.0)))
-        assertEquals(true, buildPath { rect(0, 0, 15, 15) }.intersectsWith(Matrix().scale(2.0, 2.0), path2, Matrix()))
+        assertEquals(false, buildVectorPath(VectorPath()) {
+            rect(0, 0, 15, 15)
+        }.intersectsWith(Matrix(), path2, Matrix().scale(2.0)))
+        assertEquals(true, buildVectorPath(VectorPath()) {
+            rect(0, 0, 15, 15)
+        }.intersectsWith(Matrix().scale(2.0, 2.0), path2, Matrix().scale(2.0)))
+        assertEquals(true, buildVectorPath(VectorPath()) {
+            rect(0, 0, 15, 15)
+        }.intersectsWith(Matrix().scale(2.0, 2.0), path2, Matrix()))
 
         assertEquals(true, VectorPath.intersects(path1, Matrix(), path1, Matrix()))
         assertEquals(true, VectorPath.intersects(path1, Matrix().translate(101.0, 0.0), path1, Matrix().translate(101.0, 0.0)))
@@ -207,7 +218,7 @@ class VectorPathTest {
     @Test
     fun testVisitEdgesSimplified() {
         val log = arrayListOf<String>()
-        buildPath {
+        buildVectorPath(VectorPath()) {
             moveTo(100, 100)
             quadTo(100, 200, 200, 200)
             close()

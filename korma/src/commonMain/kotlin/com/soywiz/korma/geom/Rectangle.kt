@@ -312,10 +312,6 @@ fun Rectangle.expand(margin: MarginInt): Rectangle =
 inline fun Rectangle.setTo(x: Number, y: Number, width: Number, height: Number) =
     this.setTo(x.toDouble(), y.toDouble(), width.toDouble(), height.toDouble())
 
-@Deprecated("Use non-mixed Int or Double variants for now")
-inline fun Rectangle.setBounds(left: Number, top: Number, right: Number, bottom: Number) =
-    setBounds(left.toDouble(), top.toDouble(), right.toDouble(), bottom.toDouble())
-
 //////////// INT
 
 interface IRectangleInt {

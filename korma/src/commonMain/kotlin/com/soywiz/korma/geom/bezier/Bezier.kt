@@ -1036,7 +1036,6 @@ class Bezier(
             //return true;
         }
 
-        //@Deprecated("", ReplaceWith("v.convertRange(ds, de, ts, te)", "com.soywiz.korma.math.convertRange"))
         private fun map(v: Double, ds: Double, de: Double, ts: Double, te: Double): Double {
             return v.convertRange(ds, de, ts, te)
             //val d1 = de - ds

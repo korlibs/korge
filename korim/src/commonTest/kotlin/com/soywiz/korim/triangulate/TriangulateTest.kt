@@ -7,9 +7,9 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.writeTo
 import com.soywiz.korio.file.std.localCurrentDirVfs
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.triangle.TriangleList
-import com.soywiz.korma.geom.vector.rect
+import com.soywiz.korma.geom.vector.*
 import com.soywiz.korma.triangle.poly2tri.triangulateSafe
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 class TriangulateTest {
     @Test
     fun testTriangulateSafe() {
-        buildPath {
+        buildVectorPath(VectorPath()) {
             rect(0, 0, 100, 100)
             rect(20, 20, 60, 60)
         }.also { path ->
@@ -30,7 +30,7 @@ class TriangulateTest {
             )
         }
 
-        buildPath {
+        buildVectorPath(VectorPath()) {
             rect(0, 0, 100, 100)
             rect(20, 20, 120, 60)
         }.also { path ->

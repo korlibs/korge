@@ -8,7 +8,7 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.toBitmap1
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.PointIntArrayList
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
@@ -61,7 +61,7 @@ class VectorTracer(
                     linked = null
                 }
                 val points = this
-                return buildPath {
+                return buildVectorPath(VectorPath(), fun VectorPath.() {
                     for (n in 0 until points.size) {
                         val x = points.getX(n)
                         val y = points.getY(n)
@@ -75,7 +75,7 @@ class VectorTracer(
                         }
                     }
                     close()
-                }
+                })
             }
         }
 

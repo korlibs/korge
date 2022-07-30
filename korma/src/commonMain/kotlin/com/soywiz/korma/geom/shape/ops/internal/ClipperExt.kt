@@ -4,7 +4,7 @@ import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.shape.toPathList
 import com.soywiz.korma.geom.toPoints
 import com.soywiz.korma.geom.vector.LineCap
@@ -94,7 +94,7 @@ fun Paths.toPathList(): List<IPointArrayList> {
 }
 
 fun Paths.toVectorPath(): VectorPath {
-    return buildPath {
+    return buildVectorPath(VectorPath()) {
         for (path in this@toVectorPath) {
             var first = true
             for (point in path) {

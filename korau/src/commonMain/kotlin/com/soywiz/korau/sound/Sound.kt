@@ -349,8 +349,6 @@ abstract class Sound(val creationCoroutineContext: CoroutineContext) : SoundProp
     suspend fun playAndWait(times: PlaybackTimes = 1.playbackTimes, startTime: TimeSpan = 0.seconds, progress: SoundChannel.(current: TimeSpan, total: TimeSpan) -> Unit = { current, total -> }): Unit = play(times, startTime).await(progress)
 
     abstract suspend fun decode(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData
-    @Deprecated("", ReplaceWith("toAudioData(maxSamples)"))
-    suspend fun toData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData = toAudioData(maxSamples)
     suspend fun toAudioData(maxSamples: Int = DEFAULT_MAX_SAMPLES): AudioData = decode(maxSamples)
     override suspend fun toStream(): AudioStream = decode().toStream()
     override fun toString(): String = "NativeSound('$name')"
