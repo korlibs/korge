@@ -51,8 +51,8 @@ class TS : Demuxer {
 
         while (this.bits.has(188 shl 3) && this.parsePacket()) Unit
 
-        val leftoverCount = this.bits.byteLength - (this.bits.index ushr 3)
-        this.leftoverBytes = if (leftoverCount > 0) this.bits.bytes.subarray(this.bits.index ushr 3) else null
+        val leftoverCount = this.bits.byteLength - (this.bits.index shr 3)
+        this.leftoverBytes = if (leftoverCount > 0) this.bits.bytes.subarray(this.bits.index shr 3) else null
     }
 
     var parsePacketCount = 0
@@ -66,7 +66,7 @@ class TS : Demuxer {
             }
         }
 
-        val end = (this.bits.index ushr 3) + 187
+        val end = (this.bits.index shr 3) + 187
         var transportError = this.bits.read(1)
         val payloadStart = this.bits.read(1)
         var transportPriority = this.bits.read(1)
@@ -152,7 +152,7 @@ class TS : Demuxer {
 
                 val pi = this.pesPacketInfo[streamId]
                 if (pi != null) {
-                    val start = this.bits.index ushr 3
+                    val start = this.bits.index shr 3
 
                     val complete = if (end < this.bits.byteLength) this.packetAddData(pi, start, end) else false
 
@@ -174,7 +174,7 @@ class TS : Demuxer {
             return false
         }
 
-        val byteIndex = this.bits.index ushr 3
+        val byteIndex = this.bits.index shr 3
 
         // Look for the first sync token in the first 187 bytes
         for (i in 0 until 187) {

@@ -8,19 +8,16 @@ package com.soywiz.korvi.mpeg.stream.video
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kmem.BaseIntBuffer
 import com.soywiz.kmem.Int32Buffer
-import com.soywiz.kmem.IntArrayIntBuffer
 import com.soywiz.kmem.Uint32Buffer
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8ClampedBuffer
-import com.soywiz.kmem.size
-import com.soywiz.korvi.mpeg.util.BitBuffer
-import com.soywiz.korvi.mpeg.stream.DecoderBase
 import com.soywiz.korvi.mpeg.JSMpeg
 import com.soywiz.korvi.mpeg.hashArray
+import com.soywiz.korvi.mpeg.stream.DecoderBase
 import com.soywiz.korvi.mpeg.stream.VideoDestination
+import com.soywiz.korvi.mpeg.util.BitBuffer
 import kotlin.reflect.KProperty
 import kotlin.reflect.KProperty0
-import kotlin.reflect.KProperty1
 
 // Inspired by Java MPEG-1 Video Decoder and Player by Zoltan Korandi
 // https://sourceforge.net/projects/javampeg1video/
@@ -33,11 +30,11 @@ class MPEG1(
     var bufferMode = if (streaming) BitBuffer.MODE.EVICT else BitBuffer.MODE.EXPAND
 
     override val bits: BitBuffer = BitBuffer(bufferSize, bufferMode)
-    val customIntraQuantMatrix = Uint8Buffer(64)
-    val customNonIntraQuantMatrix = Uint8Buffer(64)
-    var intraQuantMatrix: BaseIntBuffer = IntArrayIntBuffer(IntArray(64))
-    var nonIntraQuantMatrix: BaseIntBuffer = IntArrayIntBuffer(IntArray(64))
-    val blockData: BaseIntBuffer = IntArrayIntBuffer(IntArray(64))
+    val customIntraQuantMatrix = IntArray(64)
+    val customNonIntraQuantMatrix = IntArray(64)
+    var intraQuantMatrix: IntArray = IntArray(64)
+    var nonIntraQuantMatrix: IntArray = IntArray(64)
+    val blockData: IntArray = IntArray(64)
     var currentFrame = 0
 
     var width: Int = 0
@@ -141,8 +138,8 @@ class MPEG1(
     }
 
     fun initBuffers() {
-        this.intraQuantMatrix = IntArrayIntBuffer(DEFAULT_INTRA_QUANT_MATRIX)
-        this.nonIntraQuantMatrix = IntArrayIntBuffer(DEFAULT_NON_INTRA_QUANT_MATRIX)
+        this.intraQuantMatrix = DEFAULT_INTRA_QUANT_MATRIX
+        this.nonIntraQuantMatrix = DEFAULT_NON_INTRA_QUANT_MATRIX
 
         this.mbWidth = (this.width + 15) shr 4
         this.mbHeight = (this.height + 15) shr 4
@@ -901,7 +898,7 @@ class MPEG1(
             } else {
                 IDCT(this.blockData)
                 CopyBlockToDestination(this.blockData, destArray, destIndex, scan)
-                JSMpeg.Fill(this.blockData, 0)
+                this.blockData.fill(0)
             }
         } else {
             // Add data to the predicted macroblock
@@ -911,15 +908,16 @@ class MPEG1(
             } else {
                 IDCT(this.blockData)
                 AddBlockToDestination(this.blockData, destArray, destIndex, scan)
-                JSMpeg.Fill(this.blockData, 0)
+                this.blockData.fill(0)
             }
         }
     }
 
     companion object {
-        fun CopyBlockToDestination(block: BaseIntBuffer, dest: BaseIntBuffer, index: Int, scan: Int) {
+        fun CopyBlockToDestination(block: IntArray, dest: Uint8ClampedBuffer, index: Int, scan: Int) {
             var index = index
-            for (n in 0 until 64 step 8) {
+            var n = 0
+            while (n < 64) {
                 dest[index + 0] = block[n + 0]
                 dest[index + 1] = block[n + 1]
                 dest[index + 2] = block[n + 2]
@@ -929,12 +927,14 @@ class MPEG1(
                 dest[index + 6] = block[n + 6]
                 dest[index + 7] = block[n + 7]
                 index += scan + 8
+                n += 8
             }
         }
 
-        fun AddBlockToDestination(block: BaseIntBuffer, dest: BaseIntBuffer, index: Int, scan: Int) {
+        fun AddBlockToDestination(block: IntArray, dest: Uint8ClampedBuffer, index: Int, scan: Int) {
             var index = index
-            for (n in 0 until 64 step 8) {
+            var n = 0
+            while (n < 64) {
                 dest[index + 0] += block[n + 0]
                 dest[index + 1] += block[n + 1]
                 dest[index + 2] += block[n + 2]
@@ -944,12 +944,14 @@ class MPEG1(
                 dest[index + 6] += block[n + 6]
                 dest[index + 7] += block[n + 7]
                 index += scan + 8
+                n += 8
             }
         }
 
-        fun CopyValueToDestination(value: Int, dest: BaseIntBuffer, index: Int, scan: Int) {
+        fun CopyValueToDestination(value: Int, dest: Uint8ClampedBuffer, index: Int, scan: Int) {
             var index = index
-            for (n in 0 until 64 step 8) {
+            var n = 0
+            while (n < 64) {
                 dest[index + 0] = value
                 dest[index + 1] = value
                 dest[index + 2] = value
@@ -959,12 +961,14 @@ class MPEG1(
                 dest[index + 6] = value
                 dest[index + 7] = value
                 index += scan + 8
+                n += 8
             }
         }
 
-        fun AddValueToDestination(value: Int, dest: BaseIntBuffer, index: Int, scan: Int) {
+        fun AddValueToDestination(value: Int, dest: Uint8ClampedBuffer, index: Int, scan: Int) {
             var index = index
-            for (n in 0 until 64 step 8) {
+            var n = 0
+            while (n < 64) {
                 dest[index + 0] += value
                 dest[index + 1] += value
                 dest[index + 2] += value
@@ -974,10 +978,11 @@ class MPEG1(
                 dest[index + 6] += value
                 dest[index + 7] += value
                 index += scan + 8
+                n += 8
             }
         }
 
-        fun IDCT(block: BaseIntBuffer) {
+        fun IDCT(block: IntArray) {
             // See http://vsr.informatik.tu-chemnitz.de/~jan/MPEG/HTML/IDCT.html
             // for more info.
 
@@ -1012,7 +1017,8 @@ class MPEG1(
             }
 
             // Transform rows
-            for (i in 0 until 64 step 8) {
+            var i = 0
+            while (i < 64) {
                 val b1 = block[4 + i]
                 val b3 = block[2 + i] + block[6 + i]
                 val b4 = block[5 + i] - block[3 + i]
@@ -1039,6 +1045,7 @@ class MPEG1(
                 block[5 + i] = (x0 + y5 + 128) shr 8
                 block[6 + i] = (y3 - x4 + 128) shr 8
                 block[7 + i] = (y4 - b7 + 128) shr 8
+                i += 8
             }
         }
 

@@ -83,10 +83,6 @@ object JSMpeg {
         //}
     }
 
-    fun Fill(array: BaseIntBuffer, value: Int) {
-        for (n in 0 until array.size) array[n] = value
-    }
-
     fun Base64ToArrayBuffer(base64: String): Uint8Buffer = Uint8Buffer(com.soywiz.kmem.buffer.Int8Buffer(MemBufferWrap(base64.fromBase64())))
 }
 

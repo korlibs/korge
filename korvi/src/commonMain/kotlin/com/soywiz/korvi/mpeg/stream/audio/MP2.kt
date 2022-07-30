@@ -39,7 +39,7 @@ class MP2(
     override fun decode(): Boolean {
         val startTime = JSMpeg.Now()
 
-        val pos = this.bits.index ushr 3
+        val pos = this.bits.index shr 3
         if (pos >= this.bits.byteLength) {
             return false
         }
@@ -129,7 +129,7 @@ class MP2(
             val tab2 = QUANT_LUT_STEP_1[tab1][bitrateIndex]
             tab3 = QUANT_LUT_STEP_2[tab2][sampleRateIndex]
             sblimit = tab3 and 63
-            tab3 = tab3 ushr 6
+            tab3 = tab3 shr 6
         }
 
         if (bound > sblimit) {
@@ -238,8 +238,8 @@ class MP2(
                         // Build U, windowing, calculate output
                         this.U.fill(0)
 
-                        var dIndex = 512 - (this.VPos ushr 1)
-                        var vIndex = (this.VPos % 128) ushr 1
+                        var dIndex = 512 - (this.VPos shr 1)
+                        var vIndex = (this.VPos % 128) shr 1
                         while (vIndex < 1024) {
                             for (i in 0 until 32) {
                                 this.U[i] += (this.D[dIndex++] * this.V[ch][vIndex++]).toInt()
@@ -278,7 +278,7 @@ class MP2(
 
     fun readAllocation(sb: Int, tab3: Int): Quant? {
         val tab4 = QUANT_LUT_STEP_3[tab3][sb]
-        val qtab = QUANT_LUT_STEP4[tab4 and 15][this.bits.read(tab4 ushr 4)]
+        val qtab = QUANT_LUT_STEP4[tab4 and 15][this.bits.read(tab4 shr 4)]
         return if (qtab != 0) (QUANT_TAB_TAB[qtab - 1]) else null
     }
 
@@ -301,7 +301,7 @@ class MP2(
             63 -> 0
             else -> {
                 val shift = (sf / 3)
-                (SCALEFACTOR_BASE[sf % 3] + ((1 shl shift) ushr 1)) ushr shift
+                (SCALEFACTOR_BASE[sf % 3] + ((1 shl shift) shr 1)) shr shift
             }
         }
 
@@ -323,16 +323,16 @@ class MP2(
 
         // Postmultiply samples
         val scale = (65536.0 / (adj + 1)).toInt()
-        adj = ((adj + 1) ushr 1) - 1
+        adj = ((adj + 1) shr 1) - 1
 
         `val` = ((adj - sample[0]) * scale).toInt()
-        sample[0] = ((`val` * (sf ushr 12) + ((`val` * (sf and 4095) + 2048) ushr 12)) ushr 12).toDouble()
+        sample[0] = ((`val` * (sf shr 12) + ((`val` * (sf and 4095) + 2048) shr 12)) shr 12).toDouble()
 
         `val` = ((adj - sample[1]) * scale).toInt()
-        sample[1] = ((`val` * (sf ushr 12) + ((`val` * (sf and 4095) + 2048) ushr 12)) ushr 12).toDouble()
+        sample[1] = ((`val` * (sf shr 12) + ((`val` * (sf and 4095) + 2048) shr 12)) shr 12).toDouble()
 
         `val` = ((adj - sample[2]) * scale).toInt()
-        sample[2] = ((`val` * (sf ushr 12) + ((`val` * (sf and 4095) + 2048) ushr 12)) ushr 12).toDouble()
+        sample[2] = ((`val` * (sf shr 12) + ((`val` * (sf and 4095) + 2048) shr 12)) shr 12).toDouble()
     }
 
     companion object {
