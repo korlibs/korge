@@ -80,7 +80,7 @@ open class Context2d constructor(
 		override val width: Int get() = (parent.width / scaleX).toInt()
 		override val height: Int get() = (parent.height / scaleY).toInt()
 
-		private inline fun <T> adjustMatrix(transform: Matrix, callback: () -> T): T = transform.keep {
+		private inline fun <T> adjustMatrix(transform: Matrix, callback: () -> T): T = transform.keepMatrix {
             transform.scale(scaleX, scaleY)
             callback()
         }

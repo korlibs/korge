@@ -41,8 +41,8 @@ class NinePatchEx(
 
 		bounds.setTo(0, 0, (width * xscale).toInt(), (height * yscale).toInt())
 
-		m.keep {
-			prescale(1.0 / xscale, 1.0 / yscale)
+		m.keepMatrix {
+			m.prescale(1.0 / xscale, 1.0 / yscale)
             val ninePatch = ninePatch
             if (ninePatch != null) {
                 recomputeVerticesIfRequired()
