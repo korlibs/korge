@@ -36,10 +36,29 @@ enum class GraphicsRenderer {
     GPU
 }
 
-class Graphics(shape: Shape = EmptyShape, renderer: GraphicsRenderer = GraphicsRenderer.GPU) : Container(), ViewLeaf {
+class Graphics(
+    shape: Shape = EmptyShape,
+    renderer: GraphicsRenderer = GraphicsRenderer.GPU
+) : Container(), ViewLeaf, Anchorable {
     private var softGraphics: CpuGraphics? = null
     private var gpuGraphics: GpuShapeView? = null
 
+    private val anchorable: Anchorable? get() = softGraphics ?: gpuGraphics
+
+    val rendererView: View? get() = softGraphics ?: gpuGraphics
+    var boundsIncludeStrokes: Boolean
+        get() = softGraphics?.boundsIncludeStrokes ?: gpuGraphics?.boundsIncludeStrokes ?: false
+        set(value) {
+            softGraphics?.boundsIncludeStrokes = value
+            gpuGraphics?.boundsIncludeStrokes = value
+        }
+
+    override var anchorX: Double
+        get() = anchorable?.anchorX ?: 0.0
+        set(value) { anchorable?.anchorX = value }
+    override var anchorY: Double
+        get() = anchorable?.anchorY ?: 0.0
+        set(value) { anchorable?.anchorY = value }
     var antialiased: Boolean = true
         set(value) {
             if (field == value) return
