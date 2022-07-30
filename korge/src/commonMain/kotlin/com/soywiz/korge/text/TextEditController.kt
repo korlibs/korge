@@ -487,10 +487,14 @@ class TextEditController(
                 onOut(this@TextEditController)
                 bg?.isOver = false
             }
-            click {
+            downImmediate {
+                cursorIndex = getIndexAtPos(it.currentPosLocal)
+                dragging = false
+                focused = true
+            }
+            down {
                 //println("UiTextInput.down")
                 cursorIndex = getIndexAtPos(it.currentPosLocal)
-                focused = true
                 dragging = false
             }
             downOutside {
