@@ -2,7 +2,6 @@ package com.soywiz.korim.bitmap
 
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp
-import com.soywiz.kmem.fill
 import com.soywiz.kmem.toInt
 import com.soywiz.korim.annotation.KorimInternal
 import com.soywiz.korim.color.ColorFormat

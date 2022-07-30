@@ -5,7 +5,6 @@ import com.soywiz.kds.Extra
 import com.soywiz.kmem.ByteArrayBuilder
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp
-import com.soywiz.kmem.fill
 import com.soywiz.kmem.nextAlignedTo
 import com.soywiz.kmem.readCharArrayBE
 import com.soywiz.kmem.readCharArrayLE

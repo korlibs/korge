@@ -5,7 +5,6 @@ import com.soywiz.kds.GenericSubList
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.clamp01
 import com.soywiz.kmem.extract8
-import com.soywiz.kmem.fill
 import com.soywiz.korim.internal.d2i
 import com.soywiz.korim.internal.f2i
 import com.soywiz.korim.internal.packIntClamped
