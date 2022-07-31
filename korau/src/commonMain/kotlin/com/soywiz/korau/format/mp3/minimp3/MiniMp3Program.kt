@@ -240,19 +240,19 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
         // CPointer<L12_scale_info>
         class ScaleInfo(
-            var scf: Array192Float,
+            var scf: FloatPointer,
             var total_bands: UByte,
             var stereo_bands: UByte,
-            var bitalloc: Array64UByte,
-            var scfcod: Array64UByte,
+            var bitalloc: CPointer<UByte>,
+            var scfcod: CPointer<UByte>,
         ) {
             val value get() = this
             constructor(runtime: AbstractRuntime) : this(
-                scf = Array192Float(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
+                scf = FloatPointer(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
                 total_bands = 0u,
                 stereo_bands = 0u,
-                bitalloc = Array64UByte(runtime.alloca(64).ptr),
-                scfcod = Array64UByte(runtime.alloca(64).ptr),
+                bitalloc = CPointer<UByte>(runtime.alloca(64).ptr),
+                scfcod = CPointer<UByte>(runtime.alloca(64).ptr),
             )
         }
     }
@@ -1611,26 +1611,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     //////////////////
 
     /////////////
-    operator fun Array192Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array192Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array192Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array192FloatAlloc(setItems: Array192Float.() -> Unit): Array192Float = Array192Float(alloca_zero(
-        Array192Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array192FloatAlloc(items: Array<Float>, size: Int = items.size): Array192Float = Array192FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array192Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array192Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array64UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array64UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array64UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array64UByteAlloc(setItems: Array64UByte.() -> Unit): Array64UByte = Array64UByte(alloca_zero(
-        Array64UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array64UByteAlloc(items: Array<UByte>, size: Int = items.size): Array64UByte = Array64UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array64UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array64UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
     operator fun Array3UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
     operator fun Array3UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
     var Array3UByte.value get() = this[0]; set(value) { this[0] = value }
@@ -1787,18 +1767,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 //////////////////
 
 //////////////////
-internal const val Array192Float__NUM_ELEMENTS = 192
-internal const val Array192Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array192Float__TOTAL_SIZE_BYTES = 768
-internal @kotlin.jvm.JvmInline value/*!*/ class Array192Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array192Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array64UByte__NUM_ELEMENTS = 64
-internal const val Array64UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array64UByte__TOTAL_SIZE_BYTES = 64
-internal @kotlin.jvm.JvmInline value/*!*/ class Array64UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array64UByte__ELEMENT_SIZE_BYTES
-}
 internal const val Array3UByte__NUM_ELEMENTS = 3
 internal const val Array3UByte__ELEMENT_SIZE_BYTES = 1
 internal const val Array3UByte__TOTAL_SIZE_BYTES = 3
