@@ -151,7 +151,7 @@ class AndroidNativeSoundProvider : NativeSoundProvider() {
         }
     }
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
         ensureAudioManager(coroutineContext)
 
         return object : PlatformAudioOutput(coroutineContext, freq) {

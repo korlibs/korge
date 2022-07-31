@@ -1,6 +1,5 @@
 package com.soywiz.korvi.mpeg
 
-import com.soywiz.kds.Deque
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.Uint8Buffer
 import com.soywiz.kmem.Uint8ClampedBuffer
@@ -12,7 +11,6 @@ import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.async.Signal
 import com.soywiz.korio.async.delay
-import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.stream.AsyncInputStream
 import com.soywiz.korio.stream.openAsync
 import com.soywiz.korio.stream.readBytesUpTo
@@ -21,7 +19,6 @@ import com.soywiz.korvi.mpeg.stream.AudioDestination
 import com.soywiz.korvi.mpeg.stream.VideoDestination
 import com.soywiz.korvi.mpeg.stream.audio.MP2
 import com.soywiz.korvi.mpeg.stream.video.MPEG1
-import kotlinx.coroutines.Dispatchers
 import kotlin.coroutines.CoroutineContext
 
 class JSMpegPlayer(val coroutineContext: CoroutineContext) {
@@ -150,7 +147,7 @@ class JSMpegPlayer(val coroutineContext: CoroutineContext) {
         demuxer.write(data)
     }
 
-    val audioStream = nativeSoundProvider.createAudioStream(coroutineContext)
+    val audioStream = nativeSoundProvider.createPlatformAudioOutput(coroutineContext)
     //val audioStream = nativeSoundProvider.createAudioStream(Dispatchers.Unconfined)
     val audioSamplesDeque = AudioSamplesDeque(2)
     val audioSamples = AudioSamples(2, 4096)

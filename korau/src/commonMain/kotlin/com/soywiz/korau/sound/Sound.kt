@@ -34,7 +34,7 @@ open class LazyNativeSoundProvider(val prepareInit: () -> Unit = {}, val gen: ()
 
     override val target: String get() = parent.target
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = parent.createAudioStream(coroutineContext, freq)
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = parent.createPlatformAudioOutput(coroutineContext, freq)
 
     override fun init() = prepareInit()
 
@@ -66,9 +66,9 @@ open class NativeSoundProvider : Disposable {
 		}
 	}
 
-	open fun createAudioStream(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
+	open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
 
-    suspend fun createAudioStream(freq: Int = 44100): PlatformAudioOutput = createAudioStream(coroutineContextKt, freq)
+    suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
 
 	protected open fun init(): Unit = Unit
 
@@ -145,7 +145,7 @@ open class LogNativeSoundProvider : NativeSoundProvider() {
 
     val streams = arrayListOf<PlatformLogAudioOutput>()
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
         return PlatformLogAudioOutput(coroutineContext, freq).also { streams.add(it) }
     }
 }
