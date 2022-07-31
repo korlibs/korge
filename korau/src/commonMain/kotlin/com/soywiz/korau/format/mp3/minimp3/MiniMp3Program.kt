@@ -441,7 +441,6 @@ internal open class MiniMp3Program() {
     ///////////////////////////////////
 
     fun Boolean.toInt(): Int = if (this) 1 else 0
-    fun CPointer<*>.toInt(): Int = ptr
     fun Int.toBool(): Boolean = this != 0
     fun UByte.toBool(): Boolean = this.toInt() != 0
     fun UInt.toBool(): Boolean = this.toInt() != 0
@@ -1753,6 +1752,3 @@ internal open class MiniMp3Program() {
 
     }
 }
-
-@kotlin.jvm.JvmInline internal value/*!*/ class CPointer<T>(val ptr: Int)
-@kotlin.jvm.JvmInline internal value/*!*/ class CFunction<T>(val ptr: Int)
