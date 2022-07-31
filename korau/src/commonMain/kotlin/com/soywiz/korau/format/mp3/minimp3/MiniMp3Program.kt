@@ -840,8 +840,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
+    val tempInt3 = IntArray(3) // @TODO: Allocates, can we cache this?
     fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>) {
-        val max_band = IntArray(3) // @TODO: Allocates, can we cache this?
+        val max_band = tempInt3
         val n_sfb: Int = (((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt()
         var i: Int = 0
         val max_blocks: Int = (if (gr.value.n_short_sfb.toBool()) 3 else 1)
@@ -860,7 +861,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             ist_pos[itop] = (if (max_band[i] >= prev) default_pos else ist_pos[prev].toInt()).toUByte()
             i++
         }
-        L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, ((((gr[1].scalefac_compress.toUInt()) and 1u)).toInt()))
+        L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, (((gr[1].scalefac_compress.toUInt() and 1u)).toInt()))
 
     }
     fun L3_reorder(grbuf: FloatPointer, scratch: FloatPointer, sfb: CPointer<UByte>) {
@@ -883,7 +884,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             sfb += 3
             src += (2 * len)
         }
-        memcpy((CPointer(grbuf.ptr)), (CPointer(scratch.ptr)), ((dst - scratch) * Float.SIZE_BYTES))
+        memcpy(CPointer(grbuf.ptr), CPointer(scratch.ptr), (dst - scratch) * Float.SIZE_BYTES)
 
     }
     fun L3_antialias(grbuf: FloatPointer, nbands: Int) {
@@ -902,27 +903,15 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
     }
     fun L3_dct3_9(y: FloatPointer) {
-        var s0: Float = 0f
-        var s1: Float = 0f
-        var s2: Float = 0f
-        var s3: Float = 0f
-        var s4: Float = 0f
-        var s5: Float = 0f
-        var s6: Float = 0f
-        var s7: Float = 0f
-        var s8: Float = 0f
-        var t0: Float = 0f
-        var t2: Float = 0f
-        var t4: Float = 0f
-        s0 = y[0]
-        s2 = y[2]
-        s4 = y[4]
-        s6 = y[6]
-        s8 = y[8]
-        t0 = s0 + (s6 * 0.5f)
+        var s0: Float = y[0]
+        var s2: Float = y[2]
+        var s4: Float = y[4]
+        var s6: Float = y[6]
+        var s8: Float = y[8]
+        var t0 = s0 + (s6 * 0.5f)
         s0 -= s6
-        t4 = (s4 + s2) * 0.9396926f
-        t2 = (s8 + s2) * 0.76604444f
+        var t4 = (s4 + s2) * 0.9396926f
+        var t2 = (s8 + s2) * 0.76604444f
         s6 = (s4 - s8) * 0.17364818f
         s4 += (s8 - s2)
         s2 = s0 - (s4 * 0.5f)
@@ -930,10 +919,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         s8 = (t0 - t2) + s6
         s0 = (t0 - t4) + t2
         s4 = (t0 + t4) - s6
-        s1 = y[1]
-        s3 = y[3]
-        s5 = y[5]
-        s7 = y[7]
+        var s1: Float = y[1]
+        var s3: Float = y[3]
+        var s5: Float = y[5]
+        var s7: Float = y[7]
         s3 *= 0.8660254f
         t0 = (s5 + s1) * 0.9848077f
         t4 = (s5 - s7) * 0.34202015f
@@ -1164,8 +1153,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var x5: Float = x[5]
                     var x6: Float = x[6]
                     var x7: Float = x[7]
-                    var xt: Float = 0f
-                    xt = x0 - x7
+                    var xt: Float = x0 - x7
                     x0 += x7
                     x7 = x1 - x6
                     x1 += x6
@@ -1801,36 +1789,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array39UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
     operator fun Array39UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
     /////////////
-    operator fun Array2Array3Array15UByte.get(index: Int): Array3Array15UByte = Array3Array15UByte(addr(index))
-    operator fun Array2Array3Array15UByte.set(index: Int, value: Array3Array15UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array3Array15UByte__ELEMENT_SIZE_BYTES) }
-    var Array2Array3Array15UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array2Array3Array15UByteAlloc(setItems: Array2Array3Array15UByte.() -> Unit): Array2Array3Array15UByte = Array2Array3Array15UByte(alloca_zero(
-        Array2Array3Array15UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array2Array3Array15UByteAlloc(items: Array<Array3Array15UByte>, size: Int = items.size): Array2Array3Array15UByte = Array2Array3Array15UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array2Array3Array15UByte.plus(offset: Int): CPointer<Array3Array15UByte> = CPointer(addr(offset))
-    operator fun Array2Array3Array15UByte.minus(offset: Int): CPointer<Array3Array15UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array3Array15UByte.get(index: Int): Array15UByte = Array15UByte(addr(index))
-    operator fun Array3Array15UByte.set(index: Int, value: Array15UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array3Array15UByte__ELEMENT_SIZE_BYTES) }
-    var Array3Array15UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array3Array15UByteAlloc(setItems: Array3Array15UByte.() -> Unit): Array3Array15UByte = Array3Array15UByte(alloca_zero(
-        Array3Array15UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array3Array15UByteAlloc(items: Array<Array15UByte>, size: Int = items.size): Array3Array15UByte = Array3Array15UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array3Array15UByte.plus(offset: Int): CPointer<Array15UByte> = CPointer(addr(offset))
-    operator fun Array3Array15UByte.minus(offset: Int): CPointer<Array15UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array15UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array15UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array15UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array15UByteAlloc(setItems: Array15UByte.() -> Unit): Array15UByte = Array15UByte(alloca_zero(
-        Array15UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array15UByteAlloc(items: Array<UByte>, size: Int = items.size): Array15UByte = Array15UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array15UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array15UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
     operator fun Array3UInt.get(index: Int): UInt = lw(addr(index)).toUInt()
     operator fun Array3UInt.set(index: Int, value: UInt) { sw(addr(index), (value).toInt()) }
     var Array3UInt.value get() = this[0]; set(value) { this[0] = value }
@@ -1920,16 +1878,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun Array28UByteAlloc(items: Array<UByte>, size: Int = items.size): Array28UByte = Array28UByteAlloc { for (n in 0 until size) this[n] = items[n] }
     operator fun Array28UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
     operator fun Array28UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array14Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array14Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array14Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array14FloatAlloc(setItems: Array14Float.() -> Unit): Array14Float = Array14Float(alloca_zero(
-        Array14Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array14FloatAlloc(items: Array<Float>, size: Int = items.size): Array14Float = Array14FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array14Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array14Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
     operator fun Array2Array8Float.get(index: Int): Array8Float = Array8Float(addr(index))
     operator fun Array2Array8Float.set(index: Int, value: Array8Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array8Float__ELEMENT_SIZE_BYTES) }
@@ -2209,24 +2157,6 @@ internal const val Array39UByte__TOTAL_SIZE_BYTES = 39
 internal @kotlin.jvm.JvmInline value/*!*/ class Array39UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array39UByte__ELEMENT_SIZE_BYTES
 }
-internal const val Array2Array3Array15UByte__NUM_ELEMENTS = 2
-internal const val Array2Array3Array15UByte__ELEMENT_SIZE_BYTES = 45
-internal const val Array2Array3Array15UByte__TOTAL_SIZE_BYTES = 90
-internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array3Array15UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array2Array3Array15UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array3Array15UByte__NUM_ELEMENTS = 3
-internal const val Array3Array15UByte__ELEMENT_SIZE_BYTES = 15
-internal const val Array3Array15UByte__TOTAL_SIZE_BYTES = 45
-internal @kotlin.jvm.JvmInline value/*!*/ class Array3Array15UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array3Array15UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array15UByte__NUM_ELEMENTS = 15
-internal const val Array15UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array15UByte__TOTAL_SIZE_BYTES = 15
-internal @kotlin.jvm.JvmInline value/*!*/ class Array15UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array15UByte__ELEMENT_SIZE_BYTES
-}
 internal const val Array3UInt__NUM_ELEMENTS = 3
 internal const val Array3UInt__ELEMENT_SIZE_BYTES = 4
 internal const val Array3UInt__TOTAL_SIZE_BYTES = 12
@@ -2280,48 +2210,6 @@ internal const val Array28UByte__ELEMENT_SIZE_BYTES = 1
 internal const val Array28UByte__TOTAL_SIZE_BYTES = 28
 internal @kotlin.jvm.JvmInline value/*!*/ class Array28UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array28UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array16UByte__NUM_ELEMENTS = 16
-internal const val Array16UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array16UByte__TOTAL_SIZE_BYTES = 16
-internal @kotlin.jvm.JvmInline value/*!*/ class Array16UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array16UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array24UByte__NUM_ELEMENTS = 24
-internal const val Array24UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array24UByte__TOTAL_SIZE_BYTES = 24
-internal @kotlin.jvm.JvmInline value/*!*/ class Array24UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array24UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array10UByte__NUM_ELEMENTS = 10
-internal const val Array10UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array10UByte__TOTAL_SIZE_BYTES = 10
-internal @kotlin.jvm.JvmInline value/*!*/ class Array10UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array10UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array145Float__NUM_ELEMENTS = 145
-internal const val Array145Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array145Float__TOTAL_SIZE_BYTES = 580
-internal @kotlin.jvm.JvmInline value/*!*/ class Array145Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array145Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array32Short__NUM_ELEMENTS = 32
-internal const val Array32Short__ELEMENT_SIZE_BYTES = 2
-internal const val Array32Short__TOTAL_SIZE_BYTES = 64
-internal @kotlin.jvm.JvmInline value/*!*/ class Array32Short(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array32Short__ELEMENT_SIZE_BYTES
-}
-internal const val Array3Int__NUM_ELEMENTS = 3
-internal const val Array3Int__ELEMENT_SIZE_BYTES = 4
-internal const val Array3Int__TOTAL_SIZE_BYTES = 12
-internal @kotlin.jvm.JvmInline value/*!*/ class Array3Int(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array3Int__ELEMENT_SIZE_BYTES
-}
-internal const val Array14Float__NUM_ELEMENTS = 14
-internal const val Array14Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array14Float__TOTAL_SIZE_BYTES = 56
-internal @kotlin.jvm.JvmInline value/*!*/ class Array14Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array14Float__ELEMENT_SIZE_BYTES
 }
 internal const val Array2Array8Float__NUM_ELEMENTS = 2
 internal const val Array2Array8Float__ELEMENT_SIZE_BYTES = 32
