@@ -4,6 +4,7 @@ import kotlin.math.max
 
 //ENTRY Program
 //Program.main(arrayOf())
+@Suppress("MemberVisibilityCanBePrivate", "NAME_SHADOWING", "ObjectPropertyName")
 @OptIn(ExperimentalUnsignedTypes::class)
 internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     companion object {
@@ -39,7 +40,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             0.58293498f, 1.06067765f, 0.83934963f, 0.62250412f, 1.72244716f, 0.74453628f, 0.67480832f, 5.10114861f
         )
 
-        private val __STATIC_L3_stereo_process_g_pan = floatArrayOf(0f, 1f, 0.21132487f, 0.78867513f, 0.3660254f, 0.6339746f, 0.5f, 0.5f, 0.6339746f, 0.3660254f, 0.78867513f, 0.21132487f, 1f, 0f)
+        private val __STATIC_L3_stereo_process_g_pan: FloatArray = floatArrayOf(0f, 1f, 0.21132487f, 0.78867513f, 0.3660254f, 0.6339746f, 0.5f, 0.5f, 0.6339746f, 0.3660254f, 0.78867513f, 0.21132487f, 1f, 0f)
+        private val __STATIC_mp3d_synth_g_win: FloatArray = floatArrayOf(-1f, 26f, -31f, 208f, 218f, 401f, -519f, 2063f, 2000f, 4788f, -5517f, 7134f, 5959f, 35640f, -39336f, 74992f, -1f, 24f, -35f, 202f, 222f, 347f, -581f, 2080f, 1952f, 4425f, -5879f, 7640f, 5288f, 33791f, -41176f, 74856f, -1f, 21f, -38f, 196f, 225f, 294f, -645f, 2087f, 1893f, 4063f, -6237f, 8092f, 4561f, 31947f, -43006f, 74630f, -1f, 19f, -41f, 190f, 227f, 244f, -711f, 2085f, 1822f, 3705f, -6589f, 8492f, 3776f, 30112f, -44821f, 74313f, -1f, 17f, -45f, 183f, 228f, 197f, -779f, 2075f, 1739f, 3351f, -6935f, 8840f, 2935f, 28289f, -46617f, 73908f, -1f, 16f, -49f, 176f, 228f, 153f, -848f, 2057f, 1644f, 3004f, -7271f, 9139f, 2037f, 26482f, -48390f, 73415f, -2f, 14f, -53f, 169f, 227f, 111f, -919f, 2032f, 1535f, 2663f, -7597f, 9389f, 1082f, 24694f, -50137f, 72835f, -2f, 13f, -58f, 161f, 224f, 72f, -991f, 2001f, 1414f, 2330f, -7910f, 9592f, 70f, 22929f, -51853f, 72169f, -2f, 11f, -63f, 154f, 221f, 36f, -1064f, 1962f, 1280f, 2006f, -8209f, 9750f, -998f, 21189f, -53534f, 71420f, -2f, 10f, -68f, 147f, 215f, 2f, -1137f, 1919f, 1131f, 1692f, -8491f, 9863f, -2122f, 19478f, -55178f, 70590f, -3f, 9f, -73f, 139f, 208f, -29f, -1210f, 1870f, 970f, 1388f, -8755f, 9935f, -3300f, 17799f, -56778f, 69679f, -3f, 8f, -79f, 132f, 200f, -57f, -1283f, 1817f, 794f, 1095f, -8998f, 9966f, -4533f, 16155f, -58333f, 68692f, -4f, 7f, -85f, 125f, 189f, -83f, -1356f, 1759f, 605f, 814f, -9219f, 9959f, -5818f, 14548f, -59838f, 67629f, -4f, 7f, -91f, 117f, 177f, -106f, -1428f, 1698f, 402f, 545f, -9416f, 9916f, -7154f, 12980f, -61289f, 66494f, -5f, 6f, -97f, 111f, 163f, -127f, -1498f, 1634f, 185f, 288f, -9585f, 9838f, -8540f, 11455f, -62684f, 65290f)
     }
 
     private var __STATIC_hdr_bitrate_kbps_halfrate: Array2Array3Array15UByte = Array2Array3Array15UByteAlloc(arrayOf(Array3Array15UByteAlloc(arrayOf(
@@ -75,7 +77,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     private var __STATIC_L3_huffman_g_linbits: CPointer<UByte> = fixedArrayOfUByte("\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0003\u0004\u0006\u0008\u000a\u000d\u0004\u0005\u0006\u0007\u0008\u0009\u000b\u000d")
     private var __STATIC_L3_antialias_g_aa: Array2Array8Float = Array2Array8FloatAlloc(arrayOf(Array8Float(fixedArrayOfFloat(0.85749293f, 0.881742f, 0.94962865f, 0.98331459f, 0.99551782f, 0.99916056f, 0.9998992f, 0.99999316f).ptr), Array8Float(fixedArrayOfFloat(0.51449576f, 0.47173197f, 0.31337745f, 0.1819132f, 0.09457419f, 0.04096558f, 0.01419856f, 0.00369997f).ptr)))
     private var __STATIC_L3_imdct_gr_g_mdct_window: Array2Array18Float = Array2Array18FloatAlloc(arrayOf(Array18Float(fixedArrayOfFloat(0.99904822f, 0.99144486f, 0.97629601f, 0.95371695f, 0.92387953f, 0.88701083f, 0.84339145f, 0.79335334f, 0.73727734f, 0.04361938f, 0.13052619f, 0.21643961f, 0.3007058f, 0.38268343f, 0.46174861f, 0.53729961f, 0.60876143f, 0.67559021f).ptr), Array18Float(fixedArrayOfFloat(1f, 1f, 1f, 1f, 1f, 1f, 0.99144486f, 0.92387953f, 0.79335334f, 0f, 0f, 0f, 0f, 0f, 0f, 0.13052619f, 0.38268343f, 0.60876143f).ptr)))
-    private var __STATIC_mp3d_synth_g_win: FloatPointer = fixedArrayOfFloat(-1f, 26f, -31f, 208f, 218f, 401f, -519f, 2063f, 2000f, 4788f, -5517f, 7134f, 5959f, 35640f, -39336f, 74992f, -1f, 24f, -35f, 202f, 222f, 347f, -581f, 2080f, 1952f, 4425f, -5879f, 7640f, 5288f, 33791f, -41176f, 74856f, -1f, 21f, -38f, 196f, 225f, 294f, -645f, 2087f, 1893f, 4063f, -6237f, 8092f, 4561f, 31947f, -43006f, 74630f, -1f, 19f, -41f, 190f, 227f, 244f, -711f, 2085f, 1822f, 3705f, -6589f, 8492f, 3776f, 30112f, -44821f, 74313f, -1f, 17f, -45f, 183f, 228f, 197f, -779f, 2075f, 1739f, 3351f, -6935f, 8840f, 2935f, 28289f, -46617f, 73908f, -1f, 16f, -49f, 176f, 228f, 153f, -848f, 2057f, 1644f, 3004f, -7271f, 9139f, 2037f, 26482f, -48390f, 73415f, -2f, 14f, -53f, 169f, 227f, 111f, -919f, 2032f, 1535f, 2663f, -7597f, 9389f, 1082f, 24694f, -50137f, 72835f, -2f, 13f, -58f, 161f, 224f, 72f, -991f, 2001f, 1414f, 2330f, -7910f, 9592f, 70f, 22929f, -51853f, 72169f, -2f, 11f, -63f, 154f, 221f, 36f, -1064f, 1962f, 1280f, 2006f, -8209f, 9750f, -998f, 21189f, -53534f, 71420f, -2f, 10f, -68f, 147f, 215f, 2f, -1137f, 1919f, 1131f, 1692f, -8491f, 9863f, -2122f, 19478f, -55178f, 70590f, -3f, 9f, -73f, 139f, 208f, -29f, -1210f, 1870f, 970f, 1388f, -8755f, 9935f, -3300f, 17799f, -56778f, 69679f, -3f, 8f, -79f, 132f, 200f, -57f, -1283f, 1817f, 794f, 1095f, -8998f, 9966f, -4533f, 16155f, -58333f, 68692f, -4f, 7f, -85f, 125f, 189f, -83f, -1356f, 1759f, 605f, 814f, -9219f, 9959f, -5818f, 14548f, -59838f, 67629f, -4f, 7f, -91f, 117f, 177f, -106f, -1428f, 1698f, 402f, 545f, -9416f, 9916f, -7154f, 12980f, -61289f, 66494f, -5f, 6f, -97f, 111f, 163f, -127f, -1498f, 1634f, 185f, 288f, -9585f, 9838f, -8540f, 11455f, -62684f, 65290f)
     // typealias uint8_t = UByte
     // typealias uint16_t = UShort
     // typealias uint32_t = UInt
@@ -1135,28 +1136,28 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     var x7: Float = x[7]
                     var xt: Float = 0f
                     xt = x0 - x7
-                    x0 = x0 + x7
+                    x0 += x7
                     x7 = x1 - x6
-                    x1 = x1 + x6
+                    x1 += x6
                     x6 = x2 - x5
-                    x2 = x2 + x5
+                    x2 += x5
                     x5 = x3 - x4
-                    x3 = x3 + x4
+                    x3 += x4
                     x4 = x0 - x3
-                    x0 = x0 + x3
+                    x0 += x3
                     x3 = x1 - x2
-                    x1 = x1 + x2
+                    x1 += x2
                     x[0] = x0 + x1
                     x[4] = (x0 - x1) * 0.70710677f
-                    x5 = x5 + x6
+                    x5 += x6
                     x6 = (x6 + x7) * 0.70710677f
-                    x7 = x7 + xt
+                    x7 += xt
                     x3 = (x3 + x4) * 0.70710677f
-                    x5 = x5 - (x7 * 0.198912367f)
-                    x7 = x7 + (x5 * 0.382683432f)
-                    x5 = x5 - (x7 * 0.198912367f)
+                    x5 -= (x7 * 0.198912367f)
+                    x7 += (x5 * 0.382683432f)
+                    x5 -= (x7 * 0.198912367f)
                     x0 = xt - x6
-                    xt = xt + x6
+                    xt += x6
                     x[1] = (xt + x7) * 0.50979561f
                     x[2] = (x4 + x3) * 0.54119611f
                     x[3] = (x0 - x5) * 0.60134488f
@@ -1186,14 +1187,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun mp3d_scale_pcm(sample: Float): Short {
-        if ((sample.toDouble()) >= 32766.5) {
-            return 32767.toInt().toShort()
-        }
-        if ((sample.toDouble()) <= -32767.5) {
-            return (-32768L).toInt().toShort()
-        }
+        if ((sample.toDouble()) >= 32766.5) return 32767.toShort()
+        if ((sample.toDouble()) <= -32767.5) return (-32768).toShort()
         var s: Short = ((sample + 0.5f)).toInt().toShort()
-        s = (((s.toInt()) - (((s < (0.toInt().toShort()))).toInt()))).toInt().toShort()
+        s = (((s.toInt()) - (((s < (0.toShort()))).toInt()))).toShort()
         return s
 
     }
@@ -1201,23 +1198,23 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var z: FloatPointer = z // Mutating parameter
         var a: Float = 0f
         a = (z[14 * 64] - z[0]) * 29f
-        a = a + ((z[1 * 64] + z[13 * 64]) * 213f)
-        a = a + ((z[12 * 64] - z[2 * 64]) * 459f)
-        a = a + ((z[3 * 64] + z[11 * 64]) * 2037f)
-        a = a + ((z[10 * 64] - z[4 * 64]) * 5153f)
-        a = a + ((z[5 * 64] + z[9 * 64]) * 6574f)
-        a = a + ((z[8 * 64] - z[6 * 64]) * 37489f)
-        a = a + (z[7 * 64] * 75038f)
+        a += ((z[1 * 64] + z[13 * 64]) * 213f)
+        a += ((z[12 * 64] - z[2 * 64]) * 459f)
+        a += ((z[3 * 64] + z[11 * 64]) * 2037f)
+        a += ((z[10 * 64] - z[4 * 64]) * 5153f)
+        a += ((z[5 * 64] + z[9 * 64]) * 6574f)
+        a += ((z[8 * 64] - z[6 * 64]) * 37489f)
+        a += (z[7 * 64] * 75038f)
         pcm[0] = mp3d_scale_pcm(a)
-        z = z + 2
+        z += 2
         a = z[14 * 64] * 104f
-        a = a + (z[12 * 64] * 1567f)
-        a = a + (z[10 * 64] * 9727f)
-        a = a + (z[8 * 64] * 64019f)
-        a = a + (z[6 * 64] * -9975f)
-        a = a + (z[4 * 64] * -45f)
-        a = a + (z[2 * 64] * 146f)
-        a = a + (z[0 * 64] * -5f)
+        a += (z[12 * 64] * 1567f)
+        a += (z[10 * 64] * 9727f)
+        a += (z[8 * 64] * 64019f)
+        a += (z[6 * 64] * -9975f)
+        a += (z[4 * 64] * -45f)
+        a += (z[2 * 64] * 146f)
+        a += (z[0 * 64] * -5f)
         pcm[16 * nch] = mp3d_scale_pcm(a)
 
     }
@@ -1225,9 +1222,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var i: Int = 0
         val xr: FloatPointer = xl + ((576 * (nch - 1)))
         val dstr: CPointer<Short> = dstl + ((nch - 1))
-        val g_win: FloatPointer = __STATIC_mp3d_synth_g_win
+        val g_win: FloatArray = __STATIC_mp3d_synth_g_win
         val zlin: FloatPointer = lins + ((15 * 64))
-        var w: FloatPointer = FloatPointer(g_win.ptr)
+        var w = 0
         zlin[4 * 15] = xl[18 * 16]
         zlin[(4 * 15) + 1] = xr[18 * 16]
         zlin[(4 * 15) + 2] = xl[0]
@@ -1260,8 +1257,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             }
 
             for (n in 0 until 8) {
-                val w0: Float = w++.value
-                val w1: Float = w++.value
+                val w0: Float = g_win[w++]
+                val w1: Float = g_win[w++]
                 val vz: FloatPointer = zlin + ((4 * i) - (n * 64))
                 val vy: FloatPointer = zlin + ((4 * i) - ((15 - n) * 64))
                 if (n % 2 == 0) {
@@ -2385,19 +2382,16 @@ internal const val Array2Array8Float__TOTAL_SIZE_BYTES = 64
 internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array2Array8Float__ELEMENT_SIZE_BYTES
 }
-internal const val Array8Float__NUM_ELEMENTS = 8
 internal const val Array8Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array8Float__TOTAL_SIZE_BYTES = 32
 internal @kotlin.jvm.JvmInline value/*!*/ class Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array8Float__ELEMENT_SIZE_BYTES
 }
-internal const val Array18Float__NUM_ELEMENTS = 18
 internal const val Array18Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array18Float__TOTAL_SIZE_BYTES = 72
 internal @kotlin.jvm.JvmInline value/*!*/ class Array18Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array18Float__ELEMENT_SIZE_BYTES
 }
-internal const val Array9Float__NUM_ELEMENTS = 9
 internal const val Array9Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array9Float__TOTAL_SIZE_BYTES = 36
 internal @kotlin.jvm.JvmInline value/*!*/ class Array9Float(val ptr: Int) {
