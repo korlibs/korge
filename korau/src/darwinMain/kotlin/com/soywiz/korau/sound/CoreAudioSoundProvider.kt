@@ -1,15 +1,66 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.korau.format.*
-import kotlinx.cinterop.*
 //import mystdio.*
-import platform.AudioToolbox.*
-import platform.CoreAudioTypes.*
-import platform.CoreFoundation.*
-import platform.darwin.*
-import kotlin.coroutines.*
+import cnames.structs.OpaqueAudioQueue
+import kotlinx.cinterop.Arena
+import kotlinx.cinterop.COpaquePointer
+import kotlinx.cinterop.CPointer
+import kotlinx.cinterop.CPointerVarOf
+import kotlinx.cinterop.ShortVar
+import kotlinx.cinterop.StableRef
+import kotlinx.cinterop.alloc
+import kotlinx.cinterop.allocArray
+import kotlinx.cinterop.asStableRef
+import kotlinx.cinterop.convert
+import kotlinx.cinterop.get
+import kotlinx.cinterop.memScoped
+import kotlinx.cinterop.plus
+import kotlinx.cinterop.pointed
+import kotlinx.cinterop.ptr
+import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.set
+import kotlinx.cinterop.staticCFunction
+import kotlinx.cinterop.value
+import platform.AudioToolbox.AudioQueueAllocateBuffer
+import platform.AudioToolbox.AudioQueueBuffer
+import platform.AudioToolbox.AudioQueueBufferRef
+import platform.AudioToolbox.AudioQueueDispose
+import platform.AudioToolbox.AudioQueueEnqueueBuffer
+import platform.AudioToolbox.AudioQueueNewOutput
+import platform.AudioToolbox.AudioQueueRef
+import platform.AudioToolbox.AudioQueueStart
+import platform.AudioToolbox.kAudioFormatUnsupportedDataFormatError
+import platform.AudioToolbox.kAudioQueueErr_BufferEmpty
+import platform.AudioToolbox.kAudioQueueErr_BufferInQueue
+import platform.AudioToolbox.kAudioQueueErr_CannotStart
+import platform.AudioToolbox.kAudioQueueErr_CodecNotFound
+import platform.AudioToolbox.kAudioQueueErr_DisposalPending
+import platform.AudioToolbox.kAudioQueueErr_EnqueueDuringReset
+import platform.AudioToolbox.kAudioQueueErr_InvalidBuffer
+import platform.AudioToolbox.kAudioQueueErr_InvalidCodecAccess
+import platform.AudioToolbox.kAudioQueueErr_InvalidDevice
+import platform.AudioToolbox.kAudioQueueErr_InvalidOfflineMode
+import platform.AudioToolbox.kAudioQueueErr_InvalidParameter
+import platform.AudioToolbox.kAudioQueueErr_InvalidProperty
+import platform.AudioToolbox.kAudioQueueErr_InvalidPropertySize
+import platform.AudioToolbox.kAudioQueueErr_InvalidPropertyValue
+import platform.AudioToolbox.kAudioQueueErr_InvalidQueueType
+import platform.AudioToolbox.kAudioQueueErr_InvalidRunState
+import platform.AudioToolbox.kAudioQueueErr_Permissions
+import platform.AudioToolbox.kAudioQueueErr_PrimeTimedOut
+import platform.AudioToolbox.kAudioQueueErr_QueueInvalidated
+import platform.AudioToolbox.kAudioQueueErr_RecordUnderrun
+import platform.CoreAudioTypes.AudioStreamBasicDescription
+import platform.CoreAudioTypes.kAudioFormatFlagIsPacked
+import platform.CoreAudioTypes.kAudioFormatLinearPCM
+import platform.CoreAudioTypes.kLinearPCMFormatFlagIsSignedInteger
+import platform.CoreFoundation.CFRunLoopGetCurrent
+import platform.CoreFoundation.kCFRunLoopCommonModes
+import platform.darwin.OSStatus
+import kotlin.coroutines.CoroutineContext
 
 actual val nativeSoundProvider: NativeSoundProvider get() = CORE_AUDIO_NATIVE_SOUND_PROVIDER
+expect fun appleInitAudio()
 
 @ThreadLocal
 val CORE_AUDIO_NATIVE_SOUND_PROVIDER: CoreAudioNativeSoundProvider by lazy { CoreAudioNativeSoundProvider() }
@@ -21,7 +72,7 @@ class CoreAudioNativeSoundProvider : NativeSoundProvider() {
 
     //override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps): NativeSound = AVFoundationNativeSoundNoStream(CoroutineScope(coroutineContext), audioFormats.decode(data))
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = CoreAudioPlatformAudioOutput(coroutineContext, freq)
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = CoreAudioPlatformAudioOutput(coroutineContext, freq)
 }
 
 class CoreAudioPlatformAudioOutput(
@@ -29,11 +80,18 @@ class CoreAudioPlatformAudioOutput(
     freq: Int
 ) : DequeBasedPlatformAudioOutput(coroutineContext, freq) {
     val generator = CoreAudioGenerator(freq, nchannels, coroutineContext = coroutineContext) { data, dataSize ->
-        for (n in 0 until dataSize / nchannels) {
-            for (m in 0 until nchannels) {
-                data[n * nchannels + m] = readShort(m)
+        val temp = ShortArray(dataSize / nchannels)
+        for (m in 0 until nchannels) {
+            readShorts(m, temp)
+            for (n in 0 until dataSize / nchannels) {
+                data[n * nchannels + m] = temp[n]
             }
         }
+        //for (n in 0 until dataSize / nchannels) {
+        //    for (m in 0 until nchannels) {
+        //        data[n * nchannels + m] = readShort(m)
+        //    }
+        //}
     }
     override fun start() {
         generator.start()
@@ -53,6 +111,7 @@ interface MyCoreAudioOutputCallback {
 }
 
 private fun coreAudioOutputCallback(custom_data: COpaquePointer?, queue: AudioQueueRef?, buffer: AudioQueueBufferRef?) {
+    initRuntimeIfNeeded()
     val output = custom_data?.asStableRef<MyCoreAudioOutputCallback>() ?: return println("outputCallback null[0]")
     val buf = buffer?.pointed ?: return println("outputCallback null[1]")
     val dat = buf.mAudioDataByteSize.toInt() / Short.SIZE_BYTES

@@ -1,4 +1,4 @@
 package com.soywiz.korau.sound
 
-fun appleInitAudio() {
+actual fun appleInitAudio() {
 }
