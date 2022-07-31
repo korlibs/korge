@@ -19,13 +19,13 @@ class DispatchersExtTest {
         val dispatcher = Dispatchers.createFixedThreadDispatcher("hello", threadCount = 4)
         try {
             withContext(dispatcher) {
-                for (n in 0 until 2048) {
+                for (n in 0 until 8192) {
                     historiogram.add(currentThreadId.toInt())
                     yield()
                 }
             }
             val map = historiogram.getMapCopy().toMap()
-            assertEquals(if (Platform.hasMultithreadedSharedHeap) "4:2048" else "1:2048", "${map.size}:${map.values.sum()}")
+            assertEquals(if (Platform.hasMultithreadedSharedHeap) "4:8192" else "1:8192", "${map.size}:${map.values.sum()}")
         } finally {
             dispatcher.close()
         }
