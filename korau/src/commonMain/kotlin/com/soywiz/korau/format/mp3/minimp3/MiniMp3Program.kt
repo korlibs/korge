@@ -659,10 +659,10 @@ internal open class MiniMp3Program() {
                             dst[k] = (((get_bits(bs, ba)) - half)).toFloat()
                         }
                     } else {
-                        val mod: UInt = (((2 shl (ba - 17)) + 1)).toUInt()
-                        var code: UInt = get_bits(bs, (((mod.toInt()) + 2) - (((mod shr 3)).toInt()))).toUInt()
+                        val mod = (((2 shl (ba - 17)) + 1))
+                        var code = get_bits(bs, mod + 2 - (mod shr 3))
                         for (k in 0 until group_size) {
-                            dst[k] = ((((code % mod) - (mod / 2u))).toInt()).toFloat()
+                            dst[k] = (code % mod - (mod / 2)).toFloat()
                             code /= mod
                         }
                     }
