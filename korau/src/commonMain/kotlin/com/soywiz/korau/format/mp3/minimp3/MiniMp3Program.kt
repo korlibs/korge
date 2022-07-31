@@ -116,145 +116,145 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             arrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000")
         )
 
-        data class L12_subband_alloc_tStruct(val tab_offset: UByte, val code_tab_width: UByte, val band_count: UByte)
-
         private val __STATIC_L12_subband_alloc_table_g_alloc_L1: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 76u, code_tab_width = 4u, band_count = 32u))
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M2: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 60u, code_tab_width = 4u, band_count = (4.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (7.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (2.toUByte()), band_count = (19.toUByte())))
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 0u, code_tab_width = 4u, band_count = (3.toUByte())), L12_subband_alloc_tStruct(tab_offset = (16.toUByte()), code_tab_width = (4.toUByte()), band_count = (8.toUByte())), L12_subband_alloc_tStruct(tab_offset = (32.toUByte()), code_tab_width = (3.toUByte()), band_count = (12.toUByte())), L12_subband_alloc_tStruct(tab_offset = (40.toUByte()), code_tab_width = (2.toUByte()), band_count = (7.toUByte())))
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1_lowrate: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (4.toUByte()), band_count = (2.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (10.toUByte())))
 
         private val g_pow43: FloatArray = floatArrayOf(0f, -1f, -2.519842f, -4.326749f, -6.349604f, -8.54988f, -10.902724f, -13.390518f, -16f, -18.720754f, -21.544347f, -24.463781f, -27.473142f, -30.567351f, -33.741992f, -36.993181f, 0f, 1f, 2.519842f, 4.326749f, 6.349604f, 8.54988f, 10.902724f, 13.390518f, 16f, 18.720754f, 21.544347f, 24.463781f, 27.473142f, 30.567351f, 33.741992f, 36.993181f, 40.317474f, 43.711787f, 47.173345f, 50.699631f, 54.288352f, 57.937408f, 61.644865f, 65.408941f, 69.227979f, 73.100443f, 77.024898f, 81f, 85.024491f, 89.097188f, 93.216975f, 97.3828f, 101.593667f, 105.848633f, 110.146801f, 114.487321f, 118.869381f, 123.292209f, 127.755065f, 132.257246f, 136.798076f, 141.376907f, 145.993119f, 150.646117f, 155.335327f, 160.060199f, 164.820202f, 169.614826f, 174.443577f, 179.30598f, 184.201575f, 189.129918f, 194.09058f, 199.083145f, 204.10721f, 209.162385f, 214.248292f, 219.364564f, 224.510845f, 229.686789f, 234.892058f, 240.126328f, 245.38928f, 250.680604f, 256f, 261.347174f, 266.721841f, 272.123723f, 277.552547f, 283.008049f, 288.489971f, 293.99806f, 299.532071f, 305.091761f, 310.676898f, 316.287249f, 321.922592f, 327.582707f, 333.267377f, 338.976394f, 344.70955f, 350.466646f, 356.247482f, 362.051866f, 367.879608f, 373.730522f, 379.604427f, 385.501143f, 391.420496f, 397.362314f, 403.326427f, 409.312672f, 415.320884f, 421.350905f, 427.402579f, 433.47575f, 439.570269f, 445.685987f, 451.822757f, 457.980436f, 464.158883f, 470.35796f, 476.57753f, 482.817459f, 489.077615f, 495.357868f, 501.65809f, 507.978156f, 514.317941f, 520.677324f, 527.056184f, 533.454404f, 539.871867f, 546.308458f, 552.764065f, 559.238575f, 565.731879f, 572.24387f, 578.77444f, 585.323483f, 591.890898f, 598.476581f, 605.080431f, 611.702349f, 618.342238f, 625f, 631.67554f, 638.368763f, 645.079578f)
-        
-        class Mp3Dec(
-            var mdct_overlap: Array<CPointer<Float>>,
-            var qmf_state: CPointer<Float>,
-            var reserv: Int,
-            var free_format_bytes_array: IntArray,
-            var header: CPointer<UByte>,
-            var reserv_buf: CPointer<UByte>,
-        ) {
-            constructor(runtime: AbstractRuntime) : this(
-                mdct_overlap = Array(2) { CPointer<Float>(runtime.alloca(2 * 288 * Float.SIZE_BYTES).ptr) },
-                qmf_state = CPointer<Float>(runtime.alloca(960 * Float.SIZE_BYTES).ptr),
-                reserv = 0,
-                free_format_bytes_array = IntArray(1),
-                header = CPointer<UByte>(runtime.alloca(4).ptr),
-                reserv_buf = CPointer<UByte>(runtime.alloca(511).ptr),
-            )
-        }
-        
-        class Bs(
-            var buf: CPointer<UByte> = CPointer(0),
-            var pos: Int = 0,
-            var limit: Int = 0,
-        ) {
-        }
-        
-        class Mp3Scratch(
-            var bs: Bs,
-            var maindata: CPointer<UByte>,
-            var gr_info: ArrayPtr<GrInfo>,
-            var grbuf: Array2Array576Float,
-            var scf: CPointer<Float>,
-            var syn: Array33Array64Float,
-            var ist_pos: Array<UByteArray>,
-        ) {
-            constructor(runtime: AbstractRuntime) : this(
-                bs = Bs(),
-                maindata = CPointer<UByte>(runtime.alloca(2815).ptr),
-                gr_info = ArrayPtr(Array(4) { GrInfo(runtime) }, 0),
-                grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
-                scf = CPointer<Float>(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
-                syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
-                ist_pos = Array(2) { UByteArray(39) },
-            )
-        }
+    }
 
-        // mp3dec_frame_info_t
-        class Mp3FrameInfo(
-            var frame_bytes: Int = 0,
-            var frame_offset: Int = 0,
-            var channels: Int = 0,
-            var hz: Int = 0,
-            var layer: Int = 0,
-            var bitrate_kbps: Int = 0,
-        ) {
-            val value get() = this
-        }
+    data class L12_subband_alloc_tStruct(val tab_offset: UByte, val code_tab_width: UByte, val band_count: UByte)
 
-        class ArrayPtr<T>(val array: Array<T>, val pos: Int) {
-            val value: T get() = array[pos]
-            operator fun get(index: Int): T = array[pos + index]
-            operator fun set(index: Int, value: T) { array[pos + index] = value }
-            operator fun inc(): ArrayPtr<T> = ArrayPtr(array, pos + 1)
-            operator fun plus(other: Int): ArrayPtr<T> = ArrayPtr(array, pos + other)
-        }
+    class Mp3Dec(
+        var mdct_overlap: Array<CPointer<Float>>,
+        var qmf_state: CPointer<Float>,
+        var reserv: Int,
+        var free_format_bytes_array: IntArray,
+        var header: CPointer<UByte>,
+        var reserv_buf: CPointer<UByte>,
+    ) {
+        constructor(runtime: AbstractRuntime) : this(
+            mdct_overlap = Array(2) { CPointer<Float>(runtime.alloca(2 * 288 * Float.SIZE_BYTES).ptr) },
+            qmf_state = CPointer<Float>(runtime.alloca(960 * Float.SIZE_BYTES).ptr),
+            reserv = 0,
+            free_format_bytes_array = IntArray(1),
+            header = CPointer<UByte>(runtime.alloca(4).ptr),
+            reserv_buf = CPointer<UByte>(runtime.alloca(511).ptr),
+        )
+    }
 
-        class UByteArrayPtr(val array: UByteArray, val pos: Int = 0) {
-            val value: UByte get() = array[pos]
-            operator fun get(index: Int): UByte = array[pos + index]
-            operator fun set(index: Int, value: UByte) { array[pos + index] = value }
-            operator fun inc(): UByteArrayPtr = UByteArrayPtr(array, pos + 1)
-            operator fun plus(other: Int): UByteArrayPtr = UByteArrayPtr(array, pos + other)
-        }
+    class Bs(
+        var buf: CPointer<UByte> = CPointer(0),
+        var pos: Int = 0,
+        var limit: Int = 0,
+    ) {
+    }
 
-        class GrInfo(
-            var sfbtab: UByteArrayPtr,
-            var part_23_length: UShort,
-            var big_values: UShort,
-            var scalefac_compress: UShort,
-            var global_gain: UByte,
-            var block_type: UByte,
-            var mixed_block_flag: UByte,
-            var n_long_sfb: UByte,
-            var n_short_sfb: UByte,
-            var table_select: UByteArray,
-            var region_count: UByteArray,
-            var subblock_gain: UByteArray,
-            var preflag: UByte,
-            var scalefac_scale: UByte,
-            var count1_table: UByte,
-            var scfsi: UByte,
-        ) {
-            constructor(runtime: AbstractRuntime) : this(
-                sfbtab = UByteArrayPtr(UByteArray(0)),
-                part_23_length = 0u,
-                big_values = 0u,
-                scalefac_compress = 0u,
-                global_gain = 0u,
-                block_type = 0u,
-                mixed_block_flag = 0u,
-                n_long_sfb = 0u,
-                n_short_sfb = 0u,
-                table_select = UByteArray(3),
-                region_count = UByteArray(3),
-                subblock_gain = UByteArray(3),
-                preflag = 0u,
-                scalefac_scale = 0u,
-                count1_table = 0u,
-                scfsi = 0u,
-            )
-            
-            val value get() = this
-        }
+    class Mp3Scratch(
+        var bs: Bs,
+        var maindata: CPointer<UByte>,
+        var gr_info: ArrayPtr<GrInfo>,
+        var grbuf: Array2Array576Float,
+        var scf: CPointer<Float>,
+        var syn: Array33Array64Float,
+        var ist_pos: Array<UByteArray>,
+    ) {
+        constructor(runtime: AbstractRuntime) : this(
+            bs = Bs(),
+            maindata = CPointer<UByte>(runtime.alloca(2815).ptr),
+            gr_info = ArrayPtr(Array(4) { GrInfo(runtime) }, 0),
+            grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
+            scf = CPointer<Float>(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
+            syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
+            ist_pos = Array(2) { UByteArray(39) },
+        )
+    }
 
-        // CPointer<L12_scale_info>
-        class ScaleInfo(
-            var scf: FloatPointer,
-            var total_bands: UByte,
-            var stereo_bands: UByte,
-            var bitalloc: CPointer<UByte>,
-            var scfcod: CPointer<UByte>,
-        ) {
-            val value get() = this
-            constructor(runtime: AbstractRuntime) : this(
-                scf = FloatPointer(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
-                total_bands = 0u,
-                stereo_bands = 0u,
-                bitalloc = CPointer<UByte>(runtime.alloca(64).ptr),
-                scfcod = CPointer<UByte>(runtime.alloca(64).ptr),
-            )
-        }
+    // mp3dec_frame_info_t
+    class Mp3FrameInfo(
+        var frame_bytes: Int = 0,
+        var frame_offset: Int = 0,
+        var channels: Int = 0,
+        var hz: Int = 0,
+        var layer: Int = 0,
+        var bitrate_kbps: Int = 0,
+    ) {
+        val value get() = this
+    }
+
+    class ArrayPtr<T>(val array: Array<T>, val pos: Int) {
+        val value: T get() = array[pos]
+        operator fun get(index: Int): T = array[pos + index]
+        operator fun set(index: Int, value: T) { array[pos + index] = value }
+        operator fun inc(): ArrayPtr<T> = ArrayPtr(array, pos + 1)
+        operator fun plus(other: Int): ArrayPtr<T> = ArrayPtr(array, pos + other)
+    }
+
+    class UByteArrayPtr(val array: UByteArray, val pos: Int = 0) {
+        val value: UByte get() = array[pos]
+        operator fun get(index: Int): UByte = array[pos + index]
+        operator fun set(index: Int, value: UByte) { array[pos + index] = value }
+        operator fun inc(): UByteArrayPtr = UByteArrayPtr(array, pos + 1)
+        operator fun plus(other: Int): UByteArrayPtr = UByteArrayPtr(array, pos + other)
+    }
+
+    class GrInfo(
+        var sfbtab: UByteArrayPtr,
+        var part_23_length: UShort,
+        var big_values: UShort,
+        var scalefac_compress: UShort,
+        var global_gain: UByte,
+        var block_type: UByte,
+        var mixed_block_flag: UByte,
+        var n_long_sfb: UByte,
+        var n_short_sfb: UByte,
+        var table_select: UByteArray,
+        var region_count: UByteArray,
+        var subblock_gain: UByteArray,
+        var preflag: UByte,
+        var scalefac_scale: UByte,
+        var count1_table: UByte,
+        var scfsi: UByte,
+    ) {
+        constructor(runtime: AbstractRuntime) : this(
+            sfbtab = UByteArrayPtr(UByteArray(0)),
+            part_23_length = 0u,
+            big_values = 0u,
+            scalefac_compress = 0u,
+            global_gain = 0u,
+            block_type = 0u,
+            mixed_block_flag = 0u,
+            n_long_sfb = 0u,
+            n_short_sfb = 0u,
+            table_select = UByteArray(3),
+            region_count = UByteArray(3),
+            subblock_gain = UByteArray(3),
+            preflag = 0u,
+            scalefac_scale = 0u,
+            count1_table = 0u,
+            scfsi = 0u,
+        )
+
+        val value get() = this
+    }
+
+    // CPointer<L12_scale_info>
+    class ScaleInfo(
+        var scf: FloatPointer,
+        var total_bands: UByte,
+        var stereo_bands: UByte,
+        var bitalloc: CPointer<UByte>,
+        var scfcod: CPointer<UByte>,
+    ) {
+        val value get() = this
+        constructor(runtime: AbstractRuntime) : this(
+            scf = FloatPointer(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
+            total_bands = 0u,
+            stereo_bands = 0u,
+            bitalloc = CPointer<UByte>(runtime.alloca(64).ptr),
+            scfcod = CPointer<UByte>(runtime.alloca(64).ptr),
+        )
     }
 
     fun allocaMp3Dec(): Mp3Dec = Mp3Dec(this)
