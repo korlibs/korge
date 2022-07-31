@@ -125,6 +125,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M2: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 60u, code_tab_width = 4u, band_count = (4.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (7.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (2.toUByte()), band_count = (19.toUByte())))
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 0u, code_tab_width = 4u, band_count = (3.toUByte())), L12_subband_alloc_tStruct(tab_offset = (16.toUByte()), code_tab_width = (4.toUByte()), band_count = (8.toUByte())), L12_subband_alloc_tStruct(tab_offset = (32.toUByte()), code_tab_width = (3.toUByte()), band_count = (12.toUByte())), L12_subband_alloc_tStruct(tab_offset = (40.toUByte()), code_tab_width = (2.toUByte()), band_count = (7.toUByte())))
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1_lowrate: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (4.toUByte()), band_count = (2.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (10.toUByte())))
+
+        private val g_pow43: FloatArray = floatArrayOf(0f, -1f, -2.519842f, -4.326749f, -6.349604f, -8.54988f, -10.902724f, -13.390518f, -16f, -18.720754f, -21.544347f, -24.463781f, -27.473142f, -30.567351f, -33.741992f, -36.993181f, 0f, 1f, 2.519842f, 4.326749f, 6.349604f, 8.54988f, 10.902724f, 13.390518f, 16f, 18.720754f, 21.544347f, 24.463781f, 27.473142f, 30.567351f, 33.741992f, 36.993181f, 40.317474f, 43.711787f, 47.173345f, 50.699631f, 54.288352f, 57.937408f, 61.644865f, 65.408941f, 69.227979f, 73.100443f, 77.024898f, 81f, 85.024491f, 89.097188f, 93.216975f, 97.3828f, 101.593667f, 105.848633f, 110.146801f, 114.487321f, 118.869381f, 123.292209f, 127.755065f, 132.257246f, 136.798076f, 141.376907f, 145.993119f, 150.646117f, 155.335327f, 160.060199f, 164.820202f, 169.614826f, 174.443577f, 179.30598f, 184.201575f, 189.129918f, 194.09058f, 199.083145f, 204.10721f, 209.162385f, 214.248292f, 219.364564f, 224.510845f, 229.686789f, 234.892058f, 240.126328f, 245.38928f, 250.680604f, 256f, 261.347174f, 266.721841f, 272.123723f, 277.552547f, 283.008049f, 288.489971f, 293.99806f, 299.532071f, 305.091761f, 310.676898f, 316.287249f, 321.922592f, 327.582707f, 333.267377f, 338.976394f, 344.70955f, 350.466646f, 356.247482f, 362.051866f, 367.879608f, 373.730522f, 379.604427f, 385.501143f, 391.420496f, 397.362314f, 403.326427f, 409.312672f, 415.320884f, 421.350905f, 427.402579f, 433.47575f, 439.570269f, 445.685987f, 451.822757f, 457.980436f, 464.158883f, 470.35796f, 476.57753f, 482.817459f, 489.077615f, 495.357868f, 501.65809f, 507.978156f, 514.317941f, 520.677324f, 527.056184f, 533.454404f, 539.871867f, 546.308458f, 552.764065f, 559.238575f, 565.731879f, 572.24387f, 578.77444f, 585.323483f, 591.890898f, 598.476581f, 605.080431f, 611.702349f, 618.342238f, 625f, 631.67554f, 638.368763f, 645.079578f)
     }
 
     private var __STATIC_L12_read_scale_info_g_bitalloc_code_tab: CPointer<UByte> = fixedArrayOfUByte("\u0000\u0011\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0010\u0000\u0011\u0012\u0010\u0000\u0011\u0012\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u0000\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010")
@@ -140,39 +142,11 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     private var __STATIC_L3_decode_scalefactors_g_scf_partitions: Array3Array28UByte = Array3Array28UByteAlloc(arrayOf(
         Array28UByte(fixedArrayOfUByte("\u0006\u0005\u0005\u0005\u0006\u0005\u0005\u0005\u0006\u0005\u0007\u0003\u000b\u000a\u0000\u0000\u0007\u0007\u0007\u0000\u0006\u0006\u0006\u0003\u0008\u0008\u0005\u0000").ptr), Array28UByte(fixedArrayOfUByte("\u0008\u0009\u0006\u000c\u0006\u0009\u0009\u0009\u0006\u0009\u000c\u0006\u000f\u0012\u0000\u0000\u0006\u000f\u000c\u0000\u0006\u000c\u0009\u0006\u0006\u0012\u0009\u0000").ptr), Array28UByte(fixedArrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000").ptr)
     ))
-    // typealias uint8_t = UByte
-    // typealias uint16_t = UShort
-    // typealias uint32_t = UInt
-    // typealias uint64_t = ULong
-    // typealias int8_t = Byte
-    // typealias int16_t = Short
-    // typealias int32_t = Int
-    // typealias int64_t = Long
-    // typealias mp3dec_frame_info_t = mp3dec_frame_info_t
-    // typealias mp3dec_t = mp3dec_t
-    // var mp3dec_init: CFunction<(CPointer<struct null>) -> Unit> = 0 /*CFunction<(CPointer<mp3dec_t>) -> Unit>*/
-    // typealias mp3d_sample_t = Short
-    // var mp3dec_decode_frame: CFunction<(CPointer<struct null>, CPointer<UByte>, Int, CPointer<Short>, CPointer<struct null>) -> Int> = 0 /*CFunction<(CPointer<mp3dec_t>, CPointer<uint8_t>, Int, CPointer<mp3d_sample_t>, CPointer<mp3dec_frame_info_t>) -> Int>*/
-    // typealias size_t = Int
-    // var malloc: CFunction<(Int) -> CPointer<Unit>> = 0 /*CFunction<(size_t) -> CPointer<Unit>>*/
-    // var realloc: CFunction<(CPointer<Unit>, Int) -> CPointer<Unit>> = 0 /*CFunction<(CPointer<Unit>, size_t) -> CPointer<Unit>>*/
-    // var free: CFunction<(CPointer<Unit>) -> Unit> = 0 /*CFunction<(CPointer<Unit>) -> Unit>*/
-    // var exit: CFunction<(Int) -> Unit> = 0 /*CFunction<(Int) -> Unit>*/
-    // var strlen: CFunction<(CPointer<Byte>) -> Int> = 0 /*CFunction<(CPointer<Byte>) -> size_t>*/
-    // var memset: CFunction<(CPointer<Unit>, Int, Int) -> CPointer<Unit>> = 0 /*CFunction<(CPointer<Unit>, Int, size_t) -> CPointer<Unit>>*/
-    // var memcpy: CFunction<(CPointer<Unit>, CPointer<Unit>, Int) -> CPointer<Unit>> = 0 /*CFunction<(CPointer<Unit>, CPointer<Unit>, size_t) -> CPointer<Unit>>*/
-    // var memmove: CFunction<(CPointer<Unit>, CPointer<Unit>, Int) -> CPointer<Unit>> = 0 /*CFunction<(CPointer<Unit>, CPointer<Unit>, size_t) -> CPointer<Unit>>*/
-    // var memcmp: CFunction<(CPointer<Unit>, CPointer<Unit>, Int) -> Int> = 0 /*CFunction<(CPointer<Unit>, CPointer<Unit>, size_t) -> Int>*/
-    // typealias bs_t = bs_t
-    // typealias L12_scale_info = L12_scale_info
-    // typealias L12_subband_alloc_t = L12_subband_alloc_t
-    // typealias L3_gr_info_t = L3_gr_info_t
-    // typealias mp3dec_scratch_t = mp3dec_scratch_t
+
     fun bs_init(bs: CPointer<bs_t>, data: CPointer<UByte>, bytes: Int) {
         bs.value.buf = data
         bs.value.pos = 0
         bs.value.limit = bytes * 8
-
     }
     fun get_bits(bs: CPointer<bs_t>, n: Int): UInt {
         var next: UInt = 0u
@@ -297,8 +271,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun L12_read_scale_info(hdr: CPointer<UByte>, bs: CPointer<bs_t>, sci: CPointer<L12_scale_info>) {
-        val g_bitalloc_code_tab: CPointer<UByte> = __STATIC_L12_read_scale_info_g_bitalloc_code_tab
-        var subband_alloc: Array<L12_subband_alloc_tStruct> = L12_subband_alloc_table(hdr, sci)
+        val g_bitalloc_code_tab = __STATIC_L12_read_scale_info_g_bitalloc_code_tab
+        val subband_alloc = L12_subband_alloc_table(hdr, sci)
         var subband_alloc_n = 0
         var i: Int = 0
         var k: Int = 0
@@ -351,7 +325,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         k = 0
                         while (k < group_size) {
                             dst[k] = (((get_bits(bs, ba).toInt()) - half)).toFloat()
-                            k = k + 1
+                            k += 1
                         }
 
                     } else {
@@ -421,7 +395,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             gr.value.part_23_length = get_bits(bs, 12).toInt().toUShort()
             part_23_sum += (gr.value.part_23_length.toInt())
             gr.value.big_values = get_bits(bs, 9).toInt().toUShort()
-            if (gr.value.big_values > (288.toInt().toUShort())) {
+            if (gr.value.big_values > 288u) {
                 return -1
             }
             gr.value.global_gain = get_bits(bs, 8).toUByte()
@@ -604,7 +578,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    var g_pow43: Array145Float /*static*/ = Array145Float(fixedArrayOfFloat(0f, -1f, -2.519842f, -4.326749f, -6.349604f, -8.54988f, -10.902724f, -13.390518f, -16f, -18.720754f, -21.544347f, -24.463781f, -27.473142f, -30.567351f, -33.741992f, -36.993181f, 0f, 1f, 2.519842f, 4.326749f, 6.349604f, 8.54988f, 10.902724f, 13.390518f, 16f, 18.720754f, 21.544347f, 24.463781f, 27.473142f, 30.567351f, 33.741992f, 36.993181f, 40.317474f, 43.711787f, 47.173345f, 50.699631f, 54.288352f, 57.937408f, 61.644865f, 65.408941f, 69.227979f, 73.100443f, 77.024898f, 81f, 85.024491f, 89.097188f, 93.216975f, 97.3828f, 101.593667f, 105.848633f, 110.146801f, 114.487321f, 118.869381f, 123.292209f, 127.755065f, 132.257246f, 136.798076f, 141.376907f, 145.993119f, 150.646117f, 155.335327f, 160.060199f, 164.820202f, 169.614826f, 174.443577f, 179.30598f, 184.201575f, 189.129918f, 194.09058f, 199.083145f, 204.10721f, 209.162385f, 214.248292f, 219.364564f, 224.510845f, 229.686789f, 234.892058f, 240.126328f, 245.38928f, 250.680604f, 256f, 261.347174f, 266.721841f, 272.123723f, 277.552547f, 283.008049f, 288.489971f, 293.99806f, 299.532071f, 305.091761f, 310.676898f, 316.287249f, 321.922592f, 327.582707f, 333.267377f, 338.976394f, 344.70955f, 350.466646f, 356.247482f, 362.051866f, 367.879608f, 373.730522f, 379.604427f, 385.501143f, 391.420496f, 397.362314f, 403.326427f, 409.312672f, 415.320884f, 421.350905f, 427.402579f, 433.47575f, 439.570269f, 445.685987f, 451.822757f, 457.980436f, 464.158883f, 470.35796f, 476.57753f, 482.817459f, 489.077615f, 495.357868f, 501.65809f, 507.978156f, 514.317941f, 520.677324f, 527.056184f, 533.454404f, 539.871867f, 546.308458f, 552.764065f, 559.238575f, 565.731879f, 572.24387f, 578.77444f, 585.323483f, 591.890898f, 598.476581f, 605.080431f, 611.702349f, 618.342238f, 625f, 631.67554f, 638.368763f, 645.079578f).ptr)
     fun L3_pow_43(x: Int): Float {
         var x: Int = x // Mutating parameter
         var frac: Float = 0f
@@ -814,7 +787,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_top_band(right: FloatPointer, sfb: CPointer<UByte>, nbands: Int, max_band: Array3Int) {
+    fun L3_stereo_top_band(right: FloatPointer, sfb: CPointer<UByte>, nbands: Int, max_band: IntArray) {
         var right: FloatPointer = right // Mutating parameter
         max_band[0] = -1
         max_band[1] = -1
@@ -832,7 +805,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: CPointer<UByte>, hdr: CPointer<UByte>, max_band: Array3Int, mpeg2_sh: Int) {
+    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: CPointer<UByte>, hdr: CPointer<UByte>, max_band: IntArray, mpeg2_sh: Int) {
         var left: FloatPointer = left // Mutating parameter
         val g_pan: FloatArray = __STATIC_L3_stereo_process_g_pan
         var i: UInt = 0u
@@ -868,7 +841,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>) {
-        val max_band: Array3Int = Array3Int(fixedArrayOfInt(0, size = 3).ptr)
+        val max_band = IntArray(3) // @TODO: Allocates, can we cache this?
         val n_sfb: Int = (((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt()
         var i: Int = 0
         val max_blocks: Int = (if (gr.value.n_short_sfb.toBool()) 3 else 1)
@@ -1947,66 +1920,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun Array28UByteAlloc(items: Array<UByte>, size: Int = items.size): Array28UByte = Array28UByteAlloc { for (n in 0 until size) this[n] = items[n] }
     operator fun Array28UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
     operator fun Array28UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array16UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array16UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array16UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array16UByteAlloc(setItems: Array16UByte.() -> Unit): Array16UByte = Array16UByte(alloca_zero(
-        Array16UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array16UByteAlloc(items: Array<UByte>, size: Int = items.size): Array16UByte = Array16UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array16UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array16UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array24UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array24UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array24UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array24UByteAlloc(setItems: Array24UByte.() -> Unit): Array24UByte = Array24UByte(alloca_zero(
-        Array24UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array24UByteAlloc(items: Array<UByte>, size: Int = items.size): Array24UByte = Array24UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array24UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array24UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array10UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array10UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array10UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array10UByteAlloc(setItems: Array10UByte.() -> Unit): Array10UByte = Array10UByte(alloca_zero(
-        Array10UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array10UByteAlloc(items: Array<UByte>, size: Int = items.size): Array10UByte = Array10UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array10UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array10UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array145Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array145Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array145Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array145FloatAlloc(setItems: Array145Float.() -> Unit): Array145Float = Array145Float(alloca_zero(
-        Array145Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array145FloatAlloc(items: Array<Float>, size: Int = items.size): Array145Float = Array145FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array145Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array145Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array32Short.get(index: Int): Short = lh(addr(index))
-    operator fun Array32Short.set(index: Int, value: Short) { sh(addr(index), value) }
-    var Array32Short.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array32ShortAlloc(setItems: Array32Short.() -> Unit): Array32Short = Array32Short(alloca_zero(
-        Array32Short__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array32ShortAlloc(items: Array<Short>, size: Int = items.size): Array32Short = Array32ShortAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array32Short.plus(offset: Int): CPointer<Short> = CPointer(addr(offset))
-    operator fun Array32Short.minus(offset: Int): CPointer<Short> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array3Int.get(index: Int): Int = lw(addr(index))
-    operator fun Array3Int.set(index: Int, value: Int) { sw(addr(index), value) }
-    var Array3Int.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array3IntAlloc(setItems: Array3Int.() -> Unit): Array3Int = Array3Int(alloca_zero(
-        Array3Int__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array3IntAlloc(items: Array<Int>, size: Int = items.size): Array3Int = Array3IntAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array3Int.plus(offset: Int): IntPointer = IntPointer(addr(offset))
-    operator fun Array3Int.minus(offset: Int): IntPointer = IntPointer(addr(-offset))
     /////////////
     operator fun Array14Float.get(index: Int): Float = lwf(addr(index))
     operator fun Array14Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
