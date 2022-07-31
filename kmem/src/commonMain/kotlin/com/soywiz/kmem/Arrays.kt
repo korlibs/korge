@@ -9,6 +9,7 @@ public inline class UByteArrayInt(public val bytes: ByteArray) {
 }
 
 fun UByteArrayInt.fill(value: Int, fromIndex: Int = 0, toIndex: Int = size) = this.bytes.fill(value.toByte(), fromIndex, toIndex)
+fun arraycopy(src: UByteArrayInt, srcPos: Int, dst: UByteArrayInt, dstPos: Int, size: Int) = arraycopy(src.bytes, srcPos, dst.bytes, dstPos, size)
 
 /** Creates a new [UByteArrayInt] view of [size] bytes */
 public fun UByteArrayInt(size: Int): UByteArrayInt = UByteArrayInt(ByteArray(size))

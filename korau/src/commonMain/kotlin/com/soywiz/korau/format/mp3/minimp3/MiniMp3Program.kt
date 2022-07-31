@@ -1,6 +1,7 @@
 package com.soywiz.korau.format.mp3.minimp3
 
 import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.fill
 import kotlin.math.max
 
@@ -439,12 +440,12 @@ internal open class MiniMp3Program() {
         }
     }
 
-    fun memcpy(dst: FloatArrayPtr, src: FloatArrayPtr, byteSize: Int) {
-        for (n in 0 until byteSize / Float.SIZE_BYTES) dst[n] = src[n]
+    fun memcpy(dst: FloatArrayPtr, src: FloatArrayPtr, size: Int) {
+        arraycopy(src.array, src.pos, dst.array, dst.pos, size)
     }
 
-    fun memcpy(dst: UByteArrayIntPtr, src: UByteArrayIntPtr, byteSize: Int) {
-        for (n in 0 until byteSize / UByte.SIZE_BYTES) dst[n] = src[n]
+    fun memcpy(dst: UByteArrayIntPtr, src: UByteArrayIntPtr, size: Int) {
+        arraycopy(src.array, src.pos, dst.array, dst.pos, size)
     }
 
     class GrInfo(
@@ -680,7 +681,7 @@ internal open class MiniMp3Program() {
         memcpy(
             dst + 576 + sci.stereo_bands * 18,
             dst + sci.stereo_bands * 18,
-            ((sci.total_bands.toUInt() - (sci.stereo_bands.toUInt())) * 18u * ((Float.SIZE_BYTES).toUInt())).toInt()
+            (sci.total_bands - sci.stereo_bands) * 18
         )
         for (i in 0 until sci.total_bands) {
             for (k in 0 until 12) {
@@ -1154,7 +1155,7 @@ internal open class MiniMp3Program() {
             sfb += 3
             src += (2 * len)
         }
-        memcpy((grbuf), (scratch), (dst - scratch) * Float.SIZE_BYTES)
+        memcpy((grbuf), (scratch), (dst - scratch))
     }
 
     fun L3_antialias(grbuf: FloatArrayPtr, nbands: Int) {
@@ -1279,8 +1280,8 @@ internal open class MiniMp3Program() {
         var nbands: Int = nbands // Mutating parameter
         while (nbands > 0) {
             val tmp = FloatArrayPtr(FloatArray(18))
-            memcpy(tmp, grbuf, 72)
-            memcpy(grbuf, overlap, 6 * Float.SIZE_BYTES)
+            memcpy(tmp, grbuf, 72 / 4)
+            memcpy(grbuf, overlap, 6)
             L3_imdct12(tmp, grbuf + 6, overlap + 6)
             L3_imdct12(tmp + 1, grbuf + 12, overlap + 6)
             L3_imdct12(tmp + 2, overlap, overlap + 6)
@@ -1550,7 +1551,7 @@ internal open class MiniMp3Program() {
             mp3d_DCT_II((grbuf + ((576 * i))), nbands)
             i++
         }
-        memcpy(((lins)), ((qmf_state)), ((Float.SIZE_BYTES * 15) * 64))
+        memcpy(lins, qmf_state, 15 * 64)
         i = 0
         while (i < nbands) {
             mp3d_synth((grbuf + i), (pcm + ((32 * (nch * i)))), nch, (lins + ((i * 64))))
@@ -1563,7 +1564,7 @@ internal open class MiniMp3Program() {
                 i += 2
             }
         } else {
-            memcpy(((qmf_state)), ((((lins + ((nbands * 64)))))), ((Float.SIZE_BYTES * 15) * 64))
+            memcpy(qmf_state, lins + nbands * 64, 15 * 64)
         }
     }
 
