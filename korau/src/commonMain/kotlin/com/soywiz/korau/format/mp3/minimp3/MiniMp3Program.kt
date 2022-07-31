@@ -312,7 +312,9 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     }
 
     class ArrayPtr<T>(val array: Array<T>, val pos: Int) {
-        val value: T get() = array[pos]
+        var value: T
+            get() = array[pos]
+            set(value) { array[pos] = value }
         operator fun get(index: Int): T = array[pos + index]
         operator fun set(index: Int, value: T) { array[pos + index] = value }
         operator fun inc(): ArrayPtr<T> = ArrayPtr(array, pos + 1)
@@ -320,7 +322,9 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     }
 
     class UByteArrayPtr(val array: UByteArray, val pos: Int = 0) {
-        val value: UByte get() = array[pos]
+        var value: UByte
+            get() = array[pos]
+            set(value) { array[pos] = value }
         operator fun get(index: Int): UByte = array[pos + index]
         operator fun set(index: Int, value: UByte) { array[pos + index] = value }
         operator fun inc(): UByteArrayPtr = UByteArrayPtr(array, pos + 1)
@@ -328,7 +332,9 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     }
 
     class FloatArrayPtr(val array: FloatArray, val pos: Int = 0) {
-        val value: Float get() = array[pos]
+        var value: Float
+            get() = array[pos]
+            set(value) { array[pos] = value }
         operator fun get(index: Int): Float = array[pos + index]
         operator fun set(index: Int, value: Float) { array[pos + index] = value }
         operator fun inc(): FloatArrayPtr = FloatArrayPtr(array, pos + 1)
@@ -377,19 +383,19 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
 
     // CPointer<L12_scale_info>
     class ScaleInfo(
-        var scf: FloatPointer,
+        var scf: FloatArray,
         var total_bands: UByte,
         var stereo_bands: UByte,
         var bitalloc: UByteArray,
-        var scfcod: CPointer<UByte>,
+        var scfcod: UByteArray,
     ) {
         val value get() = this
-        constructor(runtime: MiniMp3Program) : this(
-            scf = FloatPointer(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
+        constructor() : this(
+            scf = FloatArray(192),
             total_bands = 0u,
             stereo_bands = 0u,
             bitalloc = UByteArray(64),
-            scfcod = CPointer<UByte>(runtime.alloca(64).ptr),
+            scfcod = UByteArray(64),
         )
     }
 
@@ -662,9 +668,9 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         return alloc
 
     }
-    fun L12_read_scalefactors(bs: Bs, pba: UByteArray, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer) {
+    fun L12_read_scalefactors(bs: Bs, pba: UByteArray, scfcod: UByteArray, bands: Int, scf: FloatArrayPtr) {
         var pba: UByteArray = pba // Mutating parameter
-        var scf: FloatPointer = scf // Mutating parameter
+        var scf: FloatArrayPtr = scf // Mutating parameter
         val g_deq_L12: FloatArray = __STATIC_L12_read_scalefactors_g_deq_L12
         var i: Int = 0
         var m: Int = 0
@@ -688,7 +694,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
 
     }
     fun L12_read_scale_info(hdr: CPointer<UByte>, bs: Bs, sci: ScaleInfo) {
-        val g_bitalloc_code_tab: UByteArrayPtr = UByteArrayPtr(__STATIC_L12_read_scale_info_g_bitalloc_code_tab)
+        val g_bitalloc_code_tab = UByteArrayPtr(__STATIC_L12_read_scale_info_g_bitalloc_code_tab)
         val subband_alloc = L12_subband_alloc_table(hdr, sci)
         var subband_alloc_n = 0
         var i: Int = 0
@@ -717,7 +723,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             sci.value.scfcod[i] = ((if (sci.value.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
             i += 1
         }
-        L12_read_scalefactors(bs, ((sci.value.bitalloc)), (CPointer(sci.value.scfcod.ptr)), ((((sci.value.total_bands.toUInt()) * 2u)).toInt()), (FloatPointer(sci.value.scf.ptr)))
+        L12_read_scalefactors(bs, ((sci.value.bitalloc)), ((sci.value.scfcod)), ((((sci.value.total_bands.toUInt()) * 2u)).toInt()), (FloatArrayPtr(sci.value.scf)))
         i = sci.value.stereo_bands.toInt()
         while (i < (sci.value.total_bands.toInt())) {
             sci.value.bitalloc[(2 * i) + 1] = 0.toUByte()
@@ -766,8 +772,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         return group_size * 4
 
     }
-    fun L12_apply_scf_384(sci: ScaleInfo, scf: FloatPointer, dst: FloatPointer) {
-        var scf: FloatPointer = scf // Mutating parameter
+    fun L12_apply_scf_384(sci: ScaleInfo, scf: FloatArrayPtr, dst: FloatPointer) {
+        var scf: FloatArrayPtr = scf // Mutating parameter
         var dst: FloatPointer = dst // Mutating parameter
         var i: Int = 0
         var k: Int = 0
@@ -1857,33 +1863,30 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             L3_save_reservoir(dec, ((scratch)))
 
         } else {
-            stackFrame {
-                val sci = ScaleInfo(this)
-                L12_read_scale_info(hdr, bs_frame, sci)
-                memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
-                i = 0
-                igr = 0
-                while (igr < 3) {
-                    i += L12_dequantize_granule(
-                        scratch.grbuf[0] + i,
-                        (bs_frame),
-                        (sci),
-                        info.value.layer or 1
-                    )
-                    if (12 == i) {
-                        i = 0
-                        L12_apply_scf_384(((sci)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
-                        mp3d_synth_granule((FloatPointer(dec.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
-                        memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
-                        pcm += 384 * info.value.channels
-                    }
-                    if (bs_frame.pos > bs_frame.limit) {
-                        mp3dec_init(dec)
-                        return 0
-                    }
-                    igr += 1
+            val sci = ScaleInfo()
+            L12_read_scale_info(hdr, bs_frame, sci)
+            memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
+            i = 0
+            igr = 0
+            while (igr < 3) {
+                i += L12_dequantize_granule(
+                    scratch.grbuf[0] + i,
+                    (bs_frame),
+                    (sci),
+                    info.value.layer or 1
+                )
+                if (12 == i) {
+                    i = 0
+                    L12_apply_scf_384(((sci)), FloatArrayPtr(sci.value.scf) + igr, (FloatPointer(scratch.grbuf[0].ptr)))
+                    mp3d_synth_granule((FloatPointer(dec.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
+                    memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
+                    pcm += 384 * info.value.channels
                 }
-
+                if (bs_frame.pos > bs_frame.limit) {
+                    mp3dec_init(dec)
+                    return 0
+                }
+                igr += 1
             }
         }
         return success * (hdr_frame_samples((CPointer(dec.header.ptr))).toInt())
