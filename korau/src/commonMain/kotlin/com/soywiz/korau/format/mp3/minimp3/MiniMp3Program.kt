@@ -127,16 +127,16 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     data class L12_subband_alloc_tStruct(val tab_offset: UByte, val code_tab_width: UByte, val band_count: UByte)
 
     class Mp3Dec(
-        var mdct_overlap: Array<CPointer<Float>>,
-        var qmf_state: CPointer<Float>,
+        var mdct_overlap: Array<FloatPointer>,
+        var qmf_state: FloatPointer,
         var reserv: Int,
         var free_format_bytes_array: IntArray,
         var header: CPointer<UByte>,
         var reserv_buf: CPointer<UByte>,
     ) {
         constructor(runtime: AbstractRuntime) : this(
-            mdct_overlap = Array(2) { CPointer<Float>(runtime.alloca(2 * 288 * Float.SIZE_BYTES).ptr) },
-            qmf_state = CPointer<Float>(runtime.alloca(960 * Float.SIZE_BYTES).ptr),
+            mdct_overlap = Array(2) { FloatPointer(runtime.alloca(288 * Float.SIZE_BYTES).ptr) },
+            qmf_state = FloatPointer(runtime.alloca(960 * Float.SIZE_BYTES).ptr),
             reserv = 0,
             free_format_bytes_array = IntArray(1),
             header = CPointer<UByte>(runtime.alloca(4).ptr),
@@ -156,7 +156,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var maindata: CPointer<UByte>,
         var gr_info: ArrayPtr<GrInfo>,
         var grbuf: Array2Array576Float,
-        var scf: CPointer<Float>,
+        var scf: FloatPointer,
         var syn: Array33Array64Float,
         var ist_pos: Array<UByteArray>,
     ) {
@@ -165,7 +165,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             maindata = CPointer<UByte>(runtime.alloca(2815).ptr),
             gr_info = ArrayPtr(Array(4) { GrInfo(runtime) }, 0),
             grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
-            scf = CPointer<Float>(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
+            scf = FloatPointer(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
             syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
             ist_pos = Array(2) { UByteArray(39) },
         )
@@ -1611,16 +1611,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     //////////////////
 
     /////////////
-    operator fun Array3UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array3UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array3UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array3UByteAlloc(setItems: Array3UByte.() -> Unit): Array3UByte = Array3UByte(alloca_zero(
-        Array3UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array3UByteAlloc(items: Array<UByte>, size: Int = items.size): Array3UByte = Array3UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array3UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array3UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
     operator fun Array2Array576Float.get(index: Int): Array576Float = Array576Float(addr(index))
     operator fun Array2Array576Float.set(index: Int, value: Array576Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array576Float__ELEMENT_SIZE_BYTES) }
     var Array2Array576Float.value get() = this[0]; set(value) { this[0] = value }
@@ -1767,12 +1757,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 //////////////////
 
 //////////////////
-internal const val Array3UByte__NUM_ELEMENTS = 3
-internal const val Array3UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array3UByte__TOTAL_SIZE_BYTES = 3
-internal @kotlin.jvm.JvmInline value/*!*/ class Array3UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array3UByte__ELEMENT_SIZE_BYTES
-}
 internal const val Array2Array576Float__NUM_ELEMENTS = 2
 internal const val Array2Array576Float__ELEMENT_SIZE_BYTES = 2304
 internal const val Array2Array576Float__TOTAL_SIZE_BYTES = 4608
