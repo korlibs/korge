@@ -1,5 +1,7 @@
 package com.soywiz.korau.format.mp3.minimp3
 
+import kotlin.math.max
+
 //ENTRY Program
 //Program.main(arrayOf())
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName", "CanBeVal", "DoubleNegation", "LocalVariableName", "NAME_SHADOWING", "VARIABLE_WITH_REDUNDANT_INITIALIZER", "RemoveRedundantCallsOfConversionMethods", "EXPERIMENTAL_IS_NOT_ENABLED", "RedundantExplicitType", "RemoveExplicitTypeArguments", "RedundantExplicitType", "unused", "UNCHECKED_CAST", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "NOTHING_TO_INLINE", "PropertyName", "ClassName", "USELESS_CAST", "PrivatePropertyName", "CanBeParameter", "UnusedMainParameter")
@@ -615,7 +617,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         }
 
                     } while (((--pairs_to_decode)).toBool())
-                } while (((run { val `-` = big_val_cnt - np; big_val_cnt = `-`; `-` }) > 0) && ((--sfb_cnt) >= 0))
+                    big_val_cnt -= np
+                } while (big_val_cnt > 0 && (--sfb_cnt >= 0))
             } else {
                 do0@do {
                     np = (((sfb.value.toUInt()) / 2u)).toInt()
@@ -651,7 +654,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         }
 
                     } while (((--pairs_to_decode)).toBool())
-                } while (((run { val `-` = big_val_cnt - np; big_val_cnt = `-`; `-` }) > 0) && ((--sfb_cnt) >= 0))
+                    big_val_cnt -= np
+                } while (big_val_cnt > 0 && --sfb_cnt >= 0)
             }
 
         }
@@ -678,27 +682,27 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     one = scf++.value
                 }
                 if (((leaf and (128 shr 0))).toBool()) {
-                    dst[0] = (if ((bs_cache.toInt()) < 0) (-one) else one)
+                    dst[0] = if ((bs_cache.toInt()) < 0) (-one) else one
                     bs_cache = bs_cache shl 1
                     bs_sh += 1
                 }
                 if (((leaf and (128 shr 1))).toBool()) {
-                    dst[1] = (if ((bs_cache.toInt()) < 0) (-one) else one)
+                    dst[1] = if ((bs_cache.toInt()) < 0) (-one) else one
                     bs_cache = bs_cache shl 1
                     bs_sh += 1
                 }
                 if ((--np) == 0) {
-                    np = (((sfb.value.toUInt()) / 2u)).toInt()
+                    np = (sfb.value.toUInt() / 2u).toInt()
                     sfb += 1
                     if (np == 0) break@while0
                     one = scf++.value
                 }
-                if (((leaf and (128 shr 2))).toBool()) {
+                if ((leaf and (128 shr 2)).toBool()) {
                     dst[2] = if (bs_cache.toInt() < 0) -one else one
                     bs_cache = bs_cache shl 1
                     bs_sh += 1
                 }
-                if (((leaf and (128 shr 3))).toBool()) {
+                if ((leaf and (128 shr 3)).toBool()) {
                     dst[3] = if (bs_cache.toInt() < 0) -one else one
                     bs_cache = bs_cache shl 1
                     bs_sh += 1
@@ -783,8 +787,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     L3_midside_stereo(left, (sfb[i.toInt()].toInt()))
                 }
             }
-            left = left + (sfb[i.toInt()].toInt())
-            i = i + 1u
+            left += (sfb[i.toInt()].toInt())
+            i += 1u
         }
 
     }
@@ -795,11 +799,14 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var max_blocks: Int = (if (gr.value.n_short_sfb.toBool()) 3 else 1)
         L3_stereo_top_band((left + 576), gr.value.sfbtab, n_sfb, max_band)
         if (gr.value.n_long_sfb.toBool()) {
-            max_band[0] = run { val `-` = run { val `-` = (if ((if (max_band[0] < max_band[1]) max_band[1] else max_band[0]) < max_band[2]) max_band[2] else (if (max_band[0] < max_band[1]) max_band[1] else max_band[0])); max_band[2] = `-`; `-` }; max_band[1] = `-`; `-` }
+            val v = max(max(max_band[0], max_band[1]), max_band[2])
+            max_band[0] = v
+            max_band[1] = v
+            max_band[2] = v
         }
         i = 0
         while (i < max_blocks) {
-            var default_pos: Int = (if ((((hdr[1].toUInt()) and 8u)).toBool()) 3 else 0)
+            var default_pos: Int = if ((((hdr[1].toUInt()) and 8u)).toBool()) 3 else 0
             var itop: Int = (n_sfb - max_blocks) + i
             var prev: Int = itop - max_blocks
             ist_pos[itop] = (if (max_band[i] >= prev) default_pos else ist_pos[prev].toInt()).toUByte()
@@ -949,8 +956,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         dst[0] = a1 + m1
         dst[2] = a1 - m1
     }
-    private val temp1F3 = FloatArray(3)
-    private val temp2F3 = FloatArray(3)
+    private val temp1F3 = FloatArray(4)
+    private val temp2F3 = FloatArray(4)
     fun L3_imdct12(x: FloatPointer, dst: FloatPointer, overlap: FloatPointer) {
         var g_twid3: Array6Float = __STATIC_L3_imdct12_g_twid3
         var co = temp1F3
@@ -1222,8 +1229,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         i = 14
         while (i >= 0) {
 
-            var a: Array4Float = Array4Float(fixedArrayOfFloat(0f, size = 4).ptr)
-            var b: Array4Float = Array4Float(fixedArrayOfFloat(0f, size = 4).ptr)
+            var a = temp1F3
+            var b = temp2F3
             zlin[4 * i] = xl[18 * (31 - i)]
             zlin[(4 * i) + 1] = xr[18 * (31 - i)]
             zlin[(4 * i) + 2] = xl[1 + (18 * (31 - i))]
@@ -1241,8 +1248,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             for (n in 0 until 8) {
                 var w0: Float = w++.value
                 var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (n * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - n) * 64)))
+                var vz: FloatPointer = zlin + ((4 * i) - (n * 64))
+                var vy: FloatPointer = zlin + ((4 * i) - ((15 - n) * 64))
                 if (n % 2 == 0) {
                     for (j in 0 until 4) {
                         b[j] = b[j] + (vz[j] * w1) + (vy[j] * w0)
@@ -1425,7 +1432,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 i = 0
                 igr = 0
                 while (igr < 3) {
-                    if (12 == (run { val `-` = i + L12_dequantize_granule((scratch.grbuf[0] + i), (CPointer<bs_t>(bs_frame.ptr)), (CPointer<L12_scale_info>(sci.ptr)), (info.value.layer or 1)); i = `-`; `-` })) {
+                    i += L12_dequantize_granule(
+                        scratch.grbuf[0] + i,
+                        CPointer<bs_t>(bs_frame.ptr),
+                        CPointer<L12_scale_info>(sci.ptr),
+                        info.value.layer or 1
+                    )
+                    if (12 == i) {
                         i = 0
                         L12_apply_scf_384((CPointer<L12_scale_info>(sci.ptr)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
                         mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
