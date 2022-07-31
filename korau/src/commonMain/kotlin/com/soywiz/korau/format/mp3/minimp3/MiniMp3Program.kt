@@ -157,7 +157,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var grbuf: Array2Array576Float,
             var scf: CPointer<Float>,
             var syn: Array33Array64Float,
-            var ist_pos: Array<CPointer<UByte>>,
+            var ist_pos: Array<UByteArray>,
         ) {
             constructor(runtime: AbstractRuntime) : this(
                 bs = Bs(),
@@ -166,7 +166,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
                 scf = CPointer<Float>(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
                 syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
-                ist_pos = Array(2) { CPointer(runtime.alloca(2 * 39).ptr) },
+                ist_pos = Array(2) { UByteArray(39) },
             )
         }
 
@@ -554,9 +554,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return main_data_begin
 
     }
-    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: UByteArrayPtr, bitbuf: Bs, scfsi: Int) {
+    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: UByteArray, scf_size: CPointer<UByte>, scf_count: UByteArrayPtr, bitbuf: Bs, scfsi: Int) {
         var scf: CPointer<UByte> = scf // Mutating parameter
-        var ist_pos: CPointer<UByte> = ist_pos // Mutating parameter
+        var ist_pos = UByteArrayPtr(ist_pos) // Mutating parameter
         var scfsi: Int = scfsi // Mutating parameter
         var i: Int = 0
         var k: Int = 0
@@ -564,12 +564,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         while ((i < 4) && (scf_count[i].toBool())) {
             val cnt: Int = scf_count[i].toInt()
             if (((scfsi and 8)).toBool()) {
-                memcpy((CPointer(scf.ptr)), (CPointer(ist_pos.ptr)), cnt)
+                for (n in 0 until cnt) scf[n] = ist_pos[n]
             } else {
                 val bits: Int = scf_size[i].toInt()
                 if (bits == 0) {
                     memset((CPointer<Unit>(scf.ptr)), 0, cnt)
-                    memset((CPointer<Unit>(ist_pos.ptr)), 0, cnt)
+                    for (n in 0 until cnt) ist_pos[n] = 0u
                 } else {
                     val max_scf: Int = ((if (scfsi < 0) ((((1 shl bits) - 1)).toLong()) else -1L)).toInt()
                     k = 0
@@ -607,7 +607,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return y
 
     }
-    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: Bs, gr: ArrayPtr<GrInfo>, scf: FloatPointer, ch: Int) {
+    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: UByteArray, bs: Bs, gr: ArrayPtr<GrInfo>, scf: FloatPointer, ch: Int) {
         val g_scf_partitions = __STATIC_L3_decode_scalefactors_g_scf_partitions
         var scf_partition = UByteArrayPtr(g_scf_partitions[gr.value.n_short_sfb.toBool().toInt() + (!gr.value.n_long_sfb.toBool()).toInt()])
         val scf_size = CPointer<UByte>(fixedArrayOfUByte("\u0000", size = 4).ptr)
@@ -901,7 +901,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: UByteArrayPtr, hdr: CPointer<UByte>, max_band: IntArray, mpeg2_sh: Int) {
+    fun L3_stereo_process(left: FloatPointer, ist_pos: UByteArray, sfb: UByteArrayPtr, hdr: CPointer<UByte>, max_band: IntArray, mpeg2_sh: Int) {
         var left: FloatPointer = left // Mutating parameter
         val g_pan: FloatArray = __STATIC_L3_stereo_process_g_pan
         var i: UInt = 0u
@@ -936,8 +936,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    val tempInt3 = IntArray(3) // @TODO: Allocates, can we cache this?
-    fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: ArrayPtr<GrInfo>, hdr: CPointer<UByte>) {
+    val tempInt3 = IntArray(3)
+    fun L3_intensity_stereo(left: FloatPointer, ist_pos: UByteArray, gr: ArrayPtr<GrInfo>, hdr: CPointer<UByte>) {
         val max_band = tempInt3
         val n_sfb: Int = (((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt()
         var i: Int = 0
@@ -1183,12 +1183,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         ch = 0
         while (ch < nch) {
             val layer3gr_limit: Int = s.bs.pos + (gr_info[ch].part_23_length.toInt())
-            L3_decode_scalefactors((CPointer(h.header.ptr)), (CPointer(s.ist_pos[ch].ptr)), s.bs, (gr_info + ch), (FloatPointer(s.scf.ptr)), ch)
+            L3_decode_scalefactors((CPointer(h.header.ptr)), (s.ist_pos[ch]), s.bs, (gr_info + ch), (FloatPointer(s.scf.ptr)), ch)
             L3_huffman((FloatPointer(s.grbuf[ch].ptr)), s.bs, (gr_info + ch), (FloatPointer(s.scf.ptr)), layer3gr_limit)
             ch++
         }
         if ((((h.header[3].toUInt()) and 16u)).toBool()) {
-            L3_intensity_stereo((FloatPointer(s.grbuf[0].ptr)), (CPointer(s.ist_pos[1].ptr)), gr_info, (CPointer(h.header.ptr)))
+            L3_intensity_stereo((FloatPointer(s.grbuf[0].ptr)), (s.ist_pos[1]), gr_info, (CPointer(h.header.ptr)))
         } else {
             if (((((h.header[3].toUInt()) and 224u)).toInt()) == 96) {
                 L3_midside_stereo((FloatPointer(s.grbuf[0].ptr)), 576)
