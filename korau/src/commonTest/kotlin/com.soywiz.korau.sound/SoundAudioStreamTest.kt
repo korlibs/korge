@@ -5,6 +5,7 @@ import com.soywiz.korau.format.WAV
 import com.soywiz.korau.format.mp3.FastMP3Decoder
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
+import com.soywiz.korio.lang.currentThreadId
 import doIOTest
 import kotlinx.coroutines.CompletableDeferred
 import kotlin.test.Test
@@ -38,11 +39,13 @@ class SoundAudioStreamTest {
         for (fileName in listOf("click.wav", "click.mp3")) {
             val sound2 = soundProvider.createSound(resourcesVfs[fileName], streaming = true)
             val channel = sound2.play()
-            assertEquals("0ms/58.5ms", "${channel.current}/${channel.total}")
             val wait = CompletableDeferred<Unit>()
+            println("currentThreadId:$currentThreadId")
             soundProvider.onAfterAdd.once {
+                println("currentThreadId:$currentThreadId")
                 wait.complete(Unit)
             }
+            assertEquals("0ms/58.5ms", "${channel.current}/${channel.total}")
             wait.await()
             assertEquals("58.5ms/58.5ms", "${channel.current}/${channel.total}")
         }
