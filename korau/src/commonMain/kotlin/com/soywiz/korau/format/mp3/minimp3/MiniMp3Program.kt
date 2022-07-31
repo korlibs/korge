@@ -252,22 +252,23 @@ internal open class MiniMp3Program() {
             arrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000")
         )
 
-        private val __STATIC_L12_subband_alloc_table_g_alloc_L1: Array<L12_subband_alloc_tStruct> =
-            arrayOf(L12_subband_alloc_tStruct(tab_offset = 76u, code_tab_width = 4u, band_count = 32u))
+        private val __STATIC_L12_subband_alloc_table_g_alloc_L1: Array<L12_subband_alloc_tStruct> = arrayOf(
+            L12_subband_alloc_tStruct(76u, 4u, 32u),
+        )
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M2: Array<L12_subband_alloc_tStruct> = arrayOf(
-            L12_subband_alloc_tStruct(tab_offset = 60u, code_tab_width = 4u, band_count = (4.toUByte())),
-            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (7.toUByte())),
-            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (2.toUByte()), band_count = (19.toUByte()))
+            L12_subband_alloc_tStruct(60u, 4u, 4u),
+            L12_subband_alloc_tStruct(44u, 3u, 7u),
+            L12_subband_alloc_tStruct(44u, 2u, 19u),
         )
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1: Array<L12_subband_alloc_tStruct> = arrayOf(
-            L12_subband_alloc_tStruct(tab_offset = 0u, code_tab_width = 4u, band_count = (3.toUByte())),
-            L12_subband_alloc_tStruct(tab_offset = (16.toUByte()), code_tab_width = (4.toUByte()), band_count = (8.toUByte())),
-            L12_subband_alloc_tStruct(tab_offset = (32.toUByte()), code_tab_width = (3.toUByte()), band_count = (12.toUByte())),
-            L12_subband_alloc_tStruct(tab_offset = (40.toUByte()), code_tab_width = (2.toUByte()), band_count = (7.toUByte()))
+            L12_subband_alloc_tStruct(0u, 4u, 3u),
+            L12_subband_alloc_tStruct(16u, 4u, 8u),
+            L12_subband_alloc_tStruct(32u, 3u, 12u),
+            L12_subband_alloc_tStruct(40u, 2u, 7u),
         )
         private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1_lowrate: Array<L12_subband_alloc_tStruct> = arrayOf(
-            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (4.toUByte()), band_count = (2.toUByte())),
-            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (10.toUByte()))
+            L12_subband_alloc_tStruct(44u, 4u, 2u),
+            L12_subband_alloc_tStruct(44u, 3u, 10u),
         )
 
         private val g_pow43: FloatArray = floatArrayOf(
@@ -462,9 +463,7 @@ internal open class MiniMp3Program() {
         var scalefac_scale: UByte = 0u,
         var count1_table: UByte = 0u,
         var scfsi: UByte = 0u,
-    ) {
-        val value get() = this
-    }
+    )
 
     // CPointer<L12_scale_info>
     class ScaleInfo(
@@ -473,9 +472,7 @@ internal open class MiniMp3Program() {
         var stereo_bands: UByte = 0u,
         var bitalloc: UByteArray = UByteArray(64),
         var scfcod: UByteArray = UByteArray(64),
-    ) {
-        val value get() = this
-    }
+    )
 
     ////////////////////////////////////////////////////////////////////////
 
@@ -487,7 +484,6 @@ internal open class MiniMp3Program() {
     fun Int.toBool(): Boolean = this != 0
     fun UByte.toBool(): Boolean = this.toInt() != 0
     fun UInt.toBool(): Boolean = this.toInt() != 0
-    fun Boolean.toBool(): Boolean = this
 
     ///////////////////////////////////
     // PROGRAM
@@ -527,12 +523,11 @@ internal open class MiniMp3Program() {
     }
 
     fun hdr_compare(h1: UByteArrayPtr, h2: UByteArrayPtr): Int {
-        return (((((hdr_valid(h2).toBool()) && ((((((h1[1].toUInt()) xor (h2[1].toUInt())) and 254u)).toInt()) == 0)) && ((((((h1[2].toUInt()) xor (h2[2].toUInt())) and 12u)).toInt()) == 0)) && (((((((((h1[2].toUInt()) and 240u)).toInt()) == 0)).toInt()) xor (((((((h2[2].toUInt()) and 240u)).toInt()) == 0)).toInt())) == 0))).toInt()
+        return (hdr_valid(h2) && (h1[1].toUInt() xor (h2[1].toUInt()) and 254u).toInt() == 0 && (h1[2].toUInt() xor (h2[2].toUInt()) and 12u).toInt() == 0 && (((h1[2].toUInt()) and 240u).toInt() == 0).toInt() xor ((h2[2].toUInt() and 240u).toInt() == 0).toInt() == 0).toInt()
     }
 
     fun hdr_bitrate_kbps(h: UByteArrayPtr): UInt {
-        val halfrate: Array<Array<UByteArray>> = __STATIC_hdr_bitrate_kbps_halfrate
-        return (2 * halfrate[(h[1].toUInt() and 8u != 0u).toInt()][(h[1].toUInt() shr 1 and 3u).toInt() - 1][((h[2].toUInt()) shr 4).toInt()].toInt()).toUInt()
+        return (2 * __STATIC_hdr_bitrate_kbps_halfrate[(h[1].toUInt() and 8u != 0u).toInt()][(h[1].toUInt() shr 1 and 3u).toInt() - 1][((h[2].toUInt()) shr 4).toInt()].toInt()).toUInt()
     }
 
     fun hdr_sample_rate_hz(h: UByteArrayPtr): UInt {
@@ -575,9 +570,7 @@ internal open class MiniMp3Program() {
             } else {
                 val sample_rate_idx: Int = ((((hdr[2].toUInt()) shr 2) and 3u)).toInt()
                 var kbps: UInt = hdr_bitrate_kbps(hdr) shr (((mode != 3)).toInt())
-                if (kbps == 0u) {
-                    kbps = 192u
-                }
+                if (kbps == 0u) kbps = 192u
                 alloc = __STATIC_L12_subband_alloc_table_g_alloc_L2M1
                 nbands = 27
                 when {
@@ -592,8 +585,8 @@ internal open class MiniMp3Program() {
                 }
             }
         }
-        sci.value.total_bands = nbands.toUByte()
-        sci.value.stereo_bands = if (stereo_bands > nbands) nbands.toUByte() else stereo_bands.toUByte()
+        sci.total_bands = nbands.toUByte()
+        sci.stereo_bands = if (stereo_bands > nbands) nbands.toUByte() else stereo_bands.toUByte()
         return alloc
     }
 
@@ -629,7 +622,7 @@ internal open class MiniMp3Program() {
         var ba_bits: Int = 0
         var ba_code_tab: UByteArrayPtr = (g_bitalloc_code_tab)
         i = 0
-        while (i < (sci.value.total_bands.toInt())) {
+        while (i < sci.total_bands.toInt()) {
             var ba: UByte = 0u
             if (i == k) {
                 k += (subband_alloc[subband_alloc_n].band_count.toInt())
@@ -638,29 +631,29 @@ internal open class MiniMp3Program() {
                 subband_alloc_n++
             }
             ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
-            sci.value.bitalloc[2 * i] = ba
-            if (i < (sci.value.stereo_bands.toInt())) {
+            sci.bitalloc[2 * i] = ba
+            if (i < (sci.stereo_bands.toInt())) {
                 ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
             }
-            sci.value.bitalloc[(2 * i) + 1] = (if (sci.value.stereo_bands.toBool()) ba else (0.toUByte()))
+            sci.bitalloc[(2 * i) + 1] = (if (sci.stereo_bands.toBool()) ba else (0.toUByte()))
             i++
         }
         i = 0
-        while (i < (2 * (sci.value.total_bands.toInt()))) {
-            sci.value.scfcod[i] =
-                ((if (sci.value.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
+        while (i < (2 * (sci.total_bands.toInt()))) {
+            sci.scfcod[i] =
+                ((if (sci.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
             i++
         }
         L12_read_scalefactors(
             bs,
-            ((sci.value.bitalloc)),
-            ((sci.value.scfcod)),
-            ((((sci.value.total_bands.toUInt()) * 2u)).toInt()),
-            (FloatArrayPtr(sci.value.scf))
+            ((sci.bitalloc)),
+            ((sci.scfcod)),
+            ((((sci.total_bands.toUInt()) * 2u)).toInt()),
+            (FloatArrayPtr(sci.scf))
         )
-        i = sci.value.stereo_bands.toInt()
-        while (i < (sci.value.total_bands.toInt())) {
-            sci.value.bitalloc[(2 * i) + 1] = 0.toUByte()
+        i = sci.stereo_bands.toInt()
+        while (i < (sci.total_bands.toInt())) {
+            sci.bitalloc[(2 * i) + 1] = 0.toUByte()
             i++
         }
     }
@@ -674,8 +667,8 @@ internal open class MiniMp3Program() {
         while (j < 4) {
             var dst: FloatArrayPtr = grbuf + ((group_size * j))
             i = 0
-            while (i < (2 * (sci.value.total_bands.toInt()))) {
-                val ba: Int = sci.value.bitalloc[i].toInt()
+            while (i < (2 * (sci.total_bands.toInt()))) {
+                val ba: Int = sci.bitalloc[i].toInt()
                 if (ba != 0) {
                     if (ba < 17) {
                         val half: Int = (1 shl (ba - 1)) - 1
@@ -710,12 +703,12 @@ internal open class MiniMp3Program() {
         var i: Int = 0
         var k: Int = 0
         memcpy(
-            (((((dst + 576) + (((((sci.value.stereo_bands.toUInt()) * 18u)).toInt())))))),
-            ((((dst + (((((sci.value.stereo_bands.toUInt()) * 18u)).toInt())))))),
-            ((((((sci.value.total_bands.toUInt()) - (sci.value.stereo_bands.toUInt())) * 18u) * ((Float.SIZE_BYTES).toUInt()))).toInt())
+            (((((dst + 576) + (((((sci.stereo_bands.toUInt()) * 18u)).toInt())))))),
+            ((((dst + (((((sci.stereo_bands.toUInt()) * 18u)).toInt())))))),
+            ((((((sci.total_bands.toUInt()) - (sci.stereo_bands.toUInt())) * 18u) * ((Float.SIZE_BYTES).toUInt()))).toInt())
         )
         i = 0
-        while (i < (sci.value.total_bands.toInt())) {
+        while (i < (sci.total_bands.toInt())) {
             k = 0
             while (k < 12) {
                 dst[k + 0] = dst[k + 0] * scf[0]
@@ -1668,7 +1661,7 @@ internal open class MiniMp3Program() {
         var k: Int = 0
         i = 0
         while (i < mp3_bytes - 4) {
-            if (hdr_valid(mp3).toBool()) {
+            if (hdr_valid(mp3)) {
                 var frame_bytes: Int = hdr_frame_bytes(mp3, free_format_bytes[0])
                 var frame_and_padding: Int = frame_bytes + hdr_padding(mp3)
                 k = 4
@@ -1786,7 +1779,7 @@ internal open class MiniMp3Program() {
                 )
                 if (12 == i) {
                     i = 0
-                    L12_apply_scf_384(((sci)), FloatArrayPtr(sci.value.scf) + igr, ((scratch.grbuf[0])))
+                    L12_apply_scf_384(((sci)), FloatArrayPtr(sci.scf) + igr, ((scratch.grbuf[0])))
                     mp3d_synth_granule((FloatArrayPtr(dec.qmf_state)), ((scratch.grbuf[0])), 12, info.value.channels, pcm, ((scratch.syn[0])))
                     scratch.grbuf[0].fill(0f, 0, 576 * 2)
                     pcm += 384 * info.value.channels
