@@ -1,13 +1,20 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.kds.ConcurrentPool
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
+import com.soywiz.kmem.Platform
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.launchAsap
-import com.soywiz.korio.async.launchImmediately
+import com.soywiz.korio.concurrent.createSingleThreadedDispatcher
+import com.soywiz.korio.lang.Closeable
+import kotlinx.coroutines.CloseableCoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.cancellation.CancellationException
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class SoundAudioStream(
     coroutineContext: CoroutineContext,
     val stream: AudioStream,
@@ -22,14 +29,27 @@ class SoundAudioStream(
     override suspend fun toStream(): AudioStream = stream.clone()
     override val nchannels: Int get() = stream.channels
 
+    companion object {
+        private val ID_POOL = ConcurrentPool<Int> { it }
+    }
+
     @OptIn(ExperimentalStdlibApi::class)
     override fun play(coroutineContext: CoroutineContext, params: PlaybackParameters): SoundChannel {
-        val nas: PlatformAudioOutput = soundProvider.createAudioStream(coroutineContext, stream.rate)
+        val nas: PlatformAudioOutput = soundProvider.createPlatformAudioOutput(coroutineContext, stream.rate)
         nas.copySoundPropsFrom(params)
         var playing = true
         var paused = false
         var newStream: AudioStream? = null
-        val job = launchAsap(coroutineContext) {
+        val channelId = ID_POOL.alloc()
+        val dispatcherName = "SoundChannel-SoundAudioStream-$channelId"
+        val dispatcher = when {
+            //Platform.runtime.isNative -> Dispatchers.createRedirectedDispatcher(dispatcherName, coroutineContext[CoroutineDispatcher.Key] ?: Dispatchers.Default)
+            Platform.runtime.isNative -> null // @TODO: In MacOS audio is not working. Check why.
+            else -> Dispatchers.createSingleThreadedDispatcher(dispatcherName)
+        }
+        //println("dispatcher[a]=$dispatcher, thread=${currentThreadName}:${currentThreadId}")
+        val job = launchAsap(dispatcher?.let { coroutineContext + it } ?: coroutineContext) {
+            //println("dispatcher[b]=$dispatcher, thread=${currentThreadName}:${currentThreadId}")
             val stream = stream.clone()
             newStream = stream
             stream.currentTime = params.startTime
@@ -72,8 +92,16 @@ class SoundAudioStream(
                     stream.close()
                 }
                 playing = false
-                params.onFinish?.invoke()
-                onComplete?.invoke()
+                try {
+                    params.onFinish?.invoke()
+                    onComplete?.invoke()
+                } finally {
+                    ID_POOL.free(channelId)
+                    when (dispatcher) {
+                        is CloseableCoroutineDispatcher -> dispatcher.close()
+                        is Closeable -> dispatcher.close()
+                    }
+                }
             }
         }
         fun close() {
