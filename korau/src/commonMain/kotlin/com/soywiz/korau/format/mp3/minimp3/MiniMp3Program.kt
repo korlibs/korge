@@ -156,7 +156,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         class Mp3Scratch(
             var bs: Bs,
             var maindata: CPointer<UByte>,
-            var gr_info: Array4L3_gr_info_t,
+            var gr_info: ArrayPtr<GrInfo>,
             var grbuf: Array2Array576Float,
             var scf: CPointer<Float>,
             var syn: Array33Array64Float,
@@ -165,7 +165,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             constructor(runtime: AbstractRuntime) : this(
                 bs = Bs(),
                 maindata = CPointer<UByte>(runtime.alloca(2815).ptr),
-                gr_info = Array4L3_gr_info_t(runtime.alloca(4 * L3_gr_info_t__SIZE_BYTES).ptr),
+                gr_info = ArrayPtr(Array(4) { GrInfo(runtime) }, 0),
                 grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
                 scf = CPointer<Float>(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
                 syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
@@ -182,6 +182,54 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var layer: Int = 0,
             var bitrate_kbps: Int = 0,
         ) {
+            val value get() = this
+        }
+
+        class ArrayPtr<T>(val array: Array<T>, val pos: Int) {
+            val value: T get() = array[pos]
+            operator fun get(index: Int): T = array[pos + index]
+            operator fun set(index: Int, value: T) { array[pos + index] = value }
+            operator fun inc(): ArrayPtr<T> = ArrayPtr(array, pos + 1)
+            operator fun plus(other: Int): ArrayPtr<T> = ArrayPtr(array, pos + other)
+        }
+
+        class GrInfo(
+            var sfbtab: CPointer<UByte>,
+            var part_23_length: UShort,
+            var big_values: UShort,
+            var scalefac_compress: UShort,
+            var global_gain: UByte,
+            var block_type: UByte,
+            var mixed_block_flag: UByte,
+            var n_long_sfb: UByte,
+            var n_short_sfb: UByte,
+            var table_select: Array3UByte,
+            var region_count: Array3UByte,
+            var subblock_gain: Array3UByte,
+            var preflag: UByte,
+            var scalefac_scale: UByte,
+            var count1_table: UByte,
+            var scfsi: UByte,
+        ) {
+            constructor(runtime: AbstractRuntime) : this(
+                sfbtab = CPointer(0),
+                part_23_length = 0u,
+                big_values = 0u,
+                scalefac_compress = 0u,
+                global_gain = 0u,
+                block_type = 0u,
+                mixed_block_flag = 0u,
+                n_long_sfb = 0u,
+                n_short_sfb = 0u,
+                table_select = Array3UByte(runtime.alloca(3).ptr),
+                region_count = Array3UByte(runtime.alloca(3).ptr),
+                subblock_gain = Array3UByte(runtime.alloca(3).ptr),
+                preflag = 0u,
+                scalefac_scale = 0u,
+                count1_table = 0u,
+                scfsi = 0u,
+            )
+            
             val value get() = this
         }
     }
@@ -431,8 +479,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_read_side_info(bs: Bs, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>): Int {
-        var gr: CPointer<L3_gr_info_t> = gr // Mutating parameter
+    fun L3_read_side_info(bs: Bs, gr: ArrayPtr<GrInfo>, hdr: CPointer<UByte>): Int {
+        var gr: ArrayPtr<GrInfo> = gr // Mutating parameter
         val g_scf_long: Array8Array23UByte = __STATIC_L3_read_side_info_g_scf_long
         val g_scf_short: Array8Array40UByte = __STATIC_L3_read_side_info_g_scf_short
         val g_scf_mixed: Array8Array40UByte = __STATIC_L3_read_side_info_g_scf_mixed
@@ -568,7 +616,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return y
 
     }
-    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: Bs, gr: CPointer<L3_gr_info_t>, scf: FloatPointer, ch: Int) {
+    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: Bs, gr: ArrayPtr<GrInfo>, scf: FloatPointer, ch: Int) {
         val g_scf_partitions: Array3Array28UByte = __STATIC_L3_decode_scalefactors_g_scf_partitions
         var scf_partition: CPointer<UByte> = CPointer(g_scf_partitions[(gr.value.n_short_sfb.toBool().toInt()) + (!gr.value.n_long_sfb.toBool()).toInt()].ptr)
         val scf_size = CPointer<UByte>(fixedArrayOfUByte("\u0000", size = 4).ptr)
@@ -657,7 +705,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return (g_pow43[16 + ((x + sign) shr 6)] * (1f + (frac * ((4f / 3f) + (frac * (2f / 9f)))))) * (mult.toFloat())
 
     }
-    fun L3_huffman(dst: FloatPointer, bs: Bs, gr_info: CPointer<L3_gr_info_t>, scf: FloatPointer, layer3gr_limit: Int) {
+    fun L3_huffman(dst: FloatPointer, bs: Bs, gr_info: ArrayPtr<GrInfo>, scf: FloatPointer, layer3gr_limit: Int) {
         var dst: FloatPointer = dst // Mutating parameter
         var scf: FloatPointer = scf // Mutating parameter
         val tabs = __STATIC_L3_huffman_tabs
@@ -898,7 +946,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     val tempInt3 = IntArray(3) // @TODO: Allocates, can we cache this?
-    fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>) {
+    fun L3_intensity_stereo(left: FloatPointer, ist_pos: CPointer<UByte>, gr: ArrayPtr<GrInfo>, hdr: CPointer<UByte>) {
         val max_band = tempInt3
         val n_sfb: Int = (((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt()
         var i: Int = 0
@@ -1138,8 +1186,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return ((h.reserv >= main_data_begin)).toInt()
 
     }
-    fun L3_decode(h: Mp3Dec, s: Mp3Scratch, gr_info: CPointer<L3_gr_info_t>, nch: Int) {
-        var gr_info: CPointer<L3_gr_info_t> = gr_info // Mutating parameter
+    fun L3_decode(h: Mp3Dec, s: Mp3Scratch, gr_info: ArrayPtr<GrInfo>, nch: Int) {
+        var gr_info: ArrayPtr<GrInfo> = gr_info // Mutating parameter
         var ch: Int = 0
         ch = 0
         while (ch < nch) {
@@ -1497,7 +1545,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             get_bits(bs_frame, 16)
         }
         if (info.value.layer == 3) {
-            val main_data_begin: Int = L3_read_side_info(((bs_frame)), (CPointer(scratch.gr_info.ptr)), hdr)
+            val main_data_begin: Int = L3_read_side_info(((bs_frame)), scratch.gr_info, hdr)
             if ((main_data_begin < 0) || (bs_frame.pos > bs_frame.limit)) {
                 mp3dec_init(dec)
                 return 0
@@ -1571,36 +1619,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     var L12_scale_info.scfcod: Array64UByte get() = Array64UByte(ptr + L12_scale_info__OFFSET_scfcod); set(value) { TODO("Unsupported setting ftype=UByte[64]") }
     /// }
 
-    //////////////////
-    fun L3_gr_info_tAlloc(): L3_gr_info_t = L3_gr_info_t(alloca(L3_gr_info_t__SIZE_BYTES).ptr)
-    fun L3_gr_info_tAlloc(sfbtab: CPointer<UByte>, part_23_length: UShort, big_values: UShort, scalefac_compress: UShort, global_gain: UByte, block_type: UByte, mixed_block_flag: UByte, n_long_sfb: UByte, n_short_sfb: UByte, table_select: Array3UByte, region_count: Array3UByte, subblock_gain: Array3UByte, preflag: UByte, scalefac_scale: UByte, count1_table: UByte, scfsi: UByte): L3_gr_info_t = L3_gr_info_tAlloc().apply { this.sfbtab = sfbtab; this.part_23_length = part_23_length; this.big_values = big_values; this.scalefac_compress = scalefac_compress; this.global_gain = global_gain; this.block_type = block_type; this.mixed_block_flag = mixed_block_flag; this.n_long_sfb = n_long_sfb; this.n_short_sfb = n_short_sfb; this.table_select = table_select; this.region_count = region_count; this.subblock_gain = subblock_gain; this.preflag = preflag; this.scalefac_scale = scalefac_scale; this.count1_table = count1_table; this.scfsi = scfsi }
-    fun L3_gr_info_t.copyFrom(src: L3_gr_info_t): L3_gr_info_t = this.apply { memcpy(CPointer(this.ptr), CPointer(src.ptr), L3_gr_info_t__SIZE_BYTES) }
-    inline fun fixedArrayOfL3_gr_info_t(size: Int, setItems: CPointer<L3_gr_info_t>.() -> Unit): CPointer<L3_gr_info_t> = CPointer<L3_gr_info_t>(alloca_zero(size * L3_gr_info_t__SIZE_BYTES).ptr).apply(setItems)
-    @kotlin.jvm.JvmName("getL3_gr_info_t") operator fun CPointer<L3_gr_info_t>.get(index: Int): L3_gr_info_t = L3_gr_info_t(this.ptr + index * L3_gr_info_t__SIZE_BYTES)
-    operator fun CPointer<L3_gr_info_t>.set(index: Int, value: L3_gr_info_t) = L3_gr_info_t(this.ptr + index * L3_gr_info_t__SIZE_BYTES).copyFrom(value)
-    @kotlin.jvm.JvmName("plusL3_gr_info_t") operator fun CPointer<L3_gr_info_t>.plus(offset: Int): CPointer<L3_gr_info_t> = CPointer(this.ptr + offset * L3_gr_info_t__SIZE_BYTES)
-    @kotlin.jvm.JvmName("minusL3_gr_info_t") operator fun CPointer<L3_gr_info_t>.minus(offset: Int): CPointer<L3_gr_info_t> = CPointer(this.ptr - offset * L3_gr_info_t__SIZE_BYTES)
-    fun CPointer<L3_gr_info_t>.minusPtrL3_gr_info_t(other: CPointer<L3_gr_info_t>) = (this.ptr - other.ptr) / L3_gr_info_t__SIZE_BYTES
-    @get:kotlin.jvm.JvmName("getL3_gr_info_t") var CPointer<L3_gr_info_t>.value: L3_gr_info_t get() = this[0]; set(value) { this[0] = value }
-    /// L3_gr_info_t fields {
-    var L3_gr_info_t.sfbtab: CPointer<UByte> get() = CPointer(lw(ptr + L3_gr_info_t__OFFSET_sfbtab)); set(value) { sw(ptr + L3_gr_info_t__OFFSET_sfbtab, value.ptr) }
-    var L3_gr_info_t.part_23_length: UShort get() = lh(ptr + L3_gr_info_t__OFFSET_part_23_length).toUShort(); set(value) = sh(ptr + L3_gr_info_t__OFFSET_part_23_length, (value).toShort())
-    var L3_gr_info_t.big_values: UShort get() = lh(ptr + L3_gr_info_t__OFFSET_big_values).toUShort(); set(value) = sh(ptr + L3_gr_info_t__OFFSET_big_values, (value).toShort())
-    var L3_gr_info_t.scalefac_compress: UShort get() = lh(ptr + L3_gr_info_t__OFFSET_scalefac_compress).toUShort(); set(value) = sh(ptr + L3_gr_info_t__OFFSET_scalefac_compress, (value).toShort())
-    var L3_gr_info_t.global_gain: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_global_gain).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_global_gain, (value).toByte())
-    var L3_gr_info_t.block_type: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_block_type).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_block_type, (value).toByte())
-    var L3_gr_info_t.mixed_block_flag: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_mixed_block_flag).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_mixed_block_flag, (value).toByte())
-    var L3_gr_info_t.n_long_sfb: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_n_long_sfb).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_n_long_sfb, (value).toByte())
-    var L3_gr_info_t.n_short_sfb: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_n_short_sfb).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_n_short_sfb, (value).toByte())
-    var L3_gr_info_t.table_select: Array3UByte get() = Array3UByte(ptr + L3_gr_info_t__OFFSET_table_select); set(value) { TODO("Unsupported setting ftype=UByte[3]") }
-    var L3_gr_info_t.region_count: Array3UByte get() = Array3UByte(ptr + L3_gr_info_t__OFFSET_region_count); set(value) { TODO("Unsupported setting ftype=UByte[3]") }
-    var L3_gr_info_t.subblock_gain: Array3UByte get() = Array3UByte(ptr + L3_gr_info_t__OFFSET_subblock_gain); set(value) { TODO("Unsupported setting ftype=UByte[3]") }
-    var L3_gr_info_t.preflag: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_preflag).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_preflag, (value).toByte())
-    var L3_gr_info_t.scalefac_scale: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_scalefac_scale).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_scalefac_scale, (value).toByte())
-    var L3_gr_info_t.count1_table: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_count1_table).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_count1_table, (value).toByte())
-    var L3_gr_info_t.scfsi: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_scfsi).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_scfsi, (value).toByte())
-    /// }
-
     /////////////
     operator fun Array192Float.get(index: Int): Float = lwf(addr(index))
     operator fun Array192Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
@@ -1631,16 +1649,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun Array3UByteAlloc(items: Array<UByte>, size: Int = items.size): Array3UByte = Array3UByteAlloc { for (n in 0 until size) this[n] = items[n] }
     operator fun Array3UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
     operator fun Array3UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array4L3_gr_info_t.get(index: Int): L3_gr_info_t = L3_gr_info_t(addr(index))
-    operator fun Array4L3_gr_info_t.set(index: Int, value: L3_gr_info_t) { L3_gr_info_t(addr(index)).copyFrom(value) }
-    var Array4L3_gr_info_t.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array4L3_gr_info_tAlloc(setItems: Array4L3_gr_info_t.() -> Unit): Array4L3_gr_info_t = Array4L3_gr_info_t(alloca_zero(
-        Array4L3_gr_info_t__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array4L3_gr_info_tAlloc(items: Array<L3_gr_info_t>, size: Int = items.size): Array4L3_gr_info_t = Array4L3_gr_info_tAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array4L3_gr_info_t.plus(offset: Int): CPointer<L3_gr_info_t> = CPointer(addr(offset))
-    operator fun Array4L3_gr_info_t.minus(offset: Int): CPointer<L3_gr_info_t> = CPointer(addr(-offset))
     /////////////
     operator fun Array2Array576Float.get(index: Int): Array576Float = Array576Float(addr(index))
     operator fun Array2Array576Float.set(index: Int, value: Array576Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array576Float__ELEMENT_SIZE_BYTES) }
@@ -1872,34 +1880,6 @@ internal const val L12_scale_info__OFFSET_stereo_bands = 769
 internal const val L12_scale_info__OFFSET_bitalloc = 770
 internal const val L12_scale_info__OFFSET_scfcod = 834
 //////////////////
-internal @kotlin.jvm.JvmInline value/*!*/ class L3_gr_info_t(val ptr: Int)
-internal const val L3_gr_info_t__SIZE_BYTES = 28
-internal const val L3_gr_info_t__OFFSET_sfbtab = 0
-internal const val L3_gr_info_t__OFFSET_part_23_length = 4
-internal const val L3_gr_info_t__OFFSET_big_values = 6
-internal const val L3_gr_info_t__OFFSET_scalefac_compress = 8
-internal const val L3_gr_info_t__OFFSET_global_gain = 10
-internal const val L3_gr_info_t__OFFSET_block_type = 11
-internal const val L3_gr_info_t__OFFSET_mixed_block_flag = 12
-internal const val L3_gr_info_t__OFFSET_n_long_sfb = 13
-internal const val L3_gr_info_t__OFFSET_n_short_sfb = 14
-internal const val L3_gr_info_t__OFFSET_table_select = 15
-internal const val L3_gr_info_t__OFFSET_region_count = 18
-internal const val L3_gr_info_t__OFFSET_subblock_gain = 21
-internal const val L3_gr_info_t__OFFSET_preflag = 24
-internal const val L3_gr_info_t__OFFSET_scalefac_scale = 25
-internal const val L3_gr_info_t__OFFSET_count1_table = 26
-internal const val L3_gr_info_t__OFFSET_scfsi = 27
-//////////////////
-internal @kotlin.jvm.JvmInline value/*!*/ class mp3dec_scratch_t(val ptr: Int)
-internal const val mp3dec_scratch_t__SIZE_BYTES = 16233
-internal const val mp3dec_scratch_t__OFFSET_bs = 0
-internal const val mp3dec_scratch_t__OFFSET_maindata = 12
-internal const val mp3dec_scratch_t__OFFSET_gr_info = 2827
-internal const val mp3dec_scratch_t__OFFSET_grbuf = 2939
-internal const val mp3dec_scratch_t__OFFSET_scf = 7547
-internal const val mp3dec_scratch_t__OFFSET_syn = 7707
-internal const val mp3dec_scratch_t__OFFSET_ist_pos = 16155
 internal const val Array192Float__NUM_ELEMENTS = 192
 internal const val Array192Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array192Float__TOTAL_SIZE_BYTES = 768
