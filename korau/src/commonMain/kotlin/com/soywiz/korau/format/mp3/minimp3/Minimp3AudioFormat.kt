@@ -22,7 +22,6 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
     internal class Minimp3Decoder : MiniMp3Program(512 * 1024), BaseMp3Decoder {
         private fun <R> CPointer<*>.reinterpret(): CPointer<R> = CPointer(this.ptr)
 
-        private val inputData = alloca(1152 * 2 * 2).reinterpret<Byte>()
         private val pcmData = alloca(1152 * 2 * 2 * 2).reinterpret<Short>()
         private val mp3dec = allocaMp3Dec()
         private val mp3decFrameInfo = Mp3FrameInfo()
@@ -34,10 +33,9 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
         override val info: BaseMp3DecoderInfo = BaseMp3DecoderInfo()
 
         override fun decodeFrame(availablePeek: Int): ShortArray? {
-            memWrite(inputData, info.tempBuffer, 0, availablePeek)
             val samples = mp3dec_decode_frame(
                 mp3dec,
-                inputData.reinterpret<UByte>().plus(0),
+                UByteArrayPtr(info.tempBuffer.asUByteArray()),
                 availablePeek,
                 pcmData,
                 mp3decFrameInfo
@@ -58,10 +56,6 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
         }
 
         override fun close() {
-            free(inputData)
-            free(pcmData)
-            free(mp3dec)
-            free(mp3decFrameInfo)
         }
     }
 }
