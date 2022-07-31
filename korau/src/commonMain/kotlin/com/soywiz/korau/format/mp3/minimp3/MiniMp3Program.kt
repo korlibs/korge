@@ -172,6 +172,18 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 ist_pos = Array2Array39UByte(runtime.alloca(2 * 39).ptr),
             )
         }
+
+        // mp3dec_frame_info_t
+        class Mp3FrameInfo(
+            var frame_bytes: Int = 0,
+            var frame_offset: Int = 0,
+            var channels: Int = 0,
+            var hz: Int = 0,
+            var layer: Int = 0,
+            var bitrate_kbps: Int = 0,
+        ) {
+            val value get() = this
+        }
     }
 
     private var __STATIC_L12_read_scale_info_g_bitalloc_code_tab: CPointer<UByte> = fixedArrayOfUByte("\u0000\u0011\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0010\u0000\u0011\u0012\u0010\u0000\u0011\u0012\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u0000\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010")
@@ -190,6 +202,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     fun allocaMp3Dec(): Mp3Dec = Mp3Dec(this)
     fun free(value: Mp3Dec) {
+    }
+    fun free(value: Mp3FrameInfo) {
     }
 
     fun bs_init(bs: Bs, data: CPointer<UByte>, bytes: Int) {
@@ -1436,7 +1450,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         dec.header[0] = 0.toUByte()
 
     }
-    fun mp3dec_decode_frame(dec: Mp3Dec, mp3: CPointer<UByte>, mp3_bytes: Int, pcm: CPointer<Short>, info: CPointer<mp3dec_frame_info_t>): Int = stackFrame {
+    fun mp3dec_decode_frame(dec: Mp3Dec, mp3: CPointer<UByte>, mp3_bytes: Int, pcm: CPointer<Short>, info: Mp3FrameInfo): Int = stackFrame {
         // Require alloc in stack to get pointer: frame_size
         // Require alloc in stack to get pointer: scratch
         var pcm: CPointer<Short> = pcm // Mutating parameter
@@ -1538,26 +1552,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     //////////////////
     // C STRUCTURES //
     //////////////////
-
-    //////////////////
-    fun mp3dec_frame_info_tAlloc(): mp3dec_frame_info_t = mp3dec_frame_info_t(alloca(mp3dec_frame_info_t__SIZE_BYTES).ptr)
-    fun mp3dec_frame_info_tAlloc(frame_bytes: Int, frame_offset: Int, channels: Int, hz: Int, layer: Int, bitrate_kbps: Int): mp3dec_frame_info_t = mp3dec_frame_info_tAlloc().apply { this.frame_bytes = frame_bytes; this.frame_offset = frame_offset; this.channels = channels; this.hz = hz; this.layer = layer; this.bitrate_kbps = bitrate_kbps }
-    fun mp3dec_frame_info_t.copyFrom(src: mp3dec_frame_info_t): mp3dec_frame_info_t = this.apply { memcpy(CPointer(this.ptr), CPointer(src.ptr), mp3dec_frame_info_t__SIZE_BYTES) }
-    inline fun fixedArrayOfmp3dec_frame_info_t(size: Int, setItems: CPointer<mp3dec_frame_info_t>.() -> Unit): CPointer<mp3dec_frame_info_t> = CPointer<mp3dec_frame_info_t>(alloca_zero(size * mp3dec_frame_info_t__SIZE_BYTES).ptr).apply(setItems)
-    @kotlin.jvm.JvmName("getmp3dec_frame_info_t") operator fun CPointer<mp3dec_frame_info_t>.get(index: Int): mp3dec_frame_info_t = mp3dec_frame_info_t(this.ptr + index * mp3dec_frame_info_t__SIZE_BYTES)
-    operator fun CPointer<mp3dec_frame_info_t>.set(index: Int, value: mp3dec_frame_info_t) = mp3dec_frame_info_t(this.ptr + index * mp3dec_frame_info_t__SIZE_BYTES).copyFrom(value)
-    @kotlin.jvm.JvmName("plusmp3dec_frame_info_t") operator fun CPointer<mp3dec_frame_info_t>.plus(offset: Int): CPointer<mp3dec_frame_info_t> = CPointer(this.ptr + offset * mp3dec_frame_info_t__SIZE_BYTES)
-    @kotlin.jvm.JvmName("minusmp3dec_frame_info_t") operator fun CPointer<mp3dec_frame_info_t>.minus(offset: Int): CPointer<mp3dec_frame_info_t> = CPointer(this.ptr - offset * mp3dec_frame_info_t__SIZE_BYTES)
-    fun CPointer<mp3dec_frame_info_t>.minusPtrmp3dec_frame_info_t(other: CPointer<mp3dec_frame_info_t>) = (this.ptr - other.ptr) / mp3dec_frame_info_t__SIZE_BYTES
-    @get:kotlin.jvm.JvmName("getmp3dec_frame_info_t") var CPointer<mp3dec_frame_info_t>.value: mp3dec_frame_info_t get() = this[0]; set(value) { this[0] = value }
-    /// mp3dec_frame_info_t fields {
-    var mp3dec_frame_info_t.frame_bytes: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_frame_bytes); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_frame_bytes, value)
-    var mp3dec_frame_info_t.frame_offset: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_frame_offset); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_frame_offset, value)
-    var mp3dec_frame_info_t.channels: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_channels); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_channels, value)
-    var mp3dec_frame_info_t.hz: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_hz); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_hz, value)
-    var mp3dec_frame_info_t.layer: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_layer); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_layer, value)
-    var mp3dec_frame_info_t.bitrate_kbps: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_bitrate_kbps); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_bitrate_kbps, value)
-    /// }
 
     //////////////////
     fun L12_scale_infoAlloc(): L12_scale_info = L12_scale_info(alloca(L12_scale_info__SIZE_BYTES).ptr)
@@ -1909,16 +1903,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array3Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
     operator fun Array3Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
-    operator fun Array2Array18Float.get(index: Int): Array18Float = Array18Float(addr(index))
-    operator fun Array2Array18Float.set(index: Int, value: Array18Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array18Float__ELEMENT_SIZE_BYTES) }
-    var Array2Array18Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array2Array18FloatAlloc(setItems: Array2Array18Float.() -> Unit): Array2Array18Float = Array2Array18Float(alloca_zero(
-        Array2Array18Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array2Array18FloatAlloc(items: Array<Array18Float>, size: Int = items.size): Array2Array18Float = Array2Array18FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array2Array18Float.plus(offset: Int): CPointer<Array18Float> = CPointer(addr(offset))
-    operator fun Array2Array18Float.minus(offset: Int): CPointer<Array18Float> = CPointer(addr(-offset))
-    /////////////
     operator fun Array24Float.get(index: Int): Float = lwf(addr(index))
     operator fun Array24Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array24Float.value get() = this[0]; set(value) { this[0] = value }
@@ -1954,15 +1938,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 // C STRUCTURES //
 //////////////////
 
-//////////////////
-internal @kotlin.jvm.JvmInline value/*!*/ class mp3dec_frame_info_t(val ptr: Int)
-internal const val mp3dec_frame_info_t__SIZE_BYTES = 24
-internal const val mp3dec_frame_info_t__OFFSET_frame_bytes = 0
-internal const val mp3dec_frame_info_t__OFFSET_frame_offset = 4
-internal const val mp3dec_frame_info_t__OFFSET_channels = 8
-internal const val mp3dec_frame_info_t__OFFSET_hz = 12
-internal const val mp3dec_frame_info_t__OFFSET_layer = 16
-internal const val mp3dec_frame_info_t__OFFSET_bitrate_kbps = 20
 //////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class bs_t(val ptr: Int)
 internal const val bs_t__SIZE_BYTES = 12
@@ -2182,12 +2157,6 @@ internal const val Array3Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array3Float__TOTAL_SIZE_BYTES = 12
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array2Array18Float__NUM_ELEMENTS = 2
-internal const val Array2Array18Float__ELEMENT_SIZE_BYTES = 72
-internal const val Array2Array18Float__TOTAL_SIZE_BYTES = 144
-internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array18Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array2Array18Float__ELEMENT_SIZE_BYTES
 }
 internal const val Array24Float__NUM_ELEMENTS = 24
 internal const val Array24Float__ELEMENT_SIZE_BYTES = 4
