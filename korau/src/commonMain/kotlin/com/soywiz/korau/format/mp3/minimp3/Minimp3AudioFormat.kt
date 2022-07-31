@@ -2,28 +2,14 @@
 
 package com.soywiz.korau.format.mp3.minimp3
 
-import com.soywiz.kds.ByteArrayDeque
-import com.soywiz.kds.ShortArrayDeque
-import com.soywiz.korau.format.AudioDecodingProps
-import com.soywiz.korau.format.AudioFormat
-import com.soywiz.korau.format.MP3
-import com.soywiz.korau.format.MP3Base
-import com.soywiz.korau.sound.AudioSamples
-import com.soywiz.korau.sound.AudioSamplesDeque
-import com.soywiz.korau.sound.AudioStream
-import com.soywiz.korio.lang.Closeable
-import com.soywiz.korio.stream.AsyncStream
-import com.soywiz.korio.stream.readBytesUpTo
 import kotlin.jvm.JvmName
 
 internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
     override fun createMp3Decoder(): BaseMp3Decoder = Minimp3Decoder()
 
-    internal class Minimp3Decoder : MiniMp3Program(512 * 1024), BaseMp3Decoder {
-        private fun <R> CPointer<*>.reinterpret(): CPointer<R> = CPointer(this.ptr)
-
-        private val pcmData = alloca(1152 * 2 * 2 * 2).reinterpret<Short>()
-        private val mp3dec = allocaMp3Dec()
+    internal class Minimp3Decoder : MiniMp3Program(), BaseMp3Decoder {
+        private val pcmData = ShortArray(1152 * 2 * 2 * 2)
+        private val mp3dec = Mp3Dec()
         private val mp3decFrameInfo = Mp3FrameInfo()
 
         init {
@@ -37,7 +23,7 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
                 mp3dec,
                 UByteArrayPtr(info.tempBuffer.asUByteArray()),
                 availablePeek,
-                pcmData,
+                ShortArrayPtr(pcmData),
                 mp3decFrameInfo
             )
             val struct = mp3decFrameInfo
@@ -50,9 +36,7 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
 
             if (info.nchannels == 0 || samples <= 0) return null
 
-            val buf = ShortArray(samples * info.nchannels)
-            memRead(pcmData, buf, 0, samples * info.nchannels)
-            return buf
+            return pcmData.copyOf(samples * info.nchannels)
         }
 
         override fun close() {
