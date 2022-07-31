@@ -39,19 +39,16 @@ fun KotlinTarget.configureKotlinNativeTarget(project: Project) {
     }
 
     // https://github.com/JetBrains/kotlin/blob/master/kotlin-native/NEW_MM.md#switch-to-the-new-mm
-    if (project.korge.useNewMemoryModel && SemVer(BuildVersions.KOTLIN) >= SemVer("1.6.0")) {
-        project.extra["kotlin.native.binary.memoryModel"] = "experimental"
-        //project.setProperty("kotlin.native.binary.memoryModel", "experimental") // Could not set unknown property 'kotlin.native.binary.memoryModel' for root project 'e2e-sample' of type org.gradle.api.Project.
-        (this as? KotlinNativeTarget?)?.apply {
-            compilations.all {
-                kotlinOptions.freeCompilerArgs += listOf(
-                    "-Xbinary=memoryModel=experimental",
-                    // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
-                    //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
-                )
-            }
-            // @TODO: Enable for Kotlin 1.6.0
-            //binaries.all { it.binaryOptions["memoryModel"] = "experimental" }
+    project.extra["kotlin.native.binary.memoryModel"] = "experimental"
+    //project.setProperty("kotlin.native.binary.memoryModel", "experimental") // Could not set unknown property 'kotlin.native.binary.memoryModel' for root project 'e2e-sample' of type org.gradle.api.Project.
+    (this as? KotlinNativeTarget?)?.apply {
+        compilations.all {
+            kotlinOptions.freeCompilerArgs += listOf(
+                "-Xbinary=memoryModel=experimental",
+                // @TODO: https://youtrack.jetbrains.com/issue/KT-49234#focus=Comments-27-5293935.0-0
+                //"-Xdisable-phases=RemoveRedundantCallsToFileInitializersPhase",
+            )
         }
+        binaries.all { binaryOptions["memoryModel"] = "experimental" }
     }
 }
