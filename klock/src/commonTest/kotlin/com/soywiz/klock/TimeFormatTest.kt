@@ -62,6 +62,6 @@ class TimeFormatTest {
         val dateUnix = DateTimeTz.fromUnix(now)
         val dateUnixLocal = DateTimeTz.fromUnixLocal(now).addOffset(diff)
 
-        assertEquals(dateUnix.hours, dateUnixLocal.hours)
+        assertEquals(dateUnix.hours, dateUnixLocal.hours, "testFromUnix. now=$now, diff=$diff, dataUnix=$dateUnix, dateUnixLocal=$dateUnixLocal")
     }
 }
