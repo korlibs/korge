@@ -136,8 +136,41 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var header: Array4UByte,
             var reserv_buf: Array511UByte,
         ) {
-            @Deprecated("")
-            val value: Mp3Dec get() = this
+            constructor(runtime: AbstractRuntime) : this(
+                mdct_overlap = Array2Array288Float(runtime.alloca(2 * 288 * Float.SIZE_BYTES).ptr),
+                qmf_state = Array960Float(runtime.alloca(960 * Float.SIZE_BYTES).ptr),
+                reserv = 0,
+                free_format_bytes_array = IntArray(1),
+                header = Array4UByte(runtime.alloca(4).ptr),
+                reserv_buf = Array511UByte(runtime.alloca(511).ptr),
+            )
+        }
+        
+        class Bs(
+            var buf: CPointer<UByte> = CPointer(0),
+            var pos: Int = 0,
+            var limit: Int = 0,
+        ) {
+        }
+        
+        class Mp3Scratch(
+            var bs: Bs,
+            var maindata: Array2815UByte,
+            var gr_info: Array4L3_gr_info_t,
+            var grbuf: Array2Array576Float,
+            var scf: Array40Float,
+            var syn: Array33Array64Float,
+            var ist_pos: Array2Array39UByte,
+        ) {
+            constructor(runtime: AbstractRuntime) : this(
+                bs = Bs(),
+                maindata = Array2815UByte(runtime.alloca(2815).ptr),
+                gr_info = Array4L3_gr_info_t(runtime.alloca(4 * L3_gr_info_t__SIZE_BYTES).ptr),
+                grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
+                scf = Array40Float(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
+                syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
+                ist_pos = Array2Array39UByte(runtime.alloca(2 * 39).ptr),
+            )
         }
     }
 
@@ -155,32 +188,23 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         Array28UByte(fixedArrayOfUByte("\u0006\u0005\u0005\u0005\u0006\u0005\u0005\u0005\u0006\u0005\u0007\u0003\u000b\u000a\u0000\u0000\u0007\u0007\u0007\u0000\u0006\u0006\u0006\u0003\u0008\u0008\u0005\u0000").ptr), Array28UByte(fixedArrayOfUByte("\u0008\u0009\u0006\u000c\u0006\u0009\u0009\u0009\u0006\u0009\u000c\u0006\u000f\u0012\u0000\u0000\u0006\u000f\u000c\u0000\u0006\u000c\u0009\u0006\u0006\u0012\u0009\u0000").ptr), Array28UByte(fixedArrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000").ptr)
     ))
 
-    fun allocaMp3Dec(): Mp3Dec {
-        return Mp3Dec(
-            mdct_overlap = Array2Array288Float(alloca(2 * 288 * Float.SIZE_BYTES).ptr),
-            qmf_state = Array960Float(alloca(960 * Float.SIZE_BYTES).ptr),
-            reserv = 0,
-            free_format_bytes_array = IntArray(1),
-            header = Array4UByte(alloca(4).ptr),
-            reserv_buf = Array511UByte(alloca(511).ptr),
-        )
-    }
+    fun allocaMp3Dec(): Mp3Dec = Mp3Dec(this)
     fun free(value: Mp3Dec) {
     }
 
-    fun bs_init(bs: CPointer<bs_t>, data: CPointer<UByte>, bytes: Int) {
-        bs.value.buf = data
-        bs.value.pos = 0
-        bs.value.limit = bytes * 8
+    fun bs_init(bs: Bs, data: CPointer<UByte>, bytes: Int) {
+        bs.buf = data
+        bs.pos = 0
+        bs.limit = bytes * 8
     }
-    fun get_bits(bs: CPointer<bs_t>, n: Int): UInt {
+    fun get_bits(bs: Bs, n: Int): UInt {
         var next: UInt = 0u
         var cache: UInt = 0u
-        val s: UInt = ((bs.value.pos and 7)).toUInt()
+        val s: UInt = ((bs.pos and 7)).toUInt()
         var shl: Int = n + (s.toInt())
-        var p: CPointer<UByte> = bs.value.buf + ((bs.value.pos shr 3))
-        bs.value.pos += n
-        if (bs.value.pos > bs.value.limit) return 0u
+        var p: CPointer<UByte> = bs.buf + ((bs.pos shr 3))
+        bs.pos += n
+        if (bs.pos > bs.limit) return 0u
         next = p.value.toUInt() and ((255 shr (s.toInt()))).toUInt()
         p += 1
         while (true) {
@@ -191,13 +215,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             p += 1
         }
         return cache or (next shr (-shl))
-
     }
-    fun hdr_valid(h: CPointer<UByte>): Int {
-        val h0 = h[0].toUInt()
-        val h1 = h[1].toUInt()
-        val h2 = h[2].toUInt()
-        return (h0 == 255u && (h1 and 240u == 240u || (h1 and 254u == 226u)) && (h1 shr 1 and 3u != 0u) && (h2 shr 4 != 15u) && (h2 shr 2 and 3u != 3u)).toInt()
+    fun hdr_valid(h: CPointer<UByte>): Boolean {
+        val h0 = h[0].toInt()
+        val h1 = h[1].toInt()
+        val h2 = h[2].toInt()
+        return h0 == 255 && (h1 and 240 == 240 || (h1 and 254 == 226)) && (h1 shr 1 and 3 != 0) && (h2 shr 4 != 15) && (h2 shr 2 and 3 != 3)
 
     }
     fun hdr_compare(h1: CPointer<UByte>, h2: CPointer<UByte>): Int {
@@ -269,7 +292,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return alloc
 
     }
-    fun L12_read_scalefactors(bs: CPointer<bs_t>, pba: CPointer<UByte>, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer) {
+    fun L12_read_scalefactors(bs: Bs, pba: CPointer<UByte>, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer) {
         var pba: CPointer<UByte> = pba // Mutating parameter
         var scf: FloatPointer = scf // Mutating parameter
         val g_deq_L12: FloatArray = __STATIC_L12_read_scalefactors_g_deq_L12
@@ -295,7 +318,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L12_read_scale_info(hdr: CPointer<UByte>, bs: CPointer<bs_t>, sci: CPointer<L12_scale_info>) {
+    fun L12_read_scale_info(hdr: CPointer<UByte>, bs: Bs, sci: CPointer<L12_scale_info>) {
         val g_bitalloc_code_tab = __STATIC_L12_read_scale_info_g_bitalloc_code_tab
         val subband_alloc = L12_subband_alloc_table(hdr, sci)
         var subband_alloc_n = 0
@@ -333,7 +356,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L12_dequantize_granule(grbuf: FloatPointer, bs: CPointer<bs_t>, sci: CPointer<L12_scale_info>, group_size: Int): Int {
+    fun L12_dequantize_granule(grbuf: FloatPointer, bs: Bs, sci: CPointer<L12_scale_info>, group_size: Int): Int {
         var i: Int = 0
         var j: Int = 0
         var k: Int = 0
@@ -394,7 +417,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_read_side_info(bs: CPointer<bs_t>, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>): Int {
+    fun L3_read_side_info(bs: Bs, gr: CPointer<L3_gr_info_t>, hdr: CPointer<UByte>): Int {
         var gr: CPointer<L3_gr_info_t> = gr // Mutating parameter
         val g_scf_long: Array8Array23UByte = __STATIC_L3_read_side_info_g_scf_long
         val g_scf_short: Array8Array40UByte = __STATIC_L3_read_side_info_g_scf_short
@@ -472,13 +495,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             scfsi = scfsi shl 4
             gr += 1
         } while (((--gr_count)).toBool())
-        if ((part_23_sum + bs.value.pos) > (bs.value.limit + (main_data_begin * 8))) {
+        if ((part_23_sum + bs.pos) > (bs.limit + (main_data_begin * 8))) {
             return -1
         }
         return main_data_begin
 
     }
-    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: CPointer<UByte>, bitbuf: CPointer<bs_t>, scfsi: Int) {
+    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: CPointer<UByte>, bitbuf: Bs, scfsi: Int) {
         var scf: CPointer<UByte> = scf // Mutating parameter
         var ist_pos: CPointer<UByte> = ist_pos // Mutating parameter
         var scfsi: Int = scfsi // Mutating parameter
@@ -531,9 +554,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return y
 
     }
-    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: CPointer<bs_t>, gr: CPointer<L3_gr_info_t>, scf: FloatPointer, ch: Int) {
+    fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: Bs, gr: CPointer<L3_gr_info_t>, scf: FloatPointer, ch: Int) {
         val g_scf_partitions: Array3Array28UByte = __STATIC_L3_decode_scalefactors_g_scf_partitions
-        var scf_partition: CPointer<UByte> = CPointer(g_scf_partitions[(((!(!gr.value.n_short_sfb.toBool()))).toInt()) + (((!gr.value.n_long_sfb.toBool())).toInt())].ptr)
+        var scf_partition: CPointer<UByte> = CPointer(g_scf_partitions[(gr.value.n_short_sfb.toBool().toInt()) + (!gr.value.n_long_sfb.toBool()).toInt()].ptr)
         val scf_size: Array4UByte = Array4UByte(fixedArrayOfUByte("\u0000", size = 4).ptr)
         val iscf: Array40UByte = Array40UByte(fixedArrayOfUByte("\u0000", size = 40).ptr)
         var i: Int = 0
@@ -561,7 +584,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 modprod = 1
                 i = 3
                 while (i >= 0) {
-                    scf_size[i] = (((sfc / modprod) % (g_mod[k + i].toInt()))).toUByte()
+                    scf_size[i] = ((sfc / modprod) % g_mod[k + i].toInt()).toUByte()
                     modprod *= (g_mod[k + i].toInt())
                     i -= 1
                 }
@@ -577,9 +600,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             val sh: Int = 3 - scf_shift
             i = 0
             while (i < (gr.value.n_short_sfb.toInt())) {
-                iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 0] = (((iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 0].toUInt()) + ((gr.value.subblock_gain[0].toUInt()) shl sh))).toUByte()
-                iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 1] = (((iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 1].toUInt()) + ((gr.value.subblock_gain[1].toUInt()) shl sh))).toUByte()
-                iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 2] = (((iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 2].toUInt()) + ((gr.value.subblock_gain[2].toUInt()) shl sh))).toUByte()
+                iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0].toUInt() + ((gr.value.subblock_gain[0].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1].toUInt() + ((gr.value.subblock_gain[1].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 2] = (iscf[((gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt()) + 2].toUInt() + ((gr.value.subblock_gain[2].toUInt()) shl sh)).toUByte()
                 i += 3
             }
 
@@ -588,7 +611,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 val g_preamp = __STATIC_L3_decode_scalefactors_g_preamp
                 i = 0
                 while (i < 10) {
-                    iscf[11 + i] = (((iscf[11 + i].toUInt()) + (g_preamp[i].toUInt()))).toUByte()
+                    iscf[11 + i] = (iscf[11 + i].toUInt() + g_preamp[i].toUInt()).toUByte()
                     i += 1
                 }
 
@@ -620,7 +643,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return (g_pow43[16 + ((x + sign) shr 6)] * (1f + (frac * ((4f / 3f) + (frac * (2f / 9f)))))) * (mult.toFloat())
 
     }
-    fun L3_huffman(dst: FloatPointer, bs: CPointer<bs_t>, gr_info: CPointer<L3_gr_info_t>, scf: FloatPointer, layer3gr_limit: Int) {
+    fun L3_huffman(dst: FloatPointer, bs: Bs, gr_info: CPointer<L3_gr_info_t>, scf: FloatPointer, layer3gr_limit: Int) {
         var dst: FloatPointer = dst // Mutating parameter
         var scf: FloatPointer = scf // Mutating parameter
         val tabs = __STATIC_L3_huffman_tabs
@@ -632,11 +655,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var ireg: Int = 0
         var big_val_cnt: Int = gr_info.value.big_values.toInt()
         var sfb: CPointer<UByte> = gr_info.value.sfbtab
-        var bs_next_ptr: CPointer<UByte> = bs.value.buf + ((bs.value.pos / 8))
-        var bs_cache: UInt = (((((((bs_next_ptr[0].toUInt()) * 256u) + (bs_next_ptr[1].toUInt())) * 256u) + (bs_next_ptr[2].toUInt())) * 256u) + (bs_next_ptr[3].toUInt())) shl (bs.value.pos and 7)
+        var bs_next_ptr: CPointer<UByte> = bs.buf + ((bs.pos / 8))
+        var bs_cache: UInt =
+            (((((((bs_next_ptr[0].toUInt()) * 256u) + (bs_next_ptr[1].toUInt())) * 256u) + (bs_next_ptr[2].toUInt())) * 256u) + (bs_next_ptr[3].toUInt())) shl (bs.pos and 7)
         var pairs_to_decode: Int = 0
         var np: Int = 0
-        var bs_sh: Int = (bs.value.pos and 7) - 8
+        var bs_sh: Int = (bs.pos and 7) - 8
         bs_next_ptr += 4
         while (big_val_cnt > 0) {
             val tab_num: Int = gr_info.value.table_select[ireg].toInt()
@@ -644,12 +668,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             val codebook = tabindex[tab_num].toInt()
             val linbits: Int = g_linbits[tab_num].toInt()
             if (linbits.toBool()) {
-                do0@do {
+                do0@ do {
                     np = (sfb.value.toUInt() / 2u).toInt()
                     sfb += 1
                     pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
-                    do1@do {
+                    do1@ do {
                         var j: Int = 0
                         var w: Int = 5
                         var leaf: Int = tabs[codebook + ((bs_cache shr (32 - w))).toInt()].toInt()
@@ -688,17 +712,16 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                             bs_next_ptr += 1
                             bs_sh -= 8
                         }
-
                     } while (((--pairs_to_decode)).toBool())
                     big_val_cnt -= np
                 } while (big_val_cnt > 0 && (--sfb_cnt >= 0))
             } else {
-                do0@do {
-                    np = (((sfb.value.toUInt()) / 2u)).toInt()
+                do0@ do {
+                    np = (sfb.value.toUInt() / 2u).toInt()
                     sfb += 1
                     pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
-                    do1@do {
+                    do1@ do {
                         var j = 0
                         var w = 5
                         var leaf: Int = tabs[codebook + ((bs_cache shr (32 - w))).toInt()].toInt()
@@ -725,15 +748,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                             bs_next_ptr += 1
                             bs_sh -= 8
                         }
-
                     } while (((--pairs_to_decode)).toBool())
                     big_val_cnt -= np
                 } while (big_val_cnt > 0 && --sfb_cnt >= 0)
             }
-
         }
         np = 1 - big_val_cnt
-        while0@while (1.toBool()) {
+        while0@ while (1.toBool()) {
             val __oldPos0 = STACK_PTR
             try {
                 val codebook_count1 = if (gr_info.value.count1_table.toBool()) tab33 else tab32
@@ -743,7 +764,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 }
                 bs_cache = bs_cache shl (leaf and 7)
                 bs_sh += (leaf and 7)
-                if (((((bs_next_ptr.minusPtrUByte(bs.value.buf)) * 8) - 24) + bs_sh) > layer3gr_limit) {
+                if (((((bs_next_ptr.minusPtrUByte(bs.buf)) * 8) - 24) + bs_sh) > layer3gr_limit) {
                     break@while0
                 }
                 if ((--np) == 0) {
@@ -785,15 +806,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     bs_next_ptr += 1
                     bs_sh -= 8
                 }
-
-            }
-            finally {
+            } finally {
                 STACK_PTR = __oldPos0
             }
             dst += 4
         }
-        bs.value.pos = layer3gr_limit
-
+        bs.pos = layer3gr_limit
     }
     fun L3_midside_stereo(left: FloatPointer, n: Int) {
         val right: FloatPointer = left + 576
@@ -1085,56 +1103,55 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_save_reservoir(h: Mp3Dec, s: CPointer<mp3dec_scratch_t>) {
-        var pos: Int = (s.value.bs.pos + 7) / 8
-        var remains: Int = (s.value.bs.limit / 8) - pos
+    fun L3_save_reservoir(h: Mp3Dec, s: Mp3Scratch) {
+        var pos: Int = (s.bs.pos + 7) / 8
+        var remains: Int = (s.bs.limit / 8) - pos
         if (remains > 511) {
             pos += (remains - 511)
             remains = 511
         }
         if (remains > 0) {
-            memmove((CPointer(h.value.reserv_buf.ptr)), (CPointer(((s.value.maindata + pos)).ptr)), remains)
+            memmove((CPointer(h.reserv_buf.ptr)), (CPointer(((s.maindata + pos)).ptr)), remains)
         }
-        h.value.reserv = remains
-
+        h.reserv = remains
     }
-    fun L3_restore_reservoir(h: Mp3Dec, bs: CPointer<bs_t>, s: CPointer<mp3dec_scratch_t>, main_data_begin: Int): Int {
-        val frame_bytes: Int = (bs.value.limit - bs.value.pos) / 8
+    fun L3_restore_reservoir(h: Mp3Dec, bs: Bs, s: Mp3Scratch, main_data_begin: Int): Int {
+        val frame_bytes: Int = (bs.limit - bs.pos) / 8
         val bytes_have: Int = (if (h.reserv > main_data_begin) main_data_begin else h.reserv)
-        memcpy((CPointer(s.value.maindata.ptr)), (CPointer(((h.reserv_buf + ((if (0 < (h.reserv - main_data_begin)) (h.reserv - main_data_begin) else 0)))).ptr)), (if (h.reserv > main_data_begin) main_data_begin else h.reserv))
-        memcpy((CPointer(((s.value.maindata + bytes_have)).ptr)), (CPointer(((bs.value.buf + ((bs.value.pos / 8)))).ptr)), frame_bytes)
-        bs_init((CPointer((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (CPointer(s.value.maindata.ptr)), (bytes_have + frame_bytes))
+        memcpy((CPointer(s.maindata.ptr)), (CPointer(((h.reserv_buf + ((if (0 < (h.reserv - main_data_begin)) (h.reserv - main_data_begin) else 0)))).ptr)), (if (h.reserv > main_data_begin) main_data_begin else h.reserv))
+        memcpy((CPointer(((s.maindata + bytes_have)).ptr)), (CPointer(((bs.buf + ((bs.pos / 8)))).ptr)), frame_bytes)
+        bs_init(s.bs, (CPointer(s.maindata.ptr)), (bytes_have + frame_bytes))
         return ((h.reserv >= main_data_begin)).toInt()
 
     }
-    fun L3_decode(h: Mp3Dec, s: CPointer<mp3dec_scratch_t>, gr_info: CPointer<L3_gr_info_t>, nch: Int) {
+    fun L3_decode(h: Mp3Dec, s: Mp3Scratch, gr_info: CPointer<L3_gr_info_t>, nch: Int) {
         var gr_info: CPointer<L3_gr_info_t> = gr_info // Mutating parameter
         var ch: Int = 0
         ch = 0
         while (ch < nch) {
-            val layer3gr_limit: Int = s.value.bs.pos + (gr_info[ch].part_23_length.toInt())
-            L3_decode_scalefactors((CPointer(h.value.header.ptr)), (CPointer(s.value.ist_pos[ch].ptr)), (CPointer((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (gr_info + ch), (FloatPointer(s.value.scf.ptr)), ch)
-            L3_huffman((FloatPointer(s.value.grbuf[ch].ptr)), (CPointer((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (gr_info + ch), (FloatPointer(s.value.scf.ptr)), layer3gr_limit)
+            val layer3gr_limit: Int = s.bs.pos + (gr_info[ch].part_23_length.toInt())
+            L3_decode_scalefactors((CPointer(h.header.ptr)), (CPointer(s.ist_pos[ch].ptr)), s.bs, (gr_info + ch), (FloatPointer(s.scf.ptr)), ch)
+            L3_huffman((FloatPointer(s.grbuf[ch].ptr)), s.bs, (gr_info + ch), (FloatPointer(s.scf.ptr)), layer3gr_limit)
             ch++
         }
-        if ((((h.value.header[3].toUInt()) and 16u)).toBool()) {
-            L3_intensity_stereo((FloatPointer(s.value.grbuf[0].ptr)), (CPointer(s.value.ist_pos[1].ptr)), gr_info, (CPointer(h.value.header.ptr)))
+        if ((((h.header[3].toUInt()) and 16u)).toBool()) {
+            L3_intensity_stereo((FloatPointer(s.grbuf[0].ptr)), (CPointer(s.ist_pos[1].ptr)), gr_info, (CPointer(h.header.ptr)))
         } else {
-            if (((((h.value.header[3].toUInt()) and 224u)).toInt()) == 96) {
-                L3_midside_stereo((FloatPointer(s.value.grbuf[0].ptr)), 576)
+            if (((((h.header[3].toUInt()) and 224u)).toInt()) == 96) {
+                L3_midside_stereo((FloatPointer(s.grbuf[0].ptr)), 576)
             }
         }
         ch = 0
         while (ch < nch) {
             var aa_bands: Int = 31
-            val n_long_bands: Int = (if (gr_info.value.mixed_block_flag.toBool()) 2 else 0) shl (((((((((h.value.header[2].toUInt()) shr 2) and 3u) + (((((h.value.header[1].toUInt()) shr 3) and 1u) + (((h.value.header[1].toUInt()) shr 4) and 1u)) * 3u))).toInt()) == 2)).toInt())
+            val n_long_bands: Int = (if (gr_info.value.mixed_block_flag.toBool()) 2 else 0) shl (((((((((h.header[2].toUInt()) shr 2) and 3u) + (((((h.header[1].toUInt()) shr 3) and 1u) + (((h.header[1].toUInt()) shr 4) and 1u)) * 3u))).toInt()) == 2)).toInt())
             if (gr_info.value.n_short_sfb.toBool()) {
                 aa_bands = n_long_bands - 1
-                L3_reorder((s.value.grbuf[ch] + ((n_long_bands * 18))), (FloatPointer(s.value.syn[0].ptr)), (gr_info.value.sfbtab + (gr_info.value.n_long_sfb.toInt())))
+                L3_reorder((s.grbuf[ch] + ((n_long_bands * 18))), (FloatPointer(s.syn[0].ptr)), (gr_info.value.sfbtab + (gr_info.value.n_long_sfb.toInt())))
             }
-            L3_antialias((FloatPointer(s.value.grbuf[ch].ptr)), aa_bands)
-            L3_imdct_gr((FloatPointer(s.value.grbuf[ch].ptr)), (FloatPointer(h.value.mdct_overlap[ch].ptr)), (gr_info.value.block_type.toUInt()), (n_long_bands.toUInt()))
-            L3_change_sign((FloatPointer(s.value.grbuf[ch].ptr)))
+            L3_antialias((FloatPointer(s.grbuf[ch].ptr)), aa_bands)
+            L3_imdct_gr((FloatPointer(s.grbuf[ch].ptr)), (FloatPointer(h.mdct_overlap[ch].ptr)), (gr_info.value.block_type.toUInt()), (n_long_bands.toUInt()))
+            L3_change_sign((FloatPointer(s.grbuf[ch].ptr)))
             ch++
             gr_info += 1
         }
@@ -1239,8 +1256,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     }
     fun mp3d_synth_pair(pcm: CPointer<Short>, nch: Int, z: FloatPointer) {
         var z: FloatPointer = z // Mutating parameter
-        var a: Float = 0f
-        a = (z[14 * 64] - z[0]) * 29f
+        var a = 0f
+        a += (z[14 * 64] - z[0]) * 29f
         a += ((z[1 * 64] + z[13 * 64]) * 213f)
         a += ((z[12 * 64] - z[2 * 64]) * 459f)
         a += ((z[3 * 64] + z[11 * 64]) * 2037f)
@@ -1369,7 +1386,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var i: Int = 0
         var k: Int = 0
         i = 0
-        while0@while (i < (mp3_bytes - 4)) {
+        while (i < mp3_bytes - 4) {
             if (hdr_valid(mp3).toBool()) {
                 val __oldPos2 = STACK_PTR
                 try {
@@ -1416,7 +1433,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun mp3dec_init(dec: Mp3Dec) {
-        dec.value.header[0] = 0.toUByte()
+        dec.header[0] = 0.toUByte()
 
     }
     fun mp3dec_decode_frame(dec: Mp3Dec, mp3: CPointer<UByte>, mp3_bytes: Int, pcm: CPointer<Short>, info: CPointer<mp3dec_frame_info_t>): Int = stackFrame {
@@ -1428,10 +1445,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         val frame_size: IntPointer = IntPointer(alloca(4).ptr).also { it.value = 0 }
         var success: Int = 1
         var hdr: CPointer<UByte> = CPointer(0)
-        val bs_frame: Array1bs_t = Array1bs_tAlloc(arrayOf((bs_t(0))))
-        val scratch: mp3dec_scratch_t = mp3dec_scratch_tAlloc().copyFrom(mp3dec_scratch_tAlloc())
-        if (((mp3_bytes > 4) && ((dec.value.header[0].toInt()) == 255)) && (hdr_compare((CPointer(dec.value.header.ptr)), mp3).toBool())) {
-            frame_size.value = hdr_frame_bytes(mp3, dec.value.free_format_bytes_array[0]) + hdr_padding(mp3)
+        val bs_frame = Bs()
+        val scratch: Mp3Scratch = Mp3Scratch(this)
+        if (((mp3_bytes > 4) && ((dec.header[0].toInt()) == 255)) && (hdr_compare((CPointer(dec.header.ptr)), mp3).toBool())) {
+            frame_size.value = hdr_frame_bytes(mp3, dec.free_format_bytes_array[0]) + hdr_padding(mp3)
             if ((frame_size.value != mp3_bytes) && (((frame_size.value + 4) > mp3_bytes) || (hdr_compare(mp3, (mp3 + frame_size.value)) == 0))) {
                 frame_size.value = 0
             }
@@ -1451,7 +1468,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             }
         }
         hdr = mp3 + i
-        memcpy((CPointer(dec.value.header.ptr)), (CPointer(hdr.ptr)), 4)
+        memcpy((CPointer(dec.header.ptr)), (CPointer(hdr.ptr)), 4)
         info.value.frame_bytes = i + frame_size.value
         info.value.frame_offset = i
         info.value.channels = (if (((((hdr[3].toUInt()) and 192u)).toInt()) == 192) 1 else 2)
@@ -1461,51 +1478,51 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         if (!pcm.toBool()) {
             return hdr_frame_samples(hdr).toInt()
         }
-        bs_init((CPointer(bs_frame.ptr)), (hdr + 4), (frame_size.value - 4))
+        bs_init(bs_frame, (hdr + 4), (frame_size.value - 4))
         if (((hdr[1].toUInt()) and 1u) == 0u) {
-            get_bits((CPointer(bs_frame.ptr)), 16)
+            get_bits(bs_frame, 16)
         }
         if (info.value.layer == 3) {
-            val main_data_begin: Int = L3_read_side_info((CPointer(bs_frame.ptr)), (CPointer(scratch.gr_info.ptr)), hdr)
-            if ((main_data_begin < 0) || (bs_frame.value.pos > bs_frame.value.limit)) {
+            val main_data_begin: Int = L3_read_side_info(((bs_frame)), (CPointer(scratch.gr_info.ptr)), hdr)
+            if ((main_data_begin < 0) || (bs_frame.pos > bs_frame.limit)) {
                 mp3dec_init(dec)
                 return 0
             }
-            success = L3_restore_reservoir(dec, (CPointer(bs_frame.ptr)), (CPointer(scratch.ptr)), main_data_begin)
+            success = L3_restore_reservoir(dec, ((bs_frame)), ((scratch)), main_data_begin)
             if (success.toBool()) {
                 igr = 0
                 while (igr < (if ((((hdr[1].toUInt()) and 8u)).toBool()) 2 else 1)) {
                     memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
-                    L3_decode(dec, (CPointer(scratch.ptr)), (scratch.gr_info + ((igr * info.value.channels))), info.value.channels)
-                    mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 18, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
+                    L3_decode(dec, ((scratch)), (scratch.gr_info + ((igr * info.value.channels))), info.value.channels)
+                    mp3d_synth_granule((FloatPointer(dec.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 18, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
                     igr++
                     pcm += 576 * info.value.channels
                 }
             }
-            L3_save_reservoir(dec, (CPointer(scratch.ptr)))
+            L3_save_reservoir(dec, ((scratch)))
 
         } else {
             stackFrame {
                 val sci: Array1L12_scale_info = Array1L12_scale_infoAlloc(arrayOf((L12_scale_info(0))))
-                L12_read_scale_info(hdr, (CPointer(bs_frame.ptr)), (CPointer(sci.ptr)))
+                L12_read_scale_info(hdr, ((bs_frame)), (CPointer(sci.ptr)))
                 memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
                 i = 0
                 igr = 0
                 while (igr < 3) {
                     i += L12_dequantize_granule(
                         scratch.grbuf[0] + i,
-                        CPointer(bs_frame.ptr),
+                        (bs_frame),
                         CPointer(sci.ptr),
                         info.value.layer or 1
                     )
                     if (12 == i) {
                         i = 0
                         L12_apply_scf_384((CPointer(sci.ptr)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
-                        mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
+                        mp3d_synth_granule((FloatPointer(dec.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
                         memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
                         pcm += 384 * info.value.channels
                     }
-                    if (bs_frame.value.pos > bs_frame.value.limit) {
+                    if (bs_frame.pos > bs_frame.limit) {
                         mp3dec_init(dec)
                         return 0
                     }
@@ -1514,7 +1531,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
             }
         }
-        return success * (hdr_frame_samples((CPointer(dec.value.header.ptr))).toInt())
+        return success * (hdr_frame_samples((CPointer(dec.header.ptr))).toInt())
 
     }
 
@@ -1540,23 +1557,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     var mp3dec_frame_info_t.hz: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_hz); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_hz, value)
     var mp3dec_frame_info_t.layer: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_layer); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_layer, value)
     var mp3dec_frame_info_t.bitrate_kbps: Int get() = lw(ptr + mp3dec_frame_info_t__OFFSET_bitrate_kbps); set(value) = sw(ptr + mp3dec_frame_info_t__OFFSET_bitrate_kbps, value)
-    /// }
-
-    //////////////////
-    fun bs_tAlloc(): bs_t = bs_t(alloca(bs_t__SIZE_BYTES).ptr)
-    fun bs_tAlloc(buf: CPointer<UByte>, pos: Int, limit: Int): bs_t = bs_tAlloc().apply { this.buf = buf; this.pos = pos; this.limit = limit }
-    fun bs_t.copyFrom(src: bs_t): bs_t = this.apply { memcpy(CPointer(this.ptr), CPointer(src.ptr), bs_t__SIZE_BYTES) }
-    inline fun fixedArrayOfbs_t(size: Int, setItems: CPointer<bs_t>.() -> Unit): CPointer<bs_t> = CPointer<bs_t>(alloca_zero(size * bs_t__SIZE_BYTES).ptr).apply(setItems)
-    @kotlin.jvm.JvmName("getbs_t") operator fun CPointer<bs_t>.get(index: Int): bs_t = bs_t(this.ptr + index * bs_t__SIZE_BYTES)
-    operator fun CPointer<bs_t>.set(index: Int, value: bs_t) = bs_t(this.ptr + index * bs_t__SIZE_BYTES).copyFrom(value)
-    @kotlin.jvm.JvmName("plusbs_t") operator fun CPointer<bs_t>.plus(offset: Int): CPointer<bs_t> = CPointer(this.ptr + offset * bs_t__SIZE_BYTES)
-    @kotlin.jvm.JvmName("minusbs_t") operator fun CPointer<bs_t>.minus(offset: Int): CPointer<bs_t> = CPointer(this.ptr - offset * bs_t__SIZE_BYTES)
-    fun CPointer<bs_t>.minusPtrbs_t(other: CPointer<bs_t>) = (this.ptr - other.ptr) / bs_t__SIZE_BYTES
-    @get:kotlin.jvm.JvmName("getbs_t") var CPointer<bs_t>.value: bs_t get() = this[0]; set(value) { this[0] = value }
-    /// bs_t fields {
-    var bs_t.buf: CPointer<UByte> get() = CPointer(lw(ptr + bs_t__OFFSET_buf)); set(value) { sw(ptr + bs_t__OFFSET_buf, value.ptr) }
-    var bs_t.pos: Int get() = lw(ptr + bs_t__OFFSET_pos); set(value) = sw(ptr + bs_t__OFFSET_pos, value)
-    var bs_t.limit: Int get() = lw(ptr + bs_t__OFFSET_limit); set(value) = sw(ptr + bs_t__OFFSET_limit, value)
     /// }
 
     //////////////////
@@ -1606,27 +1606,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     var L3_gr_info_t.scalefac_scale: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_scalefac_scale).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_scalefac_scale, (value).toByte())
     var L3_gr_info_t.count1_table: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_count1_table).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_count1_table, (value).toByte())
     var L3_gr_info_t.scfsi: UByte get() = lb(ptr + L3_gr_info_t__OFFSET_scfsi).toUByte(); set(value) = sb(ptr + L3_gr_info_t__OFFSET_scfsi, (value).toByte())
-    /// }
-
-    //////////////////
-    fun mp3dec_scratch_tAlloc(): mp3dec_scratch_t = mp3dec_scratch_t(alloca(mp3dec_scratch_t__SIZE_BYTES).ptr)
-    fun mp3dec_scratch_tAlloc(bs: bs_t, maindata: Array2815UByte, gr_info: Array4L3_gr_info_t, grbuf: Array2Array576Float, scf: Array40Float, syn: Array33Array64Float, ist_pos: Array2Array39UByte): mp3dec_scratch_t = mp3dec_scratch_tAlloc().apply { this.bs = bs; this.maindata = maindata; this.gr_info = gr_info; this.grbuf = grbuf; this.scf = scf; this.syn = syn; this.ist_pos = ist_pos }
-    fun mp3dec_scratch_t.copyFrom(src: mp3dec_scratch_t): mp3dec_scratch_t = this.apply { memcpy(CPointer(this.ptr), CPointer(src.ptr), mp3dec_scratch_t__SIZE_BYTES) }
-    inline fun fixedArrayOfmp3dec_scratch_t(size: Int, setItems: CPointer<mp3dec_scratch_t>.() -> Unit): CPointer<mp3dec_scratch_t> = CPointer<mp3dec_scratch_t>(alloca_zero(size * mp3dec_scratch_t__SIZE_BYTES).ptr).apply(setItems)
-    @kotlin.jvm.JvmName("getmp3dec_scratch_t") operator fun CPointer<mp3dec_scratch_t>.get(index: Int): mp3dec_scratch_t = mp3dec_scratch_t(this.ptr + index * mp3dec_scratch_t__SIZE_BYTES)
-    operator fun CPointer<mp3dec_scratch_t>.set(index: Int, value: mp3dec_scratch_t) = mp3dec_scratch_t(this.ptr + index * mp3dec_scratch_t__SIZE_BYTES).copyFrom(value)
-    @kotlin.jvm.JvmName("plusmp3dec_scratch_t") operator fun CPointer<mp3dec_scratch_t>.plus(offset: Int): CPointer<mp3dec_scratch_t> = CPointer(this.ptr + offset * mp3dec_scratch_t__SIZE_BYTES)
-    @kotlin.jvm.JvmName("minusmp3dec_scratch_t") operator fun CPointer<mp3dec_scratch_t>.minus(offset: Int): CPointer<mp3dec_scratch_t> = CPointer(this.ptr - offset * mp3dec_scratch_t__SIZE_BYTES)
-    fun CPointer<mp3dec_scratch_t>.minusPtrmp3dec_scratch_t(other: CPointer<mp3dec_scratch_t>) = (this.ptr - other.ptr) / mp3dec_scratch_t__SIZE_BYTES
-    @get:kotlin.jvm.JvmName("getmp3dec_scratch_t") var CPointer<mp3dec_scratch_t>.value: mp3dec_scratch_t get() = this[0]; set(value) { this[0] = value }
-    /// mp3dec_scratch_t fields {
-    var mp3dec_scratch_t.bs: bs_t get() = bs_t(ptr + mp3dec_scratch_t__OFFSET_bs); set(value) { bs_t(ptr + mp3dec_scratch_t__OFFSET_bs).copyFrom(value) }
-    var mp3dec_scratch_t.maindata: Array2815UByte get() = Array2815UByte(ptr + mp3dec_scratch_t__OFFSET_maindata); set(value) { TODO("Unsupported setting ftype=UByte[2815]") }
-    var mp3dec_scratch_t.gr_info: Array4L3_gr_info_t get() = Array4L3_gr_info_t(ptr + mp3dec_scratch_t__OFFSET_gr_info); set(value) { TODO("Unsupported setting ftype=struct null[4]") }
-    var mp3dec_scratch_t.grbuf: Array2Array576Float get() = Array2Array576Float(ptr + mp3dec_scratch_t__OFFSET_grbuf); set(value) { TODO("Unsupported setting ftype=Float[576][2]") }
-    var mp3dec_scratch_t.scf: Array40Float get() = Array40Float(ptr + mp3dec_scratch_t__OFFSET_scf); set(value) { TODO("Unsupported setting ftype=Float[40]") }
-    var mp3dec_scratch_t.syn: Array33Array64Float get() = Array33Array64Float(ptr + mp3dec_scratch_t__OFFSET_syn); set(value) { TODO("Unsupported setting ftype=Float[64][33]") }
-    var mp3dec_scratch_t.ist_pos: Array2Array39UByte get() = Array2Array39UByte(ptr + mp3dec_scratch_t__OFFSET_ist_pos); set(value) { TODO("Unsupported setting ftype=UByte[39][2]") }
     /// }
 
     /////////////
@@ -1800,26 +1779,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array39UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
     operator fun Array39UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
     /////////////
-    operator fun Array3UInt.get(index: Int): UInt = lw(addr(index)).toUInt()
-    operator fun Array3UInt.set(index: Int, value: UInt) { sw(addr(index), (value).toInt()) }
-    var Array3UInt.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array3UIntAlloc(setItems: Array3UInt.() -> Unit): Array3UInt = Array3UInt(alloca_zero(
-        Array3UInt__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array3UIntAlloc(items: Array<UInt>, size: Int = items.size): Array3UInt = Array3UIntAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array3UInt.plus(offset: Int): CPointer<UInt> = CPointer(addr(offset))
-    operator fun Array3UInt.minus(offset: Int): CPointer<UInt> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array54Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array54Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array54Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array54FloatAlloc(setItems: Array54Float.() -> Unit): Array54Float = Array54Float(alloca_zero(
-        Array54Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array54FloatAlloc(items: Array<Float>, size: Int = items.size): Array54Float = Array54FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array54Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array54Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
     operator fun Array8Array23UByte.get(index: Int): Array23UByte = Array23UByte(addr(index))
     operator fun Array8Array23UByte.set(index: Int, value: Array23UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array23UByte__ELEMENT_SIZE_BYTES) }
     var Array8Array23UByte.value get() = this[0]; set(value) { this[0] = value }
@@ -1979,16 +1938,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun Array4Array8FloatAlloc(items: Array<Array8Float>, size: Int = items.size): Array4Array8Float = Array4Array8FloatAlloc { for (n in 0 until size) this[n] = items[n] }
     operator fun Array4Array8Float.plus(offset: Int): CPointer<Array8Float> = CPointer(addr(offset))
     operator fun Array4Array8Float.minus(offset: Int): CPointer<Array8Float> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array1bs_t.get(index: Int): bs_t = bs_t(addr(index))
-    operator fun Array1bs_t.set(index: Int, value: bs_t) { bs_t(addr(index)).copyFrom(value) }
-    var Array1bs_t.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array1bs_tAlloc(setItems: Array1bs_t.() -> Unit): Array1bs_t = Array1bs_t(alloca_zero(
-        Array1bs_t__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array1bs_tAlloc(items: Array<bs_t>, size: Int = items.size): Array1bs_t = Array1bs_tAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array1bs_t.plus(offset: Int): CPointer<bs_t> = CPointer(addr(offset))
-    operator fun Array1bs_t.minus(offset: Int): CPointer<bs_t> = CPointer(addr(-offset))
     /////////////
     operator fun Array1L12_scale_info.get(index: Int): L12_scale_info = L12_scale_info(addr(index))
     operator fun Array1L12_scale_info.set(index: Int, value: L12_scale_info) { L12_scale_info(addr(index)).copyFrom(value) }
@@ -2158,18 +2107,6 @@ internal const val Array39UByte__ELEMENT_SIZE_BYTES = 1
 internal const val Array39UByte__TOTAL_SIZE_BYTES = 39
 internal @kotlin.jvm.JvmInline value/*!*/ class Array39UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array39UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array3UInt__NUM_ELEMENTS = 3
-internal const val Array3UInt__ELEMENT_SIZE_BYTES = 4
-internal const val Array3UInt__TOTAL_SIZE_BYTES = 12
-internal @kotlin.jvm.JvmInline value/*!*/ class Array3UInt(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array3UInt__ELEMENT_SIZE_BYTES
-}
-internal const val Array54Float__NUM_ELEMENTS = 54
-internal const val Array54Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array54Float__TOTAL_SIZE_BYTES = 216
-internal @kotlin.jvm.JvmInline value/*!*/ class Array54Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array54Float__ELEMENT_SIZE_BYTES
 }
 internal const val Array8Array23UByte__NUM_ELEMENTS = 8
 internal const val Array8Array23UByte__ELEMENT_SIZE_BYTES = 23
