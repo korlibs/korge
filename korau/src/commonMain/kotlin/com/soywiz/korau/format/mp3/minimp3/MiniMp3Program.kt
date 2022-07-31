@@ -25,8 +25,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         internal const val HAVE_SIMD = 0
         internal const val HAVE_ARMV6 = 0
 
-        private fun arrayOfUByte(values: String, size: Int = values.length): UByteArray = UByteArray(size) { values[it].code.toUByte() }
-        private fun arrayOfShort(values: String, size: Int = values.length): ShortArray = ShortArray(size) { values[it].code.toShort() }
+        private fun arrayOfUByte(values: String, size: Int = values.length): UByteArray = UByteArray(size) { values.getOrElse(it) { 0.toChar() }.code.toUByte() }
+        private fun arrayOfShort(values: String, size: Int = values.length): ShortArray = ShortArray(size) { values.getOrElse(it) { 0.toChar() }.code.toShort() }
 
         private val __STATIC_L3_imdct36_g_twid9: FloatArray = floatArrayOf(
             0.7372773f, 0.79335334f, 0.8433915f, 0.88701083f, 0.92387953f, 0.95371695f, 0.97629601f, 0.99144486f, 0.99904822f,
@@ -79,8 +79,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         private val __STATIC_L3_huffman_tabindex: ShortArray = arrayOfShort("\u0000\u0020\u0040\u0062\u0000\u0084\u00b4\u00da\u0124\u016c\u01aa\u021a\u0288\u02ea\u0000\u0466\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u0732\u0732\u0732\u0732\u0732\u0732\u0732\u0732")
         private val __STATIC_L3_huffman_g_linbits: UByteArray = arrayOfUByte("\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0003\u0004\u0006\u0008\u000a\u000d\u0004\u0005\u0006\u0007\u0008\u0009\u000b\u000d")
 
-
-        /*
         private val __STATIC_L12_read_scale_info_g_bitalloc_code_tab: UByteArray = arrayOfUByte("\u0000\u0011\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0010\u0000\u0011\u0012\u0010\u0000\u0011\u0012\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u0000\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010")
         private val __STATIC_L3_read_side_info_g_scf_long: Array<UByteArray> = arrayOf(
             arrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u000a\u000c\u000e\u0010\u0014\u0018\u001c\u0020\u0026\u002e\u0034\u003c\u0044\u003a\u0036\u0000"),
@@ -117,7 +115,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             arrayOfUByte("\u0008\u0009\u0006\u000c\u0006\u0009\u0009\u0009\u0006\u0009\u000c\u0006\u000f\u0012\u0000\u0000\u0006\u000f\u000c\u0000\u0006\u000c\u0009\u0006\u0006\u0012\u0009\u0000"),
             arrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000")
         )
-        */
 
         data class L12_subband_alloc_tStruct(val tab_offset: UByte, val code_tab_width: UByte, val band_count: UByte)
 
@@ -193,8 +190,16 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             operator fun plus(other: Int): ArrayPtr<T> = ArrayPtr(array, pos + other)
         }
 
+        class UByteArrayPtr(val array: UByteArray, val pos: Int = 0) {
+            val value: UByte get() = array[pos]
+            operator fun get(index: Int): UByte = array[pos + index]
+            operator fun set(index: Int, value: UByte) { array[pos + index] = value }
+            operator fun inc(): UByteArrayPtr = UByteArrayPtr(array, pos + 1)
+            operator fun plus(other: Int): UByteArrayPtr = UByteArrayPtr(array, pos + other)
+        }
+
         class GrInfo(
-            var sfbtab: CPointer<UByte>,
+            var sfbtab: UByteArrayPtr,
             var part_23_length: UShort,
             var big_values: UShort,
             var scalefac_compress: UShort,
@@ -212,7 +217,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var scfsi: UByte,
         ) {
             constructor(runtime: AbstractRuntime) : this(
-                sfbtab = CPointer(0),
+                sfbtab = UByteArrayPtr(UByteArray(0)),
                 part_23_length = 0u,
                 big_values = 0u,
                 scalefac_compress = 0u,
@@ -233,20 +238,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             val value get() = this
         }
     }
-
-    private var __STATIC_L12_read_scale_info_g_bitalloc_code_tab: CPointer<UByte> = fixedArrayOfUByte("\u0000\u0011\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0010\u0000\u0011\u0012\u0010\u0000\u0011\u0012\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u0000\u0002\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010")
-    private var __STATIC_L3_read_side_info_g_scf_long: Array8Array23UByte = Array8Array23UByteAlloc(arrayOf(
-        Array23UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u000a\u000c\u000e\u0010\u0014\u0018\u001c\u0020\u0026\u002e\u0034\u003c\u0044\u003a\u0036\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u000c\u000c\u000c\u000c\u000c\u000c\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u004c\u005a\u0002\u0002\u0002\u0002\u0002\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u000a\u000c\u000e\u0010\u0014\u0018\u001c\u0020\u0026\u002e\u0034\u003c\u0044\u003a\u0036\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u000a\u000c\u000e\u0010\u0012\u0016\u001a\u0020\u0026\u002e\u0036\u003e\u0046\u004c\u0024\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u000a\u000c\u000e\u0010\u0014\u0018\u001c\u0020\u0026\u002e\u0034\u003c\u0044\u003a\u0036\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0008\u0008\u000a\u000c\u0010\u0014\u0018\u001c\u0022\u002a\u0032\u0036\u004c\u009e\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u000a\u000c\u0010\u0012\u0016\u001c\u0022\u0028\u002e\u0036\u0036\u00c0\u0000").ptr), Array23UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0008\u000a\u000c\u0010\u0014\u0018\u001e\u0026\u002e\u0038\u0044\u0054\u0066\u001a\u0000").ptr)
-    ))
-    private var __STATIC_L3_read_side_info_g_scf_short: Array8Array40UByte = Array8Array40UByteAlloc(arrayOf(
-        Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u0018\u0018\u0018\u001c\u001c\u001c\u0024\u0024\u0024\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u001a\u001a\u001a\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000e\u000e\u000e\u0012\u0012\u0012\u001a\u001a\u001a\u0020\u0020\u0020\u002a\u002a\u002a\u0012\u0012\u0012\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u0020\u0020\u0020\u002c\u002c\u002c\u000c\u000c\u000c\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0016\u0016\u0016\u001e\u001e\u001e\u0038\u0038\u0038\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0006\u0006\u0006\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0042\u0042\u0042\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0022\u0022\u0022\u002a\u002a\u002a\u000c\u000c\u000c\u0000").ptr)
-    ))
-    private var __STATIC_L3_read_side_info_g_scf_mixed: Array8Array40UByte = Array8Array40UByteAlloc(arrayOf(
-        Array40UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000", size = 40).ptr), Array40UByte(fixedArrayOfUByte("\u000c\u000c\u000c\u0004\u0004\u0004\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u0018\u0018\u0018\u001c\u001c\u001c\u0024\u0024\u0024\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u001a\u001a\u001a\u0000").ptr), Array40UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000e\u000e\u000e\u0012\u0012\u0012\u001a\u001a\u001a\u0020\u0020\u0020\u002a\u002a\u002a\u0012\u0012\u0012\u0000", size = 40).ptr), Array40UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u0020\u0020\u0020\u002c\u002c\u002c\u000c\u000c\u000c\u0000", size = 40).ptr), Array40UByte(fixedArrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000", size = 40).ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0016\u0016\u0016\u001e\u001e\u001e\u0038\u0038\u0038\u0000", size = 40).ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0006\u0006\u0006\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0042\u0042\u0042\u0000", size = 40).ptr), Array40UByte(fixedArrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0022\u0022\u0022\u002a\u002a\u002a\u000c\u000c\u000c\u0000", size = 40).ptr)
-    ))
-    private var __STATIC_L3_decode_scalefactors_g_scf_partitions: Array3Array28UByte = Array3Array28UByteAlloc(arrayOf(
-        Array28UByte(fixedArrayOfUByte("\u0006\u0005\u0005\u0005\u0006\u0005\u0005\u0005\u0006\u0005\u0007\u0003\u000b\u000a\u0000\u0000\u0007\u0007\u0007\u0000\u0006\u0006\u0006\u0003\u0008\u0008\u0005\u0000").ptr), Array28UByte(fixedArrayOfUByte("\u0008\u0009\u0006\u000c\u0006\u0009\u0009\u0009\u0006\u0009\u000c\u0006\u000f\u0012\u0000\u0000\u0006\u000f\u000c\u0000\u0006\u000c\u0009\u0006\u0006\u0012\u0009\u0000").ptr), Array28UByte(fixedArrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000").ptr)
-    ))
 
     fun allocaMp3Dec(): Mp3Dec = Mp3Dec(this)
     fun free(value: Mp3Dec) {
@@ -381,20 +372,20 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun L12_read_scale_info(hdr: CPointer<UByte>, bs: Bs, sci: CPointer<L12_scale_info>) {
-        val g_bitalloc_code_tab = __STATIC_L12_read_scale_info_g_bitalloc_code_tab
+        val g_bitalloc_code_tab: UByteArrayPtr = UByteArrayPtr(__STATIC_L12_read_scale_info_g_bitalloc_code_tab)
         val subband_alloc = L12_subband_alloc_table(hdr, sci)
         var subband_alloc_n = 0
         var i: Int = 0
         var k: Int = 0
         var ba_bits: Int = 0
-        var ba_code_tab: CPointer<UByte> = CPointer(g_bitalloc_code_tab.ptr)
+        var ba_code_tab: UByteArrayPtr = (g_bitalloc_code_tab)
         i = 0
         while (i < (sci.value.total_bands.toInt())) {
             var ba: UByte = 0u
             if (i == k) {
                 k += (subband_alloc[subband_alloc_n].band_count.toInt())
                 ba_bits = subband_alloc[subband_alloc_n].code_tab_width.toInt()
-                ba_code_tab = CPointer(((g_bitalloc_code_tab + (subband_alloc[subband_alloc_n].tab_offset.toInt()))).ptr)
+                ba_code_tab = g_bitalloc_code_tab + subband_alloc[subband_alloc_n].tab_offset.toInt()
                 subband_alloc_n += 1
             }
             ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
@@ -481,9 +472,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     }
     fun L3_read_side_info(bs: Bs, gr: ArrayPtr<GrInfo>, hdr: CPointer<UByte>): Int {
         var gr: ArrayPtr<GrInfo> = gr // Mutating parameter
-        val g_scf_long: Array8Array23UByte = __STATIC_L3_read_side_info_g_scf_long
-        val g_scf_short: Array8Array40UByte = __STATIC_L3_read_side_info_g_scf_short
-        val g_scf_mixed: Array8Array40UByte = __STATIC_L3_read_side_info_g_scf_mixed
+        val g_scf_long = __STATIC_L3_read_side_info_g_scf_long
+        val g_scf_short = __STATIC_L3_read_side_info_g_scf_short
+        val g_scf_mixed = __STATIC_L3_read_side_info_g_scf_mixed
         var tables: UInt = 0u
         var scfsi: UInt = 0u
         var main_data_begin: Int = 0
@@ -510,7 +501,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             }
             gr.value.global_gain = get_bits(bs, 8).toUByte()
             gr.value.scalefac_compress = get_bits(bs, (if ((((hdr[1].toUInt()) and 8u)).toBool()) 4 else 9)).toInt().toUShort()
-            gr.value.sfbtab = CPointer(g_scf_long[sr_idx].ptr)
+            gr.value.sfbtab = UByteArrayPtr(g_scf_long[sr_idx])
             gr.value.n_long_sfb = 22.toUByte()
             gr.value.n_short_sfb = 0.toUByte()
             if (get_bits(bs, 1).toBool()) {
@@ -525,11 +516,11 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     scfsi = scfsi and 3855u
                     if (!gr.value.mixed_block_flag.toBool()) {
                         gr.value.region_count[0] = 8.toUByte()
-                        gr.value.sfbtab = CPointer(g_scf_short[sr_idx].ptr)
+                        gr.value.sfbtab = UByteArrayPtr(g_scf_short[sr_idx])
                         gr.value.n_long_sfb = 0.toUByte()
                         gr.value.n_short_sfb = 39.toUByte()
                     } else {
-                        gr.value.sfbtab = CPointer(g_scf_mixed[sr_idx].ptr)
+                        gr.value.sfbtab = UByteArrayPtr(g_scf_mixed[sr_idx])
                         gr.value.n_long_sfb = ((if ((((hdr[1].toUInt()) and 8u)).toBool()) 8 else 6)).toUByte()
                         gr.value.n_short_sfb = 30.toUByte()
                     }
@@ -563,7 +554,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return main_data_begin
 
     }
-    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: CPointer<UByte>, bitbuf: Bs, scfsi: Int) {
+    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: CPointer<UByte>, scf_size: CPointer<UByte>, scf_count: UByteArrayPtr, bitbuf: Bs, scfsi: Int) {
         var scf: CPointer<UByte> = scf // Mutating parameter
         var ist_pos: CPointer<UByte> = ist_pos // Mutating parameter
         var scfsi: Int = scfsi // Mutating parameter
@@ -617,8 +608,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: CPointer<UByte>, bs: Bs, gr: ArrayPtr<GrInfo>, scf: FloatPointer, ch: Int) {
-        val g_scf_partitions: Array3Array28UByte = __STATIC_L3_decode_scalefactors_g_scf_partitions
-        var scf_partition: CPointer<UByte> = CPointer(g_scf_partitions[(gr.value.n_short_sfb.toBool().toInt()) + (!gr.value.n_long_sfb.toBool()).toInt()].ptr)
+        val g_scf_partitions = __STATIC_L3_decode_scalefactors_g_scf_partitions
+        var scf_partition = UByteArrayPtr(g_scf_partitions[gr.value.n_short_sfb.toBool().toInt() + (!gr.value.n_long_sfb.toBool()).toInt()])
         val scf_size = CPointer<UByte>(fixedArrayOfUByte("\u0000", size = 4).ptr)
         val iscf: Array40UByte = Array40UByte(fixedArrayOfUByte("\u0000", size = 40).ptr)
         var i: Int = 0
@@ -716,7 +707,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var one: Float = 0f
         var ireg: Int = 0
         var big_val_cnt: Int = gr_info.value.big_values.toInt()
-        var sfb: CPointer<UByte> = gr_info.value.sfbtab
+        var sfb: UByteArrayPtr = gr_info.value.sfbtab
         var bs_next_ptr: CPointer<UByte> = bs.buf + ((bs.pos / 8))
         var bs_cache: UInt =
             (((((((bs_next_ptr[0].toUInt()) * 256u) + (bs_next_ptr[1].toUInt())) * 256u) + (bs_next_ptr[2].toUInt())) * 256u) + (bs_next_ptr[3].toUInt())) shl (bs.pos and 7)
@@ -892,7 +883,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_top_band(right: FloatPointer, sfb: CPointer<UByte>, nbands: Int, max_band: IntArray) {
+    fun L3_stereo_top_band(right: FloatPointer, sfb: UByteArrayPtr, nbands: Int, max_band: IntArray) {
         var right: FloatPointer = right // Mutating parameter
         max_band[0] = -1
         max_band[1] = -1
@@ -910,7 +901,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: CPointer<UByte>, hdr: CPointer<UByte>, max_band: IntArray, mpeg2_sh: Int) {
+    fun L3_stereo_process(left: FloatPointer, ist_pos: CPointer<UByte>, sfb: UByteArrayPtr, hdr: CPointer<UByte>, max_band: IntArray, mpeg2_sh: Int) {
         var left: FloatPointer = left // Mutating parameter
         val g_pan: FloatArray = __STATIC_L3_stereo_process_g_pan
         var i: UInt = 0u
@@ -969,8 +960,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, (((gr[1].scalefac_compress.toUInt() and 1u)).toInt()))
 
     }
-    fun L3_reorder(grbuf: FloatPointer, scratch: FloatPointer, sfb: CPointer<UByte>) {
-        var sfb: CPointer<UByte> = sfb // Mutating parameter
+    fun L3_reorder(grbuf: FloatPointer, scratch: FloatPointer, sfb: UByteArrayPtr) {
+        var sfb: UByteArrayPtr = sfb // Mutating parameter
         var i: Int = 0
         var len: Int = 0
         var src: FloatPointer = grbuf
