@@ -203,9 +203,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var mixed_block_flag: UByte,
             var n_long_sfb: UByte,
             var n_short_sfb: UByte,
-            var table_select: Array3UByte,
-            var region_count: Array3UByte,
-            var subblock_gain: Array3UByte,
+            var table_select: UByteArray,
+            var region_count: UByteArray,
+            var subblock_gain: UByteArray,
             var preflag: UByte,
             var scalefac_scale: UByte,
             var count1_table: UByte,
@@ -221,9 +221,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 mixed_block_flag = 0u,
                 n_long_sfb = 0u,
                 n_short_sfb = 0u,
-                table_select = Array3UByte(runtime.alloca(3).ptr),
-                region_count = Array3UByte(runtime.alloca(3).ptr),
-                subblock_gain = Array3UByte(runtime.alloca(3).ptr),
+                table_select = UByteArray(3),
+                region_count = UByteArray(3),
+                subblock_gain = UByteArray(3),
                 preflag = 0u,
                 scalefac_scale = 0u,
                 count1_table = 0u,
@@ -1866,12 +1866,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 //////////////////
 
 //////////////////
-internal @kotlin.jvm.JvmInline value/*!*/ class bs_t(val ptr: Int)
-internal const val bs_t__SIZE_BYTES = 12
-internal const val bs_t__OFFSET_buf = 0
-internal const val bs_t__OFFSET_pos = 4
-internal const val bs_t__OFFSET_limit = 8
-//////////////////
 internal @kotlin.jvm.JvmInline value/*!*/ class L12_scale_info(val ptr: Int)
 internal const val L12_scale_info__SIZE_BYTES = 898
 internal const val L12_scale_info__OFFSET_scf = 0
@@ -1897,12 +1891,6 @@ internal const val Array3UByte__ELEMENT_SIZE_BYTES = 1
 internal const val Array3UByte__TOTAL_SIZE_BYTES = 3
 internal @kotlin.jvm.JvmInline value/*!*/ class Array3UByte(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array3UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array4L3_gr_info_t__NUM_ELEMENTS = 4
-internal const val Array4L3_gr_info_t__ELEMENT_SIZE_BYTES = 28
-internal const val Array4L3_gr_info_t__TOTAL_SIZE_BYTES = 112
-internal @kotlin.jvm.JvmInline value/*!*/ class Array4L3_gr_info_t(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array4L3_gr_info_t__ELEMENT_SIZE_BYTES
 }
 internal const val Array2Array576Float__NUM_ELEMENTS = 2
 internal const val Array2Array576Float__ELEMENT_SIZE_BYTES = 2304
@@ -2020,12 +2008,6 @@ internal const val Array4Array8Float__ELEMENT_SIZE_BYTES = 32
 internal const val Array4Array8Float__TOTAL_SIZE_BYTES = 128
 internal @kotlin.jvm.JvmInline value/*!*/ class Array4Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array4Array8Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array1bs_t__NUM_ELEMENTS = 1
-internal const val Array1bs_t__ELEMENT_SIZE_BYTES = 12
-internal const val Array1bs_t__TOTAL_SIZE_BYTES = 12
-internal @kotlin.jvm.JvmInline value/*!*/ class Array1bs_t(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array1bs_t__ELEMENT_SIZE_BYTES
 }
 internal const val Array1L12_scale_info__NUM_ELEMENTS = 1
 internal const val Array1L12_scale_info__ELEMENT_SIZE_BYTES = 898
