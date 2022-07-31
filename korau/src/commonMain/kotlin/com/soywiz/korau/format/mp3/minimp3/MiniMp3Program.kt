@@ -22,6 +22,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         internal const val HAVE_SSE = 0
         internal const val HAVE_SIMD = 0
         internal const val HAVE_ARMV6 = 0
+
+        private val __STATIC_L3_imdct36_g_twid9: FloatArray = floatArrayOf(0.73727734f, 0.79335334f, 0.84339145f, 0.88701083f, 0.92387953f, 0.95371695f, 0.97629601f, 0.99144486f, 0.99904822f, 0.67559021f, 0.60876143f, 0.53729961f, 0.46174861f, 0.38268343f, 0.3007058f, 0.21643961f, 0.13052619f, 0.04361938f)
     }
 
     private var __STATIC_hdr_bitrate_kbps_halfrate: Array2Array3Array15UByte = Array2Array3Array15UByteAlloc(arrayOf(Array3Array15UByteAlloc(arrayOf(
@@ -57,7 +59,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     private var __STATIC_L3_huffman_g_linbits: CPointer<UByte> = fixedArrayOfUByte("\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0003\u0004\u0006\u0008\u000a\u000d\u0004\u0005\u0006\u0007\u0008\u0009\u000b\u000d")
     private var __STATIC_L3_stereo_process_g_pan: Array14Float = Array14Float(fixedArrayOfFloat(0f, 1f, 0.21132487f, 0.78867513f, 0.3660254f, 0.6339746f, 0.5f, 0.5f, 0.6339746f, 0.3660254f, 0.78867513f, 0.21132487f, 1f, 0f).ptr)
     private var __STATIC_L3_antialias_g_aa: Array2Array8Float = Array2Array8FloatAlloc(arrayOf(Array8Float(fixedArrayOfFloat(0.85749293f, 0.881742f, 0.94962865f, 0.98331459f, 0.99551782f, 0.99916056f, 0.9998992f, 0.99999316f).ptr), Array8Float(fixedArrayOfFloat(0.51449576f, 0.47173197f, 0.31337745f, 0.1819132f, 0.09457419f, 0.04096558f, 0.01419856f, 0.00369997f).ptr)))
-    private var __STATIC_L3_imdct36_g_twid9: Array18Float = Array18Float(fixedArrayOfFloat(0.73727734f, 0.79335334f, 0.84339145f, 0.88701083f, 0.92387953f, 0.95371695f, 0.97629601f, 0.99144486f, 0.99904822f, 0.67559021f, 0.60876143f, 0.53729961f, 0.46174861f, 0.38268343f, 0.3007058f, 0.21643961f, 0.13052619f, 0.04361938f).ptr)
     private var __STATIC_L3_imdct12_g_twid3: Array6Float = Array6Float(fixedArrayOfFloat(0.79335334f, 0.92387953f, 0.99144486f, 0.60876143f, 0.38268343f, 0.13052619f).ptr)
     private var __STATIC_L3_imdct_gr_g_mdct_window: Array2Array18Float = Array2Array18FloatAlloc(arrayOf(Array18Float(fixedArrayOfFloat(0.99904822f, 0.99144486f, 0.97629601f, 0.95371695f, 0.92387953f, 0.88701083f, 0.84339145f, 0.79335334f, 0.73727734f, 0.04361938f, 0.13052619f, 0.21643961f, 0.3007058f, 0.38268343f, 0.46174861f, 0.53729961f, 0.60876143f, 0.67559021f).ptr), Array18Float(fixedArrayOfFloat(1f, 1f, 1f, 1f, 1f, 1f, 0.99144486f, 0.92387953f, 0.79335334f, 0f, 0f, 0f, 0f, 0f, 0f, 0.13052619f, 0.38268343f, 0.60876143f).ptr)))
     private var __STATIC_mp3d_DCT_II_g_sec: Array24Float = Array24Float(fixedArrayOfFloat(10.19000816f, 0.50060302f, 0.50241929f, 3.40760851f, 0.50547093f, 0.52249861f, 2.05778098f, 0.51544732f, 0.56694406f, 1.4841646f, 0.53104258f, 0.6468218f, 1.16943991f, 0.55310392f, 0.7881546f, 0.97256821f, 0.58293498f, 1.06067765f, 0.83934963f, 0.62250412f, 1.72244716f, 0.74453628f, 0.67480832f, 5.10114861f).ptr)
@@ -108,7 +109,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         next = (run { val `-` = p; p = p + 1; `-` }.value.toUInt()) and (((255 shr (s.toInt()))).toUInt())
         while ((run { val `-` = shl - 8; shl = `-`; `-` }) > 0) {
             cache = cache or (next shl shl)
-            next = run { val `-` = p; p = p + 1; `-` }.value.toUInt()
+            next = p.value.toUInt()
+            p += 1
         }
         return cache or (next shr (-shl))
 
@@ -198,21 +200,18 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var m: Int = 0
         i = 0
         while (i < bands) {
-            block {
-                var s: Float = 0f
-                var ba: Int = run { val `-` = pba; pba = pba + 1; `-` }.value.toInt()
-                var mask: Int = (if (ba.toBool()) (4 + ((19 shr (scfcod[i].toInt())) and 3)) else 0)
-                m = 4
-                while (m.toBool()) {
-                    if (((mask and m)).toBool()) {
-                        var b: Int = get_bits(bs, 6).toInt()
-                        s = g_deq_L12[((ba * 3) - 6) + (b % 3)] * ((((1 shl 21) shr (b / 3))).toFloat())
+            var s: Float = 0f
+            var ba: Int = run { val `-` = pba; pba = pba + 1; `-` }.value.toInt()
+            var mask: Int = (if (ba.toBool()) (4 + ((19 shr (scfcod[i].toInt())) and 3)) else 0)
+            m = 4
+            while (m.toBool()) {
+                if (((mask and m)).toBool()) {
+                    var b: Int = get_bits(bs, 6).toInt()
+                    s = g_deq_L12[((ba * 3) - 6) + (b % 3)] * ((((1 shl 21) shr (b / 3))).toFloat())
 
-                    }
-                    scf++.value = s
-                    m = m shr 1
                 }
-
+                scf++.value = s
+                m = m shr 1
             }
             i = i + 1
         }
@@ -227,34 +226,31 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var ba_code_tab: CPointer<UByte> = CPointer<UByte>(g_bitalloc_code_tab.ptr)
         i = 0
         while (i < (sci.value.total_bands.toInt())) {
-            block {
-                var ba: UByte = 0u
-                if (i == k) {
-                    k = k + (subband_alloc.value.band_count.toInt())
-                    ba_bits = subband_alloc.value.code_tab_width.toInt()
-                    ba_code_tab = CPointer<UByte>(((g_bitalloc_code_tab + (subband_alloc.value.tab_offset.toInt()))).ptr)
-                    subband_alloc = subband_alloc + 1
-                }
-                ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
-                sci.value.bitalloc[2 * i] = ba
-                if (i < (sci.value.stereo_bands.toInt())) {
-                    ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
-                }
-                sci.value.bitalloc[(2 * i) + 1] = (if (sci.value.stereo_bands.toBool()) ba else (0.toUByte()))
-
+            var ba: UByte = 0u
+            if (i == k) {
+                k = k + (subband_alloc.value.band_count.toInt())
+                ba_bits = subband_alloc.value.code_tab_width.toInt()
+                ba_code_tab = CPointer<UByte>(((g_bitalloc_code_tab + (subband_alloc.value.tab_offset.toInt()))).ptr)
+                subband_alloc = subband_alloc + 1
             }
-            i = i + 1
+            ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
+            sci.value.bitalloc[2 * i] = ba
+            if (i < (sci.value.stereo_bands.toInt())) {
+                ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
+            }
+            sci.value.bitalloc[(2 * i) + 1] = (if (sci.value.stereo_bands.toBool()) ba else (0.toUByte()))
+            i += 1
         }
         i = 0
         while (i < (2 * (sci.value.total_bands.toInt()))) {
             sci.value.scfcod[i] = ((if (sci.value.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
-            i = i + 1
+            i += 1
         }
         L12_read_scalefactors(bs, (CPointer<UByte>(sci.value.bitalloc.ptr)), (CPointer<UByte>(sci.value.scfcod.ptr)), ((((sci.value.total_bands.toUInt()) * 2u)).toInt()), (FloatPointer(sci.value.scf.ptr)))
         i = sci.value.stereo_bands.toInt()
         while (i < (sci.value.total_bands.toInt())) {
             sci.value.bitalloc[(2 * i) + 1] = 0.toUByte()
-            i = i + 1
+            i += 1
         }
 
     }
@@ -265,41 +261,35 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var choff: Int = 576
         j = 0
         while (j < 4) {
-            block {
-                var dst: FloatPointer = grbuf + ((group_size * j))
-                i = 0
-                while (i < (2 * (sci.value.total_bands.toInt()))) {
-                    block {
-                        var ba: Int = sci.value.bitalloc[i].toInt()
-                        if (ba != 0) {
-                            if (ba < 17) {
-                                var half: Int = (1 shl (ba - 1)) - 1
-                                k = 0
-                                while (k < group_size) {
-                                    dst[k] = (((get_bits(bs, ba).toInt()) - half)).toFloat()
-                                    k = k + 1
-                                }
-
-                            } else {
-                                var mod: UInt = (((2 shl (ba - 17)) + 1)).toUInt()
-                                var code: UInt = get_bits(bs, (((mod.toInt()) + 2) - (((mod shr 3)).toInt())))
-                                k = 0
-                                while (k < group_size) {
-                                    dst[k] = ((((code % mod) - (mod / 2u))).toInt()).toFloat()
-                                    run { k++; run { val `-` = code / mod; code = `-`; `-` } }
-                                }
-
-                            }
+            var dst: FloatPointer = grbuf + ((group_size * j))
+            i = 0
+            while (i < (2 * (sci.value.total_bands.toInt()))) {
+                var ba: Int = sci.value.bitalloc[i].toInt()
+                if (ba != 0) {
+                    if (ba < 17) {
+                        var half: Int = (1 shl (ba - 1)) - 1
+                        k = 0
+                        while (k < group_size) {
+                            dst[k] = (((get_bits(bs, ba).toInt()) - half)).toFloat()
+                            k = k + 1
                         }
-                        dst = dst + choff
-                        choff = 18 - choff
+
+                    } else {
+                        var mod: UInt = (((2 shl (ba - 17)) + 1)).toUInt()
+                        var code: UInt = get_bits(bs, (((mod.toInt()) + 2) - (((mod shr 3)).toInt())))
+                        k = 0
+                        while (k < group_size) {
+                            dst[k] = ((((code % mod) - (mod / 2u))).toInt()).toFloat()
+                            run { k++; run { val `-` = code / mod; code = `-`; `-` } }
+                        }
 
                     }
-                    i = i + 1
                 }
-
+                dst += choff
+                choff = 18 - choff
+                i += 1
             }
-            j = j + 1
+            j += 1
         }
         return group_size * 4
 
@@ -316,9 +306,11 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             while (k < 12) {
                 dst[k + 0] = dst[k + 0] * scf[0]
                 dst[k + 576] = dst[k + 576] * scf[3]
-                k = k + 1
+                k += 1
             }
-            run { i++; run { val `-` = dst + 18; dst = `-`; `-` }; run { val `-` = scf + 6; scf = `-`; `-` } }
+            i++
+            dst += 18
+            scf += 6
         }
 
     }
@@ -332,7 +324,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var main_data_begin: Int = 0
         var part_23_sum: Int = 0
         var sr_idx: Int = (((((hdr[2].toUInt()) shr 2) and 3u) + (((((hdr[1].toUInt()) shr 3) and 1u) + (((hdr[1].toUInt()) shr 4) and 1u)) * 3u))).toInt()
-        sr_idx = sr_idx - (((sr_idx != 0)).toInt().toInt())
+        sr_idx -= (((sr_idx != 0)).toInt().toInt())
         var gr_count: Int = (if (((((hdr[3].toUInt()) and 192u)).toInt()) == 192) 1 else 2)
         if ((((hdr[1].toUInt()) and 8u)).toBool()) {
             gr_count = gr_count * 2
@@ -346,7 +338,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 scfsi = scfsi shl 4
             }
             gr.value.part_23_length = get_bits(bs, 12).toInt().toUShort()
-            part_23_sum = part_23_sum + (gr.value.part_23_length.toInt())
+            part_23_sum += (gr.value.part_23_length.toInt())
             gr.value.big_values = get_bits(bs, 9).toInt().toUShort()
             if (gr.value.big_values > (288.toInt().toUShort())) {
                 return -1
@@ -398,7 +390,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             gr.value.count1_table = get_bits(bs, 1).toUByte()
             gr.value.scfsi = (((scfsi shr 12) and 15u)).toUByte()
             scfsi = scfsi shl 4
-            gr = gr + 1
+            gr += 1
         } while (((--gr_count)).toBool())
         if ((part_23_sum + bs.value.pos) > (bs.value.limit + (main_data_begin * 8))) {
             return -1
@@ -414,38 +406,36 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var k: Int = 0
         i = 0
         while ((i < 4) && (scf_count[i].toBool())) {
-            block {
-                var cnt: Int = scf_count[i].toInt()
-                if (((scfsi and 8)).toBool()) {
-                    memcpy((CPointer<Unit>(scf.ptr)), (CPointer<Unit>(ist_pos.ptr)), cnt)
+            var cnt: Int = scf_count[i].toInt()
+            if (((scfsi and 8)).toBool()) {
+                memcpy((CPointer<Unit>(scf.ptr)), (CPointer<Unit>(ist_pos.ptr)), cnt)
+            } else {
+                var bits: Int = scf_size[i].toInt()
+                if (bits == 0) {
+                    memset((CPointer<Unit>(scf.ptr)), 0, cnt)
+                    memset((CPointer<Unit>(ist_pos.ptr)), 0, cnt)
                 } else {
-                    var bits: Int = scf_size[i].toInt()
-                    if (bits == 0) {
-                        memset((CPointer<Unit>(scf.ptr)), 0, cnt)
-                        memset((CPointer<Unit>(ist_pos.ptr)), 0, cnt)
-                    } else {
-                        var max_scf: Int = ((if (scfsi < 0) ((((1 shl bits) - 1)).toLong()) else -1L)).toInt()
-                        k = 0
-                        while (k < cnt) {
-                            block {
-                                var s: Int = get_bits(bitbuf, bits).toInt()
-                                ist_pos[k] = ((if (s == max_scf) -1L else (s.toLong()))).toUByte()
-                                scf[k] = s.toUByte()
-
-                            }
-                            k = k + 1
-                        }
-
+                    var max_scf: Int = ((if (scfsi < 0) ((((1 shl bits) - 1)).toLong()) else -1L)).toInt()
+                    k = 0
+                    while (k < cnt) {
+                        var s: Int = get_bits(bitbuf, bits).toInt()
+                        ist_pos[k] = ((if (s == max_scf) -1L else (s.toLong()))).toUByte()
+                        scf[k] = s.toUByte()
+                        k += 1
                     }
 
                 }
-                ist_pos = ist_pos + cnt
-                scf = scf + cnt
 
             }
-            run { i++; run { val `-` = scfsi * 2; scfsi = `-`; `-` } }
+            ist_pos += cnt
+            scf += cnt
+
+            i++
+            scfsi *= 2
         }
-        scf[0] = run { val `-` = run { val `-` = 0.toUByte(); scf[2] = `-`; `-` }; scf[1] = `-`; `-` }
+        scf[0] = 0u
+        scf[1] = 0u
+        scf[2] = 0u
 
     }
     fun L3_ldexp_q2(y: Float, exp_q2: Int): Float {
@@ -455,7 +445,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var e: Int = 0
         do0@do {
             e = (if ((30 * 4) > exp_q2) exp_q2 else (30 * 4))
-            y = y * (g_expfrac[e and 3] * ((((1 shl 30) shr (e shr 2))).toFloat()))
+            y *= (g_expfrac[e and 3] * ((((1 shl 30) shr (e shr 2))).toFloat()))
         } while ((run { val `-` = exp_q2 - e; exp_q2 = `-`; `-` }) > 0)
         return y
 
@@ -473,8 +463,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         if ((((hdr[1].toUInt()) and 8u)).toBool()) {
             var g_scfc_decode: Array16UByte = __STATIC_L3_decode_scalefactors_g_scfc_decode
             var part: Int = g_scfc_decode[gr.value.scalefac_compress.toInt()].toInt()
-            scf_size[1] = run { val `-` = ((part shr 2)).toUByte(); scf_size[0] = `-`; `-` }
-            scf_size[3] = run { val `-` = ((part and 3)).toUByte(); scf_size[2] = `-`; `-` }
+            scf_size[0] = ((part shr 2)).toUByte()
+            scf_size[1] = scf_size[0]
+            scf_size[2] = ((part and 3)).toUByte()
+            scf_size[3] = scf_size[2]
 
         } else {
             var g_mod: Array24UByte = __STATIC_L3_decode_scalefactors_g_mod
@@ -485,15 +477,17 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             sfc = (((gr.value.scalefac_compress.toUInt()) shr ist)).toInt()
             k = (ist * 3) * 4
             while (sfc >= 0) {
-                run { run { val `-` = 1; modprod = `-`; `-` }; run { val `-` = 3; i = `-`; `-` } }
+                modprod = 1
+                i = 3
                 while (i >= 0) {
                     scf_size[i] = (((sfc / modprod) % (g_mod[k + i].toInt()))).toUByte()
-                    modprod = modprod * (g_mod[k + i].toInt())
-                    i = i - 1
+                    modprod *= (g_mod[k + i].toInt())
+                    i -= 1
                 }
-                run { run { val `-` = sfc - modprod; sfc = `-`; `-` }; run { val `-` = k + 4; k = `-`; `-` } }
+                sfc -= modprod
+                k += 4
             }
-            scf_partition = scf_partition + k
+            scf_partition += k
             scfsi = -16
 
         }
@@ -505,7 +499,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 0] = (((iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 0].toUInt()) + ((gr.value.subblock_gain[0].toUInt()) shl sh))).toUByte()
                 iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 1] = (((iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 1].toUInt()) + ((gr.value.subblock_gain[1].toUInt()) shl sh))).toUByte()
                 iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 2] = (((iscf[((((gr.value.n_long_sfb.toUInt()) + (i.toUInt()))).toInt()) + 2].toUInt()) + ((gr.value.subblock_gain[2].toUInt()) shl sh))).toUByte()
-                i = i + 3
+                i += 3
             }
 
         } else {
@@ -514,7 +508,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 i = 0
                 while (i < 10) {
                     iscf[11 + i] = (((iscf[11 + i].toUInt()) + (g_preamp[i].toUInt()))).toUByte()
-                    i = i + 1
+                    i += 1
                 }
 
             }
@@ -524,7 +518,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         i = 0
         while (i < ((((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt())) {
             scf[i] = L3_ldexp_q2(gain, ((((iscf[i].toUInt()) shl scf_shift)).toInt()))
-            i = i + 1
+            i += 1
         }
 
     }
@@ -563,7 +557,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var pairs_to_decode: Int = 0
         var np: Int = 0
         var bs_sh: Int = (bs.value.pos and 7) - 8
-        bs_next_ptr = bs_next_ptr + 4
+        bs_next_ptr += 4
         while (big_val_cnt > 0) {
             var tab_num: Int = gr_info.value.table_select[ireg].toInt()
             var sfb_cnt: Int = gr_info.value.region_count[ireg++].toInt()
@@ -588,29 +582,28 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         bs_sh = bs_sh + (leaf shr 8)
                         j = 0
                         while (j < 2) {
-                            block {
-                                var lsb: Int = leaf and 15
-                                if (lsb == 15) {
-                                    lsb = lsb + (((bs_cache shr (32 - linbits))).toInt())
-                                    bs_cache = bs_cache shl linbits
-                                    bs_sh = bs_sh + linbits
-                                    while (bs_sh >= 0) {
-                                        bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
-                                        bs_sh = bs_sh - 8
-                                    }
-                                    dst.value = (one * L3_pow_43(lsb)) * (((if ((bs_cache.toInt()) < 0) -1L else 1L)).toFloat())
-                                } else {
-                                    dst.value = g_pow43[(16 + lsb) - (16 * (((bs_cache shr 31)).toInt()))] * one
+                            var lsb: Int = leaf and 15
+                            if (lsb == 15) {
+                                lsb += (((bs_cache shr (32 - linbits))).toInt())
+                                bs_cache = bs_cache shl linbits
+                                bs_sh += linbits
+                                while (bs_sh >= 0) {
+                                    bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
+                                    bs_sh -= 8
                                 }
-                                bs_cache = bs_cache shl (if (lsb.toBool()) 1 else 0)
-                                bs_sh = bs_sh + (if (lsb.toBool()) 1 else 0)
-
+                                dst.value = (one * L3_pow_43(lsb)) * (((if ((bs_cache.toInt()) < 0) -1L else 1L)).toFloat())
+                            } else {
+                                dst.value = g_pow43[(16 + lsb) - (16 * (((bs_cache shr 31)).toInt()))] * one
                             }
-                            run { j++; dst++; run { val `-` = leaf shr 4; leaf = `-`; `-` } }
+                            bs_cache = bs_cache shl (if (lsb.toBool()) 1 else 0)
+                            bs_sh += (if (lsb.toBool()) 1 else 0)
+                            j++
+                            dst++
+                            leaf = leaf shr 4
                         }
                         while (bs_sh >= 0) {
                             bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
-                            bs_sh = bs_sh - 8
+                            bs_sh -= 8
                         }
 
                     } while (((--pairs_to_decode)).toBool())
@@ -631,21 +624,20 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                             leaf = codebook[(((bs_cache shr (32 - w))).toInt()) - (leaf shr 3)].toInt()
                         }
                         bs_cache = bs_cache shl (leaf shr 8)
-                        bs_sh = bs_sh + (leaf shr 8)
+                        bs_sh += (leaf shr 8)
                         j = 0
                         while (j < 2) {
-                            block {
-                                var lsb: Int = leaf and 15
-                                dst.value = g_pow43[(16 + lsb) - (16 * (((bs_cache shr 31)).toInt()))] * one
-                                bs_cache = bs_cache shl (if (lsb.toBool()) 1 else 0)
-                                bs_sh = bs_sh + (if (lsb.toBool()) 1 else 0)
-
-                            }
-                            run { j++; dst++; run { val `-` = leaf shr 4; leaf = `-`; `-` } }
+                            var lsb: Int = leaf and 15
+                            dst.value = g_pow43[(16 + lsb) - (16 * (((bs_cache shr 31)).toInt()))] * one
+                            bs_cache = bs_cache shl (if (lsb.toBool()) 1 else 0)
+                            bs_sh += (if (lsb.toBool()) 1 else 0)
+                            j++
+                            dst++
+                            leaf = leaf shr 4
                         }
                         while (bs_sh >= 0) {
                             bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
-                            bs_sh = bs_sh - 8
+                            bs_sh -= 8
                         }
 
                     } while (((--pairs_to_decode)).toBool())
@@ -677,15 +669,16 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 if (((leaf and (128 shr 0))).toBool()) {
                     dst[0] = (if ((bs_cache.toInt()) < 0) (-one) else one)
                     bs_cache = bs_cache shl 1
-                    bs_sh = bs_sh + 1
+                    bs_sh += 1
                 }
                 if (((leaf and (128 shr 1))).toBool()) {
                     dst[1] = (if ((bs_cache.toInt()) < 0) (-one) else one)
                     bs_cache = bs_cache shl 1
-                    bs_sh = bs_sh + 1
+                    bs_sh += 1
                 }
                 if ((--np) == 0) {
-                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
+                    np = (((sfb.value.toUInt()) / 2u)).toInt()
+                    sfb = sfb + 1
                     if (np == 0) {
                         break@while0
                     }
@@ -719,13 +712,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var i: Int = 0
         var right: FloatPointer = left + 576
         while (i < n) {
-            block {
-                var a: Float = left[i]
-                var b: Float = right[i]
-                left[i] = a + b
-                right[i] = a - b
-
-            }
+            var a: Float = left[i]
+            var b: Float = right[i]
+            left[i] = a + b
+            right[i] = a - b
             i = i + 1
         }
 
@@ -767,33 +757,30 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var max_pos: UInt = ((if ((((hdr[1].toUInt()) and 8u)).toBool()) 7 else 64)).toUInt()
         i = 0u
         while (sfb[i.toInt()].toBool()) {
-            block {
-                var ipos: UInt = ist_pos[i.toInt()].toUInt()
-                if (((i.toInt()) > max_band[((i % 3u)).toInt()]) && (ipos < max_pos)) {
-                    var kl: Float = 0f
-                    var kr: Float = 0f
-                    var s: Float = (if ((((hdr[3].toUInt()) and 32u)).toBool()) 1.41421356f else 1f)
-                    if ((((hdr[1].toUInt()) and 8u)).toBool()) {
-                        kl = g_pan[2 * (ipos.toInt())]
-                        kr = g_pan[(2 * (ipos.toInt())) + 1]
-                    } else {
-                        kl = 1f
-                        kr = L3_ldexp_q2(1f, ((((ipos.toInt()) + 1) shr 1) shl mpeg2_sh))
-                        if (((ipos and 1u)).toBool()) {
-                            kl = kr
-                            kr = 1f
-                        }
-                    }
-                    L3_intensity_stereo_band(left, (sfb[i.toInt()].toInt()), (kl * s), (kr * s))
-
+            var ipos: UInt = ist_pos[i.toInt()].toUInt()
+            if (((i.toInt()) > max_band[((i % 3u)).toInt()]) && (ipos < max_pos)) {
+                var kl: Float = 0f
+                var kr: Float = 0f
+                var s: Float = (if ((((hdr[3].toUInt()) and 32u)).toBool()) 1.41421356f else 1f)
+                if ((((hdr[1].toUInt()) and 8u)).toBool()) {
+                    kl = g_pan[2 * (ipos.toInt())]
+                    kr = g_pan[(2 * (ipos.toInt())) + 1]
                 } else {
-                    if ((((hdr[3].toUInt()) and 32u)).toBool()) {
-                        L3_midside_stereo(left, (sfb[i.toInt()].toInt()))
+                    kl = 1f
+                    kr = L3_ldexp_q2(1f, ((((ipos.toInt()) + 1) shr 1) shl mpeg2_sh))
+                    if (((ipos and 1u)).toBool()) {
+                        kl = kr
+                        kr = 1f
                     }
                 }
-                left = left + (sfb[i.toInt()].toInt())
+                L3_intensity_stereo_band(left, (sfb[i.toInt()].toInt()), (kl * s), (kr * s))
 
+            } else {
+                if ((((hdr[3].toUInt()) and 32u)).toBool()) {
+                    L3_midside_stereo(left, (sfb[i.toInt()].toInt()))
+                }
             }
+            left = left + (sfb[i.toInt()].toInt())
             i = i + 1u
         }
 
@@ -809,14 +796,11 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
         i = 0
         while (i < max_blocks) {
-            block {
-                var default_pos: Int = (if ((((hdr[1].toUInt()) and 8u)).toBool()) 3 else 0)
-                var itop: Int = (n_sfb - max_blocks) + i
-                var prev: Int = itop - max_blocks
-                ist_pos[itop] = ((if (max_band[i] >= prev) default_pos else (ist_pos[prev].toInt()))).toUByte()
-
-            }
-            i = i + 1
+            var default_pos: Int = (if ((((hdr[1].toUInt()) and 8u)).toBool()) 3 else 0)
+            var itop: Int = (n_sfb - max_blocks) + i
+            var prev: Int = itop - max_blocks
+            ist_pos[itop] = ((if (max_band[i] >= prev) default_pos else (ist_pos[prev].toInt()))).toUByte()
+            i++
         }
         L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, ((((gr[1].scalefac_compress.toUInt()) and 1u)).toInt()))
 
@@ -827,15 +811,19 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var len: Int = 0
         var src: FloatPointer = grbuf
         var dst: FloatPointer = scratch
-        while (0 != (run { val `-` = sfb.value.toInt(); len = `-`; `-` })) {
+        while (true) {
+            len = sfb.value.toInt()
+            if (len == 0) break
             i = 0
             while (i < len) {
                 dst++.value = src[0 * len]
                 dst++.value = src[1 * len]
                 dst++.value = src[2 * len]
-                run { i++; src++ }
+                i++
+                src++
             }
-            run { run { val `-` = sfb + 3; sfb = `-`; `-` }; run { val `-` = src + ((2 * len)); src = `-`; `-` } }
+            sfb += 3
+            src += (2 * len)
         }
         memcpy((CPointer<Unit>(grbuf.ptr)), (CPointer<Unit>(scratch.ptr)), ((dst - scratch) * Float.SIZE_BYTES))
 
@@ -845,21 +833,16 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var nbands: Int = nbands // Mutating parameter
         var g_aa: Array2Array8Float = __STATIC_L3_antialias_g_aa
         while (nbands > 0) {
-            block {
-                var i: Int = 0
-                while (i < 8) {
-                    block {
-                        var u: Float = grbuf[18 + i]
-                        var d: Float = grbuf[17 - i]
-                        grbuf[18 + i] = (u * g_aa[0][i]) - (d * g_aa[1][i])
-                        grbuf[17 - i] = (u * g_aa[1][i]) + (d * g_aa[0][i])
-
-                    }
-                    i = i + 1
-                }
-
+            var i: Int = 0
+            while (i < 8) {
+                var u: Float = grbuf[18 + i]
+                var d: Float = grbuf[17 - i]
+                grbuf[18 + i] = (u * g_aa[0][i]) - (d * g_aa[1][i])
+                grbuf[17 - i] = (u * g_aa[1][i]) + (d * g_aa[0][i])
+                i++
             }
-            run { nbands--; run { val `-` = grbuf + 18; grbuf = `-`; `-` } }
+            nbands--
+            grbuf += 18
         }
 
     }
@@ -919,73 +902,68 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var overlap: FloatPointer = overlap // Mutating parameter
         var i: Int = 0
         var j: Int = 0
-        var g_twid9: Array18Float = __STATIC_L3_imdct36_g_twid9
+        var g_twid9 = __STATIC_L3_imdct36_g_twid9
         j = 0
         while (j < nbands) {
-            block {
-                var co: Array9Float = Array9Float(fixedArrayOfFloat(0f, size = 9).ptr)
-                var si: Array9Float = Array9Float(fixedArrayOfFloat(0f, size = 9).ptr)
-                co[0] = -grbuf[0]
-                si[0] = grbuf[17]
-                i = 0
-                while (i < 4) {
-                    si[8 - (2 * i)] = grbuf[(4 * i) + 1] - grbuf[(4 * i) + 2]
-                    co[1 + (2 * i)] = grbuf[(4 * i) + 1] + grbuf[(4 * i) + 2]
-                    si[7 - (2 * i)] = grbuf[(4 * i) + 4] - grbuf[(4 * i) + 3]
-                    co[2 + (2 * i)] = -(grbuf[(4 * i) + 3] + grbuf[(4 * i) + 4])
-                    i = i + 1
-                }
-                L3_dct3_9((FloatPointer(co.ptr)))
-                L3_dct3_9((FloatPointer(si.ptr)))
-                si[1] = -si[1]
-                si[3] = -si[3]
-                si[5] = -si[5]
-                si[7] = -si[7]
-                i = 0
-                while (i < 9) {
-                    block {
-                        var ovl: Float = overlap[i]
-                        var sum: Float = (co[i] * g_twid9[9 + i]) + (si[i] * g_twid9[0 + i])
-                        overlap[i] = (co[i] * g_twid9[0 + i]) - (si[i] * g_twid9[9 + i])
-                        grbuf[i] = (ovl * window[0 + i]) - (sum * window[9 + i])
-                        grbuf[17 - i] = (ovl * window[9 + i]) + (sum * window[0 + i])
-
-                    }
-                    i = i + 1
-                }
-
+            var co: Array9Float = Array9Float(fixedArrayOfFloat(0f, size = 9).ptr)
+            var si: Array9Float = Array9Float(fixedArrayOfFloat(0f, size = 9).ptr)
+            co[0] = -grbuf[0]
+            si[0] = grbuf[17]
+            i = 0
+            while (i < 4) {
+                si[8 - (2 * i)] = grbuf[(4 * i) + 1] - grbuf[(4 * i) + 2]
+                co[1 + (2 * i)] = grbuf[(4 * i) + 1] + grbuf[(4 * i) + 2]
+                si[7 - (2 * i)] = grbuf[(4 * i) + 4] - grbuf[(4 * i) + 3]
+                co[2 + (2 * i)] = -(grbuf[(4 * i) + 3] + grbuf[(4 * i) + 4])
+                i++
             }
-            run { j++; run { val `-` = grbuf + 18; grbuf = `-`; `-` }; run { val `-` = overlap + 9; overlap = `-`; `-` } }
+            L3_dct3_9((FloatPointer(co.ptr)))
+            L3_dct3_9((FloatPointer(si.ptr)))
+            si[1] = -si[1]
+            si[3] = -si[3]
+            si[5] = -si[5]
+            si[7] = -si[7]
+            i = 0
+            while (i < 9) {
+                var ovl: Float = overlap[i]
+                var sum: Float = (co[i] * g_twid9[9 + i]) + (si[i] * g_twid9[0 + i])
+                overlap[i] = (co[i] * g_twid9[0 + i]) - (si[i] * g_twid9[9 + i])
+                grbuf[i] = (ovl * window[0 + i]) - (sum * window[9 + i])
+                grbuf[17 - i] = (ovl * window[9 + i]) + (sum * window[0 + i])
+                i++
+            }
+
+            j++
+            grbuf += 18
+            overlap += 9
         }
 
     }
-    fun L3_idct3(x0: Float, x1: Float, x2: Float, dst: FloatPointer) {
+    fun L3_idct3(x0: Float, x1: Float, x2: Float, dst: FloatArray) {
         var m1: Float = x1 * 0.8660254f
         var a1: Float = x0 - (x2 * 0.5f)
         dst[1] = x0 + x2
         dst[0] = a1 + m1
         dst[2] = a1 - m1
-
     }
+    private val temp1F3 = FloatArray(3)
+    private val temp2F3 = FloatArray(3)
     fun L3_imdct12(x: FloatPointer, dst: FloatPointer, overlap: FloatPointer) {
         var g_twid3: Array6Float = __STATIC_L3_imdct12_g_twid3
-        var co: Array3Float = Array3Float(fixedArrayOfFloat(0f, size = 3).ptr)
-        var si: Array3Float = Array3Float(fixedArrayOfFloat(0f, size = 3).ptr)
+        var co = temp1F3
+        var si = temp2F3
         var i: Int = 0
-        L3_idct3((-x[0]), (x[6] + x[3]), (x[12] + x[9]), (FloatPointer(co.ptr)))
-        L3_idct3(x[15], (x[12] - x[9]), (x[6] - x[3]), (FloatPointer(si.ptr)))
+        L3_idct3((-x[0]), (x[6] + x[3]), (x[12] + x[9]), co)
+        L3_idct3(x[15], (x[12] - x[9]), (x[6] - x[3]), si)
         si[1] = -si[1]
         i = 0
         while (i < 3) {
-            block {
-                var ovl: Float = overlap[i]
-                var sum: Float = (co[i] * g_twid3[3 + i]) + (si[i] * g_twid3[0 + i])
-                overlap[i] = (co[i] * g_twid3[0 + i]) - (si[i] * g_twid3[3 + i])
-                dst[i] = (ovl * g_twid3[2 - i]) - (sum * g_twid3[5 - i])
-                dst[5 - i] = (ovl * g_twid3[5 - i]) + (sum * g_twid3[2 - i])
-
-            }
-            i = i + 1
+            var ovl: Float = overlap[i]
+            var sum: Float = (co[i] * g_twid3[3 + i]) + (si[i] * g_twid3[0 + i])
+            overlap[i] = (co[i] * g_twid3[0 + i]) - (si[i] * g_twid3[3 + i])
+            dst[i] = (ovl * g_twid3[2 - i]) - (sum * g_twid3[5 - i])
+            dst[5 - i] = (ovl * g_twid3[5 - i]) + (sum * g_twid3[2 - i])
+            i++
         }
 
     }
@@ -994,16 +972,15 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var overlap: FloatPointer = overlap // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
         while (nbands > 0) {
-            block {
-                var tmp: Array18Float = Array18Float(fixedArrayOfFloat(0f, size = 18).ptr)
-                memcpy((CPointer<Unit>(tmp.ptr)), (CPointer<Unit>(grbuf.ptr)), 72)
-                memcpy((CPointer<Unit>(grbuf.ptr)), (CPointer<Unit>(overlap.ptr)), (6 * Float.SIZE_BYTES))
-                L3_imdct12((FloatPointer(tmp.ptr)), (grbuf + 6), (overlap + 6))
-                L3_imdct12((tmp + 1), (grbuf + 12), (overlap + 6))
-                L3_imdct12((tmp + 2), overlap, (overlap + 6))
-
-            }
-            run { nbands--; run { val `-` = overlap + 9; overlap = `-`; `-` }; run { val `-` = grbuf + 18; grbuf = `-`; `-` } }
+            var tmp: Array18Float = Array18Float(fixedArrayOfFloat(0f, size = 18).ptr)
+            memcpy((CPointer<Unit>(tmp.ptr)), (CPointer<Unit>(grbuf.ptr)), 72)
+            memcpy((CPointer<Unit>(grbuf.ptr)), (CPointer<Unit>(overlap.ptr)), (6 * Float.SIZE_BYTES))
+            L3_imdct12((FloatPointer(tmp.ptr)), (grbuf + 6), (overlap + 6))
+            L3_imdct12((tmp + 1), (grbuf + 12), (overlap + 6))
+            L3_imdct12((tmp + 2), overlap, (overlap + 6))
+            nbands--
+            overlap += 9
+            grbuf += 18
         }
 
     }
@@ -1016,9 +993,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             i = 1
             while (i < 18) {
                 grbuf[i] = -grbuf[i]
-                i = i + 2
+                i += 2
             }
-            run { run { val `-` = b + 2; b = `-`; `-` }; run { val `-` = grbuf + 36; grbuf = `-`; `-` } }
+            b += 2
+            grbuf += 36
         }
 
     }
@@ -1028,8 +1006,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var g_mdct_window: Array2Array18Float = __STATIC_L3_imdct_gr_g_mdct_window
         if (n_long_bands.toBool()) {
             L3_imdct36(grbuf, overlap, (FloatPointer(g_mdct_window[0].ptr)), (n_long_bands.toInt()))
-            grbuf = grbuf + ((18 * (n_long_bands.toInt())))
-            overlap = overlap + ((9 * (n_long_bands.toInt())))
+            grbuf += ((18 * (n_long_bands.toInt())))
+            overlap += ((9 * (n_long_bands.toInt())))
         }
         if ((block_type.toInt()) == 2) {
             L3_imdct_short(grbuf, overlap, (32 - (n_long_bands.toInt())))
@@ -1042,7 +1020,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var pos: Int = (s.value.bs.pos + 7) / 8
         var remains: Int = (s.value.bs.limit / 8) - pos
         if (remains > 511) {
-            pos = pos + (remains - 511)
+            pos += (remains - 511)
             remains = 511
         }
         if (remains > 0) {
@@ -1065,13 +1043,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var ch: Int = 0
         ch = 0
         while (ch < nch) {
-            block {
-                var layer3gr_limit: Int = s.value.bs.pos + (gr_info[ch].part_23_length.toInt())
-                L3_decode_scalefactors((CPointer<UByte>(h.value.header.ptr)), (CPointer<UByte>(s.value.ist_pos[ch].ptr)), (CPointer<bs_t>((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (gr_info + ch), (FloatPointer(s.value.scf.ptr)), ch)
-                L3_huffman((FloatPointer(s.value.grbuf[ch].ptr)), (CPointer<bs_t>((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (gr_info + ch), (FloatPointer(s.value.scf.ptr)), layer3gr_limit)
-
-            }
-            ch = ch + 1
+            var layer3gr_limit: Int = s.value.bs.pos + (gr_info[ch].part_23_length.toInt())
+            L3_decode_scalefactors((CPointer<UByte>(h.value.header.ptr)), (CPointer<UByte>(s.value.ist_pos[ch].ptr)), (CPointer<bs_t>((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (gr_info + ch), (FloatPointer(s.value.scf.ptr)), ch)
+            L3_huffman((FloatPointer(s.value.grbuf[ch].ptr)), (CPointer<bs_t>((s).ptr + mp3dec_scratch_t__OFFSET_bs)), (gr_info + ch), (FloatPointer(s.value.scf.ptr)), layer3gr_limit)
+            ch++
         }
         if ((((h.value.header[3].toUInt()) and 16u)).toBool()) {
             L3_intensity_stereo((FloatPointer(s.value.grbuf[0].ptr)), (CPointer<UByte>(s.value.ist_pos[1].ptr)), gr_info, (CPointer<UByte>(h.value.header.ptr)))
@@ -1082,19 +1057,17 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
         ch = 0
         while (ch < nch) {
-            block {
-                var aa_bands: Int = 31
-                var n_long_bands: Int = (if (gr_info.value.mixed_block_flag.toBool()) 2 else 0) shl (((((((((h.value.header[2].toUInt()) shr 2) and 3u) + (((((h.value.header[1].toUInt()) shr 3) and 1u) + (((h.value.header[1].toUInt()) shr 4) and 1u)) * 3u))).toInt()) == 2)).toInt().toInt())
-                if (gr_info.value.n_short_sfb.toBool()) {
-                    aa_bands = n_long_bands - 1
-                    L3_reorder((s.value.grbuf[ch] + ((n_long_bands * 18))), (FloatPointer(s.value.syn[0].ptr)), (gr_info.value.sfbtab + (gr_info.value.n_long_sfb.toInt())))
-                }
-                L3_antialias((FloatPointer(s.value.grbuf[ch].ptr)), aa_bands)
-                L3_imdct_gr((FloatPointer(s.value.grbuf[ch].ptr)), (FloatPointer(h.value.mdct_overlap[ch].ptr)), (gr_info.value.block_type.toUInt()), (n_long_bands.toUInt()))
-                L3_change_sign((FloatPointer(s.value.grbuf[ch].ptr)))
-
+            var aa_bands: Int = 31
+            var n_long_bands: Int = (if (gr_info.value.mixed_block_flag.toBool()) 2 else 0) shl (((((((((h.value.header[2].toUInt()) shr 2) and 3u) + (((((h.value.header[1].toUInt()) shr 3) and 1u) + (((h.value.header[1].toUInt()) shr 4) and 1u)) * 3u))).toInt()) == 2)).toInt().toInt())
+            if (gr_info.value.n_short_sfb.toBool()) {
+                aa_bands = n_long_bands - 1
+                L3_reorder((s.value.grbuf[ch] + ((n_long_bands * 18))), (FloatPointer(s.value.syn[0].ptr)), (gr_info.value.sfbtab + (gr_info.value.n_long_sfb.toInt())))
             }
-            run { ch++; run { val `-` = gr_info; gr_info = gr_info + 1; `-` } }
+            L3_antialias((FloatPointer(s.value.grbuf[ch].ptr)), aa_bands)
+            L3_imdct_gr((FloatPointer(s.value.grbuf[ch].ptr)), (FloatPointer(h.value.mdct_overlap[ch].ptr)), (gr_info.value.block_type.toUInt()), (n_long_bands.toUInt()))
+            L3_change_sign((FloatPointer(s.value.grbuf[ch].ptr)))
+            ch++
+            gr_info += 1
         }
 
     }
@@ -1109,67 +1082,63 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 var y: FloatPointer = grbuf + k
                 run { run { val `-` = FloatPointer(t[0].ptr); x = `-`; `-` }; run { val `-` = 0; i = `-`; `-` } }
                 while (i < 8) {
-                    block {
-                        var x0: Float = y[i * 18]
-                        var x1: Float = y[(15 - i) * 18]
-                        var x2: Float = y[(16 + i) * 18]
-                        var x3: Float = y[(31 - i) * 18]
-                        var t0: Float = x0 + x3
-                        var t1: Float = x1 + x2
-                        var t2: Float = (x1 - x2) * g_sec[(3 * i) + 0]
-                        var t3: Float = (x0 - x3) * g_sec[(3 * i) + 1]
-                        x[0] = t0 + t1
-                        x[8] = (t0 - t1) * g_sec[(3 * i) + 2]
-                        x[16] = t3 + t2
-                        x[24] = (t3 - t2) * g_sec[(3 * i) + 2]
-
-                    }
-                    run { i++; x++ }
+                    var x0: Float = y[i * 18]
+                    var x1: Float = y[(15 - i) * 18]
+                    var x2: Float = y[(16 + i) * 18]
+                    var x3: Float = y[(31 - i) * 18]
+                    var t0: Float = x0 + x3
+                    var t1: Float = x1 + x2
+                    var t2: Float = (x1 - x2) * g_sec[(3 * i) + 0]
+                    var t3: Float = (x0 - x3) * g_sec[(3 * i) + 1]
+                    x[0] = t0 + t1
+                    x[8] = (t0 - t1) * g_sec[(3 * i) + 2]
+                    x[16] = t3 + t2
+                    x[24] = (t3 - t2) * g_sec[(3 * i) + 2]
+                    i++
+                    x++
                 }
                 run { run { val `-` = FloatPointer(t[0].ptr); x = `-`; `-` }; run { val `-` = 0; i = `-`; `-` } }
                 while (i < 4) {
-                    block {
-                        var x0: Float = x[0]
-                        var x1: Float = x[1]
-                        var x2: Float = x[2]
-                        var x3: Float = x[3]
-                        var x4: Float = x[4]
-                        var x5: Float = x[5]
-                        var x6: Float = x[6]
-                        var x7: Float = x[7]
-                        var xt: Float = 0f
-                        xt = x0 - x7
-                        x0 = x0 + x7
-                        x7 = x1 - x6
-                        x1 = x1 + x6
-                        x6 = x2 - x5
-                        x2 = x2 + x5
-                        x5 = x3 - x4
-                        x3 = x3 + x4
-                        x4 = x0 - x3
-                        x0 = x0 + x3
-                        x3 = x1 - x2
-                        x1 = x1 + x2
-                        x[0] = x0 + x1
-                        x[4] = (x0 - x1) * 0.70710677f
-                        x5 = x5 + x6
-                        x6 = (x6 + x7) * 0.70710677f
-                        x7 = x7 + xt
-                        x3 = (x3 + x4) * 0.70710677f
-                        x5 = x5 - (x7 * 0.198912367f)
-                        x7 = x7 + (x5 * 0.382683432f)
-                        x5 = x5 - (x7 * 0.198912367f)
-                        x0 = xt - x6
-                        xt = xt + x6
-                        x[1] = (xt + x7) * 0.50979561f
-                        x[2] = (x4 + x3) * 0.54119611f
-                        x[3] = (x0 - x5) * 0.60134488f
-                        x[5] = (x0 + x5) * 0.89997619f
-                        x[6] = (x4 - x3) * 1.30656302f
-                        x[7] = (xt - x7) * 2.56291556f
-
-                    }
-                    run { i++; run { val `-` = x + 8; x = `-`; `-` } }
+                    var x0: Float = x[0]
+                    var x1: Float = x[1]
+                    var x2: Float = x[2]
+                    var x3: Float = x[3]
+                    var x4: Float = x[4]
+                    var x5: Float = x[5]
+                    var x6: Float = x[6]
+                    var x7: Float = x[7]
+                    var xt: Float = 0f
+                    xt = x0 - x7
+                    x0 = x0 + x7
+                    x7 = x1 - x6
+                    x1 = x1 + x6
+                    x6 = x2 - x5
+                    x2 = x2 + x5
+                    x5 = x3 - x4
+                    x3 = x3 + x4
+                    x4 = x0 - x3
+                    x0 = x0 + x3
+                    x3 = x1 - x2
+                    x1 = x1 + x2
+                    x[0] = x0 + x1
+                    x[4] = (x0 - x1) * 0.70710677f
+                    x5 = x5 + x6
+                    x6 = (x6 + x7) * 0.70710677f
+                    x7 = x7 + xt
+                    x3 = (x3 + x4) * 0.70710677f
+                    x5 = x5 - (x7 * 0.198912367f)
+                    x7 = x7 + (x5 * 0.382683432f)
+                    x5 = x5 - (x7 * 0.198912367f)
+                    x0 = xt - x6
+                    xt = xt + x6
+                    x[1] = (xt + x7) * 0.50979561f
+                    x[2] = (x4 + x3) * 0.54119611f
+                    x[3] = (x0 - x5) * 0.60134488f
+                    x[5] = (x0 + x5) * 0.89997619f
+                    x[6] = (x4 - x3) * 1.30656302f
+                    x[7] = (xt - x7) * 2.56291556f
+                    i++
+                    x += 8
                 }
                 i = 0
                 while (i < 7) {
@@ -1177,7 +1146,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     y[1 * 18] = (t[2][i] + t[3][i]) + t[3][i + 1]
                     y[2 * 18] = t[1][i] + t[1][i + 1]
                     y[3 * 18] = (t[2][i + 1] + t[3][i]) + t[3][i + 1]
-                    run { i++; run { val `-` = y + ((4 * 18)); y = `-`; `-` } }
+                    i++
+                    y += 4 * 18
                 }
                 y[0 * 18] = t[0][7]
                 y[1 * 18] = t[2][7] + t[3][7]
@@ -1185,7 +1155,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 y[3 * 18] = t[3][7]
 
             }
-            k = k + 1
+            k++
         }
 
     }
@@ -1246,132 +1216,146 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         mp3d_synth_pair((dstl + ((32 * nch))), nch, ((lins + ((4 * 15))) + 64))
         i = 14
         while (i >= 0) {
-            block {
-                var a: Array4Float = Array4Float(fixedArrayOfFloat(0f, size = 4).ptr)
-                var b: Array4Float = Array4Float(fixedArrayOfFloat(0f, size = 4).ptr)
-                zlin[4 * i] = xl[18 * (31 - i)]
-                zlin[(4 * i) + 1] = xr[18 * (31 - i)]
-                zlin[(4 * i) + 2] = xl[1 + (18 * (31 - i))]
-                zlin[(4 * i) + 3] = xr[1 + (18 * (31 - i))]
-                zlin[4 * (i + 16)] = xl[1 + (18 * (1 + i))]
-                zlin[(4 * (i + 16)) + 1] = xr[1 + (18 * (1 + i))]
-                zlin[(4 * (i - 16)) + 2] = xl[18 * (1 + i)]
-                zlin[(4 * (i - 16)) + 3] = xr[18 * (1 + i)]
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (0 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 0) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = (vz[j] * w1) + (vy[j] * w0); b[j] = `-`; `-` }; run { val `-` = (vz[j] * w0) - (vy[j] * w1); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
 
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (1 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 1) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
+            var a: Array4Float = Array4Float(fixedArrayOfFloat(0f, size = 4).ptr)
+            var b: Array4Float = Array4Float(fixedArrayOfFloat(0f, size = 4).ptr)
+            zlin[4 * i] = xl[18 * (31 - i)]
+            zlin[(4 * i) + 1] = xr[18 * (31 - i)]
+            zlin[(4 * i) + 2] = xl[1 + (18 * (31 - i))]
+            zlin[(4 * i) + 3] = xr[1 + (18 * (31 - i))]
+            zlin[4 * (i + 16)] = xl[1 + (18 * (1 + i))]
+            zlin[(4 * (i + 16)) + 1] = xr[1 + (18 * (1 + i))]
+            zlin[(4 * (i - 16)) + 2] = xl[18 * (1 + i)]
+            zlin[(4 * (i - 16)) + 3] = xr[18 * (1 + i)]
 
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (2 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 2) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
-
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (3 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 3) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
-
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (4 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 4) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
-
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (5 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 5) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
-
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (6 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 6) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
-
-                }
-                block {
-                    var j: Int = 0
-                    var w0: Float = w++.value
-                    var w1: Float = w++.value
-                    var vz: FloatPointer = ((zlin) + ((4 * i) - (7 * 64)))
-                    var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 7) * 64)))
-                    j = 0
-                    while (j < 4) {
-                        run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
-                        j = j + 1
-                    }
-
-                }
-                dstr[(15 - i) * nch] = mp3d_scale_pcm(a[1])
-                dstr[(17 + i) * nch] = mp3d_scale_pcm(b[1])
-                dstl[(15 - i) * nch] = mp3d_scale_pcm(a[0])
-                dstl[(17 + i) * nch] = mp3d_scale_pcm(b[0])
-                dstr[(47 - i) * nch] = mp3d_scale_pcm(a[3])
-                dstr[(49 + i) * nch] = mp3d_scale_pcm(b[3])
-                dstl[(47 - i) * nch] = mp3d_scale_pcm(a[2])
-                dstl[(49 + i) * nch] = mp3d_scale_pcm(b[2])
+            fun block() {
 
             }
-            i = i - 1
+
+            for (j in 0 until 4) {
+                b[j] = 0f
+                a[j] = 0f
+            }
+
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (0 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 0) * 64)))
+                j = 0
+                while (j < 4) {
+                    b[j] = b[j] + (vz[j] * w1) + (vy[j] * w0)
+                    a[j] = a[j] + (vz[j] * w0) - (vy[j] * w1)
+                    j += 1
+                }
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (1 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 1) * 64)))
+                j = 0
+                while (j < 4) {
+                    b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
+                    a[j] = a[j] + ((vy[j] * w1) - (vz[j] * w0))
+                    j += 1
+                }
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (2 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 2) * 64)))
+                j = 0
+                while (j < 4) {
+                    b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
+                    a[j] = a[j] + ((vz[j] * w0) - (vy[j] * w1))
+                    j += 1
+                }
+
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (3 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 3) * 64)))
+                j = 0
+                while (j < 4) {
+                    b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
+                    a[j] = a[j] + ((vy[j] * w1) - (vz[j] * w0))
+                    j += 1
+                }
+
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (4 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 4) * 64)))
+                j = 0
+                while (j < 4) {
+                    run {
+                        b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
+                        a[j] = a[j] + ((vz[j] * w0) - (vy[j] * w1))
+                    }
+                    j += 1
+                }
+
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (5 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 5) * 64)))
+                j = 0
+                while (j < 4) {
+                    run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
+                    j = j + 1
+                }
+
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (6 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 6) * 64)))
+                j = 0
+                while (j < 4) {
+                    run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
+                    j = j + 1
+                }
+
+            }
+            run {
+                var j: Int = 0
+                var w0: Float = w++.value
+                var w1: Float = w++.value
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (7 * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 7) * 64)))
+                j = 0
+                while (j < 4) {
+                    run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
+                    j = j + 1
+                }
+
+            }
+            dstr[(15 - i) * nch] = mp3d_scale_pcm(a[1])
+            dstr[(17 + i) * nch] = mp3d_scale_pcm(b[1])
+            dstl[(15 - i) * nch] = mp3d_scale_pcm(a[0])
+            dstl[(17 + i) * nch] = mp3d_scale_pcm(b[0])
+            dstr[(47 - i) * nch] = mp3d_scale_pcm(a[3])
+            dstr[(49 + i) * nch] = mp3d_scale_pcm(b[3])
+            dstl[(47 - i) * nch] = mp3d_scale_pcm(a[2])
+            dstl[(49 + i) * nch] = mp3d_scale_pcm(b[2])
+
+            i -= 1
         }
 
     }
@@ -1380,19 +1364,19 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         i = 0
         while (i < nch) {
             mp3d_DCT_II((grbuf + ((576 * i))), nbands)
-            i = i + 1
+            i++
         }
         memcpy((CPointer<Unit>(lins.ptr)), (CPointer<Unit>(qmf_state.ptr)), ((Float.SIZE_BYTES * 15) * 64))
         i = 0
         while (i < nbands) {
             mp3d_synth((grbuf + i), (pcm + ((32 * (nch * i)))), nch, (lins + ((i * 64))))
-            i = i + 2
+            i += 2
         }
         if (nch == 1) {
             i = 0
             while (i < (15 * 64)) {
                 qmf_state[i] = lins[(nbands * 64) + i]
-                i = i + 2
+                i += 2
             }
         } else {
             memcpy((CPointer<Unit>(qmf_state.ptr)), (CPointer<Unit>(((lins + ((nbands * 64)))).ptr)), ((Float.SIZE_BYTES * 15) * 64))
@@ -1404,14 +1388,14 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var nmatch: Int = 0
         run { run { val `-` = 0; i = `-`; `-` }; run { val `-` = 0; nmatch = `-`; `-` } }
         while (nmatch < 10) {
-            i = i + (hdr_frame_bytes((hdr + i), frame_bytes) + hdr_padding((hdr + i)))
+            i += (hdr_frame_bytes((hdr + i), frame_bytes) + hdr_padding((hdr + i)))
             if ((i + 4) > mp3_bytes) {
                 return ((nmatch > 0)).toInt().toInt()
             }
             if (hdr_compare(hdr, (hdr + i)) == 0) {
                 return 0
             }
-            nmatch = nmatch + 1
+            nmatch += 1
         }
         return 1
 
@@ -1447,7 +1431,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                 STACK_PTR = __oldPos1
                             }
                         }
-                        k = k + 1
+                        k++
                     }
                     if ((((frame_bytes.toBool()) && (((i + (((frame_and_padding <= mp3_bytes)).toInt().toInt()))).toBool())) && (mp3d_match_frame(mp3, (mp3_bytes - i), frame_bytes).toBool())) || ((i == 0) && (frame_and_padding == mp3_bytes))) {
                         ptr_frame_bytes.value = frame_and_padding
@@ -1572,22 +1556,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun memcmp(ptr1: CPointer<Unit>, ptr2: CPointer<Unit>, num: Int): Int {
         var a: CPointer<Byte> = CPointer<Byte>(ptr1.ptr)
         var b: CPointer<Byte> = CPointer<Byte>(ptr2.ptr)
-        block {
-            var n: Int = 0
-            while (n < num) {
-                block {
-                    var res: Int = (a[n].toInt()) - (b[n].toInt())
-                    if (res < 0) {
-                        return -1
-                    }
-                    if (res > 0) {
-                        return 1
-                    }
-
-                }
-                n = n + 1
-            }
-
+        var n: Int = 0
+        while (n < num) {
+            var res: Int = (a[n].toInt()) - (b[n].toInt())
+            if (res < 0) return -1
+            if (res > 0) return 1
+            n++
         }
         return 0
 
@@ -2836,15 +2810,6 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
     inline operator fun <T0, T1, T2, T3, TR> CFunction<(T0, T1, T2, T3) -> TR>.invoke(v0: T0, v1: T1, v2: T2, v3: T3): TR = func.invoke(v0, v1, v2, v3)
     inline operator fun <T0, T1, T2, T3, T4, TR> CFunction<(T0, T1, T2, T3, T4) -> TR>.invoke(v0: T0, v1: T1, v2: T2, v3: T3, v4: T4): TR = func.invoke(v0, v1, v2, v3, v4)
     inline operator fun <T0, T1, T2, T3, T4, T5, TR> CFunction<(T0, T1, T2, T3, T4, T5) -> TR>.invoke(v0: T0, v1: T1, v2: T2, v3: T3, v4: T4, v5: T5): TR = func.invoke(v0, v1, v2, v3, v4, v5)
-
-    ///////////////////////////////////////
-    // TOOLS
-    ///////////////////////////////////////
-    @OptIn(kotlin.contracts.ExperimentalContracts::class)
-    public inline fun block(block: () -> Unit) {
-        kotlin.contracts.contract { callsInPlace(block, kotlin.contracts.InvocationKind.EXACTLY_ONCE) }
-        return block()
-    }
 }
 
 @Suppress("UNCHECKED_CAST")
