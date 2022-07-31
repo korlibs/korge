@@ -895,8 +895,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         return main_data_begin
 
     }
-    fun L3_read_scalefactors(scf: CPointer<UByte>, ist_pos: UByteArray, scf_size: CPointer<UByte>, scf_count: UByteArrayPtr, bitbuf: Bs, scfsi: Int) {
-        var scf: CPointer<UByte> = scf // Mutating parameter
+    fun L3_read_scalefactors(scf: UByteArrayPtr, ist_pos: UByteArray, scf_size: UByteArray, scf_count: UByteArrayPtr, bitbuf: Bs, scfsi: Int) {
+        var scf: UByteArrayPtr = scf // Mutating parameter
         var ist_pos = UByteArrayPtr(ist_pos) // Mutating parameter
         var scfsi: Int = scfsi // Mutating parameter
         var i: Int = 0
@@ -909,7 +909,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             } else {
                 val bits: Int = scf_size[i].toInt()
                 if (bits == 0) {
-                    memset((CPointer<Unit>(scf.ptr)), 0, cnt)
+                    for (n in 0 until cnt) scf[n] = 0u
                     for (n in 0 until cnt) ist_pos[n] = 0u
                 } else {
                     val max_scf: Int = ((if (scfsi < 0) ((((1 shl bits) - 1)).toLong()) else -1L)).toInt()
@@ -951,8 +951,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     fun L3_decode_scalefactors(hdr: CPointer<UByte>, ist_pos: UByteArray, bs: Bs, gr: ArrayPtr<GrInfo>, scf: FloatPointer, ch: Int) {
         val g_scf_partitions = __STATIC_L3_decode_scalefactors_g_scf_partitions
         var scf_partition = UByteArrayPtr(g_scf_partitions[gr.value.n_short_sfb.toBool().toInt() + (!gr.value.n_long_sfb.toBool()).toInt()])
-        val scf_size = CPointer<UByte>(fixedArrayOfUByte("\u0000", size = 4).ptr)
-        val iscf = fixedArrayOfUByte("\u0000", size = 40)
+        val scf_size = UByteArray(4)
+        val iscf = UByteArray(40)
         var i: Int = 0
         val scf_shift: Int = (((gr.value.scalefac_scale.toUInt()) + 1u)).toInt()
         var gain_exp: Int = 0
@@ -989,7 +989,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             scfsi = -16
 
         }
-        L3_read_scalefactors((CPointer(iscf.ptr)), ist_pos, (CPointer(scf_size.ptr)), scf_partition, bs, scfsi)
+        L3_read_scalefactors(UByteArrayPtr(iscf), ist_pos, ((scf_size)), scf_partition, bs, scfsi)
         if (gr.value.n_short_sfb.toBool()) {
             val sh: Int = 3 - scf_shift
             i = 0
