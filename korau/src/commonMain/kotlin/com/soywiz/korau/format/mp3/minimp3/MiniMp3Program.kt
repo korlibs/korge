@@ -237,6 +237,24 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             
             val value get() = this
         }
+
+        // CPointer<L12_scale_info>
+        class ScaleInfo(
+            var scf: Array192Float,
+            var total_bands: UByte,
+            var stereo_bands: UByte,
+            var bitalloc: Array64UByte,
+            var scfcod: Array64UByte,
+        ) {
+            val value get() = this
+            constructor(runtime: AbstractRuntime) : this(
+                scf = Array192Float(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
+                total_bands = 0u,
+                stereo_bands = 0u,
+                bitalloc = Array64UByte(runtime.alloca(64).ptr),
+                scfcod = Array64UByte(runtime.alloca(64).ptr),
+            )
+        }
     }
 
     fun allocaMp3Dec(): Mp3Dec = Mp3Dec(this)
@@ -306,7 +324,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return (if ((((h[2].toUInt()) and 2u)).toBool()) (if (((((h[1].toUInt()) and 6u)).toInt()) == 6) 4 else 1) else 0)
 
     }
-    fun L12_subband_alloc_table(hdr: CPointer<UByte>, sci: CPointer<L12_scale_info>): Array<L12_subband_alloc_tStruct> {
+    fun L12_subband_alloc_table(hdr: CPointer<UByte>, sci: ScaleInfo): Array<L12_subband_alloc_tStruct> {
         var alloc: Array<L12_subband_alloc_tStruct> = __STATIC_L12_subband_alloc_table_g_alloc_L1
         val mode: Int = ((((hdr[3].toUInt()) shr 6) and 3u)).toInt()
         var nbands: Int = 0
@@ -371,7 +389,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L12_read_scale_info(hdr: CPointer<UByte>, bs: Bs, sci: CPointer<L12_scale_info>) {
+    fun L12_read_scale_info(hdr: CPointer<UByte>, bs: Bs, sci: ScaleInfo) {
         val g_bitalloc_code_tab: UByteArrayPtr = UByteArrayPtr(__STATIC_L12_read_scale_info_g_bitalloc_code_tab)
         val subband_alloc = L12_subband_alloc_table(hdr, sci)
         var subband_alloc_n = 0
@@ -409,7 +427,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         }
 
     }
-    fun L12_dequantize_granule(grbuf: FloatPointer, bs: Bs, sci: CPointer<L12_scale_info>, group_size: Int): Int {
+    fun L12_dequantize_granule(grbuf: FloatPointer, bs: Bs, sci: ScaleInfo, group_size: Int): Int {
         var i: Int = 0
         var j: Int = 0
         var k: Int = 0
@@ -450,7 +468,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return group_size * 4
 
     }
-    fun L12_apply_scf_384(sci: CPointer<L12_scale_info>, scf: FloatPointer, dst: FloatPointer) {
+    fun L12_apply_scf_384(sci: ScaleInfo, scf: FloatPointer, dst: FloatPointer) {
         var scf: FloatPointer = scf // Mutating parameter
         var dst: FloatPointer = dst // Mutating parameter
         var i: Int = 0
@@ -1556,8 +1574,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
         } else {
             stackFrame {
-                val sci: Array1L12_scale_info = Array1L12_scale_infoAlloc(arrayOf((L12_scale_info(0))))
-                L12_read_scale_info(hdr, ((bs_frame)), (CPointer(sci.ptr)))
+                val sci = ScaleInfo(this)
+                L12_read_scale_info(hdr, bs_frame, sci)
                 memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
                 i = 0
                 igr = 0
@@ -1565,12 +1583,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     i += L12_dequantize_granule(
                         scratch.grbuf[0] + i,
                         (bs_frame),
-                        CPointer(sci.ptr),
+                        (sci),
                         info.value.layer or 1
                     )
                     if (12 == i) {
                         i = 0
-                        L12_apply_scf_384((CPointer(sci.ptr)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
+                        L12_apply_scf_384(((sci)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
                         mp3d_synth_granule((FloatPointer(dec.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
                         memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
                         pcm += 384 * info.value.channels
@@ -1591,24 +1609,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     //////////////////
     // C STRUCTURES //
     //////////////////
-
-    //////////////////
-    fun L12_scale_infoAlloc(): L12_scale_info = L12_scale_info(alloca(L12_scale_info__SIZE_BYTES).ptr)
-    fun L12_scale_infoAlloc(scf: Array192Float, total_bands: UByte, stereo_bands: UByte, bitalloc: Array64UByte, scfcod: Array64UByte): L12_scale_info = L12_scale_infoAlloc().apply { this.scf = scf; this.total_bands = total_bands; this.stereo_bands = stereo_bands; this.bitalloc = bitalloc; this.scfcod = scfcod }
-    fun L12_scale_info.copyFrom(src: L12_scale_info): L12_scale_info = this.apply { memcpy(CPointer(this.ptr), CPointer(src.ptr), L12_scale_info__SIZE_BYTES) }
-    @kotlin.jvm.JvmName("getL12_scale_info") operator fun CPointer<L12_scale_info>.get(index: Int): L12_scale_info = L12_scale_info(this.ptr + index * L12_scale_info__SIZE_BYTES)
-    operator fun CPointer<L12_scale_info>.set(index: Int, value: L12_scale_info) = L12_scale_info(this.ptr + index * L12_scale_info__SIZE_BYTES).copyFrom(value)
-    @kotlin.jvm.JvmName("plusL12_scale_info") operator fun CPointer<L12_scale_info>.plus(offset: Int): CPointer<L12_scale_info> = CPointer(this.ptr + offset * L12_scale_info__SIZE_BYTES)
-    @kotlin.jvm.JvmName("minusL12_scale_info") operator fun CPointer<L12_scale_info>.minus(offset: Int): CPointer<L12_scale_info> = CPointer(this.ptr - offset * L12_scale_info__SIZE_BYTES)
-    fun CPointer<L12_scale_info>.minusPtrL12_scale_info(other: CPointer<L12_scale_info>) = (this.ptr - other.ptr) / L12_scale_info__SIZE_BYTES
-    @get:kotlin.jvm.JvmName("getL12_scale_info") var CPointer<L12_scale_info>.value: L12_scale_info get() = this[0]; set(value) { this[0] = value }
-    /// L12_scale_info fields {
-    var L12_scale_info.scf: Array192Float get() = Array192Float(ptr + L12_scale_info__OFFSET_scf); set(value) { TODO("Unsupported setting ftype=Float[192]") }
-    var L12_scale_info.total_bands: UByte get() = lb(ptr + L12_scale_info__OFFSET_total_bands).toUByte(); set(value) = sb(ptr + L12_scale_info__OFFSET_total_bands, (value).toByte())
-    var L12_scale_info.stereo_bands: UByte get() = lb(ptr + L12_scale_info__OFFSET_stereo_bands).toUByte(); set(value) = sb(ptr + L12_scale_info__OFFSET_stereo_bands, (value).toByte())
-    var L12_scale_info.bitalloc: Array64UByte get() = Array64UByte(ptr + L12_scale_info__OFFSET_bitalloc); set(value) { TODO("Unsupported setting ftype=UByte[64]") }
-    var L12_scale_info.scfcod: Array64UByte get() = Array64UByte(ptr + L12_scale_info__OFFSET_scfcod); set(value) { TODO("Unsupported setting ftype=UByte[64]") }
-    /// }
 
     /////////////
     operator fun Array192Float.get(index: Int): Float = lwf(addr(index))
@@ -1780,30 +1780,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     fun Array4Array8FloatAlloc(items: Array<Array8Float>, size: Int = items.size): Array4Array8Float = Array4Array8FloatAlloc { for (n in 0 until size) this[n] = items[n] }
     operator fun Array4Array8Float.plus(offset: Int): CPointer<Array8Float> = CPointer(addr(offset))
     operator fun Array4Array8Float.minus(offset: Int): CPointer<Array8Float> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array1L12_scale_info.get(index: Int): L12_scale_info = L12_scale_info(addr(index))
-    operator fun Array1L12_scale_info.set(index: Int, value: L12_scale_info) { L12_scale_info(addr(index)).copyFrom(value) }
-    var Array1L12_scale_info.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array1L12_scale_infoAlloc(setItems: Array1L12_scale_info.() -> Unit): Array1L12_scale_info = Array1L12_scale_info(alloca_zero(
-        Array1L12_scale_info__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array1L12_scale_infoAlloc(items: Array<L12_scale_info>, size: Int = items.size): Array1L12_scale_info = Array1L12_scale_infoAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array1L12_scale_info.plus(offset: Int): CPointer<L12_scale_info> = CPointer(addr(offset))
-    operator fun Array1L12_scale_info.minus(offset: Int): CPointer<L12_scale_info> = CPointer(addr(-offset))
 }
 
 //////////////////
 // C STRUCTURES //
 //////////////////
 
-//////////////////
-internal @kotlin.jvm.JvmInline value/*!*/ class L12_scale_info(val ptr: Int)
-internal const val L12_scale_info__SIZE_BYTES = 898
-internal const val L12_scale_info__OFFSET_scf = 0
-internal const val L12_scale_info__OFFSET_total_bands = 768
-internal const val L12_scale_info__OFFSET_stereo_bands = 769
-internal const val L12_scale_info__OFFSET_bitalloc = 770
-internal const val L12_scale_info__OFFSET_scfcod = 834
 //////////////////
 internal const val Array192Float__NUM_ELEMENTS = 192
 internal const val Array192Float__ELEMENT_SIZE_BYTES = 4
@@ -1903,12 +1885,6 @@ internal const val Array4Array8Float__ELEMENT_SIZE_BYTES = 32
 internal const val Array4Array8Float__TOTAL_SIZE_BYTES = 128
 internal @kotlin.jvm.JvmInline value/*!*/ class Array4Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array4Array8Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array1L12_scale_info__NUM_ELEMENTS = 1
-internal const val Array1L12_scale_info__ELEMENT_SIZE_BYTES = 898
-internal const val Array1L12_scale_info__TOTAL_SIZE_BYTES = 898
-internal @kotlin.jvm.JvmInline value/*!*/ class Array1L12_scale_info(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array1L12_scale_info__ELEMENT_SIZE_BYTES
 }
 // KTCC RUNTIME ///////////////////////////////////////////////////
 
