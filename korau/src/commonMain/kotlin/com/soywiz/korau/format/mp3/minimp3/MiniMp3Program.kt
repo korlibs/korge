@@ -103,11 +103,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var s: UInt = ((bs.value.pos and 7)).toUInt()
         var shl: Int = n + (s.toInt())
         var p: CPointer<UByte> = bs.value.buf + ((bs.value.pos shr 3))
-        if ((run { val `-` = bs.value.pos + n; bs.value.pos = `-`; `-` }) > bs.value.limit) {
-            return 0u
-        }
-        next = (run { val `-` = p; p = p + 1; `-` }.value.toUInt()) and (((255 shr (s.toInt()))).toUInt())
-        while ((run { val `-` = shl - 8; shl = `-`; `-` }) > 0) {
+        bs.value.pos += n
+        if (bs.value.pos > bs.value.limit) return 0u
+        next = p.value.toUInt() and ((255 shr (s.toInt()))).toUInt()
+        p += 1
+        while (true) {
+            shl -= 8
+            if (shl <= 0) break
             cache = cache or (next shl shl)
             next = p.value.toUInt()
             p += 1
@@ -142,7 +144,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         if (((((h[1].toUInt()) and 6u)).toInt()) == 6) {
             frame_bytes = frame_bytes and ((3).inv())
         }
-        return (if (frame_bytes.toBool()) frame_bytes else free_format_size)
+        return if (frame_bytes.toBool()) frame_bytes else free_format_size
 
     }
     fun hdr_padding(h: CPointer<UByte>): Int {
@@ -228,10 +230,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         while (i < (sci.value.total_bands.toInt())) {
             var ba: UByte = 0u
             if (i == k) {
-                k = k + (subband_alloc.value.band_count.toInt())
+                k += (subband_alloc.value.band_count.toInt())
                 ba_bits = subband_alloc.value.code_tab_width.toInt()
                 ba_code_tab = CPointer<UByte>(((g_bitalloc_code_tab + (subband_alloc.value.tab_offset.toInt()))).ptr)
-                subband_alloc = subband_alloc + 1
+                subband_alloc += 1
             }
             ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
             sci.value.bitalloc[2 * i] = ba
@@ -280,7 +282,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         k = 0
                         while (k < group_size) {
                             dst[k] = ((((code % mod) - (mod / 2u))).toInt()).toFloat()
-                            run { k++; run { val `-` = code / mod; code = `-`; `-` } }
+                            k++
+                            code /= mod
                         }
 
                     }
@@ -565,8 +568,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var linbits: Int = g_linbits[tab_num].toInt()
             if (linbits.toBool()) {
                 do0@do {
-                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
-                    pairs_to_decode = (if (big_val_cnt > np) np else big_val_cnt)
+                    np = (sfb.value.toUInt() / 2u).toInt()
+                    sfb += 1
+                    pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
                     do1@do {
                         var j: Int = 0
@@ -574,12 +578,12 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         var leaf: Int = codebook[((bs_cache shr (32 - w))).toInt()].toInt()
                         while (leaf < 0) {
                             bs_cache = bs_cache shl w
-                            bs_sh = bs_sh + w
+                            bs_sh += w
                             w = leaf and 7
                             leaf = codebook[(((bs_cache shr (32 - w))).toInt()) - (leaf shr 3)].toInt()
                         }
                         bs_cache = bs_cache shl (leaf shr 8)
-                        bs_sh = bs_sh + (leaf shr 8)
+                        bs_sh += (leaf shr 8)
                         j = 0
                         while (j < 2) {
                             var lsb: Int = leaf and 15
@@ -602,7 +606,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                             leaf = leaf shr 4
                         }
                         while (bs_sh >= 0) {
-                            bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
+                            bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
+                            bs_next_ptr += 1
                             bs_sh -= 8
                         }
 
@@ -610,8 +615,9 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 } while (((run { val `-` = big_val_cnt - np; big_val_cnt = `-`; `-` }) > 0) && ((--sfb_cnt) >= 0))
             } else {
                 do0@do {
-                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
-                    pairs_to_decode = (if (big_val_cnt > np) np else big_val_cnt)
+                    np = (((sfb.value.toUInt()) / 2u)).toInt()
+                    sfb += 1
+                    pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
                     do1@do {
                         var j: Int = 0
@@ -619,7 +625,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                         var leaf: Int = codebook[((bs_cache shr (32 - w))).toInt()].toInt()
                         while (leaf < 0) {
                             bs_cache = bs_cache shl w
-                            bs_sh = bs_sh + w
+                            bs_sh += w
                             w = leaf and 7
                             leaf = codebook[(((bs_cache shr (32 - w))).toInt()) - (leaf shr 3)].toInt()
                         }
@@ -636,7 +642,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                             leaf = leaf shr 4
                         }
                         while (bs_sh >= 0) {
-                            bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
+                            bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
+                            bs_next_ptr += 1
                             bs_sh -= 8
                         }
 
