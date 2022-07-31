@@ -24,7 +24,7 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
 
         private val inputData = alloca(1152 * 2 * 2).reinterpret<Byte>()
         private val pcmData = alloca(1152 * 2 * 2 * 2).reinterpret<Short>()
-        private val mp3dec = alloca(mp3dec_t__SIZE_BYTES).reinterpret<mp3dec_t>()
+        private val mp3dec = allocaMp3Dec()
         private val mp3decFrameInfo = alloca(mp3dec_frame_info_t__SIZE_BYTES).reinterpret<mp3dec_frame_info_t>()
 
         init {
