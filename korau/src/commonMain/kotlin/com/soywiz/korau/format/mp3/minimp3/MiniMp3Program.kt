@@ -471,9 +471,6 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     @set:kotlin.jvm.JvmName("setter_Byte_value") @get:kotlin.jvm.JvmName("getter_Byte_value") var CPointer<Byte>.value: Byte get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusByte") operator fun CPointer<Byte>.plus(offset: Int): CPointer<Byte> = addPtr<Byte>(offset, 1)
     @kotlin.jvm.JvmName("minusByte") operator fun CPointer<Byte>.minus(offset: Int): CPointer<Byte> = addPtr<Byte>(-offset, 1)
-    inline fun fixedArrayOfByte(size: Int, setItems: CPointer<Byte>.() -> Unit): CPointer<Byte> = CPointer<Byte>(alloca_zero(size * 1).ptr).apply(setItems)
-    fun fixedArrayOfByte(vararg values: Byte, size: Int = values.size): CPointer<Byte> = fixedArrayOfByte(size) { for (n in 0 until values.size) this[n] = values[n] }
-    fun fixedArrayOfByte(values: String, size: Int = values.length): CPointer<Byte> = fixedArrayOfByte(size) { for (n in 0 until values.length) this[n] = values[n].code.toByte() }
 
     // short*
     @kotlin.jvm.JvmName("getterShort") operator fun CPointer<Short>.get(offset: Int): Short = lh(this.ptr + offset * 2)
@@ -481,16 +478,11 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     @set:kotlin.jvm.JvmName("setter_Short_value") @get:kotlin.jvm.JvmName("getter_Short_value") var CPointer<Short>.value: Short get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusShort") operator fun CPointer<Short>.plus(offset: Int): CPointer<Short> = addPtr<Short>(offset, 2)
     @kotlin.jvm.JvmName("minusShort") operator fun CPointer<Short>.minus(offset: Int): CPointer<Short> = addPtr<Short>(-offset, 2)
-    inline fun fixedArrayOfShort(size: Int, setItems: CPointer<Short>.() -> Unit): CPointer<Short> = CPointer<Short>(alloca_zero(size * 2).ptr).apply(setItems)
-    fun fixedArrayOfShort(vararg values: Short, size: Int = values.size): CPointer<Short> = fixedArrayOfShort(size) { for (n in 0 until values.size) this[n] = values[n] }
-    fun fixedArrayOfShort(values: String, size: Int = values.length): CPointer<Short> = fixedArrayOfShort(size) { for (n in 0 until values.length) this[n] = values[n].code.toShort() }
 
     // int*
     @kotlin.jvm.JvmName("getterInt") operator fun IntPointer.get(offset: Int): Int = lw(this.ptr + offset * 4)
     @kotlin.jvm.JvmName("setterInt") operator fun IntPointer.set(offset: Int, value: Int): Unit = sw(this.ptr + offset * 4, value)
     @set:kotlin.jvm.JvmName("setter_Int_value") @get:kotlin.jvm.JvmName("getter_Int_value") var IntPointer.value: Int get() = this[0]; set(value) { this[0] = value }
-    inline fun fixedArrayOfInt(size: Int, setItems: IntPointer.() -> Unit): IntPointer = IntPointer(alloca_zero(size * 4).ptr).apply(setItems)
-    fun fixedArrayOfInt(vararg values: Int, size: Int = values.size): IntPointer = fixedArrayOfInt(size) { for (n in 0 until values.size) this[n] = values[n] }
     ///////////////////////////////////////
 
     operator fun CPointer<UByte>.get(offset: Int): UByte = lb(this.ptr + offset * 1).toUByte()
@@ -508,17 +500,12 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     var CPointer<UShort>.value: UShort get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusUShort") operator fun CPointer<UShort>.plus(offset: Int): CPointer<UShort> = addPtr<UShort>(offset, 2)
     @kotlin.jvm.JvmName("minusUShort") operator fun CPointer<UShort>.minus(offset: Int): CPointer<UShort> = addPtr<UShort>(-offset, 2)
-    inline fun fixedArrayOfUShort(size: Int, setItems: CPointer<UShort>.() -> Unit): CPointer<UShort> = CPointer<UShort>(alloca_zero(size * 2).ptr).apply(setItems)
-    fun fixedArrayOfUShort(vararg values: UShort, size: Int = values.size): CPointer<UShort> = fixedArrayOfUShort(size) { for (n in 0 until values.size) this[n] = values[n] }
-    fun fixedArrayOfUShort(values: String, size: Int = values.length): CPointer<UShort> = fixedArrayOfUShort(size) { for (n in 0 until values.length) this[n] = values[n].code.toUShort() }
 
     operator fun CPointer<UInt>.get(offset: Int): UInt = lw(this.ptr + offset * 4).toUInt()
     operator fun CPointer<UInt>.set(offset: Int, value: UInt): Unit = sw(this.ptr + offset * 4, (value).toInt())
     var CPointer<UInt>.value: UInt get() = this[0]; set(value) { this[0] = value }
     @kotlin.jvm.JvmName("plusUInt") operator fun CPointer<UInt>.plus(offset: Int): CPointer<UInt> = addPtr<UInt>(offset, 4)
     @kotlin.jvm.JvmName("minusUInt") operator fun CPointer<UInt>.minus(offset: Int): CPointer<UInt> = addPtr<UInt>(-offset, 4)
-    inline fun fixedArrayOfUInt(size: Int, setItems: CPointer<UInt>.() -> Unit): CPointer<UInt> = CPointer<UInt>(alloca_zero(size * 4).ptr).apply(setItems)
-    fun fixedArrayOfUInt(vararg values: UInt, size: Int = values.size): CPointer<UInt> = fixedArrayOfUInt(size) { for (n in 0 until values.size) this[n] = values[n] }
 
     ///////////////////////////////////////
     operator fun FloatPointer.get(offset: Int): Float = lwf(this.ptr + offset * 4)
@@ -1352,7 +1339,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             grbuf += 18
         }
     }
-    fun L3_dct3_9(y: FloatPointer) {
+    fun L3_dct3_9(y: FloatArray) {
         var s0: Float = y[0]
         var s2: Float = y[2]
         var s4: Float = y[4]
@@ -1391,6 +1378,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         y[8] = s4 + s7
 
     }
+    private val co = FloatArray(9)
+    private val si = FloatArray(9)
     fun L3_imdct36(grbuf: FloatPointer, overlap: FloatPointer, window: FloatArray, nbands: Int) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var overlap: FloatPointer = overlap // Mutating parameter
@@ -1399,8 +1388,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         val g_twid9 = __STATIC_L3_imdct36_g_twid9
         j = 0
         while (j < nbands) {
-            val co = fixedArrayOfFloat(0f, size = 9)
-            val si = fixedArrayOfFloat(0f, size = 9)
+            val co = this.co
+            val si = this.si
             co[0] = -grbuf[0]
             si[0] = grbuf[17]
             i = 0
@@ -1411,8 +1400,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
                 co[2 + (2 * i)] = -(grbuf[(4 * i) + 3] + grbuf[(4 * i) + 4])
                 i++
             }
-            L3_dct3_9((FloatPointer(co.ptr)))
-            L3_dct3_9((FloatPointer(si.ptr)))
+            L3_dct3_9(co)
+            L3_dct3_9(si)
             si[1] = -si[1]
             si[3] = -si[3]
             si[5] = -si[5]
