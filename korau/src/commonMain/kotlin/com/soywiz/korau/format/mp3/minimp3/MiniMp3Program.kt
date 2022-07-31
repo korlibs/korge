@@ -1063,8 +1063,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         val g_twid9 = __STATIC_L3_imdct36_g_twid9
         j = 0
         while (j < nbands) {
-            val co: Array9Float = Array9Float(fixedArrayOfFloat(0f, size = 9).ptr)
-            val si: Array9Float = Array9Float(fixedArrayOfFloat(0f, size = 9).ptr)
+            val co = fixedArrayOfFloat(0f, size = 9)
+            val si = fixedArrayOfFloat(0f, size = 9)
             co[0] = -grbuf[0]
             si[0] = grbuf[17]
             i = 0
@@ -1130,7 +1130,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var overlap: FloatPointer = overlap // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
         while (nbands > 0) {
-            val tmp: Array18Float = Array18Float(fixedArrayOfFloat(0f, size = 18).ptr)
+            val tmp = fixedArrayOfFloat(0f, size = 18)
             memcpy((CPointer(tmp.ptr)), (CPointer(grbuf.ptr)), 72)
             memcpy((CPointer(grbuf.ptr)), (CPointer(overlap.ptr)), (6 * Float.SIZE_BYTES))
             L3_imdct12((FloatPointer(tmp.ptr)), (grbuf + 6), (overlap + 6))
@@ -1701,46 +1701,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array8Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
     operator fun Array8Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
-    operator fun Array18Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array18Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array18Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array18FloatAlloc(setItems: Array18Float.() -> Unit): Array18Float = Array18Float(alloca_zero(
-        Array18Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array18FloatAlloc(items: Array<Float>, size: Int = items.size): Array18Float = Array18FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array18Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array18Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array9Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array9Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array9Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array9FloatAlloc(setItems: Array9Float.() -> Unit): Array9Float = Array9Float(alloca_zero(
-        Array9Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array9FloatAlloc(items: Array<Float>, size: Int = items.size): Array9Float = Array9FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array9Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array9Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array6Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array6Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array6Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array6FloatAlloc(setItems: Array6Float.() -> Unit): Array6Float = Array6Float(alloca_zero(
-        Array6Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array6FloatAlloc(items: Array<Float>, size: Int = items.size): Array6Float = Array6FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array6Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array6Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array3Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array3Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array3Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array3FloatAlloc(setItems: Array3Float.() -> Unit): Array3Float = Array3Float(alloca_zero(
-        Array3Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array3FloatAlloc(items: Array<Float>, size: Int = items.size): Array3Float = Array3FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array3Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array3Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
     operator fun Array4Array8Float.get(index: Int): Array8Float = Array8Float(addr(index))
     operator fun Array4Array8Float.set(index: Int, value: Array8Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array4Array8Float__ELEMENT_SIZE_BYTES) }
     var Array4Array8Float.value get() = this[0]; set(value) { this[0] = value }
@@ -1809,28 +1769,6 @@ internal const val Array8Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array8Float__TOTAL_SIZE_BYTES = 32
 internal @kotlin.jvm.JvmInline value/*!*/ class Array8Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array8Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array18Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array18Float__TOTAL_SIZE_BYTES = 72
-internal @kotlin.jvm.JvmInline value/*!*/ class Array18Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array18Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array9Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array9Float__TOTAL_SIZE_BYTES = 36
-internal @kotlin.jvm.JvmInline value/*!*/ class Array9Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array9Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array6Float__NUM_ELEMENTS = 6
-internal const val Array6Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array6Float__TOTAL_SIZE_BYTES = 24
-internal @kotlin.jvm.JvmInline value/*!*/ class Array6Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array6Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array3Float__NUM_ELEMENTS = 3
-internal const val Array3Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array3Float__TOTAL_SIZE_BYTES = 12
-internal @kotlin.jvm.JvmInline value/*!*/ class Array3Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array3Float__ELEMENT_SIZE_BYTES
 }
 internal const val Array4Array8Float__NUM_ELEMENTS = 4
 internal const val Array4Array8Float__ELEMENT_SIZE_BYTES = 32
@@ -2072,42 +2010,6 @@ internal abstract class AbstractRuntime(val REQUESTED_HEAP_SIZE: Int = 0, val RE
         for (n in 0 until array.size) sw(ptr.ptr + n * POINTER_SIZE, array[n].ptr.ptr)
         return ptr
     }
-
-    fun CPointer<Byte>.strlenz(): Int {
-        for (n in 0 until Int.MAX_VALUE) if (this[n] == 0.toByte()) return n
-        return Int.MAX_VALUE
-    }
-
-    fun CPointer<Byte>.readStringz(): String {
-        val len = this.strlenz()
-        val ba = ByteArray(len)
-        var pos = this.ptr
-        for (n in 0 until len) ba[n] = lb(pos++)
-        return ba.decodeToString()
-    }
-
-    fun CPointer<Byte>.writeStringz(str: String) {
-        val bytes = str.encodeToByteArray()
-        memWrite(this, bytes)
-        this[bytes.size] = 0.toByte()
-    }
-
-    ///////////////////////////////////////
-    // FUNCTIONS
-    ///////////////////////////////////////
-    val FUNCTIONS: ArrayList<kotlin.reflect.KFunction<*>> = arrayListOf<kotlin.reflect.KFunction<*>>()
-    val FUNCTION_PTRS: LinkedHashMap<kotlin.reflect.KFunction<*>, Int> = LinkedHashMap<kotlin.reflect.KFunction<*>, Int>()
-
-    val <T> CFunction<T>.func: T get() = (FUNCTIONS[this.ptr] as T)
-    val <T : kotlin.reflect.KFunction<*>> T.cfunc: CFunction<T> get() = CFunction<T>(FUNCTION_PTRS.getOrPut(this) { FUNCTIONS.add(this); FUNCTIONS.size - 1 })
-
-    inline operator fun <TR> CFunction<() -> TR>.invoke(): TR = func.invoke()
-    inline operator fun <T0, TR> CFunction<(T0) -> TR>.invoke(v0: T0): TR = func.invoke(v0)
-    inline operator fun <T0, T1, TR> CFunction<(T0, T1) -> TR>.invoke(v0: T0, v1: T1): TR = func.invoke(v0, v1)
-    inline operator fun <T0, T1, T2, TR> CFunction<(T0, T1, T2) -> TR>.invoke(v0: T0, v1: T1, v2: T2): TR = func.invoke(v0, v1, v2)
-    inline operator fun <T0, T1, T2, T3, TR> CFunction<(T0, T1, T2, T3) -> TR>.invoke(v0: T0, v1: T1, v2: T2, v3: T3): TR = func.invoke(v0, v1, v2, v3)
-    inline operator fun <T0, T1, T2, T3, T4, TR> CFunction<(T0, T1, T2, T3, T4) -> TR>.invoke(v0: T0, v1: T1, v2: T2, v3: T3, v4: T4): TR = func.invoke(v0, v1, v2, v3, v4)
-    inline operator fun <T0, T1, T2, T3, T4, T5, TR> CFunction<(T0, T1, T2, T3, T4, T5) -> TR>.invoke(v0: T0, v1: T1, v2: T2, v3: T3, v4: T4, v5: T5): TR = func.invoke(v0, v1, v2, v3, v4, v5)
 }
 
 @Suppress("UNCHECKED_CAST")
