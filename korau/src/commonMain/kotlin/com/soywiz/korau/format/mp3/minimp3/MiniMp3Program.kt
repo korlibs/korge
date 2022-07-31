@@ -157,7 +157,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var grbuf: Array2Array576Float,
             var scf: CPointer<Float>,
             var syn: Array33Array64Float,
-            var ist_pos: Array2Array39UByte,
+            var ist_pos: Array<CPointer<UByte>>,
         ) {
             constructor(runtime: AbstractRuntime) : this(
                 bs = Bs(),
@@ -166,7 +166,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
                 scf = CPointer<Float>(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
                 syn = Array33Array64Float(runtime.alloca(33 * 64 * Float.SIZE_BYTES).ptr),
-                ist_pos = Array2Array39UByte(runtime.alloca(2 * 39).ptr),
+                ist_pos = Array(2) { CPointer(runtime.alloca(2 * 39).ptr) },
             )
         }
 
@@ -1681,26 +1681,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array64Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
     operator fun Array64Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
-    operator fun Array2Array39UByte.get(index: Int): Array39UByte = Array39UByte(addr(index))
-    operator fun Array2Array39UByte.set(index: Int, value: Array39UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array39UByte__ELEMENT_SIZE_BYTES) }
-    var Array2Array39UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array2Array39UByteAlloc(setItems: Array2Array39UByte.() -> Unit): Array2Array39UByte = Array2Array39UByte(alloca_zero(
-        Array2Array39UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array2Array39UByteAlloc(items: Array<Array39UByte>, size: Int = items.size): Array2Array39UByte = Array2Array39UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array2Array39UByte.plus(offset: Int): CPointer<Array39UByte> = CPointer(addr(offset))
-    operator fun Array2Array39UByte.minus(offset: Int): CPointer<Array39UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array39UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array39UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array39UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array39UByteAlloc(setItems: Array39UByte.() -> Unit): Array39UByte = Array39UByte(alloca_zero(
-        Array39UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array39UByteAlloc(items: Array<UByte>, size: Int = items.size): Array39UByte = Array39UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array39UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array39UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
     operator fun Array8Array23UByte.get(index: Int): Array23UByte = Array23UByte(addr(index))
     operator fun Array8Array23UByte.set(index: Int, value: Array23UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array23UByte__ELEMENT_SIZE_BYTES) }
     var Array8Array23UByte.value get() = this[0]; set(value) { this[0] = value }
@@ -1906,18 +1886,6 @@ internal const val Array64Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array64Float__TOTAL_SIZE_BYTES = 256
 internal @kotlin.jvm.JvmInline value/*!*/ class Array64Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array64Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array2Array39UByte__NUM_ELEMENTS = 2
-internal const val Array2Array39UByte__ELEMENT_SIZE_BYTES = 39
-internal const val Array2Array39UByte__TOTAL_SIZE_BYTES = 78
-internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array39UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array2Array39UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array39UByte__NUM_ELEMENTS = 39
-internal const val Array39UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array39UByte__TOTAL_SIZE_BYTES = 39
-internal @kotlin.jvm.JvmInline value/*!*/ class Array39UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array39UByte__ELEMENT_SIZE_BYTES
 }
 internal const val Array8Array23UByte__NUM_ELEMENTS = 8
 internal const val Array8Array23UByte__ELEMENT_SIZE_BYTES = 23
