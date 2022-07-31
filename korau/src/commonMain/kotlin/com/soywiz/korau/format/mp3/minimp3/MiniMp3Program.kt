@@ -327,6 +327,14 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         operator fun plus(other: Int): UByteArrayPtr = UByteArrayPtr(array, pos + other)
     }
 
+    class FloatArrayPtr(val array: FloatArray, val pos: Int = 0) {
+        val value: Float get() = array[pos]
+        operator fun get(index: Int): Float = array[pos + index]
+        operator fun set(index: Int, value: Float) { array[pos + index] = value }
+        operator fun inc(): FloatArrayPtr = FloatArrayPtr(array, pos + 1)
+        operator fun plus(other: Int): FloatArrayPtr = FloatArrayPtr(array, pos + other)
+    }
+
     class GrInfo(
         var sfbtab: UByteArrayPtr,
         var part_23_length: UShort,
@@ -1358,90 +1366,74 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     }
     fun mp3d_DCT_II(grbuf: FloatPointer, n: Int) {
         val g_sec: FloatArray = __STATIC_mp3d_DCT_II_g_sec
-        var i: Int = 0
-        var k: Int = 0
-        while (k < n) {
-            stackFrame {
-                val t: Array4Array8Float = Array4Array8FloatAlloc(arrayOf((Array8Float(0))))
-                var x: FloatPointer = FloatPointer(0)
-                var y: FloatPointer = grbuf + k
-                x = FloatPointer(t[0].ptr)
-                i = 0
-                while (i < 8) {
-                    val x0: Float = y[i * 18]
-                    val x1: Float = y[(15 - i) * 18]
-                    val x2: Float = y[(16 + i) * 18]
-                    val x3: Float = y[(31 - i) * 18]
-                    val t0: Float = x0 + x3
-                    val t1: Float = x1 + x2
-                    val t2: Float = (x1 - x2) * g_sec[(3 * i) + 0]
-                    val t3: Float = (x0 - x3) * g_sec[(3 * i) + 1]
-                    x[0] = t0 + t1
-                    x[8] = (t0 - t1) * g_sec[(3 * i) + 2]
-                    x[16] = t3 + t2
-                    x[24] = (t3 - t2) * g_sec[(3 * i) + 2]
-                    i++
-                    x++
-                }
-                x = FloatPointer(t[0].ptr)
-                i = 0
-                while (i < 4) {
-                    var x0: Float = x[0]
-                    var x1: Float = x[1]
-                    var x2: Float = x[2]
-                    var x3: Float = x[3]
-                    var x4: Float = x[4]
-                    var x5: Float = x[5]
-                    var x6: Float = x[6]
-                    var x7: Float = x[7]
-                    var xt: Float = x0 - x7
-                    x0 += x7
-                    x7 = x1 - x6
-                    x1 += x6
-                    x6 = x2 - x5
-                    x2 += x5
-                    x5 = x3 - x4
-                    x3 += x4
-                    x4 = x0 - x3
-                    x0 += x3
-                    x3 = x1 - x2
-                    x1 += x2
-                    x[0] = x0 + x1
-                    x[4] = (x0 - x1) * 0.70710677f
-                    x5 += x6
-                    x6 = (x6 + x7) * 0.70710677f
-                    x7 += xt
-                    x3 = (x3 + x4) * 0.70710677f
-                    x5 -= (x7 * 0.19891237f)
-                    x7 += (x5 * 0.38268343f)
-                    x5 -= (x7 * 0.19891237f)
-                    x0 = xt - x6
-                    xt += x6
-                    x[1] = (xt + x7) * 0.5097956f
-                    x[2] = (x4 + x3) * 0.5411961f
-                    x[3] = (x0 - x5) * 0.6013449f
-                    x[5] = (x0 + x5) * 0.8999762f
-                    x[6] = (x4 - x3) * 1.306563f
-                    x[7] = (xt - x7) * 2.5629156f
-                    i++
-                    x += 8
-                }
-                i = 0
-                while (i < 7) {
-                    y[0 * 18] = t[0][i]
-                    y[1 * 18] = (t[2][i] + t[3][i]) + t[3][i + 1]
-                    y[2 * 18] = t[1][i] + t[1][i + 1]
-                    y[3 * 18] = (t[2][i + 1] + t[3][i]) + t[3][i + 1]
-                    i++
-                    y += 4 * 18
-                }
-                y[0 * 18] = t[0][7]
-                y[1 * 18] = t[2][7] + t[3][7]
-                y[2 * 18] = t[1][7]
-                y[3 * 18] = t[3][7]
-
+        val t = Array(4) { FloatArray(8) }
+        for (k in 0 until n) {
+            var y: FloatPointer = grbuf + k
+            for (i in 0 until 8) {
+                val x0: Float = y[i * 18]
+                val x1: Float = y[(15 - i) * 18]
+                val x2: Float = y[(16 + i) * 18]
+                val x3: Float = y[(31 - i) * 18]
+                val t0: Float = x0 + x3
+                val t1: Float = x1 + x2
+                val t2: Float = (x1 - x2) * g_sec[(3 * i) + 0]
+                val t3: Float = (x0 - x3) * g_sec[(3 * i) + 1]
+                t[0][i] = t0 + t1
+                t[1][i] = (t0 - t1) * g_sec[(3 * i) + 2]
+                t[2][i] = t3 + t2
+                t[3][i] = (t3 - t2) * g_sec[(3 * i) + 2]
             }
-            k++
+            for (i in 0 until 4) {
+                val x = t[i]
+                var x0: Float = x[0]
+                var x1: Float = x[1]
+                var x2: Float = x[2]
+                var x3: Float = x[3]
+                var x4: Float = x[4]
+                var x5: Float = x[5]
+                var x6: Float = x[6]
+                var x7: Float = x[7]
+                var xt: Float = x0 - x7
+                x0 += x7
+                x7 = x1 - x6
+                x1 += x6
+                x6 = x2 - x5
+                x2 += x5
+                x5 = x3 - x4
+                x3 += x4
+                x4 = x0 - x3
+                x0 += x3
+                x3 = x1 - x2
+                x1 += x2
+                x[0] = x0 + x1
+                x[4] = (x0 - x1) * 0.70710677f
+                x5 += x6
+                x6 = (x6 + x7) * 0.70710677f
+                x7 += xt
+                x3 = (x3 + x4) * 0.70710677f
+                x5 -= (x7 * 0.19891237f)
+                x7 += (x5 * 0.38268343f)
+                x5 -= (x7 * 0.19891237f)
+                x0 = xt - x6
+                xt += x6
+                x[1] = (xt + x7) * 0.5097956f
+                x[2] = (x4 + x3) * 0.5411961f
+                x[3] = (x0 - x5) * 0.6013449f
+                x[5] = (x0 + x5) * 0.8999762f
+                x[6] = (x4 - x3) * 1.306563f
+                x[7] = (xt - x7) * 2.5629156f
+            }
+            for (i in 0 until 7) {
+                y[0 * 18] = t[0][i]
+                y[1 * 18] = (t[2][i] + t[3][i]) + t[3][i + 1]
+                y[2 * 18] = t[1][i] + t[1][i + 1]
+                y[3 * 18] = (t[2][i + 1] + t[3][i]) + t[3][i + 1]
+                y += 4 * 18
+            }
+            y[0 * 18] = t[0][7]
+            y[1 * 18] = t[2][7] + t[3][7]
+            y[2 * 18] = t[1][7]
+            y[3 * 18] = t[3][7]
         }
 
     }
@@ -1733,113 +1725,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         return success * (hdr_frame_samples((CPointer(dec.header.ptr))).toInt())
 
     }
-
-    //////////////////
-    // C STRUCTURES //
-    //////////////////
-
-    /////////////
-    operator fun Array4Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array4Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array4Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array4FloatAlloc(setItems: Array4Float.() -> Unit): Array4Float = Array4Float(alloca_zero(
-        Array4Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array4FloatAlloc(items: Array<Float>, size: Int = items.size): Array4Float = Array4FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array4Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array4Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array3Array28UByte.get(index: Int): Array28UByte = Array28UByte(addr(index))
-    operator fun Array3Array28UByte.set(index: Int, value: Array28UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array3Array28UByte__ELEMENT_SIZE_BYTES) }
-    var Array3Array28UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array3Array28UByteAlloc(setItems: Array3Array28UByte.() -> Unit): Array3Array28UByte = Array3Array28UByte(alloca_zero(
-        Array3Array28UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array3Array28UByteAlloc(items: Array<Array28UByte>, size: Int = items.size): Array3Array28UByte = Array3Array28UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array3Array28UByte.plus(offset: Int): CPointer<Array28UByte> = CPointer(addr(offset))
-    operator fun Array3Array28UByte.minus(offset: Int): CPointer<Array28UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array28UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array28UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array28UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array28UByteAlloc(setItems: Array28UByte.() -> Unit): Array28UByte = Array28UByte(alloca_zero(
-        Array28UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array28UByteAlloc(items: Array<UByte>, size: Int = items.size): Array28UByte = Array28UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array28UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array28UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array2Array8Float.get(index: Int): Array8Float = Array8Float(addr(index))
-    operator fun Array2Array8Float.set(index: Int, value: Array8Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array8Float__ELEMENT_SIZE_BYTES) }
-    var Array2Array8Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array2Array8FloatAlloc(setItems: Array2Array8Float.() -> Unit): Array2Array8Float = Array2Array8Float(alloca_zero(
-        Array2Array8Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array2Array8FloatAlloc(items: Array<Array8Float>, size: Int = items.size): Array2Array8Float = Array2Array8FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array2Array8Float.plus(offset: Int): CPointer<Array8Float> = CPointer(addr(offset))
-    operator fun Array2Array8Float.minus(offset: Int): CPointer<Array8Float> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array8Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array8Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array8Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array8FloatAlloc(setItems: Array8Float.() -> Unit): Array8Float = Array8Float(alloca_zero(
-        Array8Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array8FloatAlloc(items: Array<Float>, size: Int = items.size): Array8Float = Array8FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array8Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array8Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
-    operator fun Array4Array8Float.get(index: Int): Array8Float = Array8Float(addr(index))
-    operator fun Array4Array8Float.set(index: Int, value: Array8Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array4Array8Float__ELEMENT_SIZE_BYTES) }
-    var Array4Array8Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array4Array8FloatAlloc(setItems: Array4Array8Float.() -> Unit): Array4Array8Float = Array4Array8Float(alloca_zero(
-        Array4Array8Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array4Array8FloatAlloc(items: Array<Array8Float>, size: Int = items.size): Array4Array8Float = Array4Array8FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array4Array8Float.plus(offset: Int): CPointer<Array8Float> = CPointer(addr(offset))
-    operator fun Array4Array8Float.minus(offset: Int): CPointer<Array8Float> = CPointer(addr(-offset))
 }
 
-//////////////////
-// C STRUCTURES //
-//////////////////
-
-//////////////////
-internal const val Array4Float__NUM_ELEMENTS = 4
-internal const val Array4Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array4Float__TOTAL_SIZE_BYTES = 16
-internal @kotlin.jvm.JvmInline value/*!*/ class Array4Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array4Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array3Array28UByte__NUM_ELEMENTS = 3
-internal const val Array3Array28UByte__ELEMENT_SIZE_BYTES = 28
-internal const val Array3Array28UByte__TOTAL_SIZE_BYTES = 84
-internal @kotlin.jvm.JvmInline value/*!*/ class Array3Array28UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array3Array28UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array28UByte__NUM_ELEMENTS = 28
-internal const val Array28UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array28UByte__TOTAL_SIZE_BYTES = 28
-internal @kotlin.jvm.JvmInline value/*!*/ class Array28UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array28UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array2Array8Float__NUM_ELEMENTS = 2
-internal const val Array2Array8Float__ELEMENT_SIZE_BYTES = 32
-internal const val Array2Array8Float__TOTAL_SIZE_BYTES = 64
-internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array8Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array2Array8Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array8Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array8Float__TOTAL_SIZE_BYTES = 32
-internal @kotlin.jvm.JvmInline value/*!*/ class Array8Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array8Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array4Array8Float__NUM_ELEMENTS = 4
-internal const val Array4Array8Float__ELEMENT_SIZE_BYTES = 32
-internal const val Array4Array8Float__TOTAL_SIZE_BYTES = 128
-internal @kotlin.jvm.JvmInline value/*!*/ class Array4Array8Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array4Array8Float__ELEMENT_SIZE_BYTES
-}
 // KTCC RUNTIME ///////////////////////////////////////////////////
 
 @Suppress("MemberVisibilityCanBePrivate", "FunctionName", "CanBeVal", "DoubleNegation", "LocalVariableName", "NAME_SHADOWING", "VARIABLE_WITH_REDUNDANT_INITIALIZER", "RemoveRedundantCallsOfConversionMethods", "EXPERIMENTAL_IS_NOT_ENABLED", "RedundantExplicitType", "RemoveExplicitTypeArguments", "RedundantExplicitType", "unused", "UNCHECKED_CAST", "UNUSED_VARIABLE", "UNUSED_PARAMETER", "NOTHING_TO_INLINE", "PropertyName", "ClassName", "USELESS_CAST", "PrivatePropertyName", "CanBeParameter", "UnusedMainParameter")
