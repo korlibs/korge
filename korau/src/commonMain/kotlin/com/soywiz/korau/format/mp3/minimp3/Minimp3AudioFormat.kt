@@ -2,6 +2,7 @@
 
 package com.soywiz.korau.format.mp3.minimp3
 
+import com.soywiz.kmem.UByteArrayInt
 import kotlin.jvm.JvmName
 
 internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
@@ -21,7 +22,7 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
         override fun decodeFrame(availablePeek: Int): ShortArray? {
             val samples = mp3dec_decode_frame(
                 mp3dec,
-                UByteArrayPtr(info.tempBuffer.asUByteArray()),
+                UByteArrayIntPtr(UByteArrayInt(info.tempBuffer)),
                 availablePeek,
                 ShortArrayPtr(pcmData),
                 mp3decFrameInfo
