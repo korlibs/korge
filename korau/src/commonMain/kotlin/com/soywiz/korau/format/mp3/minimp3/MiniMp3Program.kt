@@ -489,8 +489,6 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     operator fun FloatPointer.get(offset: Int): Float = lwf(this.ptr + offset * 4)
     operator fun FloatPointer.set(offset: Int, value: Float): Unit = swf(this.ptr + offset * 4, (value))
     var FloatPointer.value: Float get() = this[0]; set(value) { this[0] = value }
-    inline fun fixedArrayOfFloat(size: Int, setItems: FloatPointer.() -> Unit): FloatPointer = FloatPointer(alloca_zero(size * 4).ptr).apply(setItems)
-    fun fixedArrayOfFloat(vararg values: Float, size: Int = values.size): FloatPointer = fixedArrayOfFloat(size) { for (n in 0 until values.size) this[n] = values[n] }
     ///////////////////////////////////////
 
     ///////////////////////////////////////
@@ -1433,7 +1431,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         var overlap: FloatPointer = overlap // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
         while (nbands > 0) {
-            val tmp = fixedArrayOfFloat(0f, size = 18)
+            val tmp = FloatPointer(alloca(18 * Float.SIZE_BYTES).ptr)
             memcpy((CPointer(tmp.ptr)), (CPointer(grbuf.ptr)), 72)
             memcpy((CPointer(grbuf.ptr)), (CPointer(overlap.ptr)), (6 * Float.SIZE_BYTES))
             L3_imdct12((FloatPointer(tmp.ptr)), (grbuf + 6), (overlap + 6))
