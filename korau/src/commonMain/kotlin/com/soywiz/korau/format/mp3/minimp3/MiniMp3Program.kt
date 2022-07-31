@@ -1228,124 +1228,29 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             zlin[(4 * (i - 16)) + 2] = xl[18 * (1 + i)]
             zlin[(4 * (i - 16)) + 3] = xr[18 * (1 + i)]
 
-            fun block() {
-
-            }
-
             for (j in 0 until 4) {
                 b[j] = 0f
                 a[j] = 0f
             }
 
-            run {
-                var j: Int = 0
+            for (n in 0 until 8) {
                 var w0: Float = w++.value
                 var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (0 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 0) * 64)))
-                j = 0
-                while (j < 4) {
-                    b[j] = b[j] + (vz[j] * w1) + (vy[j] * w0)
-                    a[j] = a[j] + (vz[j] * w0) - (vy[j] * w1)
-                    j += 1
-                }
-            }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (1 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 1) * 64)))
-                j = 0
-                while (j < 4) {
-                    b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
-                    a[j] = a[j] + ((vy[j] * w1) - (vz[j] * w0))
-                    j += 1
-                }
-            }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (2 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 2) * 64)))
-                j = 0
-                while (j < 4) {
-                    b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
-                    a[j] = a[j] + ((vz[j] * w0) - (vy[j] * w1))
-                    j += 1
-                }
-
-            }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (3 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 3) * 64)))
-                j = 0
-                while (j < 4) {
-                    b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
-                    a[j] = a[j] + ((vy[j] * w1) - (vz[j] * w0))
-                    j += 1
-                }
-
-            }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (4 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 4) * 64)))
-                j = 0
-                while (j < 4) {
-                    run {
-                        b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
-                        a[j] = a[j] + ((vz[j] * w0) - (vy[j] * w1))
+                var vz: FloatPointer = ((zlin) + ((4 * i) - (n * 64)))
+                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - n) * 64)))
+                if (n % 2 == 0) {
+                    for (j in 0 until 4) {
+                        b[j] = b[j] + (vz[j] * w1) + (vy[j] * w0)
+                        a[j] = a[j] + (vz[j] * w0) - (vy[j] * w1)
                     }
-                    j += 1
+                } else {
+                    for (j in 0 until 4) {
+                        b[j] = b[j] + ((vz[j] * w1) + (vy[j] * w0))
+                        a[j] = a[j] + ((vy[j] * w1) - (vz[j] * w0))
+                    }
                 }
-
             }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (5 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 5) * 64)))
-                j = 0
-                while (j < 4) {
-                    run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
-                    j = j + 1
-                }
 
-            }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (6 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 6) * 64)))
-                j = 0
-                while (j < 4) {
-                    run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vz[j] * w0) - (vy[j] * w1)); a[j] = `-`; `-` } }
-                    j = j + 1
-                }
-
-            }
-            run {
-                var j: Int = 0
-                var w0: Float = w++.value
-                var w1: Float = w++.value
-                var vz: FloatPointer = ((zlin) + ((4 * i) - (7 * 64)))
-                var vy: FloatPointer = ((zlin) + ((4 * i) - ((15 - 7) * 64)))
-                j = 0
-                while (j < 4) {
-                    run { run { val `-` = b[j] + ((vz[j] * w1) + (vy[j] * w0)); b[j] = `-`; `-` }; run { val `-` = a[j] + ((vy[j] * w1) - (vz[j] * w0)); a[j] = `-`; `-` } }
-                    j = j + 1
-                }
-
-            }
             dstr[(15 - i) * nch] = mp3d_scale_pcm(a[1])
             dstr[(17 + i) * nch] = mp3d_scale_pcm(b[1])
             dstl[(15 - i) * nch] = mp3d_scale_pcm(a[0])
