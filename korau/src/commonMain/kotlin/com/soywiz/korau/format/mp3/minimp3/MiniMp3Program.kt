@@ -611,7 +611,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         val g_scf_partitions = __STATIC_L3_decode_scalefactors_g_scf_partitions
         var scf_partition = UByteArrayPtr(g_scf_partitions[gr.value.n_short_sfb.toBool().toInt() + (!gr.value.n_long_sfb.toBool()).toInt()])
         val scf_size = CPointer<UByte>(fixedArrayOfUByte("\u0000", size = 4).ptr)
-        val iscf: Array40UByte = Array40UByte(fixedArrayOfUByte("\u0000", size = 40).ptr)
+        val iscf = fixedArrayOfUByte("\u0000", size = 40)
         var i: Int = 0
         val scf_shift: Int = (((gr.value.scalefac_scale.toUInt()) + 1u)).toInt()
         var gain_exp: Int = 0
@@ -1681,26 +1681,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     operator fun Array64Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
     operator fun Array64Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
     /////////////
-    operator fun Array8Array40UByte.get(index: Int): Array40UByte = Array40UByte(addr(index))
-    operator fun Array8Array40UByte.set(index: Int, value: Array40UByte) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array8Array40UByte__ELEMENT_SIZE_BYTES) }
-    var Array8Array40UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array8Array40UByteAlloc(setItems: Array8Array40UByte.() -> Unit): Array8Array40UByte = Array8Array40UByte(alloca_zero(
-        Array8Array40UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array8Array40UByteAlloc(items: Array<Array40UByte>, size: Int = items.size): Array8Array40UByte = Array8Array40UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array8Array40UByte.plus(offset: Int): CPointer<Array40UByte> = CPointer(addr(offset))
-    operator fun Array8Array40UByte.minus(offset: Int): CPointer<Array40UByte> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array40UByte.get(index: Int): UByte = lb(addr(index)).toUByte()
-    operator fun Array40UByte.set(index: Int, value: UByte) { sb(addr(index), (value).toByte()) }
-    var Array40UByte.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array40UByteAlloc(setItems: Array40UByte.() -> Unit): Array40UByte = Array40UByte(alloca_zero(
-        Array40UByte__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array40UByteAlloc(items: Array<UByte>, size: Int = items.size): Array40UByte = Array40UByteAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array40UByte.plus(offset: Int): CPointer<UByte> = CPointer(addr(offset))
-    operator fun Array40UByte.minus(offset: Int): CPointer<UByte> = CPointer(addr(-offset))
-    /////////////
     operator fun Array4Float.get(index: Int): Float = lwf(addr(index))
     operator fun Array4Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array4Float.value get() = this[0]; set(value) { this[0] = value }
@@ -1866,18 +1846,6 @@ internal const val Array64Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array64Float__TOTAL_SIZE_BYTES = 256
 internal @kotlin.jvm.JvmInline value/*!*/ class Array64Float(val ptr: Int) {
     fun addr(index: Int) = ptr + index * Array64Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array8Array40UByte__NUM_ELEMENTS = 8
-internal const val Array8Array40UByte__ELEMENT_SIZE_BYTES = 40
-internal const val Array8Array40UByte__TOTAL_SIZE_BYTES = 320
-internal @kotlin.jvm.JvmInline value/*!*/ class Array8Array40UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array8Array40UByte__ELEMENT_SIZE_BYTES
-}
-internal const val Array40UByte__NUM_ELEMENTS = 40
-internal const val Array40UByte__ELEMENT_SIZE_BYTES = 1
-internal const val Array40UByte__TOTAL_SIZE_BYTES = 40
-internal @kotlin.jvm.JvmInline value/*!*/ class Array40UByte(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array40UByte__ELEMENT_SIZE_BYTES
 }
 internal const val Array4Float__NUM_ELEMENTS = 4
 internal const val Array4Float__ELEMENT_SIZE_BYTES = 4
