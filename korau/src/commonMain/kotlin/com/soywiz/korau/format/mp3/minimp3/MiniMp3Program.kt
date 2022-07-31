@@ -203,7 +203,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         i = 0
         while (i < bands) {
             var s: Float = 0f
-            var ba: Int = run { val `-` = pba; pba = pba + 1; `-` }.value.toInt()
+            var ba: Int = pba.value.toInt()
+            pba += 1
             var mask: Int = (if (ba.toBool()) (4 + ((19 shr (scfcod[i].toInt())) and 3)) else 0)
             m = 4
             while (m.toBool()) {
@@ -215,7 +216,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 scf++.value = s
                 m = m shr 1
             }
-            i = i + 1
+            i += 1
         }
 
     }
@@ -449,7 +450,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         do0@do {
             e = (if ((30 * 4) > exp_q2) exp_q2 else (30 * 4))
             y *= (g_expfrac[e and 3] * ((((1 shl 30) shr (e shr 2))).toFloat()))
-        } while ((run { val `-` = exp_q2 - e; exp_q2 = `-`; `-` }) > 0)
+            exp_q2 -= e
+        } while (exp_q2 > 0)
         return y
 
     }
@@ -592,7 +594,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                 bs_cache = bs_cache shl linbits
                                 bs_sh += linbits
                                 while (bs_sh >= 0) {
-                                    bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
+                                    bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
+                                    bs_next_ptr += 1
                                     bs_sh -= 8
                                 }
                                 dst.value = (one * L3_pow_43(lsb)) * (((if ((bs_cache.toInt()) < 0) -1L else 1L)).toFloat())
@@ -1319,7 +1322,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                                 var fb: Int = k - hdr_padding(mp3)
                                 var nextfb: Int = fb + hdr_padding((mp3 + k))
                                 if (((((i + k) + nextfb) + 4) > mp3_bytes) || (hdr_compare(mp3, ((mp3 + k) + nextfb)) == 0)) {
-                                    k = k + 1
+                                    k += 1
                                     continue@while1
                                 }
                                 frame_and_padding = k
@@ -1344,7 +1347,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     STACK_PTR = __oldPos2
                 }
             }
-            run { i++; run { val `-` = mp3; mp3 = mp3 + 1; `-` } }
+            i++
+            mp3 += 1
         }
         ptr_frame_bytes.value = 0
         return mp3_bytes
@@ -1407,7 +1411,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
                     L3_decode(dec, (CPointer<mp3dec_scratch_t>(scratch.ptr)), (scratch.gr_info + ((igr * info.value.channels))), info.value.channels)
                     mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 18, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
-                    run { igr++; run { val `-` = pcm + ((576 * info.value.channels)); pcm = `-`; `-` } }
+                    igr++
+                    pcm += 576 * info.value.channels
                 }
             }
             L3_save_reservoir(dec, (CPointer<mp3dec_scratch_t>(scratch.ptr)))
@@ -1417,53 +1422,26 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 var sci: Array1L12_scale_info = Array1L12_scale_infoAlloc(arrayOf((L12_scale_info(0))))
                 L12_read_scale_info(hdr, (CPointer<bs_t>(bs_frame.ptr)), (CPointer<L12_scale_info>(sci.ptr)))
                 memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
-                run { run { val `-` = 0; i = `-`; `-` }; run { val `-` = 0; igr = `-`; `-` } }
+                i = 0
+                igr = 0
                 while (igr < 3) {
                     if (12 == (run { val `-` = i + L12_dequantize_granule((scratch.grbuf[0] + i), (CPointer<bs_t>(bs_frame.ptr)), (CPointer<L12_scale_info>(sci.ptr)), (info.value.layer or 1)); i = `-`; `-` })) {
                         i = 0
                         L12_apply_scf_384((CPointer<L12_scale_info>(sci.ptr)), (sci.value.scf + igr), (FloatPointer(scratch.grbuf[0].ptr)))
                         mp3d_synth_granule((FloatPointer(dec.value.qmf_state.ptr)), (FloatPointer(scratch.grbuf[0].ptr)), 12, info.value.channels, pcm, (FloatPointer(scratch.syn[0].ptr)))
                         memset((CPointer<Unit>(scratch.grbuf[0].ptr)), 0, ((576 * 2) * Float.SIZE_BYTES))
-                        pcm = pcm + ((384 * info.value.channels))
+                        pcm += 384 * info.value.channels
                     }
                     if (bs_frame.value.pos > bs_frame.value.limit) {
                         mp3dec_init(dec)
                         return 0
                     }
-                    igr = igr + 1
+                    igr += 1
                 }
 
             }
         }
         return success * (hdr_frame_samples((CPointer<UByte>(dec.value.header.ptr))).toInt())
-
-    }
-    class ExitError(val code: Int) : Error()
-    fun exit(status: Int) {
-
-        throw ExitError(status)
-
-    }
-    fun strlen(str: CPointer<Byte>): Int {
-        var str: CPointer<Byte> = str // Mutating parameter
-        var out: Int = 0
-        while ((run { val `-` = str; str = str + 1; `-` }.value.toInt()) != 0) {
-            out = out + 1
-        }
-        return out
-
-    }
-    fun memcmp(ptr1: CPointer<Unit>, ptr2: CPointer<Unit>, num: Int): Int {
-        var a: CPointer<Byte> = CPointer<Byte>(ptr1.ptr)
-        var b: CPointer<Byte> = CPointer<Byte>(ptr2.ptr)
-        var n: Int = 0
-        while (n < num) {
-            var res: Int = (a[n].toInt()) - (b[n].toInt())
-            if (res < 0) return -1
-            if (res > 0) return 1
-            n++
-        }
-        return 0
 
     }
 
