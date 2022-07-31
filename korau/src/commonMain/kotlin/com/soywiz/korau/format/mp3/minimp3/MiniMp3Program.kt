@@ -281,7 +281,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         constructor(runtime: MiniMp3Program) : this(
             bs = Bs(),
             maindata = CPointer<UByte>(runtime.alloca(2815).ptr),
-            gr_info = ArrayPtr(Array(4) { GrInfo(runtime) }, 0),
+            gr_info = ArrayPtr(Array(4) { GrInfo() }, 0),
             grbuf = kotlin.run {
                 val CSIZE = 576 * Float.SIZE_BYTES
                 val data = runtime.alloca(2 * CSIZE).ptr
@@ -353,7 +353,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         var count1_table: UByte,
         var scfsi: UByte,
     ) {
-        constructor(runtime: MiniMp3Program) : this(
+        constructor() : this(
             sfbtab = UByteArrayPtr(UByteArray(0)),
             part_23_length = 0u,
             big_values = 0u,
@@ -380,7 +380,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         var scf: FloatPointer,
         var total_bands: UByte,
         var stereo_bands: UByte,
-        var bitalloc: CPointer<UByte>,
+        var bitalloc: UByteArray,
         var scfcod: CPointer<UByte>,
     ) {
         val value get() = this
@@ -388,7 +388,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             scf = FloatPointer(runtime.alloca(192 * Float.SIZE_BYTES).ptr),
             total_bands = 0u,
             stereo_bands = 0u,
-            bitalloc = CPointer<UByte>(runtime.alloca(64).ptr),
+            bitalloc = UByteArray(64),
             scfcod = CPointer<UByte>(runtime.alloca(64).ptr),
         )
     }
@@ -662,8 +662,8 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         return alloc
 
     }
-    fun L12_read_scalefactors(bs: Bs, pba: CPointer<UByte>, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer) {
-        var pba: CPointer<UByte> = pba // Mutating parameter
+    fun L12_read_scalefactors(bs: Bs, pba: UByteArray, scfcod: CPointer<UByte>, bands: Int, scf: FloatPointer) {
+        var pba: UByteArray = pba // Mutating parameter
         var scf: FloatPointer = scf // Mutating parameter
         val g_deq_L12: FloatArray = __STATIC_L12_read_scalefactors_g_deq_L12
         var i: Int = 0
@@ -671,8 +671,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         i = 0
         while (i < bands) {
             var s: Float = 0f
-            val ba: Int = pba.value.toInt()
-            pba += 1
+            val ba: Int = pba[i].toInt()
             val mask: Int = if (ba.toBool()) (4 + ((19 shr (scfcod[i].toInt())) and 3)) else 0
             m = 4
             while (m.toBool()) {
@@ -718,7 +717,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             sci.value.scfcod[i] = ((if (sci.value.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
             i += 1
         }
-        L12_read_scalefactors(bs, (CPointer(sci.value.bitalloc.ptr)), (CPointer(sci.value.scfcod.ptr)), ((((sci.value.total_bands.toUInt()) * 2u)).toInt()), (FloatPointer(sci.value.scf.ptr)))
+        L12_read_scalefactors(bs, ((sci.value.bitalloc)), (CPointer(sci.value.scfcod.ptr)), ((((sci.value.total_bands.toUInt()) * 2u)).toInt()), (FloatPointer(sci.value.scf.ptr)))
         i = sci.value.stereo_bands.toInt()
         while (i < (sci.value.total_bands.toInt())) {
             sci.value.bitalloc[(2 * i) + 1] = 0.toUByte()
