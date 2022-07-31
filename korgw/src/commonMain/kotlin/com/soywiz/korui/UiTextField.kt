@@ -2,11 +2,10 @@ package com.soywiz.korui
 
 import com.soywiz.korev.KeyEvent
 import com.soywiz.korio.lang.Disposable
-import com.soywiz.korio.util.RedirectMutableField
 import com.soywiz.korui.native.NativeUiFactory
 
 open class UiTextField(app: UiApplication, val textField: NativeUiFactory.NativeTextField = app.factory.createTextField()) : UiComponent(app, textField) {
-    var text by RedirectMutableField(textField::text)
+    var text by textField::text
     fun select(range: IntRange? = 0 until Int.MAX_VALUE): Unit = textField.select(range)
     fun focus(): Unit = textField.focus()
     fun onKeyEvent(block: (KeyEvent) -> Unit): Disposable = textField.onKeyEvent(block)
