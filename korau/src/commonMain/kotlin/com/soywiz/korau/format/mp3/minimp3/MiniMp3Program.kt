@@ -155,7 +155,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var bs: Bs,
         var maindata: CPointer<UByte>,
         var gr_info: ArrayPtr<GrInfo>,
-        var grbuf: Array2Array576Float,
+        var grbuf: Array<FloatPointer>,
         var scf: FloatPointer,
         var syn: Array<FloatPointer>,
         var ist_pos: Array<UByteArray>,
@@ -164,7 +164,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             bs = Bs(),
             maindata = CPointer<UByte>(runtime.alloca(2815).ptr),
             gr_info = ArrayPtr(Array(4) { GrInfo(runtime) }, 0),
-            grbuf = Array2Array576Float(runtime.alloca(2 * 576 * Float.SIZE_BYTES).ptr),
+            grbuf = kotlin.run {
+                val CSIZE = 576 * Float.SIZE_BYTES
+                val data = runtime.alloca(2 * CSIZE).ptr
+                Array(2) {
+                    FloatPointer(data + CSIZE * it)
+                }
+            },
             scf = FloatPointer(runtime.alloca(40 * Float.SIZE_BYTES).ptr),
             syn = kotlin.run {
                 val CSIZE = 64 * Float.SIZE_BYTES
@@ -1615,26 +1621,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     //////////////////
 
     /////////////
-    operator fun Array2Array576Float.get(index: Int): Array576Float = Array576Float(addr(index))
-    operator fun Array2Array576Float.set(index: Int, value: Array576Float) { memcpy(CPointer(addr(index)), CPointer(value.ptr), Array2Array576Float__ELEMENT_SIZE_BYTES) }
-    var Array2Array576Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array2Array576FloatAlloc(setItems: Array2Array576Float.() -> Unit): Array2Array576Float = Array2Array576Float(alloca_zero(
-        Array2Array576Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array2Array576FloatAlloc(items: Array<Array576Float>, size: Int = items.size): Array2Array576Float = Array2Array576FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array2Array576Float.plus(offset: Int): CPointer<Array576Float> = CPointer(addr(offset))
-    operator fun Array2Array576Float.minus(offset: Int): CPointer<Array576Float> = CPointer(addr(-offset))
-    /////////////
-    operator fun Array576Float.get(index: Int): Float = lwf(addr(index))
-    operator fun Array576Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
-    var Array576Float.value get() = this[0]; set(value) { this[0] = value }
-    inline fun Array576FloatAlloc(setItems: Array576Float.() -> Unit): Array576Float = Array576Float(alloca_zero(
-        Array576Float__TOTAL_SIZE_BYTES
-    ).ptr).apply(setItems)
-    fun Array576FloatAlloc(items: Array<Float>, size: Int = items.size): Array576Float = Array576FloatAlloc { for (n in 0 until size) this[n] = items[n] }
-    operator fun Array576Float.plus(offset: Int): FloatPointer = FloatPointer(addr(offset))
-    operator fun Array576Float.minus(offset: Int): FloatPointer = FloatPointer(addr(-offset))
-    /////////////
     operator fun Array4Float.get(index: Int): Float = lwf(addr(index))
     operator fun Array4Float.set(index: Int, value: Float) { swf(addr(index), (value)) }
     var Array4Float.value get() = this[0]; set(value) { this[0] = value }
@@ -1701,18 +1687,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 //////////////////
 
 //////////////////
-internal const val Array2Array576Float__NUM_ELEMENTS = 2
-internal const val Array2Array576Float__ELEMENT_SIZE_BYTES = 2304
-internal const val Array2Array576Float__TOTAL_SIZE_BYTES = 4608
-internal @kotlin.jvm.JvmInline value/*!*/ class Array2Array576Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array2Array576Float__ELEMENT_SIZE_BYTES
-}
-internal const val Array576Float__NUM_ELEMENTS = 576
-internal const val Array576Float__ELEMENT_SIZE_BYTES = 4
-internal const val Array576Float__TOTAL_SIZE_BYTES = 2304
-internal @kotlin.jvm.JvmInline value/*!*/ class Array576Float(val ptr: Int) {
-    fun addr(index: Int) = ptr + index * Array576Float__ELEMENT_SIZE_BYTES
-}
 internal const val Array4Float__NUM_ELEMENTS = 4
 internal const val Array4Float__ELEMENT_SIZE_BYTES = 4
 internal const val Array4Float__TOTAL_SIZE_BYTES = 16
