@@ -24,12 +24,21 @@ class SoftMp3DecoderTest {
 
     @Test
     @Ignore
-    fun testMiniMp3Speed() = suspendTest({ doIOTest }) {
+    fun testMiniMp3SpeedFast() = suspendTest({ doIOTest }) {
         val bytes = resourcesVfs["mp31.mp3"].readBytes()
         //for (n in 0 until 100) {
-        for (n in 0 until 10) {
+        for (n in 0 until 100) {
             val output = FastMP3Decoder.decode(bytes)
-            //val output = JavaMp3AudioFormat.decode(bytes)
+        }
+    }
+
+    @Test
+    @Ignore
+    fun testMiniMp3SpeedJava() = suspendTest({ doIOTest }) {
+        val bytes = resourcesVfs["mp31.mp3"].readBytes()
+        //for (n in 0 until 100) {
+        for (n in 0 until 100) {
+            val output = JavaMp3AudioFormat.decode(bytes)
         }
     }
 

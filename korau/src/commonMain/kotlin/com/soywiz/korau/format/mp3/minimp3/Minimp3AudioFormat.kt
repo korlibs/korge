@@ -8,7 +8,7 @@ internal object Minimp3AudioFormat : BaseMinimp3AudioFormat() {
     override fun createMp3Decoder(): BaseMp3Decoder = Minimp3Decoder()
 
     internal class Minimp3Decoder : MiniMp3Program(), BaseMp3Decoder {
-        private val pcmData = ShortArray(1152 * 2 * 2 * 2)
+        private val pcmData = ShortArray(MINIMP3_MAX_SAMPLES_PER_FRAME * 2 * 2)
         private val mp3dec = Mp3Dec()
         private val mp3decFrameInfo = Mp3FrameInfo()
 

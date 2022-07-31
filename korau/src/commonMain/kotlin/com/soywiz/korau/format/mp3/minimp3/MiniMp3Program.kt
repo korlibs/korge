@@ -8,43 +8,32 @@ import kotlin.math.max
 @OptIn(ExperimentalUnsignedTypes::class)
 internal open class MiniMp3Program() {
     companion object {
-        internal const val MINIMP3_IMPLEMENTATION = 1
         internal const val MINIMP3_MAX_SAMPLES_PER_FRAME = 2304
-        internal const val MAX_FREE_FORMAT_FRAME_SIZE = 2304
-        internal const val MAX_FRAME_SYNC_MATCHES = 10
-        internal const val MAX_L3_FRAME_PAYLOAD_BYTES = 2304
         internal const val MAX_BITRESERVOIR_BYTES = 511
-        internal const val SHORT_BLOCK_TYPE = 2
-        internal const val STOP_BLOCK_TYPE = 3
-        internal const val MODE_MONO = 3
-        internal const val MODE_JOINT_STEREO = 1
-        internal const val HDR_SIZE = 4
-        internal const val BITS_DEQUANTIZER_OUT = -1
-        internal const val MAX_SCF = 41
-        internal const val HAVE_SSE = 0
-        internal const val HAVE_SIMD = 0
-        internal const val HAVE_ARMV6 = 0
 
-        private fun arrayOfUByte(values: String, size: Int = values.length): UByteArray = UByteArray(size) { values.getOrElse(it) { 0.toChar() }.code.toUByte() }
-        private fun arrayOfShort(values: String, size: Int = values.length): ShortArray = ShortArray(size) { values.getOrElse(it) { 0.toChar() }.code.toShort() }
+        private fun arrayOfUByte(values: String, size: Int = values.length): UByteArray =
+            UByteArray(size) { values.getOrElse(it) { 0.toChar() }.code.toUByte() }
+
+        private fun arrayOfShort(values: String, size: Int = values.length): ShortArray =
+            ShortArray(size) { values.getOrElse(it) { 0.toChar() }.code.toShort() }
 
         private val __STATIC_L3_imdct36_g_twid9: FloatArray = floatArrayOf(
-            0.7372773f, 0.79335334f, 0.8433915f, 0.88701083f, 0.92387953f, 0.95371695f, 0.97629601f, 0.99144486f, 0.99904822f,
-            0.6755902f, 0.6087614f, 0.53729963f, 0.46174861f, 0.38268343f, 0.3007058f, 0.2164396f, 0.13052619f, 0.04361938f
+            0.7372773f, 0.7933533f, 0.8433915f, 0.8870108f, 0.9238795f, 0.95371693f, 0.976296f, 0.9914449f, 0.99904823f,
+            0.6755902f, 0.6087614f, 0.53729963f, 0.4617486f, 0.38268343f, 0.3007058f, 0.2164396f, 0.13052619f, 0.04361938f
         )
 
         private val __STATIC_L3_imdct12_g_twid3: FloatArray = floatArrayOf(
-            0.79335334f, 0.92387953f, 0.99144486f, 0.60876143f, 0.38268343f, 0.13052619f
+            0.7933533f, 0.9238795f, 0.9914449f, 0.6087614f, 0.38268343f, 0.13052619f
         )
 
         private val __STATIC_mp3d_DCT_II_g_sec: FloatArray = floatArrayOf(
-            10.19000816f, 0.50060302f, 0.50241929f, 3.40760851f, 0.50547093f, 0.52249861f, 2.05778098f, 0.51544732f,
-            0.56694406f, 1.4841646f, 0.53104258f, 0.6468218f, 1.16943991f, 0.55310392f, 0.7881546f, 0.97256821f,
-            0.58293498f, 1.06067765f, 0.83934963f, 0.62250412f, 1.72244716f, 0.74453628f, 0.67480832f, 5.10114861f
+            10.190008f, 0.500603f, 0.5024193f, 3.4076085f, 0.50547093f, 0.5224986f, 2.057781f, 0.5154473f,
+            0.56694406f, 1.4841646f, 0.5310426f, 0.6468218f, 1.1694399f, 0.5531039f, 0.7881546f, 0.9725682f,
+            0.582935f, 1.0606776f, 0.8393496f, 0.6225041f, 1.7224472f, 0.7445363f, 0.6748083f, 5.1011486f
         )
 
         private val __STATIC_L3_stereo_process_g_pan: FloatArray = floatArrayOf(
-            0f, 1f, 0.21132487f, 0.78867513f, 0.3660254f, 0.6339746f, 0.5f, 0.5f, 0.6339746f, 0.3660254f, 0.78867513f, 0.21132487f, 1f, 0f
+            0f, 1f, 0.21132487f, 0.7886751f, 0.3660254f, 0.6339746f, 0.5f, 0.5f, 0.6339746f, 0.3660254f, 0.7886751f, 0.21132487f, 1f, 0f
         )
         private val __STATIC_mp3d_synth_g_win: FloatArray = floatArrayOf(
             -1f, 26f, -31f, 208f, 218f, 401f, -519f, 2063f, 2000f, 4788f, -5517f, 7134f, 5959f, 35640f, -39336f, 74992f, -1f, 24f, -35f, 202f, 222f, 347f,
@@ -61,25 +50,40 @@ internal open class MiniMp3Program() {
             -9585f, 9838f, -8540f, 11455f, -62684f, 65290f
         )
         private val __STATIC_L3_antialias_g_aa: Array<FloatArray> = arrayOf(
-            floatArrayOf(0.85749293f, 0.881742f, 0.94962865f, 0.98331459f, 0.99551782f, 0.99916056f, 0.9998992f, 0.99999316f),
-            floatArrayOf(0.51449576f, 0.47173197f, 0.31337745f, 0.1819132f, 0.09457419f, 0.04096558f, 0.01419856f, 0.00369997f)
+            floatArrayOf(0.8574929f, 0.881742f, 0.94962865f, 0.9833146f, 0.9955178f, 0.9991606f, 0.9998992f, 0.99999315f),
+            floatArrayOf(0.51449573f, 0.47173196f, 0.31337744f, 0.1819132f, 0.09457419f, 0.04096558f, 0.01419856f, 0.00369997f)
         )
         private val __STATIC_L3_imdct_gr_g_mdct_window: Array<FloatArray> = arrayOf(
-            floatArrayOf(0.99904822f, 0.99144486f, 0.97629601f, 0.95371695f, 0.92387953f, 0.88701083f, 0.84339145f, 0.79335334f, 0.73727734f, 0.04361938f, 0.13052619f, 0.21643961f, 0.3007058f, 0.38268343f, 0.46174861f, 0.53729961f, 0.60876143f, 0.67559021f),
-            floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 0.99144486f, 0.92387953f, 0.79335334f, 0f, 0f, 0f, 0f, 0f, 0f, 0.13052619f, 0.38268343f, 0.60876143f)
+            floatArrayOf(
+                0.99904823f,
+                0.9914449f,
+                0.976296f,
+                0.95371693f,
+                0.9238795f,
+                0.8870108f,
+                0.8433915f,
+                0.7933533f,
+                0.7372773f, 0.04361938f, 0.13052619f,
+                0.2164396f, 0.3007058f, 0.38268343f,
+                0.4617486f,
+                0.53729963f,
+                0.6087614f,
+                0.6755902f
+            ),
+            floatArrayOf(1f, 1f, 1f, 1f, 1f, 1f, 0.9914449f, 0.9238795f, 0.7933533f, 0f, 0f, 0f, 0f, 0f, 0f, 0.13052619f, 0.38268343f, 0.6087614f)
         )
-        private val __STATIC_L3_ldexp_q2_g_expfrac: FloatArray = floatArrayOf(9.31322575e-10f, 7.83145814e-10f, 6.58544508e-10f, 5.53767716e-10f)
+        private val __STATIC_L3_ldexp_q2_g_expfrac: FloatArray = floatArrayOf(9.313226E-10f, 7.831458E-10f, 6.585445E-10f, 5.537677E-10f)
         private val __STATIC_L12_read_scalefactors_g_deq_L12: FloatArray = floatArrayOf(
-            (9.53674316e-7f / 3f), (7.56931807e-7f / 3f), (6.00777173e-7f / 3f), (9.53674316e-7f / 7f), (7.56931807e-7f / 7f), (6.00777173e-7f / 7f),
-            (9.53674316e-7f / 15f), (7.56931807e-7f / 15f), (6.00777173e-7f / 15f), (9.53674316e-7f / 31f), (7.56931807e-7f / 31f), (6.00777173e-7f / 31f),
-            (9.53674316e-7f / 63f), (7.56931807e-7f / 63f), (6.00777173e-7f / 63f), (9.53674316e-7f / 127f), (7.56931807e-7f / 127f), (6.00777173e-7f / 127f),
-            (9.53674316e-7f / 255f), (7.56931807e-7f / 255f), (6.00777173e-7f / 255f), (9.53674316e-7f / 511f), (7.56931807e-7f / 511f), (6.00777173e-7f / 511f),
-            (9.53674316e-7f / 1023f), (7.56931807e-7f / 1023f), (6.00777173e-7f / 1023f), (9.53674316e-7f / 2047f), (7.56931807e-7f / 2047f),
-            (6.00777173e-7f / 2047f), (9.53674316e-7f / 4095f), (7.56931807e-7f / 4095f), (6.00777173e-7f / 4095f), (9.53674316e-7f / 8191f),
-            (7.56931807e-7f / 8191f), (6.00777173e-7f / 8191f), (9.53674316e-7f / 16383f), (7.56931807e-7f / 16383f), (6.00777173e-7f / 16383f),
-            (9.53674316e-7f / 32767f), (7.56931807e-7f / 32767f), (6.00777173e-7f / 32767f), (9.53674316e-7f / 65535f), (7.56931807e-7f / 65535f),
-            (6.00777173e-7f / 65535f), (9.53674316e-7f / 3f), (7.56931807e-7f / 3f), (6.00777173e-7f / 3f), (9.53674316e-7f / 5f), (7.56931807e-7f / 5f),
-            (6.00777173e-7f / 5f), (9.53674316e-7f / 9f), (7.56931807e-7f / 9f), (6.00777173e-7f / 9f)
+            (9.536743E-7f / 3f), (7.569318E-7f / 3f), (6.007772E-7f / 3f), (9.536743E-7f / 7f), (7.569318E-7f / 7f), (6.007772E-7f / 7f),
+            (9.536743E-7f / 15f), (7.569318E-7f / 15f), (6.007772E-7f / 15f), (9.536743E-7f / 31f), (7.569318E-7f / 31f), (6.007772E-7f / 31f),
+            (9.536743E-7f / 63f), (7.569318E-7f / 63f), (6.007772E-7f / 63f), (9.536743E-7f / 127f), (7.569318E-7f / 127f), (6.007772E-7f / 127f),
+            (9.536743E-7f / 255f), (7.569318E-7f / 255f), (6.007772E-7f / 255f), (9.536743E-7f / 511f), (7.569318E-7f / 511f), (6.007772E-7f / 511f),
+            (9.536743E-7f / 1023f), (7.569318E-7f / 1023f), (6.007772E-7f / 1023f), (9.536743E-7f / 2047f), (7.569318E-7f / 2047f),
+            (6.007772E-7f / 2047f), (9.536743E-7f / 4095f), (7.569318E-7f / 4095f), (6.007772E-7f / 4095f), (9.536743E-7f / 8191f),
+            (7.569318E-7f / 8191f), (6.007772E-7f / 8191f), (9.536743E-7f / 16383f), (7.569318E-7f / 16383f), (6.007772E-7f / 16383f),
+            (9.536743E-7f / 32767f), (7.569318E-7f / 32767f), (6.007772E-7f / 32767f), (9.536743E-7f / 65535f), (7.569318E-7f / 65535f),
+            (6.007772E-7f / 65535f), (9.536743E-7f / 3f), (7.569318E-7f / 3f), (6.007772E-7f / 3f), (9.536743E-7f / 5f), (7.569318E-7f / 5f),
+            (6.007772E-7f / 5f), (9.536743E-7f / 9f), (7.569318E-7f / 9f), (6.007772E-7f / 9f)
         )
         private val __STATIC_hdr_sample_rate_hz_g_hz: UIntArray = uintArrayOf(44100u, 48000u, 32000u)
 
@@ -96,8 +100,10 @@ internal open class MiniMp3Program() {
             )
         )
 
-        private val __STATIC_L3_decode_scalefactors_g_scfc_decode: UByteArray = arrayOfUByte("\u0000\u0001\u0002\u0003\u000c\u0005\u0006\u0007\u0009\u000a\u000b\u000d\u000e\u000f\u0012\u0013")
-        private val __STATIC_L3_decode_scalefactors_g_mod: UByteArray = arrayOfUByte("\u0005\u0005\u0004\u0004\u0005\u0005\u0004\u0001\u0004\u0003\u0001\u0001\u0005\u0006\u0006\u0001\u0004\u0004\u0004\u0001\u0004\u0003\u0001\u0001")
+        private val __STATIC_L3_decode_scalefactors_g_scfc_decode: UByteArray =
+            arrayOfUByte("\u0000\u0001\u0002\u0003\u000c\u0005\u0006\u0007\u0009\u000a\u000b\u000d\u000e\u000f\u0012\u0013")
+        private val __STATIC_L3_decode_scalefactors_g_mod: UByteArray =
+            arrayOfUByte("\u0005\u0005\u0004\u0004\u0005\u0005\u0004\u0001\u0004\u0003\u0001\u0001\u0005\u0006\u0006\u0001\u0004\u0004\u0004\u0001\u0004\u0003\u0001\u0001")
         private val __STATIC_L3_decode_scalefactors_g_preamp: UByteArray = arrayOfUByte("\u0001\u0001\u0001\u0001\u0002\u0002\u0003\u0003\u0003\u0002")
         private val __STATIC_L3_huffman_tabs: ShortArray = arrayOfShort(
             "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000" +
@@ -172,11 +178,16 @@ internal open class MiniMp3Program() {
                 "\u02e0\u020e\u01d0\u01d0\u01e6\u01c9\u01ba\u01d7\u01e4\u01e2\u054d\u05a9\u059a\u05c6\u056c\u05d3\u053d\u05d2\u052d\u05d1\u05b7\u057b\u051d\u05c5\u055c\u05a8\u058a\u0599\u05c4\u054c\u05b6\u056b\ufa61\u05c3\u053c\u05a7\u057a\u05c2\u052c\u05b5\u055b\u05c1\u010d\u01c0\u0598\u0589\u051c\u05b4\uf951\u05b3\uf941\u05a1\u044b\u044b\u05a6\u056a\u0597\u0579\uf931\u0509\u043b\u043b\u0488\u0488\u05b2\u05a5" +
                 "\u042b\u042b\u055a\u05b1\u051b\u0596\u0469\u0469\u044a\u044a\u010c\u01b0\u010b\u01a0\u010a\u0190\uf8a1\u0478\u04a3\u043a\u0495\u0459\u04a2\u042a\u041a\u0486\u0468\u0477\u0494\u0449\u0493\u0439\u01a4\u0187\u0485\u0458\u0492\u0476\u0467\u0429\u0491\u0419\u0484\u0448\u0475\u0457\u0483\u0438\u0466\u0482\u0428\u0481\u0474\u0447\u0418\uf791\u0465\u0456\u0471\uf781\u0337\u0337\u0473\u0472\u0327\u0327" +
                 "\u0180\u0108\u0170\u0107\u0364\u0346\u0355\u0317\u0363\u0336\u0354\u0345\u0362\u0326\u0361\u0316\uf6f1\u0353\u0335\u0344\u0160\u0106\u0352\u0325\u0351\uf6a1\u0215\u0215\u0343\u0334" +
-                "\u0150\u0105\u0242\u0224\u0233\u0241\u0214\u0214\u0340\u0304\u0232\u0232\u0223\u0223\u0131\u0113\u0230\u0203\u0122\u0122\u0120\u0102")
-        private val __STATIC_L3_huffman_tab32: UByteArray = arrayOfUByte("\u0082\u00a2\u00c1\u00d1\u002c\u001c\u004c\u008c\u0009\u0009\u0009\u0009\u0009\u0009\u0009\u0009\u00be\u00fe\u00de\u00ee\u007e\u005e\u009d\u009d\u006d\u003d\u00ad\u00cd")
-        private val __STATIC_L3_huffman_tab33: UByteArray = arrayOfUByte("\u00fc\u00ec\u00dc\u00cc\u00bc\u00ac\u009c\u008c\u007c\u006c\u005c\u004c\u003c\u002c\u001c\u000c")
-        private val __STATIC_L3_huffman_tabindex: ShortArray = arrayOfShort("\u0000\u0020\u0040\u0062\u0000\u0084\u00b4\u00da\u0124\u016c\u01aa\u021a\u0288\u02ea\u0000\u0466\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u0732\u0732\u0732\u0732\u0732\u0732\u0732\u0732")
-        private val __STATIC_L3_huffman_g_linbits: UByteArray = arrayOfUByte("\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0003\u0004\u0006\u0008\u000a\u000d\u0004\u0005\u0006\u0007\u0008\u0009\u000b\u000d")
+                "\u0150\u0105\u0242\u0224\u0233\u0241\u0214\u0214\u0340\u0304\u0232\u0232\u0223\u0223\u0131\u0113\u0230\u0203\u0122\u0122\u0120\u0102"
+        )
+        private val __STATIC_L3_huffman_tab32: UByteArray =
+            arrayOfUByte("\u0082\u00a2\u00c1\u00d1\u002c\u001c\u004c\u008c\u0009\u0009\u0009\u0009\u0009\u0009\u0009\u0009\u00be\u00fe\u00de\u00ee\u007e\u005e\u009d\u009d\u006d\u003d\u00ad\u00cd")
+        private val __STATIC_L3_huffman_tab33: UByteArray =
+            arrayOfUByte("\u00fc\u00ec\u00dc\u00cc\u00bc\u00ac\u009c\u008c\u007c\u006c\u005c\u004c\u003c\u002c\u001c\u000c")
+        private val __STATIC_L3_huffman_tabindex: ShortArray =
+            arrayOfShort("\u0000\u0020\u0040\u0062\u0000\u0084\u00b4\u00da\u0124\u016c\u01aa\u021a\u0288\u02ea\u0000\u0466\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u05b4\u0732\u0732\u0732\u0732\u0732\u0732\u0732\u0732")
+        private val __STATIC_L3_huffman_g_linbits: UByteArray =
+            arrayOfUByte("\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0001\u0002\u0003\u0004\u0006\u0008\u000a\u000d\u0004\u0005\u0006\u0007\u0008\u0009\u000b\u000d")
 
         private val __STATIC_L12_read_scale_info_g_bitalloc_code_tab: UByteArray = arrayOfUByte(
             "\u0000\u0011\u0003\u0004\u0005\u0006\u0007\u0008\u0009\u000a\u000b\u000c\u000d\u000e\u000f\u0010\u0000\u0011\u0012\u0003\u0013\u0004\u0005\u0006" +
@@ -205,14 +216,35 @@ internal open class MiniMp3Program() {
             arrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0022\u0022\u0022\u002a\u002a\u002a\u000c\u000c\u000c\u0000")
         )
         private val __STATIC_L3_read_side_info_g_scf_mixed: Array<UByteArray> = arrayOf(
-            arrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000", size = 40),
+            arrayOfUByte(
+                "\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000",
+                size = 40
+            ),
             arrayOfUByte("\u000c\u000c\u000c\u0004\u0004\u0004\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u0018\u0018\u0018\u001c\u001c\u001c\u0024\u0024\u0024\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u0002\u001a\u001a\u001a\u0000"),
-            arrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000e\u000e\u000e\u0012\u0012\u0012\u001a\u001a\u001a\u0020\u0020\u0020\u002a\u002a\u002a\u0012\u0012\u0012\u0000", size = 40),
-            arrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u0020\u0020\u0020\u002c\u002c\u002c\u000c\u000c\u000c\u0000", size = 40),
-            arrayOfUByte("\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000", size = 40),
-            arrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0016\u0016\u0016\u001e\u001e\u001e\u0038\u0038\u0038\u0000", size = 40),
-            arrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0006\u0006\u0006\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0042\u0042\u0042\u0000", size = 40),
-            arrayOfUByte("\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0022\u0022\u0022\u002a\u002a\u002a\u000c\u000c\u000c\u0000", size = 40)
+            arrayOfUByte(
+                "\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000e\u000e\u000e\u0012\u0012\u0012\u001a\u001a\u001a\u0020\u0020\u0020\u002a\u002a\u002a\u0012\u0012\u0012\u0000",
+                size = 40
+            ),
+            arrayOfUByte(
+                "\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u0020\u0020\u0020\u002c\u002c\u002c\u000c\u000c\u000c\u0000",
+                size = 40
+            ),
+            arrayOfUByte(
+                "\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0018\u0018\u0018\u001e\u001e\u001e\u0028\u0028\u0028\u0012\u0012\u0012\u0000",
+                size = 40
+            ),
+            arrayOfUByte(
+                "\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0012\u0012\u0012\u0016\u0016\u0016\u001e\u001e\u001e\u0038\u0038\u0038\u0000",
+                size = 40
+            ),
+            arrayOfUByte(
+                "\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0006\u0006\u0006\u000a\u000a\u000a\u000c\u000c\u000c\u000e\u000e\u000e\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0042\u0042\u0042\u0000",
+                size = 40
+            ),
+            arrayOfUByte(
+                "\u0004\u0004\u0004\u0004\u0004\u0004\u0006\u0006\u0004\u0004\u0004\u0006\u0006\u0006\u0008\u0008\u0008\u000c\u000c\u000c\u0010\u0010\u0010\u0014\u0014\u0014\u001a\u001a\u001a\u0022\u0022\u0022\u002a\u002a\u002a\u000c\u000c\u000c\u0000",
+                size = 40
+            )
         )
         private val __STATIC_L3_decode_scalefactors_g_scf_partitions: Array<UByteArray> = arrayOf(
             arrayOfUByte("\u0006\u0005\u0005\u0005\u0006\u0005\u0005\u0005\u0006\u0005\u0007\u0003\u000b\u000a\u0000\u0000\u0007\u0007\u0007\u0000\u0006\u0006\u0006\u0003\u0008\u0008\u0005\u0000"),
@@ -220,25 +252,38 @@ internal open class MiniMp3Program() {
             arrayOfUByte("\u0009\u0009\u0006\u000c\u0009\u0009\u0009\u0009\u0009\u0009\u000c\u0006\u0012\u0012\u0000\u0000\u000c\u000c\u000c\u0000\u000c\u0009\u0009\u0006\u000f\u000c\u0009\u0000")
         )
 
-        private val __STATIC_L12_subband_alloc_table_g_alloc_L1: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 76u, code_tab_width = 4u, band_count = 32u))
-        private val __STATIC_L12_subband_alloc_table_g_alloc_L2M2: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 60u, code_tab_width = 4u, band_count = (4.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (7.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (2.toUByte()), band_count = (19.toUByte())))
-        private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = 0u, code_tab_width = 4u, band_count = (3.toUByte())), L12_subband_alloc_tStruct(tab_offset = (16.toUByte()), code_tab_width = (4.toUByte()), band_count = (8.toUByte())), L12_subband_alloc_tStruct(tab_offset = (32.toUByte()), code_tab_width = (3.toUByte()), band_count = (12.toUByte())), L12_subband_alloc_tStruct(tab_offset = (40.toUByte()), code_tab_width = (2.toUByte()), band_count = (7.toUByte())))
-        private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1_lowrate: Array<L12_subband_alloc_tStruct> = arrayOf(L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (4.toUByte()), band_count = (2.toUByte())), L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (10.toUByte())))
+        private val __STATIC_L12_subband_alloc_table_g_alloc_L1: Array<L12_subband_alloc_tStruct> =
+            arrayOf(L12_subband_alloc_tStruct(tab_offset = 76u, code_tab_width = 4u, band_count = 32u))
+        private val __STATIC_L12_subband_alloc_table_g_alloc_L2M2: Array<L12_subband_alloc_tStruct> = arrayOf(
+            L12_subband_alloc_tStruct(tab_offset = 60u, code_tab_width = 4u, band_count = (4.toUByte())),
+            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (7.toUByte())),
+            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (2.toUByte()), band_count = (19.toUByte()))
+        )
+        private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1: Array<L12_subband_alloc_tStruct> = arrayOf(
+            L12_subband_alloc_tStruct(tab_offset = 0u, code_tab_width = 4u, band_count = (3.toUByte())),
+            L12_subband_alloc_tStruct(tab_offset = (16.toUByte()), code_tab_width = (4.toUByte()), band_count = (8.toUByte())),
+            L12_subband_alloc_tStruct(tab_offset = (32.toUByte()), code_tab_width = (3.toUByte()), band_count = (12.toUByte())),
+            L12_subband_alloc_tStruct(tab_offset = (40.toUByte()), code_tab_width = (2.toUByte()), band_count = (7.toUByte()))
+        )
+        private val __STATIC_L12_subband_alloc_table_g_alloc_L2M1_lowrate: Array<L12_subband_alloc_tStruct> = arrayOf(
+            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (4.toUByte()), band_count = (2.toUByte())),
+            L12_subband_alloc_tStruct(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (10.toUByte()))
+        )
 
         private val g_pow43: FloatArray = floatArrayOf(
-            0f, -1f, -2.519842f, -4.326749f, -6.349604f, -8.54988f, -10.902724f, -13.390518f, -16f, -18.720754f, -21.544347f, -24.463781f, -27.473142f,
-            -30.567351f, -33.741992f, -36.993181f, 0f, 1f, 2.519842f, 4.326749f, 6.349604f, 8.54988f, 10.902724f, 13.390518f, 16f, 18.720754f, 21.544347f,
-            24.463781f, 27.473142f, 30.567351f, 33.741992f, 36.993181f, 40.317474f, 43.711787f, 47.173345f, 50.699631f, 54.288352f, 57.937408f, 61.644865f,
-            65.408941f, 69.227979f, 73.100443f, 77.024898f, 81f, 85.024491f, 89.097188f, 93.216975f, 97.3828f, 101.593667f, 105.848633f, 110.146801f,
-            114.487321f, 118.869381f, 123.292209f, 127.755065f, 132.257246f, 136.798076f, 141.376907f, 145.993119f, 150.646117f, 155.335327f, 160.060199f,
-            164.820202f, 169.614826f, 174.443577f, 179.30598f, 184.201575f, 189.129918f, 194.09058f, 199.083145f, 204.10721f, 209.162385f, 214.248292f,
-            219.364564f, 224.510845f, 229.686789f, 234.892058f, 240.126328f, 245.38928f, 250.680604f, 256f, 261.347174f, 266.721841f, 272.123723f,
-            277.552547f, 283.008049f, 288.489971f, 293.99806f, 299.532071f, 305.091761f, 310.676898f, 316.287249f, 321.922592f, 327.582707f, 333.267377f,
-            338.976394f, 344.70955f, 350.466646f, 356.247482f, 362.051866f, 367.879608f, 373.730522f, 379.604427f, 385.501143f, 391.420496f, 397.362314f,
-            403.326427f, 409.312672f, 415.320884f, 421.350905f, 427.402579f, 433.47575f, 439.570269f, 445.685987f, 451.822757f, 457.980436f, 464.158883f,
-            470.35796f, 476.57753f, 482.817459f, 489.077615f, 495.357868f, 501.65809f, 507.978156f, 514.317941f, 520.677324f, 527.056184f, 533.454404f,
-            539.871867f, 546.308458f, 552.764065f, 559.238575f, 565.731879f, 572.24387f, 578.77444f, 585.323483f, 591.890898f, 598.476581f, 605.080431f,
-            611.702349f, 618.342238f, 625f, 631.67554f, 638.368763f, 645.079578f
+            0f, -1f, -2.519842f, -4.326749f, -6.349604f, -8.54988f, -10.902724f, -13.390518f, -16f, -18.720755f, -21.544348f, -24.463781f, -27.473143f,
+            -30.56735f, -33.741993f, -36.99318f, 0f, 1f, 2.519842f, 4.326749f, 6.349604f, 8.54988f, 10.902724f, 13.390518f, 16f, 18.720755f, 21.544348f,
+            24.463781f, 27.473143f, 30.56735f, 33.741993f, 36.99318f, 40.317474f, 43.71179f, 47.173344f, 50.69963f, 54.288353f, 57.93741f, 61.644863f,
+            65.40894f, 69.22798f, 73.10044f, 77.024895f, 81f, 85.02449f, 89.09719f, 93.21697f, 97.3828f, 101.593666f, 105.84863f, 110.146805f,
+            114.48732f, 118.869385f, 123.292206f, 127.755066f, 132.25725f, 136.79808f, 141.3769f, 145.99312f, 150.64612f, 155.33533f, 160.0602f,
+            164.8202f, 169.61482f, 174.44357f, 179.30598f, 184.20157f, 189.12991f, 194.09058f, 199.08315f, 204.10721f, 209.16238f, 214.24829f,
+            219.36456f, 224.51085f, 229.68678f, 234.89206f, 240.12633f, 245.38928f, 250.6806f, 256f, 261.34717f, 266.72183f, 272.12372f,
+            277.55255f, 283.00806f, 288.48996f, 293.99805f, 299.53207f, 305.09177f, 310.6769f, 316.28726f, 321.92258f, 327.5827f, 333.26736f,
+            338.97638f, 344.70956f, 350.46664f, 356.24747f, 362.05188f, 367.8796f, 373.73053f, 379.60443f, 385.50113f, 391.4205f, 397.3623f,
+            403.32642f, 409.31268f, 415.3209f, 421.3509f, 427.4026f, 433.47574f, 439.57028f, 445.68597f, 451.82275f, 457.98044f, 464.15887f,
+            470.35797f, 476.57755f, 482.81744f, 489.0776f, 495.35788f, 501.65808f, 507.97815f, 514.31793f, 520.6773f, 527.0562f, 533.4544f,
+            539.8719f, 546.3085f, 552.76404f, 559.2386f, 565.7319f, 572.2439f, 578.7744f, 585.3235f, 591.89087f, 598.47656f, 605.08044f,
+            611.70233f, 618.3422f, 625f, 631.67554f, 638.3688f, 645.0796f
         )
     }
 
@@ -258,7 +303,7 @@ internal open class MiniMp3Program() {
             reserv = 0,
             free_format_bytes_array = IntArray(1),
             header = UByteArray(4),
-            reserv_buf = UByteArray(511),
+            reserv_buf = UByteArray(MAX_BITRESERVOIR_BYTES),
         )
     }
 
@@ -314,9 +359,15 @@ internal open class MiniMp3Program() {
     class ArrayPtr<T>(val array: Array<T>, val pos: Int) {
         var value: T
             get() = array[pos]
-            set(value) { array[pos] = value }
+            set(value) {
+                array[pos] = value
+            }
+
         operator fun get(index: Int): T = array[pos + index]
-        operator fun set(index: Int, value: T) { array[pos + index] = value }
+        operator fun set(index: Int, value: T) {
+            array[pos + index] = value
+        }
+
         operator fun inc(): ArrayPtr<T> = ArrayPtr(array, pos + 1)
         operator fun plus(other: Int): ArrayPtr<T> = ArrayPtr(array, pos + other)
         operator fun minus(other: ArrayPtr<T>): Int = pos - other.pos
@@ -328,9 +379,15 @@ internal open class MiniMp3Program() {
     class UByteArrayPtr(val array: UByteArray, val pos: Int = 0) {
         var value: UByte
             get() = array[pos]
-            set(value) { array[pos] = value }
+            set(value) {
+                array[pos] = value
+            }
+
         operator fun get(index: Int): UByte = array[pos + index]
-        operator fun set(index: Int, value: UByte) { array[pos + index] = value }
+        operator fun set(index: Int, value: UByte) {
+            array[pos + index] = value
+        }
+
         operator fun inc(): UByteArrayPtr = UByteArrayPtr(array, pos + 1)
         operator fun plus(other: Int): UByteArrayPtr = UByteArrayPtr(array, pos + other)
         operator fun minus(other: UByteArrayPtr): Int = pos - other.pos
@@ -343,9 +400,15 @@ internal open class MiniMp3Program() {
     class FloatArrayPtr(val array: FloatArray, val pos: Int = 0) {
         var value: Float
             get() = array[pos]
-            set(value) { array[pos] = value }
+            set(value) {
+                array[pos] = value
+            }
+
         operator fun get(index: Int): Float = array[pos + index]
-        operator fun set(index: Int, value: Float) { array[pos + index] = value }
+        operator fun set(index: Int, value: Float) {
+            array[pos + index] = value
+        }
+
         operator fun inc(): FloatArrayPtr = FloatArrayPtr(array, pos + 1)
         operator fun plus(other: Int): FloatArrayPtr = FloatArrayPtr(array, pos + other)
         operator fun minus(other: FloatArrayPtr): Int = pos - other.pos
@@ -357,9 +420,15 @@ internal open class MiniMp3Program() {
     class ShortArrayPtr(val array: ShortArray, val pos: Int = 0) {
         var value: Short
             get() = array[pos]
-            set(value) { array[pos] = value }
+            set(value) {
+                array[pos] = value
+            }
+
         operator fun get(index: Int): Short = array[pos + index]
-        operator fun set(index: Int, value: Short) { array[pos + index] = value }
+        operator fun set(index: Int, value: Short) {
+            array[pos + index] = value
+        }
+
         operator fun inc(): ShortArrayPtr = ShortArrayPtr(array, pos + 1)
         operator fun plus(other: Int): ShortArrayPtr = ShortArrayPtr(array, pos + other)
         operator fun minus(other: ShortArrayPtr): Int = pos - other.pos
@@ -371,67 +440,41 @@ internal open class MiniMp3Program() {
     fun memcpy(dst: FloatArrayPtr, src: FloatArrayPtr, byteSize: Int) {
         for (n in 0 until byteSize / Float.SIZE_BYTES) dst[n] = src[n]
     }
+
     fun memcpy(dst: UByteArrayPtr, src: UByteArrayPtr, byteSize: Int) {
         for (n in 0 until byteSize / UByte.SIZE_BYTES) dst[n] = src[n]
     }
 
-
     class GrInfo(
-        var sfbtab: UByteArrayPtr,
-        var part_23_length: UShort,
-        var big_values: UShort,
-        var scalefac_compress: UShort,
-        var global_gain: UByte,
-        var block_type: UByte,
-        var mixed_block_flag: UByte,
-        var n_long_sfb: UByte,
-        var n_short_sfb: UByte,
-        var table_select: UByteArray,
-        var region_count: UByteArray,
-        var subblock_gain: UByteArray,
-        var preflag: UByte,
-        var scalefac_scale: UByte,
-        var count1_table: UByte,
-        var scfsi: UByte,
+        var sfbtab: UByteArrayPtr = UByteArrayPtr(UByteArray(0)),
+        var part_23_length: UShort = 0u,
+        var big_values: UShort = 0u,
+        var scalefac_compress: UShort = 0u,
+        var global_gain: UByte = 0u,
+        var block_type: UByte = 0u,
+        var mixed_block_flag: UByte = 0u,
+        var n_long_sfb: UByte = 0u,
+        var n_short_sfb: UByte = 0u,
+        var table_select: UByteArray= UByteArray(3),
+        var region_count: UByteArray= UByteArray(3),
+        var subblock_gain: UByteArray= UByteArray(3),
+        var preflag: UByte = 0u,
+        var scalefac_scale: UByte = 0u,
+        var count1_table: UByte = 0u,
+        var scfsi: UByte = 0u,
     ) {
-        constructor() : this(
-            sfbtab = UByteArrayPtr(UByteArray(0)),
-            part_23_length = 0u,
-            big_values = 0u,
-            scalefac_compress = 0u,
-            global_gain = 0u,
-            block_type = 0u,
-            mixed_block_flag = 0u,
-            n_long_sfb = 0u,
-            n_short_sfb = 0u,
-            table_select = UByteArray(3),
-            region_count = UByteArray(3),
-            subblock_gain = UByteArray(3),
-            preflag = 0u,
-            scalefac_scale = 0u,
-            count1_table = 0u,
-            scfsi = 0u,
-        )
-
         val value get() = this
     }
 
     // CPointer<L12_scale_info>
     class ScaleInfo(
-        var scf: FloatArray,
-        var total_bands: UByte,
-        var stereo_bands: UByte,
-        var bitalloc: UByteArray,
-        var scfcod: UByteArray,
+        var scf: FloatArray = FloatArray(192),
+        var total_bands: UByte = 0u,
+        var stereo_bands: UByte = 0u,
+        var bitalloc: UByteArray = UByteArray(64),
+        var scfcod: UByteArray = UByteArray(64),
     ) {
         val value get() = this
-        constructor() : this(
-            scf = FloatArray(192),
-            total_bands = 0u,
-            stereo_bands = 0u,
-            bitalloc = UByteArray(64),
-            scfcod = UByteArray(64),
-        )
     }
 
     ////////////////////////////////////////////////////////////////////////
@@ -455,6 +498,7 @@ internal open class MiniMp3Program() {
         bs.pos = 0
         bs.limit = bytes * 8
     }
+
     fun get_bits(bs: Bs, n: Int): UInt {
         var next: UInt = 0u
         var cache: UInt = 0u
@@ -464,53 +508,54 @@ internal open class MiniMp3Program() {
         bs.pos += n
         if (bs.pos > bs.limit) return 0u
         next = p.value.toUInt() and ((255 shr (s.toInt()))).toUInt()
-        p += 1
+        p++
         while (true) {
             shl -= 8
             if (shl <= 0) break
             cache = cache or (next shl shl)
             next = p.value.toUInt()
-            p += 1
+            p++
         }
         return cache or (next shr (-shl))
     }
+
     fun hdr_valid(h: UByteArrayPtr): Boolean {
         val h0 = h[0].toInt()
         val h1 = h[1].toInt()
         val h2 = h[2].toInt()
         return h0 == 255 && (h1 and 240 == 240 || (h1 and 254 == 226)) && (h1 shr 1 and 3 != 0) && (h2 shr 4 != 15) && (h2 shr 2 and 3 != 3)
-
     }
+
     fun hdr_compare(h1: UByteArrayPtr, h2: UByteArrayPtr): Int {
         return (((((hdr_valid(h2).toBool()) && ((((((h1[1].toUInt()) xor (h2[1].toUInt())) and 254u)).toInt()) == 0)) && ((((((h1[2].toUInt()) xor (h2[2].toUInt())) and 12u)).toInt()) == 0)) && (((((((((h1[2].toUInt()) and 240u)).toInt()) == 0)).toInt()) xor (((((((h2[2].toUInt()) and 240u)).toInt()) == 0)).toInt())) == 0))).toInt()
-
     }
+
     fun hdr_bitrate_kbps(h: UByteArrayPtr): UInt {
         val halfrate: Array<Array<UByteArray>> = __STATIC_hdr_bitrate_kbps_halfrate
         return (2 * halfrate[(h[1].toUInt() and 8u != 0u).toInt()][(h[1].toUInt() shr 1 and 3u).toInt() - 1][((h[2].toUInt()) shr 4).toInt()].toInt()).toUInt()
-
     }
+
     fun hdr_sample_rate_hz(h: UByteArrayPtr): UInt {
         val g_hz: UIntArray = __STATIC_hdr_sample_rate_hz_g_hz
         return g_hz[(h[2].toUInt() shr 2 and 3u).toInt()] shr (h[1].toUInt() and 8u == 0u).toInt() shr (h[1].toUInt() and 16u == 0u).toInt()
-
     }
+
     fun hdr_frame_samples(h: UByteArrayPtr): UInt {
         return (if (h[1].toUInt() and 6u == 6u) 384 else 1152 shr (h[1].toUInt() and 14u == 2u).toInt()).toUInt()
-
     }
+
     fun hdr_frame_bytes(h: UByteArrayPtr, free_format_size: Int): Int {
         var frame_bytes: Int = ((((hdr_frame_samples(h) * hdr_bitrate_kbps(h)) * 125u) / hdr_sample_rate_hz(h))).toInt()
         if (h[1].toUInt() and 6u == 6u) {
             frame_bytes = frame_bytes and ((3).inv())
         }
         return if (frame_bytes != 0) frame_bytes else free_format_size
-
     }
+
     fun hdr_padding(h: UByteArrayPtr): Int {
         return (if ((((h[2].toUInt()) and 2u)).toBool()) (if (((((h[1].toUInt()) and 6u)).toInt()) == 6) 4 else 1) else 0)
-
     }
+
     fun L12_subband_alloc_table(hdr: UByteArrayPtr, sci: ScaleInfo): Array<L12_subband_alloc_tStruct> {
         var alloc: Array<L12_subband_alloc_tStruct> = __STATIC_L12_subband_alloc_table_g_alloc_L1
         val mode: Int = (hdr[3].toUInt() shr 6 and 3u).toInt()
@@ -523,12 +568,10 @@ internal open class MiniMp3Program() {
         if (hdr[1].toInt() and 6 == 6) {
             alloc = __STATIC_L12_subband_alloc_table_g_alloc_L1
             nbands = 32
-
         } else {
             if (((hdr[1].toUInt()) and 8u) == 0u) {
                 alloc = __STATIC_L12_subband_alloc_table_g_alloc_L2M2
                 nbands = 30
-
             } else {
                 val sample_rate_idx: Int = ((((hdr[2].toUInt()) shr 2) and 3u)).toInt()
                 var kbps: UInt = hdr_bitrate_kbps(hdr) shr (((mode != 3)).toInt())
@@ -542,18 +585,18 @@ internal open class MiniMp3Program() {
                         alloc = __STATIC_L12_subband_alloc_table_g_alloc_L2M1_lowrate
                         nbands = (if (sample_rate_idx == 2) 12 else 8)
                     }
+
                     kbps.toInt() >= 96 && sample_rate_idx != 1 -> {
                         nbands = 30
                     }
                 }
-
             }
         }
         sci.value.total_bands = nbands.toUByte()
         sci.value.stereo_bands = if (stereo_bands > nbands) nbands.toUByte() else stereo_bands.toUByte()
         return alloc
-
     }
+
     fun L12_read_scalefactors(bs: Bs, pba: UByteArray, scfcod: UByteArray, bands: Int, scf: FloatArrayPtr) {
         var scf: FloatArrayPtr = scf // Mutating parameter
         val g_deq_L12: FloatArray = __STATIC_L12_read_scalefactors_g_deq_L12
@@ -569,15 +612,14 @@ internal open class MiniMp3Program() {
                 if (((mask and m)).toBool()) {
                     val b: Int = get_bits(bs, 6).toInt()
                     s = g_deq_L12[((ba * 3) - 6) + (b % 3)] * ((((1 shl 21) shr (b / 3))).toFloat())
-
                 }
                 scf++.value = s
                 m = m shr 1
             }
-            i += 1
+            i++
         }
-
     }
+
     fun L12_read_scale_info(hdr: UByteArrayPtr, bs: Bs, sci: ScaleInfo) {
         val g_bitalloc_code_tab = UByteArrayPtr(__STATIC_L12_read_scale_info_g_bitalloc_code_tab)
         val subband_alloc = L12_subband_alloc_table(hdr, sci)
@@ -593,7 +635,7 @@ internal open class MiniMp3Program() {
                 k += (subband_alloc[subband_alloc_n].band_count.toInt())
                 ba_bits = subband_alloc[subband_alloc_n].code_tab_width.toInt()
                 ba_code_tab = g_bitalloc_code_tab + subband_alloc[subband_alloc_n].tab_offset.toInt()
-                subband_alloc_n += 1
+                subband_alloc_n++
             }
             ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
             sci.value.bitalloc[2 * i] = ba
@@ -601,21 +643,28 @@ internal open class MiniMp3Program() {
                 ba = ba_code_tab[get_bits(bs, ba_bits).toInt()]
             }
             sci.value.bitalloc[(2 * i) + 1] = (if (sci.value.stereo_bands.toBool()) ba else (0.toUByte()))
-            i += 1
+            i++
         }
         i = 0
         while (i < (2 * (sci.value.total_bands.toInt()))) {
-            sci.value.scfcod[i] = ((if (sci.value.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
-            i += 1
+            sci.value.scfcod[i] =
+                ((if (sci.value.bitalloc[i].toBool()) (if (((((hdr[1].toUInt()) and 6u)).toInt()) == 6) 2 else (get_bits(bs, 2).toInt())) else 6)).toUByte()
+            i++
         }
-        L12_read_scalefactors(bs, ((sci.value.bitalloc)), ((sci.value.scfcod)), ((((sci.value.total_bands.toUInt()) * 2u)).toInt()), (FloatArrayPtr(sci.value.scf)))
+        L12_read_scalefactors(
+            bs,
+            ((sci.value.bitalloc)),
+            ((sci.value.scfcod)),
+            ((((sci.value.total_bands.toUInt()) * 2u)).toInt()),
+            (FloatArrayPtr(sci.value.scf))
+        )
         i = sci.value.stereo_bands.toInt()
         while (i < (sci.value.total_bands.toInt())) {
             sci.value.bitalloc[(2 * i) + 1] = 0.toUByte()
-            i += 1
+            i++
         }
-
     }
+
     fun L12_dequantize_granule(grbuf: FloatArrayPtr, bs: Bs, sci: ScaleInfo, group_size: Int): Int {
         var i: Int = 0
         var j: Int = 0
@@ -633,9 +682,8 @@ internal open class MiniMp3Program() {
                         k = 0
                         while (k < group_size) {
                             dst[k] = (((get_bits(bs, ba).toInt()) - half)).toFloat()
-                            k += 1
+                            k++
                         }
-
                     } else {
                         val mod: UInt = (((2 shl (ba - 17)) + 1)).toUInt()
                         var code: UInt = get_bits(bs, (((mod.toInt()) + 2) - (((mod shr 3)).toInt())))
@@ -645,38 +693,41 @@ internal open class MiniMp3Program() {
                             k++
                             code /= mod
                         }
-
                     }
                 }
                 dst += choff
                 choff = 18 - choff
-                i += 1
+                i++
             }
-            j += 1
+            j++
         }
         return group_size * 4
-
     }
+
     fun L12_apply_scf_384(sci: ScaleInfo, scf: FloatArrayPtr, dst: FloatArrayPtr) {
         var scf: FloatArrayPtr = scf // Mutating parameter
         var dst: FloatArrayPtr = dst // Mutating parameter
         var i: Int = 0
         var k: Int = 0
-        memcpy((((((dst + 576) + (((((sci.value.stereo_bands.toUInt()) * 18u)).toInt())))))), ((((dst + (((((sci.value.stereo_bands.toUInt()) * 18u)).toInt())))))), ((((((sci.value.total_bands.toUInt()) - (sci.value.stereo_bands.toUInt())) * 18u) * ((Float.SIZE_BYTES).toUInt()))).toInt()))
+        memcpy(
+            (((((dst + 576) + (((((sci.value.stereo_bands.toUInt()) * 18u)).toInt())))))),
+            ((((dst + (((((sci.value.stereo_bands.toUInt()) * 18u)).toInt())))))),
+            ((((((sci.value.total_bands.toUInt()) - (sci.value.stereo_bands.toUInt())) * 18u) * ((Float.SIZE_BYTES).toUInt()))).toInt())
+        )
         i = 0
         while (i < (sci.value.total_bands.toInt())) {
             k = 0
             while (k < 12) {
                 dst[k + 0] = dst[k + 0] * scf[0]
                 dst[k + 576] = dst[k + 576] * scf[3]
-                k += 1
+                k++
             }
             i++
             dst += 18
             scf += 6
         }
-
     }
+
     fun L3_read_side_info(bs: Bs, gr: ArrayPtr<GrInfo>, hdr: UByteArrayPtr): Int {
         var gr: ArrayPtr<GrInfo> = gr // Mutating parameter
         val g_scf_long = __STATIC_L3_read_side_info_g_scf_long
@@ -748,19 +799,20 @@ internal open class MiniMp3Program() {
             gr.value.table_select[0] = ((tables shr 10)).toUByte()
             gr.value.table_select[1] = (((tables shr 5) and 31u)).toUByte()
             gr.value.table_select[2] = ((tables and 31u)).toUByte()
-            gr.value.preflag = ((if ((((hdr[1].toUInt()) and 8u)).toBool()) get_bits(bs, 1) else (((gr.value.scalefac_compress >= 500.toUShort())).toInt().toUInt()))).toUByte()
+            gr.value.preflag = ((if ((((hdr[1].toUInt()) and 8u)).toBool()) get_bits(bs, 1) else (((gr.value.scalefac_compress >= 500.toUShort())).toInt()
+                .toUInt()))).toUByte()
             gr.value.scalefac_scale = get_bits(bs, 1).toUByte()
             gr.value.count1_table = get_bits(bs, 1).toUByte()
             gr.value.scfsi = (((scfsi shr 12) and 15u)).toUByte()
             scfsi = scfsi shl 4
-            gr += 1
+            gr++
         } while (((--gr_count)).toBool())
         if ((part_23_sum + bs.pos) > (bs.limit + (main_data_begin * 8))) {
             return -1
         }
         return main_data_begin
-
     }
+
     fun L3_read_scalefactors(scf: UByteArrayPtr, ist_pos: UByteArray, scf_size: UByteArray, scf_count: UByteArrayPtr, bitbuf: Bs, scfsi: Int) {
         var scf: UByteArrayPtr = scf // Mutating parameter
         var ist_pos = UByteArrayPtr(ist_pos) // Mutating parameter
@@ -791,8 +843,8 @@ internal open class MiniMp3Program() {
         scf[0] = 0u
         scf[1] = 0u
         scf[2] = 0u
-
     }
+
     fun L3_ldexp_q2(y: Float, exp_q2: Int): Float {
         var y: Float = y
         var exp_q2: Int = exp_q2 // Mutating parameter
@@ -803,8 +855,8 @@ internal open class MiniMp3Program() {
             exp_q2 -= e
         } while (exp_q2 > 0)
         return y
-
     }
+
     fun L3_decode_scalefactors(hdr: UByteArray, ist_pos: UByteArray, bs: Bs, gr: ArrayPtr<GrInfo>, scf: FloatArrayPtr, ch: Int) {
         val g_scf_partitions = __STATIC_L3_decode_scalefactors_g_scf_partitions
         var scf_partition = UByteArrayPtr(g_scf_partitions[gr.value.n_short_sfb.toBool().toInt() + (!gr.value.n_long_sfb.toBool()).toInt()])
@@ -822,7 +874,6 @@ internal open class MiniMp3Program() {
             scf_size[1] = scf_size[0]
             scf_size[2] = ((part and 3)).toUByte()
             scf_size[3] = scf_size[2]
-
         } else {
             val g_mod = __STATIC_L3_decode_scalefactors_g_mod
             var k: Int = 0
@@ -833,50 +884,48 @@ internal open class MiniMp3Program() {
             k = (ist * 3) * 4
             while (sfc >= 0) {
                 modprod = 1
-                i = 3
-                while (i >= 0) {
+                for (i in 3 downTo 0) {
                     scf_size[i] = ((sfc / modprod) % g_mod[k + i].toInt()).toUByte()
                     modprod *= (g_mod[k + i].toInt())
-                    i -= 1
                 }
                 sfc -= modprod
                 k += 4
             }
             scf_partition += k
             scfsi = -16
-
         }
         L3_read_scalefactors(UByteArrayPtr(iscf), ist_pos, ((scf_size)), scf_partition, bs, scfsi)
         if (gr.value.n_short_sfb.toBool()) {
             val sh: Int = 3 - scf_shift
-            i = 0
-            while (i < (gr.value.n_short_sfb.toInt())) {
-                iscf[(gr.value.n_long_sfb.toInt() + i) + 0] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0].toUInt() + ((gr.value.subblock_gain[0].toUInt()) shl sh)).toUByte()
-                iscf[(gr.value.n_long_sfb.toInt() + i) + 1] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1].toUInt() + ((gr.value.subblock_gain[1].toUInt()) shl sh)).toUByte()
-                iscf[(gr.value.n_long_sfb.toInt() + i) + 2] = (iscf[((gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt()) + 2].toUInt() + ((gr.value.subblock_gain[2].toUInt()) shl sh)).toUByte()
-                i += 3
+            for (i in 0 until gr.value.n_short_sfb.toInt() step 3) {
+                iscf[(gr.value.n_long_sfb.toInt() + i) + 0] =
+                    (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0].toUInt() + ((gr.value.subblock_gain[0].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toInt() + i) + 1] =
+                    (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1].toUInt() + ((gr.value.subblock_gain[1].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toInt() + i) + 2] =
+                    (iscf[((gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt()) + 2].toUInt() + ((gr.value.subblock_gain[2].toUInt()) shl sh)).toUByte()
             }
-
         } else {
             if (gr.value.preflag.toBool()) {
                 val g_preamp = __STATIC_L3_decode_scalefactors_g_preamp
-                i = 0
-                while (i < 10) {
+                for (i in 0 until 10) {
                     iscf[11 + i] = (iscf[11 + i].toUInt() + g_preamp[i].toUInt()).toUByte()
-                    i += 1
                 }
-
             }
         }
-        gain_exp = (((((gr.value.global_gain.toUInt()) + (((-1L * 4L)).toUInt()))).toInt()) - 210) - (if (((((hdr[3].toUInt()) and 224u)).toInt()) == 96) 2 else 0)
-        gain = L3_ldexp_q2((((1 shl (((((((255L + (-1L * 4L)) - 210L) + 3L) and ((((3).inv())).toLong())) / 4L)).toInt()))).toFloat()), (((((((255L + (-1L * 4L)) - 210L) + 3L) and ((((3).inv())).toLong())) - (gain_exp.toLong()))).toInt()))
+        gain_exp =
+            (((((gr.value.global_gain.toUInt()) + (((-1L * 4L)).toUInt()))).toInt()) - 210) - (if (((((hdr[3].toUInt()) and 224u)).toInt()) == 96) 2 else 0)
+        gain = L3_ldexp_q2(
+            (((1 shl (((((((255L + (-1L * 4L)) - 210L) + 3L) and ((((3).inv())).toLong())) / 4L)).toInt()))).toFloat()),
+            (((((((255L + (-1L * 4L)) - 210L) + 3L) and ((((3).inv())).toLong())) - (gain_exp.toLong()))).toInt())
+        )
         i = 0
         while (i < ((((gr.value.n_long_sfb.toUInt()) + (gr.value.n_short_sfb.toUInt()))).toInt())) {
             scf[i] = L3_ldexp_q2(gain, ((((iscf[i].toUInt()) shl scf_shift)).toInt()))
-            i += 1
+            i++
         }
-
     }
+
     fun L3_pow_43(x: Int): Float {
         var x: Int = x // Mutating parameter
         var frac: Float = 0f
@@ -892,8 +941,8 @@ internal open class MiniMp3Program() {
         sign = (2 * x) and 64
         frac = ((((x and 63) - sign)).toFloat()) / ((((x and ((63).inv())) + sign)).toFloat())
         return (g_pow43[16 + ((x + sign) shr 6)] * (1f + (frac * ((4f / 3f) + (frac * (2f / 9f)))))) * (mult.toFloat())
-
     }
+
     fun L3_huffman(dst: FloatArrayPtr, bs: Bs, gr_info: ArrayPtr<GrInfo>, scf: FloatArrayPtr, layer3gr_limit: Int) {
         var dst: FloatArrayPtr = dst // Mutating parameter
         var scf: FloatArrayPtr = scf // Mutating parameter
@@ -921,7 +970,7 @@ internal open class MiniMp3Program() {
             if (linbits.toBool()) {
                 do {
                     np = (sfb.value.toUInt() / 2u).toInt()
-                    sfb += 1
+                    sfb++
                     pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
                     do {
@@ -945,7 +994,7 @@ internal open class MiniMp3Program() {
                                 bs_sh += linbits
                                 while (bs_sh >= 0) {
                                     bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
-                                    bs_next_ptr += 1
+                                    bs_next_ptr++
                                     bs_sh -= 8
                                 }
                                 dst.value = (one * L3_pow_43(lsb)) * (((if ((bs_cache.toInt()) < 0) -1L else 1L)).toFloat())
@@ -960,7 +1009,7 @@ internal open class MiniMp3Program() {
                         }
                         while (bs_sh >= 0) {
                             bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
-                            bs_next_ptr += 1
+                            bs_next_ptr++
                             bs_sh -= 8
                         }
                     } while (((--pairs_to_decode)).toBool())
@@ -969,7 +1018,7 @@ internal open class MiniMp3Program() {
             } else {
                 do {
                     np = (sfb.value.toUInt() / 2u).toInt()
-                    sfb += 1
+                    sfb++
                     pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
                     do {
@@ -996,7 +1045,7 @@ internal open class MiniMp3Program() {
                         }
                         while (bs_sh >= 0) {
                             bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
-                            bs_next_ptr += 1
+                            bs_next_ptr++
                             bs_sh -= 8
                         }
                     } while (((--pairs_to_decode)).toBool())
@@ -1018,7 +1067,7 @@ internal open class MiniMp3Program() {
             }
             if ((--np) == 0) {
                 np = (((sfb.value.toUInt()) / 2u)).toInt()
-                sfb += 1
+                sfb++
                 if (np == 0) {
                     break
                 }
@@ -1027,38 +1076,39 @@ internal open class MiniMp3Program() {
             if (((leaf and (128 shr 0))).toBool()) {
                 dst[0] = if ((bs_cache.toInt()) < 0) (-one) else one
                 bs_cache = bs_cache shl 1
-                bs_sh += 1
+                bs_sh++
             }
             if (((leaf and (128 shr 1))).toBool()) {
                 dst[1] = if ((bs_cache.toInt()) < 0) (-one) else one
                 bs_cache = bs_cache shl 1
-                bs_sh += 1
+                bs_sh++
             }
             if ((--np) == 0) {
                 np = (sfb.value.toUInt() / 2u).toInt()
-                sfb += 1
+                sfb++
                 if (np == 0) break
                 one = scf++.value
             }
             if ((leaf and (128 shr 2)).toBool()) {
                 dst[2] = if (bs_cache.toInt() < 0) -one else one
                 bs_cache = bs_cache shl 1
-                bs_sh += 1
+                bs_sh++
             }
             if ((leaf and (128 shr 3)).toBool()) {
                 dst[3] = if (bs_cache.toInt() < 0) -one else one
                 bs_cache = bs_cache shl 1
-                bs_sh += 1
+                bs_sh++
             }
             while (bs_sh >= 0) {
                 bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
-                bs_next_ptr += 1
+                bs_next_ptr++
                 bs_sh -= 8
             }
             dst += 4
         }
         bs.pos = layer3gr_limit
     }
+
     fun L3_midside_stereo(left: FloatArrayPtr, n: Int) {
         val right: FloatArrayPtr = left + 576
         for (i in 0 until n) {
@@ -1067,15 +1117,15 @@ internal open class MiniMp3Program() {
             left[i] = a + b
             right[i] = a - b
         }
-
     }
+
     fun L3_intensity_stereo_band(left: FloatArrayPtr, n: Int, kl: Float, kr: Float) {
         for (i in 0 until n) {
             left[i + 576] = left[i] * kr
             left[i] = left[i] * kl
         }
-
     }
+
     fun L3_stereo_top_band(right: FloatArrayPtr, sfb: UByteArrayPtr, nbands: Int, max_band: IntArray) {
         var right: FloatArrayPtr = right // Mutating parameter
         max_band[0] = -1
@@ -1092,8 +1142,8 @@ internal open class MiniMp3Program() {
             }
             right += (sfb[i].toInt())
         }
-
     }
+
     fun L3_stereo_process(left: FloatArrayPtr, ist_pos: UByteArray, sfb: UByteArrayPtr, hdr: UByteArray, max_band: IntArray, mpeg2_sh: Int) {
         var left: FloatArrayPtr = left // Mutating parameter
         val g_pan: FloatArray = __STATIC_L3_stereo_process_g_pan
@@ -1105,7 +1155,7 @@ internal open class MiniMp3Program() {
             if (((i.toInt()) > max_band[((i % 3u)).toInt()]) && (ipos < max_pos)) {
                 var kl: Float = 0f
                 var kr: Float = 0f
-                val s: Float = (if ((((hdr[3].toUInt()) and 32u)).toBool()) 1.41421356f else 1f)
+                val s: Float = (if ((((hdr[3].toUInt()) and 32u)).toBool()) 1.4142135f else 1f)
                 if ((((hdr[1].toUInt()) and 8u)).toBool()) {
                     kl = g_pan[2 * (ipos.toInt())]
                     kr = g_pan[(2 * (ipos.toInt())) + 1]
@@ -1118,17 +1168,16 @@ internal open class MiniMp3Program() {
                     }
                 }
                 L3_intensity_stereo_band(left, (sfb[i.toInt()].toInt()), (kl * s), (kr * s))
-
             } else {
                 if ((((hdr[3].toUInt()) and 32u)).toBool()) {
                     L3_midside_stereo(left, (sfb[i.toInt()].toInt()))
                 }
             }
             left += (sfb[i.toInt()].toInt())
-            i += 1u
+            i++
         }
-
     }
+
     val tempInt3 = IntArray(3)
     fun L3_intensity_stereo(left: FloatArrayPtr, ist_pos: UByteArray, gr: ArrayPtr<GrInfo>, hdr: UByteArray) {
         val max_band = tempInt3
@@ -1151,8 +1200,8 @@ internal open class MiniMp3Program() {
             i++
         }
         L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, (((gr[1].scalefac_compress.toUInt() and 1u)).toInt()))
-
     }
+
     fun L3_reorder(grbuf: FloatArrayPtr, scratch: FloatArrayPtr, sfb: UByteArrayPtr) {
         var sfb: UByteArrayPtr = sfb // Mutating parameter
         var i: Int = 0
@@ -1174,8 +1223,8 @@ internal open class MiniMp3Program() {
             src += (2 * len)
         }
         memcpy((grbuf), (scratch), (dst - scratch) * Float.SIZE_BYTES)
-
     }
+
     fun L3_antialias(grbuf: FloatArrayPtr, nbands: Int) {
         var grbuf: FloatArrayPtr = grbuf // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
@@ -1191,6 +1240,7 @@ internal open class MiniMp3Program() {
             grbuf += 18
         }
     }
+
     fun L3_dct3_9(y: FloatArray) {
         var s0: Float = y[0]
         var s2: Float = y[2]
@@ -1228,8 +1278,8 @@ internal open class MiniMp3Program() {
         y[6] = s0 + s3
         y[7] = s2 - s1
         y[8] = s4 + s7
-
     }
+
     private val co = FloatArray(9)
     private val si = FloatArray(9)
     fun L3_imdct36(grbuf: FloatArrayPtr, overlap: FloatArrayPtr, window: FloatArray, nbands: Int) {
@@ -1272,8 +1322,8 @@ internal open class MiniMp3Program() {
             grbuf += 18
             overlap += 9
         }
-
     }
+
     fun L3_idct3(x0: Float, x1: Float, x2: Float, dst: FloatArray) {
         val m1: Float = x1 * 0.8660254f
         val a1: Float = x0 - (x2 * 0.5f)
@@ -1281,6 +1331,7 @@ internal open class MiniMp3Program() {
         dst[0] = a1 + m1
         dst[2] = a1 - m1
     }
+
     private val temp1F3 = FloatArray(4)
     private val temp2F3 = FloatArray(4)
     fun L3_imdct12(x: FloatArrayPtr, dst: FloatArrayPtr, overlap: FloatArrayPtr) {
@@ -1300,41 +1351,36 @@ internal open class MiniMp3Program() {
             dst[5 - i] = (ovl * g_twid3[5 - i]) + (sum * g_twid3[2 - i])
             i++
         }
-
     }
+
     fun L3_imdct_short(grbuf: FloatArrayPtr, overlap: FloatArrayPtr, nbands: Int) {
         var grbuf: FloatArrayPtr = grbuf // Mutating parameter
         var overlap: FloatArrayPtr = overlap // Mutating parameter
         var nbands: Int = nbands // Mutating parameter
         while (nbands > 0) {
             val tmp = FloatArrayPtr(FloatArray(18))
-            memcpy(((tmp)), ((grbuf)), 72)
-            memcpy(((grbuf)), ((overlap)), (6 * Float.SIZE_BYTES))
-            L3_imdct12(((tmp)), (grbuf + 6), (overlap + 6))
-            L3_imdct12((tmp + 1), (grbuf + 12), (overlap + 6))
-            L3_imdct12((tmp + 2), overlap, (overlap + 6))
+            memcpy(tmp, grbuf, 72)
+            memcpy(grbuf, overlap, (6 * Float.SIZE_BYTES))
+            L3_imdct12(tmp, grbuf + 6, overlap + 6)
+            L3_imdct12(tmp + 1, grbuf + 12, overlap + 6)
+            L3_imdct12(tmp + 2, overlap, overlap + 6)
             nbands--
             overlap += 9
             grbuf += 18
         }
-
     }
+
     fun L3_change_sign(grbuf: FloatArrayPtr) {
-        var grbuf: FloatArrayPtr = grbuf // Mutating parameter
-        var b: Int = 0
-        var i: Int = 0
-        b = 0
-        grbuf += 18
-        while (b < 32) {
-            i = 1
-            while (i < 18) {
-                grbuf[i] = -grbuf[i]
-                i += 2
+        var p = 18
+        for (b in 0 until 32 step 2) {
+            for (i in 1 until 18 step 2) {
+                val index = p + i
+                grbuf[index] = -grbuf[index]
             }
-            b += 2
-            grbuf += 36
+            p += 36
         }
     }
+
     fun L3_imdct_gr(grbuf: FloatArrayPtr, overlap: FloatArrayPtr, block_type: UInt, n_long_bands: UInt) {
         var grbuf: FloatArrayPtr = grbuf // Mutating parameter
         var overlap: FloatArrayPtr = (overlap) // Mutating parameter
@@ -1344,62 +1390,70 @@ internal open class MiniMp3Program() {
             grbuf += 18 * (n_long_bands.toInt())
             overlap += 9 * (n_long_bands.toInt())
         }
-        if ((block_type.toInt()) == 2) {
+        if (block_type.toInt() == 2) {
             L3_imdct_short(grbuf, overlap, (32 - (n_long_bands.toInt())))
         } else {
             L3_imdct36(grbuf, overlap, g_mdct_window[(block_type == 3u).toInt()], 32 - (n_long_bands.toInt()))
         }
-
     }
+
     fun L3_save_reservoir(h: Mp3Dec, s: Mp3Scratch) {
         var pos: Int = (s.bs.pos + 7) / 8
         var remains: Int = (s.bs.limit / 8) - pos
-        if (remains > 511) {
-            pos += (remains - 511)
-            remains = 511
+        if (remains > MAX_BITRESERVOIR_BYTES) {
+            pos += (remains - MAX_BITRESERVOIR_BYTES)
+            remains = MAX_BITRESERVOIR_BYTES
         }
         if (remains > 0) {
             memcpy(UByteArrayPtr(h.reserv_buf), s.maindata + pos, remains)
         }
         h.reserv = remains
     }
+
     fun L3_restore_reservoir(h: Mp3Dec, bs: Bs, s: Mp3Scratch, main_data_begin: Int): Int {
         val frame_bytes: Int = (bs.limit - bs.pos) / 8
-        val bytes_have: Int = (if (h.reserv > main_data_begin) main_data_begin else h.reserv)
-        memcpy(((s.maindata)), ((((UByteArrayPtr(h.reserv_buf) + ((if (0 < (h.reserv - main_data_begin)) (h.reserv - main_data_begin) else 0)))))), (if (h.reserv > main_data_begin) main_data_begin else h.reserv))
-        memcpy(((((s.maindata + bytes_have)))), ((((bs.buf + ((bs.pos / 8)))))), frame_bytes)
-        bs_init(s.bs, ((s.maindata)), (bytes_have + frame_bytes))
+        val bytes_have: Int = if (h.reserv > main_data_begin) main_data_begin else h.reserv
+        memcpy(
+            s.maindata,
+            UByteArrayPtr(h.reserv_buf) + if (0 < (h.reserv - main_data_begin)) (h.reserv - main_data_begin) else 0,
+            if (h.reserv > main_data_begin) main_data_begin else h.reserv
+        )
+        memcpy(s.maindata + bytes_have, bs.buf + (bs.pos / 8), frame_bytes)
+        bs_init(s.bs, s.maindata, (bytes_have + frame_bytes))
         return ((h.reserv >= main_data_begin)).toInt()
-
     }
+
     fun L3_decode(h: Mp3Dec, s: Mp3Scratch, gr_info: ArrayPtr<GrInfo>, nch: Int) {
         var gr_info: ArrayPtr<GrInfo> = gr_info // Mutating parameter
         for (ch in 0 until nch) {
             val layer3gr_limit: Int = s.bs.pos + (gr_info[ch].part_23_length.toInt())
-            L3_decode_scalefactors(((h.header)), (s.ist_pos[ch]), s.bs, (gr_info + ch), ((s.scf)), ch)
-            L3_huffman(((s.grbuf[ch])), s.bs, (gr_info + ch), ((s.scf)), layer3gr_limit)
+            L3_decode_scalefactors(((h.header)), s.ist_pos[ch], s.bs, (gr_info + ch), ((s.scf)), ch)
+            L3_huffman(s.grbuf[ch], s.bs, gr_info + ch, ((s.scf)), layer3gr_limit)
         }
-        if ((((h.header[3].toUInt()) and 16u)).toBool()) {
-            L3_intensity_stereo(((s.grbuf[0])), (s.ist_pos[1]), gr_info, ((h.header)))
-        } else {
-            if (((((h.header[3].toUInt()) and 224u)).toInt()) == 96) {
-                L3_midside_stereo(((s.grbuf[0])), 576)
+        when {
+            (h.header[3].toUInt() and 16u).toBool() -> {
+                L3_intensity_stereo(s.grbuf[0], (s.ist_pos[1]), gr_info, ((h.header)))
+            }
+
+            h.header[3].toUInt() and 224u == 96u -> {
+                L3_midside_stereo(s.grbuf[0], 576)
             }
         }
         for (ch in 0 until nch) {
             var aa_bands = 31
-            val n_long_bands: Int = (if (gr_info.value.mixed_block_flag.toBool()) 2 else 0) shl (((((((((h.header[2].toUInt()) shr 2) and 3u) + (((((h.header[1].toUInt()) shr 3) and 1u) + (((h.header[1].toUInt()) shr 4) and 1u)) * 3u))).toInt()) == 2)).toInt())
+            val n_long_bands: Int =
+                (if (gr_info.value.mixed_block_flag.toBool()) 2 else 0) shl (((h.header[2].toUInt() shr 2 and 3u) + ((h.header[1].toUInt() shr 3 and 1u) + (h.header[1].toUInt() shr 4 and 1u)) * 3u).toInt() == 2).toInt()
             if (gr_info.value.n_short_sfb.toBool()) {
                 aa_bands = n_long_bands - 1
-                L3_reorder((s.grbuf[ch] + ((n_long_bands * 18))), ((s.syn[0])), (gr_info.value.sfbtab + (gr_info.value.n_long_sfb.toInt())))
+                L3_reorder(s.grbuf[ch] + n_long_bands * 18, s.syn[0], gr_info.value.sfbtab + gr_info.value.n_long_sfb.toInt())
             }
-            L3_antialias(((s.grbuf[ch])), aa_bands)
-            L3_imdct_gr(((s.grbuf[ch])), ((FloatArrayPtr(h.mdct_overlap[ch]))), (gr_info.value.block_type.toUInt()), (n_long_bands.toUInt()))
-            L3_change_sign(((s.grbuf[ch])))
+            L3_antialias(s.grbuf[ch], aa_bands)
+            L3_imdct_gr(s.grbuf[ch], FloatArrayPtr(h.mdct_overlap[ch]), gr_info.value.block_type.toUInt(), n_long_bands.toUInt())
+            L3_change_sign(s.grbuf[ch])
             gr_info += 1
         }
-
     }
+
     fun mp3d_DCT_II(grbuf: FloatArrayPtr, n: Int) {
         val g_sec: FloatArray = __STATIC_mp3d_DCT_II_g_sec
         val t = Array(4) { FloatArray(8) }
@@ -1471,16 +1525,16 @@ internal open class MiniMp3Program() {
             y[2 * 18] = t[1][7]
             y[3 * 18] = t[3][7]
         }
-
     }
+
     fun mp3d_scale_pcm(sample: Float): Short {
         if (sample >= 32766.5f) return 32767.toShort()
         if (sample <= -32767.5f) return (-32768).toShort()
         var s: Short = ((sample + 0.5f)).toInt().toShort()
         s = (s.toInt() - (s < 0).toInt()).toShort()
         return s
-
     }
+
     fun mp3d_synth_pair(pcm: ShortArrayPtr, nch: Int, z: FloatArrayPtr) {
         var z: FloatArrayPtr = z // Mutating parameter
         var a = 0f
@@ -1503,8 +1557,8 @@ internal open class MiniMp3Program() {
         a += (z[2 * 64] * 146f)
         a += (z[0 * 64] * -5f)
         pcm[16 * nch] = mp3d_scale_pcm(a)
-
     }
+
     fun mp3d_synth(xl: FloatArrayPtr, dstl: ShortArrayPtr, nch: Int, lins: FloatArrayPtr) {
         var i: Int = 0
         val xr: FloatArrayPtr = xl + ((576 * (nch - 1)))
@@ -1570,10 +1624,10 @@ internal open class MiniMp3Program() {
             dstl[(47 - i) * nch] = mp3d_scale_pcm(a[2])
             dstl[(49 + i) * nch] = mp3d_scale_pcm(b[2])
 
-            i -= 1
+            i--
         }
-
     }
+
     fun mp3d_synth_granule(qmf_state: FloatArrayPtr, grbuf: FloatArrayPtr, nbands: Int, nch: Int, pcm: ShortArrayPtr, lins: FloatArrayPtr) {
         var i: Int = 0
         i = 0
@@ -1596,8 +1650,8 @@ internal open class MiniMp3Program() {
         } else {
             memcpy(((qmf_state)), ((((lins + ((nbands * 64)))))), ((Float.SIZE_BYTES * 15) * 64))
         }
-
     }
+
     fun mp3d_match_frame(hdr: UByteArrayPtr, mp3_bytes: Int, frame_bytes: Int): Int {
         var i: Int = 0
         for (nmatch in 0 until 10) {
@@ -1606,8 +1660,8 @@ internal open class MiniMp3Program() {
             if (hdr_compare(hdr, (hdr + i)) == 0) return 0
         }
         return 1
-
     }
+
     fun mp3d_find_frame(mp3: UByteArrayPtr, mp3_bytes: Int, free_format_bytes: IntArray, ptr_frame_bytes: IntArray): Int {
         var mp3: UByteArrayPtr = mp3 // Mutating parameter
         var i: Int = 0
@@ -1632,7 +1686,12 @@ internal open class MiniMp3Program() {
                     }
                     k++
                 }
-                if ((((frame_bytes.toBool()) && (((i + (((frame_and_padding <= mp3_bytes)).toInt()))).toBool())) && (mp3d_match_frame(mp3, (mp3_bytes - i), frame_bytes).toBool())) || ((i == 0) && (frame_and_padding == mp3_bytes))) {
+                if ((((frame_bytes.toBool()) && (((i + (((frame_and_padding <= mp3_bytes)).toInt()))).toBool())) && (mp3d_match_frame(
+                        mp3,
+                        (mp3_bytes - i),
+                        frame_bytes
+                    ).toBool())) || ((i == 0) && (frame_and_padding == mp3_bytes))
+                ) {
                     ptr_frame_bytes[0] = frame_and_padding
                     return i
                 }
@@ -1643,26 +1702,24 @@ internal open class MiniMp3Program() {
         }
         ptr_frame_bytes[0] = 0
         return mp3_bytes
-
     }
+
     fun mp3dec_init(dec: Mp3Dec) {
         dec.header[0] = 0.toUByte()
-
     }
+
+    private val scratch = Mp3Scratch()
+    private val bs_frame = Bs()
     fun mp3dec_decode_frame(dec: Mp3Dec, mp3: UByteArrayPtr, mp3_bytes: Int, pcm: ShortArrayPtr, info: Mp3FrameInfo): Int {
-        // Require alloc in stack to get pointer: frame_size
-        // Require alloc in stack to get pointer: scratch
         var pcm: ShortArrayPtr = pcm // Mutating parameter
-        var i: Int = 0
-        var igr: Int = 0
-        val frame_size: IntArray = IntArray(1)
-        var success: Int = 1
-        var hdr: UByteArrayPtr = UByteArrayPtr(UByteArray(0))
-        val bs_frame = Bs()
-        val scratch: Mp3Scratch = Mp3Scratch()
-        if (((mp3_bytes > 4) && ((dec.header[0].toInt()) == 255)) && (hdr_compare(((UByteArrayPtr(dec.header))), mp3).toBool())) {
+        var i = 0
+        val frame_size = IntArray(1)
+        var success = 1
+        val bs_frame = this.bs_frame
+        val scratch = this.scratch
+        if (mp3_bytes > 4 && ((dec.header[0].toInt()) == 255) && (hdr_compare(((UByteArrayPtr(dec.header))), mp3).toBool())) {
             frame_size[0] = hdr_frame_bytes(mp3, dec.free_format_bytes_array[0]) + hdr_padding(mp3)
-            if ((frame_size[0] != mp3_bytes) && (((frame_size[0] + 4) > mp3_bytes) || (hdr_compare(mp3, (mp3 + frame_size[0])) == 0))) {
+            if (frame_size[0] != mp3_bytes && (((frame_size[0] + 4) > mp3_bytes) || (hdr_compare(mp3, (mp3 + frame_size[0])) == 0))) {
                 frame_size[0] = 0
             }
         }
@@ -1681,7 +1738,7 @@ internal open class MiniMp3Program() {
                 return 0
             }
         }
-        hdr = mp3 + i
+        val hdr = mp3 + i
         memcpy(UByteArrayPtr(dec.header), hdr, 4)
         info.value.frame_bytes = i + frame_size[0]
         info.value.frame_offset = i
@@ -1704,7 +1761,7 @@ internal open class MiniMp3Program() {
             }
             success = L3_restore_reservoir(dec, ((bs_frame)), ((scratch)), main_data_begin)
             if (success.toBool()) {
-                igr = 0
+                var igr = 0
                 while (igr < (if ((((hdr[1].toUInt()) and 8u)).toBool()) 2 else 1)) {
                     scratch.grbuf[0].fill(0f, 0, 576 * 2)
                     L3_decode(dec, ((scratch)), (scratch.gr_info + ((igr * info.value.channels))), info.value.channels)
@@ -1714,13 +1771,12 @@ internal open class MiniMp3Program() {
                 }
             }
             L3_save_reservoir(dec, ((scratch)))
-
         } else {
             val sci = ScaleInfo()
             L12_read_scale_info(hdr, bs_frame, sci)
             scratch.grbuf[0].fill(0f, 0, 576 * 2)
             i = 0
-            igr = 0
+            var igr = 0
             while (igr < 3) {
                 i += L12_dequantize_granule(
                     scratch.grbuf[0] + i,
@@ -1739,10 +1795,9 @@ internal open class MiniMp3Program() {
                     mp3dec_init(dec)
                     return 0
                 }
-                igr += 1
+                igr++
             }
         }
         return success * (hdr_frame_samples(UByteArrayPtr(dec.header)).toInt())
-
     }
 }
