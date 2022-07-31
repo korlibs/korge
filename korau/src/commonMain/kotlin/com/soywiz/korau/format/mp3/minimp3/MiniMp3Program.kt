@@ -662,12 +662,13 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     leaf = codebook_count1[(leaf shr 3) + ((((bs_cache shl 4) shr (32 - (leaf and 3)))).toInt())].toInt()
                 }
                 bs_cache = bs_cache shl (leaf and 7)
-                bs_sh = bs_sh + (leaf and 7)
+                bs_sh += (leaf and 7)
                 if (((((bs_next_ptr.minusPtrUByte(bs.value.buf)) * 8) - 24) + bs_sh) > layer3gr_limit) {
                     break@while0
                 }
                 if ((--np) == 0) {
-                    np = (((run { val `-` = sfb; sfb = sfb + 1; `-` }.value.toUInt()) / 2u)).toInt()
+                    np = (((sfb.value.toUInt()) / 2u)).toInt()
+                    sfb += 1
                     if (np == 0) {
                         break@while0
                     }
@@ -685,75 +686,67 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 }
                 if ((--np) == 0) {
                     np = (((sfb.value.toUInt()) / 2u)).toInt()
-                    sfb = sfb + 1
-                    if (np == 0) {
-                        break@while0
-                    }
+                    sfb += 1
+                    if (np == 0) break@while0
                     one = scf++.value
                 }
                 if (((leaf and (128 shr 2))).toBool()) {
-                    dst[2] = (if ((bs_cache.toInt()) < 0) (-one) else one)
+                    dst[2] = if (bs_cache.toInt() < 0) -one else one
                     bs_cache = bs_cache shl 1
-                    bs_sh = bs_sh + 1
+                    bs_sh += 1
                 }
                 if (((leaf and (128 shr 3))).toBool()) {
-                    dst[3] = (if ((bs_cache.toInt()) < 0) (-one) else one)
+                    dst[3] = if (bs_cache.toInt() < 0) -one else one
                     bs_cache = bs_cache shl 1
-                    bs_sh = bs_sh + 1
+                    bs_sh += 1
                 }
                 while (bs_sh >= 0) {
-                    bs_cache = bs_cache or ((run { val `-` = bs_next_ptr; bs_next_ptr = bs_next_ptr + 1; `-` }.value.toUInt()) shl bs_sh)
-                    bs_sh = bs_sh - 8
+                    bs_cache = bs_cache or (bs_next_ptr.value.toUInt() shl bs_sh)
+                    bs_next_ptr += 1
+                    bs_sh -= 8
                 }
 
             }
             finally {
                 STACK_PTR = __oldPos0
             }
-            dst = dst + 4
+            dst += 4
         }
         bs.value.pos = layer3gr_limit
 
     }
     fun L3_midside_stereo(left: FloatPointer, n: Int) {
-        var i: Int = 0
         var right: FloatPointer = left + 576
-        while (i < n) {
+        for (i in 0 until n) {
             var a: Float = left[i]
             var b: Float = right[i]
             left[i] = a + b
             right[i] = a - b
-            i = i + 1
         }
 
     }
     fun L3_intensity_stereo_band(left: FloatPointer, n: Int, kl: Float, kr: Float) {
-        var i: Int = 0
-        i = 0
-        while (i < n) {
+        for (i in 0 until n) {
             left[i + 576] = left[i] * kr
             left[i] = left[i] * kl
-            i = i + 1
         }
 
     }
     fun L3_stereo_top_band(right: FloatPointer, sfb: CPointer<UByte>, nbands: Int, max_band: Array3Int) {
         var right: FloatPointer = right // Mutating parameter
-        var i: Int = 0
-        var k: Int = 0
-        max_band[0] = run { val `-` = run { val `-` = -1; max_band[2] = `-`; `-` }; max_band[1] = `-`; `-` }
-        i = 0
-        while0@while (i < nbands) {
-            k = 0
+        max_band[0] = -1
+        max_band[1] = -1
+        max_band[2] = -1
+        for (i in 0 until nbands) {
+            var k = 0
             while1@while (k < (sfb[i].toInt())) {
                 if ((right[k] != 0f) || (right[k + 1] != 0f)) {
                     max_band[i % 3] = i
                     break@while1
                 }
-                k = k + 2
+                k += 2
             }
-            right = right + (sfb[i].toInt())
-            i = i + 1
+            right += (sfb[i].toInt())
         }
 
     }
@@ -806,7 +799,7 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             var default_pos: Int = (if ((((hdr[1].toUInt()) and 8u)).toBool()) 3 else 0)
             var itop: Int = (n_sfb - max_blocks) + i
             var prev: Int = itop - max_blocks
-            ist_pos[itop] = ((if (max_band[i] >= prev) default_pos else (ist_pos[prev].toInt()))).toUByte()
+            ist_pos[itop] = (if (max_band[i] >= prev) default_pos else ist_pos[prev].toInt()).toUByte()
             i++
         }
         L3_stereo_process(left, ist_pos, gr.value.sfbtab, hdr, max_band, ((((gr[1].scalefac_compress.toUInt()) and 1u)).toInt()))
@@ -995,7 +988,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
         var b: Int = 0
         var i: Int = 0
-        run { run { val `-` = 0; b = `-`; `-` }; run { val `-` = grbuf + 18; grbuf = `-`; `-` } }
+        b = 0
+        grbuf += 18
         while (b < 32) {
             i = 1
             while (i < 18) {
@@ -1005,7 +999,6 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
             b += 2
             grbuf += 36
         }
-
     }
     fun L3_imdct_gr(grbuf: FloatPointer, overlap: FloatPointer, block_type: UInt, n_long_bands: UInt) {
         var grbuf: FloatPointer = grbuf // Mutating parameter
@@ -1013,8 +1006,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         var g_mdct_window: Array2Array18Float = __STATIC_L3_imdct_gr_g_mdct_window
         if (n_long_bands.toBool()) {
             L3_imdct36(grbuf, overlap, (FloatPointer(g_mdct_window[0].ptr)), (n_long_bands.toInt()))
-            grbuf += ((18 * (n_long_bands.toInt())))
-            overlap += ((9 * (n_long_bands.toInt())))
+            grbuf += 18 * (n_long_bands.toInt())
+            overlap += 9 * (n_long_bands.toInt())
         }
         if ((block_type.toInt()) == 2) {
             L3_imdct_short(grbuf, overlap, (32 - (n_long_bands.toInt())))
@@ -1087,7 +1080,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                 var t: Array4Array8Float = Array4Array8FloatAlloc(arrayOf((Array8Float(0))))
                 var x: FloatPointer = FloatPointer(0)
                 var y: FloatPointer = grbuf + k
-                run { run { val `-` = FloatPointer(t[0].ptr); x = `-`; `-` }; run { val `-` = 0; i = `-`; `-` } }
+                x = FloatPointer(t[0].ptr)
+                i = 0
                 while (i < 8) {
                     var x0: Float = y[i * 18]
                     var x1: Float = y[(15 - i) * 18]
@@ -1104,7 +1098,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
                     i++
                     x++
                 }
-                run { run { val `-` = FloatPointer(t[0].ptr); x = `-`; `-` }; run { val `-` = 0; i = `-`; `-` } }
+                x = FloatPointer(t[0].ptr)
+                i = 0
                 while (i < 4) {
                     var x0: Float = x[0]
                     var x1: Float = x[1]
@@ -1297,17 +1292,10 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
     }
     fun mp3d_match_frame(hdr: CPointer<UByte>, mp3_bytes: Int, frame_bytes: Int): Int {
         var i: Int = 0
-        var nmatch: Int = 0
-        run { run { val `-` = 0; i = `-`; `-` }; run { val `-` = 0; nmatch = `-`; `-` } }
-        while (nmatch < 10) {
-            i += (hdr_frame_bytes((hdr + i), frame_bytes) + hdr_padding((hdr + i)))
-            if ((i + 4) > mp3_bytes) {
-                return ((nmatch > 0)).toInt().toInt()
-            }
-            if (hdr_compare(hdr, (hdr + i)) == 0) {
-                return 0
-            }
-            nmatch += 1
+        for (nmatch in 0 until 10) {
+            i += hdr_frame_bytes(hdr + i, frame_bytes) + hdr_padding((hdr + i))
+            if ((i + 4) > mp3_bytes) return (nmatch > 0).toInt()
+            if (hdr_compare(hdr, (hdr + i)) == 0) return 0
         }
         return 1
 
