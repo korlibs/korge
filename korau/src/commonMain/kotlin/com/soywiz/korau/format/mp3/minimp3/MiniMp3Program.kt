@@ -25,6 +25,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         internal const val HAVE_SIMD = 0
         internal const val HAVE_ARMV6 = 0
 
+        private fun arrayOfUByte(values: String, size: Int = values.length): UByteArray = UByteArray(size) { values[it].code.toUByte() }
+
         private val __STATIC_L3_imdct36_g_twid9: FloatArray = floatArrayOf(
             0.7372773f, 0.79335334f, 0.8433915f, 0.88701083f, 0.92387953f, 0.95371695f, 0.97629601f, 0.99144486f, 0.99904822f,
             0.6755902f, 0.6087614f, 0.53729963f, 0.46174861f, 0.38268343f, 0.3007058f, 0.2164396f, 0.13052619f, 0.04361938f
@@ -53,11 +55,21 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
         private val __STATIC_L3_ldexp_q2_g_expfrac: FloatArray = floatArrayOf(9.31322575e-10f, 7.83145814e-10f, 6.58544508e-10f, 5.53767716e-10f)
         private val __STATIC_L12_read_scalefactors_g_deq_L12: FloatArray = floatArrayOf((9.53674316e-7f / 3f), (7.56931807e-7f / 3f), (6.00777173e-7f / 3f), (9.53674316e-7f / 7f), (7.56931807e-7f / 7f), (6.00777173e-7f / 7f), (9.53674316e-7f / 15f), (7.56931807e-7f / 15f), (6.00777173e-7f / 15f), (9.53674316e-7f / 31f), (7.56931807e-7f / 31f), (6.00777173e-7f / 31f), (9.53674316e-7f / 63f), (7.56931807e-7f / 63f), (6.00777173e-7f / 63f), (9.53674316e-7f / 127f), (7.56931807e-7f / 127f), (6.00777173e-7f / 127f), (9.53674316e-7f / 255f), (7.56931807e-7f / 255f), (6.00777173e-7f / 255f), (9.53674316e-7f / 511f), (7.56931807e-7f / 511f), (6.00777173e-7f / 511f), (9.53674316e-7f / 1023f), (7.56931807e-7f / 1023f), (6.00777173e-7f / 1023f), (9.53674316e-7f / 2047f), (7.56931807e-7f / 2047f), (6.00777173e-7f / 2047f), (9.53674316e-7f / 4095f), (7.56931807e-7f / 4095f), (6.00777173e-7f / 4095f), (9.53674316e-7f / 8191f), (7.56931807e-7f / 8191f), (6.00777173e-7f / 8191f), (9.53674316e-7f / 16383f), (7.56931807e-7f / 16383f), (6.00777173e-7f / 16383f), (9.53674316e-7f / 32767f), (7.56931807e-7f / 32767f), (6.00777173e-7f / 32767f), (9.53674316e-7f / 65535f), (7.56931807e-7f / 65535f), (6.00777173e-7f / 65535f), (9.53674316e-7f / 3f), (7.56931807e-7f / 3f), (6.00777173e-7f / 3f), (9.53674316e-7f / 5f), (7.56931807e-7f / 5f), (6.00777173e-7f / 5f), (9.53674316e-7f / 9f), (7.56931807e-7f / 9f), (6.00777173e-7f / 9f))
         private val __STATIC_hdr_sample_rate_hz_g_hz: UIntArray = uintArrayOf(44100u, 48000u, 32000u)
+
+        private val __STATIC_hdr_bitrate_kbps_halfrate: Array<Array<UByteArray>> = arrayOf(
+            arrayOf(
+                arrayOfUByte("\u0000\u0004\u0008\u000c\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0048\u0050"),
+                arrayOfUByte("\u0000\u0004\u0008\u000c\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0048\u0050"),
+                arrayOfUByte("\u0000\u0010\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0048\u0050\u0058\u0060\u0070\u0080")
+            ),
+            arrayOf(
+                arrayOfUByte("\u0000\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0050\u0060\u0070\u0080\u00a0"),
+                arrayOfUByte("\u0000\u0010\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0050\u0060\u0070\u0080\u00a0\u00c0"),
+                arrayOfUByte("\u0000\u0010\u0020\u0030\u0040\u0050\u0060\u0070\u0080\u0090\u00a0\u00b0\u00c0\u00d0\u00e0")
+            )
+        )
     }
 
-    private var __STATIC_hdr_bitrate_kbps_halfrate: Array2Array3Array15UByte = Array2Array3Array15UByteAlloc(arrayOf(Array3Array15UByteAlloc(arrayOf(
-        Array15UByte(fixedArrayOfUByte("\u0000\u0004\u0008\u000c\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0048\u0050").ptr), Array15UByte(fixedArrayOfUByte("\u0000\u0004\u0008\u000c\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0048\u0050").ptr), Array15UByte(fixedArrayOfUByte("\u0000\u0010\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0048\u0050\u0058\u0060\u0070\u0080").ptr)
-    )), Array3Array15UByteAlloc(arrayOf(Array15UByte(fixedArrayOfUByte("\u0000\u0010\u0014\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0050\u0060\u0070\u0080\u00a0").ptr), Array15UByte(fixedArrayOfUByte("\u0000\u0010\u0018\u001c\u0020\u0028\u0030\u0038\u0040\u0050\u0060\u0070\u0080\u00a0\u00c0").ptr), Array15UByte(fixedArrayOfUByte("\u0000\u0010\u0020\u0030\u0040\u0050\u0060\u0070\u0080\u0090\u00a0\u00b0\u00c0\u00d0\u00e0").ptr)))))
     private var __STATIC_L12_subband_alloc_table_g_alloc_L1: CPointer<L12_subband_alloc_t> = fixedArrayOfL12_subband_alloc_t(1) { this[0] = L12_subband_alloc_tAlloc(tab_offset = (76.toUByte()), code_tab_width = (4.toUByte()), band_count = (32.toUByte())) }
     private var __STATIC_L12_subband_alloc_table_g_alloc_L2M2: CPointer<L12_subband_alloc_t> = fixedArrayOfL12_subband_alloc_t(3) { this[0] = L12_subband_alloc_tAlloc(tab_offset = (60.toUByte()), code_tab_width = (4.toUByte()), band_count = (4.toUByte())); this[1] = L12_subband_alloc_tAlloc(tab_offset = (44.toUByte()), code_tab_width = (3.toUByte()), band_count = (7.toUByte())); this[2] = L12_subband_alloc_tAlloc(tab_offset = (44.toUByte()), code_tab_width = (2.toUByte()), band_count = (19.toUByte())) }
     private var __STATIC_L12_subband_alloc_table_g_alloc_L2M1: CPointer<L12_subband_alloc_t> = fixedArrayOfL12_subband_alloc_t(4) { this[0] = L12_subband_alloc_tAlloc(tab_offset = (0.toUByte()), code_tab_width = (4.toUByte()), band_count = (3.toUByte())); this[1] = L12_subband_alloc_tAlloc(tab_offset = (16.toUByte()), code_tab_width = (4.toUByte()), band_count = (8.toUByte())); this[2] = L12_subband_alloc_tAlloc(tab_offset = (32.toUByte()), code_tab_width = (3.toUByte()), band_count = (12.toUByte())); this[3] = L12_subband_alloc_tAlloc(tab_offset = (40.toUByte()), code_tab_width = (2.toUByte()), band_count = (7.toUByte())) }
@@ -149,8 +161,8 @@ internal open class MiniMp3Program(HEAP_SIZE: Int = 0) : Runtime(HEAP_SIZE) {
 
     }
     fun hdr_bitrate_kbps(h: CPointer<UByte>): UInt {
-        val halfrate: Array2Array3Array15UByte = __STATIC_hdr_bitrate_kbps_halfrate
-        return ((2 * (halfrate[((!(((h[1].toUInt()) and 8u) == 0u))).toInt()][(((((h[1].toUInt()) shr 1) and 3u)).toInt()) - 1][(((h[2].toUInt()) shr 4)).toInt()].toInt()))).toUInt()
+        val halfrate: Array<Array<UByteArray>> = __STATIC_hdr_bitrate_kbps_halfrate
+        return (2 * halfrate[(h[1].toUInt() and 8u != 0u).toInt()][(h[1].toUInt() shr 1 and 3u).toInt() - 1][((h[2].toUInt()) shr 4).toInt()].toInt()).toUInt()
 
     }
     fun hdr_sample_rate_hz(h: CPointer<UByte>): UInt {
