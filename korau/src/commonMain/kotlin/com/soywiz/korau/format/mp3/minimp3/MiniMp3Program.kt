@@ -830,7 +830,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         } else {
             main_data_begin = ((get_bits(bs, (8 + gr_count)) shr gr_count)).toInt()
         }
-        do0@do {
+        do {
             if (((((hdr[3].toUInt()) and 192u)).toInt()) == 192) {
                 scfsi = scfsi shl 4
             }
@@ -940,7 +940,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         var exp_q2: Int = exp_q2 // Mutating parameter
         val g_expfrac: FloatArray = __STATIC_L3_ldexp_q2_g_expfrac
         var e: Int = 0
-        do0@do {
+        do {
             e = (if ((30 * 4) > exp_q2) exp_q2 else (30 * 4))
             y *= (g_expfrac[e and 3] * ((((1 shl 30) shr (e shr 2))).toFloat()))
             exp_q2 -= e
@@ -1062,12 +1062,12 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             val codebook = tabindex[tab_num].toInt()
             val linbits: Int = g_linbits[tab_num].toInt()
             if (linbits.toBool()) {
-                do0@ do {
+                do {
                     np = (sfb.value.toUInt() / 2u).toInt()
                     sfb += 1
                     pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
-                    do1@ do {
+                    do {
                         var j: Int = 0
                         var w: Int = 5
                         var leaf: Int = tabs[codebook + ((bs_cache shr (32 - w))).toInt()].toInt()
@@ -1110,12 +1110,12 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
                     big_val_cnt -= np
                 } while (big_val_cnt > 0 && (--sfb_cnt >= 0))
             } else {
-                do0@ do {
+                do {
                     np = (sfb.value.toUInt() / 2u).toInt()
                     sfb += 1
                     pairs_to_decode = if (big_val_cnt > np) np else big_val_cnt
                     one = scf++.value
-                    do1@ do {
+                    do {
                         var j = 0
                         var w = 5
                         var leaf: Int = tabs[codebook + ((bs_cache shr (32 - w))).toInt()].toInt()
@@ -1148,7 +1148,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             }
         }
         np = 1 - big_val_cnt
-        while0@ while (1.toBool()) {
+        while (1.toBool()) {
             val __oldPos0 = STACK_PTR
             try {
                 val codebook_count1 = if (gr_info.value.count1_table.toBool()) tab33 else tab32
@@ -1159,13 +1159,13 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
                 bs_cache = bs_cache shl (leaf and 7)
                 bs_sh += (leaf and 7)
                 if (((((bs_next_ptr.minusPtrUByte(bs.buf)) * 8) - 24) + bs_sh) > layer3gr_limit) {
-                    break@while0
+                    break
                 }
                 if ((--np) == 0) {
                     np = (((sfb.value.toUInt()) / 2u)).toInt()
                     sfb += 1
                     if (np == 0) {
-                        break@while0
+                        break
                     }
                     one = scf++.value
                 }
@@ -1182,7 +1182,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
                 if ((--np) == 0) {
                     np = (sfb.value.toUInt() / 2u).toInt()
                     sfb += 1
-                    if (np == 0) break@while0
+                    if (np == 0) break
                     one = scf++.value
                 }
                 if ((leaf and (128 shr 2)).toBool()) {
@@ -1231,10 +1231,10 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
         max_band[2] = -1
         for (i in 0 until nbands) {
             var k = 0
-            while1@while (k < (sfb[i].toInt())) {
+            while (k < (sfb[i].toInt())) {
                 if ((right[k] != 0f) || (right[k + 1] != 0f)) {
                     max_band[i % 3] = i
-                    break@while1
+                    break
                 }
                 k += 2
             }
@@ -1773,7 +1773,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
                     var frame_bytes: Int = hdr_frame_bytes(mp3, free_format_bytes[0])
                     var frame_and_padding: Int = frame_bytes + hdr_padding(mp3)
                     k = 4
-                    while1@while (((frame_bytes == 0) && (k < 2304)) && (((i + (2 * (((k < (mp3_bytes - 4))).toInt())))).toBool())) {
+                    while (((frame_bytes == 0) && (k < 2304)) && (((i + (2 * (((k < (mp3_bytes - 4))).toInt())))).toBool())) {
                         if (hdr_compare(mp3, (mp3 + k)).toBool()) {
                             val __oldPos1 = STACK_PTR
                             try {
@@ -1781,7 +1781,7 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
                                 val nextfb: Int = fb + hdr_padding((mp3 + k))
                                 if (((((i + k) + nextfb) + 4) > mp3_bytes) || (hdr_compare(mp3, ((mp3 + k) + nextfb)) == 0)) {
                                     k += 1
-                                    continue@while1
+                                    continue
                                 }
                                 frame_and_padding = k
                                 frame_bytes = fb
