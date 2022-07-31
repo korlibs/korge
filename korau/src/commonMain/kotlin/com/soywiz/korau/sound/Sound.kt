@@ -281,9 +281,9 @@ suspend fun SoundChannelBase.await() {
     while (playingOrPaused) delay(1.milliseconds)
 }
 
-val SoundChannelBase.playing get() = state.playing
-val SoundChannelBase.paused get() = state.paused
-val SoundChannelBase.playingOrPaused get() = state.playingOrPaused
+val SoundChannelBase.playing: Boolean get() = state.playing
+val SoundChannelBase.paused: Boolean get() = state.paused
+val SoundChannelBase.playingOrPaused: Boolean get() = state.playingOrPaused
 
 fun <T : SoundChannelBase> T.attachTo(group: SoundChannelGroup): T = this.apply { group.add(this) }
 
