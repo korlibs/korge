@@ -465,13 +465,6 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     operator fun <T> CPointer<CPointer<T>>.set(offset: Int, value: CPointer<T>): Unit = sw(this.ptr + offset * 4, value.ptr)
     @kotlin.jvm.JvmName("getPtrPtr") operator fun <T> CPointer<CPointer<T>>.get(offset: Int): CPointer<T> = CPointer(lw(this.ptr + offset * 4))
 
-    // char*
-    @kotlin.jvm.JvmName("getterByte") operator fun CPointer<Byte>.get(offset: Int): Byte = lb(this.ptr + offset * 1)
-    @kotlin.jvm.JvmName("setterByte") operator fun CPointer<Byte>.set(offset: Int, value: Byte): Unit = sb(this.ptr + offset * 1, value)
-    @set:kotlin.jvm.JvmName("setter_Byte_value") @get:kotlin.jvm.JvmName("getter_Byte_value") var CPointer<Byte>.value: Byte get() = this[0]; set(value) { this[0] = value }
-    @kotlin.jvm.JvmName("plusByte") operator fun CPointer<Byte>.plus(offset: Int): CPointer<Byte> = addPtr<Byte>(offset, 1)
-    @kotlin.jvm.JvmName("minusByte") operator fun CPointer<Byte>.minus(offset: Int): CPointer<Byte> = addPtr<Byte>(-offset, 1)
-
     // short*
     @kotlin.jvm.JvmName("getterShort") operator fun CPointer<Short>.get(offset: Int): Short = lh(this.ptr + offset * 2)
     @kotlin.jvm.JvmName("setterShort") operator fun CPointer<Short>.set(offset: Int, value: Short): Unit = sh(this.ptr + offset * 2, value)
@@ -491,21 +484,6 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     @kotlin.jvm.JvmName("plusUByte") operator fun CPointer<UByte>.plus(offset: Int): CPointer<UByte> = addPtr<UByte>(offset, 1)
     @kotlin.jvm.JvmName("minusUByte") operator fun CPointer<UByte>.minus(offset: Int): CPointer<UByte> = addPtr<UByte>(-offset, 1)
     fun CPointer<UByte>.minusPtrUByte(other: CPointer<UByte>): Int = (this.ptr - other.ptr) / 1
-    inline fun fixedArrayOfUByte(size: Int, setItems: CPointer<UByte>.() -> Unit): CPointer<UByte> = CPointer<UByte>(alloca_zero(size * 1).ptr).apply(setItems)
-    fun fixedArrayOfUByte(vararg values: UByte, size: Int = values.size): CPointer<UByte> = fixedArrayOfUByte(size) { for (n in 0 until values.size) this[n] = values[n] }
-    fun fixedArrayOfUByte(values: String, size: Int = values.length): CPointer<UByte> = fixedArrayOfUByte(size) { for (n in 0 until values.length) this[n] = values[n].code.toUByte() }
-
-    operator fun CPointer<UShort>.get(offset: Int): UShort = lh(this.ptr + offset * 2).toUShort()
-    operator fun CPointer<UShort>.set(offset: Int, value: UShort): Unit = sh(this.ptr + offset * 2, (value).toShort())
-    var CPointer<UShort>.value: UShort get() = this[0]; set(value) { this[0] = value }
-    @kotlin.jvm.JvmName("plusUShort") operator fun CPointer<UShort>.plus(offset: Int): CPointer<UShort> = addPtr<UShort>(offset, 2)
-    @kotlin.jvm.JvmName("minusUShort") operator fun CPointer<UShort>.minus(offset: Int): CPointer<UShort> = addPtr<UShort>(-offset, 2)
-
-    operator fun CPointer<UInt>.get(offset: Int): UInt = lw(this.ptr + offset * 4).toUInt()
-    operator fun CPointer<UInt>.set(offset: Int, value: UInt): Unit = sw(this.ptr + offset * 4, (value).toInt())
-    var CPointer<UInt>.value: UInt get() = this[0]; set(value) { this[0] = value }
-    @kotlin.jvm.JvmName("plusUInt") operator fun CPointer<UInt>.plus(offset: Int): CPointer<UInt> = addPtr<UInt>(offset, 4)
-    @kotlin.jvm.JvmName("minusUInt") operator fun CPointer<UInt>.minus(offset: Int): CPointer<UInt> = addPtr<UInt>(-offset, 4)
 
     ///////////////////////////////////////
     operator fun FloatPointer.get(offset: Int): Float = lwf(this.ptr + offset * 4)
@@ -558,23 +536,23 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
     ///////////////////////////////////////
     // STRINGS
     ///////////////////////////////////////
-    private val STRINGS: LinkedHashMap<String, CPointer<Byte>> = LinkedHashMap<String, CPointer<Byte>>()
+    private val STRINGS: LinkedHashMap<String, CPointer<UByte>> = LinkedHashMap<String, CPointer<UByte>>()
 
-    val String.ptr: CPointer<Byte>
+    val String.ptr: CPointer<UByte>
         get() = STRINGS.getOrPut(this) {
             val bytes = this.encodeToByteArray()
-            val ptr = CPointer<Byte>(malloc(bytes.size + 1).ptr)
+            val ptr = CPointer<UByte>(malloc(bytes.size + 1).ptr)
             val p = ptr.ptr
             for (n in 0 until bytes.size) sb(p + n, bytes[n])
             sb(p + bytes.size, 0)
             ptr
         }
 
-    val Array<String>.ptr: CPointer<CPointer<Byte>>
+    val Array<String>.ptr: CPointer<CPointer<UByte>>
         get() {
             val POINTER_SIZE: Int = 4
             val array = this
-            val ptr = CPointer<CPointer<Byte>>(malloc(POINTER_SIZE * array.size).ptr)
+            val ptr = CPointer<CPointer<UByte>>(malloc(POINTER_SIZE * array.size).ptr)
             for (n in 0 until array.size) sw(ptr.ptr + n * POINTER_SIZE, array[n].ptr.ptr)
             return ptr
         }
@@ -843,23 +821,23 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             gr.value.global_gain = get_bits(bs, 8).toUByte()
             gr.value.scalefac_compress = get_bits(bs, (if ((((hdr[1].toUInt()) and 8u)).toBool()) 4 else 9)).toInt().toUShort()
             gr.value.sfbtab = UByteArrayPtr(g_scf_long[sr_idx])
-            gr.value.n_long_sfb = 22.toUByte()
-            gr.value.n_short_sfb = 0.toUByte()
+            gr.value.n_long_sfb = 22u
+            gr.value.n_short_sfb = 0u
             if (get_bits(bs, 1).toBool()) {
                 gr.value.block_type = get_bits(bs, 2).toUByte()
                 if (!gr.value.block_type.toBool()) {
                     return -1
                 }
                 gr.value.mixed_block_flag = get_bits(bs, 1).toUByte()
-                gr.value.region_count[0] = 7.toUByte()
-                gr.value.region_count[1] = 255.toUByte()
-                if (gr.value.block_type == (2.toUByte())) {
+                gr.value.region_count[0] = 7u
+                gr.value.region_count[1] = 255u
+                if (gr.value.block_type.toInt() == 2) {
                     scfsi = scfsi and 3855u
                     if (!gr.value.mixed_block_flag.toBool()) {
-                        gr.value.region_count[0] = 8.toUByte()
+                        gr.value.region_count[0] = 8u
                         gr.value.sfbtab = UByteArrayPtr(g_scf_short[sr_idx])
-                        gr.value.n_long_sfb = 0.toUByte()
-                        gr.value.n_short_sfb = 39.toUByte()
+                        gr.value.n_long_sfb = 0u
+                        gr.value.n_short_sfb = 39u
                     } else {
                         gr.value.sfbtab = UByteArrayPtr(g_scf_mixed[sr_idx])
                         gr.value.n_long_sfb = ((if ((((hdr[1].toUInt()) and 8u)).toBool()) 8 else 6)).toUByte()
@@ -994,9 +972,9 @@ internal open class MiniMp3Program(val HEAP_SIZE: Int = 16 * 1024 * 1024) {
             val sh: Int = 3 - scf_shift
             i = 0
             while (i < (gr.value.n_short_sfb.toInt())) {
-                iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0].toUInt() + ((gr.value.subblock_gain[0].toUInt()) shl sh)).toUByte()
-                iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1].toUInt() + ((gr.value.subblock_gain[1].toUInt()) shl sh)).toUByte()
-                iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 2] = (iscf[((gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt()) + 2].toUInt() + ((gr.value.subblock_gain[2].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toInt() + i) + 0] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 0].toUInt() + ((gr.value.subblock_gain[0].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toInt() + i) + 1] = (iscf[(gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt() + 1].toUInt() + ((gr.value.subblock_gain[1].toUInt()) shl sh)).toUByte()
+                iscf[(gr.value.n_long_sfb.toInt() + i) + 2] = (iscf[((gr.value.n_long_sfb.toUInt() + (i.toUInt())).toInt()) + 2].toUInt() + ((gr.value.subblock_gain[2].toUInt()) shl sh)).toUByte()
                 i += 3
             }
 
