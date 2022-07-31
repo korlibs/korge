@@ -1320,19 +1320,19 @@ internal open class MiniMp3Program() {
         }
     }
 
-    fun L3_imdct_gr(grbuf: FloatArrayPtr, overlap: FloatArrayPtr, block_type: UInt, n_long_bands: UInt) {
+    fun L3_imdct_gr(grbuf: FloatArrayPtr, overlap: FloatArrayPtr, block_type: Int, n_long_bands: Int) {
         var grbuf: FloatArrayPtr = grbuf // Mutating parameter
         var overlap: FloatArrayPtr = (overlap) // Mutating parameter
         val g_mdct_window: Array<FloatArray> = __STATIC_L3_imdct_gr_g_mdct_window
-        if (n_long_bands.toInt() != 0) {
-            L3_imdct36(grbuf, overlap, g_mdct_window[0], n_long_bands.toInt())
-            grbuf += 18 * (n_long_bands.toInt())
-            overlap += 9 * (n_long_bands.toInt())
+        if (n_long_bands != 0) {
+            L3_imdct36(grbuf, overlap, g_mdct_window[0], n_long_bands)
+            grbuf += 18 * n_long_bands
+            overlap += 9 * n_long_bands
         }
-        if (block_type.toInt() == 2) {
-            L3_imdct_short(grbuf, overlap, (32 - (n_long_bands.toInt())))
+        if (block_type == 2) {
+            L3_imdct_short(grbuf, overlap, 32 - n_long_bands)
         } else {
-            L3_imdct36(grbuf, overlap, g_mdct_window[(block_type == 3u).toInt()], 32 - (n_long_bands.toInt()))
+            L3_imdct36(grbuf, overlap, g_mdct_window[(block_type == 3).toInt()], 32 - n_long_bands)
         }
     }
 
@@ -1387,7 +1387,7 @@ internal open class MiniMp3Program() {
                 L3_reorder(s.grbuf[ch] + n_long_bands * 18, s.syn[0], gr_info.value.sfbtab + gr_info.value.n_long_sfb)
             }
             L3_antialias(s.grbuf[ch], aa_bands)
-            L3_imdct_gr(s.grbuf[ch], FloatArrayPtr(h.mdct_overlap[ch]), gr_info.value.block_type.toUInt(), n_long_bands.toUInt())
+            L3_imdct_gr(s.grbuf[ch], FloatArrayPtr(h.mdct_overlap[ch]), gr_info.value.block_type, n_long_bands)
             L3_change_sign(s.grbuf[ch])
             gr_info += 1
         }
@@ -1499,7 +1499,6 @@ internal open class MiniMp3Program() {
     }
 
     fun mp3d_synth(xl: FloatArrayPtr, dstl: ShortArrayPtr, nch: Int, lins: FloatArrayPtr) {
-        var i: Int = 0
         val xr: FloatArrayPtr = xl + ((576 * (nch - 1)))
         val dstr: ShortArrayPtr = dstl + ((nch - 1))
         val g_win: FloatArray = __STATIC_mp3d_synth_g_win
@@ -1517,9 +1516,7 @@ internal open class MiniMp3Program() {
         mp3d_synth_pair((dstr + ((32 * nch))), nch, (((lins + ((4 * 15))) + 64) + 1))
         mp3d_synth_pair(dstl, nch, (lins + ((4 * 15))))
         mp3d_synth_pair((dstl + ((32 * nch))), nch, ((lins + ((4 * 15))) + 64))
-        i = 14
-        while (i >= 0) {
-
+        for (i in 14 downTo 0) {
             val a = temp1F3
             val b = temp2F3
             zlin[4 * i] = xl[18 * (31 - i)]
@@ -1562,8 +1559,6 @@ internal open class MiniMp3Program() {
             dstr[(49 + i) * nch] = mp3d_scale_pcm(b[3])
             dstl[(47 - i) * nch] = mp3d_scale_pcm(a[2])
             dstl[(49 + i) * nch] = mp3d_scale_pcm(b[2])
-
-            i--
         }
     }
 
