@@ -312,8 +312,7 @@ internal open class MiniMp3Program() {
         var buf: UByteArrayPtr = UByteArrayPtr(UByteArray(0)),
         var pos: Int = 0,
         var limit: Int = 0,
-    ) {
-    }
+    )
 
     class Mp3Scratch(
         var bs: Bs,
@@ -1665,28 +1664,28 @@ internal open class MiniMp3Program() {
         if (pcm.array.isEmpty()) {
             return hdr_frame_samples(hdr).toInt()
         }
-        bs_init(bs_frame, (hdr + 4), (frame_size[0] - 4))
-        if (((hdr[1].toUInt()) and 1u) == 0u) {
+        bs_init(bs_frame, hdr + 4, frame_size[0] - 4)
+        if (hdr[1].toInt() and 1 == 0) {
             get_bits(bs_frame, 16)
         }
         if (info.value.layer == 3) {
-            val main_data_begin: Int = L3_read_side_info(((bs_frame)), scratch.gr_info, hdr)
-            if ((main_data_begin < 0) || (bs_frame.pos > bs_frame.limit)) {
+            val main_data_begin: Int = L3_read_side_info(bs_frame, scratch.gr_info, hdr)
+            if (main_data_begin < 0 || bs_frame.pos > bs_frame.limit) {
                 mp3dec_init(dec)
                 return 0
             }
-            success = L3_restore_reservoir(dec, ((bs_frame)), ((scratch)), main_data_begin)
+            success = L3_restore_reservoir(dec, bs_frame, scratch, main_data_begin)
             if (success != 0) {
                 var igr = 0
-                while (igr < (if ((((hdr[1].toUInt()) and 8u)).toInt() != 0) 2 else 1)) {
+                while (igr < if (hdr[1].toInt() and 8 != 0) 2 else 1) {
                     scratch.grbuf[0].fill(0f, 0, 576 * 2)
-                    L3_decode(dec, ((scratch)), (scratch.gr_info + ((igr * info.value.channels))), info.value.channels)
-                    mp3d_synth_granule((FloatArrayPtr(dec.qmf_state)), ((scratch.grbuf[0])), 18, info.value.channels, pcm, ((scratch.syn[0])))
+                    L3_decode(dec, scratch, scratch.gr_info + igr * info.value.channels, info.value.channels)
+                    mp3d_synth_granule(FloatArrayPtr(dec.qmf_state), scratch.grbuf[0], 18, info.value.channels, pcm, scratch.syn[0])
                     igr++
                     pcm += 576 * info.value.channels
                 }
             }
-            L3_save_reservoir(dec, ((scratch)))
+            L3_save_reservoir(dec, scratch)
         } else {
             val sci = ScaleInfo()
             L12_read_scale_info(hdr, bs_frame, sci)
@@ -1702,8 +1701,8 @@ internal open class MiniMp3Program() {
                 )
                 if (12 == i) {
                     i = 0
-                    L12_apply_scf_384(((sci)), FloatArrayPtr(sci.scf) + igr, ((scratch.grbuf[0])))
-                    mp3d_synth_granule((FloatArrayPtr(dec.qmf_state)), ((scratch.grbuf[0])), 12, info.value.channels, pcm, ((scratch.syn[0])))
+                    L12_apply_scf_384(sci, FloatArrayPtr(sci.scf) + igr, scratch.grbuf[0])
+                    mp3d_synth_granule(FloatArrayPtr(dec.qmf_state), scratch.grbuf[0], 12, info.value.channels, pcm, scratch.syn[0])
                     scratch.grbuf[0].fill(0f, 0, 576 * 2)
                     pcm += 384 * info.value.channels
                 }
