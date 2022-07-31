@@ -126,7 +126,7 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainJSMpeg),
-        Demo(::MainTextInput),
+        Demo(::MainXM),
         listOf(
             Demo(::MainJSMpeg),
             Demo(::MainSDF),
