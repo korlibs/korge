@@ -14,6 +14,7 @@ object CheckReferences {
         val localCurrentDirVfs = folder.toVfs()
         val references = localCurrentDirVfs["references"]
         var notSimilarCount = 0
+        var existCount = 0
 
         for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64", "macosarm64")) {
             val generatedVfs = localCurrentDirVfs["build/screenshots/$kind"]
@@ -26,6 +27,7 @@ object CheckReferences {
             }
 
             if (exists) {
+                existCount++
                 val pngfiles = references.list().filter { it.extensionLC == "png" }.toList()
                 pngfiles.filter { !it.baseName.contains(".alt") }.forEach { file ->
                     val files = pngfiles.filter { it.baseName.substringBefore('.') == file.baseName.substringBefore('.') }
@@ -48,7 +50,11 @@ object CheckReferences {
         }
 
         if (notSimilarCount != 0) {
-            error("Exiting with... exitCode=$notSimilarCount")
+            error("Different notSimilarCount=$notSimilarCount")
+        }
+
+        if (existCount == 0) {
+            error("Couldn't find anything to compare")
         }
     }
 }
