@@ -92,7 +92,7 @@ class KorgeGradleApply(val project: Project) {
 	}
 
 	private fun Project.configureIdea() {
-		project.plugins.apply("idea")
+		project.plugins.applyOnce("idea")
 		(project["idea"] as IdeaModel).apply {
 			module {
                 val module = this
@@ -118,7 +118,7 @@ class KorgeGradleApply(val project: Project) {
 	}
 
 	private fun Project.configureKotlin() {
-		plugins.apply("kotlin-multiplatform")
+		plugins.applyOnce("kotlin-multiplatform")
 
 		project.korge.addDependency("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
 		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
