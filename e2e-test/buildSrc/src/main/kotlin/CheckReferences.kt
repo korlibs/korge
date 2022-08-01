@@ -4,15 +4,18 @@ import com.soywiz.korio.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.flow.*
+import java.io.File
 import kotlin.jvm.*
 import kotlin.system.*
 
 object CheckReferences {
     @JvmStatic
-    fun main(args: Array<String>) = Korio {
+    fun main(folder: File) = Korio {
+        val localCurrentDirVfs = folder.toVfs()
         val references = localCurrentDirVfs["references"]
         var notSimilarCount = 0
-        for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64")) {
+
+        for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64", "macosarm64")) {
             val generatedVfs = localCurrentDirVfs["build/screenshots/$kind"]
             val exists = generatedVfs.exists()
             println("generatedVfs=$generatedVfs . exists=${exists}")
@@ -44,8 +47,8 @@ object CheckReferences {
             }
         }
 
-        println("Exiting with... exitCode=$notSimilarCount")
-        exitProcess(notSimilarCount)
+        if (notSimilarCount != 0) {
+            error("Exiting with... exitCode=$notSimilarCount")
+        }
     }
 }
-
