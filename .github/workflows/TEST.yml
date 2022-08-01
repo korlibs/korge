@@ -152,7 +152,7 @@ jobs:
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
       - { name: Testing Kotlin/Native Linux, run: ./gradlew linuxX64Test }
-      - { name: Publish gradle plugin, run: ./gradlew :korge-gradle-plugin:publishToMavenLocal }
+      - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, run: ./gradlew publishLinuxX64PublicationToMavenLocal }
       - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative }
 
@@ -168,7 +168,7 @@ jobs:
       - { name: Grant execute permission for gradlew, run: chmod +x gradlew }
       - { name: Start gradle, run: ./gradlew }
       - { name: Testing Kotlin/Native MacosX64, run: ./gradlew macosX64Test }
-      - { name: Publish gradle plugin, run: ./gradlew :korge-gradle-plugin:publishToMavenLocal }
+      - { name: Publish gradle plugin, run: "./gradlew :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, run: ./gradlew publishMacosX64PublicationToMavenLocal }
       - { name: e2e test, working-directory: e2e-test, run: ./gradlew checkReferencesNative }
       - { name: Publish Arm64, run: ./gradlew publishMacosArm64PublicationToMavenLocal }
@@ -186,6 +186,6 @@ jobs:
       - { name: Set up JDK 1.8, uses: actions/setup-java@v1, with: { java-version: 1.8 } }
       - { name: Gradle cache, uses: ./.github/actions/gradle-cache }
       - { name: Testing Kotlin/Native MingwX64Test, shell: cmd, run: CALL gradlew.bat mingwX64Test }
-      - { name: Publish gradle plugin, run: CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal }
+      - { name: Publish gradle plugin, run: "CALL gradlew.bat :korge-gradle-plugin:publishToMavenLocal" }
       - { name: Publish X64, run: CALL gradlew.bat publishMingwX64PublicationToMavenLocal }
       - { name: e2e test, working-directory: e2e-test, run: CALL gradlew.bat checkReferencesNative }
