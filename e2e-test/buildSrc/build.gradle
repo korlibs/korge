@@ -11,3 +11,5 @@ repositories {
 dependencies {
     implementation("com.soywiz.korlibs.korim:korim-jvm:3.0.0-Beta7")
 }
+
+System.setProperty("java.awt.headless", "true")
