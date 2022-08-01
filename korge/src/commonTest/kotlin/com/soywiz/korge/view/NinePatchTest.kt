@@ -1,9 +1,13 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korag.log.LogAG
+import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.VertexInfo
 import com.soywiz.korge.render.testRenderContext
 import com.soywiz.korge.tests.ViewsForTesting
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.NinePatchBitmap32
+import com.soywiz.korim.bitmap.NinePatchBmpSlice
 import com.soywiz.korim.bitmap.readNinePatch
 import com.soywiz.korio.file.std.resourcesVfs
 import kotlin.test.Test
@@ -105,6 +109,20 @@ class NinePatchTest : ViewsForTesting() {
                 computeInterestingPoints(32, 32)
             ).joinToString("\n")
         )
+    }
+
+    @Test
+    fun testNinePatchColorInvalidation() {
+        val ctx = RenderContext(LogAG())
+        val container = Container()
+        val ninePatch = container.ninePatch(NinePatchBmpSlice(Bitmap32(32, 32, premultiplied = true)), 16.0, 16.0)
+        ninePatch.render(ctx)
+        assertEquals(1, ninePatch.renderedVersion)
+        container.alpha = 0.5
+        ninePatch.render(ctx)
+        assertEquals(2, ninePatch.renderedVersion)
+        ninePatch.render(ctx)
+        assertEquals(2, ninePatch.renderedVersion)
     }
 }
 

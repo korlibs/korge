@@ -6,6 +6,7 @@ import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korim.color.Colors
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 import com.soywiz.korma.geom.Matrix
@@ -61,18 +62,21 @@ class NinePatchEx(
 		}
 	}
 
+    internal var renderedVersion = 0
     private var tva: TexturedVertexArray? = null
     private var tvaCached: TexturedVertexArray? = null
     private var cachedMatrix: Matrix = Matrix()
+    private var cachedRenderColorMul = Colors.WHITE
 
     private var cachedNinePatch: NinePatchBmpSlice? = null
     private val cachedBounds = RectangleInt()
 
     private fun recomputeVerticesIfRequired() {
         val viewBounds = this.bounds
-        if (cachedBounds.rect == viewBounds.rect && cachedNinePatch == ninePatch) return
+        if (cachedBounds.rect == viewBounds.rect && cachedNinePatch == ninePatch && cachedRenderColorMul == renderColorMul) return
         cachedBounds.rect.copyFrom(viewBounds.rect)
         cachedNinePatch = ninePatch
+        cachedRenderColorMul = renderColorMul
         val ninePatch = ninePatch
         if (ninePatch == null) {
             tva = null
@@ -95,6 +99,7 @@ class NinePatchEx(
         this.tva = tva
         this.tvaCached = TexturedVertexArray(numQuads * 4, indices)
         this.cachedMatrix.setToNan()
+        renderedVersion++
     }
 
 	override fun getLocalBoundsInternal(out: Rectangle) {
