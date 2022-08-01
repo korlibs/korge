@@ -6,9 +6,7 @@ import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.internal.InternalViewAutoscaling
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmaps
-import com.soywiz.korim.bitmap.NativeImage
 import com.soywiz.korim.bitmap.NativeImageOrBitmap32
 import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.slice
@@ -134,10 +132,13 @@ abstract class BaseGraphics(
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    private val renderBoundsStrokes = true
+    //private val renderBoundsStrokes = false
+
     //val fillWidth get() = (bitmap.width - EXTRA_PIXELS).toDouble() / realImageScaleX
     //val fillHeight get() = (bitmap.height - EXTRA_PIXELS).toDouble() / realImageScaleY
-    val fillWidth get() = _getLocalBoundsInternal().width
-    val fillHeight get() = _getLocalBoundsInternal().height
+    val fillWidth get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).width
+    val fillHeight get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).height
 
     private val bitmapWidth: Double get() = bitmap.width.toDouble()
     private val bitmapHeight: Double get() = bitmap.height.toDouble()
@@ -149,8 +150,8 @@ abstract class BaseGraphics(
 
     final override val anchorDispX: Double get() = (anchorX * bwidth)
     final override val anchorDispY: Double get() = (anchorY * bheight)
-    override val sLeft: Double get() = _getLocalBoundsInternal().x
-    override val sTop: Double get() = _getLocalBoundsInternal().y
+    override val sLeft: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).x
+    override val sTop: Double get() = _getLocalBoundsInternal(strokes = renderBoundsStrokes).y
 
     internal val _sLeft get() = sLeft
     internal val _sTop get() = sTop
@@ -161,8 +162,8 @@ abstract class BaseGraphics(
 
     private val __localBounds: Rectangle = Rectangle()
     var boundsIncludeStrokes = false
-    private fun _getLocalBoundsInternal(out: Rectangle = __localBounds): Rectangle {
-        val bounds = boundsUnsafe(strokes = boundsIncludeStrokes)
+    private fun _getLocalBoundsInternal(out: Rectangle = __localBounds, strokes: Boolean = this.boundsIncludeStrokes): Rectangle {
+        val bounds = boundsUnsafe(strokes = strokes)
         out.setTo(bounds.x - anchorDispX, bounds.y - anchorDispY, bounds.width, bounds.height)
         return out
     }
