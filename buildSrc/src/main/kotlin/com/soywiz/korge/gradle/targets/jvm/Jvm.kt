@@ -139,13 +139,16 @@ open class KorgeJavaExec : JavaExec() {
     @get:InputFiles
     val korgeClassPath: FileCollection = run {
         val mainJvmCompilation = project.mainJvmCompilation
-        listOf(
-            mainJvmCompilation.runtimeDependencyFiles,
-            mainJvmCompilation.compileDependencyFiles,
-            mainJvmCompilation.output.allOutputs,
-            mainJvmCompilation.output.classesDirs,
-            project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation))
-        ).reduceRight { l, r -> l + r }
+        ArrayList<FileCollection>().apply {
+            add(mainJvmCompilation.runtimeDependencyFiles)
+            add(mainJvmCompilation.compileDependencyFiles)
+            if (project.korge.searchResourceProcessorsInMainSourceSet) {
+                add(mainJvmCompilation.output.allOutputs)
+                add(mainJvmCompilation.output.classesDirs)
+            }
+            add(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
+        }
+        .reduceRight { l, r -> l + r }
     }
 
     override fun exec() {

@@ -45,9 +45,13 @@ korge {
     targetIos()
     targetAndroidIndirect() // targetAndroidDirect()
 
+    enableKorgeResourceProcessing = false
+
     //entrypoint("CheckReferences", "CheckReferences")
     //entrypoint("HelloWorld", "HelloWorld")
 }
+
+//println(BuildVersions.KORGE)
 
 // Use MESA OpenGL 32 since Windows Server doesn't have a proper OpenGL implementation on GitHub Actions
 // @see: https://amiralizadeh9480.medium.com/how-to-run-opengl-based-tests-on-github-actions-60f270b1ea2c
@@ -90,6 +94,7 @@ tasks {
     afterEvaluate {
         val isArm = com.soywiz.kmem.Platform.arch == com.soywiz.kmem.Arch.ARM64
         for (target in listOf("mingwX64", "linuxX64", if (isArm) "macosArm64" else "macosX64")) {
+        //for (target in listOf("mingwX64", "linuxX64", "macosX64")) {
             val runTask = (findByName("runNative${target.capitalize()}Debug") as? Exec?) ?: continue
             runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
             checkReferencesNative.dependsOn(runTask)

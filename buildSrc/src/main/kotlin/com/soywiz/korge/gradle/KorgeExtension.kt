@@ -290,6 +290,8 @@ class KorgeExtension(val project: Project) {
     val newJsEnabled get() = project.findProperty("korge.enable.js") == "true" || System.getenv("KORGE_ENABLE_JS") == "true"
 
     var searchResourceProcessorsInMainSourceSet: Boolean = false
+    var enableKorgeResourceProcessing: Boolean = true
+    //var enableKorgeResourceProcessing: Boolean = false
 
     var icon: File? = project.projectDir["icon.png"]
     var banner: File? = project.projectDir["banner.png"]
