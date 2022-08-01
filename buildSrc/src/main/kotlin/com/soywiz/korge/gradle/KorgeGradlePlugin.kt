@@ -21,7 +21,7 @@ class KorgeGradleApply(val project: Project) {
 
 		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
         //val expectedGradleVersion = SemVer("6.8.1")
-        val expectedGradleVersion = SemVer("6.8.0")
+        val expectedGradleVersion = SemVer("7.5.0")
 		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
 
 		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
