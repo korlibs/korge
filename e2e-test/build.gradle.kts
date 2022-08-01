@@ -3,8 +3,6 @@ import com.soywiz.korge.gradle.targets.jvm.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.net.*
 
-System.setProperty("java.awt.headless", "true")
-
 buildscript {
     val korgePluginVersion: String by project
 
