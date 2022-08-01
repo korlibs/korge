@@ -38,13 +38,13 @@ class SoundAudioStreamTest {
         val soundProvider = LogNativeSoundProvider()
         for (fileName in listOf("click.wav", "click.mp3")) {
             val sound2 = soundProvider.createSound(resourcesVfs[fileName], streaming = true)
-            val channel = sound2.play()
             val wait = CompletableDeferred<Unit>()
-            println("currentThreadId:$currentThreadId")
             soundProvider.onAfterAdd.once {
                 println("currentThreadId:$currentThreadId")
                 wait.complete(Unit)
             }
+            println("currentThreadId:$currentThreadId")
+            val channel = sound2.play()
             assertEquals("0ms/58.5ms", "${channel.current}/${channel.total}")
             wait.await()
             assertEquals("58.5ms/58.5ms", "${channel.current}/${channel.total}")
