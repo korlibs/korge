@@ -4,6 +4,7 @@ import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.hr.HRTimeSpan
 import com.soywiz.klock.milliseconds
+import kotlinx.cinterop.NativePlacement
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.convert
 import kotlinx.cinterop.memScoped
@@ -35,17 +36,17 @@ internal actual object KlockInternal {
             mingw_gettimeofday(timeVal.ptr, null)
             val sec = timeVal.tv_sec
             val usec = timeVal.tv_usec
-            HRTimeSpan.fromSeconds(sec.toInt()) + HRTimeSpan.fromMicroseconds(usec.toInt())
+            HRTimeSpan.fromSeconds(sec) + HRTimeSpan.fromMicroseconds(usec)
         }
 
     actual fun localTimezoneOffsetMinutes(time: DateTime): TimeSpan = memScoped {
         val timeAsFileTime = UnixMillisecondsToWindowsTicks(time.unixMillisLong)
-        val utcFtime = FILETIME_fromWindowsTicks(timeAsFileTime)
-        val timezone = getTimeZoneInformation()
-        val utcStime = utcFtime.toSystemTime()
-        val localStime = utcStime.toTimezone(timezone)
-        val localUnix = localStime.toFiletime().toUnix()
-        val utcUnix = utcStime.toFiletime().toUnix()
+        val utcFtime = FILETIME_fromWindowsTicks(this, timeAsFileTime)
+        val timezone = getTimeZoneInformation(this)
+        val utcStime = utcFtime.toSystemTime(this)
+        val localStime = utcStime.toTimezone(this, timezone)
+        val localUnix = localStime.toFiletime(this).toUnix()
+        val utcUnix = utcStime.toFiletime(this).toUnix()
         return (localUnix - utcUnix).milliseconds
     }
 
@@ -57,18 +58,17 @@ internal actual object KlockInternal {
         if (u > 0) platform.posix.usleep(u.convert())
     }
 
-    fun SYSTEMTIME.toTimezone(tzi: TIME_ZONE_INFORMATION): SYSTEMTIME = memScoped { alloc<SYSTEMTIME>().apply { SystemTimeToTzSpecificLocalTime(tzi.ptr, this@toTimezone.ptr, this.ptr) } }
-    fun SYSTEMTIME.toUtc(tzi: TIME_ZONE_INFORMATION): SYSTEMTIME = memScoped { alloc<SYSTEMTIME>().apply { TzSpecificLocalTimeToSystemTime(tzi.ptr, this@toUtc.ptr, this.ptr) } }
-    fun getTimeZoneInformation() = memScoped { alloc<TIME_ZONE_INFORMATION>().apply { GetTimeZoneInformation(this.ptr) } }
-    fun SYSTEMTIME.toFiletime(): FILETIME = memScoped { alloc<FILETIME>().apply { SystemTimeToFileTime(this@toFiletime.ptr, this.ptr) } }
-    fun FILETIME.toSystemTime(): SYSTEMTIME = memScoped { alloc<SYSTEMTIME>().apply { FileTimeToSystemTime(this@toSystemTime.ptr, this.ptr) } }
+    fun FILETIME_fromWindowsTicks(scope: NativePlacement, ticks: Long): FILETIME = scope.run { alloc<FILETIME>().apply { dwHighDateTime = (ticks ushr 32).toUInt(); dwLowDateTime = ticks.toUInt() } }
+    fun getTimeZoneInformation(scope: NativePlacement) = scope.run { alloc<TIME_ZONE_INFORMATION>().apply { GetTimeZoneInformation(this.ptr) } }
+    fun FILETIME.toSystemTime(scope: NativePlacement): SYSTEMTIME = scope.run { alloc<SYSTEMTIME>().apply { FileTimeToSystemTime(this@toSystemTime.ptr, this.ptr) } }
+    fun SYSTEMTIME.toTimezone(scope: NativePlacement, tzi: TIME_ZONE_INFORMATION): SYSTEMTIME = scope.run { alloc<SYSTEMTIME>().apply { SystemTimeToTzSpecificLocalTime(tzi.ptr, this@toTimezone.ptr, this.ptr) } }
+    fun SYSTEMTIME.toUtc(scope: NativePlacement, tzi: TIME_ZONE_INFORMATION): SYSTEMTIME = scope.run { alloc<SYSTEMTIME>().apply { TzSpecificLocalTimeToSystemTime(tzi.ptr, this@toUtc.ptr, this.ptr) } }
+    fun SYSTEMTIME.toFiletime(scope: NativePlacement): FILETIME = scope.run { alloc<FILETIME>().apply { SystemTimeToFileTime(this@toFiletime.ptr, this.ptr) } }
     fun FILETIME.toWindowsTicks() = ((dwHighDateTime.toULong() shl 32) or (dwLowDateTime.toULong())).toLong()
     fun FILETIME.toUnix() = WindowsTickToUnixMilliseconds(toWindowsTicks())
-    fun FILETIME_fromUnix(unix: Long): FILETIME = FILETIME_fromWindowsTicks(UnixMillisecondsToWindowsTicks(unix))
-    fun FILETIME_fromWindowsTicks(ticks: Long): FILETIME = memScoped { return alloc<FILETIME>().apply { dwHighDateTime = (ticks ushr 32).toUInt(); dwLowDateTime = ticks.toUInt()} }
+    fun FILETIME_fromUnix(scope: NativePlacement, unix: Long): FILETIME = FILETIME_fromWindowsTicks(scope, UnixMillisecondsToWindowsTicks(unix))
     const val WINDOWS_TICK = 10_000L
     const val MS_TO_UNIX_EPOCH = 11644473600_000L
-
     fun WindowsTickToUnixMilliseconds(windowsTicks: Long) = (windowsTicks / WINDOWS_TICK - MS_TO_UNIX_EPOCH)
     fun UnixMillisecondsToWindowsTicks(unix: Long) = ((unix + MS_TO_UNIX_EPOCH) * WINDOWS_TICK)
 }
