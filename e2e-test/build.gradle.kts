@@ -78,12 +78,6 @@ tasks {
         doLast {
             CheckReferences.main(project.projectDir)
         }
-        val isArm = com.soywiz.kmem.Platform.arch == com.soywiz.kmem.Arch.ARM64
-        for (target in listOf("mingwX64", "linuxX64", if (isArm) "macosArm64" else "macosX64")) {
-            val runTask = (findByName("runNative${target.capitalize()}Debug") as? Exec?) ?: continue
-            runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
-            this.dependsOn(runTask)
-        }
     }
 
     val checkReferencesJvm by creating(Task::class) {
@@ -91,5 +85,14 @@ tasks {
             CheckReferences.main(project.projectDir)
         }
         dependsOn("runJvm")
+    }
+
+    afterEvaluate {
+        val isArm = com.soywiz.kmem.Platform.arch == com.soywiz.kmem.Arch.ARM64
+        for (target in listOf("mingwX64", "linuxX64", if (isArm) "macosArm64" else "macosX64")) {
+            val runTask = (findByName("runNative${target.capitalize()}Debug") as? Exec?) ?: continue
+            runTask.environment("OUTPUT_DIR", File(buildDir, "screenshots/${target.toLowerCase()}"))
+            checkReferencesNative.dependsOn(runTask)
+        }
     }
 }

@@ -16,8 +16,12 @@ object CheckReferences {
         var notSimilarCount = 0
         var existCount = 0
 
+        val screenshotsFolder = localCurrentDirVfs["build/screenshots"]
+
+        println("screenshotsFolder: ${screenshotsFolder.listNames()}")
+
         for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64", "macosarm64")) {
-            val generatedVfs = localCurrentDirVfs["build/screenshots/$kind"]
+            val generatedVfs = screenshotsFolder["$kind"]
             val exists = generatedVfs.exists()
             println("generatedVfs=$generatedVfs . exists=${exists}")
 
