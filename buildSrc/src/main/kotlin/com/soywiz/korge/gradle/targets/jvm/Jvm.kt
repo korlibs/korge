@@ -142,10 +142,10 @@ open class KorgeJavaExec : JavaExec() {
         ArrayList<FileCollection>().apply {
             add(mainJvmCompilation.runtimeDependencyFiles)
             add(mainJvmCompilation.compileDependencyFiles)
-            if (project.korge.searchResourceProcessorsInMainSourceSet) {
+            //if (project.korge.searchResourceProcessorsInMainSourceSet) {
                 add(mainJvmCompilation.output.allOutputs)
                 add(mainJvmCompilation.output.classesDirs)
-            }
+            //}
             add(project.files().from(project.getCompilationKorgeProcessedResourcesFolder(mainJvmCompilation)))
         }
         .reduceRight { l, r -> l + r }

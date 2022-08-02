@@ -47,6 +47,8 @@ korge {
 
     enableKorgeResourceProcessing = false
 
+    jvmMainClassName = "RefMainKt"
+
     //entrypoint("CheckReferences", "CheckReferences")
     //entrypoint("HelloWorld", "HelloWorld")
 }
