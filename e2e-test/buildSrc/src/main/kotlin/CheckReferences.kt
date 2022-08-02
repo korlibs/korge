@@ -4,16 +4,24 @@ import com.soywiz.korio.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
 import kotlinx.coroutines.flow.*
+import java.io.File
 import kotlin.jvm.*
 import kotlin.system.*
 
 object CheckReferences {
     @JvmStatic
-    fun main(args: Array<String>) = Korio {
+    fun main(folder: File) = Korio {
+        val localCurrentDirVfs = folder.toVfs()
         val references = localCurrentDirVfs["references"]
         var notSimilarCount = 0
-        for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64")) {
-            val generatedVfs = localCurrentDirVfs["build/screenshots/$kind"]
+        var existCount = 0
+
+        val screenshotsFolder = localCurrentDirVfs["build/screenshots"]
+
+        println("screenshotsFolder: ${screenshotsFolder.listNames()}")
+
+        for (kind in listOf("jvm", "mingwx64", "linuxx64", "macosx64", "macosarm64")) {
+            val generatedVfs = screenshotsFolder["$kind"]
             val exists = generatedVfs.exists()
             println("generatedVfs=$generatedVfs . exists=${exists}")
 
@@ -23,6 +31,7 @@ object CheckReferences {
             }
 
             if (exists) {
+                existCount++
                 val pngfiles = references.list().filter { it.extensionLC == "png" }.toList()
                 pngfiles.filter { !it.baseName.contains(".alt") }.forEach { file ->
                     val files = pngfiles.filter { it.baseName.substringBefore('.') == file.baseName.substringBefore('.') }
@@ -44,8 +53,12 @@ object CheckReferences {
             }
         }
 
-        println("Exiting with... exitCode=$notSimilarCount")
-        exitProcess(notSimilarCount)
+        if (notSimilarCount != 0) {
+            error("Different notSimilarCount=$notSimilarCount")
+        }
+
+        if (existCount == 0) {
+            error("Couldn't find anything to compare")
+        }
     }
 }
-

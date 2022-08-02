@@ -1,6 +1,7 @@
 /.gradle
 /.idea
 /build
+/buildSrc/build
 *.iml
 *.hprof
 *.log

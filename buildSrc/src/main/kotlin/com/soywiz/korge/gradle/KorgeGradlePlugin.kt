@@ -71,7 +71,9 @@ class KorgeGradleApply(val project: Project) {
 
         project.afterEvaluate {
             project.configureDependencies()
-            project.addGenResourcesTasks()
+            if (korge.enableKorgeResourceProcessing) {
+                project.addGenResourcesTasks()
+            }
         }
 	}
 
