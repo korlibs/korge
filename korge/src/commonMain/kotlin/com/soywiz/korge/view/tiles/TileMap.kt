@@ -42,8 +42,8 @@ import com.soywiz.korma.math.max
 inline fun Container.tileMap(
     map: IntArray2,
     tileset: TileSet,
-    repeatX: BaseTileMap.Repeat = BaseTileMap.Repeat.NONE,
-    repeatY: BaseTileMap.Repeat = repeatX,
+    repeatX: TileMapRepeat = TileMapRepeat.NONE,
+    repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
     orientation: TileMapOrientation? = null,
     staggerAxis: TileMapStaggerAxis? = null,
@@ -55,8 +55,8 @@ inline fun Container.tileMap(
 inline fun Container.tileMap(
     map: Bitmap32,
     tileset: TileSet,
-    repeatX: BaseTileMap.Repeat = BaseTileMap.Repeat.NONE,
-    repeatY: BaseTileMap.Repeat = repeatX,
+    repeatX: TileMapRepeat = TileMapRepeat.NONE,
+    repeatY: TileMapRepeat = repeatX,
     smoothing: Boolean = true,
     orientation: TileMapOrientation? = null,
     staggerAxis: TileMapStaggerAxis? = null,
@@ -67,6 +67,15 @@ inline fun Container.tileMap(
 
 @PublishedApi
 internal fun Bitmap32.toIntArray2() = IntArray2(width, height, ints)
+
+enum class TileMapRepeat(val get: (v: Int, max: Int) -> Int) {
+    NONE({ v, max -> v }),
+    REPEAT({ v, max -> v umod max }),
+    MIRROR({ v, max ->
+        val r = v umod max
+        if ((v / max) % 2 == 0) r else max - 1 - r
+    })
+}
 
 abstract class BaseTileMap(
     intMap: IntArray2,
@@ -107,17 +116,8 @@ abstract class BaseTileMap(
     var tileWidth: Double = 0.0
     var tileHeight: Double = 0.0
 
-    var repeatX = Repeat.NONE
-    var repeatY = Repeat.NONE
-
-    enum class Repeat(val get: (v: Int, max: Int) -> Int) {
-        NONE({ v, max -> v }),
-        REPEAT({ v, max -> v umod max }),
-        MIRROR({ v, max ->
-            val r = v umod max
-            if ((v / max) % 2 == 0) r else max - 1 - r
-        })
-    }
+    var repeatX = TileMapRepeat.NONE
+    var repeatY = TileMapRepeat.NONE
 
     private val t0 = Point(0, 0)
     private val tt0 = Point(0, 0)
@@ -252,8 +252,8 @@ abstract class BaseTileMap(
 
         //println("$xmin,$xmax")
 
-        val doRepeatX = repeatX != Repeat.NONE
-        val doRepeatY = repeatY != Repeat.NONE
+        val doRepeatX = repeatX != TileMapRepeat.NONE
+        val doRepeatY = repeatY != TileMapRepeat.NONE
         val doRepeatAny = doRepeatX || doRepeatY // Since if it is rotated, we might have problems. For no rotation we could repeat separately
         val ymin2 = if (doRepeatAny) ymin else ymin.clamp(0, intMap.height)
         val ymax2 = if (doRepeatAny) ymax else ymax.clamp(0, intMap.height)
@@ -526,14 +526,14 @@ open class TileMap(
     //}
 }
 
-fun <T : BaseTileMap> T.repeat(repeatX: BaseTileMap.Repeat, repeatY: BaseTileMap.Repeat = repeatX): T {
+fun <T : BaseTileMap> T.repeat(repeatX: TileMapRepeat, repeatY: TileMapRepeat = repeatX): T {
     this.repeatX = repeatX
     this.repeatY = repeatY
     return this
 }
 
 fun <T : BaseTileMap> T.repeat(repeatX: Boolean = false, repeatY: Boolean = false): T {
-    this.repeatX = if (repeatX) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE
-    this.repeatY = if (repeatY) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE
+    this.repeatX = if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE
+    this.repeatY = if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE
     return this
 }

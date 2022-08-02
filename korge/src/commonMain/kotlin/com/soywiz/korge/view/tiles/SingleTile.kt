@@ -14,8 +14,8 @@ inline fun Container.repeatedImageView(
     repeatY: Boolean = false,
     smoothing: Boolean = true,
     block: @ViewDslMarker SingleTile.() -> Unit = {}
-) = SingleTile(bitmap, smoothing).repeat(if (repeatX) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE,
-        if (repeatY) BaseTileMap.Repeat.REPEAT else BaseTileMap.Repeat.NONE).addTo(this, block)
+) = SingleTile(bitmap, smoothing).repeat(if (repeatX) TileMapRepeat.REPEAT else TileMapRepeat.NONE,
+        if (repeatY) TileMapRepeat.REPEAT else TileMapRepeat.NONE).addTo(this, block)
 
 open class SingleTile(
     bitmap: BmpSlice,
