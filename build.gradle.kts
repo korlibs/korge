@@ -740,7 +740,9 @@ samples {
                     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
                     from(project.tasks.getByName("jsProcessResources").outputs.files)
                     afterEvaluate {
-                        from(project.tasks.getByName("korgeProcessedResourcesJsMain").outputs.files)
+                        project.tasks.findByName("korgeProcessedResourcesJsMain")?.outputs?.files?.let {
+                            from(it)
+                        }
                     }
                     //for (sourceSet in gkotlin.js().compilations.flatMap { it.kotlinSourceSets }) from(sourceSet.resources)
                     into(wwwFolder)
