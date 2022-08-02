@@ -1,11 +1,11 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.format.cg.*
+import com.soywiz.korim.format.cg.CGNativeImageFormatProvider
 
 // https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/drawingwithquartz2d/dq_context/dq_context.html#//apple_ref/doc/uid/TP30001066-CH203-BCIBHHBB
 //@ThreadLocal
-actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
+//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
 
 //actual val nativeImageFormatProvider: NativeImageFormatProvider = NSNativeImageFormatProvider
 
