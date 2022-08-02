@@ -84,7 +84,10 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                             val iwidth = CGImageGetWidth(cgImage).toInt()
                             val iheight = CGImageGetHeight(cgImage).toInt()
 
-                            run {
+                            // This might have channels changed? RGBA -> ARGB?, might be in float, etc.
+                            // https://developer.apple.com/documentation/coregraphics/1455401-cgimagegetalphainfo
+                            // https://developer.apple.com/documentation/coregraphics/cgbitmapinfo
+                            if (false) {
                                 val data = CGDataProviderCopyData(CGImageGetDataProvider(cgImage))
                                 try {
                                     val pixels = CFDataGetBytePtr(data);
@@ -96,42 +99,41 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
                                 } finally {
                                     CFRelease(data)
                                 }
-                            }
+                            } else {
 
-                            /*
-                            //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
-                            val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
-                            //val colorSpace = CGColorSpaceCreateDeviceRGB()
-                            try {
-                                val realPremultiplied = true
-                                //val realPremultiplied = premultiplied
+                                //val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceGenericRGB)
+                                val colorSpace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB)
+                                //val colorSpace = CGColorSpaceCreateDeviceRGB()
+                                try {
+                                    val realPremultiplied = true
+                                    //val realPremultiplied = premultiplied
 
-                                val alphaInfo = when (realPremultiplied) {
-                                    true -> CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
-                                    false -> CGImageAlphaInfo.kCGImageAlphaLast.value
-                                }
+                                    val alphaInfo = when (realPremultiplied) {
+                                        true -> CGImageAlphaInfo.kCGImageAlphaPremultipliedLast.value
+                                        false -> CGImageAlphaInfo.kCGImageAlphaLast.value
+                                    }
 
-                                Bitmap32(iwidth, iheight, realPremultiplied).also { bmp ->
-                                    bmp.data.ints.usePinned { pin ->
-                                        val context = CGBitmapContextCreate(
-                                            pin.startAddressOf, iwidth.convert(), iheight.convert(), 8,
-                                            (iwidth * 4).convert(), colorSpace, alphaInfo
-                                        ) ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
+                                    Bitmap32(iwidth, iheight, realPremultiplied).also { bmp ->
+                                        bmp.ints.usePinned { pin ->
+                                            val context = CGBitmapContextCreate(
+                                                pin.startAddressOf, iwidth.convert(), iheight.convert(), 8,
+                                                (iwidth * 4).convert(), colorSpace, alphaInfo
+                                            )
+                                                ?: error("Couldn't create context for $iwidth, $iheight, premultiplied=$premultiplied")
 
-                                        try {
-                                            val rect = CGRectMake(0.cg, 0.cg, iwidth.cg, iheight.cg)
-                                            CGContextDrawImage(context, rect, cgImage)
-                                            CGContextFlush(context)
-                                        } finally {
-                                            CGContextRelease(context)
+                                            try {
+                                                val rect = CGRectMake(0.cg, 0.cg, iwidth.cg, iheight.cg)
+                                                CGContextDrawImage(context, rect, cgImage)
+                                                CGContextFlush(context)
+                                            } finally {
+                                                CGContextRelease(context)
+                                            }
                                         }
                                     }
+                                } finally {
+                                    CGColorSpaceRelease(colorSpace)
                                 }
-                            } finally {
-                                CGColorSpaceRelease(colorSpace)
                             }
-
-                             */
                         }
                     }
                 })
