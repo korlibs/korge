@@ -42,6 +42,11 @@ open class CGNativeImageFormatProvider : CGBaseNativeImageFormatProvider() {
 
     //override fun createBitmapNativeImage(bmp: Bitmap) = BitmapNativeImage(bmp.toBMP32().premultipliedIfRequired())
     override suspend fun decodeInternal(data: ByteArray, props: ImageDecodingProps): NativeImageResult {
+        // Since we are decoding as premultiplied, we need a decoder that decodes un-multiplied
+        if (props.asumePremultiplied) {
+            return super.decodeInternal(data, props)
+        }
+
         val premultiplied = props.premultipliedSure
 
         data class Info(val data: ByteArray, val premultiplied: Boolean, val maxSize: Int?)
