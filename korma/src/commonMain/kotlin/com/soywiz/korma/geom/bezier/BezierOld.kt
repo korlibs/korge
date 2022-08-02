@@ -11,7 +11,7 @@ import com.soywiz.korma.geom.PointArrayList
 import com.soywiz.korma.geom.PointPool
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import kotlin.jvm.JvmName
 import kotlin.math.hypot
 import kotlin.math.max

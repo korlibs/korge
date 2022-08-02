@@ -159,7 +159,11 @@ abstract class Shape2d {
         override val type: Int get() = TYPE
 
         val isCircle get() = ellipseRadiusX == ellipseRadiusY
-        val vectorPath by lazy { buildPath { ellipse(0.0, 0.0, ellipseRadiusX, ellipseRadiusY) }.applyTransform(Matrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle)) }
+        val vectorPath by lazy {
+            buildVectorPath(VectorPath()) {
+                ellipse(0.0, 0.0, ellipseRadiusX, ellipseRadiusY)
+            }.applyTransform(Matrix().pretranslate(ellipseX, ellipseY).prerotate(ellipseAngle))
+        }
 
         override val paths: List<IPointArrayList> = when {
             isCircle -> listOf(PointArrayList(ellipseTotalPoints) {
@@ -233,7 +237,11 @@ abstract class Shape2d {
         override val type: Int = TYPE
         override val paths = listOf(points)
         override val closed: Boolean = true
-        val vectorPath by lazy { buildPath { polygon(points) } }
+        val vectorPath by lazy {
+            buildVectorPath(VectorPath()) {
+                polygon(points)
+            }
+        }
         override fun containsPoint(x: Double, y: Double): Boolean = vectorPath.containsPoint(x, y)
     }
 
@@ -403,11 +411,6 @@ fun VectorPath.getPoints2List(): List<PointArrayList> {
     flush()
     return out
 }
-
-@Deprecated("", ReplaceWith("buildVectorPath(out, block)"))
-inline fun buildPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, block)
-@Deprecated("", ReplaceWith("buildVectorPath(out, winding, block)"))
-inline fun buildPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = buildVectorPath(out, winding, block)
 
 inline fun buildVectorPath(out: VectorPath = VectorPath(), block: VectorPath.() -> Unit): VectorPath = out.apply(block)
 inline fun buildVectorPath(out: VectorPath = VectorPath(), winding: Winding = Winding.DEFAULT, block: VectorPath.() -> Unit): VectorPath = out.also { it.winding = winding }.apply(block)

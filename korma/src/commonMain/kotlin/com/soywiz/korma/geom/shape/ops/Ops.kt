@@ -35,7 +35,7 @@ fun Shape2d.extend(size: Double, cap: LineCap = LineCap.ROUND): Shape2d {
     return solution.toShape2d()
 }
 
-fun Shape2d.extendLine(size: Double, join: LineJoin = LineJoin.SQUARE, cap: LineCap = LineCap.SQUARE): Shape2d {
+fun Shape2d.extendLine(size: Double, join: LineJoin = LineJoin.BEVEL, cap: LineCap = LineCap.SQUARE): Shape2d {
     val clipper = ClipperOffset()
     val solution = Paths()
     clipper.addPaths(

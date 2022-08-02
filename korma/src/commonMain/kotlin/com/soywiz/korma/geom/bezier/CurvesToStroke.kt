@@ -28,7 +28,7 @@ import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.toCurvesList
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import com.soywiz.korma.math.isNanOrInfinite
 import kotlin.math.absoluteValue
 import kotlin.math.sign

@@ -8,24 +8,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
-fun Long.clamp(min: Long, max: Long): Long = if (this < min) min else if (this > max) max else this
-fun Int.clamp(min: Int, max: Int): Int = if (this < min) min else if (this > max) max else this
-fun Double.clamp(min: Double, max: Double): Double = if (this < min) min else if (this > max) max else this
-fun Float.clamp(min: Float, max: Float): Float = if (this < min) min else if (this > max) max else this
 fun Double.betweenInclusive(min: Double, max: Double): Boolean = (this >= min) && (this <= max)
-
-/** Clamps the integer value in the 0..255 range */
-fun Int.clampUByte(): Int {
-    val n = this and -(if (this >= 0) 1 else 0)
-    return (n or (0xFF - n shr 31)) and 0xFF
-}
-fun Int.clampUShort(): Int {
-    val n = this and -(if (this >= 0) 1 else 0)
-    return (n or (0xFFFF - n shr 31)) and 0xFFFF
-}
-
-fun Int.toShortClamped(): Short = this.clamp(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
-fun Int.toByteClamped(): Byte = this.clamp(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toByte()
 
 fun almostEquals(a: Float, b: Float) = almostZero(a - b)
 fun almostZero(a: Float) = abs(a) <= 0.0000001

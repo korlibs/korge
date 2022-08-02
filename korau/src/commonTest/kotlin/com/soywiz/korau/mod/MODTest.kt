@@ -10,7 +10,7 @@ class MODTest {
     @Test
     fun test() = suspendTest({ doIOTest }) {
         val sound = resourcesVfs["GUITAROU.MOD"].readMOD()
-        val data = sound.toData(maxSamples = 44100 * 4)
+        val data = sound.toAudioData(maxSamples = 44100 * 4)
         //WAV.encodeToByteArray(data).writeToFile("/tmp/guitarou.wav")
         //sound.playAndWait()
         //val mod = Protracker()

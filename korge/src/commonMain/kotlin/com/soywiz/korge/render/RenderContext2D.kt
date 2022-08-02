@@ -14,8 +14,7 @@ import com.soywiz.korim.color.RGBA
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.shape.buildPath
-import com.soywiz.korma.geom.shape.toPathList
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.triangle.TriangleList
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.ellipse
@@ -172,11 +171,15 @@ class RenderContext2D(
     }
 
     fun ellipse(x: Double, y: Double, width: Double, height: Double, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
-        simplePath(buildPath { ellipse(x, y, width, height) }, color, filtering)
+        simplePath(buildVectorPath(VectorPath()) {
+            ellipse(x, y, width, height)
+        }, color, filtering)
     }
 
     fun ellipseOutline(x: Double, y: Double, width: Double, height: Double, lineWidth: Double = 1.0, color: RGBA = this.multiplyColor, filtering: Boolean = this.filtering) {
-        simplePath(buildPath { ellipse(x, y, width, height) }.strokeToFill(lineWidth), color, filtering)
+        simplePath(buildVectorPath(VectorPath()) {
+            ellipse(x, y, width, height)
+        }.strokeToFill(lineWidth), color, filtering)
     }
 
     // @TODO: It doesn't handle holes (it uses a triangle fan approach)

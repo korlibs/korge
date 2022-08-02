@@ -1,11 +1,10 @@
 package com.soywiz.korui
 
-import com.soywiz.korio.util.RedirectMutableField
 import com.soywiz.korui.native.NativeUiFactory
 
 open class UiLabel(app: UiApplication, val label: NativeUiFactory.NativeLabel = app.factory.createLabel()) : UiComponent(app, label) {
-    var text by RedirectMutableField(label::text)
-    var icon by RedirectMutableField(label::icon)
+    var text by label::text
+    var icon by label::icon
 
     override fun copyFrom(that: UiComponent) {
         super.copyFrom(that)

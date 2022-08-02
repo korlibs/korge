@@ -8,10 +8,8 @@ import com.soywiz.kmem.clamp
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.ImageFormat
-import com.soywiz.korim.format.RegisteredImageFormats
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korio.file.VfsFile
-import com.soywiz.korio.util.endExclusive
 import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.RectangleInt
 import com.soywiz.korma.geom.vector.rect
@@ -82,7 +80,7 @@ class NinePatchInfo constructor(
 		xsegments.map { x ->
 			Segment(
                 this,
-				RectangleInt.fromBounds(x.range.start, y.range.start, x.range.endExclusive, y.range.endExclusive),
+				RectangleInt.fromBounds(x.range.first, y.range.first, x.range.last + 1, y.range.last + 1),
 				x, y
 			)
 		}.toFastList()

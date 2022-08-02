@@ -18,9 +18,7 @@ import com.soywiz.korim.tiles.TileSetTileInfo
 import com.soywiz.korim.tiles.TileShapeInfo
 import com.soywiz.korio.lang.invalidArgument
 import com.soywiz.korma.geom.*
-import com.soywiz.korma.geom.shape.Shape2d
-import com.soywiz.korma.geom.shape.buildPath
-import com.soywiz.korma.geom.shape.toShape2dNew
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.ellipse
@@ -262,21 +260,32 @@ class TiledMap constructor(
             open fun toShape2d(): Shape2d = toVectorPath().toShape2dNew()
 
             data class Rectangle(val width: Double, val height: Double) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { rect(0.0, 0.0, width, height) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    rect(0.0, 0.0, width, height)
+                })
+
                 override fun toShape2d(): Shape2d = Shape2d.Rectangle(0.0, 0.0, width, height)
             }
             data class Ellipse(val width: Double, val height: Double) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { ellipse(0.0, 0.0, width, height) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    ellipse(0.0, 0.0, width, height)
+                })
+
                 override fun toShape2d() = Shape2d.EllipseOrCircle(0.0, 0.0, width, height)
             }
             object PPoint : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath {  }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                })
             }
             data class Polygon(val points: List<Point>) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    polygon(points)
+                })
             }
             data class Polyline(val points: List<Point>) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath { polygon(points) }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                    polygon(points)
+                })
             }
             data class Text(
                 val fontFamily: String,
@@ -291,7 +300,8 @@ class TiledMap constructor(
                 val hAlign: TextHAlignment,
                 val vAlign: TextVAlignment
             ) : Shape() {
-                override fun toVectorPath(): VectorPath = buildPath {  }
+                override fun toVectorPath(): VectorPath = buildVectorPath(VectorPath(), fun VectorPath.() {
+                })
             }
         }
     }

@@ -21,8 +21,9 @@ import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.Size
 import com.soywiz.korma.geom.cosine
 import com.soywiz.korma.geom.ds.BVH2D
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.sine
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rect
 import com.soywiz.korma.random.get
 import kotlin.random.Random
@@ -63,7 +64,9 @@ class MainBVH : Scene() {
         val statusText = text("", font = views.debugBmpFont)
         var selectedRectangle = Rectangle(Point(100, 100) - Point(50, 50), Size(100, 100))
         val rayLine = line(center, center + (dir * 1000), Colors.WHITE)
-        val selectedRect = outline(buildPath { rect(selectedRectangle) })
+        val selectedRect = outline(buildVectorPath(VectorPath()) {
+            rect(selectedRectangle)
+        })
         //outline(buildPath { star(5, 50.0, 100.0, x = 100.0, y = 100.0) })
         //debugLine(center, center + (dir * 1000), Colors.WHITE)
         fun updateRay() {
@@ -99,11 +102,15 @@ class MainBVH : Scene() {
         mouse {
             onDown {
                 selectedRectangle = Rectangle(stage!!.mouseXY - Point(50, 50), Size(100, 100))
-                selectedRect.vectorPath = buildPath { rect(selectedRectangle) }
+                selectedRect.vectorPath = buildVectorPath(VectorPath()) {
+                    rect(selectedRectangle)
+                }
             }
             onMouseDrag {
                 selectedRectangle = Rectangle(stage.mouseXY - Point(50, 50), Size(100, 100))
-                selectedRect.vectorPath = buildPath { rect(selectedRectangle) }
+                selectedRect.vectorPath = buildVectorPath(VectorPath()) {
+                    rect(selectedRectangle)
+                }
             }
         }
     }

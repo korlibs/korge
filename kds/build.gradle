@@ -10,6 +10,8 @@ project.ext.props = [
 ]
 
 dependencies {
+    add("commonMainImplementation", "org.jetbrains.kotlinx:atomicfu:${libs.versions.kotlinx.atomicfu.get()}")
+    //add("commonMainApi", "org.jetbrains.kotlinx:atomicfu:${libs.versions.kotlinx.atomicfu.get()}")
     //add("jvmTestApi", "org.powermock:powermock-mockito-release-full:1.6.4")
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")
     //add("jvmTestApi", "org.ow2.asm:asm:8.0.1")

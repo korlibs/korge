@@ -1,7 +1,7 @@
 package com.soywiz.korma.interpolation
 
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.pow

@@ -29,7 +29,7 @@ import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.radians
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.*
 import com.soywiz.korma.geom.vector.LineCap
 import com.soywiz.korma.geom.vector.LineJoin
 import com.soywiz.korma.geom.vector.VectorBuilder
@@ -80,7 +80,7 @@ open class Context2d constructor(
 		override val width: Int get() = (parent.width / scaleX).toInt()
 		override val height: Int get() = (parent.height / scaleY).toInt()
 
-		private inline fun <T> adjustMatrix(transform: Matrix, callback: () -> T): T = transform.keep {
+		private inline fun <T> adjustMatrix(transform: Matrix, callback: () -> T): T = transform.keepMatrix {
             transform.scale(scaleX, scaleY)
             callback()
         }
@@ -485,7 +485,9 @@ open class Context2d constructor(
     }
 
     inline fun clip(path: VectorPath.() -> Unit, winding: Winding = Winding.NON_ZERO, block: () -> Unit) {
-        clip(buildPath { path() }, winding, block)
+        clip(buildVectorPath(VectorPath()) {
+            path()
+        }, winding, block)
     }
 
     fun drawShape(

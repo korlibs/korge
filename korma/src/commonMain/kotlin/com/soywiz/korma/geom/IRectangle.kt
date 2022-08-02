@@ -60,36 +60,8 @@ interface IRectangle {
 
 val IRectangle.area: Double get() = width * height
 fun IRectangle.clone(): Rectangle = Rectangle(x, y, width, height)
-val IRectangle.isNotEmpty: Boolean get() = area != 0.0
+val IRectangle.isNotEmpty: Boolean get() = width != 0.0 || height != 0.0
 val IRectangle.mutable: Rectangle get() = Rectangle(x, y, width, height)
-
-@Deprecated(
-    "Properties with underscores are deprecated and will be removed soon",
-    ReplaceWith("x"),
-    DeprecationLevel.ERROR
-)
-val IRectangle._x get() = x
-
-@Deprecated(
-    "Properties with underscores are deprecated and will be removed soon",
-    ReplaceWith("y"),
-    DeprecationLevel.ERROR
-)
-val IRectangle._y get() = y
-
-@Deprecated(
-    "Properties with underscores are deprecated and will be removed soon",
-    ReplaceWith("width"),
-    DeprecationLevel.ERROR
-)
-val IRectangle._width get() = width
-
-@Deprecated(
-    "Properties with underscores are deprecated and will be removed soon",
-    ReplaceWith("height"),
-    DeprecationLevel.ERROR
-)
-val IRectangle._height get() = height
 
 val IRectangle.left get() = x
 val IRectangle.top get() = y

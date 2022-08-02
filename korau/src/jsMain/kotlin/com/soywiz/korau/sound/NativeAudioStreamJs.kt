@@ -8,11 +8,17 @@ import com.soywiz.korau.internal.write
 import com.soywiz.korio.async.delay
 import com.soywiz.korio.lang.Cancellable
 import com.soywiz.korio.lang.cancel
+import com.soywiz.korio.util.OS
 import kotlinx.browser.document
 import kotlin.coroutines.CoroutineContext
 
-
-actual val nativeSoundProvider: NativeSoundProvider by lazy { HtmlNativeSoundProvider() }
+actual val nativeSoundProvider: NativeSoundProvider by lazy {
+    if (OS.isJsBrowser) {
+        HtmlNativeSoundProvider()
+    } else {
+        DummyNativeSoundProvider
+    }
+}
 
 class JsPlatformAudioOutput(coroutineContext: CoroutineContext, val freq: Int) : PlatformAudioOutput(coroutineContext, freq) {
 	val id = lastId++

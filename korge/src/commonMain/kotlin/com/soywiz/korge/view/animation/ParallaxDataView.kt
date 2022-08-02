@@ -3,6 +3,7 @@ package com.soywiz.korge.view.animation
 import com.soywiz.kds.ExtraTypeCreate
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kds.setExtra
+import com.soywiz.kmem.clamp
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.tiles.SingleTile
 import com.soywiz.korge.view.tiles.repeat
@@ -11,7 +12,6 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
 import com.soywiz.korma.geom.SizeInt
-import com.soywiz.korma.math.clamp
 
 inline fun Container.parallaxDataView(
     data: ParallaxDataContainer,

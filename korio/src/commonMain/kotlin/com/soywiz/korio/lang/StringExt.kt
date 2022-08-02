@@ -2,10 +2,8 @@ package com.soywiz.korio.lang
 
 import com.soywiz.kmem.ByteArrayBuilder
 import com.soywiz.kmem.clamp
-import com.soywiz.korio.util.endExclusive
 import com.soywiz.korio.util.quote
 import com.soywiz.korio.util.toStringUnsigned
-import kotlin.jvm.JvmStatic
 
 operator fun String.Companion.invoke(arrays: IntArray, offset: Int = 0, size: Int = arrays.size - offset): String {
 	val sb = StringBuilder()
@@ -134,8 +132,8 @@ val String.quoted: String get() = this.quote()
 
 fun String.toCharArray() = CharArray(length) { this@toCharArray[it] }
 
-fun String.withoutRange(range: IntRange) = this.substr(0, range.first) + this.substr(range.endExclusive)
-fun String.withoutIndex(index: Int) = this.substr(0, index) + this.substr(index + 1)
+fun String.withoutRange(range: IntRange): String = this.substr(0, range.first) + this.substr(range.last + 1)
+fun String.withoutIndex(index: Int): String = this.substr(0, index) + this.substr(index + 1)
 fun String.withInsertion(index: Int, insertedText: String): String {
     val before = this.substr(0, index)
     val after = this.substr(index, this.length)

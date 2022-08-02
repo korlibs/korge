@@ -112,6 +112,8 @@ open class GpuShapeView(
     var useNativeRendering: Boolean = true
     /** Use for compatibility with [BaseGraphics] */
     var smoothing: Boolean = true
+    /** Use for compatibility with [BaseGraphics] */
+    var boundsIncludeStrokes: Boolean = false
 
     private val gpuShapeViewCommands = GpuShapeViewCommands()
     private val bb = BoundsBuilder()
@@ -142,15 +144,19 @@ open class GpuShapeView(
 
     private var validShape = false
     private var validShapeBounds = false
+    private var validShapeBoundsStrokes = false
     private var renderCount = 0
     private val _shapeBounds: Rectangle = Rectangle()
+    private val _shapeBoundsStrokes: Rectangle = Rectangle()
     private val shapeBounds: Rectangle
         get() {
-            if (!validShapeBounds) {
-                validShapeBounds = true
-                shape.getBounds(_shapeBounds, bb, includeStrokes = true)
+            val _bounds = if (boundsIncludeStrokes) _shapeBoundsStrokes else _shapeBounds
+            val valid = if (boundsIncludeStrokes) validShapeBoundsStrokes else validShapeBounds
+            if (!valid) {
+                if (boundsIncludeStrokes) validShapeBoundsStrokes = true else validShapeBounds = true
+                shape.getBounds(_bounds, bb, includeStrokes = boundsIncludeStrokes)
             }
-            return _shapeBounds
+            return _bounds
         }
 
     val shapeWidth: Double get() = shapeBounds.width
@@ -164,6 +170,7 @@ open class GpuShapeView(
         renderCount = 0
         validShape = false
         validShapeBounds = false
+        validShapeBoundsStrokes = false
         //strokeCache.clear()
     }
 

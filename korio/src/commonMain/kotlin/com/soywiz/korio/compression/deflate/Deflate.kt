@@ -1,7 +1,6 @@
 package com.soywiz.korio.compression.deflate
 
 import com.soywiz.kmem.FixedSizeByteArrayBuilder
-import com.soywiz.kmem.fill
 import com.soywiz.kmem.unsigned
 import com.soywiz.korio.compression.CompressionContext
 import com.soywiz.korio.compression.CompressionMethod

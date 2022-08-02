@@ -524,9 +524,6 @@ data class Matrix(
     override fun interpolateWith(ratio: Double, other: Matrix): Matrix =
         Matrix().setToInterpolated(ratio, this, other)
 
-    @Deprecated("Use keepMatrix instead")
-    inline fun <T> keep(callback: Matrix.() -> T): T = keepMatrix(callback)
-
     inline fun <T> keepMatrix(callback: (Matrix) -> T): T {
         val a = this.a
         val b = this.b

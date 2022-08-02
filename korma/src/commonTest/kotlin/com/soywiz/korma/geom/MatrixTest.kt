@@ -83,7 +83,7 @@ class MatrixTest {
     @Test
     fun keep() {
         val m = Matrix()
-        m.keep {
+        m.keepMatrix {
             m.setTo(2, 3, 4, 5, 6, 7)
             assertEquals(Matrix(2, 3, 4, 5, 6, 7), m)
         }

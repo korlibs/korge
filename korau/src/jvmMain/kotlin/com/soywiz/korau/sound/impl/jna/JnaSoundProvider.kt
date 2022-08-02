@@ -80,8 +80,8 @@ class JnaOpenALNativeSoundProvider : NativeSoundProvider() {
         return OpenALSoundNoStream(this, coroutineContext, data, name = name)
     }
 
-    override fun createAudioStream(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
-        if (!AL.loaded) return super.createAudioStream(coroutineContext, freq)
+    override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput {
+        if (!AL.loaded) return super.createPlatformAudioOutput(coroutineContext, freq)
         return OpenALPlatformAudioOutput(this, coroutineContext, freq)
     }
 }

@@ -21,7 +21,7 @@ class KorgeGradleApply(val project: Project) {
 
 		val currentGradleVersion = SemVer(project.gradle.gradleVersion)
         //val expectedGradleVersion = SemVer("6.8.1")
-        val expectedGradleVersion = SemVer("6.8.0")
+        val expectedGradleVersion = SemVer("7.5.0")
 		val korgeCheckGradleVersion = (project.ext.properties["korgeCheckGradleVersion"] as? Boolean) ?: true
 
 		if (korgeCheckGradleVersion && currentGradleVersion < expectedGradleVersion) {
@@ -92,7 +92,7 @@ class KorgeGradleApply(val project: Project) {
 	}
 
 	private fun Project.configureIdea() {
-		project.plugins.apply("idea")
+		project.plugins.applyOnce("idea")
 		(project["idea"] as IdeaModel).apply {
 			module {
                 val module = this
@@ -118,7 +118,7 @@ class KorgeGradleApply(val project: Project) {
 	}
 
 	private fun Project.configureKotlin() {
-		plugins.apply("kotlin-multiplatform")
+		plugins.applyOnce("kotlin-multiplatform")
 
 		project.korge.addDependency("commonMainImplementation", "org.jetbrains.kotlin:kotlin-stdlib-common")
 		project.korge.addDependency("commonTestImplementation", "org.jetbrains.kotlin:kotlin-test")
