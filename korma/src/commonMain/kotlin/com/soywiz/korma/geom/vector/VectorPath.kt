@@ -59,11 +59,11 @@ class VectorPath(
     }
 
     interface Visitor {
-        fun close()
-        fun moveTo(x: Double, y: Double)
-        fun lineTo(x: Double, y: Double)
-        fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double)
-        fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double)
+        fun close() = Unit
+        fun moveTo(x: Double, y: Double) = Unit
+        fun lineTo(x: Double, y: Double) = Unit
+        fun quadTo(cx: Double, cy: Double, ax: Double, ay: Double) = Unit
+        fun cubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) = Unit
     }
 
     inline fun visitCmds(
@@ -527,7 +527,15 @@ fun VectorBuilder.write(path: VectorPath, m: Matrix?) {
 }
 
 fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
-    path.getCurvesList().fastForEach { curves ->
+    val curvesList = path.getCurvesList()
+    if (curvesList.isEmpty() && path.isNotEmpty()) {
+        path.visit(object : VectorPath.Visitor {
+            override fun moveTo(x: Double, y: Double) {
+                add(x, y)
+            }
+        })
+    }
+    curvesList.fastForEach { curves ->
         curves.beziers.fastForEach { bezier ->
             addEvenEmpty(bezier.getBounds(this.tempRect, transform))
         }
@@ -538,7 +546,6 @@ fun BoundsBuilder.add(path: VectorPath, transform: Matrix? = null) {
 
 fun VectorPath.applyTransform(m: Matrix?): VectorPath {
     if (m != null) {
-        @Suppress("ReplaceManualRangeWithIndicesCalls")
         for (n in 0 until data.size step 2) {
             val x = data.getAt(n + 0)
             val y = data.getAt(n + 1)

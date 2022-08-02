@@ -1,11 +1,10 @@
 package com.soywiz.korui
 
-import com.soywiz.korio.util.RedirectMutableField
 import com.soywiz.korui.native.NativeUiFactory
 
 open class UiComboBox<T>(app: UiApplication, val comboBox: NativeUiFactory.NativeComboBox<T> = app.factory.createComboBox()) : UiComponent(app, comboBox) {
-    var items by RedirectMutableField(comboBox::items)
-    var selectedItem by RedirectMutableField(comboBox::selectedItem)
+    var items by comboBox::items
+    var selectedItem by comboBox::selectedItem
     fun open() = comboBox.open()
     fun close() = comboBox.close()
     fun onChange(block: () -> Unit) = comboBox.onChange(block)

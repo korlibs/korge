@@ -186,6 +186,19 @@ public fun Long.toIntClamp(min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE): 
 /** Clamps [this] [Long] value into the range [min] and [max] converting it into [Int] (where [min] must be zero or positive). The default parameters will cover the whole range of positive and zero values. */
 public fun Long.toUintClamp(min: Int = 0, max: Int = Int.MAX_VALUE): Int = this.toIntClamp(min, max)
 
+/** Clamps the integer value in the 0..255 range */
+fun Int.clampUByte(): Int {
+    val n = this and -(if (this >= 0) 1 else 0)
+    return (n or (0xFF - n shr 31)) and 0xFF
+}
+fun Int.clampUShort(): Int {
+    val n = this and -(if (this >= 0) 1 else 0)
+    return (n or (0xFFFF - n shr 31)) and 0xFFFF
+}
+
+fun Int.toShortClamped(): Short = this.clamp(Short.MIN_VALUE.toInt(), Short.MAX_VALUE.toInt()).toShort()
+fun Int.toByteClamped(): Byte = this.clamp(Byte.MIN_VALUE.toInt(), Byte.MAX_VALUE.toInt()).toByte()
+
 ////////////////////
 ////////////////////
 

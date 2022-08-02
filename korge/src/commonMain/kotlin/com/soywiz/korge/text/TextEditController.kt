@@ -40,7 +40,6 @@ import com.soywiz.korio.lang.cancel
 import com.soywiz.korio.lang.withInsertion
 import com.soywiz.korio.lang.withoutIndex
 import com.soywiz.korio.lang.withoutRange
-import com.soywiz.korio.util.endExclusive
 import com.soywiz.korio.util.length
 import com.soywiz.korma.geom.Margin
 import com.soywiz.korma.geom.Point
@@ -207,7 +206,7 @@ class TextEditController(
     }
 
     fun select(range: IntRange) {
-        select(range.first, range.endExclusive)
+        select(range.first, range.last + 1)
     }
 
     fun selectAll() {
@@ -277,8 +276,8 @@ class TextEditController(
 
         val array = PointArrayList(2)
         if (range.isEmpty()) {
-            val last = (range.start >= this.text.length)
-            val caret = getCaretAtIndex(range.start)
+            val last = (range.first >= this.text.length)
+            val caret = getCaretAtIndex(range.first)
             val sign = if (last) -1.0 else +1.0
             val normal = caret.normal(0.0) * (4.0 * sign)
             val p0 = caret.points.firstPoint()
@@ -288,7 +287,7 @@ class TextEditController(
             array.add(p0 + normal)
             array.add(p1 + normal)
         } else {
-            for (n in range.start..range.endExclusive) {
+            for (n in range.first..range.last +1) {
                 val caret = getCaretAtIndex(n)
                 val p0 = caret.points.firstPoint()
                 val p1 = caret.points.lastPoint()
@@ -488,10 +487,14 @@ class TextEditController(
                 onOut(this@TextEditController)
                 bg?.isOver = false
             }
+            downImmediate {
+                cursorIndex = getIndexAtPos(it.currentPosLocal)
+                dragging = false
+                focused = true
+            }
             down {
                 //println("UiTextInput.down")
                 cursorIndex = getIndexAtPos(it.currentPosLocal)
-                focused = true
                 dragging = false
             }
             downOutside {

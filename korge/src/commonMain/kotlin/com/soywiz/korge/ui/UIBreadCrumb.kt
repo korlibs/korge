@@ -1,6 +1,6 @@
 package com.soywiz.korge.ui
 
-import com.soywiz.korge.component.decorateOutOverSimple
+import com.soywiz.korge.component.decorateOutOver
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ViewDslMarker
@@ -51,7 +51,7 @@ class UIBreadCrumb<T>(path: Path<T>) : UIView() {
                     mx += text.width + 4.0
                 }
                 val text = text(path.toString()).autoSize(true).position(mx, 0.0)
-                text.decorateOutOverSimple { view, over ->
+                text.decorateOutOver { view, over ->
                     text.colorMul = if (over) Colors.WHITE else Colors.DARKGREY
                 }
                 text.onClick {

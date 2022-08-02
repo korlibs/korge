@@ -1,5 +1,7 @@
 package com.soywiz.kmem
 
+import kotlin.jvm.JvmInline
+
 /**
  * FastBuffer holding a chunk of [mem] memory
  */
@@ -170,22 +172,15 @@ public class FBuffer private constructor(public val mem: MemBuffer, public val s
 		copyAligned(this, srcPos, dst, dstPos, len)
 }
 
-public inline class Uint8Buffer(public val b: Int8Buffer) {
-	public companion object;
+public inline class Uint32Buffer(public val b: Int32Buffer) {
+    public companion object;
+    val buffer: MemBuffer get() = b.mem
     public val size: Int get() = b.size
-	public operator fun get(index: Int): Int = b[index].toInt() and 0xFF
-	public operator fun set(index: Int, value: Int) { b[index] = value.toByte() }
+    public operator fun get(index: Int): UInt = b[index].toUInt()
+    public operator fun set(index: Int, value: Int) { b[index] = value }
+    public operator fun set(index: Int, value: UInt) { b[index] = value.toInt() }
 }
-
-public inline class Uint16Buffer(public val b: Int16Buffer) {
-	public companion object;
-	public val size: Int get() = b.size
-	public operator fun get(index: Int): Int = b[index].toInt() and 0xFFFF
-	public operator fun set(index: Int, value: Int) { b[index] = value.toShort() }
-}
-
-public fun Uint8BufferAlloc(size: Int): Uint8Buffer = Uint8Buffer(Int8BufferAlloc(size))
-public fun Uint16BufferAlloc(size: Int): Uint16Buffer = Uint16Buffer(Int16BufferAlloc(size))
+public fun Uint32Buffer.subarray(begin: Int, end: Int = this.size): Uint32Buffer = Uint32Buffer(this.b.subarray(begin, end))
 
 public inline fun <T> fbuffer(size: Int, callback: (FBuffer) -> T): T = FBuffer(size).run(callback)
 

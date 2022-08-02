@@ -664,11 +664,6 @@ class Fasttracker : BaseModuleTracker() {
     }
 
 
-    @Deprecated("", ReplaceWith("this != 0"))
-    fun Int.toBool(): Boolean = this != 0
-
-    @Deprecated("", ReplaceWith("(this and v) != 0"))
-    infix fun Int.andBool(v: Int): Boolean = (this and v) != 0
     fun pow(a: Double, b: Double): Double = a.pow(b)
     fun pow(a: Int, b: Int): Int = a.toDouble().pow(b.toDouble()).toInt() // @TODO: 2.pow(y) --> bit shifting (1 << y)
 

@@ -6,7 +6,7 @@ import com.soywiz.korma.internal.niceStr
 import com.soywiz.korma.interpolation.Interpolable
 import com.soywiz.korma.interpolation.MutableInterpolable
 import com.soywiz.korma.interpolation.interpolate
-import com.soywiz.korma.math.clamp
+import com.soywiz.kmem.clamp
 import com.soywiz.korma.math.isAlmostEquals
 import com.soywiz.korma.math.isAlmostZero
 import com.soywiz.korma.math.roundDecimalPlaces

@@ -42,18 +42,12 @@ enum class LineJoin {
     MITER;
 
     companion object {
-        /**
-         * Alias of [BEVEL]
-         */
-        @Deprecated("", ReplaceWith("BEVEL", "com.soywiz.korma.geom.vector.LineJoin.BEVEL"))
-        val SQUARE: LineJoin get() = BEVEL
-
         operator fun get(str: String?): LineJoin = when {
             str.isNullOrEmpty() -> MITER
             else -> when (str[0].uppercaseChar()) {
                 'M' -> MITER
                 'B' -> BEVEL
-                'S' -> SQUARE
+                'S' -> BEVEL //SQUARE
                 'R' -> ROUND
                 else -> MITER
             }

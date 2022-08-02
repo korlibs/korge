@@ -63,9 +63,6 @@ inline class Angle private constructor(
         inline val HALF get() = fromRatio(0.5)
         inline val FULL get() = fromRatio(1.0)
 
-        @Deprecated("", ReplaceWith("fromRadians(radians)", "com.soywiz.korma.geom.Angle.Companion.fromRadians"))
-        operator fun invoke(radians: Double, @Suppress("UNUSED_PARAMETER") dummy: Unit = Unit): Angle = fromRadians(radians)
-
         fun fromRatio(ratio: Double): Angle = Angle(ratio)
         inline fun fromRadians(radians: Double): Angle = fromRatio(radiansToRatio(radians))
         inline fun fromDegrees(degrees: Double): Angle = fromRatio(degreesToRatio(degrees))

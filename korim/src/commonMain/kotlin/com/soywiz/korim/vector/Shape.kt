@@ -142,7 +142,8 @@ sealed interface Shape : BoundsDrawable {
     fun getPath(path: VectorPath = VectorPath()): VectorPath = path
 
     // Unoptimized version
-    override val bounds: Rectangle get() = BoundsBuilder().also { addBounds(it) }.getBounds()
+    fun getBounds(includeStrokes: Boolean): Rectangle = BoundsBuilder().also { addBounds(it, includeStrokes = includeStrokes) }.getBounds()
+    override val bounds: Rectangle get() = getBounds(includeStrokes = true)
 	fun containsPoint(x: Double, y: Double): Boolean = bounds.contains(x, y)
 }
 
@@ -372,19 +373,21 @@ data class PolylineShape constructor(
     override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) {
         tempBB.reset()
         tempBB.add(path)
-        tempBB.getBounds(tempRect)
+        val bounds = tempBB.getBoundsOrNull(tempRect)
+
+        //println("PolylineShape.addBounds: bounds=bounds, path=$path")
 
         //println("TEMP_RECT: ${tempRect}")
 
         if (includeStrokes) {
             val halfThickness = max(strokeInfo.thickness / 2.0, 0.0)
-            tempRect.inflate(halfThickness, halfThickness)
+            bounds?.inflate(halfThickness, halfThickness)
         }
 
         //println("  TEMP_RECT AFTER INFLATE: ${tempRect}")
 
         //println("PolylineShape.addBounds: thickness=$thickness, rect=$tempRect")
-        bb.add(tempRect)
+        bb.addEvenEmpty(bounds)
     }
 
     override fun drawInternal(c: Context2d) {

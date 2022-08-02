@@ -14,6 +14,7 @@ import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.cubic
+import com.soywiz.korma.geom.vector.line
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 import com.soywiz.korma.geom.vector.rect
@@ -23,22 +24,22 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class GraphicsTest {
-	@Test
-	fun test() = suspendTest({ !OS.isAndroid }) {
-		val g = CpuGraphics().updateShape(redrawNow = true) {
-			fill(Colors.RED) {
-				rect(-50, -50, 100, 100)
-			}
-		}
-		val bmp = g.bitmap.base.toBMP32()
-		assertEquals(Size(101, 101), bmp.size)
-		//assertEquals("#ff0000ff", bmp[0, 0].hexString)
-		//assertEquals("#ff0000ff", bmp[99, 99].hexString)
+    @Test
+    fun test() = suspendTest({ !OS.isAndroid }) {
+        val g = CpuGraphics().updateShape(redrawNow = true) {
+            fill(Colors.RED) {
+                rect(-50, -50, 100, 100)
+            }
+        }
+        val bmp = g.bitmap.base.toBMP32()
+        assertEquals(Size(101, 101), bmp.size)
+        //assertEquals("#ff0000ff", bmp[0, 0].hexString)
+        //assertEquals("#ff0000ff", bmp[99, 99].hexString)
         assertEquals("#ff0000ff", bmp[1, 1].hexString)
         assertEquals("#ff0000ff", bmp[98, 98].hexString)
-		assertEquals(-50.0, g._sLeft)
-		assertEquals(-50.0, g._sTop)
-	}
+        assertEquals(-50.0, g._sLeft)
+        assertEquals(-50.0, g._sTop)
+    }
 
     @Test
     fun testEmptyGraphics() = suspendTest({ !OS.isAndroid }) {
@@ -212,6 +213,42 @@ class GraphicsTest {
                 anchorDispXYNoOffset=${graphics.anchorDispXNoOffset.niceStr},${graphics.anchorDispYNoOffset.niceStr}
                 bounds=${graphics.getLocalBounds()}
                 size=${graphics.bitmap.sizeString}
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun testStrokePositioning() {
+        val container = Container()
+        val graphics = container.graphics {
+            it.renderer = GraphicsRenderer.SYSTEM
+            it.antialiased = true
+            this.stroke(Colors.YELLOW, info = StrokeInfo(50.0)) {
+                line(100.0, 100.0, 200.0, 200.0)
+            }
+            this.circle(100.0, 100.0, 5.0)
+            fill(Colors.BLUE)
+        }
+
+        val posCircle = container.circle(25.0, fill = Colors.ORANGE) {
+            anchor(Anchor.CENTER)
+            position(graphics.pos)
+        }
+
+        val posCircle2 = container.circle(5.0, fill = Colors.RED) {
+            anchor(Anchor.CENTER)
+            position(100.0, 100.0)
+        }
+
+        val g = (graphics.rendererView as CpuGraphics)
+        assertEquals(
+            """
+                leftTop=75, 75
+                fillSize=150, 150
+            """.trimIndent(),
+            """
+                leftTop=${g._sLeft.niceStr}, ${g._sTop.niceStr}
+                fillSize=${g.fillWidth.niceStr}, ${g.fillHeight.niceStr}
             """.trimIndent()
         )
     }

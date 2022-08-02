@@ -1405,7 +1405,7 @@ abstract class View internal constructor(
     fun getLocalBoundsOptimizedAnchored(includeFilters: Boolean = true): Rectangle = getLocalBounds(_localBounds, doAnchoring = true, includeFilters = includeFilters)
 
     @Deprecated("Allocates")
-    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true) = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
+    fun getLocalBounds(doAnchoring: Boolean = true, includeFilters: Boolean = true): Rectangle = getLocalBounds(Rectangle(), doAnchoring, includeFilters)
 
     private val tempMutableMargin: MutableMarginInt = MutableMarginInt()
 

@@ -319,10 +319,6 @@ data class VfsStat(
 ) : Path by file {
     val enrichedFile: VfsFile get() = file.copy().also { it.cachedStat = this }
 
-    //@Deprecated("Use file instead")
-    //val enrichedFile: VfsFile get() = file
-    //init { file.cachedStat = this }
-
 	fun toString(showFile: Boolean): String = "VfsStat(" + ArrayList<String>(16).also { al ->
 		if (showFile) al.add("file=$file") else al.add("file=${file.absolutePath}")
 		al.add("exists=$exists")

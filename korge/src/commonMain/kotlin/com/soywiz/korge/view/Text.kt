@@ -6,6 +6,8 @@ import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.html.Html
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.render.TexturedVertexArray
+import com.soywiz.korge.view.filter.backdropFilter
+import com.soywiz.korge.view.filter.filter
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -186,12 +188,8 @@ open class Text(
 
     override fun getLocalBoundsInternal(out: Rectangle) {
         _renderInternal(null)
-        if (font !is BitmapFont) {
-            //if (_staticGraphics != null) {
-            //    _staticGraphics!!.getLocalBounds(out)
-            //} else {
-                super.getLocalBoundsInternal(out)
-            //}
+        if (filter != null || backdropFilter != null) {
+            super.getLocalBoundsInternal(out) // This is required for getting proper bounds when glyphs are transformed
         } else {
             out.copyFrom(_textBounds)
         }

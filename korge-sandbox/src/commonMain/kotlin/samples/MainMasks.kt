@@ -4,13 +4,26 @@ import com.soywiz.klock.seconds
 import com.soywiz.korge.animate.animate
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.tween.get
-import com.soywiz.korge.view.*
-import com.soywiz.korge.view.filter.*
-import com.soywiz.korge.view.mask.*
+import com.soywiz.korge.view.SContainer
+import com.soywiz.korge.view.centered
+import com.soywiz.korge.view.circle
+import com.soywiz.korge.view.filter.BlurFilter
+import com.soywiz.korge.view.filter.ColorMatrixFilter
+import com.soywiz.korge.view.filter.DropshadowFilter
+import com.soywiz.korge.view.filter.IdentityFilter
+import com.soywiz.korge.view.filter.backdropFilters
+import com.soywiz.korge.view.filter.filter
+import com.soywiz.korge.view.filter.filters
+import com.soywiz.korge.view.mask.mask
+import com.soywiz.korge.view.roundRect
+import com.soywiz.korge.view.solidRect
+import com.soywiz.korge.view.visible
+import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korio.async.launchImmediately
-import com.soywiz.korma.geom.shape.buildPath
+import com.soywiz.korma.geom.shape.buildVectorPath
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.interpolation.Easing
 
@@ -52,7 +65,9 @@ class MainMasks : Scene() {
         launchImmediately {
             val width = this.width
             val height = this.height
-            val path = buildPath { this.circle(width * 0.5, height * 0.5, 300.0) }
+            val path = buildVectorPath(VectorPath()) {
+                circle(width * 0.5, height * 0.5, 300.0)
+            }
             animate(looped = true) {
                 tween(circle3::pos[path], time = 2.seconds, easing = Easing.LINEAR)
             }

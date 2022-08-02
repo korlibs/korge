@@ -4,7 +4,7 @@ import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.seconds
 import com.soywiz.kmem.clamp
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.component.decorateOutOverAlphaSimple
+import com.soywiz.korge.component.decorateOutOverAlpha
 import com.soywiz.korge.input.mouse
 import com.soywiz.korge.input.onMouseDrag
 import com.soywiz.korge.internal.KorgeInternal
@@ -189,7 +189,7 @@ open class UIScrollable(width: Double, height: Double) : UIView(width, height) {
         var dragging = false
 
         for (info in infos) {
-            info.view.decorateOutOverAlphaSimple { if (it) 1.0 else scrollBarAlpha }
+            info.view.decorateOutOverAlpha { if (it) 1.0 else scrollBarAlpha }
         }
 
         for (info in infos) {

@@ -1,7 +1,6 @@
 package com.soywiz.korau.format.mp3.javamp3
 
 import com.soywiz.kmem.arraycopy
-import com.soywiz.kmem.fill
 import com.soywiz.korau.internal.SampleConvert
 import com.soywiz.korio.lang.Charsets
 import com.soywiz.korio.lang.EOFException

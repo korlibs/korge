@@ -1,7 +1,7 @@
 package com.soywiz.korim.color
 
+import com.soywiz.kmem.clampUByte
 import com.soywiz.kmem.extract8
-import com.soywiz.korim.internal.clamp0_255
 import kotlin.math.max
 
 // https://en.wikipedia.org/wiki/CMYK_color_model
@@ -16,9 +16,9 @@ inline class CMYK(val value: Int) {
     val yf: Float get() = y.toFloat() / 255f
     val kf: Float get() = k.toFloat() / 255f
 
-    val r: Int get() = 255 - (c * (1 - k / 255) + k).clamp0_255()
-    val g: Int get() = 255 - (m * (1 - k / 255) + k).clamp0_255()
-    val b: Int get() = 255 - (y * (1 - k / 255) + k).clamp0_255()
+    val r: Int get() = 255 - (c * (1 - k / 255) + k).clampUByte()
+    val g: Int get() = 255 - (m * (1 - k / 255) + k).clampUByte()
+    val b: Int get() = 255 - (y * (1 - k / 255) + k).clampUByte()
     val a: Int get() = 255
 
     fun toRGBA() = RGBA(r, g, b, a)

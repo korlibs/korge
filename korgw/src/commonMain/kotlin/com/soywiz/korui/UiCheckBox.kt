@@ -1,11 +1,10 @@
 package com.soywiz.korui
 
-import com.soywiz.korio.util.RedirectMutableField
 import com.soywiz.korui.native.NativeUiFactory
 
 open class UiCheckBox(app: UiApplication, val checkBox: NativeUiFactory.NativeCheckBox = app.factory.createCheckBox()) : UiComponent(app, checkBox) {
-    var text by RedirectMutableField(checkBox::text)
-    var checked by RedirectMutableField(checkBox::checked)
+    var text by checkBox::text
+    var checked by checkBox::checked
     fun onChange(block: UiCheckBox.(Boolean) -> Unit) = checkBox.onChange { block(this, checked) }
 }
 

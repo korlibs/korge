@@ -61,11 +61,7 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
                             val inp = _inp.addressOf(0)
                             val out = _out.addressOf(0)
                             var tempInputSize = 0
-                            strm.zalloc = null
-                            strm.zfree = null
-                            strm.opaque = null
-                            strm.avail_in = 0u
-                            strm.next_in = null
+                            memset(strm.ptr, 0, z_stream.size.convert())
                             ret = inflateInit2_(strm.ptr, -windowBits, zlibVersion()?.toKString(), sizeOf<z_stream>().toInt());
                             if (ret != Z_OK) error("Invalid inflateInit2_")
 
@@ -140,12 +136,8 @@ fun DeflateNative(windowBits: Int): CompressionMethod = object : CompressionMeth
 					outArray.usePinned { _out ->
 						val inp = _inp.addressOf(0)
 						val out = _out.addressOf(0)
-						strm.zalloc = null
-						strm.zfree = null
-						strm.opaque = null
-						strm.avail_in = 0u
-						strm.next_in = null
-						val Z_DEFLATED = 8
+                        memset(strm.ptr, 0, z_stream.size.convert())
+                        val Z_DEFLATED = 8
 						val MAX_MEM_LEVEL = 9
 						val Z_DEFAULT_STRATEGY = 0
 						ret = deflateInit2_(strm.ptr, context.level, Z_DEFLATED, -windowBits, MAX_MEM_LEVEL, Z_DEFAULT_STRATEGY, zlibVersion()?.toKString(), sizeOf<z_stream>().toInt());

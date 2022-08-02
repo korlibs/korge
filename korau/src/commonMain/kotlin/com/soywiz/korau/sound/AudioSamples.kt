@@ -5,7 +5,6 @@ import com.soywiz.kmem.FastShortTransfer
 import com.soywiz.kmem.arraycopy
 import com.soywiz.kmem.arrayinterleave
 import com.soywiz.kmem.clamp01
-import com.soywiz.kmem.fill
 import com.soywiz.korau.internal.SampleConvert
 import com.soywiz.korau.internal.coerceToShort
 import com.soywiz.korio.lang.assert
