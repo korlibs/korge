@@ -1,10 +1,10 @@
 package com.soywiz.korim.format
 
-import com.soywiz.korim.format.cg.CGBaseNativeImageFormatProvider
+import com.soywiz.korim.format.cg.CGNativeImageFormatProvider
 
 //actual val nativeImageFormatProvider: NativeImageFormatProvider = UIImageNativeImageFormatProvider
-//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
-actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
+actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGNativeImageFormatProvider
+//actual val nativeImageFormatProvider: NativeImageFormatProvider get() = CGBaseNativeImageFormatProvider
 
 
 /*

@@ -459,7 +459,7 @@ class AGQueueProcessorOpenGL(
 
                     val tex = unit.texture
                     if (tex != null) {
-                        // @TODO: This might be enqueuing commands, we shouldn'd do that here.
+                        // @TODO: This might be enqueuing commands, we shouldn't do that here.
                         textureBindEnsuring(tex)
                         textureSetWrap(tex)
                         textureSetFilter(tex, unit.linear, unit.trilinear ?: unit.linear)
