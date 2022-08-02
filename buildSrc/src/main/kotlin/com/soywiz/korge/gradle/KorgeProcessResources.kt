@@ -27,6 +27,12 @@ fun getKorgeProcessResourcesTaskName(targetName: String, compilationName: String
     "korgeProcessedResources${targetName.capitalize()}${compilationName.capitalize()}"
 
 fun Project.addGenResourcesTasks(): Project {
+    tasks.withType(Copy::class.java).all {
+        //this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.WARN
+        this.duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
+        //println("Task $this")
+    }
+
     val runJvm by lazy { (tasks["runJvm"] as KorgeJavaExec) }
 
     tasks.create("listKorgeTargets", Task::class.java) {
