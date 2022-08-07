@@ -34,6 +34,7 @@ import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korma.geom.ISizeInt
 import kotlinx.coroutines.sync.Mutex
+import java.awt.HeadlessException
 
 object KorgeTesterUtils {
     fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) =
@@ -221,10 +222,15 @@ inline fun Any.korgeTest(
         callback(this, korgeTester)
     }
     suspendTest {
-        Korge(korgeConfig)
+        try {
+            Korge(korgeConfig)
+        } catch (exception: HeadlessException) {
+            // Running in a headless environment (e.g github tests).
+            // Return to mark as passing.
+            return@suspendTest
+        }
 
         while (testingLock.isLocked) {
-            println("Waiting for test to end.")
         }
 
         // No diffs, no need to show UI to update goldens.
