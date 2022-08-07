@@ -1,29 +1,63 @@
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.korge.Korge
+import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.input.onClick
+import com.soywiz.korge.ui.uiButton
+import com.soywiz.korge.ui.uiContainer
+import com.soywiz.korge.ui.uiScrollable
+import com.soywiz.korge.ui.uiVerticalStack
+import com.soywiz.korge.view.Container
+import com.soywiz.korge.view.ScalingOption
+import com.soywiz.korge.view.SolidRect
 import com.soywiz.korge.view.Stage
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korge.view.alignBottomToTopOf
+import com.soywiz.korge.view.alignLeftToRightOf
+import com.soywiz.korge.view.alignRightToRightOf
+import com.soywiz.korge.view.alignTopToBottomOf
 import com.soywiz.korge.view.anchor
+import com.soywiz.korge.view.centerOn
+import com.soywiz.korge.view.centerXOn
+import com.soywiz.korge.view.centerXOnStage
+import com.soywiz.korge.view.container
+import com.soywiz.korge.view.image
 import com.soywiz.korge.view.position
 import com.soywiz.korge.view.renderToBitmap
+import com.soywiz.korge.view.scaleWhileMaintainingAspect
 import com.soywiz.korge.view.solidRect
 import com.soywiz.korge.view.text
+import com.soywiz.korge.view.util.distributeEvenlyHorizontally
+import com.soywiz.korge.view.util.distributeEvenlyVertically
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.format.PNG
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.async.suspendTest
+import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korma.geom.ISizeInt
 import com.soywiz.korma.geom.degrees
 import kotlinx.coroutines.sync.Mutex
 import org.junit.Test
 
+fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) = "${testMethodName}_$goldenName.png"
+
 data class KorgeTestResult(
     val testMethodName: String,
-    val goldenName: String
-)
+    val goldenName: String,
+    val testGoldensVfs: VfsFile,
+    val tempVfs: VfsFile,
+    val oldBitmap: Bitmap,
+    val newBitmap: Bitmap
+) {
+    suspend fun updateGoldenFileToNewBitmap() {
+        val goldenFileName = makeGoldenFileNameWithExtension(testMethodName, goldenName)
+        tempVfs[goldenFileName].copyTo(testGoldensVfs[goldenFileName])
+    }
+}
 
 data class KorgeTestResults(
     val results: MutableList<KorgeTestResult> = mutableListOf()
@@ -46,7 +80,7 @@ class KorgeTester(
         PATH_DATE_FORMAT.format(localTestTime)
     }"]
 
-    val recordedGoldenFileNames = mutableSetOf<String>()
+    val recordedGoldenNames = mutableSetOf<String>()
 
     init {
         require(testingLock.isLocked) {
@@ -71,36 +105,48 @@ class KorgeTester(
         tempVfs.mkdirs()
     }
 
-    fun makeGoldenFileNameWithExtension(goldenName: String) = "${testMethodName}_$goldenName.png"
+
 
     // name: The name of the golden. (e.g: "cool_view").
     //  Note: Do not add a file extension to the end.
     suspend fun recordGolden(view: View, goldenName: String) {
         val bitmap = view.renderToBitmap(views)
-        val fileName = makeGoldenFileNameWithExtension(goldenName)
-        require(!recordedGoldenFileNames.contains(fileName)) {
+        require(!recordedGoldenNames.contains(goldenName)) {
             """
-                Golden collision for name: $fileName
+                Golden collision for name: $goldenName
                 Please rename your golden!
             """.trimIndent()
         }
-        recordedGoldenFileNames.add(fileName)
+        recordedGoldenNames.add(goldenName)
+        val fileName = makeGoldenFileNameWithExtension(testMethodName, goldenName)
         tempVfs[fileName].writeBitmap(bitmap, PNG)
     }
 
     suspend fun processGoldenResults() {
         println("Processing golden results")
-        recordedGoldenFileNames.forEach {
-            println("Processing: $it")
-            val testGoldenImage = testGoldensVfs[it]
+        recordedGoldenNames.forEach { goldenName ->
+            println("Processing: $goldenName")
+            val goldenFileName = makeGoldenFileNameWithExtension(testMethodName, goldenName)
+            val testGoldenImage = testGoldensVfs[goldenFileName]
             val existsGoldenInGoldenDirectory = testGoldenImage.exists()
             println("existsGoldenInGoldenDirectory: $existsGoldenInGoldenDirectory")
             if (existsGoldenInGoldenDirectory) {
                 val oldBitmap = testGoldenImage.readBitmap(PNG)
-                val newBitmap = tempVfs.readBitmap(PNG)
-                TODO()
+                val newBitmap = tempVfs[goldenFileName].readBitmap(PNG)
+                if (!oldBitmap.contentEquals(newBitmap)) {
+                    testResultsOutput.results.add(
+                        KorgeTestResult(
+                            testMethodName,
+                            goldenName,
+                            testGoldensVfs,
+                            tempVfs,
+                            oldBitmap,
+                            newBitmap
+                        )
+                    )
+                }
             } else {
-                tempVfs[it].copyToTree(testGoldenImage)
+                tempVfs[goldenFileName].copyToTree(testGoldenImage)
             }
         }
     }
@@ -121,6 +167,7 @@ class KorgeTester(
     }
 }
 
+@OptIn(KorgeExperimental::class)
 inline fun Any.korgeTest(
     korgeConfig: Korge.Config,
     crossinline callback: suspend Stage.(korgeTester: KorgeTester) -> Unit,
@@ -141,22 +188,96 @@ inline fun Any.korgeTest(
         callback(this, korgeTester)
     }
     suspendTest {
-        val korge = Korge(korgeConfig)
+        Korge(korgeConfig)
         //        val korge = Korge(korgeConfig) {
         //            val korgeTester = KorgeTester(views)
         //            korgeTester.init()
         //            callback(this, korgeTester)
         //        }
 
-//        while (testingLock.isLocked) { }
-//        val config = Korge.Config(
-//            windowSize = ISizeInt.invoke(640, 480),
-//            virtualSize = ISizeInt.invoke(640, 480),
-//            main = {
-//                views.gameWindow.exitProcessOnExit = false
-//                text("Hello world")
-//            })
-//        Korge(config)
+        while (testingLock.isLocked) {
+        }
+        val config = Korge.Config(
+            bgcolor = Colors.LIGHTGRAY,
+            windowSize = ISizeInt.invoke(1280, 720),
+            virtualSize = ISizeInt.invoke(700, 480),
+            main = {
+                views.gameWindow.exitProcessOnExit = false
+
+                uiScrollable(700.0, 480.0) {
+                    it.backgroundColor = Colors.LIGHTGRAY
+                    var prevContainer: Container? = null
+                    results.results.forEach { testResult ->
+                        container {
+                            val description = container {
+                                distributeEvenlyVertically(
+                                    listOf(
+                                        text("Test method name: ${testResult.testMethodName}"),
+                                        text("Golden name: ${testResult.goldenName}")
+                                    ),
+                                    35.0
+                                )
+
+                            }
+                            container {
+                                val fn = { headerText: String, bitmap: Bitmap ->
+                                    container {
+                                        val text =
+                                            text("$headerText (${bitmap.size.width.toInt()} x ${bitmap.size.height.toInt()})")
+                                        val rect =
+                                            solidRect(320, 240, color = Colors.BLACK.withAd(0.75)) {
+                                                alignTopToBottomOf(text)
+                                            }
+                                        image(bitmap).apply {
+                                            scaleWhileMaintainingAspect(
+                                                ScalingOption.ByWidthAndHeight(
+                                                    310.0,
+                                                    230.0
+                                                )
+                                            )
+                                            centerOn(rect)
+                                        }
+                                    }
+                                }
+                                val oldImage = fn("Old Image", testResult.oldBitmap)
+                                val newImage = fn("New Image", testResult.newBitmap).apply {
+                                    alignLeftToRightOf(oldImage, padding = 5.0)
+                                }
+                                uiButton("Accept change?", width = 125.0) {
+                                    alignTopToBottomOf(oldImage)
+                                    centerXOn(this@container)
+                                    onClick {
+                                        testResult.updateGoldenFileToNewBitmap()
+                                        disable()
+                                    }
+                                }
+                                alignTopToBottomOf(description)
+                            }
+
+                            val sectionBg =
+                                solidRect(scaledWidth, scaledHeight, Colors.DARKSLATEGRAY)
+                            sendChildToBack(sectionBg)
+
+                            println(
+                                """
+                                scaledWidth: $scaledWidth,
+                                scaledHeight: $scaledHeight
+                            """.trimIndent()
+                            )
+
+                            centerXOnStage()
+
+                            if (prevContainer != null) {
+                                alignTopToBottomOf(prevContainer!!, padding = 10.0)
+                            }
+                            prevContainer = this
+                        }
+
+                    }
+                }
+
+            })
+        Korge(config)
 
     }
 }
@@ -199,15 +320,15 @@ class KorgeScreenshotTest {
 
         it.recordGolden(this, "initial1")
 
-        //            while (true) {
-        //                println("STEP")
-        //                image.tween(image::rotation[minDegrees], time = 0.5.seconds, easing = Easing.EASE_IN_OUT)
-        //                image.tween(image::rotation[maxDegrees], time = 0.5.seconds, easing = Easing.EASE_IN_OUT)
-        //                views.gameWindow.close() // We close the window, finalizing the test here
-        //            }
+        val rect2 = solidRect(150, 150, Colors.YELLOW) {
+            rotation = maxDegrees
+            anchor(.5, .5)
+            scale = 0.8
+            position(350, 350)
+        }
 
-        //                views.gameWindow.close()
-        //        }
+        it.recordGolden(rect2, "initial2")
+
 
         it.endTest()
     }
