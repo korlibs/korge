@@ -5,10 +5,10 @@ import com.soywiz.kmem.extract2
 import com.soywiz.kmem.extract4
 import com.soywiz.kmem.extract6
 import com.soywiz.kmem.write32BE
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray
-import com.soywiz.korio.lang.ASCII
 import com.soywiz.korio.lang.LATIN1
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.readAvailable
@@ -31,13 +31,23 @@ object QOI : ImageFormat("qoi") {
         }
     }
 
-    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
-        val header = decodeHeader(s, props) ?: error("Not a QOI image")
+    // QOI supports outputting to the `out` bitmap, but certain conditions must be met.
+    // 1. The width and height of the output Bitmap must match the header width and height.
+    // 2. The out Bitmap must be a Bitmap32.
+    override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+        val header = decodeHeader(s, props)
+            ?: error("Not a QOI image")
         val bytes = UByteArrayInt(s.readAvailable())
         val index = RgbaArray(64)
-        val out = Bitmap32(header.width, header.height, premultiplied = false)
-        val outp = RgbaArray(out.ints)
-        val totalPixels = out.area
+        val outBmp =
+            if (out != null && out.width == header.width && out.height == header.height && out is Bitmap32) {
+                out.premultiplied = false
+                out
+            } else {
+                Bitmap32(header.width, header.height, premultiplied = false)
+            }
+        val outp = RgbaArray(outBmp.ints)
+        val totalPixels = outBmp.area
         var o = 0
         var p = 0
 
@@ -96,7 +106,7 @@ object QOI : ImageFormat("qoi") {
             index[QOI_COLOR_HASH(r, g, b, a) % 64] = lastCol
             outp[o++] = lastCol
         }
-        return ImageData(out)
+        return ImageData(outBmp, returnBitmapInPlace = true)
     }
 
     override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) {
@@ -161,7 +171,8 @@ object QOI : ImageFormat("qoi") {
 
                         when {
                             vr > -3 && vr < 2 && vg > -3 && vg < 2 && vb > -3 && vb < 2 -> {
-                                bytes[p++] = QUI_SOP(QOI_SOP_DIFF) or ((vr + 2) shl 4) or ((vg + 2) shl 2) or (vb + 2)
+                                bytes[p++] =
+                                    QUI_SOP(QOI_SOP_DIFF) or ((vr + 2) shl 4) or ((vg + 2) shl 2) or (vb + 2)
                             }
                             vg_r > -9 && vg_r < 8 && vg > -33 && vg < 32 && vg_b > -9 && vg_b < 8 -> {
                                 bytes[p++] = QUI_SOP(QOI_SOP_LUMA) or (vg + 32)
@@ -211,7 +222,9 @@ object QOI : ImageFormat("qoi") {
 
     private const val QOI_MASK_2 = 0xc0 /* 11000000 */
 
-    private fun QOI_COLOR_HASH(r: Int, g: Int, b: Int, a: Int): Int = (r * 3 + g * 5 + b * 7 + a * 11)
+    private fun QOI_COLOR_HASH(r: Int, g: Int, b: Int, a: Int): Int =
+        (r * 3 + g * 5 + b * 7 + a * 11)
+
     private fun QOI_COLOR_HASH(C: RGBA): Int = QOI_COLOR_HASH(C.r, C.g, C.b, C.a)
     val QOI_PADDING = byteArrayOf(0, 0, 0, 0, 0, 0, 0, 1)
     private const val QOI_HEADER_SIZE = 14

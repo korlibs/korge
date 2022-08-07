@@ -1,6 +1,7 @@
 package com.soywiz.korim.format
 
 import com.soywiz.klock.milliseconds
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
@@ -31,7 +32,7 @@ object GIF : ImageFormat("gif") {
         }
     }
 
-    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+    override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
         val gif = GifDec.gd_open_gif(s.clone())
         val frames = arrayListOf<ImageFrame>()
         while (GifDec.gd_get_frame(gif) >= 1) {

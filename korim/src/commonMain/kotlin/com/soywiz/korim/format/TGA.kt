@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.color.BGR
@@ -73,7 +74,7 @@ object TGA : ImageFormat("tga") {
 		return Info(width = width, height = height, flipY = flipY, bitsPerPixel = pixelDepth)
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
 		val info = readHeader(s)
 		val format = when (info.bitsPerPixel) {
 			24 -> BGR
