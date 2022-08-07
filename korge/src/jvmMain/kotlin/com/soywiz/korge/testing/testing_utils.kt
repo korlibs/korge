@@ -1,8 +1,11 @@
+package com.soywiz.korge.testing
+
 import com.soywiz.klock.DateFormat
 import com.soywiz.klock.DateTime
 import com.soywiz.korge.Korge
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.input.onClick
+import com.soywiz.korge.testing.KorgeTesterUtils.makeGoldenFileNameWithExtension
 import com.soywiz.korge.ui.uiButton
 import com.soywiz.korge.ui.uiScrollable
 import com.soywiz.korge.view.Container
@@ -12,13 +15,11 @@ import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
 import com.soywiz.korge.view.alignLeftToRightOf
 import com.soywiz.korge.view.alignTopToBottomOf
-import com.soywiz.korge.view.anchor
 import com.soywiz.korge.view.centerOn
 import com.soywiz.korge.view.centerXOn
 import com.soywiz.korge.view.centerXOnStage
 import com.soywiz.korge.view.container
 import com.soywiz.korge.view.image
-import com.soywiz.korge.view.position
 import com.soywiz.korge.view.renderToBitmap
 import com.soywiz.korge.view.scaleWhileMaintainingAspect
 import com.soywiz.korge.view.solidRect
@@ -32,12 +33,12 @@ import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import com.soywiz.korma.geom.ISizeInt
-import com.soywiz.korma.geom.degrees
 import kotlinx.coroutines.sync.Mutex
-import org.junit.Test
 
-fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) =
-    "${testMethodName}_$goldenName.png"
+object KorgeTesterUtils {
+    fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) =
+        "${testMethodName}_$goldenName.png"
+}
 
 sealed class KorgeTestResult(
     open val testMethodName: String,
@@ -168,7 +169,8 @@ class KorgeTester(
             }
         }
 
-        (existingGoldenNames - recordedGoldenNames).forEach {goldenName ->
+        // Process any deleted goldens.
+        (existingGoldenNames - recordedGoldenNames).forEach { goldenName ->
             val goldenFileName = makeGoldenFileNameWithExtension(testMethodName, goldenName)
             val oldBitmap = testGoldensVfs[goldenFileName].readBitmap(PNG)
             testResultsOutput.results.add(
@@ -220,13 +222,9 @@ inline fun Any.korgeTest(
     }
     suspendTest {
         Korge(korgeConfig)
-        //        val korge = Korge(korgeConfig) {
-        //            val korgeTester = KorgeTester(views)
-        //            korgeTester.init()
-        //            callback(this, korgeTester)
-        //        }
 
         while (testingLock.isLocked) {
+            println("Waiting for test to end.")
         }
 
         // No diffs, no need to show UI to update goldens.
@@ -332,48 +330,4 @@ inline fun Any.korgeTest(
         Korge(config)
 
     }
-}
-
-class KorgeScreenshotTest {
-    @Test
-    fun test1() = korgeTest(
-        Korge.Config(
-            windowSize = ISizeInt.invoke(512, 512),
-            virtualSize = ISizeInt(512, 512),
-            bgcolor = Colors.RED
-        )
-    ) {
-
-        val maxDegrees = (+16).degrees
-
-        val rect1 = solidRect(100, 100, Colors.RED) {
-            rotation = maxDegrees
-            anchor(.5, .5)
-            scale = 0.8
-            position(200, 200)
-        }
-
-        it.recordGolden(this, "initial1")
-
-        val rect2 = solidRect(150, 150, Colors.YELLOW) {
-            rotation = maxDegrees
-            anchor(.5, .5)
-            scale = 0.8
-            position(350, 350)
-        }
-
-        it.recordGolden(rect2, "initial2")
-
-        val rect3 = solidRect(150, 150, Colors.GREEN) {
-            rotation = maxDegrees
-            anchor(.5, .5)
-            scale = 0.8
-            position(100, 350)
-        }
-
-        it.recordGolden(this, "initial3")
-
-        it.endTest()
-    }
-
 }
