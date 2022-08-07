@@ -3,6 +3,7 @@ package com.soywiz.korim.format
 import com.soywiz.kds.Extra
 import com.soywiz.kds.ExtraType
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.runBlockingNoSuspensionsNullable
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
@@ -19,7 +20,7 @@ import kotlin.math.max
 
 abstract class ImageFormatWithContainer(vararg exts: String) : ImageFormat(*exts) {
     override fun readImageContainer(s: SyncStream, props: ImageDecodingProps): ImageDataContainer = TODO()
-    final override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData = readImageContainer(s, props).imageDatas.first()
+    final override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData = readImageContainer(s, props).imageDatas.first()
 }
 
 abstract class ImageFormatSuspend(vararg exts: String) : ImageFormat(*exts) {
@@ -37,7 +38,7 @@ interface ImageFormatDecoder {
 abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 	val extensions = exts.map { it.toLowerCase().trim() }.toSet()
     open fun readImageContainer(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageDataContainer = ImageDataContainer(listOf(readImage(s, props)))
-	open fun readImage(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): ImageData = TODO()
+	open fun readImage(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT, out: Bitmap? = null): ImageData = TODO()
 	open fun writeImage(
 		image: ImageData,
 		s: SyncStream,
@@ -65,16 +66,21 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 	//fun read(file: File) = this.read(file.openSync(), file.name)
 	fun read(s: ByteArray, filename: String = "unknown"): Bitmap = read(s.openSync(), filename)
 
-	fun read(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = readImage(s, props).mainBitmap
+	fun read(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT, out: Bitmap? = null): Bitmap = readImage(s, props, out).mainBitmap
 	//fun read(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync(), props.copy(filename = file.name))
-	fun read(s: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = read(s.openSync(), props)
+	fun read(s: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT, out: Bitmap? = null): Bitmap = read(s.openSync(), props, out)
 
 	fun check(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Boolean =
         runIgnoringExceptions(show = true) { decodeHeader(s, props) != null } ?: false
 
 	fun decode(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = this.read(s, props)
 	//fun decode(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync("r"), props.copy(filename = file.name))
-    fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = read(data.openSync(), props)
+
+    // Decodes a given byte array to a bitmap based on the image format.
+    // Provides an `out` parameter to reuse an existing Bitmap to reduce allocations.
+    // Note though that not all formats may use the bitmap provided by the `out` param.
+    // In those cases, they will return a newly allocated Bitmap instead.
+    fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT, out: Bitmap? = null): Bitmap = read(data.openSync(), props, out)
 
 	override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): Bitmap = decode(data, props)
 

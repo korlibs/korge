@@ -4,6 +4,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.extraProperty
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.UByteArrayInt
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapChannel
@@ -192,7 +193,7 @@ object KRA : ImageFormat("kra") {
         return oidx.toInt()
     }
 
-    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+    override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
         return runBlockingNoSuspensions {
             val vfs = ZipVfs(s.clone().toAsync())
             val folderVfs = vfs.listSimple().filter { it.isDirectory() }.firstOrNull() ?: error("No root folder in zip")

@@ -33,32 +33,53 @@ open class ImageFrame(
             includeInAtlas: Boolean = true,
             name: String? = null,
             index: Int = 0,
-        ): ImageFrame = ImageFrame(index, time, fastArrayListOf(ImageFrameLayer(
-            ImageLayer(0, null, ImageLayer.Type.NORMAL),
-            bitmap.slice(name = name),
-            targetX,
-            targetY,
-            main,
-            includeInAtlas,
-        )))
+            returnBitmapInPlace: Boolean = false,
+        ): ImageFrame =
+            ImageFrame(
+                index, time,
+                fastArrayListOf(
+                    ImageFrameLayer(
+                        ImageLayer(0, null, ImageLayer.Type.NORMAL),
+                        bitmap.slice(name = name),
+                        targetX,
+                        targetY,
+                        main,
+                        includeInAtlas,
+                        returnBitmapInPlace = returnBitmapInPlace
+                    )
+                )
+            )
     }
 
     val first = layerData.firstOrNull()
 
-    val slice: BmpSlice get() = first?.slice ?: Bitmaps.transparent
-    val targetX: Int get() = first?.targetX ?: 0
-    val targetY: Int get() = first?.targetY ?: 0
-    val main: Boolean get() = first?.main ?: false
-    val includeInAtlas: Boolean get() = first?.includeInAtlas ?: true
+    val slice: BmpSlice
+        get() = first?.slice
+            ?: Bitmaps.transparent
+    val targetX: Int
+        get() = first?.targetX
+            ?: 0
+    val targetY: Int
+        get() = first?.targetY
+            ?: 0
+    val main: Boolean
+        get() = first?.main
+            ?: false
+    val includeInAtlas: Boolean
+        get() = first?.includeInAtlas
+            ?: true
 
     val duration get() = time
     val width get() = slice.width
     val height get() = slice.height
-	val area: Int get() = slice.area
-    val bitmap get() = first?.bitmap ?: Bitmaps.transparent.bmp
+    val area: Int get() = slice.area
+    val bitmap
+        get() = first?.bitmap
+            ?: Bitmaps.transparent.bmp
     val name get() = slice.name
 
-	override fun toString(): String = "ImageFrame($slice, time=$time, targetX=$targetX, targetY=$targetY, main=$main)"
+    override fun toString(): String =
+        "ImageFrame($slice, time=$time, targetX=$targetX, targetY=$targetY, main=$main)"
 }
 
 val Iterable<ImageFrame>.area: Int get() = this.sumBy { it.area }

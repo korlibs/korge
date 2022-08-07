@@ -49,7 +49,7 @@ open class ImageFormats(formats: Iterable<ImageFormat>) : ImageFormat("") {
 		return null
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
 		//val format = formats.firstOrNull { it.check(s.sliceStart(), props) }
 		//println("--------------")
 		//println("FORMATS: $formats, props=$props")

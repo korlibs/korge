@@ -1,6 +1,7 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kds.Extra
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.openSync
@@ -49,7 +50,7 @@ object DDS : ImageFormat("dds") {
 		}
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
 		val h = decodeHeader(s, props) ?: invalidOp("Not a DDS file")
 		val fourcc = h.fourcc.toUpperCase()
 		val subimageFormat: DXT = when (fourcc) {

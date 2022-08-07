@@ -35,7 +35,7 @@ object ICO : ImageFormat("ico") {
 		return ImageInfo()
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
 		data class DirEntry(
 			val width: Int, val height: Int,
 			val colorCount: Int,
