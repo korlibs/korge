@@ -37,7 +37,6 @@ include(":korge")
 include(":korge-gradle-plugin")
 include(":korge-reload-agent")
 include(":korge-sandbox")
-include(":korge-benchmarks")
 
 if (!inCI) {
 }
@@ -50,4 +49,5 @@ if (!disabledExtraKorgeLibs) {
     include(":korge-swf")
     include(":korge-box2d")
     include(":korge-fleks")
+    include(":korge-benchmarks")
 }
