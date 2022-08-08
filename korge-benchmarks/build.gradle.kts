@@ -15,10 +15,7 @@ benchmark {
 }
 
 dependencies {
-//    add("commonMainApi", project(":kds"))
     add("commonMainApi", project(":korim"))
     add("commonMainApi", project(":korge"))
     add("commonMainApi", "org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
-
-//    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
 }
