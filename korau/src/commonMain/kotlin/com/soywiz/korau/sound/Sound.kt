@@ -29,14 +29,12 @@ import kotlin.coroutines.coroutineContext as coroutineContextKt
 @ThreadLocal
 expect val nativeSoundProvider: NativeSoundProvider
 
-open class LazyNativeSoundProvider(val prepareInit: () -> Unit = {}, val gen: () -> NativeSoundProvider) : NativeSoundProvider() {
-    val parent by lazy { gen().also { it.initOnce() } }
+open class LazyNativeSoundProvider(val gen: () -> NativeSoundProvider) : NativeSoundProvider() {
+    val parent by lazy { gen() }
 
     override val target: String get() = parent.target
 
     override fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int): PlatformAudioOutput = parent.createPlatformAudioOutput(coroutineContext, freq)
-
-    override fun init() = prepareInit()
 
     override suspend fun createSound(data: ByteArray, streaming: Boolean, props: AudioDecodingProps, name: String): Sound =
         parent.createSound(data, streaming, props, name)
@@ -57,20 +55,9 @@ open class LazyNativeSoundProvider(val prepareInit: () -> Unit = {}, val gen: ()
 open class NativeSoundProvider : Disposable {
 	open val target: String = "unknown"
 
-	private var initialized = korAtomic(false)
-
-	fun initOnce() {
-		if (!initialized.value) {
-			initialized.value = true
-			init()
-		}
-	}
-
 	open fun createPlatformAudioOutput(coroutineContext: CoroutineContext, freq: Int = 44100): PlatformAudioOutput = PlatformAudioOutput(coroutineContext, freq)
 
     suspend fun createPlatformAudioOutput(freq: Int = 44100): PlatformAudioOutput = createPlatformAudioOutput(coroutineContextKt, freq)
-
-	protected open fun init(): Unit = Unit
 
 	open suspend fun createSound(data: ByteArray, streaming: Boolean = false, props: AudioDecodingProps = AudioDecodingProps.DEFAULT, name: String = "Unknown"): Sound {
         val format = props.formats ?: audioFormats
