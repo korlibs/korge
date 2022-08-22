@@ -8,7 +8,6 @@ import com.soywiz.klock.milliseconds
 import com.soywiz.klogger.Console
 import com.soywiz.klogger.Logger
 import com.soywiz.korag.log.PrintAG
-import com.soywiz.korau.sound.nativeSoundProvider
 import com.soywiz.korev.DestroyEvent
 import com.soywiz.korev.DropFileEvent
 import com.soywiz.korev.EventDispatcher
@@ -243,9 +242,6 @@ object Korge {
                 prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
             }
 
-            gameWindow.registerTime("nativeSoundProvider") {
-                nativeSoundProvider.initOnce()
-            }
             gameWindow.registerTime("completeViews") {
                 completeViews(views)
             }
