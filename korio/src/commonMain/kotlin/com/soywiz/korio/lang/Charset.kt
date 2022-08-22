@@ -7,7 +7,7 @@ import com.soywiz.kmem.extract
 import com.soywiz.kmem.insert
 import com.soywiz.kmem.readS16
 import com.soywiz.kmem.write16
-import com.soywiz.korio.concurrent.lock.Lock
+import com.soywiz.kds.lock.Lock
 import kotlin.math.min
 import kotlin.native.concurrent.SharedImmutable
 import kotlin.native.concurrent.ThreadLocal
