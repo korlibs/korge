@@ -105,15 +105,13 @@ class KorgeScreenshotTester(
             if (existsGoldenInGoldenDirectory) {
                 val oldBitmap = testGoldenImage.readBitmap(PNG)
                 val newBitmap = context.tempGoldensVfs[goldenFileName].readBitmap(PNG)
-                if (!oldBitmap.contentEquals(newBitmap)) {
-                    testResultsOutput.results.add(
-                        KorgeScreenshotTestResult(
-                            goldenName,
-                            oldBitmap,
-                            newBitmap
-                        )
+                testResultsOutput.results.add(
+                    KorgeScreenshotTestResult(
+                        goldenName,
+                        oldBitmap,
+                        newBitmap
                     )
-                }
+                )
             } else {
                 // This is a new golden, so we can just save it.
                 context.tempGoldensVfs[goldenFileName].copyTo(testGoldenImage)
@@ -135,15 +133,6 @@ class KorgeScreenshotTester(
                 )
             )
         }
-    }
-
-    private fun contentEquals(left: Bitmap, other: Bitmap): Boolean {
-        if (left.width != other.width) return false
-        if (left.height != other.height) return false
-        for (y in 0 until left.height) for (x in 0 until left.width) {
-            if (left.getRgbaRaw(x, y) != other.getRgbaRaw(x, y)) return false
-        }
-        return true
     }
 
     suspend fun endTest() {

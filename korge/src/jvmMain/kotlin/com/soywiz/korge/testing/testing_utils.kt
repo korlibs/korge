@@ -25,16 +25,11 @@ import com.soywiz.korma.geom.ISizeInt
 import kotlinx.coroutines.sync.Mutex
 import java.awt.HeadlessException
 
-//object KorgeScreenshotTesterUtils {
-//    fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) =
-//        "${testMethodName}_$goldenName.png"
-//}
-
 @OptIn(KorgeExperimental::class)
 inline fun korgeScreenshotTest(
     korgeConfig: Korge.Config,
     settings: KorgeScreenshotTestSettings = KorgeScreenshotTestSettings(),
-    crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit,
+    crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit = {},
 ) {
     System.setProperty("java.awt.headless", "false")
     val throwable = Throwable()
@@ -66,8 +61,14 @@ inline fun korgeScreenshotTest(
         while (testingLock.isLocked) {
         }
 
+        val resultsWithAnyErrors = results.results.filter { result ->
+            settings.validators.any {
+                it.validate(result) is ValidatorResult.Error
+            }
+        }
+
         // No diffs, no need to show UI to update goldens.
-        if (results.results.isEmpty()) return@suspendTest
+        if (resultsWithAnyErrors.isEmpty()) return@suspendTest
 
         val config = Korge.Config(
             bgcolor = Colors.LIGHTGRAY,
@@ -76,10 +77,10 @@ inline fun korgeScreenshotTest(
             main = {
                 views.gameWindow.exitProcessOnExit = false
 
-                uiScrollable(700.0, 480.0) {
-                    it.backgroundColor = Colors.LIGHTGRAY
+                uiScrollable(700.0, 480.0) { uiScrollable ->
+                    uiScrollable.backgroundColor = Colors.LIGHTGRAY
                     var prevContainer: Container? = null
-                    results.results.forEach { testResult ->
+                    resultsWithAnyErrors.forEach { testResult ->
                         container {
                             val description = text("Test method name: ${results.testMethodName}")
                             container {

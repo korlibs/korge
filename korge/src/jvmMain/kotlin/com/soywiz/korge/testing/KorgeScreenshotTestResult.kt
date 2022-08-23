@@ -5,6 +5,6 @@ import com.soywiz.korio.file.VfsFile
 
 data class KorgeScreenshotTestResult(
     val goldenName: String,
-    val oldBitmap: Bitmap?,
+    val oldBitmap: Bitmap,
     val newBitmap: Bitmap?
 )

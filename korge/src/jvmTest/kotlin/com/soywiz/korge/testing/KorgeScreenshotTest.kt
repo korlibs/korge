@@ -16,9 +16,8 @@ class KorgeScreenshotTest {
             windowSize = ISizeInt.invoke(512, 512),
             virtualSize = ISizeInt(512, 512),
             bgcolor = Colors.RED
-        )
+        ),
     ) {
-
         val maxDegrees = (+16).degrees
 
         val rect1 = solidRect(100, 100, Colors.RED) {
