@@ -81,7 +81,7 @@ data class KorgeTestResults(
     val results: MutableList<KorgeTestResult> = mutableListOf()
 )
 
-class KorgeTester(
+class KorgeScreenshotTester(
     val views: Views,
     val testClassName: String,
     val testMethodName: String,
@@ -202,9 +202,9 @@ class KorgeTester(
 }
 
 @OptIn(KorgeExperimental::class)
-inline fun Any.korgeTest(
+inline fun korgeScreenshotTest(
     korgeConfig: Korge.Config,
-    crossinline callback: suspend Stage.(korgeTester: KorgeTester) -> Unit,
+    crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit,
 ) {
     System.setProperty("java.awt.headless", "false")
     val throwable = Throwable()
@@ -214,16 +214,18 @@ inline fun Any.korgeTest(
     val results = KorgeTestResults(testMethodName)
     // Keep locked while tester is running
     val testingLock = Mutex(locked = true)
-    korgeConfig.main = {
-        val korgeTester = KorgeTester(views, testClassName, testMethodName, testingLock, results)
-        korgeTester.init()
+    val finalKorgeConfig = korgeConfig.copy(main = {
+        val korgeScreenshotTester =
+            KorgeScreenshotTester(views, testClassName, testMethodName, testingLock, results)
+        korgeScreenshotTester.init()
         // If there already exists a main, run that first.
+        // This allows people to test their existing modules.
         existingMain?.invoke(this)
-        callback(this, korgeTester)
-    }
+        callback(this, korgeScreenshotTester)
+    })
     suspendTest {
         try {
-            Korge(korgeConfig)
+            Korge(finalKorgeConfig)
         } catch (exception: HeadlessException) {
             // Running in a headless environment (e.g github tests).
             // Return to mark as passing.
@@ -294,6 +296,7 @@ inline fun Any.korgeTest(
                                                     alignLeftToRightOf(oldImage, padding = 5.0)
                                                 }
                                         }
+
                                         is KorgeTestResult.Deleted -> {
                                             val oldImage = fn("Old Image", testResult.oldBitmap)
                                             val newImage =

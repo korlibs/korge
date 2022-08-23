@@ -11,7 +11,7 @@ import org.junit.Test
 
 class KorgeScreenshotTest {
     @Test
-    fun test1() = korgeTest(
+    fun test1() = korgeScreenshotTest(
         Korge.Config(
             windowSize = ISizeInt.invoke(512, 512),
             virtualSize = ISizeInt(512, 512),
