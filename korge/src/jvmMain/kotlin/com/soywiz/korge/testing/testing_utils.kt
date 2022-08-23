@@ -25,14 +25,15 @@ import com.soywiz.korma.geom.ISizeInt
 import kotlinx.coroutines.sync.Mutex
 import java.awt.HeadlessException
 
-object KorgeScreenshotTesterUtils {
-    fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) =
-        "${testMethodName}_$goldenName.png"
-}
+//object KorgeScreenshotTesterUtils {
+//    fun makeGoldenFileNameWithExtension(testMethodName: String, goldenName: String) =
+//        "${testMethodName}_$goldenName.png"
+//}
 
 @OptIn(KorgeExperimental::class)
 inline fun korgeScreenshotTest(
     korgeConfig: Korge.Config,
+    settings: KorgeScreenshotTestSettings = KorgeScreenshotTestSettings(),
     crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit,
 ) {
     System.setProperty("java.awt.headless", "false")
@@ -43,10 +44,11 @@ inline fun korgeScreenshotTest(
     val results = KorgeScreenshotTestResults(testMethodName)
     // Keep locked while tester is running
     val testingLock = Mutex(locked = true)
+    val context = KorgeScreenshotTestingContext(testClassName, testMethodName)
     val finalKorgeConfig = korgeConfig.copy(main = {
+        context.init()
         val korgeScreenshotTester =
-            KorgeScreenshotTester(views, testClassName, testMethodName, testingLock, results)
-        korgeScreenshotTester.init()
+            KorgeScreenshotTester(views, context, settings, testingLock, results)
         // If there already exists a main, run that first.
         // This allows people to test their existing modules.
         existingMain?.invoke(this)
@@ -142,7 +144,13 @@ inline fun korgeScreenshotTest(
                                     alignTopToBottomOf(diffSection)
                                     centerXOn(this@container)
                                     onClick {
-                                        testResult.acceptChange()
+                                        val goldenFileNameWithExt = context.makeGoldenFileNameWithExtension(testResult.goldenName)
+                                        if (testResult.oldBitmap != null && testResult.newBitmap != null) {
+                                            context.tempGoldensVfs[goldenFileNameWithExt].copyTo(context.testGoldensVfs[goldenFileNameWithExt])
+                                        } else if (testResult.oldBitmap != null && testResult.newBitmap == null) {
+                                            // Bitmap was deleted
+                                            context.testGoldensVfs[goldenFileNameWithExt].delete()
+                                        }
                                         disable()
                                     }
                                 }

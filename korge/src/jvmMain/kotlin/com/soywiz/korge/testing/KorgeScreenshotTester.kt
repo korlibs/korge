@@ -12,41 +12,32 @@ import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korio.file.std.localCurrentDirVfs
 import kotlinx.coroutines.sync.Mutex
 
-class KorgeScreenshotTester(
-    val views: Views,
+data class KorgeScreenshotTestingContext(
     val testClassName: String,
     val testMethodName: String,
-    // We will unlock this mutex after the test ends (via `endTest`).
-    // This is to ensure that dependents have a safe way on waiting on the tester to finish.
-    val testingLock: Mutex,
-    val testResultsOutput: KorgeScreenshotTestResults
 ) {
-    val testGoldensVfs = localCurrentDirVfs["testGoldens/$testClassName"]
-    val localTestTime = DateTime.nowLocal()
-    val tempVfs = localCurrentDirVfs["build/tmp/testGoldens/$testClassName/${
-        PATH_DATE_FORMAT.format(localTestTime)
-    }"]
+    val testGoldensVfs = localCurrentDirVfs["testGoldens/${testClassName}"]
+    private val localTestTime = DateTime.nowLocal()
+    val tempGoldensVfs =
+        localCurrentDirVfs["build/tmp/testGoldens/${testClassName}/${
+            KorgeScreenshotTester.PATH_DATE_FORMAT.format(localTestTime)
+        }"]
 
     lateinit var existingGoldenNames: Set<String>
 
-    val recordedGoldenNames = mutableSetOf<String>()
-
     init {
-        require(testingLock.isLocked) {
-            "Please provide a locked testing mutex."
-        }
         val currentTime = DATE_FORMAT.format(localTestTime)
         println("=".repeat(LINE_BREAK_WIDTH))
         println("Korge Tester initializing...")
         println("Local test time: $currentTime")
         println("Goldens directory: ${testGoldensVfs.absolutePath}")
-        println("Temp directory: ${tempVfs.absolutePath}")
+        println("Temp directory: ${tempGoldensVfs.absolutePath}")
         println("=".repeat(LINE_BREAK_WIDTH))
     }
 
     suspend fun init() {
         testGoldensVfs.mkdirs()
-        tempVfs.mkdirs()
+        tempGoldensVfs.mkdirs()
 
         val prefix = "${testMethodName}_"
 
@@ -56,6 +47,33 @@ class KorgeScreenshotTester(
 
         println("Existing golden names")
         println(existingGoldenNames)
+    }
+
+    fun makeGoldenFileNameWithExtension(goldenName: String) =
+        "${testMethodName}_$goldenName.png"
+
+    companion object {
+        val DATE_FORMAT = DateFormat("yyyy-dd-MM HH:mm:ss z")
+        private const val LINE_BREAK_WIDTH = 100
+
+    }
+}
+
+class KorgeScreenshotTester(
+    val views: Views,
+    val context: KorgeScreenshotTestingContext,
+    private val settings: KorgeScreenshotTestSettings,
+    // We will unlock this mutex after the test ends (via `endTest`).
+    // This is to ensure that dependents have a safe way on waiting on the tester to finish.
+    private val testingLock: Mutex,
+    private val testResultsOutput: KorgeScreenshotTestResults,
+) {
+    val recordedGoldenNames = mutableSetOf<String>()
+
+    init {
+        require(testingLock.isLocked) {
+            "Please provide a locked testing mutex."
+        }
     }
 
     // name: The name of the golden. (e.g: "cool_view").
@@ -69,8 +87,9 @@ class KorgeScreenshotTester(
             """.trimIndent()
         }
         recordedGoldenNames.add(goldenName)
-        val fileName = KorgeScreenshotTesterUtils.makeGoldenFileNameWithExtension(testMethodName, goldenName)
-        tempVfs[fileName].writeBitmap(bitmap, PNG)
+        val fileName =
+            context.makeGoldenFileNameWithExtension(goldenName)
+        context.tempGoldensVfs[fileName].writeBitmap(bitmap, PNG)
     }
 
     private suspend fun processGoldenResults() {
@@ -78,19 +97,21 @@ class KorgeScreenshotTester(
         recordedGoldenNames.forEach { goldenName ->
             println("Processing: $goldenName")
             val goldenFileName =
-                KorgeScreenshotTesterUtils.makeGoldenFileNameWithExtension(testMethodName, goldenName)
-            val testGoldenImage = testGoldensVfs[goldenFileName]
+                context.makeGoldenFileNameWithExtension(
+                    goldenName
+                )
+            val testGoldenImage = context.testGoldensVfs[goldenFileName]
             val existsGoldenInGoldenDirectory = testGoldenImage.exists()
             if (existsGoldenInGoldenDirectory) {
                 val oldBitmap = testGoldenImage.readBitmap(PNG)
-                val newBitmap = tempVfs[goldenFileName].readBitmap(PNG)
+                val newBitmap = context.tempGoldensVfs[goldenFileName].readBitmap(PNG)
                 if (!oldBitmap.contentEquals(newBitmap)) {
                     testResultsOutput.results.add(
                         KorgeScreenshotTestResult.Diff(
-                            testMethodName,
+                            context.testMethodName,
                             goldenName,
-                            testGoldensVfs,
-                            tempVfs,
+                            context.testGoldensVfs,
+                            context.tempGoldensVfs,
                             oldBitmap,
                             newBitmap
                         )
@@ -98,20 +119,22 @@ class KorgeScreenshotTester(
                 }
             } else {
                 // This is a new golden, so we can just save it.
-                tempVfs[goldenFileName].copyTo(testGoldenImage)
+                context.tempGoldensVfs[goldenFileName].copyTo(testGoldenImage)
             }
         }
 
         // Process any deleted goldens.
-        (existingGoldenNames - recordedGoldenNames).forEach { goldenName ->
+        (context.existingGoldenNames - recordedGoldenNames).forEach { goldenName ->
             val goldenFileName =
-                KorgeScreenshotTesterUtils.makeGoldenFileNameWithExtension(testMethodName, goldenName)
-            val oldBitmap = testGoldensVfs[goldenFileName].readBitmap(PNG)
+                context.makeGoldenFileNameWithExtension(
+                    goldenName
+                )
+            val oldBitmap = context.testGoldensVfs[goldenFileName].readBitmap(PNG)
             testResultsOutput.results.add(
                 KorgeScreenshotTestResult.Deleted(
-                    testMethodName,
+                    context.testMethodName,
                     goldenName,
-                    testGoldensVfs,
+                    context.testGoldensVfs,
                     oldBitmap
                 )
             )
@@ -137,8 +160,7 @@ class KorgeScreenshotTester(
     }
 
     companion object {
-        val DATE_FORMAT = DateFormat("yyyy-dd-MM HH:mm:ss z")
         val PATH_DATE_FORMAT = DateFormat("yyyyMMdd_HH_mm_ss_z")
-        private val LINE_BREAK_WIDTH = 100
+        private const val LINE_BREAK_WIDTH = 100
     }
 }
