@@ -119,23 +119,11 @@ inline fun korgeScreenshotTest(
 
                                         }
                                     }
-                                    when (testResult) {
-                                        is KorgeScreenshotTestResult.Diff -> {
-                                            val oldImage = fn("Old Image", testResult.oldBitmap)
-                                            val newImage =
-                                                fn("New Image", testResult.newBitmap).apply {
-                                                    alignLeftToRightOf(oldImage, padding = 5.0)
-                                                }
+                                    val oldImage = fn("Old Image", testResult.oldBitmap)
+                                    val newImage =
+                                        fn("New Image", testResult.newBitmap).apply {
+                                            alignLeftToRightOf(oldImage, padding = 5.0)
                                         }
-
-                                        is KorgeScreenshotTestResult.Deleted -> {
-                                            val oldImage = fn("Old Image", testResult.oldBitmap)
-                                            val newImage =
-                                                fn("New Image", null).apply {
-                                                    alignLeftToRightOf(oldImage, padding = 5.0)
-                                                }
-                                        }
-                                    }
                                     alignTopToBottomOf(goldenNameText)
                                 }
 
@@ -144,9 +132,12 @@ inline fun korgeScreenshotTest(
                                     alignTopToBottomOf(diffSection)
                                     centerXOn(this@container)
                                     onClick {
-                                        val goldenFileNameWithExt = context.makeGoldenFileNameWithExtension(testResult.goldenName)
+                                        val goldenFileNameWithExt =
+                                            context.makeGoldenFileNameWithExtension(testResult.goldenName)
                                         if (testResult.oldBitmap != null && testResult.newBitmap != null) {
-                                            context.tempGoldensVfs[goldenFileNameWithExt].copyTo(context.testGoldensVfs[goldenFileNameWithExt])
+                                            context.tempGoldensVfs[goldenFileNameWithExt].copyTo(
+                                                context.testGoldensVfs[goldenFileNameWithExt]
+                                            )
                                         } else if (testResult.oldBitmap != null && testResult.newBitmap == null) {
                                             // Bitmap was deleted
                                             context.testGoldensVfs[goldenFileNameWithExt].delete()

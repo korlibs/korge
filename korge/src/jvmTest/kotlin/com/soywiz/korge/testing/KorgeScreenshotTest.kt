@@ -46,7 +46,7 @@ class KorgeScreenshotTest {
             position(100, 350)
         }
 
-//        it.recordGolden(this, "initial3")
+        it.recordGolden(this, "initial3")
 
         it.endTest()
     }

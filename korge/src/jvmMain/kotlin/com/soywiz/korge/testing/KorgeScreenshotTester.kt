@@ -107,11 +107,8 @@ class KorgeScreenshotTester(
                 val newBitmap = context.tempGoldensVfs[goldenFileName].readBitmap(PNG)
                 if (!oldBitmap.contentEquals(newBitmap)) {
                     testResultsOutput.results.add(
-                        KorgeScreenshotTestResult.Diff(
-                            context.testMethodName,
+                        KorgeScreenshotTestResult(
                             goldenName,
-                            context.testGoldensVfs,
-                            context.tempGoldensVfs,
                             oldBitmap,
                             newBitmap
                         )
@@ -131,11 +128,10 @@ class KorgeScreenshotTester(
                 )
             val oldBitmap = context.testGoldensVfs[goldenFileName].readBitmap(PNG)
             testResultsOutput.results.add(
-                KorgeScreenshotTestResult.Deleted(
-                    context.testMethodName,
+                KorgeScreenshotTestResult(
                     goldenName,
-                    context.testGoldensVfs,
-                    oldBitmap
+                    oldBitmap,
+                    null
                 )
             )
         }
