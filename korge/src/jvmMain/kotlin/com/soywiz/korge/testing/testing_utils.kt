@@ -8,6 +8,7 @@ import com.soywiz.korge.ui.uiScrollable
 import com.soywiz.korge.view.Container
 import com.soywiz.korge.view.ScalingOption
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.View
 import com.soywiz.korge.view.alignLeftToRightOf
 import com.soywiz.korge.view.alignTopToBottomOf
 import com.soywiz.korge.view.centerOn
@@ -28,7 +29,7 @@ import java.awt.HeadlessException
 @OptIn(KorgeExperimental::class)
 inline fun korgeScreenshotTest(
     korgeConfig: Korge.Config,
-    settings: KorgeScreenshotTestSettings = KorgeScreenshotTestSettings(),
+    settings: KorgeScreenshotValidationSettings = KorgeScreenshotValidationSettings(),
     crossinline callback: suspend Stage.(korgeScreenshotTester: KorgeScreenshotTester) -> Unit = {},
 ) {
     System.setProperty("java.awt.headless", "false")
@@ -59,16 +60,15 @@ inline fun korgeScreenshotTest(
         }
 
         while (testingLock.isLocked) {
+            println("Waiting for test to end...")
         }
 
-        val resultsWithAnyErrors = results.results.filter { result ->
-            settings.validators.any {
-                it.validate(result) is ValidatorResult.Error
-            }
+        val resultsWithErrors = results.results.filter { result ->
+            result.hasValidationErrors
         }
 
         // No diffs, no need to show UI to update goldens.
-        if (resultsWithAnyErrors.isEmpty()) return@suspendTest
+        if (resultsWithErrors.isEmpty()) return@suspendTest
 
         val config = Korge.Config(
             bgcolor = Colors.LIGHTGRAY,
@@ -80,74 +80,83 @@ inline fun korgeScreenshotTest(
                 uiScrollable(700.0, 480.0) { uiScrollable ->
                     uiScrollable.backgroundColor = Colors.LIGHTGRAY
                     var prevContainer: Container? = null
-                    resultsWithAnyErrors.forEach { testResult ->
+                    resultsWithErrors.forEach { testResult ->
+                        val viewsToAlign = mutableListOf<View>()
                         container {
-                            val description = text("Test method name: ${results.testMethodName}")
-                            container {
-                                val goldenNameText = text("Golden name: ${testResult.goldenName}")
-                                val diffSection = container {
-                                    val fn = { headerText: String, bitmap: Bitmap? ->
-                                        container {
-                                            val headerText = if (bitmap == null) {
-                                                text("$headerText")
-                                            } else {
-                                                text("$headerText (${bitmap.size.width.toInt()} x ${bitmap.size.height.toInt()})")
-                                            }
+                            viewsToAlign += text("Test method name: ${results.testMethodName}")
+//                            val testResultSection = container {
+                            viewsToAlign += text("Golden name: ${testResult.goldenName}")
+                            viewsToAlign += container {
+                                val fn = { headerText: String, bitmap: Bitmap? ->
+                                    container {
+                                        val headerText = if (bitmap == null) {
+                                            text("$headerText")
+                                        } else {
+                                            text("$headerText (${bitmap.size.width.toInt()} x ${bitmap.size.height.toInt()})")
+                                        }
 
-                                            val rect =
-                                                solidRect(
-                                                    320,
-                                                    240,
-                                                    color = Colors.BLACK.withAd(0.75)
-                                                ) {
-                                                    alignTopToBottomOf(headerText)
-                                                }
-                                            if (bitmap == null) {
-                                                text("Deleted") {
-                                                    centerOn(rect)
-                                                }
-                                            } else {
-                                                image(bitmap).apply {
-                                                    scaleWhileMaintainingAspect(
-                                                        ScalingOption.ByWidthAndHeight(
-                                                            310.0,
-                                                            230.0
-                                                        )
+                                        val rect =
+                                            solidRect(
+                                                320,
+                                                240,
+                                                color = Colors.BLACK.withAd(0.75)
+                                            ) {
+                                                alignTopToBottomOf(headerText)
+                                            }
+                                        if (bitmap == null) {
+                                            text("Deleted") {
+                                                centerOn(rect)
+                                            }
+                                        } else {
+                                            image(bitmap).apply {
+                                                scaleWhileMaintainingAspect(
+                                                    ScalingOption.ByWidthAndHeight(
+                                                        310.0,
+                                                        230.0
                                                     )
-                                                    centerOn(rect)
-                                                }
+                                                )
+                                                centerOn(rect)
                                             }
-
                                         }
-                                    }
-                                    val oldImage = fn("Old Image", testResult.oldBitmap)
-                                    val newImage =
-                                        fn("New Image", testResult.newBitmap).apply {
-                                            alignLeftToRightOf(oldImage, padding = 5.0)
-                                        }
-                                    alignTopToBottomOf(goldenNameText)
-                                }
 
-
-                                uiButton("Accept change?", width = 125.0) {
-                                    alignTopToBottomOf(diffSection)
-                                    centerXOn(this@container)
-                                    onClick {
-                                        val goldenFileNameWithExt =
-                                            context.makeGoldenFileNameWithExtension(testResult.goldenName)
-                                        if (testResult.oldBitmap != null && testResult.newBitmap != null) {
-                                            context.tempGoldensVfs[goldenFileNameWithExt].copyTo(
-                                                context.testGoldensVfs[goldenFileNameWithExt]
-                                            )
-                                        } else if (testResult.oldBitmap != null && testResult.newBitmap == null) {
-                                            // Bitmap was deleted
-                                            context.testGoldensVfs[goldenFileNameWithExt].delete()
-                                        }
-                                        disable()
                                     }
                                 }
-                                alignTopToBottomOf(description)
+                                val oldImage = fn("Old Image", testResult.oldBitmap)
+                                val newImage =
+                                    fn("New Image", testResult.newBitmap).apply {
+                                        alignLeftToRightOf(oldImage, padding = 5.0)
+                                    }
                             }
+
+                            val separator = "\n * "
+                            viewsToAlign += container {
+                                val textResultString = testResult.validationErrors.joinToString(separator=separator, prefix=separator) {
+                                    it.errorMessaage
+                                }
+                                text("Validation errors:$textResultString")
+                            }
+
+                            viewsToAlign += uiButton("Accept change?", width = 125.0) {
+                                centerXOn(this@container)
+                                onClick {
+                                    val goldenFileNameWithExt =
+                                        context.makeGoldenFileNameWithExtension(testResult.goldenName)
+                                    if (testResult.oldBitmap != null && testResult.newBitmap != null) {
+                                        context.tempGoldensVfs[goldenFileNameWithExt].copyTo(
+                                            context.testGoldensVfs[goldenFileNameWithExt]
+                                        )
+                                    } else if (testResult.oldBitmap != null && testResult.newBitmap == null) {
+                                        // Bitmap was deleted
+                                        context.testGoldensVfs[goldenFileNameWithExt].delete()
+                                    }
+                                    disable()
+                                }
+                            }
+
+                            viewsToAlign.windowed(2) {
+                                it[1].alignTopToBottomOf(it[0])
+                            }
+
 
                             val sectionBg =
                                 solidRect(scaledWidth, scaledHeight, Colors.DARKSLATEGRAY)
