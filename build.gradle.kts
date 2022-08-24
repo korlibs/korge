@@ -42,7 +42,7 @@ buildscript {
 plugins {
 	java
     kotlin("multiplatform")
-    id("org.jetbrains.kotlinx.kover") version "0.5.0" apply false
+    id("org.jetbrains.kotlinx.kover") version "0.6.0" apply false
     id("org.jetbrains.dokka") version "1.6.10" apply false
     signing
     `maven-publish`
@@ -132,6 +132,7 @@ subprojects {
 
         // AppData\Local\Android\Sdk\tools\bin>sdkmanager --licenses
         apply(plugin = "kotlin-multiplatform")
+        apply(plugin = "kover")
 
         if (hasAndroid) {
             if (isSample) {
