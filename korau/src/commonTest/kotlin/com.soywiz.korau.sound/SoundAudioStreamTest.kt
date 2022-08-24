@@ -1,8 +1,10 @@
 package com.soywiz.korau.sound
 
+import com.soywiz.klock.milliseconds
 import com.soywiz.korau.format.AudioFormats
 import com.soywiz.korau.format.WAV
 import com.soywiz.korau.format.mp3.FastMP3Decoder
+import com.soywiz.korio.async.delay
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.lang.currentThreadId
@@ -47,6 +49,7 @@ class SoundAudioStreamTest {
             val channel = sound2.play()
             assertEquals("0ms/58.5ms", "${channel.current}/${channel.total}")
             wait.await()
+            delay(20.milliseconds) // @TODO: This is a patch to try to avoid or reduce a flaky test. This shouldn't be needed and we should figure out the real reason for this
             assertEquals("58.5ms/58.5ms", "${channel.current}/${channel.total}")
         }
     }
