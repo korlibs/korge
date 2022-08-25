@@ -193,7 +193,7 @@ object KRA : ImageFormat("kra") {
         return oidx.toInt()
     }
 
-    override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
         return runBlockingNoSuspensions {
             val vfs = ZipVfs(s.clone().toAsync())
             val folderVfs = vfs.listSimple().filter { it.isDirectory() }.firstOrNull() ?: error("No root folder in zip")

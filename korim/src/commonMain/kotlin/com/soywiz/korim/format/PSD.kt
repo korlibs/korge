@@ -17,7 +17,7 @@ import com.soywiz.korio.stream.readU16BE
 
 // https://www.adobe.com/devnet-apps/photoshop/fileformatashtml/
 object PSD : ImageFormat("psd") {
-    override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData = s.run {
+    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData = s.run {
         val header = decodeHeader(this, props) ?: invalidOp("Not a PSD file")
         @Suppress("UNUSED_VARIABLE") val colorMode = readStream(readS32BE())
         @Suppress("UNUSED_VARIABLE") val imageResources = readStream(readS32BE())
