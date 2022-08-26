@@ -91,11 +91,21 @@ class SceneContainer(
                 val scene = currentScene
                 if (scene != null) {
                     println("[ReloadEvent] Reloading $currentScene . doFullReload=${event.doFullReload}")
-                    if (event.doFullReload) {
-                        changeTo(event.getReloadedClass(scene::class, scene.injector))
+                    val sceneClass: KClass<Scene> = if (event.doFullReload) {
+                        event.getReloadedClass(scene::class, scene.injector)
                     } else {
-                        changeTo(scene::class)
-                    }
+                        scene::class
+                    } as KClass<Scene>
+
+                    changeTo(sceneClass, {
+                        it.get(sceneClass).also { newScene ->
+                            try {
+                                event.transferKeepProperties(scene, newScene)
+                            } catch (e: Throwable) {
+                                e.printStackTrace()
+                            }
+                        }
+                    })
                 }
             }
         }
