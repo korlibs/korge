@@ -15,6 +15,9 @@ dependencies {
 	add("commonMainApi", project(":korinject"))
     commonMainApi(project(":korte"))
     jvmMainApi("org.jetbrains.kotlin:kotlin-reflect")
+    jvmMainApi("com.fasterxml.jackson.core:jackson-databind:2.13.3")
+    jvmMainApi("com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3")
+
     //add("jvmMainApi", project(":korte"))
 
 	//add("commonTestApi", "it.krzeminski.vis-assert:vis-assert:0.4.0-beta")

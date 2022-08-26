@@ -97,15 +97,17 @@ class SceneContainer(
                         scene::class
                     } as KClass<Scene>
 
-                    changeTo(sceneClass, {
-                        it.get(sceneClass).also { newScene ->
-                            try {
-                                event.transferKeepProperties(scene, newScene)
-                            } catch (e: Throwable) {
-                                e.printStackTrace()
+                    val scene = changeTo(sceneClass, {
+                        it.get(sceneClass)
+                            .also { newScene ->
+                                try {
+                                    event.transferKeepProperties(scene, newScene)
+                                } catch (e: Throwable) {
+                                    e.printStackTrace()
+                                }
                             }
-                        }
                     })
+                    scene.views.debugHightlightView(scene.sceneView)
                 }
             }
         }

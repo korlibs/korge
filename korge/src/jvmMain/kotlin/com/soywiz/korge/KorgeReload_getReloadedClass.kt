@@ -6,6 +6,8 @@ import java.io.File
 import kotlin.reflect.*
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.jvmErasure
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 
 internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : KorgeReloadInternalImpl() {
     override fun <T : Any> getReloadedClass(clazz: KClass<T>, context: ReloadClassContext): KClass<T> {
@@ -20,19 +22,28 @@ internal actual val KorgeReloadInternal: KorgeReloadInternalImpl = object : Korg
 
     override fun transferKeepProperties(old: Any, new: Any) {
         //println("transferKeepProperties: ${old::class.java}")
-        for (prop in old::class.memberProperties) {
-            if (prop.hasAnnotation<KeepOnReload>()) {
-                //println("- $prop : ${prop.annotations}")
-                try {
-                    val newProp = new::class.memberProperties.firstOrNull { it.name == prop.name }
-                    if (newProp != null && newProp.hasAnnotation<KeepOnReload>()) {
-                        val oldValue = (prop as KProperty1<Any, Any>).get(old)
-                        //println("   ** Trying to set $oldValue to $newProp")
-                        (newProp as KMutableProperty1<Any, Any>).set(new, oldValue)
-                    }
-                } catch (e: Throwable) {
-                    e.printStackTrace()
+        val objectMapper = jacksonObjectMapper()
+        for (newProp in new::class.memberProperties) {
+            if (!newProp.hasAnnotation<KeepOnReload>()) continue
+
+            //println("- $prop : ${prop.annotations}")
+            try {
+                val newProp = newProp as? KMutableProperty1<Any, Any>? ?: continue
+                val oldProp = old::class.memberProperties.firstOrNull { it.name == newProp.name } as? KMutableProperty1<Any, Any>? ?: continue
+                val oldClass = oldProp.returnType.jvmErasure
+                val newClass = newProp.returnType.jvmErasure
+                val oldValue = oldProp.get(old)
+                //println("   ** Trying to set $oldValue to $newProp")
+
+                val newValue = when {
+                    oldClass === newClass -> oldValue
+                    // We try to serialize & unserialize in the case we are for example using an enum that has been reloaded
+                    else -> objectMapper.convertValue(oldValue, newClass.java)
                 }
+
+                newProp.set(new, newValue)
+            } catch (e: Throwable) {
+                e.printStackTrace()
             }
         }
     }
