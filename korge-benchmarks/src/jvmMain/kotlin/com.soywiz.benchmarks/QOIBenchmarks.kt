@@ -2,6 +2,7 @@ package com.soywiz.benchmarks
 
 import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
+import com.soywiz.korim.format.ImageDecodingProps
 import com.soywiz.korim.format.QOI
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.file.std.resourcesVfs
@@ -21,13 +22,13 @@ import kotlinx.benchmark.State
 @BenchmarkMode(Mode.AverageTime)
 class QOIBenchmarks {
     var qoiBytes: ByteArray = ByteArray(0)
-    var qoiOutputBitmap = Bitmap32.EMPTY
+    var qoiOutputBitmap = Bitmap32(800, 600, premultiplied = false)
+    val prop = ImageDecodingProps(out = qoiOutputBitmap)
 
     @Setup
     fun setup() {
         runBlockingNoJs {
             qoiBytes = resourcesVfs["dice.qoi"].readBytes()
-            qoiOutputBitmap = Bitmap32(800, 600, premultiplied = false)
         }
     }
 
@@ -44,6 +45,6 @@ class QOIBenchmarks {
         // 1024.693 ±(99.9%) 8.932 us/op [Average]
         //  (min, avg, max) = (1002.131, 1024.693, 1212.177), stdev = 26.335
         //  CI (99.9%): [1015.761, 1033.624] (assumes normal distribution)
-        return QOI.decode(qoiBytes, out = qoiOutputBitmap)
+        return QOI.decode(qoiBytes, prop)
     }
 }

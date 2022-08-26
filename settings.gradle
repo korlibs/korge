@@ -39,6 +39,7 @@ include(":korge-reload-agent")
 include(":korge-sandbox")
 
 if (!inCI) {
+    include(":korge-benchmarks")
 }
 
 if (!disabledExtraKorgeLibs) {
@@ -49,5 +50,4 @@ if (!disabledExtraKorgeLibs) {
     include(":korge-swf")
     include(":korge-box2d")
     include(":korge-fleks")
-//    include(":korge-benchmarks")
 }
