@@ -3,6 +3,7 @@ package com.soywiz.korim.format
 import com.soywiz.kds.Extra
 import com.soywiz.kds.ExtraType
 import com.soywiz.korim.bitmap.Bitmap
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.runBlockingNoSuspensionsNullable
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName
@@ -74,6 +75,8 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 
 	fun decode(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = this.read(s, props)
 	//fun decode(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync("r"), props.copy(filename = file.name))
+
+    // Decodes a given byte array to a bitmap based on the image format.
     fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = read(data.openSync(), props)
 
 	override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): Bitmap = decode(data, props)
@@ -120,6 +123,10 @@ data class ImageDecodingProps constructor(
     val preferKotlinDecoder: Boolean = false,
     val tryNativeDecode: Boolean = true,
     val format: ImageFormat? = RegisteredImageFormats,
+    // Provides an `out` parameter to reuse an existing Bitmap to reduce allocations.
+    // Note though that not all formats may use the bitmap provided by the `out` param.
+    // In those cases, they will return a newly allocated Bitmap instead.
+    val out: Bitmap? = null,
     override var extra: ExtraType = null
 ) : Extra {
 

@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.color.BGR
@@ -60,7 +61,7 @@ object BMP : ImageFormat("bmp") {
 		}
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
 		val h = decodeHeader(s, props) ?: throw IllegalArgumentException("Not a BMP file")
 
         when (h.compression) {

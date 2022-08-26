@@ -1,5 +1,6 @@
 package com.soywiz.korim.format
 
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.vector.render
 import com.soywiz.korio.lang.UTF8
 import com.soywiz.korio.lang.toString

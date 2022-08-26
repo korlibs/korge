@@ -4,6 +4,7 @@ import com.soywiz.kmem.readS32LE
 import com.soywiz.kmem.readU16LE
 import com.soywiz.kmem.readU32LE
 import com.soywiz.kmem.readU8
+import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.BGR_565
 import com.soywiz.korim.color.Colors
@@ -111,7 +112,7 @@ abstract class DXT(val format: String, val premultiplied: Boolean, val blockSize
 		return out
 	}
 
-	final override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
+	final override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
 		val bytes = s.readAll()
 		val totalPixels = (bytes.size / blockSize) * 4 * 4
 		val potentialSide = sqrt(totalPixels.toDouble()).toInt()

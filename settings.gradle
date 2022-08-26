@@ -49,4 +49,5 @@ if (!disabledExtraKorgeLibs) {
     include(":korge-swf")
     include(":korge-box2d")
     include(":korge-fleks")
+//    include(":korge-benchmarks")
 }
