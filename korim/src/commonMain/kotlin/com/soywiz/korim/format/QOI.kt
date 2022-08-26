@@ -40,8 +40,10 @@ object QOI : ImageFormat("qoi") {
         val bytes = UByteArrayInt(s.readAvailable())
         val index = RgbaArray(64)
         val out = props.out
+        var returnInPlace = false
         val outBmp =
             if (out != null && out.width == header.width && out.height == header.height && out is Bitmap32) {
+                returnInPlace = true
                 out.premultiplied = false
                 out
             } else {
@@ -107,7 +109,7 @@ object QOI : ImageFormat("qoi") {
             index[QOI_COLOR_HASH(r, g, b, a) % 64] = lastCol
             outp[o++] = lastCol
         }
-        return ImageData(outBmp, returnBitmapInPlace = true)
+        return ImageData(outBmp, returnBitmapInPlace = returnInPlace)
     }
 
     override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) {
