@@ -362,7 +362,7 @@ object PNG : ImageFormat("png") {
 		}
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData =
+	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData =
 		ImageData(readCommon(s, readHeader = false) as Bitmap)
 
 	fun paethPredictor(a: Int, b: Int, c: Int): Int {

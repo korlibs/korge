@@ -32,7 +32,7 @@ object GIF : ImageFormat("gif") {
         }
     }
 
-    override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+    override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
         val gif = GifDec.gd_open_gif(s.clone())
         val frames = arrayListOf<ImageFrame>()
         while (GifDec.gd_get_frame(gif) >= 1) {

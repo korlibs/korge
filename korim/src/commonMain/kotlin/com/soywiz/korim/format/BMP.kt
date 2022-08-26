@@ -61,7 +61,7 @@ object BMP : ImageFormat("bmp") {
 		}
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
 		val h = decodeHeader(s, props) ?: throw IllegalArgumentException("Not a BMP file")
 
         when (h.compression) {

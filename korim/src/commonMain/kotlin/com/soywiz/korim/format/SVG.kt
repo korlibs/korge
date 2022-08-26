@@ -30,7 +30,7 @@ object SVG : ImageFormat("svg") {
         }
     }.getOrNull()
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
 		val content = s.sliceStart().readAll().toString(UTF8).trim()
 		val svg = com.soywiz.korim.vector.format.SVG(content)
 		return ImageData(listOf(ImageFrame(svg.render().toBMP32())))
