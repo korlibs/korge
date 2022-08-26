@@ -1504,6 +1504,7 @@ abstract class View internal constructor(
             uiEditableValue(view::rotation, name = "rotation")
             uiEditableValue(Pair(view::skewX, view::skewY), name = "skew")
             uiEditableValue(view::visible)
+            uiEditableValue(view::zIndex)
         }
 
         views.viewExtraBuildDebugComponent.fastForEach {
@@ -2125,6 +2126,13 @@ fun <T : View> T.alpha(alpha: Double): T {
 }
 fun <T : View> T.alpha(alpha: Float): T = alpha(alpha.toDouble())
 fun <T : View> T.alpha(alpha: Int): T = alpha(alpha.toDouble())
+
+fun <T : View> T.zIndex(index: Float): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Int): T = zIndex(index.toDouble())
+fun <T : View> T.zIndex(index: Double): T {
+    this.zIndex = index
+    return this
+}
 
 typealias ViewDslMarker = com.soywiz.korma.annotations.ViewDslMarker
 // @TODO: This causes issues having to put some explicit this@ when it shouldn't be required
