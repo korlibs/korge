@@ -27,7 +27,11 @@ class QOITest {
         val pngBytes = resourcesVfs["dice.png"].readBytes()
         val qoiBytes = resourcesVfs["dice.qoi"].readBytes()
 
-        val (expectedNative, expectedNativeTime) = measureTimeWithResult { nativeImageFormatProvider.decode(pngBytes) }
+        val (expectedNative, expectedNativeTime) = measureTimeWithResult {
+            nativeImageFormatProvider.decode(
+                pngBytes
+            )
+        }
         val (expected, expectedTime) = measureTimeWithResult { PNG.decode(pngBytes) }
         val (output, outputTime) = measureTimeWithResult { QOI.decode(qoiBytes) }
 
@@ -57,10 +61,14 @@ class QOITest {
         val pngBytes = resourcesVfs["dice.png"].readBytes()
         val qoiBytes = resourcesVfs["dice.qoi"].readBytes()
 
-        val (expectedNative, expectedNativeTime) = measureTimeWithResult { nativeImageFormatProvider.decode(pngBytes) }
+        val (expectedNative, expectedNativeTime) = measureTimeWithResult {
+            nativeImageFormatProvider.decode(
+                pngBytes
+            )
+        }
         val (expected, expectedTime) = measureTimeWithResult { PNG.decode(pngBytes) }
         val (output, outputTime) = measureTimeWithResult {
-            QOI.decode(qoiBytes, out = qoiOutBitmap)
+            QOI.decode(qoiBytes, ImageDecodingProps.DEFAULT.copy(out = qoiOutBitmap))
         }
 
         // QOI=1.3790999755859374ms, PNG=28.038300048828127ms, PNG_native=22.283200012207033ms
@@ -79,7 +87,7 @@ class QOITest {
 
         val qoiBytes = resourcesVfs["dice.qoi"].readBytes()
         val (output, outputTime) = measureTimeWithResult {
-            QOI.decode(qoiBytes, out = qoiOutBitmap)
+            QOI.decode(qoiBytes, ImageDecodingProps.DEFAULT.copy(out = qoiOutBitmap))
         }
 
         assertNotSame(qoiOutBitmap, output)
@@ -93,7 +101,7 @@ class QOITest {
 
         val qoiBytes = resourcesVfs["dice.qoi"].readBytes()
         val (output, outputTime) = measureTimeWithResult {
-            QOI.decode(qoiBytes, out = qoiOutBitmap)
+            QOI.decode(qoiBytes, ImageDecodingProps.DEFAULT.copy(out = qoiOutBitmap))
         }
 
         assertNotSame(qoiOutBitmap, output)
@@ -107,7 +115,7 @@ class QOITest {
 
         val qoiBytes = resourcesVfs["dice.qoi"].readBytes()
         val (output, outputTime) = measureTimeWithResult {
-            QOI.decode(qoiBytes, out = qoiOutBitmap)
+            QOI.decode(qoiBytes, ImageDecodingProps.DEFAULT.copy(out = qoiOutBitmap))
         }
         assertSame(qoiOutBitmap, output)
         assertFalse(qoiOutBitmap.premultiplied)

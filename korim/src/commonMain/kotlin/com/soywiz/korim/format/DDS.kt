@@ -50,7 +50,7 @@ object DDS : ImageFormat("dds") {
 		}
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
 		val h = decodeHeader(s, props) ?: invalidOp("Not a DDS file")
 		val fourcc = h.fourcc.toUpperCase()
 		val subimageFormat: DXT = when (fourcc) {

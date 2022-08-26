@@ -74,7 +74,7 @@ object TGA : ImageFormat("tga") {
 		return Info(width = width, height = height, flipY = flipY, bitsPerPixel = pixelDepth)
 	}
 
-	override fun readImage(s: SyncStream, props: ImageDecodingProps, out: Bitmap?): ImageData {
+	override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
 		val info = readHeader(s)
 		val format = when (info.bitsPerPixel) {
 			24 -> BGR
