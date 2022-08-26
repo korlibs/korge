@@ -4,7 +4,6 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.extraProperty
 import com.soywiz.kds.fastArrayListOf
 import com.soywiz.kmem.UByteArrayInt
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.Bitmap8
 import com.soywiz.korim.bitmap.BitmapChannel

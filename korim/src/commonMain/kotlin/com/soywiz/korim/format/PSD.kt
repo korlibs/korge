@@ -1,7 +1,6 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kmem.unsigned
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korio.lang.invalidOp

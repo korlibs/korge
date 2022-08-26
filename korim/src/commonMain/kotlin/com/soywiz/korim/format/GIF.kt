@@ -1,7 +1,6 @@
 package com.soywiz.korim.format
 
 import com.soywiz.klock.milliseconds
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA

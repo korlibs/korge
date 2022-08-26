@@ -1,6 +1,14 @@
 package com.soywiz.korim.format
 
-import com.soywiz.kds.*
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.FastIntMap
+import com.soywiz.kds.IntArray2
+import com.soywiz.kds.IntMap
+import com.soywiz.kds.get
+import com.soywiz.kds.getExtra
+import com.soywiz.kds.getExtraTyped
+import com.soywiz.kds.set
+import com.soywiz.kds.toLinkedMap
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.extract

@@ -3,7 +3,6 @@ package com.soywiz.korim.format
 import com.soywiz.kds.Extra
 import com.soywiz.kds.ExtraType
 import com.soywiz.korim.bitmap.Bitmap
-import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korio.async.runBlockingNoSuspensionsNullable
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.baseName

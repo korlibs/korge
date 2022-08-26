@@ -4,7 +4,6 @@ import com.soywiz.kmem.readS32LE
 import com.soywiz.kmem.readU16LE
 import com.soywiz.kmem.readU32LE
 import com.soywiz.kmem.readU8
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.BGR_565
 import com.soywiz.korim.color.Colors

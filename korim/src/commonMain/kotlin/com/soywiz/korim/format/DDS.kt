@@ -1,7 +1,6 @@
 package com.soywiz.korim.format
 
 import com.soywiz.kds.Extra
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korio.lang.invalidOp
 import com.soywiz.korio.stream.SyncStream
 import com.soywiz.korio.stream.openSync

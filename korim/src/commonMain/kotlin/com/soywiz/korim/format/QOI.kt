@@ -5,7 +5,6 @@ import com.soywiz.kmem.extract2
 import com.soywiz.kmem.extract4
 import com.soywiz.kmem.extract6
 import com.soywiz.kmem.write32BE
-import com.soywiz.korim.bitmap.Bitmap
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RgbaArray

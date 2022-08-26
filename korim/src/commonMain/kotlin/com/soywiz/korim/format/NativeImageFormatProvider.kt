@@ -9,7 +9,6 @@ import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.bitmap.ensureNative
 import com.soywiz.korim.bitmap.extract
 import com.soywiz.korim.color.RGBA
-import com.soywiz.korim.color.RgbaArray
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korim.vector.SizedDrawable
 import com.soywiz.korim.vector.render
