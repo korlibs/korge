@@ -21,7 +21,9 @@ open class ImageData constructor(
         // Creates an ImageData with a single Bitmap frame.
         // When `returnBitmapInPlace` is set to true, `mainBitmap` will return the same Bitmap that
         // was provided here. Otherwise, it MAY return a new copy of the bitmap instead.
-        operator fun invoke(simple: Bitmap, returnBitmapInPlace: Boolean = false): ImageData = ImageData(listOf(ImageFrame(simple, returnBitmapInPlace = returnBitmapInPlace)))
+        operator fun invoke(simple: Bitmap): ImageData = ImageData(listOf(
+            ImageFrame(simple)
+        ))
 
         operator fun invoke(
             loopCount: Int = 0,

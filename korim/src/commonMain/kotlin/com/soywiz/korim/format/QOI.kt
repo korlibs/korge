@@ -108,7 +108,7 @@ object QOI : ImageFormat("qoi") {
             index[QOI_COLOR_HASH(r, g, b, a) % 64] = lastCol
             outp[o++] = lastCol
         }
-        return ImageData(outBmp, returnBitmapInPlace = returnInPlace)
+        return ImageData(outBmp)
     }
 
     override fun writeImage(image: ImageData, s: SyncStream, props: ImageEncodingProps) {

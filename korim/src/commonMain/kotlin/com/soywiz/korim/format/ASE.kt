@@ -572,7 +572,15 @@ object ASE : ImageFormatWithContainer("ase") {
                     maskRotate = resolved.bitmask90CWFlip,
                 )
             }
-            return ImageFrameLayer(layer, resolved.bmp.slice(), resolved.x, resolved.y, main = false, includeInAtlas = true, tilemap = tilemap)
+            return ImageFrameLayer(
+                layer,
+                resolved.bmp.slice(),
+                resolved.x,
+                resolved.y,
+                main = false,
+                includeInAtlas = true,
+                tilemap = tilemap
+            )
         }
 
         val frames = image.frames.mapNotNull { frame ->
@@ -627,7 +635,7 @@ object ASE : ImageFormatWithContainer("ase") {
                         it.layer, it.slice.slice(sliceFrame, it.slice.name),
                         (if (props.useSlicePosition()) sliceKey.sliceFrame.x else it.targetX) - sliceKey.pivotX,
                         (if (props.useSlicePosition()) sliceKey.sliceFrame.y else it.targetY) - sliceKey.pivotY,
-                        it.main, it.includeInAtlas, null
+                        it.main, it.includeInAtlas
                     )
                 }
                 if (layerData.isNotEmpty()) {

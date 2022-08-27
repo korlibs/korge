@@ -18,16 +18,14 @@ import com.soywiz.korim.tiles.TileMapData
  * [...]
  *
  */
-open class ImageFrameLayer constructor(
+open class ImageFrameLayer(
     val layer: ImageLayer,
     slice: BmpSlice,
     val targetX: Int = 0,
     val targetY: Int = 0,
     val main: Boolean = true,
     val includeInAtlas: Boolean = true,
-    val linkedFrameLayer: ImageFrameLayer? = null,
     val tilemap: TileMapData? = null,
-    val returnBitmapInPlace: Boolean = false,
 ) {
     private var _bitmap: Bitmap? = null
     private var _bitmap32: Bitmap32? = null
@@ -43,7 +41,7 @@ open class ImageFrameLayer constructor(
     val height get() = slice.height
     val area: Int get() = slice.area
     val bitmap: Bitmap get() {
-        if (returnBitmapInPlace) return slice.bmp
+        if (slice.bmp.width == width && slice.bmp.height == height) return slice.bmp
         if (_bitmap == null) _bitmap = slice.extract()
         return _bitmap!!
     }

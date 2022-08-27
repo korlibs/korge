@@ -33,7 +33,6 @@ open class ImageFrame(
             includeInAtlas: Boolean = true,
             name: String? = null,
             index: Int = 0,
-            returnBitmapInPlace: Boolean = false,
         ): ImageFrame =
             ImageFrame(
                 index, time,
@@ -44,8 +43,7 @@ open class ImageFrame(
                         targetX,
                         targetY,
                         main,
-                        includeInAtlas,
-                        returnBitmapInPlace = returnBitmapInPlace
+                        includeInAtlas
                     )
                 )
             )
