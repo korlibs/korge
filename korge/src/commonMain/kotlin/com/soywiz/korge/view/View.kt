@@ -1482,13 +1482,6 @@ abstract class View internal constructor(
 
         extraBuildDebugComponent?.invoke(views, view, container)
 
-        if (filter != null) {
-            container.uiCollapsibleSection("Filter") {
-                uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
-                filter!!.buildDebugComponent(views, this)
-            }
-        }
-
         container.uiCollapsibleSection("View") {
             addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))
             uiEditableValue(view::name)
