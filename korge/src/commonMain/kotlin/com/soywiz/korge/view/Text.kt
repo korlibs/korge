@@ -405,8 +405,8 @@ open class Text(
         container.uiCollapsibleSection("Text") {
             uiEditableValue(::text)
             uiEditableValue(::textSize, min= 1.0, max = 300.0)
-            uiEditableValue(::verticalAlign, values = { listOf(VerticalAlign.TOP, VerticalAlign.MIDDLE, VerticalAlign.BASELINE, VerticalAlign.BOTTOM) })
-            uiEditableValue(::horizontalAlign, values = { listOf(HorizontalAlign.LEFT, HorizontalAlign.CENTER, HorizontalAlign.RIGHT, HorizontalAlign.JUSTIFY) })
+            uiEditableValue(::verticalAlign, VerticalAlign.ALL)
+            uiEditableValue(::horizontalAlign, HorizontalAlign.ALL)
             uiEditableValue(::fontSource, UiTextEditableValue.Kind.FILE(views.currentVfs) {
                 it.extensionLC == "ttf" || it.extensionLC == "fnt"
             })
