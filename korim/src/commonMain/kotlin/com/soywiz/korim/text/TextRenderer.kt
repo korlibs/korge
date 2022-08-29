@@ -1,7 +1,6 @@
 package com.soywiz.korim.text
 
 import com.soywiz.kds.doubleArrayListOf
-import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.Bitmaps
 import com.soywiz.korim.bitmap.BmpSlice
 import com.soywiz.korim.color.Colors
@@ -13,10 +12,6 @@ import com.soywiz.korim.font.GlyphMetrics
 import com.soywiz.korim.font.GlyphPath
 import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.paint.Paint
-import com.soywiz.korim.vector.CompoundShape
-import com.soywiz.korim.vector.EmptyShape
-import com.soywiz.korim.vector.FillShape
-import com.soywiz.korim.vector.StyledShape
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.util.niceStr
@@ -34,12 +29,14 @@ import com.soywiz.korma.geom.vector.VectorBuilder
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.path
+import kotlin.math.max
 import kotlin.native.concurrent.SharedImmutable
 
 interface ITextRendererActions {
     var x: Double
     var y: Double
     val lineHeight: Double
+    var currentLineNum: Int
     val transform: Matrix
 
     fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double
@@ -53,9 +50,10 @@ interface ITextRendererActions {
     fun advance(x: Double) {
         this.x += x
     }
-    fun newLine(y: Double) {
+    fun newLine(y: Double, end: Boolean) {
         this.x = 0.0
         this.y += y
+        currentLineNum++
     }
 }
 
@@ -64,6 +62,7 @@ abstract class TextRendererActions : ITextRendererActions {
     protected val glyphMetrics = GlyphMetrics()
     val fontMetrics = FontMetrics()
     override val lineHeight: Double get() = fontMetrics.lineHeight
+    override var currentLineNum: Int = 0
     lateinit var font: Font; private set
     var fontSize = 0.0; private set
 
@@ -89,11 +88,50 @@ abstract class TextRendererActions : ITextRendererActions {
         font.getKerning(fontSize, leftCodePoint, rightCodePoint)
 }
 
+fun <T> TextRenderer<T>.measure(text: T, size: Double, defaultFont: Font): BoundBuilderTextRendererActions {
+    val actions = BoundBuilderTextRendererActions()
+    invoke(actions, text, size, defaultFont)
+    return actions
+}
+
 class BoundBuilderTextRendererActions : TextRendererActions() {
     val flbb = BoundsBuilder()
     val bb = BoundsBuilder()
     var currentLine = 0
     val nlines get() = currentLine + 1
+
+    val lines = arrayListOf<LineStats>()
+    var current = LineStats()
+
+    val totalMaxLineHeight get() = lines.sumOf { it.maxLineHeight }
+
+    fun getAlignX(align: HorizontalAlign, line: Int, fontMetrics: FontMetrics): Double = align.getOffsetX(lines.getOrNull(line)?.maxX ?: 0.0)
+    fun getAlignY(align: VerticalAlign, line: Int, fontMetrics: FontMetrics): Double =
+        align.getOffsetYRespectBaseline(fontMetrics, totalMaxLineHeight)
+
+    data class LineStats(
+        var maxLineHeight: Double = 0.0,
+        var maxX: Double = 0.0,
+        val bounds: BoundsBuilder = BoundsBuilder(),
+    ) {
+
+        fun advance(dx: Double) {
+            maxX += dx
+        }
+
+        fun metrics(fontMetrics: FontMetrics) {
+            maxLineHeight = max(maxLineHeight, fontMetrics.lineHeight)
+        }
+
+        fun end() {
+        }
+
+        fun reset() {
+            maxX = 0.0
+            bounds.reset()
+            maxLineHeight = 0.0
+        }
+    }
 
     private fun add(x: Double, y: Double) {
         //val itransform = transform.inverted()
@@ -104,6 +142,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         if (currentLine == 0) {
             flbb.add(rx, ry)
         }
+        current.bounds.add(rx, ry)
     }
 
     private fun add(rect: Rectangle) {
@@ -124,18 +163,30 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         currentLine = 0
         bb.reset()
         flbb.reset()
+        current.reset()
+        lines.clear()
     }
 
     override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
         val g = getGlyphMetrics(codePoint)
         // y = 0 is the baseline
         add(g.bounds)
+        current.metrics(fontMetrics)
         return g
     }
 
-    override fun newLine(y: Double) {
-        super.newLine(y)
+    override fun advance(x: Double) {
+        super.advance(x)
+        current.advance(x)
+    }
+
+    override fun newLine(y: Double, end: Boolean) {
+        super.newLine(y, end)
         currentLine++
+        current.metrics(fontMetrics)
+        current.end()
+        lines.add(current)
+        current = LineStats()
     }
 }
 
@@ -299,7 +350,7 @@ fun CreateWStringTextRenderer(
             val c1 = reader.peek(+1).codePoint
             val startPos = reader.position
             if (c == '\n'.code) {
-                newLine(lineHeight)
+                newLine(lineHeight, end = false)
             } else {
                 val g = getGlyphMetrics(c)
                 transform.identity()
@@ -310,6 +361,7 @@ fun CreateWStringTextRenderer(
                 reader.skip(1)
             }
         }
+        newLine(lineHeight, end = true)
     }
 }
 
@@ -344,25 +396,29 @@ val DefaultStringTextRenderer: TextRenderer<String> = CreateStringTextRenderer {
 fun <T> VectorBuilder.text(
     text: T, font: VectorFont, textSize: Double = 16.0,
     x: Double = 0.0, y: Double = 0.0,
+    align: TextAlignment = TextAlignment.BASELINE_LEFT,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
 ) {
+    val vectorBuilder = this
     val transform = Matrix()
-    //transform.pretranslate(x, y)
 
     val actions = object : TextRendererActions() {
+        val metrics = renderer.measure(text, textSize, font)
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
             val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath)
             if (glyph != null) {
                 transform.keepMatrix {
+                    val dx = metrics.getAlignX(align.horizontal, currentLineNum, fontMetrics)
+                    val dy = metrics.getAlignY(align.vertical, currentLineNum, fontMetrics)
                     transform.premultiply(glyph.transform)
-                    transform.translate(this.x + x, this.y + y)
+                    transform.translate(this.x + x - dx, this.y + y + dy)
                     transform.premultiply(this.transform)
                     //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
                     val shape = glyph.colorShape
                     if (shape != null) {
-                        path(shape.getPath(), transform)
+                        vectorBuilder.path(shape.getPath(), transform)
                     } else {
-                        path(glyph.path, transform)
+                        vectorBuilder.path(glyph.path, transform)
                     }
                 }
             }
