@@ -33,7 +33,6 @@ import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.extensionLC
-import com.soywiz.korio.lang.printStackTrace
 import com.soywiz.korio.resources.Resourceable
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
@@ -99,6 +98,9 @@ open class Text(
     init {
         updateLineCount()
     }
+    //var fill: Paint? = null; set(value) { if (field != value) { field = value; version++ } }
+    //var stroke: Stroke? = null; set(value) { if (field != value) { field = value; version++ } }
+
     var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
     var font: Resourceable<out Font> = font; set(value) {
         if (field != value) { field = value; version++ }
@@ -348,27 +350,31 @@ open class Text(
                         _staticGraphics?.autoScaling = true
                     }
 
+                    //println("alignment=$alignment")
                     val metrics = _staticGraphics!!.updateShape {
                         drawText(
-                            text = text,
+                            text = this@Text.text,
                             x = 0.0, y = 0.0,
                             size = realTextSize,
                             font = font,
-                            paint = color,
+                            paint = this@Text.color,
                             renderer = this@Text.renderer,
-                            valign = VerticalAlign.TOP,
+                            //align = TextAlignment.TOP_LEFT,
+                            align = this@Text.alignment,
                             outMetrics = TextMetricsResult()
                         )
                     }
                     cachedVersionGlyphMetrics = version
                     _textMetricsResult = metrics
 
-                    val met = metrics!!.metrics
-                    val x = -horizontalAlign.getOffsetX(met.width)// + met.left
-                    val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
+                    //val met = metrics!!.metrics
+                    //val x = -horizontalAlign.getOffsetX(met.width)// + met.left
+                    //val y = verticalAlign.getOffsetY(met.lineHeight, -(met.ascent))
                     //setContainerPosition(x * 1.0, y * 1.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
                     //println("alignment=$alignment, horizontalAlign=$horizontalAlign, verticalAlign=$verticalAlign")
-                    setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    //setContainerPosition(x, y, font.getFontMetrics(fontSize, fontMetrics).baseline)
+                    setContainerPosition(0.0, 0.0, font.getFontMetrics(fontSize, fontMetrics).baseline)
+
                 }
                 //_staticImage?.smoothing = smoothing
                 _staticGraphics?.smoothing = smoothing
@@ -383,6 +389,8 @@ open class Text(
             setRealContainerPosition(x, y)
         } else {
             //staticImage?.position(x + alignment.horizontal.getOffsetX(textBounds.width), y + alignment.vertical.getOffsetY(textBounds.height, font.getFontMetrics(fontSize).baseline))
+
+            // @TODO: Fix this!
             setRealContainerPosition(x + alignment.horizontal.getOffsetX(_textBounds.width), y - alignment.vertical.getOffsetY(_textBounds.height, baseline))
         }
     }

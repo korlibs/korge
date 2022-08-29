@@ -12,10 +12,13 @@ import com.soywiz.korim.paint.NonePaint
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korim.text.BoundBuilderTextRendererActions
 import com.soywiz.korim.text.DefaultStringTextRenderer
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.TextRendererActions
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.invoke
+import com.soywiz.korim.text.measure
+import com.soywiz.korim.tiles.tiled.TiledMap
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
@@ -190,21 +193,25 @@ fun <T> Font.measureTextGlyphs(
 }
 
 fun <T> Font.drawText(
-    ctx: Context2d?, size: Double,
+    ctx: Context2d?,
+    size: Double,
     text: T, paint: Paint?,
     x: Double = 0.0, y: Double = 0.0,
     fill: Boolean = true,
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-    valign: VerticalAlign = VerticalAlign.BASELINE,
+    align: TextAlignment = TextAlignment.BASELINE_LEFT,
     outMetrics: TextMetricsResult? = null,
     placed: ((codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
 ): TextMetricsResult? {
-    //println("drawText!!: text=$text")
+    //println("drawText!!: text=$text, align=$align")
     val glyphs = if (outMetrics != null) arrayListOf<PlacedGlyphMetrics>() else null
+    val fnt = this
     val actions = object : TextRendererActions() {
+        val metrics = renderer.measure(text, size, fnt)
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
-            val dy = valign.getOffsetYRespectBaseline(glyphMetrics, fontMetrics)
-            val px = this.x + x
+            val dx = metrics.getAlignX(align.horizontal, currentLineNum, fontMetrics)
+            val dy = metrics.getAlignY(align.vertical, currentLineNum, fontMetrics)
+            val px = this.x + x - dx
             val py = this.y + y + dy
             ctx?.keepTransform {
                 //val m = getGlyphMetrics(codePoint)
@@ -217,7 +224,7 @@ fun <T> Font.drawText(
                 ctx.transform(this.transform)
                 //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
                 ctx.fillStyle = this.paint ?: paint ?: NonePaint
-                font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics, reader)
+                this.font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics, reader)
                 if (fill) ctx.fill() else ctx.stroke()
             }
             if (glyphs != null) {

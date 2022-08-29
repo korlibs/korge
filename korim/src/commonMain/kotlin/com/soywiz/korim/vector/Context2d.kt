@@ -588,19 +588,19 @@ open class Context2d constructor(
     }
 
     fun <T> drawText(
-        text: T, x:
-        Double = 0.0,
+        text: T,
+        x: Double = 0.0,
         y: Double = 0.0,
         fill: Boolean = true,
         paint: Paint? = null,
         font: Font? = this.font,
         size: Double = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-        valign: VerticalAlign = VerticalAlign.BASELINE,
+        align: TextAlignment = TextAlignment.BASELINE_LEFT,
         outMetrics: TextMetricsResult? = null,
     ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, valign = valign, outMetrics = outMetrics)
+        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, align = align, outMetrics = outMetrics)
     }
 
     // @TODO: Fix this!
