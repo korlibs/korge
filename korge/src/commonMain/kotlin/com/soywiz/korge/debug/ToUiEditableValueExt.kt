@@ -20,6 +20,13 @@ fun <T> UiContainer.uiEditableValue(
     return UiRowEditableValue(app, name, UiListEditableValue<T>(app, values, obs)).also { addChild(it) }
 }
 
+@JvmName("uiEditableValueGeneric")
+fun <T> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    values: List<T>,
+    name: String = prop.name,
+): UiRowEditableValue = uiEditableValue(prop, { values }, name)
+
 @JvmName("uiEditableValueRGBA")
 fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<RGBA>,
