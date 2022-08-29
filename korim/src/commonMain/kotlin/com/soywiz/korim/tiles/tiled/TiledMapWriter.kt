@@ -7,6 +7,8 @@ import com.soywiz.korim.tiles.tiled.TiledMap.Layer
 import com.soywiz.korim.tiles.tiled.TiledMap.Object
 import com.soywiz.korim.tiles.tiled.TiledMap.Property
 import com.soywiz.korim.color.RGBA
+import com.soywiz.korim.text.HorizontalAlign
+import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.tiles.TileMapObjectAlignment
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.lang.format
@@ -342,8 +344,19 @@ private fun XmlBuilder.objectLayerToXml(layer: Layer.Objects?) {
 						"underline" to type.underline.toInt().takeIf { it != 0 },
 						"strikeout" to type.strikeout.toInt().takeIf { it != 0 },
 						"kerning" to type.kerning.toInt().takeIf { it != 1 },
-						"halign" to type.hAlign.value,
-						"valign" to type.vAlign.value
+						"halign" to when (type.hAlign) {
+                            HorizontalAlign.LEFT -> "left"
+                            HorizontalAlign.CENTER -> "center"
+                            HorizontalAlign.RIGHT -> "right"
+                            HorizontalAlign.JUSTIFY -> "justify"
+                            else -> "left"
+                        },
+						"valign" to when (type.vAlign) {
+                            VerticalAlign.TOP -> "top"
+                            VerticalAlign.MIDDLE -> "center"
+                            VerticalAlign.BOTTOM -> "bottom"
+                            else -> "top"
+                        }
 					)
 				}
 			}
