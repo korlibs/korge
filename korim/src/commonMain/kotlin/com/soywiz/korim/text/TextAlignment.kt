@@ -81,13 +81,14 @@ inline class VerticalAlign(val ratio: Double) {
         val BASELINE = VerticalAlign(Double.POSITIVE_INFINITY) // Special
         private val values = arrayOf(TOP, MIDDLE, BASELINE, BOTTOM)
 
+        val CENTER get() = MIDDLE
         val ALL = values.toList()
 
         fun values() = values
 
-        operator fun invoke(str: String): VerticalAlign = when (str) {
+        operator fun invoke(str: String): VerticalAlign = when (str.uppercase()) {
             "TOP" -> TOP
-            "MIDDLE" -> MIDDLE
+            "CENTER", "MIDDLE" -> MIDDLE
             "BOTTOM" -> BOTTOM
             "BASELINE" -> BASELINE
             else -> VerticalAlign(str.substringAfter('(').substringBefore(')').toDoubleOrNull() ?: 0.0)
@@ -131,7 +132,7 @@ inline class HorizontalAlign(val ratio: Double) {
         val ALL = values.toList()
         fun values() = values
 
-        operator fun invoke(str: String): HorizontalAlign = when (str) {
+        operator fun invoke(str: String): HorizontalAlign = when (str.uppercase()) {
             "LEFT" -> LEFT
             "CENTER" -> CENTER
             "RIGHT" -> RIGHT
