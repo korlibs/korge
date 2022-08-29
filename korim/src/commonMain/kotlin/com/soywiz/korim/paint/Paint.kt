@@ -15,12 +15,16 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import kotlin.math.sqrt
 
 interface Paint {
     fun clone(): Paint
 }
+
+data class Stroke(val paint: Paint, val info: StrokeInfo)
+fun StrokeInfo.withPaint(paint: Paint): Stroke = Stroke(paint, this)
 
 object NonePaint : Paint {
     override fun clone(): Paint = this
