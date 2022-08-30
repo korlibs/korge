@@ -295,6 +295,14 @@ abstract class BaseTtfFont(
     //val substitutionsGlyphIds = IntMap<Map<List<Int>, List<Int>>>()
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
+    lateinit var fontMetrics1px: FontMetrics; private set
+    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
+    var isOpenType = false
+
+    val ttfName: String get() = namesi.ttfName
+    val ttfCompleteName: String get() = namesi.ttfCompleteName
+    override val name: String get() = extName ?: ttfName
+
     fun doInit() {
         readHeaderTables()
         readHead()
@@ -338,25 +346,21 @@ abstract class BaseTtfFont(
         //    //println("substitution: $fromCodePoints -> $to")
         //    substitutionsCodePoints[fromCodePoint] = SubstitutionInfo(maxSeq, map)
         //}
-    }
 
-    val ttfName: String get() = namesi.ttfName
-    val ttfCompleteName: String get() = namesi.ttfCompleteName
-    override val name: String get() = extName ?: ttfName
+        fontMetrics1px = FontMetrics().also {
+            val scale = getTextScale(1.0)
+            it.size = 1.0
+            it.top = (this.yMax) * scale
+            it.ascent = this.ascender * scale
+            it.baseline = 0.0 * scale
+            it.descent = this.descender * scale
+            it.bottom = (this.yMin) * scale
+            it.leading = this.lineGap * scale
+            it.maxWidth = this.advanceWidthMax *scale
+        }
+    }
 
     override fun toString(): String = "TtfFont(name=$name)"
-
-    protected val fontMetrics1px = FontMetrics().also {
-        val scale = getTextScale(1.0)
-        it.size = 1.0
-        it.top = (this.yMax) * scale
-        it.ascent = this.ascender * scale
-        it.baseline = 0.0 * scale
-        it.descent = this.descender * scale
-        it.bottom = (this.yMin) * scale
-        it.leading = this.lineGap * scale
-        it.maxWidth = this.advanceWidthMax *scale
-    }
 
     data class Table(val id: String, val checksum: Int, val offset: Int, val length: Int) {
 		var s: (() -> FastByteArrayInputStream)? = null
@@ -391,7 +395,6 @@ abstract class BaseTtfFont(
     @PublishedApi
 	internal fun openTable(name: String): FastByteArrayInputStream? = getTable(name)?.open()
 
-    var isOpenType = false
 
     protected abstract fun readHeaderTables()
 
@@ -1661,8 +1664,6 @@ abstract class BaseTtfFont(
     }
 
     fun getAllGlyphs(cache: Boolean = false) = (0 until numGlyphs).mapNotNull { getGlyphByIndex(it, cache) }
-
-    protected val nonExistantGlyphMetrics1px = GlyphMetrics(1.0, false, 0, Rectangle(), 0.0)
 
     data class Contour(var x: Int = 0, var y: Int = 0, var onCurve: Boolean = false) {
 		fun copyFrom(that: Contour) {
