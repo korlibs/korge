@@ -121,7 +121,7 @@ fun ViewsContainer.registerBox2dSupportOnce() {
                             physicsContainer()
                         }
                     }
-                    uiEditableValue(body::type, values = { listOf(BodyType.STATIC, BodyType.DYNAMIC, BodyType.KINEMATIC) })
+                    uiEditableValue(body::type)
                     val fixture = body.m_fixtureList
                     if (fixture != null) {
                         uiEditableValue(fixture::isSensor)
