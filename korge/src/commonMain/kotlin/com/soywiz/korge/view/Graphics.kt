@@ -1,11 +1,14 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korge.debug.uiCollapsibleSection
+import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.view.vector.GpuShapeView
 import com.soywiz.korge.view.vector.gpuGraphics
 import com.soywiz.korim.vector.EmptyShape
 import com.soywiz.korim.vector.Shape
 import com.soywiz.korim.vector.ShapeBuilder
 import com.soywiz.korim.vector.buildShape
+import com.soywiz.korui.UiContainer
 
 inline fun Container.graphics(
     renderer: GraphicsRenderer = GraphicsRenderer.SYSTEM,
@@ -139,5 +142,18 @@ class Graphics(
 
     init {
         this.shape = shape
+    }
+
+    override fun buildDebugComponent(views: Views, container: UiContainer) {
+        val view = this
+        container.uiCollapsibleSection("Graphics") {
+            uiEditableValue(Pair(view::anchorX, view::anchorY), min = 0.0, max = 1.0, clamp = false, name = "anchor")
+            uiEditableValue(view::renderer)
+            uiEditableValue(view::boundsIncludeStrokes)
+            uiEditableValue(view::antialiased)
+            uiEditableValue(view::smoothing)
+            uiEditableValue(view::autoScaling)
+        }
+        super.buildDebugComponent(views, container)
     }
 }
