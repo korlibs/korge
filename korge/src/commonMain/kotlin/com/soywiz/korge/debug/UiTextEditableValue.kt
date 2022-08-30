@@ -4,6 +4,8 @@ import com.soywiz.korev.Key
 import com.soywiz.korim.color.Colors
 import com.soywiz.korio.file.VfsFile
 import com.soywiz.korio.file.relativePathTo
+import com.soywiz.korio.util.uescape
+import com.soywiz.korio.util.unescape
 import com.soywiz.korui.UiApplication
 import com.soywiz.korui.UiLabel
 import com.soywiz.korui.UiTextField
@@ -48,7 +50,7 @@ class UiTextEditableValue(
         if (!contentText.visible) {
             contentText.visible = true
             contentTextField.visible = false
-            setValue(contentTextField.text)
+            setValue(untransformed(contentTextField.text))
             super.hideEditor()
         }
     }
@@ -61,12 +63,16 @@ class UiTextEditableValue(
         contentTextField.focus()
     }
 
+    fun transformed(text: String): String = text.uescape()
+    fun untransformed(text: String): String = text.unescape()
+
     fun setValue(value: String, setProperty: Boolean = true) {
         if (current != value) {
             current = value
             if (setProperty) prop.value = value
-            contentText.text = value
-            contentTextField.text = value
+            val transformed = transformed(value)
+            contentText.text = transformed
+            contentTextField.text = transformed
         }
     }
 
