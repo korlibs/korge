@@ -3,6 +3,7 @@ package com.soywiz.korge.view.filter
 import com.soywiz.kds.Extra
 import com.soywiz.kds.extraPropertyThis
 import com.soywiz.kmem.clamp
+import com.soywiz.kmem.toIntCeil
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korge.debug.uiEditableValue
 import com.soywiz.korge.render.RenderContext
@@ -80,11 +81,18 @@ fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = tru
 
         val realFilterScale = (texWidthNoBorder.toDouble() / bounds.width).clamp(0.03125, 1.0)
 
-        val texWidth = texWidthNoBorder
-        val texHeight = texHeightNoBorder
+        // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
+        // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
+        val edgeSize = (1.0 / filterScale).toIntCeil().clamp(1, 8)
 
-        val addx = -bounds.x
-        val addy = -bounds.y
+        val texWidth = texWidthNoBorder + (edgeSize * 2)
+        val texHeight = texHeightNoBorder + (edgeSize * 2)
+
+        val addx = -bounds.x + edgeSize
+        val addy = -bounds.y + edgeSize
+
+        val rx = -edgeSize
+        val ry = -edgeSize
 
         //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
         //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")
@@ -109,7 +117,7 @@ fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = tru
         }) { texture ->
             //println("texWidthHeight=$texWidth,$texHeight")
             tempMat2d.copyFrom(globalMatrix)
-            tempMat2d.pretranslate(-addx, -addy)
+            tempMat2d.pretranslate(-addx + rx, -addy + ry)
             tempMat2d.prescale(1.0 / realFilterScale)
             filter.render(
                 ctx,
