@@ -9,16 +9,19 @@ import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.ViewRenderPhase
 import com.soywiz.korge.view.addDebugExtraComponent
+import com.soywiz.korio.lang.portableSimpleName
 import kotlin.native.concurrent.ThreadLocal
 
 private class FilterDebugExtra(val view: View) {
     var enable = true
     init {
-        view.addDebugExtraComponent("Filter") { views ->
+        view.addDebugExtraComponent("") { views ->
             if (enable) {
-                uiCollapsibleSection("Filter") {
-                    uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
-                    view.filter?.buildDebugComponent(views, this)
+                for (filter in view.filter?.allFilters ?: emptyList()) {
+                    uiCollapsibleSection(filter::class.portableSimpleName) {
+                        uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
+                        filter.buildDebugComponent(views, this)
+                    }
                 }
             }
             // @TODO: Add filter button?
