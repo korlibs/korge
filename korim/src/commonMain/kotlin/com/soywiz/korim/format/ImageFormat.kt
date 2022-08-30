@@ -75,7 +75,7 @@ abstract class ImageFormat(vararg exts: String) : ImageFormatDecoder {
 	fun decode(s: SyncStream, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = this.read(s, props)
 	//fun decode(file: File, props: ImageDecodingProps = ImageDecodingProps()) = this.read(file.openSync("r"), props.copy(filename = file.name))
 
-    // Decodes a given byte array to a bitmap based on the image format.
+    /** Decodes a given [data] byte array to a bitmap based on the image format with optional extra [prop] properties. */
     fun decode(data: ByteArray, props: ImageDecodingProps = ImageDecodingProps.DEFAULT): Bitmap = read(data.openSync(), props)
 
 	override suspend fun decodeSuspend(data: ByteArray, props: ImageDecodingProps): Bitmap = decode(data, props)
