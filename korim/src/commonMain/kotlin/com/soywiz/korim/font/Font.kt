@@ -156,6 +156,7 @@ fun <T> Font.renderTextToBitmap(
     //println("BOUNDS: $bounds")
     val glyphs = arrayListOf<PlacedGlyphMetrics>()
     val iwidth = bounds.width.toIntCeil() + border * 2 + 1
+    //println("bounds.nlines=${bounds.nlines}, bounds.allLineHeight=${bounds.allLineHeight}")
     val iheight = (if (drawBorder) bounds.allLineHeight else bounds.height).toIntCeil() + border * 2 + 1
     val image = if (nativeRendering) NativeImage(iwidth, iheight) else Bitmap32(iwidth, iheight, premultiplied = true)
     //println("bounds.firstLineBounds: ${bounds.firstLineBounds}")

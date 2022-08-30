@@ -98,7 +98,8 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     val flbb = BoundsBuilder()
     val bb = BoundsBuilder()
     var currentLine = 0
-    val nlines get() = currentLine + 1
+    //val nlines get() = currentLine + 1
+    val nlines get() = currentLine
 
     val lines = arrayListOf<LineStats>()
     var current = LineStats()
