@@ -438,10 +438,18 @@ open class Context2d constructor(
         stroke(paint, info.thickness, info.startCap, info.join, info.miterLimit, info.dash, info.dashOffset, begin, callback)
     }
 
+    inline fun stroke(stroke: Stroke, begin: Boolean = true, callback: () -> Unit = {}) {
+        stroke(stroke.paint, stroke.info, begin, callback)
+    }
+
     inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
         callback()
         fill(fill)
         if (strokeInfo != null) stroke(stroke, strokeInfo, begin = false) else stroke(stroke, begin = false)
+    }
+
+    inline fun fillStroke(fill: Paint, stroke: Stroke, callback: () -> Unit = {}) {
+        fillStroke(fill, stroke.paint, stroke.info, callback)
     }
 
     fun fillStroke() { fill(); stroke() }

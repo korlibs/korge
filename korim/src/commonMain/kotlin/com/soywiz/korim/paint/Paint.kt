@@ -1,6 +1,7 @@
 package com.soywiz.korim.paint
 
 import com.soywiz.kds.DoubleArrayList
+import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.IntArrayList
 import com.soywiz.kmem.clamp
 import com.soywiz.korim.bitmap.Bitmap
@@ -15,6 +16,9 @@ import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
 import com.soywiz.korma.geom.div
 import com.soywiz.korma.geom.unaryMinus
+import com.soywiz.korma.geom.vector.LineCap
+import com.soywiz.korma.geom.vector.LineJoin
+import com.soywiz.korma.geom.vector.LineScaleMode
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import kotlin.math.sqrt
@@ -23,7 +27,30 @@ interface Paint {
     fun clone(): Paint
 }
 
-data class Stroke(val paint: Paint, val info: StrokeInfo)
+data class Stroke(val paint: Paint, val info: StrokeInfo) {
+    constructor(
+        paint: Paint,
+        thickness: Double = 1.0,
+        pixelHinting: Boolean = false,
+        scaleMode: LineScaleMode = LineScaleMode.NORMAL,
+        startCap: LineCap = LineCap.BUTT,
+        endCap: LineCap = LineCap.BUTT,
+        join: LineJoin = LineJoin.MITER,
+        miterLimit: Double = 20.0,
+        dash: IDoubleArrayList? = null,
+        dashOffset: Double = 0.0
+    ) : this(paint, StrokeInfo(
+        thickness = thickness,
+        pixelHinting = pixelHinting,
+        scaleMode = scaleMode,
+        startCap = startCap,
+        endCap = endCap,
+        join = join,
+        miterLimit = miterLimit,
+        dash = dash,
+        dashOffset = dashOffset,
+    ))
+}
 fun StrokeInfo.withPaint(paint: Paint): Stroke = Stroke(paint, this)
 
 object NonePaint : Paint {
