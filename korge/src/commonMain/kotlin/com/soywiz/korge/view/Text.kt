@@ -71,9 +71,7 @@ open class Text(
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = DEFAULT_AUTO_SCALING
-) : Container(), IText
-    //, ViewLeaf
-{
+) : Container(), IText, ViewLeaf {
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
         val DEFAULT_AUTO_SCALING = true
