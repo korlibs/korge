@@ -122,9 +122,12 @@ data class ImageDecodingProps constructor(
     val preferKotlinDecoder: Boolean = false,
     val tryNativeDecode: Boolean = true,
     val format: ImageFormat? = RegisteredImageFormats,
-    // Provides an `out` parameter to reuse an existing Bitmap to reduce allocations.
-    // Note though that not all formats may use the bitmap provided by the `out` param.
-    // In those cases, they will return a newly allocated Bitmap instead.
+    /**
+     * Provides an `out` parameter to reuse an existing Bitmap to reduce allocations.
+     *
+     * Note though that not all formats may use the bitmap provided by the `out` param.
+     * In those cases, they will return a newly allocated Bitmap instead.
+     */
     val out: Bitmap? = null,
     override var extra: ExtraType = null
 ) : Extra {
