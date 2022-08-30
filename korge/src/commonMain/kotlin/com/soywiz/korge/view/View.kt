@@ -1397,6 +1397,14 @@ abstract class View internal constructor(
         return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
     }
 
+    ///** Kind of bounds we are checking */
+    //enum class BoundsKind {
+    //    /** The bounds including pixels, so all the non-transparent pixels will be instead. For filters, etc. */
+    //    PIXELS,
+    //    /** For hit boxes and physics */
+    //    SHAPE
+    //}
+
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
