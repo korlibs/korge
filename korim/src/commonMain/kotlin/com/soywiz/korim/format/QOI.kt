@@ -30,9 +30,11 @@ object QOI : ImageFormat("qoi") {
         }
     }
 
-    // QOI supports outputting to the `out` bitmap, but certain conditions must be met.
-    // 1. The width and height of the output Bitmap must match the header width and height.
-    // 2. The out Bitmap must be a Bitmap32.
+    /*
+     * QOI supports outputting to the `out` bitmap, but certain conditions must be met.
+     * 1. The width and height of the output Bitmap must match the header width and height.
+     * 2. The out Bitmap must be a Bitmap32.
+     */
     override fun readImage(s: SyncStream, props: ImageDecodingProps): ImageData {
         val header = decodeHeader(s, props)
             ?: error("Not a QOI image")
