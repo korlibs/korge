@@ -13,19 +13,32 @@ interface VectorFont : Font {
         codePoint: Int,
         x: Double,
         y: Double,
-        fill: Boolean,
+        fill: Boolean?,
         metrics: GlyphMetrics,
         reader: WStringReader?,
-    ) {
+        beforeDraw: (() -> Unit)?
+    ): Boolean {
         getGlyphMetrics(size, codePoint, metrics)
         val g = getGlyphPath(size, codePoint, reader = reader)
         if (g != null) {
+            if (fill != null) {
+                ctx.beginPath()
+            }
+            if (!g.isOnlyPath) {
+                beforeDraw?.invoke()
+            }
             ctx.keepTransform {
                 ctx.translate(x, y)
                 g.draw(ctx)
             }
-            if (fill) ctx.fill() else ctx.stroke()
+            when (fill) {
+                true -> ctx.fill()
+                false -> ctx.stroke()
+                null -> Unit
+            }
+            return !g.isOnlyPath
         }
+        return false
     }
 }
 

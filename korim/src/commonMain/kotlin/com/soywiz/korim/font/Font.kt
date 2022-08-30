@@ -15,30 +15,23 @@ import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.TextRendererActions
-import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.invoke
 import com.soywiz.korim.text.measure
-import com.soywiz.korim.tiles.tiled.TiledMap
 import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.resources.Resourceable
-import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.IPoint
-import com.soywiz.korma.geom.Line
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.Rectangle
 import com.soywiz.korma.geom.bezier.Bezier
-import com.soywiz.korma.geom.bezier.Bezier.Companion.midX
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.toBezier
 import com.soywiz.korma.geom.shape.buildVectorPath
-import com.soywiz.korma.geom.topLeft
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.getCurves
 import com.soywiz.korma.geom.vector.rect
-import com.soywiz.korma.geom.vector.transformed
 
 interface Font : Resourceable<Font> {
     override fun getOrNull() = this
@@ -52,7 +45,12 @@ interface Font : Resourceable<Font> {
     fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double
 
     // Rendering
-    fun renderGlyph(ctx: Context2d, size: Double, codePoint: Int, x: Double, y: Double, fill: Boolean, metrics: GlyphMetrics, reader: WStringReader? = null)
+    // Returns true if it painted something
+    fun renderGlyph(
+        ctx: Context2d, size: Double, codePoint: Int, x: Double, y: Double, fill: Boolean?,
+        metrics: GlyphMetrics, reader: WStringReader? = null,
+        beforeDraw: (() -> Unit)? = null
+    ): Boolean
 }
 
 data class TextToBitmapResult(
@@ -206,6 +204,12 @@ fun <T> Font.drawText(
     //println("drawText!!: text=$text, align=$align")
     val glyphs = if (outMetrics != null) arrayListOf<PlacedGlyphMetrics>() else null
     val fnt = this
+    //println("Font.drawText:")
+    val doRender: () -> Unit = {
+        //println("doRender=")
+        if (fill) ctx?.fill() else ctx?.stroke()
+        ctx?.beginPath()
+    }
     val actions = object : TextRendererActions() {
         val metrics = renderer.measure(text, size, fnt)
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
@@ -224,8 +228,7 @@ fun <T> Font.drawText(
                 ctx.transform(this.transform)
                 //ctx.translate(+m.width * transformAnchor.sx, -m.height * transformAnchor.sy)
                 ctx.fillStyle = this.paint ?: paint ?: NonePaint
-                this.font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, true, glyphMetrics, reader)
-                if (fill) ctx.fill() else ctx.stroke()
+                this.font.renderGlyph(ctx, size, codePoint, 0.0, 0.0, null, glyphMetrics, reader, beforeDraw = doRender)
             }
             if (glyphs != null) {
                 glyphs += PlacedGlyphMetrics(codePoint, px, py, glyphMetrics.clone(), fontMetrics.clone(), transform.clone(), glyphs.size)
@@ -234,7 +237,9 @@ fun <T> Font.drawText(
             return glyphMetrics
         }
     }
+    ctx?.beginPath()
     renderer.invoke(actions, text, size, this)
+    doRender()
     if (outMetrics != null) {
         val metrics = getTextBounds(size, text, renderer = renderer)
         outMetrics.fmetrics = metrics.fontMetrics
