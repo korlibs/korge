@@ -32,11 +32,11 @@ object CheckReferences {
                 val similar get() = psnr >= 32.0
             }
 
-            val SCALE_WIDTH = 768 / 4
-            val SCALE_HEIGHT = 512 / 4
-
-            //fun Bitmap32.scaled() = this.scaleLinear(SCALE_WIDTH.toDouble(), SCALE_HEIGHT.toDouble())
-            fun Bitmap32.scaled() = this.resized(SCALE_WIDTH, SCALE_HEIGHT, ScaleMode.SHOW_ALL, Anchor.CENTER).toBMP32()
+            //val SCALE_WIDTH = 768 / 4
+            //val SCALE_HEIGHT = 512 / 4
+            fun Bitmap32.scaled() = this.scaleLinear(0.25, 0.25)
+            //fun Bitmap32.scaled() = this.scaledFixed(SCALE_WIDTH, SCALE_HEIGHT, smooth = true)
+            //fun Bitmap32.scaled() = this.resized(SCALE_WIDTH, SCALE_HEIGHT, ScaleMode.SHOW_ALL, Anchor.CENTER).toBMP32()
 
             if (exists) {
                 existCount++

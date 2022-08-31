@@ -3,6 +3,7 @@ import com.soywiz.korge.*
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
+import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.bitmap.resized
 import com.soywiz.korim.color.*
 import com.soywiz.korim.format.*
@@ -36,12 +37,16 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
             delayFrame()
             println("TAKING SCREENSHOT for ${case.name}")
             try {
-                val SCALE_WIDTH = 768 / 4
-                val SCALE_HEIGHT = 512 / 4
+                //val SCALE_WIDTH = 768 / 4
+                //val SCALE_HEIGHT = 512 / 4
+                fun Bitmap32.scaled() = this.scaleLinear(0.25, 0.25)
+                //fun Bitmap32.scaled() = this.scaledFixed(SCALE_WIDTH, SCALE_HEIGHT, smooth = true)
+                //fun Bitmap32.scaled() = this.resized(SCALE_WIDTH, SCALE_HEIGHT, ScaleMode.SHOW_ALL, Anchor.CENTER).toBMP32()
+
 
                 screenshotsVfs["${case.name}.png"].writeBitmap(
                     //stage.renderToBitmap(views).scaleLinear(SCALE_WIDTH.toDouble(), SCALE_HEIGHT.toDouble()),
-                    stage.renderToBitmap(views).resized(SCALE_WIDTH, SCALE_HEIGHT, ScaleMode.SHOW_ALL, Anchor.CENTER, native = true),
+                    stage.renderToBitmap(views).scaled(),
                     PNG
                 )
                 println("SCREENSHOT TAKEN")
