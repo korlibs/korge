@@ -35,5 +35,7 @@ class BlurFilter(
 
     override fun buildDebugComponent(views: Views, container: UiContainer) {
         container.uiEditableValue(::radius)
+        container.uiEditableValue(::expandBorder)
+        container.uiEditableValue(::optimize)
     }
 }

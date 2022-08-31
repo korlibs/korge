@@ -23,9 +23,7 @@ import com.soywiz.korim.bitmap.slice
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.format.ImageDecodingProps
-import com.soywiz.korim.format.ImageFormat
 import com.soywiz.korim.format.PNG
-import com.soywiz.korim.format.RegisteredImageFormats
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.format.writeBitmap
 import com.soywiz.korim.paint.DefaultPaint
@@ -91,14 +89,15 @@ class BitmapFont(
         codePoint: Int,
         x: Double,
         y: Double,
-        fill: Boolean,
+        fill: Boolean?,
         metrics: GlyphMetrics,
-        reader: WStringReader?
-    ) {
+        reader: WStringReader?,
+        beforeDraw: (() -> Unit)?,
+    ): Boolean {
         val scale = getTextScale(size)
-        val g = glyphs[codePoint] ?: return
-        getGlyphMetrics(size, codePoint, metrics).takeIf { it.existing } ?: return
-        if (metrics.width == 0.0 && metrics.height == 0.0) return
+        val g = glyphs[codePoint] ?: return false
+        getGlyphMetrics(size, codePoint, metrics).takeIf { it.existing } ?: return false
+        if (metrics.width == 0.0 && metrics.height == 0.0) return false
         //println("SCALE: $scale")
         val texX = x + metrics.left
         val texY = y + metrics.top
@@ -118,8 +117,10 @@ class BitmapFont(
             bmpFill.writeChannel(BitmapChannel.ALPHA, g.bmp, BitmapChannel.ALPHA)
             bmpFill
         }
+        beforeDraw?.invoke()
         ctx.drawImage(bmp, texX, texY - metrics.height, swidth, sheight)
         //ctx.drawImage(g.bmp, texX, texY, swidth, sheight)
+        return true
     }
 
     private fun getTextScale(size: Double) = size.toDouble() / fontSize.toDouble()

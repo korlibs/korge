@@ -1397,6 +1397,14 @@ abstract class View internal constructor(
         return _getBounds(this.getConcatMatrix(target ?: this, boundsTemp, inclusive), out, doAnchoring, includeFilters)
     }
 
+    ///** Kind of bounds we are checking */
+    //enum class BoundsKind {
+    //    /** The bounds including pixels, so all the non-transparent pixels will be instead. For filters, etc. */
+    //    PIXELS,
+    //    /** For hit boxes and physics */
+    //    SHAPE
+    //}
+
     /**
      * **NOTE:** that if [out] is not provided, the [Rectangle] returned shouldn't stored and modified since it is owned by this class.
      */
@@ -1481,13 +1489,6 @@ abstract class View internal constructor(
         val view = this
 
         extraBuildDebugComponent?.invoke(views, view, container)
-
-        if (filter != null) {
-            container.uiCollapsibleSection("Filter") {
-                uiEditableValue(view::filterScale, min = 0.0, max = 1.0, clamp = true)
-                filter!!.buildDebugComponent(views, this)
-            }
-        }
 
         container.uiCollapsibleSection("View") {
             addChild(UiRowEditableValue(app, "type", UiLabel(app).also { it.text = view::class.simpleName ?: "Unknown" }))

@@ -438,10 +438,18 @@ open class Context2d constructor(
         stroke(paint, info.thickness, info.startCap, info.join, info.miterLimit, info.dash, info.dashOffset, begin, callback)
     }
 
+    inline fun stroke(stroke: Stroke, begin: Boolean = true, callback: () -> Unit = {}) {
+        stroke(stroke.paint, stroke.info, begin, callback)
+    }
+
     inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
         callback()
         fill(fill)
         if (strokeInfo != null) stroke(stroke, strokeInfo, begin = false) else stroke(stroke, begin = false)
+    }
+
+    inline fun fillStroke(fill: Paint, stroke: Stroke, callback: () -> Unit = {}) {
+        fillStroke(fill, stroke.paint, stroke.info, callback)
     }
 
     fun fillStroke() { fill(); stroke() }
@@ -588,19 +596,19 @@ open class Context2d constructor(
     }
 
     fun <T> drawText(
-        text: T, x:
-        Double = 0.0,
+        text: T,
+        x: Double = 0.0,
         y: Double = 0.0,
         fill: Boolean = true,
         paint: Paint? = null,
         font: Font? = this.font,
         size: Double = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
-        valign: VerticalAlign = VerticalAlign.BASELINE,
+        align: TextAlignment = TextAlignment.BASELINE_LEFT,
         outMetrics: TextMetricsResult? = null,
     ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, valign = valign, outMetrics = outMetrics)
+        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, align = align, outMetrics = outMetrics)
     }
 
     // @TODO: Fix this!

@@ -3,6 +3,8 @@ import com.soywiz.korim.format.*
 import com.soywiz.korio.*
 import com.soywiz.korio.file.*
 import com.soywiz.korio.file.std.*
+import com.soywiz.korma.geom.Anchor
+import com.soywiz.korma.geom.ScaleMode
 import kotlinx.coroutines.flow.*
 import java.io.File
 import kotlin.jvm.*
@@ -30,6 +32,12 @@ object CheckReferences {
                 val similar get() = psnr >= 32.0
             }
 
+            //val SCALE_WIDTH = 768 / 4
+            //val SCALE_HEIGHT = 512 / 4
+            fun Bitmap32.scaled() = this.scaleLinear(0.25, 0.25)
+            //fun Bitmap32.scaled() = this.scaledFixed(SCALE_WIDTH, SCALE_HEIGHT, smooth = true)
+            //fun Bitmap32.scaled() = this.resized(SCALE_WIDTH, SCALE_HEIGHT, ScaleMode.SHOW_ALL, Anchor.CENTER).toBMP32()
+
             if (exists) {
                 existCount++
                 val pngfiles = references.list().filter { it.extensionLC == "png" }.toList()
@@ -38,8 +46,8 @@ object CheckReferences {
                     val otherFile = generatedVfs[file.baseName]
                     //println(otherFilesUnfiltered)
                     println("Comparing ${otherFile.absolutePath} <-> ${files.map { it.absolutePath }}")
-                    val bitmap1List = files.map { it.readBitmap().toBMP32() }
-                    val bitmap2 = otherFile.readBitmap().toBMP32()
+                    val bitmap1List = files.map { it.readBitmap().toBMP32().scaled() }
+                    val bitmap2 = otherFile.readBitmap().toBMP32().scaled()
 
                     val results = bitmap1List.map { bitmap1 ->
                         val similarPixelPerfect = Bitmap32.matches(bitmap1, bitmap2, threshold = 32)

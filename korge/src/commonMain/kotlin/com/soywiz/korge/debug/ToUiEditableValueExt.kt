@@ -20,6 +20,21 @@ fun <T> UiContainer.uiEditableValue(
     return UiRowEditableValue(app, name, UiListEditableValue<T>(app, values, obs)).also { addChild(it) }
 }
 
+@JvmName("uiEditableValueEnum")
+inline fun <reified T : Enum<T>> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    name: String = prop.name,
+): UiRowEditableValue {
+    return uiEditableValue(prop, { enumValues<T>().toList() }, name)
+}
+
+@JvmName("uiEditableValueGeneric")
+fun <T> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    values: List<T>,
+    name: String = prop.name,
+): UiRowEditableValue = uiEditableValue(prop, { values }, name)
+
 @JvmName("uiEditableValueRGBA")
 fun UiContainer.uiEditableValue(
     prop: KMutableProperty0<RGBA>,

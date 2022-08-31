@@ -36,8 +36,8 @@ uboSet.uniform: Uniform(u_ProjMat) = Matrix3D(
   [ 0, 0, 0, 1 ],
 )
 uboSet.uniform: Uniform(u_ViewMat) = Matrix3D(
-  [ 1, 0, 0, 0 ],
-  [ 0, 1, 0, 0 ],
+  [ 1, 0, 0, 1 ],
+  [ 0, 1, 0, 1 ],
   [ 0, 0, 1, 0 ],
   [ 0, 0, 0, 1 ],
 )
@@ -100,7 +100,7 @@ uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, triline
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [64.0, 64.0]
-uboSet.uniform: Uniform(u_MaxTexCoords) = [0.15625, 0.15625]
+uboSet.uniform: Uniform(u_MaxTexCoords) = [0.1875, 0.1875]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.015625, 0.015625]
 uboSet.uniform: Uniform(colorMatrix) = Matrix3D(
   [ 0.33, 0.59, 0.11, 0 ],
@@ -125,9 +125,9 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
 ::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
 ::draw.vertex[0]: a_Pos[0,0], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[10,0], a_Tex[0.15625,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[10,10], a_Tex[0.15625,0.15625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,10], a_Tex[0,0.15625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[12,0], a_Tex[0.1875,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[12,12], a_Tex[0.1875,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[0,12], a_Tex[0,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
 textureCreate: 3
@@ -164,7 +164,7 @@ uboSet.uniform: Uniform(u_Tex2) = TextureUnit(texture=null, linear=true, triline
 uboSet.uniform: Uniform(u_Tex3) = TextureUnit(texture=null, linear=true, trilinear=null)
 uboSet.uniform: Uniform(u_OutputPre) = true
 uboSet.uniform: Uniform(effectTextureSize) = [64.0, 64.0]
-uboSet.uniform: Uniform(u_MaxTexCoords) = [0.1875, 0.1875]
+uboSet.uniform: Uniform(u_MaxTexCoords) = [0.21875, 0.21875]
 uboSet.uniform: Uniform(u_StdTexDerivates) = [0.015625, 0.015625]
 uboSet.uniform: Uniform(weights) = Matrix3D(
   [ -1, -1, -1, 0 ],
@@ -190,9 +190,9 @@ draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
 ::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
 ::draw.vertex[0]: a_Pos[0,0], a_Tex[-0.015625,-0.015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[12,0], a_Tex[0.171875,-0.015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[12,12], a_Tex[0.171875,0.171875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[0,12], a_Tex[-0.015625,0.171875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[14,0], a_Tex[0.203125,-0.015625], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[14,14], a_Tex[0.203125,0.203125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[0,14], a_Tex[-0.015625,0.203125], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
 textureCreate: 4
@@ -236,10 +236,10 @@ stencilMask: 0
 draw: TRIANGLES, offset=0, count=6, instances=1, indexType=USHORT
 ::draw.indices: [0, 1, 2, 3, 0, 2]
 ::draw.attributes[3]: [Attribute(a_Pos), Attribute(a_Tex), Attribute(a_Col), Attribute(a_Col2), Attribute(a_TexIndex), Attribute(a_Wrap)]
-::draw.vertex[0]: a_Pos[-1,-1], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[1]: a_Pos[11,-1], a_Tex[0.1875,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[2]: a_Pos[11,11], a_Tex[0.1875,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
-::draw.vertex[3]: a_Pos[-1,11], a_Tex[0,0.1875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[0]: a_Pos[-3,-3], a_Tex[0,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[1]: a_Pos[11,-3], a_Tex[0.21875,0], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[2]: a_Pos[11,11], a_Tex[0.21875,0.21875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
+::draw.vertex[3]: a_Pos[-3,11], a_Tex[0,0.21875], a_Col[1,1,1,1], a_Col2[0.49803922,0.49803922,0.49803922,0.49803922], a_TexIndex[0], a_Wrap[0]
 vaoUse: 0
 vaoDelete: 1
 disposeTemporalPerFrameStuff()

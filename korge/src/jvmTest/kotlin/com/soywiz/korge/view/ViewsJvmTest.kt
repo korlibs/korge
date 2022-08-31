@@ -86,7 +86,9 @@ class ViewsJvmTest : ViewsForTesting(log = true) {
                 nativeRendering = useNativeRendering,
                 drawBorder = true
             )
+            //textResult.bmp.showImageAndWait()
             assertEquals(Size(450, 121), textResult.bmp.size)
+            //assertEquals(Size(450, 240), textResult.bmp.size)
         }
     }
 

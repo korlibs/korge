@@ -542,6 +542,18 @@ data class Program(val vertex: VertexShader, val fragment: FragmentShader, val n
 
         operator fun FuncRef.invoke(vararg operands: Operand): CustomFunc = CustomFunc(this, operands.toList())
 
+        // infix // Single value parameter
+        @Deprecated("Experimental, doesn't work yet")
+        fun Stm.If.ELSE_IF(cond: Operand, callback: Builder.() -> Unit): Stm.If {
+            val body = createChildBuilder()
+            body.callback()
+            val ifBody = IF(cond) {
+                callback()
+            }
+            this.fbody = ifBody
+            return ifBody
+        }
+
 		infix fun Stm.If.ELSE(callback: Builder.() -> Unit) {
 			val body = createChildBuilder()
 			body.callback()
