@@ -2,13 +2,14 @@ package com.soywiz.korim.text
 
 import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.GlyphMetrics
+import com.soywiz.korio.lang.EnumLike
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.interpolation.interpolate
 
 data class TextAlignment(
     val horizontal: HorizontalAlign,
     val vertical: VerticalAlign,
-) {
+) : EnumLike<TextAlignment> {
     val justified get() = horizontal == HorizontalAlign.JUSTIFY
     val anchor: Anchor = Anchor(horizontal.ratioFake, vertical.ratioFake)
 
@@ -68,10 +69,12 @@ data class TextAlignment(
         }
     }
 
+    override fun EnumLike.Scope.getValues(): List<TextAlignment> = ALL
+
     override fun toString(): String = "${vertical}_$horizontal"
 }
 
-inline class VerticalAlign(val ratio: Double) {
+inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
     val ratioFake get() = if (this == BASELINE) 1.0 else ratio
 
     companion object {
@@ -110,6 +113,8 @@ inline class VerticalAlign(val ratio: Double) {
         else -> ratio.interpolate(font.top, font.top - totalHeight)
     }
 
+    override fun EnumLike.Scope.getValues(): List<VerticalAlign> = ALL
+
     override fun toString(): String = when (this) {
         TOP -> "TOP"
         MIDDLE -> "MIDDLE"
@@ -119,7 +124,7 @@ inline class VerticalAlign(val ratio: Double) {
     }
 }
 
-inline class HorizontalAlign(val ratio: Double) {
+inline class HorizontalAlign(val ratio: Double) : EnumLike<HorizontalAlign> {
     val ratioFake get() = if (this == JUSTIFY) 0.0 else ratio
 
     companion object {
@@ -145,6 +150,8 @@ inline class HorizontalAlign(val ratio: Double) {
         JUSTIFY -> 0.0
         else -> width * ratio
     }
+
+    override fun EnumLike.Scope.getValues(): List<HorizontalAlign> = ALL
 
     override fun toString(): String = when (this) {
         LEFT -> "LEFT"

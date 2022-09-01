@@ -3,6 +3,7 @@ package com.soywiz.korge.debug
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.color.RGBAf
+import com.soywiz.korio.lang.EnumLike
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.degrees
@@ -26,6 +27,14 @@ inline fun <reified T : Enum<T>> UiContainer.uiEditableValue(
     name: String = prop.name,
 ): UiRowEditableValue {
     return uiEditableValue(prop, { enumValues<T>().toList() }, name)
+}
+
+@JvmName("uiEditableValueEnumLike")
+inline fun <reified T : EnumLike<T>> UiContainer.uiEditableValue(
+    prop: KMutableProperty0<T>,
+    name: String = prop.name,
+): UiRowEditableValue {
+    return uiEditableValue(prop, { EnumLike.getValues(prop.get()) }, name)
 }
 
 @JvmName("uiEditableValueGeneric")
