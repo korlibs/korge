@@ -227,6 +227,24 @@ class Template internal constructor(
     }
 }
 
+suspend fun Template(
+    template: String,
+    templates: Templates,
+    includes: NewTemplateProvider = templates.includes,
+    layouts: NewTemplateProvider = templates.layouts,
+    config: TemplateConfig = templates.config,
+    cache: Boolean = templates.cache,
+): Template {
+    val root = TemplateProvider(mapOf("template" to template))
+    return Templates(
+        root = root,
+        includes = includes,
+        layouts = layouts,
+        config = config,
+        cache = cache,
+    ).get("template")
+}
+
 suspend fun Template(template: String, config: TemplateConfig = TemplateConfig()): Template = Templates(
     TemplateProvider(mapOf("template" to template)),
     config = config
