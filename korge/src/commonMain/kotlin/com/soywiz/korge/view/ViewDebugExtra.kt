@@ -5,6 +5,7 @@ import com.soywiz.kds.FastArrayList
 import com.soywiz.korge.debug.uiCollapsibleSection
 import com.soywiz.korio.lang.Closeable
 import com.soywiz.korui.UiContainer
+import kotlin.native.concurrent.ThreadLocal
 
 class DebugExtraComponents(val view: View) {
     val sections = LinkedHashMap<String?, FastArrayList<UiContainer.(Views) -> Unit>>()
@@ -32,6 +33,7 @@ class DebugExtraComponents(val view: View) {
     }
 }
 
+@ThreadLocal
 val View.debugExtraComponents: DebugExtraComponents by Extra.PropertyThis { DebugExtraComponents(this) }
 
 fun View.addDebugExtraComponent(section: String?, block: UiContainer.(views: Views) -> Unit): Closeable {
