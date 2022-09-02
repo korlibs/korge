@@ -30,6 +30,7 @@ private class FilterDebugExtra(val view: View) {
     }
 }
 
+@ThreadLocal
 private var View.filterDebugExtra by Extra.PropertyThis { FilterDebugExtra(this) }
 
 /**
