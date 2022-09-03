@@ -5,7 +5,6 @@ import com.soywiz.korag.FragmentShaderDefault
 import com.soywiz.korag.shader.Uniform
 import com.soywiz.korag.shader.VarType
 import com.soywiz.korge.debug.uiEditableValue
-import com.soywiz.korge.render.BatchBuilder2D
 import com.soywiz.korge.render.RenderContext
 import com.soywiz.korge.view.Views
 import com.soywiz.korma.geom.Angle
@@ -46,9 +45,9 @@ class DirectionalBlurFilter(var angle: Angle = 0.degrees, var radius: Double = 4
                     val addTemp = createTemp(Float2)
                     SET(addTemp, (u_direction * xfloat) * u_StdTexDerivates)
                     //SET(addTemp, (u_direction * xfloat) * u_StdTexDerivates * 2f.lit + (u_StdTexDerivates * .5f.lit))
-                    SET(out, out + (texture2D(u_Tex, fragmentCoords01 + addTemp) * gaussianResult))
+                    SET(out, out + (texture2DZeroOutside(u_Tex, fragmentCoords01 + addTemp, check = !VIEW_FILTER_TRANSPARENT_EDGE) * gaussianResult))
                     IF(x ne 0.lit) {
-                        SET(out, out + (texture2D(u_Tex, fragmentCoords01 - addTemp) * gaussianResult))
+                        SET(out, out + (texture2DZeroOutside(u_Tex, fragmentCoords01 - addTemp, check = !VIEW_FILTER_TRANSPARENT_EDGE) * gaussianResult))
                     }
                 }
 

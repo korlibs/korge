@@ -69,6 +69,8 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 @ThreadLocal
 var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
+internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
+
 fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = true) {
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
 
@@ -84,7 +86,10 @@ fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = tru
 
         // This edge is meant to keep the edge pixels transparent, since we are using clamping to edge wrapping
         // so for example the blur filter that reads outside [0, 1] bounds can read transparent pixels.
-        val edgeSize = (1.0 / filterScale).toIntCeil().clamp(1, 8)
+        val edgeSize = when (VIEW_FILTER_TRANSPARENT_EDGE) {
+            true -> (1.0 / filterScale).toIntCeil().clamp(1, 8)
+            false -> 0
+        }
 
         val texWidth = texWidthNoBorder + (edgeSize * 2)
         val texHeight = texHeightNoBorder + (edgeSize * 2)

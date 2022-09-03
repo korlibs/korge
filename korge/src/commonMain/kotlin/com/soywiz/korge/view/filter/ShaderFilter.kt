@@ -43,15 +43,17 @@ abstract class ShaderFilter : Filter {
 
         val Program.ExpressionBuilder.fragmentCoords01: Operand get() = DefaultShaders.v_Tex["xy"]
         val Program.ExpressionBuilder.fragmentCoords: Operand get() = fragmentCoords01 * u_TextureSize
-        fun Program.ExpressionBuilder.texture2DZeroOutside(sampler: Operand, coords: Operand): Operand {
-            return TERNARY(
+        fun Program.ExpressionBuilder.texture2DZeroOutside(sampler: Operand, coords: Operand, check: Boolean = true): Operand = if (check) {
+            TERNARY(
                 //(step(vec2(0f.lit, 0f.lit), coords) - step(vec2(1f.lit, 1f.lit), coords)) eq vec2(0f.lit, 0f.lit),
                 coords.x.inRange(0f.lit, 1f.lit) and coords.y.inRange(0f.lit, 1f.lit),
                 texture2D(sampler, coords),
                 vec4(0f.lit)
             )
-            //return texture2D(sampler, coords)
+        } else{
+            texture2D(sampler, coords)
         }
+        //return texture2D(sampler, coords)
         // @TODO: Here it should premultiply if required
         fun Program.ExpressionBuilder.tex(coords: Operand): Operand = texture2D(DefaultShaders.u_Tex, coords / u_TextureSize)
     }
