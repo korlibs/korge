@@ -351,7 +351,7 @@ fun <T : ISizeInt> BmpCoordsWithT<T>.named(name: String?): BmpCoordsWithInstance
  *                     the bounds rectangle. Width and height defines the size of the virtual frame.
  */
 abstract class BmpSlice(
-    bmpBase: Bitmap,
+    val bmpBase: Bitmap,
     val bounds: RectangleInt,
     override val name: String? = null,
     final override val virtFrame: RectangleInt? = null,
@@ -370,8 +370,8 @@ abstract class BmpSlice(
         this.rotated = rotated
     }
 
-    var bmpBase: Bitmap = bmpBase
-        private set
+    //var bmpBase: Bitmap = bmpBase
+    //    private set
 
     override val base get() = bmpBase
     open val bmp: Bitmap = bmpBase
@@ -441,13 +441,18 @@ abstract class BmpSlice(
 
     fun isValidBasePixelPos(x: Int, y: Int): Boolean = x in 0 until frameWidth && y in 0 until frameHeight
 
-    fun basePixelPos(x: Int, y: Int, out: PointInt = tmpPoint): PointInt? = if (isValidBasePixelPos(x, y)) basePixelPosUnsafe(x, y, out) else throw IllegalArgumentException("Point $x,$y is not in bounds of slice")
+    fun basePixelPos(x: Int, y: Int, out: PointInt = tmpPoint): PointInt? =
+        when {
+            isValidBasePixelPos(x, y) -> basePixelPosUnsafe(x, y, out)
+            else -> throw IllegalArgumentException("Point $x,$y is not in bounds of slice")
+        }
 
     fun basePixelPosUnsafe(x: Int, y: Int, out: PointInt = tmpPoint): PointInt? = out.also {
         val offsetX = x - frameOffsetX
         val offsetY = y - frameOffsetY
-        if (offsetX < 0 || offsetY < 0 || offsetX >= width || offsetY >= height)
+        if (offsetX < 0 || offsetY < 0 || offsetX >= width || offsetY >= height) {
             return null
+        }
 
         it.x = pixelOffsets[0] + pixelOffsets[2] * offsetX + pixelOffsets[3] * offsetY
         it.y = pixelOffsets[1] + pixelOffsets[4] * offsetY + pixelOffsets[5] * offsetX
@@ -474,31 +479,29 @@ abstract class BmpSlice(
     }
 
     fun getRgba(x: Int, y: Int): RGBA {
-        basePixelPos(x, y)?.let {
-            return bmpBase.getRgbaRaw(it.x, it.y)
-        }
-        return Colors.TRANSPARENT_BLACK
+        val it = basePixelPos(x, y) ?: return Colors.TRANSPARENT_BLACK
+        return bmpBase.getRgbaRaw(it.x, it.y)
     }
 
     fun setRgba(x: Int, y: Int, value: RGBA) {
-        basePixelPos(x, y).also {
-            if (it != null) {
-                bmpBase.setRgbaRaw(it.x, it.y, value)
-            } else {
-                if (x < 0 || y < 0 || x >= frameWidth || y >= frameHeight) {
-                    throw IllegalArgumentException("Point $x,$y is not in bounds of slice")
-                }
-                bmpBase = extract()
-                bounds.setBoundsTo(0, 0, bmpBase.width, bmpBase.height)
-                virtFrame?.setBoundsTo(0, 0, bmpBase.width, bmpBase.height)
-                bmpCoords = BmpCoordsWithInstanceBase(
-                    SizeInt(bmpBase.width, bmpBase.height),
-                    premultiplied = bmpBase.premultiplied
-                )
-                intArrayOf(0, 0, 1, 0, 1, 0).copyInto(pixelOffsets)
-                bmpBase.setRgbaRaw(x, y, value)
-            }
-        }
+        val it = basePixelPos(x, y) ?: return
+        //val it = basePixelPos(x, y) ?: throw IllegalArgumentException("Point $x,$y is not in bounds of slice")
+        bmpBase.setRgbaRaw(it.x, it.y, value)
+        //if (it == null) {
+        //    if (x < 0 || y < 0 || x >= frameWidth || y >= frameHeight) {
+        //        throw IllegalArgumentException("Point $x,$y is not in bounds of slice")
+        //    }
+        //    bmpBase = extract()
+        //    bounds.setBoundsTo(0, 0, bmpBase.width, bmpBase.height)
+        //    virtFrame?.setBoundsTo(0, 0, bmpBase.width, bmpBase.height)
+        //    bmpCoords = BmpCoordsWithInstanceBase(
+        //        SizeInt(bmpBase.width, bmpBase.height),
+        //        premultiplied = bmpBase.premultiplied
+        //    )
+        //    intArrayOf(0, 0, 1, 0, 1, 0).copyInto(pixelOffsets)
+        //    bmpBase.setRgbaRaw(x, y, value)
+        //} else {
+        //}
     }
 
     open fun sliceWithBounds(left: Int, top: Int, right: Int, bottom: Int, name: String? = null, imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL): BmpSlice = slice(RectangleInt(left, top, right - left, bottom - top), name, imageOrientation)
@@ -507,26 +510,25 @@ abstract class BmpSlice(
         BitmapSlice(bmp, rect, name, bmpCoords = subCoords(rect, imageOrientation))
     open fun slice(rect: Rectangle, name: String? = null, imageOrientation: ImageOrientation = ImageOrientation.ORIGINAL): BmpSlice = slice(rect.toInt(), name, imageOrientation)
 
-    internal fun <T: Bitmap> extractWithBase(base: T): T
-    {
-        val out: T
+    internal fun <T: Bitmap> extractWithBase(base: T): T {
         val x = (min(min(tl_x, tr_x), min(bl_x, br_x)) * baseWidth).roundToInt()
         val y = (min(min(tl_y, tr_y), min(bl_y, br_y)) * baseHeight).roundToInt()
         val rotated = isRotatedInBaseDeg90
         val reverseX = width > 1 && if (rotated) tl_y > br_y else tl_x > br_x
         val reverseY = height > 1 && if (rotated) tl_x > br_x else tl_y > br_y
 
-        if (frameOffsetX == 0 && frameOffsetY == 0 && frameWidth == width && frameHeight == height) {
-            out = base.extract(x, y, width, height)
+        val out: T = if (frameOffsetX == 0 && frameOffsetY == 0 && frameWidth == width && frameHeight == height) {
+            base.extract(x, y, width, height)
         } else {
-            out = base.createWithThisFormatTyped(frameWidth, frameHeight)
-            if (!rotated) {
-                bmp.copyUnchecked(x, y, out, frameOffsetX, frameOffsetY, width, height)
-            } else {
-                val rgbaArray = IntArray(width)
-                for (x0 in 0 until height) {
-                    bmp.readPixelsUnsafe(x + x0, y, 1, width, rgbaArray)
-                    out.writePixelsUnsafe(frameOffsetX, frameOffsetY + x0, width, 1, rgbaArray)
+            base.createWithThisFormatTyped(frameWidth, frameHeight).also { out ->
+                if (!rotated) {
+                    bmp.copyUnchecked(x, y, out, frameOffsetX, frameOffsetY, width, height)
+                } else {
+                    val rgbaArray = IntArray(width)
+                    for (x0 in 0 until height) {
+                        bmp.readPixelsUnsafe(x + x0, y, 1, width, rgbaArray)
+                        out.writePixelsUnsafe(frameOffsetX, frameOffsetY + x0, width, 1, rgbaArray)
+                    }
                 }
             }
         }
