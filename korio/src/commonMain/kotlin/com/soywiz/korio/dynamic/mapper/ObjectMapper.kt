@@ -30,6 +30,10 @@ import kotlin.reflect.KClass
  * Bools, Numbers, Strings, Lists and Maps (json supported)
  */
 class ObjectMapper {
+    /** In JvmFallback mode, ignores the properties for serialization */
+    @Target(AnnotationTarget.FIELD)
+    annotation class DoNotSerialize
+
 	val _typers = linkedMapOf<KClass<*>, TypeContext.(Any?) -> Any?>()
 	val _untypers = linkedMapOf<KClass<*>, UntypeContext.(Any?) -> Any?>()
 	var fallbackTyper: ((KClass<*>, Any) -> Any)? = null
