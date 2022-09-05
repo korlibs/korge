@@ -1,192 +1,145 @@
 package com.soywiz.korge.baseview
 
 import com.soywiz.kds.FastArrayList
-import com.soywiz.kds.iterators.fastForEachWithTemp
+import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.Event
-import com.soywiz.korev.EventListenerChildren
+import com.soywiz.korev.EventListener
+import com.soywiz.korev.EventListenerFastMap
 import com.soywiz.korev.EventResult
-import com.soywiz.korev.EventType
-import com.soywiz.korev.TEvent
-import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.Component
-import com.soywiz.korge.component.Components
+import com.soywiz.korge.component.ComponentType
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.component.GamepadComponent
 import com.soywiz.korge.component.KeyComponent
 import com.soywiz.korge.component.MouseComponent
 import com.soywiz.korge.component.ResizeComponent
 import com.soywiz.korge.component.TouchComponent
+import com.soywiz.korge.component.TypedComponent
 import com.soywiz.korge.component.UpdateComponent
 import com.soywiz.korge.component.UpdateComponentWithViews
 import com.soywiz.korge.component.cancellable
 import com.soywiz.korge.component.detach
-import com.soywiz.korge.internal.KorgeInternal
+import com.soywiz.korge.component.removeFromView
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
-import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CloseableCancellable
 import kotlin.collections.set
 import kotlin.jvm.JvmName
 
-open class BaseView : EventListenerChildren {
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    // Event Listeners
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    protected class ListenerNode {
-        val listeners = FastArrayList<(Any) -> Unit>()
-        val temp = FastArrayList<(Any) -> Unit>()
-    }
-    /** @TODO: Critical. Consider two lists */
-    private var __eventListeners: MutableMap<EventType<*>, ListenerNode>? = null
-
-    override fun <T : TEvent<T>> addEventListener(type: EventType<T>, handler: (T) -> Unit): Closeable {
-        handler as (Any) -> Unit
-        if (__eventListeners == null) __eventListeners = mutableMapOf()
-        val lists = __eventListeners!!.getOrPut(type) { ListenerNode() }
-        lists.listeners.add(handler)
-        __updateChildListenerCount(type, +1)
-        return Closeable {
-            __updateChildListenerCount(type, -1)
-            lists.listeners.remove(handler)
-        }
-    }
-
-    // , result: EventResult?
-    override fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult?) {
-        val listeners = __eventListeners?.get(type)
-        listeners?.listeners?.fastForEachWithTemp(listeners.temp) {
-            it(event)
-        }
-        result?.let { it.iterationCount++ }
-    }
-
-    /** @TODO: Critical. Consider a list and a [com.soywiz.kds.IntArrayList] */
-    @PublishedApi
-    internal var __eventListenerStats: MutableMap<EventType<*>, Int>? = null
-
-    override fun getEventListenerCount(type: EventType<*>): Int {
-        return __eventListenerStats?.getOrElse(type) { 0 } ?: 0
-    }
-
-    override fun getEventListenerCounts(): Map<EventType<*>, Int>? {
-        return __eventListenerStats
-    }
-
-    //inline fun EventListenerChildren.Internal.__iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
-    protected fun __iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
-        __eventListenerStats?.forEach {
-            block(it.key, it.value)
-        }
-    }
-
+//open class BaseView : BaseEventListener() {
+open class BaseView {
     protected open val baseParent: BaseView? get() = null
+    //protected override val baseParent: BaseView? get() = null
 
-    protected fun __updateChildListenerCount(type: EventType<*>, delta: Int) {
+    @PublishedApi internal var __components: EventListenerFastMap<ComponentType<out Component>, FastArrayList<Component>>? = null
+    @PublishedApi internal val __componentsSure: EventListenerFastMap<ComponentType<out Component>, FastArrayList<Component>> get() {
+        if (__components == null) __components = EventListenerFastMap()
+        return __components!!
+    }
+
+    fun __updateChildListenerCount(view: BaseView, add: Boolean) {
+        view.__components?.forEach { key, value, count ->
+            deltaComponent(key, if (add) +count else -count)
+        }
+    }
+
+    fun getComponentCountInDescendants(clazz: ComponentType<out Component>): Int {
+        return __components?.getCount(clazz) ?: 0
+    }
+
+    private fun deltaComponent(clazz: ComponentType<out Component>, delta: Int) {
         if (delta == 0) return
-        if (__eventListenerStats == null) __eventListenerStats = mutableMapOf()
-        __eventListenerStats?.put(type, __eventListenerStats!!.getOrElse(type) { 0 } + delta)
-        baseParent?.__updateChildListenerCount(type, delta)
+        __componentsSure.setCount(clazz, __componentsSure.getCount(clazz) + delta)
+        baseParent?.deltaComponent(clazz, delta)
     }
 
-    protected fun __updateChildListenerCount(view: BaseView, add: Boolean) {
-        //println("__updateChildListenerCount[$this]:view=$view,add=$add")
-        view.__iterateListenerCount { eventType, i ->
-            //println("   - $eventType: $i")
-            __updateChildListenerCount(eventType, if (add) +i else -i)
+    fun <T : Component> getComponentsOfType(type: ComponentType<T>): FastArrayList<T>? {
+        return __components?.getValue(type) as FastArrayList<T>?
+    }
+
+    fun <T : Component> forEachComponentOfTypeRecursive(type: ComponentType<T>, temp: FastArrayList<Component> = FastArrayList(), results: EventResult? = null, block: (T) -> Unit) {
+        temp as FastArrayList<T>
+        temp.clear()
+        try {
+            getComponentOfTypeRecursive(type, temp, results)
+            temp.fastForEach(block)
+        } finally {
+            temp.clear()
         }
     }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    fun <T : Component> getComponentOfTypeRecursive(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult? = null) {
+        if (getComponentCountInDescendants(type) <= 0) return
 
-    @KorgeInternal
-    @PublishedApi
-    internal var _components: Components? = null
-
-    @KorgeInternal
-    @PublishedApi
-    internal val componentsSure: Components
-        get() {
-            if (_components == null) _components = Components()
-            return _components!!
+        getComponentOfTypeRecursiveChildren(type, out, results)
+        val components = getComponentsOfType(type)
+        components?.let { out.addAll(it) }
+        results?.let {
+            it.iterationCount++
+            it.resultCount += components?.size ?: 0
         }
+    }
+
+    protected open fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
+    }
+
+    fun <T : TypedComponent<T>> getFirstComponentOfType(type: ComponentType<T>): T? {
+        return getComponentsOfType(type)?.firstOrNull()
+    }
+
+    /** Adds a [component] to this view */
+    fun <T : Component> addComponent(component: T): T {
+        val type = component.type
+        __componentsSure.getOrPutValue(type) { FastArrayList() }.add(component)
+        deltaComponent(type, +1)
+        return component
+    }
+
+    /** Removes a specific [component] from the view */
+    fun removeComponent(component: Component) {
+        if (__components?.getValue(component.type)?.remove(component) == true) {
+            deltaComponent(component.type, -1)
+        }
+    }
+
+    /** Removes all the components attached to this view of component [clazz] */
+    fun removeAllComponentsOfType(type: ComponentType<*>) {
+        val components = getComponentsOfType(type)?.toList() ?: return
+        components.fastForEach { it.removeFromView() }
+    }
+
+    /** Removes all the components attached to this view */
+    fun removeAllComponents() {
+        __components?.forEach { key, _, _ ->
+            removeAllComponentsOfType(key)
+        }
+    }
 
     /** Creates a typed [T] component (using the [gen] factory function) if the [View] doesn't have any of that kind, or returns a component of that type if already attached */
-//Deprecated("")
-//inline fun <reified T : Component> ComponentContainer.getOrCreateComponent(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : Component> getOrCreateComponentOther(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (BaseView) -> T): T = componentsSure.getOrCreateComponent(this, T::class, gen)
-    inline fun <reified T : UpdateComponent> getComponentUpdate(): T? = componentsSure.getComponentUpdate<T>()
-    @KorgeExperimental
-    inline fun <reified T : UpdateComponent> getUpdateComponents(): List<T> = componentsSure.getUpdateComponents()
-
-    /** Removes a specific [c] component from the view */
-    fun removeComponent(c: Component) {
-        _components?.remove(c)
+    inline fun <T : TypedComponent<T>> getOrCreateComponent(type: ComponentType<T>, gen: (BaseView) -> T): T {
+        return getComponentsOfType(type)?.firstOrNull()
+            ?: addComponent(gen(this))
     }
 
-    fun removeComponent(c: MouseComponent) {
-        _components?.remove(c)
+    inline fun <T : TypedComponent<T>, reified TR : T> getOrCreateComponentTyped(type: ComponentType<T>, gen: (BaseView) -> TR): TR {
+        return (getComponentsOfType(type)?.firstOrNull { it is TR } as? TR?)
+            ?: (addComponent(gen(this)) as TR)
     }
 
-    fun removeComponent(c: KeyComponent) {
-        _components?.remove(c)
-    }
-
-    fun removeComponent(c: GamepadComponent) {
-        _components?.remove(c)
-    }
-
-    fun removeComponent(c: TouchComponent) {
-        _components?.remove(c)
-    }
-
-    fun removeComponent(c: EventComponent) {
-        _components?.remove(c)
-    }
-
-    fun removeComponent(c: UpdateComponentWithViews) {
-        _components?.remove(c)
-    }
-
-    fun removeComponent(c: UpdateComponent) {
-        _components?.remove(c)
-    }
-
-    fun removeComponent(c: ResizeComponent) {
-        _components?.remove(c)
-    }
+    inline fun <reified T : MouseComponent> getOrCreateComponentMouse(gen: (BaseView) -> T): T = getOrCreateComponentTyped(MouseComponent, gen) as T
+    inline fun <reified T : KeyComponent> getOrCreateComponentKey(gen: (BaseView) -> T): T = getOrCreateComponentTyped(KeyComponent, gen)
+    inline fun <reified T : GamepadComponent> getOrCreateComponentGamepad(gen: (BaseView) -> T): T = getOrCreateComponentTyped(GamepadComponent, gen)
+    inline fun <reified T : TouchComponent> getOrCreateComponentTouch(gen: (BaseView) -> T): T = getOrCreateComponentTyped(TouchComponent, gen)
+    inline fun <reified T : EventComponent> getOrCreateComponentEvent(gen: (BaseView) -> T): T = getOrCreateComponentTyped(EventComponent, gen)
+    inline fun <reified T : UpdateComponentWithViews> getOrCreateComponentUpdateWithViews(gen: (BaseView) -> T): T = getOrCreateComponentTyped(UpdateComponentWithViews, gen)
+    inline fun <reified T : UpdateComponent> getOrCreateComponentUpdate(gen: (BaseView) -> T): T = getOrCreateComponentTyped(UpdateComponent, gen)
+    inline fun <reified T : ResizeComponent> getOrCreateComponentResize(gen: (BaseView) -> T): T = getOrCreateComponentTyped(ResizeComponent.Companion, gen)
 
 //fun removeComponents(c: KClass<out Component>) { components?.removeAll { it.javaClass.isSubtypeOf(c) } }
 ///** Removes a set of components of the type [c] from the view */
 //@eprecated("")
 //fun removeComponents(c: KClass<out Component>) { _components?.removeAll(c) }
-
-    /** Removes all the components attached to this view */
-    fun removeAllComponents() {
-        _components?.removeAll()
-    }
-
-    /** Adds a component to this view */
-    fun addComponent(c: Component): Component = componentsSure.add(c)
-    fun addComponent(c: MouseComponent) = componentsSure.add(c)
-    fun addComponent(c: KeyComponent) = componentsSure.add(c)
-    fun addComponent(c: GamepadComponent) = componentsSure.add(c)
-    fun addComponent(c: TouchComponent) = componentsSure.add(c)
-    fun addComponent(c: EventComponent): EventComponent = componentsSure.add(c)
-    fun addComponent(c: UpdateComponentWithViews) = componentsSure.add(c)
-    fun addComponent(c: UpdateComponent) = componentsSure.add(c)
-    fun addComponent(c: ResizeComponent) = componentsSure.add(c)
 
     fun addOnEventAny(handler: (Event) -> Unit): CloseableCancellable {
         return addComponent(object : EventComponent {

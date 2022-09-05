@@ -3,10 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.clamp
-import com.soywiz.korev.Event
 import com.soywiz.korev.EventResult
-import com.soywiz.korev.EventType
-import com.soywiz.korev.TEvent
+import com.soywiz.korge.component.Component
+import com.soywiz.korge.component.ComponentType
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.internal.KorgeUntested
 import com.soywiz.korge.render.RenderContext
@@ -435,20 +434,23 @@ open class Container : View(true) {
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Event Listeners
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    override fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult?) {
-        val eventListenerCount = getEventListenerCount(type)
+    //override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    //    // @TODO: What if we mutate the list now
+    //    fastForEachChild {
+    //        val childEventListenerCount = it.onEventCount(type)
+    //        if (childEventListenerCount > 0) {
+    //            it.dispatch(type, event, result)
+    //        }
+    //    }
+    //}
 
-        if (eventListenerCount <= 0) return
-
-        // @TODO: What if we mutate the list now
+    override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
         fastForEachChild {
-            val childEventListenerCount = it.getEventListenerCount(type)
+            val childEventListenerCount = it.getComponentCountInDescendants(type)
             if (childEventListenerCount > 0) {
-                it.dispatch(type, event, result)
+                it.getComponentOfTypeRecursive(type, out, results)
             }
         }
-
-        super.dispatch(type, event, result)
     }
 }
 

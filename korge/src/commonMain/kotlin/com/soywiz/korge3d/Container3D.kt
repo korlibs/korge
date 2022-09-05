@@ -1,10 +1,10 @@
 package com.soywiz.korge3d
 
+import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
-import com.soywiz.korev.Event
 import com.soywiz.korev.EventResult
-import com.soywiz.korev.EventType
-import com.soywiz.korev.TEvent
+import com.soywiz.korge.component.Component
+import com.soywiz.korge.component.ComponentType
 
 @Korge3DExperimental
 open class Container3D : View3D() {
@@ -35,12 +35,19 @@ open class Container3D : View3D() {
 		}
 	}
 
-    override fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult?) {
-        if (getEventListenerCount(type) <= 0) return
-        // @TODO: What if we mutate the list now
+    //override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    //    // @TODO: What if we mutate the list now
+    //    fastForEachChild {
+    //        if (it.onEventCount(type) > 0) it.dispatch(type, event, result)
+    //    }
+    //}
+
+    override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
         fastForEachChild {
-            if (it.getEventListenerCount(type) > 0) it.dispatch(type, event, result)
+            val childEventListenerCount = it.getComponentCountInDescendants(type)
+            if (childEventListenerCount > 0) {
+                it.getComponentOfTypeRecursive(type, out, results)
+            }
         }
-        super.dispatch(type, event, result)
     }
 }

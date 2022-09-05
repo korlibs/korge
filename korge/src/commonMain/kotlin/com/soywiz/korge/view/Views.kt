@@ -13,6 +13,7 @@ import com.soywiz.korag.log.LogAG
 import com.soywiz.korag.shader.Program
 import com.soywiz.korev.Event
 import com.soywiz.korev.EventDispatcher
+import com.soywiz.korev.EventResult
 import com.soywiz.korev.GamePadConnectionEvent
 import com.soywiz.korev.GamePadUpdateEvent
 import com.soywiz.korev.Key
@@ -25,8 +26,15 @@ import com.soywiz.korev.dispatch
 import com.soywiz.korge.Korge
 import com.soywiz.korge.KorgeReload
 import com.soywiz.korge.annotations.KorgeExperimental
-import com.soywiz.korge.baseview.BaseView
-import com.soywiz.korge.component.Components
+import com.soywiz.korge.component.Component
+import com.soywiz.korge.component.EventComponent
+import com.soywiz.korge.component.GamepadComponent
+import com.soywiz.korge.component.KeyComponent
+import com.soywiz.korge.component.MouseComponent
+import com.soywiz.korge.component.ResizeComponent
+import com.soywiz.korge.component.TouchComponent
+import com.soywiz.korge.component.UpdateComponent
+import com.soywiz.korge.component.UpdateComponentWithViews
 import com.soywiz.korge.debug.ObservableProperty
 import com.soywiz.korge.input.Input
 import com.soywiz.korge.internal.DefaultViewport
@@ -267,6 +275,7 @@ class Views constructor(
 	var lastTime = timeProvider.now()
 
     private val tempViewsPool = Pool { FastArrayList<View>() }
+    private val tempCompsPool = Pool { FastArrayList<Component>() }
     //private val tempViews = FastArrayList<View>()
 	private val virtualSize = SizeInt()
 	private val actualSize = SizeInt()
@@ -314,32 +323,21 @@ class Views constructor(
 		resized()
 	}
 
-    inline fun <E : Event, T : BaseView, R> FastArrayList<T>.fastEvents(e: E, get: (Components) -> FastArrayList<R>?, block: (R) -> Unit) {
-        e._stopPropagation = false
-        fastForEach {
-            val comps = it._components
-            comps?.let {
-                get(comps)?.fastForEach {
-                    //it.onMouseEvent(views, e)
-                    block(it)
-                    if (e._stopPropagation) return@fastEvents
-                }
-            }
-        }
-    }
-
 	@Suppress("EXPERIMENTAL_API_USAGE")
     override fun <T : Event> dispatch(clazz: KClass<T>, event: T) {
 		val e = event
-        tempViewsPool.alloc { tempViews ->
+        tempCompsPool.alloc { tempComps ->
         //run {
             try {
                 this.stage.dispatch(clazz, event)
-                val stagedViews = getAllDescendantViews(stage, tempViews, true)
+                //val stagedViews = getAllDescendantViews(stage, tempViews, true)
                 when (e) {
-                    is MouseEvent -> stagedViews.fastEvents(e, { it.mouse }) { it.onMouseEvent(views, e) }
-                    is TouchEvent -> stagedViews.fastEvents(e, { it.touch }) { it.onTouchEvent(views, e) }
-                    is ReshapeEvent -> stagedViews.fastEvents(e, { it.resize }) { it.resized(views, e.width, e.height) }
+                    is MouseEvent ->
+                        stage.forEachComponentOfTypeRecursive(MouseComponent, tempComps) { it.onMouseEvent(views, e) }
+                    is TouchEvent ->
+                        stage.forEachComponentOfTypeRecursive(TouchComponent, tempComps) { it.onTouchEvent(views, e) }
+                    is ReshapeEvent ->
+                        stage.forEachComponentOfTypeRecursive(ResizeComponent, tempComps) { it.resized(views, e.width, e.height) }
                     is KeyEvent -> {
                         input.triggerOldKeyEvent(e)
                         input.keys.triggerKeyEvent(e)
@@ -347,13 +345,17 @@ class Views constructor(
                             debugViews = !debugViews
                             gameWindow.debug = debugViews
                         }
-                        stagedViews.fastEvents(e, { it.key }) { it.apply { views.onKeyEvent(e) } }
+                        stage.forEachComponentOfTypeRecursive(KeyComponent, tempComps) { it.apply { this@Views.apply { onKeyEvent(e) } } }
                     }
-                    is GamePadConnectionEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
-                    is GamePadUpdateEvent -> stagedViews.fastEvents(e, { it.gamepad }) { it.apply { it.onGamepadEvent(views, e) } }
+                    is GamePadConnectionEvent ->
+                        stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
+                    is GamePadUpdateEvent ->
+                        stage.forEachComponentOfTypeRecursive(GamepadComponent, tempComps) { it.onGamepadEvent(views, e) }
                     //is GamePadButtonEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
                     //is GamePadStickEvent -> stagedViews.fastForEach { it._components?.gamepad?.fastForEach { it.onGamepadEvent(views, e) } }
-                    else -> stagedViews.fastEvents(e, { it.event }) { it.apply { it.onEvent(e) } }
+                    else -> {
+                        stage.forEachComponentOfTypeRecursive(EventComponent, tempComps) { it.onEvent(e) }
+                    }
                 }
             } catch (e: PreventDefaultException) {
                 //println("PreventDefaultException.Reason: ${e.reason}")
@@ -402,18 +404,19 @@ class Views constructor(
 		render()
 	}
 
+    private val eventResults = EventResult()
 
 	fun update(elapsed: TimeSpan) {
 		//println(this)
 		//println("Update: $dtMs")
 		input.startFrame(elapsed)
-        tempViewsPool.alloc { tempViews ->
-        //run {
-            stage.updateSingleViewWithViewsAll(this, elapsed, tempViews)
+        tempCompsPool.alloc { compList ->
+            eventResults.reset()
+            stage.updateSingleViewWithViewsAll(this, elapsed, compList, eventResults)
+            //println("Views.update:eventResults=$eventResults")
         }
 		input.endFrame(elapsed)
 	}
-
 
 	fun mouseUpdated() {
 		//println("localMouse: (${stage.localMouseX}, ${stage.localMouseY}), inputMouse: (${input.mouse.x}, ${input.mouse.y})")
@@ -616,11 +619,9 @@ private fun getAllDescendantViewsBase(view: View, out: FastArrayList<View>, reve
 }
 
 @OptIn(KorgeInternal::class)
-fun View.updateSingleView(delta: TimeSpan, tempViews: FastArrayList<View> = FastArrayList()) {
-    getAllDescendantViews(this, tempViews).fastForEach { view ->
-        view._components?.update?.fastForEach { comp ->
-            comp.update(delta * view.globalSpeed)
-        }
+fun View.updateSingleView(delta: TimeSpan, tempComps: FastArrayList<Component> = FastArrayList()) {
+    forEachComponentOfTypeRecursive(UpdateComponent, tempComps) { comp ->
+        comp.update(delta * (comp.view as View).globalSpeed)
     }
 }
 
@@ -637,11 +638,14 @@ fun View.updateSingleView(delta: TimeSpan, tempViews: FastArrayList<View> = Fast
 fun View.updateSingleViewWithViewsAll(
     views: Views,
     delta: TimeSpan,
-    tempViews: FastArrayList<View> = FastArrayList()
+    tempComps: FastArrayList<Component> = FastArrayList(),
+    results: EventResult? = null
 ) {
-    getAllDescendantViews(this, tempViews).fastForEach { view ->
-        view._components?.updateWV?.fastForEach { comp -> comp.update(views, delta * view.globalSpeed) }
-        view._components?.update?.fastForEach { comp -> comp.update(delta * view.globalSpeed) }
+    forEachComponentOfTypeRecursive(UpdateComponentWithViews, tempComps, results) { comp ->
+        comp.update(views, delta * (comp.view as View).globalSpeed)
+    }
+    forEachComponentOfTypeRecursive(UpdateComponent, tempComps, results) { comp ->
+        comp.update(delta * (comp.view as View).globalSpeed)
     }
     //updateSingleView(dtMsD, tempComponents)
     //updateSingleViewWithViews(views, dtMsD, tempComponents)
