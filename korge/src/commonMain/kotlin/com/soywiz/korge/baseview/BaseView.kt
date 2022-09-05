@@ -1,7 +1,13 @@
 package com.soywiz.korge.baseview
 
+import com.soywiz.kds.FastArrayList
+import com.soywiz.kds.iterators.fastForEachWithTemp
 import com.soywiz.klock.TimeSpan
 import com.soywiz.korev.Event
+import com.soywiz.korev.EventListenerChildren
+import com.soywiz.korev.EventResult
+import com.soywiz.korev.EventType
+import com.soywiz.korev.TEvent
 import com.soywiz.korge.annotations.KorgeExperimental
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.Components
@@ -18,11 +24,84 @@ import com.soywiz.korge.component.detach
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.view.View
 import com.soywiz.korge.view.Views
+import com.soywiz.korio.lang.Closeable
 import com.soywiz.korio.lang.CloseableCancellable
 import kotlin.collections.set
 import kotlin.jvm.JvmName
 
-open class BaseView {
+open class BaseView : EventListenerChildren {
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Event Listeners
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    protected class ListenerNode {
+        val listeners = FastArrayList<(Any) -> Unit>()
+        val temp = FastArrayList<(Any) -> Unit>()
+    }
+    /** @TODO: Critical. Consider two lists */
+    private var __eventListeners: MutableMap<EventType<*>, ListenerNode>? = null
+
+    override fun <T : TEvent<T>> addEventListener(type: EventType<T>, handler: (T) -> Unit): Closeable {
+        handler as (Any) -> Unit
+        if (__eventListeners == null) __eventListeners = mutableMapOf()
+        val lists = __eventListeners!!.getOrPut(type) { ListenerNode() }
+        lists.listeners.add(handler)
+        __updateChildListenerCount(type, +1)
+        return Closeable {
+            __updateChildListenerCount(type, -1)
+            lists.listeners.remove(handler)
+        }
+    }
+
+    // , result: EventResult?
+    override fun <T : TEvent<T>> dispatch(type: EventType<T>, event: T, result: EventResult?) {
+        val listeners = __eventListeners?.get(type)
+        listeners?.listeners?.fastForEachWithTemp(listeners.temp) {
+            it(event)
+        }
+        result?.let { it.iterationCount++ }
+    }
+
+    /** @TODO: Critical. Consider a list and a [com.soywiz.kds.IntArrayList] */
+    @PublishedApi
+    internal var __eventListenerStats: MutableMap<EventType<*>, Int>? = null
+
+    override fun getEventListenerCount(type: EventType<*>): Int {
+        return __eventListenerStats?.getOrElse(type) { 0 } ?: 0
+    }
+
+    override fun getEventListenerCounts(): Map<EventType<*>, Int>? {
+        return __eventListenerStats
+    }
+
+    //inline fun EventListenerChildren.Internal.__iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
+    protected fun __iterateListenerCount(block: (EventType<*>, Int) -> Unit) {
+        __eventListenerStats?.forEach {
+            block(it.key, it.value)
+        }
+    }
+
+    protected open val baseParent: BaseView? get() = null
+
+    protected fun __updateChildListenerCount(type: EventType<*>, delta: Int) {
+        if (delta == 0) return
+        if (__eventListenerStats == null) __eventListenerStats = mutableMapOf()
+        __eventListenerStats?.put(type, __eventListenerStats!!.getOrElse(type) { 0 } + delta)
+        baseParent?.__updateChildListenerCount(type, delta)
+    }
+
+    protected fun __updateChildListenerCount(view: BaseView, add: Boolean) {
+        //println("__updateChildListenerCount[$this]:view=$view,add=$add")
+        view.__iterateListenerCount { eventType, i ->
+            //println("   - $eventType: $i")
+            __updateChildListenerCount(eventType, if (add) +i else -i)
+        }
+    }
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
     @KorgeInternal
     @PublishedApi
     internal var _components: Components? = null

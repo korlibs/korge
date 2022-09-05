@@ -1,5 +1,9 @@
 package com.soywiz.korge.view
 
+import com.soywiz.korev.MouseEvent
+import com.soywiz.korev.dispatch
+import com.soywiz.korev.dispatchSimple
+import com.soywiz.korev.dispatchWithResult
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -135,5 +139,79 @@ internal class ContainerTest {
         }
         assertEquals(listOf("a", "b", "d", "e"), c.children.map { it.name })
         validateIndices()
+    }
+
+    @Test
+    fun testEventListener() {
+        val log = arrayListOf<String>()
+        fun lg() = log.joinToString(",")
+        val container1 = Container().also { it.name = "container1" }
+        val container2 = Container().also { it.name = "container2" }
+        assertEquals(0, container1.getEventListenerCount(MouseEvent.Type.DOWN))
+        assertEquals(0, container2.getEventListenerCount(MouseEvent.Type.DOWN))
+
+        val listener = container2.addEventListener(MouseEvent.Type.DOWN) { log += "event" }
+        run {
+            assertEquals(0, container1.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals(1, container2.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals("", lg())
+            val result = container1.dispatchWithResult(MouseEvent(MouseEvent.Type.DOWN))
+            assertEquals("", lg())
+            assertEquals(0, result.iterationCount)
+        }
+
+        run {
+            container1.addChild(container2)
+            assertEquals(1, container1.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals(1, container2.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals("", lg())
+            val result = container1.dispatchWithResult(MouseEvent(MouseEvent.Type.DOWN))
+            assertEquals("event", lg())
+            assertEquals(2, result.iterationCount)
+        }
+
+        run {
+            container1.removeChild(container2)
+            assertEquals(0, container1.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals(1, container2.getEventListenerCount(MouseEvent.Type.DOWN))
+        }
+
+        run {
+            log.clear()
+            container1.addChild(container2)
+            assertEquals(1, container1.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals(1, container2.getEventListenerCount(MouseEvent.Type.DOWN))
+            container1.dispatchSimple(MouseEvent(MouseEvent.Type.DOWN))
+            assertEquals("event", lg())
+        }
+
+        run {
+            log.clear()
+            listener.close()
+            assertEquals(0, container1.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals(0, container2.getEventListenerCount(MouseEvent.Type.DOWN))
+            assertEquals("", lg())
+        }
+    }
+
+    @Test
+    fun testEventListenerMinCall() {
+        fun Container.createContainers(count: Int): List<Container> {
+            return (0 until count).map { this.container().name("container$it") }
+        }
+        val root = Container()
+        val containers = root.createContainers(10).map {
+            it.also {
+                it.createContainers(5)
+            }
+        }
+        var log = ""
+        containers[3][1].addEventListener(MouseEvent.Type.DOWN) { log += "a" }
+        containers[5][3].addEventListener(MouseEvent.Type.DOWN) { log += "b" }
+        containers[6].addEventListener(MouseEvent.Type.DOWN) { log += "c" }
+
+        val result = root.dispatchWithResult(MouseEvent(MouseEvent.Type.DOWN))
+        assertEquals("abc", log)
+        assertEquals(6, result.iterationCount)
     }
 }

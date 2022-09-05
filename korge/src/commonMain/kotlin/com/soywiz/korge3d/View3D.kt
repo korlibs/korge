@@ -88,8 +88,9 @@ abstract class View3D : BaseView() {
 	///////
 
 	internal var _parent: Container3D? = null
+    override val baseParent: Container3D? get() = parent
 
-	var parent: Container3D?
+    var parent: Container3D?
 		set(value) {
 			_parent = value
 			_parent?.addChild(this)

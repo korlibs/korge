@@ -214,6 +214,8 @@ abstract class View internal constructor(
         get() = _parent
         internal set(value) { _parent = value }
 
+    override val baseParent: Container? get() = parent
+
     /** Optional name of this view */
     var name: String? = null
 
