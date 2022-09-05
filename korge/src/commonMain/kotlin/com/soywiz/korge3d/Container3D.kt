@@ -17,6 +17,7 @@ open class Container3D : View3D() {
     fun removeChild(child: View3D) {
 		children.remove(child)
         __updateChildListenerCount(child, add = false)
+        invalidateRender()
 	}
 
 	fun addChild(child: View3D) {
@@ -25,6 +26,7 @@ open class Container3D : View3D() {
 		child._parent = this
 		child.transform.parent = this.transform
         __updateChildListenerCount(child, add = true)
+        invalidateRender()
 	}
 
 	operator fun plusAssign(child: View3D) = addChild(child)

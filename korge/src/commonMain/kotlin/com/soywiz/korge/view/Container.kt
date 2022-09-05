@@ -357,17 +357,23 @@ open class Container : View(true) {
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     @PublishedApi internal fun invalidateZIndexChildren() {
         this.__childrenZIndexValid = false
+        invalidateContainer()
     }
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Double, newZIndex: Double) {
         if (child.parent != this) return
         __childrenZIndexValidOrder = false
+        invalidateContainer()
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // Base methods that update the collection
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    protected fun invalidateContainer() {
+        stage?.views?.invalidatedView(this)
+    }
+
     /**
      * Adds the [view] [View] as a child at a specific [index].
      *
@@ -385,6 +391,7 @@ open class Container : View(true) {
         view.invalidate()
         onChildAdded(view)
         invalidateZIndexChildren()
+        invalidateContainer()
         __updateChildListenerCount(view, add = true)
     }
 
@@ -405,6 +412,7 @@ open class Container : View(true) {
         view.index = -1
         invalidateZIndexChildren()
         __updateChildListenerCount(view, add = false)
+        invalidateContainer()
         return true
     }
 
@@ -420,6 +428,7 @@ open class Container : View(true) {
         __updateChildListenerCount(old, add = false)
         if (new.parent !== this) __updateChildListenerCount(new, add = true)
 
+        invalidateContainer()
         invalidateZIndexChildren()
         new.parent?.__children?.remove(new)
         old.parent!!.__children[old.index] = new

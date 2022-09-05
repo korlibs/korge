@@ -89,6 +89,7 @@ open class Text(
         field = value;
         updateLineCount()
         version++
+        invalidate()
     } }
     private fun updateLineCount() {
         lineCount = text.count { it == '\n' } + 1
@@ -99,18 +100,49 @@ open class Text(
     //var fill: Paint? = null; set(value) { if (field != value) { field = value; version++ } }
     //var stroke: Stroke? = null; set(value) { if (field != value) { field = value; version++ } }
 
-    var color: RGBA = color; set(value) { if (field != value) { field = value; version++ } }
+    var color: RGBA = color; set(value) {
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
+        }
+    }
     var font: Resourceable<out Font> = font; set(value) {
-        if (field != value) { field = value; version++ }
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
+        }
         //printStackTrace("setfont=$field")
     }
-    var textSize: Double = textSize; set(value) { if (field != value) { field = value; version++ } }
-    var fontSize: Double
-        get() = textSize
-        set(value) {
-            textSize = value
+    var textSize: Double = textSize; set(value) {
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
         }
-    var renderer: TextRenderer<String> = renderer; set(value) { if (field != value) { field = value; version++ } }
+    }
+    var fontSize: Double by ::textSize
+
+    var renderer: TextRenderer<String> = renderer; set(value) {
+        if (field != value) {
+            field = value
+            version++
+            invalidate()
+        }
+    }
+
+    //private var cachedRendererVersionInvalidated: Int = -1
+    //init {
+    //    addUpdater {
+    //        val version = renderer.version
+    //        if (version != cachedRendererVersionInvalidated) {
+    //            cachedRendererVersionInvalidated = version
+    //            //println("renderer.version: $version != $cachedVersionRenderer")
+    //            invalidate()
+    //        }
+    //    }
+    //}
 
     var alignment: TextAlignment = alignment
         set(value) {
@@ -118,6 +150,7 @@ open class Text(
             field = value
             //println("Text.alignment=$field")
             version++
+            invalidate()
         }
     var horizontalAlign: HorizontalAlign
         get() = alignment.horizontal
@@ -131,15 +164,21 @@ open class Text(
     private val bitmapFontActions = Text2TextRendererActions()
     private var fontLoaded: Boolean = false
     var autoScaling = autoScaling
+        set(value) {
+            field = value
+            invalidate()
+        }
     var preciseAutoscaling = false
         set(value) {
             field = value
             if (value) autoScaling = true
+            invalidate()
         }
     var fontSource: String? = null
         set(value) {
             field = value
             fontLoaded = false
+            invalidate()
         }
 
     // @TODO: Use, font: Resourceable<out Font>
@@ -177,6 +216,7 @@ open class Text(
         autoSize = false
         boundsVersion++
         version++
+        invalidate()
     }
 
     fun unsetTextBounds() {
@@ -184,6 +224,7 @@ open class Text(
         autoSize = true
         boundsVersion++
         version++
+        invalidate()
     }
 
     override fun getLocalBoundsInternal(out: Rectangle) {

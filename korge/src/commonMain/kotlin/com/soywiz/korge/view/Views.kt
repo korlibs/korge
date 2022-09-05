@@ -4,6 +4,7 @@ import com.soywiz.kds.Extra
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.Pool
 import com.soywiz.kds.iterators.fastForEach
+import com.soywiz.klock.DateTime
 import com.soywiz.klock.TimeProvider
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.milliseconds
@@ -26,6 +27,7 @@ import com.soywiz.korev.dispatch
 import com.soywiz.korge.Korge
 import com.soywiz.korge.KorgeReload
 import com.soywiz.korge.annotations.KorgeExperimental
+import com.soywiz.korge.baseview.BaseView
 import com.soywiz.korge.component.Component
 import com.soywiz.korge.component.EventComponent
 import com.soywiz.korge.component.GamepadComponent
@@ -385,7 +387,7 @@ class Views constructor(
         renderContext.flush()
     }
 
-	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL) {
+	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL, forceRender: Boolean = false) {
         val currentTime = timeProvider.now()
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
@@ -401,8 +403,18 @@ class Views constructor(
 		} else {
 			update(adelta)
 		}
-		render()
+        val doRender = forceRender || updatedSinceFrame > 0
+        if (doRender) {
+            if (printRendering) {
+                println("Views.frameUpdateAndRender[${DateTime.nowUnixLong()}]: doRender=$doRender -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
+            }
+            render()
+            startFrame()
+        }
 	}
+
+    //var printRendering: Boolean = true
+    var printRendering: Boolean = Environment["SHOW_FRAME_UPDATE_AND_RENDER"] == "true"
 
     private val eventResults = EventResult()
 
@@ -523,6 +535,17 @@ class Views constructor(
     fun <T> completedEditing(prop: ObservableProperty<T>) {
         debugSaveView("Adjusted ${prop.name}", null)
         completedEditing(Unit)
+    }
+
+    var updatedSinceFrame: Int = 0
+
+    fun startFrame() {
+        updatedSinceFrame = 0
+    }
+
+    fun invalidatedView(view: BaseView) {
+        //println("invalidatedView: $view")
+        updatedSinceFrame++
     }
 
     var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()

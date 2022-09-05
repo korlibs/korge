@@ -212,7 +212,12 @@ abstract class View internal constructor(
     /** Parent [Container] of [this] View if any, or null */
     var parent: Container?
         get() = _parent
-        internal set(value) { _parent = value }
+        internal set(value) {
+            if (_parent !== value) {
+                _parent = value
+                onParentChanged()
+            }
+        }
 
     override val baseParent: Container? get() = parent
 
@@ -514,6 +519,12 @@ abstract class View internal constructor(
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidate()
+            }
+        }
 
     /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
     fun setMatrix(matrix: Matrix) {
@@ -760,12 +771,21 @@ abstract class View internal constructor(
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
+        invalidateRender()
+    }
+
+    open fun onParentChanged() {
+    }
+
+    override fun invalidateRender() {
+        stage?.views?.invalidatedView(this)
     }
 
     open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
+        invalidateRender()
     }
 
     var debugAnnotate: Boolean = false

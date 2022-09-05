@@ -34,6 +34,7 @@ class MainFlag : ScaledScene(592, 592) {
         // Propagates the wave over time
         addUpdater { dt: TimeSpan ->
             flagFilter.time = flagFilter.time.plus(dt)
+            invalidateRender()
         }
 
         fun min(a: Double, b: Double) = if (a > b) b else a

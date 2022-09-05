@@ -269,12 +269,13 @@ open class ViewsForTesting(
         frameTime: TimeSpan = this.frameTime,
         cond: () -> Boolean = { OS.isJvm && !OS.isAndroid },
         //devicePixelRatio: Double = defaultDevicePixelRatio,
+        forceRenderEveryFrame: Boolean = true,
         block: suspend Stage.() -> Unit
     ): Unit = suspendTest(timeout = timeout, cond = cond) {
         viewsLog.init()
         this@ViewsForTesting.devicePixelRatio = devicePixelRatio
         //suspendTest(timeout = timeout, cond = { !OS.isAndroid && !OS.isJs && !OS.isNative }) {
-        Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime)
+        Korge.prepareViewsBase(views, gameWindow, fixedSizeStep = frameTime, forceRenderEveryFrame = forceRenderEveryFrame)
 
 		injector.mapInstance<Module>(object : Module() {
 			override val title = "KorgeViewsForTesting"

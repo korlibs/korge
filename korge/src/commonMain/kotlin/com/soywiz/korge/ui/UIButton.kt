@@ -131,23 +131,33 @@ open class UIButton(
     }
 
     fun simulateOver() {
+        if (bover) return
 		bover = true
+        invalidate()
 	}
 
 	fun simulateOut() {
+        if (!bover) return
 		bover = false
+        invalidate()
 	}
 
 	fun simulatePressing(value: Boolean) {
+        if (bpressing == value) return
 		bpressing = value
+        invalidate()
 	}
 
 	fun simulateDown() {
+        if (bpressing) return
 		bpressing = true
+        invalidate()
 	}
 
 	fun simulateUp() {
+        if (!bpressing) return
 		bpressing = false
+        invalidate()
 	}
 
     val onPress = Signal<TouchEvents.Info>()

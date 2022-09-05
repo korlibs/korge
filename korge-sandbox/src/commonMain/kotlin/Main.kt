@@ -23,6 +23,7 @@ suspend fun main() = Korge(
     //scaleMode = ScaleMode.EXACT,
     //debug = true,
     multithreaded = true,
+    forceRenderEveryFrame = false // Newly added optimization!
     //debugAg = true,
 ) {
     //uiButton("HELLO WORLD!", width = 300.0).position(100, 100); return@Korge
@@ -30,7 +31,11 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainJSMpeg),
-        Demo(::MainGraphicsText),
+        //Demo(::MainGraphicsText),
+        //Demo(::MainEditor),
+        //Demo(::MainStage3d),
+        //Demo(::MainInput),
+        Demo(::MainSvgAnimation),
         listOf(
             Demo(::MainGraphicsText),
             Demo(::MainRpgScene),

@@ -32,6 +32,9 @@ open class BaseView {
     protected open val baseParent: BaseView? get() = null
     //protected override val baseParent: BaseView? get() = null
 
+    open fun invalidateRender() {
+    }
+
     @PublishedApi internal var __components: EventListenerFastMap<ComponentType<out Component>, FastArrayList<Component>>? = null
     @PublishedApi internal val __componentsSure: EventListenerFastMap<ComponentType<out Component>, FastArrayList<Component>> get() {
         if (__components == null) __components = EventListenerFastMap()

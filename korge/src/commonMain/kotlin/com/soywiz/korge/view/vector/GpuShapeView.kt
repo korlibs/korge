@@ -173,6 +173,7 @@ open class GpuShapeView(
         validShapeBounds = false
         validShapeBoundsStrokes = false
         //strokeCache.clear()
+        invalidateRender()
     }
 
     private fun requireShape() {

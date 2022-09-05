@@ -46,15 +46,19 @@ open class BaseImage(
     var bitmap: BaseBmpSlice
         get() = baseBitmap
         set(value) {
+            if (baseBitmap == value) return
             setBitmapSource = true
             baseBitmap = value
+            invalidate()
         }
 
     var bitmapSrc: Resourceable<out BaseBmpSlice> = bitmap
         set(value) {
+            if (field == value) return
             setBitmapSource = false
             field = value
             trySetSource()
+            invalidate()
         }
 
     fun trySetSource() {

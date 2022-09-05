@@ -50,6 +50,7 @@ open class UIRadioButton(
                 field.removeRadio(this)
                 field = value
                 value.addRadio(this)
+                invalidate()
             }
         }
 
@@ -59,6 +60,7 @@ open class UIRadioButton(
             if (super.checked != value) {
                 super.checked = value
                 if (value) group.selectedButton = this
+                invalidate()
             }
         }
 
