@@ -61,4 +61,13 @@ class FastArrayListTest {
         assertEquals(listOf(1, 2, 3), listOf(1, 2, 3).toFastList(FastArrayList(listOf(-1))))
         assertEquals(listOf(1, 2, 3), listOf(1, 2, 3).toFastList(FastArrayList(listOf(-1, -2, -3, -4))))
     }
+
+    @Test
+    fun testRemove() {
+        val list = fastArrayListOf(1, 2, 3)
+        assertEquals(true, list.remove(2))
+        assertEquals(listOf(1, 3), list)
+        assertEquals(false, list.remove(2))
+        assertEquals(listOf(1, 3), list)
+    }
 }
