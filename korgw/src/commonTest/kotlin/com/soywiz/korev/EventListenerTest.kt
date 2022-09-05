@@ -13,13 +13,15 @@ class EventListenerTest {
 
         operator fun get(index: Int): MyContainer = children[index]
 
-        fun addChild(other: MyContainer) {
-            children.add(other)
-            __updateChildListenerCount(other, add = true)
+        fun addChild(child: MyContainer) {
+            children.add(child)
+            child.baseParent = this
+            __updateChildListenerCount(child, add = true)
         }
-        fun removeChild(other: MyContainer) {
-            children.remove(other)
-            __updateChildListenerCount(other, add = false)
+        fun removeChild(child: MyContainer) {
+            children.remove(child)
+            child.baseParent = null
+            __updateChildListenerCount(child, add = false)
         }
 
         override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
