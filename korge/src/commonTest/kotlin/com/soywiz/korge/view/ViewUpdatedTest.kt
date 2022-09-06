@@ -55,13 +55,17 @@ class ViewUpdatedTest {
         val views = viewsLog.views
         val view = gen(views.stage)
 
-        fun <T> assertUpdatedOnce(prop: KMutableProperty0<T>, value: T) {
+        fun <T> assertUpdatedOnce(prop: KMutableProperty0<T>, value: T, expectedCount: Int = 1) {
+            assertUpdatedOnce(name = prop.name, expectedCount = expectedCount) { prop.set(value) }
+        }
+
+        fun assertUpdatedOnce(name: String = "block()", expectedCount: Int = 1, block: () -> Unit) {
             views.startFrame()
-            prop.set(value)
-            assertEquals(1, views.updatedSinceFrame, message = "Should update view::${prop.name}")
+            block()
+            assertEquals(expectedCount, views.updatedSinceFrame, message = "Should update view::${name}")
             views.startFrame()
-            prop.set(value)
-            assertEquals(0, views.updatedSinceFrame, message = "Shouldn't re-update view::${prop.name}")
+            block()
+            assertEquals(0, views.updatedSinceFrame, message = "Shouldn't re-update view::${name}")
         }
     }
 }
