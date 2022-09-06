@@ -3,6 +3,9 @@ package com.soywiz.korge.view
 import com.soywiz.kds.FastArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.kmem.clamp
+import com.soywiz.korev.EventResult
+import com.soywiz.korge.component.Component
+import com.soywiz.korge.component.ComponentType
 import com.soywiz.korge.internal.KorgeInternal
 import com.soywiz.korge.internal.KorgeUntested
 import com.soywiz.korge.render.RenderContext
@@ -144,25 +147,6 @@ open class Container : View(true) {
         }
     }
 
-    /**
-     * Adds the [view] [View] as a child at a specific [index].
-     *
-     * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
-     */
-    fun addChildAt(view: View, index: Int) {
-        view.parent?.invalidateZIndexChildren()
-        view.removeFromParent()
-        val aindex = index.clamp(0, this.numChildren)
-        view.index = aindex
-        val children = __children
-        children.add(aindex, view)
-        for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
-        view.parent = this
-        view.invalidate()
-        onChildAdded(view)
-        invalidateZIndexChildren()
-    }
-
     protected open fun onChildAdded(view: View) {
     }
 
@@ -189,25 +173,6 @@ open class Container : View(true) {
     @KorgeUntested
     fun getChildByName(name: String): View? = __children.firstOrNull { it.name == name }
 
-    /**
-     * Removes the specified [view] from this container.
-     *
-     * Returns true if the child was removed from this container.
-     * Returns false, if nothing happened.
-     *
-     * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
-     */
-    fun removeChild(view: View?): Boolean {
-        //if (view == null) return false
-        if (view?.parent !== this) return false
-        for (i in view.index + 1 until numChildren) __children[i].index--
-        __children.removeAt(view.index)
-        view.parent = null
-        view.index = -1
-        invalidateZIndexChildren()
-        return true
-    }
-
     fun removeChildAt(index: Int): Boolean =
         removeChild(getChildAtOrNull(index))
 
@@ -215,20 +180,6 @@ open class Container : View(true) {
     fun removeChildAt(index: Int, count: Int) {
         repeat(count) { removeChildAt(index) }
         invalidateZIndexChildren()
-    }
-
-    fun replaceChild(old: View, new: View): Boolean {
-        if (old === new) return false
-        if (old.parent != this) return false
-        invalidateZIndexChildren()
-        new.parent?.__children?.remove(new)
-        old.parent!!.__children[old.index] = new
-        new.index = old.index
-        new.parent = old.parent
-        old.parent = null
-        new.invalidate()
-        old.index = -1
-        return true
     }
 
     // @TODO: Optimize
@@ -406,12 +357,109 @@ open class Container : View(true) {
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     @PublishedApi internal fun invalidateZIndexChildren() {
         this.__childrenZIndexValid = false
+        invalidateContainer()
     }
 
     // @TODO: Instead of resort everytime that something changes, let's keep an index in the zIndex collection
     @PublishedApi internal fun updatedChildZIndex(child: View, oldZIndex: Double, newZIndex: Double) {
         if (child.parent != this) return
         __childrenZIndexValidOrder = false
+        invalidateContainer()
+    }
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Base methods that update the collection
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    protected fun invalidateContainer() {
+        stage?.views?.invalidatedView(this)
+    }
+
+    /**
+     * Adds the [view] [View] as a child at a specific [index].
+     *
+     * Remarks: if [index] is outside bounds 0..[numChildren], it will be clamped to the nearest valid value.
+     */
+    fun addChildAt(view: View, index: Int) {
+        view.parent?.invalidateZIndexChildren()
+        view.removeFromParent()
+        val aindex = index.clamp(0, this.numChildren)
+        view.index = aindex
+        val children = __children
+        children.add(aindex, view)
+        for (n in aindex + 1 until children.size) children[n].index = n // Update other indices
+        view.parent = this
+        view.invalidate()
+        onChildAdded(view)
+        invalidateZIndexChildren()
+        invalidateContainer()
+        __updateChildListenerCount(view, add = true)
+    }
+
+    /**
+     * Removes the specified [view] from this container.
+     *
+     * Returns true if the child was removed from this container.
+     * Returns false, if nothing happened.
+     *
+     * Remarks: If the parent of [view] is not this container, this function doesn't do anything.
+     */
+    fun removeChild(view: View?): Boolean {
+        //if (view == null) return false
+        if (view?.parent !== this) return false
+        for (i in view.index + 1 until numChildren) __children[i].index--
+        __children.removeAt(view.index)
+        view.parent = null
+        view.index = -1
+        invalidateZIndexChildren()
+        __updateChildListenerCount(view, add = false)
+        invalidateContainer()
+        return true
+    }
+
+    /**
+     * Replaces this child [old] with a [new] view.
+     *
+     * [old] must be part of this Container
+     */
+    fun replaceChild(old: View, new: View): Boolean {
+        if (old === new) return false
+        if (old.parent != this) return false
+
+        __updateChildListenerCount(old, add = false)
+        if (new.parent !== this) __updateChildListenerCount(new, add = true)
+
+        invalidateContainer()
+        invalidateZIndexChildren()
+        new.parent?.__children?.remove(new)
+        old.parent!!.__children[old.index] = new
+        new.index = old.index
+        new.parent = old.parent
+        old.parent = null
+        new.invalidate()
+        old.index = -1
+        return true
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Event Listeners
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //override fun <T : TEvent<T>> dispatchChildren(type: EventType<T>, event: T, result: EventResult?) {
+    //    // @TODO: What if we mutate the list now
+    //    fastForEachChild {
+    //        val childEventListenerCount = it.onEventCount(type)
+    //        if (childEventListenerCount > 0) {
+    //            it.dispatch(type, event, result)
+    //        }
+    //    }
+    //}
+
+    override fun <T : Component> getComponentOfTypeRecursiveChildren(type: ComponentType<T>, out: FastArrayList<T>, results: EventResult?) {
+        fastForEachChild {
+            val childEventListenerCount = it.getComponentCountInDescendants(type)
+            if (childEventListenerCount > 0) {
+                it.getComponentOfTypeRecursive(type, out, results)
+            }
+        }
     }
 }
 

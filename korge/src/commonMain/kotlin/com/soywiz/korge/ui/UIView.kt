@@ -22,7 +22,10 @@ private val View._defaultUiSkin: UISkin get() = extraCache("_defaultUiSkin") { U
 
 var View.uiSkin: UISkin?
     get() = getExtra("uiSkin") as? UISkin?
-    set(value) { setExtra("uiSkin", value) }
+    set(value) {
+        setExtra("uiSkin", value)
+        invalidateRender()
+    }
 
 var View.uiSkinSure: UISkin
     get() {
@@ -39,6 +42,7 @@ open class UIView(
 ) : FixedSizeContainer(width, height), UISkinable {
     override fun <T> setSkinProperty(property: String, value: T) {
         uiSkinSure.setSkinProperty(property, value)
+        invalidateRender()
     }
     override fun <T> getSkinPropertyOrNull(property: String): T? = (uiSkin?.getSkinPropertyOrNull(property) as? T?) ?: realUiSkin.getSkinPropertyOrNull(property)
 
@@ -67,7 +71,12 @@ open class UIView(
 	protected open fun onSizeChanged() {
 	}
 
-	open fun updateState() {
+    override fun onParentChanged() {
+        updateState()
+    }
+
+    open fun updateState() {
+        invalidate()
 	}
 
 	override fun renderInternal(ctx: RenderContext) {

@@ -154,6 +154,7 @@ open class UIComboBox<T>(
     }
 
     override fun updateState() {
+        super.updateState()
         onSizeChanged()
         for (i in items.indices) {
             val button = itemsView.container.getChildAtOrNull(i) as? UIButton ?: continue

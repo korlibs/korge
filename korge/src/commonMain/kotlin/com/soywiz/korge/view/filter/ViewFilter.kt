@@ -48,6 +48,7 @@ var View.filter: Filter?
         } else {
             removeRenderPhaseOfType<ViewRenderPhaseFilter>()
         }
+        invalidate()
     }
 
 class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {

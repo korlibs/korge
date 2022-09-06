@@ -110,6 +110,7 @@ object Korge {
             settingsFolder = config.settingsFolder,
             batchMaxQuads = config.batchMaxQuads,
             multithreaded = config.multithreaded,
+            forceRenderEveryFrame = config.forceRenderEveryFrame,
             entry = {
                 //println("Korge views prepared for Config")
                 RegisteredImageFormats.register(*module.imageFormats.toTypedArray())
@@ -166,6 +167,7 @@ object Korge {
         settingsFolder: String? = null,
         batchMaxQuads: Int = BatchBuilder2D.DEFAULT_BATCH_QUADS,
         multithreaded: Boolean? = null,
+        forceRenderEveryFrame: Boolean = true,
         entry: suspend Stage.() -> Unit
 	) {
         if (!OS.isJsBrowser) {
@@ -239,7 +241,7 @@ object Korge {
             //Korge.prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK)
 
             gameWindow.registerTime("prepareViews") {
-                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true)
+                prepareViews(views, gameWindow, bgcolor != null, bgcolor ?: Colors.TRANSPARENT_BLACK, waitForFirstRender = true, forceRenderEveryFrame = forceRenderEveryFrame)
             }
 
             gameWindow.registerTime("completeViews") {
@@ -279,7 +281,8 @@ object Korge {
         eventDispatcher: EventDispatcher,
         clearEachFrame: Boolean = true,
         bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-        fixedSizeStep: TimeSpan = TimeSpan.NIL
+        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        forceRenderEveryFrame: Boolean = true
     ): CompletableDeferred<Unit> {
         KorgeReload.registerEventDispatcher(eventDispatcher)
 
@@ -520,7 +523,7 @@ object Korge {
                     firstRenderDeferred.complete(Unit)
                 }
                 try {
-                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep)
+                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep, forceRender = forceRenderEveryFrame)
 
                     views.input.mouseOutside = false
                     if (moveMouseOutsideInNextFrame) {
@@ -542,14 +545,15 @@ object Korge {
 
     @KorgeInternal
     suspend fun prepareViews(
-            views: Views,
-            eventDispatcher: EventDispatcher,
-            clearEachFrame: Boolean = true,
-            bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
-            fixedSizeStep: TimeSpan = TimeSpan.NIL,
-            waitForFirstRender: Boolean = true
+        views: Views,
+        eventDispatcher: EventDispatcher,
+        clearEachFrame: Boolean = true,
+        bgcolor: RGBA = Colors.TRANSPARENT_BLACK,
+        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        waitForFirstRender: Boolean = true,
+        forceRenderEveryFrame: Boolean = true
     ) {
-        val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep)
+        val firstRenderDeferred = prepareViewsBase(views, eventDispatcher, clearEachFrame, bgcolor, fixedSizeStep, forceRenderEveryFrame)
         if (waitForFirstRender) {
             firstRenderDeferred.await()
         }
@@ -583,6 +587,7 @@ object Korge {
         val quality: GameWindow.Quality? = null,
         val icon: String? = null,
         val multithreaded: Boolean? = null,
+        val forceRenderEveryFrame: Boolean = true,
         val main: (suspend Stage.() -> Unit)? = module.main,
         val constructedScene: Scene.(Views) -> Unit = module.constructedScene,
         val constructedViews: (Views) -> Unit = module.constructedViews,

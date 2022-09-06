@@ -212,7 +212,14 @@ abstract class View internal constructor(
     /** Parent [Container] of [this] View if any, or null */
     var parent: Container?
         get() = _parent
-        internal set(value) { _parent = value }
+        internal set(value) {
+            if (_parent !== value) {
+                _parent = value
+                onParentChanged()
+            }
+        }
+
+    override val baseParent: Container? get() = parent
 
     /** Optional name of this view */
     var name: String? = null
@@ -512,6 +519,12 @@ abstract class View internal constructor(
 
     /** Determines if the view will be displayed or not. It is different to alpha=0, since the render method won't be executed. Usually giving better performance. But also not receiving events. */
     open var visible: Boolean = true
+        set(value) {
+            if (field != value) {
+                field = value
+                invalidate()
+            }
+        }
 
     /** Sets the local transform matrix that includes [x], [y], [scaleX], [scaleY], [rotation], [skewX] and [skewY] encoded into a [Matrix] */
     fun setMatrix(matrix: Matrix) {
@@ -758,12 +771,21 @@ abstract class View internal constructor(
         this._version++
         _requireInvalidate = false
         dirtyVertices = true
+        invalidateRender()
+    }
+
+    open fun onParentChanged() {
+    }
+
+    override fun invalidateRender() {
+        stage?.views?.invalidatedView(this)
     }
 
     open fun invalidateColorTransform() {
         this._versionColor++
         _requireInvalidateColor = false
         dirtyVertices = true
+        invalidateRender()
     }
 
     var debugAnnotate: Boolean = false
@@ -1643,16 +1665,17 @@ fun View?.commonAncestor(ancestor: View?): View? {
 fun View.replaceWith(view: View): Boolean = this.parent?.replaceChild(this, view) ?: false
 
 /** Adds a block that will be executed per frame to this view. As parameter the block will receive a [TimeSpan] with the time elapsed since the previous frame. */
-fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
+fun <T : View> T.addUpdater(first: Boolean = true, updatable: T.(dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponent {
         override val view: View get() = this@addUpdater
         override fun update(dt: TimeSpan) {
             updatable(this@addUpdater, dt)
         }
     }.attach()
-    component.update(TimeSpan.ZERO)
+    if (first) component.update(TimeSpan.ZERO)
     return Cancellable { component.detach() }
 }
+fun <T : View> T.addUpdater(updatable: T.(dt: TimeSpan) -> Unit): Cancellable = addUpdater(true, updatable)
 
 fun <T : View> T.addUpdaterWithViews(updatable: T.(views: Views, dt: TimeSpan) -> Unit): Cancellable {
     val component = object : UpdateComponentWithViews {

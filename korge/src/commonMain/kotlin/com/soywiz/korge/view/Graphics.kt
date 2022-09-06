@@ -54,20 +54,28 @@ class Graphics(
         set(value) {
             softGraphics?.boundsIncludeStrokes = value
             gpuGraphics?.boundsIncludeStrokes = value
+            invalidateRender()
         }
 
     override var anchorX: Double
         get() = anchorable?.anchorX ?: 0.0
-        set(value) { anchorable?.anchorX = value }
+        set(value) {
+            anchorable?.anchorX = value
+            invalidateRender()
+        }
     override var anchorY: Double
         get() = anchorable?.anchorY ?: 0.0
-        set(value) { anchorable?.anchorY = value }
+        set(value) {
+            anchorable?.anchorY = value
+            invalidateRender()
+        }
     var antialiased: Boolean = true
         set(value) {
             if (field == value) return
             field = value
             softGraphics?.antialiased = true
             gpuGraphics?.antialiased = true
+            invalidateRender()
         }
     var smoothing: Boolean = true
         set(value) {
@@ -75,6 +83,7 @@ class Graphics(
             field = value
             softGraphics?.smoothing = true
             gpuGraphics?.smoothing = true
+            invalidateRender()
         }
     var autoScaling: Boolean = true
         set(value) {
@@ -82,6 +91,7 @@ class Graphics(
             field = value
             softGraphics?.autoScaling = true
             gpuGraphics?.autoScaling = true
+            invalidateRender()
         }
 
     var shape: Shape = EmptyShape
@@ -91,6 +101,7 @@ class Graphics(
             ensure()
             softGraphics?.shape = value
             gpuGraphics?.shape = value
+            invalidateRender()
         }
     var renderer: GraphicsRenderer = renderer
         set(value) {
