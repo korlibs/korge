@@ -168,7 +168,7 @@ internal open class BaseLocalVfsJvm : LocalVfs() {
         val file = resolveFile(path)
         val fullpath = "$path/${file.name}"
         if (file.exists()) {
-            val lastModified = DateTime.fromUnix(file.lastModified())
+            val lastModified = DateTime.fromUnixMillis(file.lastModified())
             createExistsStat(
                 fullpath,
                 isDirectory = file.isDirectory,
