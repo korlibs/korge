@@ -70,7 +70,8 @@ class ViewRenderPhaseFilter(var filter: Filter? = null) : ViewRenderPhase {
 @ThreadLocal
 var View.filterScale: Double by extraPropertyThis(transform = { Filter.discretizeFilterScale(it) }) { 1.0 }
 
-internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
+//internal const val VIEW_FILTER_TRANSPARENT_EDGE = true
+internal const val VIEW_FILTER_TRANSPARENT_EDGE = false
 
 fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = true) {
     val bounds = getLocalBoundsOptimizedAnchored(includeFilters = false)
