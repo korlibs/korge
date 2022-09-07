@@ -98,9 +98,6 @@ fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = tru
         val addx = -bounds.x + edgeSize
         val addy = -bounds.y + edgeSize
 
-        val rx = -edgeSize
-        val ry = -edgeSize
-
         //println("FILTER: $texWidth, $texHeight : $globalMatrixInv, $globalMatrix, addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMulInt=$renderColorMulInt, blendMode=$blendMode")
         //println("FILTER($this): $texWidth, $texHeight : bounds=${bounds} addx=$addx, addy=$addy, renderColorAdd=$renderColorAdd, renderColorMul=$renderColorMul, blendMode=$blendMode")
 
@@ -124,7 +121,7 @@ fun View.renderFiltered(ctx: RenderContext, filter: Filter, first: Boolean = tru
         }) { texture ->
             //println("texWidthHeight=$texWidth,$texHeight")
             tempMat2d.copyFrom(globalMatrix)
-            tempMat2d.pretranslate(-addx + rx, -addy + ry)
+            tempMat2d.pretranslate(-addx, -addy)
             tempMat2d.prescale(1.0 / realFilterScale)
             filter.render(
                 ctx,
