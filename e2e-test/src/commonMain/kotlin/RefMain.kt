@@ -22,7 +22,8 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
         val cases = listOf(
             EmptyE2ETestCase,
             FiltersE2ETestCase,
-            IdentityFilterE2ETestCase
+            IdentityFilterE2ETestCase,
+            DirectionalBlurE2ETestCase,
         )
 
         println("Determining screenshotsVfs...")
@@ -125,3 +126,12 @@ object EmptyE2ETestCase : E2ETestCase() {
     }
 }
 
+object DirectionalBlurE2ETestCase : E2ETestCase() {
+    override suspend fun Container.run() {
+        solidRect(width, height, Colors.WHITE)
+        circle(32.0, Colors.RED)
+            .centered
+            .dockedTo(Anchor.CENTER, ScaleMode.NO_SCALE)
+            .filters(DirectionalBlurFilter(angle = 0.degrees, radius = 16.0, expandBorder = true))
+    }
+}
