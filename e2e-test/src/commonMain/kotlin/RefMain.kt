@@ -1,5 +1,6 @@
 import com.soywiz.klock.*
 import com.soywiz.korge.*
+import com.soywiz.korge.component.docking.dockedTo
 import com.soywiz.korge.time.*
 import com.soywiz.korge.view.*
 import com.soywiz.korge.view.filter.*
@@ -12,6 +13,7 @@ import com.soywiz.korio.lang.*
 import com.soywiz.korio.serialization.json.Json
 import com.soywiz.korma.geom.Anchor
 import com.soywiz.korma.geom.ScaleMode
+import com.soywiz.korma.geom.degrees
 
 suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"]) {
     val exceptions = arrayListOf<Throwable>()
@@ -77,7 +79,7 @@ suspend fun main() = Korge(width = 768, height = 512, bgcolor = Colors["#2b2b2b"
 }
 
 open class E2ETestCase {
-    val name get() = this::class.portableSimpleName
+    val name get() = this::class.portableSimpleName.removeSuffix("E2ETestCase")
     open val scale: Double = 1.0
     open val pixelPerfect: Boolean = false
 
