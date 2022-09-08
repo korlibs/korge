@@ -92,8 +92,8 @@ open class CatalogVfs(val parent: VfsFile) : Vfs.Proxy() {
                 path = "$path/$localName",
                 isDirectory = it["isDirectory"].bool,
                 size = it["size"].long,
-                createTime = DateTime.fromUnix(it["createTime"].long),
-                modifiedTime = DateTime.fromUnix(it["modifiedTime"].long),
+                createTime = DateTime.fromUnixMillis(it["createTime"].long),
+                modifiedTime = DateTime.fromUnixMillis(it["modifiedTime"].long),
                 cache = true
             )
         }.associateBy { it.baseName }
