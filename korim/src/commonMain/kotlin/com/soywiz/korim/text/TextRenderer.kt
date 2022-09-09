@@ -106,8 +106,11 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
 
     val totalMaxLineHeight get() = lines.sumOf { it.maxLineHeight }
 
-    fun getAlignX(align: HorizontalAlign, line: Int, fontMetrics: FontMetrics): Double = align.getOffsetX(lines.getOrNull(line)?.maxX ?: 0.0)
-    fun getAlignY(align: VerticalAlign, line: Int, fontMetrics: FontMetrics): Double =
+    fun getAlignX(align: HorizontalAlign, line: Int): Double {
+        val line = lines.getOrNull(line) ?: return align.getOffsetX(0.0)
+        return align.getOffsetX(line.maxX)
+    }
+    fun getAlignY(align: VerticalAlign, fontMetrics: FontMetrics): Double =
         align.getOffsetYRespectBaseline(fontMetrics, totalMaxLineHeight)
 
     data class LineStats(
@@ -115,6 +118,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         var maxX: Double = 0.0,
         val bounds: BoundsBuilder = BoundsBuilder(),
     ) {
+        fun getAlignX(align: HorizontalAlign): Double = align.getOffsetX(maxX)
 
         fun advance(dx: Double) {
             maxX += dx
@@ -409,8 +413,8 @@ fun <T> VectorBuilder.text(
             val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath)
             if (glyph != null) {
                 transform.keepMatrix {
-                    val dx = metrics.getAlignX(align.horizontal, currentLineNum, fontMetrics)
-                    val dy = metrics.getAlignY(align.vertical, currentLineNum, fontMetrics)
+                    val dx = metrics.getAlignX(align.horizontal, currentLineNum)
+                    val dy = metrics.getAlignY(align.vertical, fontMetrics)
                     transform.premultiply(glyph.transform)
                     transform.translate(this.x + x - dx, this.y + y + dy)
                     transform.premultiply(this.transform)

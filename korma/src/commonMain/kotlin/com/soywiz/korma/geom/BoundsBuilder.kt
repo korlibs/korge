@@ -1,5 +1,7 @@
 package com.soywiz.korma.geom
 
+import com.soywiz.korma.geom.vector.VectorPath
+
 class BoundsBuilder {
     val tempRect = Rectangle()
 
@@ -51,6 +53,10 @@ class BoundsBuilder {
     }
     fun add(ps: IPointArrayList): BoundsBuilder {
         for (n in 0 until ps.size) add(ps.getX(n), ps.getY(n))
+        return this
+    }
+    fun add(vp: VectorPath): BoundsBuilder {
+        add(vp.getBounds())
         return this
     }
 

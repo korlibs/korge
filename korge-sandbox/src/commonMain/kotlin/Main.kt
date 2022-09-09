@@ -35,7 +35,8 @@ suspend fun main() = Korge(
         //Demo(::MainEditor),
         //Demo(::MainStage3d),
         //Demo(::MainInput),
-        Demo(::MainSvgAnimation),
+        //Demo(::MainSvgAnimation),
+        Demo(::MainTextBounds),
         listOf(
             Demo(::MainGraphicsText),
             Demo(::MainRpgScene),

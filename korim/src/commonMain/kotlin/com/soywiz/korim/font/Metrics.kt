@@ -34,6 +34,7 @@ data class FontMetrics(
     //val lineHeight get() = top - bottom
     val lineHeight get() = rtop - rbottom
 
+    fun copyFrom(other: FontMetrics) = this.copyFromScaled(other, 1.0)
     fun copyFromNewSize(other: FontMetrics, size: Double) = this.copyFromScaled(other, size / other.size)
 
     fun copyFromScaled(other: FontMetrics, scale: Double) = this.apply {
@@ -103,12 +104,14 @@ data class GlyphMetrics(
     }
 }
 
-data class TextMetrics(
+data class TextMetrics constructor(
     val bounds: Rectangle = Rectangle(),
-    val firstLineBounds: Rectangle = Rectangle(),
+    var lineBounds: List<Rectangle> = emptyList(),
     val fontMetrics: FontMetrics = FontMetrics(),
     var nlines: Int = 0,
 ) {
+    val firstLineBounds: Rectangle get() = lineBounds.firstOrNull() ?: Rectangle()
+
     val left: Double get() = bounds.left
     val top: Double get() = bounds.top
 
