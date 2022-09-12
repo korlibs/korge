@@ -41,7 +41,12 @@ interface Font : Resourceable<Font> {
 
     // Metrics
     fun getFontMetrics(size: Double, metrics: FontMetrics = FontMetrics()): FontMetrics
-    fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics = GlyphMetrics()): GlyphMetrics
+    fun getGlyphMetrics(
+        size: Double,
+        codePoint: Int,
+        metrics: GlyphMetrics = GlyphMetrics(),
+        reader: WStringReader? = null
+    ): GlyphMetrics
     fun getKerning(size: Double, leftCodePoint: Int, rightCodePoint: Int): Double
 
     // Rendering
@@ -114,13 +119,15 @@ interface BaseTextMetricsResult {
 }
 
 fun Font.renderGlyphToBitmap(
-        size: Double, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
-        effect: BitmapEffect? = null,
-        border: Int = 1, nativeRendering: Boolean = true
+    size: Double, codePoint: Int, paint: Paint = DefaultPaint, fill: Boolean = true,
+    effect: BitmapEffect? = null,
+    border: Int = 1,
+    nativeRendering: Boolean = true,
+    reader: WStringReader? = null
 ): TextToBitmapResult {
     val font = this
     val fmetrics = getFontMetrics(size)
-    val gmetrics = getGlyphMetrics(size, codePoint)
+    val gmetrics = getGlyphMetrics(size, codePoint, reader = reader)
     val gx = -gmetrics.left
     val gy = gmetrics.height + gmetrics.top
     val border2 = border * 2
