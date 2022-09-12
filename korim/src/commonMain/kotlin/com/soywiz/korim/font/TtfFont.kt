@@ -123,8 +123,8 @@ abstract class BaseTtfFont(
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(this.fontMetrics1px, size)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics): GlyphMetrics =
-        metrics.copyFromNewSize(getGlyphByCodePoint(codePoint)?.metrics1px ?: nonExistantGlyphMetrics1px, size, codePoint)
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
+        metrics.copyFromNewSize(getGlyphByReader(reader, codePoint)?.metrics1px ?: nonExistantGlyphMetrics1px, size, codePoint)
 
     override fun getKerning(
         size: Double,
@@ -136,26 +136,12 @@ abstract class BaseTtfFont(
     }
 
     override fun getGlyphPath(size: Double, codePoint: Int, path: GlyphPath, reader: WStringReader?): GlyphPath? {
-        var g = getGlyphByCodePoint(codePoint) ?: return null
+        val spos = reader?.position
+        val codePointPeek = reader?.peek(0)
+        val g = getGlyphByReader(reader, codePoint, cache = true) ?: return null
 
-        val subs = substitutionsCodePoints[codePoint]
-        if (reader != null && subs != null) {
-            //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
-            for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
-                val sub = reader.substr(0, count)
-                val replacement = subs.map[sub]
-                //println("sub=${sub.toCodePointIntArray().toList()}")
-                if (replacement != null) {
-                    //println("replacement=$replacement")
-                    reader.skip(sub.length)
-                    g = getGlyphByIndex(replacement.first()) ?: break
-                    break
-                }
-            }
-            //println("maxSequence: " + subs.maxSequence)
-            //println("getGlyphPath: codePoint=$codePoint, glyphID=${g.index}, subs=${subs}")
-        }
-
+        //println("getGlyphPath: codePoint['${codePoint.toChar()}']=${codePoint}, codePointPeek=$codePointPeek, pos=$spos -> ${reader?.position}")
+        //println("stack=${currentStackTrace()}")
 
         val scale = getTextScale(size)
         //println("unitsPerEm = $unitsPerEm")
@@ -176,6 +162,9 @@ abstract class BaseTtfFont(
                 scaleX,
                 scaleY,
             )
+            //path.advanceWidth = g.advanceWidth.toDouble() * scale * scaleX
+        } else {
+            //path.advanceWidth = g.advanceWidth.toDouble() * scale
         }
         path.transform.identity()
         //path.transform.scale(scale, -scale)
@@ -1367,7 +1356,7 @@ abstract class BaseTtfFont(
                                                     val ligature = WString(codePointIntArray + componentCodePoints)
                                                     map[ligature] = intArrayOf(ligatureGlyph)
 
-                                                    //println("            - ${listOf(glyphID) + componentGlyphIDs.toList()} -> $ligatureGlyph")
+                                                    //println("            - ligature: $ligature -> ligatureGlyph=$ligatureGlyph")
                                                 }
                                             }
                                         }
@@ -1631,6 +1620,29 @@ abstract class BaseTtfFont(
     fun getCharIndexFromChar(char: Char): Int? = getCharacterMapOrNull(char.code)
     fun getCharIndexFromWChar(char: WChar): Int? = getCharacterMapOrNull(char.code)
 
+    fun getGlyphByReader(reader: WStringReader?, codePoint: Int, cache: Boolean = true): Glyph? {
+        var g = getGlyphByCodePoint(codePoint)
+        var skipCount = 1
+        if (g != null) {
+            val subs = substitutionsCodePoints[codePoint]
+            if (reader != null && subs != null) {
+                //for (v in subs.map) println(v.key.toCodePointIntArray().toList())
+                for (count in kotlin.math.min(reader.available, subs.maxSequence) downTo 2) {
+                    val sub = reader.substr(0, count)
+                    val replacement = subs.map[sub]
+                    //println("sub=${sub.toCodePointIntArray().toList()}")
+                    if (replacement != null) {
+                        //println("replacement=$replacement")
+                        skipCount = sub.length
+                        g = getGlyphByIndex(replacement.first()) ?: break
+                        break
+                    }
+                }
+            }
+        }
+        reader?.skip(skipCount)
+        return g
+    }
     fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache, codePoint) }
     fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
     fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
