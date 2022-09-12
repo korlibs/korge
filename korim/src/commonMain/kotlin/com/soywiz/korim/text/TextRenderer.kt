@@ -14,6 +14,7 @@ import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.paint.Paint
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
+import com.soywiz.korio.lang.keep
 import com.soywiz.korio.util.niceStr
 import com.soywiz.korma.geom.Angle
 import com.soywiz.korma.geom.BoundsBuilder
@@ -40,7 +41,7 @@ interface ITextRendererActions {
     val transform: Matrix
 
     fun getKerning(leftCodePoint: Int, rightCodePoint: Int): Double
-    fun getGlyphMetrics(codePoint: Int): GlyphMetrics
+    fun getGlyphMetrics(reader: WStringReader?, codePoint: Int): GlyphMetrics
     fun reset() {
         x = 0.0
         y = 0.0
@@ -75,7 +76,8 @@ abstract class TextRendererActions : ITextRendererActions {
     override var x = 0.0
     override var y = 0.0
 
-    override fun getGlyphMetrics(codePoint: Int): GlyphMetrics = font.getGlyphMetrics(fontSize, codePoint, glyphMetrics)
+    override fun getGlyphMetrics(reader: WStringReader?, codePoint: Int): GlyphMetrics =
+        font.getGlyphMetrics(fontSize, codePoint, glyphMetrics, reader)
 
     //var transformAnchor: Anchor = Anchor.BOTTOM_CENTER
     override val transform: Matrix = Matrix()
@@ -173,7 +175,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
     }
 
     override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
-        val g = getGlyphMetrics(codePoint)
+        val g = getGlyphMetrics(reader, codePoint)
         // y = 0 is the baseline
         add(g.bounds)
         current.metrics(fontMetrics)
@@ -248,7 +250,7 @@ class Text2TextRendererActions : TextRendererActions() {
 
     override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
         val bf = font as BitmapFont
-        val m = getGlyphMetrics(codePoint)
+        val m = reader.keep { getGlyphMetrics(reader, codePoint) }
         val g = bf[codePoint]
         val x = g.xoffset.toDouble()
         val y = g.yoffset.toDouble() - when (verticalAlign) {
@@ -357,8 +359,9 @@ fun CreateWStringTextRenderer(
             if (c == '\n'.code) {
                 newLine(lineHeight, end = false)
             } else {
-                val g = getGlyphMetrics(c)
+                val g = reader.keep { getGlyphMetrics(reader, c) }
                 transform.identity()
+                //println("READER: c='${c.toChar()}', pos=${reader.position}")
                 handler(this, reader, c, g, (g.xadvance + getKerning(c, c1)))
             }
             // No explicit movement, skip 1
@@ -410,22 +413,16 @@ fun <T> VectorBuilder.text(
     val actions = object : TextRendererActions() {
         val metrics = renderer.measure(text, textSize, font)
         override fun put(reader: WStringReader, codePoint: Int): GlyphMetrics {
-            val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath)
-            if (glyph != null) {
-                transform.keepMatrix {
-                    val dx = metrics.getAlignX(align.horizontal, currentLineNum)
-                    val dy = metrics.getAlignY(align.vertical, fontMetrics)
-                    transform.premultiply(glyph.transform)
-                    transform.translate(this.x + x - dx, this.y + y + dy)
-                    transform.premultiply(this.transform)
-                    //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
-                    val shape = glyph.colorShape
-                    if (shape != null) {
-                        vectorBuilder.path(shape.getPath(), transform)
-                    } else {
-                        vectorBuilder.path(glyph.path, transform)
-                    }
-                }
+            val glyph = font.getGlyphPath(this.fontSize, codePoint, this.glyphPath, reader) ?: return glyphMetrics
+            transform.keepMatrix {
+                val dx = metrics.getAlignX(align.horizontal, currentLineNum)
+                val dy = metrics.getAlignY(align.vertical, fontMetrics)
+                transform.premultiply(glyph.transform)
+                transform.translate(this.x + x - dx, this.y + y + dy)
+                transform.premultiply(this.transform)
+                //println("PUT $codePoint -> $transform : $x, $y, ${this.x}, ${this.y}")
+                val shape = glyph.colorShape
+                vectorBuilder.path(shape?.getPath() ?: glyph.path, transform)
             }
             return glyphMetrics
         }
