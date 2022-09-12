@@ -75,7 +75,7 @@ class BitmapFont(
     override fun getFontMetrics(size: Double, metrics: FontMetrics): FontMetrics =
         metrics.copyFromNewSize(naturalFontMetrics, size)
 
-    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics): GlyphMetrics =
+    override fun getGlyphMetrics(size: Double, codePoint: Int, metrics: GlyphMetrics, reader: WStringReader?): GlyphMetrics =
         metrics.copyFromNewSize(glyphs[codePoint]?.naturalMetrics ?: naturalNonExistantGlyphMetrics, size, codePoint)
 
     private val naturalNonExistantGlyphMetrics = GlyphMetrics(fontSize, false, 0, Rectangle(), 0.0)
@@ -96,7 +96,7 @@ class BitmapFont(
     ): Boolean {
         val scale = getTextScale(size)
         val g = glyphs[codePoint] ?: return false
-        getGlyphMetrics(size, codePoint, metrics).takeIf { it.existing } ?: return false
+        getGlyphMetrics(size, codePoint, metrics, reader).takeIf { it.existing } ?: return false
         if (metrics.width == 0.0 && metrics.height == 0.0) return false
         //println("SCALE: $scale")
         val texX = x + metrics.left
@@ -179,17 +179,17 @@ class BitmapFont(
          * Allows to set a different [fontName] than the one provided at [Font].
          */
         operator fun invoke(
-                font: Font,
-                fontSize: Number,
-                chars: CharacterSet = CharacterSet.LATIN_ALL,
-                fontName: String = font.name,
-                paint: Paint = Colors.WHITE,
-                mipmaps: Boolean = true,
-                effect: BitmapEffect? = null,
+            font: Font,
+            fontSize: Number,
+            chars: CharacterSet = CharacterSet.LATIN_ALL,
+            fontName: String = font.name,
+            paint: Paint = Colors.WHITE,
+            mipmaps: Boolean = true,
+            effect: BitmapEffect? = null,
         ): BitmapFont {
             val fontSize = fontSize.toDouble()
             val fmetrics = font.getFontMetrics(fontSize)
-            val glyphMetrics = chars.codePoints.map { font.getGlyphMetrics(fontSize, it) }
+            val glyphMetrics = chars.codePoints.map { font.getGlyphMetrics(fontSize, it, reader = null) }
             val requiredArea = glyphMetrics.map { (it.width + 4) * (fmetrics.lineHeight + 4) }.sum().toIntCeil()
             val requiredAreaSide = sqrt(requiredArea.toDouble()).toIntCeil()
             val matlas = MutableAtlas<TextToBitmapResult>(requiredAreaSide.nextPowerOfTwo, requiredAreaSide.nextPowerOfTwo)
