@@ -15,13 +15,16 @@ import com.soywiz.korge.view.text
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
+import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.font.getTextBoundsWithGlyphs
+import com.soywiz.korim.font.readTtfFont
 import com.soywiz.korim.font.toBitmapFont
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.aroundPath
+import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.shape.buildVectorPath
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.rect
@@ -29,15 +32,22 @@ import com.soywiz.korma.geom.vector.rect
 class MainTextBounds : Scene() {
     enum class Wrap { NO, CIRCLE }
 
+    lateinit var playfairDisplayTTF: VectorFont
     var align = TextAlignment.BASELINE_CENTER
-    val bmpFont = DefaultTtfFont.toBitmapFont(16.0)
+    //val vfont get() = DefaultTtfFont
+    val vfont get() = playfairDisplayTTF
+    val bmpFont by lazy { vfont.toBitmapFont(16.0) }
     var wrap = Wrap.NO
 
     fun Container.reload() {
         removeChildren()
-        val font = DefaultTtfFont
         val fontSize = 128.0
-        val text = "HÉLLO\nji!"
+        //val text = "HÉLLO\nji!"
+        val text = "¡Everyone's got\na story s t st to to tell!"
+        //val text = "¡¿"
+        //val text = "¡"
+        //val text = "st"
+        //val text = "hello"
         val renderer = DefaultStringTextRenderer
             .let {
                 when (wrap) {
@@ -50,10 +60,10 @@ class MainTextBounds : Scene() {
         //val align = TextAlignment.BASELINE_LEFT
         container {
             xy(600, 350)
-            text(text, fontSize, font = font, alignment = align, renderer = renderer)//.also { it.zIndex = 1.0 }
+            text(text, fontSize, font = vfont, alignment = align, renderer = renderer)//.also { it.zIndex = 1.0 }
             graphics {
                 println("----------------------")
-                val stats = font.getTextBoundsWithGlyphs(fontSize, text, align = align, renderer = renderer)
+                val stats = vfont.getTextBoundsWithGlyphs(fontSize, text, align = align, renderer = renderer)
                 val metrics = stats.metrics
                 //val metrics = font.getTextBounds(64.0, text, align = align)
                 println("- ${metrics.bounds}")
@@ -72,6 +82,8 @@ class MainTextBounds : Scene() {
     }
 
     override suspend fun SContainer.sceneMain() {
+        playfairDisplayTTF = resourcesVfs["PlayfairDisplay-BoldItalic.ttf"].readTtfFont()
+
         val container = container {
             reload()
         }
@@ -93,6 +105,5 @@ class MainTextBounds : Scene() {
                 uiButton("CIRCLE-WRAP") { onClick { wrap = Wrap.CIRCLE; container.reload() } }
             }
         }
-
     }
 }
