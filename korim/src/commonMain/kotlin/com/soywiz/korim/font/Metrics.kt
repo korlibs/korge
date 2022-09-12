@@ -84,14 +84,16 @@ data class GlyphMetrics(
 
     fun clone() = copy(bounds = bounds.clone())
 
-    fun copyFromNewSize(other: GlyphMetrics, size: Double, codePoint: Int = other.codePoint) = this.copyFromScaled(other, size / other.size, codePoint)
+    fun copyFromNewSize(other: GlyphMetrics, size: Double, codePoint: Int = other.codePoint): GlyphMetrics =
+        this.copyFromScaled(other, size / other.size, codePoint)
 
-    fun copyFromScaled(other: GlyphMetrics, scale: Double, codePoint: Int = other.codePoint) = this.apply {
+    fun copyFromScaled(other: GlyphMetrics, scale: Double, codePoint: Int = other.codePoint): GlyphMetrics {
         this.size = other.size
         this.existing = other.existing
         this.codePoint = codePoint
         this.bounds.setTo(other.bounds.x * scale, other.bounds.y * scale, other.bounds.width * scale, other.bounds.height * scale)
         this.xadvance = other.xadvance * scale
+        return this
     }
 
     override fun toString(): String = buildString {
