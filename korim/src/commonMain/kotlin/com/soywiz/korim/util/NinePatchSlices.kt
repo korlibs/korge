@@ -36,7 +36,7 @@ class NinePatchSlices private constructor(val ranges: List<DoubleRangeExclusive>
     fun transform1D(input: DoubleArrayList, oldLen: Double, newLen: Double, output: DoubleArrayList = DoubleArrayList()): DoubleArrayList {
         output.size = input.size
         for (n in 0 until input.size) output[n] = input[n]
-        transform1DInplace(oldLen, newLen, input.size, get = { output[it] }, set = { index, value -> output[index] = value })
+        transform1DInplace(output, oldLen, newLen)
         return output
     }
 
