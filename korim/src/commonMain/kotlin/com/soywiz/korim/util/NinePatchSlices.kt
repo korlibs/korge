@@ -11,11 +11,11 @@ class NinePatchSlices private constructor(val ranges: List<DoubleRangeExclusive>
     // @TODO: newLen < oldLen should make corners (non-stretch areas) smaller
     inline fun transform1DInplace(oldLen: Double, newLen: Double, count: Int, get: (index: Int) -> Double, set: (index: Int, value: Double) -> Unit, iscale: Double = 1.0) {
         val slices: NinePatchSlices = this
-        if (slices.ranges.isEmpty() || newLen < oldLen) {
-            val scale = newLen / oldLen
-            for (i in 0 until count) set(i, get(i) * scale)
+        val rscale = if (slices.ranges.isEmpty()) {
+            newLen / oldLen
         } else {
-            val scale = (newLen - oldLen) / slices.lengths
+            val rscale = if (newLen / iscale < oldLen) newLen / oldLen else iscale
+            val scale = (newLen / rscale - oldLen) / slices.lengths
             val position = get(count - 1)
             for (slice in slices.ranges) {
                 if (position > slice.start) {
@@ -24,7 +24,9 @@ class NinePatchSlices private constructor(val ranges: List<DoubleRangeExclusive>
                     for (i in 0 until count) set(i, get(i) + offset)
                 }
             }
+            rscale
         }
+        for (i in 0 until count) set(i, get(i) * rscale)
     }
 
     fun transform1DInplace(positions: DoubleArrayList, oldLen: Double, newLen: Double) {

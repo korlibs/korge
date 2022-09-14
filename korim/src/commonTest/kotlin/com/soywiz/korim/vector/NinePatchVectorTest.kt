@@ -46,7 +46,6 @@ class NinePatchVectorTest {
         )
     }
 
-    // @TODO: when we fix scaling down, this test will change
     @Test
     fun testRoundRectScaleDown() {
         val vector = buildVectorPath {
@@ -55,10 +54,12 @@ class NinePatchVectorTest {
         assertEquals(
             """
                 M12.5,0 L37.5,0 Q50,0,50,12.5 L50,37.5 Q50,50,37.5,50 L12.5,50 Q0,50,0,37.5 L0,12.5 Q0,0,12.5,0 Z
+                M12.5,0 L37.5,0 Q50,0,50,2.5 L50,7.5 Q50,10,37.5,10 L12.5,10 Q0,10,0,7.5 L0,2.5 Q0,0,12.5,0 Z
                 M25,0 L75,0 Q100,0,100,24 L100,75 Q100,100,75,100 L24,100 Q0,100,0,75 L0,24 Q0,0,24,0 Z
             """.trimIndent(),
             """
                 ${vector.scaleNinePatch(Size(50, 50)).roundDecimalPlaces(1).toSvgString()}
+                ${vector.scaleNinePatch(Size(50, 10)).roundDecimalPlaces(1).toSvgString()}
                 ${vector.toSvgString()}
             """.trimIndent()
 

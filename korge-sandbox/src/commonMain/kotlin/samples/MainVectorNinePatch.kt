@@ -20,11 +20,11 @@ class MainVectorNinePatch : Scene() {
 
     override suspend fun SContainer.sceneMain() {
         val vector = buildVectorPath {
-            roundRect(0, 0, 100, 100, 25, 25)
+            roundRect(0, 0, 300, 300, 75, 75)
         }
         val vector9 = NinePatchVector(vector, NinePatchSlices2D(
-            NinePatchSlices(26.0 until 74.0),
-            NinePatchSlices(26.0 until 74.0),
+            NinePatchSlices(77.0 until (300.0 - 77.0)),
+            NinePatchSlices(77.0 until (300.0 - 77.0)),
         ))
         val g = graphics()
 
