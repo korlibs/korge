@@ -41,6 +41,7 @@ import com.soywiz.korio.lang.WChar
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.unsupported
 import com.soywiz.korio.stream.AsyncInputOpenable
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.FastByteArrayInputStream
@@ -201,7 +202,7 @@ abstract class BaseTtfFont(
 
         fun getName(nameId: NameId): String? = getName(nameId.id)
 
-        fun toMap() = NameId.values().map { it to getName(it) }.toMap()
+        fun toMap() = NameId.values().associateWith { getName(it) }
 
         override fun toString(): String = "NamesInfo(${toMap()})"
     }
@@ -305,7 +306,27 @@ abstract class BaseTtfFont(
         readMaxp()
         readHhea()
         readNames()
+
         if (!onlyReadMetadata) {
+            // OpenType fonts with TrueType outlines use a glyph index to specify and access glyphs within a font;
+            // e.g., to index within the 'loca' table and thereby access glyph data in the 'glyf' table.
+            // This concept is retained in OpenType CFF fonts, except that glyph data is accessed through
+            // the CharStrings INDEX of the 'CFF ' table.
+            if (getTable("CFF ") != null && getTable("glyf") == null) {
+
+                // Disabled for now!
+                unsupported("Unsupported OTF/CFF")
+
+                runTableUnit("CFF ") {
+                    TtfCIDFont.CFF.apply {
+                        this@runTableUnit.readCFF()
+                    }
+                }
+            }
+
+            // this.glyphCache[index]
+
+            //println("$name: " + getTableNames())
             readLoca()
             readCmap()
             readHmtx()
@@ -515,8 +536,8 @@ abstract class BaseTtfFont(
 
     data class NameInfo(val offset: Int, val length: Int, val charset: Charset)
 
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/loca
     protected fun readLoca() = runTableUnit("loca") {
-        //println("readLoca! $name")
 		val bytesPerEntry = when (indexToLocFormat) {
 			0 -> 2
 			1 -> 4
@@ -527,9 +548,10 @@ abstract class BaseTtfFont(
 		val data = readBytesExact(bytesPerEntry * (numGlyphs + 1))
 
 		locs = FastByteArrayInputStream(data).run {
+
 			when (indexToLocFormat) {
-				0 -> IntArray(numGlyphs + 1) { readU16BE() * 2 }
-				1 -> IntArray(numGlyphs + 1) { readS32BE() }
+				0 -> readCharArrayBE(numGlyphs + 1).mapInt { it.code * 2 }
+				1 -> readIntArrayBE(numGlyphs + 1)
 				else -> invalidOp
 			}
 		}
@@ -1754,7 +1776,9 @@ abstract class BaseTtfFont(
         reader?.skip(skipCount)
         return g
     }
-    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache, codePoint) }
+    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let {
+        getGlyphByIndex(it, cache, codePoint)
+    }
     fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
     fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
 
@@ -1767,7 +1791,7 @@ abstract class BaseTtfFont(
         val start = locs.getOrNull(index) ?: 0
         val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
-        //println("GLYPH INDEX: $index")
+        //println("getGlyphByIndex: index=$index, cache=$cache, start=$start, end=$end, locs=${locs.toList()}")
         val glyph = when {
             size != 0 -> this.glyphCache[index] ?: runTable("glyf") { table ->
                 //println("READ GLYPH[$index]: start=$start, end=$end, size=$size, table=$table")
@@ -1777,7 +1801,7 @@ abstract class BaseTtfFont(
             }
             else -> {
                 //println("EMPTY GLYPH: SIZE: $size, index=$index")
-                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth).also {
+                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth, dummy = true).also {
                     //it.codePoint = finalCodePoint
                 }
             }
@@ -1937,9 +1961,10 @@ abstract class BaseTtfFont(
 		val flags: IntArray,
 		val xPos: IntArray,
 		val yPos: IntArray,
-		advanceWidth: Int
+		advanceWidth: Int,
+        val dummy: Boolean = false
 	) : Glyph(index, xMin, yMin, xMax, yMax, advanceWidth) {
-        override fun toString(): String = "SimpleGlyph[$advanceWidth]($index) : $path"
+        override fun toString(): String = "SimpleGlyph${if (dummy) "Dummy" else ""}[$index](advance=$advanceWidth) : $path"
         val npoints: Int get() = xPos.size
         protected fun onCurve(n: Int) = (flags[n] and 1) != 0
 		protected fun contour(n: Int, out: Contour = Contour()) = out.apply {
@@ -2054,7 +2079,9 @@ abstract class BaseTtfFont(
 
         //println("glyph[$index]: ncontours=$ncontours [${ncontours.hex}], xMin=$xMin, yMin=$yMin -- xMax=$xMax, yMax=$yMax")
 
-		if (ncontours < 0) {
+        val advanceWidth = horMetrics[index].advanceWidth
+
+        return if (ncontours < 0) {
 			//println("WARNING: readCompositeGlyph not implemented")
 
 			val ARG_1_AND_2_ARE_WORDS = 0x0001
@@ -2112,7 +2139,7 @@ abstract class BaseTtfFont(
 				references += ref
 			} while ((flags and MORE_COMPONENTS) != 0)
 
-			return CompositeGlyph(index, xMin, yMin, xMax, yMax, references, horMetrics[index].advanceWidth)
+            CompositeGlyph(index, xMin, yMin, xMax, yMax, references, advanceWidth)
 		} else {
 			val contoursIndices = IntArray(ncontours + 1)
 			contoursIndices[0] = -1
@@ -2159,19 +2186,21 @@ abstract class BaseTtfFont(
 				}
 			}
 
-			//println("$ncontours, $xMin, $yMax, $xMax, $yMax, ${endPtsOfContours.toList()}, $numPoints, ${flags.toList()}")
+
 			//println(xPos.toList())
 			//println(yPos.toList())
-			return SimpleGlyph(
+			SimpleGlyph(
                 index,
 				xMin, yMin,
 				xMax, yMax,
 				contoursIndices,
 				flags.toIntArray(),
 				xPos, yPos,
-				horMetrics[index].advanceWidth
+                advanceWidth
 			)
-		}
+		}.also {
+            //println("GLYPH[$index]: ncontours=$ncontours, xyminmax=[$xMin, $yMax, $xMax, $yMax], advanceWidth=$advanceWidth, glyph=${it}")
+        }
 	}
 }
 
