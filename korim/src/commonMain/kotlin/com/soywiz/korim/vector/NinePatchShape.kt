@@ -1,7 +1,6 @@
 package com.soywiz.korim.vector
 
 import com.soywiz.kds.fastArrayListOf
-import com.soywiz.kds.mapDouble
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.util.NinePatchSlices
@@ -34,7 +33,7 @@ fun Shape.ninePatch(slices: NinePatchSlices2D): NinePatchShape = NinePatchShape(
 fun Shape.ninePatch(x: NinePatchSlices, y: NinePatchSlices): NinePatchShape = NinePatchShape(this, NinePatchSlices2D(x, y))
 
 
-fun Shape.toNinePatchWithGuides(color: RGBA = Colors.FUCHSIA, optimizeShape: Boolean = true): NinePatchShape {
+fun Shape.toNinePatchWithGuides(guideColor: RGBA = Colors.FUCHSIA, optimizeShape: Boolean = true): NinePatchShape {
     val guides = fastArrayListOf<VectorPath>()
     fun Shape.getShapeWithoutGuidesAndPopulateGuides(): Shape {
         return when (this) {
@@ -44,7 +43,7 @@ fun Shape.toNinePatchWithGuides(color: RGBA = Colors.FUCHSIA, optimizeShape: Boo
                     .filter { it !is EmptyShape }
             )
             is PolylineShape -> {
-                if (this.paint == color) {
+                if (this.paint == guideColor) {
                     guides += this.path
                     EmptyShape
                 } else {

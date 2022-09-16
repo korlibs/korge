@@ -15,7 +15,13 @@ class MainVectorNinePatch : Scene() {
     val mouseY get() = sceneView.localMouseY(views)
 
     override suspend fun SContainer.sceneMain() {
-        val view = ninePatchShapeView(resourcesVfs["chat-bubble.svg"].readSVG().toShape().toNinePatchWithGuides(color = Colors.FUCHSIA))
+        val view = ninePatchShapeView(
+            resourcesVfs["chat-bubble.svg"]
+                .readSVG()
+                .toShape()
+                .toNinePatchWithGuides(guideColor = Colors.FUCHSIA)
+        )
+
         //graphics(resourcesVfs["chat-bubble.svg"].readSVG().toShape())
         //return
         //val view = ninePatchShapeView(buildShape {
