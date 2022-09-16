@@ -5,13 +5,18 @@ import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.RGBA
 import com.soywiz.korim.util.NinePatchSlices
 import com.soywiz.korim.util.NinePatchSlices2D
+import com.soywiz.korma.geom.IPoint
 import com.soywiz.korma.geom.ISize
+import com.soywiz.korma.geom.Point
 import com.soywiz.korma.geom.asSize
 import com.soywiz.korma.geom.bottomRight
 import com.soywiz.korma.geom.vector.VectorPath
 
 class NinePatchShape(val shape: Shape, val slices: NinePatchSlices2D) {
     val size: ISize = shape.bounds.bottomRight.asSize()
+
+    fun getScaledPointAt(point: IPoint, newSize: ISize, out: Point = Point()): IPoint =
+        slices.getScaledPointAt(point, size, newSize, out)
 
     fun transform(newSize: ISize): Shape {
         return shape.scaleNinePatch(newSize, slices)
