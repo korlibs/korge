@@ -54,6 +54,11 @@ class Bag<T>(
         return false
     }
 
+    fun clear() {
+        values.fill(null)
+        size = 0
+    }
+
     operator fun contains(value: T): Boolean {
         for (i in 0 until size) {
             if (values[i] == value) {
@@ -86,8 +91,27 @@ class IntBag(
     val capacity: Int
         get() = values.size
 
+    val isEmpty: Boolean
+        get() = size == 0
+
     val isNotEmpty: Boolean
         get() = size > 0
+
+    val first: Int
+        get() {
+            if (isEmpty) {
+                throw NoSuchElementException("Bag is empty!")
+            }
+            return values[0]
+        }
+
+    val firstOrNull: Int?
+        get() {
+            if (isEmpty) {
+                return null
+            }
+            return values[0]
+        }
 
     fun add(value: Int) {
         if (size == values.size) {
@@ -180,6 +204,7 @@ private fun IntArray.med3(idxA: Int, idxB: Int, idxC: Int, comparator: EntityCom
                 else -> idxA
             }
         }
+
         bc > 0 -> idxB
         ac > 0 -> idxC
         else -> idxA
