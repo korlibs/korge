@@ -5,7 +5,7 @@ import com.soywiz.korma.geom.PointArrayList
 import kotlin.math.absoluteValue
 import kotlin.math.sign
 
-class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
+data class NinePatchSlices2D(val x: NinePatchSlices, val y: NinePatchSlices) {
     constructor() : this(NinePatchSlices(), NinePatchSlices())
     fun transform2DInplace(
         positions: PointArrayList, oldSize: ISize, newSize: ISize,

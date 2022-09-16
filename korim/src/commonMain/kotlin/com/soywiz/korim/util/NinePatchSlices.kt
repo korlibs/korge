@@ -2,10 +2,18 @@ package com.soywiz.korim.util
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.korma.geom.range.DoubleRangeExclusive
+import com.soywiz.korma.geom.range.until
 
 class NinePatchSlices private constructor(val ranges: List<DoubleRangeExclusive>, dummy: Unit) {
     constructor(ranges: List<DoubleRangeExclusive>) : this(ranges.sortedBy { it.start }, Unit)
     constructor(vararg ranges: DoubleRangeExclusive) : this(ranges.sortedBy { it.start }, Unit)
+    companion object {
+        operator fun invoke(vararg doubles: Double): NinePatchSlices {
+            if (doubles.size % 2 != 0) error("Number of slices must be pair")
+            return NinePatchSlices((0 until (doubles.size / 2)).map { doubles[it * 2] until doubles[it * 2 + 1] })
+        }
+    }
+
     val lengths get() = ranges.sumOf { it.length }
 
     // @TODO: newLen < oldLen should make corners (non-stretch areas) smaller
@@ -43,4 +51,7 @@ class NinePatchSlices private constructor(val ranges: List<DoubleRangeExclusive>
     fun transform1D(input: List<DoubleArrayList>, oldLen: Double, newLen: Double): List<DoubleArrayList> =
         input.map { transform1D(it, oldLen, newLen) }
 
+    override fun hashCode(): Int = ranges.hashCode()
+    override fun equals(other: Any?): Boolean = other is NinePatchSlices && this.ranges == other.ranges
+    override fun toString(): String = "NinePatchSlices(${ranges.joinToString(", ")})"
 }
