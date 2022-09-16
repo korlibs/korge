@@ -147,6 +147,16 @@ sealed interface Shape : BoundsDrawable {
 	fun containsPoint(x: Double, y: Double): Boolean = bounds.contains(x, y)
 }
 
+fun Shape.optimize(): Shape {
+    return when (this) {
+        is CompoundShape -> {
+            val comps = this.components.filter { it !is EmptyShape }
+            if (comps.size == 1) comps.first() else CompoundShape(comps)
+        }
+        else -> this
+    }
+}
+
 fun Shape.getBounds(out: Rectangle = Rectangle(), bb: BoundsBuilder = BoundsBuilder(), includeStrokes: Boolean = false): Rectangle {
 	bb.reset()
 	addBounds(bb, includeStrokes)
