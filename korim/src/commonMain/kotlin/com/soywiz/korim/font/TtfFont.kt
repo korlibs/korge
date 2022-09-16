@@ -41,6 +41,7 @@ import com.soywiz.korio.lang.WChar
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.invalidOp
+import com.soywiz.korio.lang.unsupported
 import com.soywiz.korio.stream.AsyncInputOpenable
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.FastByteArrayInputStream
@@ -201,7 +202,7 @@ abstract class BaseTtfFont(
 
         fun getName(nameId: NameId): String? = getName(nameId.id)
 
-        fun toMap() = NameId.values().map { it to getName(it) }.toMap()
+        fun toMap() = NameId.values().associateWith { getName(it) }
 
         override fun toString(): String = "NamesInfo(${toMap()})"
     }
@@ -263,9 +264,13 @@ abstract class BaseTtfFont(
     protected val glyphCache = IntMap<Glyph>(512)
     protected fun getCharacterMapOrNull(key: Int): Int? = characterMaps[key]
 
-    protected fun addCharacterMap(codePoint: Int, index: Int) {
-        characterMaps[codePoint] = index
-        characterMapsReverse[index] = codePoint
+    protected fun addCharacterMap(codePoint: Int, glyphID: Int) {
+        characterMaps[codePoint] = glyphID
+        characterMapsReverse[glyphID] = codePoint
+    }
+
+    protected fun addCharacterMapOld(codePoint: Int, glyphID: Int) {
+        //println("addCharacterMapOld: $codePoint -> $glyphID")
     }
 
     // Bitmap extension
@@ -282,6 +287,9 @@ abstract class BaseTtfFont(
     class SubstitutionInfo(val maxSequence: Int, val map: Map<WString, IntArray>)
 
     //val substitutionsGlyphIds = IntMap<Map<List<Int>, List<Int>>>()
+    /** GlyphID -> GlyphID */
+    val glyphSubstitution = IntIntMap()
+
     val substitutionsCodePoints = IntMap<SubstitutionInfo>()
 
     lateinit var fontMetrics1px: FontMetrics; private set
@@ -298,7 +306,27 @@ abstract class BaseTtfFont(
         readMaxp()
         readHhea()
         readNames()
+
         if (!onlyReadMetadata) {
+            // OpenType fonts with TrueType outlines use a glyph index to specify and access glyphs within a font;
+            // e.g., to index within the 'loca' table and thereby access glyph data in the 'glyf' table.
+            // This concept is retained in OpenType CFF fonts, except that glyph data is accessed through
+            // the CharStrings INDEX of the 'CFF ' table.
+            if (getTable("CFF ") != null && getTable("glyf") == null) {
+
+                // Disabled for now!
+                unsupported("Unsupported OTF/CFF")
+
+                runTableUnit("CFF ") {
+                    TtfCIDFont.CFF.apply {
+                        this@runTableUnit.readCFF()
+                    }
+                }
+            }
+
+            // this.glyphCache[index]
+
+            //println("$name: " + getTableNames())
             readLoca()
             readCmap()
             readHmtx()
@@ -508,8 +536,8 @@ abstract class BaseTtfFont(
 
     data class NameInfo(val offset: Int, val length: Int, val charset: Charset)
 
+    // https://docs.microsoft.com/en-us/typography/opentype/spec/loca
     protected fun readLoca() = runTableUnit("loca") {
-        //println("readLoca! $name")
 		val bytesPerEntry = when (indexToLocFormat) {
 			0 -> 2
 			1 -> 4
@@ -520,9 +548,10 @@ abstract class BaseTtfFont(
 		val data = readBytesExact(bytesPerEntry * (numGlyphs + 1))
 
 		locs = FastByteArrayInputStream(data).run {
+
 			when (indexToLocFormat) {
-				0 -> IntArray(numGlyphs + 1) { readU16BE() * 2 }
-				1 -> IntArray(numGlyphs + 1) { readS32BE() }
+				0 -> readCharArrayBE(numGlyphs + 1).mapInt { it.code * 2 }
+				1 -> readIntArrayBE(numGlyphs + 1)
 				else -> invalidOp
 			}
 		}
@@ -1241,6 +1270,90 @@ abstract class BaseTtfFont(
         val glyphIDToClipOffset = IntIntMap()
     }
 
+    /*
+    class CoverageTable {
+        val glyphIDs = IntArrayList()
+
+        fun addOne(glyphID: Int, index: Int = -1) {
+            glyphIDs.add(glyphID)
+        }
+        fun addMultiple(glyphIDs: IntArray, index: Int = -1) {
+            for (id in glyphIDs) addOne(id)
+        }
+        fun addRange(startGlyphID: Int, endGlyphID: Int, index: Int = -1) {
+            for (id in startGlyphID..endGlyphID) {
+                addOne(id, if (index < 0) -1 else index + (id - startGlyphID))
+            }
+        }
+
+        override fun toString(): String = "CoverageTable(${glyphIDs})"
+    }
+
+    protected fun FastByteArrayInputStream.readCoverageTable(): CoverageTable {
+        //https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+        val coverageFormat = readU16BE()
+        val out = CoverageTable()
+        when (coverageFormat) {
+            1 -> {
+                val glyphCount = readU16BE()
+                val glyphArray = readCharArrayBE(glyphCount).mapInt { it.code }
+                println("  readCoverageTable[$glyphCount]: ${glyphArray.toList()}")
+                out.addMultiple(glyphArray)
+            }
+            2 -> {
+                val rangeCount = readU16BE()
+                for (n in 0 until rangeCount) {
+                    val startGlyphID = readU16BE()
+                    val endGlyphID = readU16BE()
+                    val startCoverageIndex = readU16BE()
+                    println("  readCoverageTable[$rangeCount]: $startGlyphID-$endGlyphID  :: $startCoverageIndex")
+                    out.addRange(startGlyphID, endGlyphID, startCoverageIndex)
+                }
+            }
+        }
+        return out
+    }
+
+     */
+
+    //https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+    //fun FastByteArrayInputStream.readCoverage(count: Int): IntArray {
+    fun FastByteArrayInputStream.readCoverage(hintedCount: Int = -1): IntArray {
+        val coverageFormat = readU16BE()
+        when (coverageFormat) {
+            1 -> {
+                val glyphCount = readU16BE()
+                //if (count != glyphCount) error("Invalid coverage count count=$count != glyphCount=$glyphCount")
+                return readCharArrayBE(glyphCount).mapInt { it.code }
+                //println("glyphArray[${glyphArray.size}]=${glyphArray.toList()}")
+            }
+            2 -> {
+                data class RangeInfo(val start: Int, val endInclusive: Int, val index: Int) {
+                    val count: Int = endInclusive - start + 1
+                }
+                val rangeCount = readU16BE()
+                val ranges = (0 until rangeCount).map {
+                    RangeInfo(start = readU16BE(), endInclusive = readU16BE(), index = readU16BE())
+                }
+                val glyphCount = ranges.maxOf { it.index + it.count }
+                //if (count != glyphCount) error("Invalid coverage count count=$count != glyphCount=$glyphCount")
+
+                val glyphArray = IntArray(glyphCount)
+                for (range in ranges) {
+                    for (glyphID in range.start..range.endInclusive) {
+                        val offset = glyphID - range.start
+                        glyphArray[range.index + offset] = glyphID
+                    }
+                    //println("startGlyphID=$startGlyphID, endGlyphID=$endGlyphID, startCoverageIndex=$startCoverageIndex")
+                }
+                return glyphArray
+                //println("UNSUPPORTED coverageFormat=$coverageFormat")
+                //return@runTableUnit
+            }
+            else -> TODO("coverageFormat=$coverageFormat")
+        }
+    }
+
     protected fun readGsub() = runTableUnit("GSUB") {
         val totalLength = length
         val majorVersion = readU16BE()
@@ -1272,67 +1385,70 @@ abstract class BaseTtfFont(
             }
         }
 
-        fun FastByteArrayInputStream.readCoverage(count: Int): IntArray {
-            val coverageFormat = readU16BE()
-            when (coverageFormat) {
-                1 -> {
-                    val glyphCount = readU16BE()
-                    return readCharArrayBE(glyphCount).mapInt { it.code }
-                    //println("glyphArray[${glyphArray.size}]=${glyphArray.toList()}")
-                }
-                2 -> {
-                    val glyphArray = IntArray(count)
-                    val rangeCount = readU16BE()
-                    repeat(rangeCount) {
-                        val startGlyphID = readU16BE()
-                        val endGlyphID = readU16BE()
-                        val startCoverageIndex = readU16BE()
-                        for (glyphID in startGlyphID..endGlyphID) {
-                            val offset = glyphID - startGlyphID
-                            glyphArray[startCoverageIndex + offset] = glyphID
-                        }
-                        //println("startGlyphID=$startGlyphID, endGlyphID=$endGlyphID, startCoverageIndex=$startCoverageIndex")
-                    }
-                    return glyphArray
-                    //println("UNSUPPORTED coverageFormat=$coverageFormat")
-                    //return@runTableUnit
-                }
-                else -> TODO("coverageFormat=$coverageFormat")
-            }
-        }
-
         // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lulTbl
         sliceStart(lookupListOffset).apply {
             val lookupCount = readU16BE()
-            //println("lookupCount=$lookupCount")
-            for (n in 0 until lookupCount) {
-                val lookupOffset = readOffset16()
-                //println("lookup=$lookupOffset")
+            val lookups = (0 until lookupCount).mapInt { readOffset16() }
+            //println("lookupCount=$lookupCount : $lookups")
+            for (lookupOffset in lookups) {
                 sliceStart(lookupOffset).apply {
                     val lookupType = readU16BE()
                     val lookupFlag = readU16BE()
                     val subTableCount = readU16BE()
                     val subtableOffsets = readShortArrayBE(subTableCount).mapInt { it.toInt() and 0xFFFF }
                     val markFilteringSet = readU16BE()
-                    //println("   - lookupType=$lookupType, lookupFlag=$lookupFlag, subTableCount=$subTableCount")
+                    //println(" - lookupType=$lookupType, lookupFlag=$lookupFlag, subTableCount=$subTableCount, length=${this.length}")
+                    //println("  - subtableOffsets=" + subtableOffsets.toList())
+
                     for (offset in subtableOffsets) {
                         sliceStart(offset).apply {
                             val subsTable = this
                             when (lookupType) {
+                                1 -> { // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#lookuptype-1-single-substitution-subtable
+                                    val substFormat = readU16BE()
+                                    val coverageOffset = readOffset16() // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
+                                    //println("   - substFormat=$substFormat, coverageOffset=$coverageOffset")
+                                    when (substFormat) {
+                                        1 -> {
+                                            val deltaGlyphID = readS16BE()
+                                            val coverageTable = sliceStart(coverageOffset).readCoverage()
+
+                                            //println("   - deltaGlyphID=$deltaGlyphID, coverageTable=${coverageTable.toList()}")
+                                            //val glyph = (glyphID + deltaGlyphID) and 0xFFFF
+
+                                            for (glyphID in coverageTable) {
+                                                glyphSubstitution[glyphID] = glyphID + deltaGlyphID
+                                            }
+                                        }
+                                        2 -> {
+                                            val glyphCount = readU16BE()
+                                            val coverageTable = sliceStart(coverageOffset).readCoverage()
+                                            val substituteGlyphIDs = readCharArrayBE(glyphCount).mapInt { it.code }
+
+                                            repeat(glyphCount) {
+                                                glyphSubstitution[coverageTable[it]] = substituteGlyphIDs[it]
+                                            }
+
+                                            //println("   - substituteGlyphIDs=${substituteGlyphIDs.toList()}, coverageTable=${coverageTable.toList()}")
+                                        }
+                                        else -> {
+                                            error("Unsupported lookupType=1, substFormat=$substFormat")
+                                        }
+                                    }
+                                }
                                 4 -> { // https://docs.microsoft.com/en-us/typography/opentype/spec/gsub#LS
                                     val substFormat = readU16BE()
+                                    // LigatureSubstFormat1
+                                    if (substFormat != 1) error("For lookType=4 only substFormat=1 is supported")
                                     val coverageOffset = readOffset16() // https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#coverage-table
                                     val ligatureSetCount = readU16BE()
                                     val ligatureSetOffsets = readCharArrayBE(ligatureSetCount).mapInt { it.code }
                                     val glyphArray = sliceStart(coverageOffset).readCoverage(ligatureSetCount)
+
                                     //println("   - substFormat=$substFormat")
                                     //println("   - coverageOffset=$coverageOffset")
                                     //println("   - ligatureSetCount=$ligatureSetCount")
-                                    val coverageTable = sliceStart(coverageOffset)
-                                    val glyphIDs = sliceStart(coverageOffset).let {
-                                        it.readCharArrayBE(ligatureSetCount).mapInt { it.code }
-                                    }
-                                    //println("glyphIDs=${glyphIDs.toList()}")
+                                    //println("   - ligatureSetOffsets=${ligatureSetOffsets.toList()}")
                                     //println("----")
                                     for (n in ligatureSetOffsets.indices) {
                                         val glyphID = glyphArray[n]
@@ -1351,8 +1467,12 @@ abstract class BaseTtfFont(
                                                 sliceStart(offset).apply {
                                                     val ligatureGlyph = readU16BE()
                                                     val componentCount = readU16BE()
-                                                    maxComponentCount = kotlin.math.max(maxComponentCount, componentCount + 1)
-                                                    val componentCodePoints = readCharArrayBE(componentCount - 1).mapInt { getCodePointFromCharIndexOrElse(it.code) }
+                                                    maxComponentCount =
+                                                        kotlin.math.max(maxComponentCount, componentCount + 1)
+                                                    val componentCodePoints =
+                                                        readCharArrayBE(componentCount - 1).mapInt {
+                                                            getCodePointFromCharIndexOrElse(it.code)
+                                                        }
                                                     val ligature = WString(codePointIntArray + componentCodePoints)
                                                     map[ligature] = intArrayOf(ligatureGlyph)
 
@@ -1360,18 +1480,23 @@ abstract class BaseTtfFont(
                                                 }
                                             }
                                         }
-                                        substitutionsCodePoints[codePoint] = SubstitutionInfo(maxComponentCount, map)
+                                        substitutionsCodePoints[codePoint] =
+                                            SubstitutionInfo(maxComponentCount, map)
                                     }
                                 }
+
                                 else -> {
                                     println("TTF.GSUB: Unsupported lookupType=$lookupType")
                                 }
                             }
                         }
                     }
+
                 }
             }
         }
+
+        //println("glyphSubstitution=$glyphSubstitution")
     }
 
     protected fun readColr() = runTableUnit("COLR") {
@@ -1467,12 +1592,20 @@ abstract class BaseTtfFont(
 			sliceStart(table.offset).run {
 				val format = readU16BE()
                 try {
-                    //println("TABLE FORMAT[${this@TtfFont}]: $format")
+                    //println("TABLE FORMAT[${this@BaseTtfFont}]: $format")
                     when (format) {
+                        // https://docs.microsoft.com/en-us/typography/opentype/spec/cmap#format-0-byte-encoding-table
+                        // Format 0 was the standard mapping subtable used on older Macintosh platforms but is not required on newer Apple platforms.
                         0 -> { // Byte encoding table
-                            println("UNSUPPORTED CMAP format = $format")
+                            val length = readU16BE()
+                            val language = readU16BE()
+                            val glyphIdArray = readBytesExact(256).mapInt { it.toInt() and 0xFF }
+                            for (n in 0 until 256) addCharacterMapOld(n, glyphIdArray[n])
                         }
-
+                        // This subtable format was created for “double-byte” encodings following the national
+                        // character code standards used for Japanese, Chinese, and Korean characters.
+                        // These code standards use a mixed 8-/16-bit encoding.
+                        // This format is not commonly used today.
                         2 -> { // High-byte mapping through table
                             println("UNSUPPORTED CMAP format = $format")
                         }
@@ -1643,7 +1776,9 @@ abstract class BaseTtfFont(
         reader?.skip(skipCount)
         return g
     }
-    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let { getGlyphByIndex(it, cache, codePoint) }
+    fun getGlyphByCodePoint(codePoint: Int, cache: Boolean = true): Glyph? = getCharacterMapOrNull(codePoint)?.let {
+        getGlyphByIndex(it, cache, codePoint)
+    }
     fun getGlyphByWChar(char: WChar, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
     fun getGlyphByChar(char: Char, cache: Boolean = true): Glyph? = getGlyphByCodePoint(char.code, cache)
 
@@ -1656,7 +1791,7 @@ abstract class BaseTtfFont(
         val start = locs.getOrNull(index) ?: 0
         val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
-        //println("GLYPH INDEX: $index")
+        //println("getGlyphByIndex: index=$index, cache=$cache, start=$start, end=$end, locs=${locs.toList()}")
         val glyph = when {
             size != 0 -> this.glyphCache[index] ?: runTable("glyf") { table ->
                 //println("READ GLYPH[$index]: start=$start, end=$end, size=$size, table=$table")
@@ -1666,7 +1801,7 @@ abstract class BaseTtfFont(
             }
             else -> {
                 //println("EMPTY GLYPH: SIZE: $size, index=$index")
-                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth).also {
+                SimpleGlyph(index, 0, 0, 0, 0, intArrayOf(), intArrayOf(), intArrayOf(), intArrayOf(), horMetrics[index].advanceWidth, dummy = true).also {
                     //it.codePoint = finalCodePoint
                 }
             }
@@ -1735,7 +1870,7 @@ abstract class BaseTtfFont(
         val glpyhIndex: Int,
         val path: VectorPath
     ) : IVectorPath by path {
-        override fun toString(): String = "GraphicsPath(glpyhIndex=$glpyhIndex, \"${this.path.toSvgPathString()}\")"
+        override fun toString(): String = "GlyphGraphicsPath(glpyhIndex=$glpyhIndex, \"${this.path.toSvgPathString()}\")"
     }
 
     abstract inner class Glyph(
@@ -1826,9 +1961,10 @@ abstract class BaseTtfFont(
 		val flags: IntArray,
 		val xPos: IntArray,
 		val yPos: IntArray,
-		advanceWidth: Int
+		advanceWidth: Int,
+        val dummy: Boolean = false
 	) : Glyph(index, xMin, yMin, xMax, yMax, advanceWidth) {
-        override fun toString(): String = "SimpleGlyph[$advanceWidth]($index) : $path"
+        override fun toString(): String = "SimpleGlyph${if (dummy) "Dummy" else ""}[$index](advance=$advanceWidth) : $path"
         val npoints: Int get() = xPos.size
         protected fun onCurve(n: Int) = (flags[n] and 1) != 0
 		protected fun contour(n: Int, out: Contour = Contour()) = out.apply {
@@ -1943,7 +2079,9 @@ abstract class BaseTtfFont(
 
         //println("glyph[$index]: ncontours=$ncontours [${ncontours.hex}], xMin=$xMin, yMin=$yMin -- xMax=$xMax, yMax=$yMax")
 
-		if (ncontours < 0) {
+        val advanceWidth = horMetrics[index].advanceWidth
+
+        return if (ncontours < 0) {
 			//println("WARNING: readCompositeGlyph not implemented")
 
 			val ARG_1_AND_2_ARE_WORDS = 0x0001
@@ -2001,7 +2139,7 @@ abstract class BaseTtfFont(
 				references += ref
 			} while ((flags and MORE_COMPONENTS) != 0)
 
-			return CompositeGlyph(index, xMin, yMin, xMax, yMax, references, horMetrics[index].advanceWidth)
+            CompositeGlyph(index, xMin, yMin, xMax, yMax, references, advanceWidth)
 		} else {
 			val contoursIndices = IntArray(ncontours + 1)
 			contoursIndices[0] = -1
@@ -2048,19 +2186,21 @@ abstract class BaseTtfFont(
 				}
 			}
 
-			//println("$ncontours, $xMin, $yMax, $xMax, $yMax, ${endPtsOfContours.toList()}, $numPoints, ${flags.toList()}")
+
 			//println(xPos.toList())
 			//println(yPos.toList())
-			return SimpleGlyph(
+			SimpleGlyph(
                 index,
 				xMin, yMin,
 				xMax, yMax,
 				contoursIndices,
 				flags.toIntArray(),
 				xPos, yPos,
-				horMetrics[index].advanceWidth
+                advanceWidth
 			)
-		}
+		}.also {
+            //println("GLYPH[$index]: ncontours=$ncontours, xyminmax=[$xMin, $yMax, $xMax, $yMax], advanceWidth=$advanceWidth, glyph=${it}")
+        }
 	}
 }
 
