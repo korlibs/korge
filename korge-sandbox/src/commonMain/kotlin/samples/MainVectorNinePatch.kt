@@ -6,6 +6,7 @@ import com.soywiz.korge.view.addUpdater
 import com.soywiz.korge.view.ninePatchShapeView
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.vector.format.readSVG
+import com.soywiz.korim.vector.scaledShape
 import com.soywiz.korim.vector.toNinePatchFromGuides
 import com.soywiz.korim.vector.toShape
 import com.soywiz.korio.file.std.resourcesVfs
@@ -19,6 +20,7 @@ class MainVectorNinePatch : Scene() {
             resourcesVfs["chat-bubble.svg"]
                 .readSVG()
                 .toShape()
+                .scaledShape(10.0, 10.0)
                 .toNinePatchFromGuides(guideColor = Colors.FUCHSIA)
         )
 

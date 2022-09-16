@@ -1,6 +1,5 @@
 package com.soywiz.korim.vector
 
-import com.soywiz.kds.IDoubleArrayList
 import com.soywiz.kds.iterators.fastForEach
 import com.soywiz.korim.bitmap.toUri
 import com.soywiz.korim.color.RGBA
@@ -18,26 +17,18 @@ import com.soywiz.korim.vector.format.SVG
 import com.soywiz.korim.vector.format.SvgPath
 import com.soywiz.korio.serialization.xml.Xml
 import com.soywiz.korio.util.niceStr
-import com.soywiz.korio.util.toStringDecimal
 import com.soywiz.korma.geom.BoundsBuilder
-import com.soywiz.korma.geom.IPointArrayList
 import com.soywiz.korma.geom.Matrix
 import com.soywiz.korma.geom.Rectangle
-import com.soywiz.korma.geom.bezier.Bezier
 import com.soywiz.korma.geom.bezier.Curves
 import com.soywiz.korma.geom.bezier.isConvex
 import com.soywiz.korma.geom.contains
-import com.soywiz.korma.geom.vector.LineCap
-import com.soywiz.korma.geom.vector.LineJoin
-import com.soywiz.korma.geom.vector.LineScaleMode
 import com.soywiz.korma.geom.vector.StrokeInfo
 import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.add
 import com.soywiz.korma.geom.vector.applyTransform
 import com.soywiz.korma.geom.vector.strokeToFill
-import com.soywiz.korma.geom.vector.toCurves
 import com.soywiz.korma.geom.vector.toCurvesList
-import com.soywiz.korma.math.roundDecimalPlaces
 import kotlin.math.max
 import kotlin.math.round
 
@@ -504,3 +495,15 @@ class TextShape(
         )
     }
 }
+
+fun Shape.transformedShape(m: Matrix): Shape = when (this) {
+    is EmptyShape -> EmptyShape
+    is CompoundShape -> CompoundShape(components.map { it.transformedShape(m) })
+    is FillShape -> FillShape(path.applyTransform(m), clip?.applyTransform(m), paint, Matrix().multiply(transform, m), globalAlpha)
+    is PolylineShape -> PolylineShape(path.applyTransform(m), clip?.applyTransform(m), paint, Matrix().multiply(transform, m), strokeInfo, globalAlpha)
+    is TextShape -> TextShape(text, x, y, font, fontSize, clip?.applyTransform(m), fill, stroke, halign, valign, Matrix().multiply(transform, m), globalAlpha)
+    else -> TODO()
+}
+
+fun Shape.scaledShape(sx: Double, sy: Double = sx): Shape = transformedShape(Matrix().scale(sx, sy))
+fun Shape.translatedShape(x: Double = 0.0, y: Double = 0.0): Shape = transformedShape(Matrix().translate(x, y))
