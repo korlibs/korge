@@ -412,7 +412,7 @@ data class PolylineShape constructor(
 	)
 }
 
-class CompoundShape(
+open class CompoundShape(
 	val components: List<Shape>
 ) : Shape {
 	override fun addBounds(bb: BoundsBuilder, includeStrokes: Boolean) { components.fastForEach { it.addBounds(bb, includeStrokes)}  }
