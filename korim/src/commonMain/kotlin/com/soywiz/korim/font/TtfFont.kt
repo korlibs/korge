@@ -41,7 +41,6 @@ import com.soywiz.korio.lang.WChar
 import com.soywiz.korio.lang.WString
 import com.soywiz.korio.lang.WStringReader
 import com.soywiz.korio.lang.invalidOp
-import com.soywiz.korio.lang.unsupported
 import com.soywiz.korio.stream.AsyncInputOpenable
 import com.soywiz.korio.stream.AsyncStream
 import com.soywiz.korio.stream.FastByteArrayInputStream
@@ -300,6 +299,8 @@ abstract class BaseTtfFont(
     val ttfCompleteName: String get() = namesi.ttfCompleteName
     override val name: String get() = extName ?: ttfName
 
+    var _cff: TtfCIDFont.CFF.CFFResult? = null
+
     fun doInit() {
         readHeaderTables()
         readHead()
@@ -315,11 +316,11 @@ abstract class BaseTtfFont(
             if (getTable("CFF ") != null && getTable("glyf") == null) {
 
                 // Disabled for now!
-                unsupported("Unsupported OTF/CFF")
+                //unsupported("Unsupported OTF/CFF")
 
                 runTableUnit("CFF ") {
                     TtfCIDFont.CFF.apply {
-                        this@runTableUnit.readCFF()
+                        this@BaseTtfFont._cff = this@runTableUnit.readCFF()
                     }
                 }
             }
@@ -1484,7 +1485,6 @@ abstract class BaseTtfFont(
                                             SubstitutionInfo(maxComponentCount, map)
                                     }
                                 }
-
                                 else -> {
                                     println("TTF.GSUB: Unsupported lookupType=$lookupType")
                                 }
@@ -1788,6 +1788,13 @@ abstract class BaseTtfFont(
 
     fun getGlyphByIndex(index: Int, cache: Boolean = true, codePoint: Int = -1): Glyph? {
         //val finalCodePoint = if (codePoint < 0) getCodePointFromCharIndex(index) ?: -1 else codePoint
+        val cff = _cff
+        if (cff != null) {
+            return this.glyphCache.getOrPut(index) {
+                val gvector = cff.getGlyphVector(index)
+                CFFGlyph(index, 0, 0, 0, 0, gvector.advanceWidth.toInt(), GlyphGraphicsPath(index, gvector.path))
+            }
+        }
         val start = locs.getOrNull(index) ?: 0
         val end = locs.getOrNull(index + 1) ?: start
         val size = end - start
@@ -1953,7 +1960,17 @@ abstract class BaseTtfFont(
         }
     }
 
-    inner class SimpleGlyph(
+    inner class CFFGlyph constructor(
+        index: Int,
+        xMin: Int, yMin: Int,
+        xMax: Int, yMax: Int,
+        advanceWidth: Int,
+        override val path: GlyphGraphicsPath
+    ) : Glyph(index, xMin, yMin, xMax, yMax, advanceWidth) {
+        override val paths = listOf(path)
+    }
+
+    inner class SimpleGlyph constructor(
         index: Int,
 		xMin: Int, yMin: Int,
 		xMax: Int, yMax: Int,
