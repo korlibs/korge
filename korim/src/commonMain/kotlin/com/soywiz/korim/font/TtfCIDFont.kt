@@ -2,16 +2,18 @@ package com.soywiz.korim.font
 
 import com.soywiz.kds.DoubleArrayList
 import com.soywiz.kds.mapInt
+import com.soywiz.kds.reverse
 import com.soywiz.kds.toIntMap
 import com.soywiz.kmem.toInt
-import com.soywiz.korim.vector.Context2d
 import com.soywiz.korio.lang.assert
-import com.soywiz.korio.lang.readStringz
 import com.soywiz.korio.lang.reserved
 import com.soywiz.korio.lang.unreachable
 import com.soywiz.korio.stream.FastByteArrayInputStream
 import com.soywiz.korio.stream.openFastStream
+import com.soywiz.korma.geom.vector.VectorBuilder
+import com.soywiz.korma.geom.vector.VectorPath
 import com.soywiz.korma.geom.vector.rLineTo
+import com.soywiz.korma.geom.vector.rMoveTo
 import kotlin.math.abs
 import kotlin.math.sqrt
 import kotlin.random.Random
@@ -21,6 +23,15 @@ import kotlin.random.Random
  * https://docs.microsoft.com/en-us/typography/opentype/spec/cff
  * - https://partners.adobe.com/public/developer/en/font/5176.CFF.pdf
  * - https://adobe-type-tools.github.io/font-tech-notes/pdfs/5177.Type2.pdf
+ * - https://learn.microsoft.com/en-us/typography/opentype/spec/cff2
+ *
+ * TOOLS for debugging and reference:
+ * - https://fontdrop.info/#/?darkmode=true
+ * - https://yqnn.github.io/svg-path-editor/
+ * - https://github.com/caryll/otfcc/blob/617837bc6a74b0cf6be9e77a8ed1d2ffb39ea425/lib/libcff/cff-parser.c#L342
+ * - https://github.com/RazrFalcon/ttf-parser/blob/master/src/tables/cff/cff2.rs
+ * - https://github.com/nothings/stb/blob/master/stb_truetype.h
+ * - https://github.com/opentypejs/opentype.js
  */
 object TtfCIDFont {
     /**
@@ -29,31 +40,109 @@ object TtfCIDFont {
      * https://github.com/caryll/otfcc/blob/617837bc6a74b0cf6be9e77a8ed1d2ffb39ea425/lib/table/CFF.c
      */
     object CFF {
-        fun FastByteArrayInputStream.readCFF() {
+        /**
+         * Table 1 CFF Data Layout
+         * - Header –
+         * - Name INDEX –
+         * - Top DICT INDEX –
+         * - String INDEX –
+         * - Global Subr INDEX –
+         * - Encodings –
+         * - Charsets –
+         * - FDSelect CIDFonts only
+         * - CharStrings INDEX per-font
+         * - Font DICT INDEX per-font, CIDFonts only
+         * - Private DICT per-font
+         * - Local Subr INDEX per-font or per-Private DICT for CIDFonts
+         * - Copyright and
+         * - Trademark Notices
+         */
+        fun FastByteArrayInputStream.readCFF(): CFFResult {
             readHeader()
             val nameIndex = readIndex()
-            println("nameIndex=$nameIndex, str=${nameIndex[0].readStringz(0)}")
+            //println("nameIndex=$nameIndex, str=${nameIndex[0].readStringz(0)}")
 
             val topDictIndex = readIndex()
             val topDictByte = topDictIndex[0][1]
-            println("topDictByte=${topDictByte.toUByte()}")
-            val topDict = topDictIndex[0].openFastStream().also { it.skip(0) }.readDICTMap()
-
-            println("topDict=$topDictIndex")
-            println("topDict=$topDict")
-
+            //println("topDictByte=${topDictByte.toUByte()}")
+            val topDict = topDictIndex[0].openFastStream().readDICTMap()
+            //println("topDict=$topDictIndex")
+            //println("topDict=$topDict")
             val stringIndex = readIndex()
-            println("stringIndex=$stringIndex")
-            println(stringIndex.toList().map { it.decodeToString() })
-
+            //println("stringIndex=$stringIndex")
+            //println(stringIndex.toList().map { it.decodeToString() })
             val globalSubrIndex = readIndex()
-            println("globalSubrIndex=$globalSubrIndex")
+            //println("globalSubrIndex=$globalSubrIndex")
 
-            val charStringsIndex = readIndex()
-            println("charStringsIndex=$charStringsIndex")
+            val privateSizeOffset = topDict[Op.Private]
+            var localSubrsIndex: DataIndex = DataIndex()
+            if (privateSizeOffset != null) {
+                val (privateSize, privateOffset) = privateSizeOffset.map { it.toInt() }
+                val privateDict = this.sliceWithSize(privateOffset, privateSize).readDICTMap()
+                val localSubrs = privateDict[Op.Subrs]
+                if (localSubrs != null) {
+                    val subrsOffset = privateOffset + localSubrs.last().toInt()
+                    localSubrsIndex = sliceStart(subrsOffset).readIndex()
+                    //println("localSubrsIndex=$localSubrsIndex")
 
-            val privateDict = readDICTMap()
-            println("privateDict=$privateDict")
+                    //val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex)
+                    //for (n in 0 until localSubrsIndex.size) {
+                    //    val vp = VectorPath()
+                    //    val bytes = localSubrsIndex[n]
+                    //    try {
+                    //        //println("### SUBR[$n][${bytes.size}]:")
+                    //        CharStringType2.eval(vp, bytes.openFastStream(), evalCtx)
+                    //    } catch (e: Throwable) {
+                    //        e.printStackTrace()
+                    //    }
+                    //}
+                }
+                //println("PRIV[$privateSizeOffset]: $privateDict")
+            }
+
+            val charstringsOffsets: List<Number>? = topDict[Op.CharStrings]
+            val charstringsOffset = charstringsOffsets!!.first().toInt()
+            //println("charstringsOffset=$charstringsOffset")
+            val charstringsIndex = this.sliceStart(charstringsOffset).readIndex()
+            //println("charstringsIndex=$charstringsIndex")
+            val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex)
+
+            return CFFResult(charstringsIndex, globalSubrIndex, localSubrsIndex)
+            /*
+            //for (n in 0 until charstringsIndex.size) {
+            for (n in 9..9) {
+            //for (n in 5..5) {
+                val vp = VectorPath()
+                val bytes = charstringsIndex[n]
+                try {
+                    CharStringType2.eval(vp, bytes.openFastStream(), evalCtx)
+                    println("### CHAR[$n/${charstringsIndex.size}][${bytes.size}]: ${vp.toSvgString().color(AnsiEscape.Color.YELLOW)}")
+                } catch (e: Throwable) {
+                    e.printStackTrace()
+                }
+                if (n >= 10) {
+                    println("***********")
+                    break
+                }
+            }
+
+             */
+        }
+
+        data class GlyphPath(val path: VectorPath, val advanceWidth: Double)
+
+        class CFFResult(
+            val charstringsIndex: DataIndex,
+            val globalSubrIndex: DataIndex,
+            val localSubrsIndex: DataIndex
+        ) {
+            fun getGlyphVector(index: Int): GlyphPath {
+                val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex)
+                val vp = VectorPath()
+                val bytes = charstringsIndex[index]
+                CharStringType2.eval(vp, bytes.openFastStream(), evalCtx)
+                return GlyphPath(vp, evalCtx.width)
+            }
         }
 
         fun FastByteArrayInputStream.readHeader() {
@@ -82,6 +171,7 @@ object TtfCIDFont {
         }
 
         class DataIndex(val offsets: IntArray, val bytes: ByteArray) : Iterable<ByteArray> {
+            constructor() : this(intArrayOf(0), byteArrayOf())
             val size: Int get() = offsets.size - 1
             fun itemSize(index: Int): Int = offsets[index + 1] - offsets[index]
             operator fun get(index: Int): ByteArray = bytes.copyOfRange(offsets[index], offsets[index + 1])
@@ -93,8 +183,9 @@ object TtfCIDFont {
 
         fun FastByteArrayInputStream.readIndex(): DataIndex {
             val count = readU16BE()
-            if (count == 0) return DataIndex(intArrayOf(0), byteArrayOf())
+            if (count == 0) return DataIndex()
             val offSize = readOffSize()
+            //println("offSize=$offSize")
             val offsets = (0 until count + 1).mapInt { readOffset(offSize) - 1 }
             val bytes = readBytesExact(offsets.last())
             return DataIndex(offsets.toIntArray(), bytes)
@@ -127,6 +218,7 @@ object TtfCIDFont {
                     }
                 ]
                 in 22..27 -> reserved
+                // shortint
                 28 -> ((readU8() shl 8) or readU8()).toShort().toInt()
                 29 -> (readU8() shl 24) or (readU8() shl 16) or (readU8() shl 8) or (readU8())
                 30 -> readEncodedReal(readHeader = false)
@@ -169,7 +261,7 @@ object TtfCIDFont {
         }
 
         // CFF DICT Operators
-        enum class Op(val id: Int) : PostScriptType2.Token {
+        enum class Op(val id: Int) : CharStringType2.Token {
             version(0x00), Copyright(0x0c00),
             Notice(0x01), isFixedPitch(0x0c01),
             FullName(0x02), ItalicAngle(0x0c02),
@@ -224,12 +316,8 @@ object TtfCIDFont {
      *
      * - https://adobe-type-tools.github.io/font-tech-notes/pdfs/5177.Type2.pdf
      */
-    object PostScriptType2 {
+    object CharStringType2 {
         sealed interface Token
-
-        data class Value(val value: Double) : Token {
-            constructor(value: Int) : this(value.toDouble())
-        }
 
         var DoubleArrayList.last: Double
             get() = this[size - 1]
@@ -237,6 +325,7 @@ object TtfCIDFont {
 
         fun DoubleArrayList.pop(): Double = removeAt(size - 1)
         fun DoubleArrayList.push(value: Double): Unit { add(value) }
+        fun DoubleArrayList.push(value: Int): Unit { add(value.toDouble()) }
 
         inline fun DoubleArrayList.binop(block: (l: Double, r: Double) -> Double) {
             val r = pop()
@@ -248,32 +337,124 @@ object TtfCIDFont {
             last = block(last)
         }
 
-        // https://github.com/caryll/otfcc/blob/617837bc6a74b0cf6be9e77a8ed1d2ffb39ea425/lib/libcff/cff-parser.c#L342
-        fun eval(ctx: Context2d, s: FastByteArrayInputStream, heap: DoubleArray = DoubleArray(32)) {
-            val stack = DoubleArrayList(32)
+        class EvalContext(
+            val globalSubrIndex: CFF.DataIndex = CFF.DataIndex(),
+            val localSubrsIndex: CFF.DataIndex = CFF.DataIndex(),
+            val heap: DoubleArray = DoubleArray(32)
+        ) {
+            val globalBias = computeSubrBias(globalSubrIndex.size)
+            val localBias = computeSubrBias(localSubrsIndex.size)
 
-            while (true) {
-                val v = s.readCS2Token()
-                when (v) {
-                    is Op -> {
-                        when (v) {
+            var nStems = 0
+            var width = 0.0
+            var nominalWidthX = 0.0
+            var haveWidth = false
+
+            fun reset() {
+                nStems = 0
+                width = 0.0
+                nominalWidthX = 0.0
+                haveWidth = false
+            }
+        }
+
+        fun VectorBuilder.cfrClose() {
+            //println("Z".color(AnsiEscape.Color.RED))
+            close()
+        }
+        fun VectorBuilder.cfrMoveTo(x: Double, y: Double) {
+            //println("M x=${lastX + x} y=${lastY + y}".color(AnsiEscape.Color.RED))
+            rMoveTo(x, y)
+        }
+        fun VectorBuilder.cfrLineTo(x: Double, y: Double) {
+            //println("L x=${lastX + x} y=${lastY + y}".color(AnsiEscape.Color.RED))
+            rLineTo(x, y)
+        }
+        fun VectorBuilder.cfCubicTo(fcx1: Double, fcy1: Double, fcx2: Double, fcy2: Double, fax: Double, fay: Double) {
+            //println("C x=$fax y=$fay x1=$fcx1 y1=$fcy1 x2=$fcx2 y2=$fcy2".color(AnsiEscape.Color.RED))
+            cubicTo(fcx1, fcy1, fcx2, fcy2, fax, fay)
+        }
+        fun VectorBuilder.cfrCubicTo(cx1: Double, cy1: Double, cx2: Double, cy2: Double, ax: Double, ay: Double) {
+            //rCubicTo(ax, ay, cx1, cy1, cx2, cy2)
+
+            val fcx1 = lastX + cx1
+            val fcy1 = lastY + cy1
+
+            val fcx2 = fcx1 + cx2
+            val fcy2 = fcy1 + cy2
+
+            val fax = fcx2 + ax
+            val fay = fcy2 + ay
+
+            cfCubicTo(fcx1, fcy1, fcx2, fcy2, fax, fay)
+        }
+        fun VectorBuilder.cfrMoveToHV(v: Double, horizontal: Boolean) = cfrMoveTo(if (horizontal) v else 0.0, if (!horizontal) v else 0.0)
+        fun VectorBuilder.cfrLineToHV(v: Double, horizontal: Boolean) = cfrLineTo(if (horizontal) v else 0.0, if (!horizontal) v else 0.0)
+        
+        fun FastByteArrayInputStream.u8(): Int {
+            return readU8().also {
+                //println("READ[${position}/${length}]: $it, ${it.hex}")
+            }
+        }
+
+        // https://github.com/caryll/otfcc/blob/617837bc6a74b0cf6be9e77a8ed1d2ffb39ea425/lib/libcff/cff-parser.c#L342
+        // Table 1 Type 2 Charstring Encoding Values
+        fun eval(ctx: VectorBuilder, s: FastByteArrayInputStream, evalCtx: EvalContext, stack: DoubleArrayList = DoubleArrayList(32), stackLevel: Int = 0) {
+            while (s.hasMore) {
+                val v0 = s.u8()
+                when (v0) {
+                    // Operator
+                    in 0..27, in 29..31 -> {
+                        val op = Op[when (v0) {
+                            12 -> (v0 shl 8) or s.u8()
+                            else -> v0
+                        }]
+
+                        //print(" ".repeat(stackLevel))
+                        //println("OP: $op - $stack")
+
+                        when (op) {
                             // Special
                             Op.`return` -> return
-                            Op.callsubr -> TODO()
-                            Op.callgsubr -> TODO()
+                            Op.endchar -> {
+                                if (stack.isNotEmpty() && !evalCtx.haveWidth) {
+                                    evalCtx.width = stack.pop() + evalCtx.nominalWidthX
+                                    evalCtx.haveWidth = true
+                                }
+
+                                if (ctx.totalPoints != 0) {
+                                    ctx.cfrClose()
+                                }
+                                return
+                            }
+                            Op.callsubr, Op.callgsubr -> {
+                                val global = op == Op.callgsubr
+                                if (global) {
+                                    eval(ctx, evalCtx.globalSubrIndex[evalCtx.globalBias + stack.pop().toInt()].openFastStream(), evalCtx, stack, stackLevel = stackLevel + 1)
+                                } else {
+                                    eval(ctx, evalCtx.localSubrsIndex[evalCtx.localBias + stack.pop().toInt()].openFastStream(), evalCtx, stack, stackLevel = stackLevel + 1)
+                                }
+                            }
 
                             // Stack & heap (32 elements)
                             Op.drop -> stack.pop()
                             Op.dup -> stack.pop().also { stack.add(it, it) }
                             Op.exch -> stack.swap(stack.size - 2, stack.size - 1)
+                            // @TODO: CHECK
                             Op.roll -> TODO()
-                            Op.index -> TODO()
+                            // @TODO: CHECK
+                            Op.index -> {
+                                TODO()
+                                assert(stack.size >= 2)
+                                val index = stack.pop().toInt()
+                                stack.push(if (index < 0) stack[stack.size - 1] else stack[stack.size - 1 - index])
+                            }
                             Op.put -> {
                                 val index = stack.pop()
                                 val value = stack.pop()
-                                heap[index.toInt()] = value
+                                evalCtx.heap[index.toInt()] = value
                             }
-                            Op.get -> stack.unop { heap[it.toInt()] }
+                            Op.get -> stack.unop { evalCtx.heap[it.toInt()] }
 
                             // Logic
                             Op.and -> stack.binop { l, r -> (l != 0.0 && r != 0.0).toInt().toDouble() }
@@ -305,72 +486,161 @@ object TtfCIDFont {
                             Op.mul -> stack.binop { l, r -> l * r }
 
                             // Drawing
-                            Op.vmoveto -> TODO()
-                            Op.rmoveto -> TODO()
-                            Op.hmoveto -> TODO()
-                            Op.rlineto -> {
-                                for (n in 0 until stack.size step 2) ctx.rLineTo(stack[n], stack[n + 1])
+                            Op.rmoveto -> {
+                                if (stack.size > 2) {
+                                    evalCtx.width = stack[stack.size - 3] + evalCtx.nominalWidthX
+                                    evalCtx.haveWidth = true
+                                }
+                                if (ctx.totalPoints != 0) {
+                                    ctx.cfrClose()
+                                }
+                                ctx.cfrMoveTo(stack[stack.size - 2], stack[stack.size - 1])
                                 stack.clear()
                             }
-                            Op.hlineto -> TODO()
-                            Op.vlineto -> TODO()
-                            Op.rrcurveto -> TODO()
-                            Op.rcurveline -> TODO()
-                            Op.rlinecurve -> TODO()
-                            Op.vvcurveto -> TODO()
-                            Op.hhcurveto -> TODO()
-                            Op.vhcurveto -> TODO()
-                            Op.hvcurveto -> TODO()
-                            Op.hflex -> TODO()
-                            Op.flex -> TODO()
-                            Op.hflex1 -> TODO()
-                            Op.flex1 -> TODO()
-                            Op.hstem, Op.vstem, Op.hstemhm, Op.vstemhm -> {
-                                TODO()
+                            Op.vmoveto, Op.hmoveto -> {
+                                if (stack.size > 1) {
+                                    evalCtx.width = stack[stack.size - 2] + evalCtx.nominalWidthX
+                                    evalCtx.haveWidth = true
+                                }
+                                ctx.cfrMoveToHV(stack.pop(), op == Op.hmoveto)
+                                stack.clear()
                             }
-                            // Other
-                            Op.hintmask, Op.cntrmask -> TODO()
-                            Op.endchar -> TODO()
+                            Op.rlineto -> {
+                                for (n in 0 until stack.size step 2) ctx.cfrLineTo(stack[n], stack[n + 1])
+                                stack.clear()
+                            }
+                            Op.hlineto, Op.vlineto -> {
+                                var toggle = op == Op.hlineto
+                                for (n in 0 until stack.size) {
+                                    ctx.cfrLineToHV(stack[n], horizontal = toggle)
+                                    toggle = !toggle
+                                }
+                                stack.clear()
+                            }
+                            Op.rrcurveto, Op.rcurveline, Op.rlinecurve -> {
+                                var n = 0
+                                if (op == Op.rlinecurve) {
+                                    while (stack.size - n < 6) ctx.cfrLineTo(stack[n++], stack[n++])
+                                }
+                                while (stack.size - n >= 6) {
+                                    ctx.cfrCubicTo(stack[n++], stack[n++], stack[n++], stack[n++], stack[n++], stack[n++])
+                                }
+                                if (op == Op.rcurveline) {
+                                    while (n < stack.size) ctx.cfrLineTo(stack[n++], stack[n++])
+                                }
+                                stack.clear()
+                            }
+                            Op.vvcurveto, Op.hhcurveto -> {
+                                // vvcurveto: dx1? {dya dxb dyb dyc}+
+                                // hhcurveto: dy1? {dxa dxb dyb dxc}+
+
+                                val horizontal = op == Op.hhcurveto
+                                var n = 0
+
+                                // The odd argument count indicates an X position.
+                                val v = if (stack.size % 2 == 1) stack[n++] else 0.0
+                                var initialY = if (horizontal) v else 0.0
+                                var initialX = if (horizontal) 0.0 else v
+
+                                if ((stack.size - n) % 4 != 0) error("Invalid number of operands")
+
+                                while (n < stack.size) {
+                                    val vv = stack[n++]
+                                    val x1 = initialX + (if (horizontal) vv else 0.0)
+                                    val y1 = initialY + (if (horizontal) 0.0 else vv)
+                                    val x2 = stack[n++]
+                                    val y2 = stack[n++]
+                                    val v1 = stack[n++]
+                                    val lastX = (if (horizontal) v1 else 0.0)
+                                    val lastY = (if (horizontal) 0.0 else v1)
+                                    ctx.cfrCubicTo(x1, y1, x2, y2, lastX, lastY)
+                                    initialX = 0.0
+                                    initialY = 0.0
+                                }
+
+                                stack.clear()
+                            }
+                            // @TODO: Rewrite this
+                            Op.vhcurveto, Op.hvcurveto -> {
+                                stack.reverse()
+                                var toggle = op == Op.hvcurveto
+                                while (stack.isNotEmpty()) {
+                                    val vv = stack.pop()
+                                    val x1 = (if (toggle) vv else 0.0)
+                                    val y1 = (if (toggle) 0.0 else vv)
+                                    val x2 = stack.pop()
+                                    val y2 = stack.pop()
+                                    val v1 = stack.pop()
+                                    val v2 = if (stack.size == 1) stack.pop() else 0.0
+                                    val ax = if (toggle) v2 else v1
+                                    val ay = if (toggle) v1 else v2
+                                    ctx.cfrCubicTo(x1, y1, x2, y2, ax, ay)
+                                    toggle = !toggle
+                                }
+                                stack.clear()
+                            }
+                            // Curves or straights depending on rendering factors
+                            Op.hflex, Op.flex, Op.hflex1, Op.flex1 -> {
+                                // Ignore flexes for now
+                                TODO()
+                                stack.clear()
+                            }
+                            // Hints
+                            Op.hstem, Op.vstem, Op.hstemhm, Op.vstemhm, Op.hintmask, Op.cntrmask -> {
+                                // Ignore hints for now
+                                //TODO()
+
+                                // The number of stem operators on the stack is always even.
+                                // If the value is odd, that means a width is specified.
+                                if (stack.size % 2 != 0 && !evalCtx.haveWidth) {
+                                    evalCtx.width = stack.pop() + evalCtx.nominalWidthX
+                                }
+
+                                evalCtx.nStems += stack.size ushr 1
+                                //println("parseStems: " + (stack.size ushr 1) + ", " + evalCtx.nStems)
+                                evalCtx.haveWidth = true;
+                                stack.clear()
+
+                                if (op == Op.hintmask || op == Op.cntrmask) {
+                                    val skipCount = (evalCtx.nStems + 7) ushr 3
+                                    //println("$op: skipCount=$skipCount, nStems=${evalCtx.nStems}")
+                                    s.skip(skipCount)
+                                }
+                            }
+                            // Deprecated
                             Op.cff2vsidx -> TODO()
                             Op.cff2blend -> TODO()
                         }
                     }
-
-                    is Value -> {
-                        stack.add(v.value)
+                    // Push double
+                    255 -> {
+                        val integerPart = (s.u8() shl 8) or s.u8()
+                        val fractionPart = (s.u8() shl 8) or s.u8()
+                        val value = integerPart.toDouble() + fractionPart.toDouble() / 65536.0
+                        stack.push(value)
+                        //println("PUSH: $value")
                     }
-
-                    else -> Unit
+                    // Push int
+                    else -> {
+                        val value: Int = when (v0) {
+                            28 -> ((s.u8() shl 8) or s.u8())
+                            in 32..246 -> (v0 - 139)
+                            in 247..250 -> ((v0 - 247) * 256 + s.u8() + 108)
+                            in 251..254 -> (-((v0 - 251) * 256) - s.u8() - 108)
+                            else -> unreachable
+                        }
+                        stack.push(value)
+                        //println("PUSH: $value")
+                    }
                 }
             }
         }
 
-
-        // Table 1 Type 2 Charstring Encoding Values
-        fun FastByteArrayInputStream.readCS2Token(): Token {
-            val v0 = readU8()
-            return when (v0) {
-                // Operator
-                in 0..27 -> Op(when (v0) {
-                    12 -> (v0 shl 8) or readU8()
-                    else -> v0
-                })
-                28 -> Value((readU8() shl 8) or readU8())
-                in 29..31 -> Op(v0)
-                in 32..254 -> Value(
-                    when (v0) {
-                        in 32..246 -> v0 - 139
-                        in 247..250 -> (v0 - 247) * 256 + readU8() + 108
-                        in 251..254 -> -((v0 - 251) * 256) - readU8() - 108
-                        else -> unreachable
-                    }
-                )
-                255 -> {
-                    val integerPart = (readU8() shl 8) or readU8()
-                    val fractionPart = (readU8() shl 8) or readU8()
-                    Value(integerPart.toDouble() + fractionPart.toDouble() / 65536.0)
-                }
-                else -> unreachable
+        private fun computeSubrBias(count: Int): Int {
+            return when {
+                count < 1240 -> 107
+                count < 33900 -> 1131
+                else -> 32768
             }
         }
 
@@ -418,9 +688,7 @@ object TtfCIDFont {
             companion object {
                 val MAP = values().associateBy { it.id }.toIntMap()
 
-                operator fun invoke(id: Int): Op {
-                    return MAP[id] ?: error("Unknown CFF CS2 operator $id")
-                }
+                operator fun get(id: Int): Op = MAP[id] ?: error("Unknown CFF CS2 operator $id")
             }
         }
     }

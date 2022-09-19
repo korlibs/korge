@@ -31,12 +31,12 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainJSMpeg),
-        //Demo(::MainGraphicsText),
+        Demo(::MainGraphicsText),
         //Demo(::MainEditor),
         //Demo(::MainStage3d),
         //Demo(::MainInput),
         //Demo(::MainSvgAnimation),
-        Demo(::MainVectorNinePatch),
+        //Demo(::MainVectorNinePatch),
         listOf(
             Demo(::MainVectorNinePatch),
             Demo(::MainGraphicsText),

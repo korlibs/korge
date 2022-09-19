@@ -153,10 +153,10 @@ class FontTest {
 
     @Test
     fun testReadOpenTypeFont() = suspendTestNoBrowser {
-        assertFailsWith<UnsupportedOperationException> {
+        //assertFailsWith<UnsupportedOperationException> {
             val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = true)
             println("font1=$font1")
-        }
+        //}
     }
 
     @Test
