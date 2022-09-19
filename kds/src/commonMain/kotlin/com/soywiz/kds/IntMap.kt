@@ -155,9 +155,9 @@ class IntMap<T> internal constructor(private var nbits: Int, private val loadFac
         }
     }
 
-    inline fun getOrPut(key: Int, callback: () -> T): T {
+    inline fun getOrPut(key: Int, callback: (Int) -> T): T {
         val res = get(key)
-        if (res == null) set(key, callback())
+        if (res == null) set(key, callback(key))
         return get(key)!!
     }
 
