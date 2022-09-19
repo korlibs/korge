@@ -11,8 +11,8 @@ data class FleksLife(var life: Float = 0f)
 data class FleksSprite(var path: String = "", var animationTime: Float = 0f)
 
 class FleksSystemSimple : IteratingSystem(
-    allOf = AllOf(arrayOf(FleksPosition::class))
-    ) {
+    allOfComponents = arrayOf(FleksPosition::class)
+) {
 
     private val positions: ComponentMapper<FleksPosition> = Inject.componentMapper()
 
@@ -22,9 +22,9 @@ class FleksSystemSimple : IteratingSystem(
 }
 
 class FleksSystemComplex1 : IteratingSystem(
-    allOf = AllOf(arrayOf(FleksPosition::class)),
-    noneOf = NoneOf(arrayOf(FleksLife::class)),
-    anyOf = AnyOf(arrayOf(FleksSprite::class))
+    allOfComponents = arrayOf(FleksPosition::class),
+    noneOfComponents = arrayOf(FleksLife::class),
+    anyOfComponents = arrayOf(FleksSprite::class)
 ) {
 
     private val positions: ComponentMapper<FleksPosition> = Inject.componentMapper()
@@ -46,7 +46,7 @@ class FleksSystemComplex1 : IteratingSystem(
 }
 
 class FleksSystemComplex2 : IteratingSystem(
-    anyOf = AnyOf(arrayOf(FleksPosition::class, FleksLife::class, FleksSprite::class))
+    anyOfComponents = arrayOf(FleksPosition::class, FleksLife::class, FleksSprite::class)
 ) {
 
     private val positions: ComponentMapper<FleksPosition> = Inject.componentMapper()
@@ -66,10 +66,12 @@ open class FleksStateAddRemove {
 
     @Setup(value = Level.Iteration)
     fun setup() {
-        world = World {
+        world = world {
             entityCapacity = NUM_ENTITIES
 
-            component(::FleksPosition)
+            components {
+                add(::FleksPosition)
+            }
         }
     }
 }
@@ -80,11 +82,16 @@ open class FleksStateSimple {
 
     @Setup(value = Level.Iteration)
     fun setup() {
-        world = World {
+        world = world {
             entityCapacity = NUM_ENTITIES
-            system(::FleksSystemSimple)
 
-            component(::FleksPosition)
+            systems {
+                add(::FleksSystemSimple)
+            }
+
+            components {
+                add(::FleksPosition)
+            }
         }
 
         repeat(NUM_ENTITIES) {
@@ -99,14 +106,19 @@ open class FleksStateComplex {
 
     @Setup(value = Level.Iteration)
     fun setup() {
-        world = World {
+        world = world {
             entityCapacity = NUM_ENTITIES
-            system(::FleksSystemComplex1)
-            system(::FleksSystemComplex2)
 
-            component(::FleksPosition)
-            component(::FleksLife)
-            component(::FleksSprite)
+            systems {
+                add(::FleksSystemComplex1)
+                add(::FleksSystemComplex2)
+            }
+
+            components {
+                add(::FleksPosition)
+                add(::FleksLife)
+                add(::FleksSprite)
+            }
         }
 
         repeat(NUM_ENTITIES) {
@@ -118,7 +130,7 @@ open class FleksStateComplex {
     }
 }
 
-@Fork(1)
+@Fork(value = WARMUPS)
 @Warmup(iterations = WARMUPS)
 @Measurement(iterations = ITERATIONS, time = TIME, timeUnit = TimeUnit.SECONDS)
 open class FleksBenchmark {
