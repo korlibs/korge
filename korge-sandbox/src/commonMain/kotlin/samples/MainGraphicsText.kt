@@ -16,10 +16,12 @@ import com.soywiz.korge.view.xy
 import com.soywiz.korim.bitmap.Bitmap32
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.font.DefaultTtfFont
+import com.soywiz.korim.font.readTtfFont
 import com.soywiz.korim.format.readBitmap
 import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.text.text
+import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.async.runBlockingNoJs
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korma.geom.Anchor
@@ -31,7 +33,7 @@ class MainGraphicsText : Scene() {
     /** Property delegate to trigger a refresh on change */
     protected fun <T> refreshable(initial: T, refresh: () -> Unit = { sceneContainer.changeToAsync(this::class) }) = Delegates.observable(initial) { prop, old, new -> refresh() }
 
-    @KeepOnReload var align by refreshable(TextAlignment.MIDDLE_CENTER) { this@MainGraphicsText.sceneView.sceneMainSync() }
+    @KeepOnReload var align by refreshable(TextAlignment.MIDDLE_CENTER) { launchImmediately { this@MainGraphicsText.sceneView.sceneMainSync() } }
 
     override suspend fun SContainer.sceneMain() {
         addDebugExtraComponent("Debug") {
@@ -41,14 +43,17 @@ class MainGraphicsText : Scene() {
         sceneMainSync()
     }
 
-    fun SContainer.sceneMainSync() {
+    suspend fun SContainer.sceneMainSync() {
         removeChildren()
+
+        //val font = resourcesVfs["Radicalis.ttf"].readTtfFont()
+        val font = resourcesVfs["helvetica.otf"].readTtfFont()
 
         graphics {
             fillStroke(Colors.WHITE, Stroke(Colors.RED, thickness = 5.0)) {
                 //rect(0, 0, 100, 100)
-                circle(0, 0, 50)
-                //text("Hello World!", font = DefaultTtfFont, textSize = 128.0)
+                //circle(0, 0, 50)
+                text("Hello World!", font = font, textSize = 128.0)
             }
             //drawText("hello", font = DefaultTtfFont, x = 50.0)
         }
