@@ -2247,4 +2247,4 @@ internal inline class Fixed(val data: Int) {
 suspend fun VfsFile.readTtfFont(
     preload: Boolean = false,
     onlyReadMetadata: Boolean = false,
-) = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
+): TtfFont = TtfFont(this.readAll(), freeze = preload, extName = this.baseName, onlyReadMetadata = onlyReadMetadata)
