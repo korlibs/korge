@@ -1,8 +1,11 @@
 package com.soywiz.korim.font
 
+import com.soywiz.kds.doubleArrayListOf
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.stream.openFastStream
+import com.soywiz.korma.geom.vector.VectorPath
+import com.soywiz.krypto.encoding.unhex
 import com.soywiz.krypto.encoding.unhexIgnoreSpaces
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -105,6 +108,12 @@ class TtfCIDFontTest {
         TtfCIDFont.CFF.apply {
             cidBytes.openFastStream().readCFF()
         }
+    }
 
+    @Test
+    fun testDecodePush() {
+        val stack = doubleArrayListOf()
+        TtfCIDFont.CharStringType2.eval(VectorPath(), "1cfb6e".unhex.openFastStream(), TtfCIDFont.CharStringType2.EvalContext(), stack = stack)
+        assertEquals(listOf(-1170.0), stack.toList())
     }
 }

@@ -105,8 +105,8 @@ object TtfCIDFont {
                 //println("PRIV[$privateSizeOffset]: $privateDict")
             }
 
-            println("topDict=$topDict")
-            println("privateDict=$privateDict")
+            //println("topDict=$topDict")
+            //println("privateDict=$privateDict")
 
             val charstringsOffsets: List<Number>? = topDict[Op.CharStrings]
             val charstringsOffset = charstringsOffsets!!.first().toInt()
@@ -148,7 +148,7 @@ object TtfCIDFont {
             var nominalWidthX = privateDict[Op.nominalWidthX]?.firstOrNull()?.toDouble() ?: 0.0
 
             fun getGlyphVector(index: Int, flipY: Boolean = true): GlyphPath {
-                val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex, defaultWidthX, nominalWidthX)
+                val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex, defaultWidthX, nominalWidthX, index)
                 val vp = VectorPath()
                 val bytes = charstringsIndex[index]
                 CharStringType2.eval(vp, bytes.openFastStream(), evalCtx)
@@ -353,8 +353,9 @@ object TtfCIDFont {
         class EvalContext(
             val globalSubrIndex: CFF.DataIndex = CFF.DataIndex(),
             val localSubrsIndex: CFF.DataIndex = CFF.DataIndex(),
-            var defaultWidthX: Double,
-            var nominalWidthX: Double,
+            var defaultWidthX: Double = 0.0,
+            var nominalWidthX: Double = 0.0,
+            val index: Int = -1,
             val heap: DoubleArray = DoubleArray(32)
         ) {
             val globalBias = computeSubrBias(globalSubrIndex.size)
@@ -364,7 +365,7 @@ object TtfCIDFont {
             var width = defaultWidthX
             var haveWidth = false
             init {
-                //println("defaultWidthX $defaultWidthX")
+                //println("index=$index, defaultWidthX=$defaultWidthX")
             }
         }
 
@@ -428,7 +429,7 @@ object TtfCIDFont {
                             Op.`return` -> return
                             Op.endchar -> {
                                 if (stack.isNotEmpty() && !evalCtx.haveWidth) {
-                                    evalCtx.width = stack.pop() + evalCtx.nominalWidthX
+                                    evalCtx.width = stack[0] + evalCtx.nominalWidthX
                                     evalCtx.haveWidth = true
                                 }
 
@@ -499,8 +500,9 @@ object TtfCIDFont {
                             // Drawing
                             Op.rmoveto -> {
                                 if (stack.size > 2) {
-                                    evalCtx.width = stack[stack.size - 3] + evalCtx.nominalWidthX
+                                    evalCtx.width = stack[0] + evalCtx.nominalWidthX
                                     evalCtx.haveWidth = true
+                                    //println("rmoveto width ${evalCtx.width} : $stack")
                                 }
                                 if (ctx.totalPoints != 0) {
                                     ctx.cfrClose()
@@ -510,7 +512,7 @@ object TtfCIDFont {
                             }
                             Op.vmoveto, Op.hmoveto -> {
                                 if (stack.size > 1) {
-                                    evalCtx.width = stack[stack.size - 2] + evalCtx.nominalWidthX
+                                    evalCtx.width = stack[0] + evalCtx.nominalWidthX
                                     evalCtx.haveWidth = true
                                 }
                                 ctx.cfrMoveToHV(stack.pop(), op == Op.hmoveto)
@@ -604,10 +606,9 @@ object TtfCIDFont {
                                 // The number of stem operators on the stack is always even.
                                 // If the value is odd, that means a width is specified.
                                 if (stack.size % 2 != 0 && !evalCtx.haveWidth) {
-                                    //val rstack = stack.toList()
                                     val value = stack[0]
                                     evalCtx.width = value + evalCtx.nominalWidthX
-                                    //println("parseStems $op width: ${evalCtx.width} value=$value, nominalWidthX=${evalCtx.nominalWidthX} : $rstack")
+                                    //println("parseStems $op width: ${evalCtx.width} value=$value, nominalWidthX=${evalCtx.nominalWidthX} : $stack")
                                 }
 
                                 evalCtx.nStems += stack.size ushr 1
@@ -637,7 +638,7 @@ object TtfCIDFont {
                     // Push int
                     else -> {
                         val value: Int = when (v0) {
-                            28 -> ((s.u8() shl 8) or s.u8())
+                            28 -> ((s.u8() shl 8) or s.u8()).toShort().toInt()
                             in 32..246 -> (v0 - 139)
                             in 247..250 -> ((v0 - 247) * 256 + s.u8() + 108)
                             in 251..254 -> (-((v0 - 251) * 256) - s.u8() - 108)
