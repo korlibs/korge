@@ -126,6 +126,7 @@ class Views constructor(
     override val views = this
 
     var rethrowRenderError = false
+    var forceRenderEveryFrame = true
 
     private val INCH_TO_CM = 2.54
 

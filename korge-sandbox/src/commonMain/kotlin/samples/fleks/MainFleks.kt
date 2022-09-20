@@ -44,29 +44,35 @@ class MainFleksSample : Scene() {
 
             // This is the world object of the entity component system (ECS)
             // It contains all ECS related system and component configuration
-            val world = World {
+            val world = world {
                 entityCapacity = 512
 
                 // Register all needed systems of the entity component system
                 // The order of systems here also define the order in which the systems are called inside Fleks ECS
-                system(::MoveSystem)
-                system(::SpawnerSystem)
-                system(::CollisionSystem)
-                system(::DestructSystem)
-                system(::SpriteSystem)   // Drawing images on screen should be last otherwise the position might be (0, 0) because it was not set before
+                systems {
+                    add(::MoveSystem)
+                    add(::SpawnerSystem)
+                    add(::CollisionSystem)
+                    add(::DestructSystem)
+                    add(::SpriteSystem)   // Drawing images on screen should be last otherwise the position might be (0, 0) because it was not set before
+                }
 
                 // Register all needed components and its listeners (if needed)
-                component(::Position)
-                component(::Sprite, ::SpriteListener)
-                component(::Spawner)
-                component(::Destruct)
-                component(::Rigidbody)
-                component(::Impulse)
+                components {
+                    add(::Position)
+                    add(::Sprite, ::SpriteListener)
+                    add(::Spawner)
+                    add(::Destruct)
+                    add(::Rigidbody)
+                    add(::Impulse)
+                }
 
                 // Register external objects which are used by systems and component listeners
-                inject(assets)  // Assets are used by the SpriteSystem / SpriteListener to get the image data for drawing
-                inject("layer0", layer0)  // Currently, we use only one layer to draw all objects to - this is also used in SpriteListener to add the image to the layer container
-                // inject("layer1", layer1)  // Add more layers when needed e.g. for explosion objects to be on top, etc.
+                injectables {
+                    add(assets)  // Assets are used by the SpriteSystem / SpriteListener to get the image data for drawing
+                    add("layer0", layer0)  // Currently, we use only one layer to draw all objects to - this is also used in SpriteListener to add the image to the layer container
+                    // inject("layer1", layer1)  // Add more layers when needed e.g. for explosion objects to be on top, etc.
+                }
             }
 
             // Create an entity object which will spawn meteorites on top of the visual screen area

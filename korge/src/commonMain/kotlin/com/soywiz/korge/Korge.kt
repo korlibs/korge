@@ -306,6 +306,7 @@ object Korge {
         var upTime = DateTime.EPOCH
         var moveMouseOutsideInNextFrame = false
         val mouseTouchId = -1
+        views.forceRenderEveryFrame = forceRenderEveryFrame
 
         val tempXY: Point = Point()
         // devicePixelRatio might change at runtime by changing the resolution or changing the screen of the window
@@ -523,7 +524,7 @@ object Korge {
                     firstRenderDeferred.complete(Unit)
                 }
                 try {
-                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep, forceRender = forceRenderEveryFrame)
+                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep, forceRender = views.forceRenderEveryFrame)
 
                     views.input.mouseOutside = false
                     if (moveMouseOutsideInNextFrame) {

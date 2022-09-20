@@ -441,8 +441,11 @@ class VectorPath(
     }.trimEnd()
     override fun toString(): String = "VectorPath(${toSvgString()})"
 
+    @PublishedApi
+    internal val tempPoint = Point()
+
     inline fun transformPoints(transform: (p: Point) -> IPoint): VectorPath {
-        val point = Point()
+        val point = tempPoint
         for (n in 0 until data.size step 2) {
             point.setTo(data[n + 0], data[n + 1])
             val p = transform(point)

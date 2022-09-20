@@ -3,6 +3,7 @@ package com.github.quillraven.fleks
 import com.github.quillraven.fleks.collection.Bag
 import com.github.quillraven.fleks.collection.bag
 import kotlin.math.max
+import kotlin.reflect.KClass
 
 /**
  * Interface of a component listener that gets notified when a component of a specific type
@@ -61,6 +62,16 @@ class ComponentMapper<T>(
     }
 
     /**
+     * Adds the [component] to the given [entity]. This function is only
+     * used by [World.loadSnapshot].
+     */
+    @Suppress("UNCHECKED_CAST")
+    internal fun addInternal(entity: Entity, component: Any) {
+        components[entity.id] = component as T
+        listeners.forEach { it.onComponentAdded(entity, component) }
+    }
+
+    /**
      * Creates a new component if the [entity] does not have it yet. Otherwise, updates the existing component.
      * Applies the [configuration] in both cases and returns the component.
      * Notifies any registered [ComponentListener] if a new component is created.
@@ -78,7 +89,7 @@ class ComponentMapper<T>(
      * Removes a component of the specific type from the given [entity].
      * Notifies any registered [ComponentListener].
      *
-     * @throws [ArrayIndexOutOfBoundsException] if the id of the [entity] exceeds the components' capacity.
+     * @throws [IndexOutOfBoundsException] if the id of the [entity] exceeds the components' capacity.
      */
     @PublishedApi
     internal fun removeInternal(entity: Entity) {
@@ -95,6 +106,18 @@ class ComponentMapper<T>(
      */
     operator fun get(entity: Entity): T {
         return components[entity.id] ?: throw FleksNoSuchEntityComponentException(entity, factory.toString())
+    }
+
+    /**
+     * Returns a component of the specific type of the given [entity] or null if the entity does not have this component.
+     */
+    fun getOrNull(entity: Entity): T? {
+        if (components.size > entity.id) {
+            // entity potentially has this component. However, return value can still be null
+            return components[entity.id]
+        }
+        // entity is not part of mapper
+        return null
     }
 
     /**
@@ -135,14 +158,14 @@ class ComponentMapper<T>(
  * It creates a [ComponentMapper] for every unique component type and assigns a unique id for each mapper.
  */
 class ComponentService(
-    componentFactory: Map<String, () -> Any>
+    componentFactory: Map<KClass<*>, () -> Any>
 ) {
     /**
      * Returns map of [ComponentMapper] that stores mappers by its component type.
      * It is used by the [SystemService] during system creation and by the [EntityService] for entity creation.
      */
     @PublishedApi
-    internal val mappers: Map<String, ComponentMapper<*>>
+    internal val mappers = HashMap<KClass<*>, ComponentMapper<*>>()
 
     /**
      * Returns [Bag] of [ComponentMapper]. The id of the mapper is the index of the bag.
@@ -152,10 +175,10 @@ class ComponentService(
 
     init {
         // Create component mappers with help of constructor functions from component factory
-        mappers = componentFactory.mapValues {
-            val compMapper = ComponentMapper(id = mappersBag.size, factory = it.value)
+        componentFactory.forEach { (type, factory) ->
+            val compMapper = ComponentMapper(id = mappersBag.size, factory = factory)
             mappersBag.add(compMapper)
-            compMapper
+            mappers[type] = compMapper
         }
     }
 
@@ -165,20 +188,20 @@ class ComponentService(
      * @throws [FleksNoSuchComponentException] if the component of the given [type] does not exist in the
      * world configuration.
      */
-    fun mapper(type: String): ComponentMapper<*> {
-        return mappers[type] ?: throw FleksNoSuchComponentException(type)
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Any> mapper(type: KClass<T>): ComponentMapper<T> {
+        return mappers[type] as ComponentMapper<T>
     }
 
     /**
      * Returns a [ComponentMapper] for the specific type.
      *
-     * @throws [FleksNoSuchComponentException] if the component of the given [type] does not exist in the
+     * @throws [FleksNoSuchComponentException] if the component of the given type does not exist in the
      * world configuration.
      */
     @Suppress("UNCHECKED_CAST")
     inline fun <reified T : Any> mapper(): ComponentMapper<T> {
-        val type = T::class.simpleName ?: throw FleksInjectableTypeHasNoName(T::class)
-        return mapper(type) as ComponentMapper<T>
+        return mappers[T::class] as ComponentMapper<T>
     }
 
     /**

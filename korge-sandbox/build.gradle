@@ -8,9 +8,13 @@ dependencies {
     add("commonMainApi", project(":korge-dragonbones"))
     add("commonMainApi", project(":korge-spine"))
     add("commonMainApi", project(":korge-swf"))
-    add("commonMainApi", project(":korge-fleks"))
     add("commonMainApi", project(":korge-box2d"))
     add("commonMainApi", project(":luak"))
+
+    // Use Fleks from korge-fleks module (internal version)
+    add("commonMainApi", project(":korge-fleks"))
+    // Use Fleks from Maven central (external version)
+    //add("commonMainImplementation", "io.github.quillraven.fleks:Fleks:1.6-KMP")
 }
 
 tasks.register("runJvmAwtSandbox", KorgeJavaExec) {

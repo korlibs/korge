@@ -1,11 +1,8 @@
 package com.github.quillraven.fleks.collection
 
-import com.soywiz.korio.async.*
 import kotlin.test.*
 
-internal class BagTest {
-
-    // GenericBag Test
+class GenericBagTest {
     @Test
     fun createEmptyBagOfStringOfSize32() {
         val bag = bag<String>(32)
@@ -85,13 +82,6 @@ internal class BagTest {
     }
 
     @Test
-    fun cannotGetStringValueOfInvalidOutOfBoundsIndex() = suspendTestNoJs {
-        val bag = bag<String>(2)
-
-        assertFailsWith<IndexOutOfBoundsException> { bag[2] }
-    }
-
-    @Test
     fun executeActionForEachValueOfStringBag() {
         val bag = bag<String>(4)
         bag[1] = "42"
@@ -107,10 +97,11 @@ internal class BagTest {
         assertEquals(2, numCalls)
         assertEquals(listOf("42", "43"), valuesCalled)
     }
+}
 
-    // IntBag Test
+class IntBagTest {
     @Test
-    fun createEmptyBagOfSize32() {
+    fun createEmptyBagOfStringOfSize32() {
         val bag = IntBag(32)
 
         assertEquals(32, bag.capacity)
@@ -151,13 +142,6 @@ internal class BagTest {
     }
 
     @Test
-    fun addValueUnsafeWithInsufficientCapacity() = suspendTestNoJs {
-        val bag = IntBag(0)
-
-        assertFailsWith<IndexOutOfBoundsException> { bag.unsafeAdd(42) }
-    }
-
-    @Test
     fun addValueToBagWithInsufficientCapacity() {
         val bag = IntBag(0)
 
@@ -166,13 +150,6 @@ internal class BagTest {
         assertEquals(1, bag.size)
         assertEquals(42, bag[0])
         assertEquals(1, bag.capacity)
-    }
-
-    @Test
-    fun cannotGetValueOfOutOfBoundsIndex() = suspendTestNoJs {
-        val bag = IntBag(2)
-
-        assertFailsWith<IndexOutOfBoundsException> { bag[2] }
     }
 
     @Test
@@ -194,7 +171,7 @@ internal class BagTest {
     }
 
     @Test
-    fun executeActionForEachValueOfTheBag() {
+    fun executeActionForEachValueOfBag() {
         val bag = IntBag(4)
         bag.add(42)
         bag.add(43)
@@ -205,6 +182,7 @@ internal class BagTest {
             ++numCalls
             valuesCalled.add(it)
         }
+
 
         assertEquals(2, numCalls)
         assertEquals(listOf(42, 43), valuesCalled)

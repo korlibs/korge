@@ -238,6 +238,9 @@ fun VectorBuilder.rLineToV(y: Double) = rLineTo(0.0, y)
 fun VectorBuilder.rLineToV(y: Float) = rLineToV(y.toDouble())
 fun VectorBuilder.rLineToV(y: Int) = rLineToV(y.toDouble())
 
+fun VectorBuilder.rMoveToHV(value: Double, horizontal: Boolean) = if (horizontal) rMoveToH(value) else rMoveToV(value)
+fun VectorBuilder.rLineToHV(value: Double, horizontal: Boolean) = if (horizontal) rLineToH(value) else rLineToV(value)
+
 fun VectorBuilder.rMoveTo(x: Double, y: Double) = moveTo(this.lastX + x, this.lastY + y)
 fun VectorBuilder.rMoveTo(x: Float, y: Float) = rMoveTo(x.toDouble(), y.toDouble())
 fun VectorBuilder.rMoveTo(x: Int, y: Int) = rMoveTo(x.toDouble(), y.toDouble())

@@ -18,6 +18,7 @@ import com.soywiz.korma.geom.vector.moveTo
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class FontTest {
     @Test
@@ -148,6 +149,14 @@ class FontTest {
         val font4 = resourcesVfs["myfont-bug3.ttf"].readTtfFont(preload = true)
         //font1.renderTextToBitmap(20.0, "Hello World!", border = 64, nativeRendering = false).bmp.showImageAndWait()
         //font4.renderTextToBitmap(64.0, "12 Hello World", nativeRendering = true).bmp.showImageAndWait()
+    }
+
+    @Test
+    fun testReadOpenTypeFont() = suspendTestNoBrowser {
+        //assertFailsWith<UnsupportedOperationException> {
+            val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = true)
+            println("font1=$font1")
+        //}
     }
 
     @Test
