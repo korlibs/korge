@@ -165,11 +165,19 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
         }
     }
 
-    uiComboBox(width = 300.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
+    val comboBox = uiComboBox(width = 300.0, items = (listOf(default) + all).distinctBy { it.name }.sortedBy { it.name }) {
         this.viewportHeight = 600
         this.onSelectionUpdate.add {
             println(it)
             launchImmediately { setDemo(it.selectedItem!!) }
+        }
+    }
+    uiCheckBox(width = 300.0, text = "forceRenderEveryFrame", checked = views.forceRenderEveryFrame) {
+        //x = 300.0
+        alignLeftToRightOf(comboBox, padding = 16.0)
+        //alignRightToLeftOf(comboBox)
+        onChange {
+            views.forceRenderEveryFrame = it.checked
         }
     }
     setDemo(default)
