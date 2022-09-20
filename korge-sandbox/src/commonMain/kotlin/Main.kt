@@ -1,8 +1,10 @@
 import com.soywiz.korge.Korge
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.scene.sceneContainer
+import com.soywiz.korge.ui.uiCheckBox
 import com.soywiz.korge.ui.uiComboBox
 import com.soywiz.korge.view.Stage
+import com.soywiz.korge.view.alignLeftToRightOf
 import com.soywiz.korge.view.xy
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.color.mix
@@ -14,11 +16,13 @@ import samples.connect4.MainConnect4
 import samples.fleks.MainFleksSample
 import samples.minesweeper.MainMineSweeper
 import samples.pong.MainPong
-import samples.tictactoeswf.MainTicTacToeSwf
 import samples.rpg.MainRpgScene
+import samples.tictactoeswf.MainTicTacToeSwf
+
+val DEFAULT_KORGE_BG_COLOR = Colors.DARKCYAN.mix(Colors.BLACK, 0.8)
 
 suspend fun main() = Korge(
-    bgcolor = Colors.DARKCYAN.mix(Colors.BLACK, 0.8),
+    bgcolor = DEFAULT_KORGE_BG_COLOR,
     clipBorders = false,
     //scaleMode = ScaleMode.EXACT,
     //debug = true,
@@ -159,6 +163,7 @@ suspend fun Stage.demoSelector(default: Demo, all: List<Demo>) {
     suspend fun setDemo(demo: Demo?) {
         //container.removeChildren()
         if (demo != null) {
+            views.clearColor = DEFAULT_KORGE_BG_COLOR
             container.changeTo({ injector ->
                 demo.sceneBuilder().also { it.init(injector) }
             })
