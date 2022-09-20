@@ -8,6 +8,15 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
+/**
+ * * TOOLS for debugging and reference:
+ * - https://fontdrop.info/#/?darkmode=true
+ * - https://yqnn.github.io/svg-path-editor/
+ * - https://github.com/caryll/otfcc/blob/617837bc6a74b0cf6be9e77a8ed1d2ffb39ea425/lib/libcff/cff-parser.c#L342
+ * - https://github.com/RazrFalcon/ttf-parser/blob/master/src/tables/cff/cff2.rs
+ * - https://github.com/nothings/stb/blob/master/stb_truetype.h
+ * - https://github.com/opentypejs/opentype.js
+ */
 class TtfCIDFontTest {
     @Test
     fun testRealEncoding() {
@@ -38,12 +47,15 @@ class TtfCIDFontTest {
 
     @Test
     fun testReadHeader() = suspendTest {
-        val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = true)
+        val font1 = resourcesVfs["helvetica.otf"].readTtfFont(preload = false)
         val cff = font1._cff
         assertNotNull(cff)
 
-        fun getPath(index: Int): String {
-            val path = cff.getGlyphVector(index)
+        //println(cff.getGlyphVector(2).advanceWidth)
+        //return@suspendTest
+
+        fun getPath(index: Int, flipY: Boolean = false): String {
+            val path = cff.getGlyphVector(index, flipY = flipY)
             //return "width=${path.advanceWidth.toInt()}, path=${path.path.toSvgString()}"
             return path.path.toSvgString()
         }
@@ -62,8 +74,16 @@ class TtfCIDFontTest {
         assertEquals(message = "§", actual = getPath(102), expected = "M38,37 L38,22 C38,-84,103,-152,240,-152 C368,-152,444,-96,444,23 C444,81,423,121,390,147 C437,175,468,238,468,289 C468,376,419,423,358,452 L239,508 C192,530,175,554,175,577 C175,609,199,634,237,634 C264,634,282,628,292,615 C302,602,306,585,306,566 L438,566 C438,660,384,728,248,728 C134,728,43,682,43,563 C43,516,64,478,103,449 C48,421,13,368,13,306 C13,242,45,188,119,152 L242,93 C289,70,306,46,306,9 C306,-24,287,-58,240,-58 C200,-58,170,-28,170,22 L170,37 Z M165,272 C143,284,131,307,131,326 C131,351,148,378,186,401 L282,350 C333,323,350,302,350,268 C350,247,338,222,303,193 C291,202,278,210,264,218 Z")
         assertEquals(message = "‰", actual = getPath(122), expected = "M872,181 C872,252,876,292,916,292 C956,292,960,252,960,181 C960,102,956,62,916,62 C876,62,872,102,872,181 Z M766,177 C766,48,792,-14,916,-14 C1040,-14,1066,48,1066,177 C1066,306,1040,368,916,368 C792,368,766,306,766,177 Z M27,517 C27,388,53,326,177,326 C301,326,327,388,327,517 C327,646,301,708,177,708 C53,708,27,646,27,517 Z M133,521 C133,592,137,632,177,632 C217,632,221,592,221,521 C221,442,217,402,177,402 C137,402,133,442,133,521 Z M428,177 C428,48,454,-14,578,-14 C702,-14,728,48,728,177 C728,306,702,368,578,368 C454,368,428,306,428,177 Z M534,181 C534,252,538,292,578,292 C618,292,622,252,622,181 C622,102,618,62,578,62 C538,62,534,102,534,181 Z M128,-31 L217,-31 L623,725 L534,725 Z")
 
+        fun rangeWidths(range: IntRange): String = range.joinToString(",") { cff.getGlyphVector(it).advanceWidth.toInt().toString() }
+
+        assertEquals("500,240,296,463,480,480,778,593", rangeWidths(0..7))
+        assertEquals("260,296,296,390,600,240,370,240", rangeWidths(8..15))
+        assertEquals("332,480,480,480,480,480,480,480", rangeWidths(16..23))
+        assertEquals("480,480,480,240,240,600,600,600", rangeWidths(24..31))
+        assertEquals("481,800,556,556,537,574,481,463", rangeWidths(32..39))
+
         // Read glyphs from the font normally
-        assertEquals("M198,199 L217,482 L217,714 L79,714 L79,482 L98,199 Z M79,132 L79,0 L217,0 L217,132 Z", font1.getGlyphByChar('!')?.path?.path?.toSvgString())
+        assertEquals("M198,-199 L217,-482 L217,-714 L79,-714 L79,-482 L98,-199 Z M79,-132 L79,0 L217,0 L217,-132 Z", font1.getGlyphByChar('!')?.path?.path?.toSvgString())
     }
 
     @Test

@@ -76,9 +76,14 @@ object TtfCIDFont {
 
             val privateSizeOffset = topDict[Op.Private]
             var localSubrsIndex: DataIndex = DataIndex()
+
+            var privateDict: Map<Op, List<Number>> = emptyMap()
+
             if (privateSizeOffset != null) {
                 val (privateSize, privateOffset) = privateSizeOffset.map { it.toInt() }
-                val privateDict = this.sliceWithSize(privateOffset, privateSize).readDICTMap()
+                privateDict = this.sliceWithSize(privateOffset, privateSize).readDICTMap()
+
+                //println("privateDict=$privateDict")
                 val localSubrs = privateDict[Op.Subrs]
                 if (localSubrs != null) {
                     val subrsOffset = privateOffset + localSubrs.last().toInt()
@@ -100,14 +105,16 @@ object TtfCIDFont {
                 //println("PRIV[$privateSizeOffset]: $privateDict")
             }
 
+            println("topDict=$topDict")
+            println("privateDict=$privateDict")
+
             val charstringsOffsets: List<Number>? = topDict[Op.CharStrings]
             val charstringsOffset = charstringsOffsets!!.first().toInt()
             //println("charstringsOffset=$charstringsOffset")
             val charstringsIndex = this.sliceStart(charstringsOffset).readIndex()
             //println("charstringsIndex=$charstringsIndex")
-            val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex)
 
-            return CFFResult(charstringsIndex, globalSubrIndex, localSubrsIndex)
+            return CFFResult(charstringsIndex, globalSubrIndex, localSubrsIndex, privateDict)
             /*
             //for (n in 0 until charstringsIndex.size) {
             for (n in 9..9) {
@@ -134,13 +141,19 @@ object TtfCIDFont {
         class CFFResult(
             val charstringsIndex: DataIndex,
             val globalSubrIndex: DataIndex,
-            val localSubrsIndex: DataIndex
+            val localSubrsIndex: DataIndex,
+            val privateDict: Map<Op, List<Number>>
         ) {
-            fun getGlyphVector(index: Int): GlyphPath {
-                val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex)
+            var defaultWidthX = privateDict[Op.defaultWidthX]?.firstOrNull()?.toDouble() ?: 0.0
+            var nominalWidthX = privateDict[Op.nominalWidthX]?.firstOrNull()?.toDouble() ?: 0.0
+
+            fun getGlyphVector(index: Int, flipY: Boolean = true): GlyphPath {
+                val evalCtx = CharStringType2.EvalContext(globalSubrIndex, localSubrsIndex, defaultWidthX, nominalWidthX)
                 val vp = VectorPath()
                 val bytes = charstringsIndex[index]
                 CharStringType2.eval(vp, bytes.openFastStream(), evalCtx)
+                if (flipY) vp.scale(1.0, -1.0)
+                //println("width=${evalCtx.width}")
                 return GlyphPath(vp, evalCtx.width)
             }
         }
@@ -340,21 +353,18 @@ object TtfCIDFont {
         class EvalContext(
             val globalSubrIndex: CFF.DataIndex = CFF.DataIndex(),
             val localSubrsIndex: CFF.DataIndex = CFF.DataIndex(),
+            var defaultWidthX: Double,
+            var nominalWidthX: Double,
             val heap: DoubleArray = DoubleArray(32)
         ) {
             val globalBias = computeSubrBias(globalSubrIndex.size)
             val localBias = computeSubrBias(localSubrsIndex.size)
 
             var nStems = 0
-            var width = 0.0
-            var nominalWidthX = 0.0
+            var width = defaultWidthX
             var haveWidth = false
-
-            fun reset() {
-                nStems = 0
-                width = 0.0
-                nominalWidthX = 0.0
-                haveWidth = false
+            init {
+                //println("defaultWidthX $defaultWidthX")
             }
         }
 
@@ -429,11 +439,12 @@ object TtfCIDFont {
                             }
                             Op.callsubr, Op.callgsubr -> {
                                 val global = op == Op.callgsubr
-                                if (global) {
-                                    eval(ctx, evalCtx.globalSubrIndex[evalCtx.globalBias + stack.pop().toInt()].openFastStream(), evalCtx, stack, stackLevel = stackLevel + 1)
-                                } else {
-                                    eval(ctx, evalCtx.localSubrsIndex[evalCtx.localBias + stack.pop().toInt()].openFastStream(), evalCtx, stack, stackLevel = stackLevel + 1)
+                                val funcOffset = stack.pop().toInt()
+                                val bytes = when {
+                                    global -> evalCtx.globalSubrIndex[evalCtx.globalBias + funcOffset]
+                                    else -> evalCtx.localSubrsIndex[evalCtx.localBias + funcOffset]
                                 }
+                                eval(ctx, bytes.openFastStream(), evalCtx, stack, stackLevel = stackLevel + 1)
                             }
 
                             // Stack & heap (32 elements)
@@ -593,7 +604,10 @@ object TtfCIDFont {
                                 // The number of stem operators on the stack is always even.
                                 // If the value is odd, that means a width is specified.
                                 if (stack.size % 2 != 0 && !evalCtx.haveWidth) {
-                                    evalCtx.width = stack.pop() + evalCtx.nominalWidthX
+                                    //val rstack = stack.toList()
+                                    val value = stack[0]
+                                    evalCtx.width = value + evalCtx.nominalWidthX
+                                    //println("parseStems $op width: ${evalCtx.width} value=$value, nominalWidthX=${evalCtx.nominalWidthX} : $rstack")
                                 }
 
                                 evalCtx.nStems += stack.size ushr 1
