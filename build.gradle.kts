@@ -845,7 +845,7 @@ samples {
     kotlin {
         jvm {
         }
-        js {
+        js(org.jetbrains.kotlin.gradle.plugin.KotlinJsCompilerType.IR) {
             browser {
                 binaries.executable()
             }
@@ -1171,6 +1171,7 @@ enum class CrossExecType(val cname: String, val interp: String) {
     }
 }
 
+/*
 open class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.tasks.KotlinNativeTest() {
     @Input
     @Option(option = "type", description = "Sets the executable cross type")
@@ -1200,6 +1201,7 @@ open class KotlinNativeCrossTest : org.jetbrains.kotlin.gradle.targets.native.ta
                 testArgs(testLogger, checkExitCode, testGradleFilter, testNegativeGradleFilter, userArgs)
     }
 }
+*/
 
 fun Exec.commandLineCross(vararg args: String, type: CrossExecType) {
     commandLine(*type.commands(*args))
@@ -1317,6 +1319,7 @@ subprojects {
                 for (type in CrossExecType.VALID_LIST) {
                     val linkDebugTest = project.tasks.findByName("linkDebugTest${type.nameWithArchCapital}") as? KotlinNativeLink?
                     if (linkDebugTest != null) {
+                        /*
                         tasks.create("${type.nameWithArch}Test${type.interpCapital}", KotlinNativeCrossTest::class.java, Action {
                             val link = linkDebugTest
                             val testResultsDir = project.buildDir.resolve(TestingBasePlugin.TEST_RESULTS_DIR_NAME)
@@ -1336,6 +1339,7 @@ subprojects {
                             group = "verification"
                             dependsOn(link)
                         })
+                        */
                     }
                 }
             }

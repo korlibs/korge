@@ -49,7 +49,7 @@ class KorgeGradleApply(val project: Project) {
                     "java.version" to System.getProperty("java.version"),
                     "gradle.version" to GradleVersion.current(),
                     "groovy.version" to GroovySystem.getVersion(),
-                    "kotlin.version" to KotlinVersion.CURRENT,
+                    "kotlin.version" to "1.8.20-dev-36",
                 )) {
                     println(" - $key: $value")
                 }
