@@ -1,7 +1,7 @@
 description = "Korim: Kotlin cORoutines IMaging utilities for JVM, JS, Native and Common"
 
 //com.soywiz.korlibs.NativeTools.configureCInteropLinux(project, "stb_image")
-com.soywiz.korlibs.NativeTools.configureAllCInterop(project, "stb_image")
+//com.soywiz.korlibs.NativeTools.configureAllCInterop(project, "stb_image")
 
 dependencies {
 	add("commonMainApi", project(":korio"))
