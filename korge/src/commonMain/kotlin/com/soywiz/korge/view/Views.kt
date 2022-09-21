@@ -347,6 +347,7 @@ class Views constructor(
                         if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
                             debugViews = !debugViews
                             gameWindow.debug = debugViews
+                            invalidatedView(stage)
                         }
                         stage.forEachComponentOfTypeRecursive(KeyComponent, tempComps) { it.apply { this@Views.apply { onKeyEvent(e) } } }
                     }
