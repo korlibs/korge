@@ -51,3 +51,8 @@ if (!disabledExtraKorgeLibs) {
     include(":korge-box2d")
     include(":korge-fleks")
 }
+
+for (var n = 0; n < 50; n++) {
+    include(":samples:korge-fake-sample-$n")
+}
+

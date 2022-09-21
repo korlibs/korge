@@ -96,7 +96,8 @@ kotlin {
 
 //apply(from = "${rootProject.rootDir}/build.idea.gradle")
 
-fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
+//fun Project.hasBuildGradle() = listOf("build.gradle", "build.gradle.kts").any { File(projectDir, it).exists() }
+fun Project.hasBuildGradle() = true
 val Project.isSample: Boolean get() = project.path.startsWith(":samples:") || project.path.startsWith(":korge-sandbox") || project.path.startsWith(":korge-editor") || project.path.startsWith(":korge-starter-kit")
 fun Project.mustAutoconfigureKMM(): Boolean =
     project.name != "korge-gradle-plugin" &&
@@ -1372,6 +1373,24 @@ afterEvaluate {
         if (mingwX64Test != null && isWindows && inCI) {
             mingwX64Test.doFirst { exec { commandLine("systeminfo") } }
             mingwX64Test.doLast { exec { commandLine("systeminfo") } }
+        }
+    }
+}
+
+afterEvaluate {
+    subprojects {
+        afterEvaluate {
+            if (project.path.startsWith(":samples:")) {
+                dependencies {
+                    add("commonMainApi", project(":korge"))
+                }
+
+                project.tasks.register("runJvmAwtSandbox", KorgeJavaExec::class.java) {
+                    group = "run"
+                    dependsOn("jvmMainClasses")
+                    mainClass.set("AwtSandboxSample")
+                }
+            }
         }
     }
 }
