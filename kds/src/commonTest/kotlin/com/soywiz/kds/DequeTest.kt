@@ -138,7 +138,7 @@ class DequeTest {
 
     @Test
     fun testAddAllArray() {
-        val deque = IntDeque()
+        val deque = IntDeque(1)
         deque.addAll(intArrayOf(+1, +2))
         deque.addAllFirst(intArrayOf(-2, -1))
         deque.addAll(intArrayOf(+3))
