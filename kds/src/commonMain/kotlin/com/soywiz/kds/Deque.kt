@@ -50,8 +50,22 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
     }
 
     fun addAll(items: Iterable<TGen>) {
-        resizeIfRequiredFor(items.count())
-        for (i in items) addLast(i)
+        addAll(items.toList())
+    }
+
+    fun addAll(list: List<TGen>) {
+        _addAll(list.size) { list[it] }
+    }
+
+    fun addAll(array: Array<TGen>) {
+        _addAll(array.size) { array[it] }
+    }
+
+    private inline fun _addAll(count: Int, block: (Int) -> TGen) {
+        resizeIfRequiredFor(count)
+        val base = _start + _size
+        for (n in 0 until count) data[(base + n) % capacity] = block(n)
+        _size += count
     }
 
     fun addAllFirst(items: Collection<TGen>) {
@@ -71,6 +85,10 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
 
     fun addLast(item: TGen) {
         resizeIfRequiredFor(1)
+        _addLast(item)
+    }
+
+    private fun _addLast(item: TGen) {
         data[(_start + _size) % capacity] = item
         _size++
     }
