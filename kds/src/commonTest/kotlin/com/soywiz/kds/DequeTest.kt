@@ -135,4 +135,14 @@ class DequeTest {
         deque.addAllFirst(listOf(1, 2, 3, 4))
         assertEquals(listOf(1, 2, 3, 4, 5, 6, 7, 8), deque.toList())
     }
+
+    @Test
+    fun testAddAllArray() {
+        val deque = IntDeque()
+        deque.addAll(intArrayOf(+1, +2))
+        deque.addAllFirst(intArrayOf(-2, -1))
+        deque.addAll(intArrayOf(+3))
+        deque.addAllFirst(intArrayOf(-3))
+        assertEquals("-3,-2,-1,1,2,3", deque.joinToString(","))
+    }
 }
