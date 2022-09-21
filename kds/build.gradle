@@ -16,3 +16,72 @@ dependencies {
     //add("jvmTestApi", "org.fuin:units4j:0.8.4")
     //add("jvmTestApi", "org.ow2.asm:asm:8.0.1")
 }
+
+//com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(new File(projectDir, "template"))
+
+/*
+task generate {
+    doLast {
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Deque.kt"))
+    }
+}
+*/
+
+afterEvaluate {
+    com.soywiz.korge.gradle.generate.TemplateGenerator.synchronizeNew(new File(projectDir, "src/commonMain/kotlin/com/soywiz/kds/Deque.kt"))
+}
+
+/*
+def srcDir(String path) { return new File(projectDir, "template/$path") }
+def dstDir(String path) { return new File(projectDir, "template/$path") }
+
+val srcDir = rootProject.rootDir["template"]
+val dstDir = rootProject.rootDir["kds"]
+
+tasks {
+    val generate by registering {
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(
+            srcDir("src/main/kotlin/com/soywiz/kds/TGenArrayList.kt"),
+            dstDir("src/commonMain/kotlin/com/soywiz/kds/ArrayList.kt"),
+            includeFloat = true
+        )
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(
+            srcDir["src/main/kotlin/com/soywiz/kds/TGenDeque.kt"],
+            dstDir["src/commonMain/kotlin/com/soywiz/kds/Deque.kt"],
+            includeFloat = true,
+            includeGeneric = true,
+            includeByte = true
+        )
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(
+            srcDir["src/main/kotlin/com/soywiz/kds/TGenArray2.kt"],
+            dstDir["src/commonMain/kotlin/com/soywiz/kds/Array2.kt"],
+            includeFloat = true,
+            includeGeneric = true
+        )
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(
+            srcDir["src/main/kotlin/com/soywiz/kds/TGenPriorityQueue.kt"],
+            dstDir["src/commonMain/kotlin/com/soywiz/kds/PriorityQueue.kt"],
+            includeFloat = true,
+            includeGeneric = true
+        )
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(
+            srcDir["src/main/kotlin/com/soywiz/kds/TGenStack.kt"],
+            dstDir["src/commonMain/kotlin/com/soywiz/kds/Stack.kt"],
+            includeFloat = true,
+            includeGeneric = true
+        )
+        com.soywiz.korge.gradle.generate.TemplateGenerator.synchronize(
+            srcDir["src/main/kotlin/com/soywiz/kds/TGenQueue.kt"],
+            dstDir["src/commonMain/kotlin/com/soywiz/kds/Queue.kt"],
+            includeFloat = true,
+            includeGeneric = true
+        )
+        //synchronize(
+        //    File("template/src/main/kotlin/com/soywiz/kds/TGenLinkedList.kt"),
+        //    File("src/commonMain/kotlin/com/soywiz/kds/LinkedList.kt"),
+        //    includeFloat = true,
+        //    includeGeneric = true
+        //)
+    }
+}
+*/
