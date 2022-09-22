@@ -17,6 +17,7 @@ import com.soywiz.korev.KeyEvent
 import com.soywiz.korev.MouseButton
 import com.soywiz.korev.MouseEvent
 import com.soywiz.korev.PauseEvent
+import com.soywiz.korev.RenderEvent
 import com.soywiz.korev.ReshapeEvent
 import com.soywiz.korev.ResumeEvent
 import com.soywiz.korev.StopEvent
@@ -515,28 +516,43 @@ object Korge {
         views.clearEachFrame = clearEachFrame
         views.clearColor = bgcolor
         val firstRenderDeferred = CompletableDeferred<Unit>()
-        views.gameWindow.onRenderEvent {
-            //println("RenderEvent: $it")
-            views.ag.doRender {
-                if (!renderShown) {
-                    //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
-                    renderShown = true
-                    firstRenderDeferred.complete(Unit)
-                }
-                try {
-                    views.frameUpdateAndRender(fixedSizeStep = fixedSizeStep, forceRender = views.forceRenderEveryFrame)
 
-                    views.input.mouseOutside = false
-                    if (moveMouseOutsideInNextFrame) {
-                        moveMouseOutsideInNextFrame = false
-                        views.input.mouseOutside = true
-                        views.input.mouseInside = false
-                        views.mouseUpdated()
+        fun renderBlock(event: RenderEvent) {
+            try {
+                views.frameUpdateAndRender(
+                    fixedSizeStep = fixedSizeStep,
+                    forceRender = views.forceRenderEveryFrame,
+                    doUpdate = event.update,
+                    doRender = event.render,
+                )
+
+                views.input.mouseOutside = false
+                if (moveMouseOutsideInNextFrame) {
+                    moveMouseOutsideInNextFrame = false
+                    views.input.mouseOutside = true
+                    views.input.mouseInside = false
+                    views.mouseUpdated()
+                }
+            } catch (e: Throwable) {
+                Console.error("views.gameWindow.onRenderEvent:")
+                e.printStackTrace()
+                if (views.rethrowRenderError) throw e
+            }
+        }
+
+        views.gameWindow.onRenderEvent { event ->
+            //println("RenderEvent: $it")
+            if (!event.render) {
+                renderBlock(event)
+
+            } else {
+                views.ag.doRender {
+                    if (!renderShown) {
+                        //println("!!!!!!!!!!!!! views.gameWindow.addEventListener<RenderEvent>")
+                        renderShown = true
+                        firstRenderDeferred.complete(Unit)
                     }
-                } catch (e: Throwable) {
-                    Console.error("views.gameWindow.onRenderEvent:")
-                    e.printStackTrace()
-                    if (views.rethrowRenderError) throw e
+                    renderBlock(event)
                 }
             }
         }
