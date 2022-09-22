@@ -95,36 +95,44 @@ open class KorgwSurfaceView constructor(
         val refreshRating: Float = display.refreshRate
 
         updateTimerThread = thread(start = true, isDaemon = true, name = "korgw-updater") {
-            while (true) {
-                val startTime = System.currentTimeMillis()
-                try {
-                    if (!firstRender) {
-                        requestRender()
-                    } else {
-                        //queueEvent {
-                        renderLock {
-                            //println("onAttachedToWindow.timer: continuousRenderMode=$continuousRenderMode")
-                            if (!continuousRenderMode) {
-                                val frameStartTime = runPreFrame()
-                                try {
-                                    gameWindow.frame(frameStartTime = frameStartTime, doUpdate = true, doRender = false)
-                                    //println("     --> gameWindow.mustTriggerRender=${gameWindow.mustTriggerRender}")
-                                    if (gameWindow.mustTriggerRender) {
-                                        requestRender()
+            try {
+                while (true) {
+                    val startTime = System.currentTimeMillis()
+                    try {
+                        if (!firstRender) {
+                            requestRender()
+                        } else {
+                            //queueEvent {
+                            renderLock {
+                                //println("onAttachedToWindow.timer: continuousRenderMode=$continuousRenderMode")
+                                if (!continuousRenderMode) {
+                                    val frameStartTime = runPreFrame()
+                                    try {
+                                        gameWindow.frame(
+                                            frameStartTime = frameStartTime,
+                                            doUpdate = true,
+                                            doRender = false
+                                        )
+                                        //println("     --> gameWindow.mustTriggerRender=${gameWindow.mustTriggerRender}")
+                                        if (gameWindow.mustTriggerRender) {
+                                            requestRender()
+                                        }
+                                    } catch (e: Throwable) {
+                                        e.printStackTrace()
                                     }
-                                } catch (e: Throwable) {
-                                    e.printStackTrace()
                                 }
                             }
                         }
+                        //}
+                    } finally {
+                        val endTime = System.currentTimeMillis()
+                        val elapsedTime = (endTime - startTime).toInt()
+                        // @TODO: Ideally this shouldn't be a timer, but a vsync-based callback, or at least use screen's hz)
+                        Thread.sleep(maxOf(4L, (1000L / refreshRating).toLong() - elapsedTime))
                     }
-                    //}
-                } finally {
-                    val endTime = System.currentTimeMillis()
-                    val elapsedTime = (endTime - startTime).toInt()
-                    // @TODO: Ideally this shouldn't be a timer, but a vsync-based callback, or at least use screen's hz)
-                    Thread.sleep(maxOf(4L, (1000L / refreshRating).toLong() - elapsedTime))
                 }
+            } catch (e: InterruptedException) {
+                // Do nothing, just finish the loop
             }
         }
     }
