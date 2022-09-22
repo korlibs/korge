@@ -7,7 +7,9 @@ import com.soywiz.korag.*
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.Signal
 import kotlin.coroutines.*
+import kotlin.properties.Delegates
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 
@@ -18,6 +20,11 @@ abstract class BaseAndroidGameWindow(
     abstract val androidView: View
     val context get() = androidContext
     var coroutineContext: CoroutineContext? = null
+
+    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
+    override var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new ->
+        onContinuousRenderModeUpdated?.invoke(new)
+    }
 
     val inputMethodManager get() = androidContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     override val dialogInterface = DialogInterfaceAndroid { androidContext }

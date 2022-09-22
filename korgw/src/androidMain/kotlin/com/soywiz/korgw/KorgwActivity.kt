@@ -20,10 +20,6 @@ abstract class KorgwActivity(
 ) : Activity(), ActivityWithResult by activityWithResult
 //, DialogInterface.OnKeyListener
 {
-    init {
-        activityWithResult.activity = this
-    }
-
     var gameWindow: AndroidGameWindow = AndroidGameWindow(this)
     var mGLView: KorgwSurfaceView? = null
     lateinit var ag: AGOpengl
@@ -40,6 +36,13 @@ abstract class KorgwActivity(
         }
 
     private var defaultUiVisibility = -1
+
+    init {
+        activityWithResult.activity = this
+        gameWindow.onContinuousRenderModeUpdated = {
+            mGLView?.continuousRenderMode = it
+        }
+    }
 
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

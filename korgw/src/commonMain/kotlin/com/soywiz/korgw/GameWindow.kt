@@ -544,14 +544,21 @@ open class GameWindow :
     var renderTime = 0.milliseconds
     var updateTime = 0.milliseconds
 
-    fun frame(doUpdate: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
+    open var continuousRenderMode: Boolean = true
+
+    fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
         val startTime = PerformanceCounter.reference
-        renderTime = measureTime {
-            frameRender()
+        if (doRender) {
+            renderTime = measureTime {
+                frameRender(doUpdate = doUpdate, doRender = true)
+            }
         }
         //println("renderTime=$renderTime")
         if (doUpdate) {
             updateTime = measureTime {
+                if (!doRender) {
+                    frameRender(doUpdate = true, doRender = false)
+                }
                 frameUpdate(frameStartTime)
             }
             //println("updateTime=$updateTime")
@@ -560,15 +567,17 @@ open class GameWindow :
         return endTime - startTime
     }
 
-    fun frameRender() {
-        if (contextLost) {
-            contextLost = false
-            ag.contextLost()
-        }
-        if (surfaceChanged) {
-            surfaceChanged = false
-            ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
-            dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+    fun frameRender(doUpdate: Boolean = true, doRender: Boolean = true) {
+        if (doRender) {
+            if (contextLost) {
+                contextLost = false
+                ag.contextLost()
+            }
+            if (surfaceChanged) {
+                surfaceChanged = false
+                ag.mainRenderBuffer.setSize(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+                dispatchReshapeEvent(surfaceX, surfaceY, surfaceWidth, surfaceHeight)
+            }
         }
         if (doInitialize) {
             doInitialize = false
@@ -577,7 +586,7 @@ open class GameWindow :
             dispatch(initEvent)
         }
         try {
-            dispatchRenderEvent(update = false)
+            dispatchRenderEvent(update = doUpdate, render = doRender)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
             println(e)
@@ -594,6 +603,18 @@ open class GameWindow :
     private var doInitialize = false
     private var initialized = false
     private var contextLost = false
+
+    var updatedSinceFrame: Int = 0
+
+    val mustTriggerRender: Boolean get() = updatedSinceFrame > 0
+
+    fun startFrame() {
+        updatedSinceFrame = 0
+    }
+
+    fun invalidatedView() {
+        updatedSinceFrame++
+    }
 
     fun handleContextLost() {
         println("---------------- handleContextLost --------------")
@@ -627,6 +648,7 @@ open class GameWindow :
             val remaining = (counterTimePerFrame - consumed) - 2.milliseconds // Do not push too much so give two extra milliseconds just in case
             val timeForTasks = coroutineDispatcher.maxAllocatedTimeForTasksPerFrame ?: remaining
             val finalTimeForTasks = max(timeForTasks, 4.milliseconds) // Avoid having 0 milliseconds or even negative
+            //println("         - frameUpdate: finalTimeForTasks=$finalTimeForTasks, startTime=$startTime, now=$now")
             coroutineDispatcher.executePending(finalTimeForTasks)
         } catch (e: Throwable) {
             println("ERROR GameWindow.frameRender:")
@@ -647,7 +669,10 @@ open class GameWindow :
     fun dispatchStopEvent() = dispatch(stopEvent)
     fun dispatchDestroyEvent() = dispatch(destroyEvent)
     fun dispatchDisposeEvent() = dispatch(disposeEvent)
-    fun dispatchRenderEvent(update: Boolean = true) = dispatch(renderEvent.also { it.update = update })
+    fun dispatchRenderEvent(update: Boolean = true, render: Boolean = true) = dispatch(renderEvent.also {
+        it.update = update
+        it.render = render
+    })
     fun dispatchDropfileEvent(type: DropFileEvent.Type, files: List<VfsFile>?) = dispatch(dropFileEvent.also {
         it.type = type
         it.files = files

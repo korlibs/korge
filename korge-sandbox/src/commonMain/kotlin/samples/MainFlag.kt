@@ -33,6 +33,7 @@ class MainFlag : ScaledScene(592, 592) {
 
         // Propagates the wave over time
         addUpdater { dt: TimeSpan ->
+            println("MainFlag.addUpdater: dt=$dt")
             flagFilter.time = flagFilter.time.plus(dt)
             invalidateRender()
         }
