@@ -2,6 +2,7 @@
 
 package com.soywiz.kds
 
+import com.soywiz.kds.annotations.Template
 import com.soywiz.kds.internal.arraycopy
 import com.soywiz.kds.internal.contentHashCode
 import com.soywiz.kds.internal.umod
@@ -20,6 +21,7 @@ typealias CircularList<TGen> = TGenDeque<TGen>
  * Deque structure supporting constant time of appending/removing from the start or the end of the list
  * when there is room in the underlying array.
  */
+@Template
 open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
     private var _start: Int = 0
     private var _size: Int = 0
@@ -231,6 +233,7 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
  * Deque structure supporting constant time of appending/removing from the start or the end of the list
  * when there is room in the underlying array.
  */
+@Template
 open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
     private var _start: Int = 0
     private var _size: Int = 0
@@ -440,6 +443,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
  * Deque structure supporting constant time of appending/removing from the start or the end of the list
  * when there is room in the underlying array.
  */
+@Template
 open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
     private var _start: Int = 0
     private var _size: Int = 0
@@ -649,6 +653,7 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
  * Deque structure supporting constant time of appending/removing from the start or the end of the list
  * when there is room in the underlying array.
  */
+@Template
 open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
     private var _start: Int = 0
     private var _size: Int = 0
@@ -858,6 +863,7 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
  * Deque structure supporting constant time of appending/removing from the start or the end of the list
  * when there is room in the underlying array.
  */
+@Template
 open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
     private var _start: Int = 0
     private var _size: Int = 0
