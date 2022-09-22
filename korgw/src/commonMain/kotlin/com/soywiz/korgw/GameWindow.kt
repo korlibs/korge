@@ -77,6 +77,7 @@ import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.startCoroutine
 import kotlin.native.concurrent.ThreadLocal
+import kotlin.properties.Delegates
 
 @ThreadLocal
 var GLOBAL_CHECK_GL = false
@@ -544,7 +545,10 @@ open class GameWindow :
     var renderTime = 0.milliseconds
     var updateTime = 0.milliseconds
 
-    open var continuousRenderMode: Boolean = true
+    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
+    open var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new ->
+        onContinuousRenderModeUpdated?.invoke(new)
+    }
 
     fun frame(doUpdate: Boolean = true, doRender: Boolean = true, frameStartTime: TimeSpan = PerformanceCounter.reference): TimeSpan {
         val startTime = PerformanceCounter.reference

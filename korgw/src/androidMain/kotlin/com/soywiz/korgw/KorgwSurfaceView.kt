@@ -83,7 +83,6 @@ open class KorgwSurfaceView constructor(
         //renderMode = RENDERMODE_WHEN_DIRTY
     }
 
-    private var timer: Timer = Timer(true)
     var firstRender = false
     private val renderLock = Lock()
 

@@ -21,11 +21,6 @@ abstract class BaseAndroidGameWindow(
     val context get() = androidContext
     var coroutineContext: CoroutineContext? = null
 
-    var onContinuousRenderModeUpdated: ((Boolean) -> Unit)? = null
-    override var continuousRenderMode: Boolean by Delegates.observable(true) { prop, old, new ->
-        onContinuousRenderModeUpdated?.invoke(new)
-    }
-
     val inputMethodManager get() = androidContext.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
     override val dialogInterface = DialogInterfaceAndroid { androidContext }
     override var isSoftKeyboardVisible: Boolean = false
