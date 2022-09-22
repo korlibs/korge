@@ -606,7 +606,7 @@ open class GameWindow :
 
     var updatedSinceFrame: Int = 0
 
-    val mustTriggerRender: Boolean get() = updatedSinceFrame > 0
+    val mustTriggerRender: Boolean get() = continuousRenderMode || updatedSinceFrame > 0
 
     fun startFrame() {
         updatedSinceFrame = 0
@@ -912,9 +912,21 @@ open class EventLoopGameWindow : GameWindow() {
     internal fun renderInternal(doUpdate: Boolean, frameStartTime: TimeSpan = PerformanceCounter.reference) {
         coroutineDispatcher.currentTime = PerformanceCounter.reference
         doInitRender()
-        frame(doUpdate, frameStartTime = frameStartTime)
+
+        var doRender = !doUpdate
+        if (doUpdate) {
+            frame(doUpdate = true, doRender = false, frameStartTime = frameStartTime)
+            if (mustTriggerRender) {
+                doRender = true
+            }
+        }
+        if (doRender) {
+            frame(doUpdate = false, doRender = true, frameStartTime = frameStartTime)
+        }
         lastRenderTime = PerformanceCounter.reference
-        doSwapBuffers()
+        if (doRender) {
+            doSwapBuffers()
+        }
     }
 
     fun sleepNextFrame() {
