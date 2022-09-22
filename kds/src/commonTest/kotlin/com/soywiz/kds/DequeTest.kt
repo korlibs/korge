@@ -145,4 +145,13 @@ class DequeTest {
         deque.addAllFirst(intArrayOf(-3))
         assertEquals("-3,-2,-1,1,2,3", deque.joinToString(","))
     }
+
+    @Test
+    fun testAddOverflow() {
+        val deque = IntDeque(4)
+        deque.addAll(IntArray(1000))
+        assertEquals(1000, deque.size)
+        deque.addAll(IntArray(1000))
+        assertEquals(2000, deque.size)
+    }
 }

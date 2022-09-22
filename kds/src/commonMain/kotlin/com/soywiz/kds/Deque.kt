@@ -37,7 +37,7 @@ open class TGenDeque<TGen>(initialCapacity: Int) : MutableCollection<TGen> {
         if (size + count > capacity) {
             val i = this.data
             val istart = this._start
-            val _o = arrayOfNulls<Any>(this.data.size * 2)
+            val _o = arrayOfNulls<Any>(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
             val o = _o as Array<TGen>
             copyCyclic(i, istart, o, this._size)
             this.data = o
@@ -248,7 +248,7 @@ open class IntDeque(initialCapacity: Int) : MutableCollection<Int> {
         if (size + count > capacity) {
             val i = this.data
             val istart = this._start
-            val _o = IntArray(this.data.size * 2)
+            val _o = IntArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
             val o = _o as IntArray
             copyCyclic(i, istart, o, this._size)
             this.data = o
@@ -457,7 +457,7 @@ open class DoubleDeque(initialCapacity: Int) : MutableCollection<Double> {
         if (size + count > capacity) {
             val i = this.data
             val istart = this._start
-            val _o = DoubleArray(this.data.size * 2)
+            val _o = DoubleArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
             val o = _o as DoubleArray
             copyCyclic(i, istart, o, this._size)
             this.data = o
@@ -666,7 +666,7 @@ open class FloatDeque(initialCapacity: Int) : MutableCollection<Float> {
         if (size + count > capacity) {
             val i = this.data
             val istart = this._start
-            val _o = FloatArray(this.data.size * 2)
+            val _o = FloatArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
             val o = _o as FloatArray
             copyCyclic(i, istart, o, this._size)
             this.data = o
@@ -875,7 +875,7 @@ open class ByteDeque(initialCapacity: Int) : MutableCollection<Byte> {
         if (size + count > capacity) {
             val i = this.data
             val istart = this._start
-            val _o = ByteArray(this.data.size * 2)
+            val _o = ByteArray(maxOf(this.data.size + 7, maxOf(size + count, this.data.size * 2)))
             val o = _o as ByteArray
             copyCyclic(i, istart, o, this._size)
             this.data = o
