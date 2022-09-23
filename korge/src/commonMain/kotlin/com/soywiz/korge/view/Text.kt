@@ -17,7 +17,6 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.TextMetrics
 import com.soywiz.korim.font.TextMetricsResult
-import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.font.getTextBounds
 import com.soywiz.korim.font.getTextBoundsWithGlyphs
 import com.soywiz.korim.font.readFont
@@ -32,7 +31,6 @@ import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.invoke
-import com.soywiz.korim.text.text
 import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
@@ -103,12 +101,12 @@ open class Text(
     init {
         updateLineCount()
     }
-    var fill: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
+    var fillStyle: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
     var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; version++ } }
 
     var color: RGBA
-        get() = (fill as? RGBA?) ?: Colors.WHITE
-        set(value) { fill = value }
+        get() = (fillStyle as? RGBA?) ?: Colors.WHITE
+        set(value) { fillStyle = value }
 
     var font: Resourceable<out Font> = font; set(value) {
         if (field != value) {
@@ -393,31 +391,37 @@ open class Text(
                     }
 
                     //println("alignment=$alignment")
-                    _staticGraphics!!.updateShape {
-                        if (fill != null) {
-                            fillStroke(fill, stroke) {
-                                this.text(
-                                    text = this@Text.text,
-                                    x = 0.0, y = 0.0,
-                                    textSize = realTextSize,
-                                    font = font as VectorFont,
-                                    renderer = this@Text.renderer,
-                                    align = this@Text.alignment,
-                                )
-                            }
-                        }
-                        //drawText(
-                        //    text = this@Text.text,
-                        //    x = 0.0, y = 0.0,
-                        //    size = realTextSize,
-                        //    font = font,
-                        //    paint = this@Text.color,
-                        //    renderer = this@Text.renderer,
-                        //    //align = TextAlignment.TOP_LEFT,
-                        //    align = this@Text.alignment,
-                        //    outMetrics = TextMetricsResult()
-                        //)
+                    val metrics = _staticGraphics!!.updateShape {
+                        //if (fill != null) {
+                        //    fillStroke(fill, stroke) {
+                        //        this.text(
+                        //            text = this@Text.text,
+                        //            x = 0.0, y = 0.0,
+                        //            textSize = realTextSize,
+                        //            font = font as VectorFont,
+                        //            renderer = this@Text.renderer,
+                        //            align = this@Text.alignment,
+                        //        )
+                        //    }
+                        //}
+                        drawText(
+                            text = this@Text.text,
+                            x = 0.0, y = 0.0,
+                            size = realTextSize,
+                            font = font,
+                            paint = this@Text.color,
+                            renderer = this@Text.renderer,
+                            //align = TextAlignment.TOP_LEFT,
+                            align = this@Text.alignment,
+                            outMetrics = TextMetricsResult(),
+                            //outMetrics = this@Text._textMetricsResult ?: TextMetricsResult(),
+                            fillStyle = this@Text.fillStyle,
+                            stroke = this@Text.stroke,
+                        )
                     }
+                    // Optimize since we already have the metrics to avoid recomputing them later
+                    cachedVersionGlyphMetrics = version
+                    _textMetricsResult = metrics
 
                     //val met = metrics!!.metrics
                     //val x = -horizontalAlign.getOffsetX(met.width)// + met.left

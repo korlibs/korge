@@ -11,6 +11,7 @@ import com.soywiz.korim.bitmap.effect.applyEffect
 import com.soywiz.korim.paint.DefaultPaint
 import com.soywiz.korim.paint.NonePaint
 import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.BoundBuilderTextRendererActions
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.TextAlignment
@@ -226,12 +227,17 @@ fun <T> Font.measureTextGlyphs(
 fun <T> Font.drawText(
     ctx: Context2d?,
     size: Double,
-    text: T, paint: Paint?,
+    text: T,
+    paint: Paint?, // Deprecated parameter
     x: Double = 0.0, y: Double = 0.0,
-    fill: Boolean = true,
+    fill: Boolean = true, // Deprecated parameter
     renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
     align: TextAlignment = TextAlignment.BASELINE_LEFT,
     outMetrics: TextMetricsResult? = null,
+
+    fillStyle: Paint? = null,
+    stroke: Stroke? = null,
+
     placed: (TextRendererActions.(codePoint: Int, x: Double, y: Double, size: Double, metrics: GlyphMetrics, fmetrics: FontMetrics, transform: Matrix) -> Unit)? = null
 ): TextMetricsResult? {
     //println("drawText!!: text=$text, align=$align")
@@ -240,7 +246,11 @@ fun <T> Font.drawText(
     //println("Font.drawText:")
     val doRender: () -> Unit = {
         //println("doRender=")
-        if (fill) ctx?.fill() else ctx?.stroke()
+        if (fillStyle != null || stroke != null) {
+            ctx?.fillStroke(fillStyle, stroke)
+        } else {
+            if (fill) ctx?.fill() else ctx?.stroke()
+        }
         ctx?.beginPath()
     }
     val actions = object : TextRendererActions() {

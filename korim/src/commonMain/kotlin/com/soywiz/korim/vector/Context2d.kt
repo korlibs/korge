@@ -388,7 +388,8 @@ open class Context2d constructor(
 	fun stroke() { if (state.strokeStyle != NonePaint) rendererRender(state, fill = false) }
     fun fill(winding: Winding? = null) { if (state.fillStyle != NonePaint) rendererRender(state, fill = true, winding = winding) }
 
-    fun fill(paint: Paint, winding: Winding? = null) {
+    fun fill(paint: Paint?, winding: Winding? = null) {
+        if (paint == null) return
 		this.fillStyle(paint) {
 			this.fill(winding)
 		}
@@ -434,12 +435,13 @@ open class Context2d constructor(
         }
 	}
 
-    inline fun stroke(paint: Paint, info: StrokeInfo, begin: Boolean = true, callback: () -> Unit = {}) {
+    inline fun stroke(paint: Paint?, info: StrokeInfo?, begin: Boolean = true, callback: () -> Unit = {}) {
+        if (paint == null || info == null) return
         stroke(paint, info.thickness, info.startCap, info.join, info.miterLimit, info.dash, info.dashOffset, begin, callback)
     }
 
-    inline fun stroke(stroke: Stroke, begin: Boolean = true, callback: () -> Unit = {}) {
-        stroke(stroke.paint, stroke.info, begin, callback)
+    inline fun stroke(stroke: Stroke?, begin: Boolean = true, callback: () -> Unit = {}) {
+        stroke(stroke?.paint, stroke?.info, begin, callback)
     }
 
     inline fun fillStroke(fill: Paint?, stroke: Paint?, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
@@ -601,7 +603,7 @@ open class Context2d constructor(
     ) {
         font(font, halign, valign, textSize) {
             fillStyle(color ?: fillStyle) {
-                drawText(text, x.toDouble(), y.toDouble(), fill = true)
+                drawText(text, x.toDouble(), y.toDouble(), fill = true, fillStyle = color ?: fillStyle)
             }
         }
     }
@@ -610,16 +612,21 @@ open class Context2d constructor(
         text: T,
         x: Double = 0.0,
         y: Double = 0.0,
-        fill: Boolean = true,
-        paint: Paint? = null,
+
+        fill: Boolean = true, // Deprecated parameter
+        paint: Paint? = null, // Deprecated parameter
+
         font: Font? = this.font,
         size: Double = this.fontSize,
         renderer: TextRenderer<T> = DefaultStringTextRenderer as TextRenderer<T>,
         align: TextAlignment = TextAlignment.BASELINE_LEFT,
         outMetrics: TextMetricsResult? = null,
+
+        fillStyle: Paint? = null,
+        stroke: Stroke? = null,
     ): TextMetricsResult? {
         val paint = paint ?: (if (fill) this.fillStyle else this.strokeStyle)
-        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, align = align, outMetrics = outMetrics)
+        return font?.drawText(this, size, text, paint, x, y, fill, renderer = renderer, align = align, outMetrics = outMetrics, fillStyle = fillStyle, stroke = stroke)
     }
 
     // @TODO: Fix this!
