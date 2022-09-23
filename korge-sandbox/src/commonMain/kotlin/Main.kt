@@ -35,7 +35,8 @@ suspend fun main() = Korge(
 
     demoSelector(
         //Demo(::MainJSMpeg),
-        Demo(::MainGraphicsText),
+        //Demo(::MainGraphicsText),
+        Demo(::MainTextBounds),
         //Demo(::MainEditor),
         //Demo(::MainStage3d),
         //Demo(::MainInput),

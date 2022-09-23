@@ -302,7 +302,7 @@ open class Text(
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
-            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
+            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer, align = alignment)
             _textBounds.copyFrom(metrics.bounds)
             _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
             _textBounds.x = -alignment.horizontal.getOffsetX(_textBounds.width) + metrics.left
