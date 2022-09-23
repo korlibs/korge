@@ -57,8 +57,10 @@ fun Throwable.printStackTraceWithExtraMessage(msg: String) {
     Console.error(stackTraceToString())
 }
 
+fun currentStackTrace(msg: String = "printStackTrace"): String = Exception(msg).stackTraceToString()
+
 fun printStackTrace(msg: String = "printStackTrace") {
-    Console.error(Exception(msg).stackTraceToString())
+    Console.error(currentStackTrace(msg))
 }
 
 expect fun enterDebugger(): Unit
