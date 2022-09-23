@@ -7,7 +7,9 @@ import com.soywiz.korag.*
 import com.soywiz.korev.ISoftKeyboardConfig
 import com.soywiz.korev.SoftKeyboardConfig
 import com.soywiz.korim.bitmap.*
+import com.soywiz.korio.async.Signal
 import kotlin.coroutines.*
+import kotlin.properties.Delegates
 
 actual fun CreateDefaultGameWindow(config: GameWindowCreationConfig): GameWindow = TODO()
 

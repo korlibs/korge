@@ -77,6 +77,9 @@ open class ShapeView(
         _updateShapeGraphics()
     }
 
+    @Deprecated("Use updatePath instead", ReplaceWith("updatePath(block)"))
+    inline fun updateShape(block: VectorPath.() -> Unit) = updatePath(block)
+
     @PublishedApi
     internal fun _updateShapeGraphics() {
         shapeView.updateShape {

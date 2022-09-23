@@ -95,6 +95,7 @@ class AGQueueProcessorOpenGL(
         }
         if (globalState.renderThreadId != currentThreadId) {
             println("AGQueueProcessorOpenGL.listStart: CALLED FROM DIFFERENT THREAD! ${globalState.renderThreadName}:${globalState.renderThreadId} != $currentThreadName:$currentThreadId")
+            printStackTrace()
         }
     }
 

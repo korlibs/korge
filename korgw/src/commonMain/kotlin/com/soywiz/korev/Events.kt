@@ -471,8 +471,10 @@ class RenderEvent() : Event(), TEvent<RenderEvent> {
     override val type: EventType<RenderEvent> get() = RenderEvent
 
     var update: Boolean = true
+    var render: Boolean = true
     fun copyFrom(other: RenderEvent) {
         this.update = other.update
+        this.render = other.render
     }
 }
 

@@ -25,11 +25,14 @@ import android.opengl.EGL14.eglGetCurrentDisplay
 import android.opengl.EGL14.eglQueryContext
 import android.opengl.GLSurfaceView
 import android.os.Build
+import android.view.Display
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.WindowManager
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.buildIntArray
+import com.soywiz.kds.lock.Lock
 import com.soywiz.kds.toIntArrayList
 import com.soywiz.kds.toMap
 import com.soywiz.klock.PerformanceCounter
@@ -45,10 +48,12 @@ import com.soywiz.korev.Touch
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korio.async.Signal
 import com.soywiz.korma.geom.Point
+import java.util.*
 import javax.microedition.khronos.egl.EGL10
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.egl.EGLDisplay
 import javax.microedition.khronos.opengles.GL10
+import kotlin.concurrent.thread
 import kotlin.math.absoluteValue
 
 // https://github.com/aosp-mirror/platform_frameworks_base/blob/e4df5d375df945b0f53a9c7cca83d37970b7ce64/opengl/java/android/opengl/GLSurfaceView.java
@@ -56,12 +61,17 @@ open class KorgwSurfaceView constructor(
     val viewOrActivity: Any?,
     context: Context,
     val gameWindow: BaseAndroidGameWindow,
-) : GLSurfaceView(context) {
+) : GLSurfaceView(context), GLSurfaceView.Renderer {
     val view = this
 
     val onDraw = Signal<Unit>()
     val requestedClientVersion by lazy { getVersionFromPackageManager(context) }
     var clientVersion = -1
+    var continuousRenderMode: Boolean
+        get() = renderMode == RENDERMODE_CONTINUOUSLY
+        set(value) {
+            renderMode = if (value) RENDERMODE_CONTINUOUSLY else RENDERMODE_WHEN_DIRTY
+        }
 
     init {
         println("KorgwActivity: Created GLSurfaceView $this for ${viewOrActivity}")
@@ -69,70 +79,145 @@ open class KorgwSurfaceView constructor(
         println("OpenGL ES Version (requested): $requestedClientVersion")
         setEGLContextClientVersion(getVersionFromPackageManager(context))
         setEGLConfigChooser(AndroidConfigChooser(hdr = gameWindow.config.hdr))
-        setRenderer(object : GLSurfaceView.Renderer {
-            override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
-                //GLES20.glClearColor(0.0f, 0.4f, 0.7f, 1.0f)
-                gameWindow.handleContextLost()
-                clientVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                    val out = IntArray(1)
-                    eglQueryContext(eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_CLIENT_VERSION, out, 0)
-                    out[0]
-                } else {
-                    2
-                }
-                println("OpenGL ES Version (actual): $clientVersion")
-            }
+        setRenderer(this)
+        //renderMode = RENDERMODE_WHEN_DIRTY
+    }
 
-            override fun onDrawFrame(unused: GL10) {
-                val frameStartTime = PerformanceCounter.reference
-                gameWindow.handleInitEventIfRequired()
-                gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
-                try {
-                    val gamepads = InputDevice.getDeviceIds().map { InputDevice.getDevice(it) }
-                        .filter { it.sources.hasBits(InputDevice.SOURCE_GAMEPAD) }.sortedBy { it.id }
+    var firstRender = false
+    private val renderLock = Lock()
 
-                    if (gamepads.isNotEmpty() || activeGamepads.size != 0) {
-                        val currentGamePadIds = gamepads.map { it.id }.toSet()
-                        activeGamepads.toMap().forEach { (deviceId, value) ->
-                            if (deviceId !in currentGamePadIds) {
-                                activeGamepads.remove(deviceId)
-                                //gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.DISCONNECTED, -1)
+    var updateTimerThread: Thread? = null
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+
+        val display: Display = (context.getSystemService(Context.WINDOW_SERVICE) as WindowManager).getDefaultDisplay()
+        val refreshRating: Float = display.refreshRate
+
+        updateTimerThread = thread(start = true, isDaemon = true, name = "korgw-updater") {
+            try {
+                while (true) {
+                    val startTime = System.currentTimeMillis()
+                    try {
+                        if (!firstRender) {
+                            requestRender()
+                        } else {
+                            //queueEvent {
+                            renderLock {
+                                //println("onAttachedToWindow.timer: continuousRenderMode=$continuousRenderMode")
+                                if (!continuousRenderMode) {
+                                    val frameStartTime = runPreFrame()
+                                    try {
+                                        gameWindow.frame(
+                                            frameStartTime = frameStartTime,
+                                            doUpdate = true,
+                                            doRender = false
+                                        )
+                                        //println("     --> gameWindow.mustTriggerRender=${gameWindow.mustTriggerRender}")
+                                        if (gameWindow.mustTriggerRender) {
+                                            requestRender()
+                                        }
+                                    } catch (e: Throwable) {
+                                        e.printStackTrace()
+                                    }
+                                }
                             }
                         }
-                        gameWindow.dispatchGamepadUpdateStart()
-                        val l = Point()
-                        val r = Point()
-                        for ((index, gamepad) in gamepads.withIndex()) {
-                            val info = getGamepadInfo(gamepad.id)
-                            if (!info.connected) {
-                                info.connected = true
-                                gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.CONNECTED, index)
-                            }
-                            l.setTo(info.rawAxes[0], info.rawAxes[1])
-                            r.setTo(info.rawAxes[2], info.rawAxes[3])
-                            gameWindow.dispatchGamepadUpdateAdd(l, r, info.rawButtonsPressed, StandardGamepadMapping, gamepad.name, 1.0)
-                            //println("gamepad=$gamepad")
-                        }
-                        gameWindow.dispatchGamepadUpdateEnd()
+                        //}
+                    } finally {
+                        val endTime = System.currentTimeMillis()
+                        val elapsedTime = (endTime - startTime).toInt()
+                        // @TODO: Ideally this shouldn't be a timer, but a vsync-based callback, or at least use screen's hz)
+                        Thread.sleep(maxOf(4L, (1000L / refreshRating).toLong() - elapsedTime))
                     }
-                } catch (e: Throwable) {
-                    e.printStackTrace()
                 }
+            } catch (e: InterruptedException) {
+                // Do nothing, just finish the loop
+            }
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        super.onDetachedFromWindow()
+        updateTimerThread?.interrupt()
+        updateTimerThread = null
+    }
+
+    override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
+        //GLES20.glClearColor(0.0f, 0.4f, 0.7f, 1.0f)
+        gameWindow.handleContextLost()
+        clientVersion = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            val out = IntArray(1)
+            eglQueryContext(eglGetCurrentDisplay(), eglGetCurrentContext(), EGL_CONTEXT_CLIENT_VERSION, out, 0)
+            out[0]
+        } else {
+            2
+        }
+        println("OpenGL ES Version (actual): $clientVersion")
+    }
+
+    private fun runPreFrame(): TimeSpan {
+        val frameStartTime = PerformanceCounter.reference
+        gameWindow.handleInitEventIfRequired()
+        gameWindow.handleReshapeEventIfRequired(0, 0, view.width, view.height)
+        try {
+            val gamepads = InputDevice.getDeviceIds().map { InputDevice.getDevice(it) }
+                .filter { it.sources.hasBits(InputDevice.SOURCE_GAMEPAD) }.sortedBy { it.id }
+
+            if (gamepads.isNotEmpty() || activeGamepads.size != 0) {
+                val currentGamePadIds = gamepads.map { it.id }.toSet()
+                activeGamepads.toMap().forEach { (deviceId, value) ->
+                    if (deviceId !in currentGamePadIds) {
+                        activeGamepads.remove(deviceId)
+                        //gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.DISCONNECTED, -1)
+                    }
+                }
+                gameWindow.dispatchGamepadUpdateStart()
+                val l = Point()
+                val r = Point()
+                for ((index, gamepad) in gamepads.withIndex()) {
+                    val info = getGamepadInfo(gamepad.id)
+                    if (!info.connected) {
+                        info.connected = true
+                        gameWindow.dispatchGamepadConnectionEvent(GamePadConnectionEvent.Type.CONNECTED, index)
+                    }
+                    l.setTo(info.rawAxes[0], info.rawAxes[1])
+                    r.setTo(info.rawAxes[2], info.rawAxes[3])
+                    gameWindow.dispatchGamepadUpdateAdd(l, r, info.rawButtonsPressed, StandardGamepadMapping, gamepad.name, 1.0)
+                    //println("gamepad=$gamepad")
+                }
+                gameWindow.dispatchGamepadUpdateEnd()
+            }
+        } catch (e: Throwable) {
+            e.printStackTrace()
+        }
+        return frameStartTime
+    }
+
+    override fun onDrawFrame(unused: GL10) {
+        renderLock {
+            try {
+                val frameStartTime = runPreFrame()
                 try {
-                    gameWindow.frame(frameStartTime = frameStartTime)
+                    if (!continuousRenderMode) {
+                        gameWindow.updatedSinceFrame++
+                    }
+                    gameWindow.frame(frameStartTime = frameStartTime, doUpdate = continuousRenderMode, doRender = true)
                     onDraw(Unit)
                 } catch (e: Throwable) {
                     e.printStackTrace()
                 }
+            } finally {
+                firstRender = true
             }
+        }
+    }
 
-            override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
-                println("---------------- GLSurfaceView.onSurfaceChanged($width, $height) --------------")
-                //ag.contextVersion++
-                //GLES20.glViewport(0, 0, width, height)
-                //surfaceChanged = true
-            }
-        })
+    override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
+        println("---------------- GLSurfaceView.onSurfaceChanged($width, $height) --------------")
+        //ag.contextVersion++
+        //GLES20.glViewport(0, 0, width, height)
+        //surfaceChanged = true
     }
 
     val activeGamepads = IntMap<GamepadInfo>()

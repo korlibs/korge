@@ -126,7 +126,7 @@ class Views constructor(
     override val views = this
 
     var rethrowRenderError = false
-    var forceRenderEveryFrame = true
+    var forceRenderEveryFrame: Boolean by gameWindow::continuousRenderMode
 
     private val INCH_TO_CM = 2.54
 
@@ -347,6 +347,7 @@ class Views constructor(
                         if ((e.type == KeyEvent.Type.UP) && supportTogglingDebug && (e.key == Key.F12 || e.key == Key.F7)) {
                             debugViews = !debugViews
                             gameWindow.debug = debugViews
+                            invalidatedView(stage)
                         }
                         stage.forEachComponentOfTypeRecursive(KeyComponent, tempComps) { it.apply { this@Views.apply { onKeyEvent(e) } } }
                     }
@@ -388,7 +389,12 @@ class Views constructor(
         renderContext.flush()
     }
 
-	fun frameUpdateAndRender(fixedSizeStep: TimeSpan = TimeSpan.NIL, forceRender: Boolean = false) {
+	fun frameUpdateAndRender(
+        fixedSizeStep: TimeSpan = TimeSpan.NIL,
+        forceRender: Boolean = false,
+        doUpdate: Boolean = true,
+        doRender: Boolean = true,
+    ) {
         val currentTime = timeProvider.now()
 		views.stats.startFrame()
 		Korge.logger.trace { "ag.onRender" }
@@ -399,15 +405,17 @@ class Views constructor(
 		//println("delta: $delta")
 		//println("Render($lastTime -> $currentTime): $delta")
 		lastTime = currentTime
-		if (fixedSizeStep != TimeSpan.NIL) {
-			update(fixedSizeStep)
-		} else {
-			update(adelta)
-		}
-        val doRender = forceRender || updatedSinceFrame > 0
-        if (doRender) {
+        if (doUpdate) {
+            if (fixedSizeStep != TimeSpan.NIL) {
+                update(fixedSizeStep)
+            } else {
+                update(adelta)
+            }
+        }
+        val doRender2 = doRender && (forceRender || updatedSinceFrame > 0)
+        if (doRender2) {
             if (printRendering) {
-                println("Views.frameUpdateAndRender[${DateTime.nowUnixLong()}]: doRender=$doRender -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
+                println("Views.frameUpdateAndRender[${DateTime.nowUnixLong()}]: doRender=$doRender2 -> [forceRender=$forceRender, updatedSinceFrame=$updatedSinceFrame]")
             }
             render()
             startFrame()
@@ -538,15 +546,15 @@ class Views constructor(
         completedEditing(Unit)
     }
 
-    var updatedSinceFrame: Int = 0
+    var updatedSinceFrame: Int by gameWindow::updatedSinceFrame
 
     fun startFrame() {
-        updatedSinceFrame = 0
+        gameWindow.startFrame()
     }
 
     fun invalidatedView(view: BaseView) {
         //println("invalidatedView: $view")
-        updatedSinceFrame++
+        gameWindow.invalidatedView()
     }
 
     var viewExtraBuildDebugComponent = arrayListOf<(views: Views, view: View, container: UiContainer) -> Unit>()

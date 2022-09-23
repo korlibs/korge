@@ -383,18 +383,17 @@ class MyDefaultGameWindow : GameWindow() {
         val scaledHeight = height * factor
         //macTrace("windowDidResize")
         dispatchReshapeEvent(0, 0, scaledWidth.toInt(), scaledHeight.toInt())
-        doRender()
+        doRender(update = false)
     }
 
     @Suppress("RemoveRedundantCallsOfConversionMethods")
     internal val backingScaleFactor: Double get() = window.backingScaleFactor.toDouble()
     internal var lastBackingScaleFactor = 0.0
 
-    fun doRender() {
+    fun doRender(update: Boolean) {
         //println("doRender[0]")
         val frameStartTime = PerformanceCounter.reference
         //macTrace("render")
-        val context = openglView.openGLContext
 
         //println("doRender[1]")
 
@@ -407,14 +406,26 @@ class MyDefaultGameWindow : GameWindow() {
         //println("doRender[2]")
 
         //context?.flushBuffer()
-        context?.makeCurrentContext()
 
-        //println("doRender[3] : $context")
-        //ag.clear(Colors.BLACK)
-        //ag.onRender(ag)
-        //dispatch(renderEvent)
-        frame(frameStartTime = frameStartTime)
-        context?.flushBuffer()
+        var doRender = !update
+        if (update) {
+            frame(doUpdate = true, doRender = false, frameStartTime = frameStartTime)
+            if (mustTriggerRender) {
+                doRender = true
+            }
+        }
+
+        if (doRender) {
+            val context = openglView.openGLContext
+            context?.makeCurrentContext()
+
+            //println("doRender[3] : $context")
+            //ag.clear(Colors.BLACK)
+            //ag.onRender(ag)
+            //dispatch(renderEvent)
+            frame(frameStartTime = frameStartTime)
+            context?.flushBuffer()
+        }
 
         //println("doRender[3]")
         //println("doRender[4]")
@@ -533,7 +544,7 @@ class MyDefaultGameWindow : GameWindow() {
                     //}
                     //println("KoruiWrap.pentry[2]")
 
-                    doRender()
+                    doRender(update = true)
                     val useDisplayLink = Environment["MACOS_USE_DISPLAY_LINK"] != "false"
                     if (useDisplayLink && createDisplayLink()) {
                         //timer = NSTimer.scheduledTimerWithTimeInterval(1.0 / 480.0, true, ::timerDisplayLink)
@@ -569,7 +580,7 @@ class MyDefaultGameWindow : GameWindow() {
 
             private fun timer(timer: NSTimer?) {
                 //println("TIMER")
-                doRender()
+                doRender(update = true)
             }
 
             override fun applicationWillTerminate(notification: NSNotification) {
@@ -606,7 +617,7 @@ private val atomicDisplayLinkContext = AtomicReference<COpaquePointer?>(null)
 @SharedImmutable
 val doDisplayCallbackRender: () -> Unit = {
     val gameWindow = atomicDisplayLinkContext.value?.asStableRef<MyDefaultGameWindow>()
-    gameWindow?.get()?.doRender()
+    gameWindow?.get()?.doRender(update = true)
 }
 
 @Suppress("UNUSED_PARAMETER")
