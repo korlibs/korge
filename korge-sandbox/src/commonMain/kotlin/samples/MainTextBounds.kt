@@ -1,5 +1,6 @@
 package samples
 
+import com.soywiz.kds.doubleArrayListOf
 import com.soywiz.korge.input.onClick
 import com.soywiz.korge.scene.Scene
 import com.soywiz.korge.ui.uiButton
@@ -19,6 +20,7 @@ import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.font.getTextBoundsWithGlyphs
 import com.soywiz.korim.font.readTtfFont
 import com.soywiz.korim.font.toBitmapFont
+import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
 import com.soywiz.korim.text.TextAlignment
@@ -60,13 +62,17 @@ class MainTextBounds : Scene() {
         //val align = TextAlignment.BASELINE_LEFT
         container {
             xy(600, 350)
-            text(text, fontSize, font = vfont, alignment = align, renderer = renderer)//.also { it.zIndex = 1.0 }
+            text(
+                text, fontSize, font = vfont, alignment = align, renderer = renderer,
+                fill = Colors.YELLOW,
+                stroke = Stroke(Colors.RED, thickness = 3.0, dash = doubleArrayListOf(50.0, 50.0))
+            )//.also { it.zIndex = 1.0 }
             graphics {
-                println("----------------------")
+                println("MainTextBounds: ----------------------")
                 val stats = vfont.getTextBoundsWithGlyphs(fontSize, text, align = align, renderer = renderer)
                 val metrics = stats.metrics
                 //val metrics = font.getTextBounds(64.0, text, align = align)
-                println("- ${metrics.bounds}")
+                println("MainTextBounds: - ${metrics.bounds}")
                 stroke(Colors.BLUE.withAd(0.5), lineWidth = 8.0) { rect(metrics.firstLineBounds) }
                 stroke(Colors.WHITE.withAd(0.5), lineWidth = 5.0) { rect(metrics.bounds) }
                 for (line in metrics.lineBounds) {

@@ -442,14 +442,19 @@ open class Context2d constructor(
         stroke(stroke.paint, stroke.info, begin, callback)
     }
 
-    inline fun fillStroke(fill: Paint, stroke: Paint, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
+    inline fun fillStroke(fill: Paint?, stroke: Paint?, strokeInfo: StrokeInfo? = null, callback: () -> Unit = {}) {
         callback()
-        fill(fill)
-        if (strokeInfo != null) stroke(stroke, strokeInfo, begin = false) else stroke(stroke, begin = false)
+        if (fill != null) fill(fill)
+        if (stroke != null) {
+            when {
+                strokeInfo != null -> stroke(stroke, strokeInfo, begin = false)
+                else -> stroke(stroke, begin = false)
+            }
+        }
     }
 
-    inline fun fillStroke(fill: Paint, stroke: Stroke, callback: () -> Unit = {}) {
-        fillStroke(fill, stroke.paint, stroke.info, callback)
+    inline fun fillStroke(fill: Paint?, stroke: Stroke?, callback: () -> Unit = {}) {
+        fillStroke(fill, stroke?.paint, stroke?.info, callback)
     }
 
     fun fillStroke() { fill(); stroke() }
@@ -557,10 +562,16 @@ open class Context2d constructor(
         transform: Matrix = Matrix()
     ) = BitmapPaint(bitmap, transform, cycleX, cycleY, smooth)
 
-    fun getTextBounds(text: String, out: TextMetrics = TextMetrics()): TextMetrics {
+    fun getTextBounds(
+        text: String,
+        out: TextMetrics = TextMetrics(),
+        fontSize: Double = this.fontSize,
+        renderer: TextRenderer<String> = DefaultStringTextRenderer,
+        align: TextAlignment = this.alignment
+    ): TextMetrics {
         val font = font
         if (font != null) {
-            font.getTextBounds(fontSize, text, out = out)
+            font.getTextBounds(fontSize, text, out = out, renderer = renderer, align = align)
         } else {
             out.clear()
         }

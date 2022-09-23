@@ -321,7 +321,6 @@ fun <T> Font.getTextBoundsWithGlyphs(
     }
 }
 
-
 fun <T> Font.getTextBounds(
     size: Double,
     text: T,

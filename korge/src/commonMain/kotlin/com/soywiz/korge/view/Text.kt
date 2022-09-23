@@ -17,9 +17,12 @@ import com.soywiz.korim.font.Font
 import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.TextMetrics
 import com.soywiz.korim.font.TextMetricsResult
+import com.soywiz.korim.font.VectorFont
 import com.soywiz.korim.font.getTextBounds
-import com.soywiz.korim.font.measureTextGlyphs
+import com.soywiz.korim.font.getTextBoundsWithGlyphs
 import com.soywiz.korim.font.readFont
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.CurveTextRenderer
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
@@ -29,6 +32,7 @@ import com.soywiz.korim.text.TextRenderer
 import com.soywiz.korim.text.VerticalAlign
 import com.soywiz.korim.text.aroundPath
 import com.soywiz.korim.text.invoke
+import com.soywiz.korim.text.text
 import com.soywiz.korim.text.withSpacing
 import com.soywiz.korio.async.launchImmediately
 import com.soywiz.korio.file.VfsFile
@@ -61,16 +65,18 @@ inline fun Container.text(
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
+    fill: Paint? = null, stroke: Stroke? = null,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
+    = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
     text: String, textSize: Double = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = DEFAULT_AUTO_SCALING
+    autoScaling: Boolean = DEFAULT_AUTO_SCALING,
+    fill: Paint? = null, stroke: Stroke? = null,
 ) : Container(), IText, ViewLeaf {
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
@@ -97,16 +103,13 @@ open class Text(
     init {
         updateLineCount()
     }
-    //var fill: Paint? = null; set(value) { if (field != value) { field = value; version++ } }
-    //var stroke: Stroke? = null; set(value) { if (field != value) { field = value; version++ } }
+    var fill: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
+    var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; version++ } }
 
-    var color: RGBA = color; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-    }
+    var color: RGBA
+        get() = (fill as? RGBA?) ?: Colors.WHITE
+        set(value) { fill = value }
+
     var font: Resourceable<out Font> = font; set(value) {
         if (field != value) {
             field = value
@@ -265,7 +268,7 @@ open class Text(
         _renderInternal(null)
         if (cachedVersionGlyphMetrics != version) {
             cachedVersionGlyphMetrics = version
-            _textMetricsResult = font.getOrNull()?.measureTextGlyphs(fontSize, text, renderer)
+            _textMetricsResult = font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, text, renderer)
         }
         return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
     }
@@ -296,7 +299,7 @@ open class Text(
             }
         }
         //container.colorMul = color
-        val font = this.font.getOrNull()
+        val font: Font? = this.font.getOrNull()
 
         //println("font=$font")
 
@@ -390,21 +393,31 @@ open class Text(
                     }
 
                     //println("alignment=$alignment")
-                    val metrics = _staticGraphics!!.updateShape {
-                        drawText(
-                            text = this@Text.text,
-                            x = 0.0, y = 0.0,
-                            size = realTextSize,
-                            font = font,
-                            paint = this@Text.color,
-                            renderer = this@Text.renderer,
-                            //align = TextAlignment.TOP_LEFT,
-                            align = this@Text.alignment,
-                            outMetrics = TextMetricsResult()
-                        )
+                    _staticGraphics!!.updateShape {
+                        if (fill != null) {
+                            fillStroke(fill, stroke) {
+                                this.text(
+                                    text = this@Text.text,
+                                    x = 0.0, y = 0.0,
+                                    textSize = realTextSize,
+                                    font = font as VectorFont,
+                                    renderer = this@Text.renderer,
+                                    align = this@Text.alignment,
+                                )
+                            }
+                        }
+                        //drawText(
+                        //    text = this@Text.text,
+                        //    x = 0.0, y = 0.0,
+                        //    size = realTextSize,
+                        //    font = font,
+                        //    paint = this@Text.color,
+                        //    renderer = this@Text.renderer,
+                        //    //align = TextAlignment.TOP_LEFT,
+                        //    align = this@Text.alignment,
+                        //    outMetrics = TextMetricsResult()
+                        //)
                     }
-                    cachedVersionGlyphMetrics = version
-                    _textMetricsResult = metrics
 
                     //val met = metrics!!.metrics
                     //val x = -horizontalAlign.getOffsetX(met.width)// + met.left
