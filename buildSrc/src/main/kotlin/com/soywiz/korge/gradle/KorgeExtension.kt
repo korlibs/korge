@@ -146,6 +146,20 @@ class KorgeExtension(val project: Project) {
     }
 
     /**
+     * Configure Desktop cross-targets:
+     *
+     * - Lima
+     * - Wine
+     */
+    fun targetDesktopCross() {
+        target("desktop-cross") {
+            if (supportKotlinNative) {
+                project.configureNativeDesktopCross()
+            }
+        }
+    }
+
+    /**
      * Configures Android indirect. Alias for [targetAndroidIndirect]
      */
     fun targetAndroid() {
