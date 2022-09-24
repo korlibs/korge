@@ -34,6 +34,7 @@ data class FontMetrics(
     //val lineHeight get() = top - bottom
     val lineHeight get() = rtop - rbottom
 
+    fun copyFrom(other: FontMetrics) = this.copyFromScaled(other, 1.0)
     fun copyFromNewSize(other: FontMetrics, size: Double) = this.copyFromScaled(other, size / other.size)
 
     fun copyFromScaled(other: FontMetrics, scale: Double) = this.apply {
@@ -83,14 +84,16 @@ data class GlyphMetrics(
 
     fun clone() = copy(bounds = bounds.clone())
 
-    fun copyFromNewSize(other: GlyphMetrics, size: Double, codePoint: Int = other.codePoint) = this.copyFromScaled(other, size / other.size, codePoint)
+    fun copyFromNewSize(other: GlyphMetrics, size: Double, codePoint: Int = other.codePoint): GlyphMetrics =
+        this.copyFromScaled(other, size / other.size, codePoint)
 
-    fun copyFromScaled(other: GlyphMetrics, scale: Double, codePoint: Int = other.codePoint) = this.apply {
+    fun copyFromScaled(other: GlyphMetrics, scale: Double, codePoint: Int = other.codePoint): GlyphMetrics {
         this.size = other.size
         this.existing = other.existing
         this.codePoint = codePoint
         this.bounds.setTo(other.bounds.x * scale, other.bounds.y * scale, other.bounds.width * scale, other.bounds.height * scale)
         this.xadvance = other.xadvance * scale
+        return this
     }
 
     override fun toString(): String = buildString {
@@ -103,12 +106,14 @@ data class GlyphMetrics(
     }
 }
 
-data class TextMetrics(
+data class TextMetrics constructor(
     val bounds: Rectangle = Rectangle(),
-    val firstLineBounds: Rectangle = Rectangle(),
+    var lineBounds: List<Rectangle> = emptyList(),
     val fontMetrics: FontMetrics = FontMetrics(),
     var nlines: Int = 0,
 ) {
+    val firstLineBounds: Rectangle get() = lineBounds.firstOrNull() ?: Rectangle()
+
     val left: Double get() = bounds.left
     val top: Double get() = bounds.top
 

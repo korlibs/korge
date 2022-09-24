@@ -18,8 +18,10 @@ import com.soywiz.korim.font.FontMetrics
 import com.soywiz.korim.font.TextMetrics
 import com.soywiz.korim.font.TextMetricsResult
 import com.soywiz.korim.font.getTextBounds
-import com.soywiz.korim.font.measureTextGlyphs
+import com.soywiz.korim.font.getTextBoundsWithGlyphs
 import com.soywiz.korim.font.readFont
+import com.soywiz.korim.paint.Paint
+import com.soywiz.korim.paint.Stroke
 import com.soywiz.korim.text.CurveTextRenderer
 import com.soywiz.korim.text.DefaultStringTextRenderer
 import com.soywiz.korim.text.HorizontalAlign
@@ -61,16 +63,18 @@ inline fun Container.text(
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
     autoScaling: Boolean = Text.DEFAULT_AUTO_SCALING,
+    fill: Paint? = null, stroke: Stroke? = null,
     block: @ViewDslMarker Text.() -> Unit = {}
 ): Text
-    = Text(text, textSize, color, font, alignment, renderer, autoScaling).addTo(this, block)
+    = Text(text, textSize, color, font, alignment, renderer, autoScaling, fill, stroke).addTo(this, block)
 
 open class Text(
     text: String, textSize: Double = DEFAULT_TEXT_SIZE,
     color: RGBA = Colors.WHITE, font: Resourceable<out Font> = DefaultTtfFont,
     alignment: TextAlignment = TextAlignment.TOP_LEFT,
     renderer: TextRenderer<String> = DefaultStringTextRenderer,
-    autoScaling: Boolean = DEFAULT_AUTO_SCALING
+    autoScaling: Boolean = DEFAULT_AUTO_SCALING,
+    fill: Paint? = null, stroke: Stroke? = null,
 ) : Container(), IText, ViewLeaf {
     companion object {
         val DEFAULT_TEXT_SIZE = 16.0
@@ -97,16 +101,13 @@ open class Text(
     init {
         updateLineCount()
     }
-    //var fill: Paint? = null; set(value) { if (field != value) { field = value; version++ } }
-    //var stroke: Stroke? = null; set(value) { if (field != value) { field = value; version++ } }
+    var fillStyle: Paint? = fill ?: color; set(value) { if (field != value) { field = value; version++ } }
+    var stroke: Stroke? = stroke; set(value) { if (field != value) { field = value; version++ } }
 
-    var color: RGBA = color; set(value) {
-        if (field != value) {
-            field = value
-            version++
-            invalidate()
-        }
-    }
+    var color: RGBA
+        get() = (fillStyle as? RGBA?) ?: Colors.WHITE
+        set(value) { fillStyle = value }
+
     var font: Resourceable<out Font> = font; set(value) {
         if (field != value) {
             field = value
@@ -265,7 +266,7 @@ open class Text(
         _renderInternal(null)
         if (cachedVersionGlyphMetrics != version) {
             cachedVersionGlyphMetrics = version
-            _textMetricsResult = font.getOrNull()?.measureTextGlyphs(fontSize, text, renderer)
+            _textMetricsResult = font.getOrNull()?.getTextBoundsWithGlyphs(fontSize, text, renderer)
         }
         return _textMetricsResult ?: error("Must ensure font is resolved before calling getGlyphMetrics")
     }
@@ -296,13 +297,13 @@ open class Text(
             }
         }
         //container.colorMul = color
-        val font = this.font.getOrNull()
+        val font: Font? = this.font.getOrNull()
 
         //println("font=$font")
 
         if (autoSize && font is Font && boundsVersion != version) {
             boundsVersion = version
-            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer)
+            val metrics = font.getTextBounds(textSize, text, out = textMetrics, renderer = renderer, align = alignment)
             _textBounds.copyFrom(metrics.bounds)
             _textBounds.height = font.getFontMetrics(textSize, metrics = fontMetrics).lineHeight * lineCount
             _textBounds.x = -alignment.horizontal.getOffsetX(_textBounds.width) + metrics.left
@@ -391,6 +392,18 @@ open class Text(
 
                     //println("alignment=$alignment")
                     val metrics = _staticGraphics!!.updateShape {
+                        //if (fill != null) {
+                        //    fillStroke(fill, stroke) {
+                        //        this.text(
+                        //            text = this@Text.text,
+                        //            x = 0.0, y = 0.0,
+                        //            textSize = realTextSize,
+                        //            font = font as VectorFont,
+                        //            renderer = this@Text.renderer,
+                        //            align = this@Text.alignment,
+                        //        )
+                        //    }
+                        //}
                         drawText(
                             text = this@Text.text,
                             x = 0.0, y = 0.0,
@@ -400,9 +413,13 @@ open class Text(
                             renderer = this@Text.renderer,
                             //align = TextAlignment.TOP_LEFT,
                             align = this@Text.alignment,
-                            outMetrics = TextMetricsResult()
+                            outMetrics = TextMetricsResult(),
+                            //outMetrics = this@Text._textMetricsResult ?: TextMetricsResult(),
+                            fillStyle = this@Text.fillStyle,
+                            stroke = this@Text.stroke,
                         )
                     }
+                    // Optimize since we already have the metrics to avoid recomputing them later
                     cachedVersionGlyphMetrics = version
                     _textMetricsResult = metrics
 

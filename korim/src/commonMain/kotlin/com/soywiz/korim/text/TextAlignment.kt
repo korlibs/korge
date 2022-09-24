@@ -82,7 +82,7 @@ inline class VerticalAlign(val ratio: Double) : EnumLike<VerticalAlign> {
         val MIDDLE = VerticalAlign(0.5)
         val BOTTOM = VerticalAlign(1.0)
         val BASELINE = VerticalAlign(Double.POSITIVE_INFINITY) // Special
-        private val values = arrayOf(TOP, MIDDLE, BASELINE, BOTTOM)
+        private val values = arrayOf(TOP, BASELINE, MIDDLE, BOTTOM)
 
         val CENTER get() = MIDDLE
         val ALL = values.toList()
@@ -145,6 +145,8 @@ inline class HorizontalAlign(val ratio: Double) : EnumLike<HorizontalAlign> {
             else -> HorizontalAlign(str.substringAfter('(').substringBefore(')').toDoubleOrNull() ?: 0.0)
         }
     }
+
+    fun getOffsetX(min: Double, max: Double): Double = getOffsetX(max - min) + min
 
     fun getOffsetX(width: Double): Double = when (this) {
         JUSTIFY -> 0.0

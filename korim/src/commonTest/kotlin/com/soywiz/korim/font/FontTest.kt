@@ -6,19 +6,20 @@ import com.soywiz.korim.bitmap.context2d
 import com.soywiz.korim.color.Colors
 import com.soywiz.korim.paint.LinearGradientPaint
 import com.soywiz.korim.text.CreateStringTextRenderer
+import com.soywiz.korim.text.TextAlignment
 import com.soywiz.korim.vector.buildSvgXml
 import com.soywiz.korio.async.suspendTest
 import com.soywiz.korio.async.suspendTestNoBrowser
 import com.soywiz.korio.file.std.resourcesVfs
 import com.soywiz.korio.util.OS
 import com.soywiz.korma.geom.degrees
+import com.soywiz.korma.geom.int
 import com.soywiz.korma.geom.vector.circle
 import com.soywiz.korma.geom.vector.lineTo
 import com.soywiz.korma.geom.vector.moveTo
 import kotlin.test.Ignore
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 
 class FontTest {
     @Test
@@ -161,14 +162,32 @@ class FontTest {
 
     @Test
     fun testTextBounds() {
+        val text1 = "Hello : jworld"
+        val text2 = "Hello : jworld\ntest"
+        fun metrics(text: String, align: TextAlignment): TextMetrics =
+            DefaultTtfFont.getTextBounds(16.0, text, align = align).round()
         assertEquals(
             """
-                TextMetrics[1, -3, 78, 14][-1, 11]            
-                TextMetrics[0, -3, 78, 30][0, 11]
+                [1]left:     TextMetrics[-1, 0, 79, 18][1, 18]
+                [1]middle:   TextMetrics[-1, -9, 79, 18][1, 9]
+                [1]baseline: TextMetrics[-1, -15, 79, 18][1, 3]
+                [1]bottom:   TextMetrics[-1, -18, 79, 18][1, 0]
+                [2]left:     TextMetrics[-1, 0, 79, 36][1, 18]
+                [2]middle:   TextMetrics[-1, -18, 79, 36][1, 0]
+                [2]baseline: TextMetrics[-1, -15, 79, 36][1, 3]
+                [2]bottom:   TextMetrics[-1, -36, 79, 36][1, -18]
+                Rectangle(x=3, y=0, width=342, height=71)
             """.trimIndent(),
             """
-                ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld").round()}            
-                ${DefaultTtfFont.getTextBounds(16.0, "Hello : jworld\ntest").round()}
+                [1]left:     ${metrics(text1, TextAlignment.TOP_LEFT)}
+                [1]middle:   ${metrics(text1, TextAlignment.MIDDLE_LEFT)}
+                [1]baseline: ${metrics(text1, TextAlignment.BASELINE_LEFT)}
+                [1]bottom:   ${metrics(text1, TextAlignment.BOTTOM_LEFT)}
+                [2]left:     ${metrics(text2, TextAlignment.TOP_LEFT)}
+                [2]middle:   ${metrics(text2, TextAlignment.MIDDLE_LEFT)}
+                [2]baseline: ${metrics(text2, TextAlignment.BASELINE_LEFT)}
+                [2]bottom:   ${metrics(text2, TextAlignment.BOTTOM_LEFT)}
+                ${DefaultTtfFont.getTextBounds(64.0, "jHello : Worljg").bounds.int.toString()}
             """.trimIndent()
         )
     }
