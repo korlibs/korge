@@ -354,11 +354,12 @@ fun <T> Font.getTextBounds(
     for (line in actions.lines) {
         val offsetX = line.getAlignX(align.horizontal)
         val rect = Rectangle(
-            -offsetX + out.drawLeft,
+            -offsetX,
             +offsetY + dy - out.ascent,
             line.maxX,
             line.maxLineHeight
         )
+        //println("rect=$rect, offsetX=$offsetX, drawLeft=${out.drawLeft}")
         bb.add(rect)
         lineBounds.add(rect)
         dy += line.maxLineHeight

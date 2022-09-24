@@ -120,7 +120,7 @@ class BoundBuilderTextRendererActions : TextRendererActions() {
         var maxX: Double = 0.0,
         val bounds: BoundsBuilder = BoundsBuilder(),
     ) {
-        fun getAlignX(align: HorizontalAlign): Double = align.getOffsetX(maxX)
+        fun getAlignX(align: HorizontalAlign): Double = align.getOffsetX(maxX) + bounds.xmin
 
         fun advance(dx: Double) {
             maxX += dx

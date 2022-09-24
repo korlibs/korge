@@ -146,6 +146,8 @@ inline class HorizontalAlign(val ratio: Double) : EnumLike<HorizontalAlign> {
         }
     }
 
+    fun getOffsetX(min: Double, max: Double): Double = getOffsetX(max - min) + min
+
     fun getOffsetX(width: Double): Double = when (this) {
         JUSTIFY -> 0.0
         else -> width * ratio
