@@ -15,5 +15,6 @@ expect fun posixTruncate(file: String, size: Long): Int
 expect fun posixStat(rpath: String): PosixStatInfo?
 expect fun posixReadlink(path: String): String?
 expect fun posixRealpath(path: String): String
+expect fun posixGetcwd(): String
 expect fun posixMkdir(path: String, attr: Int): Int
 expect fun ioctlSocketFionRead(sockfd: Int): Int

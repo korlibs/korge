@@ -26,7 +26,7 @@ val tmpdir: String by lazy { Environment["TMPDIR"] ?: Environment["TEMP"] ?: Env
 @ThreadLocal
 var customCwd: String? = null
 @ThreadLocal
-val nativeCwd by lazy { com.soywiz.korio.nativeCwd() }
+val nativeCwd by lazy { StandardPaths.cwd }
 val cwd: String get() = customCwd ?: nativeCwd
 
 //@ThreadLocal
@@ -44,10 +44,10 @@ actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
 @ThreadLocal
 actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
-actual val applicationVfs: VfsFile get() = cwdVfs
-actual val applicationDataVfs: VfsFile get() = cwdVfs
-actual val externalStorageVfs: VfsFile get() = cwdVfs
-actual val userHomeVfs: VfsFile get() = jailedLocalVfs(Environment.expand("~"))
+actual val applicationVfs: VfsFile get() = rootLocalVfsNative[StandardPaths.resourcesFolder]
+actual val applicationDataVfs: VfsFile get() = applicationVfs
+actual val externalStorageVfs: VfsFile get() = applicationVfs
+actual val userHomeVfs: VfsFile get() = jailedLocalVfs(StandardPaths.userHome)
 
 @ThreadLocal
 val rootLocalVfsNative by lazy { LocalVfsNative(async = true) }
