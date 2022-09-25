@@ -35,8 +35,8 @@ val cwdVfs: VfsFile get() = rootLocalVfsNative[cwd]
 
 @ThreadLocal
 actual val standardVfs: StandardVfs = object : StandardVfs() {
-    override val resourcesVfs: VfsFile by lazy { cwdVfs.jail() }
-    override val rootLocalVfs: VfsFile get() = cwdVfs
+    override val resourcesVfs: VfsFile by lazy { applicationDataVfs.jail() }
+    override val rootLocalVfs: VfsFile get() = applicationDataVfs
 }
 
 @ThreadLocal
@@ -44,7 +44,7 @@ actual val cacheVfs: VfsFile by lazy { MemoryVfs() }
 @ThreadLocal
 actual val tempVfs: VfsFile by lazy { jailedLocalVfs(tmpdir) }
 
-actual val applicationVfs: VfsFile get() = rootLocalVfsNative[StandardPaths.resourcesFolder]
+actual val applicationVfs: VfsFile get() = rootLocalVfsNative[customCwd ?: StandardPaths.resourcesFolder]
 actual val applicationDataVfs: VfsFile get() = applicationVfs
 actual val externalStorageVfs: VfsFile get() = applicationVfs
 actual val userHomeVfs: VfsFile get() = jailedLocalVfs(StandardPaths.userHome)
