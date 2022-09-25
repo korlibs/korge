@@ -53,7 +53,7 @@ fun ByteArray.toNodeJsBuffer(offset: Int, size: Int): NodeJsBuffer =
 // DIRTY HACK to prevent webpack to mess with our code
 val REQ get() = "req"
 private external val eval: dynamic
-private fun require_node(name: String): dynamic = eval("(${REQ}uire('$name'))")
+internal fun require_node(name: String): dynamic = eval("(${REQ}uire('$name'))")
 
 private external val process: dynamic // node.js
 
