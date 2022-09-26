@@ -12,7 +12,7 @@ class BoundsBuilder {
 
     /**
      * True if some points were added to the [BoundsBuilder],
-     * and thus [xminOr], [xmaxOr], [yminOr], [ymaxOr] have valid values
+     * and thus [xmin], [xmax], [ymin], [ymax] have valid values
      **/
     val hasPoints: Boolean get() = npoints > 0
 
