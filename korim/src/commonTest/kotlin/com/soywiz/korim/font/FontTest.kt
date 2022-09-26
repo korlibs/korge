@@ -162,12 +162,17 @@ class FontTest {
 
     @Test
     fun testTextBounds() {
+        val text0 = ""
         val text1 = "Hello : jworld"
         val text2 = "Hello : jworld\ntest"
         fun metrics(text: String, align: TextAlignment): TextMetrics =
             DefaultTtfFont.getTextBounds(16.0, text, align = align).round()
         assertEquals(
             """
+                [0]left:     TextMetrics[0, 0, 0, 18][0, 18]
+                [0]middle:   TextMetrics[0, -9, 0, 18][0, 9]
+                [0]baseline: TextMetrics[0, -15, 0, 18][0, 3]
+                [0]bottom:   TextMetrics[0, -18, 0, 18][0, 0]
                 [1]left:     TextMetrics[-1, 0, 79, 18][1, 18]
                 [1]middle:   TextMetrics[-1, -9, 79, 18][1, 9]
                 [1]baseline: TextMetrics[-1, -15, 79, 18][1, 3]
@@ -179,6 +184,10 @@ class FontTest {
                 Rectangle(x=3, y=0, width=342, height=71)
             """.trimIndent(),
             """
+                [0]left:     ${metrics(text0, TextAlignment.TOP_LEFT)}
+                [0]middle:   ${metrics(text0, TextAlignment.MIDDLE_LEFT)}
+                [0]baseline: ${metrics(text0, TextAlignment.BASELINE_LEFT)}
+                [0]bottom:   ${metrics(text0, TextAlignment.BOTTOM_LEFT)}
                 [1]left:     ${metrics(text1, TextAlignment.TOP_LEFT)}
                 [1]middle:   ${metrics(text1, TextAlignment.MIDDLE_LEFT)}
                 [1]baseline: ${metrics(text1, TextAlignment.BASELINE_LEFT)}
