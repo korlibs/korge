@@ -13,7 +13,6 @@ import com.soywiz.kds.IntDeque
 import com.soywiz.kds.IntSet
 import com.soywiz.kds.Pool
 import com.soywiz.kds.fastCastTo
-import com.soywiz.kds.lock.Lock
 import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.kmem.FBuffer
 import com.soywiz.kmem.extract
@@ -86,7 +85,7 @@ class AGGlobalState(val checked: Boolean = false) {
     internal val textureIndices = AGManagedObjectPool("texture", checked = checked)
     internal val frameBufferIndices = AGManagedObjectPool("frame", checked = checked)
     //var programIndex = KorAtomicInt(0)
-    private val lock = Lock()
+    private val lock = NonRecursiveLock()
     private val lists = Deque<AGList>()
 
     // For example if we want to wait for pixels to be read

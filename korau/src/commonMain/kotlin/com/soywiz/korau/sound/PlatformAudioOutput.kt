@@ -1,6 +1,6 @@
 package com.soywiz.korau.sound
 
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.klock.milliseconds
 import com.soywiz.kmem.clamp
 import com.soywiz.kmem.clamp01
@@ -42,7 +42,7 @@ open class DequeBasedPlatformAudioOutput(
     companion object {
         const val nchannels = 2
     }
-    private val lock = Lock()
+    private val lock = NonRecursiveLock()
     private val deque = AudioSamplesDeque(nchannels)
 
     override var pitch: Double = 1.0 ; set(value) { field = value; updateProps() }

@@ -1,11 +1,11 @@
 package com.soywiz.kds.sync
 
 import com.soywiz.kds.BaseMutableMap
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 open class SynchronizedMap<K, V>(
     protected val base: MutableMap<K, V>,
-    protected val lock: Lock = Lock()
+    protected val lock: NonRecursiveLock = NonRecursiveLock()
 ) : BaseMutableMap<K, V> {
     override val entries: MutableSet<MutableMap.MutableEntry<K, V>> get() = SynchronizedSet(base.entries)
     override val keys: MutableSet<K> get() = SynchronizedSet(base.keys)

@@ -1,13 +1,13 @@
 package com.soywiz.korgw
 
-import com.soywiz.kds.lock.Lock
 import com.soywiz.kds.Pool
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.korev.TouchEvent
 import com.soywiz.korev.dispatch
 
 class TouchEventHandler {
     @PublishedApi
-    internal val lock = Lock()
+    internal val lock = NonRecursiveLock()
     @PublishedApi
     internal val touchesEventPool = Pool { TouchEvent() }
     @PublishedApi

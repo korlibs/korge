@@ -40,7 +40,7 @@ class FastReentrantLock constructor() {
     }
 }
 
-class NonRecursiveLock actual constructor() {
+actual class NonRecursiveLock actual constructor() {
     @PublishedApi internal var locked = atomic(false)
 
     actual inline operator fun <T> invoke(callback: () -> T): T {

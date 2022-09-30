@@ -32,7 +32,7 @@ import android.view.MotionEvent
 import android.view.WindowManager
 import com.soywiz.kds.IntMap
 import com.soywiz.kds.buildIntArray
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.kds.toIntArrayList
 import com.soywiz.kds.toMap
 import com.soywiz.klock.PerformanceCounter
@@ -84,7 +84,7 @@ open class KorgwSurfaceView constructor(
     }
 
     var firstRender = false
-    private val renderLock = Lock()
+    private val renderLock = NonRecursiveLock()
 
     var updateTimerThread: Thread? = null
 

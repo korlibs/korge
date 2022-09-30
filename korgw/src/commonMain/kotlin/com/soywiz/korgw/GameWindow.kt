@@ -1,7 +1,7 @@
 package com.soywiz.korgw
 
 import com.soywiz.kds.*
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import com.soywiz.klock.PerformanceCounter
 import com.soywiz.klock.TimeSpan
 import com.soywiz.klock.blockingSleep
@@ -108,7 +108,7 @@ open class GameWindowCoroutineDispatcher : CoroutineDispatcher(), Delay, Closeab
 
     @PublishedApi internal val tasks = Queue<Runnable>()
     @PublishedApi internal val timedTasks = PriorityQueue<TimedTask> { a, b -> a.time.compareTo(b.time) }
-    val lock = Lock()
+    val lock = NonRecursiveLock()
 
     fun hasTasks() = tasks.isNotEmpty()
 

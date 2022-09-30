@@ -1,10 +1,10 @@
 package com.soywiz.kds.sync
 
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 open class SynchronizedCollection<T>(
     protected val base: MutableCollection<T>,
-    protected val lock: Lock = Lock()
+    protected val lock: NonRecursiveLock = NonRecursiveLock()
 ) : MutableCollection<T> {
     override val size: Int get() = lock { base.size }
     override fun clear() = lock { base.clear() }
