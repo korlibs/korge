@@ -1,10 +1,10 @@
 package com.soywiz.kds.sync
 
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 open class SynchronizedSet<T>(
     protected val base: MutableSet<T>,
-    protected val lock: Lock = Lock()
+    protected val lock: NonRecursiveLock = NonRecursiveLock()
 ) : MutableSet<T> {
     override fun add(element: T): Boolean = lock { base.add(element) }
     override fun addAll(elements: Collection<T>): Boolean = lock { base.addAll(elements) }

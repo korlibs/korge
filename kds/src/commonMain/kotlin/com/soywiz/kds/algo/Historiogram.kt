@@ -1,10 +1,10 @@
 package com.soywiz.kds.algo
 
 import com.soywiz.kds.IntIntMap
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 
 class Historiogram(private val out: IntIntMap = IntIntMap()) {
-    private val lock = Lock()
+    private val lock = NonRecursiveLock()
     fun add(value: Int) {
         lock {
             out.getOrPut(value) { 0 }
