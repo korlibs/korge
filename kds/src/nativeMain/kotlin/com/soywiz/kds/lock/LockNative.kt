@@ -15,7 +15,7 @@ class FastReentrantLock constructor() {
     @PublishedApi internal var locked = atomic(false)
     @PublishedApi internal var current: platform.posix.pthread_t? = null
 
-    inline operator fun <T> invoke(callback: () -> T): T {
+    @PublishedApi internal fun lock(): Boolean {
         var initialThread = false
         if (!locked.compareAndSet(false, true)) {
             if (current != pthread_self()) {
@@ -27,15 +27,24 @@ class FastReentrantLock constructor() {
             current = pthread_self()
             initialThread = true
         }
+        return initialThread
+    }
+
+    @PublishedApi internal fun unlock(initialThread: Boolean) {
+        if (initialThread) {
+            current = null
+            while (!locked.compareAndSet(true, false)) {
+                Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
+            }
+        }
+    }
+
+    inline operator fun <T> invoke(callback: () -> T): T {
+        val initialThread = lock()
         try {
             return callback()
         } finally {
-            if (initialThread) {
-                current = null
-                while (!locked.compareAndSet(true, false)) {
-                    Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
-                }
-            }
+            unlock(initialThread)
         }
     }
 }
@@ -43,16 +52,24 @@ class FastReentrantLock constructor() {
 actual class NonRecursiveLock actual constructor() {
     @PublishedApi internal var locked = atomic(false)
 
-    actual inline operator fun <T> invoke(callback: () -> T): T {
+    fun lock() {
         while (!locked.compareAndSet(false, true)) {
             Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
         }
+    }
+
+    fun unlock() {
+        while (!locked.compareAndSet(true, false)) {
+            Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
+        }
+    }
+
+    actual inline operator fun <T> invoke(callback: () -> T): T {
+        lock()
         try {
             return callback()
         } finally {
-            while (!locked.compareAndSet(true, false)) {
-                Unit // Should we try to sleep this thread and awake it later? If the lock is short, might not be needed
-            }
+            unlock()
         }
     }
 }
