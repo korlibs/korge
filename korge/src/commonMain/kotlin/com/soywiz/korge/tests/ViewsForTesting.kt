@@ -374,11 +374,7 @@ open class ViewsForTesting(
             //println("invokeOnTimeout: $timeMillis")
             val task = TimedTask2(time + timeMillis.toDouble().milliseconds, null, block)
             lock { timedTasks2.add(task) }
-            return object : DisposableHandle {
-                override fun dispose() {
-                    lock { timedTasks2.remove(task) }
-                }
-            }
+            return DisposableHandle { lock { timedTasks2.remove(task) } }
         }
 
         override fun scheduleResumeAfterDelay(timeMillis: Long, continuation: CancellableContinuation<Unit>) {

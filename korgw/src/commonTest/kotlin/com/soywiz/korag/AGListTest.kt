@@ -14,6 +14,7 @@ class AGListTest {
     val _list = AGList(global)
     fun AGQueueProcessor.sync(list: AGList = _list, block: AGList.() -> Unit) {
         block(list)
+        list.listFlush()
         processBlockingAll(list)
     }
     @Test

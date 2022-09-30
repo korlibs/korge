@@ -1,11 +1,11 @@
 package com.soywiz.kds
 
 import com.soywiz.kds.internal.arraycopy
-import com.soywiz.kds.lock.Lock
+import com.soywiz.kds.lock.NonRecursiveLock
 import kotlin.math.min
 
 class ChunkedByteDeque {
-    private val lock = Lock()
+    private val lock = NonRecursiveLock()
     private val chunks = Deque<ByteArray>()
     private var chunkPos: Int = 0
     var availableRead: Int = 0; private set
